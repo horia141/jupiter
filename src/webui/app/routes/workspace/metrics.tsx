@@ -21,7 +21,6 @@ import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
-import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
@@ -53,7 +52,6 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 
 export default function Metrics() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
-  const isBigScreen = useBigScreen();
   const topLevelInfo = useContext(TopLevelInfoContext);
 
   const shouldShowABranch = useTrunkNeedsToShowBranch();
@@ -77,35 +75,25 @@ export default function Metrics() {
   return (
     <TrunkPanel
       createLocation="/workspace/metrics/new"
-      extraFilters={
+      extraControls={[
         <>
           {isWorkspaceFeatureAvailable(
             topLevelInfo.workspace,
             WorkspaceFeature.PROJECTS
           ) && (
             <>
-              {isBigScreen ? (
-                <Button
-                  variant="outlined"
-                  to={`/workspace/metrics/settings`}
-                  component={Link}
-                  startIcon={<TuneIcon />}
-                >
-                  Settings
-                </Button>
-              ) : (
-                <Button
-                  variant="outlined"
-                  to={`/workspace/metrics/settings`}
-                  component={Link}
-                >
-                  <TuneIcon />
-                </Button>
-              )}
+              <Button
+                variant="outlined"
+                to={`/workspace/metrics/settings`}
+                component={Link}
+                startIcon={<TuneIcon />}
+              >
+                Settings
+              </Button>
             </>
           )}
-        </>
-      }
+        </>,
+      ]}
       returnLocation="/workspace"
     >
       <NestingAwareBlock

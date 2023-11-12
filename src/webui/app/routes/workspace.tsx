@@ -150,7 +150,7 @@ export default function Workspace() {
       <WorkspaceContainer>
         <AppBar
           position="static"
-          sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
+          sx={{ zIndex: (theme) => theme.zIndex.drawer + 10 }}
         >
           <Toolbar>
             <IconButton

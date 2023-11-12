@@ -109,57 +109,30 @@ export default function SmartListViewItems() {
     <BranchPanel
       key={`${loaderData.smartList.ref_id.the_id}/items`}
       createLocation={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/items/new`}
-      extraFilters={
+      extraControls={[
+        <Button
+          variant="outlined"
+          to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/items/details`}
+          component={Link}
+          startIcon={<TuneIcon />}
+        >
+          "Details"
+        </Button>,
         <ButtonGroup>
-          {isBigScreen ? (
-            <Button
-              variant="outlined"
-              to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/items/details`}
-              component={Link}
-              startIcon={<TuneIcon />}
-            >
-              "Details"
-            </Button>
-          ) : (
-            <Button
-              variant="outlined"
-              to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/items/details`}
-              component={Link}
-            >
-              <TuneIcon />
-            </Button>
-          )}
+          <Button variant="contained" startIcon={<ReorderIcon />}>
+            "Items"
+          </Button>
 
-          {isBigScreen ? (
-            <Button variant="contained" startIcon={<ReorderIcon />}>
-              "Items"
-            </Button>
-          ) : (
-            <Button variant="contained">
-              <ReorderIcon />
-            </Button>
-          )}
-
-          {isBigScreen ? (
-            <Button
-              variant="outlined"
-              to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/tags`}
-              startIcon={<TagIcon />}
-              component={Link}
-            >
-              "Tags"
-            </Button>
-          ) : (
-            <Button
-              variant="outlined"
-              to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/tags`}
-              component={Link}
-            >
-              <TagIcon />
-            </Button>
-          )}
-        </ButtonGroup>
-      }
+          <Button
+            variant="outlined"
+            to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/tags`}
+            startIcon={<TagIcon />}
+            component={Link}
+          >
+            "Tags"
+          </Button>
+        </ButtonGroup>,
+      ]}
       returnLocation="/workspace/smart-lists"
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>

@@ -1,3 +1,5 @@
+import ViewListIcon from "@mui/icons-material/ViewList";
+import ViewTimelineIcon from "@mui/icons-material/ViewTimeline";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
@@ -130,109 +132,106 @@ export default function BigPlans() {
 
   const [showFilterDialog, setShowFilterDialog] = useState(false);
 
+  let extraControls = [];
+  if (isBigScreen) {
+    extraControls = [
+      <ButtonGroup>
+        {isWorkspaceFeatureAvailable(
+          topLevelInfo.workspace,
+          WorkspaceFeature.PROJECTS
+        ) && (
+          <Button
+            variant={
+              selectedView === View.TIMELINE_BY_PROJECT
+                ? "contained"
+                : "outlined"
+            }
+            startIcon={<ViewTimelineIcon />}
+            onClick={() => setSelectedView(View.TIMELINE_BY_PROJECT)}
+          >
+            Timeline by Project
+          </Button>
+        )}
+        <Button
+          variant={selectedView === View.TIMELINE ? "contained" : "outlined"}
+          startIcon={<ViewTimelineIcon />}
+          onClick={() => setSelectedView(View.TIMELINE)}
+        >
+          Timeline
+        </Button>
+        <Button
+          variant={selectedView === View.LIST ? "contained" : "outlined"}
+          startIcon={<ViewListIcon />}
+          onClick={() => setSelectedView(View.LIST)}
+        >
+          List
+        </Button>
+      </ButtonGroup>,
+    ];
+  } else {
+    extraControls = [
+      <Button
+        variant="outlined"
+        startIcon={<ViewTimelineIcon />}
+        onClick={() => setShowFilterDialog(true)}
+      >
+        Views
+      </Button>,
+    ];
+  }
+
   return (
     <TrunkPanel
       createLocation="/workspace/big-plans/new"
-      extraFilters={
-        <>
-          {isBigScreen && (
-            <ButtonGroup>
-              {isWorkspaceFeatureAvailable(
-                topLevelInfo.workspace,
-                WorkspaceFeature.PROJECTS
-              ) && (
-                <Button
-                  variant={
-                    selectedView === View.TIMELINE_BY_PROJECT
-                      ? "contained"
-                      : "outlined"
-                  }
-                  onClick={() => setSelectedView(View.TIMELINE_BY_PROJECT)}
-                >
-                  Timeline by Project
-                </Button>
-              )}
-              <Button
-                variant={
-                  selectedView === View.TIMELINE ? "contained" : "outlined"
-                }
-                onClick={() => setSelectedView(View.TIMELINE)}
-              >
-                Timeline
-              </Button>
-              <Button
-                variant={selectedView === View.LIST ? "contained" : "outlined"}
-                onClick={() => setSelectedView(View.LIST)}
-              >
-                List
-              </Button>
-            </ButtonGroup>
-          )}
-
-          {!isBigScreen && (
-            <>
-              <ButtonGroup>
-                <Button onClick={() => setShowFilterDialog(true)}>
-                  Filters
-                </Button>
-              </ButtonGroup>
-
-              <Dialog
-                onClose={() => setShowFilterDialog(false)}
-                open={showFilterDialog}
-              >
-                <DialogTitle>Filters</DialogTitle>
-                <DialogContent>
-                  <ButtonGroup orientation="vertical">
-                    {isWorkspaceFeatureAvailable(
-                      topLevelInfo.workspace,
-                      WorkspaceFeature.PROJECTS
-                    ) && (
-                      <Button
-                        variant={
-                          selectedView === View.TIMELINE_BY_PROJECT
-                            ? "contained"
-                            : "outlined"
-                        }
-                        onClick={() =>
-                          setSelectedView(View.TIMELINE_BY_PROJECT)
-                        }
-                      >
-                        Timeline by Project
-                      </Button>
-                    )}
-                    <Button
-                      variant={
-                        selectedView === View.TIMELINE
-                          ? "contained"
-                          : "outlined"
-                      }
-                      onClick={() => setSelectedView(View.TIMELINE)}
-                    >
-                      Timeline
-                    </Button>
-                    <Button
-                      variant={
-                        selectedView === View.LIST ? "contained" : "outlined"
-                      }
-                      onClick={() => setSelectedView(View.LIST)}
-                    >
-                      List
-                    </Button>
-                  </ButtonGroup>
-                </DialogContent>
-                <DialogActions>
-                  <Button onClick={() => setShowFilterDialog(false)}>
-                    Close
-                  </Button>
-                </DialogActions>
-              </Dialog>
-            </>
-          )}
-        </>
-      }
+      extraControls={extraControls}
       returnLocation="/workspace"
     >
+      <Dialog
+        onClose={() => setShowFilterDialog(false)}
+        open={showFilterDialog}
+      >
+        <DialogTitle>Filters</DialogTitle>
+        <DialogContent>
+          <ButtonGroup orientation="vertical">
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.PROJECTS
+            ) && (
+              <Button
+                variant={
+                  selectedView === View.TIMELINE_BY_PROJECT
+                    ? "contained"
+                    : "outlined"
+                }
+                startIcon={<ViewTimelineIcon />}
+                onClick={() => setSelectedView(View.TIMELINE_BY_PROJECT)}
+              >
+                Timeline by Project
+              </Button>
+            )}
+            <Button
+              variant={
+                selectedView === View.TIMELINE ? "contained" : "outlined"
+              }
+              startIcon={<ViewTimelineIcon />}
+              onClick={() => setSelectedView(View.TIMELINE)}
+            >
+              Timeline
+            </Button>
+            <Button
+              variant={selectedView === View.LIST ? "contained" : "outlined"}
+              startIcon={<ViewListIcon />}
+              onClick={() => setSelectedView(View.LIST)}
+            >
+              List
+            </Button>
+          </ButtonGroup>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowFilterDialog(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
         {isWorkspaceFeatureAvailable(
           topLevelInfo.workspace,

@@ -1,3 +1,4 @@
+import TuneIcon from "@mui/icons-material/Tune";
 import { Button } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
@@ -55,7 +56,6 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 
 export default function Persons() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
-
   const topLevelInfo = useContext(TopLevelInfoContext);
 
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
@@ -79,22 +79,25 @@ export default function Persons() {
   return (
     <TrunkPanel
       createLocation="/workspace/persons/new"
-      extraFilters={
+      extraControls={[
         <>
           {isWorkspaceFeatureAvailable(
             topLevelInfo.workspace,
             WorkspaceFeature.PROJECTS
           ) && (
-            <Button
-              variant="outlined"
-              to={`/workspace/persons/settings`}
-              component={Link}
-            >
-              Settings
-            </Button>
+            <>
+              <Button
+                variant="outlined"
+                to={`/workspace/persons/settings`}
+                component={Link}
+                startIcon={<TuneIcon />}
+              >
+                Settings
+              </Button>
+            </>
           )}
-        </>
-      }
+        </>,
+      ]}
       returnLocation="/workspace"
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>

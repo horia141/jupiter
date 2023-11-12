@@ -37,6 +37,10 @@ import {
 import { memo, useContext, useState } from "react";
 import { InboxTaskStatusTag } from "~/components/inbox-task-status-tag";
 
+import FilterAltIcon from "@mui/icons-material/FilterAlt";
+import FlareIcon from "@mui/icons-material/Flare";
+import ViewKanbanIcon from "@mui/icons-material/ViewKanban";
+import ViewListIcon from "@mui/icons-material/ViewList";
 import Grid from "@mui/material/Unstable_Grid2";
 import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";
@@ -308,66 +312,72 @@ export default function InboxTasks() {
     globalProperties.inboxTasksToAskForGC
   );
 
+  let extraControls = [];
+  if (isBigScreen) {
+    extraControls = [
+      <ButtonGroup>
+        <Button
+          variant={selectedView === View.SWIFTVIEW ? "contained" : "outlined"}
+          startIcon={<FlareIcon />}
+          onClick={() => setSelectedView(View.SWIFTVIEW)}
+        >
+          SwiftView
+        </Button>
+        <Button
+          variant={
+            selectedView === View.KANBAN_BY_EISEN ? "contained" : "outlined"
+          }
+          startIcon={<ViewKanbanIcon />}
+          onClick={() => setSelectedView(View.KANBAN_BY_EISEN)}
+        >
+          Kanban by Eisen
+        </Button>
+        <Button
+          variant={selectedView === View.KANBAN ? "contained" : "outlined"}
+          startIcon={<ViewKanbanIcon />}
+          onClick={() => setSelectedView(View.KANBAN)}
+        >
+          Kanban
+        </Button>
+        <Button
+          variant={selectedView === View.LIST ? "contained" : "outlined"}
+          startIcon={<ViewListIcon />}
+          onClick={() => setSelectedView(View.LIST)}
+        >
+          List
+        </Button>
+      </ButtonGroup>,
+      <Button
+        variant="outlined"
+        startIcon={<FilterAltIcon />}
+        onClick={() => setShowFilterDialog(true)}
+      >
+        Filters
+      </Button>,
+    ];
+  } else {
+    extraControls = [
+      <Button
+        variant="outlined"
+        startIcon={<ViewKanbanIcon />}
+        onClick={() => setShowViewsDialog(true)}
+      >
+        Views
+      </Button>,
+      <Button
+        variant="outlined"
+        startIcon={<FilterAltIcon />}
+        onClick={() => setShowFilterDialog(true)}
+      >
+        Filters
+      </Button>,
+    ];
+  }
+
   return (
     <TrunkPanel
       createLocation="/workspace/inbox-tasks/new"
-      extraFilters={
-        <>
-          {isBigScreen && (
-            <ButtonGroup>
-              <Button
-                variant={
-                  selectedView === View.SWIFTVIEW ? "contained" : "outlined"
-                }
-                onClick={() => setSelectedView(View.SWIFTVIEW)}
-              >
-                SwiftView
-              </Button>
-              <Button
-                variant={
-                  selectedView === View.KANBAN_BY_EISEN
-                    ? "contained"
-                    : "outlined"
-                }
-                onClick={() => setSelectedView(View.KANBAN_BY_EISEN)}
-              >
-                Kanban by Eisen
-              </Button>
-              <Button
-                variant={
-                  selectedView === View.KANBAN ? "contained" : "outlined"
-                }
-                onClick={() => setSelectedView(View.KANBAN)}
-              >
-                Kanban
-              </Button>
-              <Button
-                variant={selectedView === View.LIST ? "contained" : "outlined"}
-                onClick={() => setSelectedView(View.LIST)}
-              >
-                List
-              </Button>
-            </ButtonGroup>
-          )}
-
-          <ButtonGroup>
-            {!isBigScreen && (
-              <Button
-                variant="outlined"
-                onClick={() => setShowViewsDialog(true)}
-              >
-                Views
-              </Button>
-            )}
-            <Button
-              variant="outlined"
-              onClick={() => setShowFilterDialog(true)}
-            >
-              Filters
-            </Button>
-          </ButtonGroup>
-        </>
-      }
+      extraControls={extraControls}
       returnLocation="/workspace"
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
@@ -403,6 +413,7 @@ export default function InboxTasks() {
                   variant={
                     selectedView === View.SWIFTVIEW ? "contained" : "outlined"
                   }
+                  startIcon={<FlareIcon />}
                   onClick={() => setSelectedView(View.SWIFTVIEW)}
                 >
                   SwiftView
@@ -413,6 +424,7 @@ export default function InboxTasks() {
                       ? "contained"
                       : "outlined"
                   }
+                  startIcon={<ViewKanbanIcon />}
                   onClick={() => setSelectedView(View.KANBAN_BY_EISEN)}
                 >
                   Kanban by Eisen
@@ -421,6 +433,7 @@ export default function InboxTasks() {
                   variant={
                     selectedView === View.KANBAN ? "contained" : "outlined"
                   }
+                  startIcon={<ViewKanbanIcon />}
                   onClick={() => setSelectedView(View.KANBAN)}
                 >
                   Kanban
@@ -429,6 +442,7 @@ export default function InboxTasks() {
                   variant={
                     selectedView === View.LIST ? "contained" : "outlined"
                   }
+                  startIcon={<ViewListIcon />}
                   onClick={() => setSelectedView(View.LIST)}
                 >
                   List

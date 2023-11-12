@@ -77,7 +77,7 @@ export default function EmailTasks() {
 
   return (
     <TrunkPanel
-      extraFilters={
+      extraControls={[
         <>
           {isWorkspaceFeatureAvailable(
             topLevelInfo.workspace,
@@ -91,8 +91,8 @@ export default function EmailTasks() {
               Setings
             </Button>
           )}
-        </>
-      }
+        </>,
+      ]}
       returnLocation="/workspace"
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>

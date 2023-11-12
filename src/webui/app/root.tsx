@@ -12,7 +12,6 @@ import {
 import { SnackbarProvider } from "notistack";
 
 import { StrictMode } from "react";
-import ScrollToTop from "react-scroll-to-top";
 import { EnvBanner } from "./components/infra/env-banner";
 import {
   GlobalPropertiesContext,
@@ -56,14 +55,6 @@ export default function App() {
               <SnackbarProvider>
                 <CssBaseline />
                 <EnvBanner />
-                <ScrollToTop
-                  smooth
-                  style={{
-                    zIndex: THEME.zIndex.appBar + 1,
-                    width: "4rem",
-                    height: "4rem",
-                  }}
-                />
                 <Outlet />
               </SnackbarProvider>
             </ThemeProvider>

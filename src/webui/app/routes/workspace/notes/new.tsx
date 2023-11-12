@@ -16,6 +16,7 @@ import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { NoteEditor } from "~/components/note-editor";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
+import { LeafPanelExpansionState } from "~/rendering/leaf-panel-expansion";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
@@ -61,7 +62,10 @@ export default function NewNote() {
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <LeafPanel returnLocation="/workspace/notes">
+    <LeafPanel
+      returnLocation="/workspace/notes"
+      initialExpansionState={LeafPanelExpansionState.FULL}
+    >
       <Card>
         <GlobalError actionResult={actionData} />
         <CardContent>

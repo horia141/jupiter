@@ -73,7 +73,7 @@ export default function SlackTasks() {
 
   return (
     <TrunkPanel
-      extraFilters={
+      extraControls={[
         <>
           {isWorkspaceFeatureAvailable(
             topLevelInfo.workspace,
@@ -87,8 +87,8 @@ export default function SlackTasks() {
               Setings
             </Button>
           )}
-        </>
-      }
+        </>,
+      ]}
       returnLocation="/workspace"
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>

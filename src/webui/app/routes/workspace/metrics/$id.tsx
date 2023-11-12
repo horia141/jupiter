@@ -29,7 +29,6 @@ import { TimeDiffTag } from "~/components/time-diff-tag";
 import { aDateToDate, compareADate } from "~/logic/domain/adate";
 import { metricEntryName } from "~/logic/domain/metric-entry";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
-import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
@@ -76,7 +75,6 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 
 export default function Metric() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
-  const isBigScreen = useBigScreen();
   const shouldShowALeaf = useBranchNeedsToShowLeaf();
 
   const sortedEntries = [...loaderData.metricEntries].sort((e1, e2) => {
@@ -103,28 +101,16 @@ export default function Metric() {
     <BranchPanel
       key={loaderData.metric.ref_id.the_id}
       createLocation={`/workspace/metrics/${loaderData.metric.ref_id.the_id}/entries/new`}
-      extraFilters={
-        <>
-          {isBigScreen ? (
-            <Button
-              variant="outlined"
-              to={`/workspace/metrics/${loaderData.metric.ref_id.the_id}/details`}
-              component={Link}
-              startIcon={<TuneIcon />}
-            >
-              Details
-            </Button>
-          ) : (
-            <Button
-              variant="outlined"
-              to={`/workspace/metrics/${loaderData.metric.ref_id.the_id}/details`}
-              component={Link}
-            >
-              <TuneIcon />
-            </Button>
-          )}
-        </>
-      }
+      extraControls={[
+        <Button
+          variant="outlined"
+          to={`/workspace/metrics/${loaderData.metric.ref_id.the_id}/details`}
+          component={Link}
+          startIcon={<TuneIcon />}
+        >
+          Details
+        </Button>,
+      ]}
       returnLocation="/workspace/metrics"
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
