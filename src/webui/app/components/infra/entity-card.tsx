@@ -143,6 +143,7 @@ export function EntityLink(props: PropsWithChildren<EntityLinkProps>) {
 
 const StyledLink = styled(Link)(({ theme }) => ({
   textDecoration: "none",
+  width: "100%",
   color: theme.palette.info.dark,
   ":visited": {
     color: theme.palette.info.dark,

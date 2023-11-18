@@ -97,7 +97,9 @@ class SqliteSearchRepository(SearchRepository):
                 name=str(entity.name),
                 archived=entity.archived,
                 last_modified_time=entity.last_modified_time.to_db(),
-                archived_time=entity.archived_time.to_db() if entity.archived_time else None,
+                archived_time=entity.archived_time.to_db()
+                if entity.archived_time
+                else None,
             )
         )
         if result.rowcount == 0:
