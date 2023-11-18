@@ -93,7 +93,12 @@ class SqliteSearchRepository(SearchRepository):
                 == str(NamedEntityTag.from_entity(entity))
             )
             .where(self._search_index_table.c.ref_id == entity.ref_id.as_int())
-            .values(name=str(entity.name), archived=entity.archived)
+            .values(
+                name=str(entity.name),
+                archived=entity.archived,
+                last_modified_time=entity.last_modified_time.to_db(),
+                archived_time=entity.archived_time.to_db(),
+            )
         )
         if result.rowcount == 0:
             raise EntityNotFoundError(
