@@ -42,7 +42,7 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
   const isBigScreen = useBigScreen();
   const navigation = useNavigate();
   const location = useLocation();
-  const containerRef = useRef<HTMLFormElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const isPresent = useIsPresent();
   const [expansionState, setExpansionState] = useState(
     props.initialExpansionState ?? LeafPanelExpansionState.SMALL
@@ -52,7 +52,7 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
     BIG_SCREEN_WIDTH_FULL_INT
   );
 
-  function handleScroll(ref: HTMLFormElement, pathname: string) {
+  function handleScroll(ref: HTMLDivElement, pathname: string) {
     if (!isPresent) {
       return;
     }
@@ -193,50 +193,51 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
       transition={{ duration: 0.5 }}
       isBigScreen={isBigScreen}
     >
-      <LeafPanelControls id="leaf-panel-controls">
-        <ButtonGroup size="small">
-          {isBigScreen && (
-            <IconButton onClick={handleExpansion}>
-              <SwitchLeftIcon />
+      <Form method="post">
+        <LeafPanelControls id="leaf-panel-controls">
+          <ButtonGroup size="small">
+            {isBigScreen && (
+              <IconButton onClick={handleExpansion}>
+                <SwitchLeftIcon />
+              </IconButton>
+            )}
+            <IconButton onClick={handleScrollTop}>
+              <ArrowUpwardIcon />
+            </IconButton>
+            <IconButton onClick={handleScrollBottom}>
+              <ArrowDownwardIcon />
+            </IconButton>
+            <IconButton>
+              <Link to={props.returnLocation} style={{ display: "flex" }}>
+                <KeyboardDoubleArrowRightIcon />
+              </Link>
+            </IconButton>
+            <IconButton onClick={() => navigation(-1)}>
+              <ArrowBackIcon />
+            </IconButton>
+          </ButtonGroup>
+
+          {props.showArchiveButton && (
+            <IconButton
+              sx={{ marginLeft: "auto" }}
+              disabled={!props.enableArchiveButton}
+              type="submit"
+              name="intent"
+              value="archive"
+            >
+              <DeleteIcon />
             </IconButton>
           )}
-          <IconButton onClick={handleScrollTop}>
-            <ArrowUpwardIcon />
-          </IconButton>
-          <IconButton onClick={handleScrollBottom}>
-            <ArrowDownwardIcon />
-          </IconButton>
-          <IconButton>
-            <Link to={props.returnLocation} style={{ display: "flex" }}>
-              <KeyboardDoubleArrowRightIcon />
-            </Link>
-          </IconButton>
-          <IconButton onClick={() => navigation(-1)}>
-            <ArrowBackIcon />
-          </IconButton>
-        </ButtonGroup>
+        </LeafPanelControls>
 
-        {props.showArchiveButton && (
-          <IconButton
-            sx={{ marginLeft: "auto" }}
-            disabled={!props.enableArchiveButton}
-            type="submit"
-            name="intent"
-            value="archive"
-          >
-            <DeleteIcon />
-          </IconButton>
-        )}
-      </LeafPanelControls>
-
-      <LeafPanelContent
-        id="leaf-panel-content"
-        method="post"
-        ref={containerRef}
-        isbigscreen={isBigScreen ? "true" : "false"}
-      >
-        {props.children}
-      </LeafPanelContent>
+        <LeafPanelContent
+          id="leaf-panel-content"
+          ref={containerRef}
+          isbigscreen={isBigScreen ? "true" : "false"}
+        >
+          {props.children}
+        </LeafPanelContent>
+      </Form>
     </LeafPanelFrame>
   );
 }
@@ -275,7 +276,7 @@ interface LeafPanelContentProps {
   isbigscreen: string;
 }
 
-const LeafPanelContent = styled(Form)<LeafPanelContentProps>(
+const LeafPanelContent = styled("div")<LeafPanelContentProps>(
   ({ isbigscreen }) => ({
     padding: "0.5rem",
     height: `calc(var(--vh, 1vh) * 100 - 4rem - ${
