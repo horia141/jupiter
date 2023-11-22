@@ -311,7 +311,7 @@ export default function Sidebar(props: SidebarProps) {
                 component={Link}
                 onClick={onClickNavigation}
               >
-                <ListItemIcon>🧰</ListItemIcon>
+                <ListItemIcon>🗑</ListItemIcon>
                 <ListItemText primary="Garbage Collect" />
               </ListItemButton>
             </ListItem>

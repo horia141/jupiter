@@ -24,6 +24,8 @@ from jupiter.core.domain.gamification.infra.score_period_best_repository import 
 from jupiter.core.domain.gamification.infra.score_stats_repository import (
     ScoreStatsRepository,
 )
+from jupiter.core.domain.gc.infra.gc_log_entry_repository import GCLogEntryRepository
+from jupiter.core.domain.gc.infra.gc_log_repository import GCLogRepository
 from jupiter.core.domain.habits.infra.habit_collection_repository import (
     HabitCollectionRepository,
 )
@@ -68,7 +70,7 @@ from jupiter.core.domain.push_integrations.slack.infra.slack_task_collection_rep
 from jupiter.core.domain.push_integrations.slack.infra.slack_task_repository import (
     SlackTaskRepository,
 )
-from jupiter.core.domain.search.search_repository import SearchRepository
+from jupiter.core.domain.search.infra.search_repository import SearchRepository
 from jupiter.core.domain.smart_lists.infra.smart_list_collection_repository import (
     SmartListCollectionRepository,
 )
@@ -281,6 +283,16 @@ class DomainUnitOfWork(abc.ABC):
     @abc.abstractmethod
     def fast_into_repository(self) -> FastInfoRepository:
         """The fast info repository."""
+
+    @property
+    @abc.abstractmethod
+    def gc_log_repository(self) -> GCLogRepository:
+        """The GC log repository."""
+
+    @property
+    @abc.abstractmethod
+    def gc_log_entry_repository(self) -> GCLogEntryRepository:
+        """The GC log entry repository."""
 
 
 class DomainStorageEngine(abc.ABC):

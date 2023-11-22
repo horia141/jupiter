@@ -27,7 +27,7 @@ from jupiter.core.domain.gamification.infra.score_stats_repository import (
 from jupiter.core.domain.gamification.score_log import ScoreLog
 from jupiter.core.domain.gamification.score_log_entry import ScoreLogEntry
 from jupiter.core.domain.gamification.score_period_best import ScorePeriodBest
-from jupiter.core.domain.gamification.score_source import ScoureSource
+from jupiter.core.domain.gamification.score_source import ScoreSource
 from jupiter.core.domain.gamification.score_stats import ScoreStats
 from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
@@ -375,7 +375,7 @@ class SqliteScoreLogEntryRepository(ScoreLogEntryRepository):
             events=[],
             name=EntityName(row["name"]),
             score_log_ref_id=EntityId.from_raw(str(row["score_log_ref_id"])),
-            source=ScoureSource(row["source"]),
+            source=ScoreSource(row["source"]),
             task_ref_id=EntityId.from_raw(str(row["task_ref_id"])),
             difficulty=Difficulty(row["difficulty"]) if row["difficulty"] else None,
             success=row["success"],

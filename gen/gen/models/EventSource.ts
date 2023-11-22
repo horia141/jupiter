@@ -7,6 +7,8 @@
  */
 export enum EventSource {
     CLI = 'cli',
+    WEB = 'web',
     SLACK = 'slack',
     EMAIL = 'email',
+    GC_CRON = 'gc-cron',
 }

@@ -30,8 +30,10 @@ class EventSource(enum.Enum):
     """The source of the modification which this event records."""
 
     CLI = "cli"
+    WEB = "web"
     SLACK = "slack"
     EMAIL = "email"
+    GC_CRON = "gc-cron"
 
     def to_db(self) -> str:
         """A database appropriate form of this enum."""

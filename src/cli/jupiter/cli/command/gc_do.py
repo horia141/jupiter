@@ -4,17 +4,18 @@ from argparse import ArgumentParser, Namespace
 from jupiter.cli.command.command import LoggedInMutationCommand
 from jupiter.cli.session_storage import SessionInfo
 from jupiter.core.domain.sync_target import SyncTarget
-from jupiter.core.use_cases.gc import GCArgs, GCUseCase
+from jupiter.core.framework.event import EventSource
+from jupiter.core.use_cases.gc.do import GCDoArgs, GCDoUseCase
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
 
 
-class GC(LoggedInMutationCommand[GCUseCase]):
+class GCDo(LoggedInMutationCommand[GCDoUseCase]):
     """UseCase class for archiving done tasks."""
 
     @staticmethod
     def name() -> str:
         """The name of the command."""
-        return "gc"
+        return "gc-do"
 
     @staticmethod
     def description() -> str:
@@ -51,7 +52,8 @@ class GC(LoggedInMutationCommand[GCUseCase]):
 
         await self._use_case.execute(
             AppLoggedInUseCaseSession(session_info.auth_token_ext),
-            GCArgs(
+            GCDoArgs(
+                source=EventSource.CLI,
                 gc_targets=gc_targets,
             ),
         )

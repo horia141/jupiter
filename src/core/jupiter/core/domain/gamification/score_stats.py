@@ -4,7 +4,7 @@ from typing import Tuple
 
 from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.gamification.score_log_entry import ScoreLogEntry
-from jupiter.core.domain.gamification.score_source import ScoureSource
+from jupiter.core.domain.gamification.score_source import ScoreSource
 from jupiter.core.domain.gamification.user_score_history import UserScoreAtDate
 from jupiter.core.domain.gamification.user_score_overview import UserScore
 from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
@@ -55,9 +55,9 @@ class ScoreStats(Record):
             last_modified_time=modification_time,
             total_score=max(0, self.total_score + score_log_entry.score),
             inbox_task_cnt=self.inbox_task_cnt
-            + (1 if score_log_entry.source == ScoureSource.INBOX_TASK else 0),
+            + (1 if score_log_entry.source == ScoreSource.INBOX_TASK else 0),
             big_plan_cnt=self.big_plan_cnt
-            + (1 if score_log_entry.source == ScoureSource.BIG_PLAN else 0),
+            + (1 if score_log_entry.source == ScoreSource.BIG_PLAN else 0),
         )
 
     @property

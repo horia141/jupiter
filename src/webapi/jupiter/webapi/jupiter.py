@@ -99,7 +99,12 @@ from jupiter.core.use_cases.chores.unsuspend import (
     ChoreUnsuspendUseCase,
 )
 from jupiter.core.use_cases.chores.update import ChoreUpdateArgs, ChoreUpdateUseCase
-from jupiter.core.use_cases.gc import GCArgs, GCUseCase
+from jupiter.core.use_cases.gc.do import GCDoArgs, GCDoUseCase
+from jupiter.core.use_cases.gc.load_runs import (
+    GCLoadRunsArgs,
+    GCLoadRunsResult,
+    GCLoadRunsUseCase,
+)
 from jupiter.core.use_cases.gen import GenArgs, GenUseCase
 from jupiter.core.use_cases.get_summaries import (
     GetSummariesArgs,
@@ -564,13 +569,18 @@ report_use_case = ReportUseCase(
     storage_engine=domain_storage_engine,
 )
 
-gc_use_case = GCUseCase(
+gc_do_use_case = GCDoUseCase(
     time_provider=time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+)
+
+gc_load_runs_use_case = GCLoadRunsUseCase(
+    auth_token_stamper=auth_token_stamper,
+    storage_engine=domain_storage_engine,
 )
 
 load_top_level_info_use_case = LoadTopLevelInfoUseCase(
@@ -1600,10 +1610,23 @@ async def report(args: ReportArgs, session: LoggedInSession) -> ReportResult:
     return await report_use_case.execute(session, args)
 
 
-@app.post("/gc", response_model=None, tags=["gc"], responses=standard_responses)
-async def garbage_collect(args: GCArgs, session: LoggedInSession) -> None:
-    """Garbage collect."""
-    await gc_use_case.execute(session, args)
+@app.post("/gc/do", response_model=None, tags=["gc"], responses=standard_responses)
+async def gc_do(args: GCDoArgs, session: LoggedInSession) -> None:
+    """Perform a garbage collect."""
+    await gc_do_use_case.execute(session, args)
+
+
+@app.post(
+    "/gc/load-runs",
+    response_model=GCLoadRunsResult,
+    tags=["gc"],
+    responses=standard_responses,
+)
+async def gc_load_runs(
+    args: GCLoadRunsArgs, session: LoggedInSession
+) -> GCLoadRunsResult:
+    """Load history of GC runs."""
+    return await gc_load_runs_use_case.execute(session, args)
 
 
 @app.post(

@@ -34,7 +34,7 @@ def upgrade() -> None:
     )
     op.execute(
         """
-        CREATE UNIQUE INDEX ix_gamification_score_log_user_ref_id ON gamification_score_log (user_reF_id);"""
+        CREATE UNIQUE INDEX ix_gamification_score_log_user_ref_id ON gamification_score_log (user_ref_id);"""
     )
     op.execute(
         """

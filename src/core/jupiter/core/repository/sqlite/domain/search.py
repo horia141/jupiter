@@ -3,10 +3,14 @@ from typing import Final, Iterable, List, Optional
 
 from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.entity_name import EntityName
+from jupiter.core.domain.entity_summary import EntitySummary
 from jupiter.core.domain.named_entity_tag import NamedEntityTag
+from jupiter.core.domain.search.infra.search_repository import (
+    SearchMatch,
+    SearchRepository,
+)
 from jupiter.core.domain.search.search_limit import SearchLimit
 from jupiter.core.domain.search.search_query import SearchQuery
-from jupiter.core.domain.search.search_repository import SearchMatch, SearchRepository
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.entity import BranchEntity, LeafEntity
@@ -216,17 +220,18 @@ class SqliteSearchRepository(SearchRepository):
     @staticmethod
     def _row_to_match(row: RowType) -> SearchMatch:
         return SearchMatch(
-            entity_tag=NamedEntityTag.from_raw(row["entity_tag"]),
-            ref_id=EntityId.from_raw(str(row["ref_id"])),
-            parent_ref_id=EntityId.from_raw(str(row["parent_ref_id"])),
-            name=EntityName.from_raw(row["name"]),
-            archived=row["archived"],
-            created_time=Timestamp.from_db(row["created_time"]),
-            archived_time=Timestamp.from_db(row["archived_time"])
-            if row["archived_time"]
-            else None,
-            last_modified_time=Timestamp.from_db(row["last_modified_time"]),
-            match_highlight=row["highlight"],
-            match_snippet=row["snippet"],
+            summary=EntitySummary(
+                entity_tag=NamedEntityTag.from_raw(row["entity_tag"]),
+                ref_id=EntityId.from_raw(str(row["ref_id"])),
+                parent_ref_id=EntityId.from_raw(str(row["parent_ref_id"])),
+                name=EntityName.from_raw(row["name"]),
+                archived=row["archived"],
+                created_time=Timestamp.from_db(row["created_time"]),
+                archived_time=Timestamp.from_db(row["archived_time"])
+                if row["archived_time"]
+                else None,
+                last_modified_time=Timestamp.from_db(row["last_modified_time"]),
+                snippet=row["snippet"],
+            ),
             search_rank=row["rank"],
         )

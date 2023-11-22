@@ -33,9 +33,11 @@ from jupiter.core.domain.recurring_task_due_at_month import RecurringTaskDueAtMo
 from jupiter.core.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
 from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.recurring_task_skip_rule import RecurringTaskSkipRule
+from jupiter.core.domain.sync_target import SyncTarget
 from jupiter.core.domain.timezone import Timezone
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.entity import BranchEntity, LeafEntity
+from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     ProgressReporterFactory,
@@ -375,8 +377,18 @@ def project_to_rich_text(project_name: ProjectName) -> Text:
 
 
 def entity_tag_to_rich_text(entity_tag: NamedEntityTag) -> Text:
-    """Transform a sync target into text."""
+    """Transform a named entity tag into text."""
     return Text(entity_tag.value, style="blue italic")
+
+
+def sync_target_to_rich_text(sync_target: SyncTarget) -> Text:
+    """Transform a sync target tag into text."""
+    return Text(sync_target.value, style="yellow italic")
+
+
+def event_source_to_rich_text(source: EventSource) -> Text:
+    """Transform an event source into text."""
+    return Text(source.value, style="red italic underline")
 
 
 def entity_name_to_rich_text(name: EntityName) -> Text:

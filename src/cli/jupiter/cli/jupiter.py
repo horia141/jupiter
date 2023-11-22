@@ -29,7 +29,8 @@ from jupiter.cli.command.email_task_change_generation_project import (
 from jupiter.cli.command.email_task_remove import EmailTaskRemove
 from jupiter.cli.command.email_task_show import EmailTaskShow
 from jupiter.cli.command.email_task_update import EmailTaskUpdate
-from jupiter.cli.command.gc import GC
+from jupiter.cli.command.gc_do import GCDo
+from jupiter.cli.command.gc_show import GCShow
 from jupiter.cli.command.gen import Gen
 from jupiter.cli.command.habit_archive import HabitArchive
 from jupiter.cli.command.habit_change_project import HabitChangeProject
@@ -162,7 +163,8 @@ from jupiter.core.use_cases.chores.remove import ChoreRemoveUseCase
 from jupiter.core.use_cases.chores.suspend import ChoreSuspendUseCase
 from jupiter.core.use_cases.chores.unsuspend import ChoreUnsuspendUseCase
 from jupiter.core.use_cases.chores.update import ChoreUpdateUseCase
-from jupiter.core.use_cases.gc import GCUseCase
+from jupiter.core.use_cases.gc.do import GCDoUseCase
+from jupiter.core.use_cases.gc.load_runs import GCLoadRunsUseCase
 from jupiter.core.use_cases.gen import GenUseCase
 from jupiter.core.use_cases.habits.archive import HabitArchiveUseCase
 from jupiter.core.use_cases.habits.change_project import HabitChangeProjectUseCase
@@ -428,16 +430,24 @@ async def main() -> None:
                     top_level_context.to_logged_in(),
                     ReportUseCase(auth_token_stamper, domain_storage_engine),
                 ),
-                GC(
+                GCDo(
                     session_storage,
                     top_level_context.to_logged_in(),
-                    GCUseCase(
+                    GCDoUseCase(
                         time_provider,
                         invocation_recorder,
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
                         search_storage_engine=search_storage_engine,
+                    ),
+                ),
+                GCShow(
+                    session_storage,
+                    top_level_context.to_logged_in(),
+                    GCLoadRunsUseCase(
+                        auth_token_stamper,
+                        domain_storage_engine,
                     ),
                 ),
                 Pomodoro(

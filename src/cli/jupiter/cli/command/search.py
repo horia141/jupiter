@@ -196,25 +196,25 @@ class Search(LoggedInReadonlyCommand[SearchUseCase]):
 
         for match in result.matches:
             match_text = Text("")
-            match_text.append(entity_tag_to_rich_text(match.entity_tag))
-            match_text.append(entity_id_to_rich_text(match.ref_id))
+            match_text.append(entity_tag_to_rich_text(match.summary.entity_tag))
+            match_text.append(entity_id_to_rich_text(match.summary.ref_id))
             match_text.append(" ")
 
-            match_snippet_with_markup = match.match_snippet.replace(
+            match_snippet_with_markup = match.summary.snippet.replace(
                 "found", "bold underline blue"
             )
 
             snippet_text = Text.from_markup(match_snippet_with_markup)
             match_text.append(snippet_text)
 
-            if not match.archived:
+            if not match.summary.archived:
                 modified_time_str = f"""Modified {(
-                    match.last_modified_time.as_datetime().diff_for_humans(
+                    match.summary.last_modified_time.as_datetime().diff_for_humans(
                         self._time_provider.get_current_time().as_datetime()
                     )
                 )}"""
             else:
-                modified_time_str = f"""Archived {(cast(Timestamp, match.archived_time).as_datetime().diff_for_humans(
+                modified_time_str = f"""Archived {(cast(Timestamp, match.summary.archived_time).as_datetime().diff_for_humans(
                     self._time_provider.get_current_time().as_datetime()
                 ))}"""
 
@@ -222,7 +222,7 @@ class Search(LoggedInReadonlyCommand[SearchUseCase]):
             match_text.append(modified_time_str)
             match_text.append("]")
 
-            if match.archived:
+            if match.summary.archived:
                 match_text.stylize("gray62")
 
             rich_tree.add(match_text)

@@ -19,19 +19,18 @@ import {
 import { json, LoaderArgs } from "@remix-run/node";
 import { ShouldRevalidateFunction, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { ApiError, NamedEntityTag, SearchMatch } from "jupiter-gen";
+import { ApiError, NamedEntityTag } from "jupiter-gen";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { CheckboxAsString, parseQuery } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
-import { SlimChip } from "~/components/infra/chips";
-import { EntityCard, EntityLink } from "~/components/infra/entity-card";
+import { EntitySummaryLink } from "~/components/entity-summary-link";
+import { EntityCard } from "~/components/infra/entity-card";
 import { EntityStack2 } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { ToolPanel } from "~/components/infra/layout/tool-panel";
 import { EntityTagSelect } from "~/components/named-entity-tag-select";
-import { TimeDiffTag } from "~/components/time-diff-tag";
 import {
   isNoErrorSomeData,
   noErrorSomeData,
@@ -504,10 +503,10 @@ export default function Search() {
           {loaderData.data.result.matches.map((match) => {
             return (
               <EntityCard
-                showAsArchived={match.archived}
-                key={`${match.entity_tag}:${match.ref_id.the_id}`}
+                showAsArchived={match.summary.archived}
+                key={`${match.summary.entity_tag}:${match.summary.ref_id.the_id}`}
               >
-                <Match match={match} />
+                <EntitySummaryLink summary={match.summary} />
               </EntityCard>
             );
           })}
@@ -520,196 +519,3 @@ export default function Search() {
 export const ErrorBoundary = makeErrorBoundary(
   () => `There was an error performing the search!`
 );
-
-interface MatchProps {
-  match: SearchMatch;
-}
-
-function Match({ match }: MatchProps) {
-  const commonSequence = (
-    <>
-      <MatchSnippet snippet={match.match_snippet} />
-      {match.archived && (
-        <TimeDiffTag
-          labelPrefix="Archived"
-          collectionTime={match.archived_time}
-        />
-      )}
-      {!match.archived && (
-        <TimeDiffTag
-          labelPrefix="Modified"
-          collectionTime={match.last_modified_time}
-        />
-      )}
-    </>
-  );
-
-  switch (match.entity_tag) {
-    case NamedEntityTag.INBOX_TASK:
-      return (
-        <EntityLink to={`/workspace/inbox-tasks/${match.ref_id.the_id}`}>
-          <SlimChip label={"Inbox Task"} color={"primary"} />
-          {commonSequence}
-        </EntityLink>
-      );
-    case NamedEntityTag.HABIT:
-      return (
-        <EntityLink to={`/workspace/habits/${match.ref_id.the_id}`}>
-          <SlimChip label={"Habit"} color={"primary"} />
-          {commonSequence}
-        </EntityLink>
-      );
-    case NamedEntityTag.CHORE:
-      return (
-        <EntityLink to={`/workspace/chores/${match.ref_id.the_id}`}>
-          <SlimChip label={"Chore"} color={"primary"} />
-          {commonSequence}
-        </EntityLink>
-      );
-    case NamedEntityTag.BIG_PLAN:
-      return (
-        <EntityLink to={`/workspace/big-plans/${match.ref_id.the_id}`}>
-          <SlimChip label={"Big Plan"} color={"primary"} />
-          {commonSequence}
-        </EntityLink>
-      );
-    case NamedEntityTag.NOTE:
-      return (
-        <EntityLink to={`/workspace/notes/${match.ref_id.the_id}`}>
-          <SlimChip label={"Note"} color={"primary"} />
-          {commonSequence}
-        </EntityLink>
-      );
-    case NamedEntityTag.VACATION:
-      return (
-        <EntityLink to={`/workspace/vacations/${match.ref_id.the_id}`}>
-          <SlimChip label={"Vacation"} color={"primary"} />
-          {commonSequence}
-        </EntityLink>
-      );
-    case NamedEntityTag.PROJECT:
-      return (
-        <EntityLink to={`/workspace/projects/${match.ref_id.the_id}`}>
-          <SlimChip label={"Inbox Task"} color={"primary"} />
-          {commonSequence}
-        </EntityLink>
-      );
-    case NamedEntityTag.SMART_LIST:
-      return (
-        <EntityLink to={`/workspace/smart-lists/${match.ref_id.the_id}/items`}>
-          <SlimChip label={"Smart List"} color={"primary"} />
-          {commonSequence}
-        </EntityLink>
-      );
-    case NamedEntityTag.SMART_LIST_TAG:
-      return (
-        <EntityLink
-          to={`/workspace/smart-lists/${match.parent_ref_id.the_id}/tags/${match.ref_id.the_id}`}
-        >
-          <SlimChip label={"Smart List Tag"} color={"primary"} />
-          {commonSequence}
-        </EntityLink>
-      );
-    case NamedEntityTag.SMART_LIST_ITEM:
-      return (
-        <EntityLink
-          to={`/workspace/smart-lists/${match.parent_ref_id.the_id}/items/${match.ref_id.the_id}`}
-        >
-          <SlimChip label={"Smart List Item"} color={"primary"} />
-          {commonSequence}
-        </EntityLink>
-      );
-    case NamedEntityTag.METRIC:
-      return (
-        <EntityLink to={`/workspace/metrics/${match.ref_id.the_id}/entries`}>
-          <SlimChip label={"Metric"} color={"primary"} />
-          {commonSequence}
-        </EntityLink>
-      );
-    case NamedEntityTag.METRIC_ENTRY:
-      return (
-        <EntityLink
-          to={`/workspace/metrics/${match.parent_ref_id.the_id}/entries/${match.ref_id.the_id}`}
-        >
-          <SlimChip label={"Metric Entry"} color={"primary"} />
-          {commonSequence}
-        </EntityLink>
-      );
-    case NamedEntityTag.PERSON:
-      return (
-        <EntityLink to={`/workspace/persons/${match.ref_id.the_id}`}>
-          <SlimChip label={"Persons"} color={"primary"} />
-          {commonSequence}
-        </EntityLink>
-      );
-    case NamedEntityTag.SLACK_TASK:
-      return (
-        <EntityLink to={`/workspace/slack-tasks/${match.ref_id.the_id}`}>
-          <SlimChip label={"Slack Tasks"} color={"primary"} />
-          {commonSequence}
-        </EntityLink>
-      );
-    case NamedEntityTag.EMAIL_TASK:
-      return (
-        <EntityLink to={`/workspace/email-tasks/${match.ref_id.the_id}`}>
-          <SlimChip label={"Email Tasks"} color={"primary"} />
-          {commonSequence}
-        </EntityLink>
-      );
-  }
-}
-
-interface MatchSnippetProps {
-  snippet: string;
-}
-
-function MatchSnippet({ snippet }: MatchSnippetProps) {
-  const matchSnippetArr: Array<{ text: string; bold: boolean }> = [];
-
-  let currentStr = "";
-  let bold = false;
-  for (let i = 0; i < snippet.length; i++) {
-    if (bold === false && snippet.startsWith("[found]", i)) {
-      if (currentStr.length > 0) {
-        matchSnippetArr.push({
-          text: currentStr,
-          bold: false,
-        });
-      }
-      i += 6;
-      currentStr = "";
-      bold = true;
-    } else if (bold === true && snippet.startsWith("[/found]", i)) {
-      if (currentStr.length > 0) {
-        matchSnippetArr.push({
-          text: currentStr,
-          bold: true,
-        });
-      }
-      i += 7;
-      currentStr = "";
-      bold = false;
-    } else {
-      currentStr += snippet[i];
-    }
-  }
-
-  if (currentStr.length > 0) {
-    matchSnippetArr.push({
-      text: currentStr,
-      bold: bold,
-    });
-  }
-
-  return (
-    <div>
-      {matchSnippetArr.map((item, idx) => {
-        if (item.bold) {
-          return <strong key={idx}>{item.text}</strong>;
-        } else {
-          return <span key={idx}>{item.text}</span>;
-        }
-      })}
-    </div>
-  );
-}

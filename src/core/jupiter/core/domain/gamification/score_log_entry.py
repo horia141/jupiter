@@ -6,7 +6,7 @@ from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.big_plans.big_plan_status import BigPlanStatus
 from jupiter.core.domain.difficulty import Difficulty
 from jupiter.core.domain.entity_name import EntityName
-from jupiter.core.domain.gamification.score_source import ScoureSource
+from jupiter.core.domain.gamification.score_source import ScoreSource
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
@@ -24,7 +24,7 @@ class ScoreLogEntry(LeafEntity):
         """Created event."""
 
     score_log_ref_id: EntityId
-    source: ScoureSource
+    source: ScoreSource
     task_ref_id: EntityId
     difficulty: Difficulty | None
     success: bool
@@ -64,7 +64,7 @@ class ScoreLogEntry(LeafEntity):
             ],
             name=EntityName(f"For InboxTask #{inbox_task.ref_id} '{inbox_task.name}'"),
             score_log_ref_id=score_log_ref_id,
-            source=ScoureSource.INBOX_TASK,
+            source=ScoreSource.INBOX_TASK,
             task_ref_id=inbox_task.ref_id,
             difficulty=inbox_task.difficulty,
             success=inbox_task.status == InboxTaskStatus.DONE,
@@ -104,7 +104,7 @@ class ScoreLogEntry(LeafEntity):
             ],
             name=EntityName(f"For BigPlan #{big_plan.ref_id} '{big_plan.name}'"),
             score_log_ref_id=score_log_ref_id,
-            source=ScoureSource.BIG_PLAN,
+            source=ScoreSource.BIG_PLAN,
             task_ref_id=big_plan.ref_id,
             difficulty=None,
             success=big_plan.status == BigPlanStatus.DONE,

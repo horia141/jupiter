@@ -4,12 +4,11 @@ from dataclasses import dataclass
 from typing import Iterable, List, Optional
 
 from jupiter.core.domain.adate import ADate
-from jupiter.core.domain.entity_name import EntityName
+from jupiter.core.domain.entity_summary import EntitySummary
 from jupiter.core.domain.named_entity_tag import NamedEntityTag
 from jupiter.core.domain.search.search_limit import SearchLimit
 from jupiter.core.domain.search.search_query import SearchQuery
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.entity import BranchEntity, LeafEntity
 from jupiter.core.framework.repository import Repository
 
@@ -18,16 +17,7 @@ from jupiter.core.framework.repository import Repository
 class SearchMatch:
     """Information about a particular entity that was found."""
 
-    entity_tag: NamedEntityTag
-    parent_ref_id: EntityId
-    ref_id: EntityId
-    name: EntityName
-    archived: bool
-    created_time: Timestamp
-    last_modified_time: Timestamp
-    archived_time: Optional[Timestamp]
-    match_highlight: str
-    match_snippet: str
+    summary: EntitySummary
     search_rank: float  # lower is better
 
 

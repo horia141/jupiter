@@ -3,7 +3,7 @@ import enum
 
 
 @enum.unique
-class ScoureSource(enum.Enum):
+class ScoreSource(enum.Enum):
     """The source of a score."""
 
     INBOX_TASK = "inbox-task"
