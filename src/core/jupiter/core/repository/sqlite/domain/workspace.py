@@ -1,5 +1,5 @@
 """The SQLite based Workspace repository."""
-from typing import Final, Optional
+from typing import Final, Iterable, Optional
 
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.workspaces.infra.workspace_repository import (
@@ -129,6 +129,25 @@ class SqliteWorkspaceRepository(WorkspaceRepository):
             if str(err).find("no such table: workspace") >= 0:
                 return None
             raise
+
+    async def find_all(
+        self,
+        allow_archived: bool = False,
+        filter_ref_ids: Iterable[EntityId] | None = None,
+    ) -> list[Workspace]:
+        """Find all workspaces matching some criteria."""
+        query_stmt = select(self._workspace_table)
+        if not allow_archived:
+            query_stmt = query_stmt.where(self._workspace_table.c.archived is False)
+        if filter_ref_ids is not None:
+            query_stmt = query_stmt.where(
+                self._workspace_table.c.ref_id.in_(
+                    [ref_id.as_int() for ref_id in filter_ref_ids]
+                )
+            )
+
+        results = await self._connection.execute(query_stmt)
+        return [self._row_to_entity(row) for row in results]
 
     @staticmethod
     def _row_to_entity(row: RowType) -> Workspace:

@@ -391,6 +391,49 @@ class AppTransactionalLoggedInReadOnlyUseCase(
         """Execute the command's action."""
 
 
+class AppBackgroundMutationUseCase(
+    Generic[UseCaseArgs, UseCaseResult],
+    UseCase[EmptySession, EmptyContext, UseCaseArgs, UseCaseResult],
+    abc.ABC,
+):
+    """A command which does some sort of mutation for the app in the background."""
+
+    _progress_reporter_factory: ProgressReporterFactory[EmptyContext]
+
+    def __init__(
+        self, progress_reporter_factory: ProgressReporterFactory[EmptyContext]
+    ) -> None:
+        """Constructor."""
+        self._progress_reporter_factory = progress_reporter_factory
+
+    async def _build_context(self, session: EmptySession) -> EmptyContext:
+        """Construct the context for the use case."""
+        return EmptyContext()
+
+    async def execute(
+        self,
+        session: EmptySession,
+        args: UseCaseArgs,
+    ) -> UseCaseResult:
+        """Execute the command's action."""
+        # A hacky hack!
+        use_case.LOGGER.info(
+            f"Invoking background mutation command {self.__class__.__name__} with args {args}",
+        )
+        context = await self._build_context(session)
+        progress_reporter = self._progress_reporter_factory.new_reporter(context)
+        return await self._execute(progress_reporter, context, args)
+
+    @abc.abstractmethod
+    async def _execute(
+        self,
+        progress_reporter: ProgressReporter,
+        context: EmptyContext,
+        args: UseCaseArgs,
+    ) -> UseCaseResult:
+        """Execute the command's action."""
+
+
 class AppTestHelperUseCase(
     Generic[UseCaseArgs, UseCaseResult],
     UseCase[EmptySession, EmptyContext, UseCaseArgs, UseCaseResult],

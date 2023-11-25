@@ -4,6 +4,7 @@ from types import FrameType
 from typing import Annotated, Any, Callable, Dict, Union
 
 import aiohttp
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import Depends, FastAPI
 from fastapi.routing import APIRoute
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -1403,6 +1404,9 @@ async def startup_event() -> None:
     """The startup event for the whole service."""
     await sqlite_connection.prepare()
     # aio_session = aiohttp.ClientSession()
+    scheduler = AsyncIOScheduler()
+    scheduler.add_job(do_gc_run, "cron", day="*", hour='1')
+    scheduler.start()
 
 
 @app.on_event("shutdown")
@@ -2845,3 +2849,7 @@ async def find_email_task(
 ) -> EmailTaskFindResult:
     """Find all email tasks, filtering by id."""
     return await email_task_find_use_case.execute(session, args)
+
+
+async def do_gc_run() -> None:
+    print("Performing GC runs")
