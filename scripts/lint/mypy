@@ -76,3 +76,6 @@ ignore_missing_imports = True
 
 [mypy-validators.*]
 ignore_missing_imports = True
+
+[mypy-apscheduler.*]
+ignore_missing_imports = True

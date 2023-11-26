@@ -1,17 +1,22 @@
 # Garbage Collection
 
-Garbage collection is a periodic action you must perform. It cleans up tasks and big plans that are
-completed and otherwise lingering on in the system.
+Garbage collection is a periodic action that cleans up tasks and big plans that are
+completed and otherwise lingering on in the system. It marks them
+as _archived_, which means they won't appear in various views, or counted
+in other processes like [task generation](./tasks-generation.md). But
+they don't dissapear for ever, and will always be accessible.
 
-It needs to be performed weekly usually.
+It currently happens daily without any user intervention.
+
+There is a log of all the runs, which shows you which entities were
+archived too.
 
 In the web app you can find reporting in the `Garbage Collect` left-hand side tab, under _tools_. It looks
 something like this:
 
 ![Gen](../assets/gc.png)
 
-After pressing the `Garbage Collect` button, completed inbox tasks and big plans are archived. This makes
-them invisible for most views.
+You can trigger a manual by pressing the `Garbage Collect` button.
 
 The CLI command is called `gc` and has the same capabilities as the Web App.
 

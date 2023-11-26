@@ -29,6 +29,7 @@ from jupiter.core.domain.workspaces.infra.workspace_repository import (
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.repository import LeafEntityNotFoundError
 from jupiter.core.framework.secure import secure_fn
+from jupiter.core.framework.use_case import EmptySession
 from jupiter.core.repository.sqlite.connection import SqliteConnection
 from jupiter.core.repository.sqlite.domain.storage_engine import (
     SqliteDomainStorageEngine,
@@ -101,6 +102,7 @@ from jupiter.core.use_cases.chores.unsuspend import (
 )
 from jupiter.core.use_cases.chores.update import ChoreUpdateArgs, ChoreUpdateUseCase
 from jupiter.core.use_cases.gc.do import GCDoArgs, GCDoUseCase
+from jupiter.core.use_cases.gc.do_all import GCDoAllArgs, GCDoAllUseCase
 from jupiter.core.use_cases.gc.load_runs import (
     GCLoadRunsArgs,
     GCLoadRunsResult,
@@ -480,14 +482,15 @@ from jupiter.core.use_cases.workspaces.update import (
     WorkspaceUpdateUseCase,
 )
 from jupiter.core.utils.global_properties import build_global_properties
-from jupiter.core.utils.progress_reporter import NoOpProgressReporterFactory
-from jupiter.webapi.time_provider import PerRequestTimeProvider
+from jupiter.core.utils.progress_reporter import EmptyProgressReporterFactory, NoOpProgressReporterFactory
+from jupiter.webapi.time_provider import CronRunTimeProvider, PerRequestTimeProvider
 from jupiter.webapi.websocket_progress_reporter import WebsocketProgressReporterFactory
 from starlette import status
 from starlette.requests import Request
 from starlette.responses import JSONResponse, PlainTextResponse
 
-time_provider = PerRequestTimeProvider()
+request_time_provider = PerRequestTimeProvider()
+cron_run_time_provider = CronRunTimeProvider()
 
 no_timezone_global_properties = build_global_properties()
 
@@ -507,7 +510,7 @@ usecase_storage_engine = SqliteUseCaseStorageEngine(sqlite_connection)
 
 auth_token_stamper = AuthTokenStamper(
     auth_token_secret=global_properties.auth_token_secret,
-    time_provider=time_provider,
+    time_provider=request_time_provider,
 )
 
 aio_session = aiohttp.ClientSession()
@@ -519,7 +522,7 @@ invocation_recorder = PersistentMutationUseCaseInvocationRecorder(
 )
 
 init_use_case = InitUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=NoOpProgressReporterFactory(),
     auth_token_stamper=auth_token_stamper,
@@ -534,7 +537,7 @@ login_use_case = LoginUseCase(
 )
 
 auth_change_password_use_case = ChangePasswordUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -543,7 +546,7 @@ auth_change_password_use_case = ChangePasswordUseCase(
 )
 
 auth_reset_password_use_case = ResetPasswordUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=NoOpProgressReporterFactory(),
     auth_token_stamper=auth_token_stamper,
@@ -557,7 +560,7 @@ search_use_case = SearchUseCase(
 )
 
 gen_use_case = GenUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -571,12 +574,18 @@ report_use_case = ReportUseCase(
 )
 
 gc_do_use_case = GCDoUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+)
+
+gc_do_all_use_case = GCDoAllUseCase(
+    time_provider=cron_run_time_provider,
+    progress_reporter_factory=EmptyProgressReporterFactory(),
+    storage_engine=domain_storage_engine,
 )
 
 gc_load_runs_use_case = GCLoadRunsUseCase(
@@ -588,7 +597,7 @@ load_top_level_info_use_case = LoadTopLevelInfoUseCase(
     auth_token_stamper=auth_token_stamper,
     storage_engine=domain_storage_engine,
     global_properties=global_properties,
-    time_provider=time_provider,
+    time_provider=request_time_provider,
 )
 
 load_progress_reporter_token_use_case = LoadProgressReporterTokenUseCase(
@@ -601,7 +610,7 @@ get_summaries_use_case = GetSummariesUseCase(
 )
 
 user_update_use_case = UserUpdateUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -610,7 +619,7 @@ user_update_use_case = UserUpdateUseCase(
 )
 
 user_change_feature_flags_use_case = UserChangeFeatureFlagsUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -622,11 +631,11 @@ user_change_feature_flags_use_case = UserChangeFeatureFlagsUseCase(
 user_load_use_case = UserLoadUseCase(
     auth_token_stamper=auth_token_stamper,
     storage_engine=domain_storage_engine,
-    time_provider=time_provider,
+    time_provider=request_time_provider,
 )
 
 workspace_update_use_case = WorkspaceUpdateUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -634,7 +643,7 @@ workspace_update_use_case = WorkspaceUpdateUseCase(
     search_storage_engine=search_storage_engine,
 )
 workspace_change_default_project_use_case = WorkspaceChangeDefaultProjectUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -642,7 +651,7 @@ workspace_change_default_project_use_case = WorkspaceChangeDefaultProjectUseCase
     search_storage_engine=search_storage_engine,
 )
 workspace_change_feature_flags_use_case = WorkspaceChangeFeatureFlagsUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -655,7 +664,7 @@ workspace_load_use_case = WorkspaceLoadUseCase(
 )
 
 inbox_task_create_use_case = InboxTaskCreateUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -663,7 +672,7 @@ inbox_task_create_use_case = InboxTaskCreateUseCase(
     search_storage_engine=search_storage_engine,
 )
 inbox_task_archive_use_case = InboxTaskArchiveUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -671,7 +680,7 @@ inbox_task_archive_use_case = InboxTaskArchiveUseCase(
     search_storage_engine=search_storage_engine,
 )
 inbox_task_update_use_case = InboxTaskUpdateUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -679,7 +688,7 @@ inbox_task_update_use_case = InboxTaskUpdateUseCase(
     search_storage_engine=search_storage_engine,
 )
 inbox_task_change_project_use_case = InboxTaskChangeProjectUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -687,7 +696,7 @@ inbox_task_change_project_use_case = InboxTaskChangeProjectUseCase(
     search_storage_engine=search_storage_engine,
 )
 inbox_task_associate_with_big_plan = InboxTaskAssociateWithBigPlanUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -702,7 +711,7 @@ inbox_task_find_use_case = InboxTaskFindUseCase(
 )
 
 habit_create_use_case = HabitCreateUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -710,7 +719,7 @@ habit_create_use_case = HabitCreateUseCase(
     search_storage_engine=search_storage_engine,
 )
 habit_archive_use_case = HabitArchiveUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -718,7 +727,7 @@ habit_archive_use_case = HabitArchiveUseCase(
     search_storage_engine=search_storage_engine,
 )
 habit_update_use_case = HabitUpdateUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -726,7 +735,7 @@ habit_update_use_case = HabitUpdateUseCase(
     search_storage_engine=search_storage_engine,
 )
 habit_change_project_use_case = HabitChangeProjectUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -734,7 +743,7 @@ habit_change_project_use_case = HabitChangeProjectUseCase(
     search_storage_engine=search_storage_engine,
 )
 habit_suspend_use_case = HabitSuspendUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -742,7 +751,7 @@ habit_suspend_use_case = HabitSuspendUseCase(
     search_storage_engine=search_storage_engine,
 )
 habit_unsuspend_use_case = HabitUnsuspendUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -757,7 +766,7 @@ habit_find_use_case = HabitFindUseCase(
 )
 
 chore_create_use_case = ChoreCreateUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -765,7 +774,7 @@ chore_create_use_case = ChoreCreateUseCase(
     search_storage_engine=search_storage_engine,
 )
 chore_archive_use_case = ChoreArchiveUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -773,7 +782,7 @@ chore_archive_use_case = ChoreArchiveUseCase(
     search_storage_engine=search_storage_engine,
 )
 chore_update_use_case = ChoreUpdateUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -781,7 +790,7 @@ chore_update_use_case = ChoreUpdateUseCase(
     search_storage_engine=search_storage_engine,
 )
 chore_change_project_use_case = ChoreChangeProjectUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -789,7 +798,7 @@ chore_change_project_use_case = ChoreChangeProjectUseCase(
     search_storage_engine=search_storage_engine,
 )
 chore_suspend_use_case = ChoreSuspendUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -797,7 +806,7 @@ chore_suspend_use_case = ChoreSuspendUseCase(
     search_storage_engine=search_storage_engine,
 )
 chore_unsuspend_use_case = ChoreUnsuspendUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -812,7 +821,7 @@ chore_find_use_case = ChoreFindUseCase(
 )
 
 big_plan_create_use_case = BigPlanCreateUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -820,7 +829,7 @@ big_plan_create_use_case = BigPlanCreateUseCase(
     search_storage_engine=search_storage_engine,
 )
 big_plan_archive_use_case = BigPlanArchiveUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -828,7 +837,7 @@ big_plan_archive_use_case = BigPlanArchiveUseCase(
     search_storage_engine=search_storage_engine,
 )
 big_plan_update_use_case = BigPlanUpdateUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -836,7 +845,7 @@ big_plan_update_use_case = BigPlanUpdateUseCase(
     search_storage_engine=search_storage_engine,
 )
 big_plan_change_project_use_case = BigPlanChangeProjectUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -851,7 +860,7 @@ big_plan_find_use_case = BigPlanFindUseCase(
 )
 
 note_create_use_case = NoteCreateUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -859,7 +868,7 @@ note_create_use_case = NoteCreateUseCase(
     search_storage_engine=search_storage_engine,
 )
 note_archive_use_case = NoteArchiveUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -867,7 +876,7 @@ note_archive_use_case = NoteArchiveUseCase(
     search_storage_engine=search_storage_engine,
 )
 note_update_use_case = NoteUpdateUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -875,7 +884,7 @@ note_update_use_case = NoteUpdateUseCase(
     search_storage_engine=search_storage_engine,
 )
 note_change_parent_use_case = NoteChangeParentUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -890,7 +899,7 @@ note_find_use_case = NoteFindUseCase(
 )
 
 vacation_create_use_case = VacationCreateUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -898,7 +907,7 @@ vacation_create_use_case = VacationCreateUseCase(
     search_storage_engine=search_storage_engine,
 )
 vacation_archive_use_case = VacationArchiveUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -906,7 +915,7 @@ vacation_archive_use_case = VacationArchiveUseCase(
     search_storage_engine=search_storage_engine,
 )
 vacation_update_use_case = VacationUpdateUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -921,7 +930,7 @@ vacation_find_use_case = VacationFindUseCase(
 )
 
 project_create_use_case = ProjectCreateUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -929,7 +938,7 @@ project_create_use_case = ProjectCreateUseCase(
     search_storage_engine=search_storage_engine,
 )
 project_archive_use_case = ProjectArchiveUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -937,7 +946,7 @@ project_archive_use_case = ProjectArchiveUseCase(
     search_storage_engine=search_storage_engine,
 )
 project_update_use_case = ProjectUpdateUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -952,7 +961,7 @@ project_find_use_case = ProjectFindUseCase(
 )
 
 smart_list_create_use_case = SmartListCreateUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -960,7 +969,7 @@ smart_list_create_use_case = SmartListCreateUseCase(
     search_storage_engine=search_storage_engine,
 )
 smart_list_archive_use_case = SmartListArchiveUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -968,7 +977,7 @@ smart_list_archive_use_case = SmartListArchiveUseCase(
     search_storage_engine=search_storage_engine,
 )
 smart_list_update_use_case = SmartListUpdateUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -982,7 +991,7 @@ smart_list_find_use_case = SmartListFindUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
 )
 smart_list_tag_create_use_case = SmartListTagCreateUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -990,7 +999,7 @@ smart_list_tag_create_use_case = SmartListTagCreateUseCase(
     search_storage_engine=search_storage_engine,
 )
 smart_list_tag_archive_use_case = SmartListTagArchiveUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -1001,7 +1010,7 @@ smart_list_tag_load_use_case = SmartListTagLoadUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
 )
 smart_list_tag_update_use_case = SmartListTagUpdateUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -1009,7 +1018,7 @@ smart_list_tag_update_use_case = SmartListTagUpdateUseCase(
     search_storage_engine=search_storage_engine,
 )
 smart_list_item_create_use_case = SmartListItemCreateUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -1017,7 +1026,7 @@ smart_list_item_create_use_case = SmartListItemCreateUseCase(
     search_storage_engine=search_storage_engine,
 )
 smart_list_item_archive_use_case = SmartListItemArchiveUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -1025,7 +1034,7 @@ smart_list_item_archive_use_case = SmartListItemArchiveUseCase(
     search_storage_engine=search_storage_engine,
 )
 smart_list_item_update_use_case = SmartListItemUpdateUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -1038,7 +1047,7 @@ smart_list_item_load_use_case = SmartListItemLoadUseCase(
 
 
 metric_create_use_case = MetricCreateUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -1046,7 +1055,7 @@ metric_create_use_case = MetricCreateUseCase(
     search_storage_engine=search_storage_engine,
 )
 metric_archive_use_case = MetricArchiveUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -1054,7 +1063,7 @@ metric_archive_use_case = MetricArchiveUseCase(
     search_storage_engine=search_storage_engine,
 )
 metric_update_use_case = MetricUpdateUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -1066,7 +1075,7 @@ metric_load_settings_use_case = MetricLoadSettingsUseCase(
     storage_engine=domain_storage_engine,
 )
 metric_change_collection_project_use_case = MetricChangeCollectionProjectUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -1080,7 +1089,7 @@ metric_find_use_case = MetricFindUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
 )
 metric_entry_create_use_case = MetricEntryCreateUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -1088,7 +1097,7 @@ metric_entry_create_use_case = MetricEntryCreateUseCase(
     search_storage_engine=search_storage_engine,
 )
 metric_entry_update_use_case = MetricEntryUpdateUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -1096,7 +1105,7 @@ metric_entry_update_use_case = MetricEntryUpdateUseCase(
     search_storage_engine=search_storage_engine,
 )
 metric_entry_archive_use_case = MetricEntryArchiveUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -1108,7 +1117,7 @@ metric_entry_load_use_case = MetricEntryLoadUseCase(
 )
 
 person_create_use_case = PersonCreateUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -1116,7 +1125,7 @@ person_create_use_case = PersonCreateUseCase(
     search_storage_engine=search_storage_engine,
 )
 person_archive_use_case = PersonArchiveUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -1124,7 +1133,7 @@ person_archive_use_case = PersonArchiveUseCase(
     search_storage_engine=search_storage_engine,
 )
 person_update_use_case = PersonUpdateUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -1136,7 +1145,7 @@ person_load_settings_use_case = PersonLoadSettingsUseCase(
     storage_engine=domain_storage_engine,
 )
 person_change_catch_up_project_use_case = PersonChangeCatchUpProjectUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -1151,7 +1160,7 @@ person_find_use_case = PersonFindUseCase(
 )
 
 slack_task_archive_use_case = SlackTaskArchiveUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -1159,7 +1168,7 @@ slack_task_archive_use_case = SlackTaskArchiveUseCase(
     search_storage_engine=search_storage_engine,
 )
 slack_task_update_use_case = SlackTaskUpdateUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -1171,7 +1180,7 @@ slack_task_load_settings_use_case = SlackTaskLoadSettingsUseCase(
     storage_engine=domain_storage_engine,
 )
 slack_task_change_generation_project_use_case = SlackTaskChangeGenerationProjectUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -1186,7 +1195,7 @@ slack_task_find_use_case = SlackTaskFindUseCase(
 )
 
 email_task_archive_use_case = EmailTaskArchiveUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -1194,7 +1203,7 @@ email_task_archive_use_case = EmailTaskArchiveUseCase(
     search_storage_engine=search_storage_engine,
 )
 email_task_update_use_case = EmailTaskUpdateUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -1206,7 +1215,7 @@ email_task_load_settings_use_case = EmailTaskLoadSettingsUseCase(
     storage_engine=domain_storage_engine,
 )
 email_task_change_generation_project_use_case = EmailTaskChangeGenerationProjectUseCase(
-    time_provider=time_provider,
+    time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
@@ -1242,7 +1251,7 @@ app = FastAPI(
 @app.middleware("http")
 async def time_provider_middleware(request: Request, call_next: DecoratedCallable) -> Callable[[DecoratedCallable], DecoratedCallable]:  # type: ignore
     """Middleware which provides the time for a particular request on a thread."""
-    time_provider.set_request_time()
+    request_time_provider.set_request_time()
     return await call_next(request)  # type: ignore
 
 
@@ -1405,7 +1414,7 @@ async def startup_event() -> None:
     await sqlite_connection.prepare()
     # aio_session = aiohttp.ClientSession()
     scheduler = AsyncIOScheduler()
-    scheduler.add_job(do_gc_run, "cron", hour='*', minute='15')
+    scheduler.add_job(do_gc_run, "cron", day="*", hour="1")
     scheduler.start()
 
 
@@ -2852,4 +2861,5 @@ async def find_email_task(
 
 
 async def do_gc_run() -> None:
-    print("Performing GC runs")
+    """A periodic GC run for all workspaces."""
+    await gc_do_all_use_case.execute(EmptySession(), GCDoAllArgs())

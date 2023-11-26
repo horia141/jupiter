@@ -138,7 +138,7 @@ class SqliteWorkspaceRepository(WorkspaceRepository):
         """Find all workspaces matching some criteria."""
         query_stmt = select(self._workspace_table)
         if not allow_archived:
-            query_stmt = query_stmt.where(self._workspace_table.c.archived is False)
+            query_stmt = query_stmt.where(self._workspace_table.c.archived.is_(False))
         if filter_ref_ids is not None:
             query_stmt = query_stmt.where(
                 self._workspace_table.c.ref_id.in_(

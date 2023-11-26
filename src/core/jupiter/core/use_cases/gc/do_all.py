@@ -28,8 +28,8 @@ class GCDoAllUseCase(AppBackgroundMutationUseCase[GCDoAllArgs, None]):
 
     def __init__(
         self,
-        progress_reporter_factory: ProgressReporterFactory[EmptyContext],
         time_provider: TimeProvider,
+        progress_reporter_factory: ProgressReporterFactory[EmptyContext],
         storage_engine: DomainStorageEngine,
     ) -> None:
         """Constructor."""
