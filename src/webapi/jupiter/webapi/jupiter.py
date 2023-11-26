@@ -1405,7 +1405,7 @@ async def startup_event() -> None:
     await sqlite_connection.prepare()
     # aio_session = aiohttp.ClientSession()
     scheduler = AsyncIOScheduler()
-    scheduler.add_job(do_gc_run, "cron", day="*", hour='1')
+    scheduler.add_job(do_gc_run, "cron", hour='*', minute='15')
     scheduler.start()
 
 
