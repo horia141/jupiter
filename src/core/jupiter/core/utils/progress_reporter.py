@@ -18,6 +18,12 @@ class NoOpProgressReporter(ProgressReporter):
     _updated_entities: List[BranchEntity | LeafEntity]
     _removed_entities: List[BranchEntity | LeafEntity]
 
+    def __init__(self) -> None:
+        """Constructor."""
+        self._created_entities = []
+        self._updated_entities = []
+        self._removed_entities = []
+
     @asynccontextmanager
     async def section(self, title: str) -> AsyncIterator[None]:
         """Start a section or subsection."""
