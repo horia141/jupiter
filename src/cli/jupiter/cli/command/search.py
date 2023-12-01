@@ -5,6 +5,7 @@ from typing import Final, cast
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     entity_id_to_rich_text,
+    entity_summary_snippet_to_rich_text,
     entity_tag_to_rich_text,
 )
 from jupiter.cli.session_storage import SessionInfo, SessionStorage
@@ -200,12 +201,9 @@ class Search(LoggedInReadonlyCommand[SearchUseCase]):
             match_text.append(entity_id_to_rich_text(match.summary.ref_id))
             match_text.append(" ")
 
-            match_snippet_with_markup = match.summary.snippet.replace(
-                "found", "bold underline blue"
+            match_text.append(
+                entity_summary_snippet_to_rich_text(match.summary.snippet)
             )
-
-            snippet_text = Text.from_markup(match_snippet_with_markup)
-            match_text.append(snippet_text)
 
             if not match.summary.archived:
                 modified_time_str = f"""Modified {(

@@ -8,6 +8,7 @@ from jupiter.core.domain import schedules
 from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.chores.chore import Chore
 from jupiter.core.domain.features import FeatureUnavailableError, WorkspaceFeature
+from jupiter.core.domain.gen.gen_log_entry import GenLogEntry
 from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
@@ -42,9 +43,10 @@ from jupiter.core.use_cases.infra.use_cases import (
 
 
 @dataclass
-class GenArgs(UseCaseArgsBase):
+class GenDoArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
+    source: EventSource
     gen_even_if_not_modified: bool
     today: Optional[ADate] = None
     gen_targets: Optional[List[SyncTarget]] = None
@@ -58,14 +60,14 @@ class GenArgs(UseCaseArgsBase):
     filter_email_task_ref_ids: Optional[List[EntityId]] = None
 
 
-class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
+class GenDoUseCase(AppLoggedInMutationUseCase[GenDoArgs, None]):
     """The command for generating new tasks."""
 
     async def _perform_mutation(
         self,
         progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
-        args: GenArgs,
+        args: GenDoArgs,
     ) -> None:
         """Execute the command's action."""
         user = context.user
@@ -125,6 +127,25 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
             raise FeatureUnavailableError(WorkspaceFeature.EMAIL_TASKS)
 
         async with self._domain_storage_engine.get_unit_of_work() as uow:
+            gen_log = await uow.gen_log_repository.load_by_parent(workspace.ref_id)
+            gen_log_entry = GenLogEntry.new_log_entry(
+                gen_log_ref_id=gen_log.ref_id,
+                source=args.source,
+                gen_even_if_not_modified=args.gen_even_if_not_modified,
+                today=today,
+                gen_targets=gen_targets,
+                period=args.period,
+                filter_project_ref_ids=args.filter_project_ref_ids,
+                filter_habit_ref_ids=args.filter_habit_ref_ids,
+                filter_chore_ref_ids=args.filter_chore_ref_ids,
+                filter_metric_ref_ids=args.filter_metric_ref_ids,
+                filter_person_ref_ids=args.filter_person_ref_ids,
+                filter_slack_task_ref_ids=args.filter_slack_task_ref_ids,
+                filter_email_task_ref_ids=args.filter_email_task_ref_ids,
+                created_time=self._time_provider.get_current_time(),
+            )
+            gen_log_entry = await uow.gen_log_entry_repository.create(gen_log_entry)
+
             vacation_collection = (
                 await uow.vacation_collection_repository.load_by_parent(
                     workspace.ref_id,
@@ -198,7 +219,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
 
                 for habit in all_habits:
                     project = all_projects_by_ref_id[habit.project_ref_id]
-                    await self._generate_inbox_tasks_for_habit(
+                    gen_log_entry = await self._generate_inbox_tasks_for_habit(
                         progress_reporter=progress_reporter,
                         user=user,
                         inbox_task_collection=inbox_task_collection,
@@ -208,6 +229,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                         habit=habit,
                         all_inbox_tasks_by_habit_ref_id_and_timeline=all_inbox_tasks_by_habit_ref_id_and_timeline,
                         gen_even_if_not_modified=args.gen_even_if_not_modified,
+                        gen_log_entry=gen_log_entry,
                     )
 
         if (
@@ -247,7 +269,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
 
                 for chore in all_chores:
                     project = all_projects_by_ref_id[chore.project_ref_id]
-                    await self._generate_inbox_tasks_for_chore(
+                    gen_log_entry = await self._generate_inbox_tasks_for_chore(
                         progress_reporter=progress_reporter,
                         user=user,
                         workspace=workspace,
@@ -259,6 +281,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                         chore=chore,
                         all_inbox_tasks_by_chore_ref_id_and_timeline=all_inbox_tasks_by_chore_ref_id_and_timeline,
                         gen_even_if_not_modified=args.gen_even_if_not_modified,
+                        gen_log_entry=gen_log_entry,
                     )
 
         if (
@@ -308,7 +331,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                     project = all_projects_by_ref_id[
                         metric_collection.collection_project_ref_id
                     ]
-                    await self._generate_collection_inbox_tasks_for_metric(
+                    gen_log_entry = await self._generate_collection_inbox_tasks_for_metric(
                         progress_reporter=progress_reporter,
                         user=user,
                         inbox_task_collection=inbox_task_collection,
@@ -319,6 +342,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                         collection_params=metric.collection_params,
                         all_inbox_tasks_by_metric_ref_id_and_timeline=all_collection_inbox_tasks_by_metric_ref_id_and_timeline,
                         gen_even_if_not_modified=args.gen_even_if_not_modified,
+                        gen_log_entry=gen_log_entry,
                     )
 
         if (
@@ -377,7 +401,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
 
                     # MyPy not smart enough to infer that if (not A and not B) then (A or B)
 
-                    await self._generate_catch_up_inbox_tasks_for_person(
+                    gen_log_entry = await self._generate_catch_up_inbox_tasks_for_person(
                         progress_reporter=progress_reporter,
                         user=user,
                         inbox_task_collection=inbox_task_collection,
@@ -388,6 +412,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                         catch_up_params=person.catch_up_params,
                         all_inbox_tasks_by_person_ref_id_and_timeline=all_catch_up_inbox_tasks_by_person_ref_id_and_timeline,
                         gen_even_if_not_modified=args.gen_even_if_not_modified,
+                        gen_log_entry=gen_log_entry,
                     )
 
             all_birthday_inbox_tasks_by_person_ref_id_and_timeline = {}
@@ -407,7 +432,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                 if person.birthday is None:
                     continue
 
-                await self._generate_birthday_inbox_task_for_person(
+                gen_log_entry = await self._generate_birthday_inbox_task_for_person(
                     progress_reporter=progress_reporter,
                     user=user,
                     inbox_task_collection=inbox_task_collection,
@@ -417,6 +442,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                     birthday=person.birthday,
                     all_inbox_tasks_by_person_ref_id_and_timeline=all_birthday_inbox_tasks_by_person_ref_id_and_timeline,
                     gen_even_if_not_modified=args.gen_even_if_not_modified,
+                    gen_log_entry=gen_log_entry,
                 )
 
         if (
@@ -458,16 +484,19 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                     project = all_projects_by_ref_id[
                         slack_collection.generation_project_ref_id
                     ]
-                    await self._generate_slack_inbox_task_for_slack_task(
-                        progress_reporter=progress_reporter,
-                        slack_task=slack_task,
-                        inbox_task_collection=inbox_task_collection,
-                        project=project,
-                        all_inbox_tasks_by_slack_task_ref_id=typing.cast(
-                            Dict[EntityId, InboxTask],
-                            all_inbox_tasks_by_slack_task_ref_id,
-                        ),
-                        gen_even_if_not_modified=args.gen_even_if_not_modified,
+                    gen_log_entry = (
+                        await self._generate_slack_inbox_task_for_slack_task(
+                            progress_reporter=progress_reporter,
+                            slack_task=slack_task,
+                            inbox_task_collection=inbox_task_collection,
+                            project=project,
+                            all_inbox_tasks_by_slack_task_ref_id=typing.cast(
+                                Dict[EntityId, InboxTask],
+                                all_inbox_tasks_by_slack_task_ref_id,
+                            ),
+                            gen_even_if_not_modified=args.gen_even_if_not_modified,
+                            gen_log_entry=gen_log_entry,
+                        )
                     )
 
         if (
@@ -509,17 +538,24 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                     project = all_projects_by_ref_id[
                         email_collection.generation_project_ref_id
                     ]
-                    await self._generate_email_inbox_task_for_email_task(
-                        progress_reporter=progress_reporter,
-                        email_task=email_task,
-                        inbox_task_collection=inbox_task_collection,
-                        project=project,
-                        all_inbox_tasks_by_email_task_ref_id=typing.cast(
-                            Dict[EntityId, InboxTask],
-                            all_inbox_tasks_by_email_task_ref_id,
-                        ),
-                        gen_even_if_not_modified=args.gen_even_if_not_modified,
+                    gen_log_entry = (
+                        await self._generate_email_inbox_task_for_email_task(
+                            progress_reporter=progress_reporter,
+                            email_task=email_task,
+                            inbox_task_collection=inbox_task_collection,
+                            project=project,
+                            all_inbox_tasks_by_email_task_ref_id=typing.cast(
+                                Dict[EntityId, InboxTask],
+                                all_inbox_tasks_by_email_task_ref_id,
+                            ),
+                            gen_even_if_not_modified=args.gen_even_if_not_modified,
+                            gen_log_entry=gen_log_entry,
+                        )
                     )
+
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
+            gen_log_entry = gen_log_entry.close(self._time_provider.get_current_time())
+            gen_log_entry = await uow.gen_log_entry_repository.save(gen_log_entry)
 
     async def _generate_inbox_tasks_for_habit(
         self,
@@ -535,12 +571,13 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
             List[InboxTask],
         ],
         gen_even_if_not_modified: bool,
-    ) -> None:
+        gen_log_entry: GenLogEntry,
+    ) -> GenLogEntry:
         if habit.suspended:
-            return
+            return gen_log_entry
 
         if period_filter is not None and habit.gen_params.period not in period_filter:
-            return
+            return gen_log_entry
 
         schedule = schedules.get_schedule(
             habit.gen_params.period,
@@ -556,7 +593,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
         )
 
         if schedule.should_skip:
-            return
+            return gen_log_entry
 
         all_found_tasks_by_repeat_index: Dict[Optional[int], InboxTask] = {
             ft.recurring_repeat_index: ft
@@ -580,7 +617,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                     not gen_even_if_not_modified
                     and found_task.last_modified_time >= habit.last_modified_time
                 ):
-                    return
+                    return gen_log_entry
 
                 found_task = found_task.update_link_to_habit(
                     project_ref_id=project.ref_id,
@@ -598,7 +635,9 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                 async with self._domain_storage_engine.get_unit_of_work() as uow:
                     await uow.inbox_task_repository.save(found_task)
                     await progress_reporter.mark_updated(found_task)
-
+                gen_log_entry = gen_log_entry.add_entity_updated(
+                    found_task, self._time_provider.get_current_time()
+                )
             else:
                 inbox_task = InboxTask.new_inbox_task_for_habit(
                     inbox_task_collection_ref_id=inbox_task_collection.ref_id,
@@ -621,6 +660,9 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                         inbox_task,
                     )
                     await progress_reporter.mark_created(inbox_task)
+                gen_log_entry = gen_log_entry.add_entity_created(
+                    inbox_task, self._time_provider.get_current_time()
+                )
 
         async with self._domain_storage_engine.get_unit_of_work() as uow:
             inbox_task_remove_service = InboxTaskRemoveService()
@@ -630,6 +672,11 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                 if task.recurring_repeat_index in repeat_idx_to_keep:
                     continue
                 await inbox_task_remove_service.do_it(uow, progress_reporter, task)
+                gen_log_entry = gen_log_entry.add_entity_removed(
+                    task, self._time_provider.get_current_time()
+                )
+
+        return gen_log_entry
 
     async def _generate_inbox_tasks_for_chore(
         self,
@@ -647,12 +694,13 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
             InboxTask,
         ],
         gen_even_if_not_modified: bool,
-    ) -> None:
+        gen_log_entry: GenLogEntry,
+    ) -> GenLogEntry:
         if chore.suspended:
-            return
+            return gen_log_entry
 
         if period_filter is not None and chore.gen_params.period not in period_filter:
-            return
+            return gen_log_entry
 
         schedule = schedules.get_schedule(
             chore.gen_params.period,
@@ -671,13 +719,13 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
             if not chore.must_do:
                 for vacation in all_vacations:
                     if vacation.is_in_vacation(schedule.first_day, schedule.end_day):
-                        return
+                        return gen_log_entry
 
         if not chore.is_in_active_interval(schedule.first_day, schedule.end_day):
-            return
+            return gen_log_entry
 
         if schedule.should_skip:
-            return
+            return gen_log_entry
 
         found_task = all_inbox_tasks_by_chore_ref_id_and_timeline.get(
             (chore.ref_id, schedule.timeline),
@@ -689,7 +737,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                 not gen_even_if_not_modified
                 and found_task.last_modified_time >= chore.last_modified_time
             ):
-                return
+                return gen_log_entry
 
             found_task = found_task.update_link_to_chore(
                 project_ref_id=project.ref_id,
@@ -706,6 +754,10 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
             async with self._domain_storage_engine.get_unit_of_work() as uow:
                 await uow.inbox_task_repository.save(found_task)
                 await progress_reporter.mark_updated(found_task)
+
+            gen_log_entry = gen_log_entry.add_entity_updated(
+                found_task, self._time_provider.get_current_time()
+            )
         else:
             inbox_task = InboxTask.new_inbox_task_for_chore(
                 inbox_task_collection_ref_id=inbox_task_collection.ref_id,
@@ -726,6 +778,12 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                 inbox_task = await uow.inbox_task_repository.create(inbox_task)
                 await progress_reporter.mark_created(inbox_task)
 
+            gen_log_entry = gen_log_entry.add_entity_created(
+                inbox_task, self._time_provider.get_current_time()
+            )
+
+        return gen_log_entry
+
     async def _generate_collection_inbox_tasks_for_metric(
         self,
         progress_reporter: ProgressReporter,
@@ -741,9 +799,10 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
             InboxTask,
         ],
         gen_even_if_not_modified: bool,
-    ) -> None:
+        gen_log_entry: GenLogEntry,
+    ) -> GenLogEntry:
         if period_filter is not None and collection_params.period not in period_filter:
-            return
+            return gen_log_entry
 
         schedule = schedules.get_schedule(
             typing.cast(RecurringTaskPeriod, collection_params.period),
@@ -768,7 +827,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                 not gen_even_if_not_modified
                 and found_task.last_modified_time >= metric.last_modified_time
             ):
-                return
+                return gen_log_entry
 
             found_task = found_task.update_link_to_metric(
                 project_ref_id=project.ref_id,
@@ -785,6 +844,10 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
             async with self._domain_storage_engine.get_unit_of_work() as uow:
                 await uow.inbox_task_repository.save(found_task)
                 await progress_reporter.mark_updated(found_task)
+
+            gen_log_entry = gen_log_entry.add_entity_updated(
+                found_task, self._time_provider.get_current_time()
+            )
         else:
             inbox_task = InboxTask.new_inbox_task_for_metric_collection(
                 inbox_task_collection_ref_id=inbox_task_collection.ref_id,
@@ -805,6 +868,12 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                 inbox_task = await uow.inbox_task_repository.create(inbox_task)
                 await progress_reporter.mark_created(inbox_task)
 
+            gen_log_entry = gen_log_entry.add_entity_created(
+                inbox_task, self._time_provider.get_current_time()
+            )
+
+        return gen_log_entry
+
     async def _generate_catch_up_inbox_tasks_for_person(
         self,
         progress_reporter: ProgressReporter,
@@ -820,9 +889,10 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
             InboxTask,
         ],
         gen_even_if_not_modified: bool,
-    ) -> None:
+        gen_log_entry: GenLogEntry,
+    ) -> GenLogEntry:
         if period_filter is not None and catch_up_params.period not in period_filter:
-            return
+            return gen_log_entry
 
         schedule = schedules.get_schedule(
             typing.cast(RecurringTaskPeriod, catch_up_params.period),
@@ -847,7 +917,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                 not gen_even_if_not_modified
                 and found_task.last_modified_time >= person.last_modified_time
             ):
-                return
+                return gen_log_entry
 
             found_task = found_task.update_link_to_person_catch_up(
                 project_ref_id=project.ref_id,
@@ -864,6 +934,10 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
             async with self._domain_storage_engine.get_unit_of_work() as uow:
                 await uow.inbox_task_repository.save(found_task)
                 await progress_reporter.mark_updated(found_task)
+
+            gen_log_entry = gen_log_entry.add_entity_updated(
+                found_task, self._time_provider.get_current_time()
+            )
         else:
             inbox_task = InboxTask.new_inbox_task_for_person_catch_up(
                 inbox_task_collection_ref_id=inbox_task_collection.ref_id,
@@ -884,6 +958,12 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                 inbox_task = await uow.inbox_task_repository.create(inbox_task)
                 await progress_reporter.mark_created(inbox_task)
 
+            gen_log_entry = gen_log_entry.add_entity_created(
+                inbox_task, self._time_provider.get_current_time()
+            )
+
+        return gen_log_entry
+
     async def _generate_birthday_inbox_task_for_person(
         self,
         progress_reporter: ProgressReporter,
@@ -898,7 +978,8 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
             InboxTask,
         ],
         gen_even_if_not_modified: bool,
-    ) -> None:
+        gen_log_entry: GenLogEntry,
+    ) -> GenLogEntry:
         schedule = schedules.get_schedule(
             RecurringTaskPeriod.YEARLY,
             person.name,
@@ -928,7 +1009,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                 not gen_even_if_not_modified
                 and found_task.last_modified_time >= person.last_modified_time
             ):
-                return
+                return gen_log_entry
 
             found_task = found_task.update_link_to_person_birthday(
                 project_ref_id=project.ref_id,
@@ -943,6 +1024,10 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
             async with self._domain_storage_engine.get_unit_of_work() as uow:
                 await uow.inbox_task_repository.save(found_task)
                 await progress_reporter.mark_updated(found_task)
+
+            gen_log_entry = gen_log_entry.add_entity_updated(
+                found_task, self._time_provider.get_current_time()
+            )
         else:
             inbox_task = InboxTask.new_inbox_task_for_person_birthday(
                 inbox_task_collection_ref_id=inbox_task_collection.ref_id,
@@ -961,6 +1046,12 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                 inbox_task = await uow.inbox_task_repository.create(inbox_task)
                 await progress_reporter.mark_created(inbox_task)
 
+            gen_log_entry = gen_log_entry.add_entity_created(
+                inbox_task, self._time_provider.get_current_time()
+            )
+
+        return gen_log_entry
+
     async def _generate_slack_inbox_task_for_slack_task(
         self,
         progress_reporter: ProgressReporter,
@@ -969,7 +1060,8 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
         project: Project,
         all_inbox_tasks_by_slack_task_ref_id: Dict[EntityId, InboxTask],
         gen_even_if_not_modified: bool,
-    ) -> None:
+        gen_log_entry: GenLogEntry,
+    ) -> GenLogEntry:
         found_task = all_inbox_tasks_by_slack_task_ref_id.get(
             slack_task.ref_id,
             None,
@@ -980,7 +1072,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                 not gen_even_if_not_modified
                 and found_task.last_modified_time >= slack_task.last_modified_time
             ):
-                return
+                return gen_log_entry
 
             found_task = found_task.update_link_to_slack_task(
                 project_ref_id=project.ref_id,
@@ -995,6 +1087,10 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
             async with self._domain_storage_engine.get_unit_of_work() as uow:
                 await uow.inbox_task_repository.save(found_task)
                 await progress_reporter.mark_updated(found_task)
+
+            gen_log_entry = gen_log_entry.add_entity_updated(
+                found_task, self._time_provider.get_current_time()
+            )
         else:
             inbox_task = InboxTask.new_inbox_task_for_slack_task(
                 inbox_task_collection_ref_id=inbox_task_collection.ref_id,
@@ -1019,6 +1115,12 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                 inbox_task = await uow.inbox_task_repository.create(inbox_task)
                 await progress_reporter.mark_created(inbox_task)
 
+            gen_log_entry = gen_log_entry.add_entity_created(
+                inbox_task, self._time_provider.get_current_time()
+            )
+
+        return gen_log_entry
+
     async def _generate_email_inbox_task_for_email_task(
         self,
         progress_reporter: ProgressReporter,
@@ -1027,7 +1129,8 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
         project: Project,
         all_inbox_tasks_by_email_task_ref_id: Dict[EntityId, InboxTask],
         gen_even_if_not_modified: bool,
-    ) -> None:
+        gen_log_entry: GenLogEntry,
+    ) -> GenLogEntry:
         found_task = all_inbox_tasks_by_email_task_ref_id.get(
             email_task.ref_id,
             None,
@@ -1038,7 +1141,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                 not gen_even_if_not_modified
                 and found_task.last_modified_time >= email_task.last_modified_time
             ):
-                return
+                return gen_log_entry
 
             found_task = found_task.update_link_to_email_task(
                 project_ref_id=project.ref_id,
@@ -1054,6 +1157,11 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
 
             async with self._domain_storage_engine.get_unit_of_work() as uow:
                 await uow.inbox_task_repository.save(found_task)
+                await progress_reporter.mark_updated(found_task)
+
+            gen_log_entry = gen_log_entry.add_entity_updated(
+                found_task, self._time_provider.get_current_time()
+            )
         else:
             inbox_task = InboxTask.new_inbox_task_for_email_task(
                 inbox_task_collection_ref_id=inbox_task_collection.ref_id,
@@ -1079,3 +1187,9 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
 
                 inbox_task = await uow.inbox_task_repository.create(inbox_task)
                 await progress_reporter.mark_created(inbox_task)
+
+            gen_log_entry = gen_log_entry.add_entity_created(
+                inbox_task, self._time_provider.get_current_time()
+            )
+
+        return gen_log_entry

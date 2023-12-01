@@ -1,7 +1,6 @@
-"""SQLite implementation of gamification task gcs classes."""
+"""SQLite implementation of garbage collection infra classes."""
 from typing import Final, Iterable, List, Optional
 
-from jupiter.core.domain.entity_name import EntityName
 from jupiter.core.domain.entity_summary import EntitySummary
 from jupiter.core.domain.gc.gc_log import GCLog
 from jupiter.core.domain.gc.gc_log_entry import GCLogEntry
@@ -14,7 +13,6 @@ from jupiter.core.domain.gc.infra.gc_log_repository import (
     GCLogNotFoundError,
     GCLogRepository,
 )
-from jupiter.core.domain.named_entity_tag import NamedEntityTag
 from jupiter.core.domain.sync_target import SyncTarget
 from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
@@ -237,22 +235,7 @@ class SqliteGCLogEntryRepository(GCLogEntryRepository):
                 source=entity.source.value,
                 gc_targets=[g.value for g in entity.gc_targets],
                 opened=entity.opened,
-                entity_records=[
-                    {
-                        "entity_tag": r.entity_tag.value,
-                        "parent_ref_id": r.parent_ref_id.the_id,
-                        "ref_id": r.ref_id.the_id,
-                        "name": str(r.name),
-                        "archived": r.archived,
-                        "created_time": str(r.created_time),
-                        "last_modified_time": str(r.last_modified_time),
-                        "archived_time": str(r.archived_time)
-                        if r.archived_time
-                        else None,
-                        "snippet": str(r.name),
-                    }
-                    for r in entity.entity_records
-                ],
+                entity_records=[r.to_json() for r in entity.entity_records],
             ),
         )
         entity = entity.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
@@ -279,22 +262,7 @@ class SqliteGCLogEntryRepository(GCLogEntryRepository):
                 source=entity.source.value,
                 gc_targets=[g.value for g in entity.gc_targets],
                 opened=entity.opened,
-                entity_records=[
-                    {
-                        "entity_tag": r.entity_tag.value,
-                        "parent_ref_id": r.parent_ref_id.the_id,
-                        "ref_id": r.ref_id.the_id,
-                        "name": str(r.name),
-                        "archived": r.archived,
-                        "created_time": str(r.created_time),
-                        "last_modified_time": str(r.last_modified_time),
-                        "archived_time": str(r.archived_time)
-                        if r.archived_time
-                        else None,
-                        "snippet": str(r.name),
-                    }
-                    for r in entity.entity_records
-                ],
+                entity_records=[r.to_json() for r in entity.entity_records],
             ),
         )
         if result.rowcount == 0:
@@ -402,20 +370,5 @@ class SqliteGCLogEntryRepository(GCLogEntryRepository):
             source=EventSource(row["source"]),
             gc_targets=[SyncTarget.from_raw(g) for g in row["gc_targets"]],
             opened=row["opened"],
-            entity_records=[
-                EntitySummary(
-                    entity_tag=NamedEntityTag.from_raw(r["entity_tag"]),
-                    parent_ref_id=EntityId.from_raw(r["parent_ref_id"]),
-                    ref_id=EntityId.from_raw(r["ref_id"]),
-                    name=EntityName.from_raw(r["name"]),
-                    archived=r["archived"],
-                    created_time=Timestamp.from_raw(r["created_time"]),
-                    last_modified_time=Timestamp.from_raw(r["last_modified_time"]),
-                    archived_time=Timestamp.from_raw(r["archived_time"])
-                    if r["archived_time"]
-                    else None,
-                    snippet=str(r["snippet"]),
-                )
-                for r in row["entity_records"]
-            ],
+            entity_records=[EntitySummary.from_json(r) for r in row["entity_records"]],
         )

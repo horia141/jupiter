@@ -10,8 +10,9 @@ export function eventSourceName(source: EventSource) {
       return "Slack";
     case EventSource.EMAIL:
       return "Email";
-
     case EventSource.GC_CRON:
       return "GC Cron";
+    case EventSource.GEN_CRON:
+      return "Gen Cron";
   }
 }

@@ -11,4 +11,5 @@ export enum EventSource {
     SLACK = 'slack',
     EMAIL = 'email',
     GC_CRON = 'gc-cron',
+    GEN_CRON = 'gen-cron',
 }

@@ -10,13 +10,14 @@ from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.sync_target import SyncTarget
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.use_cases.gen import GenArgs, GenUseCase
+from jupiter.core.framework.event import EventSource
+from jupiter.core.use_cases.gen.do import GenDoArgs, GenDoUseCase
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
 from jupiter.core.utils.global_properties import GlobalProperties
 from jupiter.core.utils.time_provider import TimeProvider
 
 
-class Gen(LoggedInMutationCommand[GenUseCase]):
+class GenDo(LoggedInMutationCommand[GenDoUseCase]):
     """UseCase class for creating recurring tasks."""
 
     _global_properties: Final[GlobalProperties]
@@ -28,7 +29,7 @@ class Gen(LoggedInMutationCommand[GenUseCase]):
         time_provider: TimeProvider,
         session_storage: SessionStorage,
         top_level_context: LoggedInTopLevelContext,
-        use_case: GenUseCase,
+        use_case: GenDoUseCase,
     ) -> None:
         """Constructor."""
         super().__init__(session_storage, top_level_context, use_case)
@@ -243,7 +244,8 @@ class Gen(LoggedInMutationCommand[GenUseCase]):
 
         await self._use_case.execute(
             AppLoggedInUseCaseSession(session_info.auth_token_ext),
-            GenArgs(
+            GenDoArgs(
+                source=EventSource.CLI,
                 gen_even_if_not_modified=gen_even_if_not_modified,
                 today=today,
                 gen_targets=gen_targets,

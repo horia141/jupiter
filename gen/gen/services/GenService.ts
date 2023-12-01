@@ -1,7 +1,9 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { GenArgs } from '../models/GenArgs';
+import type { GenDoArgs } from '../models/GenDoArgs';
+import type { GenLoadRunsArgs } from '../models/GenLoadRunsArgs';
+import type { GenLoadRunsResult } from '../models/GenLoadRunsResult';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
@@ -11,18 +13,41 @@ export class GenService {
     constructor(public readonly httpRequest: BaseHttpRequest) {}
 
     /**
-     * Gen
+     * Gen Do
      * Generate inbox tasks.
      * @param requestBody
      * @returns any Successful Response
      * @throws ApiError
      */
-    public gen(
-        requestBody: GenArgs,
+    public genDo(
+        requestBody: GenDoArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/gen',
+            url: '/gen/do',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Gen Load Runs
+     * Load history of task generation runs.
+     * @param requestBody
+     * @returns GenLoadRunsResult Successful Response
+     * @throws ApiError
+     */
+    public genLoadRuns(
+        requestBody: GenLoadRunsArgs,
+    ): CancelablePromise<GenLoadRunsResult> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/gen/load-runs',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

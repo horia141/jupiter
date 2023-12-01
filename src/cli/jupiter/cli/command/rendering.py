@@ -371,6 +371,11 @@ def due_date_to_rich_text(due_date: ADate) -> Text:
     return Text("Due at ").append(ADate.to_user_date_str(due_date), style="underline")
 
 
+def date_with_label_to_rich_text(due_date: ADate, label: str) -> Text:
+    """Transform a due date into text."""
+    return Text(f"{label} ").append(ADate.to_user_date_str(due_date), style="underline")
+
+
 def project_to_rich_text(project_name: ProjectName) -> Text:
     """Transform a project into text."""
     return Text("In Project ").append(str(project_name), style="underline")
@@ -613,3 +618,18 @@ def user_score_overview_to_rich(score_overview: UserScoreOverview) -> Tree:
     gamification_tree.add(scores_table)
 
     return gamification_tree
+
+
+def entity_summary_snippet_to_rich_text(snippet: str) -> Text:
+    """Transform the snippet of text in an entity summary to text."""
+    snippet_with_markup = snippet.replace("found", "bold underline blue")
+
+    return Text.from_markup(snippet_with_markup)
+
+
+def boolean_to_rich_text(value: bool, label: str) -> Text:
+    """Transform a boolean to rich text."""
+    if value:
+        return Text(f"✅ {label}")
+    else:
+        return Text(f"⛔ {label}")

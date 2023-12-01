@@ -5,6 +5,7 @@ from argparse import ArgumentParser, Namespace
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     entity_id_to_rich_text,
+    entity_summary_snippet_to_rich_text,
     entity_tag_to_rich_text,
     event_source_to_rich_text,
     sync_target_to_rich_text,
@@ -64,6 +65,10 @@ class GCShow(LoggedInReadonlyCommand[GCLoadRunsUseCase]):
             for entity_record in entry.entity_records:
                 record_text = entity_tag_to_rich_text(entity_record.entity_tag)
                 record_text.append(entity_id_to_rich_text(entity_record.ref_id))
+                record_text.append(" ")
+                record_text.append(
+                    entity_summary_snippet_to_rich_text(entity_record.snippet)
+                )
                 entry_tree.add(record_text)
 
         console = Console()

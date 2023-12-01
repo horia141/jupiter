@@ -25,11 +25,11 @@ class GCLogEntry(LeafEntity):
 
     @dataclass
     class AddEntity(Entity.Updated):
-        """Event that gets triggered when a GC log entry is opened."""
+        """Event that gets triggered when an entity is added to the log entry."""
 
     @dataclass
     class Closed(Entity.Updated):
-        """Event that gets triggered when a GC log entry is opened."""
+        """Event that gets triggered when a GC log entry is closed."""
 
     gc_log_ref_id: EntityId
     source: EventSource
@@ -40,8 +40,8 @@ class GCLogEntry(LeafEntity):
     @staticmethod
     def new_log_entry(
         gc_log_ref_id: EntityId,
-        gc_targets: list[SyncTarget],
         source: EventSource,
+        gc_targets: list[SyncTarget],
         created_time: Timestamp,
     ) -> "GCLogEntry":
         """Create a new GC log entry."""

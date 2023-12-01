@@ -27,7 +27,6 @@ from jupiter.core.domain.workspaces.infra.workspace_repository import (
     WorkspaceNotFoundError,
 )
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.repository import LeafEntityNotFoundError
 from jupiter.core.framework.secure import secure_fn
 from jupiter.core.framework.use_case import EmptySession
 from jupiter.core.repository.sqlite.connection import SqliteConnection
@@ -108,7 +107,12 @@ from jupiter.core.use_cases.gc.load_runs import (
     GCLoadRunsResult,
     GCLoadRunsUseCase,
 )
-from jupiter.core.use_cases.gen import GenArgs, GenUseCase
+from jupiter.core.use_cases.gen.do import GenDoArgs, GenDoUseCase
+from jupiter.core.use_cases.gen.load_runs import (
+    GenLoadRunsArgs,
+    GenLoadRunsResult,
+    GenLoadRunsUseCase,
+)
 from jupiter.core.use_cases.get_summaries import (
     GetSummariesArgs,
     GetSummariesResult,
@@ -482,7 +486,10 @@ from jupiter.core.use_cases.workspaces.update import (
     WorkspaceUpdateUseCase,
 )
 from jupiter.core.utils.global_properties import build_global_properties
-from jupiter.core.utils.progress_reporter import EmptyProgressReporterFactory, NoOpProgressReporterFactory
+from jupiter.core.utils.progress_reporter import (
+    EmptyProgressReporterFactory,
+    NoOpProgressReporterFactory,
+)
 from jupiter.webapi.time_provider import CronRunTimeProvider, PerRequestTimeProvider
 from jupiter.webapi.websocket_progress_reporter import WebsocketProgressReporterFactory
 from starlette import status
@@ -559,13 +566,18 @@ search_use_case = SearchUseCase(
     search_storage_engine=search_storage_engine,
 )
 
-gen_use_case = GenUseCase(
+gen_do_use_case = GenDoUseCase(
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+)
+
+gen_load_runs_use_case = GenLoadRunsUseCase(
+    auth_token_stamper=auth_token_stamper,
+    storage_engine=domain_storage_engine,
 )
 
 report_use_case = ReportUseCase(
@@ -1361,16 +1373,16 @@ async def project_in_significant_use_error_handler(
     )
 
 
-@app.exception_handler(LeafEntityNotFoundError)
-async def leaf_entity_not_found_error_handler(
-    _request: Request,
-    _exc: LeafEntityNotFoundError,
-) -> PlainTextResponse:
-    """Transform LeafEntityNotFoundError to something that signals clients the entity does not exist."""
-    return PlainTextResponse(
-        status_code=status.HTTP_404_NOT_FOUND,
-        content="Entity does not exist",
-    )
+# @app.exception_handler(LeafEntityNotFoundError)
+# async def leaf_entity_not_found_error_handler(
+#     _request: Request,
+#     _exc: LeafEntityNotFoundError,
+# ) -> PlainTextResponse:
+#     """Transform LeafEntityNotFoundError to something that signals clients the entity does not exist."""
+#     return PlainTextResponse(
+#         status_code=status.HTTP_404_NOT_FOUND,
+#         content="Entity does not exist",
+#     )
 
 
 @app.exception_handler(InvalidAuthTokenError)
@@ -1606,10 +1618,23 @@ async def search(args: SearchArgs, session: LoggedInSession) -> SearchResult:
     return await search_use_case.execute(session, args)
 
 
-@app.post("/gen", response_model=None, tags=["gen"], responses=standard_responses)
-async def gen(args: GenArgs, session: LoggedInSession) -> None:
+@app.post("/gen/do", response_model=None, tags=["gen"], responses=standard_responses)
+async def gen_do(args: GenDoArgs, session: LoggedInSession) -> None:
     """Generate inbox tasks."""
-    await gen_use_case.execute(session, args)
+    await gen_do_use_case.execute(session, args)
+
+
+@app.post(
+    "/gen/load-runs",
+    response_model=GenLoadRunsResult,
+    tags=["gen"],
+    responses=standard_responses,
+)
+async def gen_load_runs(
+    args: GenLoadRunsArgs, session: LoggedInSession
+) -> GenLoadRunsResult:
+    """Load history of task generation runs."""
+    return await gen_load_runs_use_case.execute(session, args)
 
 
 @app.post(

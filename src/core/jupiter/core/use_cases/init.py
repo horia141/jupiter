@@ -16,6 +16,7 @@ from jupiter.core.domain.features import (
 )
 from jupiter.core.domain.gamification.score_log import ScoreLog
 from jupiter.core.domain.gc.gc_log import GCLog
+from jupiter.core.domain.gen.gen_log import GenLog
 from jupiter.core.domain.habits.habit_collection import HabitCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.metrics.metric_collection import MetricCollection
@@ -315,11 +316,18 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             )
 
             new_gc_log = GCLog.new_gc_log(
-                workspace_ref_id=Workspace.ref_id,
+                workspace_ref_id=new_workspace.ref_id,
                 source=EventSource.CLI,
                 created_time=self._time_provider.get_current_time(),
             )
             new_gc_log = await uow.gc_log_repository.create(new_gc_log)
+
+            new_gen_log = GenLog.new_gen_log(
+                workspace_ref_id=new_workspace.ref_id,
+                source=EventSource.CLI,
+                created_time=self._time_provider.get_current_time(),
+            )
+            new_gen_log = await uow.gen_log_repository.create(new_gen_log)
 
             new_user_workspace_link = UserWorkspaceLink.new_user_workspace_link(
                 user_ref_id=new_user.ref_id,

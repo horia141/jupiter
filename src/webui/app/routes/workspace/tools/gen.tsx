@@ -1,16 +1,24 @@
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Autocomplete,
+  Box,
   Button,
   Card,
   CardActions,
   CardContent,
+  Divider,
   FormControl,
   FormControlLabel,
   InputLabel,
   OutlinedInput,
   Stack,
+  styled,
   Switch,
   TextField,
+  Typography,
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
@@ -22,6 +30,7 @@ import {
 import { StatusCodes } from "http-status-codes";
 import {
   ApiError,
+  EventSource,
   RecurringTaskPeriod,
   SyncTarget,
   WorkspaceFeature,
@@ -31,11 +40,19 @@ import { useContext, useState } from "react";
 import { z } from "zod";
 import { CheckboxAsString, parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
+import { ADateTag } from "~/components/adate-tag";
+import { EntitySummaryLink } from "~/components/entity-summary-link";
+import { EventSourceTag } from "~/components/event-source-tag";
+import { SlimChip } from "~/components/infra/chips";
+import { EntityCard } from "~/components/infra/entity-card";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { ToolPanel } from "~/components/infra/layout/tool-panel";
 import { PeriodSelect } from "~/components/period-select";
+import { PeriodTag } from "~/components/period-tag";
 import { SyncTargetSelect } from "~/components/sync-target-select";
+import { SyncTargetTag } from "~/components/sync-target-tag";
+import { TimeDiffTag } from "~/components/time-diff-tag";
 import {
   noErrorNoData,
   validationErrorToUIErrorInfo,
@@ -95,7 +112,7 @@ export const handle = {
 
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
-  const response = await getLoggedInApiClient(
+  const summariesResponse = await getLoggedInApiClient(
     session
   ).getSummaries.getSummaries({
     include_projects: true,
@@ -104,8 +121,14 @@ export async function loader({ request }: LoaderArgs) {
     include_metrics: true,
     include_persons: true,
   });
+  const loadRunsResponse = await getLoggedInApiClient(session).gen.genLoadRuns(
+    {}
+  );
 
-  return response;
+  return {
+    summaries: summariesResponse,
+    loadRuns: loadRunsResponse,
+  };
 }
 
 export async function action({ request }: ActionArgs) {
@@ -113,7 +136,8 @@ export async function action({ request }: ActionArgs) {
   const form = await parseForm(request, GenFormSchema);
 
   try {
-    await getLoggedInApiClient(session).gen.gen({
+    await getLoggedInApiClient(session).gen.genDo({
+      source: EventSource.WEB,
       gen_even_if_not_modified: form.gen_even_if_not_modified,
       today:
         form.today !== undefined && form.today !== ""
@@ -164,35 +188,35 @@ export default function Gen() {
 
   const [selectedProjects, setSelectedProjects] = useState<ProjectOption[]>([]);
   const projectOptions =
-    loaderData.projects?.map((p) => ({
+    loaderData.summaries.projects?.map((p) => ({
       refId: p.ref_id.the_id,
       label: p.name.the_name,
     })) ?? [];
 
   const [selectedHabits, setSelectedHabits] = useState<HabitOptions[]>([]);
   const habitOptions =
-    loaderData.habits?.map((p) => ({
+    loaderData.summaries.habits?.map((p) => ({
       refId: p.ref_id.the_id,
       label: p.name.the_name,
     })) ?? [];
 
   const [selectedChores, setSelectedChores] = useState<ChoreOptions[]>([]);
   const choreOptions =
-    loaderData.chores?.map((p) => ({
+    loaderData.summaries.chores?.map((p) => ({
       refId: p.ref_id.the_id,
       label: p.name.the_name,
     })) ?? [];
 
   const [selectedMetrics, setSelectedMetrics] = useState<MetricOptions[]>([]);
   const metricOptions =
-    loaderData.metrics?.map((p) => ({
+    loaderData.summaries.metrics?.map((p) => ({
       refId: p.ref_id.the_id,
       label: p.icon ? `${p.icon.the_icon} ${p.name.the_name}` : p.name.the_name,
     })) ?? [];
 
   const [selectedPersons, setSelectedPersons] = useState<PersonOptions[]>([]);
   const personOptions =
-    loaderData.persons?.map((p) => ({
+    loaderData.summaries.persons?.map((p) => ({
       refId: p.ref_id.the_id,
       label: p.name.the_name,
     })) ?? [];
@@ -442,6 +466,155 @@ export default function Gen() {
           </Button>
         </CardActions>
       </Card>
+
+      <Divider style={{ paddingTop: "1rem", paddingBottom: "1rem" }}>
+        <Typography variant="h6">Previous Runs</Typography>
+      </Divider>
+
+      {loaderData.loadRuns.entries.map((entry) => {
+        return (
+          <Accordion key={entry.ref_id.the_id}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <AccordionHeader>
+                Run from <EventSourceTag source={entry.source} />
+                with {entry.entity_created_records.length} entities created,{" "}
+                {entry.entity_updated_records.length} entities updated, and{" "}
+                {entry.entity_removed_records.length} entities removed
+                <TimeDiffTag
+                  labelPrefix="from"
+                  collectionTime={entry.created_time}
+                />
+              </AccordionHeader>
+            </AccordionSummary>
+
+            <AccordionDetails>
+              <GenTargetsSection>
+                Generate even if not modified:{" "}
+                {entry.gen_even_if_not_modified ? "✅" : "⛔"}
+              </GenTargetsSection>
+              <GenTargetsSection>
+                Generate for: <ADateTag date={entry.today} label={""} />
+              </GenTargetsSection>
+              <GenTargetsSection>
+                Gen targets:
+                {entry.gen_targets.map((target) => (
+                  <SyncTargetTag key={target} target={target} />
+                ))}
+              </GenTargetsSection>
+              <GenTargetsSection>
+                Period:{" "}
+                {entry.period &&
+                  entry.period.map((p) => <PeriodTag period={p} />)}
+                {!entry.period && <SlimChip label={"All"} />}
+              </GenTargetsSection>
+              <GenTargetsSection>
+                Filter projects ref ids:{" "}
+                {entry.filter_project_ref_ids &&
+                  entry.filter_project_ref_ids.map((refId) => (
+                    <>{refId.the_id}</>
+                  ))}
+                {!entry.filter_project_ref_ids && <SlimChip label={"All"} />}
+              </GenTargetsSection>
+              <GenTargetsSection>
+                Filter habits ref ids:{" "}
+                {entry.filter_habit_ref_ids &&
+                  entry.filter_habit_ref_ids.map((refId) => (
+                    <>{refId.the_id}</>
+                  ))}
+                {!entry.filter_habit_ref_ids && <SlimChip label={"All"} />}
+              </GenTargetsSection>
+              <GenTargetsSection>
+                Filter chores ref ids:{" "}
+                {entry.filter_chore_ref_ids &&
+                  entry.filter_chore_ref_ids.map((refId) => (
+                    <>{refId.the_id}</>
+                  ))}
+                {!entry.filter_chore_ref_ids && <SlimChip label={"All"} />}
+              </GenTargetsSection>
+              <GenTargetsSection>
+                Filter metrics ref ids:{" "}
+                {entry.filter_metric_ref_ids &&
+                  entry.filter_metric_ref_ids.map((refId) => (
+                    <>{refId.the_id}</>
+                  ))}
+                {!entry.filter_metric_ref_ids && <SlimChip label={"All"} />}
+              </GenTargetsSection>
+              <GenTargetsSection>
+                Filter persons ref ids:{" "}
+                {entry.filter_person_ref_ids &&
+                  entry.filter_person_ref_ids.map((refId) => (
+                    <>{refId.the_id}</>
+                  ))}
+                {!entry.filter_person_ref_ids && <SlimChip label={"All"} />}
+              </GenTargetsSection>
+              <GenTargetsSection>
+                Filter Slack task ref ids:{" "}
+                {entry.filter_slack_task_ref_ids &&
+                  entry.filter_slack_task_ref_ids.map((refId) => (
+                    <>{refId.the_id}</>
+                  ))}
+                {!entry.filter_slack_task_ref_ids && <SlimChip label={"All"} />}
+              </GenTargetsSection>
+              <GenTargetsSection>
+                Filter email task ref ids:{" "}
+                {entry.filter_email_task_ref_ids &&
+                  entry.filter_email_task_ref_ids.map((refId) => (
+                    <>{refId.the_id}</>
+                  ))}
+                {!entry.filter_email_task_ref_ids && <SlimChip label={"All"} />}
+              </GenTargetsSection>
+
+              {entry.entity_created_records.length > 0 && (
+                <>
+                  <Divider
+                    style={{ paddingTop: "1rem", paddingBottom: "1rem" }}
+                  >
+                    <Typography variant="h6">Created entities</Typography>
+                  </Divider>
+
+                  {entry.entity_created_records.map((record) => (
+                    <EntityCard key={record.ref_id.the_id}>
+                      <EntitySummaryLink summary={record} />
+                    </EntityCard>
+                  ))}
+                </>
+              )}
+
+              {entry.entity_updated_records.length > 0 && (
+                <>
+                  <Divider
+                    style={{ paddingTop: "1rem", paddingBottom: "1rem" }}
+                  >
+                    <Typography variant="h6">Updated entities</Typography>
+                  </Divider>
+
+                  {entry.entity_updated_records.map((record) => (
+                    <EntityCard key={record.ref_id.the_id}>
+                      <EntitySummaryLink summary={record} />
+                    </EntityCard>
+                  ))}
+                </>
+              )}
+
+              {entry.entity_removed_records.length > 0 && (
+                <>
+                  <Divider
+                    style={{ paddingTop: "1rem", paddingBottom: "1rem" }}
+                  >
+                    <Typography variant="h6">Removed entities</Typography>
+                  </Divider>
+
+                  {entry.entity_removed_records.map((record) => (
+                    <EntityCard key={record.ref_id.the_id}>
+                      <EntitySummaryLink summary={record} />
+                    </EntityCard>
+                  ))}
+                </>
+              )}
+            </AccordionDetails>
+          </Accordion>
+        );
+      })}
     </ToolPanel>
   );
 }
@@ -449,3 +622,18 @@ export default function Gen() {
 export const ErrorBoundary = makeErrorBoundary(
   () => `There was an error generating tasks! Please try again!`
 );
+
+const AccordionHeader = styled(Box)(({ theme }) => ({
+  display: "flex",
+  alignItems: "center",
+  gap: theme.spacing(1),
+  flexWrap: "wrap",
+}));
+
+const GenTargetsSection = styled(Box)(({ theme }) => ({
+  display: "flex",
+  alignItems: "center",
+  gap: theme.spacing(1),
+  flexWrap: "wrap",
+  paddingBottom: theme.spacing(1),
+}));

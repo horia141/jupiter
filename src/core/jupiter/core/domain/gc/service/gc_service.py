@@ -57,8 +57,8 @@ class GCService:
             gc_log = await uow.gc_log_repository.load_by_parent(workspace.ref_id)
             gc_log_entry = GCLogEntry.new_log_entry(
                 gc_log_ref_id=gc_log.ref_id,
-                gc_targets=gc_targets,
                 source=self._source,
+                gc_targets=gc_targets,
                 created_time=self._time_provider.get_current_time(),
             )
             gc_log_entry = await uow.gc_log_entry_repository.create(gc_log_entry)

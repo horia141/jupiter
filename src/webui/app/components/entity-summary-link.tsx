@@ -1,13 +1,17 @@
 import { EntitySummary, NamedEntityTag } from "jupiter-gen";
 import { SlimChip } from "./infra/chips";
-import { EntityLink } from "./infra/entity-card";
+import { EntityFakeLink, EntityLink } from "./infra/entity-card";
 import { TimeDiffTag } from "./time-diff-tag";
 
 interface EntitySummaryLinkProps {
   summary: EntitySummary;
+  removed?: boolean;
 }
 
-export function EntitySummaryLink({ summary }: EntitySummaryLinkProps) {
+export function EntitySummaryLink({
+  summary,
+  removed,
+}: EntitySummaryLinkProps) {
   const commonSequence = (
     <>
       <MatchSnippet snippet={summary.snippet} />
@@ -25,6 +29,15 @@ export function EntitySummaryLink({ summary }: EntitySummaryLinkProps) {
       )}
     </>
   );
+
+  if (removed) {
+    return (
+      <EntityFakeLink>
+        <SlimChip label={"Removed Entity"} color={"primary"} />
+        {commonSequence}
+      </EntityFakeLink>
+    );
+  }
 
   switch (summary.entity_tag) {
     case NamedEntityTag.INBOX_TASK:

@@ -31,7 +31,8 @@ from jupiter.cli.command.email_task_show import EmailTaskShow
 from jupiter.cli.command.email_task_update import EmailTaskUpdate
 from jupiter.cli.command.gc_do import GCDo
 from jupiter.cli.command.gc_show import GCShow
-from jupiter.cli.command.gen import Gen
+from jupiter.cli.command.gen_do import GenDo
+from jupiter.cli.command.gen_show import GenShow
 from jupiter.cli.command.habit_archive import HabitArchive
 from jupiter.cli.command.habit_change_project import HabitChangeProject
 from jupiter.cli.command.habit_create import HabitCreate
@@ -165,7 +166,8 @@ from jupiter.core.use_cases.chores.unsuspend import ChoreUnsuspendUseCase
 from jupiter.core.use_cases.chores.update import ChoreUpdateUseCase
 from jupiter.core.use_cases.gc.do import GCDoUseCase
 from jupiter.core.use_cases.gc.load_runs import GCLoadRunsUseCase
-from jupiter.core.use_cases.gen import GenUseCase
+from jupiter.core.use_cases.gen.do import GenDoUseCase
+from jupiter.core.use_cases.gen.load_runs import GenLoadRunsUseCase
 from jupiter.core.use_cases.habits.archive import HabitArchiveUseCase
 from jupiter.core.use_cases.habits.change_project import HabitChangeProjectUseCase
 from jupiter.core.use_cases.habits.create import HabitCreateUseCase
@@ -409,18 +411,26 @@ async def main() -> None:
                         search_storage_engine=search_storage_engine,
                     ),
                 ),
-                Gen(
+                GenDo(
                     global_properties,
                     time_provider,
                     session_storage,
                     top_level_context.to_logged_in(),
-                    GenUseCase(
+                    GenDoUseCase(
                         time_provider,
                         invocation_recorder,
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
                         search_storage_engine=search_storage_engine,
+                    ),
+                ),
+                GenShow(
+                    session_storage,
+                    top_level_context.to_logged_in(),
+                    GenLoadRunsUseCase(
+                        auth_token_stamper,
+                        domain_storage_engine,
                     ),
                 ),
                 Report(

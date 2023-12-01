@@ -153,3 +153,20 @@ const StyledLink = styled(Link)(({ theme }) => ({
   flexWrap: "wrap",
   alignItems: "center",
 }));
+
+export function EntityFakeLink(props: PropsWithChildren) {
+  return <StyledFakeLink>{props.children}</StyledFakeLink>;
+}
+
+const StyledFakeLink = styled("span")(({ theme }) => ({
+  textDecoration: "none",
+  width: "100%",
+  color: theme.palette.info.dark,
+  ":visited": {
+    color: theme.palette.info.dark,
+  },
+  display: "flex",
+  gap: "0.5rem",
+  flexWrap: "wrap",
+  alignItems: "center",
+}));

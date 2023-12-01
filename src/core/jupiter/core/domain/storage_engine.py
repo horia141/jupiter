@@ -26,6 +26,8 @@ from jupiter.core.domain.gamification.infra.score_stats_repository import (
 )
 from jupiter.core.domain.gc.infra.gc_log_entry_repository import GCLogEntryRepository
 from jupiter.core.domain.gc.infra.gc_log_repository import GCLogRepository
+from jupiter.core.domain.gen.infra.gen_log_entry_repository import GenLogEntryRepository
+from jupiter.core.domain.gen.infra.gen_log_repository import GenLogRepository
 from jupiter.core.domain.habits.infra.habit_collection_repository import (
     HabitCollectionRepository,
 )
@@ -283,6 +285,16 @@ class DomainUnitOfWork(abc.ABC):
     @abc.abstractmethod
     def fast_into_repository(self) -> FastInfoRepository:
         """The fast info repository."""
+
+    @property
+    @abc.abstractmethod
+    def gen_log_repository(self) -> GenLogRepository:
+        """The task generation log repository."""
+
+    @property
+    @abc.abstractmethod
+    def gen_log_entry_repository(self) -> GenLogEntryRepository:
+        """The task generation log entry repository."""
 
     @property
     @abc.abstractmethod

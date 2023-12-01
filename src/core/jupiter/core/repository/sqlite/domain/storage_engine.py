@@ -27,6 +27,8 @@ from jupiter.core.domain.gamification.infra.score_stats_repository import (
 )
 from jupiter.core.domain.gc.infra.gc_log_entry_repository import GCLogEntryRepository
 from jupiter.core.domain.gc.infra.gc_log_repository import GCLogRepository
+from jupiter.core.domain.gen.infra.gen_log_entry_repository import GenLogEntryRepository
+from jupiter.core.domain.gen.infra.gen_log_repository import GenLogRepository
 from jupiter.core.domain.habits.infra.habit_collection_repository import (
     HabitCollectionRepository,
 )
@@ -121,6 +123,10 @@ from jupiter.core.repository.sqlite.domain.gamification.scores import (
 from jupiter.core.repository.sqlite.domain.gc import (
     SqliteGCLogEntryRepository,
     SqliteGCLogRepository,
+)
+from jupiter.core.repository.sqlite.domain.gen import (
+    SqliteGenLogEntryRepository,
+    SqliteGenLogRepository,
 )
 from jupiter.core.repository.sqlite.domain.habits import (
     SqliteHabitCollectionRepository,
@@ -220,6 +226,8 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
     _email_task_collection_repository: Final[SqliteEmailTaskCollectionRepository]
     _email_task_repository: Final[SqliteEmailTaskRepository]
     _fast_info_repository: Final[SqliteFastInfoRepository]
+    _gen_log_repository: Final[SqliteGenLogRepository]
+    _gen_log_entry_repository: Final[SqliteGenLogEntryRepository]
     _gc_log_repository: Final[SqliteGCLogRepository]
     _gc_log_entry_repository: Final[SqliteGCLogEntryRepository]
 
@@ -262,6 +270,8 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
         email_task_collection_repository: SqliteEmailTaskCollectionRepository,
         email_task_repository: SqliteEmailTaskRepository,
         fast_into_repository: SqliteFastInfoRepository,
+        gen_log_repository: SqliteGenLogRepository,
+        gen_log_entry_repository: SqliteGenLogEntryRepository,
         gc_log_repository: SqliteGCLogRepository,
         gc_log_entry_repository: SqliteGCLogEntryRepository,
     ) -> None:
@@ -303,6 +313,8 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
         self._email_task_collection_repository = email_task_collection_repository
         self._email_task_repository = email_task_repository
         self._fast_info_repository = fast_into_repository
+        self._gen_log_repository = gen_log_repository
+        self._gen_log_entry_repository = gen_log_entry_repository
         self._gc_log_repository = gc_log_repository
         self._gc_log_entry_repository = gc_log_entry_repository
 
@@ -504,6 +516,16 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
         return self._fast_info_repository
 
     @property
+    def gen_log_repository(self) -> GenLogRepository:
+        """The gen log repository."""
+        return self._gen_log_repository
+
+    @property
+    def gen_log_entry_repository(self) -> GenLogEntryRepository:
+        """The gen log entry repository."""
+        return self._gen_log_entry_repository
+
+    @property
     def gc_log_repository(self) -> GCLogRepository:
         """The gc log repository."""
         return self._gc_log_repository
@@ -634,6 +656,10 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
                 self._metadata,
             )
             fast_info_repository = SqliteFastInfoRepository(connection)
+            gen_log_repository = SqliteGenLogRepository(connection, self._metadata)
+            gen_log_entry_repository = SqliteGenLogEntryRepository(
+                connection, self._metadata
+            )
             gc_log_repository = SqliteGCLogRepository(connection, self._metadata)
             gc_log_entry_repository = SqliteGCLogEntryRepository(
                 connection, self._metadata
@@ -677,6 +703,8 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
                 email_task_collection_repository=email_task_collection_repository,
                 email_task_repository=email_task_repository,
                 fast_into_repository=fast_info_repository,
+                gen_log_repository=gen_log_repository,
+                gen_log_entry_repository=gen_log_entry_repository,
                 gc_log_repository=gc_log_repository,
                 gc_log_entry_repository=gc_log_entry_repository,
             )
