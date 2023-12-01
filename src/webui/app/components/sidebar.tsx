@@ -285,23 +285,36 @@ export default function Sidebar(props: SidebarProps) {
 
             <ListItem disablePadding>
               <ListItemButton
-                to="/workspace/tools/gen"
+                to="/workspace/tools/report"
                 component={Link}
                 onClick={onClickNavigation}
               >
-                <ListItemIcon>🧰</ListItemIcon>
-                <ListItemText primary="Generate Tasks" />
+                <ListItemIcon>📊</ListItemIcon>
+                <ListItemText primary="Report" />
               </ListItemButton>
             </ListItem>
 
             <ListItem disablePadding>
               <ListItemButton
-                to="/workspace/tools/report"
+                to="/workspace/tools/pomodoro"
                 component={Link}
                 onClick={onClickNavigation}
               >
-                <ListItemIcon>🧰</ListItemIcon>
-                <ListItemText primary="Report" />
+                <ListItemIcon>🥫</ListItemIcon>
+                <ListItemText primary="Pomodoro Timer" />
+              </ListItemButton>
+            </ListItem>
+
+            <Divider textAlign="left">Process</Divider>
+
+            <ListItem disablePadding>
+              <ListItemButton
+                to="/workspace/tools/gen"
+                component={Link}
+                onClick={onClickNavigation}
+              >
+                <ListItemIcon>🔮</ListItemIcon>
+                <ListItemText primary="Generate Tasks" />
               </ListItemButton>
             </ListItem>
 
@@ -313,17 +326,6 @@ export default function Sidebar(props: SidebarProps) {
               >
                 <ListItemIcon>🗑</ListItemIcon>
                 <ListItemText primary="Garbage Collect" />
-              </ListItemButton>
-            </ListItem>
-
-            <ListItem disablePadding>
-              <ListItemButton
-                to="/workspace/tools/pomodoro"
-                component={Link}
-                onClick={onClickNavigation}
-              >
-                <ListItemIcon>🧰</ListItemIcon>
-                <ListItemText primary="Pomodoro Timer" />
               </ListItemButton>
             </ListItem>
           </List>

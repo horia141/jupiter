@@ -1,5 +1,5 @@
 """The SQLIte based user workspace links repository."""
-from typing import Final
+from typing import Final, Iterable
 
 from jupiter.core.domain.user_workspace_link.infra.user_workspace_link_repository import (
     UserWorkspaceLinkNotFoundError,
@@ -152,6 +152,27 @@ class SqliteUserWorkspaceLinkRepository(UserWorkspaceLinkRepository):
                 f"User workspace link for user with id {user_id} does not exist"
             )
         return self._row_to_entity(result)
+
+    async def find_all(
+        self,
+        allow_archived: bool = False,
+        filter_ref_ids: Iterable[EntityId] | None = None,
+    ) -> list[UserWorkspaceLink]:
+        """Find all user workspace links matching some criteria."""
+        query_stmt = select(self._user_workspace_link_table)
+        if not allow_archived:
+            query_stmt = query_stmt.where(
+                self._user_workspace_link_table.c.archived.is_(False)
+            )
+        if filter_ref_ids is not None:
+            query_stmt = query_stmt.where(
+                self._user_workspace_link_table.c.ref_id.in_(
+                    [ref_id.as_int() for ref_id in filter_ref_ids]
+                )
+            )
+
+        results = await self._connection.execute(query_stmt)
+        return [self._row_to_entity(row) for row in results]
 
     @staticmethod
     def _row_to_entity(row: RowType) -> UserWorkspaceLink:

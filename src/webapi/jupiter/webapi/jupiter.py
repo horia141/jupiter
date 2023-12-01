@@ -108,6 +108,7 @@ from jupiter.core.use_cases.gc.load_runs import (
     GCLoadRunsUseCase,
 )
 from jupiter.core.use_cases.gen.do import GenDoArgs, GenDoUseCase
+from jupiter.core.use_cases.gen.do_all import GenDoAllArgs, GenDoAllUseCase
 from jupiter.core.use_cases.gen.load_runs import (
     GenLoadRunsArgs,
     GenLoadRunsResult,
@@ -573,6 +574,12 @@ gen_do_use_case = GenDoUseCase(
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+)
+
+gen_do_all_use_case = GenDoAllUseCase(
+    time_provider=cron_run_time_provider,
+    progress_reporter_factory=EmptyProgressReporterFactory(),
+    storage_engine=domain_storage_engine,
 )
 
 gen_load_runs_use_case = GenLoadRunsUseCase(
@@ -1426,6 +1433,7 @@ async def startup_event() -> None:
     await sqlite_connection.prepare()
     # aio_session = aiohttp.ClientSession()
     scheduler = AsyncIOScheduler()
+    scheduler.add_job(do_gen_run, "cron", day="*", hour="2")
     scheduler.add_job(do_gc_run, "cron", day="*", hour="1")
     scheduler.start()
 
@@ -2883,6 +2891,11 @@ async def find_email_task(
 ) -> EmailTaskFindResult:
     """Find all email tasks, filtering by id."""
     return await email_task_find_use_case.execute(session, args)
+
+
+async def do_gen_run() -> None:
+    """A periodic task generation run for all workspaces."""
+    await gen_do_all_use_case.execute(EmptySession(), GenDoAllArgs())
 
 
 async def do_gc_run() -> None:

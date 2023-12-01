@@ -36,7 +36,7 @@ import {
   WorkspaceFeature,
 } from "jupiter-gen";
 import { DateTime } from "luxon";
-import { useContext, useState } from "react";
+import React, { useContext, useState } from "react";
 import { z } from "zod";
 import { CheckboxAsString, parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
@@ -504,14 +504,16 @@ export default function Gen() {
               <GenTargetsSection>
                 Period:{" "}
                 {entry.period &&
-                  entry.period.map((p) => <PeriodTag period={p} />)}
+                  entry.period.map((p) => <PeriodTag key={p} period={p} />)}
                 {!entry.period && <SlimChip label={"All"} />}
               </GenTargetsSection>
               <GenTargetsSection>
                 Filter projects ref ids:{" "}
                 {entry.filter_project_ref_ids &&
                   entry.filter_project_ref_ids.map((refId) => (
-                    <>{refId.the_id}</>
+                    <React.Fragment key={refId.the_id}>
+                      {refId.the_id}
+                    </React.Fragment>
                   ))}
                 {!entry.filter_project_ref_ids && <SlimChip label={"All"} />}
               </GenTargetsSection>
@@ -519,7 +521,9 @@ export default function Gen() {
                 Filter habits ref ids:{" "}
                 {entry.filter_habit_ref_ids &&
                   entry.filter_habit_ref_ids.map((refId) => (
-                    <>{refId.the_id}</>
+                    <React.Fragment key={refId.the_id}>
+                      {refId.the_id}
+                    </React.Fragment>
                   ))}
                 {!entry.filter_habit_ref_ids && <SlimChip label={"All"} />}
               </GenTargetsSection>
@@ -527,7 +531,9 @@ export default function Gen() {
                 Filter chores ref ids:{" "}
                 {entry.filter_chore_ref_ids &&
                   entry.filter_chore_ref_ids.map((refId) => (
-                    <>{refId.the_id}</>
+                    <React.Fragment key={refId.the_id}>
+                      {refId.the_id}
+                    </React.Fragment>
                   ))}
                 {!entry.filter_chore_ref_ids && <SlimChip label={"All"} />}
               </GenTargetsSection>
@@ -535,7 +541,9 @@ export default function Gen() {
                 Filter metrics ref ids:{" "}
                 {entry.filter_metric_ref_ids &&
                   entry.filter_metric_ref_ids.map((refId) => (
-                    <>{refId.the_id}</>
+                    <React.Fragment key={refId.the_id}>
+                      {refId.the_id}
+                    </React.Fragment>
                   ))}
                 {!entry.filter_metric_ref_ids && <SlimChip label={"All"} />}
               </GenTargetsSection>
@@ -543,7 +551,9 @@ export default function Gen() {
                 Filter persons ref ids:{" "}
                 {entry.filter_person_ref_ids &&
                   entry.filter_person_ref_ids.map((refId) => (
-                    <>{refId.the_id}</>
+                    <React.Fragment key={refId.the_id}>
+                      {refId.the_id}
+                    </React.Fragment>
                   ))}
                 {!entry.filter_person_ref_ids && <SlimChip label={"All"} />}
               </GenTargetsSection>
@@ -551,7 +561,9 @@ export default function Gen() {
                 Filter Slack task ref ids:{" "}
                 {entry.filter_slack_task_ref_ids &&
                   entry.filter_slack_task_ref_ids.map((refId) => (
-                    <>{refId.the_id}</>
+                    <React.Fragment key={refId.the_id}>
+                      {refId.the_id}
+                    </React.Fragment>
                   ))}
                 {!entry.filter_slack_task_ref_ids && <SlimChip label={"All"} />}
               </GenTargetsSection>
@@ -559,7 +571,9 @@ export default function Gen() {
                 Filter email task ref ids:{" "}
                 {entry.filter_email_task_ref_ids &&
                   entry.filter_email_task_ref_ids.map((refId) => (
-                    <>{refId.the_id}</>
+                    <React.Fragment key={refId.the_id}>
+                      {refId.the_id}
+                    </React.Fragment>
                   ))}
                 {!entry.filter_email_task_ref_ids && <SlimChip label={"All"} />}
               </GenTargetsSection>
@@ -606,7 +620,7 @@ export default function Gen() {
 
                   {entry.entity_removed_records.map((record) => (
                     <EntityCard key={record.ref_id.the_id}>
-                      <EntitySummaryLink summary={record} />
+                      <EntitySummaryLink summary={record} removed />
                     </EntityCard>
                   ))}
                 </>
