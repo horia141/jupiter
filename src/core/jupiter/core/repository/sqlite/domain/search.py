@@ -146,6 +146,8 @@ class SqliteSearchRepository(SearchRepository):
         filter_archived_time_before: Optional[ADate],
     ) -> List[SearchMatch]:
         """Search for entities in the index."""
+        query_clean = SqliteSearchRepository._clean_query(query)
+
         query_stmt = (
             select(
                 self._search_index_table.c.workspace_ref_id,
@@ -166,7 +168,7 @@ class SqliteSearchRepository(SearchRepository):
             .where(
                 self._search_index_table.c.workspace_ref_id == workspace_ref_id.as_int()
             )
-            .where(self._search_index_table.c.name.match(str(query)))
+            .where(self._search_index_table.c.name.match(query_clean))
         )
         if not include_archived:
             query_stmt = query_stmt.where(
@@ -235,3 +237,8 @@ class SqliteSearchRepository(SearchRepository):
             ),
             search_rank=row["rank"],
         )
+
+    @staticmethod
+    def _clean_query(query: SearchQuery) -> str:
+        """Remove some punctation from the query that is interpreted by SQLite search as commands."""
+        return str(query).replace('"', " ").replace("'", " ").replace(":", " ")
