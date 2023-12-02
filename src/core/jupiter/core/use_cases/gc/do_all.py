@@ -7,7 +7,6 @@ from jupiter.core.domain.storage_engine import DomainStorageEngine, SearchStorag
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
     EmptyContext,
-    ProgressReporter,
     ProgressReporterFactory,
     UseCaseArgsBase,
 )
@@ -42,7 +41,6 @@ class GCDoAllUseCase(AppBackgroundMutationUseCase[GCDoAllArgs, None]):
 
     async def _execute(
         self,
-        progress_reporter: ProgressReporter,
         context: EmptyContext,
         args: GCDoAllArgs,
     ) -> None:
@@ -54,9 +52,25 @@ class GCDoAllUseCase(AppBackgroundMutationUseCase[GCDoAllArgs, None]):
             source=EventSource.GC_CRON,
             time_provider=self._time_provider,
             domain_storage_engine=self._domain_storage_engine,
-            search_storage_engine=self._search_storage_engine,
         )
 
         for workspace in workspaces:
+            progress_reporter = self._progress_reporter_factory.new_reporter(context)
             gc_targets = workspace.infer_sync_targets_for_enabled_features(None)
             await gc_service.do_it(progress_reporter, workspace, gc_targets)
+
+            async with self._search_storage_engine.get_unit_of_work() as search_uow:
+                for created_entity in progress_reporter.created_entities:
+                    await search_uow.search_repository.create(
+                        workspace.ref_id, created_entity
+                    )
+
+                for updated_entity in progress_reporter.updated_entities:
+                    await search_uow.search_repository.update(
+                        workspace.ref_id, updated_entity
+                    )
+
+                for removed_entity in progress_reporter.removed_entities:
+                    await search_uow.search_repository.remove(
+                        workspace.ref_id, removed_entity
+                    )

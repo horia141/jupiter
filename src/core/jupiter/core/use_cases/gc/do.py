@@ -55,7 +55,6 @@ class GCDoUseCase(AppLoggedInMutationUseCase[GCDoArgs, None]):
             source=EventSource.CLI,
             time_provider=self._time_provider,
             domain_storage_engine=self._domain_storage_engine,
-            search_storage_engine=self._search_storage_engine,
         )
 
         await gc_service.do_it(progress_reporter, workspace, gc_targets)

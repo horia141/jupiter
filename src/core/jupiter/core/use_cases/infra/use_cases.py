@@ -421,13 +421,11 @@ class AppBackgroundMutationUseCase(
             f"Invoking background mutation command {self.__class__.__name__} with args {args}",
         )
         context = await self._build_context(session)
-        progress_reporter = self._progress_reporter_factory.new_reporter(context)
-        return await self._execute(progress_reporter, context, args)
+        return await self._execute(context, args)
 
     @abc.abstractmethod
     async def _execute(
         self,
-        progress_reporter: ProgressReporter,
         context: EmptyContext,
         args: UseCaseArgs,
     ) -> UseCaseResult:
