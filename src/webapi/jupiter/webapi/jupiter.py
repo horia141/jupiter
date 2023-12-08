@@ -579,7 +579,8 @@ gen_do_use_case = GenDoUseCase(
 gen_do_all_use_case = GenDoAllUseCase(
     time_provider=cron_run_time_provider,
     progress_reporter_factory=EmptyProgressReporterFactory(),
-    storage_engine=domain_storage_engine,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 
 gen_load_runs_use_case = GenLoadRunsUseCase(
@@ -604,7 +605,8 @@ gc_do_use_case = GCDoUseCase(
 gc_do_all_use_case = GCDoAllUseCase(
     time_provider=cron_run_time_provider,
     progress_reporter_factory=EmptyProgressReporterFactory(),
-    storage_engine=domain_storage_engine,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 
 gc_load_runs_use_case = GCLoadRunsUseCase(

@@ -26,7 +26,7 @@ from jupiter.core.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.core.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.core.domain.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
-from jupiter.core.domain.storage_engine import DomainStorageEngine
+from jupiter.core.domain.storage_engine import DomainStorageEngine, SearchStorageEngine
 from jupiter.core.domain.sync_target import SyncTarget
 from jupiter.core.domain.user.user import User
 from jupiter.core.domain.vacations.vacation import Vacation
@@ -43,17 +43,20 @@ class GenService:
     _source: Final[EventSource]
     _time_provider: Final[TimeProvider]
     _domain_storage_engine: Final[DomainStorageEngine]
+    _search_storage_engine: Final[SearchStorageEngine]
 
     def __init__(
         self,
         source: EventSource,
         time_provider: TimeProvider,
         domain_storage_engine: DomainStorageEngine,
+        search_storage_engine: SearchStorageEngine,
     ) -> None:
         """Constructor."""
         self._source = source
         self._time_provider = time_provider
         self._domain_storage_engine = domain_storage_engine
+        self._search_storage_engine = search_storage_engine
 
     async def do_it(
         self,
@@ -549,6 +552,16 @@ class GenService:
         async with self._domain_storage_engine.get_unit_of_work() as uow:
             gen_log_entry = gen_log_entry.close(self._time_provider.get_current_time())
             gen_log_entry = await uow.gen_log_entry_repository.save(gen_log_entry)
+
+        async with self._search_storage_engine.get_unit_of_work() as search_uow:
+            for created_entity in progress_reporter.created_entities:
+                await search_uow.search_repository.create(workspace.ref_id, created_entity)
+
+            for updated_entity in progress_reporter.updated_entities:
+                await search_uow.search_repository.update(workspace.ref_id, updated_entity)
+
+            for removed_entity in progress_reporter.removed_entities:
+                await search_uow.search_repository.remove(workspace.ref_id, removed_entity)
 
     async def _generate_inbox_tasks_for_habit(
         self,

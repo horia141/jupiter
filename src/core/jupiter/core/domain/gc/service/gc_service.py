@@ -19,7 +19,11 @@ from jupiter.core.domain.push_integrations.slack.service.archive_service import 
     SlackTaskArchiveService,
 )
 from jupiter.core.domain.push_integrations.slack.slack_task import SlackTask
-from jupiter.core.domain.storage_engine import DomainStorageEngine, DomainUnitOfWork
+from jupiter.core.domain.storage_engine import (
+    DomainStorageEngine,
+    DomainUnitOfWork,
+    SearchStorageEngine,
+)
 from jupiter.core.domain.sync_target import SyncTarget
 from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.base.entity_id import EntityId
@@ -34,17 +38,20 @@ class GCService:
     _source: Final[EventSource]
     _time_provider: Final[TimeProvider]
     _domain_storage_engine: Final[DomainStorageEngine]
+    _search_storage_engine: Final[SearchStorageEngine]
 
     def __init__(
         self,
         source: EventSource,
         time_provider: TimeProvider,
         domain_storage_engine: DomainStorageEngine,
+        search_storage_engine: SearchStorageEngine,
     ) -> None:
         """Constructor."""
         self._source = source
         self._time_provider = time_provider
         self._domain_storage_engine = domain_storage_engine
+        self._search_storage_engine = search_storage_engine
 
     async def do_it(
         self,
@@ -177,6 +184,16 @@ class GCService:
         async with self._domain_storage_engine.get_unit_of_work() as uow:
             gc_log_entry = gc_log_entry.close(self._time_provider.get_current_time())
             gc_log_entry = await uow.gc_log_entry_repository.save(gc_log_entry)
+
+        async with self._search_storage_engine.get_unit_of_work() as search_uow:
+            for created_entity in progress_reporter.created_entities:
+                await search_uow.search_repository.create(workspace.ref_id, created_entity)
+
+            for updated_entity in progress_reporter.updated_entities:
+                await search_uow.search_repository.update(workspace.ref_id, updated_entity)
+
+            for removed_entity in progress_reporter.removed_entities:
+                await search_uow.search_repository.remove(workspace.ref_id, removed_entity)
 
     async def _archive_done_inbox_tasks(
         self,

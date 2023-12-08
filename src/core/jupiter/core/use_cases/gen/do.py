@@ -60,6 +60,7 @@ class GenDoUseCase(AppLoggedInMutationUseCase[GenDoArgs, None]):
             source=args.source,
             time_provider=self._time_provider,
             domain_storage_engine=self._domain_storage_engine,
+            search_storage_engine=self._search_storage_engine,
         )
 
         await gen_service.do_it(

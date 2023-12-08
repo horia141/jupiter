@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Final
 
 from jupiter.core.domain.gen.service.gen_service import GenService
-from jupiter.core.domain.storage_engine import DomainStorageEngine
+from jupiter.core.domain.storage_engine import DomainStorageEngine, SearchStorageEngine
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
     EmptyContext,
@@ -24,18 +24,21 @@ class GenDoAllUseCase(AppBackgroundMutationUseCase[GenDoAllArgs, None]):
     """The command for doing task generation for all workspaces."""
 
     _time_provider: Final[TimeProvider]
-    _storage_engine: Final[DomainStorageEngine]
+    _domain_storage_engine: Final[DomainStorageEngine]
+    _search_storage_engine: Final[SearchStorageEngine]
 
     def __init__(
         self,
         time_provider: TimeProvider,
         progress_reporter_factory: ProgressReporterFactory[EmptyContext],
-        storage_engine: DomainStorageEngine,
+        domain_storage_engine: DomainStorageEngine,
+        search_storage_engine: SearchStorageEngine,
     ) -> None:
         """Constructor."""
         super().__init__(progress_reporter_factory)
         self._time_provider = time_provider
-        self._storage_engine = storage_engine
+        self._domain_storage_engine = domain_storage_engine
+        self._search_storage_engine = search_storage_engine
 
     async def _execute(
         self,
@@ -44,7 +47,7 @@ class GenDoAllUseCase(AppBackgroundMutationUseCase[GenDoAllArgs, None]):
         args: GenDoAllArgs,
     ) -> None:
         """Execute the command's action."""
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             workspaces = await uow.workspace_repository.find_all(allow_archived=False)
             users = await uow.user_repository.find_all(allow_archived=False)
             users_by_id = {u.ref_id: u for u in users}
@@ -58,7 +61,8 @@ class GenDoAllUseCase(AppBackgroundMutationUseCase[GenDoAllArgs, None]):
         gen_service = GenService(
             source=EventSource.GEN_CRON,
             time_provider=self._time_provider,
-            domain_storage_engine=self._storage_engine,
+            domain_storage_engine=self._domain_storage_engine,
+            search_storage_engine=self._search_storage_engine,
         )
 
         today = self._time_provider.get_current_date()
