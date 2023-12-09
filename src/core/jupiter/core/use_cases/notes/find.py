@@ -19,6 +19,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 class NoteFindArgs(UseCaseArgsBase):
     """NoteFind args."""
 
+    source: NoteSource
     allow_archived: bool
     include_subnotes: bool
     filter_ref_ids: Optional[List[EntityId]] = None
@@ -65,7 +66,7 @@ class NoteFindUseCase(
 
         notes = await uow.note_repository.find_all_with_filters(
             parent_ref_id=note_collection.ref_id,
-            source=NoteSource.USER,
+            source=args.source,
             allow_archived=args.allow_archived,
             filter_ref_ids=args.filter_ref_ids,
             filter_parent_note_ref_ids=[None],

@@ -1,9 +1,17 @@
+import { Button, ButtonGroup } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Outlet, ShouldRevalidateFunction, useFetcher } from "@remix-run/react";
+import {
+  Link,
+  Outlet,
+  ShouldRevalidateFunction,
+  useFetcher,
+} from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
-import type { Note } from "jupiter-gen";
+import { NoteSource, WorkspaceFeature, type Note } from "jupiter-gen";
 import { useContext } from "react";
+import { z } from "zod";
+import { parseQuery } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
 import { EntityNameComponent } from "~/components/entity-name";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
@@ -11,7 +19,9 @@ import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
+import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
+import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
@@ -24,14 +34,24 @@ export const handle = {
   displayType: DisplayType.TRUNK,
 };
 
+const QuerySchema = {
+  source: z.nativeEnum(NoteSource).optional(),
+};
+
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
+  const query = parseQuery(request, QuerySchema);
+
+  const source = query.source ?? NoteSource.USER;
+
   const body = await getLoggedInApiClient(session).note.findNote({
+    source: source,
     allow_archived: false,
     include_subnotes: false,
   });
 
   return json({
+    source: source,
     entries: body.entries,
   });
 }
@@ -41,10 +61,9 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 
 export default function Notes() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
-
   const topLevelInfo = useContext(TopLevelInfoContext);
-
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
+  const isBigScreen = useBigScreen();
 
   const archiveNoteFetch = useFetcher();
 
@@ -61,9 +80,77 @@ export default function Notes() {
     );
   }
 
+  let extraControls = [];
+  if (isBigScreen) {
+    extraControls = [
+      <ButtonGroup>
+        <Button
+          variant={
+            loaderData.source === NoteSource.USER ? "contained" : "outlined"
+          }
+          component={Link}
+          to={`/workspace/notes?source=${NoteSource.USER}`}
+        >
+          🗒️ User
+        </Button>
+
+        {isWorkspaceFeatureAvailable(
+          topLevelInfo.workspace,
+          WorkspaceFeature.METRICS
+        ) && (
+          <Button
+            variant={
+              loaderData.source === NoteSource.METRIC_ENTRY
+                ? "contained"
+                : "outlined"
+            }
+            component={Link}
+            to={`/workspace/notes?source=${NoteSource.METRIC_ENTRY}`}
+          >
+            📈 Metrics
+          </Button>
+        )}
+      </ButtonGroup>,
+    ];
+  } else {
+    extraControls = [
+      <Button
+        variant={
+          loaderData.source === NoteSource.USER ? "contained" : "outlined"
+        }
+        component={Link}
+        to={`/workspace/notes?source=${NoteSource.USER}`}
+      >
+        🗒️ User
+      </Button>,
+    ];
+
+    if (
+      isWorkspaceFeatureAvailable(
+        topLevelInfo.workspace,
+        WorkspaceFeature.METRICS
+      )
+    ) {
+      extraControls.push(
+        <Button
+          variant={
+            loaderData.source === NoteSource.METRIC_ENTRY
+              ? "contained"
+              : "outlined"
+          }
+          component={Link}
+          to={`/workspace/notes?source=${NoteSource.METRIC_ENTRY}`}
+        >
+          📈 Metrics
+        </Button>
+      );
+    }
+  }
+
   return (
     <TrunkPanel
       createLocation="/workspace/notes/new"
+      extraControls={extraControls}
       returnLocation="/workspace"
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>

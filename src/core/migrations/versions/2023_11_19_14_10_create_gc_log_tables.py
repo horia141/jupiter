@@ -16,7 +16,6 @@ depends_on = None
 
 
 def upgrade() -> None:
-    # Gamification Score Log
     op.execute(
         """
         CREATE TABLE gc_log (
@@ -51,8 +50,6 @@ def upgrade() -> None:
         FOREIGN KEY (owner_ref_id) REFERENCES gc_log (ref_id)
     );"""
     )
-
-    # Gamification Score Log Entry
 
     op.execute(
         """
