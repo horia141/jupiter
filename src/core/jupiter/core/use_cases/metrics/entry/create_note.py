@@ -65,7 +65,6 @@ class MetricEntryCreateNoteUseCase(
             metric_name=metric.name,
             metric_entry_ref_id=metric_entry.ref_id,
             collection_time=metric_entry.collection_time,
-            content=[],
             source=EventSource.CLI,
             created_time=self._time_provider.get_current_time(),
         )

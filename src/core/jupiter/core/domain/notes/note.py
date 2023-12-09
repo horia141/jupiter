@@ -79,7 +79,6 @@ class Note(LeafEntity):
         metric_name: MetricName,
         metric_entry_ref_id: EntityId,
         collection_time: ADate,
-        content: list[OneOfNoteContentBlock],
         source: EventSource,
         created_time: Timestamp,
     ) -> "Note":
@@ -105,7 +104,7 @@ class Note(LeafEntity):
             name=NoteName.from_raw(
                 f'Note for metric "{str(metric_name)}" on {ADate.to_user_date_str(collection_time)}'
             ),
-            content=content,
+            content=[],
         )
         return note
 
