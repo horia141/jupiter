@@ -22,6 +22,7 @@ import { ApiError } from "jupiter-gen";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
+import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
@@ -43,7 +44,6 @@ const UpdateFormSchema = {
   intent: z.string(),
   collectionTime: z.string(),
   value: z.string().transform(parseFloat),
-  notes: z.string().optional(),
 };
 
 export const handle = {
@@ -62,6 +62,7 @@ export async function loader({ request, params }: LoaderArgs) {
 
     return json({
       metricEntry: result.metric_entry,
+      note: result.note,
     });
   } catch (error) {
     if (error instanceof ApiError && error.status === StatusCodes.NOT_FOUND) {
@@ -93,10 +94,14 @@ export async function action({ request, params }: ActionArgs) {
             should_change: true,
             value: form.value,
           },
-          notes: {
-            should_change: true,
-            value: form.notes && form.notes !== "" ? form.notes : undefined,
-          },
+        });
+
+        return redirect(`/workspace/metrics/${id}/entries/${entryId}`);
+      }
+
+      case "create-note": {
+        await getLoggedInApiClient(session).metric.createNoteForMetricEntry({
+          ref_id: { the_id: entryId },
         });
 
         return redirect(`/workspace/metrics/${id}/entries/${entryId}`);
@@ -143,7 +148,7 @@ export default function MetricEntry() {
       enableArchiveButton={inputsEnabled}
       returnLocation={`/workspace/metrics/${id}`}
     >
-      <Card>
+      <Card sx={{ marginBottom: "1rem" }}>
         <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
@@ -185,20 +190,6 @@ export default function MetricEntry() {
               />
               <FieldError actionResult={actionData} fieldName="/value" />
             </FormControl>
-
-            <FormControl fullWidth>
-              <InputLabel id="notes">Notes</InputLabel>
-              <OutlinedInput
-                multiline
-                minRows={2}
-                maxRows={4}
-                label="Notes"
-                name="notes"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.metricEntry.notes}
-              />
-              <FieldError actionResult={actionData} fieldName="/notes" />
-            </FormControl>
           </Stack>
         </CardContent>
 
@@ -215,6 +206,31 @@ export default function MetricEntry() {
             </Button>
           </ButtonGroup>
         </CardActions>
+      </Card>
+
+      <Card>
+        {!loaderData.note && (
+          <CardActions>
+            <ButtonGroup>
+              <Button
+                variant="contained"
+                disabled={!inputsEnabled}
+                type="submit"
+                name="intent"
+                value="create-note"
+              >
+                Create Note
+              </Button>
+            </ButtonGroup>
+          </CardActions>
+        )}
+
+        {loaderData.note && (
+          <EntityNoteEditor
+            initialNote={loaderData.note}
+            inputsEnabled={inputsEnabled}
+          />
+        )}
       </Card>
     </LeafPanel>
   );

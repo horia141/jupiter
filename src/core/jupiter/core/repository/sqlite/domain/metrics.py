@@ -46,7 +46,6 @@ from sqlalchemy import (
     String,
     Table,
     Unicode,
-    UnicodeText,
     delete,
     insert,
     select,
@@ -451,7 +450,6 @@ class SqliteMetricEntryRepository(MetricEntryRepository):
             ),
             Column("collection_time", DateTime, nullable=False),
             Column("value", Float, nullable=False),
-            Column("notes", UnicodeText, nullable=True),
             keep_existing=True,
         )
         self._metric_entry_event_table = build_event_table(
@@ -477,7 +475,6 @@ class SqliteMetricEntryRepository(MetricEntryRepository):
                 metric_ref_id=entity.metric_ref_id.as_int(),
                 collection_time=entity.collection_time.to_db(),
                 value=entity.value,
-                notes=entity.notes,
             ),
         )
         entity = entity.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
@@ -499,7 +496,6 @@ class SqliteMetricEntryRepository(MetricEntryRepository):
                 metric_ref_id=entity.metric_ref_id.as_int(),
                 collection_time=entity.collection_time.to_db(),
                 value=entity.value,
-                notes=entity.notes,
             ),
         )
         if result.rowcount == 0:
@@ -583,10 +579,9 @@ class SqliteMetricEntryRepository(MetricEntryRepository):
             last_modified_time=Timestamp.from_db(row["last_modified_time"]),
             events=[],
             name=MetricEntry.build_name(
-                ADate.from_db(row["collection_time"]), row["value"], row["notes"]
+                ADate.from_db(row["collection_time"]), row["value"]
             ),
             metric_ref_id=EntityId.from_raw(str(row["metric_ref_id"])),
             collection_time=ADate.from_db(row["collection_time"]),
             value=row["value"],
-            notes=row["notes"],
         )

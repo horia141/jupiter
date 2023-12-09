@@ -223,6 +223,11 @@ from jupiter.core.use_cases.metrics.entry.create import (
     MetricEntryCreateResult,
     MetricEntryCreateUseCase,
 )
+from jupiter.core.use_cases.metrics.entry.create_note import (
+    MetricEntryCreateNoteArgs,
+    MetricEntryCreateNoteResult,
+    MetricEntryCreateNoteUseCase,
+)
 from jupiter.core.use_cases.metrics.entry.load import (
     MetricEntryLoadArgs,
     MetricEntryLoadResult,
@@ -269,6 +274,10 @@ from jupiter.core.use_cases.notes.load import (
     NoteLoadUseCase,
 )
 from jupiter.core.use_cases.notes.update import NoteUpdateArgs, NoteUpdateUseCase
+from jupiter.core.use_cases.notes.update_for_entity import (
+    NoteUpdateForEntityArgs,
+    NoteUpdateForEntityUseCase,
+)
 from jupiter.core.use_cases.persons.archive import (
     PersonArchiveArgs,
     PersonArchiveUseCase,
@@ -904,6 +913,14 @@ note_update_use_case = NoteUpdateUseCase(
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
 )
+note_update_for_entity_use_case = NoteUpdateForEntityUseCase(
+    time_provider=request_time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
 note_change_parent_use_case = NoteChangeParentUseCase(
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
@@ -1110,6 +1127,14 @@ metric_find_use_case = MetricFindUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
 )
 metric_entry_create_use_case = MetricEntryCreateUseCase(
+    time_provider=request_time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
+metric_entry_create_note_use_case = MetricEntryCreateNoteUseCase(
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
@@ -2188,6 +2213,19 @@ async def update_note(args: NoteUpdateArgs, session: LoggedInSession) -> None:
 
 
 @app.post(
+    "/note/update-for-entity",
+    response_model=None,
+    tags=["note"],
+    responses=standard_responses,
+)
+async def update_note_for_entity(
+    args: NoteUpdateForEntityArgs, session: LoggedInSession
+) -> None:
+    """Update a note."""
+    await note_update_for_entity_use_case.execute(session, args)
+
+
+@app.post(
     "/note/change-parent",
     response_model=None,
     tags=["note"],
@@ -2611,6 +2649,19 @@ async def create_metric_entry(
 ) -> MetricEntryCreateResult:
     """Create a metric entry."""
     return await metric_entry_create_use_case.execute(session, args)
+
+
+@app.post(
+    "/metric/entry/create-note",
+    response_model=MetricEntryCreateNoteResult,
+    tags=["metric"],
+    responses=standard_responses,
+)
+async def create_note_for_metric_entry(
+    args: MetricEntryCreateNoteArgs, session: LoggedInSession
+) -> MetricEntryCreateNoteResult:
+    """Create a metric entry note."""
+    return await metric_entry_create_note_use_case.execute(session, args)
 
 
 @app.post(

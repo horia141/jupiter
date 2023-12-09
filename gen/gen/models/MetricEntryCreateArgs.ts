@@ -9,6 +9,5 @@ export type MetricEntryCreateArgs = {
     metric_ref_id: EntityId;
     value: number;
     collection_time?: ADate;
-    notes?: string;
 };
 

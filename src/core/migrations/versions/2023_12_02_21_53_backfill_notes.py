@@ -6,12 +6,11 @@ Create Date: 2023-12-02 21:53:14.441458
 
 """
 from alembic import op
-import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '4d1bac2408cf'
-down_revision = '90a028e24c30'
+revision = "4d1bac2408cf"
+down_revision = "90a028e24c30"
 branch_labels = None
 depends_on = None
 
@@ -39,6 +38,7 @@ def upgrade() -> None:
     )
     """
     )
+
 
 def downgrade() -> None:
     pass

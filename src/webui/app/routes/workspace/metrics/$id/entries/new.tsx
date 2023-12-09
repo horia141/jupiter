@@ -38,7 +38,6 @@ const ParamsSchema = {
 const CreateFormSchema = {
   collectionTime: z.string(),
   value: z.string().transform(parseFloat),
-  notes: z.string().optional(),
 };
 
 export const handle = {
@@ -74,7 +73,6 @@ export async function action({ params, request }: ActionArgs) {
         the_datetime: undefined,
       },
       value: form.value,
-      notes: form.notes && form.notes !== "" ? form.notes : undefined,
     });
 
     return redirect(
@@ -137,19 +135,6 @@ export default function NewMetricEntry() {
                 readOnly={!inputsEnabled}
               />
               <FieldError actionResult={actionData} fieldName="/value" />
-            </FormControl>
-
-            <FormControl fullWidth>
-              <InputLabel id="notes">Notes</InputLabel>
-              <OutlinedInput
-                multiline
-                minRows={2}
-                maxRows={4}
-                label="Notes"
-                name="notes"
-                readOnly={!inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/notes" />
             </FormControl>
           </Stack>
         </CardContent>

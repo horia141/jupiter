@@ -15,7 +15,8 @@ class NoteRemoveService:
     ) -> None:
         """Execute the command's action."""
         subnotes = await uow.note_repository.find_all_with_filters(
-            parent_ref_id=note.ref_id,
+            parent_ref_id=note.note_collection_ref_id,
+            source=note.source,
             allow_archived=True,
             filter_parent_note_ref_ids=[note.ref_id],
         )

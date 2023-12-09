@@ -7,5 +7,6 @@
  */
 export enum NoteSource {
     USER = 'user',
+    METRIC_ENTRY = 'metric-entry',
     LOG = 'log',
 }

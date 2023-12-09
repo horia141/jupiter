@@ -13,6 +13,7 @@ from jupiter.core.domain.inbox_tasks.service.remove_service import (
     InboxTaskRemoveService,
 )
 from jupiter.core.domain.metrics.service.remove_service import MetricRemoveService
+from jupiter.core.domain.notes.note_source import NoteSource
 from jupiter.core.domain.notes.service.note_remove_service import NoteRemoveService
 from jupiter.core.domain.persons.service.remove_service import PersonRemoveService
 from jupiter.core.domain.projects.service.remove_service import ProjectRemoveService
@@ -274,6 +275,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
         async with progress_reporter.section("Clearing notes"):
             root_notes = await uow.note_repository.find_all_with_filters(
                 parent_ref_id=note_collection.ref_id,
+                source=NoteSource.USER,
                 allow_archived=True,
                 filter_parent_note_ref_ids=[None],
             )

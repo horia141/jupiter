@@ -1,6 +1,6 @@
 """UseCase for showing metrics."""
 from argparse import ArgumentParser, Namespace
-from typing import Optional
+from typing import Optional, cast
 
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
@@ -19,6 +19,7 @@ from jupiter.cli.command.rendering import (
 from jupiter.cli.session_storage import SessionInfo
 from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.notes.note_content_block import ParagraphBlock
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
 from jupiter.core.use_cases.metrics.find import MetricFindArgs, MetricFindUseCase
@@ -87,6 +88,7 @@ class MetricShow(LoggedInReadonlyCommand[MetricFindUseCase]):
                 allow_archived=show_archived,
                 include_entries=True,
                 include_collection_inbox_tasks=True,
+                include_metric_entry_notes=True,
                 filter_ref_ids=ref_ids,
             ),
         )
@@ -110,6 +112,14 @@ class MetricShow(LoggedInReadonlyCommand[MetricFindUseCase]):
             metric = metric_result_entry.metric
             metric_entries = metric_result_entry.metric_entries
             collection_inbox_tasks = metric_result_entry.metric_collection_inbox_tasks
+            notes_by_metric_entry_ref_id = (
+                {
+                    n.source_entity_ref_id: n
+                    for n in metric_result_entry.metric_entry_notes
+                }
+                if metric_result_entry.metric_entry_notes
+                else {}
+            )
 
             metric_text = Text("")
             metric_text.append(entity_id_to_rich_text(metric.ref_id))
@@ -215,9 +225,11 @@ class MetricShow(LoggedInReadonlyCommand[MetricFindUseCase]):
                         elif metric_entry.value < previous_value:
                             metric_entry_text.append(" ⬇️ ")
 
-                    if metric_entry.notes:
+                    if metric_entry.ref_id in notes_by_metric_entry_ref_id:
+                        note = notes_by_metric_entry_ref_id[metric_entry.ref_id]
+                        note_paragraph = cast(ParagraphBlock, note.content[0]).text
                         metric_entry_text.append(" notes=")
-                        metric_entry_text.append(metric_entry.notes, style="italic")
+                        metric_entry_text.append(note_paragraph, style="italic")
 
                     if metric_entry.archived:
                         metric_entry_text.stylize("gray62")

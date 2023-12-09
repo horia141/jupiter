@@ -40,6 +40,7 @@ export async function loader({ request }: LoaderArgs) {
     allow_archived: false,
     include_entries: false,
     include_collection_inbox_tasks: false,
+    include_metric_entry_notes: false,
   });
 
   return json({

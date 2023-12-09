@@ -1,6 +1,5 @@
 """A metric entry."""
 from dataclasses import dataclass
-from typing import Optional
 
 from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.entity_name import EntityName
@@ -26,7 +25,6 @@ class MetricEntry(LeafEntity):
     metric_ref_id: EntityId
     collection_time: ADate
     value: float
-    notes: Optional[str]
 
     @staticmethod
     def new_metric_entry(
@@ -34,7 +32,6 @@ class MetricEntry(LeafEntity):
         metric_ref_id: EntityId,
         collection_time: ADate,
         value: float,
-        notes: Optional[str],
         source: EventSource,
         created_time: Timestamp,
     ) -> "MetricEntry":
@@ -46,7 +43,7 @@ class MetricEntry(LeafEntity):
             created_time=created_time,
             archived_time=created_time if archived else None,
             last_modified_time=created_time,
-            name=MetricEntry.build_name(collection_time, value, notes),
+            name=MetricEntry.build_name(collection_time, value),
             events=[
                 MetricEntry.Created.make_event_from_frame_args(
                     source,
@@ -57,7 +54,6 @@ class MetricEntry(LeafEntity):
             metric_ref_id=metric_ref_id,
             collection_time=collection_time,
             value=value,
-            notes=notes,
         )
         return metric_entry
 
@@ -65,7 +61,6 @@ class MetricEntry(LeafEntity):
         self,
         collection_time: UpdateAction[ADate],
         value: UpdateAction[float],
-        notes: UpdateAction[Optional[str]],
         source: EventSource,
         modification_time: Timestamp,
     ) -> "MetricEntry":
@@ -73,7 +68,6 @@ class MetricEntry(LeafEntity):
         return self._new_version(
             collection_time=collection_time.or_else(self.collection_time),
             value=value.or_else(self.value),
-            notes=notes.or_else(self.notes),
             new_event=MetricEntry.Updated.make_event_from_frame_args(
                 source,
                 self.version,
@@ -87,11 +81,8 @@ class MetricEntry(LeafEntity):
         return self.metric_ref_id
 
     @staticmethod
-    def build_name(
-        collection_time: ADate, value: float, notes: str | None
-    ) -> EntityName:
+    def build_name(collection_time: ADate, value: float) -> EntityName:
         """Construct a name."""
         return EntityName(
-            f"Entry for {ADate.to_user_date_str(collection_time)} value={value}"
-            + (f"notes={notes}" if notes else ""),
+            f"Entry for {ADate.to_user_date_str(collection_time)} value={value}",
         )

@@ -46,13 +46,6 @@ class MetricEntryCreate(LoggedInMutationCommand[MetricEntryCreateUseCase]):
             type=float,
             help="The value for the metric",
         )
-        parser.add_argument(
-            "--notes",
-            dest="notes",
-            required=False,
-            type=str,
-            help="A note for the metric",
-        )
 
     async def _run(
         self,
@@ -65,7 +58,6 @@ class MetricEntryCreate(LoggedInMutationCommand[MetricEntryCreateUseCase]):
             ADate.from_str(args.collection_time) if args.collection_time else None
         )
         value = args.value
-        notes = args.notes
 
         await self._use_case.execute(
             AppLoggedInUseCaseSession(session_info.auth_token_ext),
@@ -73,6 +65,5 @@ class MetricEntryCreate(LoggedInMutationCommand[MetricEntryCreateUseCase]):
                 metric_ref_id=metric_ref_id,
                 collection_time=collection_time,
                 value=value,
-                notes=notes,
             ),
         )

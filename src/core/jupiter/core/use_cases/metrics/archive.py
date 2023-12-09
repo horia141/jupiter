@@ -7,6 +7,7 @@ from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.inbox_tasks.service.archive_service import (
     InboxTaskArchiveService,
 )
+from jupiter.core.domain.notes.note_source import NoteSource
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
@@ -79,6 +80,17 @@ class MetricArchiveUseCase(
             )
             await uow.metric_entry_repository.save(metric_entry)
             await progress_reporter.mark_updated(metric_entry)
+
+            note = await uow.note_repository.load_optional_for_source(
+                NoteSource.METRIC_ENTRY, metric_entry.ref_id
+            )
+            if note is not None:
+                note = note.mark_archived(
+                    EventSource.CLI,
+                    self._time_provider.get_current_time(),
+                )
+                await uow.note_repository.save(note)
+                await progress_reporter.mark_updated(note)
 
         metric = metric.mark_archived(
             EventSource.CLI,

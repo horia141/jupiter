@@ -299,6 +299,27 @@ class SqliteNoteRepository(NoteRepository):
             raise NoteNotFoundError(f"Note identified by {ref_id} does not exist")
         return self._row_to_entity(result)
 
+    async def load_optional_for_source(
+        self,
+        note_source: NoteSource,
+        source_entity_ref_id: EntityId,
+        allow_archived: bool = False,
+    ) -> Note | None:
+        """Retrieve a note via its source entity."""
+        query_stmt = (
+            select(self._note_table)
+            .where(self._note_table.c.source == note_source.value)
+            .where(
+                self._note_table.c.source_entity_ref_id == source_entity_ref_id.as_int()
+            )
+        )
+        if not allow_archived:
+            query_stmt = query_stmt.where(self._note_table.c.archived.is_(False))
+        result = (await self._connection.execute(query_stmt)).first()
+        if result is None:
+            return None
+        return self._row_to_entity(result)
+
     async def find_all(
         self,
         parent_ref_id: EntityId,
@@ -308,6 +329,7 @@ class SqliteNoteRepository(NoteRepository):
         """Find all notes matching some criteria."""
         return await self.find_all_with_filters(
             parent_ref_id=parent_ref_id,
+            source=NoteSource.USER,
             allow_archived=allow_archived,
             filter_ref_ids=filter_ref_ids,
             filter_parent_note_ref_ids=None,
@@ -316,13 +338,16 @@ class SqliteNoteRepository(NoteRepository):
     async def find_all_with_filters(
         self,
         parent_ref_id: EntityId,
+        source: NoteSource,
         allow_archived: bool = False,
         filter_ref_ids: Iterable[EntityId] | None = None,
         filter_parent_note_ref_ids: Iterable[EntityId | None] | None = None,
     ) -> list[Note]:
         """Find all notes matching some criteria."""
-        query_stmt = select(self._note_table).where(
-            self._note_table.c.note_collection_ref_id == parent_ref_id.as_int()
+        query_stmt = (
+            select(self._note_table)
+            .where(self._note_table.c.note_collection_ref_id == parent_ref_id.as_int())
+            .where(self._note_table.c.source == source.value)
         )
         if not allow_archived:
             query_stmt = query_stmt.where(self._note_table.c.archived.is_(False))
@@ -366,6 +391,29 @@ class SqliteNoteRepository(NoteRepository):
         )
         await remove_events(self._connection, self._note_event_table, ref_id)
         return self._row_to_entity(result)
+
+    async def remove_optional_for_source(
+        self, note_source: NoteSource, source_entity_ref_id: EntityId
+    ) -> Note | None:
+        """Hard remove a note via its source."""
+        query_stmt = (
+            select(self._note_table)
+            .where(self._note_table.c.source == note_source.value)
+            .where(
+                self._note_table.c.source_entity_ref_id == source_entity_ref_id.as_int()
+            )
+        )
+        result = (await self._connection.execute(query_stmt)).first()
+        if result is None:
+            return None
+        note = self._row_to_entity(result)
+        await self._connection.execute(
+            delete(self._note_table).where(
+                self._note_table.c.ref_id == note.ref_id.as_int(),
+            ),
+        )
+        await remove_events(self._connection, self._note_event_table, note.ref_id)
+        return note
 
     @staticmethod
     def _row_to_entity(row: RowType) -> Note:

@@ -1,7 +1,6 @@
 """UseCase for updating a metric entry's properties."""
 
 from argparse import ArgumentParser, Namespace
-from typing import Optional
 
 from jupiter.cli.command.command import LoggedInMutationCommand
 from jupiter.cli.session_storage import SessionInfo
@@ -49,21 +48,6 @@ class MetricEntryUpdate(LoggedInMutationCommand[MetricEntryUpdateUseCase]):
             type=float,
             help="The value for the metric",
         )
-        parser.add_argument(
-            "--notes",
-            dest="notes",
-            required=False,
-            type=str,
-            help="A note for the metric",
-        )
-        parser.add_argument(
-            "--clear-notes",
-            dest="clear_notes",
-            default=False,
-            action="store_const",
-            const=True,
-            help="Clear the notes",
-        )
 
     async def _run(
         self,
@@ -82,13 +66,6 @@ class MetricEntryUpdate(LoggedInMutationCommand[MetricEntryUpdateUseCase]):
             if args.value is not None
             else UpdateAction.do_nothing()
         )
-        notes: UpdateAction[Optional[str]]
-        if args.clear_notes:
-            notes = UpdateAction.change_to(None)
-        elif args.notes is not None:
-            notes = UpdateAction.change_to(args.notes)
-        else:
-            notes = UpdateAction.do_nothing()
 
         await self._use_case.execute(
             AppLoggedInUseCaseSession(session_info.auth_token_ext),
@@ -96,6 +73,5 @@ class MetricEntryUpdate(LoggedInMutationCommand[MetricEntryUpdateUseCase]):
                 ref_id=ref_id,
                 collection_time=collection_time,
                 value=value,
-                notes=notes,
             ),
         )

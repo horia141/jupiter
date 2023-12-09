@@ -52,7 +52,8 @@ class NoteLoadUseCase(
             args.ref_id, allow_archived=args.allow_archived
         )
         subnotes = await uow.note_repository.find_all_with_filters(
-            note.note_collection_ref_id,
+            parent_ref_id=note.note_collection_ref_id,
+            source=note.source,
             allow_archived=args.allow_archived,
             filter_parent_note_ref_ids=[note.ref_id],
         )

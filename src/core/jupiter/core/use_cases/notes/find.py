@@ -5,6 +5,7 @@ from typing import Iterable, List, Optional
 
 from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.notes.note import Note
+from jupiter.core.domain.notes.note_source import NoteSource
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import UseCaseArgsBase, UseCaseResultBase
@@ -63,7 +64,8 @@ class NoteFindUseCase(
         )
 
         notes = await uow.note_repository.find_all_with_filters(
-            note_collection.ref_id,
+            parent_ref_id=note_collection.ref_id,
+            source=NoteSource.USER,
             allow_archived=args.allow_archived,
             filter_ref_ids=args.filter_ref_ids,
             filter_parent_note_ref_ids=[None],
@@ -72,7 +74,8 @@ class NoteFindUseCase(
         subnotes_by_parent_ref_id = defaultdict(list)
         if args.include_subnotes:
             subnotes = await uow.note_repository.find_all_with_filters(
-                note_collection.ref_id,
+                parent_ref_id=note_collection.ref_id,
+                source=NoteSource.USER,
                 allow_archived=args.allow_archived,
                 filter_parent_note_ref_ids=[n.ref_id for n in notes],
             )

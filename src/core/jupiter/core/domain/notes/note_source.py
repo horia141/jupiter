@@ -7,6 +7,7 @@ class NoteSource(enum.Enum):
     """The source of a note."""
 
     USER = "user"
+    METRIC_ENTRY = "metric-entry"
     LOG = "log"  # for later
 
     def __str__(self) -> str:

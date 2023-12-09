@@ -15,9 +15,5 @@ export type MetricEntryUpdateArgs = {
         should_change: boolean;
         value?: number;
     };
-    notes: {
-        should_change: boolean;
-        value?: string;
-    };
 };
 

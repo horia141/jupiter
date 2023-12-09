@@ -3,13 +3,15 @@ import itertools
 import typing
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import DefaultDict, Dict, Iterable, List, Optional
+from typing import DefaultDict, Dict, Iterable, List, Optional, cast
 
 from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.metrics.metric import Metric
 from jupiter.core.domain.metrics.metric_entry import MetricEntry
+from jupiter.core.domain.notes.note import Note
+from jupiter.core.domain.notes.note_source import NoteSource
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -30,6 +32,7 @@ class MetricFindArgs(UseCaseArgsBase):
     allow_archived: bool
     include_entries: bool
     include_collection_inbox_tasks: bool
+    include_metric_entry_notes: bool
     filter_ref_ids: Optional[List[EntityId]] = None
     filter_entry_ref_ids: Optional[List[EntityId]] = None
 
@@ -41,6 +44,7 @@ class MetricFindResponseEntry:
     metric: Metric
     metric_entries: Optional[List[MetricEntry]] = None
     metric_collection_inbox_tasks: Optional[List[InboxTask]] = None
+    metric_entry_notes: list[Note] | None = None
 
 
 @dataclass
@@ -135,6 +139,23 @@ class MetricFindUseCase(
         else:
             metric_collection_inbox_tasks_by_ref_id = defaultdict(list)
 
+        all_notes_by_metric_entry_ref_id: defaultdict[EntityId, Note] = defaultdict(
+            None
+        )
+        if args.include_metric_entry_notes:
+            note_collection = await uow.note_collection_repository.load_by_parent(
+                workspace.ref_id
+            )
+            all_notes = await uow.note_repository.find_all_with_filters(
+                parent_ref_id=note_collection.ref_id,
+                source=NoteSource.METRIC_ENTRY,
+                allow_archived=True,
+            )
+            for n in all_notes:
+                all_notes_by_metric_entry_ref_id[
+                    cast(EntityId, n.source_entity_ref_id)
+                ] = n
+
         return MetricFindResult(
             collection_project=collection_project,
             entries=[
@@ -149,6 +170,11 @@ class MetricFindUseCase(
                     )
                     if len(metric_collection_inbox_tasks_by_ref_id) > 0
                     else None,
+                    metric_entry_notes=[
+                        all_notes_by_metric_entry_ref_id[me.ref_id]
+                        for me in metric_entries_by_ref_ids.get(m.ref_id, [])
+                        if (me.ref_id in all_notes_by_metric_entry_ref_id)
+                    ],
                 )
                 for m in metrics
             ],

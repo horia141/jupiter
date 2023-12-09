@@ -18,6 +18,5 @@ export type MetricEntry = {
     metric_ref_id: EntityId;
     collection_time: ADate;
     value: number;
-    notes: string;
 };
 

@@ -26,7 +26,6 @@ class MetricEntryCreateArgs(UseCaseArgsBase):
     metric_ref_id: EntityId
     value: float
     collection_time: Optional[ADate] = None
-    notes: Optional[str] = None
 
 
 @dataclass
@@ -71,7 +70,6 @@ class MetricEntryCreateUseCase(
             metric_ref_id=metric.ref_id,
             collection_time=collection_time,
             value=args.value,
-            notes=args.notes,
             source=EventSource.CLI,
             created_time=self._time_provider.get_current_time(),
         )
