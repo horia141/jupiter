@@ -57,10 +57,12 @@ class MetricEntryLoadUseCase(
             args.ref_id, allow_archived=args.allow_archived
         )
 
-        note = await uow.note_repository.load_optional_for_source(
-            NoteSource.METRIC_ENTRY,
-            metric_entry.ref_id,
-            allow_archived=args.allow_archived,
-        )
+        note = None
+        if context.workspace.is_feature_available(WorkspaceFeature.NOTES):
+            note = await uow.note_repository.load_optional_for_source(
+                NoteSource.METRIC_ENTRY,
+                metric_entry.ref_id,
+                allow_archived=args.allow_archived,
+            )
 
         return MetricEntryLoadResult(metric_entry=metric_entry, note=note)

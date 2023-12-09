@@ -44,7 +44,7 @@ class MetricEntryCreateNoteUseCase(
         UserFeature
     ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
         """The feature the use case is scope to."""
-        return WorkspaceFeature.METRICS
+        return [WorkspaceFeature.METRICS, WorkspaceFeature.NOTES]
 
     async def _perform_transactional_mutation(
         self,
