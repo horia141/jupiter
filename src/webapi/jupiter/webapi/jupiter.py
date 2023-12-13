@@ -291,6 +291,11 @@ from jupiter.core.use_cases.persons.create import (
     PersonCreateResult,
     PersonCreateUseCase,
 )
+from jupiter.core.use_cases.persons.create_note import (
+    PersonCreateNoteArgs,
+    PersonCreateNoteResult,
+    PersonCreateNoteUseCase,
+)
 from jupiter.core.use_cases.persons.find import (
     PersonFindArgs,
     PersonFindResult,
@@ -1163,6 +1168,14 @@ metric_entry_load_use_case = MetricEntryLoadUseCase(
 )
 
 person_create_use_case = PersonCreateUseCase(
+    time_provider=request_time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
+person_create_note_use_case = PersonCreateNoteUseCase(
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
@@ -2714,6 +2727,19 @@ async def create_person(
 ) -> PersonCreateResult:
     """Create a person."""
     return await person_create_use_case.execute(session, args)
+
+
+@app.post(
+    "/person/create-note",
+    response_model=PersonCreateNoteResult,
+    tags=["person"],
+    responses=standard_responses,
+)
+async def create_note_for_person(
+    args: PersonCreateNoteArgs, session: LoggedInSession
+) -> PersonCreateNoteResult:
+    """Create a person note."""
+    return await person_create_note_use_case.execute(session, args)
 
 
 @app.post(

@@ -111,6 +111,7 @@ export function NoteEditor({
           <Suspense fallback={<div>Loading...</div>}>
             <BlockEditor
               initialContent={noteContent}
+              inputsEnabled={inputsEnabled}
               onChange={(c) => {
                 setDataModified(true);
                 setNoteContent(c);

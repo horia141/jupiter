@@ -142,7 +142,9 @@ class MetricFindUseCase(
         all_notes_by_metric_entry_ref_id: defaultdict[EntityId, Note] = defaultdict(
             None
         )
-        if args.include_metric_entry_notes:
+        if args.include_metric_entry_notes and workspace.is_feature_available(
+            WorkspaceFeature.NOTES
+        ):
             note_collection = await uow.note_collection_repository.load_by_parent(
                 workspace.ref_id
             )

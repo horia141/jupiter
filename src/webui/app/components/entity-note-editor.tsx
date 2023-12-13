@@ -72,6 +72,7 @@ export function EntityNoteEditor({
             <Box id="entity-block-editor">
               <BlockEditor
                 initialContent={noteContent}
+                inputsEnabled={inputsEnabled}
                 onChange={(c) => {
                   setDataModified(true);
                   setNoteContent(c);

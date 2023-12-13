@@ -234,10 +234,13 @@ export default function MetricEntry() {
           )}
 
           {loaderData.note && (
+            <>
             <EntityNoteEditor
               initialNote={loaderData.note}
               inputsEnabled={inputsEnabled}
             />
+            <FieldError actionResult={actionData} fieldName="/content" />
+            </>
           )}
         </Card>
       )}

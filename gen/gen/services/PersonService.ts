@@ -4,6 +4,8 @@
 import type { PersonArchiveArgs } from '../models/PersonArchiveArgs';
 import type { PersonChangeCatchUpProjectArgs } from '../models/PersonChangeCatchUpProjectArgs';
 import type { PersonCreateArgs } from '../models/PersonCreateArgs';
+import type { PersonCreateNoteArgs } from '../models/PersonCreateNoteArgs';
+import type { PersonCreateNoteResult } from '../models/PersonCreateNoteResult';
 import type { PersonCreateResult } from '../models/PersonCreateResult';
 import type { PersonFindArgs } from '../models/PersonFindArgs';
 import type { PersonFindResult } from '../models/PersonFindResult';
@@ -33,6 +35,29 @@ export class PersonService {
         return this.httpRequest.request({
             method: 'POST',
             url: '/person/create',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Create Note For Person
+     * Create a person note.
+     * @param requestBody
+     * @returns PersonCreateNoteResult Successful Response
+     * @throws ApiError
+     */
+    public createNoteForPerson(
+        requestBody: PersonCreateNoteArgs,
+    ): CancelablePromise<PersonCreateNoteResult> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/person/create-note',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

@@ -1,10 +1,13 @@
 """The command for finding the persons."""
+from collections import defaultdict
 from dataclasses import dataclass
-from typing import Iterable, List, Optional
+from typing import Iterable, List, Optional, cast
 
 from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
+from jupiter.core.domain.notes.note import Note
+from jupiter.core.domain.notes.note_source import NoteSource
 from jupiter.core.domain.persons.person import Person
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -26,6 +29,7 @@ class PersonFindArgs(UseCaseArgsBase):
     allow_archived: bool
     include_catch_up_inbox_tasks: bool
     include_birthday_inbox_tasks: bool
+    include_notes: bool
     filter_person_ref_ids: Optional[List[EntityId]] = None
 
 
@@ -36,6 +40,7 @@ class PersonFindResultEntry:
     person: Person
     catch_up_inbox_tasks: Optional[List[InboxTask]] = None
     birthday_inbox_tasks: Optional[List[InboxTask]] = None
+    note: Note | None = None
 
 
 @dataclass
@@ -108,6 +113,21 @@ class PersonFindUseCase(
         else:
             birthday_inbox_tasks = None
 
+        all_notes_by_person_ref_id: defaultdict[EntityId, Note] = defaultdict(None)
+        if args.include_notes and workspace.is_feature_available(
+            WorkspaceFeature.NOTES
+        ):
+            notes_collection = await uow.note_collection_repository.load_by_parent(
+                workspace.ref_id
+            )
+            all_notes = await uow.note_repository.find_all_with_filters(
+                parent_ref_id=notes_collection.ref_id,
+                source=NoteSource.PERSON,
+                allow_archived=True,
+            )
+            for n in all_notes:
+                all_notes_by_person_ref_id[cast(EntityId, n.source_entity_ref_id)] = n
+
         return PersonFindResult(
             catch_up_project=catch_up_project,
             entries=[
@@ -127,6 +147,7 @@ class PersonFindUseCase(
                     ]
                     if birthday_inbox_tasks is not None
                     else None,
+                    note=all_notes_by_person_ref_id.get(p.ref_id, None),
                 )
                 for p in persons
             ],

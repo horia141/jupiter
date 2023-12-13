@@ -31,11 +31,13 @@ import {
   InboxTaskStatus,
   PersonRelationship,
   RecurringTaskPeriod,
+  WorkspaceFeature,
 } from "jupiter-gen";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
+import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
@@ -47,6 +49,7 @@ import { eisenName } from "~/logic/domain/eisen";
 import { sortInboxTasksNaturally } from "~/logic/domain/inbox-task";
 import { periodName } from "~/logic/domain/period";
 import { personRelationshipName } from "~/logic/domain/person-relationship";
+import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { getIntent } from "~/logic/intent";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -96,6 +99,7 @@ export async function loader({ request, params }: LoaderArgs) {
       person: result.person,
       catchUpInboxTasks: result.catch_up_inbox_tasks,
       birthdayInboxTasks: result.birthday_inbox_tasks,
+      note: result.note,
     });
   } catch (error) {
     if (error instanceof ApiError && error.status === StatusCodes.NOT_FOUND) {
@@ -221,6 +225,14 @@ export async function action({ request, params }: ActionArgs) {
         return redirect(`/workspace/persons/${id}`);
       }
 
+      case "create-note": {
+        await getLoggedInApiClient(session).person.createNoteForPerson({
+          ref_id: { the_id: id },
+        });
+
+        return redirect(`/workspace/persons/${id}`);
+      }
+
       case "archive": {
         await getLoggedInApiClient(session).person.archivePerson({
           ref_id: { the_id: id },
@@ -321,7 +333,7 @@ export default function Person() {
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/persons"
     >
-      <Card>
+      <Card sx={{ marginBottom: "1rem" }}>
         <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
@@ -602,6 +614,39 @@ export default function Person() {
           </ButtonGroup>
         </CardActions>
       </Card>
+
+      {isWorkspaceFeatureAvailable(
+        topLevelInfo.workspace,
+        WorkspaceFeature.NOTES
+      ) && (
+        <Card>
+          {!loaderData.note && (
+            <CardActions>
+              <ButtonGroup>
+                <Button
+                  variant="contained"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="create-note"
+                >
+                  Create Note
+                </Button>
+              </ButtonGroup>
+            </CardActions>
+          )}
+
+          {loaderData.note && (
+            <>
+            <EntityNoteEditor
+              initialNote={loaderData.note}
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/content" />
+            </>
+          )}
+        </Card>
+      )}
 
       {sortedBirthdayTasks.length > 0 && (
         <InboxTaskStack

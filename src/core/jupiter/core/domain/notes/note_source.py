@@ -8,6 +8,7 @@ class NoteSource(enum.Enum):
 
     USER = "user"
     METRIC_ENTRY = "metric-entry"
+    PERSON = "person"
     LOG = "log"  # for later
 
     def __str__(self) -> str:

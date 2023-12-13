@@ -110,6 +110,21 @@ export default function Notes() {
             📈 Metrics
           </Button>
         )}
+
+        {isWorkspaceFeatureAvailable(
+          topLevelInfo.workspace,
+          WorkspaceFeature.PERSONS
+        ) && (
+          <Button
+            variant={
+              loaderData.source === NoteSource.PERSON ? "contained" : "outlined"
+            }
+            component={Link}
+            to={`/workspace/notes?source=${NoteSource.PERSON}`}
+          >
+            👨 Persons
+          </Button>
+        )}
       </ButtonGroup>,
     ];
   } else {
@@ -142,6 +157,25 @@ export default function Notes() {
           to={`/workspace/notes?source=${NoteSource.METRIC_ENTRY}`}
         >
           📈 Metrics
+        </Button>
+      );
+    }
+
+    if (
+      isWorkspaceFeatureAvailable(
+        topLevelInfo.workspace,
+        WorkspaceFeature.PERSONS
+      )
+    ) {
+      extraControls.push(
+        <Button
+          variant={
+            loaderData.source === NoteSource.PERSON ? "contained" : "outlined"
+          }
+          component={Link}
+          to={`/workspace/notes?source=${NoteSource.PERSON}`}
+        >
+          👨 Persons
         </Button>
       );
     }

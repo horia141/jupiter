@@ -24,6 +24,7 @@ import { OneOfNoteContentBlock } from "~/logic/domain/notes";
 
 interface BlockEditorProps {
   initialContent: Array<OneOfNoteContentBlock>;
+  inputsEnabled: boolean;
   onChange?: (content: Array<OneOfNoteContentBlock>) => void;
 }
 
@@ -35,6 +36,7 @@ export default function BlockEditor(props: BlockEditorProps) {
       holder: "editorjs",
       placeholder: "Start writing...",
       autofocus: true,
+      readOnly: !props.inputsEnabled,
       data: props.initialContent
         ? transformContentBlocksToEditorJs(props.initialContent)
         : undefined,

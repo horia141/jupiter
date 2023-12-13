@@ -70,6 +70,7 @@ class PersonShow(LoggedInReadonlyCommand[PersonFindUseCase]):
                 allow_archived=show_archived,
                 include_catch_up_inbox_tasks=False,
                 include_birthday_inbox_tasks=False,
+                include_notes=False,
                 filter_person_ref_ids=ref_ids,
             ),
         )

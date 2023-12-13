@@ -8,7 +8,7 @@ import {
   useTransition,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { ApiError } from "jupiter-gen";
+import { ApiError, NoteSource } from "jupiter-gen";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
@@ -111,7 +111,7 @@ export default function Note() {
         <GlobalError actionResult={actionData} />
         <CardContent>
           <FormControl fullWidth>
-            <NoteEditor initialNote={note} inputsEnabled={inputsEnabled} />
+            <NoteEditor initialNote={note} inputsEnabled={inputsEnabled && note.source === NoteSource.USER} />
             <FieldError actionResult={actionData} fieldName="/name" />
             <FieldError actionResult={actionData} fieldName="/content" />
           </FormControl>

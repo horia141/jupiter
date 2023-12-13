@@ -7,6 +7,7 @@ from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.inbox_tasks.service.archive_service import (
     InboxTaskArchiveService,
 )
+from jupiter.core.domain.notes.note_source import NoteSource
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
@@ -79,3 +80,14 @@ class PersonArchiveUseCase(
         )
         await uow.person_repository.save(person)
         await progress_reporter.mark_updated(person)
+
+        note = await uow.note_repository.load_optional_for_source(
+            NoteSource.PERSON, person.ref_id
+        )
+
+        if note is not None:
+            note = note.mark_archived(
+                EventSource.CLI, self._time_provider.get_current_time()
+            )
+            await uow.note_repository.save(note)
+            await progress_reporter.mark_updated(note)

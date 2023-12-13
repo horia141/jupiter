@@ -6,6 +6,7 @@ from jupiter.core.domain.metrics.metric_name import MetricName
 from jupiter.core.domain.notes.note_content_block import OneOfNoteContentBlock
 from jupiter.core.domain.notes.note_name import NoteName
 from jupiter.core.domain.notes.note_source import NoteSource
+from jupiter.core.domain.persons.person_name import PersonName
 from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.entity import FIRST_VERSION, LeafEntity
@@ -104,6 +105,38 @@ class Note(LeafEntity):
             name=NoteName.from_raw(
                 f'Note for metric "{str(metric_name)}" on {ADate.to_user_date_str(collection_time)}'
             ),
+            content=[],
+        )
+        return note
+
+    @staticmethod
+    def new_note_for_person(
+        note_collection_ref_id: EntityId,
+        person_name: PersonName,
+        person_ref_id: EntityId,
+        source: EventSource,
+        created_time: Timestamp,
+    ) -> "Note":
+        """Create a note."""
+        note = Note(
+            ref_id=BAD_REF_ID,
+            version=FIRST_VERSION,
+            archived=False,
+            created_time=created_time,
+            archived_time=None,
+            last_modified_time=created_time,
+            events=[
+                Note.Created.make_event_from_frame_args(
+                    source,
+                    FIRST_VERSION,
+                    created_time,
+                ),
+            ],
+            note_collection_ref_id=note_collection_ref_id,
+            parent_note_ref_id=None,
+            source=NoteSource.PERSON,
+            source_entity_ref_id=person_ref_id,
+            name=NoteName.from_raw(f'Note for person "{str(person_name)}"'),
             content=[],
         )
         return note

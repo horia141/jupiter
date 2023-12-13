@@ -179,6 +179,8 @@ export type { PersonArchiveArgs } from './models/PersonArchiveArgs';
 export type { PersonBirthday } from './models/PersonBirthday';
 export type { PersonChangeCatchUpProjectArgs } from './models/PersonChangeCatchUpProjectArgs';
 export type { PersonCreateArgs } from './models/PersonCreateArgs';
+export type { PersonCreateNoteArgs } from './models/PersonCreateNoteArgs';
+export type { PersonCreateNoteResult } from './models/PersonCreateNoteResult';
 export type { PersonCreateResult } from './models/PersonCreateResult';
 export type { PersonFindArgs } from './models/PersonFindArgs';
 export type { PersonFindResult } from './models/PersonFindResult';

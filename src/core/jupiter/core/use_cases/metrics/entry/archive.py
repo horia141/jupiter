@@ -61,4 +61,4 @@ class MetricEntryArchiveUseCase(
                 EventSource.CLI, self._time_provider.get_current_time()
             )
             await uow.note_repository.save(note)
-            await progress_reporter.mark_updated(metric_entry)
+            await progress_reporter.mark_updated(note)
