@@ -113,6 +113,7 @@ class InboxTaskShow(LoggedInReadonlyCommand[InboxTaskFindUseCase]):
             AppLoggedInUseCaseSession(session_info.auth_token_ext),
             InboxTaskFindArgs(
                 allow_archived=show_archived,
+                include_notes=False,
                 filter_ref_ids=ref_ids,
                 filter_project_ref_ids=project_ref_ids,
                 filter_sources=sources,

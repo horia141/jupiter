@@ -8,6 +8,8 @@ from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.metrics.metric import Metric
+from jupiter.core.domain.notes.note import Note
+from jupiter.core.domain.notes.note_source import NoteSource
 from jupiter.core.domain.persons.person import Person
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.push_integrations.email.email_task import EmailTask
@@ -45,6 +47,7 @@ class InboxTaskLoadResult(UseCaseResultBase):
     person: Optional[Person] = None
     slack_task: Optional[SlackTask] = None
     email_task: Optional[EmailTask] = None
+    note: Optional[Note] = None
 
 
 class InboxTaskLoadUseCase(
@@ -112,6 +115,14 @@ class InboxTaskLoadUseCase(
         else:
             email_task = None
 
+        note = None
+        if context.workspace.is_feature_available(WorkspaceFeature.NOTES):
+            note = await uow.note_repository.load_optional_for_source(
+                NoteSource.INBOX_TASK,
+                inbox_task.ref_id,
+                allow_archived=args.allow_archived,
+            )
+
         return InboxTaskLoadResult(
             inbox_task=inbox_task,
             project=project,
@@ -122,4 +133,5 @@ class InboxTaskLoadUseCase(
             person=person,
             slack_task=slack_task,
             email_task=email_task,
+            note=note,
         )

@@ -16,5 +16,13 @@ export const standardShouldRevalidate: ShouldRevalidateFunction = ({
     return false;
   }
 
+  if (formAction === "/workspace/notes/update") {
+    return false;
+  }
+
+  if (formAction === "/workspace/notes/update-for-entity") {
+    return false;
+  }
+
   return defaultShouldRevalidate;
 };

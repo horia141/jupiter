@@ -103,6 +103,8 @@ export type { InboxTaskArchiveArgs } from './models/InboxTaskArchiveArgs';
 export type { InboxTaskAssociateWithBigPlanArgs } from './models/InboxTaskAssociateWithBigPlanArgs';
 export type { InboxTaskChangeProjectArgs } from './models/InboxTaskChangeProjectArgs';
 export type { InboxTaskCreateArgs } from './models/InboxTaskCreateArgs';
+export type { InboxTaskCreateNoteArgs } from './models/InboxTaskCreateNoteArgs';
+export type { InboxTaskCreateNoteResult } from './models/InboxTaskCreateNoteResult';
 export type { InboxTaskCreateResult } from './models/InboxTaskCreateResult';
 export type { InboxTaskFindArgs } from './models/InboxTaskFindArgs';
 export type { InboxTaskFindResult } from './models/InboxTaskFindResult';

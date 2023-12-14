@@ -1,4 +1,4 @@
-A#!/bin/bash
+#!/bin/bash
 
 set -ex
 
@@ -28,4 +28,5 @@ npx openapi \
     --output gen/gen \
     --client fetch \
     --name ApiClient
+
 (cd gen && npx tsc)

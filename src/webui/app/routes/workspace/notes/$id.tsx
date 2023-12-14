@@ -111,7 +111,10 @@ export default function Note() {
         <GlobalError actionResult={actionData} />
         <CardContent>
           <FormControl fullWidth>
-            <NoteEditor initialNote={note} inputsEnabled={inputsEnabled && note.source === NoteSource.USER} />
+            <NoteEditor
+              initialNote={note}
+              inputsEnabled={inputsEnabled && note.source === NoteSource.USER}
+            />
             <FieldError actionResult={actionData} fieldName="/name" />
             <FieldError actionResult={actionData} fieldName="/content" />
           </FormControl>

@@ -342,6 +342,7 @@ class SqliteNoteRepository(NoteRepository):
         allow_archived: bool = False,
         filter_ref_ids: Iterable[EntityId] | None = None,
         filter_parent_note_ref_ids: Iterable[EntityId | None] | None = None,
+        filter_source_entity_ref_ids: Iterable[EntityId] | None = None,
     ) -> list[Note]:
         """Find all notes matching some criteria."""
         query_stmt = (
@@ -373,6 +374,12 @@ class SqliteNoteRepository(NoteRepository):
                         ]
                     )
                 )
+        if filter_source_entity_ref_ids is not None:
+            query_stmt = query_stmt.where(
+                self._note_table.c.source_entity_ref_id.in_(
+                    [fi.as_int() for fi in filter_source_entity_ref_ids]
+                )
+            )
         results = await self._connection.execute(query_stmt)
         return [self._row_to_entity(row) for row in results]
 

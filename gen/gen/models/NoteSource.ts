@@ -7,6 +7,7 @@
  */
 export enum NoteSource {
     USER = 'user',
+    INBOX_TASK = 'inbox-task',
     METRIC_ENTRY = 'metric-entry',
     PERSON = 'person',
     LOG = 'log',

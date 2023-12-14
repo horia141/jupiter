@@ -52,6 +52,7 @@ import { getLoggedInApiClient } from "~/api-clients";
 import { BigPlanTag } from "~/components/big-plan-tag";
 import { ChoreTag } from "~/components/chore-tag";
 import { EmailTaskTag } from "~/components/email-task-tag";
+import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { HabitTag } from "~/components/habit-tag";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
@@ -226,6 +227,14 @@ export async function action({ request, params }: ActionArgs) {
         return redirect(`/workspace/inbox-tasks/${id}`);
       }
 
+      case "create-note": {
+        await getLoggedInApiClient(session).inboxTask.createNoteForInboxTask({
+          ref_id: { the_id: id },
+        });
+
+        return redirect(`/workspace/inbox-tasks/${id}`);
+      }
+
       case "archive": {
         await getLoggedInApiClient(session).inboxTask.archiveInboxTask({
           ref_id: { the_id: id },
@@ -378,7 +387,7 @@ export default function InboxTask() {
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/inbox-tasks"
     >
-      <Card>
+      <Card sx={{ marginBottom: "1rem" }}>
         <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
@@ -674,6 +683,39 @@ export default function InboxTask() {
           </ButtonGroup>
         </CardActions>
       </Card>
+
+      {isWorkspaceFeatureAvailable(
+        topLevelInfo.workspace,
+        WorkspaceFeature.NOTES
+      ) && (
+        <Card>
+          {!loaderData.info.note && (
+            <CardActions>
+              <ButtonGroup>
+                <Button
+                  variant="contained"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="create-note"
+                >
+                  Create Note
+                </Button>
+              </ButtonGroup>
+            </CardActions>
+          )}
+
+          {loaderData.info.note && (
+            <>
+              <EntityNoteEditor
+                initialNote={loaderData.info.note}
+                inputsEnabled={inputsEnabled}
+              />
+              <FieldError actionResult={actionData} fieldName="/content" />
+            </>
+          )}
+        </Card>
+      )}
     </LeafPanel>
   );
 }

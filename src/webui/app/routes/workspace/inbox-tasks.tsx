@@ -127,6 +127,7 @@ export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const response = await getLoggedInApiClient(session).inboxTask.findInboxTask({
     allow_archived: false,
+    include_notes: false,
   });
   return json({
     entries: response.entries,

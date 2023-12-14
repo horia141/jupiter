@@ -162,6 +162,11 @@ from jupiter.core.use_cases.inbox_tasks.create import (
     InboxTaskCreateResult,
     InboxTaskCreateUseCase,
 )
+from jupiter.core.use_cases.inbox_tasks.create_note import (
+    InboxTaskCreateNoteArgs,
+    InboxTaskCreateNoteResult,
+    InboxTaskCreateNoteUseCase,
+)
 from jupiter.core.use_cases.inbox_tasks.find import (
     InboxTaskFindArgs,
     InboxTaskFindResult,
@@ -706,7 +711,7 @@ inbox_task_create_use_case = InboxTaskCreateUseCase(
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
 )
-inbox_task_archive_use_case = InboxTaskArchiveUseCase(
+inbox_task_create_note_use_case = InboxTaskCreateNoteUseCase(
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
@@ -715,6 +720,14 @@ inbox_task_archive_use_case = InboxTaskArchiveUseCase(
     search_storage_engine=search_storage_engine,
 )
 inbox_task_update_use_case = InboxTaskUpdateUseCase(
+    time_provider=request_time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
+inbox_task_archive_use_case = InboxTaskArchiveUseCase(
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
@@ -1853,16 +1866,16 @@ async def create_inbox_task(
 
 
 @app.post(
-    "/inbox-task/archive",
-    response_model=None,
+    "/inbox-task/create-note",
+    response_model=InboxTaskCreateNoteResult,
     tags=["inbox-task"],
     responses=standard_responses,
 )
-async def archive_inbox_task(
-    args: InboxTaskArchiveArgs, session: LoggedInSession
-) -> None:
-    """Archive a inbox task."""
-    await inbox_task_archive_use_case.execute(session, args)
+async def create_note_for_inbox_task(
+    args: InboxTaskCreateNoteArgs, session: LoggedInSession
+) -> InboxTaskCreateNoteResult:
+    """Create a inbox task note."""
+    return await inbox_task_create_note_use_case.execute(session, args)
 
 
 @app.post(
@@ -1876,6 +1889,19 @@ async def update_inbox_task(
 ) -> InboxTaskUpdateResult:
     """Update a inbox task."""
     return await inbox_task_update_use_case.execute(session, args)
+
+
+@app.post(
+    "/inbox-task/archive",
+    response_model=None,
+    tags=["inbox-task"],
+    responses=standard_responses,
+)
+async def archive_inbox_task(
+    args: InboxTaskArchiveArgs, session: LoggedInSession
+) -> None:
+    """Archive a inbox task."""
+    await inbox_task_archive_use_case.execute(session, args)
 
 
 @app.post(

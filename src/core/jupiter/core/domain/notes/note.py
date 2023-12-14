@@ -2,6 +2,7 @@
 from dataclasses import dataclass
 
 from jupiter.core.domain.adate import ADate
+from jupiter.core.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.core.domain.metrics.metric_name import MetricName
 from jupiter.core.domain.notes.note_content_block import OneOfNoteContentBlock
 from jupiter.core.domain.notes.note_name import NoteName
@@ -71,6 +72,38 @@ class Note(LeafEntity):
             source_entity_ref_id=None,
             name=name,
             content=content,
+        )
+        return note
+
+    @staticmethod
+    def new_note_for_inbox_task(
+        note_collection_ref_id: EntityId,
+        inbox_task_name: InboxTaskName,
+        inbox_task_ref_id: EntityId,
+        source: EventSource,
+        created_time: Timestamp,
+    ) -> "Note":
+        """Create a note."""
+        note = Note(
+            ref_id=BAD_REF_ID,
+            version=FIRST_VERSION,
+            archived=False,
+            created_time=created_time,
+            archived_time=None,
+            last_modified_time=created_time,
+            events=[
+                Note.Created.make_event_from_frame_args(
+                    source,
+                    FIRST_VERSION,
+                    created_time,
+                ),
+            ],
+            note_collection_ref_id=note_collection_ref_id,
+            parent_note_ref_id=None,
+            source=NoteSource.INBOX_TASK,
+            source_entity_ref_id=inbox_task_ref_id,
+            name=NoteName.from_raw(f'Note for inbox task "{str(inbox_task_name)}"'),
+            content=[],
         )
         return note
 

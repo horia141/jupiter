@@ -124,6 +124,7 @@ class PersonFindUseCase(
                 parent_ref_id=notes_collection.ref_id,
                 source=NoteSource.PERSON,
                 allow_archived=True,
+                filter_source_entity_ref_ids=[p.ref_id for p in persons],
             )
             for n in all_notes:
                 all_notes_by_person_ref_id[cast(EntityId, n.source_entity_ref_id)] = n

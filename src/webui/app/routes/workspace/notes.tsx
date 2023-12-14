@@ -94,6 +94,18 @@ export default function Notes() {
           🗒️ User
         </Button>
 
+        <Button
+          variant={
+            loaderData.source === NoteSource.INBOX_TASK
+              ? "contained"
+              : "outlined"
+          }
+          component={Link}
+          to={`/workspace/notes?source=${NoteSource.INBOX_TASK}`}
+        >
+          📥 Inbox Tasks
+        </Button>
+
         {isWorkspaceFeatureAvailable(
           topLevelInfo.workspace,
           WorkspaceFeature.METRICS
@@ -137,6 +149,15 @@ export default function Notes() {
         to={`/workspace/notes?source=${NoteSource.USER}`}
       >
         🗒️ User
+      </Button>,
+      <Button
+        variant={
+          loaderData.source === NoteSource.INBOX_TASK ? "contained" : "outlined"
+        }
+        component={Link}
+        to={`/workspace/notes?source=${NoteSource.INBOX_TASK}`}
+      >
+        📥 Inbox Tasks
       </Button>,
     ];
 

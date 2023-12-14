@@ -41,5 +41,6 @@ class NoteRepository(LeafEntityRepository[Note], abc.ABC):
         allow_archived: bool = False,
         filter_ref_ids: Optional[Iterable[EntityId]] = None,
         filter_parent_note_ref_ids: Optional[Iterable[EntityId | None]] = None,
+        filter_source_entity_ref_ids: Optional[Iterable[EntityId]] = None,
     ) -> list[Note]:
         """Find all notes."""
