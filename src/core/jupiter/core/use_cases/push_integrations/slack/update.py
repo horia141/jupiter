@@ -2,9 +2,9 @@
 from dataclasses import dataclass
 from typing import Iterable, Optional
 
-from jupiter.core.domain.adate import ADate
-from jupiter.core.domain.difficulty import Difficulty
-from jupiter.core.domain.eisen import Eisen
+from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.core.difficulty import Difficulty
+from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource

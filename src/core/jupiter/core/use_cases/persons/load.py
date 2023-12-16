@@ -2,11 +2,11 @@
 from dataclasses import dataclass
 from typing import Iterable
 
+from jupiter.core.domain.core.notes.note import Note
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
-from jupiter.core.domain.notes.note import Note
-from jupiter.core.domain.notes.note_source import NoteSource
 from jupiter.core.domain.persons.person import Person
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -81,13 +81,11 @@ class PersonLoadUseCase(
             filter_sources=[InboxTaskSource.PERSON_BIRTHDAY],
         )
 
-        note = None
-        if context.workspace.is_feature_available(WorkspaceFeature.NOTES):
-            note = await uow.note_repository.load_optional_for_source(
-                NoteSource.PERSON,
-                person.ref_id,
-                allow_archived=args.allow_archived,
-            )
+        note = await uow.note_repository.load_optional_for_source(
+            NoteDomain.PERSON,
+            person.ref_id,
+            allow_archived=args.allow_archived,
+        )
 
         return PersonLoadResult(
             person=person,

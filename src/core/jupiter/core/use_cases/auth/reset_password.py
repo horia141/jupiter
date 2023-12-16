@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from jupiter.core.domain.auth.auth import IncorrectRecoveryTokenError
 from jupiter.core.domain.auth.password_new_plain import PasswordNewPlain
 from jupiter.core.domain.auth.recovery_token_plain import RecoveryTokenPlain
-from jupiter.core.domain.email_address import EmailAddress
+from jupiter.core.domain.core.email_address import EmailAddress
 from jupiter.core.domain.user.infra.user_repository import UserNotFoundError
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.secure import secure_class

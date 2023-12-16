@@ -1,10 +1,10 @@
 """A particular entry in the task generation log."""
 from dataclasses import dataclass
 
-from jupiter.core.domain.adate import ADate
-from jupiter.core.domain.entity_name import EntityName
+from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.core.entity_name import EntityName
+from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.entity_summary import EntitySummary
-from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.sync_target import SyncTarget
 from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.core.framework.base.timestamp import Timestamp

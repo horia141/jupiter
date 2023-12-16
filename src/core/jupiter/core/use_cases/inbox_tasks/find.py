@@ -5,6 +5,8 @@ from typing import Iterable, List, Optional, cast
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.chores.chore import Chore
+from jupiter.core.domain.core.notes.note import Note
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.features import (
     FeatureUnavailableError,
     UserFeature,
@@ -14,8 +16,6 @@ from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.metrics.metric import Metric
-from jupiter.core.domain.notes.note import Note
-from jupiter.core.domain.notes.note_source import NoteSource
 from jupiter.core.domain.persons.person import Person
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.push_integrations.email.email_task import EmailTask
@@ -236,15 +236,13 @@ class InboxTaskFindUseCase(
         email_tasks_by_ref_id = {p.ref_id: p for p in email_tasks}
 
         notes_by_inbox_task_ref_id: defaultdict[EntityId, Note] = defaultdict(None)
-        if args.include_notes and context.workspace.is_feature_available(
-            WorkspaceFeature.NOTES
-        ):
+        if args.include_notes:
             note_collection = await uow.note_collection_repository.load_by_parent(
                 workspace.ref_id
             )
             notes = await uow.note_repository.find_all_with_filters(
                 parent_ref_id=note_collection.ref_id,
-                source=NoteSource.INBOX_TASK,
+                domain=NoteDomain.INBOX_TASK,
                 allow_archived=True,
                 filter_source_entity_ref_ids=[it.ref_id for it in inbox_tasks],
             )

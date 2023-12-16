@@ -1,7 +1,7 @@
 """A history of user scores over time."""
 from dataclasses import dataclass
 
-from jupiter.core.domain.adate import ADate
+from jupiter.core.domain.core.adate import ADate
 from jupiter.core.framework.value import Value
 
 

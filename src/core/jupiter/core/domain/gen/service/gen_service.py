@@ -4,9 +4,13 @@ import typing
 from collections import defaultdict
 from typing import Dict, Final, FrozenSet, List, Optional, Tuple
 
-from jupiter.core.domain import schedules
-from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.chores.chore import Chore
+from jupiter.core.domain.core import schedules
+from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
+from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDueAtMonth
+from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
+from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import FeatureUnavailableError, WorkspaceFeature
 from jupiter.core.domain.gen.gen_log_entry import GenLogEntry
 from jupiter.core.domain.habits.habit import Habit
@@ -22,10 +26,6 @@ from jupiter.core.domain.persons.person_birthday import PersonBirthday
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.push_integrations.email.email_task import EmailTask
 from jupiter.core.domain.push_integrations.slack.slack_task import SlackTask
-from jupiter.core.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
-from jupiter.core.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
-from jupiter.core.domain.recurring_task_gen_params import RecurringTaskGenParams
-from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.storage_engine import DomainStorageEngine
 from jupiter.core.domain.sync_target import SyncTarget
 from jupiter.core.domain.user.user import User

@@ -149,8 +149,8 @@ class Workspace(RootEntity):
                 WorkspaceFeature.BIG_PLANS
             ):
                 inferred_entity_tags.append(entity_tag)
-            elif entity_tag is NamedEntityTag.NOTE and self.is_feature_available(
-                WorkspaceFeature.NOTES
+            elif entity_tag is NamedEntityTag.DOC and self.is_feature_available(
+                WorkspaceFeature.DOCS
             ):
                 inferred_entity_tags.append(entity_tag)
             elif entity_tag is NamedEntityTag.VACATION and self.is_feature_available(
@@ -268,8 +268,8 @@ class Workspace(RootEntity):
                 WorkspaceFeature.BIG_PLANS
             ):
                 inferred_sync_targets.append(sync_target)
-            elif sync_target is SyncTarget.NOTES and self.is_feature_available(
-                WorkspaceFeature.NOTES
+            elif sync_target is SyncTarget.DOCS and self.is_feature_available(
+                WorkspaceFeature.DOCS
             ):
                 inferred_sync_targets.append(sync_target)
             elif sync_target is SyncTarget.VACATIONS and self.is_feature_available(

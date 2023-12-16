@@ -2,10 +2,10 @@
 from dataclasses import dataclass
 from typing import Iterable, Optional
 
-from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.core.domain.big_plans.big_plan_status import BigPlanStatus
+from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.features import (
     FeatureUnavailableError,
     UserFeature,

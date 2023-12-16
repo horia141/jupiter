@@ -5,7 +5,7 @@ from typing import List, Optional
 
 from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.core.domain.chores.chore_name import ChoreName
-from jupiter.core.domain.entity_icon import EntityIcon
+from jupiter.core.domain.core.entity_icon import EntityIcon
 from jupiter.core.domain.habits.habit_name import HabitName
 from jupiter.core.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.core.domain.metrics.metric_name import MetricName

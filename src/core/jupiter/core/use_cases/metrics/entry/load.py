@@ -2,10 +2,10 @@
 from dataclasses import dataclass
 from typing import Iterable, Optional
 
+from jupiter.core.domain.core.notes.note import Note
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.metrics.metric_entry import MetricEntry
-from jupiter.core.domain.notes.note import Note
-from jupiter.core.domain.notes.note_source import NoteSource
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
@@ -57,12 +57,10 @@ class MetricEntryLoadUseCase(
             args.ref_id, allow_archived=args.allow_archived
         )
 
-        note = None
-        if context.workspace.is_feature_available(WorkspaceFeature.NOTES):
-            note = await uow.note_repository.load_optional_for_source(
-                NoteSource.METRIC_ENTRY,
-                metric_entry.ref_id,
-                allow_archived=args.allow_archived,
-            )
+        note = await uow.note_repository.load_optional_for_source(
+            NoteDomain.METRIC_ENTRY,
+            metric_entry.ref_id,
+            allow_archived=args.allow_archived,
+        )
 
         return MetricEntryLoadResult(metric_entry=metric_entry, note=note)

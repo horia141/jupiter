@@ -2,9 +2,9 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.core.domain.big_plans.big_plan_status import BigPlanStatus
+from jupiter.core.domain.core.adate import ADate
 from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.entity import FIRST_VERSION, Entity, LeafEntity

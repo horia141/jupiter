@@ -14,8 +14,8 @@ from jupiter.cli.command.rendering import (
     source_to_rich_text,
 )
 from jupiter.cli.session_storage import SessionInfo
-from jupiter.core.domain.adate import ADate
-from jupiter.core.domain.difficulty import Difficulty
+from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.framework.base.entity_id import EntityId

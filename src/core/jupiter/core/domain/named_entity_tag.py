@@ -5,6 +5,7 @@ from typing import Iterable, Optional
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.chores.chore import Chore
+from jupiter.core.domain.docs.doc import Doc
 from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.metrics.metric import Metric
@@ -29,7 +30,7 @@ class NamedEntityTag(enum.Enum):
     HABIT = Habit.__name__
     CHORE = Chore.__name__
     BIG_PLAN = BigPlan.__name__
-    NOTE = "Note"  # Note.__name__
+    DOC = Doc.__name__
     VACATION = Vacation.__name__
     PROJECT = Project.__name__
     SMART_LIST = SmartList.__name__

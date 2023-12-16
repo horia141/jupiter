@@ -2,18 +2,18 @@
 from dataclasses import dataclass
 from typing import Iterable, Optional
 
-from jupiter.core.domain.difficulty import Difficulty
-from jupiter.core.domain.eisen import Eisen
-from jupiter.core.domain.entity_icon import EntityIcon
+from jupiter.core.domain.core.difficulty import Difficulty
+from jupiter.core.domain.core.eisen import Eisen
+from jupiter.core.domain.core.entity_icon import EntityIcon
+from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
+from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDueAtMonth
+from jupiter.core.domain.core.recurring_task_due_at_time import RecurringTaskDueAtTime
+from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
+from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.metrics.metric import Metric
 from jupiter.core.domain.metrics.metric_name import MetricName
 from jupiter.core.domain.metrics.metric_unit import MetricUnit
-from jupiter.core.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
-from jupiter.core.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
-from jupiter.core.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
-from jupiter.core.domain.recurring_task_gen_params import RecurringTaskGenParams
-from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (

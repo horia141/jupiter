@@ -1,7 +1,6 @@
 """The SQLite base chores repository."""
 from typing import Final, Iterable, List, Optional
 
-from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.chores.chore import Chore
 from jupiter.core.domain.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.chores.chore_name import ChoreName
@@ -14,14 +13,15 @@ from jupiter.core.domain.chores.infra.chore_repository import (
     ChoreNotFoundError,
     ChoreRepository,
 )
-from jupiter.core.domain.difficulty import Difficulty
-from jupiter.core.domain.eisen import Eisen
-from jupiter.core.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
-from jupiter.core.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
-from jupiter.core.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
-from jupiter.core.domain.recurring_task_gen_params import RecurringTaskGenParams
-from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
-from jupiter.core.domain.recurring_task_skip_rule import RecurringTaskSkipRule
+from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.core.difficulty import Difficulty
+from jupiter.core.domain.core.eisen import Eisen
+from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
+from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDueAtMonth
+from jupiter.core.domain.core.recurring_task_due_at_time import RecurringTaskDueAtTime
+from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
+from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
+from jupiter.core.domain.core.recurring_task_skip_rule import RecurringTaskSkipRule
 from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.repository.sqlite.infra.events import (

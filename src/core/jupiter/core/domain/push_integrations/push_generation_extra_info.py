@@ -4,12 +4,12 @@ import shlex
 from dataclasses import dataclass
 from typing import Optional
 
-from jupiter.core.domain.adate import ADate
-from jupiter.core.domain.difficulty import Difficulty
-from jupiter.core.domain.eisen import Eisen
+from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.core.difficulty import Difficulty
+from jupiter.core.domain.core.eisen import Eisen
+from jupiter.core.domain.core.timezone import UTC, Timezone
 from jupiter.core.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
-from jupiter.core.domain.timezone import UTC, Timezone
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.value import Value
 

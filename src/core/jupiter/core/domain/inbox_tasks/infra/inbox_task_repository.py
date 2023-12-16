@@ -2,7 +2,7 @@
 import abc
 from typing import Iterable, List, Optional
 
-from jupiter.core.domain.adate import ADate
+from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.framework.base.entity_id import EntityId

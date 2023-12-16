@@ -1,9 +1,9 @@
 """The SQLIte based user repository."""
 from typing import Final, Iterable
 
-from jupiter.core.domain.email_address import EmailAddress
+from jupiter.core.domain.core.email_address import EmailAddress
+from jupiter.core.domain.core.timezone import Timezone
 from jupiter.core.domain.features import UserFeature
-from jupiter.core.domain.timezone import Timezone
 from jupiter.core.domain.user.avatar import Avatar
 from jupiter.core.domain.user.infra.user_repository import (
     UserAlreadyExistsError,

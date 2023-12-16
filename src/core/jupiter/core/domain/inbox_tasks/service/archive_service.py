@@ -1,8 +1,11 @@
 """Shared service for archiving an inbox task."""
 from typing import Final
 
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
+from jupiter.core.domain.core.notes.service.note_archive_service import (
+    NoteArchiveService,
+)
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
-from jupiter.core.domain.notes.note_source import NoteSource
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import ProgressReporter
@@ -41,13 +44,10 @@ class InboxTaskArchiveService:
         await uow.inbox_task_repository.save(inbox_task)
         await progress_reporter.mark_updated(inbox_task)
 
-        note = await uow.note_repository.load_optional_for_source(
-            NoteSource.INBOX_TASK, inbox_task.ref_id
+        note_archive_service = NoteArchiveService(
+            self._source,
+            self._time_provider,
         )
-
-        if note is not None:
-            note = note.mark_archived(
-                EventSource.CLI, self._time_provider.get_current_time()
-            )
-            await uow.note_repository.save(note)
-            await progress_reporter.mark_updated(note)
+        await note_archive_service.archive_for_source(
+            uow, NoteDomain.INBOX_TASK, inbox_task.ref_id
+        )

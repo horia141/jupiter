@@ -6,7 +6,8 @@ from jupiter.cli.command.command import GuestMutationCommand
 from jupiter.cli.session_storage import SessionInfo, SessionStorage
 from jupiter.cli.top_level_context import TopLevelContext
 from jupiter.core.domain.auth.password_new_plain import PasswordNewPlain
-from jupiter.core.domain.email_address import EmailAddress
+from jupiter.core.domain.core.email_address import EmailAddress
+from jupiter.core.domain.core.timezone import Timezone
 from jupiter.core.domain.features import (
     UserFeature,
     UserFeatureFlags,
@@ -14,7 +15,6 @@ from jupiter.core.domain.features import (
     WorkspaceFeatureFlags,
 )
 from jupiter.core.domain.projects.project_name import ProjectName
-from jupiter.core.domain.timezone import Timezone
 from jupiter.core.domain.user.user_name import UserName
 from jupiter.core.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.core.framework.secure import secure_class

@@ -1,5 +1,5 @@
 """The name of a smart list tag."""
-from jupiter.core.domain.tag_name import TagName
+from jupiter.core.domain.core.tags.tag_name import TagName
 
 
 class SmartListTagName(TagName):

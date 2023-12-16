@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from jupiter.core.domain.entity_icon import EntityIcon
+from jupiter.core.domain.core.entity_icon import EntityIcon
 from jupiter.core.domain.smart_lists.smart_list_name import SmartListName
 from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.core.framework.base.timestamp import Timestamp

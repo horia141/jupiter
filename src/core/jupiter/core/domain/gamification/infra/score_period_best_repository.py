@@ -2,8 +2,8 @@
 import abc
 from typing import Tuple
 
+from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.gamification.score_period_best import ScorePeriodBest
-from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.repository import (
     RecordAlreadyExistsError,

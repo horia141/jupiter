@@ -3,21 +3,21 @@ import typing
 from dataclasses import dataclass
 from typing import Iterable, Optional
 
-from jupiter.core.domain import schedules
-from jupiter.core.domain.difficulty import Difficulty
-from jupiter.core.domain.eisen import Eisen
-from jupiter.core.domain.entity_icon import EntityIcon
+from jupiter.core.domain.core import schedules
+from jupiter.core.domain.core.difficulty import Difficulty
+from jupiter.core.domain.core.eisen import Eisen
+from jupiter.core.domain.core.entity_icon import EntityIcon
+from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
+from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDueAtMonth
+from jupiter.core.domain.core.recurring_task_due_at_time import RecurringTaskDueAtTime
+from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
+from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.inbox_tasks.service.archive_service import (
     InboxTaskArchiveService,
 )
 from jupiter.core.domain.metrics.metric_name import MetricName
-from jupiter.core.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
-from jupiter.core.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
-from jupiter.core.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
-from jupiter.core.domain.recurring_task_gen_params import RecurringTaskGenParams
-from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp

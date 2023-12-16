@@ -1,9 +1,10 @@
 """Remove a person."""
 
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
+from jupiter.core.domain.core.notes.service.note_remove_service import NoteRemoveService
 from jupiter.core.domain.inbox_tasks.service.remove_service import (
     InboxTaskRemoveService,
 )
-from jupiter.core.domain.notes.note_source import NoteSource
 from jupiter.core.domain.persons.person import Person
 from jupiter.core.domain.persons.person_collection import PersonCollection
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -36,11 +37,10 @@ class PersonRemoveService:
         for inbox_task in all_inbox_tasks:
             await inbox_task_remove_service.do_it(uow, progress_reporter, inbox_task)
 
-        note = await uow.note_repository.remove_optional_for_source(
-            NoteSource.PERSON, person.ref_id
+        note_remove_service = NoteRemoveService()
+        await note_remove_service.remove_for_source(
+            uow, NoteDomain.PERSON, person.ref_id
         )
-        if note is not None:
-            await progress_reporter.mark_removed(note)
 
         await uow.person_repository.remove(person.ref_id)
         await progress_reporter.mark_removed(person)

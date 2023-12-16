@@ -1,10 +1,15 @@
 """SQLite based metrics repositories."""
 from typing import Final, Iterable, List, Optional
 
-from jupiter.core.domain.adate import ADate
-from jupiter.core.domain.difficulty import Difficulty
-from jupiter.core.domain.eisen import Eisen
-from jupiter.core.domain.entity_icon import EntityIcon
+from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.core.difficulty import Difficulty
+from jupiter.core.domain.core.eisen import Eisen
+from jupiter.core.domain.core.entity_icon import EntityIcon
+from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
+from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDueAtMonth
+from jupiter.core.domain.core.recurring_task_due_at_time import RecurringTaskDueAtTime
+from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
+from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.metrics.infra.metric_collection_repository import (
     MetricCollectionNotFoundError,
     MetricCollectionRepository,
@@ -22,11 +27,6 @@ from jupiter.core.domain.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.metrics.metric_entry import MetricEntry
 from jupiter.core.domain.metrics.metric_name import MetricName
 from jupiter.core.domain.metrics.metric_unit import MetricUnit
-from jupiter.core.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
-from jupiter.core.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
-from jupiter.core.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
-from jupiter.core.domain.recurring_task_gen_params import RecurringTaskGenParams
-from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.repository.sqlite.infra.events import (

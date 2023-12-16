@@ -1,14 +1,14 @@
 """A service for getting the scores overview for a user."""
 import asyncio
 
+from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
+from jupiter.core.domain.core.timeline import infer_timeline
 from jupiter.core.domain.gamification.score_log import ScoreLog
 from jupiter.core.domain.gamification.user_score_overview import (
     UserScore,
     UserScoreOverview,
 )
-from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.domain.timeline import infer_timeline
 from jupiter.core.domain.user.user import User
 from jupiter.core.framework.base.timestamp import Timestamp
 

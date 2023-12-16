@@ -4,14 +4,14 @@ from typing import Optional
 
 from jupiter.cli.command.command import LoggedInMutationCommand
 from jupiter.cli.session_storage import SessionInfo
-from jupiter.core.domain.difficulty import Difficulty
-from jupiter.core.domain.eisen import Eisen
-from jupiter.core.domain.entity_icon import EntityIcon
+from jupiter.core.domain.core.difficulty import Difficulty
+from jupiter.core.domain.core.eisen import Eisen
+from jupiter.core.domain.core.entity_icon import EntityIcon
+from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
+from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDueAtMonth
+from jupiter.core.domain.core.recurring_task_due_at_time import RecurringTaskDueAtTime
+from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.metrics.metric_name import MetricName
-from jupiter.core.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
-from jupiter.core.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
-from jupiter.core.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
-from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession

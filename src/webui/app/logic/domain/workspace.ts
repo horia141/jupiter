@@ -39,8 +39,8 @@ export function inferEntityTagsForEnabledFeatures(
     ) {
       inferredEntityTags.push(entityTag);
     } else if (
-      entityTag === NamedEntityTag.NOTE &&
-      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.NOTES)
+      entityTag === NamedEntityTag.DOC &&
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.DOCS)
     ) {
       inferredEntityTags.push(entityTag);
     } else if (
@@ -184,8 +184,8 @@ export function inferSyncTargetsForEnabledFeatures(
     ) {
       inferredSyncTargets.push(syncTarget);
     } else if (
-      syncTarget === SyncTarget.NOTES &&
-      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.NOTES)
+      syncTarget === SyncTarget.DOCS &&
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.DOCS)
     ) {
       inferredSyncTargets.push(syncTarget);
     } else if (

@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from typing import Iterable, Optional, cast
 
-from jupiter.core.domain import schedules
+from jupiter.core.domain.core import schedules
 from jupiter.core.domain.features import (
     FeatureUnavailableError,
     UserFeature,

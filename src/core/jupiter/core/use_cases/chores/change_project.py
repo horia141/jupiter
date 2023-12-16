@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from typing import Iterable, Optional, cast
 
-from jupiter.core.domain import schedules
+from jupiter.core.domain.core import schedules
 from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId

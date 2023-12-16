@@ -16,7 +16,7 @@ from jupiter.core.domain.auth.auth_token import (
 from jupiter.core.domain.auth.auth_token_ext import AuthTokenExt
 from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
 from jupiter.core.domain.auth.password_plain import PasswordPlain
-from jupiter.core.domain.email_address import EmailAddress
+from jupiter.core.domain.core.email_address import EmailAddress
 from jupiter.core.domain.features import FeatureUnavailableError
 from jupiter.core.domain.projects.errors import ProjectInSignificantUseError
 from jupiter.core.domain.user.infra.user_repository import (
@@ -100,6 +100,29 @@ from jupiter.core.use_cases.chores.unsuspend import (
     ChoreUnsuspendUseCase,
 )
 from jupiter.core.use_cases.chores.update import ChoreUpdateArgs, ChoreUpdateUseCase
+from jupiter.core.use_cases.core.notes.archive import (
+    NoteArchiveArgs,
+    NoteArchiveUseCase,
+)
+from jupiter.core.use_cases.core.notes.create import (
+    NoteCreateArgs,
+    NoteCreateResult,
+    NoteCreateUseCase,
+)
+from jupiter.core.use_cases.core.notes.update import NoteUpdateArgs, NoteUpdateUseCase
+from jupiter.core.use_cases.docs.archive import DocArchiveArgs, DocArchiveUseCase
+from jupiter.core.use_cases.docs.change_parent import (
+    DocChangeParentArgs,
+    DocChangeParentUseCase,
+)
+from jupiter.core.use_cases.docs.create import (
+    DocCreateArgs,
+    DocCreateResult,
+    DocCreateUseCase,
+)
+from jupiter.core.use_cases.docs.find import DocFindArgs, DocFindResult, DocFindUseCase
+from jupiter.core.use_cases.docs.load import DocLoadArgs, DocLoadResult, DocLoadUseCase
+from jupiter.core.use_cases.docs.update import DocUpdateArgs, DocUpdateUseCase
 from jupiter.core.use_cases.gc.do import GCDoArgs, GCDoUseCase
 from jupiter.core.use_cases.gc.do_all import GCDoAllArgs, GCDoAllUseCase
 from jupiter.core.use_cases.gc.load_runs import (
@@ -162,11 +185,6 @@ from jupiter.core.use_cases.inbox_tasks.create import (
     InboxTaskCreateResult,
     InboxTaskCreateUseCase,
 )
-from jupiter.core.use_cases.inbox_tasks.create_note import (
-    InboxTaskCreateNoteArgs,
-    InboxTaskCreateNoteResult,
-    InboxTaskCreateNoteUseCase,
-)
 from jupiter.core.use_cases.inbox_tasks.find import (
     InboxTaskFindArgs,
     InboxTaskFindResult,
@@ -228,11 +246,6 @@ from jupiter.core.use_cases.metrics.entry.create import (
     MetricEntryCreateResult,
     MetricEntryCreateUseCase,
 )
-from jupiter.core.use_cases.metrics.entry.create_note import (
-    MetricEntryCreateNoteArgs,
-    MetricEntryCreateNoteResult,
-    MetricEntryCreateNoteUseCase,
-)
 from jupiter.core.use_cases.metrics.entry.load import (
     MetricEntryLoadArgs,
     MetricEntryLoadResult,
@@ -258,31 +271,6 @@ from jupiter.core.use_cases.metrics.load_settings import (
     MetricLoadSettingsUseCase,
 )
 from jupiter.core.use_cases.metrics.update import MetricUpdateArgs, MetricUpdateUseCase
-from jupiter.core.use_cases.notes.archive import NoteArchiveArgs, NoteArchiveUseCase
-from jupiter.core.use_cases.notes.change_parent import (
-    NoteChangeParentArgs,
-    NoteChangeParentUseCase,
-)
-from jupiter.core.use_cases.notes.create import (
-    NoteCreateArgs,
-    NoteCreateResult,
-    NoteCreateUseCase,
-)
-from jupiter.core.use_cases.notes.find import (
-    NoteFindArgs,
-    NoteFindResult,
-    NoteFindUseCase,
-)
-from jupiter.core.use_cases.notes.load import (
-    NoteLoadArgs,
-    NoteLoadResult,
-    NoteLoadUseCase,
-)
-from jupiter.core.use_cases.notes.update import NoteUpdateArgs, NoteUpdateUseCase
-from jupiter.core.use_cases.notes.update_for_entity import (
-    NoteUpdateForEntityArgs,
-    NoteUpdateForEntityUseCase,
-)
 from jupiter.core.use_cases.persons.archive import (
     PersonArchiveArgs,
     PersonArchiveUseCase,
@@ -295,11 +283,6 @@ from jupiter.core.use_cases.persons.create import (
     PersonCreateArgs,
     PersonCreateResult,
     PersonCreateUseCase,
-)
-from jupiter.core.use_cases.persons.create_note import (
-    PersonCreateNoteArgs,
-    PersonCreateNoteResult,
-    PersonCreateNoteUseCase,
 )
 from jupiter.core.use_cases.persons.find import (
     PersonFindArgs,
@@ -711,14 +694,6 @@ inbox_task_create_use_case = InboxTaskCreateUseCase(
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
 )
-inbox_task_create_note_use_case = InboxTaskCreateNoteUseCase(
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
 inbox_task_update_use_case = InboxTaskUpdateUseCase(
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
@@ -907,7 +882,7 @@ big_plan_find_use_case = BigPlanFindUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
 )
 
-note_create_use_case = NoteCreateUseCase(
+doc_create_use_case = DocCreateUseCase(
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
@@ -915,7 +890,7 @@ note_create_use_case = NoteCreateUseCase(
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
 )
-note_archive_use_case = NoteArchiveUseCase(
+doc_archive_use_case = DocArchiveUseCase(
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
@@ -923,7 +898,7 @@ note_archive_use_case = NoteArchiveUseCase(
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
 )
-note_update_use_case = NoteUpdateUseCase(
+doc_update_use_case = DocUpdateUseCase(
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
@@ -931,7 +906,7 @@ note_update_use_case = NoteUpdateUseCase(
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
 )
-note_update_for_entity_use_case = NoteUpdateForEntityUseCase(
+doc_change_parent_use_case = DocChangeParentUseCase(
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
@@ -939,18 +914,10 @@ note_update_for_entity_use_case = NoteUpdateForEntityUseCase(
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
 )
-note_change_parent_use_case = NoteChangeParentUseCase(
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
-note_load_use_case = NoteLoadUseCase(
+doc_load_use_case = DocLoadUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
 )
-note_find_use_case = NoteFindUseCase(
+doc_find_use_case = DocFindUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
 )
 
@@ -1152,14 +1119,6 @@ metric_entry_create_use_case = MetricEntryCreateUseCase(
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
 )
-metric_entry_create_note_use_case = MetricEntryCreateNoteUseCase(
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
 metric_entry_update_use_case = MetricEntryUpdateUseCase(
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
@@ -1181,14 +1140,6 @@ metric_entry_load_use_case = MetricEntryLoadUseCase(
 )
 
 person_create_use_case = PersonCreateUseCase(
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
-person_create_note_use_case = PersonCreateNoteUseCase(
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
@@ -1299,6 +1250,31 @@ email_task_load_use_case = EmailTaskLoadUseCase(
 )
 email_task_find_use_case = EmailTaskFindUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+)
+
+note_create_use_case = NoteCreateUseCase(
+    time_provider=request_time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
+note_archive_use_case = NoteArchiveUseCase(
+    time_provider=request_time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
+note_update_use_case = NoteUpdateUseCase(
+    time_provider=request_time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 
 standard_responses: Dict[Union[int, str], Dict[str, Any]] = {  # type: ignore
@@ -1866,19 +1842,6 @@ async def create_inbox_task(
 
 
 @app.post(
-    "/inbox-task/create-note",
-    response_model=InboxTaskCreateNoteResult,
-    tags=["inbox-task"],
-    responses=standard_responses,
-)
-async def create_note_for_inbox_task(
-    args: InboxTaskCreateNoteArgs, session: LoggedInSession
-) -> InboxTaskCreateNoteResult:
-    """Create a inbox task note."""
-    return await inbox_task_create_note_use_case.execute(session, args)
-
-
-@app.post(
     "/inbox-task/update",
     response_model=InboxTaskUpdateResult,
     tags=["inbox-task"],
@@ -2217,86 +2180,71 @@ async def find_big_plan(
 
 
 @app.post(
-    "/note/create",
-    response_model=NoteCreateResult,
-    tags=["note"],
+    "/doc/create",
+    response_model=DocCreateResult,
+    tags=["doc"],
     responses=standard_responses,
 )
-async def create_note(
-    args: NoteCreateArgs, session: LoggedInSession
-) -> NoteCreateResult:
-    """Create a note."""
-    return await note_create_use_case.execute(session, args)
+async def create_doc(args: DocCreateArgs, session: LoggedInSession) -> DocCreateResult:
+    """Create a doc."""
+    return await doc_create_use_case.execute(session, args)
 
 
 @app.post(
-    "/note/archive",
+    "/doc/archive",
     response_model=None,
-    tags=["note"],
+    tags=["doc"],
     responses=standard_responses,
 )
-async def archive_note(args: NoteArchiveArgs, session: LoggedInSession) -> None:
-    """Archive a note."""
-    await note_archive_use_case.execute(session, args)
+async def archive_doc(args: DocArchiveArgs, session: LoggedInSession) -> None:
+    """Archive a doc."""
+    await doc_archive_use_case.execute(session, args)
 
 
 @app.post(
-    "/note/update",
+    "/doc/update",
     response_model=None,
-    tags=["note"],
+    tags=["doc"],
     responses=standard_responses,
 )
-async def update_note(args: NoteUpdateArgs, session: LoggedInSession) -> None:
-    """Update a note."""
-    await note_update_use_case.execute(session, args)
+async def update_doc(args: DocUpdateArgs, session: LoggedInSession) -> None:
+    """Update a doc."""
+    await doc_update_use_case.execute(session, args)
 
 
 @app.post(
-    "/note/update-for-entity",
+    "/doc/change-parent",
     response_model=None,
-    tags=["note"],
+    tags=["doc"],
     responses=standard_responses,
 )
-async def update_note_for_entity(
-    args: NoteUpdateForEntityArgs, session: LoggedInSession
+async def change_doc_parent(
+    args: DocChangeParentArgs, session: LoggedInSession
 ) -> None:
-    """Update a note."""
-    await note_update_for_entity_use_case.execute(session, args)
+    """Change the parent for a doc."""
+    await doc_change_parent_use_case.execute(session, args)
 
 
 @app.post(
-    "/note/change-parent",
-    response_model=None,
-    tags=["note"],
+    "/doc/load",
+    response_model=DocLoadResult,
+    tags=["doc"],
     responses=standard_responses,
 )
-async def change_note_parent(
-    args: NoteChangeParentArgs, session: LoggedInSession
-) -> None:
-    """Change the parent for a note."""
-    await note_change_parent_use_case.execute(session, args)
+async def load_doc(args: DocLoadArgs, session: LoggedInSession) -> DocLoadResult:
+    """Load a doc."""
+    return await doc_load_use_case.execute(session, args)
 
 
 @app.post(
-    "/note/load",
-    response_model=NoteLoadResult,
-    tags=["note"],
+    "/doc/find",
+    response_model=DocFindResult,
+    tags=["doc"],
     responses=standard_responses,
 )
-async def load_note(args: NoteLoadArgs, session: LoggedInSession) -> NoteLoadResult:
-    """Load a note."""
-    return await note_load_use_case.execute(session, args)
-
-
-@app.post(
-    "/note/find",
-    response_model=NoteFindResult,
-    tags=["note"],
-    responses=standard_responses,
-)
-async def find_note(args: NoteFindArgs, session: LoggedInSession) -> NoteFindResult:
-    """Find all notes, filtering by id."""
-    return await note_find_use_case.execute(session, args)
+async def find_doc(args: DocFindArgs, session: LoggedInSession) -> DocFindResult:
+    """Find all docs, filtering by id."""
+    return await doc_find_use_case.execute(session, args)
 
 
 @app.post(
@@ -2691,19 +2639,6 @@ async def create_metric_entry(
 
 
 @app.post(
-    "/metric/entry/create-note",
-    response_model=MetricEntryCreateNoteResult,
-    tags=["metric"],
-    responses=standard_responses,
-)
-async def create_note_for_metric_entry(
-    args: MetricEntryCreateNoteArgs, session: LoggedInSession
-) -> MetricEntryCreateNoteResult:
-    """Create a metric entry note."""
-    return await metric_entry_create_note_use_case.execute(session, args)
-
-
-@app.post(
     "/metric/entry/archive",
     response_model=None,
     tags=["metric"],
@@ -2753,19 +2688,6 @@ async def create_person(
 ) -> PersonCreateResult:
     """Create a person."""
     return await person_create_use_case.execute(session, args)
-
-
-@app.post(
-    "/person/create-note",
-    response_model=PersonCreateNoteResult,
-    tags=["person"],
-    responses=standard_responses,
-)
-async def create_note_for_person(
-    args: PersonCreateNoteArgs, session: LoggedInSession
-) -> PersonCreateNoteResult:
-    """Create a person note."""
-    return await person_create_note_use_case.execute(session, args)
 
 
 @app.post(
@@ -2996,6 +2918,41 @@ async def find_email_task(
 ) -> EmailTaskFindResult:
     """Find all email tasks, filtering by id."""
     return await email_task_find_use_case.execute(session, args)
+
+
+@app.post(
+    "/core/note/create",
+    response_model=NoteCreateResult,
+    tags=["note"],
+    responses=standard_responses,
+)
+async def create_note(
+    args: NoteCreateArgs, session: LoggedInSession
+) -> NoteCreateResult:
+    """Create a note."""
+    return await note_create_use_case.execute(session, args)
+
+
+@app.post(
+    "/core/note/archive",
+    response_model=None,
+    tags=["note"],
+    responses=standard_responses,
+)
+async def archive_note(args: NoteArchiveArgs, session: LoggedInSession) -> None:
+    """Archive a note."""
+    await note_archive_use_case.execute(session, args)
+
+
+@app.post(
+    "/core/note/update",
+    response_model=None,
+    tags=["note"],
+    responses=standard_responses,
+)
+async def update_note(args: NoteUpdateArgs, session: LoggedInSession) -> None:
+    """Update a note."""
+    await note_update_use_case.execute(session, args)
 
 
 async def do_gen_run() -> None:

@@ -3,11 +3,11 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import Iterable, List, Optional, cast
 
+from jupiter.core.domain.core.notes.note import Note
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
-from jupiter.core.domain.notes.note import Note
-from jupiter.core.domain.notes.note_source import NoteSource
 from jupiter.core.domain.persons.person import Person
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -114,15 +114,13 @@ class PersonFindUseCase(
             birthday_inbox_tasks = None
 
         all_notes_by_person_ref_id: defaultdict[EntityId, Note] = defaultdict(None)
-        if args.include_notes and workspace.is_feature_available(
-            WorkspaceFeature.NOTES
-        ):
+        if args.include_notes:
             notes_collection = await uow.note_collection_repository.load_by_parent(
                 workspace.ref_id
             )
             all_notes = await uow.note_repository.find_all_with_filters(
                 parent_ref_id=notes_collection.ref_id,
-                source=NoteSource.PERSON,
+                domain=NoteDomain.PERSON,
                 allow_archived=True,
                 filter_source_entity_ref_ids=[p.ref_id for p in persons],
             )

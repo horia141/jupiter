@@ -2,9 +2,9 @@
 from dataclasses import dataclass
 from typing import Tuple
 
+from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.gamification.score_stats import ScoreStats
 from jupiter.core.domain.gamification.user_score_overview import UserScore
-from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.entity import Record

@@ -3,7 +3,7 @@ import abc
 from dataclasses import dataclass
 from typing import Iterable, List, Optional
 
-from jupiter.core.domain.adate import ADate
+from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.entity_summary import EntitySummary
 from jupiter.core.domain.named_entity_tag import NamedEntityTag
 from jupiter.core.domain.search.search_limit import SearchLimit

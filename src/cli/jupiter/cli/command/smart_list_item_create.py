@@ -3,9 +3,9 @@ from argparse import ArgumentParser, Namespace
 
 from jupiter.cli.command.command import LoggedInMutationCommand
 from jupiter.cli.session_storage import SessionInfo
+from jupiter.core.domain.core.url import URL
 from jupiter.core.domain.smart_lists.smart_list_item_name import SmartListItemName
 from jupiter.core.domain.smart_lists.smart_list_tag_name import SmartListTagName
-from jupiter.core.domain.url import URL
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
 from jupiter.core.use_cases.smart_lists.item.create import (

@@ -2,8 +2,8 @@
 from dataclasses import dataclass
 from typing import ClassVar, Dict, Optional, Tuple
 
-from jupiter.core.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
-from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
+from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
+from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.value import Value
 

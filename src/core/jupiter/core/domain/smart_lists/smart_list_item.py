@@ -2,8 +2,8 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
+from jupiter.core.domain.core.url import URL
 from jupiter.core.domain.smart_lists.smart_list_item_name import SmartListItemName
-from jupiter.core.domain.url import URL
 from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.entity import FIRST_VERSION, Entity, LeafEntity

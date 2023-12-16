@@ -1,7 +1,7 @@
 """The SQLite based vacations repository."""
 from typing import Final, Iterable, List, Optional
 
-from jupiter.core.domain.adate import ADate
+from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.vacations.infra.vacation_collection_repository import (
     VacationCollectionNotFoundError,
     VacationCollectionRepository,

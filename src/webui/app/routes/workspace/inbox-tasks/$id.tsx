@@ -43,6 +43,7 @@ import {
   Eisen,
   InboxTaskSource,
   InboxTaskStatus,
+  NoteDomain,
   WorkspaceFeature,
 } from "jupiter-gen";
 import { useContext, useEffect, useState } from "react";
@@ -228,8 +229,10 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "create-note": {
-        await getLoggedInApiClient(session).inboxTask.createNoteForInboxTask({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).note.createNote({
+          domain: NoteDomain.INBOX_TASK,
+          source_entity_ref_id: { the_id: id },
+          content: [],
         });
 
         return redirect(`/workspace/inbox-tasks/${id}`);
@@ -684,10 +687,6 @@ export default function InboxTask() {
         </CardActions>
       </Card>
 
-      {isWorkspaceFeatureAvailable(
-        topLevelInfo.workspace,
-        WorkspaceFeature.NOTES
-      ) && (
         <Card>
           {!loaderData.info.note && (
             <CardActions>
@@ -715,7 +714,6 @@ export default function InboxTask() {
             </>
           )}
         </Card>
-      )}
     </LeafPanel>
   );
 }

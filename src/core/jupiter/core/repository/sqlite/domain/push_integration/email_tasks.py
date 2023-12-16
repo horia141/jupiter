@@ -1,7 +1,7 @@
 """The Email tasks repositories."""
 from typing import Final, Iterable, List, Optional
 
-from jupiter.core.domain.email_address import EmailAddress
+from jupiter.core.domain.core.email_address import EmailAddress
 from jupiter.core.domain.push_integrations.email.email_task import EmailTask
 from jupiter.core.domain.push_integrations.email.email_task_collection import (
     EmailTaskCollection,

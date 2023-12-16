@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from typing import Final
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
+from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
+from jupiter.core.domain.core.timeline import infer_timeline
 from jupiter.core.domain.gamification.infra.score_log_entry_repository import (
     ScoreLogEntryAlreadyExistsError,
 )
@@ -13,9 +15,7 @@ from jupiter.core.domain.gamification.score_period_best import ScorePeriodBest
 from jupiter.core.domain.gamification.score_stats import ScoreStats
 from jupiter.core.domain.gamification.user_score_overview import UserScoreOverview
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
-from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.domain.timeline import infer_timeline
 from jupiter.core.domain.user.user import User
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.value import Value

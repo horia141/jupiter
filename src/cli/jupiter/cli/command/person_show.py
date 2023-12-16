@@ -10,8 +10,8 @@ from jupiter.cli.command.rendering import (
     person_relationship_to_rich_text,
 )
 from jupiter.cli.session_storage import SessionInfo
+from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
 from jupiter.core.use_cases.persons.find import PersonFindArgs, PersonFindUseCase

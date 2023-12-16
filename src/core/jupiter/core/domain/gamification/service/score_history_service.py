@@ -1,8 +1,8 @@
 """The service for getting the scores history for a user."""
 
-from jupiter.core.domain.adate import ADate
+from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.gamification.user_score_history import UserScoreHistory
-from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.user.user import User
 from jupiter.core.framework.base.timestamp import Timestamp

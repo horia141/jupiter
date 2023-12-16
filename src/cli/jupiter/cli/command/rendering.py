@@ -5,12 +5,18 @@ from collections import defaultdict
 from contextlib import asynccontextmanager, contextmanager
 from typing import AsyncIterator, DefaultDict, Final, Iterator, List, Tuple
 
-from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.big_plans.big_plan_status import BigPlanStatus
-from jupiter.core.domain.difficulty import Difficulty
-from jupiter.core.domain.eisen import Eisen
-from jupiter.core.domain.email_address import EmailAddress
-from jupiter.core.domain.entity_name import EntityName
+from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.core.difficulty import Difficulty
+from jupiter.core.domain.core.eisen import Eisen
+from jupiter.core.domain.core.email_address import EmailAddress
+from jupiter.core.domain.core.entity_name import EntityName
+from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
+from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDueAtMonth
+from jupiter.core.domain.core.recurring_task_due_at_time import RecurringTaskDueAtTime
+from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
+from jupiter.core.domain.core.recurring_task_skip_rule import RecurringTaskSkipRule
+from jupiter.core.domain.core.timezone import Timezone
 from jupiter.core.domain.gamification.user_score_overview import (
     UserScore,
     UserScoreOverview,
@@ -28,13 +34,7 @@ from jupiter.core.domain.push_integrations.slack.slack_channel_name import (
     SlackChannelName,
 )
 from jupiter.core.domain.push_integrations.slack.slack_user_name import SlackUserName
-from jupiter.core.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
-from jupiter.core.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
-from jupiter.core.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
-from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
-from jupiter.core.domain.recurring_task_skip_rule import RecurringTaskSkipRule
 from jupiter.core.domain.sync_target import SyncTarget
-from jupiter.core.domain.timezone import Timezone
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.entity import BranchEntity, LeafEntity
 from jupiter.core.framework.event import EventSource

@@ -12,6 +12,14 @@ from jupiter.core.domain.chores.infra.chore_collection_repository import (
     ChoreCollectionRepository,
 )
 from jupiter.core.domain.chores.infra.chore_repository import ChoreRepository
+from jupiter.core.domain.core.notes.infra.note_collection_repository import (
+    NoteCollectionRepository,
+)
+from jupiter.core.domain.core.notes.infra.note_repository import NoteRepository
+from jupiter.core.domain.docs.infra.doc_collection_repository import (
+    DocCollectionRepository,
+)
+from jupiter.core.domain.docs.infra.doc_repository import DocRepository
 from jupiter.core.domain.fast_info_repository import FastInfoRepository
 from jupiter.core.domain.gamification.infra.score_log_entry_repository import (
     ScoreLogEntryRepository,
@@ -46,10 +54,6 @@ from jupiter.core.domain.metrics.infra.metric_entry_repository import (
     MetricEntryRepository,
 )
 from jupiter.core.domain.metrics.infra.metric_repository import MetricRepository
-from jupiter.core.domain.notes.infra.note_collection_repository import (
-    NoteCollectionRepository,
-)
-from jupiter.core.domain.notes.infra.note_repository import NoteRepository
 from jupiter.core.domain.persons.infra.person_collection_repository import (
     PersonCollectionRepository,
 )
@@ -113,6 +117,14 @@ from jupiter.core.repository.sqlite.domain.chores import (
     SqliteChoreCollectionRepository,
     SqliteChoreRepository,
 )
+from jupiter.core.repository.sqlite.domain.core.notes import (
+    SqliteNoteCollectionRepository,
+    SqliteNoteRepository,
+)
+from jupiter.core.repository.sqlite.domain.docs import (
+    SqliteDocCollectionRepository,
+    SqliteDocRepository,
+)
 from jupiter.core.repository.sqlite.domain.fast_info import SqliteFastInfoRepository
 from jupiter.core.repository.sqlite.domain.gamification.scores import (
     SqliteScoreLogEntryRepository,
@@ -140,10 +152,6 @@ from jupiter.core.repository.sqlite.domain.metrics import (
     SqliteMetricCollectionRepository,
     SqliteMetricEntryRepository,
     SqliteMetricRepository,
-)
-from jupiter.core.repository.sqlite.domain.notes import (
-    SqliteNoteCollectionRepository,
-    SqliteNoteRepository,
 )
 from jupiter.core.repository.sqlite.domain.persons import (
     SqlitePersonCollectionRepository,
@@ -205,8 +213,8 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
     _chore_repository: Final[SqliteChoreRepository]
     _big_plan_collection_repository: Final[SqliteBigPlanCollectionRepository]
     _big_plan_repository: Final[SqliteBigPlanRepository]
-    _note_collection_repository: Final[SqliteNoteCollectionRepository]
-    _note_repository: Final[SqliteNoteRepository]
+    _doc_collection_repository: Final[SqliteDocCollectionRepository]
+    _doc_repository: Final[SqliteDocRepository]
     _vacation_collection_repository: Final[SqliteVacationCollectionRepository]
     _vacation_repository: Final[SqliteVacationRepository]
     _project_collection_repository: Final[SqliteProjectCollectionRepository]
@@ -225,6 +233,8 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
     _slack_task_repository: Final[SqliteSlackTaskRepository]
     _email_task_collection_repository: Final[SqliteEmailTaskCollectionRepository]
     _email_task_repository: Final[SqliteEmailTaskRepository]
+    _note_collection_repository: Final[SqliteNoteCollectionRepository]
+    _note_repository: Final[SqliteNoteRepository]
     _fast_info_repository: Final[SqliteFastInfoRepository]
     _gen_log_repository: Final[SqliteGenLogRepository]
     _gen_log_entry_repository: Final[SqliteGenLogEntryRepository]
@@ -249,8 +259,8 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
         chore_repository: SqliteChoreRepository,
         big_plan_collection_repository: SqliteBigPlanCollectionRepository,
         big_plan_repository: SqliteBigPlanRepository,
-        note_collection_repository: SqliteNoteCollectionRepository,
-        note_repository: SqliteNoteRepository,
+        doc_collection_repository: SqliteDocCollectionRepository,
+        doc_repository: SqliteDocRepository,
         vacation_repository: SqliteVacationRepository,
         vacation_collection_repository: SqliteVacationCollectionRepository,
         project_collection_repository: SqliteProjectCollectionRepository,
@@ -269,6 +279,8 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
         slack_task_repository: SqliteSlackTaskRepository,
         email_task_collection_repository: SqliteEmailTaskCollectionRepository,
         email_task_repository: SqliteEmailTaskRepository,
+        note_collection_repository: SqliteNoteCollectionRepository,
+        note_repository: SqliteNoteRepository,
         fast_into_repository: SqliteFastInfoRepository,
         gen_log_repository: SqliteGenLogRepository,
         gen_log_entry_repository: SqliteGenLogEntryRepository,
@@ -292,8 +304,8 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
         self._chore_repository = chore_repository
         self._big_plan_collection_repository = big_plan_collection_repository
         self._big_plan_repository = big_plan_repository
-        self._note_collection_repository = note_collection_repository
-        self._note_repository = note_repository
+        self._doc_collection_repository = doc_collection_repository
+        self._doc_repository = doc_repository
         self._vacation_collection_repository = vacation_collection_repository
         self._vacation_repository = vacation_repository
         self._project_collection_repository = project_collection_repository
@@ -312,6 +324,8 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
         self._slack_task_repository = slack_task_repository
         self._email_task_collection_repository = email_task_collection_repository
         self._email_task_repository = email_task_repository
+        self._note_collection_repository = note_collection_repository
+        self._note_repository = note_repository
         self._fast_info_repository = fast_into_repository
         self._gen_log_repository = gen_log_repository
         self._gen_log_entry_repository = gen_log_entry_repository
@@ -411,14 +425,14 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
         return self._big_plan_repository
 
     @property
-    def note_collection_repository(self) -> NoteCollectionRepository:
-        """The note collection repository."""
-        return self._note_collection_repository
+    def doc_collection_repository(self) -> DocCollectionRepository:
+        """The doc collection repository."""
+        return self._doc_collection_repository
 
     @property
-    def note_repository(self) -> NoteRepository:
-        """The note repository."""
-        return self._note_repository
+    def doc_repository(self) -> DocRepository:
+        """The doc repository."""
+        return self._doc_repository
 
     @property
     def vacation_collection_repository(self) -> VacationCollectionRepository:
@@ -511,6 +525,16 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
         return self._email_task_repository
 
     @property
+    def note_collection_repository(self) -> NoteCollectionRepository:
+        """The note collection repository."""
+        return self._note_collection_repository
+
+    @property
+    def note_repository(self) -> NoteRepository:
+        """The note repository."""
+        return self._note_repository
+
+    @property
     def fast_into_repository(self) -> FastInfoRepository:
         """The fast info repository."""
         return self._fast_info_repository
@@ -590,11 +614,11 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
                 self._metadata,
             )
             big_plan_repository = SqliteBigPlanRepository(connection, self._metadata)
-            note_collection_repository = SqliteNoteCollectionRepository(
+            doc_collection_repository = SqliteDocCollectionRepository(
                 connection,
                 self._metadata,
             )
-            note_repository = SqliteNoteRepository(connection, self._metadata)
+            doc_repository = SqliteDocRepository(connection, self._metadata)
             vacation_collection_repository = SqliteVacationCollectionRepository(
                 connection,
                 self._metadata,
@@ -655,6 +679,11 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
                 connection,
                 self._metadata,
             )
+            note_collection_repository = SqliteNoteCollectionRepository(
+                connection,
+                self._metadata,
+            )
+            note_repository = SqliteNoteRepository(connection, self._metadata)
             fast_info_repository = SqliteFastInfoRepository(connection)
             gen_log_repository = SqliteGenLogRepository(connection, self._metadata)
             gen_log_entry_repository = SqliteGenLogEntryRepository(
@@ -682,8 +711,8 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
                 chore_repository=chore_repository,
                 big_plan_collection_repository=big_plan_collection_repository,
                 big_plan_repository=big_plan_repository,
-                note_collection_repository=note_collection_repository,
-                note_repository=note_repository,
+                doc_collection_repository=doc_collection_repository,
+                doc_repository=doc_repository,
                 vacation_collection_repository=vacation_collection_repository,
                 vacation_repository=vacation_repository,
                 project_collection_repository=project_collection_repository,
@@ -702,6 +731,8 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
                 slack_task_repository=slack_task_repository,
                 email_task_collection_repository=email_task_collection_repository,
                 email_task_repository=email_task_repository,
+                note_collection_repository=note_collection_repository,
+                note_repository=note_repository,
                 fast_into_repository=fast_info_repository,
                 gen_log_repository=gen_log_repository,
                 gen_log_entry_repository=gen_log_entry_repository,

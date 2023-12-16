@@ -18,7 +18,7 @@ import {
   useTransition,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { ApiError, WorkspaceFeature } from "jupiter-gen";
+import { ApiError, NoteDomain, WorkspaceFeature } from "jupiter-gen";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
@@ -103,8 +103,10 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "create-note": {
-        await getLoggedInApiClient(session).metric.createNoteForMetricEntry({
-          ref_id: { the_id: entryId },
+        await getLoggedInApiClient(session).note.createNote({
+          domain: NoteDomain.METRIC_ENTRY,
+          source_entity_ref_id: { the_id: entryId },
+          content: [],
         });
 
         return redirect(`/workspace/metrics/${id}/entries/${entryId}`);
@@ -212,10 +214,6 @@ export default function MetricEntry() {
         </CardActions>
       </Card>
 
-      {isWorkspaceFeatureAvailable(
-        topLevelInfo.workspace,
-        WorkspaceFeature.NOTES
-      ) && (
         <Card>
           {!loaderData.note && (
             <CardActions>
@@ -243,7 +241,6 @@ export default function MetricEntry() {
             </>
           )}
         </Card>
-      )}
     </LeafPanel>
   );
 }

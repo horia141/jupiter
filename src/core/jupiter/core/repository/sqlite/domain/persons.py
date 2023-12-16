@@ -1,8 +1,13 @@
 """SQLite based Person repositories."""
 from typing import Final, Iterable, List, Optional
 
-from jupiter.core.domain.difficulty import Difficulty
-from jupiter.core.domain.eisen import Eisen
+from jupiter.core.domain.core.difficulty import Difficulty
+from jupiter.core.domain.core.eisen import Eisen
+from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
+from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDueAtMonth
+from jupiter.core.domain.core.recurring_task_due_at_time import RecurringTaskDueAtTime
+from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
+from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.persons.infra.person_collection_repository import (
     PersonCollectionNotFoundError,
     PersonCollectionRepository,
@@ -17,11 +22,6 @@ from jupiter.core.domain.persons.person_birthday import PersonBirthday
 from jupiter.core.domain.persons.person_collection import PersonCollection
 from jupiter.core.domain.persons.person_name import PersonName
 from jupiter.core.domain.persons.person_relationship import PersonRelationship
-from jupiter.core.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
-from jupiter.core.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
-from jupiter.core.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
-from jupiter.core.domain.recurring_task_gen_params import RecurringTaskGenParams
-from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.repository.sqlite.infra.events import (

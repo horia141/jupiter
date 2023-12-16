@@ -3,15 +3,15 @@ from argparse import ArgumentParser, Namespace
 
 from jupiter.cli.command.command import LoggedInMutationCommand
 from jupiter.cli.session_storage import SessionInfo
-from jupiter.core.domain.difficulty import Difficulty
-from jupiter.core.domain.eisen import Eisen
+from jupiter.core.domain.core.difficulty import Difficulty
+from jupiter.core.domain.core.eisen import Eisen
+from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
+from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDueAtMonth
+from jupiter.core.domain.core.recurring_task_due_at_time import RecurringTaskDueAtTime
+from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
+from jupiter.core.domain.core.recurring_task_skip_rule import RecurringTaskSkipRule
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.habits.habit_name import HabitName
-from jupiter.core.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
-from jupiter.core.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
-from jupiter.core.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
-from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
-from jupiter.core.domain.recurring_task_skip_rule import RecurringTaskSkipRule
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.use_cases.habits.create import HabitCreateArgs, HabitCreateUseCase
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession

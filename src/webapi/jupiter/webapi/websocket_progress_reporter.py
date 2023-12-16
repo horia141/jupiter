@@ -14,7 +14,7 @@ from typing import (
     Tuple,
 )
 
-from jupiter.core.domain.entity_name import EntityName
+from jupiter.core.domain.core.entity_name import EntityName
 from jupiter.core.domain.named_entity_tag import NamedEntityTag
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.entity import BranchEntity, LeafEntity

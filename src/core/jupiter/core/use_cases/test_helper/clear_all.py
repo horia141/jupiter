@@ -7,14 +7,15 @@ from jupiter.core.domain.auth.password_new_plain import PasswordNewPlain
 from jupiter.core.domain.auth.password_plain import PasswordPlain
 from jupiter.core.domain.big_plans.service.remove_service import BigPlanRemoveService
 from jupiter.core.domain.chores.service.remove_service import ChoreRemoveService
+from jupiter.core.domain.core.notes.service.note_remove_service import NoteRemoveService
+from jupiter.core.domain.core.timezone import Timezone
+from jupiter.core.domain.docs.service.doc_remove_service import DocRemoveService
 from jupiter.core.domain.features import UserFeatureFlags, WorkspaceFeatureFlags
 from jupiter.core.domain.habits.service.remove_service import HabitRemoveService
 from jupiter.core.domain.inbox_tasks.service.remove_service import (
     InboxTaskRemoveService,
 )
 from jupiter.core.domain.metrics.service.remove_service import MetricRemoveService
-from jupiter.core.domain.notes.note_source import NoteSource
-from jupiter.core.domain.notes.service.note_remove_service import NoteRemoveService
 from jupiter.core.domain.persons.service.remove_service import PersonRemoveService
 from jupiter.core.domain.projects.service.remove_service import ProjectRemoveService
 from jupiter.core.domain.push_integrations.email.service.remove_service import (
@@ -31,7 +32,6 @@ from jupiter.core.domain.storage_engine import (
     DomainUnitOfWork,
     SearchStorageEngine,
 )
-from jupiter.core.domain.timezone import Timezone
 from jupiter.core.domain.user.user_name import UserName
 from jupiter.core.domain.vacations.service.remove_service import VacationRemoveService
 from jupiter.core.domain.workspaces.workspace_name import WorkspaceName
@@ -130,7 +130,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
         big_plan_collection = await uow.big_plan_collection_repository.load_by_parent(
             workspace.ref_id,
         )
-        note_collection = await uow.note_collection_repository.load_by_parent(
+        doc_collection = await uow.doc_collection_repository.load_by_parent(
             workspace.ref_id
         )
         vacation_collection = await uow.vacation_collection_repository.load_by_parent(
@@ -164,6 +164,9 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
             await uow.email_task_collection_repository.load_by_parent(
                 push_integration_group.ref_id,
             )
+        )
+        note_collection = await uow.note_collection_repository.load_by_parent(
+            workspace.ref_id
         )
 
         async with progress_reporter.section("Resseting user"):
@@ -272,16 +275,15 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
                     big_plan.ref_id,
                 )
 
-        async with progress_reporter.section("Clearing notes"):
-            root_notes = await uow.note_repository.find_all_with_filters(
-                parent_ref_id=note_collection.ref_id,
-                source=NoteSource.USER,
+        async with progress_reporter.section("Clearing docs"):
+            root_docs = await uow.doc_repository.find_all_with_filters(
+                parent_ref_id=doc_collection.ref_id,
                 allow_archived=True,
-                filter_parent_note_ref_ids=[None],
+                filter_parent_doc_ref_ids=[None],
             )
-            note_remove_service = NoteRemoveService()
-            for note in root_notes:
-                await note_remove_service.do_it(uow, progress_reporter, note)
+            doc_remove_service = DocRemoveService()
+            for doc in root_docs:
+                await doc_remove_service.do_it(uow, progress_reporter, doc)
 
         async with progress_reporter.section("Clearing vacations"):
             all_vacations = await uow.vacation_repository.find_all(
@@ -417,6 +419,15 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
                 await inbox_task_remove_service.do_it(
                     uow, progress_reporter, inbox_task
                 )
+
+        async with progress_reporter.section("Clearing notes"):
+            root_notes = await uow.note_repository.find_all(
+                parent_ref_id=note_collection.ref_id,
+                allow_archived=True,
+            )
+            note_remove_service = NoteRemoveService()
+            for note in root_notes:
+                await note_remove_service.remove(uow, note)
 
         async with progress_reporter.section("Clearing use case invocation records"):
             async with self._use_case_storage_engine.get_unit_of_work() as uc_uow:

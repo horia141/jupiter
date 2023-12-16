@@ -2,10 +2,10 @@
 from dataclasses import dataclass
 from typing import Optional
 
+from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.persons.person_birthday import PersonBirthday
 from jupiter.core.domain.persons.person_name import PersonName
 from jupiter.core.domain.persons.person_relationship import PersonRelationship
-from jupiter.core.domain.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.entity import FIRST_VERSION, Entity, LeafEntity

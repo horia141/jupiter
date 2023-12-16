@@ -6,7 +6,7 @@ from jupiter.cli.command.command import GuestMutationCommand
 from jupiter.cli.session_storage import SessionInfo
 from jupiter.core.domain.auth.password_new_plain import PasswordNewPlain
 from jupiter.core.domain.auth.recovery_token_plain import RecoveryTokenPlain
-from jupiter.core.domain.email_address import EmailAddress
+from jupiter.core.domain.core.email_address import EmailAddress
 from jupiter.core.framework.secure import secure_class
 from jupiter.core.use_cases.auth.reset_password import (
     ResetPasswordArgs,

@@ -1,13 +1,13 @@
 """A user of Jupiter."""
 from dataclasses import dataclass
 
-from jupiter.core.domain.email_address import EmailAddress
+from jupiter.core.domain.core.email_address import EmailAddress
+from jupiter.core.domain.core.timezone import Timezone
 from jupiter.core.domain.features import (
     UserFeature,
     UserFeatureFlags,
     UserFeatureFlagsControls,
 )
-from jupiter.core.domain.timezone import Timezone
 from jupiter.core.domain.user.avatar import Avatar
 from jupiter.core.domain.user.user_name import UserName
 from jupiter.core.framework.base.entity_id import BAD_REF_ID

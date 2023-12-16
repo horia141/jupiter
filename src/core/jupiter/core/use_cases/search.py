@@ -2,8 +2,8 @@
 from dataclasses import dataclass
 from typing import Final, List, Optional
 
-from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
+from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.features import FeatureUnavailableError
 from jupiter.core.domain.named_entity_tag import NamedEntityTag
 from jupiter.core.domain.search.infra.search_repository import SearchMatch

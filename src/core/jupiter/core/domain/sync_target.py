@@ -14,7 +14,7 @@ class SyncTarget(enum.Enum):
     HABITS = "habits"
     CHORES = "chores"
     BIG_PLANS = "big-plans"
-    NOTES = "notes"
+    DOCS = "docs"
     VACATIONS = "vacations"
     PROJECTS = "projects"
     SMART_LISTS = "smart-lists"

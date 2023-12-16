@@ -27,8 +27,8 @@ export function workspaceFeatureName(feature: WorkspaceFeature): string {
       return "Chores";
     case WorkspaceFeature.BIG_PLANS:
       return "Big Plans";
-    case WorkspaceFeature.NOTES:
-      return "Notes";
+    case WorkspaceFeature.DOCS:
+      return "Docs";
     case WorkspaceFeature.VACATIONS:
       return "Vacations";
     case WorkspaceFeature.PROJECTS:
@@ -58,8 +58,8 @@ export function workspaceFeatureToDocsHelpSubject(
       return DocsHelpSubject.CHORES;
     case WorkspaceFeature.BIG_PLANS:
       return DocsHelpSubject.BIG_PLANS;
-    case WorkspaceFeature.NOTES:
-      return DocsHelpSubject.NOTES;
+    case WorkspaceFeature.DOCS:
+      return DocsHelpSubject.DOCS;
     case WorkspaceFeature.VACATIONS:
       return DocsHelpSubject.VACATIONS;
     case WorkspaceFeature.PROJECTS:

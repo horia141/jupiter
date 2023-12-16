@@ -3,15 +3,15 @@ from argparse import ArgumentParser, Namespace
 
 from jupiter.cli.command.command import LoggedInMutationCommand
 from jupiter.cli.session_storage import SessionInfo
-from jupiter.core.domain.difficulty import Difficulty
-from jupiter.core.domain.eisen import Eisen
+from jupiter.core.domain.core.difficulty import Difficulty
+from jupiter.core.domain.core.eisen import Eisen
+from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
+from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDueAtMonth
+from jupiter.core.domain.core.recurring_task_due_at_time import RecurringTaskDueAtTime
+from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.persons.person_birthday import PersonBirthday
 from jupiter.core.domain.persons.person_name import PersonName
 from jupiter.core.domain.persons.person_relationship import PersonRelationship
-from jupiter.core.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
-from jupiter.core.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
-from jupiter.core.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
-from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
 from jupiter.core.use_cases.persons.create import PersonCreateArgs, PersonCreateUseCase
 

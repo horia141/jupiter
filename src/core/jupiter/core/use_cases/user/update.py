@@ -1,8 +1,8 @@
 """The command for updating a user's properties."""
 from dataclasses import dataclass
 
+from jupiter.core.domain.core.timezone import Timezone
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.domain.timezone import Timezone
 from jupiter.core.domain.user.user_name import UserName
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.update_action import UpdateAction

@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 
 from jupiter.cli.command.command import LoggedInMutationCommand
 from jupiter.cli.session_storage import SessionInfo
-from jupiter.core.domain.adate import ADate
+from jupiter.core.domain.core.adate import ADate
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
 from jupiter.core.use_cases.metrics.entry.create import (

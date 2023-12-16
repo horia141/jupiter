@@ -6,13 +6,13 @@ from jupiter.cli.command.command import TestHelperCommand
 from jupiter.cli.session_storage import SessionStorage
 from jupiter.core.domain.auth.password_new_plain import PasswordNewPlain
 from jupiter.core.domain.auth.password_plain import PasswordPlain
+from jupiter.core.domain.core.timezone import Timezone
 from jupiter.core.domain.features import (
     UserFeature,
     UserFeatureFlags,
     WorkspaceFeature,
     WorkspaceFeatureFlags,
 )
-from jupiter.core.domain.timezone import Timezone
 from jupiter.core.domain.user.user_name import UserName
 from jupiter.core.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.core.framework.base.entity_id import EntityId

@@ -5,7 +5,7 @@ from typing import cast
 from jupiter.cli.command.command import GuestReadonlyCommand
 from jupiter.cli.session_storage import SessionInfo
 from jupiter.core.domain.auth.password_plain import PasswordPlain
-from jupiter.core.domain.email_address import EmailAddress
+from jupiter.core.domain.core.email_address import EmailAddress
 from jupiter.core.framework.secure import secure_class
 from jupiter.core.use_cases.infra.use_cases import AppGuestUseCaseSession
 from jupiter.core.use_cases.login import LoginArgs, LoginUseCase

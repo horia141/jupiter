@@ -115,7 +115,7 @@ class WorkspaceFeature(enum.Enum):
     HABITS = "habits"
     CHORES = "chores"
     BIG_PLANS = "big-plans"
-    NOTES = "notes"
+    DOCS = "docs"
     VACATIONS = "vacations"
     PROJECTS = "projects"
     SMART_LISTS = "smart-lists"
@@ -174,7 +174,7 @@ BASIC_WORKSPACE_FEATURE_FLAGS = {
     WorkspaceFeature.HABITS: True,
     WorkspaceFeature.CHORES: False,
     WorkspaceFeature.BIG_PLANS: False,
-    WorkspaceFeature.NOTES: True,
+    WorkspaceFeature.DOCS: True,
     WorkspaceFeature.VACATIONS: False,
     WorkspaceFeature.PROJECTS: False,
     WorkspaceFeature.SMART_LISTS: False,
@@ -191,7 +191,7 @@ HOSTED_GLOBAL_WORKSPACE_FEATURE_FLAGS_CONTROLS = WorkspaceFeatureFlagsControls(
         WorkspaceFeature.HABITS: FeatureControl.USER,
         WorkspaceFeature.CHORES: FeatureControl.USER,
         WorkspaceFeature.BIG_PLANS: FeatureControl.USER,
-        WorkspaceFeature.NOTES: FeatureControl.USER,
+        WorkspaceFeature.DOCS: FeatureControl.USER,
         WorkspaceFeature.VACATIONS: FeatureControl.USER,
         WorkspaceFeature.PROJECTS: FeatureControl.USER,
         WorkspaceFeature.SMART_LISTS: FeatureControl.USER,
@@ -209,7 +209,7 @@ LOCAL_WORKSPACE_FEATURE_FLAGS_CONTROLS = WorkspaceFeatureFlagsControls(
         WorkspaceFeature.HABITS: FeatureControl.USER,
         WorkspaceFeature.CHORES: FeatureControl.USER,
         WorkspaceFeature.BIG_PLANS: FeatureControl.USER,
-        WorkspaceFeature.NOTES: FeatureControl.USER,
+        WorkspaceFeature.DOCS: FeatureControl.USER,
         WorkspaceFeature.VACATIONS: FeatureControl.USER,
         WorkspaceFeature.PROJECTS: FeatureControl.USER,
         WorkspaceFeature.SMART_LISTS: FeatureControl.USER,

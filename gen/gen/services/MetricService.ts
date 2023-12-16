@@ -7,8 +7,6 @@ import type { MetricCreateArgs } from '../models/MetricCreateArgs';
 import type { MetricCreateResult } from '../models/MetricCreateResult';
 import type { MetricEntryArchiveArgs } from '../models/MetricEntryArchiveArgs';
 import type { MetricEntryCreateArgs } from '../models/MetricEntryCreateArgs';
-import type { MetricEntryCreateNoteArgs } from '../models/MetricEntryCreateNoteArgs';
-import type { MetricEntryCreateNoteResult } from '../models/MetricEntryCreateNoteResult';
 import type { MetricEntryCreateResult } from '../models/MetricEntryCreateResult';
 import type { MetricEntryLoadArgs } from '../models/MetricEntryLoadArgs';
 import type { MetricEntryLoadResult } from '../models/MetricEntryLoadResult';
@@ -202,29 +200,6 @@ export class MetricService {
         return this.httpRequest.request({
             method: 'POST',
             url: '/metric/entry/create',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * Create Note For Metric Entry
-     * Create a metric entry note.
-     * @param requestBody
-     * @returns MetricEntryCreateNoteResult Successful Response
-     * @throws ApiError
-     */
-    public createNoteForMetricEntry(
-        requestBody: MetricEntryCreateNoteArgs,
-    ): CancelablePromise<MetricEntryCreateNoteResult> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/metric/entry/create-note',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

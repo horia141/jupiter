@@ -17,9 +17,9 @@ from jupiter.cli.command.rendering import (
     period_to_rich_text,
 )
 from jupiter.cli.session_storage import SessionInfo
-from jupiter.core.domain.adate import ADate
+from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.core.notes.note_content_block import ParagraphBlock
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.notes.note_content_block import ParagraphBlock
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
 from jupiter.core.use_cases.metrics.find import MetricFindArgs, MetricFindUseCase

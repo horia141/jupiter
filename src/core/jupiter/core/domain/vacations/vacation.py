@@ -2,7 +2,7 @@
 import typing
 from dataclasses import dataclass
 
-from jupiter.core.domain.adate import ADate
+from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.vacations.vacation_name import VacationName
 from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.core.framework.base.timestamp import Timestamp

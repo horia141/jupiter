@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 
 from jupiter.cli.command.command import LoggedInMutationCommand
 from jupiter.cli.session_storage import SessionInfo
-from jupiter.core.domain.entity_icon import EntityIcon
+from jupiter.core.domain.core.entity_icon import EntityIcon
 from jupiter.core.domain.smart_lists.smart_list_name import SmartListName
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
 from jupiter.core.use_cases.smart_lists.create import (

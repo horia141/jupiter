@@ -68,10 +68,10 @@ export function EntitySummaryLink({
           {commonSequence}
         </EntityLink>
       );
-    case NamedEntityTag.NOTE:
+    case NamedEntityTag.DOC:
       return (
-        <EntityLink to={`/workspace/notes/${summary.ref_id.the_id}`}>
-          <SlimChip label={"Note"} color={"primary"} />
+        <EntityLink to={`/workspace/docs/${summary.ref_id.the_id}`}>
+          <SlimChip label={"Doc"} color={"primary"} />
           {commonSequence}
         </EntityLink>
       );

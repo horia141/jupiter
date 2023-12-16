@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from jupiter.core.domain.entity_name import EntityName
+from jupiter.core.domain.core.entity_name import EntityName
 from jupiter.core.domain.push_integrations.push_generation_extra_info import (
     PushGenerationExtraInfo,
 )

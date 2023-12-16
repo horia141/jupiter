@@ -11,6 +11,14 @@ from jupiter.core.domain.chores.infra.chore_collection_repository import (
     ChoreCollectionRepository,
 )
 from jupiter.core.domain.chores.infra.chore_repository import ChoreRepository
+from jupiter.core.domain.core.notes.infra.note_collection_repository import (
+    NoteCollectionRepository,
+)
+from jupiter.core.domain.core.notes.infra.note_repository import NoteRepository
+from jupiter.core.domain.docs.infra.doc_collection_repository import (
+    DocCollectionRepository,
+)
+from jupiter.core.domain.docs.infra.doc_repository import DocRepository
 from jupiter.core.domain.fast_info_repository import FastInfoRepository
 from jupiter.core.domain.gamification.infra.score_log_entry_repository import (
     ScoreLogEntryRepository,
@@ -45,10 +53,6 @@ from jupiter.core.domain.metrics.infra.metric_entry_repository import (
     MetricEntryRepository,
 )
 from jupiter.core.domain.metrics.infra.metric_repository import MetricRepository
-from jupiter.core.domain.notes.infra.note_collection_repository import (
-    NoteCollectionRepository,
-)
-from jupiter.core.domain.notes.infra.note_repository import NoteRepository
 from jupiter.core.domain.persons.infra.person_collection_repository import (
     PersonCollectionRepository,
 )
@@ -183,13 +187,13 @@ class DomainUnitOfWork(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def note_collection_repository(self) -> NoteCollectionRepository:
-        """The note collection repository."""
+    def doc_collection_repository(self) -> DocCollectionRepository:
+        """The doc collection repository."""
 
     @property
     @abc.abstractmethod
-    def note_repository(self) -> NoteRepository:
-        """The note repository."""
+    def doc_repository(self) -> DocRepository:
+        """The doc repository."""
 
     @property
     @abc.abstractmethod
@@ -280,6 +284,16 @@ class DomainUnitOfWork(abc.ABC):
     @abc.abstractmethod
     def email_task_repository(self) -> EmailTaskRepository:
         """The email task repository."""
+
+    @property
+    @abc.abstractmethod
+    def note_collection_repository(self) -> NoteCollectionRepository:
+        """The note collection repository."""
+
+    @property
+    @abc.abstractmethod
+    def note_repository(self) -> NoteRepository:
+        """The note repository."""
 
     @property
     @abc.abstractmethod

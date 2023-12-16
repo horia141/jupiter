@@ -1,8 +1,8 @@
 """A metric entry."""
 from dataclasses import dataclass
 
-from jupiter.core.domain.adate import ADate
-from jupiter.core.domain.entity_name import EntityName
+from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.core.entity_name import EntityName
 from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.entity import FIRST_VERSION, Entity, LeafEntity

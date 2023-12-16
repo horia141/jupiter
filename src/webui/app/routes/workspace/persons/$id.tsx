@@ -29,6 +29,7 @@ import {
   Difficulty,
   Eisen,
   InboxTaskStatus,
+  NoteDomain,
   PersonRelationship,
   RecurringTaskPeriod,
   WorkspaceFeature,
@@ -226,8 +227,10 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "create-note": {
-        await getLoggedInApiClient(session).person.createNoteForPerson({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).note.createNote({
+          domain: NoteDomain.PERSON,
+          source_entity_ref_id: { the_id: id },
+          content: [],
         });
 
         return redirect(`/workspace/persons/${id}`);
@@ -615,10 +618,6 @@ export default function Person() {
         </CardActions>
       </Card>
 
-      {isWorkspaceFeatureAvailable(
-        topLevelInfo.workspace,
-        WorkspaceFeature.NOTES
-      ) && (
         <Card>
           {!loaderData.note && (
             <CardActions>
@@ -646,7 +645,6 @@ export default function Person() {
             </>
           )}
         </Card>
-      )}
 
       {sortedBirthdayTasks.length > 0 && (
         <InboxTaskStack

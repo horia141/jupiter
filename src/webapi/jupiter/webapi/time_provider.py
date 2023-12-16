@@ -2,7 +2,7 @@
 from contextvars import ContextVar
 
 import pendulum
-from jupiter.core.domain.adate import ADate
+from jupiter.core.domain.core.adate import ADate
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.utils.time_provider import TimeProvider
 from pendulum.tz.timezone import UTC

@@ -5,9 +5,9 @@ from typing import Final
 from jupiter.cli.command.command import LoggedInMutationCommand
 from jupiter.cli.session_storage import SessionInfo, SessionStorage
 from jupiter.cli.top_level_context import LoggedInTopLevelContext
-from jupiter.core.domain.adate import ADate
-from jupiter.core.domain.difficulty import Difficulty
-from jupiter.core.domain.eisen import Eisen
+from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.core.difficulty import Difficulty
+from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.core.framework.base.entity_id import EntityId

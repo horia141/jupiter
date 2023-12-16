@@ -1,7 +1,8 @@
 """SQLite implementation of task generation infra classes."""
 from typing import Final, Iterable, List, Optional
 
-from jupiter.core.domain.adate import ADate
+from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.entity_summary import EntitySummary
 from jupiter.core.domain.gen.gen_log import GenLog
 from jupiter.core.domain.gen.gen_log_entry import GenLogEntry
@@ -14,7 +15,6 @@ from jupiter.core.domain.gen.infra.gen_log_repository import (
     GenLogNotFoundError,
     GenLogRepository,
 )
-from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.sync_target import SyncTarget
 from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.core.framework.base.timestamp import Timestamp

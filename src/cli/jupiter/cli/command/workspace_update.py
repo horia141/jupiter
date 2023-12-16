@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 
 from jupiter.cli.command.command import LoggedInMutationCommand
 from jupiter.cli.session_storage import SessionInfo
-from jupiter.core.domain.timezone import Timezone
+from jupiter.core.domain.core.timezone import Timezone
 from jupiter.core.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession

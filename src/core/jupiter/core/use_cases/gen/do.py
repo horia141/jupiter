@@ -2,9 +2,9 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
-from jupiter.core.domain.adate import ADate
+from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.gen.service.gen_service import GenService
-from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.sync_target import SyncTarget
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource

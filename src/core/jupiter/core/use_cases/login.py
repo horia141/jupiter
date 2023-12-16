@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from jupiter.core.domain.auth.auth_token_ext import AuthTokenExt
 from jupiter.core.domain.auth.password_plain import PasswordPlain
-from jupiter.core.domain.email_address import EmailAddress
+from jupiter.core.domain.core.email_address import EmailAddress
 from jupiter.core.domain.user.infra.user_repository import UserNotFoundError
 from jupiter.core.framework.secure import secure_class
 from jupiter.core.framework.use_case import (

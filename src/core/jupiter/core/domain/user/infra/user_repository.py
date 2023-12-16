@@ -2,7 +2,7 @@
 import abc
 from typing import Iterable, Optional
 
-from jupiter.core.domain.email_address import EmailAddress
+from jupiter.core.domain.core.email_address import EmailAddress
 from jupiter.core.domain.user.user import User
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.repository import (

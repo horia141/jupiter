@@ -26,13 +26,13 @@ warn_untyped_fields = True
 [mypy-jupiter.core.framework.update_action.*]
 disallow_any_explicit = False
 
-[mypy-jupiter.core.domain.adate]
+[mypy-jupiter.core.domain.core.adate]
 disallow_untyped_calls = False
 
-[mypy-jupiter.core.domain.schedules]
+[mypy-jupiter.core.domain.core.schedules]
 disallow_untyped_calls = False
 
-[mypy-jupiter.core.domain.timeline]
+[mypy-jupiter.core.domain.core.timeline]
 disallow_untyped_calls = False
 
 [mypy-jupiter.cli.command.*]

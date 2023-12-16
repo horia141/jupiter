@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from typing import Iterable, Optional
 
-from jupiter.core.domain.adate import ADate
+from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.metrics.metric_entry import MetricEntry
 from jupiter.core.domain.storage_engine import DomainUnitOfWork

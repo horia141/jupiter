@@ -1,7 +1,6 @@
 """The SQLite big plans repository."""
 from typing import Final, Iterable, List, Optional
 
-from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
@@ -15,6 +14,7 @@ from jupiter.core.domain.big_plans.infra.big_plan_repository import (
     BigPlanNotFoundError,
     BigPlanRepository,
 )
+from jupiter.core.domain.core.adate import ADate
 from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.repository.sqlite.infra.events import (

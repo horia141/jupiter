@@ -2,12 +2,15 @@
 from dataclasses import dataclass
 from typing import Iterable
 
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
+from jupiter.core.domain.core.notes.service.note_archive_service import (
+    NoteArchiveService,
+)
 from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.inbox_tasks.service.archive_service import (
     InboxTaskArchiveService,
 )
-from jupiter.core.domain.notes.note_source import NoteSource
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
@@ -81,13 +84,10 @@ class PersonArchiveUseCase(
         await uow.person_repository.save(person)
         await progress_reporter.mark_updated(person)
 
-        note = await uow.note_repository.load_optional_for_source(
-            NoteSource.PERSON, person.ref_id
+        note_archive_service = NoteArchiveService(
+            source=EventSource.CLI,
+            time_provider=self._time_provider,
         )
-
-        if note is not None:
-            note = note.mark_archived(
-                EventSource.CLI, self._time_provider.get_current_time()
-            )
-            await uow.note_repository.save(note)
-            await progress_reporter.mark_updated(note)
+        await note_archive_service.archive_for_source(
+            uow, NoteDomain.PERSON, person.ref_id
+        )

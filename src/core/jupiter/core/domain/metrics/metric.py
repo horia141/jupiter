@@ -2,10 +2,10 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from jupiter.core.domain.entity_icon import EntityIcon
+from jupiter.core.domain.core.entity_icon import EntityIcon
+from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.metrics.metric_name import MetricName
 from jupiter.core.domain.metrics.metric_unit import MetricUnit
-from jupiter.core.domain.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.entity import FIRST_VERSION, BranchEntity, Entity

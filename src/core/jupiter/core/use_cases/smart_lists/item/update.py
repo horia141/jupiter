@@ -2,12 +2,12 @@
 from dataclasses import dataclass
 from typing import Iterable, List, Optional
 
+from jupiter.core.domain.core.url import URL
 from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.smart_lists.smart_list_item_name import SmartListItemName
 from jupiter.core.domain.smart_lists.smart_list_tag import SmartListTag
 from jupiter.core.domain.smart_lists.smart_list_tag_name import SmartListTagName
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.domain.url import URL
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.update_action import UpdateAction

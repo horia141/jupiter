@@ -1,10 +1,11 @@
 """Shared service for removing a metric."""
 
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
+from jupiter.core.domain.core.notes.service.note_remove_service import NoteRemoveService
 from jupiter.core.domain.inbox_tasks.service.remove_service import (
     InboxTaskRemoveService,
 )
 from jupiter.core.domain.metrics.metric import Metric
-from jupiter.core.domain.notes.note_source import NoteSource
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.use_case import ProgressReporter
@@ -45,11 +46,10 @@ class MetricRemoveService:
         for metric_entry in all_metric_entries:
             await uow.metric_entry_repository.remove(metric_entry.ref_id)
             await progress_reporter.mark_removed(metric_entry)
-            note = await uow.note_repository.remove_optional_for_source(
-                NoteSource.METRIC_ENTRY, metric_entry.ref_id
+            note_remove_service = NoteRemoveService()
+            await note_remove_service.remove_for_source(
+                uow, NoteDomain.METRIC_ENTRY, metric_entry.ref_id
             )
-            if note is not None:
-                await progress_reporter.mark_removed(note)
 
         await uow.metric_repository.remove(metric.ref_id)
         await progress_reporter.mark_removed(metric)

@@ -5,8 +5,6 @@ import type { InboxTaskArchiveArgs } from '../models/InboxTaskArchiveArgs';
 import type { InboxTaskAssociateWithBigPlanArgs } from '../models/InboxTaskAssociateWithBigPlanArgs';
 import type { InboxTaskChangeProjectArgs } from '../models/InboxTaskChangeProjectArgs';
 import type { InboxTaskCreateArgs } from '../models/InboxTaskCreateArgs';
-import type { InboxTaskCreateNoteArgs } from '../models/InboxTaskCreateNoteArgs';
-import type { InboxTaskCreateNoteResult } from '../models/InboxTaskCreateNoteResult';
 import type { InboxTaskCreateResult } from '../models/InboxTaskCreateResult';
 import type { InboxTaskFindArgs } from '../models/InboxTaskFindArgs';
 import type { InboxTaskFindResult } from '../models/InboxTaskFindResult';
@@ -35,29 +33,6 @@ export class InboxTaskService {
         return this.httpRequest.request({
             method: 'POST',
             url: '/inbox-task/create',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * Create Note For Inbox Task
-     * Create a inbox task note.
-     * @param requestBody
-     * @returns InboxTaskCreateNoteResult Successful Response
-     * @throws ApiError
-     */
-    public createNoteForInboxTask(
-        requestBody: InboxTaskCreateNoteArgs,
-    ): CancelablePromise<InboxTaskCreateNoteResult> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/inbox-task/create-note',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

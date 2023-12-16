@@ -10,8 +10,8 @@ export function entityTagName(entityTag: NamedEntityTag): string {
       return "Chore";
     case NamedEntityTag.BIG_PLAN:
       return "Big Plan";
-    case NamedEntityTag.NOTE:
-      return "Note";
+    case NamedEntityTag.DOC:
+      return "Doc";
     case NamedEntityTag.VACATION:
       return "Vacation";
     case NamedEntityTag.PROJECT:

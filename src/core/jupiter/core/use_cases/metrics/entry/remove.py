@@ -2,8 +2,9 @@
 from dataclasses import dataclass
 from typing import Iterable
 
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
+from jupiter.core.domain.core.notes.service.note_remove_service import NoteRemoveService
 from jupiter.core.domain.features import UserFeature, WorkspaceFeature
-from jupiter.core.domain.notes.note_source import NoteSource
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
@@ -45,8 +46,7 @@ class MetricEntryRemoveUseCase(
         """Execute the command's action."""
         metric_entry = await uow.metric_entry_repository.remove(args.ref_id)
         await progress_reporter.mark_removed(metric_entry)
-        note = await uow.note_repository.remove_optional_for_source(
-            NoteSource.METRIC_ENTRY, metric_entry.ref_id
+        note_remove_service = NoteRemoveService()
+        await note_remove_service.remove_for_source(
+            uow, NoteDomain.METRIC_ENTRY, metric_entry.ref_id
         )
-        if note is not None:
-            await progress_reporter.mark_removed(note)

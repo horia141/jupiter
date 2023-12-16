@@ -4,8 +4,8 @@ import dataclasses
 from dataclasses import dataclass
 from typing import List, Optional, TypeVar, Union, cast
 
-from jupiter.core.domain.entity_name import EntityName
-from jupiter.core.domain.tag_name import TagName
+from jupiter.core.domain.core.entity_name import EntityName
+from jupiter.core.domain.core.tags.tag_name import TagName
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.event import Event, EventKind, EventSource
