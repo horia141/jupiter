@@ -1,19 +1,18 @@
 """The command for archiving a smart list tag."""
 from dataclasses import dataclass
-from typing import Iterable
 
-from jupiter.core.domain.features import UserFeature, WorkspaceFeature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
+    mutation_use_case,
 )
 
 
@@ -24,23 +23,17 @@ class SmartListTagArchiveArgs(UseCaseArgsBase):
     ref_id: EntityId
 
 
+@mutation_use_case(WorkspaceFeature.SMART_LISTS)
 class SmartListTagArchiveUseCase(
     AppTransactionalLoggedInMutationUseCase[SmartListTagArchiveArgs, None]
 ):
     """The command for archiving a smart list tag."""
 
-    @staticmethod
-    def get_scoped_to_feature() -> Iterable[
-        UserFeature
-    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
-        """The feature the use case is scope to."""
-        return WorkspaceFeature.SMART_LISTS
-
     async def _perform_transactional_mutation(
         self,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInMutationUseCaseContext,
         args: SmartListTagArchiveArgs,
     ) -> None:
         """Execute the command's action."""
@@ -54,21 +47,17 @@ class SmartListTagArchiveUseCase(
 
         for smart_list_item in smart_list_items:
             smart_list_item = smart_list_item.update(
+                ctx=context.domain_context,
                 name=UpdateAction.do_nothing(),
                 is_done=UpdateAction.do_nothing(),
                 tags_ref_id=UpdateAction.change_to(
                     [t for t in smart_list_item.tags_ref_id if t != args.ref_id],
                 ),
                 url=UpdateAction.do_nothing(),
-                source=EventSource.CLI,
-                modification_time=self._time_provider.get_current_time(),
             )
             await uow.smart_list_item_repository.save(smart_list_item)
             await progress_reporter.mark_updated(smart_list_item)
 
-        smart_list_tag = smart_list_tag.mark_archived(
-            EventSource.CLI,
-            self._time_provider.get_current_time(),
-        )
+        smart_list_tag = smart_list_tag.mark_archived(context.domain_context)
         await uow.smart_list_tag_repository.save(smart_list_tag)
         await progress_reporter.mark_updated(smart_list_tag)

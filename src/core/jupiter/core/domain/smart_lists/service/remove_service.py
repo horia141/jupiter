@@ -2,6 +2,7 @@
 
 from jupiter.core.domain.smart_lists.smart_list import SmartList
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
+from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.use_case import ProgressReporter
 
 
@@ -10,6 +11,7 @@ class SmartListRemoveService:
 
     async def execute(
         self,
+        ctx: DomainContext,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
         smart_list: SmartList,

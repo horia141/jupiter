@@ -32,31 +32,25 @@ from jupiter.core.domain.user.user import User
 from jupiter.core.domain.vacations.vacation import Vacation
 from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.event import EventSource
+from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.use_case import ProgressReporter
-from jupiter.core.utils.time_provider import TimeProvider
 
 
 class GenService:
     """Shared service for performing garbage collection."""
 
-    _source: Final[EventSource]
-    _time_provider: Final[TimeProvider]
     _domain_storage_engine: Final[DomainStorageEngine]
 
     def __init__(
         self,
-        source: EventSource,
-        time_provider: TimeProvider,
         domain_storage_engine: DomainStorageEngine,
     ) -> None:
         """Constructor."""
-        self._source = source
-        self._time_provider = time_provider
         self._domain_storage_engine = domain_storage_engine
 
     async def do_it(
         self,
+        ctx: DomainContext,
         progress_reporter: ProgressReporter,
         user: User,
         workspace: Workspace,
@@ -122,8 +116,8 @@ class GenService:
         async with self._domain_storage_engine.get_unit_of_work() as uow:
             gen_log = await uow.gen_log_repository.load_by_parent(workspace.ref_id)
             gen_log_entry = GenLogEntry.new_log_entry(
+                ctx,
                 gen_log_ref_id=gen_log.ref_id,
-                source=self._source,
                 gen_even_if_not_modified=gen_even_if_not_modified,
                 today=today,
                 gen_targets=gen_targets,
@@ -135,7 +129,6 @@ class GenService:
                 filter_person_ref_ids=filter_person_ref_ids,
                 filter_slack_task_ref_ids=filter_slack_task_ref_ids,
                 filter_email_task_ref_ids=filter_email_task_ref_ids,
-                created_time=self._time_provider.get_current_time(),
             )
             gen_log_entry = await uow.gen_log_entry_repository.create(gen_log_entry)
 
@@ -213,6 +206,7 @@ class GenService:
                 for habit in all_habits:
                     project = all_projects_by_ref_id[habit.project_ref_id]
                     gen_log_entry = await self._generate_inbox_tasks_for_habit(
+                        ctx,
                         progress_reporter=progress_reporter,
                         user=user,
                         inbox_task_collection=inbox_task_collection,
@@ -263,6 +257,7 @@ class GenService:
                 for chore in all_chores:
                     project = all_projects_by_ref_id[chore.project_ref_id]
                     gen_log_entry = await self._generate_inbox_tasks_for_chore(
+                        ctx,
                         progress_reporter=progress_reporter,
                         user=user,
                         workspace=workspace,
@@ -325,6 +320,7 @@ class GenService:
                         metric_collection.collection_project_ref_id
                     ]
                     gen_log_entry = await self._generate_collection_inbox_tasks_for_metric(
+                        ctx,
                         progress_reporter=progress_reporter,
                         user=user,
                         inbox_task_collection=inbox_task_collection,
@@ -395,6 +391,7 @@ class GenService:
                     # MyPy not smart enough to infer that if (not A and not B) then (A or B)
 
                     gen_log_entry = await self._generate_catch_up_inbox_tasks_for_person(
+                        ctx,
                         progress_reporter=progress_reporter,
                         user=user,
                         inbox_task_collection=inbox_task_collection,
@@ -426,6 +423,7 @@ class GenService:
                     continue
 
                 gen_log_entry = await self._generate_birthday_inbox_task_for_person(
+                    ctx,
                     progress_reporter=progress_reporter,
                     user=user,
                     inbox_task_collection=inbox_task_collection,
@@ -479,6 +477,7 @@ class GenService:
                     ]
                     gen_log_entry = (
                         await self._generate_slack_inbox_task_for_slack_task(
+                            ctx,
                             progress_reporter=progress_reporter,
                             slack_task=slack_task,
                             inbox_task_collection=inbox_task_collection,
@@ -533,6 +532,7 @@ class GenService:
                     ]
                     gen_log_entry = (
                         await self._generate_email_inbox_task_for_email_task(
+                            ctx,
                             progress_reporter=progress_reporter,
                             email_task=email_task,
                             inbox_task_collection=inbox_task_collection,
@@ -547,11 +547,12 @@ class GenService:
                     )
 
         async with self._domain_storage_engine.get_unit_of_work() as uow:
-            gen_log_entry = gen_log_entry.close(self._time_provider.get_current_time())
+            gen_log_entry = gen_log_entry.close(ctx)
             gen_log_entry = await uow.gen_log_entry_repository.save(gen_log_entry)
 
     async def _generate_inbox_tasks_for_habit(
         self,
+        ctx: DomainContext,
         progress_reporter: ProgressReporter,
         user: User,
         inbox_task_collection: InboxTaskCollection,
@@ -613,6 +614,7 @@ class GenService:
                     return gen_log_entry
 
                 found_task = found_task.update_link_to_habit(
+                    ctx,
                     project_ref_id=project.ref_id,
                     name=schedule.full_name,
                     timeline=schedule.timeline,
@@ -621,18 +623,18 @@ class GenService:
                     due_date=schedule.due_time,
                     eisen=habit.gen_params.eisen,
                     difficulty=habit.gen_params.difficulty,
-                    source=EventSource.CLI,
-                    modification_time=self._time_provider.get_current_time(),
                 )
 
                 async with self._domain_storage_engine.get_unit_of_work() as uow:
                     await uow.inbox_task_repository.save(found_task)
                     await progress_reporter.mark_updated(found_task)
                 gen_log_entry = gen_log_entry.add_entity_updated(
-                    found_task, self._time_provider.get_current_time()
+                    ctx,
+                    found_task,
                 )
             else:
                 inbox_task = InboxTask.new_inbox_task_for_habit(
+                    ctx,
                     inbox_task_collection_ref_id=inbox_task_collection.ref_id,
                     name=schedule.full_name,
                     project_ref_id=project.ref_id,
@@ -644,8 +646,6 @@ class GenService:
                     difficulty=habit.gen_params.difficulty,
                     actionable_date=schedule.actionable_date,
                     due_date=schedule.due_time,
-                    source=EventSource.CLI,
-                    created_time=self._time_provider.get_current_time(),
                 )
 
                 async with self._domain_storage_engine.get_unit_of_work() as uow:
@@ -654,7 +654,8 @@ class GenService:
                     )
                     await progress_reporter.mark_created(inbox_task)
                 gen_log_entry = gen_log_entry.add_entity_created(
-                    inbox_task, self._time_provider.get_current_time()
+                    ctx,
+                    inbox_task,
                 )
 
         async with self._domain_storage_engine.get_unit_of_work() as uow:
@@ -664,15 +665,17 @@ class GenService:
                     continue
                 if task.recurring_repeat_index in repeat_idx_to_keep:
                     continue
-                await inbox_task_remove_service.do_it(uow, progress_reporter, task)
+                await inbox_task_remove_service.do_it(ctx, uow, progress_reporter, task)
                 gen_log_entry = gen_log_entry.add_entity_removed(
-                    task, self._time_provider.get_current_time()
+                    ctx,
+                    task,
                 )
 
         return gen_log_entry
 
     async def _generate_inbox_tasks_for_chore(
         self,
+        ctx: DomainContext,
         progress_reporter: ProgressReporter,
         user: User,
         workspace: Workspace,
@@ -733,6 +736,7 @@ class GenService:
                 return gen_log_entry
 
             found_task = found_task.update_link_to_chore(
+                ctx,
                 project_ref_id=project.ref_id,
                 name=schedule.full_name,
                 timeline=schedule.timeline,
@@ -740,8 +744,6 @@ class GenService:
                 due_date=schedule.due_time,
                 eisen=chore.gen_params.eisen,
                 difficulty=chore.gen_params.difficulty,
-                source=EventSource.CLI,
-                modification_time=self._time_provider.get_current_time(),
             )
 
             async with self._domain_storage_engine.get_unit_of_work() as uow:
@@ -749,10 +751,12 @@ class GenService:
                 await progress_reporter.mark_updated(found_task)
 
             gen_log_entry = gen_log_entry.add_entity_updated(
-                found_task, self._time_provider.get_current_time()
+                ctx,
+                found_task,
             )
         else:
             inbox_task = InboxTask.new_inbox_task_for_chore(
+                ctx,
                 inbox_task_collection_ref_id=inbox_task_collection.ref_id,
                 name=schedule.full_name,
                 project_ref_id=project.ref_id,
@@ -763,8 +767,6 @@ class GenService:
                 difficulty=chore.gen_params.difficulty,
                 actionable_date=schedule.actionable_date,
                 due_date=schedule.due_time,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
             )
 
             async with self._domain_storage_engine.get_unit_of_work() as uow:
@@ -772,13 +774,15 @@ class GenService:
                 await progress_reporter.mark_created(inbox_task)
 
             gen_log_entry = gen_log_entry.add_entity_created(
-                inbox_task, self._time_provider.get_current_time()
+                ctx,
+                inbox_task,
             )
 
         return gen_log_entry
 
     async def _generate_collection_inbox_tasks_for_metric(
         self,
+        ctx: DomainContext,
         progress_reporter: ProgressReporter,
         user: User,
         inbox_task_collection: InboxTaskCollection,
@@ -823,6 +827,7 @@ class GenService:
                 return gen_log_entry
 
             found_task = found_task.update_link_to_metric(
+                ctx,
                 project_ref_id=project.ref_id,
                 name=schedule.full_name,
                 recurring_timeline=schedule.timeline,
@@ -830,8 +835,6 @@ class GenService:
                 difficulty=collection_params.difficulty,
                 actionable_date=schedule.actionable_date,
                 due_time=schedule.due_time,
-                source=EventSource.CLI,
-                modification_time=self._time_provider.get_current_time(),
             )
 
             async with self._domain_storage_engine.get_unit_of_work() as uow:
@@ -839,10 +842,12 @@ class GenService:
                 await progress_reporter.mark_updated(found_task)
 
             gen_log_entry = gen_log_entry.add_entity_updated(
-                found_task, self._time_provider.get_current_time()
+                ctx,
+                found_task,
             )
         else:
             inbox_task = InboxTask.new_inbox_task_for_metric_collection(
+                ctx,
                 inbox_task_collection_ref_id=inbox_task_collection.ref_id,
                 project_ref_id=project.ref_id,
                 name=schedule.full_name,
@@ -853,8 +858,6 @@ class GenService:
                 difficulty=collection_params.difficulty,
                 actionable_date=schedule.actionable_date,
                 due_date=schedule.due_time,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
             )
 
             async with self._domain_storage_engine.get_unit_of_work() as uow:
@@ -862,13 +865,15 @@ class GenService:
                 await progress_reporter.mark_created(inbox_task)
 
             gen_log_entry = gen_log_entry.add_entity_created(
-                inbox_task, self._time_provider.get_current_time()
+                ctx,
+                inbox_task,
             )
 
         return gen_log_entry
 
     async def _generate_catch_up_inbox_tasks_for_person(
         self,
+        ctx: DomainContext,
         progress_reporter: ProgressReporter,
         user: User,
         inbox_task_collection: InboxTaskCollection,
@@ -913,6 +918,7 @@ class GenService:
                 return gen_log_entry
 
             found_task = found_task.update_link_to_person_catch_up(
+                ctx,
                 project_ref_id=project.ref_id,
                 name=schedule.full_name,
                 recurring_timeline=schedule.timeline,
@@ -920,8 +926,6 @@ class GenService:
                 difficulty=catch_up_params.difficulty,
                 actionable_date=schedule.actionable_date,
                 due_time=schedule.due_time,
-                source=EventSource.CLI,
-                modification_time=self._time_provider.get_current_time(),
             )
 
             async with self._domain_storage_engine.get_unit_of_work() as uow:
@@ -929,10 +933,12 @@ class GenService:
                 await progress_reporter.mark_updated(found_task)
 
             gen_log_entry = gen_log_entry.add_entity_updated(
-                found_task, self._time_provider.get_current_time()
+                ctx,
+                found_task,
             )
         else:
             inbox_task = InboxTask.new_inbox_task_for_person_catch_up(
+                ctx,
                 inbox_task_collection_ref_id=inbox_task_collection.ref_id,
                 name=schedule.full_name,
                 project_ref_id=project.ref_id,
@@ -943,8 +949,6 @@ class GenService:
                 difficulty=catch_up_params.difficulty,
                 actionable_date=schedule.actionable_date,
                 due_date=schedule.due_time,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
             )
 
             async with self._domain_storage_engine.get_unit_of_work() as uow:
@@ -952,13 +956,15 @@ class GenService:
                 await progress_reporter.mark_created(inbox_task)
 
             gen_log_entry = gen_log_entry.add_entity_created(
-                inbox_task, self._time_provider.get_current_time()
+                ctx,
+                inbox_task,
             )
 
         return gen_log_entry
 
     async def _generate_birthday_inbox_task_for_person(
         self,
+        ctx: DomainContext,
         progress_reporter: ProgressReporter,
         user: User,
         inbox_task_collection: InboxTaskCollection,
@@ -1005,13 +1011,12 @@ class GenService:
                 return gen_log_entry
 
             found_task = found_task.update_link_to_person_birthday(
+                ctx,
                 project_ref_id=project.ref_id,
                 name=schedule.full_name,
                 recurring_timeline=schedule.timeline,
                 preparation_days_cnt=person.preparation_days_cnt_for_birthday,
                 due_time=schedule.due_time,
-                source=EventSource.CLI,
-                modification_time=self._time_provider.get_current_time(),
             )
 
             async with self._domain_storage_engine.get_unit_of_work() as uow:
@@ -1019,10 +1024,12 @@ class GenService:
                 await progress_reporter.mark_updated(found_task)
 
             gen_log_entry = gen_log_entry.add_entity_updated(
-                found_task, self._time_provider.get_current_time()
+                ctx,
+                found_task,
             )
         else:
             inbox_task = InboxTask.new_inbox_task_for_person_birthday(
+                ctx,
                 inbox_task_collection_ref_id=inbox_task_collection.ref_id,
                 name=schedule.full_name,
                 project_ref_id=project.ref_id,
@@ -1031,8 +1038,6 @@ class GenService:
                 preparation_days_cnt=person.preparation_days_cnt_for_birthday,
                 recurring_task_gen_right_now=today.to_timestamp_at_end_of_day(),
                 due_date=schedule.due_time,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
             )
 
             async with self._domain_storage_engine.get_unit_of_work() as uow:
@@ -1040,13 +1045,15 @@ class GenService:
                 await progress_reporter.mark_created(inbox_task)
 
             gen_log_entry = gen_log_entry.add_entity_created(
-                inbox_task, self._time_provider.get_current_time()
+                ctx,
+                inbox_task,
             )
 
         return gen_log_entry
 
     async def _generate_slack_inbox_task_for_slack_task(
         self,
+        ctx: DomainContext,
         progress_reporter: ProgressReporter,
         slack_task: SlackTask,
         inbox_task_collection: InboxTaskCollection,
@@ -1068,13 +1075,12 @@ class GenService:
                 return gen_log_entry
 
             found_task = found_task.update_link_to_slack_task(
+                ctx,
                 project_ref_id=project.ref_id,
                 user=slack_task.user,
                 channel=slack_task.channel,
                 message=slack_task.message,
                 generation_extra_info=slack_task.generation_extra_info,
-                source=EventSource.SLACK,
-                modification_time=self._time_provider.get_current_time(),
             )
 
             async with self._domain_storage_engine.get_unit_of_work() as uow:
@@ -1082,10 +1088,12 @@ class GenService:
                 await progress_reporter.mark_updated(found_task)
 
             gen_log_entry = gen_log_entry.add_entity_updated(
-                found_task, self._time_provider.get_current_time()
+                ctx,
+                found_task,
             )
         else:
             inbox_task = InboxTask.new_inbox_task_for_slack_task(
+                ctx,
                 inbox_task_collection_ref_id=inbox_task_collection.ref_id,
                 project_ref_id=project.ref_id,
                 slack_task_ref_id=slack_task.ref_id,
@@ -1093,15 +1101,10 @@ class GenService:
                 channel=slack_task.channel,
                 generation_extra_info=slack_task.generation_extra_info,
                 message=slack_task.message,
-                source=EventSource.SLACK,  # We consider this generation as coming from Slack
-                created_time=self._time_provider.get_current_time(),
             )
 
             async with self._domain_storage_engine.get_unit_of_work() as uow:
-                slack_task = slack_task.mark_as_used_for_generation(
-                    source=EventSource.CLI,
-                    modification_time=self._time_provider.get_current_time(),
-                )
+                slack_task = slack_task.mark_as_used_for_generation(ctx)
                 await uow.slack_task_repository.save(slack_task)
                 await progress_reporter.mark_updated(slack_task)
 
@@ -1109,13 +1112,15 @@ class GenService:
                 await progress_reporter.mark_created(inbox_task)
 
             gen_log_entry = gen_log_entry.add_entity_created(
-                inbox_task, self._time_provider.get_current_time()
+                ctx,
+                inbox_task,
             )
 
         return gen_log_entry
 
     async def _generate_email_inbox_task_for_email_task(
         self,
+        ctx: DomainContext,
         progress_reporter: ProgressReporter,
         email_task: EmailTask,
         inbox_task_collection: InboxTaskCollection,
@@ -1137,6 +1142,7 @@ class GenService:
                 return gen_log_entry
 
             found_task = found_task.update_link_to_email_task(
+                ctx,
                 project_ref_id=project.ref_id,
                 from_address=email_task.from_address,
                 from_name=email_task.from_name,
@@ -1144,8 +1150,6 @@ class GenService:
                 subject=email_task.subject,
                 body=email_task.body,
                 generation_extra_info=email_task.generation_extra_info,
-                source=EventSource.EMAIL,
-                modification_time=self._time_provider.get_current_time(),
             )
 
             async with self._domain_storage_engine.get_unit_of_work() as uow:
@@ -1153,10 +1157,12 @@ class GenService:
                 await progress_reporter.mark_updated(found_task)
 
             gen_log_entry = gen_log_entry.add_entity_updated(
-                found_task, self._time_provider.get_current_time()
+                ctx,
+                found_task,
             )
         else:
             inbox_task = InboxTask.new_inbox_task_for_email_task(
+                ctx,
                 inbox_task_collection_ref_id=inbox_task_collection.ref_id,
                 project_ref_id=project.ref_id,
                 email_task_ref_id=email_task.ref_id,
@@ -1166,15 +1172,10 @@ class GenService:
                 subject=email_task.subject,
                 body=email_task.body,
                 generation_extra_info=email_task.generation_extra_info,
-                source=EventSource.EMAIL,  # We consider this generation as coming from Email
-                created_time=self._time_provider.get_current_time(),
             )
 
             async with self._domain_storage_engine.get_unit_of_work() as uow:
-                email_task = email_task.mark_as_used_for_generation(
-                    source=EventSource.CLI,
-                    modification_time=self._time_provider.get_current_time(),
-                )
+                email_task = email_task.mark_as_used_for_generation(ctx)
                 await uow.email_task_repository.save(email_task)
                 await progress_reporter.mark_updated(email_task)
 
@@ -1182,7 +1183,8 @@ class GenService:
                 await progress_reporter.mark_created(inbox_task)
 
             gen_log_entry = gen_log_entry.add_entity_created(
-                inbox_task, self._time_provider.get_current_time()
+                ctx,
+                inbox_task,
             )
 
         return gen_log_entry

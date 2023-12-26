@@ -1,7 +1,6 @@
 """Extra information for how to generate an inbox task."""
 import argparse
 import shlex
-from dataclasses import dataclass
 from typing import Optional
 
 from jupiter.core.domain.core.adate import ADate
@@ -11,10 +10,10 @@ from jupiter.core.domain.core.timezone import UTC, Timezone
 from jupiter.core.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import Value
+from jupiter.core.framework.value import Value, value
 
 
-@dataclass
+@value
 class PushGenerationExtraInfo(Value):
     """Extra information for how to generate an inbox task."""
 

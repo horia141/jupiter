@@ -4,6 +4,7 @@ from typing import Final
 
 from jupiter.core.domain.gen.service.gen_service import GenService
 from jupiter.core.domain.storage_engine import DomainStorageEngine, SearchStorageEngine
+from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
     EmptyContext,
@@ -56,9 +57,11 @@ class GenDoAllUseCase(AppBackgroundMutationUseCase[GenDoAllArgs, None]):
                 uwl.workspace_ref_id: uwl.user_ref_id for uwl in user_workspace_links
             }
 
+        ctx = DomainContext(
+            EventSource.GEN_CRON, self._time_provider.get_current_time()
+        )
+
         gen_service = GenService(
-            source=EventSource.GEN_CRON,
-            time_provider=self._time_provider,
             domain_storage_engine=self._domain_storage_engine,
         )
 
@@ -70,6 +73,7 @@ class GenDoAllUseCase(AppBackgroundMutationUseCase[GenDoAllArgs, None]):
             gen_targets = workspace.infer_sync_targets_for_enabled_features(None)
 
             await gen_service.do_it(
+                ctx=ctx,
                 user=user,
                 progress_reporter=progress_reporter,
                 workspace=workspace,

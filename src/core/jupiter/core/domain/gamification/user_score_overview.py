@@ -1,10 +1,9 @@
 """An overview of the scores for a user."""
-from dataclasses import dataclass
 
-from jupiter.core.framework.value import Value
+from jupiter.core.framework.value import Value, value
 
 
-@dataclass
+@value
 class UserScore(Value):
     """A full view of the score for a user."""
 
@@ -22,7 +21,7 @@ class UserScore(Value):
         )
 
 
-@dataclass
+@value
 class UserScoreOverview(Value):
     """An overview of the scores for a user."""
 

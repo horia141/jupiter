@@ -29,11 +29,13 @@ from jupiter.core.domain.smart_lists.smart_list_tag import SmartListTag
 from jupiter.core.domain.smart_lists.smart_list_tag_name import SmartListTagName
 from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
+from jupiter.core.framework.entity import EntityLinkFilterCompiled
 from jupiter.core.repository.sqlite.infra.events import (
     build_event_table,
     remove_events,
     upsert_events,
 )
+from jupiter.core.repository.sqlite.infra.filters import compile_query_relative_to
 from jupiter.core.repository.sqlite.infra.row import RowType
 from sqlalchemy import (
     JSON,
@@ -306,6 +308,23 @@ class SqliteSmartListRepository(SmartListRepository):
         results = await self._connection.execute(query_stmt)
         return [self._row_to_entity(row) for row in results]
 
+    async def find_all_generic(
+        self,
+        allow_archived: bool,
+        **kwargs: EntityLinkFilterCompiled,
+    ) -> Iterable[SmartList]:
+        """Find all big plans with generic filters."""
+        query_stmt = select(self._smart_list_table)
+        if not allow_archived:
+            query_stmt = query_stmt.where(self._smart_list_table.c.archived.is_(False))
+
+        query_stmt = compile_query_relative_to(
+            query_stmt, self._smart_list_table, kwargs
+        )
+
+        results = await self._connection.execute(query_stmt)
+        return [self._row_to_entity(row) for row in results]
+
     async def remove(self, ref_id: EntityId) -> SmartList:
         """Remove the smart list."""
         query_stmt = select(self._smart_list_table).where(
@@ -479,6 +498,25 @@ class SqliteSmartListTagRepository(SmartListTagRepository):
                     str(fi) for fi in filter_tag_names
                 ),
             )
+        results = await self._connection.execute(query_stmt)
+        return [self._row_to_entity(row) for row in results]
+
+    async def find_all_generic(
+        self,
+        allow_archived: bool,
+        **kwargs: EntityLinkFilterCompiled,
+    ) -> Iterable[SmartListTag]:
+        """Find all big plans with generic filters."""
+        query_stmt = select(self._smart_list_tag_table)
+        if not allow_archived:
+            query_stmt = query_stmt.where(
+                self._smart_list_tag_table.c.archived.is_(False)
+            )
+
+        query_stmt = compile_query_relative_to(
+            query_stmt, self._smart_list_tag_table, kwargs
+        )
+
         results = await self._connection.execute(query_stmt)
         return [self._row_to_entity(row) for row in results]
 
@@ -674,6 +712,25 @@ class SqliteSmartListItemRepository(SmartListItemRepository):
                 if len(tag_set.intersection(ent.tags_ref_id)) > 0
             ]
         return all_entities
+
+    async def find_all_generic(
+        self,
+        allow_archived: bool,
+        **kwargs: EntityLinkFilterCompiled,
+    ) -> Iterable[SmartListItem]:
+        """Find all big plans with generic filters."""
+        query_stmt = select(self._smart_list_item_table)
+        if not allow_archived:
+            query_stmt = query_stmt.where(
+                self._smart_list_item_table.c.archived.is_(False)
+            )
+
+        query_stmt = compile_query_relative_to(
+            query_stmt, self._smart_list_item_table, kwargs
+        )
+
+        results = await self._connection.execute(query_stmt)
+        return [self._row_to_entity(row) for row in results]
 
     async def remove(self, ref_id: EntityId) -> SmartListItem:
         """Remove a smart list item."""

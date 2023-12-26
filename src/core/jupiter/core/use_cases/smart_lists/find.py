@@ -1,8 +1,8 @@
 """The command for finding smart lists."""
 from dataclasses import dataclass
-from typing import Iterable, List, Optional
+from typing import List, Optional
 
-from jupiter.core.domain.features import UserFeature, WorkspaceFeature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.smart_lists.smart_list import SmartList
 from jupiter.core.domain.smart_lists.smart_list_item import SmartListItem
 from jupiter.core.domain.smart_lists.smart_list_tag import SmartListTag
@@ -14,8 +14,9 @@ from jupiter.core.framework.use_case import (
     UseCaseResultBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInReadonlyUseCaseContext,
     AppTransactionalLoggedInReadOnlyUseCase,
+    readonly_use_case,
 )
 
 
@@ -49,22 +50,16 @@ class SmartListFindResult(UseCaseResultBase):
     entries: List[SmartListFindResponseEntry]
 
 
+@readonly_use_case(WorkspaceFeature.SMART_LISTS)
 class SmartListFindUseCase(
     AppTransactionalLoggedInReadOnlyUseCase[SmartListFindArgs, SmartListFindResult]
 ):
     """The command for finding smart lists."""
 
-    @staticmethod
-    def get_scoped_to_feature() -> Iterable[
-        UserFeature
-    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
-        """The feature the use case is scope to."""
-        return WorkspaceFeature.SMART_LISTS
-
     async def _perform_transactional_read(
         self,
         uow: DomainUnitOfWork,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInReadonlyUseCaseContext,
         args: SmartListFindArgs,
     ) -> SmartListFindResult:
         """Execute the command's action."""

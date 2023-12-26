@@ -1,10 +1,9 @@
 """The due month for a recurring task."""
-from dataclasses import dataclass
 from typing import Dict, Final, Optional, Tuple
 
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import Value
+from jupiter.core.framework.value import Value, value
 
 _RECURRING_TASK_DUE_AT_MONTH_BOUNDS: Final[
     Dict[RecurringTaskPeriod, Tuple[int, int]]
@@ -17,7 +16,7 @@ _RECURRING_TASK_DUE_AT_MONTH_BOUNDS: Final[
 }
 
 
-@dataclass
+@value
 class RecurringTaskDueAtMonth(Value):
     """The due month for a recurring task."""
 

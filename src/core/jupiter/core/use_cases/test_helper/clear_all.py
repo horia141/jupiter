@@ -15,6 +15,7 @@ from jupiter.core.domain.habits.service.remove_service import HabitRemoveService
 from jupiter.core.domain.inbox_tasks.service.remove_service import (
     InboxTaskRemoveService,
 )
+from jupiter.core.domain.infra.generic_remover import generic_remover
 from jupiter.core.domain.metrics.service.remove_service import MetricRemoveService
 from jupiter.core.domain.persons.service.remove_service import PersonRemoveService
 from jupiter.core.domain.projects.service.remove_service import ProjectRemoveService
@@ -33,10 +34,9 @@ from jupiter.core.domain.storage_engine import (
     SearchStorageEngine,
 )
 from jupiter.core.domain.user.user_name import UserName
-from jupiter.core.domain.vacations.service.remove_service import VacationRemoveService
+from jupiter.core.domain.vacations.vacation import Vacation
 from jupiter.core.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
     MutationUseCaseInvocationRecorder,
@@ -46,8 +46,9 @@ from jupiter.core.framework.use_case import (
 )
 from jupiter.core.use_cases.infra.storage_engine import UseCaseStorageEngine
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
+    mutation_use_case,
 )
 from jupiter.core.utils.feature_flag_controls import infer_feature_flag_controls
 from jupiter.core.utils.global_properties import GlobalProperties
@@ -69,6 +70,7 @@ class ClearAllArgs(UseCaseArgsBase):
     workspace_feature_flags: WorkspaceFeatureFlags
 
 
+@mutation_use_case()
 class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None]):
     """The command for clearing all branch and leaf type entities."""
 
@@ -79,7 +81,9 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
         self,
         time_provider: TimeProvider,
         invocation_recorder: MutationUseCaseInvocationRecorder,
-        progress_reporter_factory: ProgressReporterFactory[AppLoggedInUseCaseContext],
+        progress_reporter_factory: ProgressReporterFactory[
+            AppLoggedInMutationUseCaseContext
+        ],
         auth_token_stamper: AuthTokenStamper,
         domain_storage_engine: DomainStorageEngine,
         search_storage_engine: SearchStorageEngine,
@@ -102,7 +106,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
         self,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInMutationUseCaseContext,
         args: ClearAllArgs,
     ) -> None:
         """Execute the command's action."""
@@ -171,27 +175,24 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
 
         async with progress_reporter.section("Resseting user"):
             user = user.update(
+                ctx=context.domain_context,
                 name=UpdateAction.change_to(args.user_name),
                 timezone=UpdateAction.change_to(args.user_timezone),
-                source=EventSource.CLI,
-                modification_time=self._time_provider.get_current_time(),
             )
 
             user = user.change_feature_flags(
+                ctx=context.domain_context,
                 feature_flag_controls=user_feature_flags_controls,
                 feature_flags=args.user_feature_flags,
-                source=EventSource.CLI,
-                modification_time=self._time_provider.get_current_time(),
             )
             await uow.user_repository.save(user)
 
             auth = await uow.auth_repository.load_by_parent(parent_ref_id=user.ref_id)
             auth = auth.change_password(
+                ctx=context.domain_context,
                 current_password=args.auth_current_password,
                 new_password=args.auth_new_password,
                 new_password_repeat=args.auth_new_password_repeat,
-                source=EventSource.CLI,
-                modification_time=self._time_provider.get_current_time(),
             )
             await uow.auth_repository.save(auth)
 
@@ -224,21 +225,18 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
             )
 
             workspace = workspace.update(
+                ctx=context.domain_context,
                 name=UpdateAction.change_to(args.workspace_name),
-                source=EventSource.CLI,
-                modification_time=self._time_provider.get_current_time(),
             )
 
             workspace = workspace.change_default_project(
+                ctx=context.domain_context,
                 default_project_ref_id=default_project.ref_id,
-                source=EventSource.CLI,
-                modification_time=self._time_provider.get_current_time(),
             )
             workspace = workspace.change_feature_flags(
+                ctx=context.domain_context,
                 feature_flag_controls=workspace_feature_flags_controls,
                 feature_flags=args.workspace_feature_flags,
-                source=EventSource.CLI,
-                modification_time=self._time_provider.get_current_time(),
             )
 
             await uow.workspace_repository.save(workspace)
@@ -250,7 +248,9 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
             )
             habit_remove_service = HabitRemoveService()
             for habit in all_habits:
-                await habit_remove_service.remove(uow, progress_reporter, habit.ref_id)
+                await habit_remove_service.remove(
+                    context.domain_context, uow, progress_reporter, habit.ref_id
+                )
 
         async with progress_reporter.section("Clearing chores"):
             all_chores = await uow.chore_repository.find_all(
@@ -259,7 +259,9 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
             )
             chore_remove_service = ChoreRemoveService()
             for chore in all_chores:
-                await chore_remove_service.remove(uow, progress_reporter, chore.ref_id)
+                await chore_remove_service.remove(
+                    context.domain_context, uow, progress_reporter, chore.ref_id
+                )
 
         async with progress_reporter.section("Clearing big plans"):
             all_big_plans = await uow.big_plan_repository.find_all(
@@ -269,6 +271,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
             big_plan_remove_service = BigPlanRemoveService()
             for big_plan in all_big_plans:
                 await big_plan_remove_service.remove(
+                    context.domain_context,
                     uow,
                     progress_reporter,
                     workspace,
@@ -283,7 +286,9 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
             )
             doc_remove_service = DocRemoveService()
             for doc in root_docs:
-                await doc_remove_service.do_it(uow, progress_reporter, doc)
+                await doc_remove_service.do_it(
+                    context.domain_context, uow, progress_reporter, doc
+                )
 
         async with progress_reporter.section("Clearing vacations"):
             all_vacations = await uow.vacation_repository.find_all(
@@ -291,9 +296,14 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
                 allow_archived=True,
             )
 
-            vacation_remove_service = VacationRemoveService()
             for vacation in all_vacations:
-                await vacation_remove_service.do_it(uow, progress_reporter, vacation)
+                await generic_remover(
+                    context.domain_context,
+                    uow,
+                    progress_reporter,
+                    Vacation,
+                    vacation.ref_id,
+                )
 
         async with progress_reporter.section("Clearing projects"):
             all_projects = await uow.project_repository.find_all(
@@ -301,15 +311,16 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
                 allow_archived=True,
             )
 
-            project_remove_service = ProjectRemoveService(
-                EventSource.CLI,
-                self._time_provider,
-            )
+            project_remove_service = ProjectRemoveService()
             for project in all_projects:
                 if project.ref_id == args.workspace_default_project_ref_id:
                     continue
                 await project_remove_service.do_it(
-                    uow, progress_reporter, workspace, project.ref_id
+                    context.domain_context,
+                    uow,
+                    progress_reporter,
+                    workspace,
+                    project.ref_id,
                 )
 
         async with progress_reporter.section("Clearing smart lists"):
@@ -320,6 +331,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
             smart_list_remove_service = SmartListRemoveService()
             for smart_list in all_smart_lists:
                 await smart_list_remove_service.execute(
+                    context.domain_context,
                     uow,
                     progress_reporter,
                     smart_list,
@@ -332,9 +344,8 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
             )
 
             metric_collection = metric_collection.change_collection_project(
+                context.domain_context,
                 collection_project_ref_id=default_project.ref_id,
-                source=EventSource.CLI,
-                modified_time=self._time_provider.get_current_time(),
             )
 
             await uow.metric_collection_repository.save(metric_collection)
@@ -342,6 +353,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
             metric_remove_service = MetricRemoveService()
             for metric in all_metrics:
                 await metric_remove_service.execute(
+                    context.domain_context,
                     uow,
                     progress_reporter,
                     workspace,
@@ -355,9 +367,8 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
             )
 
             person_collection = person_collection.change_catch_up_project(
+                context.domain_context,
                 catch_up_project_ref_id=default_project.ref_id,
-                source=EventSource.CLI,
-                modified_time=self._time_provider.get_current_time(),
             )
 
             await uow.person_collection_repository.save(person_collection)
@@ -365,6 +376,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
             person_remove_service = PersonRemoveService()
             for person in all_persons:
                 await person_remove_service.do_it(
+                    context.domain_context,
                     uow,
                     progress_reporter,
                     person_collection,
@@ -377,9 +389,8 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
                 allow_archived=True,
             )
             slack_task_collection = slack_task_collection.change_generation_project(
+                context.domain_context,
                 generation_project_ref_id=default_project.ref_id,
-                source=EventSource.CLI,
-                modified_time=self._time_provider.get_current_time(),
             )
 
             await uow.slack_task_collection_repository.save(slack_task_collection)
@@ -387,7 +398,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
             slack_task_remove_service = SlackTaskRemoveService()
             for slack_task in all_slack_tasks:
                 await slack_task_remove_service.do_it(
-                    uow, progress_reporter, slack_task
+                    context.domain_context, uow, progress_reporter, slack_task
                 )
 
         async with progress_reporter.section("Clearing email tasks"):
@@ -396,9 +407,8 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
                 allow_archived=True,
             )
             email_task_collection = email_task_collection.change_generation_project(
+                context.domain_context,
                 generation_project_ref_id=default_project.ref_id,
-                source=EventSource.CLI,
-                modified_time=self._time_provider.get_current_time(),
             )
 
             await uow.email_task_collection_repository.save(email_task_collection)
@@ -406,7 +416,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
             email_task_remove_service = EmailTaskRemoveService()
             for email_task in all_email_tasks:
                 await email_task_remove_service.do_it(
-                    uow, progress_reporter, email_task
+                    context.domain_context, uow, progress_reporter, email_task
                 )
 
         async with progress_reporter.section("Clearing inbox tasks"):
@@ -417,7 +427,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
             inbox_task_remove_service = InboxTaskRemoveService()
             for inbox_task in all_inbox_tasks:
                 await inbox_task_remove_service.do_it(
-                    uow, progress_reporter, inbox_task
+                    context.domain_context, uow, progress_reporter, inbox_task
                 )
 
         async with progress_reporter.section("Clearing notes"):
@@ -427,7 +437,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
             )
             note_remove_service = NoteRemoveService()
             for note in root_notes:
-                await note_remove_service.remove(uow, note)
+                await note_remove_service.remove(context.domain_context, uow, note)
 
         async with progress_reporter.section("Clearing use case invocation records"):
             async with self._use_case_storage_engine.get_unit_of_work() as uc_uow:

@@ -1,12 +1,12 @@
 """The command for updating a email task."""
 from dataclasses import dataclass
-from typing import Iterable, Optional
+from typing import Optional
 
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.core.email_address import EmailAddress
-from jupiter.core.domain.features import UserFeature, WorkspaceFeature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
@@ -16,15 +16,15 @@ from jupiter.core.domain.push_integrations.push_generation_extra_info import (
 )
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
+    mutation_use_case,
 )
 
 
@@ -46,23 +46,17 @@ class EmailTaskUpdateArgs(UseCaseArgsBase):
     generation_due_date: UpdateAction[Optional[ADate]]
 
 
+@mutation_use_case(WorkspaceFeature.EMAIL_TASKS)
 class EmailTaskUpdateUseCase(
     AppTransactionalLoggedInMutationUseCase[EmailTaskUpdateArgs, None]
 ):
     """The command for updating a email task."""
 
-    @staticmethod
-    def get_scoped_to_feature() -> Iterable[
-        UserFeature
-    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
-        """The feature the use case is scope to."""
-        return WorkspaceFeature.EMAIL_TASKS
-
     async def _perform_transactional_mutation(
         self,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInMutationUseCaseContext,
         args: EmailTaskUpdateArgs,
     ) -> None:
         """Execute the command's action."""
@@ -120,6 +114,7 @@ class EmailTaskUpdateUseCase(
         )[0]
 
         generated_inbox_task = generated_inbox_task.update_link_to_email_task(
+            ctx=context.domain_context,
             project_ref_id=generated_inbox_task.project_ref_id,
             from_address=email_task.from_address,
             from_name=email_task.from_name,
@@ -127,22 +122,19 @@ class EmailTaskUpdateUseCase(
             subject=email_task.subject,
             body=email_task.body,
             generation_extra_info=email_task.generation_extra_info,
-            source=EventSource.CLI,
-            modification_time=self._time_provider.get_current_time(),
         )
 
         await uow.inbox_task_repository.save(generated_inbox_task)
         await progress_reporter.mark_updated(generated_inbox_task)
 
         email_task = email_task.update(
+            ctx=context.domain_context,
             from_address=args.from_address,
             from_name=args.from_name,
             to_address=args.to_address,
             subject=args.subject,
             body=args.body,
             generation_extra_info=generation_extra_info,
-            source=EventSource.CLI,
-            modification_time=self._time_provider.get_current_time(),
         )
 
         await uow.email_task_repository.save(email_task)

@@ -1,6 +1,5 @@
 """A user of Jupiter."""
-from dataclasses import dataclass
-
+from jupiter.core.domain.auth.auth import Auth
 from jupiter.core.domain.core.email_address import EmailAddress
 from jupiter.core.domain.core.timezone import Timezone
 from jupiter.core.domain.features import (
@@ -8,30 +7,24 @@ from jupiter.core.domain.features import (
     UserFeatureFlags,
     UserFeatureFlagsControls,
 )
+from jupiter.core.domain.gamification.score_log import ScoreLog
 from jupiter.core.domain.user.avatar import Avatar
 from jupiter.core.domain.user.user_name import UserName
-from jupiter.core.framework.base.entity_id import BAD_REF_ID
-from jupiter.core.framework.base.timestamp import Timestamp
-from jupiter.core.framework.entity import FIRST_VERSION, Entity, RootEntity
-from jupiter.core.framework.event import EventSource
+from jupiter.core.framework.context import DomainContext
+from jupiter.core.framework.entity import (
+    ContainsOne,
+    IsRefId,
+    RootEntity,
+    create_entity_action,
+    entity,
+    update_entity_action,
+)
 from jupiter.core.framework.update_action import UpdateAction
 
 
-@dataclass
+@entity
 class User(RootEntity):
     """A user of Jupiter."""
-
-    @dataclass
-    class Created(Entity.Created):
-        """Created event."""
-
-    @dataclass
-    class Update(Entity.Updated):
-        """Updated event."""
-
-    @dataclass
-    class UpdateFeatureFlags(Entity.Updated):
-        """Changed the feature flags for the workspace."""
 
     email_address: EmailAddress
     name: UserName
@@ -39,29 +32,22 @@ class User(RootEntity):
     timezone: Timezone
     feature_flags: UserFeatureFlags
 
+    auth = ContainsOne(Auth, user_ref_id=IsRefId())
+    score_log = ContainsOne(ScoreLog, user_ref_id=IsRefId())
+
     @staticmethod
+    @create_entity_action
     def new_user(
+        ctx: DomainContext,
         email_address: EmailAddress,
         name: UserName,
         timezone: Timezone,
         feature_flag_controls: UserFeatureFlagsControls,
         feature_flags: UserFeatureFlags,
-        source: EventSource,
-        created_time: Timestamp,
     ) -> "User":
         """Create a new user."""
-        user = User(
-            ref_id=BAD_REF_ID,
-            version=FIRST_VERSION,
-            archived=False,
-            created_time=created_time,
-            last_modified_time=created_time,
-            archived_time=None,
-            events=[
-                User.Created.make_event_from_frame_args(
-                    source, FIRST_VERSION, created_time
-                ),
-            ],
+        return User._create(
+            ctx,
             email_address=email_address,
             name=name,
             avatar=Avatar.from_user_name(name),
@@ -71,42 +57,36 @@ class User(RootEntity):
             ),
         )
 
-        return user
-
+    @update_entity_action
     def update(
         self,
+        ctx: DomainContext,
         name: UpdateAction[UserName],
         timezone: UpdateAction[Timezone],
-        source: EventSource,
-        modification_time: Timestamp,
     ) -> "User":
         """Update properties of the user."""
         return self._new_version(
+            ctx,
             name=name.or_else(self.name),
             avatar=name.transform(lambda n: Avatar.from_user_name(n)).or_else(
                 self.avatar
             ),
             timezone=timezone.or_else(self.timezone),
-            new_event=User.Update.make_event_from_frame_args(
-                source, self.version, modification_time
-            ),
         )
 
+    @update_entity_action
     def change_feature_flags(
         self,
+        ctx: DomainContext,
         feature_flag_controls: UserFeatureFlagsControls,
         feature_flags: UserFeatureFlags,
-        source: EventSource,
-        modification_time: Timestamp,
     ) -> "User":
         """Change the feature settings for this user."""
         return self._new_version(
+            ctx,
             feature_flags=feature_flag_controls.validate_and_complete(
                 feature_flags_delta=feature_flags,
                 current_feature_flags=self.feature_flags,
-            ),
-            new_event=User.UpdateFeatureFlags.make_event_from_frame_args(
-                source, self.version, modification_time
             ),
         )
 

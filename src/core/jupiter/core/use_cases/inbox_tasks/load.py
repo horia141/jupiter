@@ -1,12 +1,12 @@
 """The use case for loading a partcular inbox task."""
 from dataclasses import dataclass
-from typing import Iterable, Optional
+from typing import Optional
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.chores.chore import Chore
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
-from jupiter.core.domain.features import UserFeature, WorkspaceFeature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.metrics.metric import Metric
@@ -21,8 +21,9 @@ from jupiter.core.framework.use_case import (
     UseCaseResultBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInReadonlyUseCaseContext,
     AppTransactionalLoggedInReadOnlyUseCase,
+    readonly_use_case,
 )
 
 
@@ -50,22 +51,16 @@ class InboxTaskLoadResult(UseCaseResultBase):
     note: Optional[Note] = None
 
 
+@readonly_use_case(WorkspaceFeature.INBOX_TASKS)
 class InboxTaskLoadUseCase(
     AppTransactionalLoggedInReadOnlyUseCase[InboxTaskLoadArgs, InboxTaskLoadResult]
 ):
     """The use case for loading a particular inbox task."""
 
-    @staticmethod
-    def get_scoped_to_feature() -> Iterable[
-        UserFeature
-    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
-        """The feature the use case is scope to."""
-        return WorkspaceFeature.INBOX_TASKS
-
     async def _perform_transactional_read(
         self,
         uow: DomainUnitOfWork,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInReadonlyUseCaseContext,
         args: InboxTaskLoadArgs,
     ) -> InboxTaskLoadResult:
         """Execute the command's action."""

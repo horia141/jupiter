@@ -52,7 +52,7 @@ async def upsert_events(
                 owner_ref_id=aggreggate_root.ref_id.as_int(),
                 timestamp=event.timestamp.to_db(),
                 session_index=event_idx,
-                name=str(event.__class__.__name__),
+                name=str(event.name),
                 source=event.source.to_db(),
                 owner_version=event.entity_version,
                 kind=event.kind.to_db(),

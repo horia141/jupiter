@@ -6,6 +6,7 @@ from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.entity import EntityLinkFilterCompiled
 from jupiter.core.framework.repository import (
     LeafEntityNotFoundError,
     LeafEntityRepository,
@@ -39,3 +40,11 @@ class InboxTaskRepository(LeafEntityRepository[InboxTask], abc.ABC):
         filter_last_modified_time_end: Optional[ADate] = None,
     ) -> List[InboxTask]:
         """Find all inbox tasks."""
+
+    @abc.abstractmethod
+    async def find_all_generic(
+        self,
+        allow_archived: bool,
+        **kwargs: EntityLinkFilterCompiled,
+    ) -> Iterable[InboxTask]:
+        """Find all habits with generic filters."""

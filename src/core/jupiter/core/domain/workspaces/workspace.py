@@ -1,125 +1,126 @@
 """The workspace where everything happens."""
-from dataclasses import dataclass
 from typing import Iterable, List
 
+from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
+from jupiter.core.domain.chores.chore_collection import ChoreCollection
+from jupiter.core.domain.core.notes.note_collection import NoteCollection
+from jupiter.core.domain.docs.doc_collection import DocCollection
 from jupiter.core.domain.features import (
     WorkspaceFeature,
     WorkspaceFeatureFlags,
     WorkspaceFeatureFlagsControls,
 )
+from jupiter.core.domain.gc.gc_log import GCLog
+from jupiter.core.domain.gen.gen_log import GenLog
+from jupiter.core.domain.habits.habit_collection import HabitCollection
+from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
+from jupiter.core.domain.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.named_entity_tag import NamedEntityTag
+from jupiter.core.domain.persons.person_collection import PersonCollection
+from jupiter.core.domain.projects.project_collection import ProjectCollection
+from jupiter.core.domain.push_integrations.group.push_integration_group import (
+    PushIntegrationGroup,
+)
+from jupiter.core.domain.smart_lists.smart_list_collection import SmartListCollection
 from jupiter.core.domain.sync_target import SyncTarget
+from jupiter.core.domain.vacations.vacation_collection import VacationCollection
 from jupiter.core.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
-from jupiter.core.framework.base.timestamp import Timestamp
-from jupiter.core.framework.entity import FIRST_VERSION, Entity, RootEntity
-from jupiter.core.framework.event import EventSource
+from jupiter.core.framework.context import DomainContext
+from jupiter.core.framework.entity import (
+    ContainsOne,
+    IsRefId,
+    RootEntity,
+    create_entity_action,
+    entity,
+    update_entity_action,
+)
 from jupiter.core.framework.update_action import UpdateAction
 
 
-@dataclass
+@entity
 class Workspace(RootEntity):
     """The workspace where everything happens."""
-
-    @dataclass
-    class Created(Entity.Created):
-        """Created event."""
-
-    @dataclass
-    class Updated(Entity.Updated):
-        """Updated event."""
-
-    @dataclass
-    class ChangedDefaultProject(Entity.Updated):
-        """Changed the default project."""
-
-    @dataclass
-    class UpdateFeatureFlags(Entity.Updated):
-        """Changed the feature flags for the workspace."""
 
     name: WorkspaceName
     default_project_ref_id: EntityId
     feature_flags: WorkspaceFeatureFlags
 
+    inbox_task_collection = ContainsOne(InboxTaskCollection, workspace_ref_id=IsRefId())
+    habit_collection = ContainsOne(HabitCollection, workspace_ref_id=IsRefId())
+    chore_collection = ContainsOne(ChoreCollection, workspace_ref_id=IsRefId())
+    big_plan_collection = ContainsOne(BigPlanCollection, workspace_ref_id=IsRefId())
+    doc_collection = ContainsOne(DocCollection, workspace_ref_id=IsRefId())
+    vacation_collection = ContainsOne(VacationCollection, workspace_ref_id=IsRefId())
+    project_collection = ContainsOne(ProjectCollection, workspace_ref_id=IsRefId())
+    smart_list_collection = ContainsOne(SmartListCollection, workspace_ref_id=IsRefId())
+    metric_collection = ContainsOne(MetricCollection, workspace_ref_id=IsRefId())
+    person_collection = ContainsOne(PersonCollection, workspace_ref_id=IsRefId())
+    push_integration_group = ContainsOne(
+        PushIntegrationGroup, workspace_ref_id=IsRefId()
+    )
+
+    note_collection = ContainsOne(NoteCollection, workspace_ref_id=IsRefId())
+
+    gc_log = ContainsOne(GCLog, workspace_ref_id=IsRefId())
+    gen_log = ContainsOne(GenLog, workspace_ref_id=IsRefId())
+
     @staticmethod
+    @create_entity_action
     def new_workspace(
+        ctx: DomainContext,
         name: WorkspaceName,
         feature_flag_controls: WorkspaceFeatureFlagsControls,
         feature_flags: WorkspaceFeatureFlags,
-        source: EventSource,
-        created_time: Timestamp,
     ) -> "Workspace":
         """Create a new workspace."""
-        workspace = Workspace(
-            ref_id=BAD_REF_ID,
-            version=FIRST_VERSION,
-            archived=False,
-            created_time=created_time,
-            archived_time=None,
-            last_modified_time=created_time,
-            events=[
-                Workspace.Created.make_event_from_frame_args(
-                    source,
-                    FIRST_VERSION,
-                    created_time,
-                ),
-            ],
+        return Workspace._create(
+            ctx,
             name=name,
+            default_project_ref_id=BAD_REF_ID,
             feature_flags=feature_flag_controls.validate_and_complete(
                 feature_flags_delta=feature_flags, current_feature_flags={}
             ),
-            default_project_ref_id=BAD_REF_ID,
         )
-        return workspace
 
+    @update_entity_action
     def update(
         self,
+        ctx: DomainContext,
         name: UpdateAction[WorkspaceName],
-        source: EventSource,
-        modification_time: Timestamp,
     ) -> "Workspace":
         """Update properties of the workspace."""
         return self._new_version(
+            ctx,
             name=name.or_else(self.name),
-            new_event=Workspace.Updated.make_event_from_frame_args(
-                source,
-                self.version,
-                modification_time,
-            ),
         )
 
+    @update_entity_action
     def change_default_project(
         self,
+        ctx: DomainContext,
         default_project_ref_id: EntityId,
-        source: EventSource,
-        modification_time: Timestamp,
     ) -> "Workspace":
         """Change the default project of the workspace."""
         return self._new_version(
+            ctx,
             default_project_ref_id=default_project_ref_id,
-            new_event=Workspace.ChangedDefaultProject.make_event_from_frame_args(
-                source,
-                self.version,
-                modification_time,
-            ),
         )
 
+    @update_entity_action
     def change_feature_flags(
         self,
+        ctx: DomainContext,
         feature_flag_controls: WorkspaceFeatureFlagsControls,
         feature_flags: WorkspaceFeatureFlags,
-        source: EventSource,
-        modification_time: Timestamp,
     ) -> "Workspace":
         """Change the feature settings for this workspace."""
         return self._new_version(
+            ctx,
             feature_flags=feature_flag_controls.validate_and_complete(
                 feature_flags_delta=feature_flags,
                 current_feature_flags=self.feature_flags,
-            ),
-            new_event=Workspace.UpdateFeatureFlags.make_event_from_frame_args(
-                source, self.version, modification_time
             ),
         )
 

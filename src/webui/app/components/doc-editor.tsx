@@ -23,8 +23,12 @@ export function DocEditor({
   const [dataModified, setDataModified] = useState(false);
   const [isActing, setIsActing] = useState(false);
   const [shouldAct, setShouldAct] = useState(false);
-  const [docId, setDocId] = useState(initialDoc ? initialDoc.ref_id.the_id : null);
-  const [noteId, setNoteId] = useState(initialNote ? initialNote.ref_id.the_id : null)
+  const [docId, setDocId] = useState(
+    initialDoc ? initialDoc.ref_id.the_id : null
+  );
+  const [noteId, setNoteId] = useState(
+    initialNote ? initialNote.ref_id.the_id : null
+  );
   const [noteName, setNoteName] = useState<string>(
     initialDoc ? initialDoc.name.the_name : ""
   );

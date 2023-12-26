@@ -6,7 +6,6 @@ from jupiter.core.domain.auth.password_new_plain import PasswordNewPlain
 from jupiter.core.domain.auth.recovery_token_plain import RecoveryTokenPlain
 from jupiter.core.domain.core.email_address import EmailAddress
 from jupiter.core.domain.user.infra.user_repository import UserNotFoundError
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.secure import secure_class
 from jupiter.core.framework.use_case import (
     ProgressReporter,
@@ -15,7 +14,7 @@ from jupiter.core.framework.use_case import (
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppGuestMutationUseCase,
-    AppGuestUseCaseContext,
+    AppGuestMutationUseCaseContext,
 )
 
 
@@ -49,7 +48,7 @@ class ResetPasswordUseCase(
     async def _execute(
         self,
         progress_reporter: ProgressReporter,
-        context: AppGuestUseCaseContext,
+        context: AppGuestMutationUseCaseContext,
         args: ResetPasswordArgs,
     ) -> ResetPasswordResult:
         """Execute the command's action."""
@@ -60,11 +59,10 @@ class ResetPasswordUseCase(
                 )
                 auth = await uow.auth_repository.load_by_parent(user.ref_id)
                 auth, new_recovery_token = auth.reset_password(
+                    ctx=context.domain_context,
                     recovery_token=args.recovery_token,
                     new_password=args.new_password,
                     new_password_repeat=args.new_password_repeat,
-                    source=EventSource.CLI,
-                    modification_time=self._time_provider.get_current_time(),
                 )
                 auth = await uow.auth_repository.save(auth)
             except (UserNotFoundError, IncorrectRecoveryTokenError) as err:

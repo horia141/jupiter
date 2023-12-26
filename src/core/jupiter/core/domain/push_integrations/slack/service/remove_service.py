@@ -5,6 +5,7 @@ from jupiter.core.domain.inbox_tasks.service.remove_service import (
 )
 from jupiter.core.domain.push_integrations.slack.slack_task import SlackTask
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
+from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.use_case import ProgressReporter
 
 
@@ -13,6 +14,7 @@ class SlackTaskRemoveService:
 
     async def do_it(
         self,
+        ctx: DomainContext,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
         slack_task: SlackTask,
@@ -37,7 +39,9 @@ class SlackTaskRemoveService:
 
         inbox_task_remove_service = InboxTaskRemoveService()
         for inbox_task in inbox_tasks_to_remove:
-            await inbox_task_remove_service.do_it(uow, progress_reporter, inbox_task)
+            await inbox_task_remove_service.do_it(
+                ctx, uow, progress_reporter, inbox_task
+            )
 
         await uow.slack_task_repository.remove(slack_task.ref_id)
         await progress_reporter.mark_removed(slack_task)

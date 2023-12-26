@@ -1,35 +1,29 @@
 """An email task which needs to be converted into an inbox task."""
-from dataclasses import dataclass
-
 from jupiter.core.domain.core.email_address import EmailAddress
 from jupiter.core.domain.core.entity_name import EntityName
+from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.push_integrations.email.email_user_name import EmailUserName
 from jupiter.core.domain.push_integrations.push_generation_extra_info import (
     PushGenerationExtraInfo,
 )
-from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
-from jupiter.core.framework.base.timestamp import Timestamp
-from jupiter.core.framework.entity import FIRST_VERSION, Entity, LeafEntity
+from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.context import DomainContext
+from jupiter.core.framework.entity import (
+    IsRefId,
+    LeafEntity,
+    OwnsAtMostOne,
+    create_entity_action,
+    entity,
+    update_entity_action,
+)
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.update_action import UpdateAction
 
 
-@dataclass
+@entity
 class EmailTask(LeafEntity):
     """An email task which needs to be converted into an inbox task."""
-
-    @dataclass
-    class Created(Entity.Created):
-        """Created event."""
-
-    @dataclass
-    class Update(Entity.Updated):
-        """Updated event."""
-
-    @dataclass
-    class GenerateInboxTask(Entity.Updated):
-        """Mark the generation of an inbox task associated with this email task event."""
 
     email_task_collection_ref_id: EntityId
     from_address: EmailAddress
@@ -40,34 +34,25 @@ class EmailTask(LeafEntity):
     generation_extra_info: PushGenerationExtraInfo
     has_generated_task: bool
 
+    generated_task = OwnsAtMostOne(
+        InboxTask, source=InboxTaskSource.EMAIL_TASK, email_task_ref_id=IsRefId()
+    )
+
     @staticmethod
+    @create_entity_action
     def new_email_task(
+        ctx: DomainContext,
         email_task_collection_ref_id: EntityId,
-        archived: bool,
         from_address: EmailAddress,
         from_name: EmailUserName,
         to_address: EmailAddress,
         subject: str,
         body: str,
         generation_extra_info: PushGenerationExtraInfo,
-        source: EventSource,
-        created_time: Timestamp,
     ) -> "EmailTask":
         """Create a Email task."""
-        email_task = EmailTask(
-            ref_id=BAD_REF_ID,
-            version=FIRST_VERSION,
-            archived=archived,
-            created_time=created_time,
-            archived_time=created_time if archived else None,
-            last_modified_time=created_time,
-            events=[
-                EmailTask.Created.make_event_from_frame_args(
-                    source,
-                    FIRST_VERSION,
-                    created_time,
-                ),
-            ],
+        return EmailTask._create(
+            ctx,
             name=EmailTask.build_name(from_address, from_name, subject),
             email_task_collection_ref_id=email_task_collection_ref_id,
             from_address=from_address,
@@ -78,21 +63,21 @@ class EmailTask(LeafEntity):
             generation_extra_info=generation_extra_info,
             has_generated_task=False,
         )
-        return email_task
 
+    @update_entity_action
     def update(
         self,
+        ctx: DomainContext,
         from_address: UpdateAction[EmailAddress],
         from_name: UpdateAction[EmailUserName],
         to_address: UpdateAction[EmailAddress],
         subject: UpdateAction[str],
         body: UpdateAction[str],
         generation_extra_info: UpdateAction[PushGenerationExtraInfo],
-        source: EventSource,
-        modification_time: Timestamp,
     ) -> "EmailTask":
         """Update email task."""
         return self._new_version(
+            ctx,
             from_address=from_address.or_else(self.from_address),
             from_name=from_name.or_else(self.from_name),
             to_address=to_address.or_else(self.to_address),
@@ -101,17 +86,12 @@ class EmailTask(LeafEntity):
             generation_extra_info=generation_extra_info.or_else(
                 self.generation_extra_info,
             ),
-            new_event=EmailTask.Update.make_event_from_frame_args(
-                source,
-                self.version,
-                modification_time,
-            ),
         )
 
+    @update_entity_action
     def mark_as_used_for_generation(
         self,
-        source: EventSource,
-        modification_time: Timestamp,
+        ctx: DomainContext,
     ) -> "EmailTask":
         """Mark this task as used for generating an inbox task."""
         if self.has_generated_task:
@@ -119,12 +99,8 @@ class EmailTask(LeafEntity):
                 f"Email task id={self.ref_id} already has an inbox task generated for it",
             )
         return self._new_version(
+            ctx,
             has_generated_task=True,
-            new_event=EmailTask.GenerateInboxTask.make_event_from_frame_args(
-                source,
-                self.version,
-                modification_time,
-            ),
         )
 
     @property

@@ -1,20 +1,20 @@
 """The command for associating a inbox task with a big plan."""
 from dataclasses import dataclass
-from typing import Iterable, Optional
+from typing import Optional
 
-from jupiter.core.domain.features import UserFeature, WorkspaceFeature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task import CannotModifyGeneratedTaskError
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
+    mutation_use_case,
 )
 
 
@@ -26,23 +26,17 @@ class InboxTaskAssociateWithBigPlanArgs(UseCaseArgsBase):
     big_plan_ref_id: Optional[EntityId] = None
 
 
+@mutation_use_case([WorkspaceFeature.INBOX_TASKS, WorkspaceFeature.BIG_PLANS])
 class InboxTaskAssociateWithBigPlanUseCase(
     AppTransactionalLoggedInMutationUseCase[InboxTaskAssociateWithBigPlanArgs, None],
 ):
     """The command for associating a inbox task with a big plan."""
 
-    @staticmethod
-    def get_scoped_to_feature() -> Iterable[
-        UserFeature
-    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
-        """The feature the use case is scope to."""
-        return (WorkspaceFeature.INBOX_TASKS, WorkspaceFeature.BIG_PLANS)
-
     async def _perform_transactional_mutation(
         self,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInMutationUseCaseContext,
         args: InboxTaskAssociateWithBigPlanArgs,
     ) -> None:
         """Execute the command's action."""
@@ -54,15 +48,13 @@ class InboxTaskAssociateWithBigPlanUseCase(
                     args.big_plan_ref_id,
                 )
                 inbox_task = inbox_task.associate_with_big_plan(
+                    ctx=context.domain_context,
                     project_ref_id=big_plan.project_ref_id,
                     big_plan_ref_id=args.big_plan_ref_id,
-                    source=EventSource.CLI,
-                    modification_time=self._time_provider.get_current_time(),
                 )
             else:
                 inbox_task = inbox_task.release_from_big_plan(
-                    source=EventSource.CLI,
-                    modification_time=self._time_provider.get_current_time(),
+                    ctx=context.domain_context,
                 )
         except CannotModifyGeneratedTaskError as err:
             raise InputValidationError(

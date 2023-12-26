@@ -1,8 +1,7 @@
 """The command for hard removing a email task."""
 from dataclasses import dataclass
-from typing import Iterable
 
-from jupiter.core.domain.features import UserFeature, WorkspaceFeature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.push_integrations.email.service.remove_service import (
     EmailTaskRemoveService,
 )
@@ -13,8 +12,9 @@ from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
+    mutation_use_case,
 )
 
 
@@ -25,23 +25,17 @@ class EmailTaskRemoveArgs(UseCaseArgsBase):
     ref_id: EntityId
 
 
+@mutation_use_case(WorkspaceFeature.EMAIL_TASKS)
 class EmailTaskRemoveUseCase(
     AppTransactionalLoggedInMutationUseCase[EmailTaskRemoveArgs, None]
 ):
     """The command for archiving a email task."""
 
-    @staticmethod
-    def get_scoped_to_feature() -> Iterable[
-        UserFeature
-    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
-        """The feature the use case is scope to."""
-        return WorkspaceFeature.EMAIL_TASKS
-
     async def _perform_transactional_mutation(
         self,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInMutationUseCaseContext,
         args: EmailTaskRemoveArgs,
     ) -> None:
         """Execute the command's action."""
@@ -49,4 +43,6 @@ class EmailTaskRemoveUseCase(
 
         email_task_remove_service = EmailTaskRemoveService()
 
-        await email_task_remove_service.do_it(uow, progress_reporter, email_task)
+        await email_task_remove_service.do_it(
+            context.domain_context, uow, progress_reporter, email_task
+        )

@@ -8,6 +8,7 @@ from jupiter.core.domain.inbox_tasks.service.remove_service import (
 from jupiter.core.domain.metrics.metric import Metric
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.workspaces.workspace import Workspace
+from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.use_case import ProgressReporter
 
 
@@ -16,6 +17,7 @@ class MetricRemoveService:
 
     async def execute(
         self,
+        ctx: DomainContext,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
         workspace: Workspace,
@@ -41,14 +43,16 @@ class MetricRemoveService:
 
         inbox_task_remove_service = InboxTaskRemoveService()
         for inbox_task in all_inbox_tasks:
-            await inbox_task_remove_service.do_it(uow, progress_reporter, inbox_task)
+            await inbox_task_remove_service.do_it(
+                ctx, uow, progress_reporter, inbox_task
+            )
 
         for metric_entry in all_metric_entries:
             await uow.metric_entry_repository.remove(metric_entry.ref_id)
             await progress_reporter.mark_removed(metric_entry)
             note_remove_service = NoteRemoveService()
             await note_remove_service.remove_for_source(
-                uow, NoteDomain.METRIC_ENTRY, metric_entry.ref_id
+                ctx, uow, NoteDomain.METRIC_ENTRY, metric_entry.ref_id
             )
 
         await uow.metric_repository.remove(metric.ref_id)

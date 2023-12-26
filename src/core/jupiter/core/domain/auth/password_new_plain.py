@@ -1,19 +1,16 @@
 """A new password in plain text, as received from a user."""
 import re
-from dataclasses import dataclass
 from re import Pattern
 from typing import Final, Optional
 
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.secret_value import SecretValue
-from jupiter.core.framework.secure import secure_class
+from jupiter.core.framework.value import SecretValue, secret_value
 
 _PASSWORD_PLAIN_RE: Final[Pattern[str]] = re.compile(r"^\S+$")
 _PASSWORD_MIN_LENGTH: Final[int] = 10
 
 
-@dataclass(repr=False)
-@secure_class
+@secret_value
 class PasswordNewPlain(SecretValue):
     """A new password in plain text, as received from a user."""
 

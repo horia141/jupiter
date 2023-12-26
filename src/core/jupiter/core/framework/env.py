@@ -1,4 +1,6 @@
 """An environment for a Jupiter application."""
+
+
 import enum
 
 

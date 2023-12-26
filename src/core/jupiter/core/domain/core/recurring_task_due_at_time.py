@@ -1,15 +1,14 @@
 """The due time for a recurring task."""
 import re
-from dataclasses import dataclass
 from typing import Final, Optional, Pattern
 
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import Value
+from jupiter.core.framework.value import Value, value
 
 _DUE_AT_TIME_RE: Final[Pattern[str]] = re.compile(r"^[0-9][0-9]:[0-9][0-9]$")
 
 
-@dataclass
+@value
 class RecurringTaskDueAtTime(Value):
     """The due time for a recurring task."""
 

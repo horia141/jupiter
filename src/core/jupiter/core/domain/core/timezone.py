@@ -1,15 +1,14 @@
 """An timezone in this domain."""
-from dataclasses import dataclass
 from functools import total_ordering
 from typing import Optional, cast
 
 import pendulum
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import Value
+from jupiter.core.framework.value import Value, value
 from pendulum.tz.zoneinfo.exceptions import InvalidTimezone
 
 
-@dataclass
+@value
 @total_ordering
 class Timezone(Value):
     """A timezone in this domain."""

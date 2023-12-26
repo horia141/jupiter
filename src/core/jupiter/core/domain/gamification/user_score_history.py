@@ -1,11 +1,10 @@
 """A history of user scores over time."""
-from dataclasses import dataclass
 
 from jupiter.core.domain.core.adate import ADate
-from jupiter.core.framework.value import Value
+from jupiter.core.framework.value import Value, value
 
 
-@dataclass
+@value
 class UserScoreAtDate(Value):
     """A full view of the score for a user."""
 
@@ -15,7 +14,7 @@ class UserScoreAtDate(Value):
     big_plan_cnt: int
 
 
-@dataclass
+@value
 class UserScoreHistory(Value):
     """A history of user scores over time."""
 

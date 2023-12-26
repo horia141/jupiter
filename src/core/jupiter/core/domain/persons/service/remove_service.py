@@ -8,6 +8,7 @@ from jupiter.core.domain.inbox_tasks.service.remove_service import (
 from jupiter.core.domain.persons.person import Person
 from jupiter.core.domain.persons.person_collection import PersonCollection
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
+from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.use_case import ProgressReporter
 
 
@@ -16,6 +17,7 @@ class PersonRemoveService:
 
     async def do_it(
         self,
+        ctx: DomainContext,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
         person_collection: PersonCollection,
@@ -35,11 +37,13 @@ class PersonRemoveService:
 
         inbox_task_remove_service = InboxTaskRemoveService()
         for inbox_task in all_inbox_tasks:
-            await inbox_task_remove_service.do_it(uow, progress_reporter, inbox_task)
+            await inbox_task_remove_service.do_it(
+                ctx, uow, progress_reporter, inbox_task
+            )
 
         note_remove_service = NoteRemoveService()
         await note_remove_service.remove_for_source(
-            uow, NoteDomain.PERSON, person.ref_id
+            ctx, uow, NoteDomain.PERSON, person.ref_id
         )
 
         await uow.person_repository.remove(person.ref_id)

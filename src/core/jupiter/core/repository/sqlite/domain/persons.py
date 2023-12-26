@@ -24,11 +24,13 @@ from jupiter.core.domain.persons.person_name import PersonName
 from jupiter.core.domain.persons.person_relationship import PersonRelationship
 from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
+from jupiter.core.framework.entity import EntityLinkFilterCompiled
 from jupiter.core.repository.sqlite.infra.events import (
     build_event_table,
     remove_events,
     upsert_events,
 )
+from jupiter.core.repository.sqlite.infra.filters import compile_query_relative_to
 from jupiter.core.repository.sqlite.infra.row import RowType
 from sqlalchemy import (
     Boolean,
@@ -345,6 +347,21 @@ class SqlitePersonRepository(PersonRepository):
             query_stmt = query_stmt.where(
                 self._person_table.c.ref_id.in_(fi.as_int() for fi in filter_ref_ids),
             )
+        results = await self._connection.execute(query_stmt)
+        return [self._row_to_entity(row) for row in results]
+
+    async def find_all_generic(
+        self,
+        allow_archived: bool,
+        **kwargs: EntityLinkFilterCompiled,
+    ) -> Iterable[Person]:
+        """Find all big plans with generic filters."""
+        query_stmt = select(self._person_table)
+        if not allow_archived:
+            query_stmt = query_stmt.where(self._person_table.c.archived.is_(False))
+
+        query_stmt = compile_query_relative_to(query_stmt, self._person_table, kwargs)
+
         results = await self._connection.execute(query_stmt)
         return [self._row_to_entity(row) for row in results]
 

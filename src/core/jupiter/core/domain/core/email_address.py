@@ -1,14 +1,13 @@
 """An email address."""
-from dataclasses import dataclass
 from functools import total_ordering
 from typing import Optional, cast
 
 from email_validator import EmailNotValidError, ValidatedEmail, validate_email
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import Value
+from jupiter.core.framework.value import Value, hashable_value
 
 
-@dataclass(eq=True, unsafe_hash=True)
+@hashable_value
 @total_ordering
 class EmailAddress(Value):
     """An email address."""

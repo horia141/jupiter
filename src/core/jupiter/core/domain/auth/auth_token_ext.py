@@ -1,19 +1,18 @@
 """An externally facing authentication token."""
 import re
-from dataclasses import dataclass
 from re import Pattern
 from typing import Final
 
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.secure import secure_class
-from jupiter.core.framework.value import Value
+from jupiter.core.framework.value import Value, value
 
 _JWT_RE: Final[Pattern[str]] = re.compile(
     r"([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_\-\+\/=]*)"
 )
 
 
-@dataclass
+@value
 @secure_class
 class AuthTokenExt(Value):
     """An externally facing authentication token."""

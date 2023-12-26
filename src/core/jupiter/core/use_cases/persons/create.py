@@ -1,6 +1,6 @@
 """Create a person."""
 from dataclasses import dataclass
-from typing import Iterable, Optional
+from typing import Optional
 
 from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
@@ -9,21 +9,21 @@ from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDu
 from jupiter.core.domain.core.recurring_task_due_at_time import RecurringTaskDueAtTime
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
-from jupiter.core.domain.features import UserFeature, WorkspaceFeature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.persons.person import Person
 from jupiter.core.domain.persons.person_birthday import PersonBirthday
 from jupiter.core.domain.persons.person_name import PersonName
 from jupiter.core.domain.persons.person_relationship import PersonRelationship
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
     UseCaseResultBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
+    mutation_use_case,
 )
 
 
@@ -51,23 +51,17 @@ class PersonCreateResult(UseCaseResultBase):
     new_person: Person
 
 
+@mutation_use_case(WorkspaceFeature.PERSONS)
 class PersonCreateUseCase(
     AppTransactionalLoggedInMutationUseCase[PersonCreateArgs, PersonCreateResult]
 ):
     """The command for creating a person."""
 
-    @staticmethod
-    def get_scoped_to_feature() -> Iterable[
-        UserFeature
-    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
-        """The feature the use case is scope to."""
-        return WorkspaceFeature.PERSONS
-
     async def _perform_transactional_mutation(
         self,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInMutationUseCaseContext,
         args: PersonCreateArgs,
     ) -> PersonCreateResult:
         """Execute the command's action."""
@@ -91,13 +85,12 @@ class PersonCreateUseCase(
             )
 
         new_person = Person.new_person(
+            ctx=context.domain_context,
             person_collection_ref_id=person_collection.ref_id,
             name=args.name,
             relationship=args.relationship,
             catch_up_params=catch_up_params,
             birthday=args.birthday,
-            source=EventSource.CLI,
-            created_time=self._time_provider.get_current_time(),
         )
         new_person = await uow.person_repository.create(new_person)
         await progress_reporter.mark_created(new_person)

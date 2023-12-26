@@ -9,7 +9,7 @@ from jupiter.core.domain.named_entity_tag import NamedEntityTag
 from jupiter.core.domain.search.search_limit import SearchLimit
 from jupiter.core.domain.search.search_query import SearchQuery
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.entity import BranchEntity, LeafEntity
+from jupiter.core.framework.entity import CrownEntity
 from jupiter.core.framework.repository import Repository
 
 
@@ -25,21 +25,15 @@ class SearchRepository(Repository, abc.ABC):
     """A search index repository for free form searching across all entities."""
 
     @abc.abstractmethod
-    async def create(
-        self, workspace_ref_id: EntityId, entity: BranchEntity | LeafEntity
-    ) -> None:
+    async def create(self, workspace_ref_id: EntityId, entity: CrownEntity) -> None:
         """Add an entity and make it available for searching."""
 
     @abc.abstractmethod
-    async def update(
-        self, workspace_ref_id: EntityId, entity: BranchEntity | LeafEntity
-    ) -> None:
+    async def update(self, workspace_ref_id: EntityId, entity: CrownEntity) -> None:
         """Update an entity for searching."""
 
     @abc.abstractmethod
-    async def remove(
-        self, workspace_ref_id: EntityId, entity: BranchEntity | LeafEntity
-    ) -> None:
+    async def remove(self, workspace_ref_id: EntityId, entity: CrownEntity) -> None:
         """Remove an entity from the search index."""
 
     @abc.abstractmethod

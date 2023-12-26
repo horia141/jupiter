@@ -1,35 +1,24 @@
 """A particular entry in the GC log."""
-from dataclasses import dataclass
 
 from jupiter.core.domain.core.entity_name import EntityName
 from jupiter.core.domain.entity_summary import EntitySummary
 from jupiter.core.domain.sync_target import SyncTarget
-from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
+from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
+from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
-    FIRST_VERSION,
-    BranchEntity,
-    Entity,
+    CrownEntity,
     LeafEntity,
+    create_entity_action,
+    entity,
+    update_entity_action,
 )
 from jupiter.core.framework.event import EventSource
 
 
-@dataclass
+@entity
 class GCLogEntry(LeafEntity):
     """A particular entry in the GC log."""
-
-    @dataclass
-    class Opened(Entity.Created):
-        """Event that gets triggered when a GC log entry is opened."""
-
-    @dataclass
-    class AddEntity(Entity.Updated):
-        """Event that gets triggered when an entity is added to the log entry."""
-
-    @dataclass
-    class Closed(Entity.Updated):
-        """Event that gets triggered when a GC log entry is closed."""
 
     gc_log_ref_id: EntityId
     source: EventSource
@@ -38,35 +27,22 @@ class GCLogEntry(LeafEntity):
     entity_records: list[EntitySummary]
 
     @staticmethod
+    @create_entity_action
     def new_log_entry(
+        ctx: DomainContext,
         gc_log_ref_id: EntityId,
-        source: EventSource,
         gc_targets: list[SyncTarget],
-        created_time: Timestamp,
     ) -> "GCLogEntry":
         """Create a new GC log entry."""
-        gc_log_entry = GCLogEntry(
-            ref_id=BAD_REF_ID,
-            version=FIRST_VERSION,
-            archived=False,
-            created_time=created_time,
-            archived_time=None,
-            last_modified_time=created_time,
-            events=[
-                GCLogEntry.Opened.make_event_from_frame_args(
-                    source,
-                    FIRST_VERSION,
-                    created_time,
-                ),
-            ],
-            name=GCLogEntry.build_name(gc_targets, created_time),
+        return GCLogEntry._create(
+            ctx,
+            name=GCLogEntry.build_name(gc_targets, ctx.action_timestamp),
             gc_log_ref_id=gc_log_ref_id,
-            source=source,
+            source=ctx.event_source,
             gc_targets=gc_targets,
             opened=True,
             entity_records=[],
         )
-        return gc_log_entry
 
     @staticmethod
     def build_name(gc_targets: list[SyncTarget], created_time: Timestamp) -> EntityName:
@@ -75,28 +51,24 @@ class GCLogEntry(LeafEntity):
             f"GC Log Entry for {','.join(str(g) for g in gc_targets)} at {created_time}"
         )
 
+    @update_entity_action
     def add_entity(
-        self, entity: BranchEntity | LeafEntity, modification_time: Timestamp
+        self,
+        ctx: DomainContext,
+        entity: CrownEntity,
     ) -> "GCLogEntry":
         """Add an entity to the GC log entry."""
         if not self.opened:
             raise Exception("Can't add an entity to a closed GC log entry.")
         return self._new_version(
+            ctx,
             entity_records=[*self.entity_records, EntitySummary.from_entity(entity)],
-            new_event=GCLogEntry.AddEntity.make_event_from_frame_args(
-                self.source,
-                self.version,
-                modification_time,
-            ),
         )
 
-    def close(self, modification_time: Timestamp) -> "GCLogEntry":
+    @update_entity_action
+    def close(self, ctx: DomainContext) -> "GCLogEntry":
         """Close the GC log entry."""
         return self._new_version(
+            ctx,
             opened=False,
-            new_event=GCLogEntry.Closed.make_event_from_frame_args(
-                self.source,
-                self.version,
-                modification_time,
-            ),
         )

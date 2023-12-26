@@ -32,7 +32,6 @@ import {
   NoteDomain,
   PersonRelationship,
   RecurringTaskPeriod,
-  WorkspaceFeature,
 } from "jupiter-gen";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
@@ -50,7 +49,6 @@ import { eisenName } from "~/logic/domain/eisen";
 import { sortInboxTasksNaturally } from "~/logic/domain/inbox-task";
 import { periodName } from "~/logic/domain/period";
 import { personRelationshipName } from "~/logic/domain/person-relationship";
-import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { getIntent } from "~/logic/intent";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -618,33 +616,33 @@ export default function Person() {
         </CardActions>
       </Card>
 
-        <Card>
-          {!loaderData.note && (
-            <CardActions>
-              <ButtonGroup>
-                <Button
-                  variant="contained"
-                  disabled={!inputsEnabled}
-                  type="submit"
-                  name="intent"
-                  value="create-note"
-                >
-                  Create Note
-                </Button>
-              </ButtonGroup>
-            </CardActions>
-          )}
+      <Card>
+        {!loaderData.note && (
+          <CardActions>
+            <ButtonGroup>
+              <Button
+                variant="contained"
+                disabled={!inputsEnabled}
+                type="submit"
+                name="intent"
+                value="create-note"
+              >
+                Create Note
+              </Button>
+            </ButtonGroup>
+          </CardActions>
+        )}
 
-          {loaderData.note && (
-            <>
-              <EntityNoteEditor
-                initialNote={loaderData.note}
-                inputsEnabled={inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/content" />
-            </>
-          )}
-        </Card>
+        {loaderData.note && (
+          <>
+            <EntityNoteEditor
+              initialNote={loaderData.note}
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/content" />
+          </>
+        )}
+      </Card>
 
       {sortedBirthdayTasks.length > 0 && (
         <InboxTaskStack

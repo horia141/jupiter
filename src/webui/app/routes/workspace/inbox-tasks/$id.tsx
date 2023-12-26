@@ -687,33 +687,33 @@ export default function InboxTask() {
         </CardActions>
       </Card>
 
-        <Card>
-          {!loaderData.info.note && (
-            <CardActions>
-              <ButtonGroup>
-                <Button
-                  variant="contained"
-                  disabled={!inputsEnabled}
-                  type="submit"
-                  name="intent"
-                  value="create-note"
-                >
-                  Create Note
-                </Button>
-              </ButtonGroup>
-            </CardActions>
-          )}
+      <Card>
+        {!loaderData.info.note && (
+          <CardActions>
+            <ButtonGroup>
+              <Button
+                variant="contained"
+                disabled={!inputsEnabled}
+                type="submit"
+                name="intent"
+                value="create-note"
+              >
+                Create Note
+              </Button>
+            </ButtonGroup>
+          </CardActions>
+        )}
 
-          {loaderData.info.note && (
-            <>
-              <EntityNoteEditor
-                initialNote={loaderData.info.note}
-                inputsEnabled={inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/content" />
-            </>
-          )}
-        </Card>
+        {loaderData.info.note && (
+          <>
+            <EntityNoteEditor
+              initialNote={loaderData.info.note}
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/content" />
+          </>
+        )}
+      </Card>
     </LeafPanel>
   );
 }

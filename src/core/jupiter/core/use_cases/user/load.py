@@ -19,8 +19,9 @@ from jupiter.core.framework.use_case import (
     UseCaseResultBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInReadonlyUseCaseContext,
     AppTransactionalLoggedInReadOnlyUseCase,
+    readonly_use_case,
 )
 from jupiter.core.utils.time_provider import TimeProvider
 
@@ -39,6 +40,7 @@ class UserLoadResult(UseCaseResultBase):
     user_score_history: UserScoreHistory | None
 
 
+@readonly_use_case()
 class UserLoadUseCase(
     AppTransactionalLoggedInReadOnlyUseCase[UserLoadArgs, UserLoadResult]
 ):
@@ -59,7 +61,7 @@ class UserLoadUseCase(
     async def _perform_transactional_read(
         self,
         uow: DomainUnitOfWork,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInReadonlyUseCaseContext,
         args: UserLoadArgs,
     ) -> UserLoadResult:
         """Execute the command's action."""

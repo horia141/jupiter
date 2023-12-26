@@ -15,7 +15,7 @@ from typing import (
 
 from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
-from jupiter.core.framework.entity import BranchEntity, LeafEntity
+from jupiter.core.framework.entity import CrownEntity
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.json import JSONDictType, process_primitive_to_json
 from jupiter.core.framework.update_action import UpdateAction
@@ -29,7 +29,7 @@ class UseCaseSessionBase:
 
 
 class UseCaseContextBase(abc.ABC):
-    """The base class for use case contexts."""
+    """Info about a particular invocation of a use case."""
 
     @property
     @abc.abstractmethod
@@ -164,30 +164,30 @@ class ProgressReporter(abc.ABC):
         """Start a section or subsection."""
 
     @abc.abstractmethod
-    async def mark_created(self, entity: BranchEntity | LeafEntity) -> None:
+    async def mark_created(self, entity: CrownEntity) -> None:
         """Mark a particular entity as created."""
 
     @abc.abstractmethod
-    async def mark_updated(self, entity: BranchEntity | LeafEntity) -> None:
+    async def mark_updated(self, entity: CrownEntity) -> None:
         """Mark a particular entity as updated."""
 
     @abc.abstractmethod
-    async def mark_removed(self, entity: BranchEntity | LeafEntity) -> None:
+    async def mark_removed(self, entity: CrownEntity) -> None:
         """Mark a particular entity as removed."""
 
     @property
     @abc.abstractmethod
-    def created_entities(self) -> Iterable[BranchEntity | LeafEntity]:
+    def created_entities(self) -> Iterable[CrownEntity]:
         """The set of entities that were created while this progress reporter was active."""
 
     @property
     @abc.abstractmethod
-    def updated_entities(self) -> Iterable[BranchEntity | LeafEntity]:
+    def updated_entities(self) -> Iterable[CrownEntity]:
         """The set of entities that were updated while this progress reporter was active."""
 
     @property
     @abc.abstractmethod
-    def removed_entities(self) -> Iterable[BranchEntity | LeafEntity]:
+    def removed_entities(self) -> Iterable[CrownEntity]:
         """The set of entities that were removed while this progress reporter was active."""
 
 

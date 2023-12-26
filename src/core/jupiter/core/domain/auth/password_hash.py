@@ -1,5 +1,4 @@
 """A hashed password, suitable for storage."""
-from dataclasses import dataclass
 from typing import Optional
 
 import argon2.profiles
@@ -7,15 +6,13 @@ from argon2 import PasswordHasher
 from jupiter.core.domain.auth.password_new_plain import PasswordNewPlain
 from jupiter.core.domain.auth.password_plain import PasswordPlain
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.secret_value import SecretValue
-from jupiter.core.framework.secure import secure_class
+from jupiter.core.framework.value import SecretValue, secret_value
 
 _PROFILE = argon2.profiles.RFC_9106_LOW_MEMORY
 _PASSWORD_HASHER = PasswordHasher.from_parameters(_PROFILE)
 
 
-@dataclass(repr=False)
-@secure_class
+@secret_value
 class PasswordHash(SecretValue):
     """A hashed password, suitable for storage."""
 

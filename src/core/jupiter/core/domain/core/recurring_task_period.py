@@ -1,14 +1,14 @@
 """A period for a particular task."""
-import enum
 from functools import lru_cache, total_ordering
 from typing import Iterable, List, Optional, cast
 
 from jupiter.core.framework.errors import InputValidationError
+from jupiter.core.framework.value import EnumValue, enum_value
 
 
-@enum.unique
+@enum_value
 @total_ordering
-class RecurringTaskPeriod(enum.Enum):
+class RecurringTaskPeriod(EnumValue):
     """A period for a particular task."""
 
     DAILY = "daily"

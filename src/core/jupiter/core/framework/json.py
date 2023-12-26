@@ -5,8 +5,7 @@ import uuid
 from enum import Enum
 from typing import Any, Dict, List, Union
 
-from jupiter.core.framework.secret_value import SecretValue
-from jupiter.core.framework.value import Value
+from jupiter.core.framework.value import SecretValue, Value
 from pendulum.date import Date
 from pendulum.datetime import DateTime
 

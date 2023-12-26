@@ -1,11 +1,10 @@
 """The base value object for any kind of tag tag."""
 import re
-from dataclasses import dataclass
 from functools import total_ordering
 from typing import Final, Optional, Pattern, Type, TypeVar
 
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import Value
+from jupiter.core.framework.value import Value, hashable_value
 
 _TAG_RE: Final[Pattern[str]] = re.compile(r"^[a-zA-Z0-9]([a-zA-Z0-9]*-?)*$")
 
@@ -13,8 +12,8 @@ _TAG_RE: Final[Pattern[str]] = re.compile(r"^[a-zA-Z0-9]([a-zA-Z0-9]*-?)*$")
 _TagNameT = TypeVar("_TagNameT", bound="TagName")
 
 
-@dataclass(eq=True, unsafe_hash=True)
 @total_ordering
+@hashable_value
 class TagName(Value):
     """The base value object for any kind of tag tag."""
 

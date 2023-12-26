@@ -9,8 +9,9 @@ from jupiter.core.framework.use_case import (
     UseCaseResultBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInReadonlyUseCaseContext,
     AppTransactionalLoggedInReadOnlyUseCase,
+    readonly_use_case,
 )
 
 
@@ -27,6 +28,7 @@ class WorkspaceLoadResult(UseCaseResultBase):
     default_project: Project
 
 
+@readonly_use_case()
 class WorkspaceLoadUseCase(
     AppTransactionalLoggedInReadOnlyUseCase[WorkspaceLoadArgs, WorkspaceLoadResult]
 ):
@@ -35,7 +37,7 @@ class WorkspaceLoadUseCase(
     async def _perform_transactional_read(
         self,
         uow: DomainUnitOfWork,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInReadonlyUseCaseContext,
         args: WorkspaceLoadArgs,
     ) -> WorkspaceLoadResult:
         """Execute the command's action."""

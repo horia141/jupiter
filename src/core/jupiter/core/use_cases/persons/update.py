@@ -1,7 +1,7 @@
 """Update a person."""
 import typing
 from dataclasses import dataclass
-from typing import Iterable, Optional
+from typing import Optional
 
 from jupiter.core.domain.core import schedules
 from jupiter.core.domain.core.difficulty import Difficulty
@@ -11,7 +11,7 @@ from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDu
 from jupiter.core.domain.core.recurring_task_due_at_time import RecurringTaskDueAtTime
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
-from jupiter.core.domain.features import UserFeature, WorkspaceFeature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.inbox_tasks.service.archive_service import (
     InboxTaskArchiveService,
@@ -22,12 +22,12 @@ from jupiter.core.domain.persons.person_relationship import PersonRelationship
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import ProgressReporter, UseCaseArgsBase
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
+    mutation_use_case,
 )
 
 
@@ -49,23 +49,17 @@ class PersonUpdateArgs(UseCaseArgsBase):
     birthday: UpdateAction[Optional[PersonBirthday]]
 
 
+@mutation_use_case(WorkspaceFeature.PERSONS)
 class PersonUpdateUseCase(
     AppTransactionalLoggedInMutationUseCase[PersonUpdateArgs, None]
 ):
     """The command for updating a person."""
 
-    @staticmethod
-    def get_scoped_to_feature() -> Iterable[
-        UserFeature
-    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
-        """The feature the use case is scope to."""
-        return WorkspaceFeature.PERSONS
-
     async def _perform_transactional_mutation(
         self,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInMutationUseCaseContext,
         args: PersonUpdateArgs,
     ) -> None:
         """Execute the command's action."""
@@ -191,13 +185,10 @@ class PersonUpdateUseCase(
         # Change the catch up inbox tasks
         if person.catch_up_params is None:
             # Situation 1: we need to get rid of any existing catch ups persons because there's no collection catch ups.
-            inbox_task_archive_service = InboxTaskArchiveService(
-                source=EventSource.CLI,
-                time_provider=self._time_provider,
-            )
+            inbox_task_archive_service = InboxTaskArchiveService()
             for inbox_task in person_catch_up_tasks:
                 await inbox_task_archive_service.do_it(
-                    uow, progress_reporter, inbox_task
+                    context.domain_context, uow, progress_reporter, inbox_task
                 )
         else:
             # Situation 2: we need to update the existing persons.
@@ -216,6 +207,7 @@ class PersonUpdateUseCase(
                 )
 
                 inbox_task = inbox_task.update_link_to_person_catch_up(
+                    ctx=context.domain_context,
                     project_ref_id=project.ref_id,
                     name=schedule.full_name,
                     recurring_timeline=schedule.timeline,
@@ -223,8 +215,6 @@ class PersonUpdateUseCase(
                     difficulty=person.catch_up_params.difficulty,
                     actionable_date=schedule.actionable_date,
                     due_time=schedule.due_time,
-                    source=EventSource.CLI,
-                    modification_time=self._time_provider.get_current_time(),
                 )
                 # Situation 2a: we're handling the same project.
                 await uow.inbox_task_repository.save(inbox_task)
@@ -233,13 +223,10 @@ class PersonUpdateUseCase(
         # Change the birthday inbox tasks
         if person.birthday is None:
             # Situation 1: we need to get rid of any existing catch ups persons because there's no collection catch ups.
-            inbox_task_archive_service = InboxTaskArchiveService(
-                source=EventSource.CLI,
-                time_provider=self._time_provider,
-            )
+            inbox_task_archive_service = InboxTaskArchiveService()
             for inbox_task in person_birthday_tasks:
                 await inbox_task_archive_service.do_it(
-                    uow, progress_reporter, inbox_task
+                    context.domain_context, uow, progress_reporter, inbox_task
                 )
         else:
             # Situation 2: we need to update the existing persons.
@@ -264,25 +251,23 @@ class PersonUpdateUseCase(
                 )
 
                 inbox_task = inbox_task.update_link_to_person_birthday(
+                    ctx=context.domain_context,
                     project_ref_id=project.ref_id,
                     name=schedule.full_name,
                     recurring_timeline=schedule.timeline,
                     preparation_days_cnt=person.preparation_days_cnt_for_birthday,
                     due_time=schedule.due_time,
-                    source=EventSource.CLI,
-                    modification_time=self._time_provider.get_current_time(),
                 )
 
                 await uow.inbox_task_repository.save(inbox_task)
                 await progress_reporter.mark_updated(inbox_task)
 
         person = person.update(
+            ctx=context.domain_context,
             name=args.name,
             relationship=args.relationship,
             birthday=args.birthday,
             catch_up_params=catch_up_params,
-            source=EventSource.CLI,
-            modification_time=self._time_provider.get_current_time(),
         )
 
         await uow.person_repository.save(person)

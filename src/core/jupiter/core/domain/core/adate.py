@@ -1,6 +1,5 @@
 """A date or possibly a datetime for the application."""
 import datetime
-from dataclasses import dataclass
 from functools import total_ordering
 from typing import Optional, cast
 
@@ -11,13 +10,13 @@ import pendulum.tz
 from jupiter.core.domain.core.timezone import Timezone
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import Value
+from jupiter.core.framework.value import Value, hashable_value
 from pendulum.date import Date
 from pendulum.datetime import DateTime
 from pendulum.tz.timezone import UTC
 
 
-@dataclass(eq=True, unsafe_hash=True)
+@hashable_value
 @total_ordering
 class ADate(Value):
     """A date or possibly a datetime for the application."""

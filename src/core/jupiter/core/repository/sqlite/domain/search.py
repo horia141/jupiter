@@ -13,7 +13,7 @@ from jupiter.core.domain.search.search_limit import SearchLimit
 from jupiter.core.domain.search.search_query import SearchQuery
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
-from jupiter.core.framework.entity import BranchEntity, LeafEntity
+from jupiter.core.framework.entity import CrownEntity
 from jupiter.core.framework.repository import EntityNotFoundError
 from jupiter.core.repository.sqlite.infra.row import RowType
 from sqlalchemy import (
@@ -63,9 +63,7 @@ class SqliteSearchRepository(SearchRepository):
             keep_existing=True,
         )
 
-    async def create(
-        self, workspace_ref_id: EntityId, entity: BranchEntity | LeafEntity
-    ) -> None:
+    async def create(self, workspace_ref_id: EntityId, entity: CrownEntity) -> None:
         """Create an entity in the index."""
         await self._connection.execute(
             insert(self._search_index_table).values(
@@ -83,9 +81,7 @@ class SqliteSearchRepository(SearchRepository):
             )
         )
 
-    async def update(
-        self, workspace_ref_id: EntityId, entity: BranchEntity | LeafEntity
-    ) -> None:
+    async def update(self, workspace_ref_id: EntityId, entity: CrownEntity) -> None:
         """Update an entity in the index."""
         result = await self._connection.execute(
             update(self._search_index_table)
@@ -111,9 +107,7 @@ class SqliteSearchRepository(SearchRepository):
                 "The entity does not exist",
             )
 
-    async def remove(
-        self, workspace_ref_id: EntityId, entity: BranchEntity | LeafEntity
-    ) -> None:
+    async def remove(self, workspace_ref_id: EntityId, entity: CrownEntity) -> None:
         """Remove an entity from the index."""
         await self._connection.execute(
             delete(self._search_index_table)

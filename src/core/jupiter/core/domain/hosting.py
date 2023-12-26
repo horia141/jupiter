@@ -1,9 +1,11 @@
 """The type of hosting Jupiter is run into."""
-import enum
 
 
-@enum.unique
-class Hosting(enum.Enum):
+from jupiter.core.framework.value import EnumValue, enum_value
+
+
+@enum_value
+class Hosting(EnumValue):
     """The type of hosting Jupiter is run into."""
 
     HOSTED_GLOBAL = "hosted-global"

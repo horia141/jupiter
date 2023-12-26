@@ -1,78 +1,62 @@
 """A metric entry."""
-from dataclasses import dataclass
-
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.entity_name import EntityName
-from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
-from jupiter.core.framework.base.timestamp import Timestamp
-from jupiter.core.framework.entity import FIRST_VERSION, Entity, LeafEntity
-from jupiter.core.framework.event import EventSource
+from jupiter.core.domain.core.notes.note import Note
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
+from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.context import DomainContext
+from jupiter.core.framework.entity import (
+    IsRefId,
+    LeafEntity,
+    OwnsAtMostOne,
+    create_entity_action,
+    entity,
+    update_entity_action,
+)
 from jupiter.core.framework.update_action import UpdateAction
 
 
-@dataclass
+@entity
 class MetricEntry(LeafEntity):
     """A metric entry."""
-
-    @dataclass
-    class Created(Entity.Created):
-        """Created event."""
-
-    @dataclass
-    class Updated(Entity.Updated):
-        """Updated event."""
 
     metric_ref_id: EntityId
     collection_time: ADate
     value: float
 
+    note = OwnsAtMostOne(
+        Note, domain=NoteDomain.METRIC_ENTRY, source_entity_ref_id=IsRefId()
+    )
+
     @staticmethod
+    @create_entity_action
     def new_metric_entry(
-        archived: bool,
+        ctx: DomainContext,
         metric_ref_id: EntityId,
         collection_time: ADate,
         value: float,
-        source: EventSource,
-        created_time: Timestamp,
     ) -> "MetricEntry":
         """Create a metric entry."""
-        metric_entry = MetricEntry(
-            ref_id=BAD_REF_ID,
-            version=FIRST_VERSION,
-            archived=archived,
-            created_time=created_time,
-            archived_time=created_time if archived else None,
-            last_modified_time=created_time,
+        return MetricEntry._create(
+            ctx,
             name=MetricEntry.build_name(collection_time, value),
-            events=[
-                MetricEntry.Created.make_event_from_frame_args(
-                    source,
-                    FIRST_VERSION,
-                    created_time,
-                ),
-            ],
             metric_ref_id=metric_ref_id,
             collection_time=collection_time,
             value=value,
         )
-        return metric_entry
 
+    @update_entity_action
     def update(
         self,
+        ctx: DomainContext,
         collection_time: UpdateAction[ADate],
         value: UpdateAction[float],
-        source: EventSource,
-        modification_time: Timestamp,
     ) -> "MetricEntry":
         """Change the metric entry."""
         return self._new_version(
+            ctx,
             collection_time=collection_time.or_else(self.collection_time),
             value=value.or_else(self.value),
-            new_event=MetricEntry.Updated.make_event_from_frame_args(
-                source,
-                self.version,
-                modification_time,
-            ),
         )
 
     @property

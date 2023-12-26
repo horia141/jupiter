@@ -1,24 +1,23 @@
 """Use case for creating a doc."""
 from dataclasses import dataclass
-from typing import Iterable
 
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_content_block import OneOfNoteContentBlock
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.docs.doc import Doc
 from jupiter.core.domain.docs.doc_name import DocName
-from jupiter.core.domain.features import UserFeature, WorkspaceFeature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
     UseCaseResultBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
+    mutation_use_case,
 )
 
 
@@ -39,23 +38,17 @@ class DocCreateResult(UseCaseResultBase):
     new_note: Note
 
 
+@mutation_use_case(WorkspaceFeature.DOCS)
 class DocCreateUseCase(
     AppTransactionalLoggedInMutationUseCase[DocCreateArgs, DocCreateResult]
 ):
     """Use case for creating a doc."""
 
-    @staticmethod
-    def get_scoped_to_feature() -> Iterable[
-        UserFeature
-    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
-        """The feature the use case is scope to."""
-        return WorkspaceFeature.DOCS
-
     async def _perform_transactional_mutation(
         self,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInMutationUseCaseContext,
         args: DocCreateArgs,
     ) -> DocCreateResult:
         """Execute the command's action."""
@@ -68,21 +61,19 @@ class DocCreateUseCase(
         )
 
         doc = Doc.new_doc(
+            ctx=context.domain_context,
             doc_collection_ref_id=doc_collection.ref_id,
             parent_doc_ref_id=args.parent_doc_ref_id,
             name=args.name,
-            source=EventSource.CLI,
-            created_time=self._time_provider.get_current_time(),
         )
         doc = await uow.doc_repository.create(doc)
 
         note = Note.new_note(
+            ctx=context.domain_context,
             note_collection_ref_id=note_collection.ref_id,
             domain=NoteDomain.DOC,
             source_entity_ref_id=doc.ref_id,
             content=args.content,
-            source=EventSource.CLI,
-            created_time=self._time_provider.get_current_time(),
         )
         note = await uow.note_repository.create(note)
 

@@ -1,6 +1,6 @@
 """The command for creating a chore."""
 from dataclasses import dataclass
-from typing import Iterable, Optional
+from typing import Optional
 
 from jupiter.core.domain.chores.chore import Chore
 from jupiter.core.domain.chores.chore_name import ChoreName
@@ -15,20 +15,19 @@ from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.core.recurring_task_skip_rule import RecurringTaskSkipRule
 from jupiter.core.domain.features import (
     FeatureUnavailableError,
-    UserFeature,
     WorkspaceFeature,
 )
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
     UseCaseResultBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
+    mutation_use_case,
 )
 
 
@@ -59,23 +58,17 @@ class ChoreCreateResult(UseCaseResultBase):
     new_chore: Chore
 
 
+@mutation_use_case(WorkspaceFeature.CHORES)
 class ChoreCreateUseCase(
     AppTransactionalLoggedInMutationUseCase[ChoreCreateArgs, ChoreCreateResult]
 ):
     """The command for creating a chore."""
 
-    @staticmethod
-    def get_scoped_to_feature() -> Iterable[
-        UserFeature
-    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
-        """The feature the use case is scope to."""
-        return WorkspaceFeature.CHORES
-
     async def _perform_transactional_mutation(
         self,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInMutationUseCaseContext,
         args: ChoreCreateArgs,
     ) -> ChoreCreateResult:
         """Execute the command's action."""
@@ -92,8 +85,8 @@ class ChoreCreateUseCase(
         )
 
         new_chore = Chore.new_chore(
+            ctx=context.domain_context,
             chore_collection_ref_id=chore_collection.ref_id,
-            archived=False,
             project_ref_id=args.project_ref_id or workspace.default_project_ref_id,
             name=args.name,
             gen_params=RecurringTaskGenParams(
@@ -111,8 +104,6 @@ class ChoreCreateUseCase(
             skip_rule=args.skip_rule,
             suspended=False,
             must_do=args.must_do,
-            source=EventSource.CLI,
-            created_time=self._time_provider.get_current_time(),
         )
         new_chore = await uow.chore_repository.create(new_chore)
         await progress_reporter.mark_created(new_chore)

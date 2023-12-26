@@ -1,18 +1,17 @@
 """The command for archiving a smart list."""
 from dataclasses import dataclass
-from typing import Iterable
 
-from jupiter.core.domain.features import UserFeature, WorkspaceFeature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
+    mutation_use_case,
 )
 
 
@@ -23,23 +22,17 @@ class SmartListArchiveArgs(UseCaseArgsBase):
     ref_id: EntityId
 
 
+@mutation_use_case(WorkspaceFeature.SMART_LISTS)
 class SmartListArchiveUseCase(
     AppTransactionalLoggedInMutationUseCase[SmartListArchiveArgs, None]
 ):
     """The command for archiving a smart list."""
 
-    @staticmethod
-    def get_scoped_to_feature() -> Iterable[
-        UserFeature
-    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
-        """The feature the use case is scope to."""
-        return WorkspaceFeature.SMART_LISTS
-
     async def _perform_transactional_mutation(
         self,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInMutationUseCaseContext,
         args: SmartListArchiveArgs,
     ) -> None:
         """Execute the command's action."""
@@ -53,24 +46,15 @@ class SmartListArchiveUseCase(
         )
 
         for smart_list_tag in smart_list_tags:
-            smart_list_tag = smart_list_tag.mark_archived(
-                EventSource.CLI,
-                self._time_provider.get_current_time(),
-            )
+            smart_list_tag = smart_list_tag.mark_archived(context.domain_context)
             await uow.smart_list_tag_repository.save(smart_list_tag)
             await progress_reporter.mark_updated(smart_list_tag)
 
         for smart_list_item in smart_list_items:
-            smart_list_item = smart_list_item.mark_archived(
-                EventSource.CLI,
-                self._time_provider.get_current_time(),
-            )
+            smart_list_item = smart_list_item.mark_archived(context.domain_context)
             await uow.smart_list_item_repository.save(smart_list_item)
             await progress_reporter.mark_updated(smart_list_item)
 
-        smart_list = smart_list.mark_archived(
-            EventSource.CLI,
-            self._time_provider.get_current_time(),
-        )
+        smart_list = smart_list.mark_archived(context.domain_context)
         await uow.smart_list_repository.save(smart_list)
         await progress_reporter.mark_updated(smart_list)

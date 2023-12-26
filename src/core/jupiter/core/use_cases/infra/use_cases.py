@@ -1,7 +1,7 @@
 """Jupiter specific use cases classes."""
 import abc
 from dataclasses import dataclass
-from typing import Final, Generic, Iterable, TypeVar, Union
+from typing import Any, Callable, Final, Generic, Type, TypeVar, Union
 
 from jupiter.core.domain.auth.auth_token import (
     AuthToken,
@@ -11,6 +11,7 @@ from jupiter.core.domain.auth.auth_token import (
 from jupiter.core.domain.auth.auth_token_ext import AuthTokenExt
 from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
 from jupiter.core.domain.features import (
+    FeatureScope,
     FeatureUnavailableError,
     UserFeature,
     WorkspaceFeature,
@@ -22,8 +23,10 @@ from jupiter.core.domain.storage_engine import (
 )
 from jupiter.core.domain.user.user import User
 from jupiter.core.domain.workspaces.workspace import Workspace
-from jupiter.core.framework import use_case
+from jupiter.core.framework import use_case as uc
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.context import DomainContext
+from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
     EmptyContext,
     EmptySession,
@@ -60,10 +63,20 @@ class AppGuestUseCaseContext(EmptyContext):
     auth_token: AuthToken | None
 
 
+@dataclass
+class AppGuestMutationUseCaseContext(AppGuestUseCaseContext):
+    """The applicatin context to use for guest-OK interactions."""
+
+    domain_context: DomainContext
+
+
 class AppGuestMutationUseCase(
     Generic[UseCaseArgs, UseCaseResult],
     MutationUseCase[
-        AppGuestUseCaseSession, AppGuestUseCaseContext, UseCaseArgs, UseCaseResult
+        AppGuestUseCaseSession,
+        AppGuestMutationUseCaseContext,
+        UseCaseArgs,
+        UseCaseResult,
     ],
     abc.ABC,
 ):
@@ -76,7 +89,9 @@ class AppGuestMutationUseCase(
         self,
         time_provider: TimeProvider,
         invocation_recorder: MutationUseCaseInvocationRecorder,
-        progress_reporter_factory: ProgressReporterFactory[AppGuestUseCaseContext],
+        progress_reporter_factory: ProgressReporterFactory[
+            AppGuestMutationUseCaseContext
+        ],
         auth_token_stamper: AuthTokenStamper,
         storage_engine: DomainStorageEngine,
     ) -> None:
@@ -87,7 +102,7 @@ class AppGuestMutationUseCase(
 
     async def _build_context(
         self, session: AppGuestUseCaseSession
-    ) -> AppGuestUseCaseContext:
+    ) -> AppGuestMutationUseCaseContext:
         """Construct the context for the use case."""
         try:
             auth_token = (
@@ -99,13 +114,26 @@ class AppGuestMutationUseCase(
             )
         except (InvalidAuthTokenError, ExpiredAuthTokenError):
             auth_token = None
-        return AppGuestUseCaseContext(auth_token)
+        return AppGuestMutationUseCaseContext(
+            auth_token=auth_token,
+            domain_context=DomainContext(
+                EventSource.CLI, self._time_provider.get_current_time()
+            ),
+        )
+
+
+@dataclass
+class AppGuestReadonlyUseCaseContext(AppGuestUseCaseContext):
+    """The applicatin context to use for guest-OK interactions."""
 
 
 class AppGuestReadonlyUseCase(
     Generic[UseCaseArgs, UseCaseResult],
     ReadonlyUseCase[
-        AppGuestUseCaseSession, AppGuestUseCaseContext, UseCaseArgs, UseCaseResult
+        AppGuestUseCaseSession,
+        AppGuestReadonlyUseCaseContext,
+        UseCaseArgs,
+        UseCaseResult,
     ],
     abc.ABC,
 ):
@@ -126,7 +154,7 @@ class AppGuestReadonlyUseCase(
 
     async def _build_context(
         self, session: AppGuestUseCaseSession
-    ) -> AppGuestUseCaseContext:
+    ) -> AppGuestReadonlyUseCaseContext:
         """Construct the context for the use case."""
         try:
             auth_token = (
@@ -138,7 +166,7 @@ class AppGuestReadonlyUseCase(
             )
         except (InvalidAuthTokenError, ExpiredAuthTokenError):
             auth_token = None
-        return AppGuestUseCaseContext(auth_token)
+        return AppGuestReadonlyUseCaseContext(auth_token=auth_token)
 
 
 @dataclass
@@ -166,10 +194,20 @@ class AppLoggedInUseCaseContext(UseCaseContextBase):
         return self.workspace.ref_id
 
 
+@dataclass
+class AppLoggedInMutationUseCaseContext(AppLoggedInUseCaseContext):
+    """The application use case context for logged-in-OK interactions."""
+
+    domain_context: DomainContext
+
+
 class AppLoggedInMutationUseCase(
     Generic[UseCaseArgs, UseCaseResult],
     MutationUseCase[
-        AppLoggedInUseCaseSession, AppLoggedInUseCaseContext, UseCaseArgs, UseCaseResult
+        AppLoggedInUseCaseSession,
+        AppLoggedInMutationUseCaseContext,
+        UseCaseArgs,
+        UseCaseResult,
     ],
     abc.ABC,
 ):
@@ -180,9 +218,7 @@ class AppLoggedInMutationUseCase(
     _search_storage_engine: Final[SearchStorageEngine]
 
     @staticmethod
-    def get_scoped_to_feature() -> Iterable[
-        UserFeature
-    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
+    def get_scoped_to_feature() -> FeatureScope:
         """The feature the use case is scope to."""
         return None
 
@@ -190,7 +226,9 @@ class AppLoggedInMutationUseCase(
         self,
         time_provider: TimeProvider,
         invocation_recorder: MutationUseCaseInvocationRecorder,
-        progress_reporter_factory: ProgressReporterFactory[AppLoggedInUseCaseContext],
+        progress_reporter_factory: ProgressReporterFactory[
+            AppLoggedInMutationUseCaseContext
+        ],
         auth_token_stamper: AuthTokenStamper,
         domain_storage_engine: DomainStorageEngine,
         search_storage_engine: SearchStorageEngine,
@@ -203,7 +241,7 @@ class AppLoggedInMutationUseCase(
 
     async def _build_context(
         self, session: AppLoggedInUseCaseSession
-    ) -> AppLoggedInUseCaseContext:
+    ) -> AppLoggedInMutationUseCaseContext:
         auth_token = self._auth_token_stamper.verify_auth_token_general(
             session.auth_token_ext
         )
@@ -233,12 +271,18 @@ class AppLoggedInMutationUseCase(
                             if not workspace.is_feature_available(feature):
                                 raise FeatureUnavailableError(feature)
 
-            return AppLoggedInUseCaseContext(user, workspace)
+            return AppLoggedInMutationUseCaseContext(
+                user=user,
+                workspace=workspace,
+                domain_context=DomainContext(
+                    EventSource.CLI, self._time_provider.get_current_time()
+                ),
+            )
 
     async def _execute(
         self,
         progress_reporter: ProgressReporter,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInMutationUseCaseContext,
         args: UseCaseArgs,
     ) -> UseCaseResult:
         """Execute the command's action."""
@@ -267,7 +311,7 @@ class AppLoggedInMutationUseCase(
     async def _perform_mutation(
         self,
         progress_reporter: ProgressReporter,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInMutationUseCaseContext,
         args: UseCaseArgs,
     ) -> UseCaseResult:
         """Execute the command's action."""
@@ -283,7 +327,7 @@ class AppTransactionalLoggedInMutationUseCase(
     async def _perform_mutation(
         self,
         progress_reporter: ProgressReporter,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInMutationUseCaseContext,
         args: UseCaseArgs,
     ) -> UseCaseResult:
         """Execute the command's action."""
@@ -297,16 +341,24 @@ class AppTransactionalLoggedInMutationUseCase(
         self,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInMutationUseCaseContext,
         args: UseCaseArgs,
     ) -> UseCaseResult:
         """Execute the command's action."""
 
 
+@dataclass
+class AppLoggedInReadonlyUseCaseContext(AppLoggedInUseCaseContext):
+    """The application use case context for logged-in-OK interactions."""
+
+
 class AppLoggedInReadonlyUseCase(
     Generic[UseCaseArgs, UseCaseResult],
     ReadonlyUseCase[
-        AppLoggedInUseCaseSession, AppLoggedInUseCaseContext, UseCaseArgs, UseCaseResult
+        AppLoggedInUseCaseSession,
+        AppLoggedInReadonlyUseCaseContext,
+        UseCaseArgs,
+        UseCaseResult,
     ],
     abc.ABC,
 ):
@@ -316,9 +368,7 @@ class AppLoggedInReadonlyUseCase(
     _storage_engine: Final[DomainStorageEngine]
 
     @staticmethod
-    def get_scoped_to_feature() -> Iterable[
-        UserFeature
-    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
+    def get_scoped_to_feature() -> FeatureScope:
         """The feature the use case is scope to."""
         return None
 
@@ -332,7 +382,7 @@ class AppLoggedInReadonlyUseCase(
 
     async def _build_context(
         self, session: AppLoggedInUseCaseSession
-    ) -> AppLoggedInUseCaseContext:
+    ) -> AppLoggedInReadonlyUseCaseContext:
         auth_token = self._auth_token_stamper.verify_auth_token_general(
             session.auth_token_ext
         )
@@ -362,7 +412,7 @@ class AppLoggedInReadonlyUseCase(
                             if not workspace.is_feature_available(feature):
                                 raise FeatureUnavailableError(feature)
 
-            return AppLoggedInUseCaseContext(user, workspace)
+            return AppLoggedInReadonlyUseCaseContext(user=user, workspace=workspace)
 
 
 class AppTransactionalLoggedInReadOnlyUseCase(
@@ -374,7 +424,7 @@ class AppTransactionalLoggedInReadOnlyUseCase(
 
     async def _execute(
         self,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInReadonlyUseCaseContext,
         args: UseCaseArgs,
     ) -> UseCaseResult:
         """Execute the command's action."""
@@ -385,7 +435,7 @@ class AppTransactionalLoggedInReadOnlyUseCase(
     async def _perform_transactional_read(
         self,
         uow: DomainUnitOfWork,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInReadonlyUseCaseContext,
         args: UseCaseArgs,
     ) -> UseCaseResult:
         """Execute the command's action."""
@@ -417,7 +467,7 @@ class AppBackgroundMutationUseCase(
     ) -> UseCaseResult:
         """Execute the command's action."""
         # A hacky hack!
-        use_case.LOGGER.info(
+        uc.LOGGER.info(
             f"Invoking background mutation command {self.__class__.__name__} with args {args}",
         )
         context = await self._build_context(session)
@@ -458,7 +508,7 @@ class AppTestHelperUseCase(
     ) -> UseCaseResult:
         """Execute the command's action."""
         # A hacky hack!
-        use_case.LOGGER.info(
+        uc.LOGGER.info(
             f"Invoking test helper command {self.__class__.__name__} with args {args}",
         )
         context = await self._build_context(session)
@@ -473,3 +523,29 @@ class AppTestHelperUseCase(
         args: UseCaseArgs,
     ) -> UseCaseResult:
         """Execute the command's action."""
+
+
+_MutationUseCaseT = TypeVar("_MutationUseCaseT", bound=AppLoggedInMutationUseCase[Any, Any])  # type: ignore
+
+
+def mutation_use_case(feature_scope: FeatureScope = None) -> Callable[[Type[_MutationUseCaseT]], Type[_MutationUseCaseT]]:  # type: ignore
+    """A decorator for use cases that scopes them to a feature."""
+
+    def decorator(cls: Type[_MutationUseCaseT]) -> Type[_MutationUseCaseT]:  # type: ignore
+        cls.get_scoped_to_feature = lambda _: feature_scope  # type: ignore
+        return cls
+
+    return decorator
+
+
+_ReadonlyUseCaseT = TypeVar("_ReadonlyUseCaseT", bound=AppLoggedInReadonlyUseCase[Any, Any])  # type: ignore
+
+
+def readonly_use_case(feature_scope: FeatureScope = None) -> Callable[[Type[_ReadonlyUseCaseT]], Type[_ReadonlyUseCaseT]]:  # type: ignore
+    """A decorator for use cases that scopes them to a feature."""
+
+    def decorator(cls: Type[_ReadonlyUseCaseT]) -> Type[_ReadonlyUseCaseT]:  # type: ignore
+        cls.get_scoped_to_feature = lambda _: feature_scope  # type: ignore
+        return cls
+
+    return decorator

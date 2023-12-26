@@ -1,14 +1,13 @@
 """An URL in this domain."""
-from dataclasses import dataclass
 from functools import total_ordering
 from typing import Optional
 
 import validators
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import Value
+from jupiter.core.framework.value import Value, value
 
 
-@dataclass
+@value
 @total_ordering
 class URL(Value):
     """A URL in this domain."""

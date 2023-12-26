@@ -2,6 +2,7 @@
 
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.use_case import ProgressReporter
 
 
@@ -10,6 +11,7 @@ class ChoreRemoveService:
 
     async def remove(
         self,
+        ctx: DomainContext,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
         ref_id: EntityId,

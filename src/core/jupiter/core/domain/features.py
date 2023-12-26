@@ -1,11 +1,9 @@
 """Even features are expressed here."""
-import enum
-from dataclasses import dataclass
 from functools import lru_cache
 from typing import Dict, Final, Iterable
 
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import Value
+from jupiter.core.framework.value import EnumValue, Value, enum_value, value
 
 
 class FeatureUnavailableError(Exception):
@@ -27,8 +25,8 @@ class FeatureUnavailableError(Exception):
         return self._error_str
 
 
-@enum.unique
-class FeatureControl(enum.Enum):
+@enum_value
+class FeatureControl(EnumValue):
     """The level of control allowed for a particular feature."""
 
     # Feature can't be turned off by the user
@@ -64,8 +62,8 @@ class FeatureControl(enum.Enum):
         return property_value
 
 
-@enum.unique
-class UserFeature(enum.Enum):
+@enum_value
+class UserFeature(EnumValue):
     """A particular feature of a Jupiter user."""
 
     GAMIFICATION = "gamification"
@@ -80,7 +78,7 @@ class UserFeature(enum.Enum):
 UserFeatureFlags = Dict[UserFeature, bool]
 
 
-@dataclass
+@value
 class UserFeatureFlagsControls(Value):
     """Feature settings controls for the user."""
 
@@ -107,8 +105,8 @@ class UserFeatureFlagsControls(Value):
         return checked_feature_flags
 
 
-@enum.unique
-class WorkspaceFeature(enum.Enum):
+@enum_value
+class WorkspaceFeature(EnumValue):
     """A particular feature of a Jupiter workspace."""
 
     INBOX_TASKS = "inbox-tasks"
@@ -134,7 +132,7 @@ class WorkspaceFeature(enum.Enum):
 WorkspaceFeatureFlags = Dict[WorkspaceFeature, bool]
 
 
-@dataclass
+@value
 class WorkspaceFeatureFlagsControls(Value):
     """Feature settings controls for the workspace."""
 
@@ -159,6 +157,15 @@ class WorkspaceFeatureFlagsControls(Value):
                 checked_feature_flags[feature] = control.standard_flag
 
         return checked_feature_flags
+
+
+FeatureScope = (
+    Iterable[UserFeature]
+    | UserFeature
+    | Iterable[WorkspaceFeature]
+    | WorkspaceFeature
+    | None
+)
 
 
 BASIC_USER_FEATURE_FLAGS = {UserFeature.GAMIFICATION: True}

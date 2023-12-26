@@ -24,12 +24,10 @@ export async function action({ request }: ActionArgs) {
   const form = await parseForm(request, UpdateForEntityFormSchema);
 
   try {
-    const result = await getLoggedInApiClient(session).note.updateNote(
-      {
-        ref_id: { the_id: form.id },
-        content: { should_change: true, value: form.content },
-      }
-    );
+    const result = await getLoggedInApiClient(session).note.updateNote({
+      ref_id: { the_id: form.id },
+      content: { should_change: true, value: form.content },
+    });
 
     return json(noErrorNoData());
   } catch (error) {

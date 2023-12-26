@@ -14,7 +14,8 @@ from jupiter.core.framework.use_case import (
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCase,
-    AppLoggedInUseCaseContext,
+    AppLoggedInMutationUseCaseContext,
+    mutation_use_case,
 )
 
 
@@ -36,13 +37,14 @@ class GenDoArgs(UseCaseArgsBase):
     filter_email_task_ref_ids: Optional[List[EntityId]] = None
 
 
+@mutation_use_case()
 class GenDoUseCase(AppLoggedInMutationUseCase[GenDoArgs, None]):
     """The command for generating new tasks."""
 
     async def _perform_mutation(
         self,
         progress_reporter: ProgressReporter,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInMutationUseCaseContext,
         args: GenDoArgs,
     ) -> None:
         """Execute the command's action."""
@@ -57,12 +59,11 @@ class GenDoUseCase(AppLoggedInMutationUseCase[GenDoArgs, None]):
         )
 
         gen_service = GenService(
-            source=args.source,
-            time_provider=self._time_provider,
             domain_storage_engine=self._domain_storage_engine,
         )
 
         await gen_service.do_it(
+            ctx=context.domain_context,
             progress_reporter=progress_reporter,
             user=user,
             workspace=workspace,

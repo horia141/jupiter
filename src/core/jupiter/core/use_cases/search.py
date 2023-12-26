@@ -13,7 +13,8 @@ from jupiter.core.domain.storage_engine import DomainStorageEngine, SearchStorag
 from jupiter.core.framework.use_case import UseCaseArgsBase, UseCaseResultBase
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCase,
-    AppLoggedInUseCaseContext,
+    AppLoggedInReadonlyUseCaseContext,
+    readonly_use_case,
 )
 
 
@@ -40,6 +41,7 @@ class SearchResult(UseCaseResultBase):
     matches: List[SearchMatch]
 
 
+@readonly_use_case()
 class SearchUseCase(AppLoggedInReadonlyUseCase[SearchArgs, SearchResult]):
     """Use case for free form searching through Jupiter."""
 
@@ -58,7 +60,7 @@ class SearchUseCase(AppLoggedInReadonlyUseCase[SearchArgs, SearchResult]):
         self._search_storage_engine = search_storage_engine
 
     async def _execute(
-        self, context: AppLoggedInUseCaseContext, args: SearchArgs
+        self, context: AppLoggedInReadonlyUseCaseContext, args: SearchArgs
     ) -> SearchResult:
         """Execute the command's action."""
         workspace = context.workspace

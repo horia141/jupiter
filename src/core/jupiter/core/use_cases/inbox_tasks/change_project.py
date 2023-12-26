@@ -1,20 +1,20 @@
 """The command for changing the project for an inbox task ."""
 from dataclasses import dataclass
-from typing import Iterable, Optional
+from typing import Optional
 
-from jupiter.core.domain.features import UserFeature, WorkspaceFeature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task import CannotModifyGeneratedTaskError
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
+    mutation_use_case,
 )
 
 
@@ -26,23 +26,17 @@ class InboxTaskChangeProjectArgs(UseCaseArgsBase):
     project_ref_id: Optional[EntityId] = None
 
 
+@mutation_use_case([WorkspaceFeature.INBOX_TASKS, WorkspaceFeature.PROJECTS])
 class InboxTaskChangeProjectUseCase(
     AppTransactionalLoggedInMutationUseCase[InboxTaskChangeProjectArgs, None],
 ):
     """The command for changing the project of a inbox task."""
 
-    @staticmethod
-    def get_scoped_to_feature() -> Iterable[
-        UserFeature
-    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
-        """The feature the use case is scope to."""
-        return (WorkspaceFeature.INBOX_TASKS, WorkspaceFeature.PROJECTS)
-
     async def _perform_transactional_mutation(
         self,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInMutationUseCaseContext,
         args: InboxTaskChangeProjectArgs,
     ) -> None:
         """Execute the command's action."""
@@ -52,9 +46,8 @@ class InboxTaskChangeProjectUseCase(
 
         try:
             inbox_task = inbox_task.change_project(
+                ctx=context.domain_context,
                 project_ref_id=args.project_ref_id or workspace.default_project_ref_id,
-                source=EventSource.CLI,
-                modification_time=self._time_provider.get_current_time(),
             )
         except CannotModifyGeneratedTaskError as err:
             raise InputValidationError(

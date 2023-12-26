@@ -1,14 +1,13 @@
 """The birthday of a person."""
-from dataclasses import dataclass
 from typing import ClassVar, Dict, Optional, Tuple
 
 from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import Value
+from jupiter.core.framework.value import Value, hashable_value
 
 
-@dataclass(eq=True, unsafe_hash=True)
+@hashable_value
 class PersonBirthday(Value):
     """The birthday of a person."""
 

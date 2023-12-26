@@ -1,7 +1,7 @@
 """The command for updating a metric's properties."""
 import typing
 from dataclasses import dataclass
-from typing import Iterable, Optional
+from typing import Optional
 
 from jupiter.core.domain.core import schedules
 from jupiter.core.domain.core.difficulty import Difficulty
@@ -12,7 +12,7 @@ from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDu
 from jupiter.core.domain.core.recurring_task_due_at_time import RecurringTaskDueAtTime
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
-from jupiter.core.domain.features import UserFeature, WorkspaceFeature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.inbox_tasks.service.archive_service import (
     InboxTaskArchiveService,
@@ -21,15 +21,15 @@ from jupiter.core.domain.metrics.metric_name import MetricName
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
+    mutation_use_case,
 )
 
 
@@ -50,23 +50,17 @@ class MetricUpdateArgs(UseCaseArgsBase):
     collection_due_at_month: UpdateAction[Optional[RecurringTaskDueAtMonth]]
 
 
+@mutation_use_case(WorkspaceFeature.METRICS)
 class MetricUpdateUseCase(
     AppTransactionalLoggedInMutationUseCase[MetricUpdateArgs, None]
 ):
     """The command for updating a metric's properties."""
 
-    @staticmethod
-    def get_scoped_to_feature() -> Iterable[
-        UserFeature
-    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
-        """The feature the use case is scope to."""
-        return WorkspaceFeature.METRICS
-
     async def _perform_transactional_mutation(
         self,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInMutationUseCaseContext,
         args: MetricUpdateArgs,
     ) -> None:
         """Execute the command's action."""
@@ -188,11 +182,10 @@ class MetricUpdateUseCase(
         )
 
         metric = metric.update(
+            context.domain_context,
             name=args.name,
             icon=args.icon,
             collection_params=collection_params,
-            source=EventSource.CLI,
-            modification_time=self._time_provider.get_current_time(),
         )
 
         await uow.metric_repository.save(metric)
@@ -201,13 +194,10 @@ class MetricUpdateUseCase(
         # Change the inbox tasks
         if metric.collection_params is None:
             # Situation 1: we need to get rid of any existing collection metrics because there's no collection anymore.
-            inbox_task_archive_service = InboxTaskArchiveService(
-                source=EventSource.CLI,
-                time_provider=self._time_provider,
-            )
+            inbox_task_archive_service = InboxTaskArchiveService()
             for inbox_task in metric_collection_tasks:
                 await inbox_task_archive_service.do_it(
-                    uow, progress_reporter, inbox_task
+                    context.domain_context, uow, progress_reporter, inbox_task
                 )
         else:
             # Situation 2: we need to update the existing metrics.
@@ -230,6 +220,7 @@ class MetricUpdateUseCase(
                 )
 
                 inbox_task = inbox_task.update_link_to_metric(
+                    ctx=context.domain_context,
                     project_ref_id=project.ref_id,
                     name=schedule.full_name,
                     recurring_timeline=schedule.timeline,
@@ -237,8 +228,6 @@ class MetricUpdateUseCase(
                     difficulty=metric.collection_params.difficulty,
                     actionable_date=schedule.actionable_date,
                     due_time=schedule.due_time,
-                    source=EventSource.CLI,
-                    modification_time=self._time_provider.get_current_time(),
                 )
 
                 await uow.inbox_task_repository.save(inbox_task)

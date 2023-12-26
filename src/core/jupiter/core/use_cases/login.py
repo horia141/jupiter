@@ -12,7 +12,7 @@ from jupiter.core.framework.use_case import (
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppGuestReadonlyUseCase,
-    AppGuestUseCaseContext,
+    AppGuestReadonlyUseCaseContext,
 )
 
 
@@ -41,7 +41,7 @@ class LoginUseCase(AppGuestReadonlyUseCase[LoginArgs, LoginResult]):
 
     async def _execute(
         self,
-        context: AppGuestUseCaseContext,
+        context: AppGuestReadonlyUseCaseContext,
         args: LoginArgs,
     ) -> LoginResult:
         """Execute the command."""

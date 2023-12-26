@@ -1,16 +1,16 @@
 """Use case for archiving a project."""
 from dataclasses import dataclass
-from typing import Iterable, Optional
+from typing import Optional
 
-from jupiter.core.domain.features import UserFeature, WorkspaceFeature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.projects.service.archive_service import ProjectArchiveService
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import ProgressReporter, UseCaseArgsBase
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
+    mutation_use_case,
 )
 
 
@@ -22,23 +22,17 @@ class ProjectArchiveArgs(UseCaseArgsBase):
     backup_project_ref_id: Optional[EntityId] = None
 
 
+@mutation_use_case(WorkspaceFeature.PROJECTS)
 class ProjectArchiveUseCase(
     AppTransactionalLoggedInMutationUseCase[ProjectArchiveArgs, None]
 ):
     """The command for archiving a project."""
 
-    @staticmethod
-    def get_scoped_to_feature() -> Iterable[
-        UserFeature
-    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
-        """The feature the use case is scope to."""
-        return WorkspaceFeature.PROJECTS
-
     async def _perform_transactional_mutation(
         self,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInMutationUseCaseContext,
         args: ProjectArchiveArgs,
     ) -> None:
         """Execute the command's action."""
@@ -46,9 +40,8 @@ class ProjectArchiveUseCase(
         if args.backup_project_ref_id:
             if context.workspace.default_project_ref_id == args.ref_id:
                 workspace = workspace.change_default_project(
+                    context.domain_context,
                     args.backup_project_ref_id,
-                    EventSource.CLI,
-                    self._time_provider.get_current_time(),
                 )
                 await uow.workspace_repository.save(workspace)
 
@@ -57,9 +50,8 @@ class ProjectArchiveUseCase(
             )
             if metric_collection.collection_project_ref_id == args.ref_id:
                 metric_collection = metric_collection.change_collection_project(
+                    context.domain_context,
                     args.backup_project_ref_id,
-                    EventSource.CLI,
-                    self._time_provider.get_current_time(),
                 )
                 await uow.metric_collection_repository.save(metric_collection)
 
@@ -68,9 +60,8 @@ class ProjectArchiveUseCase(
             )
             if person_collection.catch_up_project_ref_id == args.ref_id:
                 person_collection = person_collection.change_catch_up_project(
+                    context.domain_context,
                     args.backup_project_ref_id,
-                    EventSource.CLI,
-                    self._time_provider.get_current_time(),
                 )
                 await uow.person_collection_repository.save(person_collection)
 
@@ -86,9 +77,8 @@ class ProjectArchiveUseCase(
             )
             if slack_task_collection.generation_project_ref_id == args.ref_id:
                 slack_task_collection = slack_task_collection.change_generation_project(
+                    context.domain_context,
                     args.backup_project_ref_id,
-                    EventSource.CLI,
-                    self._time_provider.get_current_time(),
                 )
                 await uow.slack_task_collection_repository.save(slack_task_collection)
 
@@ -104,16 +94,12 @@ class ProjectArchiveUseCase(
             )
             if email_task_collection.generation_project_ref_id == args.ref_id:
                 email_task_collection = email_task_collection.change_generation_project(
+                    context.domain_context,
                     args.backup_project_ref_id,
-                    EventSource.CLI,
-                    self._time_provider.get_current_time(),
                 )
                 await uow.email_task_collection_repository.save(email_task_collection)
 
-        project_archive_service = ProjectArchiveService(
-            EventSource.CLI,
-            self._time_provider,
-        )
+        project_archive_service = ProjectArchiveService()
         await project_archive_service.do_it(
-            uow, progress_reporter, workspace, args.ref_id
+            context.domain_context, uow, progress_reporter, workspace, args.ref_id
         )

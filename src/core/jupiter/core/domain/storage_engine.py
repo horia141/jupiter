@@ -1,6 +1,6 @@
 """Domain-level storage interaction."""
 import abc
-from typing import AsyncContextManager
+from typing import AsyncContextManager, Type, TypeVar
 
 from jupiter.core.domain.auth.infra.auth_repository import AuthRepository
 from jupiter.core.domain.big_plans.infra.big_plan_collection_repository import (
@@ -100,6 +100,10 @@ from jupiter.core.domain.vacations.infra.vacation_repository import VacationRepo
 from jupiter.core.domain.workspaces.infra.workspace_repository import (
     WorkspaceRepository,
 )
+from jupiter.core.framework.entity import CrownEntity
+from jupiter.core.framework.repository import CrownEntityRepository
+
+_CrownEntityT = TypeVar("_CrownEntityT", bound=CrownEntity)
 
 
 class DomainUnitOfWork(abc.ABC):
@@ -319,6 +323,12 @@ class DomainUnitOfWork(abc.ABC):
     @abc.abstractmethod
     def gc_log_entry_repository(self) -> GCLogEntryRepository:
         """The GC log entry repository."""
+
+    @abc.abstractmethod
+    def get_repository(
+        self, entity_type: Type[_CrownEntityT]
+    ) -> CrownEntityRepository[_CrownEntityT]:
+        """Retrieve a repository."""
 
 
 class DomainStorageEngine(abc.ABC):

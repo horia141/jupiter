@@ -1,5 +1,4 @@
 """Shared logic for archiving a project."""
-from typing import Final
 
 from jupiter.core.domain.big_plans.service.archive_service import BigPlanArchiveService
 from jupiter.core.domain.chores.service.archive_service import ChoreArchiveService
@@ -11,28 +10,16 @@ from jupiter.core.domain.projects.errors import ProjectInSignificantUseError
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.event import EventSource
+from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.use_case import ProgressReporter
-from jupiter.core.utils.time_provider import TimeProvider
 
 
 class ProjectArchiveService:
     """Shared logic for archiving a project."""
 
-    _source: Final[EventSource]
-    _time_provider: Final[TimeProvider]
-
-    def __init__(
-        self,
-        source: EventSource,
-        time_provider: TimeProvider,
-    ) -> None:
-        """Constructor."""
-        self._source = source
-        self._time_provider = time_provider
-
     async def do_it(
         self,
+        ctx: DomainContext,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
         workspace: Workspace,
@@ -94,11 +81,9 @@ class ProjectArchiveService:
             allow_archived=False,
             filter_project_ref_ids=[project.ref_id],
         )
-        inbox_task_archive_service = InboxTaskArchiveService(
-            self._source, self._time_provider
-        )
+        inbox_task_archive_service = InboxTaskArchiveService()
         for it in inbox_tasks:
-            await inbox_task_archive_service.do_it(uow, progress_reporter, it)
+            await inbox_task_archive_service.do_it(ctx, uow, progress_reporter, it)
 
         # archive chores
         chore_collection = await uow.chore_collection_repository.load_by_parent(
@@ -109,12 +94,9 @@ class ProjectArchiveService:
             allow_archived=False,
             filter_project_ref_ids=[project.ref_id],
         )
-        chore_archive_service = ChoreArchiveService(
-            self._source,
-            self._time_provider,
-        )
+        chore_archive_service = ChoreArchiveService()
         for chore in chores:
-            await chore_archive_service.do_it(uow, progress_reporter, chore)
+            await chore_archive_service.do_it(ctx, uow, progress_reporter, chore)
 
         # archive habits
         habit_collection = await uow.habit_collection_repository.load_by_parent(
@@ -125,12 +107,9 @@ class ProjectArchiveService:
             allow_archived=False,
             filter_project_ref_ids=[project.ref_id],
         )
-        habit_archive_service = HabitArchiveService(
-            self._source,
-            self._time_provider,
-        )
+        habit_archive_service = HabitArchiveService()
         for habit in habits:
-            await habit_archive_service.do_it(uow, progress_reporter, habit)
+            await habit_archive_service.do_it(ctx, uow, progress_reporter, habit)
 
         # archive big plans
         big_plan_collection = await uow.habit_collection_repository.load_by_parent(
@@ -141,16 +120,11 @@ class ProjectArchiveService:
             allow_archived=False,
             filter_project_ref_ids=[project.ref_id],
         )
-        big_plan_archive_service = BigPlanArchiveService(
-            self._source,
-            self._time_provider,
-        )
+        big_plan_archive_service = BigPlanArchiveService()
         for big_plan in big_plans:
-            await big_plan_archive_service.do_it(uow, progress_reporter, big_plan)
+            await big_plan_archive_service.do_it(ctx, uow, progress_reporter, big_plan)
 
         # archive project
-        project = project.mark_archived(
-            self._source, self._time_provider.get_current_time()
-        )
+        project = project.mark_archived(ctx)
         await uow.project_repository.save(project)
         await progress_reporter.mark_updated(project)

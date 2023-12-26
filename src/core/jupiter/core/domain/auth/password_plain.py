@@ -1,14 +1,11 @@
 """A password in plain text, as received from a user."""
-from dataclasses import dataclass
 from typing import Optional
 
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.secret_value import SecretValue
-from jupiter.core.framework.secure import secure_class
+from jupiter.core.framework.value import SecretValue, secret_value
 
 
-@dataclass(repr=False)
-@secure_class
+@secret_value
 class PasswordPlain(SecretValue):
     """A new password in plain text, as received from a user."""
 

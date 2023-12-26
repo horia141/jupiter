@@ -1,17 +1,16 @@
 """The summary about an entity."""
-from dataclasses import dataclass
 from typing import Optional
 
 from jupiter.core.domain.core.entity_name import EntityName
 from jupiter.core.domain.named_entity_tag import NamedEntityTag
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
-from jupiter.core.framework.entity import BranchEntity, LeafEntity
+from jupiter.core.framework.entity import CrownEntity
 from jupiter.core.framework.json import JSONDictType
-from jupiter.core.framework.value import Value
+from jupiter.core.framework.value import Value, value
 
 
-@dataclass
+@value
 class EntitySummary(Value):
     """Information about a particular entity very broadly."""
 
@@ -26,7 +25,7 @@ class EntitySummary(Value):
     snippet: str
 
     @staticmethod
-    def from_entity(entity: BranchEntity | LeafEntity) -> "EntitySummary":
+    def from_entity(entity: CrownEntity) -> "EntitySummary":
         """Create an entity summary from an entity."""
         return EntitySummary(
             entity_tag=NamedEntityTag.from_entity(entity),

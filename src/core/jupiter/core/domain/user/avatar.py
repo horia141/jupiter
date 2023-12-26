@@ -1,15 +1,14 @@
 """A user avatar image."""
 
-from dataclasses import dataclass
 from typing import Optional
 
 import avinit
 from jupiter.core.domain.user.user_name import UserName
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import Value
+from jupiter.core.framework.value import Value, hashable_value
 
 
-@dataclass(eq=True, unsafe_hash=True)
+@hashable_value
 class Avatar(Value):
     """A user avatar image."""
 

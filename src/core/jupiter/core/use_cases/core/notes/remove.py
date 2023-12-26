@@ -11,8 +11,9 @@ from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
+    mutation_use_case,
 )
 
 
@@ -23,6 +24,7 @@ class NoteRemoveArgs(UseCaseArgsBase):
     ref_id: EntityId
 
 
+@mutation_use_case()
 class NoteRemoveUseCase(AppTransactionalLoggedInMutationUseCase[NoteRemoveArgs, None]):
     """The command for removing a note."""
 
@@ -30,9 +32,9 @@ class NoteRemoveUseCase(AppTransactionalLoggedInMutationUseCase[NoteRemoveArgs, 
         self,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInMutationUseCaseContext,
         args: NoteRemoveArgs,
     ) -> None:
         """Execute the command's action."""
         note = await uow.note_repository.load_by_id(args.ref_id)
-        await NoteRemoveService().remove(uow, note)
+        await NoteRemoveService().remove(context.domain_context, uow, note)

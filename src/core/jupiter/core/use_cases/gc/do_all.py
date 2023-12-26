@@ -4,6 +4,7 @@ from typing import Final
 
 from jupiter.core.domain.gc.service.gc_service import GCService
 from jupiter.core.domain.storage_engine import DomainStorageEngine, SearchStorageEngine
+from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
     EmptyContext,
@@ -48,16 +49,16 @@ class GCDoAllUseCase(AppBackgroundMutationUseCase[GCDoAllArgs, None]):
         async with self._domain_storage_engine.get_unit_of_work() as uow:
             workspaces = await uow.workspace_repository.find_all(allow_archived=False)
 
+        ctx = DomainContext(EventSource.GC_CRON, self._time_provider.get_current_time())
+
         gc_service = GCService(
-            source=EventSource.GC_CRON,
-            time_provider=self._time_provider,
             domain_storage_engine=self._domain_storage_engine,
         )
 
         for workspace in workspaces:
             progress_reporter = self._progress_reporter_factory.new_reporter(context)
             gc_targets = workspace.infer_sync_targets_for_enabled_features(None)
-            await gc_service.do_it(progress_reporter, workspace, gc_targets)
+            await gc_service.do_it(ctx, progress_reporter, workspace, gc_targets)
 
             async with self._search_storage_engine.get_unit_of_work() as search_uow:
                 for created_entity in progress_reporter.created_entities:

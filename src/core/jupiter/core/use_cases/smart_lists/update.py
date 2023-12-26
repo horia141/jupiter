@@ -1,21 +1,21 @@
 """The command for updating a smart list."""
 from dataclasses import dataclass
-from typing import Iterable, Optional
+from typing import Optional
 
 from jupiter.core.domain.core.entity_icon import EntityIcon
-from jupiter.core.domain.features import UserFeature, WorkspaceFeature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.smart_lists.smart_list_name import SmartListName
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
+    mutation_use_case,
 )
 
 
@@ -28,23 +28,17 @@ class SmartListUpdateArgs(UseCaseArgsBase):
     icon: UpdateAction[Optional[EntityIcon]]
 
 
+@mutation_use_case(WorkspaceFeature.SMART_LISTS)
 class SmartListUpdateUseCase(
     AppTransactionalLoggedInMutationUseCase[SmartListUpdateArgs, None]
 ):
     """The command for updating a smart list."""
 
-    @staticmethod
-    def get_scoped_to_feature() -> Iterable[
-        UserFeature
-    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
-        """The feature the use case is scope to."""
-        return WorkspaceFeature.SMART_LISTS
-
     async def _perform_transactional_mutation(
         self,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInMutationUseCaseContext,
         args: SmartListUpdateArgs,
     ) -> None:
         """Execute the command's action."""
@@ -53,10 +47,9 @@ class SmartListUpdateUseCase(
         )
 
         smart_list = smart_list.update(
+            ctx=context.domain_context,
             name=args.name,
             icon=args.icon,
-            source=EventSource.CLI,
-            modification_time=self._time_provider.get_current_time(),
         )
 
         await uow.smart_list_repository.save(smart_list)

@@ -1,6 +1,6 @@
 """The command for updating a habit."""
 from dataclasses import dataclass
-from typing import Iterable, Optional, cast
+from typing import Optional, cast
 
 from jupiter.core.domain.core import schedules
 from jupiter.core.domain.core.difficulty import Difficulty
@@ -11,20 +11,20 @@ from jupiter.core.domain.core.recurring_task_due_at_time import RecurringTaskDue
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.core.recurring_task_skip_rule import RecurringTaskSkipRule
-from jupiter.core.domain.features import UserFeature, WorkspaceFeature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.habits.habit_name import HabitName
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
+    mutation_use_case,
 )
 
 
@@ -46,23 +46,17 @@ class HabitUpdateArgs(UseCaseArgsBase):
     repeats_in_period_count: UpdateAction[Optional[int]]
 
 
+@mutation_use_case(WorkspaceFeature.HABITS)
 class HabitUpdateUseCase(
     AppTransactionalLoggedInMutationUseCase[HabitUpdateArgs, None]
 ):
     """The command for updating a habit."""
 
-    @staticmethod
-    def get_scoped_to_feature() -> Iterable[
-        UserFeature
-    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
-        """The feature the use case is scope to."""
-        return WorkspaceFeature.HABITS
-
     async def _perform_transactional_mutation(
         self,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInMutationUseCaseContext,
         args: HabitUpdateArgs,
     ) -> None:
         """Execute the command's action."""
@@ -117,12 +111,11 @@ class HabitUpdateUseCase(
             habit_gen_params = UpdateAction.do_nothing()
 
         habit = habit.update(
+            ctx=context.domain_context,
             name=args.name,
             gen_params=habit_gen_params,
             skip_rule=args.skip_rule,
             repeats_in_period_count=args.repeats_in_period_count,
-            source=EventSource.CLI,
-            modification_time=self._time_provider.get_current_time(),
         )
 
         await uow.habit_repository.save(habit)
@@ -155,6 +148,7 @@ class HabitUpdateUseCase(
                 )
 
                 inbox_task = inbox_task.update_link_to_habit(
+                    ctx=context.domain_context,
                     project_ref_id=project.ref_id,
                     name=schedule.full_name,
                     timeline=schedule.timeline,
@@ -163,8 +157,6 @@ class HabitUpdateUseCase(
                     due_date=schedule.due_time,
                     eisen=habit.gen_params.eisen,
                     difficulty=habit.gen_params.difficulty,
-                    source=EventSource.CLI,
-                    modification_time=self._time_provider.get_current_time(),
                 )
 
                 await uow.inbox_task_repository.save(inbox_task)

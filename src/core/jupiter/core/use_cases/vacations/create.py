@@ -1,21 +1,20 @@
 """The command for creating a vacation."""
 from dataclasses import dataclass
-from typing import Iterable
 
 from jupiter.core.domain.core.adate import ADate
-from jupiter.core.domain.features import UserFeature, WorkspaceFeature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.vacations.vacation import Vacation
 from jupiter.core.domain.vacations.vacation_name import VacationName
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
     UseCaseResultBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
+    mutation_use_case,
 )
 
 
@@ -35,23 +34,17 @@ class VacationCreateResult(UseCaseResultBase):
     new_vacation: Vacation
 
 
+@mutation_use_case(WorkspaceFeature.VACATIONS)
 class VacationCreateUseCase(
     AppTransactionalLoggedInMutationUseCase[VacationCreateArgs, VacationCreateResult],
 ):
     """The command for creating a vacation."""
 
-    @staticmethod
-    def get_scoped_to_feature() -> Iterable[
-        UserFeature
-    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
-        """The feature the use case is scope to."""
-        return WorkspaceFeature.VACATIONS
-
     async def _perform_transactional_mutation(
         self,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInMutationUseCaseContext,
         args: VacationCreateArgs,
     ) -> VacationCreateResult:
         """Execute the command's actions."""
@@ -62,13 +55,11 @@ class VacationCreateUseCase(
         )
 
         new_vacation = Vacation.new_vacation(
-            archived=False,
+            context.domain_context,
             vacation_collection_ref_id=vacation_collection.ref_id,
             name=args.name,
             start_date=args.start_date,
             end_date=args.end_date,
-            source=EventSource.CLI,
-            created_time=self._time_provider.get_current_time(),
         )
 
         new_vacation = await uow.vacation_repository.create(new_vacation)

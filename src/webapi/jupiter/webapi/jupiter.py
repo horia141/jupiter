@@ -1,7 +1,7 @@
 """The Jupiter Web RPC API."""
 import signal
 from types import FrameType
-from typing import Annotated, Any, Callable, Dict, Union
+from typing import Annotated, Any, Callable, Dict, Mapping, Union
 
 import aiohttp
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -27,6 +27,7 @@ from jupiter.core.domain.workspaces.infra.workspace_repository import (
     WorkspaceNotFoundError,
 )
 from jupiter.core.framework.errors import InputValidationError
+from jupiter.core.framework.repository import LeafEntityNotFoundError
 from jupiter.core.framework.secure import secure_fn
 from jupiter.core.framework.use_case import EmptySession
 from jupiter.core.repository.sqlite.connection import SqliteConnection
@@ -1282,6 +1283,11 @@ standard_responses: Dict[Union[int, str], Dict[str, Any]] = {  # type: ignore
     406: {"description": "Feature Not Available", "content": {"plain/text": {}}},
 }
 
+standard_config: Mapping[str, Any] = {  # type: ignore
+    "responses": standard_responses,
+    "response_model_exclude_defaults": True,
+}
+
 
 def custom_generate_unique_id(route: APIRoute) -> str:
     """Generate a OpenAPI unique id from just the route name."""
@@ -1409,16 +1415,16 @@ async def project_in_significant_use_error_handler(
     )
 
 
-# @app.exception_handler(LeafEntityNotFoundError)
-# async def leaf_entity_not_found_error_handler(
-#     _request: Request,
-#     _exc: LeafEntityNotFoundError,
-# ) -> PlainTextResponse:
-#     """Transform LeafEntityNotFoundError to something that signals clients the entity does not exist."""
-#     return PlainTextResponse(
-#         status_code=status.HTTP_404_NOT_FOUND,
-#         content="Entity does not exist",
-#     )
+@app.exception_handler(LeafEntityNotFoundError)
+async def leaf_entity_not_found_error_handler(
+    _request: Request,
+    _exc: LeafEntityNotFoundError,
+) -> PlainTextResponse:
+    """Transform LeafEntityNotFoundError to something that signals clients the entity does not exist."""
+    return PlainTextResponse(
+        status_code=status.HTTP_404_NOT_FOUND,
+        content="Entity does not exist",
+    )
 
 
 @app.exception_handler(InvalidAuthTokenError)
@@ -1602,7 +1608,7 @@ async def old_skool_login(
     "/init",
     response_model=InitResult,
     tags=["init"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def init(args: InitArgs, session: GuestSession) -> InitResult:
     """Initialise a new workspace."""
@@ -1610,9 +1616,7 @@ async def init(args: InitArgs, session: GuestSession) -> InitResult:
 
 
 @secure_fn
-@app.post(
-    "/login", response_model=LoginResult, tags=["login"], responses=standard_responses
-)
+@app.post("/login", response_model=LoginResult, tags=["login"], **standard_config)
 async def login(args: LoginArgs, session: GuestSession) -> LoginResult:
     """Login to a workspace."""
     return await login_use_case.execute(session, args)
@@ -1623,7 +1627,7 @@ async def login(args: LoginArgs, session: GuestSession) -> LoginResult:
     "/auth/change-password",
     response_model=None,
     tags=["auth"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def change_password(args: ChangePasswordArgs, session: LoggedInSession) -> None:
     """Change password."""
@@ -1635,7 +1639,7 @@ async def change_password(args: ChangePasswordArgs, session: LoggedInSession) ->
     "/auth/reset-password",
     response_model=ResetPasswordResult,
     tags=["auth"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def reset_password(
     args: ResetPasswordArgs, session: GuestSession
@@ -1648,14 +1652,14 @@ async def reset_password(
     "/search",
     response_model=SearchResult,
     tags=["search"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def search(args: SearchArgs, session: LoggedInSession) -> SearchResult:
     """Search entities."""
     return await search_use_case.execute(session, args)
 
 
-@app.post("/gen/do", response_model=None, tags=["gen"], responses=standard_responses)
+@app.post("/gen/do", response_model=None, tags=["gen"], **standard_config)
 async def gen_do(args: GenDoArgs, session: LoggedInSession) -> None:
     """Generate inbox tasks."""
     await gen_do_use_case.execute(session, args)
@@ -1665,7 +1669,7 @@ async def gen_do(args: GenDoArgs, session: LoggedInSession) -> None:
     "/gen/load-runs",
     response_model=GenLoadRunsResult,
     tags=["gen"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def gen_load_runs(
     args: GenLoadRunsArgs, session: LoggedInSession
@@ -1678,14 +1682,14 @@ async def gen_load_runs(
     "/report",
     response_model=ReportResult,
     tags=["report"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def report(args: ReportArgs, session: LoggedInSession) -> ReportResult:
     """Report."""
     return await report_use_case.execute(session, args)
 
 
-@app.post("/gc/do", response_model=None, tags=["gc"], responses=standard_responses)
+@app.post("/gc/do", response_model=None, tags=["gc"], **standard_config)
 async def gc_do(args: GCDoArgs, session: LoggedInSession) -> None:
     """Perform a garbage collect."""
     await gc_do_use_case.execute(session, args)
@@ -1695,7 +1699,7 @@ async def gc_do(args: GCDoArgs, session: LoggedInSession) -> None:
     "/gc/load-runs",
     response_model=GCLoadRunsResult,
     tags=["gc"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def gc_load_runs(
     args: GCLoadRunsArgs, session: LoggedInSession
@@ -1708,7 +1712,7 @@ async def gc_load_runs(
     "/load-top-level-info",
     response_model=LoadTopLevelInfoResult,
     tags=["load-top-level-info"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def load_top_level_info(
     args: LoadTopLevelInfoArgs, session: GuestSession
@@ -1721,7 +1725,7 @@ async def load_top_level_info(
     "/load-progress-reporter-token",
     response_model=LoadProgressReporterTokenResult,
     tags=["load-progress-reporter-token"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def load_progress_reporter_token(
     args: LoadProgressReporterTokenArgs, session: LoggedInSession
@@ -1734,7 +1738,7 @@ async def load_progress_reporter_token(
     "/get-summaries",
     response_model=GetSummariesResult,
     tags=["get-summaries"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def get_summaries(
     args: GetSummariesArgs, session: LoggedInSession
@@ -1747,7 +1751,7 @@ async def get_summaries(
     "/user/update",
     response_model=None,
     tags=["user"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def update_user(args: UserUpdateArgs, session: LoggedInSession) -> None:
     """Update a user."""
@@ -1758,7 +1762,7 @@ async def update_user(args: UserUpdateArgs, session: LoggedInSession) -> None:
     "/user/change-feature-flags",
     response_model=None,
     tags=["user"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def change_user_feature_flags(
     args: UserChangeFeatureFlagsArgs, session: LoggedInSession
@@ -1771,7 +1775,7 @@ async def change_user_feature_flags(
     "/user/load",
     response_model=UserLoadResult,
     tags=["user"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def load_user(args: UserLoadArgs, session: LoggedInSession) -> UserLoadResult:
     """Load a user."""
@@ -1782,7 +1786,7 @@ async def load_user(args: UserLoadArgs, session: LoggedInSession) -> UserLoadRes
     "/workspace/update",
     response_model=None,
     tags=["workspace"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def update_workspace(args: WorkspaceUpdateArgs, session: LoggedInSession) -> None:
     """Update a workspace."""
@@ -1793,7 +1797,7 @@ async def update_workspace(args: WorkspaceUpdateArgs, session: LoggedInSession) 
     "/workspace/change-default-project",
     response_model=None,
     tags=["workspace"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def change_workspace_default_project(
     args: WorkspaceChangeDefaultProjectArgs, session: LoggedInSession
@@ -1806,7 +1810,7 @@ async def change_workspace_default_project(
     "/workspace/change-feature-flags",
     response_model=None,
     tags=["workspace"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def change_workspace_feature_flags(
     args: WorkspaceChangeFeatureFlagsArgs, session: LoggedInSession
@@ -1819,7 +1823,7 @@ async def change_workspace_feature_flags(
     "/workspace/load",
     response_model=WorkspaceLoadResult,
     tags=["workspace"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def load_workspace(
     args: WorkspaceLoadArgs, session: LoggedInSession
@@ -1832,7 +1836,7 @@ async def load_workspace(
     "/inbox-task/create",
     response_model=InboxTaskCreateResult,
     tags=["inbox-task"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def create_inbox_task(
     args: InboxTaskCreateArgs, session: LoggedInSession
@@ -1845,7 +1849,7 @@ async def create_inbox_task(
     "/inbox-task/update",
     response_model=InboxTaskUpdateResult,
     tags=["inbox-task"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def update_inbox_task(
     args: InboxTaskUpdateArgs, session: LoggedInSession
@@ -1858,7 +1862,7 @@ async def update_inbox_task(
     "/inbox-task/archive",
     response_model=None,
     tags=["inbox-task"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def archive_inbox_task(
     args: InboxTaskArchiveArgs, session: LoggedInSession
@@ -1871,7 +1875,7 @@ async def archive_inbox_task(
     "/inbox-task/change-project",
     response_model=None,
     tags=["inbox-task"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def change_inbox_task_project(
     args: InboxTaskChangeProjectArgs, session: LoggedInSession
@@ -1884,7 +1888,7 @@ async def change_inbox_task_project(
     "/inbox-task/associate-with-big-plan",
     response_model=None,
     tags=["inbox-task"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def associate_inbox_task_with_big_plan(
     args: InboxTaskAssociateWithBigPlanArgs, session: LoggedInSession
@@ -1897,7 +1901,7 @@ async def associate_inbox_task_with_big_plan(
     "/inbox-task/load",
     response_model=InboxTaskLoadResult,
     tags=["inbox-task"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def load_inbox_task(
     args: InboxTaskLoadArgs, session: LoggedInSession
@@ -1910,7 +1914,7 @@ async def load_inbox_task(
     "/inbox-task/find",
     response_model=InboxTaskFindResult,
     tags=["inbox-task"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def find_inbox_task(
     args: InboxTaskFindArgs, session: LoggedInSession
@@ -1923,7 +1927,7 @@ async def find_inbox_task(
     "/habit/create",
     response_model=HabitCreateResult,
     tags=["habit"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def create_habit(
     args: HabitCreateArgs, session: LoggedInSession
@@ -1936,7 +1940,7 @@ async def create_habit(
     "/habit/archive",
     response_model=None,
     tags=["habit"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def archive_habit(args: HabitArchiveArgs, session: LoggedInSession) -> None:
     """Archive a habit."""
@@ -1947,7 +1951,7 @@ async def archive_habit(args: HabitArchiveArgs, session: LoggedInSession) -> Non
     "/habit/update",
     response_model=None,
     tags=["habit"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def update_habit(args: HabitUpdateArgs, session: LoggedInSession) -> None:
     """Update a habit."""
@@ -1958,7 +1962,7 @@ async def update_habit(args: HabitUpdateArgs, session: LoggedInSession) -> None:
     "/habit/change-project",
     response_model=None,
     tags=["habit"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def change_habit_project(
     args: HabitChangeProjectArgs, session: LoggedInSession
@@ -1971,7 +1975,7 @@ async def change_habit_project(
     "/habit/suspend",
     response_model=None,
     tags=["habit"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def suspend_habit(args: HabitSuspendArgs, session: LoggedInSession) -> None:
     """Suspend a habit."""
@@ -1982,7 +1986,7 @@ async def suspend_habit(args: HabitSuspendArgs, session: LoggedInSession) -> Non
     "/habit/unsuspend",
     response_model=None,
     tags=["habit"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def unsuspend_habit(args: HabitUnsuspendArgs, session: LoggedInSession) -> None:
     """Unsuspend a habit."""
@@ -1993,7 +1997,7 @@ async def unsuspend_habit(args: HabitUnsuspendArgs, session: LoggedInSession) ->
     "/habit/load",
     response_model=HabitLoadResult,
     tags=["habit"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def load_habit(args: HabitLoadArgs, session: LoggedInSession) -> HabitLoadResult:
     """Load a habit."""
@@ -2004,7 +2008,7 @@ async def load_habit(args: HabitLoadArgs, session: LoggedInSession) -> HabitLoad
     "/habit/find",
     response_model=HabitFindResult,
     tags=["habit"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def find_habit(args: HabitFindArgs, session: LoggedInSession) -> HabitFindResult:
     """Find all habits, filtering by id.."""
@@ -2015,7 +2019,7 @@ async def find_habit(args: HabitFindArgs, session: LoggedInSession) -> HabitFind
     "/chore/create",
     response_model=ChoreCreateResult,
     tags=["chore"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def create_chore(
     args: ChoreCreateArgs, session: LoggedInSession
@@ -2028,7 +2032,7 @@ async def create_chore(
     "/chore/archive",
     response_model=None,
     tags=["chore"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def archive_chore(args: ChoreArchiveArgs, session: LoggedInSession) -> None:
     """Archive a chore."""
@@ -2039,7 +2043,7 @@ async def archive_chore(args: ChoreArchiveArgs, session: LoggedInSession) -> Non
     "/chore/update",
     response_model=None,
     tags=["chore"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def update_chore(args: ChoreUpdateArgs, session: LoggedInSession) -> None:
     """Update a chore."""
@@ -2050,7 +2054,7 @@ async def update_chore(args: ChoreUpdateArgs, session: LoggedInSession) -> None:
     "/chore/change-project",
     response_model=None,
     tags=["chore"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def change_chore_project(
     args: ChoreChangeProjectArgs, session: LoggedInSession
@@ -2063,7 +2067,7 @@ async def change_chore_project(
     "/chore/suspend",
     response_model=None,
     tags=["chore"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def suspend_chore(args: ChoreSuspendArgs, session: LoggedInSession) -> None:
     """Suspend a chore."""
@@ -2074,7 +2078,7 @@ async def suspend_chore(args: ChoreSuspendArgs, session: LoggedInSession) -> Non
     "/chore/unsuspend",
     response_model=None,
     tags=["chore"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def unsuspend_chore(args: ChoreUnsuspendArgs, session: LoggedInSession) -> None:
     """Unsuspend a chore."""
@@ -2085,7 +2089,7 @@ async def unsuspend_chore(args: ChoreUnsuspendArgs, session: LoggedInSession) ->
     "/chore/load",
     response_model=ChoreLoadResult,
     tags=["chore"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def load_chore(args: ChoreLoadArgs, session: LoggedInSession) -> ChoreLoadResult:
     """Load a chore."""
@@ -2096,7 +2100,7 @@ async def load_chore(args: ChoreLoadArgs, session: LoggedInSession) -> ChoreLoad
     "/chore/find",
     response_model=ChoreFindResult,
     tags=["chore"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def find_chore(args: ChoreFindArgs, session: LoggedInSession) -> ChoreFindResult:
     """Find all chores, filtering by id.."""
@@ -2107,7 +2111,7 @@ async def find_chore(args: ChoreFindArgs, session: LoggedInSession) -> ChoreFind
     "/big-plan/create",
     response_model=BigPlanCreateResult,
     tags=["big-plan"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def create_big_plan(
     args: BigPlanCreateArgs, session: LoggedInSession
@@ -2120,7 +2124,7 @@ async def create_big_plan(
     "/big-plan/archive",
     response_model=None,
     tags=["big-plan"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def archive_big_plan(args: BigPlanArchiveArgs, session: LoggedInSession) -> None:
     """Archive a big plan."""
@@ -2131,7 +2135,7 @@ async def archive_big_plan(args: BigPlanArchiveArgs, session: LoggedInSession) -
     "/big-plan/update",
     response_model=BigPlanUpdateResult,
     tags=["big-plan"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def update_big_plan(
     args: BigPlanUpdateArgs, session: LoggedInSession
@@ -2144,7 +2148,7 @@ async def update_big_plan(
     "/big-plan/change-project",
     response_model=None,
     tags=["big-plan"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def change_big_plan_project(
     args: BigPlanChangeProjectArgs, session: LoggedInSession
@@ -2157,7 +2161,7 @@ async def change_big_plan_project(
     "/big-plan/load",
     response_model=BigPlanLoadResult,
     tags=["big-plan"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def load_big_plan(
     args: BigPlanLoadArgs, session: LoggedInSession
@@ -2170,7 +2174,7 @@ async def load_big_plan(
     "/big-plan/find",
     response_model=BigPlanFindResult,
     tags=["big-plan"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def find_big_plan(
     args: BigPlanFindArgs, session: LoggedInSession
@@ -2183,7 +2187,7 @@ async def find_big_plan(
     "/doc/create",
     response_model=DocCreateResult,
     tags=["doc"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def create_doc(args: DocCreateArgs, session: LoggedInSession) -> DocCreateResult:
     """Create a doc."""
@@ -2194,7 +2198,7 @@ async def create_doc(args: DocCreateArgs, session: LoggedInSession) -> DocCreate
     "/doc/archive",
     response_model=None,
     tags=["doc"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def archive_doc(args: DocArchiveArgs, session: LoggedInSession) -> None:
     """Archive a doc."""
@@ -2205,7 +2209,7 @@ async def archive_doc(args: DocArchiveArgs, session: LoggedInSession) -> None:
     "/doc/update",
     response_model=None,
     tags=["doc"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def update_doc(args: DocUpdateArgs, session: LoggedInSession) -> None:
     """Update a doc."""
@@ -2216,7 +2220,7 @@ async def update_doc(args: DocUpdateArgs, session: LoggedInSession) -> None:
     "/doc/change-parent",
     response_model=None,
     tags=["doc"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def change_doc_parent(
     args: DocChangeParentArgs, session: LoggedInSession
@@ -2229,7 +2233,7 @@ async def change_doc_parent(
     "/doc/load",
     response_model=DocLoadResult,
     tags=["doc"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def load_doc(args: DocLoadArgs, session: LoggedInSession) -> DocLoadResult:
     """Load a doc."""
@@ -2240,7 +2244,7 @@ async def load_doc(args: DocLoadArgs, session: LoggedInSession) -> DocLoadResult
     "/doc/find",
     response_model=DocFindResult,
     tags=["doc"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def find_doc(args: DocFindArgs, session: LoggedInSession) -> DocFindResult:
     """Find all docs, filtering by id."""
@@ -2251,7 +2255,7 @@ async def find_doc(args: DocFindArgs, session: LoggedInSession) -> DocFindResult
     "/vacation/create",
     response_model=VacationCreateResult,
     tags=["vacation"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def create_vacation(
     args: VacationCreateArgs, session: LoggedInSession
@@ -2264,7 +2268,7 @@ async def create_vacation(
     "/vacation/archive",
     response_model=None,
     tags=["vacation"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def archive_vacation(args: VacationArchiveArgs, session: LoggedInSession) -> None:
     """Archive a vacation."""
@@ -2275,7 +2279,7 @@ async def archive_vacation(args: VacationArchiveArgs, session: LoggedInSession) 
     "/vacation/update",
     response_model=None,
     tags=["vacation"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def update_vacation(args: VacationUpdateArgs, session: LoggedInSession) -> None:
     """Update a vacation."""
@@ -2286,7 +2290,7 @@ async def update_vacation(args: VacationUpdateArgs, session: LoggedInSession) ->
     "/vacation/load",
     response_model=VacationLoadResult,
     tags=["vacation"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def load_vacation(
     args: VacationLoadArgs, session: LoggedInSession
@@ -2299,7 +2303,7 @@ async def load_vacation(
     "/vacation/find",
     response_model=VacationFindResult,
     tags=["vacation"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def find_vacation(
     args: VacationFindArgs, session: LoggedInSession
@@ -2312,7 +2316,7 @@ async def find_vacation(
     "/project/create",
     response_model=ProjectCreateResult,
     tags=["project"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def create_project(
     args: ProjectCreateArgs, session: LoggedInSession
@@ -2325,7 +2329,7 @@ async def create_project(
     "/project/archive",
     response_model=None,
     tags=["project"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def archive_project(args: ProjectArchiveArgs, session: LoggedInSession) -> None:
     """Create a project."""
@@ -2336,7 +2340,7 @@ async def archive_project(args: ProjectArchiveArgs, session: LoggedInSession) ->
     "/project/update",
     response_model=None,
     tags=["project"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def update_project(args: ProjectUpdateArgs, session: LoggedInSession) -> None:
     """Update a project."""
@@ -2347,7 +2351,7 @@ async def update_project(args: ProjectUpdateArgs, session: LoggedInSession) -> N
     "/project/load",
     response_model=ProjectLoadResult,
     tags=["project"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def load_project(
     args: ProjectLoadArgs, session: LoggedInSession
@@ -2360,7 +2364,7 @@ async def load_project(
     "/project/find",
     response_model=ProjectFindResult,
     tags=["project"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def find_project(
     args: ProjectFindArgs, session: LoggedInSession
@@ -2373,7 +2377,7 @@ async def find_project(
     "/smart-list/create",
     response_model=SmartListCreateResult,
     tags=["smart-list"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def create_smart_list(
     args: SmartListCreateArgs, session: LoggedInSession
@@ -2386,7 +2390,7 @@ async def create_smart_list(
     "/smart-list/archive",
     response_model=None,
     tags=["smart-list"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def archive_smart_list(
     args: SmartListArchiveArgs, session: LoggedInSession
@@ -2399,7 +2403,7 @@ async def archive_smart_list(
     "/smart-list/update",
     response_model=None,
     tags=["smart-list"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def update_smart_list(
     args: SmartListUpdateArgs, session: LoggedInSession
@@ -2412,7 +2416,7 @@ async def update_smart_list(
     "/smart-list/load",
     response_model=SmartListLoadResult,
     tags=["smart-list"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def load_smart_list(
     args: SmartListLoadArgs, session: LoggedInSession
@@ -2425,7 +2429,7 @@ async def load_smart_list(
     "/smart-list/find",
     response_model=SmartListFindResult,
     tags=["smart-list"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def find_smart_list(
     args: SmartListFindArgs, session: LoggedInSession
@@ -2438,7 +2442,7 @@ async def find_smart_list(
     "/smart-list/tag/create",
     response_model=SmartListTagCreateResult,
     tags=["smart-list"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def create_smart_list_tag(
     args: SmartListTagCreateArgs, session: LoggedInSession
@@ -2451,7 +2455,7 @@ async def create_smart_list_tag(
     "/smart-list/tag/archive",
     response_model=None,
     tags=["smart-list"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def archive_smart_list_tag(
     args: SmartListTagArchiveArgs, session: LoggedInSession
@@ -2464,7 +2468,7 @@ async def archive_smart_list_tag(
     "/smart-list/tag/update",
     response_model=None,
     tags=["smart-list"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def update_smart_list_tag(
     args: SmartListTagUpdateArgs, session: LoggedInSession
@@ -2477,7 +2481,7 @@ async def update_smart_list_tag(
     "/smart-list/tag/load",
     response_model=SmartListTagLoadResult,
     tags=["smart-list"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def load_smart_list_tag(
     args: SmartListTagLoadArgs, session: LoggedInSession
@@ -2490,7 +2494,7 @@ async def load_smart_list_tag(
     "/smart-list/item/create",
     response_model=SmartListItemCreateResult,
     tags=["smart-list"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def create_smart_list_item(
     args: SmartListItemCreateArgs, session: LoggedInSession
@@ -2503,7 +2507,7 @@ async def create_smart_list_item(
     "/smart-list/item/archive",
     response_model=None,
     tags=["smart-list"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def archive_smart_list_item(
     args: SmartListItemArchiveArgs, session: LoggedInSession
@@ -2516,7 +2520,7 @@ async def archive_smart_list_item(
     "/smart-list/item/update",
     response_model=None,
     tags=["smart-list"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def update_smart_list_item(
     args: SmartListItemUpdateArgs, session: LoggedInSession
@@ -2529,7 +2533,7 @@ async def update_smart_list_item(
     "/smart-list/item/load",
     response_model=SmartListItemLoadResult,
     tags=["smart-list"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def load_smart_list_item(
     args: SmartListItemLoadArgs, session: LoggedInSession
@@ -2542,7 +2546,7 @@ async def load_smart_list_item(
     "/metric/create",
     response_model=MetricCreateResult,
     tags=["metric"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def create_metric(
     args: MetricCreateArgs, session: LoggedInSession
@@ -2555,7 +2559,7 @@ async def create_metric(
     "/metric/archive",
     response_model=None,
     tags=["metric"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def archive_metric(args: MetricArchiveArgs, session: LoggedInSession) -> None:
     """Archive a metric."""
@@ -2566,7 +2570,7 @@ async def archive_metric(args: MetricArchiveArgs, session: LoggedInSession) -> N
     "/metric/update",
     response_model=None,
     tags=["metric"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def update_metric(args: MetricUpdateArgs, session: LoggedInSession) -> None:
     """Update a metric."""
@@ -2577,7 +2581,7 @@ async def update_metric(args: MetricUpdateArgs, session: LoggedInSession) -> Non
     "/metric/load-settings",
     response_model=MetricLoadSettingsResult,
     tags=["metric"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def load_metric_settings(
     args: MetricLoadSettingsArgs, session: LoggedInSession
@@ -2590,7 +2594,7 @@ async def load_metric_settings(
     "/metric/change-collection-project",
     response_model=None,
     tags=["metric"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def change_metric_collection_project(
     args: MetricChangeCollectionProjectArgs, session: LoggedInSession
@@ -2603,7 +2607,7 @@ async def change_metric_collection_project(
     "/metric/load",
     response_model=MetricLoadResult,
     tags=["metric"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def load_metric(
     args: MetricLoadArgs, session: LoggedInSession
@@ -2616,7 +2620,7 @@ async def load_metric(
     "/metric/find",
     response_model=MetricFindResult,
     tags=["metric"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def find_metric(
     args: MetricFindArgs, session: LoggedInSession
@@ -2629,7 +2633,7 @@ async def find_metric(
     "/metric/entry/create",
     response_model=MetricEntryCreateResult,
     tags=["metric"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def create_metric_entry(
     args: MetricEntryCreateArgs, session: LoggedInSession
@@ -2642,7 +2646,7 @@ async def create_metric_entry(
     "/metric/entry/archive",
     response_model=None,
     tags=["metric"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def archive_metric_entry(
     args: MetricEntryArchiveArgs, session: LoggedInSession
@@ -2655,7 +2659,7 @@ async def archive_metric_entry(
     "/metric/entry/update",
     response_model=None,
     tags=["metric"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def update_metric_entry(
     args: MetricEntryUpdateArgs, session: LoggedInSession
@@ -2668,7 +2672,7 @@ async def update_metric_entry(
     "/metric/entry/load",
     response_model=MetricEntryLoadResult,
     tags=["metric"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def load_metric_entry(
     args: MetricEntryLoadArgs, session: LoggedInSession
@@ -2681,7 +2685,7 @@ async def load_metric_entry(
     "/person/create",
     response_model=PersonCreateResult,
     tags=["person"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def create_person(
     args: PersonCreateArgs, session: LoggedInSession
@@ -2694,7 +2698,7 @@ async def create_person(
     "/person/archive",
     response_model=None,
     tags=["person"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def archive_person(args: PersonArchiveArgs, session: LoggedInSession) -> None:
     """Archive a person."""
@@ -2705,7 +2709,7 @@ async def archive_person(args: PersonArchiveArgs, session: LoggedInSession) -> N
     "/person/update",
     response_model=None,
     tags=["person"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def update_person(args: PersonUpdateArgs, session: LoggedInSession) -> None:
     """Update a person."""
@@ -2716,7 +2720,7 @@ async def update_person(args: PersonUpdateArgs, session: LoggedInSession) -> Non
     "/person/load-settings",
     response_model=PersonLoadSettingsResult,
     tags=["person"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def load_person_settings(
     args: PersonLoadSettingsArgs, session: LoggedInSession
@@ -2729,7 +2733,7 @@ async def load_person_settings(
     "/person/change-catch-up-project",
     response_model=None,
     tags=["person"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def update_change_catch_up_project(
     args: PersonChangeCatchUpProjectArgs, session: LoggedInSession
@@ -2742,7 +2746,7 @@ async def update_change_catch_up_project(
     "/person/load",
     response_model=PersonLoadResult,
     tags=["person"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def load_person(
     args: PersonLoadArgs, session: LoggedInSession
@@ -2755,7 +2759,7 @@ async def load_person(
     "/person/find",
     response_model=PersonFindResult,
     tags=["person"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def find_person(
     args: PersonFindArgs, session: LoggedInSession
@@ -2768,7 +2772,7 @@ async def find_person(
     "/slack-task/archive",
     response_model=None,
     tags=["slack-task"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def archive_slack_task(
     args: SlackTaskArchiveArgs, session: LoggedInSession
@@ -2781,7 +2785,7 @@ async def archive_slack_task(
     "/slack-task/update",
     response_model=None,
     tags=["slack-task"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def update_slack_task(
     args: SlackTaskUpdateArgs, session: LoggedInSession
@@ -2794,7 +2798,7 @@ async def update_slack_task(
     "/slack-task/load-settings",
     response_model=SlackTaskLoadSettingsResult,
     tags=["slack-task"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def load_slack_task_settings(
     args: SlackTaskLoadSettingsArgs, session: LoggedInSession
@@ -2807,7 +2811,7 @@ async def load_slack_task_settings(
     "/slack-task/change-project",
     response_model=None,
     tags=["slack-task"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def change_slack_task_generation_project(
     args: SlackTaskChangeGenerationProjectArgs, session: LoggedInSession
@@ -2820,7 +2824,7 @@ async def change_slack_task_generation_project(
     "/slack-task/load",
     response_model=SlackTaskLoadResult,
     tags=["slack-task"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def load_slack_task(
     args: SlackTaskLoadArgs, session: LoggedInSession
@@ -2833,7 +2837,7 @@ async def load_slack_task(
     "/slack-task/find",
     response_model=SlackTaskFindResult,
     tags=["slack-task"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def find_slack_task(
     args: SlackTaskFindArgs, session: LoggedInSession
@@ -2846,7 +2850,7 @@ async def find_slack_task(
     "/email-task/archive",
     response_model=None,
     tags=["email-task"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def archive_email_task(
     args: EmailTaskArchiveArgs, session: LoggedInSession
@@ -2859,7 +2863,7 @@ async def archive_email_task(
     "/email-task/update",
     response_model=None,
     tags=["email-task"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def update_email_task(
     args: EmailTaskUpdateArgs, session: LoggedInSession
@@ -2872,7 +2876,7 @@ async def update_email_task(
     "/email-task/load-settings",
     response_model=EmailTaskLoadSettingsResult,
     tags=["email-task"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def load_email_task_settings(
     args: EmailTaskLoadSettingsArgs, session: LoggedInSession
@@ -2885,7 +2889,7 @@ async def load_email_task_settings(
     "/email-task/change-project",
     response_model=None,
     tags=["email-task"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def change_email_task_generation_project(
     args: EmailTaskChangeGenerationProjectArgs, session: LoggedInSession
@@ -2898,7 +2902,7 @@ async def change_email_task_generation_project(
     "/email-task/load",
     response_model=EmailTaskLoadResult,
     tags=["email-task"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def load_email_task(
     args: EmailTaskLoadArgs, session: LoggedInSession
@@ -2911,7 +2915,7 @@ async def load_email_task(
     "/email-task/find",
     response_model=EmailTaskFindResult,
     tags=["email-task"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def find_email_task(
     args: EmailTaskFindArgs, session: LoggedInSession
@@ -2924,7 +2928,7 @@ async def find_email_task(
     "/core/note/create",
     response_model=NoteCreateResult,
     tags=["note"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def create_note(
     args: NoteCreateArgs, session: LoggedInSession
@@ -2937,7 +2941,7 @@ async def create_note(
     "/core/note/archive",
     response_model=None,
     tags=["note"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def archive_note(args: NoteArchiveArgs, session: LoggedInSession) -> None:
     """Archive a note."""
@@ -2948,7 +2952,7 @@ async def archive_note(args: NoteArchiveArgs, session: LoggedInSession) -> None:
     "/core/note/update",
     response_model=None,
     tags=["note"],
-    responses=standard_responses,
+    **standard_config,
 )
 async def update_note(args: NoteUpdateArgs, session: LoggedInSession) -> None:
     """Update a note."""

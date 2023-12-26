@@ -1,9 +1,11 @@
 """The source of the note."""
-import enum
 
 
-@enum.unique
-class NoteDomain(enum.Enum):
+from jupiter.core.framework.value import EnumValue, enum_value
+
+
+@enum_value
+class NoteDomain(EnumValue):
     """The source of a note."""
 
     DOC = "doc"

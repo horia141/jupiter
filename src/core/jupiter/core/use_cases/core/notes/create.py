@@ -6,15 +6,15 @@ from jupiter.core.domain.core.notes.note_content_block import OneOfNoteContentBl
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
     UseCaseResultBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
+    mutation_use_case,
 )
 
 
@@ -34,6 +34,7 @@ class NoteCreateResult(UseCaseResultBase):
     new_note: Note
 
 
+@mutation_use_case()
 class NoteCreateUseCase(
     AppTransactionalLoggedInMutationUseCase[NoteCreateArgs, NoteCreateResult]
 ):
@@ -43,7 +44,7 @@ class NoteCreateUseCase(
         self,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInMutationUseCaseContext,
         args: NoteCreateArgs,
     ) -> NoteCreateResult:
         """Execute the command's action."""
@@ -52,12 +53,11 @@ class NoteCreateUseCase(
             workspace.ref_id
         )
         note = Note.new_note(
+            ctx=context.domain_context,
             note_collection_ref_id=note_collection.ref_id,
             domain=args.domain,
             source_entity_ref_id=args.source_entity_ref_id,
             content=args.content,
-            source=EventSource.CLI,
-            created_time=self._time_provider.get_current_time(),
         )
         note = await uow.note_repository.create(note)
         return NoteCreateResult(new_note=note)

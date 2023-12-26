@@ -1,13 +1,12 @@
 """A search query parameter for searches."""
 
-from dataclasses import dataclass
 from typing import Optional
 
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import Value
+from jupiter.core.framework.value import Value, value
 
 
-@dataclass
+@value
 class SearchQuery(Value):
     """A search query parameter for searches."""
 

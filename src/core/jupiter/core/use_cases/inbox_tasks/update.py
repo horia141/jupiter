@@ -1,6 +1,6 @@
 """The command for updating a inbox task."""
 from dataclasses import dataclass
-from typing import Iterable, Optional
+from typing import Optional
 
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.difficulty import Difficulty
@@ -16,7 +16,6 @@ from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
     ProgressReporter,
@@ -24,8 +23,9 @@ from jupiter.core.framework.use_case import (
     UseCaseResultBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
+    mutation_use_case,
 )
 
 
@@ -49,23 +49,17 @@ class InboxTaskUpdateResult(UseCaseResultBase):
     record_score_result: RecordScoreResult | None = None
 
 
+@mutation_use_case(WorkspaceFeature.INBOX_TASKS)
 class InboxTaskUpdateUseCase(
     AppTransactionalLoggedInMutationUseCase[InboxTaskUpdateArgs, InboxTaskUpdateResult]
 ):
     """The command for updating a inbox task."""
 
-    @staticmethod
-    def get_scoped_to_feature() -> Iterable[
-        UserFeature
-    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
-        """The feature the use case is scope to."""
-        return WorkspaceFeature.INBOX_TASKS
-
     async def _perform_transactional_mutation(
         self,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInMutationUseCaseContext,
         args: InboxTaskUpdateArgs,
     ) -> InboxTaskUpdateResult:
         """Execute the command's action."""
@@ -73,14 +67,13 @@ class InboxTaskUpdateUseCase(
 
         try:
             inbox_task = inbox_task.update(
+                ctx=context.domain_context,
                 name=args.name,
                 status=args.status,
                 eisen=args.eisen,
                 difficulty=args.difficulty,
                 actionable_date=args.actionable_date,
                 due_date=args.due_date,
-                source=EventSource.CLI,
-                modification_time=self._time_provider.get_current_time(),
             )
         except CannotModifyGeneratedTaskError as err:
             raise InputValidationError(
@@ -92,8 +85,8 @@ class InboxTaskUpdateUseCase(
 
         record_score_result = None
         if context.user.is_feature_available(UserFeature.GAMIFICATION):
-            record_score_result = await RecordScoreService(
-                EventSource.CLI, self._time_provider
-            ).record_task(uow, context.user, inbox_task)
+            record_score_result = await RecordScoreService().record_task(
+                context.domain_context, uow, context.user, inbox_task
+            )
 
         return InboxTaskUpdateResult(record_score_result=record_score_result)

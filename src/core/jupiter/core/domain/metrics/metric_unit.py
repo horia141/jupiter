@@ -1,13 +1,13 @@
 """The unit for a metric."""
-import enum
 from functools import lru_cache
 from typing import Iterable, Optional
 
 from jupiter.core.framework.errors import InputValidationError
+from jupiter.core.framework.value import EnumValue, enum_value
 
 
-@enum.unique
-class MetricUnit(enum.Enum):
+@enum_value
+class MetricUnit(EnumValue):
     """The unit for a metric."""
 
     COUNT = "count"

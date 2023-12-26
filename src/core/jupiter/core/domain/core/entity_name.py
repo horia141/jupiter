@@ -1,6 +1,5 @@
 """The name for an entity."""
 import re
-from dataclasses import dataclass
 from functools import total_ordering
 from typing import (
     Final,
@@ -11,7 +10,7 @@ from typing import (
 )
 
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import Value
+from jupiter.core.framework.value import Value, hashable_value
 
 _ENTITY_NAME_RE: Final[Pattern[str]] = re.compile(r"^.+$")
 
@@ -19,7 +18,7 @@ _ENTITY_NAME_RE: Final[Pattern[str]] = re.compile(r"^.+$")
 _EntityNameT = TypeVar("_EntityNameT", bound="EntityName")
 
 
-@dataclass(eq=True, unsafe_hash=True)
+@hashable_value
 @total_ordering
 class EntityName(Value):
     """The name for an entity which acts as both name and unique identifier."""

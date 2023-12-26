@@ -1,14 +1,14 @@
 """The status of an inbox task."""
-import enum
 from functools import lru_cache, total_ordering
 from typing import Iterable, List, Optional, cast
 
 from jupiter.core.framework.errors import InputValidationError
+from jupiter.core.framework.value import EnumValue, enum_value
 
 
-@enum.unique
+@enum_value
 @total_ordering
-class InboxTaskStatus(enum.Enum):
+class InboxTaskStatus(EnumValue):
     """The status of an inbox task."""
 
     # Created

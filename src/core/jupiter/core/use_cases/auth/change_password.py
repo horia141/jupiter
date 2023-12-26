@@ -5,12 +5,12 @@ from jupiter.core.domain.auth.auth import IncorrectPasswordError
 from jupiter.core.domain.auth.password_new_plain import PasswordNewPlain
 from jupiter.core.domain.auth.password_plain import PasswordPlain
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.secure import secure_class
 from jupiter.core.framework.use_case import ProgressReporter, UseCaseArgsBase
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
+    mutation_use_case,
 )
 
 
@@ -28,6 +28,7 @@ class ChangePasswordArgs(UseCaseArgsBase):
 
 
 @secure_class
+@mutation_use_case()
 class ChangePasswordUseCase(
     AppTransactionalLoggedInMutationUseCase[ChangePasswordArgs, None]
 ):
@@ -37,18 +38,17 @@ class ChangePasswordUseCase(
         self,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInMutationUseCaseContext,
         args: ChangePasswordArgs,
     ) -> None:
         """Execute the command's action."""
         try:
             auth = await uow.auth_repository.load_by_parent(context.user.ref_id)
             auth = auth.change_password(
+                ctx=context.domain_context,
                 current_password=args.current_password,
                 new_password=args.new_password,
                 new_password_repeat=args.new_password_repeat,
-                source=EventSource.CLI,
-                modification_time=self._time_provider.get_current_time(),
             )
             auth = await uow.auth_repository.save(auth)
         except IncorrectPasswordError as err:

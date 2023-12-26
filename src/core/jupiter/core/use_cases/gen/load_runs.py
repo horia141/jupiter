@@ -5,7 +5,8 @@ from jupiter.core.domain.gen.gen_log_entry import GenLogEntry
 from jupiter.core.framework.use_case import UseCaseArgsBase, UseCaseResultBase
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCase,
-    AppLoggedInUseCaseContext,
+    AppLoggedInReadonlyUseCaseContext,
+    readonly_use_case,
 )
 
 
@@ -21,6 +22,7 @@ class GenLoadRunsResult(UseCaseResultBase):
     entries: list[GenLogEntry]
 
 
+@readonly_use_case()
 class GenLoadRunsUseCase(
     AppLoggedInReadonlyUseCase[GenLoadRunsArgs, GenLoadRunsResult]
 ):
@@ -28,7 +30,7 @@ class GenLoadRunsUseCase(
 
     async def _execute(
         self,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInReadonlyUseCaseContext,
         args: GenLoadRunsArgs,
     ) -> GenLoadRunsResult:
         """Execute the use case."""

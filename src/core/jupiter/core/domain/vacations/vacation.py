@@ -1,28 +1,23 @@
 """A vacation."""
 import typing
-from dataclasses import dataclass
 
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.vacations.vacation_name import VacationName
-from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
-from jupiter.core.framework.base.timestamp import Timestamp
-from jupiter.core.framework.entity import FIRST_VERSION, Entity, LeafEntity
+from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.context import DomainContext
+from jupiter.core.framework.entity import (
+    LeafEntity,
+    create_entity_action,
+    entity,
+    update_entity_action,
+)
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.update_action import UpdateAction
 
 
-@dataclass
+@entity
 class Vacation(LeafEntity):
     """A vacation."""
-
-    @dataclass
-    class Created(Entity.Created):
-        """Created event."""
-
-    @dataclass
-    class Updated(Entity.Updated):
-        """Updated event."""
 
     vacation_collection_ref_id: EntityId
     name: VacationName
@@ -30,48 +25,33 @@ class Vacation(LeafEntity):
     end_date: ADate
 
     @staticmethod
+    @create_entity_action
     def new_vacation(
-        archived: bool,
+        ctx: DomainContext,
         vacation_collection_ref_id: EntityId,
         name: VacationName,
         start_date: ADate,
         end_date: ADate,
-        source: EventSource,
-        created_time: Timestamp,
     ) -> "Vacation":
         """Create a vacation."""
         if start_date >= end_date:
             raise InputValidationError("Cannot set a start date after the end date")
 
-        vacation = Vacation(
-            ref_id=BAD_REF_ID,
-            version=FIRST_VERSION,
-            archived=archived,
-            created_time=created_time,
-            last_modified_time=created_time,
-            archived_time=created_time if archived else None,
-            events=[
-                Vacation.Created.make_event_from_frame_args(
-                    source,
-                    FIRST_VERSION,
-                    created_time,
-                ),
-            ],
-            vacation_collection_ref_id=vacation_collection_ref_id,
+        return Vacation._create(
+            ctx,
             name=name,
+            vacation_collection_ref_id=vacation_collection_ref_id,
             start_date=start_date,
             end_date=end_date,
         )
 
-        return vacation
-
+    @update_entity_action
     def update(
         self,
+        ctx: DomainContext,
         name: UpdateAction[VacationName],
         start_date: UpdateAction[ADate],
         end_date: UpdateAction[ADate],
-        source: EventSource,
-        modification_time: Timestamp,
     ) -> "Vacation":
         """Update a vacation's properties."""
         new_start_date = start_date.or_else(self.start_date)
@@ -81,14 +61,10 @@ class Vacation(LeafEntity):
             raise InputValidationError("Cannot set a start date after the end date")
 
         return self._new_version(
+            ctx,
             name=name.or_else(self.name),
             start_date=new_start_date,
             end_date=new_end_date,
-            new_event=Vacation.Updated.make_event_from_frame_args(
-                source,
-                self.version,
-                modification_time,
-            ),
         )
 
     def is_in_vacation(self, start_date: ADate, end_date: ADate) -> bool:

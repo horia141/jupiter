@@ -26,31 +26,25 @@ from jupiter.core.domain.storage_engine import (
 from jupiter.core.domain.sync_target import SyncTarget
 from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.event import EventSource
+from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.use_case import ProgressReporter
-from jupiter.core.utils.time_provider import TimeProvider
 
 
 class GCService:
     """Shared service for performing garbage collection."""
 
-    _source: Final[EventSource]
-    _time_provider: Final[TimeProvider]
     _domain_storage_engine: Final[DomainStorageEngine]
 
     def __init__(
         self,
-        source: EventSource,
-        time_provider: TimeProvider,
         domain_storage_engine: DomainStorageEngine,
     ) -> None:
         """Constructor."""
-        self._source = source
-        self._time_provider = time_provider
         self._domain_storage_engine = domain_storage_engine
 
     async def do_it(
         self,
+        ctx: DomainContext,
         progress_reporter: ProgressReporter,
         workspace: Workspace,
         gc_targets: list[SyncTarget],
@@ -59,10 +53,9 @@ class GCService:
         async with self._domain_storage_engine.get_unit_of_work() as uow:
             gc_log = await uow.gc_log_repository.load_by_parent(workspace.ref_id)
             gc_log_entry = GCLogEntry.new_log_entry(
+                ctx,
                 gc_log_ref_id=gc_log.ref_id,
-                source=self._source,
                 gc_targets=gc_targets,
-                created_time=self._time_provider.get_current_time(),
             )
             gc_log_entry = await uow.gc_log_entry_repository.create(gc_log_entry)
 
@@ -106,6 +99,7 @@ class GCService:
                             allow_archived=False,
                         )
                     gc_log_entry = await self._archive_done_inbox_tasks(
+                        ctx,
                         progress_reporter,
                         inbox_tasks,
                         gc_log_entry,
@@ -125,6 +119,7 @@ class GCService:
                             allow_archived=False,
                         )
                 gc_log_entry = await self._archive_done_big_plans(
+                    ctx,
                     uow,
                     progress_reporter,
                     big_plans,
@@ -148,6 +143,7 @@ class GCService:
                         filter_slack_task_ref_ids=[st.ref_id for st in slack_tasks],
                     )
                 gc_log_entry = await self._archive_slack_tasks_whose_inbox_tasks_are_completed_or_archived(
+                    ctx,
                     progress_reporter,
                     slack_tasks,
                     inbox_tasks,
@@ -171,6 +167,7 @@ class GCService:
                         filter_email_task_ref_ids=[et.ref_id for et in email_tasks],
                     )
                 gc_log_entry = await self._archive_email_tasks_whose_inbox_tasks_are_completed_or_archived(
+                    ctx,
                     progress_reporter,
                     email_tasks,
                     inbox_tasks,
@@ -178,79 +175,74 @@ class GCService:
                 )
 
         async with self._domain_storage_engine.get_unit_of_work() as uow:
-            gc_log_entry = gc_log_entry.close(self._time_provider.get_current_time())
+            gc_log_entry = gc_log_entry.close(ctx)
             gc_log_entry = await uow.gc_log_entry_repository.save(gc_log_entry)
 
     async def _archive_done_inbox_tasks(
         self,
+        ctx: DomainContext,
         progress_reporter: ProgressReporter,
         inbox_tasks: Iterable[InboxTask],
         gc_log_entry: GCLogEntry,
     ) -> GCLogEntry:
-        inbox_task_archive_service = InboxTaskArchiveService(
-            source=EventSource.CLI,
-            time_provider=self._time_provider,
-        )
+        inbox_task_archive_service = InboxTaskArchiveService()
 
         for inbox_task in inbox_tasks:
             if not inbox_task.status.is_completed:
                 continue
             async with self._domain_storage_engine.get_unit_of_work() as uow:
                 await inbox_task_archive_service.do_it(
-                    uow, progress_reporter, inbox_task
+                    ctx, uow, progress_reporter, inbox_task
                 )
             gc_log_entry = gc_log_entry.add_entity(
+                ctx,
                 inbox_task,
-                self._time_provider.get_current_time(),
             )
 
         return gc_log_entry
 
     async def _archive_done_big_plans(
         self,
+        ctx: DomainContext,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
         big_plans: Iterable[BigPlan],
         gc_log_entry: GCLogEntry,
     ) -> GCLogEntry:
         """Archive the done big plans."""
-        big_plan_archive_service = BigPlanArchiveService(
-            source=EventSource.CLI,
-            time_provider=self._time_provider,
-        )
+        big_plan_archive_service = BigPlanArchiveService()
 
         for big_plan in big_plans:
             if not big_plan.status.is_completed:
                 continue
             async with self._domain_storage_engine.get_unit_of_work() as uow:
                 result = await big_plan_archive_service.do_it(
-                    uow, progress_reporter, big_plan
+                    ctx, uow, progress_reporter, big_plan
                 )
 
             gc_log_entry = gc_log_entry.add_entity(
+                ctx,
                 big_plan,
-                self._time_provider.get_current_time(),
             )
             for archived_inbox_task in result.archived_inbox_tasks:
                 gc_log_entry = gc_log_entry.add_entity(
+                    ctx,
                     archived_inbox_task,
-                    self._time_provider.get_current_time(),
                 )
 
         return gc_log_entry
 
     async def _archive_slack_tasks_whose_inbox_tasks_are_completed_or_archived(
         self,
+        ctx: DomainContext,
         progress_reporter: ProgressReporter,
         slack_tasks: List[SlackTask],
         inbox_tasks: List[InboxTask],
         gc_log_entry: GCLogEntry,
     ) -> GCLogEntry:
         slack_tasks_by_ref_id = {st.ref_id: st for st in slack_tasks}
-        slack_task_arhive_service = SlackTaskArchiveService(
-            source=EventSource.CLI,
-            time_provider=self._time_provider,
-        )
+        slack_task_arhive_service = SlackTaskArchiveService()
+
         for inbox_task in inbox_tasks:
             if not (inbox_task.status.is_completed or inbox_task.archived):
                 continue
@@ -259,35 +251,35 @@ class GCService:
             ]
             async with self._domain_storage_engine.get_unit_of_work() as uow:
                 result = await slack_task_arhive_service.do_it(
+                    ctx,
                     uow,
                     progress_reporter,
                     slack_tasks_by_ref_id[cast(EntityId, inbox_task.slack_task_ref_id)],
                 )
 
             gc_log_entry = gc_log_entry.add_entity(
+                ctx,
                 slack_task,
-                self._time_provider.get_current_time(),
             )
             for archived_inbox_task in result.archived_inbox_tasks:
                 gc_log_entry = gc_log_entry.add_entity(
+                    ctx,
                     archived_inbox_task,
-                    self._time_provider.get_current_time(),
                 )
 
         return gc_log_entry
 
     async def _archive_email_tasks_whose_inbox_tasks_are_completed_or_archived(
         self,
+        ctx: DomainContext,
         progress_reporter: ProgressReporter,
         email_tasks: List[EmailTask],
         inbox_tasks: List[InboxTask],
         gc_log_entry: GCLogEntry,
     ) -> GCLogEntry:
         email_tasks_by_ref_id = {st.ref_id: st for st in email_tasks}
-        email_task_arhive_service = EmailTaskArchiveService(
-            source=EventSource.CLI,
-            time_provider=self._time_provider,
-        )
+        email_task_arhive_service = EmailTaskArchiveService()
+
         for inbox_task in inbox_tasks:
             if not (inbox_task.status.is_completed or inbox_task.archived):
                 continue
@@ -296,19 +288,20 @@ class GCService:
             ]
             async with self._domain_storage_engine.get_unit_of_work() as uow:
                 result = await email_task_arhive_service.do_it(
+                    ctx,
                     uow,
                     progress_reporter,
                     email_task,
                 )
 
             gc_log_entry = gc_log_entry.add_entity(
+                ctx,
                 email_task,
-                self._time_provider.get_current_time(),
             )
             for archived_inbox_task in result.archived_inbox_tasks:
                 gc_log_entry = gc_log_entry.add_entity(
+                    ctx,
                     archived_inbox_task,
-                    self._time_provider.get_current_time(),
                 )
 
         return gc_log_entry

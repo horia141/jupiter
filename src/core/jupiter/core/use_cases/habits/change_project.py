@@ -1,24 +1,23 @@
 """The command for changing the project for a habit."""
 from dataclasses import dataclass
-from typing import Iterable, Optional, cast
+from typing import Optional, cast
 
 from jupiter.core.domain.core import schedules
 from jupiter.core.domain.features import (
     FeatureUnavailableError,
-    UserFeature,
     WorkspaceFeature,
 )
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
+    mutation_use_case,
 )
 
 
@@ -30,23 +29,17 @@ class HabitChangeProjectArgs(UseCaseArgsBase):
     project_ref_id: Optional[EntityId] = None
 
 
+@mutation_use_case([WorkspaceFeature.HABITS, WorkspaceFeature.PROJECTS])
 class HabitChangeProjectUseCase(
     AppTransactionalLoggedInMutationUseCase[HabitChangeProjectArgs, None]
 ):
     """The command for changing the project of a habit."""
 
-    @staticmethod
-    def get_scoped_to_feature() -> Iterable[
-        UserFeature
-    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
-        """The feature the use case is scope to."""
-        return (WorkspaceFeature.HABITS, WorkspaceFeature.PROJECTS)
-
     async def _perform_transactional_mutation(
         self,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInMutationUseCaseContext,
         args: HabitChangeProjectArgs,
     ) -> None:
         """Execute the command's action."""
@@ -87,6 +80,7 @@ class HabitChangeProjectUseCase(
             )
 
             inbox_task = inbox_task.update_link_to_habit(
+                context.domain_context,
                 project_ref_id=args.project_ref_id or workspace.default_project_ref_id,
                 name=schedule.full_name,
                 timeline=schedule.timeline,
@@ -95,17 +89,14 @@ class HabitChangeProjectUseCase(
                 due_date=schedule.due_time,
                 eisen=habit.gen_params.eisen,
                 difficulty=habit.gen_params.difficulty,
-                source=EventSource.CLI,
-                modification_time=self._time_provider.get_current_time(),
             )
 
             await uow.inbox_task_repository.save(inbox_task)
             await progress_reporter.mark_updated(inbox_task)
 
         habit = habit.change_project(
+            context.domain_context,
             project_ref_id=args.project_ref_id or workspace.default_project_ref_id,
-            source=EventSource.CLI,
-            modification_time=self._time_provider.get_current_time(),
         )
         await uow.habit_repository.save(habit)
         await progress_reporter.mark_updated(habit)

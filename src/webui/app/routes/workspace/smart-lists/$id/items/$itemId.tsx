@@ -118,7 +118,7 @@ export async function action({ request, params }: ActionArgs) {
 
       case "archive": {
         await getLoggedInApiClient(session).smartList.archiveSmartListItem({
-          ref_id: { the_id: id },
+          ref_id: { the_id: itemId },
         });
 
         return redirect(`/workspace/smart-lists/${id}/items/${itemId}`);

@@ -1,6 +1,6 @@
 """The command for updating a chore."""
 from dataclasses import dataclass
-from typing import Iterable, Optional, cast
+from typing import Optional, cast
 
 from jupiter.core.domain.chores.chore_name import ChoreName
 from jupiter.core.domain.core import schedules
@@ -13,19 +13,19 @@ from jupiter.core.domain.core.recurring_task_due_at_time import RecurringTaskDue
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.core.recurring_task_skip_rule import RecurringTaskSkipRule
-from jupiter.core.domain.features import UserFeature, WorkspaceFeature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
+    mutation_use_case,
 )
 
 
@@ -49,23 +49,17 @@ class ChoreUpdateArgs(UseCaseArgsBase):
     end_at_date: UpdateAction[Optional[ADate]]
 
 
+@mutation_use_case(WorkspaceFeature.CHORES)
 class ChoreUpdateUseCase(
     AppTransactionalLoggedInMutationUseCase[ChoreUpdateArgs, None]
 ):
     """The command for updating a chore."""
 
-    @staticmethod
-    def get_scoped_to_feature() -> Iterable[
-        UserFeature
-    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
-        """The feature the use case is scope to."""
-        return WorkspaceFeature.CHORES
-
     async def _perform_transactional_mutation(
         self,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInMutationUseCaseContext,
         args: ChoreUpdateArgs,
     ) -> None:
         """Execute the command's action."""
@@ -119,14 +113,13 @@ class ChoreUpdateUseCase(
             chore_gen_params = UpdateAction.do_nothing()
 
         chore = chore.update(
+            ctx=context.domain_context,
             name=args.name,
             gen_params=chore_gen_params,
             must_do=args.must_do,
             start_at_date=args.start_at_date,
             end_at_date=args.end_at_date,
             skip_rule=args.skip_rule,
-            source=EventSource.CLI,
-            modification_time=self._time_provider.get_current_time(),
         )
 
         await uow.chore_repository.save(chore)
@@ -159,6 +152,7 @@ class ChoreUpdateUseCase(
                 )
 
                 inbox_task = inbox_task.update_link_to_chore(
+                    ctx=context.domain_context,
                     project_ref_id=project.ref_id,
                     name=schedule.full_name,
                     timeline=schedule.timeline,
@@ -166,8 +160,6 @@ class ChoreUpdateUseCase(
                     due_date=schedule.due_time,
                     eisen=chore.gen_params.eisen,
                     difficulty=chore.gen_params.difficulty,
-                    source=EventSource.CLI,
-                    modification_time=self._time_provider.get_current_time(),
                 )
 
                 await uow.inbox_task_repository.save(inbox_task)

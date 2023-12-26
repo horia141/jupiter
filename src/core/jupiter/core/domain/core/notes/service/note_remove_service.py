@@ -3,6 +3,7 @@ from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.context import DomainContext
 
 
 class NoteRemoveService:
@@ -10,6 +11,7 @@ class NoteRemoveService:
 
     async def remove(
         self,
+        ctx: DomainContext,
         uow: DomainUnitOfWork,
         note: Note,
     ) -> None:
@@ -21,6 +23,7 @@ class NoteRemoveService:
 
     async def remove_for_source(
         self,
+        ctx: DomainContext,
         uow: DomainUnitOfWork,
         domain: NoteDomain,
         source_entity_ref_id: EntityId,
@@ -31,6 +34,6 @@ class NoteRemoveService:
         )
         if note is None:
             return
-        if note.can_be_removed_independently:
-            raise Exception(f"Note {note.ref_id} cannot be removed independently")
+        if not note.can_be_removed_independently:
+            raise Exception(f"Note {note.ref_id} cannot be removed dependently")
         await uow.note_repository.remove(note.ref_id)

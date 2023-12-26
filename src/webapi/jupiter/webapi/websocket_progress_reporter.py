@@ -17,13 +17,16 @@ from typing import (
 from jupiter.core.domain.core.entity_name import EntityName
 from jupiter.core.domain.named_entity_tag import NamedEntityTag
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.entity import BranchEntity, LeafEntity
+from jupiter.core.framework.entity import CrownEntity
 from jupiter.core.framework.json import JSONDictType
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     ProgressReporterFactory,
 )
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseContext
+from jupiter.core.use_cases.infra.use_cases import (
+    AppLoggedInMutationUseCaseContext,
+    AppLoggedInUseCaseContext,
+)
 from starlette.websockets import WebSocket
 from websockets.exceptions import ConnectionClosedError
 
@@ -95,13 +98,13 @@ class WebsocketProgressReporter(ProgressReporter):
 
     _websocket: Final[_WebsocketHandle]
     _sections: Final[List[str]]
-    _created_entities: Final[List[BranchEntity | LeafEntity]]
+    _created_entities: Final[List[CrownEntity]]
     _created_entities_stats: Final[
         DefaultDict[NamedEntityTag, List[Tuple[EntityName, EntityId]]]
     ]
-    _updated_entities: Final[List[BranchEntity | LeafEntity]]
+    _updated_entities: Final[List[CrownEntity]]
     _updated_entities_stats: Final[DefaultDict[NamedEntityTag, int]]
-    _removed_entities: Final[List[BranchEntity | LeafEntity]]
+    _removed_entities: Final[List[CrownEntity]]
     _removed_entities_stats: Final[DefaultDict[NamedEntityTag, int]]
     _print_indent: Final[int]
 
@@ -109,13 +112,13 @@ class WebsocketProgressReporter(ProgressReporter):
         self,
         websocket: _WebsocketHandle,
         sections: List[str],
-        created_entities: List[BranchEntity | LeafEntity],
+        created_entities: List[CrownEntity],
         created_entities_stats: DefaultDict[
             NamedEntityTag, List[Tuple[EntityName, EntityId]]
         ],
-        updated_entities: List[BranchEntity | LeafEntity],
+        updated_entities: List[CrownEntity],
         updated_entities_stats: DefaultDict[NamedEntityTag, int],
-        removed_entities: List[BranchEntity | LeafEntity],
+        removed_entities: List[CrownEntity],
         removed_entities_stats: DefaultDict[NamedEntityTag, int],
         print_indent: int,
     ) -> None:
@@ -142,7 +145,7 @@ class WebsocketProgressReporter(ProgressReporter):
         yield None
         self._sections.pop()
 
-    async def mark_created(self, entity: BranchEntity | LeafEntity) -> None:
+    async def mark_created(self, entity: CrownEntity) -> None:
         """Mark an entity as created."""
         self._created_entities.append(entity)
         self._created_entities_stats[NamedEntityTag.from_entity(entity)].append(
@@ -153,7 +156,7 @@ class WebsocketProgressReporter(ProgressReporter):
             text, NamedEntityTag.from_entity(entity), entity.ref_id, entity.name
         )
 
-    async def mark_updated(self, entity: BranchEntity | LeafEntity) -> None:
+    async def mark_updated(self, entity: CrownEntity) -> None:
         """Mark an entity as created."""
         self._updated_entities.append(entity)
         self._updated_entities_stats[NamedEntityTag.from_entity(entity)] += 1
@@ -162,7 +165,7 @@ class WebsocketProgressReporter(ProgressReporter):
             text, NamedEntityTag.from_entity(entity), entity.ref_id, entity.name
         )
 
-    async def mark_removed(self, entity: BranchEntity | LeafEntity) -> None:
+    async def mark_removed(self, entity: CrownEntity) -> None:
         """Mark an entity as created."""
         self._removed_entities.append(entity)
         self._removed_entities_stats[NamedEntityTag.from_entity(entity)] += 1
@@ -227,23 +230,21 @@ class WebsocketProgressReporter(ProgressReporter):
         # self._console.print(results_panel)
 
     @property
-    def created_entities(self) -> List[BranchEntity | LeafEntity]:
+    def created_entities(self) -> List[CrownEntity]:
         """Created entities."""
         return self._created_entities
 
     @property
-    def updated_entities(self) -> List[BranchEntity | LeafEntity]:
+    def updated_entities(self) -> List[CrownEntity]:
         """Created entities."""
         return self._updated_entities
 
     @property
-    def removed_entities(self) -> List[BranchEntity | LeafEntity]:
+    def removed_entities(self) -> List[CrownEntity]:
         """Created entities."""
         return self._removed_entities
 
-    def _entity_to_str(
-        self, action_type: str, entity: BranchEntity | LeafEntity
-    ) -> str:
+    def _entity_to_str(self, action_type: str, entity: CrownEntity) -> str:
         """Prepare the final string form for this one."""
         text = (
             self._print_indent * ".."
@@ -281,7 +282,7 @@ class WebsocketProgressReporter(ProgressReporter):
 
 
 class WebsocketProgressReporterFactory(
-    ProgressReporterFactory[AppLoggedInUseCaseContext]
+    ProgressReporterFactory[AppLoggedInMutationUseCaseContext]
 ):
     """A progress reporter factory that builds websocket progress reporters."""
 

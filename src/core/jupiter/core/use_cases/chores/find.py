@@ -1,11 +1,10 @@
 """The command for finding a chore."""
 from dataclasses import dataclass
-from typing import Iterable, List, Optional
+from typing import List, Optional
 
 from jupiter.core.domain.chores.chore import Chore
 from jupiter.core.domain.features import (
     FeatureUnavailableError,
-    UserFeature,
     WorkspaceFeature,
 )
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
@@ -17,8 +16,9 @@ from jupiter.core.framework.use_case import (
     UseCaseResultBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInReadonlyUseCaseContext,
     AppTransactionalLoggedInReadOnlyUseCase,
+    readonly_use_case,
 )
 
 
@@ -49,22 +49,16 @@ class ChoreFindResult(UseCaseResultBase):
     entries: List[ChoreFindResultEntry]
 
 
+@readonly_use_case(WorkspaceFeature.CHORES)
 class ChoreFindUseCase(
     AppTransactionalLoggedInReadOnlyUseCase[ChoreFindArgs, ChoreFindResult]
 ):
     """The command for finding a chore."""
 
-    @staticmethod
-    def get_scoped_to_feature() -> Iterable[
-        UserFeature
-    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
-        """The feature the use case is scope to."""
-        return WorkspaceFeature.CHORES
-
     async def _perform_transactional_read(
         self,
         uow: DomainUnitOfWork,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInReadonlyUseCaseContext,
         args: ChoreFindArgs,
     ) -> ChoreFindResult:
         """Execute the command's action."""

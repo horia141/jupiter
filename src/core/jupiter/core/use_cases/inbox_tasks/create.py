@@ -1,6 +1,6 @@
 """The command for creating a inbox task."""
 from dataclasses import dataclass
-from typing import Iterable, Optional
+from typing import Optional
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.core.adate import ADate
@@ -8,7 +8,6 @@ from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.features import (
     FeatureUnavailableError,
-    UserFeature,
     WorkspaceFeature,
 )
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
@@ -16,15 +15,15 @@ from jupiter.core.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
     UseCaseResultBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
+    mutation_use_case,
 )
 
 
@@ -48,23 +47,17 @@ class InboxTaskCreateResult(UseCaseResultBase):
     new_inbox_task: InboxTask
 
 
+@mutation_use_case(WorkspaceFeature.INBOX_TASKS)
 class InboxTaskCreateUseCase(
     AppTransactionalLoggedInMutationUseCase[InboxTaskCreateArgs, InboxTaskCreateResult],
 ):
     """The command for creating a inbox task."""
 
-    @staticmethod
-    def get_scoped_to_feature() -> Iterable[
-        UserFeature
-    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
-        """The feature the use case is scope to."""
-        return WorkspaceFeature.INBOX_TASKS
-
     async def _perform_transactional_mutation(
         self,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInMutationUseCaseContext,
         args: InboxTaskCreateArgs,
     ) -> InboxTaskCreateResult:
         """Execute the command's action."""
@@ -94,18 +87,19 @@ class InboxTaskCreateUseCase(
         )
 
         new_inbox_task = InboxTask.new_inbox_task(
+            ctx=context.domain_context,
             inbox_task_collection_ref_id=inbox_task_collection.ref_id,
-            archived=False,
             name=args.name,
             status=InboxTaskStatus.ACCEPTED,
             project_ref_id=args.project_ref_id or workspace.default_project_ref_id,
-            big_plan=big_plan,
             eisen=args.eisen,
             difficulty=args.difficulty,
             actionable_date=args.actionable_date,
             due_date=args.due_date,
-            source=EventSource.CLI,
-            created_time=self._time_provider.get_current_time(),
+            big_plan_ref_id=big_plan.ref_id if big_plan else None,
+            big_plan_project_ref_id=big_plan.project_ref_id if big_plan else None,
+            big_plan_actionable_date=big_plan.actionable_date if big_plan else None,
+            big_plan_due_date=big_plan.due_date if big_plan else None,
         )
 
         new_inbox_task = await uow.inbox_task_repository.create(new_inbox_task)

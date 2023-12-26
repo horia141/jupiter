@@ -1,12 +1,6 @@
-import { Button, ButtonGroup } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import {
-  Link,
-  Outlet,
-  ShouldRevalidateFunction,
-  useFetcher,
-} from "@remix-run/react";
+import { Outlet, ShouldRevalidateFunction, useFetcher } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { Doc } from "jupiter-gen";
 import { useContext } from "react";

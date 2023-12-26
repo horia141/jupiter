@@ -39,7 +39,8 @@ from jupiter.core.framework.use_case import (
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCase,
-    AppLoggedInUseCaseContext,
+    AppLoggedInReadonlyUseCaseContext,
+    readonly_use_case,
 )
 
 
@@ -206,12 +207,13 @@ class ReportResult(UseCaseResultBase):
     user_score_overview: UserScoreOverview | None
 
 
+@readonly_use_case()
 class ReportUseCase(AppLoggedInReadonlyUseCase[ReportArgs, ReportResult]):
     """The command for reporting on progress."""
 
     async def _execute(
         self,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInReadonlyUseCaseContext,
         args: ReportArgs,
     ) -> ReportResult:
         """Execute the command."""

@@ -1,8 +1,8 @@
 """Use case for loading a particular email task."""
 from dataclasses import dataclass
-from typing import Iterable, Optional
+from typing import Optional
 
-from jupiter.core.domain.features import UserFeature, WorkspaceFeature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.push_integrations.email.email_task import EmailTask
@@ -13,8 +13,9 @@ from jupiter.core.framework.use_case import (
     UseCaseResultBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInReadonlyUseCaseContext,
     AppTransactionalLoggedInReadOnlyUseCase,
+    readonly_use_case,
 )
 
 
@@ -34,22 +35,16 @@ class EmailTaskLoadResult(UseCaseResultBase):
     inbox_task: Optional[InboxTask] = None
 
 
+@readonly_use_case(WorkspaceFeature.EMAIL_TASKS)
 class EmailTaskLoadUseCase(
     AppTransactionalLoggedInReadOnlyUseCase[EmailTaskLoadArgs, EmailTaskLoadResult]
 ):
     """Use case for loading a particular email task."""
 
-    @staticmethod
-    def get_scoped_to_feature() -> Iterable[
-        UserFeature
-    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
-        """The feature the use case is scope to."""
-        return WorkspaceFeature.EMAIL_TASKS
-
     async def _perform_transactional_read(
         self,
         uow: DomainUnitOfWork,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInReadonlyUseCaseContext,
         args: EmailTaskLoadArgs,
     ) -> EmailTaskLoadResult:
         """Execute the command's action."""

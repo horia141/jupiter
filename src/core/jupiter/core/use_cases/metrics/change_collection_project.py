@@ -1,20 +1,20 @@
 """Update the metrics collection project."""
 from dataclasses import dataclass
-from typing import Iterable, Optional, cast
+from typing import Optional, cast
 
 from jupiter.core.domain.core.adate import ADate
-from jupiter.core.domain.features import UserFeature, WorkspaceFeature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
+    mutation_use_case,
 )
 
 
@@ -25,23 +25,17 @@ class MetricChangeCollectionProjectArgs(UseCaseArgsBase):
     collection_project_ref_id: Optional[EntityId] = None
 
 
+@mutation_use_case([WorkspaceFeature.METRICS, WorkspaceFeature.PROJECTS])
 class MetricChangeCollectionProjectUseCase(
     AppTransactionalLoggedInMutationUseCase[MetricChangeCollectionProjectArgs, None],
 ):
     """The command for updating the collection up project for metrics."""
 
-    @staticmethod
-    def get_scoped_to_feature() -> Iterable[
-        UserFeature
-    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
-        """The feature the use case is scope to."""
-        return (WorkspaceFeature.METRICS, WorkspaceFeature.PROJECTS)
-
     async def _perform_transactional_mutation(
         self,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInMutationUseCaseContext,
         args: MetricChangeCollectionProjectArgs,
     ) -> None:
         """Execute the command's action."""
@@ -89,6 +83,7 @@ class MetricChangeCollectionProjectUseCase(
 
             for inbox_task in all_collection_inbox_tasks:
                 inbox_task = inbox_task.update_link_to_metric(
+                    context.domain_context,
                     project_ref_id=collection_project_ref_id,
                     name=inbox_task.name,
                     recurring_timeline=cast(str, inbox_task.recurring_timeline),
@@ -96,8 +91,6 @@ class MetricChangeCollectionProjectUseCase(
                     difficulty=inbox_task.difficulty,
                     actionable_date=inbox_task.actionable_date,
                     due_time=cast(ADate, inbox_task.due_date),
-                    source=EventSource.CLI,
-                    modification_time=self._time_provider.get_current_time(),
                 )
 
                 inbox_task = await uow.inbox_task_repository.save(
@@ -106,9 +99,8 @@ class MetricChangeCollectionProjectUseCase(
                 await progress_reporter.mark_updated(inbox_task)
 
             metric_collection = metric_collection.change_collection_project(
+                context.domain_context,
                 collection_project_ref_id=collection_project_ref_id,
-                source=EventSource.CLI,
-                modified_time=self._time_provider.get_current_time(),
             )
 
             await uow.metric_collection_repository.save(metric_collection)

@@ -1,15 +1,14 @@
 """A Slack channel name."""
 import re
-from dataclasses import dataclass
 from typing import Final, Optional, Pattern
 
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import Value
+from jupiter.core.framework.value import Value, hashable_value
 
 _SLACK_CHANNEL_NAME_RE: Final[Pattern[str]] = re.compile(r"^[a-z0-9._-]+$")
 
 
-@dataclass(eq=True, unsafe_hash=True)
+@hashable_value
 class SlackChannelName(Value):
     """A Slack channel name."""
 

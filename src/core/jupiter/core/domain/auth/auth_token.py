@@ -1,13 +1,11 @@
 """An authentication token allows for secure and fast authentication across a session."""
-from dataclasses import dataclass
 from typing import ClassVar, Dict
 
 import jwt
 from jupiter.core.domain.auth.auth_token_ext import AuthTokenExt
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
-from jupiter.core.framework.secret_value import SecretValue
-from jupiter.core.framework.secure import secure_class
+from jupiter.core.framework.value import SecretValue, secret_value
 
 _ALGORITHM = "HS256"
 
@@ -20,8 +18,7 @@ class InvalidAuthTokenError(Exception):
     """Exception thrown when an auth token is invalid in some way (malformed, or fake)."""
 
 
-@dataclass(repr=False)
-@secure_class
+@secret_value
 class AuthToken(SecretValue):
     """An authentication token allows for secure and fast authentication across a session."""
 

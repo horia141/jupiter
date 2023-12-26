@@ -3,9 +3,9 @@
 set -ex
 
 # Python
-(cd src/core && poetry run mypy --config=../../scripts/lint/mypy --package jupiter.core --package tests --explicit-package-bases)
-(cd src/cli && MYPYPATH=../core poetry run mypy --config=../../scripts/lint/mypy --package jupiter.cli --package tests --explicit-package-bases)
-(cd src/webapi && MYPYPATH=../core poetry run mypy --config=../../scripts/lint/mypy --package jupiter.webapi --package tests --explicit-package-bases)
+(cd src/core && poetry run mypy --config=../../scripts/lint/mypy --package jupiter.core --package tests --explicit-package-bases --show-absolute-path)
+(cd src/cli && MYPYPATH=../core poetry run mypy --config=../../scripts/lint/mypy --package jupiter.cli --package tests --explicit-package-bases --show-absolute-path)
+(cd src/webapi && MYPYPATH=../core poetry run mypy --config=../../scripts/lint/mypy --package jupiter.webapi --package tests --explicit-package-bases --show-absolute-path)
 poetry run ruff --cache-dir=.build-cache/ruff --config=./scripts/lint/ruff.toml src tests
 poetry run pyflakes src/core src/cli src/webapi tests
 poetry run bandit --configfile=./scripts/lint/bandit --ini=./scripts/lint/bandit.src.ini -r src/core src/cli src/webapi

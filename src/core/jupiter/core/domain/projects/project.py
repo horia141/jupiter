@@ -1,70 +1,59 @@
 """The project."""
-from dataclasses import dataclass
 
+from jupiter.core.domain.big_plans.big_plan import BigPlan
+from jupiter.core.domain.chores.chore import Chore
+from jupiter.core.domain.habits.habit import Habit
+from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.projects.project_name import ProjectName
-from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
-from jupiter.core.framework.base.timestamp import Timestamp
-from jupiter.core.framework.entity import FIRST_VERSION, Entity, LeafEntity
-from jupiter.core.framework.event import EventSource
+from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.context import DomainContext
+from jupiter.core.framework.entity import (
+    IsRefId,
+    LeafEntity,
+    RefsMany,
+    create_entity_action,
+    entity,
+    update_entity_action,
+)
 from jupiter.core.framework.update_action import UpdateAction
 
 
-@dataclass
+@entity
 class Project(LeafEntity):
     """The project."""
-
-    @dataclass
-    class Created(Entity.Created):
-        """Created event."""
-
-    @dataclass
-    class Updated(Entity.Updated):
-        """Updated event."""
 
     project_collection_ref_id: EntityId
     name: ProjectName
 
+    inbox_tasks = RefsMany(InboxTask, project_ref_id=IsRefId())
+    habits = RefsMany(Habit, project_ref_id=IsRefId())
+    chores = RefsMany(Chore, project_ref_id=IsRefId())
+    big_plans = RefsMany(BigPlan, project_ref_id=IsRefId())
+
     @staticmethod
+    @create_entity_action
     def new_project(
+        ctx: DomainContext,
         project_collection_ref_id: EntityId,
         name: ProjectName,
-        source: EventSource,
-        created_time: Timestamp,
     ) -> "Project":
         """Create a project."""
-        project = Project(
-            ref_id=BAD_REF_ID,
-            version=FIRST_VERSION,
-            archived=False,
-            created_time=created_time,
-            archived_time=None,
-            last_modified_time=created_time,
-            events=[
-                Project.Created.make_event_from_frame_args(
-                    source,
-                    FIRST_VERSION,
-                    created_time,
-                ),
-            ],
+        return Project._create(
+            ctx,
             project_collection_ref_id=project_collection_ref_id,
             name=name,
         )
-        return project
 
+    @update_entity_action
     def update(
         self,
+        ctx: DomainContext,
         name: UpdateAction[ProjectName],
-        source: EventSource,
-        modification_time: Timestamp,
     ) -> "Project":
         """Change the project."""
         return self._new_version(
+            ctx,
             name=name.or_else(self.name),
-            new_event=Project.Updated.make_event_from_frame_args(
-                source,
-                self.version,
-                modification_time,
-            ),
         )
 
     @property

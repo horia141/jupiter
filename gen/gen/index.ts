@@ -80,6 +80,7 @@ export { EntityReferenceBlock } from './models/EntityReferenceBlock';
 export type { EntitySummary } from './models/EntitySummary';
 export { Env } from './models/Env';
 export type { Event } from './models/Event';
+export { EventKind } from './models/EventKind';
 export { EventSource } from './models/EventSource';
 export { FeatureControl } from './models/FeatureControl';
 export type { GCDoArgs } from './models/GCDoArgs';

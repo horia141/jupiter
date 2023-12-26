@@ -1,7 +1,5 @@
 """A service that records scores for various actions."""
 import asyncio
-from dataclasses import dataclass
-from typing import Final
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
@@ -17,12 +15,11 @@ from jupiter.core.domain.gamification.user_score_overview import UserScoreOvervi
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.user.user import User
-from jupiter.core.framework.event import EventSource
-from jupiter.core.framework.value import Value
-from jupiter.core.utils.time_provider import TimeProvider
+from jupiter.core.framework.context import DomainContext
+from jupiter.core.framework.value import Value, value
 
 
-@dataclass
+@value
 class RecordScoreResult(Value):
     """The result of the score recording."""
 
@@ -34,20 +31,12 @@ class RecordScoreResult(Value):
 class RecordScoreService:
     """A service that records scores for various actions."""
 
-    _source: Final[EventSource]
-    _time_provider: Final[TimeProvider]
-
-    def __init__(
-        self,
-        source: EventSource,
-        time_provider: TimeProvider,
-    ) -> None:
-        """Constructor."""
-        self._source = source
-        self._time_provider = time_provider
-
     async def record_task(
-        self, uow: DomainUnitOfWork, user: User, task: InboxTask | BigPlan
+        self,
+        ctx: DomainContext,
+        uow: DomainUnitOfWork,
+        user: User,
+        task: InboxTask | BigPlan,
     ) -> RecordScoreResult | None:
         """Record a task score."""
         if not task.status.is_completed:
@@ -59,17 +48,15 @@ class RecordScoreService:
 
         if isinstance(task, InboxTask):
             new_score_log_entry = ScoreLogEntry.new_from_inbox_task(
+                ctx,
                 score_log.ref_id,
                 task,
-                self._source,
-                self._time_provider.get_current_time(),
             )
         else:
             new_score_log_entry = ScoreLogEntry.new_from_big_plan(
+                ctx,
                 score_log.ref_id,
                 task,
-                self._source,
-                self._time_provider.get_current_time(),
             )
 
         try:
@@ -90,21 +77,21 @@ class RecordScoreService:
             lifetime_score_stats,
         ) = await asyncio.gather(
             self._update_current_stats(
-                RecurringTaskPeriod.DAILY, uow, score_log, new_score_log_entry
+                ctx, RecurringTaskPeriod.DAILY, uow, score_log, new_score_log_entry
             ),
             self._update_current_stats(
-                RecurringTaskPeriod.WEEKLY, uow, score_log, new_score_log_entry
+                ctx, RecurringTaskPeriod.WEEKLY, uow, score_log, new_score_log_entry
             ),
             self._update_current_stats(
-                RecurringTaskPeriod.MONTHLY, uow, score_log, new_score_log_entry
+                ctx, RecurringTaskPeriod.MONTHLY, uow, score_log, new_score_log_entry
             ),
             self._update_current_stats(
-                RecurringTaskPeriod.QUARTERLY, uow, score_log, new_score_log_entry
+                ctx, RecurringTaskPeriod.QUARTERLY, uow, score_log, new_score_log_entry
             ),
             self._update_current_stats(
-                RecurringTaskPeriod.YEARLY, uow, score_log, new_score_log_entry
+                ctx, RecurringTaskPeriod.YEARLY, uow, score_log, new_score_log_entry
             ),
-            self._update_current_stats(None, uow, score_log, new_score_log_entry),
+            self._update_current_stats(ctx, None, uow, score_log, new_score_log_entry),
         )
 
         # Update high scores at write time.
@@ -115,6 +102,7 @@ class RecordScoreService:
             best_quarterly_monthly,
         ) = await asyncio.gather(
             self._update_best(
+                ctx,
                 RecurringTaskPeriod.QUARTERLY,
                 RecurringTaskPeriod.DAILY,
                 daily_score_stats,
@@ -122,6 +110,7 @@ class RecordScoreService:
                 score_log,
             ),
             self._update_best(
+                ctx,
                 RecurringTaskPeriod.QUARTERLY,
                 RecurringTaskPeriod.WEEKLY,
                 weekly_score_stats,
@@ -129,6 +118,7 @@ class RecordScoreService:
                 score_log,
             ),
             self._update_best(
+                ctx,
                 RecurringTaskPeriod.QUARTERLY,
                 RecurringTaskPeriod.MONTHLY,
                 monthly_score_stats,
@@ -144,6 +134,7 @@ class RecordScoreService:
             best_yearly_quarterly,
         ) = await asyncio.gather(
             self._update_best(
+                ctx,
                 RecurringTaskPeriod.YEARLY,
                 RecurringTaskPeriod.DAILY,
                 daily_score_stats,
@@ -151,6 +142,7 @@ class RecordScoreService:
                 score_log,
             ),
             self._update_best(
+                ctx,
                 RecurringTaskPeriod.YEARLY,
                 RecurringTaskPeriod.WEEKLY,
                 weekly_score_stats,
@@ -158,6 +150,7 @@ class RecordScoreService:
                 score_log,
             ),
             self._update_best(
+                ctx,
                 RecurringTaskPeriod.YEARLY,
                 RecurringTaskPeriod.MONTHLY,
                 monthly_score_stats,
@@ -165,6 +158,7 @@ class RecordScoreService:
                 score_log,
             ),
             self._update_best(
+                ctx,
                 RecurringTaskPeriod.YEARLY,
                 RecurringTaskPeriod.QUARTERLY,
                 quarterly_score_stats,
@@ -181,6 +175,7 @@ class RecordScoreService:
             best_lifetime_yearly,
         ) = await asyncio.gather(
             self._update_best(
+                ctx,
                 None,
                 RecurringTaskPeriod.DAILY,
                 daily_score_stats,
@@ -188,6 +183,7 @@ class RecordScoreService:
                 score_log,
             ),
             self._update_best(
+                ctx,
                 None,
                 RecurringTaskPeriod.WEEKLY,
                 weekly_score_stats,
@@ -195,6 +191,7 @@ class RecordScoreService:
                 score_log,
             ),
             self._update_best(
+                ctx,
                 None,
                 RecurringTaskPeriod.MONTHLY,
                 monthly_score_stats,
@@ -202,6 +199,7 @@ class RecordScoreService:
                 score_log,
             ),
             self._update_best(
+                ctx,
                 None,
                 RecurringTaskPeriod.QUARTERLY,
                 quarterly_score_stats,
@@ -209,6 +207,7 @@ class RecordScoreService:
                 score_log,
             ),
             self._update_best(
+                ctx,
                 None,
                 RecurringTaskPeriod.YEARLY,
                 yearly_score_stats,
@@ -244,33 +243,32 @@ class RecordScoreService:
 
     async def _update_current_stats(
         self,
+        ctx: DomainContext,
         period: RecurringTaskPeriod | None,
         uow: DomainUnitOfWork,
         score_log: ScoreLog,
         score_log_entry: ScoreLogEntry,
     ) -> ScoreStats:
-        timeline = infer_timeline(period, self._time_provider.get_current_time())
+        timeline = infer_timeline(period, ctx.action_timestamp)
         score_stats = await uow.score_stats_repository.load_by_key_optional(
             (score_log.ref_id, period, timeline)
         )
 
         if score_stats is None:
             score_stats = ScoreStats.new_score_stats(
+                ctx,
                 score_log.ref_id,
                 period,
                 timeline,
-                self._time_provider.get_current_time(),
             ).merge_score(
+                ctx,
                 score_log_entry,
-                self._source,
-                self._time_provider.get_current_time(),
             )
             score_stats = await uow.score_stats_repository.create(score_stats)
         else:
             score_stats = score_stats.merge_score(
+                ctx,
                 score_log_entry,
-                self._source,
-                self._time_provider.get_current_time(),
             )
             score_stats = await uow.score_stats_repository.save(score_stats)
 
@@ -278,31 +276,33 @@ class RecordScoreService:
 
     async def _update_best(
         self,
+        ctx: DomainContext,
         period: RecurringTaskPeriod | None,
         sub_period: RecurringTaskPeriod,
         score_stats: ScoreStats,
         uow: DomainUnitOfWork,
         score_log: ScoreLog,
     ) -> ScorePeriodBest:
-        timeline = infer_timeline(period, self._time_provider.get_current_time())
+        timeline = infer_timeline(period, ctx.action_timestamp)
         score_period_best = await uow.score_period_best_repository.load_by_key_optional(
             (score_log.ref_id, period, timeline, sub_period)
         )
 
         if score_period_best is None:
             score_period_best = ScorePeriodBest.new_score_period_best(
+                ctx,
                 score_log.ref_id,
                 period,
                 timeline,
                 sub_period,
-                self._time_provider.get_current_time(),
-            ).update_to_max(score_stats, self._time_provider.get_current_time())
+            ).update_to_max(ctx, score_stats)
             score_period_best = await uow.score_period_best_repository.create(
                 score_period_best
             )
         else:
             score_period_best = score_period_best.update_to_max(
-                score_stats, self._time_provider.get_current_time()
+                ctx,
+                score_stats,
             )
             score_period_best = await uow.score_period_best_repository.save(
                 score_period_best

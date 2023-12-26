@@ -1,41 +1,33 @@
 """A container for all the scores a user has."""
-from dataclasses import dataclass
+from jupiter.core.domain.gamification.score_log_entry import ScoreLogEntry
+from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.context import DomainContext
+from jupiter.core.framework.entity import (
+    ContainsMany,
+    IsRefId,
+    TrunkEntity,
+    create_entity_action,
+    entity,
+)
 
-from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
-from jupiter.core.framework.base.timestamp import Timestamp
-from jupiter.core.framework.entity import FIRST_VERSION, Entity, TrunkEntity
-from jupiter.core.framework.event import EventSource
 
-
-@dataclass
+@entity
 class ScoreLog(TrunkEntity):
     """a log of the scores a user receives."""
 
-    @dataclass
-    class Created(Entity.Created):
-        """Created event."""
-
     user_ref_id: EntityId
 
+    entries = ContainsMany(ScoreLogEntry, score_log_ref_id=IsRefId())
+    # period_bests = ContainsMany(ScorePeriodBest, score_log_ref_id=IsRefId())
+
     @staticmethod
+    @create_entity_action
     def new_score_log(
-        user_ref_id: EntityId, source: EventSource, created_time: Timestamp
+        ctx: DomainContext,
+        user_ref_id: EntityId,
     ) -> "ScoreLog":
         """Create a score log for a user."""
-        score_log = ScoreLog(
-            ref_id=BAD_REF_ID,
-            version=FIRST_VERSION,
-            archived=False,
-            created_time=created_time,
-            archived_time=None,
-            last_modified_time=created_time,
-            events=[
-                ScoreLog.Created.make_event_from_frame_args(
-                    source,
-                    FIRST_VERSION,
-                    created_time,
-                ),
-            ],
+        return ScoreLog._create(
+            ctx,
             user_ref_id=user_ref_id,
         )
-        return score_log

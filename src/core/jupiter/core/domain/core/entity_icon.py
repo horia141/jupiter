@@ -1,13 +1,12 @@
 """The icon for an entity."""
-from dataclasses import dataclass
 from typing import Optional, cast
 
 import emoji
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import Value
+from jupiter.core.framework.value import Value, hashable_value
 
 
-@dataclass(eq=True, unsafe_hash=True)
+@hashable_value
 class EntityIcon(Value):
     """The icon for an entity."""
 

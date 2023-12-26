@@ -34,7 +34,7 @@ from jupiter.core.framework.use_case import (
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppGuestReadonlyUseCase,
-    AppGuestUseCaseContext,
+    AppGuestReadonlyUseCaseContext,
 )
 from jupiter.core.utils.feature_flag_controls import infer_feature_flag_controls
 from jupiter.core.utils.global_properties import GlobalProperties
@@ -87,7 +87,7 @@ class LoadTopLevelInfoUseCase(
 
     async def _execute(
         self,
-        context: AppGuestUseCaseContext,
+        context: AppGuestReadonlyUseCaseContext,
         args: LoadTopLevelInfoArgs,
     ) -> LoadTopLevelInfoResult:
         """Execute the command's action."""

@@ -1,15 +1,14 @@
 """A search limit parameter for searches."""
 
-from dataclasses import dataclass
 from typing import Optional
 
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import Value
+from jupiter.core.framework.value import Value, value
 
 _MAX_QUERY_LIMIT = 1000
 
 
-@dataclass
+@value
 class SearchLimit(Value):
     """A search limit parameter for searches."""
 

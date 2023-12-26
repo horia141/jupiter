@@ -1,20 +1,19 @@
 """The command for creating a project."""
 from dataclasses import dataclass
-from typing import Iterable
 
-from jupiter.core.domain.features import UserFeature, WorkspaceFeature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.projects.project_name import ProjectName
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
     UseCaseResultBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
+    mutation_use_case,
 )
 
 
@@ -32,23 +31,17 @@ class ProjectCreateResult(UseCaseResultBase):  # type: ignore
     new_project: Project
 
 
+@mutation_use_case(WorkspaceFeature.PROJECTS)
 class ProjectCreateUseCase(
     AppTransactionalLoggedInMutationUseCase[ProjectCreateArgs, ProjectCreateResult]
 ):
     """The command for creating a project."""
 
-    @staticmethod
-    def get_scoped_to_feature() -> Iterable[
-        UserFeature
-    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
-        """The feature the use case is scope to."""
-        return WorkspaceFeature.PROJECTS
-
     async def _perform_transactional_mutation(
         self,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInMutationUseCaseContext,
         args: ProjectCreateArgs,
     ) -> ProjectCreateResult:
         """Execute the command's action."""
@@ -59,10 +52,9 @@ class ProjectCreateUseCase(
         )
 
         new_project = Project.new_project(
+            ctx=context.domain_context,
             project_collection_ref_id=project_collection.ref_id,
             name=args.name,
-            source=EventSource.CLI,
-            created_time=self._time_provider.get_current_time(),
         )
 
         new_project = await uow.project_repository.create(new_project)

@@ -1,8 +1,7 @@
 """Remove a person."""
 from dataclasses import dataclass
-from typing import Iterable
 
-from jupiter.core.domain.features import UserFeature, WorkspaceFeature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.persons.service.remove_service import PersonRemoveService
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -11,8 +10,9 @@ from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
+    mutation_use_case,
 )
 
 
@@ -23,23 +23,17 @@ class PersonRemoveArgs(UseCaseArgsBase):
     ref_id: EntityId
 
 
+@mutation_use_case(WorkspaceFeature.PERSONS)
 class PersonRemoveUseCase(
     AppTransactionalLoggedInMutationUseCase[PersonRemoveArgs, None]
 ):
     """The command for removing a person."""
 
-    @staticmethod
-    def get_scoped_to_feature() -> Iterable[
-        UserFeature
-    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
-        """The feature the use case is scope to."""
-        return WorkspaceFeature.PERSONS
-
     async def _perform_transactional_mutation(
         self,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInMutationUseCaseContext,
         args: PersonRemoveArgs,
     ) -> None:
         """Execute the command's action."""
@@ -54,5 +48,5 @@ class PersonRemoveUseCase(
         )
 
         await PersonRemoveService().do_it(
-            uow, progress_reporter, person_collection, person
+            context.domain_context, uow, progress_reporter, person_collection, person
         )

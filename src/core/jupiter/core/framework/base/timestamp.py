@@ -1,6 +1,5 @@
 """A timestamp in the application."""
 import datetime
-from dataclasses import dataclass
 from functools import total_ordering
 from typing import Optional, cast
 
@@ -9,13 +8,13 @@ import pendulum.parser
 import pendulum.parsing
 import pendulum.tz
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import Value
+from jupiter.core.framework.value import Value, value
 from pendulum.date import Date
 from pendulum.datetime import DateTime
 from pendulum.tz.timezone import UTC
 
 
-@dataclass
+@value
 @total_ordering
 class Timestamp(Value):
     """A timestamp in the application."""

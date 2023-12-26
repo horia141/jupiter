@@ -1,6 +1,6 @@
 """The command for creating a habit."""
 from dataclasses import dataclass
-from typing import Iterable, Optional
+from typing import Optional
 
 from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
@@ -12,22 +12,21 @@ from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.core.recurring_task_skip_rule import RecurringTaskSkipRule
 from jupiter.core.domain.features import (
     FeatureUnavailableError,
-    UserFeature,
     WorkspaceFeature,
 )
 from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.habits.habit_name import HabitName
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
     UseCaseResultBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
+    mutation_use_case,
 )
 
 
@@ -56,23 +55,17 @@ class HabitCreateResult(UseCaseResultBase):
     new_habit: Habit
 
 
+@mutation_use_case(WorkspaceFeature.HABITS)
 class HabitCreateUseCase(
     AppTransactionalLoggedInMutationUseCase[HabitCreateArgs, HabitCreateResult]
 ):
     """The command for creating a habit."""
 
-    @staticmethod
-    def get_scoped_to_feature() -> Iterable[
-        UserFeature
-    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
-        """The feature the use case is scope to."""
-        return WorkspaceFeature.HABITS
-
     async def _perform_transactional_mutation(
         self,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInMutationUseCaseContext,
         args: HabitCreateArgs,
     ) -> HabitCreateResult:
         """Execute the command's action."""
@@ -89,8 +82,8 @@ class HabitCreateUseCase(
         )
 
         new_habit = Habit.new_habit(
+            ctx=context.domain_context,
             habit_collection_ref_id=habit_collection.ref_id,
-            archived=False,
             project_ref_id=args.project_ref_id or workspace.default_project_ref_id,
             name=args.name,
             gen_params=RecurringTaskGenParams(
@@ -106,8 +99,6 @@ class HabitCreateUseCase(
             skip_rule=args.skip_rule,
             suspended=False,
             repeats_in_period_count=args.repeats_in_period_count,
-            source=EventSource.CLI,
-            created_time=self._time_provider.get_current_time(),
         )
         new_habit = await uow.habit_repository.create(new_habit)
         await progress_reporter.mark_created(new_habit)

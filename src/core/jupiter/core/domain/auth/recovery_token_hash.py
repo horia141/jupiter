@@ -1,20 +1,17 @@
 """A hashed recovery token, suitable for storage."""
-from dataclasses import dataclass
 from typing import Optional
 
 import argon2.profiles
 from argon2 import PasswordHasher
 from jupiter.core.domain.auth.recovery_token_plain import RecoveryTokenPlain
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.secret_value import SecretValue
-from jupiter.core.framework.secure import secure_class
+from jupiter.core.framework.value import SecretValue, secret_value
 
 _PROFILE = argon2.profiles.RFC_9106_LOW_MEMORY
 _PASSWORD_HASHER = PasswordHasher.from_parameters(_PROFILE)
 
 
-@dataclass(repr=False)
-@secure_class
+@secret_value
 class RecoveryTokenHash(SecretValue):
     """A hashed recovery token, suitable for storage."""
 

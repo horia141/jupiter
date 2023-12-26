@@ -46,7 +46,6 @@ from jupiter.core.domain.user_workspace_link.user_workspace_link import (
 from jupiter.core.domain.vacations.vacation_collection import VacationCollection
 from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.domain.workspaces.workspace_name import WorkspaceName
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.secure import secure_class
 from jupiter.core.framework.use_case import (
     MutationUseCaseInvocationRecorder,
@@ -57,7 +56,7 @@ from jupiter.core.framework.use_case import (
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppGuestMutationUseCase,
-    AppGuestUseCaseContext,
+    AppGuestMutationUseCaseContext,
 )
 from jupiter.core.utils.feature_flag_controls import infer_feature_flag_controls
 from jupiter.core.utils.global_properties import GlobalProperties
@@ -100,7 +99,9 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
         self,
         time_provider: TimeProvider,
         invocation_recorder: MutationUseCaseInvocationRecorder,
-        progress_reporter_factory: ProgressReporterFactory[AppGuestUseCaseContext],
+        progress_reporter_factory: ProgressReporterFactory[
+            AppGuestMutationUseCaseContext
+        ],
         auth_token_stamper: AuthTokenStamper,
         domain_storage_engine: DomainStorageEngine,
         search_storage_engine: SearchStorageEngine,
@@ -120,7 +121,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
     async def _execute(
         self,
         progress_reporter: ProgressReporter,
-        context: AppGuestUseCaseContext,
+        context: AppGuestMutationUseCaseContext,
         args: InitArgs,
     ) -> InitResult:
         """Execute the command's action."""
@@ -131,80 +132,71 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
 
         async with self._storage_engine.get_unit_of_work() as uow:
             new_user = User.new_user(
+                ctx=context.domain_context,
                 email_address=args.user_email_address,
                 name=args.user_name,
                 timezone=args.user_timezone,
                 feature_flag_controls=user_feature_flags_controls,
                 feature_flags=args.user_feature_flags,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
             )
             new_user = await uow.user_repository.create(new_user)
 
             new_auth, new_recovery_token = Auth.new_auth(
+                context.domain_context,
                 user_ref_id=new_user.ref_id,
                 password=args.auth_password,
                 password_repeat=args.auth_password_repeat,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
             )
             new_auth = await uow.auth_repository.create(new_auth)
 
             new_score_log = ScoreLog.new_score_log(
+                ctx=context.domain_context,
                 user_ref_id=new_user.ref_id,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
             )
             new_score_log = await uow.score_log_repository.create(new_score_log)
 
             new_workspace = Workspace.new_workspace(
+                ctx=context.domain_context,
                 name=args.workspace_name,
                 feature_flag_controls=workspace_feature_flags_controls,
                 feature_flags=args.workspace_feature_flags,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
             )
             new_workspace = await uow.workspace_repository.create(new_workspace)
 
             new_vacation_collection = VacationCollection.new_vacation_collection(
+                ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
             )
             new_vacation_collection = await uow.vacation_collection_repository.create(
                 new_vacation_collection,
             )
 
             new_project_collection = ProjectCollection.new_project_collection(
+                ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
             )
             new_project_collection = await uow.project_collection_repository.create(
                 new_project_collection,
             )
 
             new_default_project = Project.new_project(
+                ctx=context.domain_context,
                 project_collection_ref_id=new_project_collection.ref_id,
                 name=args.workspace_first_project_name,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
             )
             new_default_project = await uow.project_repository.create(
                 new_default_project,
             )
 
             new_workspace = new_workspace.change_default_project(
+                ctx=context.domain_context,
                 default_project_ref_id=new_default_project.ref_id,
-                source=EventSource.CLI,
-                modification_time=self._time_provider.get_current_time(),
             )
             await uow.workspace_repository.save(new_workspace)
 
             new_inbox_task_collection = InboxTaskCollection.new_inbox_task_collection(
+                ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
             )
             new_inbox_task_collection = (
                 await uow.inbox_task_collection_repository.create(
@@ -213,45 +205,40 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             )
 
             new_habit_collection = HabitCollection.new_habit_collection(
+                ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
             )
             new_habit_collection = await uow.habit_collection_repository.create(
                 new_habit_collection,
             )
 
             new_chore_collection = ChoreCollection.new_chore_collection(
+                ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
             )
             new_chore_collection = await uow.chore_collection_repository.create(
                 new_chore_collection,
             )
 
             new_big_plan_collection = BigPlanCollection.new_big_plan_collection(
+                ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
             )
             new_big_plan_collection = await uow.big_plan_collection_repository.create(
                 new_big_plan_collection,
             )
 
             new_doc_collection = DocCollection.new_doc_collection(
+                ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
             )
             new_doc_collection = await uow.doc_collection_repository.create(
                 new_doc_collection
             )
 
             new_smart_list_collection = SmartListCollection.new_smart_list_collection(
+                ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
             )
             new_smart_list_collection = (
                 await uow.smart_list_collection_repository.create(
@@ -260,20 +247,18 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             )
 
             new_metric_collection = MetricCollection.new_metric_collection(
+                ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
                 collection_project_ref_id=new_default_project.ref_id,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
             )
             new_metric_collection = await uow.metric_collection_repository.create(
                 new_metric_collection,
             )
 
             new_person_collection = PersonCollection.new_person_collection(
+                ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
                 catch_up_project_ref_id=new_default_project.ref_id,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
             )
             new_person_collection = await uow.person_collection_repository.create(
                 new_person_collection,
@@ -281,9 +266,8 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
 
             new_push_integration_group = (
                 PushIntegrationGroup.new_push_integration_group(
+                    ctx=context.domain_context,
                     workspace_ref_id=new_workspace.ref_id,
-                    source=EventSource.CLI,
-                    created_time=self._time_provider.get_current_time(),
                 )
             )
             new_push_integration_group = (
@@ -293,10 +277,9 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             )
 
             new_slack_task_collection = SlackTaskCollection.new_slack_task_collection(
+                ctx=context.domain_context,
                 push_integration_group_ref_id=new_push_integration_group.ref_id,
                 generation_project_ref_id=new_default_project.ref_id,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
             )
             new_slack_task_collection = (
                 await uow.slack_task_collection_repository.create(
@@ -305,10 +288,9 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             )
 
             new_email_task_collection = EmailTaskCollection.new_email_task_collection(
+                ctx=context.domain_context,
                 push_integration_group_ref_id=new_push_integration_group.ref_id,
                 generation_project_ref_id=new_default_project.ref_id,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
             )
             new_email_task_collection = (
                 await uow.email_task_collection_repository.create(
@@ -317,33 +299,29 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             )
 
             new_note_collection = NoteCollection.new_note_collection(
+                ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
             )
             new_note_collection = await uow.note_collection_repository.create(
                 new_note_collection
             )
 
             new_gc_log = GCLog.new_gc_log(
+                ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
             )
             new_gc_log = await uow.gc_log_repository.create(new_gc_log)
 
             new_gen_log = GenLog.new_gen_log(
+                ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
             )
             new_gen_log = await uow.gen_log_repository.create(new_gen_log)
 
             new_user_workspace_link = UserWorkspaceLink.new_user_workspace_link(
+                ctx=context.domain_context,
                 user_ref_id=new_user.ref_id,
                 workspace_ref_id=new_workspace.ref_id,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
             )
             new_user_workspace_link = await uow.user_workspace_link_repository.create(
                 new_user_workspace_link

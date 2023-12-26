@@ -1,11 +1,10 @@
 """The command for finding a big plan."""
 from dataclasses import dataclass
-from typing import Iterable, List, Optional
+from typing import List, Optional
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.features import (
     FeatureUnavailableError,
-    UserFeature,
     WorkspaceFeature,
 )
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
@@ -17,8 +16,9 @@ from jupiter.core.framework.use_case import (
     UseCaseResultBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInReadonlyUseCaseContext,
     AppTransactionalLoggedInReadOnlyUseCase,
+    readonly_use_case,
 )
 
 
@@ -49,22 +49,16 @@ class BigPlanFindResult(UseCaseResultBase):
     entries: List[BigPlanFindResultEntry]
 
 
+@readonly_use_case(WorkspaceFeature.BIG_PLANS)
 class BigPlanFindUseCase(
     AppTransactionalLoggedInReadOnlyUseCase[BigPlanFindArgs, BigPlanFindResult]
 ):
     """The command for finding a big plan."""
 
-    @staticmethod
-    def get_scoped_to_feature() -> Iterable[
-        UserFeature
-    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
-        """The feature the use case is scope to."""
-        return WorkspaceFeature.BIG_PLANS
-
     async def _perform_transactional_read(
         self,
         uow: DomainUnitOfWork,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInReadonlyUseCaseContext,
         args: BigPlanFindArgs,
     ) -> BigPlanFindResult:
         """Execute the command's action."""

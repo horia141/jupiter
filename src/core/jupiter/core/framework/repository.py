@@ -5,13 +5,15 @@ from typing import Generic, Iterable, List, Optional, TypeVar
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.entity import (
     BranchEntity,
+    CrownEntity,
     Entity,
+    EntityLinkFilterCompiled,
     LeafEntity,
-    Record,
     RootEntity,
     StubEntity,
     TrunkEntity,
 )
+from jupiter.core.framework.record import Record
 
 
 class Repository:
@@ -145,6 +147,40 @@ class StubEntityRepository(EntityRepository[StubEntityT], abc.ABC):
         """Retrieve a stub by its owning parent id."""
 
 
+CrownEntityT = TypeVar("CrownEntityT", bound=CrownEntity)
+
+
+class CrownEntityRepository(EntityRepository[CrownEntityT], abc.ABC):
+    """A repository for crown entities."""
+
+    @abc.abstractmethod
+    async def load_by_id(
+        self, ref_id: EntityId, allow_archived: bool = False
+    ) -> CrownEntityT:
+        """Retrieve a crown by its id."""
+
+    @abc.abstractmethod
+    async def find_all(
+        self,
+        parent_ref_id: EntityId,
+        allow_archived: bool = False,
+        filter_ref_ids: Optional[Iterable[EntityId]] = None,
+    ) -> List[CrownEntityT]:
+        """Find all crowns matching some criteria."""
+
+    @abc.abstractmethod
+    async def find_all_generic(
+        self,
+        allow_archived: bool,
+        **kwargs: EntityLinkFilterCompiled,
+    ) -> Iterable[CrownEntityT]:
+        """Find all crowns with generic filters."""
+
+    @abc.abstractmethod
+    async def remove(self, ref_id: EntityId) -> CrownEntityT:
+        """Hard remove a crown - an irreversible operation."""
+
+
 class BranchEntityNotFoundError(EntityNotFoundError):
     """Error raised when a branch entity is not found."""
 
@@ -154,31 +190,10 @@ BranchEntityT = TypeVar("BranchEntityT", bound=BranchEntity)
 
 class BranchEntityRepository(
     Generic[BranchEntityT],
-    EntityRepository[BranchEntityT],
+    CrownEntityRepository[BranchEntityT],
     abc.ABC,
 ):
     """A repository for branch entities."""
-
-    @abc.abstractmethod
-    async def load_by_id(
-        self,
-        ref_id: EntityId,
-        allow_archived: bool = False,
-    ) -> BranchEntityT:
-        """Find a branch by id."""
-
-    @abc.abstractmethod
-    async def find_all(
-        self,
-        parent_ref_id: EntityId,
-        allow_archived: bool = False,
-        filter_ref_ids: Optional[Iterable[EntityId]] = None,
-    ) -> List[BranchEntityT]:
-        """Find all branches matching some criteria."""
-
-    @abc.abstractmethod
-    async def remove(self, ref_id: EntityId) -> BranchEntityT:
-        """Hard remove a branch - an irreversible operation."""
 
 
 class LeafEntityNotFoundError(EntityNotFoundError):
@@ -188,26 +203,7 @@ class LeafEntityNotFoundError(EntityNotFoundError):
 LeafEntityT = TypeVar("LeafEntityT", bound=LeafEntity)
 
 
-class LeafEntityRepository(EntityRepository[LeafEntityT], abc.ABC):
+class LeafEntityRepository(
+    Generic[LeafEntityT], CrownEntityRepository[LeafEntityT], abc.ABC
+):
     """A repository for leaf entities."""
-
-    @abc.abstractmethod
-    async def load_by_id(
-        self,
-        ref_id: EntityId,
-        allow_archived: bool = False,
-    ) -> LeafEntityT:
-        """Load a leaf by id."""
-
-    @abc.abstractmethod
-    async def find_all(
-        self,
-        parent_ref_id: EntityId,
-        allow_archived: bool = False,
-        filter_ref_ids: Optional[Iterable[EntityId]] = None,
-    ) -> List[LeafEntityT]:
-        """Find all leaves."""
-
-    @abc.abstractmethod
-    async def remove(self, ref_id: EntityId) -> LeafEntityT:
-        """Hard remove a leaf - an irreversible operation."""

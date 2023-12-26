@@ -9,7 +9,6 @@ from jupiter.core.domain.storage_engine import (
     DomainUnitOfWork,
     SearchStorageEngine,
 )
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
     MutationUseCaseInvocationRecorder,
     ProgressReporter,
@@ -17,8 +16,9 @@ from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
+    mutation_use_case,
 )
 from jupiter.core.utils.feature_flag_controls import infer_feature_flag_controls
 from jupiter.core.utils.global_properties import GlobalProperties
@@ -32,6 +32,7 @@ class UserChangeFeatureFlagsArgs(UseCaseArgsBase):
     feature_flags: UserFeatureFlags
 
 
+@mutation_use_case()
 class UserChangeFeatureFlagsUseCase(
     AppTransactionalLoggedInMutationUseCase[UserChangeFeatureFlagsArgs, None]
 ):
@@ -43,7 +44,9 @@ class UserChangeFeatureFlagsUseCase(
         self,
         time_provider: TimeProvider,
         invocation_recorder: MutationUseCaseInvocationRecorder,
-        progress_reporter_factory: ProgressReporterFactory[AppLoggedInUseCaseContext],
+        progress_reporter_factory: ProgressReporterFactory[
+            AppLoggedInMutationUseCaseContext
+        ],
         auth_token_stamper: AuthTokenStamper,
         domain_storage_engine: DomainStorageEngine,
         search_storage_engine: SearchStorageEngine,
@@ -64,7 +67,7 @@ class UserChangeFeatureFlagsUseCase(
         self,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInMutationUseCaseContext,
         args: UserChangeFeatureFlagsArgs,
     ) -> None:
         """Execute the command's action."""
@@ -72,9 +75,8 @@ class UserChangeFeatureFlagsUseCase(
         feature_flags_controls, _ = infer_feature_flag_controls(self._global_properties)
 
         user = user.change_feature_flags(
+            context.domain_context,
             feature_flag_controls=feature_flags_controls,
             feature_flags=args.feature_flags,
-            source=EventSource.CLI,
-            modification_time=self._time_provider.get_current_time(),
         )
         await uow.user_repository.save(user)

@@ -25,11 +25,13 @@ export async function action({ request }: ActionArgs) {
 
   try {
     const result = await getLoggedInApiClient(session).doc.createDoc({
-      name: {the_name: form.name},
+      name: { the_name: form.name },
       content: form.content,
     });
 
-    return json(noErrorSomeData({ new_doc: result.new_doc, new_note: result.new_note }));
+    return json(
+      noErrorSomeData({ new_doc: result.new_doc, new_note: result.new_note })
+    );
   } catch (error) {
     if (
       error instanceof ApiError &&

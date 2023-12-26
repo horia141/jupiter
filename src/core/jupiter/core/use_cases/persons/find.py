@@ -1,11 +1,11 @@
 """The command for finding the persons."""
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Iterable, List, Optional, cast
+from typing import List, Optional, cast
 
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
-from jupiter.core.domain.features import UserFeature, WorkspaceFeature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.persons.person import Person
@@ -17,8 +17,9 @@ from jupiter.core.framework.use_case import (
     UseCaseResultBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInReadonlyUseCaseContext,
     AppTransactionalLoggedInReadOnlyUseCase,
+    readonly_use_case,
 )
 
 
@@ -51,22 +52,16 @@ class PersonFindResult(UseCaseResultBase):
     entries: List[PersonFindResultEntry]
 
 
+@readonly_use_case(WorkspaceFeature.PERSONS)
 class PersonFindUseCase(
     AppTransactionalLoggedInReadOnlyUseCase[PersonFindArgs, PersonFindResult]
 ):
     """The command for finding the persons."""
 
-    @staticmethod
-    def get_scoped_to_feature() -> Iterable[
-        UserFeature
-    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
-        """The feature the use case is scope to."""
-        return WorkspaceFeature.PERSONS
-
     async def _perform_transactional_read(
         self,
         uow: DomainUnitOfWork,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInReadonlyUseCaseContext,
         args: PersonFindArgs,
     ) -> PersonFindResult:
         """Execute the command's action."""

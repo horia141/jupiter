@@ -1,5 +1,4 @@
 """Shared logic for removing a project."""
-from typing import Final
 
 from jupiter.core.domain.big_plans.service.remove_service import BigPlanRemoveService
 from jupiter.core.domain.chores.service.remove_service import ChoreRemoveService
@@ -11,28 +10,16 @@ from jupiter.core.domain.projects.errors import ProjectInSignificantUseError
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.event import EventSource
+from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.use_case import ProgressReporter
-from jupiter.core.utils.time_provider import TimeProvider
 
 
 class ProjectRemoveService:
     """Shared logic for removing a project."""
 
-    _source: Final[EventSource]
-    _time_provider: Final[TimeProvider]
-
-    def __init__(
-        self,
-        source: EventSource,
-        time_provider: TimeProvider,
-    ) -> None:
-        """Constructor."""
-        self._source = source
-        self._time_provider = time_provider
-
     async def do_it(
         self,
+        ctx: DomainContext,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
         workspace: Workspace,
@@ -95,7 +82,7 @@ class ProjectRemoveService:
         )
         inbox_task_remove_service = InboxTaskRemoveService()
         for it in inbox_tasks:
-            await inbox_task_remove_service.do_it(uow, progress_reporter, it)
+            await inbox_task_remove_service.do_it(ctx, uow, progress_reporter, it)
 
         # remove chores
         chore_collection = await uow.chore_collection_repository.load_by_parent(
@@ -108,7 +95,7 @@ class ProjectRemoveService:
         )
         chore_remove_service = ChoreRemoveService()
         for chore in chores:
-            await chore_remove_service.remove(uow, progress_reporter, chore.ref_id)
+            await chore_remove_service.remove(ctx, uow, progress_reporter, chore.ref_id)
 
         # remove habits
         habit_collection = await uow.habit_collection_repository.load_by_parent(
@@ -121,7 +108,7 @@ class ProjectRemoveService:
         )
         habit_remove_service = HabitRemoveService()
         for habit in habits:
-            await habit_remove_service.remove(uow, progress_reporter, habit.ref_id)
+            await habit_remove_service.remove(ctx, uow, progress_reporter, habit.ref_id)
 
         # remove big plans
         big_plan_collection = await uow.habit_collection_repository.load_by_parent(
@@ -135,7 +122,7 @@ class ProjectRemoveService:
         big_plan_remove_service = BigPlanRemoveService()
         for big_plan in big_plans:
             await big_plan_remove_service.remove(
-                uow, progress_reporter, workspace, big_plan.ref_id
+                ctx, uow, progress_reporter, workspace, big_plan.ref_id
             )
 
         # remove project

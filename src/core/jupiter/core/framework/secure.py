@@ -9,6 +9,6 @@ def secure_fn(f: Callable[..., X]) -> Callable[..., X]:  # type: ignore
     return f
 
 
-def secure_class(cls):  # type: ignore
+def secure_class(cls: type[X]) -> type[X]:
     """Mark this class as dealing with security, auth, etc but it's noop otherwise."""
     return cls

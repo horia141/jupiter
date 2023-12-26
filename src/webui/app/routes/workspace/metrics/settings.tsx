@@ -120,7 +120,7 @@ export default function MetricsSettings() {
                 </InputLabel>
                 <Select
                   labelId="collectionProject"
-                  name="collectionProject"
+                  name="project"
                   readOnly={!inputsEnabled}
                   defaultValue={loaderData.collectionProject.ref_id.the_id}
                   label="Collection Project"

@@ -1,5 +1,4 @@
 """Shared domain objects."""
-from dataclasses import dataclass
 from typing import Optional
 
 from jupiter.core.domain.core.difficulty import Difficulty
@@ -8,10 +7,11 @@ from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueA
 from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.core.domain.core.recurring_task_due_at_time import RecurringTaskDueAtTime
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
+from jupiter.core.framework.value import Value, value
 
 
-@dataclass
-class RecurringTaskGenParams:
+@value
+class RecurringTaskGenParams(Value):
     """Parameters for metric collection."""
 
     period: RecurringTaskPeriod

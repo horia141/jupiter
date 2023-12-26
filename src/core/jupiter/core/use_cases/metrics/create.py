@@ -1,6 +1,6 @@
 """The command for creating a metric."""
 from dataclasses import dataclass
-from typing import Iterable, Optional
+from typing import Optional
 
 from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
@@ -10,20 +10,20 @@ from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDu
 from jupiter.core.domain.core.recurring_task_due_at_time import RecurringTaskDueAtTime
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
-from jupiter.core.domain.features import UserFeature, WorkspaceFeature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.metrics.metric import Metric
 from jupiter.core.domain.metrics.metric_name import MetricName
 from jupiter.core.domain.metrics.metric_unit import MetricUnit
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
     UseCaseResultBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
+    mutation_use_case,
 )
 
 
@@ -51,23 +51,17 @@ class MetricCreateResult(UseCaseResultBase):
     new_metric: Metric
 
 
+@mutation_use_case(WorkspaceFeature.METRICS)
 class MetricCreateUseCase(
     AppTransactionalLoggedInMutationUseCase[MetricCreateArgs, MetricCreateResult]
 ):
     """The command for creating a metric."""
 
-    @staticmethod
-    def get_scoped_to_feature() -> Iterable[
-        UserFeature
-    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
-        """The feature the use case is scope to."""
-        return WorkspaceFeature.METRICS
-
     async def _perform_transactional_mutation(
         self,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInMutationUseCaseContext,
         args: MetricCreateArgs,
     ) -> MetricCreateResult:
         """Execute the command's action."""
@@ -91,13 +85,12 @@ class MetricCreateUseCase(
             )
 
         new_metric = Metric.new_metric(
+            context.domain_context,
             metric_collection_ref_id=metric_collection.ref_id,
             name=args.name,
             icon=args.icon,
             collection_params=collection_params,
             metric_unit=args.metric_unit,
-            source=EventSource.CLI,
-            created_time=self._time_provider.get_current_time(),
         )
         new_metric = await uow.metric_repository.create(new_metric)
         await progress_reporter.mark_created(new_metric)

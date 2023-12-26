@@ -1,16 +1,15 @@
 """A particular block of content in a note."""
 import abc
-from dataclasses import dataclass
 from typing import Literal, cast
 
 from jupiter.core.domain.core.url import URL
 from jupiter.core.domain.named_entity_tag import NamedEntityTag
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.json import JSONDictType
-from jupiter.core.framework.value import Value
+from jupiter.core.framework.value import Value, value
 
 
-@dataclass
+@value
 class NoteContentBlock(Value, abc.ABC):
     """A particular block of content in a note."""
 
@@ -50,7 +49,7 @@ class NoteContentBlock(Value, abc.ABC):
         """Convert a note content block to JSON."""
 
 
-@dataclass
+@value
 class ParagraphBlock(NoteContentBlock):
     """A paragraph of text."""
 
@@ -76,7 +75,7 @@ class ParagraphBlock(NoteContentBlock):
         }
 
 
-@dataclass
+@value
 class HeadingBlock(NoteContentBlock):
     """A heading."""
 
@@ -105,7 +104,7 @@ class HeadingBlock(NoteContentBlock):
         }
 
 
-@dataclass
+@value
 class ListItem(Value):
     """A list item."""
 
@@ -136,7 +135,7 @@ class ListItem(Value):
         }
 
 
-@dataclass
+@value
 class BulletedListBlock(NoteContentBlock):
     """A bulleted list."""
 
@@ -165,7 +164,7 @@ class BulletedListBlock(NoteContentBlock):
         }
 
 
-@dataclass
+@value
 class NumberedListBlock(NoteContentBlock):
     """A numbered list."""
 
@@ -194,7 +193,7 @@ class NumberedListBlock(NoteContentBlock):
         }
 
 
-@dataclass
+@value
 class ChecklistItem(Value):
     """A checklist item."""
 
@@ -217,7 +216,7 @@ class ChecklistItem(Value):
         }
 
 
-@dataclass
+@value
 class ChecklistBlock(NoteContentBlock):
     """A todo list."""
 
@@ -246,7 +245,7 @@ class ChecklistBlock(NoteContentBlock):
         }
 
 
-@dataclass
+@value
 class TableBlock(NoteContentBlock):
     """A table."""
 
@@ -277,7 +276,7 @@ class TableBlock(NoteContentBlock):
         }
 
 
-@dataclass
+@value
 class CodeBlock(NoteContentBlock):
     """A code block."""
 
@@ -311,7 +310,7 @@ class CodeBlock(NoteContentBlock):
         }
 
 
-@dataclass
+@value
 class QuoteBlock(NoteContentBlock):
     """A quote."""
 
@@ -337,7 +336,7 @@ class QuoteBlock(NoteContentBlock):
         }
 
 
-@dataclass
+@value
 class DividerBlock(NoteContentBlock):
     """A divider."""
 
@@ -360,7 +359,7 @@ class DividerBlock(NoteContentBlock):
         }
 
 
-@dataclass
+@value
 class LinkBlock(NoteContentBlock):
     """A link."""
 
@@ -386,7 +385,7 @@ class LinkBlock(NoteContentBlock):
         }
 
 
-@dataclass
+@value
 class EntityReferenceBlock(NoteContentBlock):
     """A link."""
 

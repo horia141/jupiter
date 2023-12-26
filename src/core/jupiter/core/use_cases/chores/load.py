@@ -1,9 +1,8 @@
 """Use case for loading a particular chore."""
 from dataclasses import dataclass
-from typing import Iterable
 
 from jupiter.core.domain.chores.chore import Chore
-from jupiter.core.domain.features import UserFeature, WorkspaceFeature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -13,8 +12,9 @@ from jupiter.core.framework.use_case import (
     UseCaseResultBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInReadonlyUseCaseContext,
     AppTransactionalLoggedInReadOnlyUseCase,
+    readonly_use_case,
 )
 
 
@@ -35,22 +35,16 @@ class ChoreLoadResult(UseCaseResultBase):
     inbox_tasks: list[InboxTask]
 
 
+@readonly_use_case(WorkspaceFeature.CHORES)
 class ChoreLoadUseCase(
     AppTransactionalLoggedInReadOnlyUseCase[ChoreLoadArgs, ChoreLoadResult]
 ):
     """Use case for loading a particular chore."""
 
-    @staticmethod
-    def get_scoped_to_feature() -> Iterable[
-        UserFeature
-    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
-        """The feature the use case is scope to."""
-        return WorkspaceFeature.CHORES
-
     async def _perform_transactional_read(
         self,
         uow: DomainUnitOfWork,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInReadonlyUseCaseContext,
         args: ChoreLoadArgs,
     ) -> ChoreLoadResult:
         """Execute the command's action."""

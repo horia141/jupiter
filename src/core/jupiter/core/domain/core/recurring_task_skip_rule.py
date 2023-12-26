@@ -1,12 +1,11 @@
 """The rules for skipping a recurring task."""
-from dataclasses import dataclass
 from typing import Optional
 
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import Value
+from jupiter.core.framework.value import Value, value
 
 
-@dataclass
+@value
 class RecurringTaskSkipRule(Value):
     """The rules for skipping a recurring task."""
 

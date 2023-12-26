@@ -18,7 +18,7 @@ import {
   useTransition,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { ApiError, NoteDomain, WorkspaceFeature } from "jupiter-gen";
+import { ApiError, NoteDomain } from "jupiter-gen";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
@@ -31,7 +31,6 @@ import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { TimeDiffTag } from "~/components/time-diff-tag";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
-import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -114,7 +113,7 @@ export async function action({ request, params }: ActionArgs) {
 
       case "archive": {
         await getLoggedInApiClient(session).metric.archiveMetricEntry({
-          ref_id: { the_id: id },
+          ref_id: { the_id: entryId },
         });
 
         return redirect(`/workspace/metrics/${id}/entries/${entryId}`);
@@ -214,33 +213,33 @@ export default function MetricEntry() {
         </CardActions>
       </Card>
 
-        <Card>
-          {!loaderData.note && (
-            <CardActions>
-              <ButtonGroup>
-                <Button
-                  variant="contained"
-                  disabled={!inputsEnabled}
-                  type="submit"
-                  name="intent"
-                  value="create-note"
-                >
-                  Create Note
-                </Button>
-              </ButtonGroup>
-            </CardActions>
-          )}
+      <Card>
+        {!loaderData.note && (
+          <CardActions>
+            <ButtonGroup>
+              <Button
+                variant="contained"
+                disabled={!inputsEnabled}
+                type="submit"
+                name="intent"
+                value="create-note"
+              >
+                Create Note
+              </Button>
+            </ButtonGroup>
+          </CardActions>
+        )}
 
-          {loaderData.note && (
-            <>
-              <EntityNoteEditor
-                initialNote={loaderData.note}
-                inputsEnabled={inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/content" />
-            </>
-          )}
-        </Card>
+        {loaderData.note && (
+          <>
+            <EntityNoteEditor
+              initialNote={loaderData.note}
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/content" />
+          </>
+        )}
+      </Card>
     </LeafPanel>
   );
 }

@@ -1,6 +1,5 @@
 """Shared logic for archiving a big plan."""
 from dataclasses import dataclass
-from typing import Final
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
@@ -8,9 +7,8 @@ from jupiter.core.domain.inbox_tasks.service.archive_service import (
     InboxTaskArchiveService,
 )
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.framework.event import EventSource
+from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.use_case import ProgressReporter
-from jupiter.core.utils.time_provider import TimeProvider
 
 
 @dataclass()
@@ -23,20 +21,9 @@ class BigPlanArchiveServiceResult:
 class BigPlanArchiveService:
     """Shared logic for archiving a big plan."""
 
-    _source: Final[EventSource]
-    _time_provider: Final[TimeProvider]
-
-    def __init__(
-        self,
-        source: EventSource,
-        time_provider: TimeProvider,
-    ) -> None:
-        """Constructor."""
-        self._source = source
-        self._time_provider = time_provider
-
     async def do_it(
         self,
+        ctx: DomainContext,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
         big_plan: BigPlan,
@@ -62,20 +49,16 @@ class BigPlanArchiveService:
 
         archived_inbox_tasks = []
 
-        inbox_task_archive_service = InboxTaskArchiveService(
-            EventSource.CLI,
-            self._time_provider,
-        )
+        inbox_task_archive_service = InboxTaskArchiveService()
         for inbox_task in inbox_tasks_to_archive:
             if inbox_task.archived:
                 continue
-            await inbox_task_archive_service.do_it(uow, progress_reporter, inbox_task)
+            await inbox_task_archive_service.do_it(
+                ctx, uow, progress_reporter, inbox_task
+            )
             archived_inbox_tasks.append(inbox_task)
 
-        big_plan = big_plan.mark_archived(
-            self._source,
-            self._time_provider.get_current_time(),
-        )
+        big_plan = big_plan.mark_archived(ctx)
         await uow.big_plan_repository.save(big_plan)
         await progress_reporter.mark_updated(big_plan)
 

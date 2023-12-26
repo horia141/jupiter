@@ -1,5 +1,4 @@
 """A chore."""
-from dataclasses import dataclass
 from typing import Optional
 
 from jupiter.core.domain.chores.chore_name import ChoreName
@@ -8,37 +7,25 @@ from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueA
 from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.core.recurring_task_skip_rule import RecurringTaskSkipRule
-from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
-from jupiter.core.framework.base.timestamp import Timestamp
-from jupiter.core.framework.entity import FIRST_VERSION, Entity, LeafEntity
+from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
+from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.context import DomainContext
+from jupiter.core.framework.entity import (
+    IsRefId,
+    LeafEntity,
+    OwnsMany,
+    create_entity_action,
+    entity,
+    update_entity_action,
+)
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.update_action import UpdateAction
 
 
-@dataclass
+@entity
 class Chore(LeafEntity):
     """A chore."""
-
-    @dataclass
-    class Created(Entity.Created):
-        """Created event."""
-
-    @dataclass
-    class ChangeProject(Entity.Updated):
-        """Changed the project event."""
-
-    @dataclass
-    class Updated(Entity.Updated):
-        """Updated event."""
-
-    @dataclass
-    class Suspended(Entity.Updated):
-        """Suspended event."""
-
-    @dataclass
-    class Unsuspended(Entity.Updated):
-        """Unsuspend event."""
 
     chore_collection_ref_id: EntityId
     project_ref_id: EntityId
@@ -50,10 +37,15 @@ class Chore(LeafEntity):
     end_at_date: Optional[ADate] = None
     skip_rule: Optional[RecurringTaskSkipRule] = None
 
+    inbox_tasks = OwnsMany(
+        InboxTask, source=InboxTaskSource.CHORE, chore_ref_id=IsRefId()
+    )
+
     @staticmethod
+    @create_entity_action
     def new_chore(
+        ctx: DomainContext,
         chore_collection_ref_id: EntityId,
-        archived: bool,
         project_ref_id: EntityId,
         name: ChoreName,
         gen_params: RecurringTaskGenParams,
@@ -62,11 +54,9 @@ class Chore(LeafEntity):
         skip_rule: Optional[RecurringTaskSkipRule],
         suspended: bool,
         must_do: bool,
-        source: EventSource,
-        created_time: Timestamp,
     ) -> "Chore":
         """Create a chore."""
-        today = ADate.from_date(created_time.as_date())
+        today = ADate.from_date(ctx.action_timestamp.as_date())
         Chore._check_actionable_and_due_date_configs(
             gen_params.actionable_from_day,
             gen_params.actionable_from_month,
@@ -85,20 +75,8 @@ class Chore(LeafEntity):
         if start_at_date is None and end_at_date is not None and end_at_date < today:
             raise InputValidationError(f"End date {end_at_date} is before {today}")
 
-        chore = Chore(
-            ref_id=BAD_REF_ID,
-            version=FIRST_VERSION,
-            archived=archived,
-            created_time=created_time,
-            archived_time=created_time if archived else None,
-            last_modified_time=created_time,
-            events=[
-                Chore.Created.make_event_from_frame_args(
-                    source,
-                    FIRST_VERSION,
-                    created_time,
-                ),
-            ],
+        return Chore._create(
+            ctx,
             chore_collection_ref_id=chore_collection_ref_id,
             project_ref_id=project_ref_id,
             name=name,
@@ -109,36 +87,31 @@ class Chore(LeafEntity):
             start_at_date=start_at_date if start_at_date else today,
             end_at_date=end_at_date,
         )
-        return chore
 
+    @update_entity_action
     def change_project(
         self,
+        ctx: DomainContext,
         project_ref_id: EntityId,
-        source: EventSource,
-        modification_time: Timestamp,
     ) -> "Chore":
         """Change the project for the chore task."""
         if self.project_ref_id == project_ref_id:
             return self
         return self._new_version(
+            ctx,
             project_ref_id=project_ref_id,
-            new_event=Chore.ChangeProject.make_event_from_frame_args(
-                source,
-                self.version,
-                modification_time,
-            ),
         )
 
+    @update_entity_action
     def update(
         self,
+        ctx: DomainContext,
         name: UpdateAction[ChoreName],
         gen_params: UpdateAction[RecurringTaskGenParams],
         must_do: UpdateAction[bool],
         start_at_date: UpdateAction[ADate],
         end_at_date: UpdateAction[Optional[ADate]],
         skip_rule: UpdateAction[Optional[RecurringTaskSkipRule]],
-        source: EventSource,
-        modification_time: Timestamp,
     ) -> "Chore":
         """Update the chore."""
         if gen_params.should_change:
@@ -164,43 +137,33 @@ class Chore(LeafEntity):
             the_end_at_date = self.end_at_date
 
         return self._new_version(
+            ctx,
             name=name.or_else(self.name),
             gen_params=the_gen_params,
             must_do=must_do.or_else(self.must_do),
             start_at_date=the_start_at_date,
             end_at_date=the_end_at_date,
             skip_rule=skip_rule.or_else(self.skip_rule),
-            new_event=Chore.Updated.make_event_from_frame_args(
-                source,
-                self.version,
-                modification_time,
-            ),
         )
 
-    def suspend(self, source: EventSource, modification_time: Timestamp) -> "Chore":
+    @update_entity_action
+    def suspend(self, ctx: DomainContext) -> "Chore":
         """Suspend the chore."""
         if self.suspended:
             return self
         return self._new_version(
+            ctx,
             suspended=True,
-            new_event=Chore.Suspended.make_event_from_frame_args(
-                source,
-                self.version,
-                modification_time,
-            ),
         )
 
-    def unsuspend(self, source: EventSource, modification_time: Timestamp) -> "Chore":
+    @update_entity_action
+    def unsuspend(self, ctx: DomainContext) -> "Chore":
         """Unsuspend the chore."""
         if not self.suspended:
             return self
         return self._new_version(
+            ctx,
             suspended=False,
-            new_event=Chore.Unsuspended.make_event_from_frame_args(
-                source,
-                self.version,
-                modification_time,
-            ),
         )
 
     def is_in_active_interval(self, start_date: ADate, end_date: ADate) -> bool:

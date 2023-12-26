@@ -1,7 +1,7 @@
 """The command for finding a inbox task."""
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Iterable, List, Optional, cast
+from typing import List, Optional, cast
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.chores.chore import Chore
@@ -9,7 +9,6 @@ from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.features import (
     FeatureUnavailableError,
-    UserFeature,
     WorkspaceFeature,
 )
 from jupiter.core.domain.habits.habit import Habit
@@ -27,8 +26,9 @@ from jupiter.core.framework.use_case import (
     UseCaseResultBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInReadonlyUseCaseContext,
     AppTransactionalLoggedInReadOnlyUseCase,
+    readonly_use_case,
 )
 
 
@@ -66,22 +66,16 @@ class InboxTaskFindResult(UseCaseResultBase):
     entries: List[InboxTaskFindResultEntry]
 
 
+@readonly_use_case(WorkspaceFeature.INBOX_TASKS)
 class InboxTaskFindUseCase(
     AppTransactionalLoggedInReadOnlyUseCase[InboxTaskFindArgs, InboxTaskFindResult]
 ):
     """The command for finding a inbox task."""
 
-    @staticmethod
-    def get_scoped_to_feature() -> Iterable[
-        UserFeature
-    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
-        """The feature the use case is scope to."""
-        return WorkspaceFeature.INBOX_TASKS
-
     async def _perform_transactional_read(
         self,
         uow: DomainUnitOfWork,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInReadonlyUseCaseContext,
         args: InboxTaskFindArgs,
     ) -> InboxTaskFindResult:
         """Execute the command's action."""

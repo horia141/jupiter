@@ -12,7 +12,8 @@ from jupiter.core.framework.use_case import (
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCase,
-    AppLoggedInUseCaseContext,
+    AppLoggedInMutationUseCaseContext,
+    mutation_use_case,
 )
 
 
@@ -24,13 +25,14 @@ class GCDoArgs(UseCaseArgsBase):
     gc_targets: Optional[List[SyncTarget]] = None
 
 
+@mutation_use_case()
 class GCDoUseCase(AppLoggedInMutationUseCase[GCDoArgs, None]):
     """The command for doing a garbage collection run."""
 
     async def _perform_mutation(
         self,
         progress_reporter: ProgressReporter,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInMutationUseCaseContext,
         args: GCDoArgs,
     ) -> None:
         """Execute the command's action."""
@@ -52,9 +54,9 @@ class GCDoUseCase(AppLoggedInMutationUseCase[GCDoArgs, None]):
             )
 
         gc_service = GCService(
-            source=EventSource.CLI,
-            time_provider=self._time_provider,
             domain_storage_engine=self._domain_storage_engine,
         )
 
-        await gc_service.do_it(progress_reporter, workspace, gc_targets)
+        await gc_service.do_it(
+            context.domain_context, progress_reporter, workspace, gc_targets
+        )

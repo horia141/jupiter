@@ -9,8 +9,9 @@ from jupiter.core.framework.use_case import (
     UseCaseResultBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInReadonlyUseCaseContext,
     AppTransactionalLoggedInReadOnlyUseCase,
+    readonly_use_case,
 )
 
 
@@ -27,6 +28,7 @@ class LoadProgressReporterTokenResult(UseCaseResultBase):
 
 
 @secure_class
+@readonly_use_case()
 class LoadProgressReporterTokenUseCase(
     AppTransactionalLoggedInReadOnlyUseCase[
         LoadProgressReporterTokenArgs, LoadProgressReporterTokenResult
@@ -37,7 +39,7 @@ class LoadProgressReporterTokenUseCase(
     async def _perform_transactional_read(
         self,
         uow: DomainUnitOfWork,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInReadonlyUseCaseContext,
         args: LoadProgressReporterTokenArgs,
     ) -> LoadProgressReporterTokenResult:
         """Execute the command."""

@@ -1,6 +1,5 @@
 """A query-like repository for scanning information quickly about entities."""
 import abc
-from dataclasses import dataclass
 from typing import List, Optional
 
 from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
@@ -15,10 +14,10 @@ from jupiter.core.domain.smart_lists.smart_list_name import SmartListName
 from jupiter.core.domain.vacations.vacation_name import VacationName
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.repository import Repository
-from jupiter.core.framework.value import Value
+from jupiter.core.framework.value import Value, value
 
 
-@dataclass
+@value
 class VacationSummary(Value):
     """Summary information about a vacation."""
 
@@ -26,7 +25,7 @@ class VacationSummary(Value):
     name: VacationName
 
 
-@dataclass
+@value
 class ProjectSummary(Value):
     """Summary information about a project."""
 
@@ -34,7 +33,7 @@ class ProjectSummary(Value):
     name: ProjectName
 
 
-@dataclass
+@value
 class InboxTaskSummary(Value):
     """Summary information about an inbox task."""
 
@@ -42,7 +41,7 @@ class InboxTaskSummary(Value):
     name: InboxTaskName
 
 
-@dataclass
+@value
 class HabitSummary(Value):
     """Summary information about a habit."""
 
@@ -50,7 +49,7 @@ class HabitSummary(Value):
     name: HabitName
 
 
-@dataclass
+@value
 class ChoreSummary(Value):
     """Summary information about a chore."""
 
@@ -58,7 +57,7 @@ class ChoreSummary(Value):
     name: ChoreName
 
 
-@dataclass
+@value
 class BigPlanSummary(Value):
     """Summary information about a big plan."""
 
@@ -67,7 +66,7 @@ class BigPlanSummary(Value):
     project_ref_id: EntityId
 
 
-@dataclass
+@value
 class SmartListSummary(Value):
     """Summary information about a smart list."""
 
@@ -76,7 +75,7 @@ class SmartListSummary(Value):
     icon: Optional[EntityIcon] = None
 
 
-@dataclass
+@value
 class MetricSummary(Value):
     """Summary information about a metric."""
 
@@ -85,7 +84,7 @@ class MetricSummary(Value):
     icon: Optional[EntityIcon] = None
 
 
-@dataclass
+@value
 class PersonSummary(Value):
     """Summary information about a person."""
 

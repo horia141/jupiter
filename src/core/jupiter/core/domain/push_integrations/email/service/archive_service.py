@@ -1,6 +1,5 @@
 """Service for archiving an email task and associated entities."""
 from dataclasses import dataclass
-from typing import Final
 
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.service.archive_service import (
@@ -8,9 +7,8 @@ from jupiter.core.domain.inbox_tasks.service.archive_service import (
 )
 from jupiter.core.domain.push_integrations.email.email_task import EmailTask
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.framework.event import EventSource
+from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.use_case import ProgressReporter
-from jupiter.core.utils.time_provider import TimeProvider
 
 
 @dataclass()
@@ -23,20 +21,9 @@ class EmailTaskArchiveServiceResult:
 class EmailTaskArchiveService:
     """Shared service for archiving a email task."""
 
-    _source: Final[EventSource]
-    _time_provider: Final[TimeProvider]
-
-    def __init__(
-        self,
-        source: EventSource,
-        time_provider: TimeProvider,
-    ) -> None:
-        """Constructor."""
-        self._source = source
-        self._time_provider = time_provider
-
     async def do_it(
         self,
+        ctx: DomainContext,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
         email_task: EmailTask,
@@ -65,20 +52,14 @@ class EmailTaskArchiveService:
 
         archived_inbox_tasks = []
 
-        inbox_task_archive_service = InboxTaskArchiveService(
-            EventSource.CLI,
-            self._time_provider,
-        )
+        inbox_task_archive_service = InboxTaskArchiveService()
         for inbox_task in inbox_tasks_to_archive:
-            if inbox_task.archived:
-                continue
-            await inbox_task_archive_service.do_it(uow, progress_reporter, inbox_task)
+            await inbox_task_archive_service.do_it(
+                ctx, uow, progress_reporter, inbox_task
+            )
             archived_inbox_tasks.append(inbox_task)
 
-        email_task = email_task.mark_archived(
-            self._source,
-            self._time_provider.get_current_time(),
-        )
+        email_task = email_task.mark_archived(ctx)
         await uow.email_task_repository.save(email_task)
         await progress_reporter.mark_updated(email_task)
 

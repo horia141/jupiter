@@ -1,19 +1,19 @@
 """Update the slack tasks generation project."""
 from dataclasses import dataclass
-from typing import Iterable, Optional, cast
+from typing import Optional, cast
 
-from jupiter.core.domain.features import UserFeature, WorkspaceFeature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInUseCaseContext,
+    AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
+    mutation_use_case,
 )
 
 
@@ -24,23 +24,17 @@ class SlackTaskChangeGenerationProjectArgs(UseCaseArgsBase):
     generation_project_ref_id: Optional[EntityId] = None
 
 
+@mutation_use_case([WorkspaceFeature.SLACK_TASKS, WorkspaceFeature.PROJECTS])
 class SlackTaskChangeGenerationProjectUseCase(
     AppTransactionalLoggedInMutationUseCase[SlackTaskChangeGenerationProjectArgs, None],
 ):
     """The command for updating the generation up project for slack tasks."""
 
-    @staticmethod
-    def get_scoped_to_feature() -> Iterable[
-        UserFeature
-    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
-        """The feature the use case is scope to."""
-        return (WorkspaceFeature.SLACK_TASKS, WorkspaceFeature.PROJECTS)
-
     async def _perform_transactional_mutation(
         self,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
-        context: AppLoggedInUseCaseContext,
+        context: AppLoggedInMutationUseCaseContext,
         args: SlackTaskChangeGenerationProjectArgs,
     ) -> None:
         """Execute the command's action."""
@@ -100,13 +94,12 @@ class SlackTaskChangeGenerationProjectUseCase(
                     cast(EntityId, inbox_task.slack_task_ref_id)
                 ]
                 update_inbox_task = inbox_task.update_link_to_slack_task(
+                    ctx=context.domain_context,
                     project_ref_id=generation_project_ref_id,
                     user=slack_task.user,
                     channel=slack_task.channel,
                     message=slack_task.message,
                     generation_extra_info=slack_task.generation_extra_info,
-                    source=EventSource.CLI,
-                    modification_time=self._time_provider.get_current_time(),
                 )
 
                 await uow.inbox_task_repository.save(
@@ -117,9 +110,8 @@ class SlackTaskChangeGenerationProjectUseCase(
                 updated_generated_inbox_tasks.append(update_inbox_task)
 
         slack_task_collection = slack_task_collection.change_generation_project(
+            ctx=context.domain_context,
             generation_project_ref_id=generation_project_ref_id,
-            source=EventSource.CLI,
-            modified_time=self._time_provider.get_current_time(),
         )
 
         await uow.slack_task_collection_repository.save(slack_task_collection)

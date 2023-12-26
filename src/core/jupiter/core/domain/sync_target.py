@@ -1,13 +1,13 @@
 """What exactly to sync."""
-import enum
 from functools import lru_cache
 from typing import Iterable, Optional
 
 from jupiter.core.framework.errors import InputValidationError
+from jupiter.core.framework.value import EnumValue, enum_value
 
 
-@enum.unique
-class SyncTarget(enum.Enum):
+@enum_value
+class SyncTarget(EnumValue):
     """What exactly to generate, gc, or look at systematically."""
 
     INBOX_TASKS = "inbox-tasks"

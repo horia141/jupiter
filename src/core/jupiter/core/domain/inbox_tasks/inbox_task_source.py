@@ -1,13 +1,13 @@
 """The origin of an inbox task."""
-import enum
 from functools import lru_cache
 from typing import Iterable, Optional
 
 from jupiter.core.framework.errors import InputValidationError
+from jupiter.core.framework.value import EnumValue, enum_value
 
 
-@enum.unique
-class InboxTaskSource(enum.Enum):
+@enum_value
+class InboxTaskSource(EnumValue):
     """The origin of an inbox task."""
 
     USER = "user"
