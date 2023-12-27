@@ -4,9 +4,6 @@ import asyncio
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.core.timeline import infer_timeline
-from jupiter.core.domain.gamification.infra.score_log_entry_repository import (
-    ScoreLogEntryAlreadyExistsError,
-)
 from jupiter.core.domain.gamification.score_log import ScoreLog
 from jupiter.core.domain.gamification.score_log_entry import ScoreLogEntry
 from jupiter.core.domain.gamification.score_period_best import ScorePeriodBest
@@ -16,6 +13,7 @@ from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.user.user import User
 from jupiter.core.framework.context import DomainContext
+from jupiter.core.framework.repository import EntityAlreadyExistsError
 from jupiter.core.framework.value import Value, value
 
 
@@ -61,7 +59,7 @@ class RecordScoreService:
 
         try:
             await uow.score_log_entry_repository.create(new_score_log_entry)
-        except ScoreLogEntryAlreadyExistsError:
+        except EntityAlreadyExistsError:
             # The score log entry already exists. This entity has already been marked as done
             # or not done, and we won't do it again!
             return None

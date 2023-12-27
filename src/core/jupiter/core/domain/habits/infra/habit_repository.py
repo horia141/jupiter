@@ -6,13 +6,8 @@ from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.entity import EntityLinkFilterCompiled
 from jupiter.core.framework.repository import (
-    LeafEntityNotFoundError,
     LeafEntityRepository,
 )
-
-
-class HabitNotFoundError(LeafEntityNotFoundError):
-    """Error raised when a habit is not found."""
 
 
 class HabitRepository(LeafEntityRepository[Habit], abc.ABC):

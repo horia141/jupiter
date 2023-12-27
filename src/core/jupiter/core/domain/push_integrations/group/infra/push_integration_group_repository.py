@@ -6,18 +6,8 @@ from jupiter.core.domain.push_integrations.group.push_integration_group import (
 )
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.repository import (
-    TrunkEntityAlreadyExistsError,
-    TrunkEntityNotFoundError,
     TrunkEntityRepository,
 )
-
-
-class PushIntegrationGroupAlreadyExistsError(TrunkEntityAlreadyExistsError):
-    """Error raised when a push integration already exists."""
-
-
-class PushIntegrationGroupNotFoundError(TrunkEntityNotFoundError):
-    """Error raised when a push integration is not found."""
 
 
 class PushIntegrationGroupRepository(

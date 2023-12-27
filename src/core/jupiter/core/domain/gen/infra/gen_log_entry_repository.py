@@ -4,13 +4,8 @@ import abc
 from jupiter.core.domain.gen.gen_log_entry import GenLogEntry
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.repository import (
-    LeafEntityNotFoundError,
     LeafEntityRepository,
 )
-
-
-class GenLogEntryNotFoundError(LeafEntityNotFoundError):
-    """Error raised when a task generation log entry is not found."""
 
 
 class GenLogEntryRepository(LeafEntityRepository[GenLogEntry], abc.ABC):

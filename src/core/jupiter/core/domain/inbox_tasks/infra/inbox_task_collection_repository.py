@@ -4,13 +4,8 @@ import abc
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.repository import (
-    TrunkEntityNotFoundError,
     TrunkEntityRepository,
 )
-
-
-class InboxTaskCollectionNotFoundError(TrunkEntityNotFoundError):
-    """Error raised when an inbox task collection does not exist."""
 
 
 class InboxTaskCollectionRepository(

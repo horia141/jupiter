@@ -5,13 +5,8 @@ from typing import Iterable, List, Optional
 from jupiter.core.domain.chores.chore import Chore
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.repository import (
-    LeafEntityNotFoundError,
     LeafEntityRepository,
 )
-
-
-class ChoreNotFoundError(LeafEntityNotFoundError):
-    """Error raised when a chore is not found."""
 
 
 class ChoreRepository(LeafEntityRepository[Chore], abc.ABC):

@@ -8,10 +8,6 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.repository import RootEntityRepository
 
 
-class UserWorkspaceLinkNotFoundError(Exception):
-    """Error raised when a user workspace link is not found."""
-
-
 class UserWorkspaceLinkRepository(RootEntityRepository[UserWorkspaceLink], abc.ABC):
     """A repository for user workspace links."""
 

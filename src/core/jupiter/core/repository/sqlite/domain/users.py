@@ -5,6 +5,7 @@ from jupiter.core.domain.core.timezone import Timezone
 from jupiter.core.domain.features import UserFeature
 from jupiter.core.domain.user.avatar import Avatar
 from jupiter.core.domain.user.infra.user_repository import (
+    UserAlreadyExistsError,
     UserNotFoundError,
     UserRepository,
 )
@@ -58,6 +59,8 @@ class SqliteUserRepository(SqliteRootEntityRepository[User], UserRepository):
                 Column("feature_flags", JSON, nullable=False),
                 keep_existing=True,
             ),
+            already_exists_err_cls=UserAlreadyExistsError,
+            not_found_err_cls=UserNotFoundError,
         )
 
     async def load_by_email_address(self, email_address: EmailAddress) -> User:

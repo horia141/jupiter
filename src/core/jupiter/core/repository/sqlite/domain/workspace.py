@@ -2,6 +2,7 @@
 
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.workspaces.infra.workspace_repository import (
+    WorkspaceNotFoundError,
     WorkspaceRepository,
 )
 from jupiter.core.domain.workspaces.workspace import Workspace
@@ -47,6 +48,7 @@ class SqliteWorkspaceRepository(
                 Column("feature_flags", JSON, nullable=False),
                 keep_existing=True,
             ),
+            not_found_err_cls=WorkspaceNotFoundError,
         )
 
     @staticmethod

@@ -4,13 +4,8 @@ import abc
 from jupiter.core.domain.smart_lists.smart_list_collection import SmartListCollection
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.repository import (
-    TrunkEntityNotFoundError,
     TrunkEntityRepository,
 )
-
-
-class SmartListCollectionNotFoundError(TrunkEntityNotFoundError):
-    """Error raised when a smart list collection is not found."""
 
 
 class SmartListCollectionRepository(

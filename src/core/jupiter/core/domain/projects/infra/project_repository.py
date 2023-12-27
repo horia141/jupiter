@@ -5,13 +5,8 @@ from typing import Iterable, List, Optional
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.repository import (
-    LeafEntityNotFoundError,
     LeafEntityRepository,
 )
-
-
-class ProjectNotFoundError(LeafEntityNotFoundError):
-    """Error raised when a project is not found."""
 
 
 class ProjectRepository(LeafEntityRepository[Project]):

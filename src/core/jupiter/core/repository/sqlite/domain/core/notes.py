@@ -6,7 +6,6 @@ from jupiter.core.domain.core.notes.infra.note_collection_repository import (
     NoteCollectionRepository,
 )
 from jupiter.core.domain.core.notes.infra.note_repository import (
-    NoteNotFoundError,
     NoteRepository,
 )
 from jupiter.core.domain.core.notes.note import Note
@@ -15,6 +14,7 @@ from jupiter.core.domain.core.notes.note_content_block import NoteContentBlock
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
+from jupiter.core.framework.repository import EntityNotFoundError
 from jupiter.core.repository.sqlite.infra.repository import (
     SqliteLeafEntityRepository,
     SqliteTrunkEntityRepository,
@@ -145,7 +145,7 @@ class SqliteNoteRepository(SqliteLeafEntityRepository[Note], NoteRepository):
             query_stmt = query_stmt.where(self._table.c.archived.is_(False))
         result = (await self._connection.execute(query_stmt)).first()
         if result is None:
-            raise NoteNotFoundError(
+            raise EntityNotFoundError(
                 f"Note in domain {domain} with source {str(source_entity_ref_id)} does not exist"
             )
         return self._row_to_entity(result)

@@ -6,18 +6,8 @@ from jupiter.core.domain.push_integrations.slack.slack_task_collection import (
 )
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.repository import (
-    TrunkEntityAlreadyExistsError,
-    TrunkEntityNotFoundError,
     TrunkEntityRepository,
 )
-
-
-class SlackTaskCollectionAlreadyExistsError(TrunkEntityAlreadyExistsError):
-    """Error raised when a slack task collection already exists."""
-
-
-class SlackTaskCollectionNotFoundError(TrunkEntityNotFoundError):
-    """Error raised when a slack task collection is not found."""
 
 
 class SlackTaskCollectionRepository(
