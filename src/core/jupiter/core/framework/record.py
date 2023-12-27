@@ -1,11 +1,15 @@
 """A simpler type of entity."""
 import dataclasses
 from dataclasses import dataclass
-from typing import Any, Callable, TypeVar, Union, cast
+from typing import Any, Callable, Generic, TypeVar, Union, cast
+from jupiter.core.framework.base.entity_id import EntityId
 
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.context import DomainContext
 from typing_extensions import dataclass_transform
+from jupiter.core.framework.entity import IsRefId
+
+from jupiter.core.framework.value import EnumValue, Value
 
 _RecordT = TypeVar("_RecordT", bound="Record")
 
@@ -55,6 +59,29 @@ class Record:
 @dataclass_transform()
 def record(cls: type[_RecordT]) -> type[_RecordT]:
     return dataclass(cls)
+
+
+RecordLinkFilterRaw = Value | EnumValue | IsRefId
+RecordLinkFilterCompiled = Value | EnumValue | EntityId
+RecordLinkFiltersRaw = dict[str, RecordLinkFilterRaw]
+RecordLinkFiltersCompiled = dict[str, RecordLinkFilterCompiled]
+
+
+@dataclass(init=False)
+class RecordLink(Generic[_RecordT]):
+    """A record link descriptor."""
+
+    the_type: type[_RecordT]
+    filters: RecordLinkFiltersRaw
+
+    def __init__(self, the_type: type[_RecordT], **kwargs: RecordLinkFilterRaw):
+        """Constructor."""
+        self.the_type = the_type
+        self.filters = kwargs
+
+
+class ContainsRecords(Generic[_RecordT], RecordLink[_RecordT]):
+    """A record link descriptor that contains records."""
 
 
 _CreateEventT = TypeVar("_CreateEventT", bound=Callable[..., Record])  #  type: ignore
