@@ -2,14 +2,13 @@
 import dataclasses
 from dataclasses import dataclass
 from typing import Any, Callable, Generic, TypeVar, Union, cast
-from jupiter.core.framework.base.entity_id import EntityId
 
+from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.context import DomainContext
-from typing_extensions import dataclass_transform
 from jupiter.core.framework.entity import IsRefId
-
 from jupiter.core.framework.value import EnumValue, Value
+from typing_extensions import dataclass_transform
 
 _RecordT = TypeVar("_RecordT", bound="Record")
 

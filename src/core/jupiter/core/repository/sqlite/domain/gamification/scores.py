@@ -25,8 +25,8 @@ from jupiter.core.domain.gamification.score_stats import ScoreStats
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.repository import (
-    EntityAlreadyExistsError,
-    EntityNotFoundError,
+    RecordAlreadyExistsError,
+    RecordNotFoundError,
 )
 from jupiter.core.repository.sqlite.infra.repository import (
     SqliteLeafEntityRepository,
@@ -240,7 +240,7 @@ class SqliteScoreStatsRepository(ScoreStatsRepository):
                 ),
             )
         except IntegrityError as err:
-            raise EntityAlreadyExistsError(
+            raise RecordAlreadyExistsError(
                 f"Score stats for score log {record.score_log_ref_id}:{record.period}:{record.timeline} already exists",
             ) from err
         return record
@@ -268,7 +268,7 @@ class SqliteScoreStatsRepository(ScoreStatsRepository):
             ),
         )
         if result.rowcount == 0:
-            raise EntityNotFoundError(
+            raise RecordNotFoundError(
                 f"The score stats {record.score_log_ref_id}:{record.period}:{record.timeline} does not exist"
             )
         return record
@@ -288,7 +288,7 @@ class SqliteScoreStatsRepository(ScoreStatsRepository):
             .where(self._score_stats_table.c.timeline == key[2])
         )
         if result.rowcount == 0:
-            raise EntityNotFoundError(
+            raise RecordNotFoundError(
                 f"The score stats {key[0]}:{key[1]}:{key[2]} does not exist"
             )
         return self._row_to_entity(result)
@@ -310,7 +310,7 @@ class SqliteScoreStatsRepository(ScoreStatsRepository):
             )
         ).first()
         if result is None:
-            raise EntityNotFoundError(
+            raise RecordNotFoundError(
                 f"Score stats {key[0]}:{key[1]}:{key[2]} does not exist"
             )
         return self._row_to_entity(result)
@@ -426,7 +426,7 @@ class SqliteScorePeriodBestRepository(ScorePeriodBestRepository):
                 ),
             )
         except IntegrityError as err:
-            raise EntityAlreadyExistsError(
+            raise RecordAlreadyExistsError(
                 f"Score period best for score log {record.score_log_ref_id}:{record.period}:{record.timeline}:{record.sub_period} already exists",
             ) from err
         return record
@@ -457,7 +457,7 @@ class SqliteScorePeriodBestRepository(ScorePeriodBestRepository):
             ),
         )
         if result.rowcount == 0:
-            raise EntityNotFoundError(
+            raise RecordNotFoundError(
                 f"The score period best {record.score_log_ref_id}:{record.period}:{record.timeline}:{record.sub_period} does not exist"
             )
         return record
@@ -478,7 +478,7 @@ class SqliteScorePeriodBestRepository(ScorePeriodBestRepository):
             .where(self._score_period_best_table.c.sub_period == key[3].value)
         )
         if result.rowcount == 0:
-            raise EntityNotFoundError(
+            raise RecordNotFoundError(
                 f"The score period best {key[0]}:{key[1]}:{key[2]}:{key[3]} does not exist"
             )
         return self._row_to_entity(result)
@@ -503,7 +503,7 @@ class SqliteScorePeriodBestRepository(ScorePeriodBestRepository):
             )
         ).first()
         if result is None:
-            raise EntityNotFoundError(
+            raise RecordNotFoundError(
                 f"Score period best {key[0]}:{key[1]}:{key[2]}:{key[3]} does not exist"
             )
         return self._row_to_entity(result)
