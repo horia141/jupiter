@@ -1,14 +1,13 @@
 """A use case that doesn't do anything."""
-from dataclasses import dataclass
 
-from jupiter.core.framework.use_case import UseCaseArgsBase
+from jupiter.core.framework.use_case import UseCaseArgsBase, use_case_args
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCase,
     AppLoggedInUseCaseContext,
 )
 
 
-@dataclass
+@use_case_args
 class NoOpArgs(UseCaseArgsBase):
     """NoOp args."""
 

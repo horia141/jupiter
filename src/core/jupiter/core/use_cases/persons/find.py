@@ -1,6 +1,5 @@
 """The command for finding the persons."""
 from collections import defaultdict
-from dataclasses import dataclass
 from typing import List, Optional, cast
 
 from jupiter.core.domain.core.notes.note import Note
@@ -15,6 +14,9 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
     UseCaseResultBase,
+    use_case_args,
+    use_case_result,
+    use_case_result_part,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCaseContext,
@@ -23,7 +25,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class PersonFindArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
@@ -34,7 +36,7 @@ class PersonFindArgs(UseCaseArgsBase):
     filter_person_ref_ids: Optional[List[EntityId]] = None
 
 
-@dataclass
+@use_case_result_part
 class PersonFindResultEntry:
     """A single person result."""
 
@@ -44,7 +46,7 @@ class PersonFindResultEntry:
     note: Note | None = None
 
 
-@dataclass
+@use_case_result
 class PersonFindResult(UseCaseResultBase):
     """PersonFindResult."""
 

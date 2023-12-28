@@ -1,5 +1,4 @@
 """The command for updating a smart list tag."""
-from dataclasses import dataclass
 
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.smart_lists.smart_list_tag_name import SmartListTagName
@@ -9,6 +8,7 @@ from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
+    use_case_args,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
@@ -17,7 +17,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class SmartListTagUpdateArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 

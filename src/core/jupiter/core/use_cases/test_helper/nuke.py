@@ -1,6 +1,5 @@
 """The command for completely destroying a workspace."""
 import logging
-from dataclasses import dataclass
 from typing import Final
 
 from jupiter.core.domain.storage_engine import DomainStorageEngine
@@ -10,13 +9,14 @@ from jupiter.core.framework.use_case import (
     ProgressReporter,
     ProgressReporterFactory,
     UseCaseArgsBase,
+    use_case_args,
 )
 from jupiter.core.use_cases.infra.use_cases import AppTestHelperUseCase
 
 LOGGER = logging.getLogger(__name__)
 
 
-@dataclass
+@use_case_args
 class NukeArgs(UseCaseArgsBase):
     """Nuke args."""
 

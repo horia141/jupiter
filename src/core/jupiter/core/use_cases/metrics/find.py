@@ -2,7 +2,6 @@
 import itertools
 import typing
 from collections import defaultdict
-from dataclasses import dataclass
 from typing import DefaultDict, Dict, List, Optional, cast
 
 from jupiter.core.domain.core.notes.note import Note
@@ -18,6 +17,9 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
     UseCaseResultBase,
+    use_case_args,
+    use_case_result,
+    use_case_result_part,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCaseContext,
@@ -26,7 +28,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class MetricFindArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
@@ -38,7 +40,7 @@ class MetricFindArgs(UseCaseArgsBase):
     filter_entry_ref_ids: Optional[List[EntityId]] = None
 
 
-@dataclass
+@use_case_result_part
 class MetricFindResponseEntry:
     """A single entry in the LoadAllMetricsResponse."""
 
@@ -48,7 +50,7 @@ class MetricFindResponseEntry:
     metric_entry_notes: list[Note] | None = None
 
 
-@dataclass
+@use_case_result
 class MetricFindResult(UseCaseResultBase):
     """PersonFindResult object."""
 

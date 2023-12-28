@@ -1,5 +1,4 @@
 """The command for updating a chore."""
-from dataclasses import dataclass
 from typing import Optional, cast
 
 from jupiter.core.domain.chores.chore_name import ChoreName
@@ -21,6 +20,7 @@ from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
+    use_case_args,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
@@ -29,7 +29,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class ChoreUpdateArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 

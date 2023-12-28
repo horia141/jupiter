@@ -1,12 +1,15 @@
 """Use case for changing a password."""
-from dataclasses import dataclass
 
 from jupiter.core.domain.auth.auth import IncorrectPasswordError
 from jupiter.core.domain.auth.password_new_plain import PasswordNewPlain
 from jupiter.core.domain.auth.password_plain import PasswordPlain
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.secure import secure_class
-from jupiter.core.framework.use_case import ProgressReporter, UseCaseArgsBase
+from jupiter.core.framework.use_case import (
+    ProgressReporter,
+    UseCaseArgsBase,
+    use_case_args,
+)
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
@@ -18,7 +21,7 @@ class InvalidChangePasswordCredentialsError(Exception):
     """Error raised when the old password isn't good."""
 
 
-@dataclass
+@use_case_args
 class ChangePasswordArgs(UseCaseArgsBase):
     """Change password args."""
 

@@ -1,5 +1,4 @@
 """Use case for loading a person."""
-from dataclasses import dataclass
 
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
@@ -12,6 +11,8 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
     UseCaseResultBase,
+    use_case_args,
+    use_case_result,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCaseContext,
@@ -20,7 +21,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class PersonLoadArgs(UseCaseArgsBase):
     """PersonLoadArgs."""
 
@@ -28,7 +29,7 @@ class PersonLoadArgs(UseCaseArgsBase):
     allow_archived: bool
 
 
-@dataclass
+@use_case_result
 class PersonLoadResult(UseCaseResultBase):
     """PersonLoadResult."""
 

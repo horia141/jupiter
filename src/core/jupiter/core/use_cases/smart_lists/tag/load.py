@@ -1,5 +1,4 @@
 """Use case for loading a smart list tag."""
-from dataclasses import dataclass
 
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.smart_lists.smart_list_tag import SmartListTag
@@ -8,6 +7,8 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
     UseCaseResultBase,
+    use_case_args,
+    use_case_result,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCaseContext,
@@ -16,7 +17,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class SmartListTagLoadArgs(UseCaseArgsBase):
     """SmartListTagLoadArgs."""
 
@@ -24,7 +25,7 @@ class SmartListTagLoadArgs(UseCaseArgsBase):
     allow_archived: bool
 
 
-@dataclass
+@use_case_result
 class SmartListTagLoadResult(UseCaseResultBase):
     """SmartListTagLoadResult."""
 

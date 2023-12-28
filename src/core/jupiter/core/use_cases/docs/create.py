@@ -1,5 +1,4 @@
 """Use case for creating a doc."""
-from dataclasses import dataclass
 
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_content_block import OneOfNoteContentBlock
@@ -13,6 +12,8 @@ from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
     UseCaseResultBase,
+    use_case_args,
+    use_case_result,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
@@ -21,7 +22,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class DocCreateArgs(UseCaseArgsBase):
     """DocCreate args."""
 
@@ -30,7 +31,7 @@ class DocCreateArgs(UseCaseArgsBase):
     parent_doc_ref_id: EntityId | None = None
 
 
-@dataclass
+@use_case_result
 class DocCreateResult(UseCaseResultBase):
     """DocCreate result."""
 

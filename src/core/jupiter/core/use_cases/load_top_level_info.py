@@ -1,5 +1,4 @@
 """The command for loading workspaces if they exist."""
-from dataclasses import dataclass
 from typing import Final, Optional
 
 from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
@@ -31,6 +30,8 @@ from jupiter.core.framework.env import Env
 from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
     UseCaseResultBase,
+    use_case_args,
+    use_case_result,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppGuestReadonlyUseCase,
@@ -41,12 +42,12 @@ from jupiter.core.utils.global_properties import GlobalProperties
 from jupiter.core.utils.time_provider import TimeProvider
 
 
-@dataclass
+@use_case_args
 class LoadTopLevelInfoArgs(UseCaseArgsBase):
     """Load user and workspsace args."""
 
 
-@dataclass
+@use_case_result
 class LoadTopLevelInfoResult(UseCaseResultBase):
     """Load user and workspace result."""
 

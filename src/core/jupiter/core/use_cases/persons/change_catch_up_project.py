@@ -1,5 +1,4 @@
 """Update the persons catch up project."""
-from dataclasses import dataclass
 from typing import Optional, cast
 
 from jupiter.core.domain.core.adate import ADate
@@ -10,6 +9,7 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
+    use_case_args,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
@@ -18,7 +18,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class PersonChangeCatchUpProjectArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 

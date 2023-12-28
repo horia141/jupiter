@@ -1,5 +1,4 @@
 """The command for archiving a metric entry."""
-from dataclasses import dataclass
 
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.core.notes.service.note_archive_service import (
@@ -11,6 +10,7 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
+    use_case_args,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
@@ -19,7 +19,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class MetricEntryArchiveArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 

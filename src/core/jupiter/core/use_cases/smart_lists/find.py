@@ -1,5 +1,4 @@
 """The command for finding smart lists."""
-from dataclasses import dataclass
 from typing import List, Optional
 
 from jupiter.core.domain.features import WorkspaceFeature
@@ -12,6 +11,9 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
     UseCaseResultBase,
+    use_case_args,
+    use_case_result,
+    use_case_result_part,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCaseContext,
@@ -20,7 +22,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class SmartListFindArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
@@ -34,7 +36,7 @@ class SmartListFindArgs(UseCaseArgsBase):
     filter_item_ref_id: Optional[List[EntityId]] = None
 
 
-@dataclass
+@use_case_result_part
 class SmartListFindResponseEntry:
     """A single entry in the LoadAllSmartListsResponse."""
 
@@ -43,7 +45,7 @@ class SmartListFindResponseEntry:
     smart_list_items: Optional[List[SmartListItem]] = None
 
 
-@dataclass
+@use_case_result
 class SmartListFindResult(UseCaseResultBase):
     """PersonFindResult object."""
 

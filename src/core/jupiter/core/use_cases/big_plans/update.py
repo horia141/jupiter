@@ -1,5 +1,4 @@
 """The command for updating a big plan."""
-from dataclasses import dataclass
 from typing import Optional
 
 from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
@@ -17,6 +16,8 @@ from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
     UseCaseResultBase,
+    use_case_args,
+    use_case_result,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
@@ -25,7 +26,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class BigPlanUpdateArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
@@ -36,7 +37,7 @@ class BigPlanUpdateArgs(UseCaseArgsBase):
     due_date: UpdateAction[Optional[ADate]]
 
 
-@dataclass
+@use_case_result
 class BigPlanUpdateResult(UseCaseResultBase):
     """InboxTaskUpdate result."""
 

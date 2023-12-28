@@ -1,5 +1,4 @@
 """A note in the notebook."""
-from dataclasses import dataclass
 
 from jupiter.core.domain.core.entity_name import NOT_USED_NAME
 from jupiter.core.domain.core.notes.note_content_block import OneOfNoteContentBlock
@@ -9,12 +8,13 @@ from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     LeafEntity,
     create_entity_action,
+    entity,
     update_entity_action,
 )
 from jupiter.core.framework.update_action import UpdateAction
 
 
-@dataclass
+@entity
 class Note(LeafEntity):
     """A note in the notebook."""
 

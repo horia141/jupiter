@@ -1,5 +1,4 @@
 """The command for creating a vacation."""
-from dataclasses import dataclass
 
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.features import WorkspaceFeature
@@ -10,6 +9,8 @@ from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
     UseCaseResultBase,
+    use_case_args,
+    use_case_result,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
@@ -18,7 +19,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class VacationCreateArgs(UseCaseArgsBase):
     """Vacation creation parameters."""
 
@@ -27,7 +28,7 @@ class VacationCreateArgs(UseCaseArgsBase):
     end_date: ADate
 
 
-@dataclass
+@use_case_result
 class VacationCreateResult(UseCaseResultBase):
     """Vacation creation result."""
 

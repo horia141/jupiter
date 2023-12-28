@@ -1,5 +1,4 @@
 """The command for generating new tasks."""
-from dataclasses import dataclass
 from typing import List, Optional
 
 from jupiter.core.domain.core.adate import ADate
@@ -11,6 +10,7 @@ from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
+    use_case_args,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCase,
@@ -19,7 +19,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class GenDoArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 

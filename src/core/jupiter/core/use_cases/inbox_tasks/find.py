@@ -1,6 +1,5 @@
 """The command for finding a inbox task."""
 from collections import defaultdict
-from dataclasses import dataclass
 from typing import List, Optional, cast
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
@@ -24,6 +23,9 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
     UseCaseResultBase,
+    use_case_args,
+    use_case_result,
+    use_case_result_part,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCaseContext,
@@ -32,7 +34,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class InboxTaskFindArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
@@ -43,7 +45,7 @@ class InboxTaskFindArgs(UseCaseArgsBase):
     filter_sources: Optional[List[InboxTaskSource]] = None
 
 
-@dataclass
+@use_case_result_part
 class InboxTaskFindResultEntry:
     """A single entry in the load all inbox tasks response."""
 
@@ -59,7 +61,7 @@ class InboxTaskFindResultEntry:
     note: Note | None = None
 
 
-@dataclass
+@use_case_result
 class InboxTaskFindResult(UseCaseResultBase):
     """PersonFindResult."""
 

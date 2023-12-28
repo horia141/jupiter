@@ -1,5 +1,4 @@
 """The command for creating a habit."""
-from dataclasses import dataclass
 from typing import Optional
 
 from jupiter.core.domain.core.difficulty import Difficulty
@@ -22,6 +21,8 @@ from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
     UseCaseResultBase,
+    use_case_args,
+    use_case_result,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
@@ -30,7 +31,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class HabitCreateArgs(UseCaseArgsBase):
     """HabitCreate args.."""
 
@@ -48,7 +49,7 @@ class HabitCreateArgs(UseCaseArgsBase):
     repeats_in_period_count: Optional[int] = None
 
 
-@dataclass
+@use_case_result
 class HabitCreateResult(UseCaseResultBase):
     """HabitCreate result."""
 

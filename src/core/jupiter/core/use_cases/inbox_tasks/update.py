@@ -1,5 +1,4 @@
 """The command for updating a inbox task."""
-from dataclasses import dataclass
 from typing import Optional
 
 from jupiter.core.domain.core.adate import ADate
@@ -21,6 +20,8 @@ from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
     UseCaseResultBase,
+    use_case_args,
+    use_case_result,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
@@ -29,7 +30,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class InboxTaskUpdateArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
@@ -42,7 +43,7 @@ class InboxTaskUpdateArgs(UseCaseArgsBase):
     due_date: UpdateAction[Optional[ADate]]
 
 
-@dataclass
+@use_case_result
 class InboxTaskUpdateResult(UseCaseResultBase):
     """InboxTaskUpdate result."""
 

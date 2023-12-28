@@ -1,5 +1,4 @@
 """The command for creating a inbox task."""
-from dataclasses import dataclass
 from typing import Optional
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
@@ -19,6 +18,8 @@ from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
     UseCaseResultBase,
+    use_case_args,
+    use_case_result,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
@@ -27,7 +28,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class InboxTaskCreateArgs(UseCaseArgsBase):
     """InboxTaskCreate args."""
 
@@ -40,7 +41,7 @@ class InboxTaskCreateArgs(UseCaseArgsBase):
     due_date: Optional[ADate] = None
 
 
-@dataclass
+@use_case_result
 class InboxTaskCreateResult(UseCaseResultBase):
     """InboxTaskCreate result."""
 

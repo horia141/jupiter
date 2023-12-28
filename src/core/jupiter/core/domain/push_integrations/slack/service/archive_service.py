@@ -1,5 +1,4 @@
 """Service for archiving a Slack task and associated entities."""
-from dataclasses import dataclass
 
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.service.archive_service import (
@@ -8,10 +7,10 @@ from jupiter.core.domain.inbox_tasks.service.archive_service import (
 from jupiter.core.domain.push_integrations.slack.slack_task import SlackTask
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.context import DomainContext
-from jupiter.core.framework.use_case import ProgressReporter
+from jupiter.core.framework.use_case import ProgressReporter, use_case_result_part
 
 
-@dataclass()
+@use_case_result_part
 class SlackTaskArchiveServiceResult:
     """The result of the archive operation."""
 

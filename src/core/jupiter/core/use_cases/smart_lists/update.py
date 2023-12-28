@@ -1,5 +1,4 @@
 """The command for updating a smart list."""
-from dataclasses import dataclass
 from typing import Optional
 
 from jupiter.core.domain.core.entity_icon import EntityIcon
@@ -11,6 +10,7 @@ from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
+    use_case_args,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
@@ -19,7 +19,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class SmartListUpdateArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 

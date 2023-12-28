@@ -1,5 +1,4 @@
 """The command for finding vacations."""
-from dataclasses import dataclass
 from typing import List, Optional
 
 from jupiter.core.domain.features import WorkspaceFeature
@@ -9,6 +8,8 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
     UseCaseResultBase,
+    use_case_args,
+    use_case_result,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCaseContext,
@@ -17,7 +18,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class VacationFindArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
@@ -25,7 +26,7 @@ class VacationFindArgs(UseCaseArgsBase):
     filter_ref_ids: Optional[List[EntityId]] = None
 
 
-@dataclass
+@use_case_result
 class VacationFindResult(UseCaseResultBase):
     """PersonFindResult object."""
 

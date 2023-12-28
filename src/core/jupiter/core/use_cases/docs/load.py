@@ -1,5 +1,4 @@
 """Load a particulr doc."""
-from dataclasses import dataclass
 
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
@@ -7,7 +6,12 @@ from jupiter.core.domain.docs.doc import Doc
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.use_case import UseCaseArgsBase, UseCaseResultBase
+from jupiter.core.framework.use_case import (
+    UseCaseArgsBase,
+    UseCaseResultBase,
+    use_case_args,
+    use_case_result,
+)
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCaseContext,
     AppTransactionalLoggedInReadOnlyUseCase,
@@ -15,7 +19,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class DocLoadArgs(UseCaseArgsBase):
     """DocLoad args."""
 
@@ -23,7 +27,7 @@ class DocLoadArgs(UseCaseArgsBase):
     allow_archived: bool
 
 
-@dataclass
+@use_case_result
 class DocLoadResult(UseCaseResultBase):
     """DocLoad result."""
 

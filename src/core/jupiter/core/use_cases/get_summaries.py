@@ -1,5 +1,4 @@
 """A use case for retrieving summaries about entities."""
-from dataclasses import dataclass
 from typing import List, Optional
 
 from jupiter.core.domain.fast_info_repository import (
@@ -18,6 +17,8 @@ from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
     UseCaseResultBase,
+    use_case_args,
+    use_case_result,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCaseContext,
@@ -26,7 +27,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class GetSummariesArgs(UseCaseArgsBase):
     """Get summaries args."""
 
@@ -43,7 +44,7 @@ class GetSummariesArgs(UseCaseArgsBase):
     include_persons: Optional[bool] = None
 
 
-@dataclass
+@use_case_result
 class GetSummariesResult(UseCaseResultBase):
     """Get summaries result."""
 

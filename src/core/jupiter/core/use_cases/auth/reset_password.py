@@ -1,5 +1,4 @@
 """Use case for reseting a password."""
-from dataclasses import dataclass
 
 from jupiter.core.domain.auth.auth import IncorrectRecoveryTokenError
 from jupiter.core.domain.auth.password_new_plain import PasswordNewPlain
@@ -11,6 +10,8 @@ from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
     UseCaseResultBase,
+    use_case_args,
+    use_case_result,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppGuestMutationUseCase,
@@ -22,7 +23,7 @@ class InvalidResetPasswordCredentialsError(Exception):
     """Error raised when either an email address or recovery token are not good."""
 
 
-@dataclass
+@use_case_args
 class ResetPasswordArgs(UseCaseArgsBase):
     """Reset password args."""
 
@@ -32,7 +33,7 @@ class ResetPasswordArgs(UseCaseArgsBase):
     new_password_repeat: PasswordNewPlain
 
 
-@dataclass
+@use_case_result
 class ResetPasswordResult(UseCaseResultBase):
     """Reset password result."""
 

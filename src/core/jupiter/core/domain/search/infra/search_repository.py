@@ -1,6 +1,5 @@
 """A search index repository for free form searching across all entities in Jupiter."""
 import abc
-from dataclasses import dataclass
 from typing import Iterable, List, Optional
 
 from jupiter.core.domain.core.adate import ADate
@@ -11,9 +10,10 @@ from jupiter.core.domain.search.search_query import SearchQuery
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.entity import CrownEntity
 from jupiter.core.framework.repository import Repository
+from jupiter.core.framework.use_case import use_case_result_part
 
 
-@dataclass
+@use_case_result_part
 class SearchMatch:
     """Information about a particular entity that was found."""
 

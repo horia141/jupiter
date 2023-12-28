@@ -1,5 +1,4 @@
 """The command for doing garbage collection for all workspaces."""
-from dataclasses import dataclass
 from typing import Final
 
 from jupiter.core.domain.gc.service.gc_service import GCService
@@ -10,12 +9,13 @@ from jupiter.core.framework.use_case import (
     EmptyContext,
     ProgressReporterFactory,
     UseCaseArgsBase,
+    use_case_args,
 )
 from jupiter.core.use_cases.infra.use_cases import AppBackgroundMutationUseCase
 from jupiter.core.utils.time_provider import TimeProvider
 
 
-@dataclass
+@use_case_args
 class GCDoAllArgs(UseCaseArgsBase):
     """GCDoAllArgs."""
 

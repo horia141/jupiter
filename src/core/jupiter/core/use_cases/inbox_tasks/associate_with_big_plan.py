@@ -1,5 +1,4 @@
 """The command for associating a inbox task with a big plan."""
-from dataclasses import dataclass
 from typing import Optional
 
 from jupiter.core.domain.features import WorkspaceFeature
@@ -10,6 +9,7 @@ from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
+    use_case_args,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
@@ -18,7 +18,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class InboxTaskAssociateWithBigPlanArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 

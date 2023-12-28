@@ -1,5 +1,4 @@
 """The command for changing the project for a habit."""
-from dataclasses import dataclass
 from typing import Optional, cast
 
 from jupiter.core.domain.core import schedules
@@ -13,6 +12,7 @@ from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
+    use_case_args,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
@@ -21,7 +21,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class HabitChangeProjectArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
