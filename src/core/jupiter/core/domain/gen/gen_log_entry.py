@@ -11,6 +11,7 @@ from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     CrownEntity,
     LeafEntity,
+    ParentLink,
     create_entity_action,
     entity,
     update_entity_action,
@@ -22,7 +23,7 @@ from jupiter.core.framework.event import EventSource
 class GenLogEntry(LeafEntity):
     """A particular entry in the task generation log."""
 
-    gen_log_ref_id: EntityId
+    gen_log: ParentLink
     source: EventSource
     gen_even_if_not_modified: bool
     today: ADate
@@ -61,7 +62,7 @@ class GenLogEntry(LeafEntity):
         return GenLogEntry._create(
             ctx,
             name=GenLogEntry.build_name(gen_targets, ctx.action_timestamp),
-            gen_log_ref_id=gen_log_ref_id,
+            gen_log=ParentLink(gen_log_ref_id),
             source=ctx.event_source,
             gen_even_if_not_modified=gen_even_if_not_modified,
             today=today,

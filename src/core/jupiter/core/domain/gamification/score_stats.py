@@ -9,6 +9,7 @@ from jupiter.core.domain.gamification.user_score_history import UserScoreAtDate
 from jupiter.core.domain.gamification.user_score_overview import UserScore
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
+from jupiter.core.framework.entity import ParentLink
 from jupiter.core.framework.record import Record, create_record_action, record
 
 
@@ -16,7 +17,7 @@ from jupiter.core.framework.record import Record, create_record_action, record
 class ScoreStats(Record):
     """Statistics about scores for a particular time interval."""
 
-    score_log_ref_id: EntityId
+    score_log: ParentLink
     period: RecurringTaskPeriod | None
     timeline: str
     total_score: int
@@ -34,7 +35,7 @@ class ScoreStats(Record):
         """Create a score stats for a given period and timeline."""
         return ScoreStats._create(
             ctx,
-            score_log_ref_id=score_log_ref_id,
+            score_log=ParentLink(score_log_ref_id),
             period=period,
             timeline=timeline,
             total_score=0,
@@ -59,7 +60,7 @@ class ScoreStats(Record):
     @property
     def key(self) -> Tuple[EntityId, RecurringTaskPeriod | None, str]:
         """The key of the score stats."""
-        return self.score_log_ref_id, self.period, self.timeline
+        return self.score_log.ref_id, self.period, self.timeline
 
     def to_user_score(self) -> UserScore:
         """Build a user score."""

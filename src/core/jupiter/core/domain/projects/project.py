@@ -10,6 +10,7 @@ from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     IsRefId,
     LeafEntity,
+    ParentLink,
     RefsMany,
     create_entity_action,
     entity,
@@ -22,7 +23,7 @@ from jupiter.core.framework.update_action import UpdateAction
 class Project(LeafEntity):
     """The project."""
 
-    project_collection_ref_id: EntityId
+    project_collection: ParentLink
     name: ProjectName
 
     inbox_tasks = RefsMany(InboxTask, project_ref_id=IsRefId())
@@ -40,7 +41,7 @@ class Project(LeafEntity):
         """Create a project."""
         return Project._create(
             ctx,
-            project_collection_ref_id=project_collection_ref_id,
+            project_collection=ParentLink(project_collection_ref_id),
             name=name,
         )
 
@@ -55,8 +56,3 @@ class Project(LeafEntity):
             ctx,
             name=name.or_else(self.name),
         )
-
-    @property
-    def parent_ref_id(self) -> EntityId:
-        """The parent."""
-        return self.project_collection_ref_id

@@ -5,6 +5,7 @@ from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     ContainsMany,
     IsRefId,
+    ParentLink,
     TrunkEntity,
     create_entity_action,
     entity,
@@ -15,7 +16,7 @@ from jupiter.core.framework.entity import (
 class GenLog(TrunkEntity):
     """A log of task generation actions a user has performed."""
 
-    workspace_ref_id: EntityId
+    workspace: ParentLink
 
     entries = ContainsMany(GenLogEntry, gen_log_ref_id=IsRefId())
 
@@ -26,7 +27,4 @@ class GenLog(TrunkEntity):
         workspace_ref_id: EntityId,
     ) -> "GenLog":
         """Create a new Gen log."""
-        return GenLog._create(
-            ctx,
-            workspace_ref_id=workspace_ref_id,
-        )
+        return GenLog._create(ctx, workspace=ParentLink(workspace_ref_id))

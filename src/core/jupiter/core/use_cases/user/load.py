@@ -1,5 +1,4 @@
 """The command for loading the current user."""
-from dataclasses import dataclass
 from typing import Final
 
 from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
@@ -17,6 +16,8 @@ from jupiter.core.domain.user.user import User
 from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
     UseCaseResultBase,
+    use_case_args,
+    use_case_result,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCaseContext,
@@ -26,12 +27,12 @@ from jupiter.core.use_cases.infra.use_cases import (
 from jupiter.core.utils.time_provider import TimeProvider
 
 
-@dataclass
+@use_case_args
 class UserLoadArgs(UseCaseArgsBase):
     """User find args."""
 
 
-@dataclass
+@use_case_result
 class UserLoadResult(UseCaseResultBase):
     """User find result."""
 

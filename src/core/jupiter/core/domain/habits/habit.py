@@ -15,6 +15,7 @@ from jupiter.core.framework.entity import (
     IsRefId,
     LeafEntity,
     OwnsMany,
+    ParentLink,
     create_entity_action,
     entity,
     update_entity_action,
@@ -27,7 +28,7 @@ from jupiter.core.framework.update_action import UpdateAction
 class Habit(LeafEntity):
     """A habit."""
 
-    habit_collection_ref_id: EntityId
+    habit_collection: ParentLink
     project_ref_id: EntityId
     name: HabitName
     gen_params: RecurringTaskGenParams
@@ -68,7 +69,7 @@ class Habit(LeafEntity):
 
         return Habit._create(
             ctx,
-            habit_collection_ref_id=habit_collection_ref_id,
+            habit_collection=ParentLink(habit_collection_ref_id),
             project_ref_id=project_ref_id,
             name=name,
             gen_params=gen_params,
@@ -175,8 +176,3 @@ class Habit(LeafEntity):
             raise InputValidationError(
                 f"Actionable day {actionable_from_day} should be before due day {due_at_day}",
             )
-
-    @property
-    def parent_ref_id(self) -> EntityId:
-        """The parent."""
-        return self.habit_collection_ref_id

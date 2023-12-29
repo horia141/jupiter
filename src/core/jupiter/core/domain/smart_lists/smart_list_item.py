@@ -9,6 +9,7 @@ from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     IsOneOfRefId,
     LeafEntity,
+    ParentLink,
     RefsMany,
     create_entity_action,
     entity,
@@ -21,7 +22,7 @@ from jupiter.core.framework.update_action import UpdateAction
 class SmartListItem(LeafEntity):
     """A smart list item."""
 
-    smart_list_ref_id: EntityId
+    smart_list: ParentLink
     name: SmartListItemName
     is_done: bool
     tags_ref_id: List[EntityId]
@@ -42,7 +43,7 @@ class SmartListItem(LeafEntity):
         """Create a smart list item."""
         return SmartListItem._create(
             ctx,
-            smart_list_ref_id=smart_list_ref_id,
+            smart_list=ParentLink(smart_list_ref_id),
             name=name,
             is_done=is_done,
             tags_ref_id=tags_ref_id,
@@ -66,8 +67,3 @@ class SmartListItem(LeafEntity):
             tags_ref_id=tags_ref_id.or_else(self.tags_ref_id),
             url=url.or_else(self.url),
         )
-
-    @property
-    def parent_ref_id(self) -> EntityId:
-        """The parent."""
-        return self.smart_list_ref_id

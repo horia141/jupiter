@@ -3,6 +3,7 @@
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
+    ParentLink,
     TrunkEntity,
     create_entity_action,
     entity,
@@ -14,7 +15,7 @@ from jupiter.core.framework.entity import (
 class PersonCollection(TrunkEntity):
     """The personal relationship database."""
 
-    workspace_ref_id: EntityId
+    workspace: ParentLink
     catch_up_project_ref_id: EntityId
 
     @staticmethod
@@ -27,8 +28,8 @@ class PersonCollection(TrunkEntity):
         """Create a new personal database."""
         return PersonCollection._create(
             ctx,
-            workspace_ref_id=workspace_ref_id,
-            catch_up_project_ref_id=catch_up_project_ref_id,
+            workspace=ParentLink(workspace_ref_id),
+            catch_up_project=ParentLink(catch_up_project_ref_id),
         )
 
     @update_entity_action
@@ -42,8 +43,3 @@ class PersonCollection(TrunkEntity):
             ctx,
             catch_up_project_ref_id=catch_up_project_ref_id,
         )
-
-    @property
-    def parent_ref_id(self) -> EntityId:
-        """The parent."""
-        return self.workspace_ref_id

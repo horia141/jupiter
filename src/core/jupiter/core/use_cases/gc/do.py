@@ -1,5 +1,4 @@
 """The command for doing a garbage collection run."""
-from dataclasses import dataclass
 from typing import List, Optional
 
 from jupiter.core.domain.features import FeatureUnavailableError
@@ -9,6 +8,7 @@ from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
+    use_case_args,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCase,
@@ -17,7 +17,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class GCDoArgs(UseCaseArgsBase):
     """GCArgs."""
 

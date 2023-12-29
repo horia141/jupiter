@@ -14,6 +14,7 @@ from jupiter.core.framework.entity import (
     BranchEntity,
     IsRefId,
     OwnsMany,
+    ParentLink,
     create_entity_action,
     entity,
     update_entity_action,
@@ -25,7 +26,7 @@ from jupiter.core.framework.update_action import UpdateAction
 class Metric(BranchEntity):
     """A metric."""
 
-    metric_collection_ref_id: EntityId
+    metric_collection: ParentLink
     name: MetricName
     icon: Optional[EntityIcon] = None
     collection_params: Optional[RecurringTaskGenParams] = None
@@ -49,7 +50,7 @@ class Metric(BranchEntity):
         """Create a metric."""
         return Metric._create(
             ctx,
-            metric_collection_ref_id=metric_collection_ref_id,
+            metric_collection=ParentLink(metric_collection_ref_id),
             name=name,
             icon=icon,
             collection_params=collection_params,
@@ -71,8 +72,3 @@ class Metric(BranchEntity):
             icon=icon.or_else(self.icon),
             collection_params=collection_params.or_else(self.collection_params),
         )
-
-    @property
-    def parent_ref_id(self) -> EntityId:
-        """The parent."""
-        return self.metric_collection_ref_id

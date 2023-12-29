@@ -21,14 +21,14 @@ class EmailTaskRemoveService:
     ) -> None:
         """Execute the service's action."""
         email_task_collection = await uow.email_task_collection_repository.load_by_id(
-            email_task.email_task_collection_ref_id,
+            email_task.email_task_collection.ref_id,
         )
         push_integration_group = await uow.push_integration_group_repository.load_by_id(
-            email_task_collection.push_integration_group_ref_id,
+            email_task_collection.push_integration_group.ref_id,
         )
         inbox_task_collection = (
             await uow.inbox_task_collection_repository.load_by_parent(
-                push_integration_group.workspace_ref_id,
+                push_integration_group.workspace.ref_id,
             )
         )
         inbox_tasks_to_remove = await uow.inbox_task_repository.find_all_with_filters(

@@ -1,5 +1,4 @@
 """Use case for free form searching through Jupiter."""
-from dataclasses import dataclass
 from typing import Final, List, Optional
 
 from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
@@ -10,7 +9,12 @@ from jupiter.core.domain.search.infra.search_repository import SearchMatch
 from jupiter.core.domain.search.search_limit import SearchLimit
 from jupiter.core.domain.search.search_query import SearchQuery
 from jupiter.core.domain.storage_engine import DomainStorageEngine, SearchStorageEngine
-from jupiter.core.framework.use_case import UseCaseArgsBase, UseCaseResultBase
+from jupiter.core.framework.use_case import (
+    UseCaseArgsBase,
+    UseCaseResultBase,
+    use_case_args,
+    use_case_result,
+)
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCase,
     AppLoggedInReadonlyUseCaseContext,
@@ -18,7 +22,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class SearchArgs(UseCaseArgsBase):
     """Search args."""
 
@@ -34,7 +38,7 @@ class SearchArgs(UseCaseArgsBase):
     filter_archived_time_before: Optional[ADate] = None
 
 
-@dataclass
+@use_case_result
 class SearchResult(UseCaseResultBase):
     """Search result."""
 

@@ -1,5 +1,4 @@
 """A use case for retrieving summaries about entities."""
-from dataclasses import dataclass
 from typing import List, Optional
 
 from jupiter.core.domain.fast_info_repository import (
@@ -18,6 +17,8 @@ from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
     UseCaseResultBase,
+    use_case_args,
+    use_case_result,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCaseContext,
@@ -26,7 +27,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class GetSummariesArgs(UseCaseArgsBase):
     """Get summaries args."""
 
@@ -43,7 +44,7 @@ class GetSummariesArgs(UseCaseArgsBase):
     include_persons: Optional[bool] = None
 
 
-@dataclass
+@use_case_result
 class GetSummariesResult(UseCaseResultBase):
     """Get summaries result."""
 
@@ -123,7 +124,7 @@ class GetSummariesUseCase(
             and args.include_vacations
         ):
             vacations = await uow.fast_into_repository.find_all_vacation_summaries(
-                parent_ref_id=vacation_collection.parent_ref_id,
+                parent_ref_id=vacation_collection.workspace.ref_id,
                 allow_archived=allow_archived,
             )
         projects = None
@@ -132,7 +133,7 @@ class GetSummariesUseCase(
             and args.include_projects
         ):
             projects = await uow.fast_into_repository.find_all_project_summaries(
-                parent_ref_id=project_collection.parent_ref_id,
+                parent_ref_id=project_collection.workspace.ref_id,
                 allow_archived=allow_archived,
             )
         inbox_tasks = None
@@ -141,7 +142,7 @@ class GetSummariesUseCase(
             and args.include_inbox_tasks
         ):
             inbox_tasks = await uow.fast_into_repository.find_all_inbox_task_summaries(
-                parent_ref_id=inbox_task_collection.parent_ref_id,
+                parent_ref_id=inbox_task_collection.workspace.ref_id,
                 allow_archived=allow_archived,
             )
         habits = None
@@ -150,7 +151,7 @@ class GetSummariesUseCase(
             and args.include_habits
         ):
             habits = await uow.fast_into_repository.find_all_habit_summaries(
-                parent_ref_id=habit_collection.parent_ref_id,
+                parent_ref_id=habit_collection.workspace.ref_id,
                 allow_archived=allow_archived,
             )
         chores = None
@@ -159,7 +160,7 @@ class GetSummariesUseCase(
             and args.include_chores
         ):
             chores = await uow.fast_into_repository.find_all_chore_summaries(
-                parent_ref_id=chore_collection.parent_ref_id,
+                parent_ref_id=chore_collection.workspace.ref_id,
                 allow_archived=allow_archived,
             )
         big_plans = None
@@ -168,7 +169,7 @@ class GetSummariesUseCase(
             and args.include_big_plans
         ):
             big_plans = await uow.fast_into_repository.find_all_big_plan_summaries(
-                parent_ref_id=big_plan_collection.parent_ref_id,
+                parent_ref_id=big_plan_collection.workspace.ref_id,
                 allow_archived=allow_archived,
             )
         smart_lists = None
@@ -177,7 +178,7 @@ class GetSummariesUseCase(
             and args.include_smart_lists
         ):
             smart_lists = await uow.fast_into_repository.find_all_smart_list_summaries(
-                parent_ref_id=smart_list_collection.parent_ref_id,
+                parent_ref_id=smart_list_collection.workspace.ref_id,
                 allow_archived=allow_archived,
             )
         metrics = None
@@ -186,7 +187,7 @@ class GetSummariesUseCase(
             and args.include_metrics
         ):
             metrics = await uow.fast_into_repository.find_all_metric_summaries(
-                parent_ref_id=metric_collection.parent_ref_id,
+                parent_ref_id=metric_collection.workspace.ref_id,
                 allow_archived=allow_archived,
             )
         persons = None
@@ -195,7 +196,7 @@ class GetSummariesUseCase(
             and args.include_persons
         ):
             persons = await uow.fast_into_repository.find_all_person_summaries(
-                parent_ref_id=person_collection.parent_ref_id,
+                parent_ref_id=person_collection.workspace.ref_id,
                 allow_archived=allow_archived,
             )
 

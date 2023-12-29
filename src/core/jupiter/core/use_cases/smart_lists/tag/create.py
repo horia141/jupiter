@@ -1,5 +1,4 @@
 """The command for creating a smart list tag."""
-from dataclasses import dataclass
 
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.smart_lists.smart_list_tag import SmartListTag
@@ -10,6 +9,8 @@ from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
     UseCaseResultBase,
+    use_case_args,
+    use_case_result,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
@@ -18,7 +19,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class SmartListTagCreateArgs(UseCaseArgsBase):
     """SmartListTagCreate args."""
 
@@ -26,7 +27,7 @@ class SmartListTagCreateArgs(UseCaseArgsBase):
     tag_name: SmartListTagName
 
 
-@dataclass
+@use_case_result
 class SmartListTagCreateResult(UseCaseResultBase):
     """SmartListTagCreate result."""
 

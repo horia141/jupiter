@@ -1,5 +1,4 @@
 """The command for archiving a smart list tag."""
-from dataclasses import dataclass
 
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -8,6 +7,7 @@ from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
+    use_case_args,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
@@ -16,7 +16,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class SmartListTagArchiveArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
@@ -40,7 +40,7 @@ class SmartListTagArchiveUseCase(
         smart_list_tag = await uow.smart_list_tag_repository.load_by_id(args.ref_id)
 
         smart_list_items = await uow.smart_list_item_repository.find_all_with_filters(
-            parent_ref_id=smart_list_tag.smart_list_ref_id,
+            parent_ref_id=smart_list_tag.smart_list.ref_id,
             allow_archived=True,
             filter_tag_ref_ids=[args.ref_id],
         )

@@ -1,4 +1,5 @@
 """Row type infra."""
-from typing import Any, Dict
+from typing import Any
 
-RowType = Dict[str, Any]  # type: ignore
+RowType = dict[str, Any]  # type: ignore
+# None | float | int | str | datetime | JSONDictType]

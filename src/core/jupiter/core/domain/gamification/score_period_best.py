@@ -6,6 +6,7 @@ from jupiter.core.domain.gamification.score_stats import ScoreStats
 from jupiter.core.domain.gamification.user_score_overview import UserScore
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
+from jupiter.core.framework.entity import ParentLink
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.record import (
     Record,
@@ -19,7 +20,7 @@ from jupiter.core.framework.record import (
 class ScorePeriodBest(Record):
     """The best score for a period of time and a particular subdivision of it."""
 
-    score_log_ref_id: EntityId
+    score_log: ParentLink
     period: RecurringTaskPeriod | None
     timeline: str
     sub_period: RecurringTaskPeriod
@@ -45,7 +46,7 @@ class ScorePeriodBest(Record):
 
         return ScorePeriodBest._create(
             ctx,
-            score_log_ref_id=score_log_ref_id,
+            score_log=ParentLink(score_log_ref_id),
             period=period,
             timeline=timeline,
             sub_period=sub_period,
@@ -74,7 +75,7 @@ class ScorePeriodBest(Record):
         self,
     ) -> Tuple[EntityId, RecurringTaskPeriod | None, str, RecurringTaskPeriod]:
         """The key of the score best."""
-        return self.score_log_ref_id, self.period, self.timeline, self.sub_period
+        return self.score_log.ref_id, self.period, self.timeline, self.sub_period
 
     def to_user_score(self) -> UserScore:
         """Build a user score."""

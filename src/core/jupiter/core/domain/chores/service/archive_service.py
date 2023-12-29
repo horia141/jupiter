@@ -24,11 +24,11 @@ class ChoreArchiveService:
             return
 
         chore_collection = await uow.chore_collection_repository.load_by_id(
-            chore.chore_collection_ref_id,
+            chore.chore_collection.ref_id,
         )
         inbox_task_collection = (
             await uow.inbox_task_collection_repository.load_by_parent(
-                chore_collection.workspace_ref_id,
+                chore_collection.workspace.ref_id,
             )
         )
         inbox_tasks_to_archive = await uow.inbox_task_repository.find_all_with_filters(

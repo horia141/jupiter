@@ -6,6 +6,7 @@ from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     ContainsMany,
     IsRefId,
+    ParentLink,
     TrunkEntity,
     create_entity_action,
     entity,
@@ -16,7 +17,7 @@ from jupiter.core.framework.entity import (
 class GCLog(TrunkEntity):
     """A log of GC actions a user has performed."""
 
-    workspace_ref_id: EntityId
+    workspace: ParentLink
 
     entries = ContainsMany(GCLogEntry, gc_log_ref_id=IsRefId())
 
@@ -27,7 +28,4 @@ class GCLog(TrunkEntity):
         workspace_ref_id: EntityId,
     ) -> "GCLog":
         """Create a new GC log."""
-        return GCLog._create(
-            ctx,
-            workspace_ref_id=workspace_ref_id,
-        )
+        return GCLog._create(ctx, workspace=ParentLink(workspace_ref_id))

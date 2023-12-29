@@ -1,5 +1,4 @@
 """Shared logic for archiving a big plan."""
-from dataclasses import dataclass
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
@@ -8,10 +7,10 @@ from jupiter.core.domain.inbox_tasks.service.archive_service import (
 )
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.context import DomainContext
-from jupiter.core.framework.use_case import ProgressReporter
+from jupiter.core.framework.use_case import ProgressReporter, use_case_result_part
 
 
-@dataclass()
+@use_case_result_part
 class BigPlanArchiveServiceResult:
     """The result of the archive operation."""
 
@@ -33,12 +32,12 @@ class BigPlanArchiveService:
             return BigPlanArchiveServiceResult(archived_inbox_tasks=[])
 
         big_plan_collection = await uow.big_plan_collection_repository.load_by_id(
-            big_plan.big_plan_collection_ref_id,
+            big_plan.big_plan_collection.ref_id,
         )
 
         inbox_task_collection = (
             await uow.inbox_task_collection_repository.load_by_parent(
-                big_plan_collection.workspace_ref_id,
+                big_plan_collection.workspace.ref_id,
             )
         )
         inbox_tasks_to_archive = await uow.inbox_task_repository.find_all_with_filters(

@@ -7,6 +7,7 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     BranchTagEntity,
+    ParentLink,
     create_entity_action,
     entity,
     update_entity_action,
@@ -18,7 +19,7 @@ from jupiter.core.framework.update_action import UpdateAction
 class SmartListTag(BranchTagEntity):
     """A smart list tag."""
 
-    smart_list_ref_id: EntityId
+    smart_list: ParentLink
 
     @staticmethod
     @create_entity_action
@@ -31,7 +32,7 @@ class SmartListTag(BranchTagEntity):
         return SmartListTag._create(
             ctx,
             name=EntityName(tag_name.the_tag),
-            smart_list_ref_id=smart_list_ref_id,
+            smart_list=ParentLink(smart_list_ref_id),
             tag_name=tag_name,
         )
 
@@ -46,8 +47,3 @@ class SmartListTag(BranchTagEntity):
             ctx,
             tag_name=tag_name.or_else(cast(SmartListTagName, self.tag_name)),
         )
-
-    @property
-    def parent_ref_id(self) -> EntityId:
-        """The parent."""
-        return self.smart_list_ref_id

@@ -9,6 +9,7 @@ from jupiter.core.domain.auth.recovery_token_plain import RecoveryTokenPlain
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
+    ParentLink,
     StubEntity,
     create_entity_action,
     entity,
@@ -31,7 +32,7 @@ class IncorrectRecoveryTokenError(Exception):
 class Auth(StubEntity):
     """Authentication information associated with a user."""
 
-    user_ref_id: EntityId
+    user: ParentLink
     password_hash: PasswordHash
     recovery_token_hash: RecoveryTokenHash
 
@@ -70,7 +71,7 @@ class Auth(StubEntity):
         """Create a new auth for a user."""
         return Auth._create(
             ctx,
-            user_ref_id=user_ref_id,
+            user=ParentLink(user_ref_id),
             password_hash=password_hash,
             recovery_token_hash=recovery_token_hash,
         )

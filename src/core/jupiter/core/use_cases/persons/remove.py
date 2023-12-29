@@ -1,5 +1,4 @@
 """Remove a person."""
-from dataclasses import dataclass
 
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.persons.service.remove_service import PersonRemoveService
@@ -8,6 +7,7 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
+    use_case_args,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
@@ -16,7 +16,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class PersonRemoveArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 

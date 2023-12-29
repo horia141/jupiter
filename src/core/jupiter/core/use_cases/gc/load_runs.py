@@ -1,8 +1,12 @@
 """Load previous runs of GC."""
-from dataclasses import dataclass
 
 from jupiter.core.domain.gc.gc_log_entry import GCLogEntry
-from jupiter.core.framework.use_case import UseCaseArgsBase, UseCaseResultBase
+from jupiter.core.framework.use_case import (
+    UseCaseArgsBase,
+    UseCaseResultBase,
+    use_case_args,
+    use_case_result,
+)
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCase,
     AppLoggedInReadonlyUseCaseContext,
@@ -10,12 +14,12 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class GCLoadRunsArgs(UseCaseArgsBase):
     """GCLoadRunsArgs."""
 
 
-@dataclass
+@use_case_result
 class GCLoadRunsResult(UseCaseResultBase):
     """GCLoadRunsResult."""
 

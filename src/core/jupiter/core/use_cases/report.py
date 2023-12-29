@@ -1,6 +1,6 @@
 """The command for reporting on progress."""
 from collections import defaultdict
-from dataclasses import dataclass, field
+from dataclasses import field
 from itertools import groupby
 from operator import itemgetter
 from typing import DefaultDict, Dict, Iterable, List, Optional, cast
@@ -36,6 +36,9 @@ from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
     UseCaseResultBase,
+    use_case_args,
+    use_case_result,
+    use_case_result_part,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCase,
@@ -44,7 +47,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class ReportArgs(UseCaseArgsBase):
     """Report args."""
 
@@ -62,7 +65,7 @@ class ReportArgs(UseCaseArgsBase):
     breakdown_period: Optional[RecurringTaskPeriod] = None
 
 
-@dataclass
+@use_case_result_part
 class NestedResultPerSource:
     """A particular result broken down by the various sources of inbox tasks."""
 
@@ -70,7 +73,7 @@ class NestedResultPerSource:
     count: int
 
 
-@dataclass
+@use_case_result_part
 class NestedResult:
     """A result broken down by the various sources of inbox tasks."""
 
@@ -78,7 +81,7 @@ class NestedResult:
     per_source_cnt: List[NestedResultPerSource]
 
 
-@dataclass
+@use_case_result_part
 class InboxTasksSummary:
     """A bigger summary for inbox tasks."""
 
@@ -89,7 +92,7 @@ class InboxTasksSummary:
     done: NestedResult
 
 
-@dataclass
+@use_case_result_part
 class WorkableBigPlan:
     """The view of a big plan via a workable."""
 
@@ -98,7 +101,7 @@ class WorkableBigPlan:
     actionable_date: Optional[ADate] = None
 
 
-@dataclass
+@use_case_result_part
 class WorkableSummary:
     """The reporting summary."""
 
@@ -111,7 +114,7 @@ class WorkableSummary:
     done_big_plans: List[WorkableBigPlan]
 
 
-@dataclass
+@use_case_result_part
 class BigPlanWorkSummary:
     """The report for a big plan."""
 
@@ -124,7 +127,7 @@ class BigPlanWorkSummary:
     done_ratio: float
 
 
-@dataclass
+@use_case_result_part
 class RecurringTaskWorkSummary:
     """The reporting summary."""
 
@@ -138,7 +141,7 @@ class RecurringTaskWorkSummary:
     streak_plot: str = field(hash=False, compare=False, repr=False, default="")
 
 
-@dataclass
+@use_case_result_part
 class PerProjectBreakdownItem:
     """The report for a particular project."""
 
@@ -148,7 +151,7 @@ class PerProjectBreakdownItem:
     big_plans_summary: WorkableSummary
 
 
-@dataclass
+@use_case_result_part
 class PerPeriodBreakdownItem:
     """The report for a particular time period."""
 
@@ -157,7 +160,7 @@ class PerPeriodBreakdownItem:
     big_plans_summary: WorkableSummary
 
 
-@dataclass
+@use_case_result_part
 class PerBigPlanBreakdownItem:
     """The report for a particular big plan."""
 
@@ -167,7 +170,7 @@ class PerBigPlanBreakdownItem:
     summary: BigPlanWorkSummary
 
 
-@dataclass
+@use_case_result_part
 class PerHabitBreakdownItem:
     """The report for a particular habit."""
 
@@ -179,7 +182,7 @@ class PerHabitBreakdownItem:
     summary: RecurringTaskWorkSummary
 
 
-@dataclass
+@use_case_result_part
 class PerChoreBreakdownItem:
     """The report for a particular chore."""
 
@@ -191,7 +194,7 @@ class PerChoreBreakdownItem:
     summary: RecurringTaskWorkSummary
 
 
-@dataclass
+@use_case_result
 class ReportResult(UseCaseResultBase):
     """Report result."""
 

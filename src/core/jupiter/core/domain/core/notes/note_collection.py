@@ -1,17 +1,22 @@
 """The note collection."""
-from dataclasses import dataclass
 
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
-from jupiter.core.framework.entity import ContainsMany, IsRefId, TrunkEntity
+from jupiter.core.framework.entity import (
+    ContainsMany,
+    IsRefId,
+    ParentLink,
+    TrunkEntity,
+    entity,
+)
 
 
-@dataclass
+@entity
 class NoteCollection(TrunkEntity):
     """A note collection."""
 
-    workspace_ref_id: EntityId
+    workspace: ParentLink
 
     notes = ContainsMany(Note, note_collection_ref_id=IsRefId())
 
@@ -21,12 +26,4 @@ class NoteCollection(TrunkEntity):
         workspace_ref_id: EntityId,
     ) -> "NoteCollection":
         """Create a inbox task collection."""
-        return NoteCollection._create(
-            ctx,
-            workspace_ref_id=workspace_ref_id,
-        )
-
-    @property
-    def parent_ref_id(self) -> EntityId:
-        """The parent."""
-        return self.workspace_ref_id
+        return NoteCollection._create(ctx, workspace=ParentLink(workspace_ref_id))

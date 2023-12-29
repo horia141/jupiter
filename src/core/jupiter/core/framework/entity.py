@@ -2,7 +2,18 @@
 import abc
 import dataclasses
 from dataclasses import dataclass
-from typing import Any, Callable, Generic, List, Optional, Type, TypeVar, Union, cast
+from typing import (
+    Any,
+    Callable,
+    Generic,
+    List,
+    Optional,
+    Type,
+    TypeVar,
+    Union,
+    cast,
+    get_origin,
+)
 
 from jupiter.core.domain.core.entity_name import EntityName
 from jupiter.core.domain.core.tags.tag_name import TagName
@@ -11,7 +22,7 @@ from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.event import Event, EventKind
 from jupiter.core.framework.value import EnumValue, Value
-from typing_extensions import dataclass_transform
+from typing_extensions import dataclass_transform, get_args
 
 FIRST_VERSION = 1
 
@@ -101,7 +112,9 @@ class Entity:
 
 @dataclass_transform()
 def entity(cls: type[_EntityT]) -> type[_EntityT]:
-    return dataclass(cls)
+    new_cls = dataclass(cls)
+    _check_entity_has_parent_field(new_cls)
+    return new_cls
 
 
 @dataclass
@@ -120,8 +133,19 @@ class IsOneOfRefId:
         self.field_name = field_name
 
 
-EntityLinkFilterRaw = Value | EnumValue | IsRefId | IsOneOfRefId
-EntityLinkFilterCompiled = Value | EnumValue | EntityId | list[EntityId]
+@dataclass
+class ParentLink:
+    """A link to a parent entity."""
+
+    ref_id: EntityId
+
+    def as_int(self) -> int:
+        """Return the ref id as an integer."""
+        return self.ref_id.as_int()
+
+
+EntityLinkFilterRaw = None | Value | EnumValue | IsRefId | IsOneOfRefId
+EntityLinkFilterCompiled = None | Value | EnumValue | EntityId | list[EntityId]
 EntityLinkFiltersRaw = dict[str, EntityLinkFilterRaw]
 EntityLinkFiltersCompiled = dict[str, EntityLinkFilterCompiled]
 
@@ -135,6 +159,7 @@ class EntityLink(Generic[_EntityT]):
 
     def __init__(self, the_type: Type[_EntityT], **kwargs: EntityLinkFilterRaw):
         """Constructor."""
+        _check_entity_can_be_filterd_by(the_type, kwargs)
         self.the_type = the_type
         self.filters = kwargs
 
@@ -142,7 +167,9 @@ class EntityLink(Generic[_EntityT]):
         """Get the filters for an entity."""
         reified_filters: EntityLinkFiltersCompiled = {}
         for k, v in self.filters.items():
-            if isinstance(v, Value):
+            if v is None:
+                reified_filters[k] = None
+            elif isinstance(v, Value):
                 reified_filters[k] = v
             elif isinstance(v, EnumValue):
                 reified_filters[k] = v
@@ -308,39 +335,29 @@ def update_entity_action(f: _UpdateEventT) -> _UpdateEventT:  # type: ignore
     return cast(_UpdateEventT, wrapper)  # type: ignore
 
 
-@entity
+@dataclass
 class RootEntity(Entity):
     """An entity without any parent."""
 
     # example: workspace, user
 
 
-@entity
+@dataclass
 class TrunkEntity(Entity, abc.ABC):
     """An entity with children, which is also a singleton."""
 
     # examples:  vacations collection, projects collection, smart list collection, integrations collection,
     # Zapier+Mail collection, etc
 
-    @property
-    def parent_ref_id(self) -> EntityId:
-        """The parent of this trunk entity."""
-        raise NotImplementedError("""Needs to be implemented.""")
 
-
-@entity
+@dataclass
 class StubEntity(Entity):
     """An entity with no children, but which is also a singleton."""
 
     # examples: GitHub connection, GSuite connection, etc
 
-    @property
-    def parent_ref_id(self) -> EntityId:
-        """The parent of this stub entity."""
-        raise NotImplementedError("""Needs to be implemented.""")
 
-
-@entity
+@dataclass
 class CrownEntity(Entity):
     """A common name for branch and leaf entities."""
 
@@ -349,7 +366,26 @@ class CrownEntity(Entity):
     @property
     def parent_ref_id(self) -> EntityId:
         """The parent of this branch entity."""
-        raise NotImplementedError("""Needs to be implemented.""")
+        all_fields = dataclasses.fields(self)
+
+        found_cnt = 0
+        found = None
+
+        for field in all_fields:
+            if field.type is not ParentLink:
+                continue
+            found_cnt += 1
+            found = cast(ParentLink, getattr(self, field.name)).ref_id
+
+        if found_cnt == 0:
+            raise Exception(
+                f"Entity {self.__class__} needs to define a ParentLink field"
+            )
+        elif found_cnt >= 2:
+            raise Exception(f"Entity {self.__class__} has more than one ParentLink")
+
+        assert found is not None
+        return found
 
 
 @dataclass
@@ -371,3 +407,110 @@ class BranchTagEntity(LeafEntity, abc.ABC):
     """A leaf entity serving as a tag for other entities on a branch.."""
 
     tag_name: TagName
+
+
+def _check_entity_has_parent_field(cls: type[_EntityT]) -> None:
+    all_fields = dataclasses.fields(cls)
+
+    found_cnt = 0
+    for field in all_fields:
+        if field.type is ParentLink:
+            found_cnt += 1
+
+    if issubclass(cls, RootEntity):
+        if found_cnt > 0:
+            raise Exception(f"Entity {cls} has a ParentLink but is a RootEntity")
+    else:
+        if found_cnt == 0:
+            raise Exception(f"Entity {cls} needs to define a ParentLink field")
+        elif found_cnt >= 2:
+            raise Exception(f"Entity {cls} has more than one ParentLink")
+
+
+def _check_entity_can_be_filterd_by(
+    cls: type[_EntityT], filters: EntityLinkFiltersRaw
+) -> None:
+    def _get_real_type(cls: type[_EntityT]) -> tuple[type[_EntityT], bool]:
+        base_type = get_origin(cls)
+        if base_type is Union:
+            base_args = get_args(cls)
+            if len(base_args) > 2:
+                raise Exception(f"Type {cls} is not compatible with entity types")
+            if type(None) in base_args:
+                return base_args[0], True
+            else:
+                raise Exception(f"Type {cls} is not compatible with entity types")
+        else:
+            return cls, False
+
+    all_fields = dataclasses.fields(cls)
+
+    for filter_name, filter_rule in filters.items():
+        found_field = None
+        for field in all_fields:
+            if field.name == filter_name:
+                found_field = field
+                break
+            elif field.type is ParentLink and filter_name == field.name + "_ref_id":
+                found_field = field
+                break
+        else:
+            raise Exception(f"Entity {cls} does not have a field {filter_name}")
+
+        found_field_type, found_field_optional = _get_real_type(found_field.type)
+
+        if found_field_optional:
+            if filter_rule is None:
+                continue
+
+        if issubclass(found_field_type, Value):
+            if isinstance(filter_rule, Value):  # type: ignore[unreachable]
+                if found_field_type != filter_rule.__class__:
+                    raise Exception(
+                        f"Filter rule for '{filter_name}' is {filter_rule.__class__} which is not correct"
+                    )
+            elif isinstance(filter_rule, EnumValue):  # type: ignore[unreachable]
+                raise Exception(
+                    f"Filter rule for {filter_name} is {filter_rule.__class__} which is not correct"
+                )
+            elif isinstance(filter_rule, IsRefId) or isinstance(
+                filter_rule, IsOneOfRefId
+            ):
+                if found_field_type != EntityId and found_field_type != ParentLink:
+                    raise Exception(
+                        f"Filter rule for '{filter_name}' is {filter_rule.__class__} which is not correct"
+                    )
+            else:
+                raise Exception(
+                    f"Filter rule for '{filter_name}' is {filter_rule.__class__} which is not correct"
+                )
+        elif issubclass(found_field_type, EnumValue):
+            if isinstance(filter_rule, Value):  # type: ignore[unreachable]
+                raise Exception(
+                    f"Filter rule for '{filter_name}' is {filter_rule.__class__} which is not correct"
+                )
+            elif isinstance(filter_rule, EnumValue):  # type: ignore[unreachable]
+                if found_field_type != filter_rule.__class__:
+                    raise Exception(
+                        f"Filter rule for '{filter_name}' is {filter_rule.__class__} which is not correct"
+                    )
+            elif isinstance(filter_rule, IsRefId) or isinstance(
+                filter_rule, IsOneOfRefId
+            ):
+                if found_field_type != EntityId and found_field_type != ParentLink:
+                    raise Exception(
+                        f"Filter rule for '{filter_name}' is {filter_rule.__class__} which is not correct"
+                    )
+            else:
+                raise Exception(
+                    f"Filter rule for '{filter_name}' is {filter_rule.__class__} which is not correct"
+                )
+        elif issubclass(found_field_type, ParentLink):
+            if not isinstance(filter_rule, IsRefId):  # type: ignore[unreachable]
+                raise Exception(
+                    f"Filter rule for '{filter_name}' is {filter_rule.__class__} which is not correct"
+                )
+        else:
+            raise Exception(
+                f"Filter rule for '{filter_name}' is {filter_rule.__class__} which is not supported"
+            )

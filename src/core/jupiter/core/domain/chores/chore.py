@@ -15,6 +15,7 @@ from jupiter.core.framework.entity import (
     IsRefId,
     LeafEntity,
     OwnsMany,
+    ParentLink,
     create_entity_action,
     entity,
     update_entity_action,
@@ -27,7 +28,7 @@ from jupiter.core.framework.update_action import UpdateAction
 class Chore(LeafEntity):
     """A chore."""
 
-    chore_collection_ref_id: EntityId
+    chore_collection: ParentLink
     project_ref_id: EntityId
     name: ChoreName
     gen_params: RecurringTaskGenParams
@@ -77,7 +78,7 @@ class Chore(LeafEntity):
 
         return Chore._create(
             ctx,
-            chore_collection_ref_id=chore_collection_ref_id,
+            chore_collection=ParentLink(chore_collection_ref_id),
             project_ref_id=project_ref_id,
             name=name,
             gen_params=gen_params,
@@ -204,8 +205,3 @@ class Chore(LeafEntity):
             raise InputValidationError(
                 f"Actionable day {actionable_from_day} should be before due day {due_at_day}",
             )
-
-    @property
-    def parent_ref_id(self) -> EntityId:
-        """The parent."""
-        return self.chore_collection_ref_id

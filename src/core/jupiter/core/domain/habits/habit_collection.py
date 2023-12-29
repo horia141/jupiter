@@ -6,6 +6,7 @@ from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     ContainsMany,
     IsRefId,
+    ParentLink,
     TrunkEntity,
     create_entity_action,
     entity,
@@ -16,7 +17,7 @@ from jupiter.core.framework.entity import (
 class HabitCollection(TrunkEntity):
     """A habit collection."""
 
-    workspace_ref_id: EntityId
+    workspace: ParentLink
 
     habits = ContainsMany(Habit, habit_collection_ref_id=IsRefId())
 
@@ -27,12 +28,4 @@ class HabitCollection(TrunkEntity):
         workspace_ref_id: EntityId,
     ) -> "HabitCollection":
         """Create a habit collection."""
-        return HabitCollection._create(
-            ctx,
-            workspace_ref_id=workspace_ref_id,
-        )
-
-    @property
-    def parent_ref_id(self) -> EntityId:
-        """The parent."""
-        return self.workspace_ref_id
+        return HabitCollection._create(ctx, workspace=ParentLink(workspace_ref_id))

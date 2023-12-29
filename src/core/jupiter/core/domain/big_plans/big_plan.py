@@ -13,6 +13,7 @@ from jupiter.core.framework.entity import (
     IsRefId,
     LeafEntity,
     OwnsMany,
+    ParentLink,
     create_entity_action,
     entity,
     update_entity_action,
@@ -24,7 +25,7 @@ from jupiter.core.framework.update_action import UpdateAction
 class BigPlan(LeafEntity):
     """A big plan."""
 
-    big_plan_collection_ref_id: EntityId
+    big_plan_collection: ParentLink
     project_ref_id: EntityId
     name: BigPlanName
     status: BigPlanStatus
@@ -56,7 +57,7 @@ class BigPlan(LeafEntity):
 
         return BigPlan._create(
             ctx,
-            big_plan_collection_ref_id=big_plan_collection_ref_id,
+            big_plan_collection=ParentLink(big_plan_collection_ref_id),
             project_ref_id=project_ref_id,
             name=name,
             status=status,
@@ -140,8 +141,3 @@ class BigPlan(LeafEntity):
             actionable_date=new_actionable_date,
             due_date=new_due_date,
         )
-
-    @property
-    def parent_ref_id(self) -> EntityId:
-        """The parent."""
-        return self.big_plan_collection_ref_id

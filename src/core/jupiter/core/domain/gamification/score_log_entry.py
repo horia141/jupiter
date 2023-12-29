@@ -10,14 +10,19 @@ from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
-from jupiter.core.framework.entity import LeafEntity, create_entity_action, entity
+from jupiter.core.framework.entity import (
+    LeafEntity,
+    ParentLink,
+    create_entity_action,
+    entity,
+)
 
 
 @entity
 class ScoreLogEntry(LeafEntity):
     """A record of a win or loss in accomplishing a task."""
 
-    score_log_ref_id: EntityId
+    score_log: ParentLink
     source: ScoreSource
     task_ref_id: EntityId
     difficulty: Difficulty | None
@@ -45,7 +50,7 @@ class ScoreLogEntry(LeafEntity):
         return ScoreLogEntry._create(
             ctx,
             name=EntityName(f"For InboxTask #{inbox_task.ref_id} '{inbox_task.name}'"),
-            score_log_ref_id=score_log_ref_id,
+            score_log=ParentLink(score_log_ref_id),
             source=ScoreSource.INBOX_TASK,
             task_ref_id=inbox_task.ref_id,
             difficulty=inbox_task.difficulty,

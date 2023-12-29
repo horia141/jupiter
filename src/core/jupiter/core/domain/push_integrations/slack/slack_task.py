@@ -17,6 +17,7 @@ from jupiter.core.framework.entity import (
     IsRefId,
     LeafEntity,
     OwnsAtMostOne,
+    ParentLink,
     create_entity_action,
     entity,
     update_entity_action,
@@ -29,7 +30,7 @@ from jupiter.core.framework.update_action import UpdateAction
 class SlackTask(LeafEntity):
     """A Slack task which needs to be converted into an inbox task."""
 
-    slack_task_collection_ref_id: EntityId
+    slack_task_collection: ParentLink
     user: SlackUserName
     message: str
     generation_extra_info: PushGenerationExtraInfo
@@ -54,7 +55,7 @@ class SlackTask(LeafEntity):
         return SlackTask._create(
             ctx,
             name=SlackTask.build_name(user, channel),
-            slack_task_collection_ref_id=slack_task_collection_ref_id,
+            slack_task_collection=ParentLink(slack_task_collection_ref_id),
             user=user,
             channel=channel,
             message=message,
@@ -96,11 +97,6 @@ class SlackTask(LeafEntity):
             ctx,
             has_generated_task=True,
         )
-
-    @property
-    def parent_ref_id(self) -> EntityId:
-        """The parent."""
-        return self.slack_task_collection_ref_id
 
     @staticmethod
     def build_name(user: SlackUserName, channel: SlackChannelName | None) -> EntityName:

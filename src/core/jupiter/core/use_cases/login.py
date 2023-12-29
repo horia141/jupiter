@@ -1,5 +1,4 @@
 """Use case for logging in as a particular user."""
-from dataclasses import dataclass
 
 from jupiter.core.domain.auth.auth_token_ext import AuthTokenExt
 from jupiter.core.domain.auth.password_plain import PasswordPlain
@@ -9,6 +8,8 @@ from jupiter.core.framework.secure import secure_class
 from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
     UseCaseResultBase,
+    use_case_args,
+    use_case_result,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppGuestReadonlyUseCase,
@@ -20,7 +21,7 @@ class InvalidLoginCredentialsError(Exception):
     """Error raised when either an email address or password are not good."""
 
 
-@dataclass
+@use_case_args
 class LoginArgs(UseCaseArgsBase):
     """Login arguments."""
 
@@ -28,7 +29,7 @@ class LoginArgs(UseCaseArgsBase):
     password: PasswordPlain
 
 
-@dataclass
+@use_case_result
 class LoginResult(UseCaseResultBase):
     """Login result."""
 

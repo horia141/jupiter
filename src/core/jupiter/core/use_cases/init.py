@@ -1,5 +1,4 @@
 """UseCase for initialising the workspace."""
-from dataclasses import dataclass
 from typing import Final
 
 from jupiter.core.domain.auth.auth import Auth
@@ -53,6 +52,8 @@ from jupiter.core.framework.use_case import (
     ProgressReporterFactory,
     UseCaseArgsBase,
     UseCaseResultBase,
+    use_case_args,
+    use_case_result,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppGuestMutationUseCase,
@@ -63,7 +64,7 @@ from jupiter.core.utils.global_properties import GlobalProperties
 from jupiter.core.utils.time_provider import TimeProvider
 
 
-@dataclass
+@use_case_args
 class InitArgs(UseCaseArgsBase):
     """Init use case arguments."""
 
@@ -78,7 +79,7 @@ class InitArgs(UseCaseArgsBase):
     workspace_feature_flags: WorkspaceFeatureFlags
 
 
-@dataclass
+@use_case_result
 class InitResult(UseCaseResultBase):
     """Init use case result."""
 

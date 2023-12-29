@@ -1,5 +1,4 @@
 """The command for creating a smart list item."""
-from dataclasses import dataclass
 from typing import List, Optional
 
 from jupiter.core.domain.core.url import URL
@@ -16,6 +15,8 @@ from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
     UseCaseResultBase,
+    use_case_args,
+    use_case_result,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
@@ -24,7 +25,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class SmartListItemCreateArgs(UseCaseArgsBase):
     """SmartListItemCreate args."""
 
@@ -35,7 +36,7 @@ class SmartListItemCreateArgs(UseCaseArgsBase):
     url: Optional[URL] = None
 
 
-@dataclass
+@use_case_result
 class SmartListItemCreateResult(UseCaseResultBase):
     """SmartListItemCreate result."""
 

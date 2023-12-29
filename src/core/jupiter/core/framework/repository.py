@@ -108,6 +108,14 @@ class RootEntityRepository(EntityRepository[RootEntityT], abc.ABC):
     async def load_optional(self, entity_id: EntityId) -> Optional[RootEntityT]:
         """Loads the root entity but returns null if there isn't one."""
 
+    @abc.abstractmethod
+    async def find_all(
+        self,
+        allow_archived: bool = False,
+        filter_ref_ids: Iterable[EntityId] | None = None,
+    ) -> list[RootEntityT]:
+        """Find all root entities matching some criteria."""
+
 
 class TrunkEntityAlreadyExistsError(EntityAlreadyExistsError):
     """Error raised when a trunk entity already exists."""
@@ -126,6 +134,12 @@ class TrunkEntityRepository(EntityRepository[TrunkEntityT], abc.ABC):
     @abc.abstractmethod
     async def load_by_parent(self, parent_ref_id: EntityId) -> TrunkEntityT:
         """Retrieve a trunk by its owning parent id."""
+
+    @abc.abstractmethod
+    async def load_by_id(
+        self, ref_id: EntityId, allow_archived: bool = False
+    ) -> TrunkEntityT:
+        """Retrieve a trunk by its id."""
 
 
 class StubEntityAlreadyExistsError(EntityAlreadyExistsError):

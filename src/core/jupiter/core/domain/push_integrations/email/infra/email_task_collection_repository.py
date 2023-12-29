@@ -6,18 +6,8 @@ from jupiter.core.domain.push_integrations.email.email_task_collection import (
 )
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.repository import (
-    TrunkEntityAlreadyExistsError,
-    TrunkEntityNotFoundError,
     TrunkEntityRepository,
 )
-
-
-class EmailTaskCollectionAlreadyExistsError(TrunkEntityAlreadyExistsError):
-    """Error raised when an email task collection already exists."""
-
-
-class EmailTaskCollectionNotFoundError(TrunkEntityNotFoundError):
-    """Error raised when an email task collection is not found."""
 
 
 class EmailTaskCollectionRepository(

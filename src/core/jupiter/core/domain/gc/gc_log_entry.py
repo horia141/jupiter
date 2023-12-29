@@ -9,6 +9,7 @@ from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     CrownEntity,
     LeafEntity,
+    ParentLink,
     create_entity_action,
     entity,
     update_entity_action,
@@ -20,7 +21,7 @@ from jupiter.core.framework.event import EventSource
 class GCLogEntry(LeafEntity):
     """A particular entry in the GC log."""
 
-    gc_log_ref_id: EntityId
+    gc_log: ParentLink
     source: EventSource
     gc_targets: list[SyncTarget]
     opened: bool
@@ -37,7 +38,7 @@ class GCLogEntry(LeafEntity):
         return GCLogEntry._create(
             ctx,
             name=GCLogEntry.build_name(gc_targets, ctx.action_timestamp),
-            gc_log_ref_id=gc_log_ref_id,
+            gc_log=ParentLink(gc_log_ref_id),
             source=ctx.event_source,
             gc_targets=gc_targets,
             opened=True,

@@ -1,5 +1,4 @@
 """The command for finding workspaces."""
-from dataclasses import dataclass
 
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -7,6 +6,8 @@ from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
     UseCaseResultBase,
+    use_case_args,
+    use_case_result,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCaseContext,
@@ -15,12 +16,12 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class WorkspaceLoadArgs(UseCaseArgsBase):
     """Workspace find args."""
 
 
-@dataclass
+@use_case_result
 class WorkspaceLoadResult(UseCaseResultBase):
     """PersonFindResult object."""
 

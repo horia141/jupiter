@@ -1,5 +1,4 @@
 """The command for loading a progress reporter specific token."""
-from dataclasses import dataclass
 
 from jupiter.core.domain.auth.auth_token_ext import AuthTokenExt
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -7,6 +6,8 @@ from jupiter.core.framework.secure import secure_class
 from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
     UseCaseResultBase,
+    use_case_args,
+    use_case_result,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCaseContext,
@@ -15,12 +16,12 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class LoadProgressReporterTokenArgs(UseCaseArgsBase):
     """Load progress reporter token args."""
 
 
-@dataclass
+@use_case_result
 class LoadProgressReporterTokenResult(UseCaseResultBase):
     """Get progress reporter token result."""
 

@@ -9,6 +9,7 @@ from jupiter.core.framework.entity import (
     IsRefId,
     LeafEntity,
     OwnsAtMostOne,
+    ParentLink,
     create_entity_action,
     entity,
     update_entity_action,
@@ -20,7 +21,7 @@ from jupiter.core.framework.update_action import UpdateAction
 class MetricEntry(LeafEntity):
     """A metric entry."""
 
-    metric_ref_id: EntityId
+    metric: ParentLink
     collection_time: ADate
     value: float
 
@@ -40,7 +41,7 @@ class MetricEntry(LeafEntity):
         return MetricEntry._create(
             ctx,
             name=MetricEntry.build_name(collection_time, value),
-            metric_ref_id=metric_ref_id,
+            metric=ParentLink(metric_ref_id),
             collection_time=collection_time,
             value=value,
         )
@@ -58,11 +59,6 @@ class MetricEntry(LeafEntity):
             collection_time=collection_time.or_else(self.collection_time),
             value=value.or_else(self.value),
         )
-
-    @property
-    def parent_ref_id(self) -> EntityId:
-        """The parent."""
-        return self.metric_ref_id
 
     @staticmethod
     def build_name(collection_time: ADate, value: float) -> EntityName:

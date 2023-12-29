@@ -24,11 +24,11 @@ class HabitArchiveService:
             return
 
         habit_collection = await uow.habit_collection_repository.load_by_id(
-            habit.habit_collection_ref_id,
+            habit.habit_collection.ref_id,
         )
         inbox_task_collection = (
             await uow.inbox_task_collection_repository.load_by_parent(
-                habit_collection.workspace_ref_id,
+                habit_collection.workspace.ref_id,
             )
         )
         inbox_tasks_to_archive = await uow.inbox_task_repository.find_all_with_filters(

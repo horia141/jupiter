@@ -20,6 +20,7 @@ from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.json import JSONDictType, process_primitive_to_json
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.utils.time_provider import TimeProvider
+from typing_extensions import dataclass_transform
 
 LOGGER = logging.getLogger(__name__)
 
@@ -70,9 +71,30 @@ class UseCaseArgsBase(UseCaseIOBase):
     """The base class for use case args types."""
 
 
+_UseCaseArgsT = TypeVar("_UseCaseArgsT", bound=UseCaseArgsBase)
+
+
+@dataclass_transform()
+def use_case_args(cls: type[_UseCaseArgsT]) -> type[_UseCaseArgsT]:
+    return dataclass(cls)
+
+
 @dataclass
 class UseCaseResultBase(UseCaseIOBase):
     """The base class for use case args results."""
+
+
+_UseCaseResultT = TypeVar("_UseCaseResultT", bound=UseCaseResultBase)
+
+
+@dataclass_transform()
+def use_case_result(cls: type[_UseCaseResultT]) -> type[_UseCaseResultT]:
+    return dataclass(cls)
+
+
+@dataclass_transform()
+def use_case_result_part(cls: type[object]) -> type[object]:
+    return dataclass(cls)
 
 
 UseCaseSession = TypeVar("UseCaseSession", bound=UseCaseSessionBase)

@@ -11,6 +11,7 @@ from jupiter.core.framework.entity import (
     BranchEntity,
     ContainsMany,
     IsRefId,
+    ParentLink,
     create_entity_action,
     entity,
     update_entity_action,
@@ -22,7 +23,7 @@ from jupiter.core.framework.update_action import UpdateAction
 class SmartList(BranchEntity):
     """A smart list."""
 
-    smart_list_collection_ref_id: EntityId
+    smart_list_collection: ParentLink
     name: SmartListName
     icon: Optional[EntityIcon]
 
@@ -40,7 +41,7 @@ class SmartList(BranchEntity):
         """Create a smart list."""
         return SmartList._create(
             ctx,
-            smart_list_collection_ref_id=smart_list_collection_ref_id,
+            smart_list_collection=ParentLink(smart_list_collection_ref_id),
             name=name,
             icon=icon,
         )
@@ -58,8 +59,3 @@ class SmartList(BranchEntity):
             name=name.or_else(self.name),
             icon=icon.or_else(self.icon),
         )
-
-    @property
-    def parent_ref_id(self) -> EntityId:
-        """The parent."""
-        return self.smart_list_collection_ref_id

@@ -1,5 +1,4 @@
 """The command for creating a project."""
-from dataclasses import dataclass
 
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.projects.project import Project
@@ -9,6 +8,8 @@ from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
     UseCaseResultBase,
+    use_case_args,
+    use_case_result,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
@@ -17,14 +18,14 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class ProjectCreateArgs(UseCaseArgsBase):
     """Project create args."""
 
     name: ProjectName
 
 
-@dataclass
+@use_case_result
 class ProjectCreateResult(UseCaseResultBase):  # type: ignore
     """Project create results."""
 

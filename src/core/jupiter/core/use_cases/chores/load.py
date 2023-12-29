@@ -1,5 +1,4 @@
 """Use case for loading a particular chore."""
-from dataclasses import dataclass
 
 from jupiter.core.domain.chores.chore import Chore
 from jupiter.core.domain.features import WorkspaceFeature
@@ -10,6 +9,8 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
     UseCaseResultBase,
+    use_case_args,
+    use_case_result,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCaseContext,
@@ -18,7 +19,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class ChoreLoadArgs(UseCaseArgsBase):
     """ChoreLoadArgs."""
 
@@ -26,7 +27,7 @@ class ChoreLoadArgs(UseCaseArgsBase):
     allow_archived: bool
 
 
-@dataclass
+@use_case_result
 class ChoreLoadResult(UseCaseResultBase):
     """ChoreLoadResult."""
 

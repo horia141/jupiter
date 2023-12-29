@@ -5,6 +5,7 @@ from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     ContainsMany,
     IsRefId,
+    ParentLink,
     TrunkEntity,
     create_entity_action,
     entity,
@@ -15,7 +16,7 @@ from jupiter.core.framework.entity import (
 class DocCollection(TrunkEntity):
     """A doc collection."""
 
-    workspace_ref_id: EntityId
+    workspace: ParentLink
 
     docs = ContainsMany(Doc, doc_collection_ref_id=IsRefId())
 
@@ -26,12 +27,4 @@ class DocCollection(TrunkEntity):
         workspace_ref_id: EntityId,
     ) -> "DocCollection":
         """Create a inbox task collection."""
-        return DocCollection._create(
-            ctx,
-            workspace_ref_id=workspace_ref_id,
-        )
-
-    @property
-    def parent_ref_id(self) -> EntityId:
-        """The parent."""
-        return self.workspace_ref_id
+        return DocCollection._create(ctx, workspace=ParentLink(workspace_ref_id))

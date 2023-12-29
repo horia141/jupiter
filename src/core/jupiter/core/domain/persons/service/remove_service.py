@@ -26,7 +26,7 @@ class PersonRemoveService:
         """Execute the command's action."""
         inbox_task_collection = (
             await uow.inbox_task_collection_repository.load_by_parent(
-                person_collection.workspace_ref_id,
+                person_collection.workspace.ref_id,
             )
         )
         all_inbox_tasks = await uow.inbox_task_repository.find_all_with_filters(

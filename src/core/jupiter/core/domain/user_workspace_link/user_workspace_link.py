@@ -20,7 +20,5 @@ class UserWorkspaceLink(RootEntity):
     ) -> "UserWorkspaceLink":
         """Create a new user workspace link."""
         return UserWorkspaceLink._create(
-            ctx,
-            user_ref_id=user_ref_id,
-            workspace_ref_id=workspace_ref_id,
+            ctx, user_ref_id=user_ref_id, workspace_ref_id=workspace_ref_id
         )

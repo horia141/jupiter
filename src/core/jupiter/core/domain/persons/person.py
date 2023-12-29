@@ -16,6 +16,7 @@ from jupiter.core.framework.entity import (
     LeafEntity,
     OwnsAtMostOne,
     OwnsMany,
+    ParentLink,
     create_entity_action,
     entity,
     update_entity_action,
@@ -27,7 +28,7 @@ from jupiter.core.framework.update_action import UpdateAction
 class Person(LeafEntity):
     """A person."""
 
-    person_collection_ref_id: EntityId
+    person_collection: ParentLink
     name: PersonName
     relationship: PersonRelationship
     catch_up_params: Optional[RecurringTaskGenParams] = None
@@ -54,7 +55,7 @@ class Person(LeafEntity):
         """Create a person."""
         return Person._create(
             ctx,
-            person_collection_ref_id=person_collection_ref_id,
+            person_collection=ParentLink(person_collection_ref_id),
             name=name,
             relationship=relationship,
             catch_up_params=catch_up_params,
@@ -88,8 +89,3 @@ class Person(LeafEntity):
             return 14
         else:
             return 2
-
-    @property
-    def parent_ref_id(self) -> EntityId:
-        """The parent."""
-        return self.person_collection_ref_id

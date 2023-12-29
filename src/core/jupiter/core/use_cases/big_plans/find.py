@@ -1,5 +1,4 @@
 """The command for finding a big plan."""
-from dataclasses import dataclass
 from typing import List, Optional
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
@@ -14,6 +13,9 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
     UseCaseResultBase,
+    use_case_args,
+    use_case_result,
+    use_case_result_part,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCaseContext,
@@ -22,7 +24,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class BigPlanFindArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
@@ -33,7 +35,7 @@ class BigPlanFindArgs(UseCaseArgsBase):
     filter_project_ref_ids: Optional[List[EntityId]] = None
 
 
-@dataclass
+@use_case_result_part
 class BigPlanFindResultEntry:
     """A single big plan result."""
 
@@ -42,7 +44,7 @@ class BigPlanFindResultEntry:
     inbox_tasks: Optional[List[InboxTask]] = None
 
 
-@dataclass
+@use_case_result
 class BigPlanFindResult(UseCaseResultBase):
     """PersonFindResult."""
 

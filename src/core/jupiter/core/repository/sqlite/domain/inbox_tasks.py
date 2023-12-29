@@ -1,5 +1,5 @@
 """The SQLite repository for inbox tasks."""
-from typing import Final, Iterable, List, Optional
+from typing import Iterable, List, Optional
 
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.difficulty import Difficulty
@@ -10,22 +10,18 @@ from jupiter.core.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.core.domain.inbox_tasks.infra.inbox_task_collection_repository import (
-    InboxTaskCollectionNotFoundError,
     InboxTaskCollectionRepository,
 )
 from jupiter.core.domain.inbox_tasks.infra.inbox_task_repository import (
-    InboxTaskNotFoundError,
     InboxTaskRepository,
 )
-from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
+from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
-from jupiter.core.framework.entity import EntityLinkFilterCompiled
-from jupiter.core.repository.sqlite.infra.events import (
-    build_event_table,
-    remove_events,
-    upsert_events,
+from jupiter.core.framework.entity import ParentLink
+from jupiter.core.repository.sqlite.infra.repository import (
+    SqliteLeafEntityRepository,
+    SqliteTrunkEntityRepository,
 )
-from jupiter.core.repository.sqlite.infra.filters import compile_query_relative_to
 from jupiter.core.repository.sqlite.infra.row import RowType
 from sqlalchemy import (
     Boolean,
@@ -37,132 +33,54 @@ from sqlalchemy import (
     String,
     Table,
     Unicode,
-    delete,
-    insert,
     select,
-    update,
 )
 from sqlalchemy.ext.asyncio import AsyncConnection
 
 
-class SqliteInboxTaskCollectionRepository(InboxTaskCollectionRepository):
+class SqliteInboxTaskCollectionRepository(
+    SqliteTrunkEntityRepository[InboxTaskCollection], InboxTaskCollectionRepository
+):
     """The inbox task collection repository."""
-
-    _connection: Final[AsyncConnection]
-    _inbox_task_collection_table: Final[Table]
-    _inbox_task_collection_event_table: Final[Table]
 
     def __init__(self, connection: AsyncConnection, metadata: MetaData) -> None:
         """Constructor."""
-        self._connection = connection
-        self._inbox_task_collection_table = Table(
-            "inbox_task_collection",
+        super().__init__(
+            connection,
             metadata,
-            Column("ref_id", Integer, primary_key=True, autoincrement=True),
-            Column("version", Integer, nullable=False),
-            Column("archived", Boolean, nullable=False),
-            Column("created_time", DateTime, nullable=False),
-            Column("last_modified_time", DateTime, nullable=False),
-            Column("archived_time", DateTime, nullable=True),
-            Column(
-                "workspace_ref_id",
-                Integer,
-                ForeignKey("workspace_ref_id.ref_id"),
-                index=True,
-                unique=True,
-                nullable=False,
-            ),
-            keep_existing=True,
-        )
-        self._inbox_task_collection_event_table = build_event_table(
-            self._inbox_task_collection_table,
-            metadata,
-        )
-
-    async def create(self, entity: InboxTaskCollection) -> InboxTaskCollection:
-        """Create the inbox task collection."""
-        ref_id_kw = {}
-        if entity.ref_id != BAD_REF_ID:
-            ref_id_kw["ref_id"] = entity.ref_id.as_int()
-        result = await self._connection.execute(
-            insert(self._inbox_task_collection_table).values(
-                **ref_id_kw,
-                version=entity.version,
-                archived=entity.archived,
-                created_time=entity.created_time.to_db(),
-                last_modified_time=entity.last_modified_time.to_db(),
-                archived_time=entity.archived_time.to_db()
-                if entity.archived_time
-                else None,
-                workspace_ref_id=entity.workspace_ref_id.as_int(),
+            Table(
+                "inbox_task_collection",
+                metadata,
+                Column("ref_id", Integer, primary_key=True, autoincrement=True),
+                Column("version", Integer, nullable=False),
+                Column("archived", Boolean, nullable=False),
+                Column("created_time", DateTime, nullable=False),
+                Column("last_modified_time", DateTime, nullable=False),
+                Column("archived_time", DateTime, nullable=True),
+                Column(
+                    "workspace_ref_id",
+                    Integer,
+                    ForeignKey("workspace_ref_id.ref_id"),
+                    index=True,
+                    unique=True,
+                    nullable=False,
+                ),
+                keep_existing=True,
             ),
         )
-        entity = entity.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
-        await upsert_events(
-            self._connection,
-            self._inbox_task_collection_event_table,
-            entity,
-        )
-        return entity
 
-    async def save(self, entity: InboxTaskCollection) -> InboxTaskCollection:
-        """Save the inbox task collection."""
-        result = await self._connection.execute(
-            update(self._inbox_task_collection_table)
-            .where(self._inbox_task_collection_table.c.ref_id == entity.ref_id.as_int())
-            .values(
-                version=entity.version,
-                archived=entity.archived,
-                last_modified_time=entity.last_modified_time.to_db(),
-                archived_time=entity.archived_time.to_db()
-                if entity.archived_time
-                else None,
-                workspace_ref_id=entity.workspace_ref_id.as_int(),
-            ),
-        )
-        if result.rowcount == 0:
-            raise InboxTaskCollectionNotFoundError(
-                "The inbox task collection does not exist",
-            )
-        await upsert_events(
-            self._connection,
-            self._inbox_task_collection_event_table,
-            entity,
-        )
-        return entity
-
-    async def load_by_id(
-        self,
-        ref_id: EntityId,
-        allow_archived: bool = False,
-    ) -> InboxTaskCollection:
-        """Retrieve the inbox task collection."""
-        query_stmt = select(self._inbox_task_collection_table).where(
-            self._inbox_task_collection_table.c.ref_id == ref_id.as_int(),
-        )
-        if not allow_archived:
-            query_stmt = query_stmt.where(
-                self._inbox_task_collection_table.c.archived.is_(False),
-            )
-        result = (await self._connection.execute(query_stmt)).first()
-        if result is None:
-            raise InboxTaskCollectionNotFoundError(
-                f"inbox task collection with id {ref_id} does not exist",
-            )
-        return self._row_to_entity(result)
-
-    async def load_by_parent(self, parent_ref_id: EntityId) -> InboxTaskCollection:
-        """Retrieve the inbox task collection for a project."""
-        query_stmt = select(self._inbox_task_collection_table).where(
-            self._inbox_task_collection_table.c.workspace_ref_id
-            == parent_ref_id.as_int(),
-        )
-        result = (await self._connection.execute(query_stmt)).first()
-        if result is None:
-            raise InboxTaskCollectionNotFoundError(
-                f"inbox task collection for workspace {parent_ref_id} does not exist",
-            )
-        return self._row_to_entity(result)
+    @staticmethod
+    def _entity_to_row(entity: InboxTaskCollection) -> RowType:
+        return {
+            "version": entity.version,
+            "archived": entity.archived,
+            "created_time": entity.created_time.to_db(),
+            "last_modified_time": entity.last_modified_time.to_db(),
+            "archived_time": entity.archived_time.to_db()
+            if entity.archived_time
+            else None,
+            "workspace_ref_id": entity.workspace.as_int(),
+        }
 
     @staticmethod
     def _row_to_entity(row: RowType) -> InboxTaskCollection:
@@ -176,258 +94,94 @@ class SqliteInboxTaskCollectionRepository(InboxTaskCollectionRepository):
             else None,
             last_modified_time=Timestamp.from_db(row["last_modified_time"]),
             events=[],
-            workspace_ref_id=EntityId.from_raw(str(row["workspace_ref_id"])),
+            workspace=ParentLink(EntityId.from_raw(str(row["workspace_ref_id"]))),
         )
 
 
-class SqliteInboxTaskRepository(InboxTaskRepository):
+class SqliteInboxTaskRepository(
+    SqliteLeafEntityRepository[InboxTask], InboxTaskRepository
+):
     """The inbox task repository."""
-
-    _connection: Final[AsyncConnection]
-    _inbox_task_table: Final[Table]
-    _inbox_task_event_table: Final[Table]
 
     def __init__(self, connection: AsyncConnection, metadata: MetaData) -> None:
         """Constructor."""
-        self._connection = connection
-        self._inbox_task_table = Table(
-            "inbox_task",
+        super().__init__(
+            connection,
             metadata,
-            Column("ref_id", Integer, primary_key=True, autoincrement=True),
-            Column("version", Integer, nullable=False),
-            Column("archived", Boolean, nullable=False),
-            Column("created_time", DateTime, nullable=False),
-            Column("last_modified_time", DateTime, nullable=False),
-            Column("archived_time", DateTime, nullable=True),
-            Column(
-                "inbox_task_collection_ref_id",
-                Integer,
-                ForeignKey("inbox_task_collection.ref_id"),
-                nullable=False,
+            Table(
+                "inbox_task",
+                metadata,
+                Column("ref_id", Integer, primary_key=True, autoincrement=True),
+                Column("version", Integer, nullable=False),
+                Column("archived", Boolean, nullable=False),
+                Column("created_time", DateTime, nullable=False),
+                Column("last_modified_time", DateTime, nullable=False),
+                Column("archived_time", DateTime, nullable=True),
+                Column(
+                    "inbox_task_collection_ref_id",
+                    Integer,
+                    ForeignKey("inbox_task_collection.ref_id"),
+                    nullable=False,
+                ),
+                Column("source", String(16), nullable=False),
+                Column(
+                    "project_ref_id",
+                    Integer,
+                    ForeignKey("project.ref_id"),
+                    nullable=False,
+                    index=True,
+                ),
+                Column(
+                    "big_plan_ref_id",
+                    Integer,
+                    ForeignKey("big_plan.ref_id"),
+                    nullable=True,
+                ),
+                Column(
+                    "habit_ref_id", Integer, ForeignKey("habit.ref_id"), nullable=True
+                ),
+                Column(
+                    "chore_ref_id", Integer, ForeignKey("chore.ref_id"), nullable=True
+                ),
+                Column(
+                    "metric_ref_id",
+                    Integer,
+                    ForeignKey("metric.ref_id"),
+                    nullable=True,
+                ),
+                Column(
+                    "person_ref_id",
+                    Integer,
+                    ForeignKey("person.ref_id"),
+                    nullable=True,
+                ),
+                Column(
+                    "slack_task_ref_id",
+                    Integer,
+                    ForeignKey("slack_task.ref_id"),
+                    nullable=True,
+                ),
+                Column(
+                    "email_task_ref_id",
+                    Integer,
+                    ForeignKey("email_task.ref_id"),
+                    nullable=True,
+                ),
+                Column("name", Unicode(), nullable=False),
+                Column("status", String(16), nullable=False),
+                Column("eisen", String(20), nullable=False),
+                Column("difficulty", String(10), nullable=True),
+                Column("actionable_date", DateTime, nullable=True),
+                Column("due_date", DateTime, nullable=True),
+                Column("notes", Unicode(), nullable=True),
+                Column("recurring_timeline", String, nullable=True),
+                Column("recurring_repeat_index", Integer, nullable=True),
+                Column("recurring_gen_right_now", DateTime, nullable=True),
+                Column("accepted_time", DateTime, nullable=True),
+                Column("working_time", DateTime, nullable=True),
+                Column("completed_time", DateTime, nullable=True),
+                keep_existing=True,
             ),
-            Column("source", String(16), nullable=False),
-            Column(
-                "project_ref_id",
-                Integer,
-                ForeignKey("project.ref_id"),
-                nullable=False,
-                index=True,
-            ),
-            Column(
-                "big_plan_ref_id",
-                Integer,
-                ForeignKey("big_plan.ref_id"),
-                nullable=True,
-            ),
-            Column("habit_ref_id", Integer, ForeignKey("habit.ref_id"), nullable=True),
-            Column("chore_ref_id", Integer, ForeignKey("chore.ref_id"), nullable=True),
-            Column(
-                "metric_ref_id",
-                Integer,
-                ForeignKey("metric.ref_id"),
-                nullable=True,
-            ),
-            Column(
-                "person_ref_id",
-                Integer,
-                ForeignKey("person.ref_id"),
-                nullable=True,
-            ),
-            Column(
-                "slack_task_ref_id",
-                Integer,
-                ForeignKey("slack_task.ref_id"),
-                nullable=True,
-            ),
-            Column(
-                "email_task_ref_id",
-                Integer,
-                ForeignKey("email_task.ref_id"),
-                nullable=True,
-            ),
-            Column("name", Unicode(), nullable=False),
-            Column("status", String(16), nullable=False),
-            Column("eisen", String(20), nullable=False),
-            Column("difficulty", String(10), nullable=True),
-            Column("actionable_date", DateTime, nullable=True),
-            Column("due_date", DateTime, nullable=True),
-            Column("notes", Unicode(), nullable=True),
-            Column("recurring_timeline", String, nullable=True),
-            Column("recurring_repeat_index", Integer, nullable=True),
-            Column("recurring_gen_right_now", DateTime, nullable=True),
-            Column("accepted_time", DateTime, nullable=True),
-            Column("working_time", DateTime, nullable=True),
-            Column("completed_time", DateTime, nullable=True),
-            keep_existing=True,
-        )
-        self._inbox_task_event_table = build_event_table(
-            self._inbox_task_table,
-            metadata,
-        )
-
-    async def create(self, entity: InboxTask) -> InboxTask:
-        """Create an inbox task."""
-        ref_id_kw = {}
-        if entity.ref_id != BAD_REF_ID:
-            ref_id_kw["ref_id"] = entity.ref_id.as_int()
-        result = await self._connection.execute(
-            insert(self._inbox_task_table).values(
-                **ref_id_kw,
-                version=entity.version,
-                archived=entity.archived,
-                created_time=entity.created_time.to_db(),
-                last_modified_time=entity.last_modified_time.to_db(),
-                archived_time=entity.archived_time.to_db()
-                if entity.archived_time
-                else None,
-                inbox_task_collection_ref_id=entity.inbox_task_collection_ref_id.as_int(),
-                source=str(entity.source),
-                project_ref_id=entity.project_ref_id.as_int(),
-                big_plan_ref_id=entity.big_plan_ref_id.as_int()
-                if entity.big_plan_ref_id
-                else None,
-                habit_ref_id=entity.habit_ref_id.as_int()
-                if entity.habit_ref_id
-                else None,
-                chore_ref_id=entity.chore_ref_id.as_int()
-                if entity.chore_ref_id
-                else None,
-                metric_ref_id=entity.metric_ref_id.as_int()
-                if entity.metric_ref_id
-                else None,
-                person_ref_id=entity.person_ref_id.as_int()
-                if entity.person_ref_id
-                else None,
-                slack_task_ref_id=entity.slack_task_ref_id.as_int()
-                if entity.slack_task_ref_id
-                else None,
-                email_task_ref_id=entity.email_task_ref_id.as_int()
-                if entity.email_task_ref_id
-                else None,
-                name=str(entity.name),
-                status=str(entity.status),
-                eisen=str(entity.eisen),
-                difficulty=str(entity.difficulty) if entity.difficulty else None,
-                actionable_date=entity.actionable_date.to_db()
-                if entity.actionable_date
-                else None,
-                due_date=entity.due_date.to_db() if entity.due_date else None,
-                notes=entity.notes,
-                recurring_timeline=entity.recurring_timeline,
-                recurring_repeat_index=entity.recurring_repeat_index,
-                recurring_gen_right_now=entity.recurring_gen_right_now.to_db()
-                if entity.recurring_gen_right_now
-                else None,
-                accepted_time=entity.accepted_time.to_db()
-                if entity.accepted_time
-                else None,
-                working_time=entity.working_time.to_db()
-                if entity.working_time
-                else None,
-                completed_time=entity.completed_time.to_db()
-                if entity.completed_time
-                else None,
-            ),
-        )
-        entity = entity.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
-        await upsert_events(self._connection, self._inbox_task_event_table, entity)
-        return entity
-
-    async def save(self, entity: InboxTask) -> InboxTask:
-        """Save an inbox task."""
-        result = await self._connection.execute(
-            update(self._inbox_task_table)
-            .where(self._inbox_task_table.c.ref_id == entity.ref_id.as_int())
-            .values(
-                version=entity.version,
-                archived=entity.archived,
-                last_modified_time=entity.last_modified_time.to_db(),
-                archived_time=entity.archived_time.to_db()
-                if entity.archived_time
-                else None,
-                inbox_task_collection_ref_id=entity.inbox_task_collection_ref_id.as_int(),
-                source=str(entity.source),
-                project_ref_id=entity.project_ref_id.as_int(),
-                big_plan_ref_id=entity.big_plan_ref_id.as_int()
-                if entity.big_plan_ref_id
-                else None,
-                habit_ref_id=entity.habit_ref_id.as_int()
-                if entity.habit_ref_id
-                else None,
-                chore_ref_id=entity.chore_ref_id.as_int()
-                if entity.chore_ref_id
-                else None,
-                metric_ref_id=entity.metric_ref_id.as_int()
-                if entity.metric_ref_id
-                else None,
-                person_ref_id=entity.person_ref_id.as_int()
-                if entity.person_ref_id
-                else None,
-                slack_task_ref_id=entity.slack_task_ref_id.as_int()
-                if entity.slack_task_ref_id
-                else None,
-                email_task_ref_id=entity.email_task_ref_id.as_int()
-                if entity.email_task_ref_id
-                else None,
-                name=str(entity.name),
-                status=str(entity.status),
-                eisen=str(entity.eisen),
-                difficulty=str(entity.difficulty) if entity.difficulty else None,
-                actionable_date=entity.actionable_date.to_db()
-                if entity.actionable_date
-                else None,
-                due_date=entity.due_date.to_db() if entity.due_date else None,
-                notes=entity.notes,
-                recurring_timeline=entity.recurring_timeline,
-                recurring_repeat_index=entity.recurring_repeat_index,
-                recurring_gen_right_now=entity.recurring_gen_right_now.to_db()
-                if entity.recurring_gen_right_now
-                else None,
-                accepted_time=entity.accepted_time.to_db()
-                if entity.accepted_time
-                else None,
-                working_time=entity.working_time.to_db()
-                if entity.working_time
-                else None,
-                completed_time=entity.completed_time.to_db()
-                if entity.completed_time
-                else None,
-            ),
-        )
-        if result.rowcount == 0:
-            raise InboxTaskNotFoundError(
-                f"inbox task with id {entity.ref_id} does not exist",
-            )
-        await upsert_events(self._connection, self._inbox_task_event_table, entity)
-        return entity
-
-    async def load_by_id(
-        self,
-        ref_id: EntityId,
-        allow_archived: bool = False,
-    ) -> InboxTask:
-        """Retrieve an inbox task."""
-        query_stmt = select(self._inbox_task_table).where(
-            self._inbox_task_table.c.ref_id == ref_id.as_int(),
-        )
-        if not allow_archived:
-            query_stmt = query_stmt.where(self._inbox_task_table.c.archived.is_(False))
-        result = (await self._connection.execute(query_stmt)).first()
-        if result is None:
-            raise InboxTaskNotFoundError(f"inbox task with id {ref_id} does not exist")
-        return self._row_to_entity(result)
-
-    async def find_all(
-        self,
-        parent_ref_id: EntityId,
-        allow_archived: bool = False,
-        filter_ref_ids: Optional[Iterable[EntityId]] = None,
-    ) -> List[InboxTask]:
-        """Find all the inbox task."""
-        return await self.find_all_with_filters(
-            parent_ref_id,
-            allow_archived=allow_archived,
-            filter_ref_ids=filter_ref_ids,
         )
 
     async def find_all_with_filters(
@@ -449,120 +203,144 @@ class SqliteInboxTaskRepository(InboxTaskRepository):
         filter_last_modified_time_end: Optional[ADate] = None,
     ) -> List[InboxTask]:
         """Find all the inbox task."""
-        query_stmt = select(self._inbox_task_table).where(
-            self._inbox_task_table.c.inbox_task_collection_ref_id
-            == parent_ref_id.as_int(),
+        query_stmt = select(self._table).where(
+            self._table.c.inbox_task_collection_ref_id == parent_ref_id.as_int(),
         )
         if not allow_archived:
-            query_stmt = query_stmt.where(self._inbox_task_table.c.archived.is_(False))
+            query_stmt = query_stmt.where(self._table.c.archived.is_(False))
         if filter_ref_ids is not None:
             query_stmt = query_stmt.where(
-                self._inbox_task_table.c.ref_id.in_(
-                    fi.as_int() for fi in filter_ref_ids
-                ),
+                self._table.c.ref_id.in_(fi.as_int() for fi in filter_ref_ids),
             )
         if filter_sources is not None:
             query_stmt = query_stmt.where(
-                self._inbox_task_table.c.source.in_(s.value for s in filter_sources),
+                self._table.c.source.in_(s.value for s in filter_sources),
             )
         if filter_project_ref_ids is not None:
             query_stmt = query_stmt.where(
-                self._inbox_task_table.c.project_ref_id.in_(
+                self._table.c.project_ref_id.in_(
                     fi.as_int() for fi in filter_project_ref_ids
                 ),
             )
         if filter_big_plan_ref_ids is not None:
             query_stmt = query_stmt.where(
-                self._inbox_task_table.c.big_plan_ref_id.in_(
+                self._table.c.big_plan_ref_id.in_(
                     fi.as_int() for fi in filter_big_plan_ref_ids
                 ),
             )
         if filter_recurring_task_ref_ids is not None:
             query_stmt = query_stmt.where(
-                self._inbox_task_table.c.recurring_task_ref_id.in_(
+                self._table.c.recurring_task_ref_id.in_(
                     fi.as_int() for fi in filter_recurring_task_ref_ids
                 ),
             )
         if filter_habit_ref_ids is not None:
             query_stmt = query_stmt.where(
-                self._inbox_task_table.c.habit_ref_id.in_(
+                self._table.c.habit_ref_id.in_(
                     fi.as_int() for fi in filter_habit_ref_ids
                 ),
             )
         if filter_chore_ref_ids is not None:
             query_stmt = query_stmt.where(
-                self._inbox_task_table.c.chore_ref_id.in_(
+                self._table.c.chore_ref_id.in_(
                     fi.as_int() for fi in filter_chore_ref_ids
                 ),
             )
         if filter_metric_ref_ids is not None:
             query_stmt = query_stmt.where(
-                self._inbox_task_table.c.metric_ref_id.in_(
+                self._table.c.metric_ref_id.in_(
                     fi.as_int() for fi in filter_metric_ref_ids
                 ),
             )
         if filter_person_ref_ids is not None:
             query_stmt = query_stmt.where(
-                self._inbox_task_table.c.person_ref_id.in_(
+                self._table.c.person_ref_id.in_(
                     fi.as_int() for fi in filter_person_ref_ids
                 ),
             )
         if filter_slack_task_ref_ids is not None:
             query_stmt = query_stmt.where(
-                self._inbox_task_table.c.slack_task_ref_id.in_(
+                self._table.c.slack_task_ref_id.in_(
                     fi.as_int() for fi in filter_slack_task_ref_ids
                 ),
             )
         if filter_email_task_ref_ids is not None:
             query_stmt = query_stmt.where(
-                self._inbox_task_table.c.email_task_ref_id.in_(
+                self._table.c.email_task_ref_id.in_(
                     fi.as_int() for fi in filter_email_task_ref_ids
                 ),
             )
         if filter_last_modified_time_start is not None:
             query_stmt = query_stmt.where(
-                self._inbox_task_table.c.last_modified_time
+                self._table.c.last_modified_time
                 >= filter_last_modified_time_start.to_db(),
             )
         if filter_last_modified_time_end is not None:
             query_stmt = query_stmt.where(
-                self._inbox_task_table.c.last_modified_time
+                self._table.c.last_modified_time
                 < filter_last_modified_time_end.to_db(),
             )
         results = await self._connection.execute(query_stmt)
         return [self._row_to_entity(row) for row in results]
 
-    async def find_all_generic(
-        self,
-        allow_archived: bool,
-        **kwargs: EntityLinkFilterCompiled,
-    ) -> List[InboxTask]:
-        query_stmt = select(self._inbox_task_table)
-        if not allow_archived:
-            query_stmt = query_stmt.where(self._inbox_task_table.c.archived.is_(False))
-
-        query_stmt = compile_query_relative_to(
-            query_stmt, self._inbox_task_table, kwargs
-        )
-
-        results = await self._connection.execute(query_stmt)
-        return [self._row_to_entity(row) for row in results]
-
-    async def remove(self, ref_id: EntityId) -> InboxTask:
-        """Remove an inbox task."""
-        query_stmt = select(self._inbox_task_table).where(
-            self._inbox_task_table.c.ref_id == ref_id.as_int(),
-        )
-        result = (await self._connection.execute(query_stmt)).first()
-        if result is None:
-            raise InboxTaskNotFoundError(f"inbox task with id {ref_id} does not exist")
-        await self._connection.execute(
-            delete(self._inbox_task_table).where(
-                self._inbox_task_table.c.ref_id == ref_id.as_int(),
-            ),
-        )
-        await remove_events(self._connection, self._inbox_task_event_table, ref_id)
-        return self._row_to_entity(result)
+    @staticmethod
+    def _entity_to_row(entity: InboxTask) -> RowType:
+        return {
+            "version": entity.version,
+            "archived": entity.archived,
+            "created_time": entity.created_time.to_db(),
+            "last_modified_time": entity.last_modified_time.to_db(),
+            "archived_time": entity.archived_time.to_db()
+            if entity.archived_time
+            else None,
+            "inbox_task_collection_ref_id": entity.inbox_task_collection.as_int(),
+            "source": str(entity.source),
+            "project_ref_id": entity.project_ref_id.as_int(),
+            "big_plan_ref_id": entity.big_plan_ref_id.as_int()
+            if entity.big_plan_ref_id
+            else None,
+            "habit_ref_id": entity.habit_ref_id.as_int()
+            if entity.habit_ref_id
+            else None,
+            "chore_ref_id": entity.chore_ref_id.as_int()
+            if entity.chore_ref_id
+            else None,
+            "metric_ref_id": entity.metric_ref_id.as_int()
+            if entity.metric_ref_id
+            else None,
+            "person_ref_id": entity.person_ref_id.as_int()
+            if entity.person_ref_id
+            else None,
+            "slack_task_ref_id": entity.slack_task_ref_id.as_int()
+            if entity.slack_task_ref_id
+            else None,
+            "email_task_ref_id": entity.email_task_ref_id.as_int()
+            if entity.email_task_ref_id
+            else None,
+            "name": str(entity.name),
+            "status": str(entity.status),
+            "eisen": str(entity.eisen),
+            "difficulty": str(entity.difficulty) if entity.difficulty else None,
+            "actionable_date": entity.actionable_date.to_db()
+            if entity.actionable_date
+            else None,
+            "due_date": entity.due_date.to_db() if entity.due_date else None,
+            "notes": entity.notes,
+            "recurring_timeline": entity.recurring_timeline,
+            "recurring_repeat_index": entity.recurring_repeat_index,
+            "recurring_gen_right_now": entity.recurring_gen_right_now.to_db()
+            if entity.recurring_gen_right_now
+            else None,
+            "accepted_time": entity.accepted_time.to_db()
+            if entity.accepted_time
+            else None,
+            "working_time": entity.working_time.to_db()
+            if entity.working_time
+            else None,
+            "completed_time": entity.completed_time.to_db()
+            if entity.completed_time
+            else None,
+        }
 
     @staticmethod
     def _row_to_entity(row: RowType) -> InboxTask:
@@ -576,8 +354,10 @@ class SqliteInboxTaskRepository(InboxTaskRepository):
             else None,
             last_modified_time=Timestamp.from_db(row["last_modified_time"]),
             events=[],
-            inbox_task_collection_ref_id=EntityId.from_raw(
-                str(row["inbox_task_collection_ref_id"]),
+            inbox_task_collection=ParentLink(
+                EntityId.from_raw(
+                    str(row["inbox_task_collection_ref_id"]),
+                )
             ),
             source=InboxTaskSource.from_raw(row["source"]),
             project_ref_id=EntityId.from_raw(str(row["project_ref_id"])),

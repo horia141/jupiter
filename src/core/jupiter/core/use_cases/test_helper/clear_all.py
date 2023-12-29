@@ -1,5 +1,4 @@
 """The command for clearing all branch and leaf type entities."""
-from dataclasses import dataclass
 from typing import Final
 
 from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
@@ -43,6 +42,7 @@ from jupiter.core.framework.use_case import (
     ProgressReporter,
     ProgressReporterFactory,
     UseCaseArgsBase,
+    use_case_args,
 )
 from jupiter.core.use_cases.infra.storage_engine import UseCaseStorageEngine
 from jupiter.core.use_cases.infra.use_cases import (
@@ -55,7 +55,7 @@ from jupiter.core.utils.global_properties import GlobalProperties
 from jupiter.core.utils.time_provider import TimeProvider
 
 
-@dataclass
+@use_case_args
 class ClearAllArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 

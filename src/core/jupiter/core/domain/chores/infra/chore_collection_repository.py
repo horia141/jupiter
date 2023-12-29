@@ -4,18 +4,8 @@ import abc
 from jupiter.core.domain.chores.chore_collection import ChoreCollection
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.repository import (
-    TrunkEntityAlreadyExistsError,
-    TrunkEntityNotFoundError,
     TrunkEntityRepository,
 )
-
-
-class ChoreCollectionAlreadyExistsError(TrunkEntityAlreadyExistsError):
-    """Error raised when a chore collection already exists."""
-
-
-class ChoreCollectionNotFoundError(TrunkEntityNotFoundError):
-    """Error raised when a chore collection is not found."""
 
 
 class ChoreCollectionRepository(TrunkEntityRepository[ChoreCollection], abc.ABC):

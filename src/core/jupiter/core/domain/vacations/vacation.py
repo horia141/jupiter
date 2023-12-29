@@ -7,6 +7,7 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     LeafEntity,
+    ParentLink,
     create_entity_action,
     entity,
     update_entity_action,
@@ -19,7 +20,7 @@ from jupiter.core.framework.update_action import UpdateAction
 class Vacation(LeafEntity):
     """A vacation."""
 
-    vacation_collection_ref_id: EntityId
+    vacation_collection: ParentLink
     name: VacationName
     start_date: ADate
     end_date: ADate
@@ -40,7 +41,7 @@ class Vacation(LeafEntity):
         return Vacation._create(
             ctx,
             name=name,
-            vacation_collection_ref_id=vacation_collection_ref_id,
+            vacation_collection=ParentLink(vacation_collection_ref_id),
             start_date=start_date,
             end_date=end_date,
         )
@@ -75,8 +76,3 @@ class Vacation(LeafEntity):
             bool,
             end_date <= vacation_end_date,
         )
-
-    @property
-    def parent_ref_id(self) -> EntityId:
-        """The parent."""
-        return self.vacation_collection_ref_id

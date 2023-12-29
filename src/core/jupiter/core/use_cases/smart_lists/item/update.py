@@ -1,5 +1,4 @@
 """The command for updating a smart list item."""
-from dataclasses import dataclass
 from typing import List, Optional
 
 from jupiter.core.domain.core.url import URL
@@ -16,6 +15,7 @@ from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
+    use_case_args,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
@@ -24,7 +24,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class SmartListItemUpdateArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
@@ -65,7 +65,7 @@ class SmartListItemUpdateUseCase(
 
                 smart_list_tag = SmartListTag.new_smart_list_tag(
                     ctx=context.domain_context,
-                    smart_list_ref_id=smart_list_item.smart_list_ref_id,
+                    smart_list_ref_id=smart_list_item.smart_list.ref_id,
                     tag_name=tag,
                 )
                 smart_list_tag = await generic_creator(

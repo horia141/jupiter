@@ -8,6 +8,7 @@ from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     ContainsOne,
     IsRefId,
+    ParentLink,
     TrunkEntity,
     create_entity_action,
     entity,
@@ -18,7 +19,7 @@ from jupiter.core.framework.entity import (
 class PushIntegrationGroup(TrunkEntity):
     """A container for all the group of various push integrations we have."""
 
-    workspace_ref_id: EntityId
+    workspace: ParentLink
 
     email_task_collection = ContainsOne(
         EmailTaskCollection, push_integration_group_ref_id=IsRefId()
@@ -33,10 +34,5 @@ class PushIntegrationGroup(TrunkEntity):
         """Create a habit collection."""
         return PushIntegrationGroup._create(
             ctx,
-            workspace_ref_id=workspace_ref_id,
+            workspace=ParentLink(workspace_ref_id),
         )
-
-    @property
-    def parent_ref_id(self) -> EntityId:
-        """The parent entity id."""
-        return self.workspace_ref_id

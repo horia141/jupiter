@@ -1,5 +1,4 @@
 """A note in the notebook."""
-from dataclasses import dataclass
 
 from jupiter.core.domain.core.entity_name import NOT_USED_NAME
 from jupiter.core.domain.core.notes.note_content_block import OneOfNoteContentBlock
@@ -8,17 +7,19 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     LeafEntity,
+    ParentLink,
     create_entity_action,
+    entity,
     update_entity_action,
 )
 from jupiter.core.framework.update_action import UpdateAction
 
 
-@dataclass
+@entity
 class Note(LeafEntity):
     """A note in the notebook."""
 
-    note_collection_ref_id: EntityId
+    note_collection: ParentLink
     domain: NoteDomain
     source_entity_ref_id: EntityId
     content: list[OneOfNoteContentBlock]
@@ -36,7 +37,7 @@ class Note(LeafEntity):
         return Note._create(
             ctx,
             name=NOT_USED_NAME,
-            note_collection_ref_id=note_collection_ref_id,
+            note_collection=ParentLink(note_collection_ref_id),
             domain=domain,
             source_entity_ref_id=source_entity_ref_id,
             content=content,
@@ -59,8 +60,3 @@ class Note(LeafEntity):
         if self.domain == NoteDomain.DOC:
             return False
         return True
-
-    @property
-    def parent_ref_id(self) -> EntityId:
-        """The parent."""
-        return self.note_collection_ref_id

@@ -26,6 +26,7 @@ from jupiter.core.framework.entity import (
     IsRefId,
     LeafEntity,
     OwnsAtMostOne,
+    ParentLink,
     create_entity_action,
     entity,
     update_entity_action,
@@ -49,7 +50,7 @@ class CannotModifyGeneratedTaskError(Exception):
 class InboxTask(LeafEntity):
     """An inbox task."""
 
-    inbox_task_collection_ref_id: EntityId
+    inbox_task_collection: ParentLink
     source: InboxTaskSource
     project_ref_id: EntityId
     name: InboxTaskName
@@ -101,7 +102,7 @@ class InboxTask(LeafEntity):
 
         return InboxTask._create(
             ctx,
-            inbox_task_collection_ref_id=inbox_task_collection_ref_id,
+            inbox_task_collection=ParentLink(inbox_task_collection_ref_id),
             source=InboxTaskSource.USER
             if big_plan_ref_id is None
             else InboxTaskSource.BIG_PLAN,
@@ -150,7 +151,7 @@ class InboxTask(LeafEntity):
         """Create an inbox task."""
         return InboxTask._create(
             ctx,
-            inbox_task_collection_ref_id=inbox_task_collection_ref_id,
+            inbox_task_collection=ParentLink(inbox_task_collection_ref_id),
             source=InboxTaskSource.HABIT,
             name=InboxTask._build_name_for_habit(name, recurring_task_repeat_index),
             status=InboxTaskStatus.RECURRING,
@@ -193,7 +194,7 @@ class InboxTask(LeafEntity):
         """Create an inbox task."""
         return InboxTask._create(
             ctx,
-            inbox_task_collection_ref_id=inbox_task_collection_ref_id,
+            inbox_task_collection=ParentLink(inbox_task_collection_ref_id),
             source=InboxTaskSource.CHORE,
             name=name,
             status=InboxTaskStatus.RECURRING,
@@ -236,7 +237,7 @@ class InboxTask(LeafEntity):
         """Create an inbox task."""
         return InboxTask._create(
             ctx,
-            inbox_task_collection_ref_id=inbox_task_collection_ref_id,
+            inbox_task_collection=ParentLink(inbox_task_collection_ref_id),
             source=InboxTaskSource.METRIC,
             name=InboxTask._build_name_for_collection_task(name),
             status=InboxTaskStatus.RECURRING,
@@ -279,7 +280,7 @@ class InboxTask(LeafEntity):
         """Create an inbox task."""
         return InboxTask._create(
             ctx,
-            inbox_task_collection_ref_id=inbox_task_collection_ref_id,
+            inbox_task_collection=ParentLink(inbox_task_collection_ref_id),
             source=InboxTaskSource.PERSON_CATCH_UP,
             name=InboxTask._build_name_for_catch_up_task(name),
             status=InboxTaskStatus.RECURRING,
@@ -320,7 +321,7 @@ class InboxTask(LeafEntity):
         """Create an inbox task."""
         return InboxTask._create(
             ctx,
-            inbox_task_collection_ref_id=inbox_task_collection_ref_id,
+            inbox_task_collection=ParentLink(inbox_task_collection_ref_id),
             source=InboxTaskSource.PERSON_BIRTHDAY,
             name=InboxTask._build_name_for_birthday_task(name),
             status=InboxTaskStatus.RECURRING,
@@ -360,7 +361,7 @@ class InboxTask(LeafEntity):
         """Create an inbox task."""
         return InboxTask._create(
             ctx,
-            inbox_task_collection_ref_id=inbox_task_collection_ref_id,
+            inbox_task_collection=ParentLink(inbox_task_collection_ref_id),
             source=InboxTaskSource.SLACK_TASK,
             name=InboxTask._build_name_for_slack_task(
                 user,
@@ -406,7 +407,7 @@ class InboxTask(LeafEntity):
         """Create an inbox task."""
         return InboxTask._create(
             ctx,
-            inbox_task_collection_ref_id=inbox_task_collection_ref_id,
+            inbox_task_collection=ParentLink(inbox_task_collection_ref_id),
             source=InboxTaskSource.EMAIL_TASK,
             name=InboxTask._build_name_for_email_task(
                 from_address,
@@ -821,11 +822,6 @@ class InboxTask(LeafEntity):
     def allow_user_changes(self) -> bool:
         """Allow user changes for an inbox task."""
         return self.source.allow_user_changes
-
-    @property
-    def parent_ref_id(self) -> EntityId:
-        """The parent."""
-        return self.inbox_task_collection_ref_id
 
     @staticmethod
     def _build_name_for_habit(

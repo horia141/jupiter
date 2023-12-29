@@ -1,5 +1,4 @@
 """UseCase for updating a workspace."""
-from dataclasses import dataclass
 
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.workspaces.workspace_name import WorkspaceName
@@ -7,6 +6,7 @@ from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
+    use_case_args,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
@@ -15,7 +15,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class WorkspaceUpdateArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 

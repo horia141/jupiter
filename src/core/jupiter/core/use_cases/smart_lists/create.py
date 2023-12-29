@@ -1,5 +1,4 @@
 """The command for creating a smart list."""
-from dataclasses import dataclass
 from typing import Optional
 
 from jupiter.core.domain.core.entity_icon import EntityIcon
@@ -11,6 +10,8 @@ from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
     UseCaseResultBase,
+    use_case_args,
+    use_case_result,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
@@ -19,7 +20,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class SmartListCreateArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
@@ -27,7 +28,7 @@ class SmartListCreateArgs(UseCaseArgsBase):
     icon: Optional[EntityIcon] = None
 
 
-@dataclass
+@use_case_result
 class SmartListCreateResult(UseCaseResultBase):
     """SmartListCreate result."""
 

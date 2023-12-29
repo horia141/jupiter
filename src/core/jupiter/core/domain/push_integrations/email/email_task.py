@@ -13,6 +13,7 @@ from jupiter.core.framework.entity import (
     IsRefId,
     LeafEntity,
     OwnsAtMostOne,
+    ParentLink,
     create_entity_action,
     entity,
     update_entity_action,
@@ -25,7 +26,7 @@ from jupiter.core.framework.update_action import UpdateAction
 class EmailTask(LeafEntity):
     """An email task which needs to be converted into an inbox task."""
 
-    email_task_collection_ref_id: EntityId
+    email_task_collection: ParentLink
     from_address: EmailAddress
     from_name: EmailUserName
     to_address: EmailAddress
@@ -54,7 +55,7 @@ class EmailTask(LeafEntity):
         return EmailTask._create(
             ctx,
             name=EmailTask.build_name(from_address, from_name, subject),
-            email_task_collection_ref_id=email_task_collection_ref_id,
+            email_task_collection=ParentLink(email_task_collection_ref_id),
             from_address=from_address,
             from_name=from_name,
             to_address=to_address,
@@ -102,11 +103,6 @@ class EmailTask(LeafEntity):
             ctx,
             has_generated_task=True,
         )
-
-    @property
-    def parent_ref_id(self) -> EntityId:
-        """The parent."""
-        return self.email_task_collection_ref_id
 
     @staticmethod
     def build_name(

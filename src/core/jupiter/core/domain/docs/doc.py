@@ -9,6 +9,7 @@ from jupiter.core.framework.entity import (
     IsRefId,
     LeafEntity,
     OwnsOne,
+    ParentLink,
     create_entity_action,
     entity,
     update_entity_action,
@@ -20,7 +21,7 @@ from jupiter.core.framework.update_action import UpdateAction
 class Doc(LeafEntity):
     """A doc in the docbook."""
 
-    doc_collection_ref_id: EntityId
+    doc_collection: ParentLink
     parent_doc_ref_id: EntityId | None
     name: DocName
 
@@ -37,7 +38,7 @@ class Doc(LeafEntity):
         """Create a doc."""
         return Doc._create(
             ctx,
-            doc_collection_ref_id=doc_collection_ref_id,
+            doc_collection=ParentLink(doc_collection_ref_id),
             parent_doc_ref_id=parent_doc_ref_id,
             name=name,
         )
@@ -65,8 +66,3 @@ class Doc(LeafEntity):
             ctx,
             name=name.or_else(self.name),
         )
-
-    @property
-    def parent_ref_id(self) -> EntityId:
-        """The parent."""
-        return self.doc_collection_ref_id

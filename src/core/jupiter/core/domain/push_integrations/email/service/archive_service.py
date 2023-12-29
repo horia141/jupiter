@@ -1,5 +1,4 @@
 """Service for archiving an email task and associated entities."""
-from dataclasses import dataclass
 
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.service.archive_service import (
@@ -8,10 +7,10 @@ from jupiter.core.domain.inbox_tasks.service.archive_service import (
 from jupiter.core.domain.push_integrations.email.email_task import EmailTask
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.context import DomainContext
-from jupiter.core.framework.use_case import ProgressReporter
+from jupiter.core.framework.use_case import ProgressReporter, use_case_result_part
 
 
-@dataclass()
+@use_case_result_part
 class EmailTaskArchiveServiceResult:
     """The result of the archive operation."""
 
@@ -33,14 +32,14 @@ class EmailTaskArchiveService:
             return EmailTaskArchiveServiceResult(archived_inbox_tasks=[])
 
         email_task_collection = await uow.email_task_collection_repository.load_by_id(
-            email_task.email_task_collection_ref_id,
+            email_task.email_task_collection.ref_id,
         )
         push_integration_group = await uow.push_integration_group_repository.load_by_id(
-            email_task_collection.push_integration_group_ref_id,
+            email_task_collection.push_integration_group.ref_id,
         )
         inbox_task_collection = (
             await uow.inbox_task_collection_repository.load_by_parent(
-                push_integration_group.workspace_ref_id,
+                push_integration_group.workspace.ref_id,
             )
         )
 

@@ -1,5 +1,4 @@
 """Use case for loading a particular slack task."""
-from dataclasses import dataclass
 from typing import Optional
 
 from jupiter.core.domain.features import WorkspaceFeature
@@ -11,6 +10,8 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
     UseCaseResultBase,
+    use_case_args,
+    use_case_result,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCaseContext,
@@ -19,7 +20,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 
 
-@dataclass
+@use_case_args
 class SlackTaskLoadArgs(UseCaseArgsBase):
     """SlackTaskLoadArgs."""
 
@@ -27,7 +28,7 @@ class SlackTaskLoadArgs(UseCaseArgsBase):
     allow_archived: bool
 
 
-@dataclass
+@use_case_result
 class SlackTaskLoadResult(UseCaseResultBase):
     """SlackTaskLoadResult."""
 

@@ -5,6 +5,7 @@ from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     ContainsMany,
     IsRefId,
+    ParentLink,
     TrunkEntity,
     create_entity_action,
     entity,
@@ -16,7 +17,7 @@ from jupiter.core.framework.entity import (
 class MetricCollection(TrunkEntity):
     """A metric collection."""
 
-    workspace_ref_id: EntityId
+    workspace: ParentLink
     collection_project_ref_id: EntityId
 
     metrics = ContainsMany(Metric, metric_collection_ref_id=IsRefId())
@@ -31,7 +32,7 @@ class MetricCollection(TrunkEntity):
         """Create a metric collection."""
         return MetricCollection._create(
             ctx,
-            workspace_ref_id=workspace_ref_id,
+            workspace=ParentLink(workspace_ref_id),
             collection_project_ref_id=collection_project_ref_id,
         )
 
@@ -46,8 +47,3 @@ class MetricCollection(TrunkEntity):
             ctx,
             collection_project_ref_id=collection_project_ref_id,
         )
-
-    @property
-    def parent_ref_id(self) -> EntityId:
-        """The parent."""
-        return self.workspace_ref_id

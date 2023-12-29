@@ -6,6 +6,7 @@ from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     ContainsMany,
     IsRefId,
+    ParentLink,
     TrunkEntity,
     create_entity_action,
     entity,
@@ -16,7 +17,7 @@ from jupiter.core.framework.entity import (
 class SmartListCollection(TrunkEntity):
     """A smart list collection."""
 
-    workspace_ref_id: EntityId
+    workspace: ParentLink
 
     smart_lists = ContainsMany(SmartList, smart_list_collection_ref_id=IsRefId())
 
@@ -29,10 +30,5 @@ class SmartListCollection(TrunkEntity):
         """Create a smart list collection."""
         return SmartListCollection._create(
             ctx,
-            workspace_ref_id=workspace_ref_id,
+            workspace=ParentLink(workspace_ref_id),
         )
-
-    @property
-    def parent_ref_id(self) -> EntityId:
-        """The parent."""
-        return self.workspace_ref_id
