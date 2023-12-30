@@ -5,6 +5,7 @@
 import type { EntityIcon } from './EntityIcon';
 import type { EntityId } from './EntityId';
 import type { EntityName } from './EntityName';
+import type { ParentLink } from './ParentLink';
 import type { Timestamp } from './Timestamp';
 
 export type SmartList = {
@@ -15,7 +16,7 @@ export type SmartList = {
     last_modified_time: Timestamp;
     archived_time: Timestamp;
     name: EntityName;
-    smart_list_collection_ref_id: EntityId;
+    smart_list_collection: ParentLink;
     icon: EntityIcon;
 };
 

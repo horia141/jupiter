@@ -17,14 +17,16 @@ from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
+from jupiter.core.domain.report.report_period_result import (
+    InboxTasksSummary,
+    WorkableSummary,
+)
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
 from jupiter.core.use_cases.report import (
-    InboxTasksSummary,
     ReportArgs,
     ReportUseCase,
-    WorkableSummary,
 )
 from jupiter.core.utils.global_properties import GlobalProperties
 from jupiter.core.utils.time_provider import TimeProvider
@@ -396,8 +398,10 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
             guide_style="bold bright_blue",
         )
 
-        if result.user_score_overview is not None:
-            rich_tree.add(user_score_overview_to_rich(result.user_score_overview))
+        if result.period_result.user_score_overview is not None:
+            rich_tree.add(
+                user_score_overview_to_rich(result.period_result.user_score_overview)
+            )
 
         if "global" in breakdowns:
             global_text = Text("🌍 Global:")
@@ -406,7 +410,7 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
 
             if "inbox-tasks" in covers:
                 inbox_task_table = self._build_inbox_tasks_summary_table(
-                    result.global_inbox_tasks_summary,
+                    result.period_result.global_inbox_tasks_summary,
                     sources_to_present,
                 )
                 global_tree.add(inbox_task_table)
@@ -418,7 +422,7 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
                 and "big-plans" in covers
             ):
                 big_plan_tree = self._build_big_plans_summary_tree(
-                    result.global_big_plans_summary,
+                    result.period_result.global_big_plans_summary,
                 )
                 global_tree.add(big_plan_tree)
 
@@ -432,7 +436,7 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
 
             global_tree = rich_tree.add(global_text)
 
-            for project_item in result.per_project_breakdown:
+            for project_item in result.period_result.per_project_breakdown:
                 project_text = entity_name_to_rich_text(project_item.name)
 
                 project_tree = global_tree.add(project_text)
@@ -460,12 +464,12 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
 
             global_tree = rich_tree.add(global_text)
 
-            if not result.per_period_breakdown:
+            if not result.period_result.per_period_breakdown:
                 raise Exception(
                     "Did not find any per period breakdown even if it's asked for",
                 )
 
-            for period_item in result.per_period_breakdown:
+            for period_item in result.period_result.per_period_breakdown:
                 period_text = entity_name_to_rich_text(period_item.name)
 
                 period_tree = global_tree.add(period_text)
@@ -497,7 +501,7 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
                 try:
                     max_breakdown_streak_size = max(
                         len(b.summary.streak_plot)
-                        for b in result.per_habit_breakdown
+                        for b in result.period_result.per_habit_breakdown
                         if b.period == print_period
                     )
                 except ValueError:
@@ -538,7 +542,7 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
                 ).append(Text(" Done"))
                 period_table.add_column(habit_done_text, width=12, justify="right")
 
-                for habit_item in result.per_habit_breakdown:
+                for habit_item in result.period_result.per_habit_breakdown:
                     if not show_archived and habit_item.archived:
                         continue
                     if habit_item.period != print_period:
@@ -632,7 +636,7 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
                 ).append(Text(" Done"))
                 period_table.add_column(chore_done_text, width=12, justify="right")
 
-                for chore_item in result.per_chore_breakdown:
+                for chore_item in result.period_result.per_chore_breakdown:
                     if not show_archived and chore_item.archived:
                         continue
                     if chore_item.period != print_period:
@@ -717,7 +721,7 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
             global_table.add_column(big_plan_done_text, width=12, justify="right")
 
             sorted_big_plans = sorted(
-                result.per_big_plan_breakdown,
+                result.period_result.per_big_plan_breakdown,
                 key=lambda bpe: (
                     bpe.actionable_date
                     if bpe.actionable_date

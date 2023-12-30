@@ -4,6 +4,7 @@
 
 import type { EntityId } from './EntityId';
 import type { EntityName } from './EntityName';
+import type { ParentLink } from './ParentLink';
 import type { TagName } from './TagName';
 import type { Timestamp } from './Timestamp';
 
@@ -16,6 +17,6 @@ export type SmartListTag = {
     archived_time: Timestamp;
     name: EntityName;
     tag_name: TagName;
-    smart_list_ref_id: EntityId;
+    smart_list: ParentLink;
 };
 

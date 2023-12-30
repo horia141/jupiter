@@ -9,6 +9,7 @@ import type { EntityId } from './EntityId';
 import type { EntityName } from './EntityName';
 import type { InboxTaskSource } from './InboxTaskSource';
 import type { InboxTaskStatus } from './InboxTaskStatus';
+import type { ParentLink } from './ParentLink';
 import type { Timestamp } from './Timestamp';
 
 export type InboxTask = {
@@ -19,7 +20,7 @@ export type InboxTask = {
     last_modified_time: Timestamp;
     archived_time: Timestamp;
     name: EntityName;
-    inbox_task_collection_ref_id: EntityId;
+    inbox_task_collection: ParentLink;
     source: InboxTaskSource;
     project_ref_id: EntityId;
     status: InboxTaskStatus;

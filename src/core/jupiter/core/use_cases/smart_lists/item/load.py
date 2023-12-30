@@ -54,7 +54,7 @@ class SmartListItemLoadUseCase(
             uow,
             SmartListItem,
             args.ref_id,
-            SmartListItem.tags,
+            SmartListItem.all_tags,
             allow_archived=args.allow_archived,
         )
 

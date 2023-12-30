@@ -4,6 +4,7 @@
 
 import type { EntityId } from './EntityId';
 import type { EntityName } from './EntityName';
+import type { ParentLink } from './ParentLink';
 import type { RecurringTaskGenParams } from './RecurringTaskGenParams';
 import type { RecurringTaskSkipRule } from './RecurringTaskSkipRule';
 import type { Timestamp } from './Timestamp';
@@ -16,7 +17,7 @@ export type Habit = {
     last_modified_time: Timestamp;
     archived_time: Timestamp;
     name: EntityName;
-    habit_collection_ref_id: EntityId;
+    habit_collection: ParentLink;
     project_ref_id: EntityId;
     gen_params: RecurringTaskGenParams;
     skip_rule?: RecurringTaskSkipRule;

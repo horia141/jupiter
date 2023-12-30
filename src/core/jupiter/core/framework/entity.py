@@ -109,6 +109,30 @@ class Entity:
         )
         return archived_entity
 
+    @property
+    def parent_ref_id(self) -> EntityId:
+        """The parent of this entity."""
+        all_fields = dataclasses.fields(self)
+
+        found_cnt = 0
+        found = None
+
+        for field in all_fields:
+            if field.type is not ParentLink:
+                continue
+            found_cnt += 1
+            found = cast(ParentLink, getattr(self, field.name)).ref_id
+
+        if found_cnt == 0:
+            raise Exception(
+                f"Entity {self.__class__} needs to define a ParentLink field"
+            )
+        elif found_cnt >= 2:
+            raise Exception(f"Entity {self.__class__} has more than one ParentLink")
+
+        assert found is not None
+        return found
+
 
 @dataclass_transform()
 def entity(cls: type[_EntityT]) -> type[_EntityT]:
@@ -120,6 +144,11 @@ def entity(cls: type[_EntityT]) -> type[_EntityT]:
 @dataclass
 class IsRefId:
     """Transforms a generic filter based on the current entity's ref id."""
+
+
+@dataclass
+class IsParentLink:
+    """Transforms a generic filter based on the current entity's parent link."""
 
 
 @dataclass
@@ -144,7 +173,7 @@ class ParentLink:
         return self.ref_id.as_int()
 
 
-EntityLinkFilterRaw = None | Value | EnumValue | IsRefId | IsOneOfRefId
+EntityLinkFilterRaw = None | Value | EnumValue | IsRefId | IsParentLink | IsOneOfRefId
 EntityLinkFilterCompiled = None | Value | EnumValue | EntityId | list[EntityId]
 EntityLinkFiltersRaw = dict[str, EntityLinkFilterRaw]
 EntityLinkFiltersCompiled = dict[str, EntityLinkFilterCompiled]
@@ -173,6 +202,8 @@ class EntityLink(Generic[_EntityT]):
                 reified_filters[k] = v
             elif isinstance(v, EnumValue):
                 reified_filters[k] = v
+            elif isinstance(v, IsParentLink):
+                reified_filters[k] = entity.parent_ref_id
             elif isinstance(v, IsRefId):
                 reified_filters[k] = entity.ref_id
             else:
@@ -363,30 +394,6 @@ class CrownEntity(Entity):
 
     name: EntityName
 
-    @property
-    def parent_ref_id(self) -> EntityId:
-        """The parent of this branch entity."""
-        all_fields = dataclasses.fields(self)
-
-        found_cnt = 0
-        found = None
-
-        for field in all_fields:
-            if field.type is not ParentLink:
-                continue
-            found_cnt += 1
-            found = cast(ParentLink, getattr(self, field.name)).ref_id
-
-        if found_cnt == 0:
-            raise Exception(
-                f"Entity {self.__class__} needs to define a ParentLink field"
-            )
-        elif found_cnt >= 2:
-            raise Exception(f"Entity {self.__class__} has more than one ParentLink")
-
-        assert found is not None
-        return found
-
 
 @dataclass
 class BranchEntity(CrownEntity):
@@ -473,8 +480,10 @@ def _check_entity_can_be_filterd_by(
                 raise Exception(
                     f"Filter rule for {filter_name} is {filter_rule.__class__} which is not correct"
                 )
-            elif isinstance(filter_rule, IsRefId) or isinstance(
-                filter_rule, IsOneOfRefId
+            elif (
+                isinstance(filter_rule, IsRefId)
+                or isinstance(filter_rule, IsOneOfRefId)
+                or isinstance(filter_rule, IsParentLink)
             ):
                 if found_field_type != EntityId and found_field_type != ParentLink:
                     raise Exception(
@@ -494,8 +503,10 @@ def _check_entity_can_be_filterd_by(
                     raise Exception(
                         f"Filter rule for '{filter_name}' is {filter_rule.__class__} which is not correct"
                     )
-            elif isinstance(filter_rule, IsRefId) or isinstance(
-                filter_rule, IsOneOfRefId
+            elif (
+                isinstance(filter_rule, IsRefId)
+                or isinstance(filter_rule, IsOneOfRefId)
+                or isinstance(filter_rule, IsParentLink)
             ):
                 if found_field_type != EntityId and found_field_type != ParentLink:
                     raise Exception(
@@ -506,7 +517,7 @@ def _check_entity_can_be_filterd_by(
                     f"Filter rule for '{filter_name}' is {filter_rule.__class__} which is not correct"
                 )
         elif issubclass(found_field_type, ParentLink):
-            if not isinstance(filter_rule, IsRefId):  # type: ignore[unreachable]
+            if not (isinstance(filter_rule, IsRefId) or isinstance(filter_rule, IsParentLink)):  # type: ignore[unreachable]
                 raise Exception(
                     f"Filter rule for '{filter_name}' is {filter_rule.__class__} which is not correct"
                 )

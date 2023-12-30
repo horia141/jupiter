@@ -33,6 +33,7 @@ import { ShouldRevalidateFunction, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import type {
   InboxTasksSummary,
+  ReportPeriodResult,
   ReportResult,
   UserScoreOverview,
   WorkableSummary,
@@ -195,7 +196,7 @@ export default function Report() {
                 name="today"
                 defaultValue={
                   isNoErrorSomeData(loaderData)
-                    ? loaderData.data.report?.today.the_date ??
+                    ? loaderData.data.report?.period_result.today.the_date ??
                       DateTime.now().toISODate()
                     : DateTime.now().toISODate()
                 }
@@ -266,7 +267,7 @@ export default function Report() {
         loaderData.data.report !== undefined && (
           <ShowReport
             topLevelInfo={topLevelInfo}
-            report={loaderData.data.report}
+            report={loaderData.data.report.period_result}
           />
         )}
     </ToolPanel>
@@ -291,7 +292,7 @@ const _SOURCES_TO_REPORT = [
 
 interface ShowReportProps {
   topLevelInfo: TopLevelInfo;
-  report: ReportResult;
+  report: ReportPeriodResult;
 }
 
 function ShowReport({ topLevelInfo, report }: ShowReportProps) {

@@ -1,12 +1,10 @@
 """The command for reporting on progress."""
 from collections import defaultdict
-from dataclasses import field
 from itertools import groupby
 from operator import itemgetter
 from typing import DefaultDict, Dict, Iterable, List, Optional, cast
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
-from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.core.domain.big_plans.big_plan_status import BigPlanStatus
 from jupiter.core.domain.chores.chore import Chore
 from jupiter.core.domain.core import schedules
@@ -22,7 +20,6 @@ from jupiter.core.domain.features import (
 from jupiter.core.domain.gamification.service.score_overview_service import (
     ScoreOverviewService,
 )
-from jupiter.core.domain.gamification.user_score_overview import UserScoreOverview
 from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
@@ -30,6 +27,21 @@ from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.core.domain.metrics.metric import Metric
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.projects.project_name import ProjectName
+from jupiter.core.domain.report.report_period_result import (
+    BigPlanWorkSummary,
+    InboxTasksSummary,
+    NestedResult,
+    NestedResultPerSource,
+    PerBigPlanBreakdownItem,
+    PerChoreBreakdownItem,
+    PerHabitBreakdownItem,
+    PerPeriodBreakdownItem,
+    PerProjectBreakdownItem,
+    RecurringTaskWorkSummary,
+    ReportPeriodResult,
+    WorkableBigPlan,
+    WorkableSummary,
+)
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.errors import InputValidationError
@@ -38,7 +50,6 @@ from jupiter.core.framework.use_case import (
     UseCaseResultBase,
     use_case_args,
     use_case_result,
-    use_case_result_part,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCase,
@@ -65,149 +76,11 @@ class ReportArgs(UseCaseArgsBase):
     breakdown_period: Optional[RecurringTaskPeriod] = None
 
 
-@use_case_result_part
-class NestedResultPerSource:
-    """A particular result broken down by the various sources of inbox tasks."""
-
-    source: InboxTaskSource
-    count: int
-
-
-@use_case_result_part
-class NestedResult:
-    """A result broken down by the various sources of inbox tasks."""
-
-    total_cnt: int
-    per_source_cnt: List[NestedResultPerSource]
-
-
-@use_case_result_part
-class InboxTasksSummary:
-    """A bigger summary for inbox tasks."""
-
-    created: NestedResult
-    accepted: NestedResult
-    working: NestedResult
-    not_done: NestedResult
-    done: NestedResult
-
-
-@use_case_result_part
-class WorkableBigPlan:
-    """The view of a big plan via a workable."""
-
-    ref_id: EntityId
-    name: BigPlanName
-    actionable_date: Optional[ADate] = None
-
-
-@use_case_result_part
-class WorkableSummary:
-    """The reporting summary."""
-
-    created_cnt: int
-    accepted_cnt: int
-    working_cnt: int
-    not_done_cnt: int
-    done_cnt: int
-    not_done_big_plans: List[WorkableBigPlan]
-    done_big_plans: List[WorkableBigPlan]
-
-
-@use_case_result_part
-class BigPlanWorkSummary:
-    """The report for a big plan."""
-
-    created_cnt: int
-    accepted_cnt: int
-    working_cnt: int
-    not_done_cnt: int
-    not_done_ratio: float
-    done_cnt: int
-    done_ratio: float
-
-
-@use_case_result_part
-class RecurringTaskWorkSummary:
-    """The reporting summary."""
-
-    created_cnt: int
-    accepted_cnt: int
-    working_cnt: int
-    not_done_cnt: int
-    not_done_ratio: float
-    done_cnt: int
-    done_ratio: float
-    streak_plot: str = field(hash=False, compare=False, repr=False, default="")
-
-
-@use_case_result_part
-class PerProjectBreakdownItem:
-    """The report for a particular project."""
-
-    ref_id: EntityId
-    name: EntityName
-    inbox_tasks_summary: InboxTasksSummary
-    big_plans_summary: WorkableSummary
-
-
-@use_case_result_part
-class PerPeriodBreakdownItem:
-    """The report for a particular time period."""
-
-    name: EntityName
-    inbox_tasks_summary: InboxTasksSummary
-    big_plans_summary: WorkableSummary
-
-
-@use_case_result_part
-class PerBigPlanBreakdownItem:
-    """The report for a particular big plan."""
-
-    ref_id: EntityId
-    name: EntityName
-    actionable_date: Optional[ADate]
-    summary: BigPlanWorkSummary
-
-
-@use_case_result_part
-class PerHabitBreakdownItem:
-    """The report for a particular habit."""
-
-    ref_id: EntityId
-    name: EntityName
-    archived: bool
-    period: RecurringTaskPeriod
-    suspended: bool
-    summary: RecurringTaskWorkSummary
-
-
-@use_case_result_part
-class PerChoreBreakdownItem:
-    """The report for a particular chore."""
-
-    ref_id: EntityId
-    name: EntityName
-    suspended: bool
-    archived: bool
-    period: RecurringTaskPeriod
-    summary: RecurringTaskWorkSummary
-
-
 @use_case_result
 class ReportResult(UseCaseResultBase):
-    """Report result."""
+    """Report results."""
 
-    today: ADate
-    period: RecurringTaskPeriod
-    global_inbox_tasks_summary: InboxTasksSummary
-    global_big_plans_summary: WorkableSummary
-    per_project_breakdown: List[PerProjectBreakdownItem]
-    per_period_breakdown: List[PerPeriodBreakdownItem]
-    per_habit_breakdown: List[PerHabitBreakdownItem]
-    per_chore_breakdown: List[PerChoreBreakdownItem]
-    per_big_plan_breakdown: List[PerBigPlanBreakdownItem]
-    user_score_overview: UserScoreOverview | None
+    period_result: ReportPeriodResult
 
 
 @readonly_use_case()
@@ -683,23 +556,25 @@ class ReportUseCase(AppLoggedInReadonlyUseCase[ReportArgs, ReportResult]):
                 )
 
         return ReportResult(
-            today=args.today,
-            period=args.period,
-            global_inbox_tasks_summary=global_inbox_tasks_summary,
-            global_big_plans_summary=global_big_plans_summary,
-            per_project_breakdown=per_project_breakdown,
-            per_period_breakdown=per_period_breakdown,
-            per_habit_breakdown=per_habit_breakdown,
-            per_chore_breakdown=per_chore_breakdown,
-            per_big_plan_breakdown=per_big_plan_breakdown,
-            user_score_overview=user_score_overview,
+            period_result=ReportPeriodResult(
+                today=args.today,
+                period=args.period,
+                global_inbox_tasks_summary=global_inbox_tasks_summary,
+                global_big_plans_summary=global_big_plans_summary,
+                per_project_breakdown=per_project_breakdown,
+                per_period_breakdown=per_period_breakdown,
+                per_habit_breakdown=per_habit_breakdown,
+                per_chore_breakdown=per_chore_breakdown,
+                per_big_plan_breakdown=per_big_plan_breakdown,
+                user_score_overview=user_score_overview,
+            )
         )
 
     @staticmethod
     def _run_report_for_inbox_tasks(
         schedule: Schedule,
         inbox_tasks: Iterable[InboxTask],
-    ) -> "InboxTasksSummary":
+    ) -> InboxTasksSummary:
         created_cnt_total = 0
         created_per_source_cnt: DefaultDict[InboxTaskSource, int] = defaultdict(int)
         accepted_cnt_total = 0
@@ -780,7 +655,7 @@ class ReportUseCase(AppLoggedInReadonlyUseCase[ReportArgs, ReportResult]):
     def _run_report_for_inbox_tasks_for_big_plan(
         schedule: Schedule,
         inbox_tasks: Iterable[InboxTask],
-    ) -> "BigPlanWorkSummary":
+    ) -> BigPlanWorkSummary:
         created_cnt = 0
         accepted_cnt = 0
         working_cnt = 0
@@ -823,7 +698,7 @@ class ReportUseCase(AppLoggedInReadonlyUseCase[ReportArgs, ReportResult]):
     def _run_report_for_inbox_for_recurring_tasks(
         schedule: Schedule,
         inbox_tasks: List[InboxTask],
-    ) -> "RecurringTaskWorkSummary":
+    ) -> RecurringTaskWorkSummary:
         # The simple summary computations here.
         created_cnt = 0
         accepted_cnt = 0

@@ -5,6 +5,7 @@
 import type { ADate } from './ADate';
 import type { EntityId } from './EntityId';
 import type { EntityName } from './EntityName';
+import type { ParentLink } from './ParentLink';
 import type { RecurringTaskGenParams } from './RecurringTaskGenParams';
 import type { RecurringTaskSkipRule } from './RecurringTaskSkipRule';
 import type { Timestamp } from './Timestamp';
@@ -17,7 +18,7 @@ export type Chore = {
     last_modified_time: Timestamp;
     archived_time: Timestamp;
     name: EntityName;
-    chore_collection_ref_id: EntityId;
+    chore_collection: ParentLink;
     project_ref_id: EntityId;
     gen_params: RecurringTaskGenParams;
     suspended: boolean;

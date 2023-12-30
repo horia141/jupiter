@@ -4,6 +4,7 @@
 
 import type { EntityId } from './EntityId';
 import type { EntityName } from './EntityName';
+import type { ParentLink } from './ParentLink';
 import type { PersonBirthday } from './PersonBirthday';
 import type { PersonRelationship } from './PersonRelationship';
 import type { RecurringTaskGenParams } from './RecurringTaskGenParams';
@@ -17,7 +18,7 @@ export type Person = {
     last_modified_time: Timestamp;
     archived_time: Timestamp;
     name: EntityName;
-    person_collection_ref_id: EntityId;
+    person_collection: ParentLink;
     relationship: PersonRelationship;
     catch_up_params?: RecurringTaskGenParams;
     birthday?: PersonBirthday;

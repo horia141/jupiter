@@ -6,6 +6,7 @@ import type { ADate } from './ADate';
 import type { BigPlanStatus } from './BigPlanStatus';
 import type { EntityId } from './EntityId';
 import type { EntityName } from './EntityName';
+import type { ParentLink } from './ParentLink';
 import type { Timestamp } from './Timestamp';
 
 export type BigPlan = {
@@ -16,7 +17,7 @@ export type BigPlan = {
     last_modified_time: Timestamp;
     archived_time: Timestamp;
     name: EntityName;
-    big_plan_collection_ref_id: EntityId;
+    big_plan_collection: ParentLink;
     project_ref_id: EntityId;
     status: BigPlanStatus;
     actionable_date?: ADate;

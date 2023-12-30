@@ -49,18 +49,17 @@ class SmartListItemUpdateUseCase(
         args: SmartListItemUpdateArgs,
     ) -> None:
         """Execute the command's action."""
-        smart_list_item, tags = await generic_loader(
-            uow,
-            SmartListItem,
-            args.ref_id,
-            SmartListItem.tags,
+        smart_list_item, all_tags = await generic_loader(
+            uow, SmartListItem, args.ref_id, SmartListItem.all_tags
         )
 
         if args.tags.should_change:
-            smart_list_tags = {t.tag_name: t for t in tags}
+            smart_list_tags = {}
+            all_smart_list_tags = {t.tag_name.the_tag: t.ref_id for t in all_tags}
 
             for tag in args.tags.just_the_value:
-                if tag in smart_list_tags:
+                if tag.the_tag in all_smart_list_tags:
+                    smart_list_tags[tag.the_tag] = all_smart_list_tags[tag.the_tag]
                     continue
 
                 smart_list_tag = SmartListTag.new_smart_list_tag(
@@ -71,10 +70,11 @@ class SmartListItemUpdateUseCase(
                 smart_list_tag = await generic_creator(
                     uow, progress_reporter, smart_list_tag
                 )
-                smart_list_tags[smart_list_tag.tag_name] = smart_list_tag
+                smart_list_tags[smart_list_tag.tag_name.the_tag] = smart_list_tag.ref_id
+                all_smart_list_tags[smart_list_tag.tag_name.the_tag] = smart_list_tag.ref_id
 
             tags_ref_id = UpdateAction.change_to(
-                [t.ref_id for t in smart_list_tags.values()],
+                list(smart_list_tags.values()),
             )
         else:
             tags_ref_id = UpdateAction.do_nothing()

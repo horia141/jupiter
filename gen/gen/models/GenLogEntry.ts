@@ -7,6 +7,7 @@ import type { EntityId } from './EntityId';
 import type { EntityName } from './EntityName';
 import type { EntitySummary } from './EntitySummary';
 import type { EventSource } from './EventSource';
+import type { ParentLink } from './ParentLink';
 import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
 import type { SyncTarget } from './SyncTarget';
 import type { Timestamp } from './Timestamp';
@@ -19,7 +20,7 @@ export type GenLogEntry = {
     last_modified_time: Timestamp;
     archived_time: Timestamp;
     name: EntityName;
-    gen_log_ref_id: EntityId;
+    gen_log: ParentLink;
     source: EventSource;
     gen_even_if_not_modified: boolean;
     today: ADate;

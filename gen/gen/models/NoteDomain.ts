@@ -8,6 +8,7 @@
 export enum NoteDomain {
     DOC = 'doc',
     INBOX_TASK = 'inbox-task',
+    JOURNAL = 'journal',
     METRIC_ENTRY = 'metric-entry',
     PERSON = 'person',
     LOG = 'log',

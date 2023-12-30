@@ -77,7 +77,7 @@ class ScoreLogEntry(LeafEntity):
         return ScoreLogEntry._create(
             ctx,
             name=EntityName(f"For BigPlan #{big_plan.ref_id} '{big_plan.name}'"),
-            score_log_ref_id=score_log_ref_id,
+            score_log=ParentLink(score_log_ref_id),
             source=ScoreSource.BIG_PLAN,
             task_ref_id=big_plan.ref_id,
             difficulty=None,

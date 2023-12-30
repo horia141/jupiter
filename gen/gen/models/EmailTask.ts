@@ -5,6 +5,7 @@
 import type { EmailAddress } from './EmailAddress';
 import type { EntityId } from './EntityId';
 import type { EntityName } from './EntityName';
+import type { ParentLink } from './ParentLink';
 import type { PushGenerationExtraInfo } from './PushGenerationExtraInfo';
 import type { Timestamp } from './Timestamp';
 
@@ -16,7 +17,7 @@ export type EmailTask = {
     last_modified_time: Timestamp;
     archived_time: Timestamp;
     name: EntityName;
-    email_task_collection_ref_id: EntityId;
+    email_task_collection: ParentLink;
     from_address: EmailAddress;
     from_name: EntityName;
     to_address: EmailAddress;

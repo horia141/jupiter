@@ -8,6 +8,7 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     IsOneOfRefId,
+    IsParentLink,
     LeafEntity,
     ParentLink,
     RefsMany,
@@ -29,6 +30,7 @@ class SmartListItem(LeafEntity):
     url: Optional[URL]
 
     tags = RefsMany(SmartListTag, ref_id=IsOneOfRefId("tags_ref_id"))
+    all_tags = RefsMany(SmartListTag, smart_list_ref_id=IsParentLink())
 
     @staticmethod
     @create_entity_action

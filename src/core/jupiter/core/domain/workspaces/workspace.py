@@ -15,6 +15,7 @@ from jupiter.core.domain.gen.gen_log import GenLog
 from jupiter.core.domain.habits.habit_collection import HabitCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
+from jupiter.core.domain.journal.journal_collection import JournalCollection
 from jupiter.core.domain.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.named_entity_tag import NamedEntityTag
 from jupiter.core.domain.persons.person_collection import PersonCollection
@@ -51,6 +52,7 @@ class Workspace(RootEntity):
     habit_collection = ContainsOne(HabitCollection, workspace_ref_id=IsRefId())
     chore_collection = ContainsOne(ChoreCollection, workspace_ref_id=IsRefId())
     big_plan_collection = ContainsOne(BigPlanCollection, workspace_ref_id=IsRefId())
+    journal_collection = ContainsOne(JournalCollection, workspace_ref_id=IsRefId())
     doc_collection = ContainsOne(DocCollection, workspace_ref_id=IsRefId())
     vacation_collection = ContainsOne(VacationCollection, workspace_ref_id=IsRefId())
     project_collection = ContainsOne(ProjectCollection, workspace_ref_id=IsRefId())

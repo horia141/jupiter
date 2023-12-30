@@ -5,6 +5,7 @@
 import type { ADate } from './ADate';
 import type { EntityId } from './EntityId';
 import type { EntityName } from './EntityName';
+import type { ParentLink } from './ParentLink';
 import type { Timestamp } from './Timestamp';
 
 export type Vacation = {
@@ -15,7 +16,7 @@ export type Vacation = {
     last_modified_time: Timestamp;
     archived_time: Timestamp;
     name: EntityName;
-    vacation_collection_ref_id: EntityId;
+    vacation_collection: ParentLink;
     start_date: ADate;
     end_date: ADate;
 };
