@@ -14,6 +14,7 @@ class InboxTaskSource(EnumValue):
     HABIT = "habit"
     CHORE = "chore"
     BIG_PLAN = "big-plan"
+    JOURNAL = "journal"
     METRIC = "metric"
     PERSON_CATCH_UP = "person-catch-up"
     PERSON_BIRTHDAY = "person-birthday"

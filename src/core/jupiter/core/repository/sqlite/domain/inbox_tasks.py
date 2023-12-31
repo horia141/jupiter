@@ -143,6 +143,7 @@ class SqliteInboxTaskRepository(
                 Column(
                     "chore_ref_id", Integer, ForeignKey("chore.ref_id"), nullable=True
                 ),
+                Column("journal_ref_id", Integer, ForeignKey("journal.ref_id"), nullable=True),
                 Column(
                     "metric_ref_id",
                     Integer,
@@ -191,10 +192,10 @@ class SqliteInboxTaskRepository(
         filter_ref_ids: Optional[Iterable[EntityId]] = None,
         filter_sources: Optional[Iterable[InboxTaskSource]] = None,
         filter_project_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_big_plan_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_recurring_task_ref_ids: Optional[Iterable[EntityId]] = None,
         filter_habit_ref_ids: Optional[Iterable[EntityId]] = None,
         filter_chore_ref_ids: Optional[Iterable[EntityId]] = None,
+        filter_big_plan_ref_ids: Optional[Iterable[EntityId]] = None,
+        filter_journal_ref_ids: Optional[Iterable[EntityId]] = None,
         filter_metric_ref_ids: Optional[Iterable[EntityId]] = None,
         filter_person_ref_ids: Optional[Iterable[EntityId]] = None,
         filter_slack_task_ref_ids: Optional[Iterable[EntityId]] = None,
@@ -222,18 +223,6 @@ class SqliteInboxTaskRepository(
                     fi.as_int() for fi in filter_project_ref_ids
                 ),
             )
-        if filter_big_plan_ref_ids is not None:
-            query_stmt = query_stmt.where(
-                self._table.c.big_plan_ref_id.in_(
-                    fi.as_int() for fi in filter_big_plan_ref_ids
-                ),
-            )
-        if filter_recurring_task_ref_ids is not None:
-            query_stmt = query_stmt.where(
-                self._table.c.recurring_task_ref_id.in_(
-                    fi.as_int() for fi in filter_recurring_task_ref_ids
-                ),
-            )
         if filter_habit_ref_ids is not None:
             query_stmt = query_stmt.where(
                 self._table.c.habit_ref_id.in_(
@@ -244,6 +233,18 @@ class SqliteInboxTaskRepository(
             query_stmt = query_stmt.where(
                 self._table.c.chore_ref_id.in_(
                     fi.as_int() for fi in filter_chore_ref_ids
+                ),
+            )
+        if filter_big_plan_ref_ids is not None:
+            query_stmt = query_stmt.where(
+                self._table.c.big_plan_ref_id.in_(
+                    fi.as_int() for fi in filter_big_plan_ref_ids
+                ),
+            )
+        if filter_journal_ref_ids is not None:
+            query_stmt = query_stmt.where(
+                self._table.c.journal_ref_id.in_(
+                    fi.as_int() for fi in filter_journal_ref_ids
                 ),
             )
         if filter_metric_ref_ids is not None:
@@ -296,14 +297,17 @@ class SqliteInboxTaskRepository(
             "inbox_task_collection_ref_id": entity.inbox_task_collection.as_int(),
             "source": str(entity.source),
             "project_ref_id": entity.project_ref_id.as_int(),
-            "big_plan_ref_id": entity.big_plan_ref_id.as_int()
-            if entity.big_plan_ref_id
-            else None,
             "habit_ref_id": entity.habit_ref_id.as_int()
             if entity.habit_ref_id
             else None,
             "chore_ref_id": entity.chore_ref_id.as_int()
             if entity.chore_ref_id
+            else None,
+            "big_plan_ref_id": entity.big_plan_ref_id.as_int()
+            if entity.big_plan_ref_id
+            else None,
+            "journal_ref_id": entity.journal_ref_id.as_int()
+            if entity.journal_ref_id
             else None,
             "metric_ref_id": entity.metric_ref_id.as_int()
             if entity.metric_ref_id
@@ -361,14 +365,17 @@ class SqliteInboxTaskRepository(
             ),
             source=InboxTaskSource.from_raw(row["source"]),
             project_ref_id=EntityId.from_raw(str(row["project_ref_id"])),
-            big_plan_ref_id=EntityId.from_raw(str(row["big_plan_ref_id"]))
-            if row["big_plan_ref_id"]
-            else None,
             habit_ref_id=EntityId.from_raw(str(row["habit_ref_id"]))
             if row["habit_ref_id"]
             else None,
             chore_ref_id=EntityId.from_raw(str(row["chore_ref_id"]))
             if row["chore_ref_id"]
+            else None,
+            big_plan_ref_id=EntityId.from_raw(str(row["big_plan_ref_id"]))
+            if row["big_plan_ref_id"]
+            else None,
+            journal_ref_id=EntityId.from_raw(str(row["journal_ref_id"]))
+            if row["journal_ref_id"]
             else None,
             metric_ref_id=EntityId.from_raw(str(row["metric_ref_id"]))
             if row["metric_ref_id"]
