@@ -46,6 +46,8 @@ from jupiter.core.domain.inbox_tasks.infra.inbox_task_collection_repository impo
 from jupiter.core.domain.inbox_tasks.infra.inbox_task_repository import (
     InboxTaskRepository,
 )
+from jupiter.core.domain.journal.infra.jorunal_repository import JournalRepository
+from jupiter.core.domain.journal.infra.journal_collection_repository import JournalCollectionRepository
 from jupiter.core.domain.metrics.infra.metric_collection_repository import (
     MetricCollectionRepository,
 )
@@ -188,6 +190,16 @@ class DomainUnitOfWork(abc.ABC):
     @abc.abstractmethod
     def big_plan_repository(self) -> BigPlanRepository:
         """The big plan repository."""
+
+    @property
+    @abc.abstractmethod
+    def journal_collection_repository(self) -> JournalCollectionRepository:
+        """The journal collection repository."""
+
+    @property
+    @abc.abstractmethod
+    def journal_repository(self) -> JournalRepository:
+        """The journal repository."""
 
     @property
     @abc.abstractmethod

@@ -330,7 +330,7 @@ class SqliteCrownEntityRepository(
         self,
         allow_archived: bool,
         **kwargs: EntityLinkFilterCompiled,
-    ) -> Iterable[_CrownEntityT]:
+    ) -> list[_CrownEntityT]:
         """Find all crowns with generic filters."""
         query_stmt = select(self._table)
         if not allow_archived:

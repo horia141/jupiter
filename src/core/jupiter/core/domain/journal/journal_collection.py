@@ -26,8 +26,8 @@ class JournalCollection(TrunkEntity):
     workspace: ParentLink
 
     periods: set[RecurringTaskPeriod]
-    writing_gen_params: RecurringTaskGenParams
-    writing_project_ref_id: EntityId
+    writing_task_project_ref_id: EntityId
+    writing_task_gen_params: RecurringTaskGenParams
 
     entries = ContainsMany(Journal, journal_collection_ref_id=IsRefId())
 
@@ -37,49 +37,50 @@ class JournalCollection(TrunkEntity):
         ctx: DomainContext,
         workspace_ref_id: EntityId,
         periods: set[RecurringTaskPeriod],
+        writing_project_ref_id: EntityId,
         writing_task_eisen: Eisen,
         writing_task_difficulty: Difficulty,
-        writing_project_ref_id: EntityId,
     ) -> "JournalCollection":
         """Create a journal."""
         JournalCollection._check_periods_are_safe(periods)
         return JournalCollection._create(
-            ctx, workspace=ParentLink(workspace_ref_id), periods=periods,
+            ctx, workspace=ParentLink(workspace_ref_id), 
+            periods=periods,
+            writing_project_ref_id=writing_project_ref_id,
             writing_gen_params=RecurringTaskGenParams(
                 period=RecurringTaskPeriod.DAILY,
                 eisen=writing_task_eisen,
                 difficulty=writing_task_difficulty,
             ),
-            writing_project_ref_id=writing_project_ref_id,
         )
 
     @update_entity_action
     def change_periods(
         self,
         ctx: DomainContext,
-        periods: UpdateAction[set[RecurringTaskPeriod]],
+        periods: set[RecurringTaskPeriod],
     ) -> "JournalCollection":
         """Update the journal."""
-        JournalCollection._check_periods_are_safe(periods.or_else(self.periods))
-        return self._new_version(ctx, periods=periods.or_else(self.periods))
+        JournalCollection._check_periods_are_safe(periods)
+        return self._new_version(ctx, periods=periods)
     
     @update_entity_action
     def change_writing_tasks(
         self,
         ctx: DomainContext,
+        writing_task_project_ref_id: UpdateAction[EntityId],
         writing_task_eisen: UpdateAction[Eisen],
         writing_task_difficulty: UpdateAction[Difficulty],
-        writing_project_ref_id: UpdateAction[EntityId],
     ) -> "JournalCollection":
         """Change the writing project."""
         return self._new_version(
             ctx,
-            writing_gen_params=RecurringTaskGenParams(
-                period=self.writing_gen_params.period,
-                eisen=writing_task_eisen.or_else(self.writing_gen_params.eisen or Eisen.REGULAR),
-                difficulty=writing_task_difficulty.or_else(self.writing_gen_params.difficulty or Difficulty.EASY),
-            ) if writing_task_eisen.should_change or writing_task_difficulty.should_change else self.writing_gen_params,
-            writing_project_ref_id=writing_project_ref_id.or_else(self.writing_project_ref_id),
+            writing_task_project_ref_id=writing_task_project_ref_id.or_else(self.writing_task_project_ref_id),
+            writing_task_gen_params=RecurringTaskGenParams(
+                period=self.writing_task_gen_params.period,
+                eisen=writing_task_eisen.or_else(self.writing_task_gen_params.eisen or Eisen.REGULAR),
+                difficulty=writing_task_difficulty.or_else(self.writing_task_gen_params.difficulty or Difficulty.EASY),
+            ) if writing_task_eisen.should_change or writing_task_difficulty.should_change else self.writing_task_gen_params,
         )
 
     @staticmethod

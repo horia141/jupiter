@@ -4,6 +4,7 @@ from jupiter.core.domain.core.entity_name import EntityName
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
+from jupiter.core.domain.core.timeline import infer_timeline
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.journal.journal_source import JournalSource
@@ -46,8 +47,6 @@ class Journal(LeafEntity):
         journal_collection_ref_id: EntityId,
         right_now: ADate,
         period: RecurringTaskPeriod,
-        timeline: str,
-        report: ReportPeriodResult,
     ) -> "Journal":
         """Create a journal."""
         return Journal._create(
@@ -57,8 +56,8 @@ class Journal(LeafEntity):
             source=JournalSource.USER,
             right_now=right_now,
             period=period,
-            timeline=timeline,
-            report=report,
+            timeline=infer_timeline(period, right_now.to_timestamp_at_end_of_day()),
+            report=ReportPeriodResult.empty(right_now, period),
         )
     
     @staticmethod

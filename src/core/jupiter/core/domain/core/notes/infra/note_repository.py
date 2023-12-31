@@ -42,11 +42,3 @@ class NoteRepository(LeafEntityRepository[Note], abc.ABC):
         filter_source_entity_ref_ids: Optional[Iterable[EntityId]] = None,
     ) -> list[Note]:
         """Find all notes."""
-
-    @abc.abstractmethod
-    async def find_all_generic(
-        self,
-        allow_archived: bool,
-        **kwargs: EntityLinkFilterCompiled,
-    ) -> Iterable[Note]:
-        """Find all habits with generic filters."""

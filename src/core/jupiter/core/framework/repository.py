@@ -187,7 +187,7 @@ class CrownEntityRepository(EntityRepository[CrownEntityT], abc.ABC):
         self,
         allow_archived: bool,
         **kwargs: EntityLinkFilterCompiled,
-    ) -> Iterable[CrownEntityT]:
+    ) -> list[CrownEntityT]:
         """Find all crowns with generic filters."""
 
     @abc.abstractmethod
