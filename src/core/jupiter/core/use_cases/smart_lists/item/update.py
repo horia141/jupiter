@@ -71,7 +71,9 @@ class SmartListItemUpdateUseCase(
                     uow, progress_reporter, smart_list_tag
                 )
                 smart_list_tags[smart_list_tag.tag_name.the_tag] = smart_list_tag.ref_id
-                all_smart_list_tags[smart_list_tag.tag_name.the_tag] = smart_list_tag.ref_id
+                all_smart_list_tags[
+                    smart_list_tag.tag_name.the_tag
+                ] = smart_list_tag.ref_id
 
             tags_ref_id = UpdateAction.change_to(
                 list(smart_list_tags.values()),
