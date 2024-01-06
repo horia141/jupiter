@@ -24,7 +24,7 @@ from jupiter.core.domain.gc.gc_log import GCLog
 from jupiter.core.domain.gen.gen_log import GenLog
 from jupiter.core.domain.habits.habit_collection import HabitCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
-from jupiter.core.domain.journal.journal_collection import JournalCollection
+from jupiter.core.domain.journals.journal_collection import JournalCollection
 from jupiter.core.domain.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.persons.person_collection import PersonCollection
 from jupiter.core.domain.projects.project import Project

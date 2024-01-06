@@ -11,6 +11,7 @@ export enum NamedEntityTag {
     CHORE = 'Chore',
     BIG_PLAN = 'BigPlan',
     DOC = 'Doc',
+    JOURNAL = 'Journal',
     VACATION = 'Vacation',
     PROJECT = 'Project',
     SMART_LIST = 'SmartList',

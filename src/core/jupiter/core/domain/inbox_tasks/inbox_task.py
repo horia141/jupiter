@@ -223,7 +223,7 @@ class InboxTask(LeafEntity):
             working_time=None,
             completed_time=None,
         )
-    
+
     @staticmethod
     @create_entity_action
     def new_inbox_task_for_writing_journal(
@@ -885,10 +885,14 @@ class InboxTask(LeafEntity):
             return InboxTaskName.from_raw(f"{name} [{repeat_index + 1}]")
         else:
             return name
-        
+
     @staticmethod
-    def _build_name_for_writing_journal(period: RecurringTaskPeriod, right_now:ADate) -> InboxTaskName:
-        return InboxTaskName.from_raw(f"Write {period} journal entry for for {ADate.to_user_date_str(right_now)}")
+    def _build_name_for_writing_journal(
+        period: RecurringTaskPeriod, right_now: ADate
+    ) -> InboxTaskName:
+        return InboxTaskName.from_raw(
+            f"Write {period} journal entry for for {ADate.to_user_date_str(right_now)}"
+        )
 
     @staticmethod
     def _build_name_for_collection_task(name: InboxTaskName) -> InboxTaskName:

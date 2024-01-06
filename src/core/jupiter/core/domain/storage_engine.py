@@ -46,8 +46,10 @@ from jupiter.core.domain.inbox_tasks.infra.inbox_task_collection_repository impo
 from jupiter.core.domain.inbox_tasks.infra.inbox_task_repository import (
     InboxTaskRepository,
 )
-from jupiter.core.domain.journal.infra.jorunal_repository import JournalRepository
-from jupiter.core.domain.journal.infra.journal_collection_repository import JournalCollectionRepository
+from jupiter.core.domain.journals.infra.journal_collection_repository import (
+    JournalCollectionRepository,
+)
+from jupiter.core.domain.journals.infra.journal_repository import JournalRepository
 from jupiter.core.domain.metrics.infra.metric_collection_repository import (
     MetricCollectionRepository,
 )

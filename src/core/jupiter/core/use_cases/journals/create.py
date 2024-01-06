@@ -5,10 +5,20 @@ from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.infra.generic_creator import generic_creator
-from jupiter.core.domain.journal.journal import Journal
+from jupiter.core.domain.journals.journal import Journal
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.framework.use_case import ProgressReporter, UseCaseArgsBase, UseCaseResultBase, use_case_args, use_case_result
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInMutationUseCaseContext, AppTransactionalLoggedInMutationUseCase, mutation_use_case
+from jupiter.core.framework.use_case import (
+    ProgressReporter,
+    UseCaseArgsBase,
+    UseCaseResultBase,
+    use_case_args,
+    use_case_result,
+)
+from jupiter.core.use_cases.infra.use_cases import (
+    AppLoggedInMutationUseCaseContext,
+    AppTransactionalLoggedInMutationUseCase,
+    mutation_use_case,
+)
 
 
 @use_case_args
@@ -28,7 +38,9 @@ class JournalCreateResult(UseCaseResultBase):
 
 
 @mutation_use_case(WorkspaceFeature.JOURNALS)
-class JournalCreateUseCase(AppTransactionalLoggedInMutationUseCase[JournalCreateArgs, JournalCreateResult]):
+class JournalCreateUseCase(
+    AppTransactionalLoggedInMutationUseCase[JournalCreateArgs, JournalCreateResult]
+):
     """Use case for creating a journal."""
 
     async def _perform_transactional_mutation(
@@ -56,13 +68,13 @@ class JournalCreateUseCase(AppTransactionalLoggedInMutationUseCase[JournalCreate
         )
         new_journal = await generic_creator(uow, progress_reporter, new_journal)
 
-        new_note = Note.new_note(context.domain_context, 
-                                 note_collection_ref_id=note_collection.ref_id, 
-                                 domain=NoteDomain.JOURNAL, 
-                                 source_entity_ref_id=new_journal.ref_id,
-                                 content=[])
+        new_note = Note.new_note(
+            context.domain_context,
+            note_collection_ref_id=note_collection.ref_id,
+            domain=NoteDomain.JOURNAL,
+            source_entity_ref_id=new_journal.ref_id,
+            content=[],
+        )
         new_note = await uow.note_repository.create(new_note)
 
-        return JournalCreateResult(
-            new_journal=new_journal, new_note=new_note
-        )
+        return JournalCreateResult(new_journal=new_journal, new_note=new_note)

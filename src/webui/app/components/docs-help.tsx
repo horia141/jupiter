@@ -10,6 +10,7 @@ export enum DocsHelpSubject {
   HABITS,
   CHORES,
   BIG_PLANS,
+  JOURNALS,
   DOCS,
   VACATIONS,
   PROJECTS,
@@ -63,6 +64,8 @@ function subjectToUrl(subject: DocsHelpSubject) {
       return `concepts/docs/`;
     case DocsHelpSubject.BIG_PLANS:
       return `concepts/big-plans/`;
+    case DocsHelpSubject.JOURNALS:
+      return `concepts/journals/`;
     case DocsHelpSubject.VACATIONS:
       return `concepts/vacations/`;
     case DocsHelpSubject.PROJECTS:

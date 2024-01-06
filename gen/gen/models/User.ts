@@ -5,9 +5,9 @@
 import type { Avatar } from './Avatar';
 import type { EmailAddress } from './EmailAddress';
 import type { EntityId } from './EntityId';
+import type { EntityName } from './EntityName';
 import type { Timestamp } from './Timestamp';
 import type { Timezone } from './Timezone';
-import type { UserName } from './UserName';
 
 export type User = {
     ref_id: EntityId;
@@ -17,7 +17,7 @@ export type User = {
     last_modified_time: Timestamp;
     archived_time: Timestamp;
     email_address: EmailAddress;
-    name: UserName;
+    name: EntityName;
     avatar: Avatar;
     timezone: Timezone;
     feature_flags: Record<string, boolean>;

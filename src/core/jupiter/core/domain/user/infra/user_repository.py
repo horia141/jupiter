@@ -4,17 +4,17 @@ import abc
 from jupiter.core.domain.core.email_address import EmailAddress
 from jupiter.core.domain.user.user import User
 from jupiter.core.framework.repository import (
-    RootEntityAlreadyExistsError,
-    RootEntityNotFoundError,
+    EntityAlreadyExistsError,
+    EntityNotFoundError,
     RootEntityRepository,
 )
 
 
-class UserAlreadyExistsError(RootEntityAlreadyExistsError):
+class UserAlreadyExistsError(EntityAlreadyExistsError):
     """Error raised when a user already exists."""
 
 
-class UserNotFoundError(RootEntityNotFoundError):
+class UserNotFoundError(EntityNotFoundError):
     """Error raised when a user does not exist."""
 
 

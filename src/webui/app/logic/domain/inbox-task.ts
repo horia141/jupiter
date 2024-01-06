@@ -251,6 +251,7 @@ export function canInboxTaskBeInStatus(
       return true;
     case InboxTaskSource.HABIT:
     case InboxTaskSource.CHORE:
+    case InboxTaskSource.JOURNAL:
     case InboxTaskSource.METRIC:
     case InboxTaskSource.PERSON_BIRTHDAY:
     case InboxTaskSource.PERSON_CATCH_UP:

@@ -4,13 +4,23 @@ from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.framework.use_case import UseCaseArgsBase, UseCaseResultBase, use_case_args, use_case_result
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext, AppTransactionalLoggedInReadOnlyUseCase, readonly_use_case
+from jupiter.core.framework.use_case import (
+    UseCaseArgsBase,
+    UseCaseResultBase,
+    use_case_args,
+    use_case_result,
+)
+from jupiter.core.use_cases.infra.use_cases import (
+    AppLoggedInReadonlyUseCaseContext,
+    AppTransactionalLoggedInReadOnlyUseCase,
+    readonly_use_case,
+)
 
 
 @use_case_args
 class JournalLoadSettingsArgs(UseCaseArgsBase):
     """JournalLoadSettings args."""
+
 
 @use_case_result
 class JournalLoadSettingsResult(UseCaseResultBase):

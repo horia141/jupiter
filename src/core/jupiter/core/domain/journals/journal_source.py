@@ -1,5 +1,4 @@
 """The source of a journal entry."""
-import enum
 from jupiter.core.framework.value import EnumValue, enum_value
 
 

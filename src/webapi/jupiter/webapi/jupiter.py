@@ -209,6 +209,25 @@ from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInUseCaseSession,
 )
 from jupiter.core.use_cases.init import InitArgs, InitResult, InitUseCase
+from jupiter.core.use_cases.journals.archive import (
+    JournalArchiveArgs,
+    JournalArchiveUseCase,
+)
+from jupiter.core.use_cases.journals.create import (
+    JournalCreateArgs,
+    JournalCreateResult,
+    JournalCreateUseCase,
+)
+from jupiter.core.use_cases.journals.find import (
+    JournalFindArgs,
+    JournalFindResult,
+    JournalFindUseCase,
+)
+from jupiter.core.use_cases.journals.load import (
+    JournalLoadArgs,
+    JournalLoadResult,
+    JournalLoadUseCase,
+)
 from jupiter.core.use_cases.load_progress_reporter_token import (
     LoadProgressReporterTokenArgs,
     LoadProgressReporterTokenResult,
@@ -882,6 +901,30 @@ big_plan_load_use_case = BigPlanLoadUseCase(
 big_plan_find_use_case = BigPlanFindUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
 )
+
+journal_create_use_case = JournalCreateUseCase(
+    time_provider=request_time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
+journal_archive_use_case = JournalArchiveUseCase(
+    time_provider=request_time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
+journal_find_use_case = JournalFindUseCase(
+    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+)
+journal_load_use_case = JournalLoadUseCase(
+    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+)
+
 
 doc_create_use_case = DocCreateUseCase(
     time_provider=request_time_provider,
@@ -2181,6 +2224,56 @@ async def find_big_plan(
 ) -> BigPlanFindResult:
     """Find all big plans, filtering by id."""
     return await big_plan_find_use_case.execute(session, args)
+
+
+@app.post(
+    "/journal/create",
+    response_model=JournalCreateResult,
+    tags=["journal"],
+    **standard_config,
+)
+async def create_journal(
+    args: JournalCreateArgs, session: LoggedInSession
+) -> JournalCreateResult:
+    """Create a journal."""
+    return await journal_create_use_case.execute(session, args)
+
+
+@app.post(
+    "/journal/archive",
+    response_model=None,
+    tags=["journal"],
+    **standard_config,
+)
+async def archive_journal(args: JournalArchiveArgs, session: LoggedInSession) -> None:
+    """Archive a journal."""
+    await journal_archive_use_case.execute(session, args)
+
+
+@app.post(
+    "/journal/find",
+    response_model=JournalFindResult,
+    tags=["journal"],
+    **standard_config,
+)
+async def find_journal(
+    args: JournalFindArgs, session: LoggedInSession
+) -> JournalFindResult:
+    """Find all journals, filtering by id."""
+    return await journal_find_use_case.execute(session, args)
+
+
+@app.post(
+    "/journal/load",
+    response_model=JournalLoadResult,
+    tags=["journal"],
+    **standard_config,
+)
+async def load_journal(
+    args: JournalLoadArgs, session: LoggedInSession
+) -> JournalLoadResult:
+    """Load a journal."""
+    return await journal_load_use_case.execute(session, args)
 
 
 @app.post(

@@ -5,7 +5,6 @@ from typing import Iterable, Optional
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.entity import EntityLinkFilterCompiled
 from jupiter.core.framework.repository import (
     LeafEntityRepository,
 )

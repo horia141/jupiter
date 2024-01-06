@@ -143,7 +143,12 @@ class SqliteInboxTaskRepository(
                 Column(
                     "chore_ref_id", Integer, ForeignKey("chore.ref_id"), nullable=True
                 ),
-                Column("journal_ref_id", Integer, ForeignKey("journal.ref_id"), nullable=True),
+                Column(
+                    "journal_ref_id",
+                    Integer,
+                    ForeignKey("journal.ref_id"),
+                    nullable=True,
+                ),
                 Column(
                     "metric_ref_id",
                     Integer,

@@ -3,8 +3,8 @@
 /* eslint-disable */
 
 import type { EntityId } from './EntityId';
+import type { EntityName } from './EntityName';
 import type { Timestamp } from './Timestamp';
-import type { WorkspaceName } from './WorkspaceName';
 
 export type Workspace = {
     ref_id: EntityId;
@@ -13,7 +13,7 @@ export type Workspace = {
     created_time: Timestamp;
     last_modified_time: Timestamp;
     archived_time: Timestamp;
-    name: WorkspaceName;
+    name: EntityName;
     default_project_ref_id: EntityId;
     feature_flags: Record<string, boolean>;
 };

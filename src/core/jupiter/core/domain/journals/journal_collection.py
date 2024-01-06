@@ -3,7 +3,7 @@ from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
-from jupiter.core.domain.journal.journal import Journal
+from jupiter.core.domain.journals.journal import Journal
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
@@ -44,7 +44,8 @@ class JournalCollection(TrunkEntity):
         """Create a journal."""
         JournalCollection._check_periods_are_safe(periods)
         return JournalCollection._create(
-            ctx, workspace=ParentLink(workspace_ref_id), 
+            ctx,
+            workspace=ParentLink(workspace_ref_id),
             periods=periods,
             writing_project_ref_id=writing_project_ref_id,
             writing_gen_params=RecurringTaskGenParams(
@@ -63,7 +64,7 @@ class JournalCollection(TrunkEntity):
         """Update the journal."""
         JournalCollection._check_periods_are_safe(periods)
         return self._new_version(ctx, periods=periods)
-    
+
     @update_entity_action
     def change_writing_tasks(
         self,
@@ -75,12 +76,20 @@ class JournalCollection(TrunkEntity):
         """Change the writing project."""
         return self._new_version(
             ctx,
-            writing_task_project_ref_id=writing_task_project_ref_id.or_else(self.writing_task_project_ref_id),
+            writing_task_project_ref_id=writing_task_project_ref_id.or_else(
+                self.writing_task_project_ref_id
+            ),
             writing_task_gen_params=RecurringTaskGenParams(
                 period=self.writing_task_gen_params.period,
-                eisen=writing_task_eisen.or_else(self.writing_task_gen_params.eisen or Eisen.REGULAR),
-                difficulty=writing_task_difficulty.or_else(self.writing_task_gen_params.difficulty or Difficulty.EASY),
-            ) if writing_task_eisen.should_change or writing_task_difficulty.should_change else self.writing_task_gen_params,
+                eisen=writing_task_eisen.or_else(
+                    self.writing_task_gen_params.eisen or Eisen.REGULAR
+                ),
+                difficulty=writing_task_difficulty.or_else(
+                    self.writing_task_gen_params.difficulty or Difficulty.EASY
+                ),
+            )
+            if writing_task_eisen.should_change or writing_task_difficulty.should_change
+            else self.writing_task_gen_params,
         )
 
     @staticmethod

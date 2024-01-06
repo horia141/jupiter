@@ -16,12 +16,14 @@ function sourceToClass(source: InboxTaskSource): "info" | "warning" | "error" {
   switch (source) {
     case InboxTaskSource.USER:
       return "info";
-    case InboxTaskSource.BIG_PLAN:
-      return "info";
     case InboxTaskSource.HABIT:
       return "warning";
     case InboxTaskSource.CHORE:
       return "warning";
+    case InboxTaskSource.BIG_PLAN:
+      return "info";
+    case InboxTaskSource.JOURNAL:
+      return "info";
     case InboxTaskSource.METRIC:
       return "warning";
     case InboxTaskSource.PERSON_BIRTHDAY:

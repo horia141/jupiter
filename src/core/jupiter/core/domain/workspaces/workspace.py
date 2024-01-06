@@ -15,7 +15,7 @@ from jupiter.core.domain.gen.gen_log import GenLog
 from jupiter.core.domain.habits.habit_collection import HabitCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
-from jupiter.core.domain.journal.journal_collection import JournalCollection
+from jupiter.core.domain.journals.journal_collection import JournalCollection
 from jupiter.core.domain.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.named_entity_tag import NamedEntityTag
 from jupiter.core.domain.persons.person_collection import PersonCollection
@@ -152,6 +152,10 @@ class Workspace(RootEntity):
                 WorkspaceFeature.BIG_PLANS
             ):
                 inferred_entity_tags.append(entity_tag)
+            elif entity_tag is NamedEntityTag.JOURNAL and self.is_feature_available(
+                WorkspaceFeature.JOURNALS
+            ):
+                inferred_entity_tags.append(entity_tag)
             elif entity_tag is NamedEntityTag.DOC and self.is_feature_available(
                 WorkspaceFeature.DOCS
             ):
@@ -223,6 +227,10 @@ class Workspace(RootEntity):
                 WorkspaceFeature.BIG_PLANS
             ):
                 inferred_sources.append(source)
+            elif source is InboxTaskSource.JOURNAL and self.is_feature_available(
+                WorkspaceFeature.JOURNALS
+            ):
+                inferred_sources.append(source)
             elif source is InboxTaskSource.METRIC and self.is_feature_available(
                 WorkspaceFeature.METRICS
             ):
@@ -269,6 +277,10 @@ class Workspace(RootEntity):
                 inferred_sync_targets.append(sync_target)
             elif sync_target is SyncTarget.BIG_PLANS and self.is_feature_available(
                 WorkspaceFeature.BIG_PLANS
+            ):
+                inferred_sync_targets.append(sync_target)
+            elif sync_target is SyncTarget.JOURNALS and self.is_feature_available(
+                WorkspaceFeature.JOURNALS
             ):
                 inferred_sync_targets.append(sync_target)
             elif sync_target is SyncTarget.DOCS and self.is_feature_available(

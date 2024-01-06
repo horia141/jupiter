@@ -157,7 +157,7 @@ class ReportPeriodResult(Value):
     user_score_overview: UserScoreOverview | None
 
     @staticmethod
-    def empty(today: ADate, period: RecurringTaskPeriod) -> ReportPeriodResult:
+    def empty(today: ADate, period: RecurringTaskPeriod) -> "ReportPeriodResult":
         """Construct an empty report."""
         return ReportPeriodResult(
             today=today,
@@ -166,47 +166,37 @@ class ReportPeriodResult(Value):
                 created=NestedResult(
                     total_cnt=0,
                     per_source_cnt=[
-                        NestedResultPerSource(
-                            source=s,
-                            count=0
-                        ) for s in InboxTaskSource
-                    ]
+                        NestedResultPerSource(source=s, count=0)
+                        for s in InboxTaskSource
+                    ],
                 ),
                 accepted=NestedResult(
                     total_cnt=0,
                     per_source_cnt=[
-                        NestedResultPerSource(
-                            source=s,
-                            count=0
-                        ) for s in InboxTaskSource
-                    ]
+                        NestedResultPerSource(source=s, count=0)
+                        for s in InboxTaskSource
+                    ],
                 ),
                 working=NestedResult(
                     total_cnt=0,
                     per_source_cnt=[
-                        NestedResultPerSource(
-                            source=s,
-                            count=0
-                        ) for s in InboxTaskSource
-                    ]
+                        NestedResultPerSource(source=s, count=0)
+                        for s in InboxTaskSource
+                    ],
                 ),
                 not_done=NestedResult(
                     total_cnt=0,
                     per_source_cnt=[
-                        NestedResultPerSource(
-                            source=s,
-                            count=0
-                        ) for s in InboxTaskSource
-                    ]
+                        NestedResultPerSource(source=s, count=0)
+                        for s in InboxTaskSource
+                    ],
                 ),
                 done=NestedResult(
                     total_cnt=0,
                     per_source_cnt=[
-                        NestedResultPerSource(
-                            source=s,
-                            count=0
-                        ) for s in InboxTaskSource
-                    ]
+                        NestedResultPerSource(source=s, count=0)
+                        for s in InboxTaskSource
+                    ],
                 ),
             ),
             global_big_plans_summary=WorkableSummary(
@@ -216,12 +206,12 @@ class ReportPeriodResult(Value):
                 not_done_cnt=0,
                 done_cnt=0,
                 not_done_big_plans=[],
-                done_big_plans=[]
+                done_big_plans=[],
             ),
             per_project_breakdown=[],
             per_period_breakdown=[],
             per_habit_breakdown=[],
             per_chore_breakdown=[],
             per_big_plan_breakdown=[],
-            user_score_overview=None
+            user_score_overview=None,
         )

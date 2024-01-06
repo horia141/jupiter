@@ -86,14 +86,6 @@ class EntityRepository(Generic[EntityT], Repository, abc.ABC):
         """Save an entity."""
 
 
-class RootEntityAlreadyExistsError(EntityAlreadyExistsError):
-    """Error raised when a root entity already exists."""
-
-
-class RootEntityNotFoundError(EntityNotFoundError):
-    """Error raised when a root entity is not found."""
-
-
 RootEntityT = TypeVar("RootEntityT", bound=RootEntity)
 
 
