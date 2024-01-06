@@ -75,6 +75,6 @@ class JournalCreateUseCase(
             source_entity_ref_id=new_journal.ref_id,
             content=[],
         )
-        new_note = await uow.note_repository.create(new_note)
+        new_note = await generic_creator(uow, progress_reporter, new_note)
 
         return JournalCreateResult(new_journal=new_journal, new_note=new_note)

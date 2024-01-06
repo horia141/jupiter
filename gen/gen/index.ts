@@ -132,6 +132,7 @@ export type { InitArgs } from './models/InitArgs';
 export type { InitResult } from './models/InitResult';
 export type { Journal } from './models/Journal';
 export type { JournalArchiveArgs } from './models/JournalArchiveArgs';
+export type { JournalChangeTimeConfigArgs } from './models/JournalChangeTimeConfigArgs';
 export type { JournalCreateArgs } from './models/JournalCreateArgs';
 export type { JournalCreateResult } from './models/JournalCreateResult';
 export type { JournalFindArgs } from './models/JournalFindArgs';

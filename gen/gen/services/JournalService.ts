@@ -2,6 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { JournalArchiveArgs } from '../models/JournalArchiveArgs';
+import type { JournalChangeTimeConfigArgs } from '../models/JournalChangeTimeConfigArgs';
 import type { JournalCreateArgs } from '../models/JournalCreateArgs';
 import type { JournalCreateResult } from '../models/JournalCreateResult';
 import type { JournalFindArgs } from '../models/JournalFindArgs';
@@ -52,6 +53,29 @@ export class JournalService {
         return this.httpRequest.request({
             method: 'POST',
             url: '/journal/archive',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Change Time Config
+     * Change time config for a journal.
+     * @param requestBody
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public changeTimeConfig(
+        requestBody: JournalChangeTimeConfigArgs,
+    ): CancelablePromise<any> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/journal/change-time-config',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

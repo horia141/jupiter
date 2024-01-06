@@ -6,7 +6,7 @@ from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
-    LeafEntity,
+    LeafSupportEntity,
     ParentLink,
     create_entity_action,
     entity,
@@ -16,7 +16,7 @@ from jupiter.core.framework.update_action import UpdateAction
 
 
 @entity
-class Note(LeafEntity):
+class Note(LeafSupportEntity):
     """A note in the notebook."""
 
     note_collection: ParentLink

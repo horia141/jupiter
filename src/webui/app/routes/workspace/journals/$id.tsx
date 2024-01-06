@@ -46,6 +46,8 @@ const ParamsSchema = {
 
 const UpdateFormSchema = {
   intent: z.string(),
+  rightNow: z.string(),
+  period: z.nativeEnum(RecurringTaskPeriod),
 };
 
 export const handle = {
@@ -86,6 +88,22 @@ export async function action({ request, params }: ActionArgs) {
 
   try {
     switch (form.intent) {
+      case "change-time-config": {
+        await getLoggedInApiClient(session).journal.changeTimeConfig({
+          ref_id: { the_id: id },
+          right_now: {
+            should_change: true,
+            value: {
+            the_date: form.rightNow,
+            the_datetime: undefined,
+          }},
+          period: {
+            should_change: true,
+            value: form.period,
+          }
+        });
+        return redirect(`/workspace/journals/${id}`);
+      }
       case "archive": {
         await getLoggedInApiClient(session).journal.archiveJournal({
           ref_id: { the_id: id },
@@ -174,7 +192,7 @@ export default function Journal() {
               disabled={!inputsEnabled}
               type="submit"
               name="intent"
-              value="update"
+              value="change-time-config"
             >
               Save
             </Button>
@@ -193,7 +211,8 @@ export default function Journal() {
 
       <ShowReport
         topLevelInfo={topLevelInfo}
-        report={loaderData.journal.report} />
+        report={loaderData.journal.report}
+      />
     </LeafPanel>
   );
 }

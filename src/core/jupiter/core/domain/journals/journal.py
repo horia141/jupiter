@@ -21,6 +21,7 @@ from jupiter.core.framework.entity import (
     entity,
     update_entity_action,
 )
+from jupiter.core.framework.update_action import UpdateAction
 
 
 @entity
@@ -80,6 +81,24 @@ class Journal(LeafEntity):
             period=period,
             timeline=timeline,
             report=report,
+        )
+    
+    @update_entity_action
+    def change_time_config(
+        self,
+        ctx: DomainContext,
+        right_now: UpdateAction[ADate],
+        period: UpdateAction[RecurringTaskPeriod],
+    ) -> "Journal":
+        """Update the journal."""
+        return self._new_version(
+            ctx,
+            right_now=right_now.or_else(self.right_now),
+            period=period.or_else(self.period),
+            timeline=infer_timeline(
+                period.or_else(self.period),
+                right_now.or_else(self.right_now).to_timestamp_at_end_of_day(),
+            ),
         )
 
     @update_entity_action
