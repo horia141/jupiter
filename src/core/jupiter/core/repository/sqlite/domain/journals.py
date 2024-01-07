@@ -13,7 +13,7 @@ from jupiter.core.domain.journals.infra.journal_collection_repository import (
     JournalCollectionRepository,
 )
 from jupiter.core.domain.journals.infra.journal_repository import (
-    JournalExistsForPeriodAndDateError,
+    JournalExistsForDateError,
     JournalRepository,
 )
 from jupiter.core.domain.journals.journal import Journal
@@ -161,7 +161,7 @@ class SqliteJournalRepository(SqliteLeafEntityRepository[Journal], JournalReposi
                 Column("report", JSON, nullable=False),
                 keep_existing=True,
             ),
-            already_exists_err_cls=JournalExistsForPeriodAndDateError,
+            already_exists_err_cls=JournalExistsForDateError,
         )
 
     @staticmethod

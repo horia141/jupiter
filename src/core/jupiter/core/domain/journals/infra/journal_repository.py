@@ -8,8 +8,8 @@ from jupiter.core.framework.repository import (
 )
 
 
-class JournalExistsForPeriodAndDateError(EntityAlreadyExistsError):
-    """An error raised when a journal already exists for a period and date."""
+class JournalExistsForDateError(EntityAlreadyExistsError):
+    """An error raised when a journal already exists for a date."""
 
 
 class JournalRepository(LeafEntityRepository[Journal], abc.ABC):

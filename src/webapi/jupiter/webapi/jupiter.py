@@ -19,7 +19,7 @@ from jupiter.core.domain.auth.password_plain import PasswordPlain
 from jupiter.core.domain.core.email_address import EmailAddress
 from jupiter.core.domain.features import FeatureUnavailableError
 from jupiter.core.domain.journals.infra.journal_repository import (
-    JournalExistsForPeriodAndDateError,
+    JournalExistsForDateError,
 )
 from jupiter.core.domain.projects.errors import ProjectInSignificantUseError
 from jupiter.core.domain.user.infra.user_repository import (
@@ -1532,15 +1532,15 @@ async def workspace_not_found_error_handler(
     )
 
 
-@app.exception_handler(JournalExistsForPeriodAndDateError)
+@app.exception_handler(JournalExistsForDateError)
 async def journal_exists_for_period_and_date_error_handler(
     _request: Request,
-    _exc: JournalExistsForPeriodAndDateError,
+    _exc: JournalExistsForDateError,
 ) -> PlainTextResponse:
     """Transform JournalExistsForPeriodAndDateError to something that signals clients the app is in a not-ready state."""
     return PlainTextResponse(
         status_code=status.HTTP_409_CONFLICT,
-        content="Journal already exists for this period and date",
+        content="Journal already exists for this date",
     )
 
 

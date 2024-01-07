@@ -19,7 +19,6 @@ import {
 import type {
   InboxTasksSummary,
   ReportPeriodResult,
-  UserScoreOverview,
   WorkableSummary,
 } from "jupiter-gen";
 import {
@@ -120,17 +119,15 @@ export function ShowReport({ topLevelInfo, report }: ShowReportProps) {
         </Typography>
       </Box>
 
-      {isUserFeatureAvailable(topLevelInfo.user, UserFeature.GAMIFICATION) && 
-      report.user_score_overview && (
-        <>
-          <Divider>
-            <Typography variant="h6">💪 Score</Typography>
-          </Divider>
-          <ScoreOverview
-            scoreOverview={report.user_score_overview}
-          />
-        </>
-      )}
+      {isUserFeatureAvailable(topLevelInfo.user, UserFeature.GAMIFICATION) &&
+        report.user_score_overview && (
+          <>
+            <Divider>
+              <Typography variant="h6">💪 Score</Typography>
+            </Divider>
+            <ScoreOverview scoreOverview={report.user_score_overview} />
+          </>
+        )}
 
       <Tabs
         value={showTab}
