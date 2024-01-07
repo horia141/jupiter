@@ -93,7 +93,9 @@ class Journal(LeafEntity):
         """Update the journal."""
         return self._new_version(
             ctx,
-            name=Journal.build_name(right_now.or_else(self.right_now), period.or_else(self.period)),
+            name=Journal.build_name(
+                right_now.or_else(self.right_now), period.or_else(self.period)
+            ),
             right_now=right_now.or_else(self.right_now),
             period=period.or_else(self.period),
             timeline=infer_timeline(

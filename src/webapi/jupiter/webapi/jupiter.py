@@ -18,7 +18,9 @@ from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
 from jupiter.core.domain.auth.password_plain import PasswordPlain
 from jupiter.core.domain.core.email_address import EmailAddress
 from jupiter.core.domain.features import FeatureUnavailableError
-from jupiter.core.domain.journals.infra.journal_repository import JournalExistsForPeriodAndDateError
+from jupiter.core.domain.journals.infra.journal_repository import (
+    JournalExistsForPeriodAndDateError,
+)
 from jupiter.core.domain.projects.errors import ProjectInSignificantUseError
 from jupiter.core.domain.user.infra.user_repository import (
     UserAlreadyExistsError,
@@ -233,7 +235,10 @@ from jupiter.core.use_cases.journals.load import (
     JournalLoadResult,
     JournalLoadUseCase,
 )
-from jupiter.core.use_cases.journals.update_report import JournalUpdateReportArgs, JournalUpdateReportUseCase
+from jupiter.core.use_cases.journals.update_report import (
+    JournalUpdateReportArgs,
+    JournalUpdateReportUseCase,
+)
 from jupiter.core.use_cases.load_progress_reporter_token import (
     LoadProgressReporterTokenArgs,
     LoadProgressReporterTokenResult,

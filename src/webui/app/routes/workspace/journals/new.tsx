@@ -27,7 +27,10 @@ import { getLoggedInApiClient } from "~/api-clients";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { aGlobalError, validationErrorToUIErrorInfo } from "~/logic/action-result";
+import {
+  aGlobalError,
+  validationErrorToUIErrorInfo,
+} from "~/logic/action-result";
 import { periodName } from "~/logic/domain/period";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -61,11 +64,8 @@ export async function action({ request }: ActionArgs) {
       return json(validationErrorToUIErrorInfo(error.body));
     }
 
-    if (
-        error instanceof ApiError &&
-        error.status === StatusCodes.CONFLICT
-    ) {
-        return json(aGlobalError(error.body));
+    if (error instanceof ApiError && error.status === StatusCodes.CONFLICT) {
+      return json(aGlobalError(error.body));
     }
 
     throw error;
@@ -84,7 +84,7 @@ export default function NewJournal() {
   return (
     <LeafPanel returnLocation="/workspace/journals">
       <GlobalError actionResult={actionData} />
-        <Card>
+      <Card>
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>

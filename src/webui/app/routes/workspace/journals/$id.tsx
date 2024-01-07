@@ -16,22 +16,32 @@ import { json, redirect, Response } from "@remix-run/node";
 import {
   ShouldRevalidateFunction,
   useActionData,
+  useFetcher,
   useParams,
   useTransition,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { ApiError, RecurringTaskPeriod } from "jupiter-gen";
+import {
+  ApiError,
+  InboxTask,
+  InboxTaskStatus,
+  RecurringTaskPeriod,
+} from "jupiter-gen";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
+import { InboxTaskStack } from "~/components/inbox-task-stack";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { ShowReport } from "~/components/show-report";
-import { aGlobalError, validationErrorToUIErrorInfo } from "~/logic/action-result";
+import {
+  aGlobalError,
+  validationErrorToUIErrorInfo,
+} from "~/logic/action-result";
 import { periodName } from "~/logic/domain/period";
 import { LeafPanelExpansionState } from "~/rendering/leaf-panel-expansion";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -107,12 +117,12 @@ export async function action({ request, params }: ActionArgs) {
         return redirect(`/workspace/journals/${id}`);
       }
 
-    case "update-report": {
+      case "update-report": {
         await getLoggedInApiClient(session).journal.updateReportForJorunal({
           ref_id: { the_id: id },
         });
         return redirect(`/workspace/journals/${id}`);
-    }
+      }
 
       case "archive": {
         await getLoggedInApiClient(session).journal.archiveJournal({
@@ -132,11 +142,8 @@ export async function action({ request, params }: ActionArgs) {
       return json(validationErrorToUIErrorInfo(error.body));
     }
 
-    if (
-        error instanceof ApiError &&
-        error.status === StatusCodes.CONFLICT
-    ) {
-        return json(aGlobalError(error.body));
+    if (error instanceof ApiError && error.status === StatusCodes.CONFLICT) {
+      return json(aGlobalError(error.body));
     }
 
     throw error;
@@ -158,6 +165,34 @@ export default function Journal() {
   const inputsEnabled =
     transition.state === "idle" && !loaderData.journal.archived;
 
+  const cardActionFetcher = useFetcher();
+
+  function handleCardMarkDone(it: InboxTask) {
+    cardActionFetcher.submit(
+      {
+        id: it.ref_id.the_id,
+        status: InboxTaskStatus.DONE,
+      },
+      {
+        method: "post",
+        action: "/workspace/inbox-tasks/update-status-and-eisen",
+      }
+    );
+  }
+
+  function handleCardMarkNotDone(it: InboxTask) {
+    cardActionFetcher.submit(
+      {
+        id: it.ref_id.the_id,
+        status: InboxTaskStatus.NOT_DONE,
+      },
+      {
+        method: "post",
+        action: "/workspace/inbox-tasks/update-status-and-eisen",
+      }
+    );
+  }
+
   return (
     <LeafPanel
       key={loaderData.journal.ref_id.the_id}
@@ -167,7 +202,13 @@ export default function Journal() {
       initialExpansionState={LeafPanelExpansionState.FULL}
     >
       <GlobalError actionResult={actionData} />
-        <Card sx={{ marginBottom: "1rem", display: "flex", flexDirection: isBigScreen ? "row" : "column" }}>
+      <Card
+        sx={{
+          marginBottom: "1rem",
+          display: "flex",
+          flexDirection: isBigScreen ? "row" : "column",
+        }}
+      >
         <CardContent sx={{ flexGrow: "1" }}>
           <Stack direction={"row"} spacing={2} useFlexGap>
             <FormControl fullWidth>
@@ -242,6 +283,23 @@ export default function Journal() {
         topLevelInfo={topLevelInfo}
         report={loaderData.journal.report}
       />
+
+      {loaderData.writingTask && (
+        <InboxTaskStack
+          topLevelInfo={topLevelInfo}
+          showLabel
+          showOptions={{
+            showStatus: true,
+            showDueDate: true,
+            showHandleMarkDone: true,
+            showHandleMarkNotDone: true,
+          }}
+          label="Writing Task"
+          inboxTasks={[loaderData.writingTask]}
+          onCardMarkDone={handleCardMarkDone}
+          onCardMarkNotDone={handleCardMarkNotDone}
+        />
+      )}
     </LeafPanel>
   );
 }
