@@ -31,7 +31,7 @@ import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { ShowReport } from "~/components/show-report";
-import { validationErrorToUIErrorInfo } from "~/logic/action-result";
+import { aGlobalError, validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { periodName } from "~/logic/domain/period";
 import { LeafPanelExpansionState } from "~/rendering/leaf-panel-expansion";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -132,6 +132,13 @@ export async function action({ request, params }: ActionArgs) {
       return json(validationErrorToUIErrorInfo(error.body));
     }
 
+    if (
+        error instanceof ApiError &&
+        error.status === StatusCodes.CONFLICT
+    ) {
+        return json(aGlobalError(error.body));
+    }
+
     throw error;
   }
 }
@@ -159,8 +166,8 @@ export default function Journal() {
       returnLocation="/workspace/journals"
       initialExpansionState={LeafPanelExpansionState.FULL}
     >
-      <Card sx={{ marginBottom: "1rem", display: "flex", flexDirection: isBigScreen ? "row" : "column" }}>
-        <GlobalError actionResult={actionData} />
+      <GlobalError actionResult={actionData} />
+        <Card sx={{ marginBottom: "1rem", display: "flex", flexDirection: isBigScreen ? "row" : "column" }}>
         <CardContent sx={{ flexGrow: "1" }}>
           <Stack direction={"row"} spacing={2} useFlexGap>
             <FormControl fullWidth>

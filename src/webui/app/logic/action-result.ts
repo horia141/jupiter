@@ -40,6 +40,14 @@ export function noErrorSomeData<T>(data: T): ActionResult<T> {
   };
 }
 
+export function aGlobalError(globalError: string): SomeErrorNoData {
+  return {
+    theType: "some-error-no-data",
+    globalError: globalError,
+    fieldErrors: {},
+  };
+}
+
 export function getFieldError(
   uiErrorInfo: SomeErrorNoData | undefined,
   fieldPrefix: string

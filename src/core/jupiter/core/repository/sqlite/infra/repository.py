@@ -103,11 +103,21 @@ class SqliteEntityRepository(Generic[_EntityT], abc.ABC):
 
     async def save(self, entity: _EntityT) -> _EntityT:
         """Save an entity."""
-        result = await self._connection.execute(
-            update(self._table)
-            .where(self._table.c.ref_id == entity.ref_id.as_int())
-            .values(**self._entity_to_row(entity)),
-        )
+        try:
+            result = await self._connection.execute(
+                update(self._table)
+                .where(self._table.c.ref_id == entity.ref_id.as_int())
+                .values(**self._entity_to_row(entity)),
+            )
+        except IntegrityError as err:
+            if isinstance(entity, CrownEntity):
+                raise self._already_exists_err_cls(
+                    f"Entity of type {self._infer_entity_class()} with name {entity.name} already exists",
+                ) from err
+            else:
+                raise self._already_exists_err_cls(
+                    f"Entity of type {self._infer_entity_class()} already exists",
+                ) from err
         if result.rowcount == 0:
             raise self._not_found_err_cls(
                 f"Entity of type {entity.__class__} and id {str(entity.ref_id)} not found."
