@@ -8,8 +8,11 @@ from jupiter.core.domain.auth.password_new_plain import PasswordNewPlain
 from jupiter.core.domain.auth.recovery_token_plain import RecoveryTokenPlain
 from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.core.domain.chores.chore_collection import ChoreCollection
+from jupiter.core.domain.core.difficulty import Difficulty
+from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.core.email_address import EmailAddress
 from jupiter.core.domain.core.notes.note_collection import NoteCollection
+from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.core.timezone import Timezone
 from jupiter.core.domain.docs.doc_collection import DocCollection
 from jupiter.core.domain.features import (
@@ -21,6 +24,7 @@ from jupiter.core.domain.gc.gc_log import GCLog
 from jupiter.core.domain.gen.gen_log import GenLog
 from jupiter.core.domain.habits.habit_collection import HabitCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
+from jupiter.core.domain.journals.journal_collection import JournalCollection
 from jupiter.core.domain.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.persons.person_collection import PersonCollection
 from jupiter.core.domain.projects.project import Project
@@ -227,6 +231,18 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             )
             new_big_plan_collection = await uow.big_plan_collection_repository.create(
                 new_big_plan_collection,
+            )
+
+            journal_collection = JournalCollection.new_journal_collection(
+                ctx=context.domain_context,
+                workspace_ref_id=new_workspace.ref_id,
+                periods={RecurringTaskPeriod.WEEKLY},
+                writing_task_eisen=Eisen.IMPORTANT,
+                writing_task_difficulty=Difficulty.MEDIUM,
+                writing_project_ref_id=new_default_project.ref_id,
+            )
+            journal_collection = await uow.journal_collection_repository.create(
+                journal_collection,
             )
 
             new_doc_collection = DocCollection.new_doc_collection(

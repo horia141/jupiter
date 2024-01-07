@@ -3,7 +3,7 @@
 ## About
 
 Jupiter is a tool for _life planning_. It provides goals management, task tracking,
-habit building, chores management, lists, metrics, a personal relationship manager, and
+habit building, a journal, chores management, lists, metrics, a personal relationship manager, and
 much more all in a unified package.
 
 I built it to [solve an issue I had](http://www.paulgraham.com/organic.html) - making sure everything

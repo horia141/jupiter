@@ -10,6 +10,8 @@ export function syncTargetName(syncTarget: SyncTarget): string {
       return "Chores";
     case SyncTarget.BIG_PLANS:
       return "Big Plans";
+    case SyncTarget.JOURNALS:
+      return "Journals";
     case SyncTarget.DOCS:
       return "Docs";
     case SyncTarget.VACATIONS:

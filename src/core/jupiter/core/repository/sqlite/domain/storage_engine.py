@@ -53,6 +53,11 @@ from jupiter.core.domain.inbox_tasks.infra.inbox_task_collection_repository impo
 from jupiter.core.domain.inbox_tasks.infra.inbox_task_repository import (
     InboxTaskRepository,
 )
+from jupiter.core.domain.journals.infra.journal_collection_repository import (
+    JournalCollectionRepository,
+)
+from jupiter.core.domain.journals.infra.journal_repository import JournalRepository
+from jupiter.core.domain.journals.journal import Journal
 from jupiter.core.domain.metrics.infra.metric_collection_repository import (
     MetricCollectionRepository,
 )
@@ -166,6 +171,10 @@ from jupiter.core.repository.sqlite.domain.inbox_tasks import (
     SqliteInboxTaskCollectionRepository,
     SqliteInboxTaskRepository,
 )
+from jupiter.core.repository.sqlite.domain.journals import (
+    SqliteJournalCollectionRepository,
+    SqliteJournalRepository,
+)
 from jupiter.core.repository.sqlite.domain.metrics import (
     SqliteMetricCollectionRepository,
     SqliteMetricEntryRepository,
@@ -233,6 +242,8 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
     _chore_repository: Final[SqliteChoreRepository]
     _big_plan_collection_repository: Final[SqliteBigPlanCollectionRepository]
     _big_plan_repository: Final[SqliteBigPlanRepository]
+    _journal_collection_repository: Final[SqliteJournalCollectionRepository]
+    _journal_repository: Final[SqliteJournalRepository]
     _doc_collection_repository: Final[SqliteDocCollectionRepository]
     _doc_repository: Final[SqliteDocRepository]
     _vacation_collection_repository: Final[SqliteVacationCollectionRepository]
@@ -279,6 +290,8 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
         chore_repository: SqliteChoreRepository,
         big_plan_collection_repository: SqliteBigPlanCollectionRepository,
         big_plan_repository: SqliteBigPlanRepository,
+        journal_collection_repository: SqliteJournalCollectionRepository,
+        journal_repository: SqliteJournalRepository,
         doc_collection_repository: SqliteDocCollectionRepository,
         doc_repository: SqliteDocRepository,
         vacation_repository: SqliteVacationRepository,
@@ -324,6 +337,8 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
         self._chore_repository = chore_repository
         self._big_plan_collection_repository = big_plan_collection_repository
         self._big_plan_repository = big_plan_repository
+        self._journal_collection_repository = journal_collection_repository
+        self._journal_repository = journal_repository
         self._doc_collection_repository = doc_collection_repository
         self._doc_repository = doc_repository
         self._vacation_collection_repository = vacation_collection_repository
@@ -443,6 +458,16 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
     def big_plan_repository(self) -> BigPlanRepository:
         """The big plan repository."""
         return self._big_plan_repository
+
+    @property
+    def journal_collection_repository(self) -> JournalCollectionRepository:
+        """The journal collection repository."""
+        return self._journal_collection_repository
+
+    @property
+    def journal_repository(self) -> JournalRepository:
+        """The journal repository."""
+        return self._journal_repository
 
     @property
     def doc_collection_repository(self) -> DocCollectionRepository:
@@ -593,6 +618,8 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
             return cast(CrownEntityRepository[_CrownEntityT], self._chore_repository)
         elif entity_type is BigPlan:
             return cast(CrownEntityRepository[_CrownEntityT], self._big_plan_repository)
+        elif entity_type is Journal:
+            return cast(CrownEntityRepository[_CrownEntityT], self._journal_repository)
         elif entity_type is Doc:
             return cast(CrownEntityRepository[_CrownEntityT], self._doc_repository)
         elif entity_type is Vacation:
@@ -687,6 +714,11 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
                 self._metadata,
             )
             big_plan_repository = SqliteBigPlanRepository(connection, self._metadata)
+            journal_collection_repository = SqliteJournalCollectionRepository(
+                connection,
+                self._metadata,
+            )
+            journal_repository = SqliteJournalRepository(connection, self._metadata)
             doc_collection_repository = SqliteDocCollectionRepository(
                 connection,
                 self._metadata,
@@ -784,6 +816,8 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
                 chore_repository=chore_repository,
                 big_plan_collection_repository=big_plan_collection_repository,
                 big_plan_repository=big_plan_repository,
+                journal_collection_repository=journal_collection_repository,
+                journal_repository=journal_repository,
                 doc_collection_repository=doc_collection_repository,
                 doc_repository=doc_repository,
                 vacation_collection_repository=vacation_collection_repository,

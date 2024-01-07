@@ -155,3 +155,63 @@ class ReportPeriodResult(Value):
     per_chore_breakdown: list[PerChoreBreakdownItem]
     per_big_plan_breakdown: list[PerBigPlanBreakdownItem]
     user_score_overview: UserScoreOverview | None
+
+    @staticmethod
+    def empty(today: ADate, period: RecurringTaskPeriod) -> "ReportPeriodResult":
+        """Construct an empty report."""
+        return ReportPeriodResult(
+            today=today,
+            period=period,
+            global_inbox_tasks_summary=InboxTasksSummary(
+                created=NestedResult(
+                    total_cnt=0,
+                    per_source_cnt=[
+                        NestedResultPerSource(source=s, count=0)
+                        for s in InboxTaskSource
+                    ],
+                ),
+                accepted=NestedResult(
+                    total_cnt=0,
+                    per_source_cnt=[
+                        NestedResultPerSource(source=s, count=0)
+                        for s in InboxTaskSource
+                    ],
+                ),
+                working=NestedResult(
+                    total_cnt=0,
+                    per_source_cnt=[
+                        NestedResultPerSource(source=s, count=0)
+                        for s in InboxTaskSource
+                    ],
+                ),
+                not_done=NestedResult(
+                    total_cnt=0,
+                    per_source_cnt=[
+                        NestedResultPerSource(source=s, count=0)
+                        for s in InboxTaskSource
+                    ],
+                ),
+                done=NestedResult(
+                    total_cnt=0,
+                    per_source_cnt=[
+                        NestedResultPerSource(source=s, count=0)
+                        for s in InboxTaskSource
+                    ],
+                ),
+            ),
+            global_big_plans_summary=WorkableSummary(
+                created_cnt=0,
+                accepted_cnt=0,
+                working_cnt=0,
+                not_done_cnt=0,
+                done_cnt=0,
+                not_done_big_plans=[],
+                done_big_plans=[],
+            ),
+            per_project_breakdown=[],
+            per_period_breakdown=[],
+            per_habit_breakdown=[],
+            per_chore_breakdown=[],
+            per_big_plan_breakdown=[],
+            user_score_overview=UserScoreOverview.empty(),
+        )

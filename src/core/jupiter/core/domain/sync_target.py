@@ -14,6 +14,7 @@ class SyncTarget(EnumValue):
     HABITS = "habits"
     CHORES = "chores"
     BIG_PLANS = "big-plans"
+    JOURNALS = "journals"
     DOCS = "docs"
     VACATIONS = "vacations"
     PROJECTS = "projects"

@@ -68,6 +68,13 @@ export function EntitySummaryLink({
           {commonSequence}
         </EntityLink>
       );
+    case NamedEntityTag.JOURNAL:
+      return (
+        <EntityLink to={`/workspace/journals/${summary.ref_id.the_id}`}>
+          <SlimChip label={"Journal"} color={"primary"} />
+          {commonSequence}
+        </EntityLink>
+      );
     case NamedEntityTag.DOC:
       return (
         <EntityLink to={`/workspace/docs/${summary.ref_id.the_id}`}>

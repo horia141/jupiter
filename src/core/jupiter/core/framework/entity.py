@@ -410,6 +410,13 @@ class LeafEntity(CrownEntity):
 
 
 @dataclass
+class LeafSupportEntity(LeafEntity, abc.ABC):
+    """A leaf entity that supports other entities."""
+
+    # examples: note, comment, attachment, etc.
+
+
+@dataclass
 class BranchTagEntity(LeafEntity, abc.ABC):
     """A leaf entity serving as a tag for other entities on a branch.."""
 

@@ -65,7 +65,12 @@ class SqlitePersonCollectionRepository(
                     ForeignKey("workspace.ref_id"),
                     nullable=False,
                 ),
-                Column("catch_up_project_ref_id", Integer, nullable=True),
+                Column(
+                    "catch_up_project_ref_id",
+                    Integer,
+                    ForeignKey("projct.ref_id"),
+                    nullable=True,
+                ),
                 keep_existing=True,
             ),
         )

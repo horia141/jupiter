@@ -8,6 +8,7 @@ from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.core.email_address import EmailAddress
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
+from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
@@ -60,9 +61,10 @@ class InboxTask(LeafEntity):
     actionable_date: Optional[ADate] = None
     due_date: Optional[ADate] = None
     notes: Optional[str] = None
-    big_plan_ref_id: Optional[EntityId] = None
     habit_ref_id: Optional[EntityId] = None
     chore_ref_id: Optional[EntityId] = None
+    big_plan_ref_id: Optional[EntityId] = None
+    journal_ref_id: Optional[EntityId] = None
     metric_ref_id: Optional[EntityId] = None
     person_ref_id: Optional[EntityId] = None
     slack_task_ref_id: Optional[EntityId] = None
@@ -116,9 +118,10 @@ class InboxTask(LeafEntity):
             project_ref_id=big_plan_project_ref_id
             if big_plan_ref_id
             else project_ref_id,
-            big_plan_ref_id=big_plan_ref_id,
             habit_ref_id=None,
             chore_ref_id=None,
+            big_plan_ref_id=big_plan_ref_id,
+            journal_ref_id=None,
             metric_ref_id=None,
             person_ref_id=None,
             slack_task_ref_id=None,
@@ -160,9 +163,10 @@ class InboxTask(LeafEntity):
             actionable_date=actionable_date,
             due_date=due_date,
             project_ref_id=project_ref_id,
-            big_plan_ref_id=None,
             habit_ref_id=habit_ref_id,
             chore_ref_id=None,
+            big_plan_ref_id=None,
+            journal_ref_id=None,
             metric_ref_id=None,
             person_ref_id=None,
             slack_task_ref_id=None,
@@ -203,9 +207,10 @@ class InboxTask(LeafEntity):
             actionable_date=actionable_date,
             due_date=due_date,
             project_ref_id=project_ref_id,
-            big_plan_ref_id=None,
             habit_ref_id=None,
             chore_ref_id=chore_ref_id,
+            big_plan_ref_id=None,
+            journal_ref_id=None,
             metric_ref_id=None,
             person_ref_id=None,
             slack_task_ref_id=None,
@@ -214,6 +219,49 @@ class InboxTask(LeafEntity):
             recurring_timeline=recurring_task_timeline,
             recurring_repeat_index=None,
             recurring_gen_right_now=recurring_task_gen_right_now,
+            accepted_time=ctx.action_timestamp,
+            working_time=None,
+            completed_time=None,
+        )
+
+    @staticmethod
+    @create_entity_action
+    def new_inbox_task_for_writing_journal(
+        ctx: DomainContext,
+        inbox_task_collection_ref_id: EntityId,
+        period: RecurringTaskPeriod,
+        right_now: ADate,
+        project_ref_id: EntityId,
+        journal_ref_id: EntityId,
+        eisen: Optional[Eisen],
+        difficulty: Optional[Difficulty],
+        actionable_date: Optional[ADate],
+        due_date: Optional[ADate],
+    ) -> "InboxTask":
+        """Create an inbox task."""
+        return InboxTask._create(
+            ctx,
+            inbox_task_collection=ParentLink(inbox_task_collection_ref_id),
+            source=InboxTaskSource.JOURNAL,
+            name=InboxTask._build_name_for_writing_journal(period, right_now),
+            status=InboxTaskStatus.RECURRING,
+            eisen=eisen or Eisen.REGULAR,
+            difficulty=difficulty,
+            actionable_date=actionable_date,
+            due_date=due_date,
+            project_ref_id=project_ref_id,
+            habit_ref_id=None,
+            chore_ref_id=None,
+            big_plan_ref_id=None,
+            journal_ref_id=journal_ref_id,
+            metric_ref_id=None,
+            person_ref_id=None,
+            slack_task_ref_id=None,
+            email_task_ref_id=None,
+            notes=None,
+            recurring_timeline=None,
+            recurring_repeat_index=None,
+            recurring_gen_right_now=None,
             accepted_time=ctx.action_timestamp,
             working_time=None,
             completed_time=None,
@@ -246,9 +294,10 @@ class InboxTask(LeafEntity):
             actionable_date=actionable_date,
             due_date=due_date,
             project_ref_id=project_ref_id,
-            big_plan_ref_id=None,
             habit_ref_id=None,
             chore_ref_id=None,
+            big_plan_ref_id=None,
+            journal_ref_id=None,
             metric_ref_id=metric_ref_id,
             person_ref_id=None,
             slack_task_ref_id=None,
@@ -289,9 +338,10 @@ class InboxTask(LeafEntity):
             actionable_date=actionable_date,
             due_date=due_date,
             project_ref_id=project_ref_id,
-            big_plan_ref_id=None,
             habit_ref_id=None,
             chore_ref_id=None,
+            big_plan_ref_id=None,
+            journal_ref_id=None,
             metric_ref_id=None,
             person_ref_id=person_ref_id,
             slack_task_ref_id=None,
@@ -330,9 +380,10 @@ class InboxTask(LeafEntity):
             actionable_date=due_date.subtract_days(preparation_days_cnt),
             due_date=due_date,
             project_ref_id=project_ref_id,
-            big_plan_ref_id=None,
             habit_ref_id=None,
             chore_ref_id=None,
+            big_plan_ref_id=None,
+            journal_ref_id=None,
             metric_ref_id=None,
             person_ref_id=person_ref_id,
             slack_task_ref_id=None,
@@ -374,9 +425,10 @@ class InboxTask(LeafEntity):
             actionable_date=generation_extra_info.actionable_date,
             due_date=generation_extra_info.due_date,
             project_ref_id=project_ref_id,
-            big_plan_ref_id=None,
             habit_ref_id=None,
             chore_ref_id=None,
+            big_plan_ref_id=None,
+            journal_ref_id=None,
             metric_ref_id=None,
             person_ref_id=None,
             slack_task_ref_id=slack_task_ref_id,
@@ -421,10 +473,11 @@ class InboxTask(LeafEntity):
             actionable_date=generation_extra_info.actionable_date,
             due_date=generation_extra_info.due_date,
             project_ref_id=project_ref_id,
-            big_plan_ref_id=None,
             habit_ref_id=None,
             chore_ref_id=None,
+            big_plan_ref_id=None,
             metric_ref_id=None,
+            journal_ref_id=None,
             person_ref_id=None,
             slack_task_ref_id=None,
             email_task_ref_id=email_task_ref_id,
@@ -832,6 +885,14 @@ class InboxTask(LeafEntity):
             return InboxTaskName.from_raw(f"{name} [{repeat_index + 1}]")
         else:
             return name
+
+    @staticmethod
+    def _build_name_for_writing_journal(
+        period: RecurringTaskPeriod, right_now: ADate
+    ) -> InboxTaskName:
+        return InboxTaskName.from_raw(
+            f"Write {period} journal entry for for {ADate.to_user_date_str(right_now)}"
+        )
 
     @staticmethod
     def _build_name_for_collection_task(name: InboxTaskName) -> InboxTaskName:

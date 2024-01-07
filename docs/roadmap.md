@@ -8,7 +8,6 @@ dates or order of delivery.
 ## New Core Features
 
 * A home page with an overview of your life
-* Support journaling
 * Support megaplans - long term plans for the whole life
 * Support an internal calendar
 * Support non-inbox kanban boards

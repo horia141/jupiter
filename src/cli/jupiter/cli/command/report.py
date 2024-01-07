@@ -44,6 +44,7 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
         InboxTaskSource.HABIT,
         InboxTaskSource.CHORE,
         InboxTaskSource.BIG_PLAN,
+        InboxTaskSource.JOURNAL,
         InboxTaskSource.METRIC,
         InboxTaskSource.PERSON_CATCH_UP,
         InboxTaskSource.PERSON_BIRTHDAY,

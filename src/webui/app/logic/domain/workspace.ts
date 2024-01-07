@@ -39,6 +39,11 @@ export function inferEntityTagsForEnabledFeatures(
     ) {
       inferredEntityTags.push(entityTag);
     } else if (
+      entityTag === NamedEntityTag.JOURNAL &&
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.JOURNALS)
+    ) {
+      inferredEntityTags.push(entityTag);
+    } else if (
       entityTag === NamedEntityTag.DOC &&
       isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.DOCS)
     ) {
@@ -125,6 +130,11 @@ export function inferSourcesForEnabledFeatures(
     ) {
       inferredSources.push(source);
     } else if (
+      source === InboxTaskSource.JOURNAL &&
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.JOURNALS)
+    ) {
+      inferredSources.push(source);
+    } else if (
       source === InboxTaskSource.METRIC &&
       isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.METRICS)
     ) {
@@ -181,6 +191,11 @@ export function inferSyncTargetsForEnabledFeatures(
     } else if (
       syncTarget === SyncTarget.BIG_PLANS &&
       isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.BIG_PLANS)
+    ) {
+      inferredSyncTargets.push(syncTarget);
+    } else if (
+      syncTarget === SyncTarget.JOURNALS &&
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.JOURNALS)
     ) {
       inferredSyncTargets.push(syncTarget);
     } else if (

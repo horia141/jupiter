@@ -13,6 +13,9 @@ import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
 import type { UserScoreOverview } from './UserScoreOverview';
 import type { WorkableSummary } from './WorkableSummary';
 
+/**
+ * Report result.
+ */
 export type ReportPeriodResult = {
     today: ADate;
     period: RecurringTaskPeriod;

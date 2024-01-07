@@ -18,6 +18,9 @@ from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
 from jupiter.core.domain.auth.password_plain import PasswordPlain
 from jupiter.core.domain.core.email_address import EmailAddress
 from jupiter.core.domain.features import FeatureUnavailableError
+from jupiter.core.domain.journals.infra.journal_repository import (
+    JournalExistsForDatePeriodCombinationError,
+)
 from jupiter.core.domain.projects.errors import ProjectInSignificantUseError
 from jupiter.core.domain.user.infra.user_repository import (
     UserAlreadyExistsError,
@@ -209,6 +212,33 @@ from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInUseCaseSession,
 )
 from jupiter.core.use_cases.init import InitArgs, InitResult, InitUseCase
+from jupiter.core.use_cases.journals.archive import (
+    JournalArchiveArgs,
+    JournalArchiveUseCase,
+)
+from jupiter.core.use_cases.journals.change_time_config import (
+    JournalChangeTimeConfigArgs,
+    JournalChangeTimeConfigUseCase,
+)
+from jupiter.core.use_cases.journals.create import (
+    JournalCreateArgs,
+    JournalCreateResult,
+    JournalCreateUseCase,
+)
+from jupiter.core.use_cases.journals.find import (
+    JournalFindArgs,
+    JournalFindResult,
+    JournalFindUseCase,
+)
+from jupiter.core.use_cases.journals.load import (
+    JournalLoadArgs,
+    JournalLoadResult,
+    JournalLoadUseCase,
+)
+from jupiter.core.use_cases.journals.update_report import (
+    JournalUpdateReportArgs,
+    JournalUpdateReportUseCase,
+)
 from jupiter.core.use_cases.load_progress_reporter_token import (
     LoadProgressReporterTokenArgs,
     LoadProgressReporterTokenResult,
@@ -883,6 +913,46 @@ big_plan_find_use_case = BigPlanFindUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
 )
 
+journal_create_use_case = JournalCreateUseCase(
+    time_provider=request_time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
+journal_archive_use_case = JournalArchiveUseCase(
+    time_provider=request_time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
+journal_change_time_config_use_case = JournalChangeTimeConfigUseCase(
+    time_provider=request_time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
+journal_update_report_use_case = JournalUpdateReportUseCase(
+    time_provider=request_time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
+journal_find_use_case = JournalFindUseCase(
+    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+)
+journal_load_use_case = JournalLoadUseCase(
+    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+)
+
+
 doc_create_use_case = DocCreateUseCase(
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
@@ -1459,6 +1529,18 @@ async def workspace_not_found_error_handler(
     return PlainTextResponse(
         status_code=status.HTTP_410_GONE,
         content="Workspace does not exist",
+    )
+
+
+@app.exception_handler(JournalExistsForDatePeriodCombinationError)
+async def journal_exists_for_period_and_date_error_handler(
+    _request: Request,
+    _exc: JournalExistsForDatePeriodCombinationError,
+) -> PlainTextResponse:
+    """Transform JournalExistsForPeriodAndDateError to something that signals clients the app is in a not-ready state."""
+    return PlainTextResponse(
+        status_code=status.HTTP_409_CONFLICT,
+        content="Journal already exists for this date and period combination",
     )
 
 
@@ -2181,6 +2263,82 @@ async def find_big_plan(
 ) -> BigPlanFindResult:
     """Find all big plans, filtering by id."""
     return await big_plan_find_use_case.execute(session, args)
+
+
+@app.post(
+    "/journal/create",
+    response_model=JournalCreateResult,
+    tags=["journal"],
+    **standard_config,
+)
+async def create_journal(
+    args: JournalCreateArgs, session: LoggedInSession
+) -> JournalCreateResult:
+    """Create a journal."""
+    return await journal_create_use_case.execute(session, args)
+
+
+@app.post(
+    "/journal/archive",
+    response_model=None,
+    tags=["journal"],
+    **standard_config,
+)
+async def archive_journal(args: JournalArchiveArgs, session: LoggedInSession) -> None:
+    """Archive a journal."""
+    await journal_archive_use_case.execute(session, args)
+
+
+@app.post(
+    "/journal/change-time-config",
+    response_model=None,
+    tags=["journal"],
+    **standard_config,
+)
+async def change_time_config_for_journal(
+    args: JournalChangeTimeConfigArgs, session: LoggedInSession
+) -> None:
+    """Change time config for a journal."""
+    await journal_change_time_config_use_case.execute(session, args)
+
+
+@app.post(
+    "/journal/update-report",
+    response_model=None,
+    tags=["journal"],
+    **standard_config,
+)
+async def update_report_for_jorunal(
+    args: JournalUpdateReportArgs, session: LoggedInSession
+) -> None:
+    """Change time config for a journal."""
+    await journal_update_report_use_case.execute(session, args)
+
+
+@app.post(
+    "/journal/find",
+    response_model=JournalFindResult,
+    tags=["journal"],
+    **standard_config,
+)
+async def find_journal(
+    args: JournalFindArgs, session: LoggedInSession
+) -> JournalFindResult:
+    """Find all journals, filtering by id."""
+    return await journal_find_use_case.execute(session, args)
+
+
+@app.post(
+    "/journal/load",
+    response_model=JournalLoadResult,
+    tags=["journal"],
+    **standard_config,
+)
+async def load_journal(
+    args: JournalLoadArgs, session: LoggedInSession
+) -> JournalLoadResult:
+    """Load a journal."""
+    return await journal_load_use_case.execute(session, args)
 
 
 @app.post(

@@ -29,9 +29,10 @@ export type InboxTask = {
     actionable_date?: ADate;
     due_date?: ADate;
     notes?: string;
-    big_plan_ref_id?: EntityId;
     habit_ref_id?: EntityId;
     chore_ref_id?: EntityId;
+    big_plan_ref_id?: EntityId;
+    journal_ref_id?: EntityId;
     metric_ref_id?: EntityId;
     person_ref_id?: EntityId;
     slack_task_ref_id?: EntityId;

@@ -16,6 +16,7 @@ warn_unreachable = True
 implicit_reexport = False
 strict_equality = True
 pretty = True
+plugins = pydantic.mypy
 
 [pydantic-mypy]
 init_forbid_extra = True

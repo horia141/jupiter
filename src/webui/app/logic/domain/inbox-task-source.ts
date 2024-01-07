@@ -10,6 +10,8 @@ export function inboxTaskSourceName(source: InboxTaskSource): string {
       return "Chore";
     case InboxTaskSource.BIG_PLAN:
       return "Big Plan";
+    case InboxTaskSource.JOURNAL:
+      return "Journal";
     case InboxTaskSource.METRIC:
       return "Metric";
     case InboxTaskSource.PERSON_CATCH_UP:
