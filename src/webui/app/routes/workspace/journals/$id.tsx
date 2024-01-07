@@ -35,6 +35,7 @@ import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { periodName } from "~/logic/domain/period";
 import { LeafPanelExpansionState } from "~/rendering/leaf-panel-expansion";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
+import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
@@ -89,21 +90,30 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (form.intent) {
       case "change-time-config": {
-        await getLoggedInApiClient(session).journal.changeTimeConfig({
+        await getLoggedInApiClient(session).journal.changeTimeConfigForJournal({
           ref_id: { the_id: id },
           right_now: {
             should_change: true,
             value: {
-            the_date: form.rightNow,
-            the_datetime: undefined,
-          }},
+              the_date: form.rightNow,
+              the_datetime: undefined,
+            },
+          },
           period: {
             should_change: true,
             value: form.period,
-          }
+          },
         });
         return redirect(`/workspace/journals/${id}`);
       }
+
+    case "update-report": {
+        await getLoggedInApiClient(session).journal.updateReportForJorunal({
+          ref_id: { the_id: id },
+        });
+        return redirect(`/workspace/journals/${id}`);
+    }
+
       case "archive": {
         await getLoggedInApiClient(session).journal.archiveJournal({
           ref_id: { the_id: id },
@@ -136,6 +146,8 @@ export default function Journal() {
 
   const topLevelInfo = useContext(TopLevelInfoContext);
 
+  const isBigScreen = useBigScreen();
+
   const inputsEnabled =
     transition.state === "idle" && !loaderData.journal.archived;
 
@@ -147,7 +159,7 @@ export default function Journal() {
       returnLocation="/workspace/journals"
       initialExpansionState={LeafPanelExpansionState.FULL}
     >
-      <Card sx={{ marginBottom: "1rem", display: "flex" }}>
+      <Card sx={{ marginBottom: "1rem", display: "flex", flexDirection: isBigScreen ? "row" : "column" }}>
         <GlobalError actionResult={actionData} />
         <CardContent sx={{ flexGrow: "1" }}>
           <Stack direction={"row"} spacing={2} useFlexGap>
@@ -195,6 +207,16 @@ export default function Journal() {
               value="change-time-config"
             >
               Save
+            </Button>
+
+            <Button
+              variant="outlined"
+              disabled={!inputsEnabled}
+              type="submit"
+              name="intent"
+              value="update-report"
+            >
+              Update Report
             </Button>
           </ButtonGroup>
         </CardActions>

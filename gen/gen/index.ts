@@ -141,6 +141,7 @@ export type { JournalFindResultEntry } from './models/JournalFindResultEntry';
 export type { JournalLoadArgs } from './models/JournalLoadArgs';
 export type { JournalLoadResult } from './models/JournalLoadResult';
 export { JournalSource } from './models/JournalSource';
+export type { JournalUpdateReportArgs } from './models/JournalUpdateReportArgs';
 export { LinkBlock } from './models/LinkBlock';
 export type { ListItem } from './models/ListItem';
 export type { LoadProgressReporterTokenArgs } from './models/LoadProgressReporterTokenArgs';

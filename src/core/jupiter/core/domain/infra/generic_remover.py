@@ -1,5 +1,4 @@
 """A generic archiver service."""
-from typing import TypeVar
 
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId

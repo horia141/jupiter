@@ -82,7 +82,7 @@ class Journal(LeafEntity):
             timeline=timeline,
             report=report,
         )
-    
+
     @update_entity_action
     def change_time_config(
         self,
@@ -105,7 +105,7 @@ class Journal(LeafEntity):
     def update_report(
         self,
         ctx: DomainContext,
-        report: object,
+        report: ReportPeriodResult,
     ) -> "Journal":
         """Update the report."""
         return self._new_version(ctx, report=report)

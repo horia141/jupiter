@@ -213,6 +213,10 @@ from jupiter.core.use_cases.journals.archive import (
     JournalArchiveArgs,
     JournalArchiveUseCase,
 )
+from jupiter.core.use_cases.journals.change_time_config import (
+    JournalChangeTimeConfigArgs,
+    JournalChangeTimeConfigUseCase,
+)
 from jupiter.core.use_cases.journals.create import (
     JournalCreateArgs,
     JournalCreateResult,
@@ -228,7 +232,7 @@ from jupiter.core.use_cases.journals.load import (
     JournalLoadResult,
     JournalLoadUseCase,
 )
-from jupiter.core.use_cases.journals.change_time_config import JournalChangeTimeConfigArgs, JournalChangeTimeConfigUseCase
+from jupiter.core.use_cases.journals.update_report import JournalUpdateReportArgs, JournalUpdateReportUseCase
 from jupiter.core.use_cases.load_progress_reporter_token import (
     LoadProgressReporterTokenArgs,
     LoadProgressReporterTokenResult,
@@ -920,6 +924,14 @@ journal_archive_use_case = JournalArchiveUseCase(
     search_storage_engine=search_storage_engine,
 )
 journal_change_time_config_use_case = JournalChangeTimeConfigUseCase(
+    time_provider=request_time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
+journal_update_report_use_case = JournalUpdateReportUseCase(
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
@@ -2265,9 +2277,24 @@ async def archive_journal(args: JournalArchiveArgs, session: LoggedInSession) ->
     tags=["journal"],
     **standard_config,
 )
-async def change_time_config(args: JournalChangeTimeConfigArgs, session: LoggedInSession) -> None:
+async def change_time_config_for_journal(
+    args: JournalChangeTimeConfigArgs, session: LoggedInSession
+) -> None:
     """Change time config for a journal."""
     await journal_change_time_config_use_case.execute(session, args)
+
+
+@app.post(
+    "/journal/update-report",
+    response_model=None,
+    tags=["journal"],
+    **standard_config,
+)
+async def update_report_for_jorunal(
+    args: JournalUpdateReportArgs, session: LoggedInSession
+) -> None:
+    """Change time config for a journal."""
+    await journal_update_report_use_case.execute(session, args)
 
 
 @app.post(
