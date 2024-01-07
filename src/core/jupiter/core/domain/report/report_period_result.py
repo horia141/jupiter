@@ -213,5 +213,5 @@ class ReportPeriodResult(Value):
             per_habit_breakdown=[],
             per_chore_breakdown=[],
             per_big_plan_breakdown=[],
-            user_score_overview=None,
+            user_score_overview=UserScoreOverview.empty(),
         )

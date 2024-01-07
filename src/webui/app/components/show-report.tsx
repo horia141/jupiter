@@ -120,13 +120,14 @@ export function ShowReport({ topLevelInfo, report }: ShowReportProps) {
         </Typography>
       </Box>
 
-      {isUserFeatureAvailable(topLevelInfo.user, UserFeature.GAMIFICATION) && (
+      {isUserFeatureAvailable(topLevelInfo.user, UserFeature.GAMIFICATION) && 
+      report.user_score_overview && (
         <>
           <Divider>
             <Typography variant="h6">💪 Score</Typography>
           </Divider>
           <ScoreOverview
-            scoreOverview={topLevelInfo.userScoreOverview as UserScoreOverview}
+            scoreOverview={report.user_score_overview}
           />
         </>
       )}
