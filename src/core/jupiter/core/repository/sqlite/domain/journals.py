@@ -6,7 +6,7 @@ import pydantic
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
-from jupiter.core.domain.core.entity_name import EntityName
+from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.journals.infra.journal_collection_repository import (

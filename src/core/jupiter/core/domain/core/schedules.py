@@ -7,7 +7,7 @@ import pendulum
 import pendulum.parser
 import pendulum.tz
 from jupiter.core.domain.core.adate import ADate
-from jupiter.core.domain.core.entity_name import EntityName
+from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.core.domain.core.recurring_task_due_at_time import RecurringTaskDueAtTime

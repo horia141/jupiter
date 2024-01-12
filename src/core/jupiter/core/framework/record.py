@@ -5,6 +5,7 @@ from typing import Any, Callable, Generic, TypeVar, Union, cast, get_args, get_o
 
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
+from jupiter.core.framework.concept import Concept
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import IsOneOfRefId, IsRefId, ParentLink
 from jupiter.core.framework.value import EnumValue, Value
@@ -14,7 +15,7 @@ _RecordT = TypeVar("_RecordT", bound="Record")
 
 
 @dataclass
-class Record:
+class Record(Concept):
     """A base class for a simplified object to store."""
 
     created_time: Timestamp

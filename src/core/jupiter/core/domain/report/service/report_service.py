@@ -9,7 +9,7 @@ from jupiter.core.domain.big_plans.big_plan_status import BigPlanStatus
 from jupiter.core.domain.chores.chore import Chore
 from jupiter.core.domain.core import schedules
 from jupiter.core.domain.core.adate import ADate
-from jupiter.core.domain.core.entity_name import EntityName
+from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.core.schedules import Schedule
 from jupiter.core.domain.features import (

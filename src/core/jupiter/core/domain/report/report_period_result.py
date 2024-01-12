@@ -4,7 +4,7 @@ from typing import Optional
 
 from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.core.domain.core.adate import ADate
-from jupiter.core.domain.core.entity_name import EntityName
+from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.gamification.user_score_overview import UserScoreOverview
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource

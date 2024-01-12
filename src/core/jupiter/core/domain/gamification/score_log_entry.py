@@ -4,7 +4,7 @@ import random
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.big_plans.big_plan_status import BigPlanStatus
 from jupiter.core.domain.core.difficulty import Difficulty
-from jupiter.core.domain.core.entity_name import EntityName
+from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.domain.gamification.score_source import ScoreSource
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus

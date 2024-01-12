@@ -2,7 +2,7 @@
 from typing import Iterable, List, Optional
 
 from jupiter.core.domain.core.entity_icon import EntityIcon
-from jupiter.core.domain.core.entity_name import EntityName
+from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.domain.core.url import URL
 from jupiter.core.domain.smart_lists.infra.smart_list_collection_repository import (
     SmartListCollectionRepository,

@@ -1,7 +1,7 @@
 """A particular entry in the task generation log."""
 
 from jupiter.core.domain.core.adate import ADate
-from jupiter.core.domain.core.entity_name import EntityName
+from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.entity_summary import EntitySummary
 from jupiter.core.domain.sync_target import SyncTarget

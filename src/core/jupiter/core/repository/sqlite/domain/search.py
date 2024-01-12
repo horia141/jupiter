@@ -2,7 +2,7 @@
 from typing import Final, Iterable, List, Optional
 
 from jupiter.core.domain.core.adate import ADate
-from jupiter.core.domain.core.entity_name import EntityName
+from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.domain.entity_summary import EntitySummary
 from jupiter.core.domain.named_entity_tag import NamedEntityTag
 from jupiter.core.domain.search.infra.search_repository import (

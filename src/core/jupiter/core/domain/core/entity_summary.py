@@ -1,7 +1,7 @@
 """The summary about an entity."""
 from typing import Optional
 
-from jupiter.core.domain.core.entity_name import EntityName
+from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.domain.named_entity_tag import NamedEntityTag
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp

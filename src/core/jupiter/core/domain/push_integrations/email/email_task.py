@@ -1,6 +1,6 @@
 """An email task which needs to be converted into an inbox task."""
 from jupiter.core.domain.core.email_address import EmailAddress
-from jupiter.core.domain.core.entity_name import EntityName
+from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.push_integrations.email.email_user_name import EmailUserName

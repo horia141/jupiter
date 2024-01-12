@@ -1,7 +1,7 @@
 """Sqlite implementation of the notes repository."""
 from typing import Iterable, Optional
 
-from jupiter.core.domain.core.entity_name import NOT_USED_NAME
+from jupiter.core.framework.base.entity_name import NOT_USED_NAME
 from jupiter.core.domain.core.notes.infra.note_collection_repository import (
     NoteCollectionRepository,
 )

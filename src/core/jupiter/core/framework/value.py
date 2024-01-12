@@ -2,13 +2,14 @@
 import enum
 from dataclasses import dataclass
 from typing import TypeVar
+from jupiter.core.framework.concept import Concept
 
 from jupiter.core.framework.secure import secure_class
 from typing_extensions import dataclass_transform
 
 
 @dataclass
-class Value:
+class Value(Concept):
     """A value object in the domain."""
 
 
@@ -26,7 +27,7 @@ def hashable_value(cls: type[_ValueT]) -> type[_ValueT]:
 
 
 @enum.unique
-class EnumValue(enum.Enum):
+class EnumValue(Concept, enum.Enum):
     """A value that is also an enum."""
 
 
