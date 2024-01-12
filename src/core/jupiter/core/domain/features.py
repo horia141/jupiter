@@ -3,7 +3,7 @@ from functools import lru_cache
 from typing import Dict, Final, Iterable
 
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import EnumValue, Value, enum_value, value
+from jupiter.core.framework.value import CompositeValue, EnumValue, Value, enum_value, value
 
 
 class FeatureUnavailableError(Exception):
@@ -79,7 +79,7 @@ UserFeatureFlags = Dict[UserFeature, bool]
 
 
 @value
-class UserFeatureFlagsControls(Value):
+class UserFeatureFlagsControls(CompositeValue):
     """Feature settings controls for the user."""
 
     controls: Dict[UserFeature, FeatureControl]
@@ -134,7 +134,7 @@ WorkspaceFeatureFlags = Dict[WorkspaceFeature, bool]
 
 
 @value
-class WorkspaceFeatureFlagsControls(Value):
+class WorkspaceFeatureFlagsControls(CompositeValue):
     """Feature settings controls for the workspace."""
 
     controls: Dict[WorkspaceFeature, FeatureControl]

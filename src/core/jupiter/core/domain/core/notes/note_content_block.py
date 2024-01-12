@@ -6,11 +6,11 @@ from jupiter.core.domain.core.url import URL
 from jupiter.core.domain.named_entity_tag import NamedEntityTag
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.json import JSONDictType
-from jupiter.core.framework.value import Value, value
+from jupiter.core.framework.value import CompositeValue, Value, value
 
 
 @value
-class NoteContentBlock(Value, abc.ABC):
+class NoteContentBlock(CompositeValue, abc.ABC):
     """A particular block of content in a note."""
 
     correlation_id: EntityId
@@ -105,7 +105,7 @@ class HeadingBlock(NoteContentBlock):
 
 
 @value
-class ListItem(Value):
+class ListItem(CompositeValue):
     """A list item."""
 
     text: str
@@ -194,7 +194,7 @@ class NumberedListBlock(NoteContentBlock):
 
 
 @value
-class ChecklistItem(Value):
+class ChecklistItem(CompositeValue):
     """A checklist item."""
 
     text: str

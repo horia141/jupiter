@@ -10,7 +10,7 @@ import pendulum.tz
 from jupiter.core.domain.core.timezone import Timezone
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import Value, hashable_value
+from jupiter.core.framework.value import AtomicValue, Value, hashable_value
 from pendulum.date import Date
 from pendulum.datetime import DateTime
 from pendulum.tz.timezone import UTC
@@ -18,7 +18,7 @@ from pendulum.tz.timezone import UTC
 
 @hashable_value
 @total_ordering
-class ADate(Value):
+class ADate(AtomicValue):
     """A date or possibly a datetime for the application."""
 
     the_date: Optional[Date] = None

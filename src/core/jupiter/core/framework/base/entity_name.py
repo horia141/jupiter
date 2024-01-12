@@ -10,7 +10,7 @@ from typing import (
 )
 
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import Value, hashable_value
+from jupiter.core.framework.value import AtomicValue, Value, hashable_value
 
 _ENTITY_NAME_RE: Final[Pattern[str]] = re.compile(r"^.+$")
 
@@ -20,7 +20,7 @@ _EntityNameT = TypeVar("_EntityNameT", bound="EntityName")
 
 @hashable_value
 @total_ordering
-class EntityName(Value):
+class EntityName(AtomicValue):
     """The name for an entity which acts as both name and unique identifier."""
 
     the_name: str

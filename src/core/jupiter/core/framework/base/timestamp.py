@@ -8,7 +8,7 @@ import pendulum.parser
 import pendulum.parsing
 import pendulum.tz
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import Value, value
+from jupiter.core.framework.value import AtomicValue, Value, value
 from pendulum.date import Date
 from pendulum.datetime import DateTime
 from pendulum.tz.timezone import UTC
@@ -16,7 +16,7 @@ from pendulum.tz.timezone import UTC
 
 @value
 @total_ordering
-class Timestamp(Value):
+class Timestamp(AtomicValue):
     """A timestamp in the application."""
 
     the_ts: DateTime

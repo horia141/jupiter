@@ -14,11 +14,11 @@ from jupiter.core.domain.smart_lists.smart_list_name import SmartListName
 from jupiter.core.domain.vacations.vacation_name import VacationName
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.repository import Repository
-from jupiter.core.framework.value import Value, value
+from jupiter.core.framework.value import CompositeValue, Value, value
 
 
 @value
-class VacationSummary(Value):
+class VacationSummary(CompositeValue):
     """Summary information about a vacation."""
 
     ref_id: EntityId
@@ -26,7 +26,7 @@ class VacationSummary(Value):
 
 
 @value
-class ProjectSummary(Value):
+class ProjectSummary(CompositeValue):
     """Summary information about a project."""
 
     ref_id: EntityId
@@ -34,7 +34,7 @@ class ProjectSummary(Value):
 
 
 @value
-class InboxTaskSummary(Value):
+class InboxTaskSummary(CompositeValue):
     """Summary information about an inbox task."""
 
     ref_id: EntityId
@@ -42,7 +42,7 @@ class InboxTaskSummary(Value):
 
 
 @value
-class HabitSummary(Value):
+class HabitSummary(CompositeValue):
     """Summary information about a habit."""
 
     ref_id: EntityId
@@ -50,7 +50,7 @@ class HabitSummary(Value):
 
 
 @value
-class ChoreSummary(Value):
+class ChoreSummary(CompositeValue):
     """Summary information about a chore."""
 
     ref_id: EntityId
@@ -58,7 +58,7 @@ class ChoreSummary(Value):
 
 
 @value
-class BigPlanSummary(Value):
+class BigPlanSummary(CompositeValue):
     """Summary information about a big plan."""
 
     ref_id: EntityId
@@ -67,7 +67,7 @@ class BigPlanSummary(Value):
 
 
 @value
-class SmartListSummary(Value):
+class SmartListSummary(CompositeValue):
     """Summary information about a smart list."""
 
     ref_id: EntityId
@@ -76,7 +76,7 @@ class SmartListSummary(Value):
 
 
 @value
-class MetricSummary(Value):
+class MetricSummary(CompositeValue):
     """Summary information about a metric."""
 
     ref_id: EntityId
@@ -85,7 +85,7 @@ class MetricSummary(Value):
 
 
 @value
-class PersonSummary(Value):
+class PersonSummary(CompositeValue):
     """Summary information about a person."""
 
     ref_id: EntityId

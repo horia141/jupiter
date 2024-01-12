@@ -8,7 +8,7 @@ from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.concept import Concept
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import IsOneOfRefId, IsRefId, ParentLink
-from jupiter.core.framework.value import EnumValue, Value
+from jupiter.core.framework.value import AtomicValue, EnumValue, Value
 from typing_extensions import dataclass_transform
 
 _RecordT = TypeVar("_RecordT", bound="Record")
@@ -61,8 +61,8 @@ def record(cls: type[_RecordT]) -> type[_RecordT]:
     return dataclass(cls)
 
 
-RecordLinkFilterRaw = None | Value | EnumValue | IsRefId
-RecordLinkFilterCompiled = None | Value | EnumValue | EntityId
+RecordLinkFilterRaw = None | AtomicValue | EnumValue | IsRefId
+RecordLinkFilterCompiled = None | AtomicValue | EnumValue | EntityId
 RecordLinkFiltersRaw = dict[str, RecordLinkFilterRaw]
 RecordLinkFiltersCompiled = dict[str, RecordLinkFilterCompiled]
 
@@ -148,8 +148,8 @@ def _check_record_can_be_filterd_by(
             if filter_rule is None:
                 continue
 
-        if issubclass(found_field_type, Value):
-            if isinstance(filter_rule, Value):  # type: ignore[unreachable]
+        if issubclass(found_field_type, AtomicValue):
+            if isinstance(filter_rule, AtomicValue):  # type: ignore[unreachable]
                 if found_field_type != filter_rule.__class__:
                     raise Exception(
                         f"Filter rule for '{filter_name}' is {filter_rule.__class__} which is not correct"
@@ -170,7 +170,7 @@ def _check_record_can_be_filterd_by(
                     f"Filter rule for '{filter_name}' is {filter_rule.__class__} which is not correct"
                 )
         elif issubclass(found_field_type, EnumValue):
-            if isinstance(filter_rule, Value):  # type: ignore[unreachable]
+            if isinstance(filter_rule, AtomicValue):  # type: ignore[unreachable]
                 raise Exception(
                     f"Filter rule for '{filter_name}' is {filter_rule.__class__} which is not correct"
                 )

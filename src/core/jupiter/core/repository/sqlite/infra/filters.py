@@ -1,6 +1,6 @@
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.entity import EntityLinkFiltersCompiled
-from jupiter.core.framework.value import EnumValue, Value
+from jupiter.core.framework.value import AtomicValue, EnumValue, Value
 from sqlalchemy import Table, select
 
 
@@ -17,7 +17,7 @@ def compile_query_relative_to(
             query_stmt = query_stmt.where(
                 table.c[key] == value.as_int(),
             )
-        elif isinstance(value, Value):
+        elif isinstance(value, AtomicValue):
             query_stmt = query_stmt.where(
                 getattr(table.c, key) == str(value),
             )

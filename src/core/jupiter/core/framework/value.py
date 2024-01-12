@@ -8,12 +8,11 @@ from jupiter.core.framework.secure import secure_class
 from typing_extensions import dataclass_transform
 
 
-@dataclass
 class Value(Concept):
     """A value object in the domain."""
 
 
-_ValueT = TypeVar("_ValueT", bound="Value")
+_ValueT = TypeVar("_ValueT", bound="AtomicValue | CompositeValue")
 
 
 @dataclass_transform()
@@ -26,8 +25,16 @@ def hashable_value(cls: type[_ValueT]) -> type[_ValueT]:
     return dataclass(eq=True, unsafe_hash=True)(cls)
 
 
+class AtomicValue(Value):
+    """An atomic value object in the domain."""
+
+
+class CompositeValue(Value):
+    """An composite value object in the domain."""
+
+
 @enum.unique
-class EnumValue(Concept, enum.Enum):
+class EnumValue(Value, enum.Enum):
     """A value that is also an enum."""
 
 

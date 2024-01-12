@@ -3,11 +3,11 @@
 from typing import Optional
 
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import Value, value
+from jupiter.core.framework.value import AtomicValue, Value, value
 
 
 @value
-class SearchQuery(Value):
+class SearchQuery(AtomicValue):
     """A search query parameter for searches."""
 
     the_query: str

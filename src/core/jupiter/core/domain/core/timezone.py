@@ -4,13 +4,13 @@ from typing import Optional, cast
 
 import pendulum
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import Value, value
+from jupiter.core.framework.value import AtomicValue, Value, value
 from pendulum.tz.zoneinfo.exceptions import InvalidTimezone
 
 
 @value
 @total_ordering
-class Timezone(Value):
+class Timezone(AtomicValue):
     """A timezone in this domain."""
 
     the_timezone: str

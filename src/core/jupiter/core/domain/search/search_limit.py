@@ -3,13 +3,13 @@
 from typing import Optional
 
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import Value, value
+from jupiter.core.framework.value import AtomicValue, Value, value
 
 _MAX_QUERY_LIMIT = 1000
 
 
 @value
-class SearchLimit(Value):
+class SearchLimit(AtomicValue):
     """A search limit parameter for searches."""
 
     the_limit: int

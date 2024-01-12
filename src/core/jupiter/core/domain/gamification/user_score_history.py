@@ -1,11 +1,11 @@
 """A history of user scores over time."""
 
 from jupiter.core.domain.core.adate import ADate
-from jupiter.core.framework.value import Value, value
+from jupiter.core.framework.value import CompositeValue, Value, value
 
 
 @value
-class UserScoreAtDate(Value):
+class UserScoreAtDate(CompositeValue):
     """A full view of the score for a user."""
 
     date: ADate
@@ -15,7 +15,7 @@ class UserScoreAtDate(Value):
 
 
 @value
-class UserScoreHistory(Value):
+class UserScoreHistory(CompositeValue):
     """A history of user scores over time."""
 
     daily_scores: list[UserScoreAtDate]

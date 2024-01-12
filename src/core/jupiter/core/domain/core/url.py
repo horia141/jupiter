@@ -4,12 +4,12 @@ from typing import Optional
 
 import validators
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import Value, value
+from jupiter.core.framework.value import AtomicValue, Value, value
 
 
 @value
 @total_ordering
-class URL(Value):
+class URL(AtomicValue):
     """A URL in this domain."""
 
     the_url: str

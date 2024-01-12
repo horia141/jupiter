@@ -4,12 +4,12 @@ from typing import Optional, cast
 
 from email_validator import EmailNotValidError, ValidatedEmail, validate_email
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import Value, hashable_value
+from jupiter.core.framework.value import AtomicValue, Value, hashable_value
 
 
 @hashable_value
 @total_ordering
-class EmailAddress(Value):
+class EmailAddress(AtomicValue):
     """An email address."""
 
     the_address: str

@@ -3,11 +3,11 @@ from typing import Optional, cast
 
 import emoji
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import Value, hashable_value
+from jupiter.core.framework.value import AtomicValue, Value, hashable_value
 
 
 @hashable_value
-class EntityIcon(Value):
+class EntityIcon(AtomicValue):
     """The icon for an entity."""
 
     the_icon: str

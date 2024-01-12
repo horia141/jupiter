@@ -10,11 +10,11 @@ from jupiter.core.domain.core.timezone import UTC, Timezone
 from jupiter.core.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import Value, value
+from jupiter.core.framework.value import CompositeValue, Value, value
 
 
 @value
-class PushGenerationExtraInfo(Value):
+class PushGenerationExtraInfo(CompositeValue):
     """Extra information for how to generate an inbox task."""
 
     timezone: Timezone

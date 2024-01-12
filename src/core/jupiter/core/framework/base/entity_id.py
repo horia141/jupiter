@@ -4,14 +4,14 @@ import typing
 from functools import total_ordering
 
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import Value, hashable_value
+from jupiter.core.framework.value import AtomicValue, Value, hashable_value
 
 _ENTITY_ID_RE: typing.Pattern[str] = re.compile(r"^\d+|[a-zA-Z0-9_]+|bad-entity-id$")
 
 
 @hashable_value
 @total_ordering
-class EntityId(Value):
+class EntityId(AtomicValue):
     """A generic entity id."""
 
     the_id: str

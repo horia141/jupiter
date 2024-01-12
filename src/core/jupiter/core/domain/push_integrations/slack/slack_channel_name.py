@@ -3,13 +3,13 @@ import re
 from typing import Final, Optional, Pattern
 
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import Value, hashable_value
+from jupiter.core.framework.value import AtomicValue, Value, hashable_value
 
 _SLACK_CHANNEL_NAME_RE: Final[Pattern[str]] = re.compile(r"^[a-z0-9._-]+$")
 
 
 @hashable_value
-class SlackChannelName(Value):
+class SlackChannelName(AtomicValue):
     """A Slack channel name."""
 
     the_name: str

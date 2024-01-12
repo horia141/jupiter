@@ -7,11 +7,11 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.entity import CrownEntity
 from jupiter.core.framework.json import JSONDictType
-from jupiter.core.framework.value import Value, value
+from jupiter.core.framework.value import AtomicValue, CompositeValue, Value, value
 
 
 @value
-class EntitySummary(Value):
+class EntitySummary(CompositeValue):
     """Information about a particular entity very broadly."""
 
     entity_tag: NamedEntityTag

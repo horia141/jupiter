@@ -5,11 +5,11 @@ from typing import Optional
 import avinit
 from jupiter.core.domain.user.user_name import UserName
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import Value, hashable_value
+from jupiter.core.framework.value import AtomicValue, Value, hashable_value
 
 
 @hashable_value
-class Avatar(Value):
+class Avatar(AtomicValue):
     """A user avatar image."""
 
     avatar_as_data_url: str

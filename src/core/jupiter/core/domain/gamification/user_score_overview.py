@@ -1,10 +1,10 @@
 """An overview of the scores for a user."""
 
-from jupiter.core.framework.value import Value, value
+from jupiter.core.framework.value import CompositeValue, Value, value
 
 
 @value
-class UserScore(Value):
+class UserScore(CompositeValue):
     """A full view of the score for a user."""
 
     total_score: int
@@ -22,7 +22,7 @@ class UserScore(Value):
 
 
 @value
-class UserScoreOverview(Value):
+class UserScoreOverview(CompositeValue):
     """An overview of the scores for a user."""
 
     daily_score: UserScore

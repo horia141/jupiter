@@ -2,11 +2,11 @@
 from typing import Optional
 
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import Value, value
+from jupiter.core.framework.value import AtomicValue, Value, value
 
 
 @value
-class RecurringTaskSkipRule(Value):
+class RecurringTaskSkipRule(AtomicValue):
     """The rules for skipping a recurring task."""
 
     skip_rule: str
