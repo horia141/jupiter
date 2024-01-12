@@ -14,9 +14,9 @@ from typing import (
     Tuple,
 )
 
-from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.domain.named_entity_tag import NamedEntityTag
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.entity import CrownEntity
 from jupiter.core.framework.json import JSONDictType
 from jupiter.core.framework.use_case import (

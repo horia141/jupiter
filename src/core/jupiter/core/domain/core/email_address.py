@@ -4,7 +4,8 @@ from typing import Optional, cast
 
 from email_validator import EmailNotValidError, ValidatedEmail, validate_email
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import AtomicValue, Value, hashable_value
+from jupiter.core.framework.primitive import Primitive
+from jupiter.core.framework.value import AtomicValue, hashable_value
 
 
 @hashable_value
@@ -25,6 +26,9 @@ class EmailAddress(AtomicValue):
             raise InputValidationError("Expected email address to be non-null")
 
         return EmailAddress(EmailAddress._clean_the_address(email_address_raw))
+
+    def to_primitive(self) -> Primitive:
+        return self.the_address
 
     def __lt__(self, other: object) -> bool:
         """Compare this with another."""

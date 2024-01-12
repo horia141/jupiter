@@ -4,7 +4,8 @@ from typing import Optional
 
 import validators
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import AtomicValue, Value, value
+from jupiter.core.framework.primitive import Primitive
+from jupiter.core.framework.value import AtomicValue, value
 
 
 @value
@@ -25,6 +26,9 @@ class URL(AtomicValue):
             raise InputValidationError("Expected url to be non-null")
 
         return URL(URL._clean_the_url(url_raw))
+
+    def to_primitive(self) -> Primitive:
+        return self.the_url
 
     def __lt__(self, other: object) -> bool:
         """Compare this with another."""

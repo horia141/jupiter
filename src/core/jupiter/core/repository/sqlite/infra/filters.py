@@ -1,6 +1,6 @@
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.entity import EntityLinkFiltersCompiled
-from jupiter.core.framework.value import AtomicValue, EnumValue, Value
+from jupiter.core.framework.value import AtomicValue, EnumValue
 from sqlalchemy import Table, select
 
 
@@ -19,7 +19,7 @@ def compile_query_relative_to(
             )
         elif isinstance(value, AtomicValue):
             query_stmt = query_stmt.where(
-                getattr(table.c, key) == str(value),
+                getattr(table.c, key) == value.to_primitive(),
             )
         elif isinstance(value, list):
             if len(value) == 0:

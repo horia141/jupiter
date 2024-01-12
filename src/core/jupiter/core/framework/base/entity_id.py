@@ -4,7 +4,8 @@ import typing
 from functools import total_ordering
 
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import AtomicValue, Value, hashable_value
+from jupiter.core.framework.primitive import Primitive
+from jupiter.core.framework.value import AtomicValue, hashable_value
 
 _ENTITY_ID_RE: typing.Pattern[str] = re.compile(r"^\d+|[a-zA-Z0-9_]+|bad-entity-id$")
 
@@ -35,6 +36,9 @@ class EntityId(AtomicValue):
         if self.the_id == "bad-entity-id":
             return -1
         return int(self.the_id)
+
+    def to_primitive(self) -> Primitive:
+        return self.the_id
 
     def __lt__(self, other: object) -> bool:
         """Compare this with another."""

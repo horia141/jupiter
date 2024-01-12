@@ -1,9 +1,9 @@
 """A particular entry in the GC log."""
 
-from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.domain.entity_summary import EntitySummary
 from jupiter.core.domain.sync_target import SyncTarget
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (

@@ -10,7 +10,7 @@ from jupiter.core.domain.core.timezone import UTC, Timezone
 from jupiter.core.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import CompositeValue, Value, value
+from jupiter.core.framework.value import CompositeValue, value
 
 
 @value

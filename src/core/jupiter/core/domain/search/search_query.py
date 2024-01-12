@@ -3,7 +3,8 @@
 from typing import Optional
 
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import AtomicValue, Value, value
+from jupiter.core.framework.primitive import Primitive
+from jupiter.core.framework.value import AtomicValue, value
 
 
 @value
@@ -23,6 +24,9 @@ class SearchQuery(AtomicValue):
             raise InputValidationError("Expected query to be non null.")
 
         return SearchQuery(SearchQuery._clean_the_query(query_raw))
+
+    def to_primitive(self) -> Primitive:
+        return self.the_query
 
     def __str__(self) -> str:
         """Transform this to a string version."""

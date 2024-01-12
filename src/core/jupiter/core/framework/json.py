@@ -2,10 +2,9 @@
 import dataclasses
 import typing
 import uuid
-from enum import Enum
 from typing import Any, Dict, List, Union
 
-from jupiter.core.framework.value import SecretValue, Value
+from jupiter.core.framework.value import AtomicValue, EnumValue, SecretValue
 from pendulum.date import Date
 from pendulum.datetime import DateTime
 
@@ -25,12 +24,12 @@ def process_primitive_to_json_key(primitive: int | float | str | object) -> str:
         return str(primitive)
     elif isinstance(primitive, DateTime):
         return str(primitive)
-    elif isinstance(primitive, Enum):
+    elif isinstance(primitive, EnumValue):
         return str(primitive.value)
     elif isinstance(primitive, SecretValue):
         return f"Redacted {str(primitive)}"
-    elif isinstance(primitive, Value):
-        return str(primitive)  # A bit of a hack really!
+    elif isinstance(primitive, AtomicValue):
+        return str(primitive.to_primitive())
     elif isinstance(primitive, uuid.UUID):
         return str(primitive)
     else:
@@ -56,17 +55,21 @@ def process_primitive_to_json(
         return str(primitive)
     elif isinstance(primitive, DateTime):
         return str(primitive)
-    elif isinstance(primitive, Enum):
+    elif isinstance(primitive, EnumValue):
         return process_primitive_to_json(primitive.value, key)
-    elif isinstance(primitive, SecretValue):
-        return f"Redacted {str(primitive)}"
-    elif isinstance(primitive, Value):
-        return str(primitive)  # A bit of a hack really!
     elif "Entity" in [t.__name__ for t in type(primitive).__mro__]:
         return {
             "ref_id": str(getattr(primitive, "ref_id")),  # noqa: B009
             "aggregate-root-type": primitive.__class__.__name__,
         }
+    elif isinstance(primitive, SecretValue):
+        return f"Redacted {str(primitive)}"
+    elif isinstance(primitive, AtomicValue):
+        atomic_value = primitive.to_primitive()
+        if isinstance(atomic_value, Date):
+            return str(atomic_value)
+        else:
+            return atomic_value
     elif isinstance(primitive, uuid.UUID):
         return str(primitive)
     elif dataclasses.is_dataclass(primitive) and not isinstance(primitive, type):

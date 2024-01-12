@@ -3,7 +3,8 @@ from typing import Optional, cast
 
 import emoji
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import AtomicValue, Value, hashable_value
+from jupiter.core.framework.primitive import Primitive
+from jupiter.core.framework.value import AtomicValue, hashable_value
 
 
 @hashable_value
@@ -23,6 +24,9 @@ class EntityIcon(AtomicValue):
             raise InputValidationError("Expected entity icon to be non-null")
 
         return EntityIcon(EntityIcon._clean_the_icon(entity_icon_raw))
+
+    def to_primitive(self) -> Primitive:
+        return self.the_icon
 
     @staticmethod
     def from_safe(entity_icon_raw: str) -> "EntityIcon":

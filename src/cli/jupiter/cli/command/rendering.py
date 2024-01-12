@@ -10,7 +10,6 @@ from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.core.email_address import EmailAddress
-from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.core.domain.core.recurring_task_due_at_time import RecurringTaskDueAtTime
@@ -36,6 +35,7 @@ from jupiter.core.domain.push_integrations.slack.slack_channel_name import (
 from jupiter.core.domain.push_integrations.slack.slack_user_name import SlackUserName
 from jupiter.core.domain.sync_target import SyncTarget
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.entity import CrownEntity
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (

@@ -8,7 +8,8 @@ import pendulum.parser
 import pendulum.parsing
 import pendulum.tz
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import AtomicValue, Value, value
+from jupiter.core.framework.primitive import Primitive
+from jupiter.core.framework.value import AtomicValue, value
 from pendulum.date import Date
 from pendulum.datetime import DateTime
 from pendulum.tz.timezone import UTC
@@ -103,6 +104,9 @@ class Timestamp(AtomicValue):
     def from_db(timestamp_raw: datetime.datetime) -> "Timestamp":
         """Parse a timestamp from a DB representation."""
         return Timestamp(pendulum.instance(timestamp_raw).in_timezone(UTC))
+
+    def to_primitive(self) -> Primitive:
+        return self.the_ts
 
     def to_db(self) -> datetime.datetime:
         """Transform a timestamp to a DB representation."""

@@ -14,7 +14,7 @@ from jupiter.core.domain.smart_lists.smart_list_name import SmartListName
 from jupiter.core.domain.vacations.vacation_name import VacationName
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.repository import Repository
-from jupiter.core.framework.value import CompositeValue, Value, value
+from jupiter.core.framework.value import CompositeValue, value
 
 
 @value

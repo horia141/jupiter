@@ -4,7 +4,8 @@ from typing import ClassVar, Dict, Optional, Tuple
 from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import AtomicValue, Value, hashable_value
+from jupiter.core.framework.primitive import Primitive
+from jupiter.core.framework.value import AtomicValue, hashable_value
 
 
 @hashable_value
@@ -64,6 +65,9 @@ class PersonBirthday(AtomicValue):
             ) from err
 
         return PersonBirthday(day.as_int(), month)
+
+    def to_primitive(self) -> Primitive:
+        return f"{self.day} {self._MONTH_INDEX_NAME[self.month]}"
 
     def __str__(self) -> str:
         """String representation."""

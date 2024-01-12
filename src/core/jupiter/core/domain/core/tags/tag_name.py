@@ -4,7 +4,8 @@ from functools import total_ordering
 from typing import Final, Optional, Pattern, Type, TypeVar
 
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import AtomicValue, Value, hashable_value
+from jupiter.core.framework.primitive import Primitive
+from jupiter.core.framework.value import AtomicValue, hashable_value
 
 _TAG_RE: Final[Pattern[str]] = re.compile(r"^[a-zA-Z0-9]([a-zA-Z0-9]*-?)*$")
 
@@ -30,6 +31,9 @@ class TagName(AtomicValue):
             raise InputValidationError("Expected tag to be non-null")
 
         return cls(TagName._clean_the_tag(tag_raw))
+
+    def to_primitive(self) -> Primitive:
+        return self.the_tag
 
     def __lt__(self, other: object) -> bool:
         """Compare this with another."""

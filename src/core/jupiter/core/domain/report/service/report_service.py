@@ -9,7 +9,6 @@ from jupiter.core.domain.big_plans.big_plan_status import BigPlanStatus
 from jupiter.core.domain.chores.chore import Chore
 from jupiter.core.domain.core import schedules
 from jupiter.core.domain.core.adate import ADate
-from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.core.schedules import Schedule
 from jupiter.core.domain.features import (
@@ -46,6 +45,7 @@ from jupiter.core.domain.storage_engine import DomainStorageEngine
 from jupiter.core.domain.user.user import User
 from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.errors import InputValidationError
 

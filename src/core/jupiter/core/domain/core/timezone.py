@@ -4,7 +4,8 @@ from typing import Optional, cast
 
 import pendulum
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import AtomicValue, Value, value
+from jupiter.core.framework.primitive import Primitive
+from jupiter.core.framework.value import AtomicValue, value
 from pendulum.tz.zoneinfo.exceptions import InvalidTimezone
 
 
@@ -26,6 +27,9 @@ class Timezone(AtomicValue):
             raise InputValidationError("Expected timezone to be non-null")
 
         return Timezone(Timezone._clean_the_timezone(timezone_raw))
+
+    def to_primitive(self) -> Primitive:
+        return self.the_timezone
 
     def __lt__(self, other: object) -> bool:
         """Compare this with another."""

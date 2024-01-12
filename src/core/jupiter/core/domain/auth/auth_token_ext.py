@@ -4,8 +4,9 @@ from re import Pattern
 from typing import Final
 
 from jupiter.core.framework.errors import InputValidationError
+from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.secure import secure_class
-from jupiter.core.framework.value import AtomicValue, Value, value
+from jupiter.core.framework.value import AtomicValue, value
 
 _JWT_RE: Final[Pattern[str]] = re.compile(
     r"([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_\-\+\/=]*)"
@@ -29,6 +30,9 @@ class AuthTokenExt(AtomicValue):
         """Build an auth token from the raw representation."""
         auth_token_str = AuthTokenExt._clean_auth_token(auth_token_raw)
         return AuthTokenExt(auth_token_str)
+
+    def to_primitive(self) -> Primitive:
+        return self.auth_token_str
 
     @staticmethod
     def _clean_auth_token(auth_token_str_raw: str) -> str:

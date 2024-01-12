@@ -1,6 +1,5 @@
 """A journal for a particular time range."""
 from jupiter.core.domain.core.adate import ADate
-from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
@@ -10,6 +9,7 @@ from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.journals.journal_source import JournalSource
 from jupiter.core.domain.report.report_period_result import ReportPeriodResult
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     IsRefId,

@@ -5,7 +5,8 @@ from typing import Optional
 import avinit
 from jupiter.core.domain.user.user_name import UserName
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import AtomicValue, Value, hashable_value
+from jupiter.core.framework.primitive import Primitive
+from jupiter.core.framework.value import AtomicValue, hashable_value
 
 
 @hashable_value
@@ -31,6 +32,9 @@ class Avatar(AtomicValue):
             raise InputValidationError("Expected avatar to be non-null")
 
         return Avatar(Avatar._clean_the_avatar(avatar_raw))
+
+    def to_primitive(self) -> Primitive:
+        return self.avatar_as_data_url
 
     @staticmethod
     def _clean_the_avatar(avatar_raw: str) -> str:

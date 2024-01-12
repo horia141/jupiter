@@ -15,9 +15,9 @@ from typing import (
     get_origin,
 )
 
-from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.domain.core.tags.tag_name import TagName
 from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
+from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.concept import Concept
 from jupiter.core.framework.context import DomainContext

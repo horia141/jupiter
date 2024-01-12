@@ -14,11 +14,11 @@ from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.user.user import User
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.repository import EntityAlreadyExistsError
-from jupiter.core.framework.value import CompositeValue, Value, value
+from jupiter.core.framework.value import CompositeValue, value
 
 
 @value
-class RecordScoreResult(CompositeValue):  # noqa: F821
+class RecordScoreResult(CompositeValue):
     """The result of the score recording."""
 
     latest_task_score: int

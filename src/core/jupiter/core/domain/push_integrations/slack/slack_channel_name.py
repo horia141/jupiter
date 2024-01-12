@@ -3,7 +3,8 @@ import re
 from typing import Final, Optional, Pattern
 
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import AtomicValue, Value, hashable_value
+from jupiter.core.framework.primitive import Primitive
+from jupiter.core.framework.value import AtomicValue, hashable_value
 
 _SLACK_CHANNEL_NAME_RE: Final[Pattern[str]] = re.compile(r"^[a-z0-9._-]+$")
 
@@ -27,6 +28,9 @@ class SlackChannelName(AtomicValue):
         return SlackChannelName(
             SlackChannelName._clean_the_name(slack_channel_name_raw),
         )
+
+    def to_primitive(self) -> Primitive:
+        return self.the_name
 
     def __str__(self) -> str:
         """Transform this to a string version."""

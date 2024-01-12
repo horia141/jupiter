@@ -3,7 +3,6 @@ from typing import Final, List, Tuple
 
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.difficulty import Difficulty
-from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.gamification.infra.score_log_entry_repository import (
     ScoreLogEntryRepository,
@@ -23,6 +22,7 @@ from jupiter.core.domain.gamification.score_period_best import ScorePeriodBest
 from jupiter.core.domain.gamification.score_source import ScoreSource
 from jupiter.core.domain.gamification.score_stats import ScoreStats
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.entity import ParentLink
 from jupiter.core.framework.repository import (

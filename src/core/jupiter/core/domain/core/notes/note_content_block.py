@@ -6,7 +6,7 @@ from jupiter.core.domain.core.url import URL
 from jupiter.core.domain.named_entity_tag import NamedEntityTag
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.json import JSONDictType
-from jupiter.core.framework.value import CompositeValue, Value, value
+from jupiter.core.framework.value import CompositeValue, value
 
 
 @value

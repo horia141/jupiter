@@ -10,7 +10,8 @@ from typing import (
 )
 
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import AtomicValue, Value, hashable_value
+from jupiter.core.framework.primitive import Primitive
+from jupiter.core.framework.value import AtomicValue, hashable_value
 
 _ENTITY_NAME_RE: Final[Pattern[str]] = re.compile(r"^.+$")
 
@@ -41,6 +42,9 @@ class EntityName(AtomicValue):
         entity_name = EntityName._clean_the_name(entity_name_raw)
 
         return cls(entity_name)
+
+    def to_primitive(self) -> Primitive:
+        return self.the_name
 
     def __lt__(self, other: object) -> bool:
         """Compare this with another."""

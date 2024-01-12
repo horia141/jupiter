@@ -1,9 +1,11 @@
 """Framework level elements for value object."""
+import abc
 import enum
 from dataclasses import dataclass
 from typing import TypeVar
-from jupiter.core.framework.concept import Concept
 
+from jupiter.core.framework.concept import Concept
+from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.secure import secure_class
 from typing_extensions import dataclass_transform
 
@@ -25,8 +27,12 @@ def hashable_value(cls: type[_ValueT]) -> type[_ValueT]:
     return dataclass(eq=True, unsafe_hash=True)(cls)
 
 
-class AtomicValue(Value):
+class AtomicValue(Value, abc.ABC):
     """An atomic value object in the domain."""
+
+    @abc.abstractmethod
+    def to_primitive(self) -> Primitive:
+        """Get the primitive representation of this value."""
 
 
 class CompositeValue(Value):

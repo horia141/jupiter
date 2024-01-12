@@ -7,7 +7,6 @@ import pendulum
 import pendulum.parser
 import pendulum.tz
 from jupiter.core.domain.core.adate import ADate
-from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.core.domain.core.recurring_task_due_at_time import RecurringTaskDueAtTime
@@ -16,6 +15,7 @@ from jupiter.core.domain.core.recurring_task_skip_rule import RecurringTaskSkipR
 from jupiter.core.domain.core.timeline import infer_timeline
 from jupiter.core.domain.core.timezone import Timezone as DomainTimezone
 from jupiter.core.domain.inbox_tasks.inbox_task_name import InboxTaskName
+from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.base.timestamp import Timestamp
 from pendulum.date import Date
 from pendulum.datetime import DateTime

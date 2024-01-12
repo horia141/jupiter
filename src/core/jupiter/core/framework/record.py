@@ -8,7 +8,7 @@ from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.concept import Concept
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import IsOneOfRefId, IsRefId, ParentLink
-from jupiter.core.framework.value import AtomicValue, EnumValue, Value
+from jupiter.core.framework.value import AtomicValue, EnumValue
 from typing_extensions import dataclass_transform
 
 _RecordT = TypeVar("_RecordT", bound="Record")

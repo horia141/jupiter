@@ -3,7 +3,8 @@ import re
 from typing import Final, Optional, Pattern
 
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import AtomicValue, Value, value
+from jupiter.core.framework.primitive import Primitive
+from jupiter.core.framework.value import AtomicValue, value
 
 _DUE_AT_TIME_RE: Final[Pattern[str]] = re.compile(r"^[0-9][0-9]:[0-9][0-9]$")
 
@@ -29,6 +30,9 @@ class RecurringTaskDueAtTime(AtomicValue):
         return RecurringTaskDueAtTime(
             RecurringTaskDueAtTime._clean_the_time(recurring_task_due_at_time_raw),
         )
+
+    def to_primitive(self) -> Primitive:
+        return self.the_time
 
     def __str__(self) -> str:
         """String version of this."""

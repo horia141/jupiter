@@ -1,7 +1,6 @@
 """Sqlite implementation of the notes repository."""
 from typing import Iterable, Optional
 
-from jupiter.core.framework.base.entity_name import NOT_USED_NAME
 from jupiter.core.domain.core.notes.infra.note_collection_repository import (
     NoteCollectionRepository,
 )
@@ -13,6 +12,7 @@ from jupiter.core.domain.core.notes.note_collection import NoteCollection
 from jupiter.core.domain.core.notes.note_content_block import NoteContentBlock
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.base.entity_name import NOT_USED_NAME
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.entity import ParentLink
 from jupiter.core.framework.repository import EntityNotFoundError

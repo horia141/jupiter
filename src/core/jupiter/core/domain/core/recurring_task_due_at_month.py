@@ -3,7 +3,8 @@ from typing import Dict, Final, Optional, Tuple
 
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import AtomicValue, Value, value
+from jupiter.core.framework.primitive import Primitive
+from jupiter.core.framework.value import AtomicValue, value
 
 _RECURRING_TASK_DUE_AT_MONTH_BOUNDS: Final[
     Dict[RecurringTaskPeriod, Tuple[int, int]]
@@ -44,6 +45,9 @@ class RecurringTaskDueAtMonth(AtomicValue):
                 recurring_task_due_at_month_raw,
             ),
         )
+
+    def to_primitive(self) -> Primitive:
+        return self.the_month
 
     def as_int(self) -> int:
         """Return an int version of this."""

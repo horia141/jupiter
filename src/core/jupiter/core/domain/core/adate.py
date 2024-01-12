@@ -10,7 +10,8 @@ import pendulum.tz
 from jupiter.core.domain.core.timezone import Timezone
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import AtomicValue, Value, hashable_value
+from jupiter.core.framework.primitive import Primitive
+from jupiter.core.framework.value import AtomicValue, hashable_value
 from pendulum.date import Date
 from pendulum.datetime import DateTime
 from pendulum.tz.timezone import UTC
@@ -120,6 +121,13 @@ class ADate(AtomicValue):
                 Date(timestamp_raw.year, timestamp_raw.month, timestamp_raw.day),
                 None,
             )
+
+    def to_primitive(self) -> Primitive:
+        """Get the primitive representation of this value."""
+        if self.the_datetime is not None:
+            return cast(DateTime, self.the_datetime)
+        else:
+            return cast(Date, self._surely_the_date)
 
     def to_db(self) -> datetime.datetime:
         """Transform a timestamp to a DB representation."""

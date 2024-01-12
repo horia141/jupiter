@@ -3,7 +3,8 @@
 from typing import Optional
 
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import AtomicValue, Value, value
+from jupiter.core.framework.primitive import Primitive
+from jupiter.core.framework.value import AtomicValue, value
 
 _MAX_QUERY_LIMIT = 1000
 
@@ -25,6 +26,9 @@ class SearchLimit(AtomicValue):
             raise InputValidationError("Expected limit to be non null.")
 
         return SearchLimit(SearchLimit._clean_the_limit(limit_raw))
+
+    def to_primitive(self) -> Primitive:
+        return self.the_limit
 
     @property
     def as_int(self) -> int:

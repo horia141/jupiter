@@ -1,9 +1,9 @@
 """A note in the notebook."""
 
-from jupiter.core.framework.base.entity_name import NOT_USED_NAME
 from jupiter.core.domain.core.notes.note_content_block import OneOfNoteContentBlock
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.base.entity_name import NOT_USED_NAME
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     LeafSupportEntity,

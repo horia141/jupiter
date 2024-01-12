@@ -1,7 +1,7 @@
 """A history of user scores over time."""
 
 from jupiter.core.domain.core.adate import ADate
-from jupiter.core.framework.value import CompositeValue, Value, value
+from jupiter.core.framework.value import CompositeValue, value
 
 
 @value

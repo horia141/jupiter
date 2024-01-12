@@ -3,7 +3,8 @@ from typing import Dict, Final, Optional, Tuple
 
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import AtomicValue, CompositeValue, Value, value
+from jupiter.core.framework.primitive import Primitive
+from jupiter.core.framework.value import AtomicValue, value
 
 _RECURRING_TASK_DUE_AT_DAY_BOUNDS: Final[Dict[RecurringTaskPeriod, Tuple[int, int]]] = {
     RecurringTaskPeriod.DAILY: (0, 0),
@@ -36,6 +37,9 @@ class RecurringTaskDueAtDay(AtomicValue):
         return RecurringTaskDueAtDay(
             RecurringTaskDueAtDay._clean_the_day(period, recurring_task_due_at_day_raw),
         )
+
+    def to_primitive(self) -> Primitive:
+        return self.the_day
 
     def as_int(self) -> int:
         """Return an int version of this."""
