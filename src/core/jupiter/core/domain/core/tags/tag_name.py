@@ -1,7 +1,7 @@
 """The base value object for any kind of tag tag."""
 import re
 from functools import total_ordering
-from typing import Final, Optional, Pattern, Type, TypeVar
+from typing import Final, Pattern, Type, TypeVar
 
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.primitive import Primitive
@@ -25,10 +25,10 @@ class TagName(AtomicValue):
         self.the_tag = self._clean_the_tag(self.the_tag)
 
     @classmethod
-    def from_raw(cls: Type[_TagNameT], tag_raw: Optional[str]) -> _TagNameT:
+    def from_raw(cls: Type[_TagNameT], tag_raw: Primitive) -> _TagNameT:
         """Validate and clean an tag."""
-        if not tag_raw:
-            raise InputValidationError("Expected tag to be non-null")
+        if not isinstance(tag_raw, str):
+            raise InputValidationError("Expected tag to be a string")
 
         return cls(TagName._clean_the_tag(tag_raw))
 

@@ -3,7 +3,6 @@ import re
 from functools import total_ordering
 from typing import (
     Final,
-    Optional,
     Pattern,
     Type,
     TypeVar,
@@ -33,13 +32,13 @@ class EntityName(AtomicValue):
     @classmethod
     def from_raw(
         cls: Type[_EntityNameT],
-        entity_name_raw: Optional[str],
+        value: Primitive,
     ) -> _EntityNameT:
         """Validate and clean an entity name."""
-        if not entity_name_raw:
+        if not isinstance(value, str):
             raise InputValidationError("Expected entity name to be non-null")
 
-        entity_name = EntityName._clean_the_name(entity_name_raw)
+        entity_name = EntityName._clean_the_name(value)
 
         return cls(entity_name)
 

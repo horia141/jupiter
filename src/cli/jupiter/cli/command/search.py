@@ -131,42 +131,42 @@ class Search(LoggedInReadonlyCommand[SearchUseCase]):
             else None
         )
         filter_created_time_after = (
-            ADate.from_raw(
+            ADate.from_raw_in_tz(
                 self._global_properties.timezone, args.filter_created_time_after
             )
             if args.filter_created_time_after
             else None
         )
         filter_created_time_before = (
-            ADate.from_raw(
+            ADate.from_raw_in_tz(
                 self._global_properties.timezone, args.filter_created_time_before
             )
             if args.filter_created_time_before
             else None
         )
         filter_last_modified_time_after = (
-            ADate.from_raw(
+            ADate.from_raw_in_tz(
                 self._global_properties.timezone, args.filter_last_modified_time_after
             )
             if args.filter_last_modified_time_after
             else None
         )
         filter_last_modified_time_before = (
-            ADate.from_raw(
+            ADate.from_raw_in_tz(
                 self._global_properties.timezone, args.filter_last_modified_time_before
             )
             if args.filter_last_modified_time_before
             else None
         )
         filter_archived_time_after = (
-            ADate.from_raw(
+            ADate.from_raw_in_tz(
                 self._global_properties.timezone, args.filter_archived_time_after
             )
             if args.filter_archived_time_after
             else None
         )
         filter_archived_time_before = (
-            ADate.from_raw(
+            ADate.from_raw_in_tz(
                 self._global_properties.timezone, args.filter_archived_time_before
             )
             if args.filter_archived_time_before

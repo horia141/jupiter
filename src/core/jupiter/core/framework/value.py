@@ -27,8 +27,16 @@ def hashable_value(cls: type[_ValueT]) -> type[_ValueT]:
     return dataclass(eq=True, unsafe_hash=True)(cls)
 
 
+_AtomicValueT = TypeVar("_AtomicValueT", bound="AtomicValue")
+
+
 class AtomicValue(Value, abc.ABC):
     """An atomic value object in the domain."""
+
+    @classmethod
+    @abc.abstractmethod
+    def from_raw(cls: type[_AtomicValueT], value: Primitive) -> _AtomicValueT:
+        """Build an atomic value from the raw representation."""
 
     @abc.abstractmethod
     def to_primitive(self) -> Primitive:

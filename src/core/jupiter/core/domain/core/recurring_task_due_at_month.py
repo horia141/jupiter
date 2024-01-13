@@ -31,7 +31,7 @@ class RecurringTaskDueAtMonth(AtomicValue):
         )
 
     @staticmethod
-    def from_raw(
+    def from_raw_with_period(
         period: RecurringTaskPeriod,
         recurring_task_due_at_month_raw: Optional[int],
     ) -> "RecurringTaskDueAtMonth":
@@ -44,6 +44,16 @@ class RecurringTaskDueAtMonth(AtomicValue):
                 period,
                 recurring_task_due_at_month_raw,
             ),
+        )
+
+    @classmethod
+    def from_raw(cls, value: Primitive) -> "RecurringTaskDueAtMonth":
+        """Build a recurring task due at month from the raw representation."""
+        if not isinstance(value, int):
+            raise InputValidationError("Expected the due month info to be an int")
+        return cls.from_raw_with_period(
+            RecurringTaskPeriod.YEARLY,
+            value,
         )
 
     def to_primitive(self) -> Primitive:

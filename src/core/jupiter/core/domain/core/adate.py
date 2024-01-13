@@ -67,7 +67,7 @@ class ADate(AtomicValue):
             )
 
     @staticmethod
-    def from_raw(timezone: Timezone, datetime_raw: Optional[str]) -> "ADate":
+    def from_raw_in_tz(timezone: Timezone, datetime_raw: Optional[str]) -> "ADate":
         """Validate and clean an ADate."""
         if not datetime_raw:
             raise InputValidationError("Expected datetime to be non-null")
@@ -90,6 +90,32 @@ class ADate(AtomicValue):
         except pendulum.parsing.exceptions.ParserError as error:
             raise InputValidationError(
                 f"Expected datetime '{datetime_raw}' to be in a proper format",
+            ) from error
+
+    @classmethod
+    def from_raw(cls, value: Primitive) -> "ADate":
+        """Validate and clean an ADate."""
+        if not isinstance(value, str):
+            raise InputValidationError("Expected datetime to be string")
+
+        try:
+            adate = pendulum.parser.parse(
+                value,
+                tz=pendulum.tz.timezone(str(UTC)),
+                exact=True,
+            )
+
+            if isinstance(adate, DateTime):
+                return ADate(None, adate.in_timezone(UTC))
+            elif isinstance(adate, Date):
+                return ADate(adate, None)
+            else:
+                raise InputValidationError(
+                    f"Expected datetime '{value}' to be in a proper datetime format",
+                )
+        except pendulum.parsing.exceptions.ParserError as error:
+            raise InputValidationError(
+                f"Expected datetime '{value}' to be in a proper format",
             ) from error
 
     @staticmethod

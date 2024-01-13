@@ -1,6 +1,5 @@
 """A search query parameter for searches."""
 
-from typing import Optional
 
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.primitive import Primitive
@@ -17,13 +16,13 @@ class SearchQuery(AtomicValue):
         """Validate after pydantic construction."""
         self.the_query = self._clean_the_query(self.the_query)
 
-    @staticmethod
-    def from_raw(query_raw: Optional[str]) -> "SearchQuery":
+    @classmethod
+    def from_raw(cls, value: Primitive) -> "SearchQuery":
         """Validate and clean the search query."""
-        if not query_raw:
-            raise InputValidationError("Expected query to be non null.")
+        if not isinstance(value, str):
+            raise InputValidationError("Expected query to be a string")
 
-        return SearchQuery(SearchQuery._clean_the_query(query_raw))
+        return SearchQuery(SearchQuery._clean_the_query(value))
 
     def to_primitive(self) -> Primitive:
         return self.the_query

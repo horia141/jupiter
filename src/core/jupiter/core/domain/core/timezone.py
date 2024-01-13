@@ -1,6 +1,6 @@
 """An timezone in this domain."""
 from functools import total_ordering
-from typing import Optional, cast
+from typing import cast
 
 import pendulum
 from jupiter.core.framework.errors import InputValidationError
@@ -20,13 +20,13 @@ class Timezone(AtomicValue):
         """Validate after pydantic construction."""
         self.the_timezone = self._clean_the_timezone(self.the_timezone)
 
-    @staticmethod
-    def from_raw(timezone_raw: Optional[str]) -> "Timezone":
+    @classmethod
+    def from_raw(cls, value: Primitive) -> "Timezone":
         """Validate and clean a timezone."""
-        if not timezone_raw:
-            raise InputValidationError("Expected timezone to be non-null")
+        if not isinstance(value, str):
+            raise InputValidationError("Expected timezone to be a string")
 
-        return Timezone(Timezone._clean_the_timezone(timezone_raw))
+        return Timezone(Timezone._clean_the_timezone(value))
 
     def to_primitive(self) -> Primitive:
         return self.the_timezone

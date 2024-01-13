@@ -988,11 +988,11 @@ class GenService:
             None,
             None,
             None,
-            RecurringTaskDueAtDay.from_raw(
+            RecurringTaskDueAtDay.from_raw_with_period(
                 RecurringTaskPeriod.MONTHLY,
                 birthday.day,
             ),
-            RecurringTaskDueAtMonth.from_raw(
+            RecurringTaskDueAtMonth.from_raw_with_period(
                 RecurringTaskPeriod.YEARLY,
                 birthday.month,
             ),

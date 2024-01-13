@@ -126,7 +126,7 @@ class PersonCreate(LoggedInMutationCommand[PersonCreateUseCase]):
             else None
         )
         catch_up_actionable_from_day = (
-            RecurringTaskDueAtDay.from_raw(
+            RecurringTaskDueAtDay.from_raw_with_period(
                 catch_up_period,
                 args.catch_up_actionable_from_day,
             )
@@ -134,7 +134,7 @@ class PersonCreate(LoggedInMutationCommand[PersonCreateUseCase]):
             else None
         )
         catch_up_actionable_from_month = (
-            RecurringTaskDueAtMonth.from_raw(
+            RecurringTaskDueAtMonth.from_raw_with_period(
                 catch_up_period,
                 args.catch_up_actionable_from_month,
             )
@@ -147,12 +147,14 @@ class PersonCreate(LoggedInMutationCommand[PersonCreateUseCase]):
             else None
         )
         catch_up_due_at_day = (
-            RecurringTaskDueAtDay.from_raw(catch_up_period, args.catch_up_due_at_day)
+            RecurringTaskDueAtDay.from_raw_with_period(
+                catch_up_period, args.catch_up_due_at_day
+            )
             if args.catch_up_due_at_day and catch_up_period
             else None
         )
         catch_up_due_at_month = (
-            RecurringTaskDueAtMonth.from_raw(
+            RecurringTaskDueAtMonth.from_raw_with_period(
                 catch_up_period,
                 args.catch_up_due_at_month,
             )

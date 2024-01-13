@@ -84,13 +84,13 @@ class VacationUpdate(LoggedInMutationCommand[VacationUpdateUseCase]):
             name = UpdateAction.do_nothing()
         if args.start_date is not None:
             start_date = UpdateAction.change_to(
-                ADate.from_raw(self._global_properties.timezone, args.start_date),
+                ADate.from_raw_in_tz(self._global_properties.timezone, args.start_date),
             )
         else:
             start_date = UpdateAction.do_nothing()
         if args.end_date is not None:
             end_date = UpdateAction.change_to(
-                ADate.from_raw(self._global_properties.timezone, args.end_date),
+                ADate.from_raw_in_tz(self._global_properties.timezone, args.end_date),
             )
         else:
             end_date = UpdateAction.do_nothing()

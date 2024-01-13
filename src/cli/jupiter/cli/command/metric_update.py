@@ -233,7 +233,7 @@ class MetricUpdate(LoggedInMutationCommand[MetricUpdateUseCase]):
             collection_actionable_from_day = UpdateAction.change_to(None)
         elif args.collection_actionable_from_day is not None:
             collection_actionable_from_day = UpdateAction.change_to(
-                RecurringTaskDueAtDay.from_raw(
+                RecurringTaskDueAtDay.from_raw_with_period(
                     RecurringTaskPeriod.YEARLY,
                     args.collection_actionable_from_day,
                 ),
@@ -247,7 +247,7 @@ class MetricUpdate(LoggedInMutationCommand[MetricUpdateUseCase]):
             collection_actionable_from_month = UpdateAction.change_to(None)
         elif args.collection_actionable_from_month is not None:
             collection_actionable_from_month = UpdateAction.change_to(
-                RecurringTaskDueAtMonth.from_raw(
+                RecurringTaskDueAtMonth.from_raw_with_period(
                     RecurringTaskPeriod.YEARLY,
                     args.collection_actionable_from_month,
                 ),
@@ -268,7 +268,7 @@ class MetricUpdate(LoggedInMutationCommand[MetricUpdateUseCase]):
             collection_due_at_day = UpdateAction.change_to(None)
         elif args.collection_due_at_day is not None:
             collection_due_at_day = UpdateAction.change_to(
-                RecurringTaskDueAtDay.from_raw(
+                RecurringTaskDueAtDay.from_raw_with_period(
                     RecurringTaskPeriod.YEARLY,
                     args.collection_due_at_day,
                 ),
@@ -280,7 +280,7 @@ class MetricUpdate(LoggedInMutationCommand[MetricUpdateUseCase]):
             collection_due_at_month = UpdateAction.change_to(None)
         elif args.collection_due_at_month is not None:
             collection_due_at_month = UpdateAction.change_to(
-                RecurringTaskDueAtMonth.from_raw(
+                RecurringTaskDueAtMonth.from_raw_with_period(
                     RecurringTaskPeriod.YEARLY,
                     args.collection_due_at_month,
                 ),

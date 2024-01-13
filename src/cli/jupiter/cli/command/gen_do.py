@@ -156,7 +156,7 @@ class GenDo(LoggedInMutationCommand[GenDoUseCase]):
     ) -> None:
         """Callback to execute when the command is invoked."""
         today = (
-            ADate.from_raw(self._global_properties.timezone, args.today)
+            ADate.from_raw_in_tz(self._global_properties.timezone, args.today)
             if args.today
             else self._time_provider.get_current_date()
         )

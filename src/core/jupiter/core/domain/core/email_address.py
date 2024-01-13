@@ -1,6 +1,6 @@
 """An email address."""
 from functools import total_ordering
-from typing import Optional, cast
+from typing import cast
 
 from email_validator import EmailNotValidError, ValidatedEmail, validate_email
 from jupiter.core.framework.errors import InputValidationError
@@ -19,13 +19,13 @@ class EmailAddress(AtomicValue):
         """Validate after pydantic construction."""
         self.the_address = self._clean_the_address(self.the_address)
 
-    @staticmethod
-    def from_raw(email_address_raw: Optional[str]) -> "EmailAddress":
+    @classmethod
+    def from_raw(cls, value: Primitive) -> "EmailAddress":
         """Validate and clean a url."""
-        if not email_address_raw:
-            raise InputValidationError("Expected email address to be non-null")
+        if not isinstance(value, str):
+            raise InputValidationError("Expected email address to be a string")
 
-        return EmailAddress(EmailAddress._clean_the_address(email_address_raw))
+        return EmailAddress(EmailAddress._clean_the_address(value))
 
     def to_primitive(self) -> Primitive:
         return self.the_address

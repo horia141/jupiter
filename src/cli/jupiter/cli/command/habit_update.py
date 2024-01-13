@@ -228,7 +228,7 @@ class HabitUpdate(LoggedInMutationCommand[HabitUpdateUseCase]):
             actionable_from_day = UpdateAction.change_to(None)
         elif args.actionable_from_day:
             actionable_from_day = UpdateAction.change_to(
-                RecurringTaskDueAtDay.from_raw(
+                RecurringTaskDueAtDay.from_raw_with_period(
                     period.just_the_value
                     if period.should_change
                     else RecurringTaskPeriod.YEARLY,
@@ -242,7 +242,7 @@ class HabitUpdate(LoggedInMutationCommand[HabitUpdateUseCase]):
             actionable_from_month = UpdateAction.change_to(None)
         elif args.actionable_from_month:
             actionable_from_month = UpdateAction.change_to(
-                RecurringTaskDueAtMonth.from_raw(
+                RecurringTaskDueAtMonth.from_raw_with_period(
                     period.just_the_value
                     if period.should_change
                     else RecurringTaskPeriod.YEARLY,
@@ -265,7 +265,7 @@ class HabitUpdate(LoggedInMutationCommand[HabitUpdateUseCase]):
             due_at_day = UpdateAction.change_to(None)
         elif args.due_at_day:
             due_at_day = UpdateAction.change_to(
-                RecurringTaskDueAtDay.from_raw(
+                RecurringTaskDueAtDay.from_raw_with_period(
                     period.just_the_value
                     if period.should_change
                     else RecurringTaskPeriod.YEARLY,
@@ -279,7 +279,7 @@ class HabitUpdate(LoggedInMutationCommand[HabitUpdateUseCase]):
             due_at_month = UpdateAction.change_to(None)
         elif args.due_at_month:
             due_at_month = UpdateAction.change_to(
-                RecurringTaskDueAtMonth.from_raw(
+                RecurringTaskDueAtMonth.from_raw_with_period(
                     period.just_the_value
                     if period.should_change
                     else RecurringTaskPeriod.YEARLY,

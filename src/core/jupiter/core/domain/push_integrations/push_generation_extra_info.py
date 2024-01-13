@@ -96,10 +96,10 @@ class PushGenerationExtraInfo(CompositeValue):
                 difficulty=Difficulty.from_raw(args.difficulty)
                 if args.difficulty
                 else None,
-                actionable_date=ADate.from_raw(timezone, args.actionable_date)
+                actionable_date=ADate.from_raw_in_tz(timezone, args.actionable_date)
                 if args.actionable_date
                 else None,
-                due_date=ADate.from_raw(timezone, args.due_date)
+                due_date=ADate.from_raw_in_tz(timezone, args.due_date)
                 if args.due_date
                 else None,
             )

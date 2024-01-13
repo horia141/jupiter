@@ -1,6 +1,6 @@
 """The due time for a recurring task."""
 import re
-from typing import Final, Optional, Pattern
+from typing import Final, Pattern
 
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.primitive import Primitive
@@ -19,16 +19,17 @@ class RecurringTaskDueAtTime(AtomicValue):
         """Validate after pydantic construction."""
         self.the_time = self._clean_the_time(self.the_time)
 
-    @staticmethod
+    @classmethod
     def from_raw(
-        recurring_task_due_at_time_raw: Optional[str],
+        cls,
+        value: Primitive,
     ) -> "RecurringTaskDueAtTime":
         """Validate and clean the due at time info."""
-        if not recurring_task_due_at_time_raw:
-            raise InputValidationError("Expected the due time info to be non-null")
+        if not isinstance(value, str):
+            raise InputValidationError("Expected the due time info to be string")
 
         return RecurringTaskDueAtTime(
-            RecurringTaskDueAtTime._clean_the_time(recurring_task_due_at_time_raw),
+            RecurringTaskDueAtTime._clean_the_time(value),
         )
 
     def to_primitive(self) -> Primitive:

@@ -1,6 +1,5 @@
 """A search limit parameter for searches."""
 
-from typing import Optional
 
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.primitive import Primitive
@@ -19,13 +18,13 @@ class SearchLimit(AtomicValue):
         """Validate after pydantic construction."""
         self.the_limit = self._clean_the_limit(self.the_limit)
 
-    @staticmethod
-    def from_raw(limit_raw: Optional[int]) -> "SearchLimit":
+    @classmethod
+    def from_raw(cls, value: Primitive) -> "SearchLimit":
         """Validate and clean the search limit."""
-        if not limit_raw:
-            raise InputValidationError("Expected limit to be non null.")
+        if not isinstance(value, int):
+            raise InputValidationError("Expected limit to be a string")
 
-        return SearchLimit(SearchLimit._clean_the_limit(limit_raw))
+        return SearchLimit(SearchLimit._clean_the_limit(value))
 
     def to_primitive(self) -> Primitive:
         return self.the_limit

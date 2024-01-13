@@ -1,5 +1,5 @@
 """The icon for an entity."""
-from typing import Optional, cast
+from typing import cast
 
 import emoji
 from jupiter.core.framework.errors import InputValidationError
@@ -17,13 +17,13 @@ class EntityIcon(AtomicValue):
         """Validate after pydantic construction."""
         self.the_icon = self._clean_the_icon(self.the_icon)
 
-    @staticmethod
-    def from_raw(entity_icon_raw: Optional[str]) -> "EntityIcon":
+    @classmethod
+    def from_raw(cls, value: Primitive) -> "EntityIcon":
         """Validate and clean an entity icon."""
-        if not entity_icon_raw:
-            raise InputValidationError("Expected entity icon to be non-null")
+        if not isinstance(value, str):
+            raise InputValidationError("Expected entity icon to be a string")
 
-        return EntityIcon(EntityIcon._clean_the_icon(entity_icon_raw))
+        return EntityIcon(EntityIcon._clean_the_icon(value))
 
     def to_primitive(self) -> Primitive:
         return self.the_icon

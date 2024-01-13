@@ -136,12 +136,14 @@ class HabitCreate(LoggedInMutationCommand[HabitCreateUseCase]):
         eisen = Eisen.from_raw(args.eisen) if args.eisen else None
         difficulty = Difficulty.from_raw(args.difficulty) if args.difficulty else None
         actionable_from_day = (
-            RecurringTaskDueAtDay.from_raw(period, args.actionable_from_day)
+            RecurringTaskDueAtDay.from_raw_with_period(period, args.actionable_from_day)
             if args.actionable_from_day
             else None
         )
         actionable_from_month = (
-            RecurringTaskDueAtMonth.from_raw(period, args.actionable_from_month)
+            RecurringTaskDueAtMonth.from_raw_with_period(
+                period, args.actionable_from_month
+            )
             if args.actionable_from_month
             else None
         )
@@ -151,12 +153,12 @@ class HabitCreate(LoggedInMutationCommand[HabitCreateUseCase]):
             else None
         )
         due_at_day = (
-            RecurringTaskDueAtDay.from_raw(period, args.due_at_day)
+            RecurringTaskDueAtDay.from_raw_with_period(period, args.due_at_day)
             if args.due_at_day
             else None
         )
         due_at_month = (
-            RecurringTaskDueAtMonth.from_raw(period, args.due_at_month)
+            RecurringTaskDueAtMonth.from_raw_with_period(period, args.due_at_month)
             if args.due_at_month
             else None
         )

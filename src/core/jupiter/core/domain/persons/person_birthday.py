@@ -1,5 +1,5 @@
 """The birthday of a person."""
-from typing import ClassVar, Dict, Optional, Tuple
+from typing import ClassVar, Dict, Tuple
 
 from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
@@ -39,29 +39,29 @@ class PersonBirthday(AtomicValue):
         self.day = day
         self.month = month
 
-    @staticmethod
-    def from_raw(birthday_str: Optional[str]) -> "PersonBirthday":
+    @classmethod
+    def from_raw(cls, value: Primitive) -> "PersonBirthday":
         """Validate and clean a raw birthday given as 12 May."""
-        if not birthday_str:
-            raise InputValidationError("Expected birthday to be non null")
+        if not isinstance(value, str):
+            raise InputValidationError("Expected birthday to be a string")
 
-        parts = birthday_str.strip().split(" ")
+        parts = value.strip().split(" ")
         if len(parts) != 2:
-            raise InputValidationError(f"Invalid format for birthday '{birthday_str}'")
+            raise InputValidationError(f"Invalid format for birthday '{value}'")
 
         try:
-            day = RecurringTaskDueAtDay.from_raw(
+            day = RecurringTaskDueAtDay.from_raw_with_period(
                 RecurringTaskPeriod.MONTHLY,
                 int(parts[0], base=10),
             )
             month = PersonBirthday._MONTH_NAME_INDEX[parts[1].capitalize()]
         except ValueError as err:
             raise InputValidationError(
-                f"Invalid format for day part of birthday '{birthday_str}'",
+                f"Invalid format for day part of birthday '{value}'",
             ) from err
         except KeyError as err:
             raise InputValidationError(
-                f"Invalid format for month part of birthday '{birthday_str}'",
+                f"Invalid format for month part of birthday '{value}'",
             ) from err
 
         return PersonBirthday(day.as_int(), month)
@@ -75,7 +75,7 @@ class PersonBirthday(AtomicValue):
 
     @staticmethod
     def _clean_the_day_and_month(day: int, month: int) -> Tuple[int, int]:
-        _ = RecurringTaskDueAtDay.from_raw(RecurringTaskPeriod.MONTHLY, day)
+        _ = RecurringTaskDueAtDay.from_raw_with_period(RecurringTaskPeriod.MONTHLY, day)
         if month < 1 or month > 12:
             raise InputValidationError(f"Month is out of bounds with value {month}")
         return day, month

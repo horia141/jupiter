@@ -116,7 +116,9 @@ class BigPlanUpdate(LoggedInMutationCommand[BigPlanUpdateUseCase]):
             actionable_date = UpdateAction.change_to(None)
         elif args.actionable_date:
             actionable_date = UpdateAction.change_to(
-                ADate.from_raw(self._global_properties.timezone, args.actionable_date),
+                ADate.from_raw_in_tz(
+                    self._global_properties.timezone, args.actionable_date
+                ),
             )
         else:
             actionable_date = UpdateAction.do_nothing()
@@ -125,7 +127,7 @@ class BigPlanUpdate(LoggedInMutationCommand[BigPlanUpdateUseCase]):
             due_date = UpdateAction.change_to(None)
         elif args.due_date:
             due_date = UpdateAction.change_to(
-                ADate.from_raw(self._global_properties.timezone, args.due_date),
+                ADate.from_raw_in_tz(self._global_properties.timezone, args.due_date),
             )
         else:
             due_date = UpdateAction.do_nothing()

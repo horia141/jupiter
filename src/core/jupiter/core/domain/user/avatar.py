@@ -1,6 +1,5 @@
 """A user avatar image."""
 
-from typing import Optional
 
 import avinit
 from jupiter.core.domain.user.user_name import UserName
@@ -25,13 +24,13 @@ class Avatar(AtomicValue):
         avatar_as_data_url = avinit.get_avatar_data_url(user_name.the_name)
         return Avatar(avatar_as_data_url)
 
-    @staticmethod
-    def from_raw(avatar_raw: Optional[str]) -> "Avatar":
+    @classmethod
+    def from_raw(cls, value: Primitive) -> "Avatar":
         """Construct an avatar from a string representation."""
-        if avatar_raw is None:
-            raise InputValidationError("Expected avatar to be non-null")
+        if not isinstance(value, str):
+            raise InputValidationError("Expected avatar to be a string")
 
-        return Avatar(Avatar._clean_the_avatar(avatar_raw))
+        return Avatar(Avatar._clean_the_avatar(value))
 
     def to_primitive(self) -> Primitive:
         return self.avatar_as_data_url

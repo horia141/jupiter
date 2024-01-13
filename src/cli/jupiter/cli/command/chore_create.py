@@ -159,12 +159,14 @@ class ChoreCreate(LoggedInMutationCommand[ChoreCreateUseCase]):
         eisen = Eisen.from_raw(args.eisen) if args.eisen else None
         difficulty = Difficulty.from_raw(args.difficulty) if args.difficulty else None
         actionable_from_day = (
-            RecurringTaskDueAtDay.from_raw(period, args.actionable_from_day)
+            RecurringTaskDueAtDay.from_raw_with_period(period, args.actionable_from_day)
             if args.actionable_from_day
             else None
         )
         actionable_from_month = (
-            RecurringTaskDueAtMonth.from_raw(period, args.actionable_from_month)
+            RecurringTaskDueAtMonth.from_raw_with_period(
+                period, args.actionable_from_month
+            )
             if args.actionable_from_month
             else None
         )
@@ -174,12 +176,12 @@ class ChoreCreate(LoggedInMutationCommand[ChoreCreateUseCase]):
             else None
         )
         due_at_day = (
-            RecurringTaskDueAtDay.from_raw(period, args.due_at_day)
+            RecurringTaskDueAtDay.from_raw_with_period(period, args.due_at_day)
             if args.due_at_day
             else None
         )
         due_at_month = (
-            RecurringTaskDueAtMonth.from_raw(period, args.due_at_month)
+            RecurringTaskDueAtMonth.from_raw_with_period(period, args.due_at_month)
             if args.due_at_month
             else None
         )
@@ -187,12 +189,12 @@ class ChoreCreate(LoggedInMutationCommand[ChoreCreateUseCase]):
             RecurringTaskSkipRule.from_raw(args.skip_rule) if args.skip_rule else None
         )
         start_at_date = (
-            ADate.from_raw(self._global_properties.timezone, args.start_at_date)
+            ADate.from_raw_in_tz(self._global_properties.timezone, args.start_at_date)
             if args.start_at_date
             else None
         )
         end_at_date = (
-            ADate.from_raw(self._global_properties.timezone, args.end_at_date)
+            ADate.from_raw_in_tz(self._global_properties.timezone, args.end_at_date)
             if args.end_at_date
             else None
         )

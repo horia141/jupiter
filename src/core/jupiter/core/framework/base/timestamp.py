@@ -1,7 +1,7 @@
 """A timestamp in the application."""
 import datetime
 from functools import total_ordering
-from typing import Optional, cast
+from typing import cast
 
 import pendulum
 import pendulum.parser
@@ -57,15 +57,15 @@ class Timestamp(AtomicValue):
         """Construct a Timestamp from a unix timestamp."""
         return Timestamp(pendulum.from_timestamp(unix_timestamp, tz=UTC))
 
-    @staticmethod
-    def from_raw(timestamp_raw: Optional[str]) -> "Timestamp":
+    @classmethod
+    def from_raw(cls, value: Primitive) -> "Timestamp":
         """Validate and clean an optional timestamp."""
-        if not timestamp_raw:
-            raise InputValidationError("Expected timestamp to be non-null")
+        if not isinstance(value, str):
+            raise InputValidationError("Expected timestamp to be string")
 
         try:
             timestamp = pendulum.parser.parse(
-                timestamp_raw,
+                value,
                 tz=UTC,
                 exact=True,
             )
@@ -81,13 +81,13 @@ class Timestamp(AtomicValue):
                 )
             else:
                 raise InputValidationError(
-                    f"Expected datetime '{timestamp_raw}' to be in a proper datetime format",
+                    f"Expected datetime '{value}' to be in a proper datetime format",
                 )
 
             return Timestamp(timestamp)
         except pendulum.parsing.exceptions.ParserError as error:
             raise InputValidationError(
-                f"Expected datetime '{timestamp_raw}' to be in a proper format",
+                f"Expected datetime '{value}' to be in a proper format",
             ) from error
 
     @staticmethod

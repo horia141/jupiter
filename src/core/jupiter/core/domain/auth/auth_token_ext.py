@@ -25,10 +25,12 @@ class AuthTokenExt(AtomicValue):
         auth_token_str = AuthTokenExt._clean_auth_token(self.auth_token_str)
         self.auth_token_str = auth_token_str
 
-    @staticmethod
-    def from_raw(auth_token_raw: str) -> "AuthTokenExt":
+    @classmethod
+    def from_raw(cls, value: Primitive) -> "AuthTokenExt":
         """Build an auth token from the raw representation."""
-        auth_token_str = AuthTokenExt._clean_auth_token(auth_token_raw)
+        if not isinstance(value, str):
+            raise InputValidationError("Expected auth token to be a string")
+        auth_token_str = AuthTokenExt._clean_auth_token(value)
         return AuthTokenExt(auth_token_str)
 
     def to_primitive(self) -> Primitive:

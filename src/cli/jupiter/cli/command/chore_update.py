@@ -255,7 +255,7 @@ class ChoreUpdate(LoggedInMutationCommand[ChoreUpdateUseCase]):
             actionable_from_day = UpdateAction.change_to(None)
         elif args.actionable_from_day:
             actionable_from_day = UpdateAction.change_to(
-                RecurringTaskDueAtDay.from_raw(
+                RecurringTaskDueAtDay.from_raw_with_period(
                     period.just_the_value
                     if period.should_change
                     else RecurringTaskPeriod.YEARLY,
@@ -269,7 +269,7 @@ class ChoreUpdate(LoggedInMutationCommand[ChoreUpdateUseCase]):
             actionable_from_month = UpdateAction.change_to(None)
         elif args.actionable_from_month:
             actionable_from_month = UpdateAction.change_to(
-                RecurringTaskDueAtMonth.from_raw(
+                RecurringTaskDueAtMonth.from_raw_with_period(
                     period.just_the_value
                     if period.should_change
                     else RecurringTaskPeriod.YEARLY,
@@ -292,7 +292,7 @@ class ChoreUpdate(LoggedInMutationCommand[ChoreUpdateUseCase]):
             due_at_day = UpdateAction.change_to(None)
         elif args.due_at_day:
             due_at_day = UpdateAction.change_to(
-                RecurringTaskDueAtDay.from_raw(
+                RecurringTaskDueAtDay.from_raw_with_period(
                     period.just_the_value
                     if period.should_change
                     else RecurringTaskPeriod.YEARLY,
@@ -306,7 +306,7 @@ class ChoreUpdate(LoggedInMutationCommand[ChoreUpdateUseCase]):
             due_at_month = UpdateAction.change_to(None)
         elif args.due_at_month:
             due_at_month = UpdateAction.change_to(
-                RecurringTaskDueAtMonth.from_raw(
+                RecurringTaskDueAtMonth.from_raw_with_period(
                     period.just_the_value
                     if period.should_change
                     else RecurringTaskPeriod.YEARLY,
@@ -317,7 +317,9 @@ class ChoreUpdate(LoggedInMutationCommand[ChoreUpdateUseCase]):
             due_at_month = UpdateAction.do_nothing()
         if args.start_at_date:
             start_at_date = UpdateAction.change_to(
-                ADate.from_raw(self._global_properties.timezone, args.start_at_date),
+                ADate.from_raw_in_tz(
+                    self._global_properties.timezone, args.start_at_date
+                ),
             )
         else:
             start_at_date = UpdateAction.do_nothing()
@@ -326,7 +328,9 @@ class ChoreUpdate(LoggedInMutationCommand[ChoreUpdateUseCase]):
             end_at_date = UpdateAction.change_to(None)
         elif args.end_at_date:
             end_at_date = UpdateAction.change_to(
-                ADate.from_raw(self._global_properties.timezone, args.end_at_date),
+                ADate.from_raw_in_tz(
+                    self._global_properties.timezone, args.end_at_date
+                ),
             )
         else:
             end_at_date = UpdateAction.do_nothing()

@@ -69,8 +69,10 @@ class VacationCreate(LoggedInMutationCommand[VacationCreateUseCase]):
     ) -> None:
         """Callback to execute when the command is invoked."""
         name = VacationName.from_raw(args.name)
-        start_date = ADate.from_raw(self._global_properties.timezone, args.start_date)
-        end_date = ADate.from_raw(self._global_properties.timezone, args.end_date)
+        start_date = ADate.from_raw_in_tz(
+            self._global_properties.timezone, args.start_date
+        )
+        end_date = ADate.from_raw_in_tz(self._global_properties.timezone, args.end_date)
 
         await self._use_case.execute(
             AppLoggedInUseCaseSession(session_info.auth_token_ext),

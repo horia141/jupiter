@@ -126,7 +126,7 @@ class MetricCreate(LoggedInMutationCommand[MetricCreateUseCase]):
             else None
         )
         collection_actionable_from_day = (
-            RecurringTaskDueAtDay.from_raw(
+            RecurringTaskDueAtDay.from_raw_with_period(
                 collection_period,
                 args.collection_actionable_from_day,
             )
@@ -134,7 +134,7 @@ class MetricCreate(LoggedInMutationCommand[MetricCreateUseCase]):
             else None
         )
         collection_actionable_from_month = (
-            RecurringTaskDueAtMonth.from_raw(
+            RecurringTaskDueAtMonth.from_raw_with_period(
                 collection_period,
                 args.collection_actionable_from_month,
             )
@@ -147,7 +147,7 @@ class MetricCreate(LoggedInMutationCommand[MetricCreateUseCase]):
             else None
         )
         collection_due_at_day = (
-            RecurringTaskDueAtDay.from_raw(
+            RecurringTaskDueAtDay.from_raw_with_period(
                 collection_period,
                 args.collection_due_at_day,
             )
@@ -155,7 +155,7 @@ class MetricCreate(LoggedInMutationCommand[MetricCreateUseCase]):
             else None
         )
         collection_due_at_month = (
-            RecurringTaskDueAtMonth.from_raw(
+            RecurringTaskDueAtMonth.from_raw_with_period(
                 collection_period,
                 args.collection_due_at_month,
             )

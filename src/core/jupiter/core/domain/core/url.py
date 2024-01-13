@@ -1,6 +1,5 @@
 """An URL in this domain."""
 from functools import total_ordering
-from typing import Optional
 
 import validators
 from jupiter.core.framework.errors import InputValidationError
@@ -19,13 +18,13 @@ class URL(AtomicValue):
         """Validate after pydantic construction."""
         self.the_url = self._clean_the_url(self.the_url)
 
-    @staticmethod
-    def from_raw(url_raw: Optional[str]) -> "URL":
+    @classmethod
+    def from_raw(cls, value: Primitive) -> "URL":
         """Validate and clean a url."""
-        if not url_raw:
-            raise InputValidationError("Expected url to be non-null")
+        if not isinstance(value, str):
+            raise InputValidationError("Expected url to be a string")
 
-        return URL(URL._clean_the_url(url_raw))
+        return URL(URL._clean_the_url(value))
 
     def to_primitive(self) -> Primitive:
         return self.the_url

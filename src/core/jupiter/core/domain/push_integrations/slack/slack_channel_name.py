@@ -1,6 +1,6 @@
 """A Slack channel name."""
 import re
-from typing import Final, Optional, Pattern
+from typing import Final, Pattern
 
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.primitive import Primitive
@@ -19,14 +19,14 @@ class SlackChannelName(AtomicValue):
         """Validate after pydantic construction."""
         self.the_name = self._clean_the_name(self.the_name)
 
-    @staticmethod
-    def from_raw(slack_channel_name_raw: Optional[str]) -> "SlackChannelName":
+    @classmethod
+    def from_raw(cls, value: Primitive) -> "SlackChannelName":
         """Validate and clean a Slack channel name."""
-        if not slack_channel_name_raw:
-            raise InputValidationError("Expected Slack channel name to be non-null")
+        if not isinstance(value, str):
+            raise InputValidationError("Expected Slack channel name to be a string")
 
         return SlackChannelName(
-            SlackChannelName._clean_the_name(slack_channel_name_raw),
+            SlackChannelName._clean_the_name(value),
         )
 
     def to_primitive(self) -> Primitive:

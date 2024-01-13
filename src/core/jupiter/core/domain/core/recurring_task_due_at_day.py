@@ -26,7 +26,7 @@ class RecurringTaskDueAtDay(AtomicValue):
         self.the_day = self._clean_the_day(RecurringTaskPeriod.YEARLY, self.the_day)
 
     @staticmethod
-    def from_raw(
+    def from_raw_with_period(
         period: RecurringTaskPeriod,
         recurring_task_due_at_day_raw: Optional[int],
     ) -> "RecurringTaskDueAtDay":
@@ -36,6 +36,19 @@ class RecurringTaskDueAtDay(AtomicValue):
 
         return RecurringTaskDueAtDay(
             RecurringTaskDueAtDay._clean_the_day(period, recurring_task_due_at_day_raw),
+        )
+
+    @classmethod
+    def from_raw(
+        cls,
+        value: Primitive,
+    ) -> "RecurringTaskDueAtDay":
+        """Validate and clean the recurring task due at day info."""
+        if not isinstance(value, int):
+            raise InputValidationError("Expected the due day info to int")
+
+        return RecurringTaskDueAtDay(
+            RecurringTaskDueAtDay._clean_the_day(RecurringTaskPeriod.YEARLY, value),
         )
 
     def to_primitive(self) -> Primitive:

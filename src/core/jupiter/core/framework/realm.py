@@ -1,9 +1,9 @@
 """A realm denotes the storage existance and validation correctness of a particular Jupiter concept (value, record, entity)."""
-
 import abc
 from typing import Generic, TypeVar
 
 from jupiter.core.framework.concept import Concept
+from jupiter.core.framework.primitive import Primitive
 
 
 class Realm:
@@ -29,18 +29,20 @@ class CliRealm(Realm):
 class EmailRealm(Realm):
     """The concept comes from an email (an email task) and is not validated to be correct."""
 
+
 AllRealms = DatabaseRealm | SearchRealm | WebRealm | CliRealm | EmailRealm
 
-RealmConcept = None | bool | int | float | str | list["RealmConcept"] | dict[str, "RealmConcept"]
+RealmConcept = Primitive | list["RealmConcept"] | dict[str, "RealmConcept"]
 
 _ConceptT = TypeVar("_ConceptT", bound=Concept)
 _RealmT = TypeVar("_RealmT", bound=Realm)
+
 
 class RealmDecodingError(Exception):
     """Error raised when a concept from a realm cannot be decoded to a domain model."""
 
 
-class RealmEncoder(Generic[_RealmT, _ConceptT], abc.ABC):
+class RealmEncoder(Generic[_ConceptT, _RealmT], abc.ABC):
     """A encoder and decoder for a realm and a particular type."""
 
     @abc.abstractmethod
@@ -48,7 +50,7 @@ class RealmEncoder(Generic[_RealmT, _ConceptT], abc.ABC):
         """Encode a realm to a string."""
 
 
-class RealmDecoder(Generic[_RealmT, _ConceptT], abc.ABC):
+class RealmDecoder(Generic[_ConceptT, _RealmT], abc.ABC):
     """A encoder and decoder for a realm and a particular type."""
 
     @abc.abstractmethod
@@ -61,12 +63,16 @@ class RealmCodecRegistry(abc.ABC):
 
     @abc.abstractmethod
     def get_encoder(
-        self, realm: type[_RealmT], concept_type: type[_ConceptT]
-    ) -> RealmEncoder[_RealmT, _ConceptT]:
+        self,
+        concept_type: type[_ConceptT],
+        realm: type[_RealmT],
+    ) -> RealmEncoder[_ConceptT, _RealmT]:
         """Get an encoder for a realm and a concept type."""
 
     @abc.abstractmethod
     def get_decoder(
-        self, realm: type[_RealmT], concept_type: type[_ConceptT]
-    ) -> RealmDecoder[_RealmT, _ConceptT]:
+        self,
+        concept_type: type[_ConceptT],
+        realm: type[_RealmT],
+    ) -> RealmDecoder[_ConceptT, _RealmT]:
         """Get a decoder for a realm and a concept type."""

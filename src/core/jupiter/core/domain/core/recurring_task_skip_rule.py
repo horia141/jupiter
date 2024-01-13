@@ -1,5 +1,4 @@
 """The rules for skipping a recurring task."""
-from typing import Optional
 
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.primitive import Primitive
@@ -16,16 +15,17 @@ class RecurringTaskSkipRule(AtomicValue):
         """Validate after pydantic construction."""
         self.skip_rule = self._clean_skip_rule(self.skip_rule)
 
-    @staticmethod
+    @classmethod
     def from_raw(
-        recurring_task_skip_rule_raw: Optional[str],
+        cls,
+        value: Primitive,
     ) -> "RecurringTaskSkipRule":
         """Validate and clean the recurring task skip rule."""
-        if not recurring_task_skip_rule_raw:
-            raise InputValidationError("Expected the skip rule info to be non-null")
+        if not isinstance(value, str):
+            raise InputValidationError("Expected the skip rule info to be a string")
 
         return RecurringTaskSkipRule(
-            RecurringTaskSkipRule._clean_skip_rule(recurring_task_skip_rule_raw),
+            RecurringTaskSkipRule._clean_skip_rule(value),
         )
 
     def to_primitive(self) -> Primitive:
