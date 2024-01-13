@@ -30,6 +30,7 @@ def hashable_value(cls: type[_ValueT]) -> type[_ValueT]:
 _AtomicValueT = TypeVar("_AtomicValueT", bound="AtomicValue")
 
 
+@dataclass
 class AtomicValue(Value, abc.ABC):
     """An atomic value object in the domain."""
 
@@ -43,6 +44,7 @@ class AtomicValue(Value, abc.ABC):
         """Get the primitive representation of this value."""
 
 
+@dataclass
 class CompositeValue(Value):
     """An composite value object in the domain."""
 

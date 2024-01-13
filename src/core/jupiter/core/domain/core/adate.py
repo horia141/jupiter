@@ -95,8 +95,15 @@ class ADate(AtomicValue):
     @classmethod
     def from_raw(cls, value: Primitive) -> "ADate":
         """Validate and clean an ADate."""
-        if not isinstance(value, str):
-            raise InputValidationError("Expected datetime to be string")
+        if not isinstance(value, (str, Date, DateTime)):
+            raise InputValidationError(
+                "Expected datetime to be string or a date or a datetime"
+            )
+
+        if isinstance(value, DateTime):
+            return ADate.from_date_and_time(value)
+        elif isinstance(value, Date):
+            return ADate.from_date(value)
 
         try:
             adate = pendulum.parser.parse(
