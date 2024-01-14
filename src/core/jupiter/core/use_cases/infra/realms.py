@@ -11,6 +11,7 @@ from jupiter.core.framework.base.entity_id import (
     EntityIdDatabaseDecoder,
     EntityIdDatabaseEncoder,
 )
+from jupiter.core.framework.base.entity_name import EntityName, EntityNameDatabaseDecoder, EntityNameDatabaseEncoder
 from jupiter.core.framework.base.timestamp import (
     Timestamp,
     TimestampDatabaseDecoder,
@@ -745,18 +746,32 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
 
             for atomic_value_type in extract_atomic_values(m):
                 if not registry._has_encoder(atomic_value_type, DatabaseRealm):
-                    registry._add_encoder(
-                        atomic_value_type,
-                        DatabaseRealm,
-                        _StandardAtomicValueDatabaseEncoder(atomic_value_type),
-                    )
+                    if issubclass(atomic_value_type, EntityName):
+                        registry._add_encoder(
+                            atomic_value_type,
+                            DatabaseRealm,
+                            EntityNameDatabaseEncoder(atomic_value_type),
+                        )
+                    else:
+                        registry._add_encoder(
+                            atomic_value_type,
+                            DatabaseRealm,
+                            _StandardAtomicValueDatabaseEncoder(atomic_value_type),
+                        )
 
                 if not registry._has_decoder(atomic_value_type, DatabaseRealm):
-                    registry._add_decoder(
-                        atomic_value_type,
-                        DatabaseRealm,
-                        _StandardAtomicValueDatabaseDecoder(atomic_value_type),
-                    )
+                    if issubclass(atomic_value_type, EntityName):
+                        registry._add_decoder(
+                            atomic_value_type,
+                            DatabaseRealm,
+                            EntityNameDatabaseDecoder(atomic_value_type),
+                        )
+                    else:
+                        registry._add_decoder(
+                            atomic_value_type,
+                            DatabaseRealm,
+                            _StandardAtomicValueDatabaseDecoder(atomic_value_type),
+                        )
 
             for composite_value_type in extract_composite_values(m):
                 if not registry._has_encoder(composite_value_type, DatabaseRealm):
