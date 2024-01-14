@@ -20,6 +20,7 @@ from jupiter.core.domain.push_integrations.slack.slack_user_name import SlackUse
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.entity import ParentLink
+from jupiter.core.framework.realm import RealmCodecRegistry
 from jupiter.core.repository.sqlite.infra.repository import (
     SqliteLeafEntityRepository,
     SqliteTrunkEntityRepository,
@@ -43,9 +44,15 @@ class SqliteSlackTaskCollectionRepository(
 ):
     """The slack task collection repository."""
 
-    def __init__(self, connection: AsyncConnection, metadata: MetaData) -> None:
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        connection: AsyncConnection,
+        metadata: MetaData,
+    ) -> None:
         """Constructor."""
         super().__init__(
+            realm_codec_registry,
             connection,
             metadata,
             Table(
@@ -115,9 +122,15 @@ class SqliteSlackTaskRepository(
 ):
     """The slack task repository."""
 
-    def __init__(self, connection: AsyncConnection, metadata: MetaData) -> None:
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        connection: AsyncConnection,
+        metadata: MetaData,
+    ) -> None:
         """Constructor."""
         super().__init__(
+            realm_codec_registry,
             connection,
             metadata,
             Table(

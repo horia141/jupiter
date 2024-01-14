@@ -26,6 +26,7 @@ from jupiter.core.framework.entity import (
     StubEntity,
     TrunkEntity,
 )
+from jupiter.core.framework.realm import RealmCodecRegistry
 from jupiter.core.framework.repository import (
     EntityAlreadyExistsError,
     EntityNotFoundError,
@@ -54,6 +55,7 @@ _EntityT = TypeVar("_EntityT", bound=Entity)
 class SqliteEntityRepository(Generic[_EntityT], abc.ABC):
     """A repository for entities backed by SQLite, meant to be used as a mixin."""
 
+    _realm_codec_registry: Final[RealmCodecRegistry]
     _connection: Final[AsyncConnection]
     _table: Final[Table]
     _event_table: Final[Table]
@@ -62,6 +64,7 @@ class SqliteEntityRepository(Generic[_EntityT], abc.ABC):
 
     def __init__(
         self,
+        realm_codec_registry: RealmCodecRegistry,
         connection: AsyncConnection,
         metadata: MetaData,
         table: Table,
@@ -69,6 +72,7 @@ class SqliteEntityRepository(Generic[_EntityT], abc.ABC):
         not_found_err_cls: type[Exception] = EntityNotFoundError,
     ):
         """Initialize the repository."""
+        self._realm_codec_registry = realm_codec_registry
         self._connection = connection
         self._table = table
         self._event_table = build_event_table(self._table, metadata)
@@ -77,12 +81,13 @@ class SqliteEntityRepository(Generic[_EntityT], abc.ABC):
 
     async def create(self, entity: _EntityT) -> _EntityT:
         """Create an entity."""
-        ref_id_kw = {}
         if entity.ref_id != BAD_REF_ID:
-            ref_id_kw["ref_id"] = entity.ref_id.as_int()
+            raise Exception("Cannot create an entity with a ref_id already set")
         try:
+            entity_for_db = self._entity_to_row(entity)
+            del entity_for_db["ref_id"]
             result = await self._connection.execute(
-                insert(self._table).values(**ref_id_kw, **self._entity_to_row(entity)),
+                insert(self._table).values(**entity_for_db),
             )
         except IntegrityError as err:
             if isinstance(entity, CrownEntity):

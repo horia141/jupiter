@@ -21,6 +21,7 @@ from jupiter.core.domain.persons.person_relationship import PersonRelationship
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.entity import ParentLink
+from jupiter.core.framework.realm import RealmCodecRegistry
 from jupiter.core.repository.sqlite.infra.repository import (
     SqliteLeafEntityRepository,
     SqliteTrunkEntityRepository,
@@ -45,9 +46,15 @@ class SqlitePersonCollectionRepository(
 ):
     """A repository of Person collections."""
 
-    def __init__(self, connection: AsyncConnection, metadata: MetaData) -> None:
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        connection: AsyncConnection,
+        metadata: MetaData,
+    ) -> None:
         """Constructor."""
         super().__init__(
+            realm_codec_registry,
             connection,
             metadata,
             Table(
@@ -109,9 +116,15 @@ class SqlitePersonCollectionRepository(
 class SqlitePersonRepository(SqliteLeafEntityRepository[Person], PersonRepository):
     """A repository of persons."""
 
-    def __init__(self, connection: AsyncConnection, metadata: MetaData) -> None:
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        connection: AsyncConnection,
+        metadata: MetaData,
+    ) -> None:
         """Constructor."""
         super().__init__(
+            realm_codec_registry,
             connection,
             metadata,
             Table(

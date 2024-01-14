@@ -26,6 +26,7 @@ from jupiter.core.domain.metrics.metric_unit import MetricUnit
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.entity import ParentLink
+from jupiter.core.framework.realm import RealmCodecRegistry
 from jupiter.core.repository.sqlite.infra.repository import (
     SqliteBranchEntityRepository,
     SqliteLeafEntityRepository,
@@ -52,9 +53,15 @@ class SqliteMetricCollectionRepository(
 ):
     """The metric collection repository."""
 
-    def __init__(self, connection: AsyncConnection, metadata: MetaData) -> None:
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        connection: AsyncConnection,
+        metadata: MetaData,
+    ) -> None:
         """Constructor."""
         super().__init__(
+            realm_codec_registry,
             connection,
             metadata,
             Table(
@@ -118,9 +125,15 @@ class SqliteMetricCollectionRepository(
 class SqliteMetricRepository(SqliteBranchEntityRepository[Metric], MetricRepository):
     """A repository for metrics."""
 
-    def __init__(self, connection: AsyncConnection, metadata: MetaData) -> None:
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        connection: AsyncConnection,
+        metadata: MetaData,
+    ) -> None:
         """Constructor."""
         super().__init__(
+            realm_codec_registry,
             connection,
             metadata,
             Table(
@@ -254,9 +267,15 @@ class SqliteMetricEntryRepository(
 ):
     """A repository of metric entries."""
 
-    def __init__(self, connection: AsyncConnection, metadata: MetaData) -> None:
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        connection: AsyncConnection,
+        metadata: MetaData,
+    ) -> None:
         """Constructor."""
         super().__init__(
+            realm_codec_registry,
             connection,
             metadata,
             Table(

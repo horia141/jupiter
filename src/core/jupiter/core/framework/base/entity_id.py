@@ -73,10 +73,10 @@ class EntityId(AtomicValue):
         entity_id: str = entity_id_raw.strip()
 
         if len(entity_id) == 0:
-            raise InputValidationError("Expected entity id to be non-empty")
+            raise RealmDecodingError("Expected entity id to be non-empty")
 
         if not _ENTITY_ID_RE.match(entity_id):
-            raise InputValidationError(
+            raise RealmDecodingError(
                 f"Expected entity id '{entity_id_raw}' to match '{_ENTITY_ID_RE.pattern}",
             )
 
@@ -94,9 +94,9 @@ class EntityIdDatabaseDecoder(RealmDecoder[EntityId, DatabaseRealm]):
     """Entity id decoder for the database realm."""
 
     def decode(self, value: RealmConcept) -> EntityId:
-        if not isinstance(value, (type(None), bool, int, float, str)):
+        if not isinstance(value, (int, str)):
             raise RealmDecodingError(
-                f"Expected value for {self.__class__} to be primitive"
+                f"Expected value for {self.__class__} to be an int or string"
             )
 
         return EntityId.from_raw(value)

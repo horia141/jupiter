@@ -1,5 +1,5 @@
 """A date or possibly a datetime for the application."""
-import datetime
+from datetime import date, datetime
 from functools import total_ordering
 from typing import Optional, cast
 
@@ -28,13 +28,13 @@ class ADate(AtomicValue):
     def __post_init_post_parse__(self) -> None:
         """Validate after pydantic construction."""
         # When reconstructing automatically this might happen!
-        if isinstance(self.the_date, (datetime.date, datetime.datetime)):
+        if isinstance(self.the_date, (date, datetime)):
             self.the_date = Date(
                 self.the_date.year,
                 self.the_date.month,
                 self.the_date.day,
             )
-        elif isinstance(self.the_datetime, datetime.datetime):
+        elif isinstance(self.the_datetime, datetime):
             self.the_datetime = pendulum.instance(self.the_datetime)
 
     @staticmethod
@@ -95,15 +95,19 @@ class ADate(AtomicValue):
     @classmethod
     def from_raw(cls, value: Primitive) -> "ADate":
         """Validate and clean an ADate."""
-        if not isinstance(value, (str, Date, DateTime)):
+        if not isinstance(value, (str, date, datetime, Date, DateTime)):
             raise InputValidationError(
                 "Expected datetime to be string or a date or a datetime"
             )
 
         if isinstance(value, DateTime):
             return ADate.from_date_and_time(value)
+        elif isinstance(value, datetime):
+            return ADate.from_db(value)
         elif isinstance(value, Date):
             return ADate.from_date(value)
+        elif isinstance(value, date):
+            return ADate.from_db(value)
 
         try:
             adate = pendulum.parser.parse(
@@ -141,9 +145,9 @@ class ADate(AtomicValue):
         )
 
     @staticmethod
-    def from_db(timestamp_raw: datetime.datetime | datetime.date) -> "ADate":
+    def from_db(timestamp_raw: datetime | date) -> "ADate":
         """Parse a timestamp from a DB representation."""
-        if isinstance(timestamp_raw, datetime.datetime) and (
+        if isinstance(timestamp_raw, datetime) and (
             timestamp_raw.hour > 0
             or timestamp_raw.minute > 0
             or timestamp_raw.second > 0
@@ -162,12 +166,12 @@ class ADate(AtomicValue):
         else:
             return cast(Date, self._surely_the_date)
 
-    def to_db(self) -> datetime.datetime:
+    def to_db(self) -> datetime:
         """Transform a timestamp to a DB representation."""
         if self.the_datetime is not None:
-            return cast(datetime.datetime, self.the_datetime)
+            return cast(datetime, self.the_datetime)
         else:
-            return datetime.datetime(
+            return datetime(
                 self._surely_the_date.year,
                 self._surely_the_date.month,
                 self._surely_the_date.day,

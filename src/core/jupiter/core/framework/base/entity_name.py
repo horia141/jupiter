@@ -111,9 +111,9 @@ class EntityNameDatabaseDecoder(
 
     def decode(self, value: RealmConcept) -> _EntityNameT:
         """Decode an entity name from the database."""
-        if not isinstance(value, (type(None), bool, int, float, str)):
+        if not isinstance(value, str):
             raise RealmDecodingError(
-                f"Expected value for {self.__class__} to be primitive"
+                f"Expected value for {self.__class__} to be a string"
             )
 
         return self._the_type.from_raw(value)

@@ -15,6 +15,7 @@ from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.entity import ParentLink
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.event import EventSource
+from jupiter.core.framework.realm import RealmCodecRegistry
 from jupiter.core.repository.sqlite.infra.repository import (
     SqliteLeafEntityRepository,
     SqliteTrunkEntityRepository,
@@ -38,9 +39,15 @@ from sqlalchemy.ext.asyncio import AsyncConnection
 class SqliteGCLogRepository(SqliteTrunkEntityRepository[GCLog], GCLogRepository):
     """The GC log repository."""
 
-    def __init__(self, connection: AsyncConnection, metadata: MetaData) -> None:
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        connection: AsyncConnection,
+        metadata: MetaData,
+    ) -> None:
         """Constructor."""
         super().__init__(
+            realm_codec_registry,
             connection,
             metadata,
             Table(
@@ -96,9 +103,15 @@ class SqliteGCLogEntryRepository(
 ):
     """Sqlite implementation of the GC log entry repository."""
 
-    def __init__(self, connection: AsyncConnection, metadata: MetaData) -> None:
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        connection: AsyncConnection,
+        metadata: MetaData,
+    ) -> None:
         """Constructor."""
         super().__init__(
+            realm_codec_registry,
             connection,
             metadata,
             Table(

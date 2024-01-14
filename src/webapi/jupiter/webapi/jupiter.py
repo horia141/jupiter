@@ -207,6 +207,7 @@ from jupiter.core.use_cases.inbox_tasks.update import (
 from jupiter.core.use_cases.infra.persistent_mutation_use_case_recoder import (
     PersistentMutationUseCaseInvocationRecorder,
 )
+from jupiter.core.use_cases.infra.realms import ModuleExplorerRealmCodecRegistry
 from jupiter.core.use_cases.infra.use_cases import (
     AppGuestUseCaseSession,
     AppLoggedInUseCaseSession,
@@ -529,11 +530,14 @@ from jupiter.webapi.websocket_progress_reporter import WebsocketProgressReporter
 from starlette import status
 from starlette.requests import Request
 from starlette.responses import JSONResponse, PlainTextResponse
+import jupiter.core.domain
 
 request_time_provider = PerRequestTimeProvider()
 cron_run_time_provider = CronRunTimeProvider()
 
 no_timezone_global_properties = build_global_properties()
+
+realm_codec_registry = ModuleExplorerRealmCodecRegistry.build_from_module_root(jupiter.core.domain)
 
 sqlite_connection = SqliteConnection(
     SqliteConnection.Config(
@@ -545,8 +549,8 @@ sqlite_connection = SqliteConnection(
 
 global_properties = build_global_properties()
 
-domain_storage_engine = SqliteDomainStorageEngine(sqlite_connection)
-search_storage_engine = SqliteSearchStorageEngine(sqlite_connection)
+domain_storage_engine = SqliteDomainStorageEngine(realm_codec_registry, sqlite_connection)
+search_storage_engine = SqliteSearchStorageEngine(realm_codec_registry, sqlite_connection)
 usecase_storage_engine = SqliteUseCaseStorageEngine(sqlite_connection)
 
 auth_token_stamper = AuthTokenStamper(

@@ -26,6 +26,7 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.entity import ParentLink
+from jupiter.core.framework.realm import RealmCodecRegistry
 from jupiter.core.repository.sqlite.infra.repository import (
     SqliteBranchEntityRepository,
     SqliteLeafEntityRepository,
@@ -52,9 +53,15 @@ class SqliteSmartListCollectionRepository(
 ):
     """The smart list collection repository."""
 
-    def __init__(self, connection: AsyncConnection, metadata: MetaData) -> None:
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        connection: AsyncConnection,
+        metadata: MetaData,
+    ) -> None:
         """Constructor."""
         super().__init__(
+            realm_codec_registry,
             connection,
             metadata,
             Table(
@@ -110,9 +117,15 @@ class SqliteSmartListRepository(
 ):
     """A repository for lists."""
 
-    def __init__(self, connection: AsyncConnection, metadata: MetaData) -> None:
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        connection: AsyncConnection,
+        metadata: MetaData,
+    ) -> None:
         """Constructor."""
         super().__init__(
+            realm_codec_registry,
             connection,
             metadata,
             Table(
@@ -176,9 +189,15 @@ class SqliteSmartListTagRepository(
 ):
     """Sqlite based smart list tags repository."""
 
-    def __init__(self, connection: AsyncConnection, metadata: MetaData) -> None:
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        connection: AsyncConnection,
+        metadata: MetaData,
+    ) -> None:
         """Constructor."""
         super().__init__(
+            realm_codec_registry,
             connection,
             metadata,
             Table(
@@ -262,9 +281,15 @@ class SqliteSmartListItemRepository(
 ):
     """A repository for smart list items."""
 
-    def __init__(self, connection: AsyncConnection, metadata: MetaData) -> None:
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        connection: AsyncConnection,
+        metadata: MetaData,
+    ) -> None:
         """Constructor."""
         super().__init__(
+            realm_codec_registry,
             connection,
             metadata,
             Table(

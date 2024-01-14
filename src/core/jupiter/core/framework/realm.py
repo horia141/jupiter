@@ -1,6 +1,6 @@
 """A realm denotes the storage existance and validation correctness of a particular Jupiter concept (value, record, entity)."""
 import abc
-from typing import Generic, TypeVar
+from typing import Generic, Mapping, TypeVar
 
 from jupiter.core.framework.concept import Concept
 from jupiter.core.framework.primitive import Primitive
@@ -32,7 +32,7 @@ class EmailRealm(Realm):
 
 AllRealms = DatabaseRealm | SearchRealm | WebRealm | CliRealm | EmailRealm
 
-RealmConcept = Primitive | list["RealmConcept"] | dict[str, "RealmConcept"]
+RealmConcept = Primitive | list["RealmConcept"] | Mapping[str, "RealmConcept"]
 
 _ConceptT = TypeVar("_ConceptT", bound=Concept)
 _RealmT = TypeVar("_RealmT", bound=Realm)

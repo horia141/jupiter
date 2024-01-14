@@ -9,6 +9,7 @@ from jupiter.core.domain.auth.recovery_token_hash import RecoveryTokenHash
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.entity import ParentLink
+from jupiter.core.framework.realm import RealmCodecRegistry
 from jupiter.core.framework.secure import secure_class
 from jupiter.core.repository.sqlite.infra.repository import SqliteStubEntityRepository
 from jupiter.core.repository.sqlite.infra.row import RowType
@@ -29,9 +30,15 @@ from sqlalchemy.ext.asyncio import AsyncConnection
 class SqliteAuthRepository(SqliteStubEntityRepository[Auth], AuthRepository):
     """The SQLite based auth repository."""
 
-    def __init__(self, connection: AsyncConnection, metadata: MetaData) -> None:
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        connection: AsyncConnection,
+        metadata: MetaData,
+    ) -> None:
         """Constructor."""
         super().__init__(
+            realm_codec_registry,
             connection,
             metadata,
             Table(

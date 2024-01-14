@@ -25,6 +25,7 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.entity import ParentLink
+from jupiter.core.framework.realm import RealmCodecRegistry
 from jupiter.core.framework.repository import (
     RecordAlreadyExistsError,
     RecordNotFoundError,
@@ -57,9 +58,15 @@ class SqliteScoreLogRepository(
 ):
     """The score log repository."""
 
-    def __init__(self, connection: AsyncConnection, metadata: MetaData) -> None:
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        connection: AsyncConnection,
+        metadata: MetaData,
+    ) -> None:
         """Constructor."""
         super().__init__(
+            realm_codec_registry,
             connection,
             metadata,
             Table(
@@ -115,9 +122,15 @@ class SqliteScoreLogEntryRepository(
 ):
     """Sqlite implementation of the score log entry repository."""
 
-    def __init__(self, connection: AsyncConnection, metadata: MetaData) -> None:
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        connection: AsyncConnection,
+        metadata: MetaData,
+    ) -> None:
         """Constructor."""
         super().__init__(
+            realm_codec_registry,
             connection,
             metadata,
             Table(
@@ -188,11 +201,13 @@ class SqliteScoreLogEntryRepository(
 class SqliteScoreStatsRepository(ScoreStatsRepository):
     """Sqlite implementation of the score stats repository."""
 
+    _realm_codec_registry: Final[RealmCodecRegistry]
     _connection: Final[AsyncConnection]
     _score_stats_table: Final[Table]
 
-    def __init__(self, connection: AsyncConnection, metadata: MetaData) -> None:
+    def __init__(self, realm_codec_registry: RealmCodecRegistry, connection: AsyncConnection, metadata: MetaData) -> None:
         """Constructor."""
+        self._realm_codec_registry = realm_codec_registry
         self._connection = connection
         self._score_stats_table = Table(
             "gamification_score_stats",
@@ -371,11 +386,13 @@ class SqliteScoreStatsRepository(ScoreStatsRepository):
 class SqliteScorePeriodBestRepository(ScorePeriodBestRepository):
     """Sqlite implementation of the score period best repository."""
 
+    _realm_codec_registry: Final[RealmCodecRegistry]
     _connection: Final[AsyncConnection]
     _score_period_best_table: Final[Table]
 
-    def __init__(self, connection: AsyncConnection, metadata: MetaData) -> None:
+    def __init__(self, realm_codec_registry: RealmCodecRegistry, connection: AsyncConnection, metadata: MetaData) -> None:
         """Constructor."""
+        self._realm_codec_registry = realm_codec_registry
         self._connection = connection
         self._score_period_best_table = Table(
             "gamification_score_period_best",

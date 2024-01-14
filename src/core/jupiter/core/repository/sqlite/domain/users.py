@@ -13,6 +13,7 @@ from jupiter.core.domain.user.user import User
 from jupiter.core.domain.user.user_name import UserName
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
+from jupiter.core.framework.realm import RealmCodecRegistry
 from jupiter.core.repository.sqlite.infra.repository import SqliteRootEntityRepository
 from jupiter.core.repository.sqlite.infra.row import RowType
 from sqlalchemy import (
@@ -32,9 +33,15 @@ from sqlalchemy.ext.asyncio import AsyncConnection
 class SqliteUserRepository(SqliteRootEntityRepository[User], UserRepository):
     """The SQLite based user repository."""
 
-    def __init__(self, connection: AsyncConnection, metadata: MetaData) -> None:
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        connection: AsyncConnection,
+        metadata: MetaData,
+    ) -> None:
         """Constructor."""
         super().__init__(
+            realm_codec_registry,
             connection,
             metadata,
             Table(

@@ -8,6 +8,7 @@ from jupiter.core.domain.user_workspace_link.user_workspace_link import (
 )
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
+from jupiter.core.framework.realm import RealmCodecRegistry
 from jupiter.core.framework.repository import EntityNotFoundError
 from jupiter.core.repository.sqlite.infra.repository import SqliteRootEntityRepository
 from jupiter.core.repository.sqlite.infra.row import RowType
@@ -29,9 +30,15 @@ class SqliteUserWorkspaceLinkRepository(
 ):
     """The SQLite based user workspace links repository."""
 
-    def __init__(self, connection: AsyncConnection, metadata: MetaData) -> None:
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        connection: AsyncConnection,
+        metadata: MetaData,
+    ) -> None:
         """Constructor."""
         super().__init__(
+            realm_codec_registry,
             connection,
             metadata,
             Table(

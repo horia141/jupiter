@@ -129,6 +129,7 @@ from jupiter.core.domain.workspaces.infra.workspace_repository import (
     WorkspaceRepository,
 )
 from jupiter.core.framework.entity import CrownEntity
+from jupiter.core.framework.realm import RealmCodecRegistry
 from jupiter.core.framework.repository import CrownEntityRepository
 from jupiter.core.repository.sqlite.connection import SqliteConnection
 from jupiter.core.repository.sqlite.domain.auths import SqliteAuthRepository
@@ -663,11 +664,13 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
 class SqliteDomainStorageEngine(DomainStorageEngine):
     """An Sqlite specific engine."""
 
+    _realm_codec_registry: Final[RealmCodecRegistry]
     _sql_engine: Final[AsyncEngine]
     _metadata: Final[MetaData]
 
-    def __init__(self, connection: SqliteConnection) -> None:
+    def __init__(self, realm_codec_registry: RealmCodecRegistry, connection: SqliteConnection) -> None:
         """Constructor."""
+        self._realm_codec_registry = realm_codec_registry
         self._sql_engine = connection.sql_engine
         self._metadata = MetaData(bind=self._sql_engine)
 
@@ -675,128 +678,128 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
     async def get_unit_of_work(self) -> AsyncIterator[DomainUnitOfWork]:
         """Get the unit of work."""
         async with self._sql_engine.begin() as connection:
-            user_repository = SqliteUserRepository(connection, self._metadata)
-            auth_repository = SqliteAuthRepository(connection, self._metadata)
-            score_log_repository = SqliteScoreLogRepository(connection, self._metadata)
+            user_repository = SqliteUserRepository(self._realm_codec_registry, connection, self._metadata)
+            auth_repository = SqliteAuthRepository(self._realm_codec_registry, connection, self._metadata)
+            score_log_repository = SqliteScoreLogRepository(self._realm_codec_registry, connection, self._metadata)
             score_log_entry_repository = SqliteScoreLogEntryRepository(
-                connection, self._metadata
+                self._realm_codec_registry, connection, self._metadata
             )
             score_stats_repository = SqliteScoreStatsRepository(
-                connection, self._metadata
+                self._realm_codec_registry, connection, self._metadata
             )
             score_period_best_repository = SqliteScorePeriodBestRepository(
-                connection, self._metadata
+                self._realm_codec_registry, connection, self._metadata
             )
-            workspace_repository = SqliteWorkspaceRepository(connection, self._metadata)
+            workspace_repository = SqliteWorkspaceRepository(self._realm_codec_registry, connection, self._metadata)
             user_workspace_link_repository = SqliteUserWorkspaceLinkRepository(
-                connection, self._metadata
+                self._realm_codec_registry, connection, self._metadata
             )
             inbox_task_collection_repository = SqliteInboxTaskCollectionRepository(
-                connection,
+                self._realm_codec_registry, connection,
                 self._metadata,
             )
             inbox_task_repository = SqliteInboxTaskRepository(
-                connection,
+                self._realm_codec_registry, connection,
                 self._metadata,
             )
             habit_collection_repository = SqliteHabitCollectionRepository(
-                connection,
+                self._realm_codec_registry, connection,
                 self._metadata,
             )
-            habit_repository = SqliteHabitRepository(connection, self._metadata)
+            habit_repository = SqliteHabitRepository(self._realm_codec_registry, connection, self._metadata)
             chore_collection_repository = SqliteChoreCollectionRepository(
-                connection,
+                self._realm_codec_registry, connection,
                 self._metadata,
             )
-            chore_repository = SqliteChoreRepository(connection, self._metadata)
+            chore_repository = SqliteChoreRepository(self._realm_codec_registry, connection, self._metadata)
             big_plan_collection_repository = SqliteBigPlanCollectionRepository(
-                connection,
+                self._realm_codec_registry, connection,
                 self._metadata,
             )
-            big_plan_repository = SqliteBigPlanRepository(connection, self._metadata)
+            big_plan_repository = SqliteBigPlanRepository(self._realm_codec_registry, connection, self._metadata)
             journal_collection_repository = SqliteJournalCollectionRepository(
-                connection,
+                self._realm_codec_registry, connection,
                 self._metadata,
             )
-            journal_repository = SqliteJournalRepository(connection, self._metadata)
+            journal_repository = SqliteJournalRepository(self._realm_codec_registry, connection, self._metadata)
             doc_collection_repository = SqliteDocCollectionRepository(
-                connection,
+                self._realm_codec_registry, connection,
                 self._metadata,
             )
-            doc_repository = SqliteDocRepository(connection, self._metadata)
+            doc_repository = SqliteDocRepository(self._realm_codec_registry, connection, self._metadata)
             vacation_collection_repository = SqliteVacationCollectionRepository(
-                connection,
+                self._realm_codec_registry, connection,
                 self._metadata,
             )
-            vacation_repository = SqliteVacationRepository(connection, self._metadata)
+            vacation_repository = SqliteVacationRepository(self._realm_codec_registry, connection, self._metadata)
             project_collection_repository = SqliteProjectCollectionRepository(
-                connection,
+                self._realm_codec_registry, connection,
                 self._metadata,
             )
-            project_repository = SqliteProjectRepository(connection, self._metadata)
+            project_repository = SqliteProjectRepository(self._realm_codec_registry, connection, self._metadata)
             smart_list_collection_repository = SqliteSmartListCollectionRepository(
-                connection,
+                self._realm_codec_registry, connection,
                 self._metadata,
             )
             smart_list_repository = SqliteSmartListRepository(
-                connection,
+                self._realm_codec_registry, connection,
                 self._metadata,
             )
             smart_list_tag_repository = SqliteSmartListTagRepository(
-                connection,
+                self._realm_codec_registry, connection,
                 self._metadata,
             )
             smart_list_item_repository = SqliteSmartListItemRepository(
-                connection,
+                self._realm_codec_registry, connection,
                 self._metadata,
             )
             metric_collection_repository = SqliteMetricCollectionRepository(
-                connection,
+                self._realm_codec_registry, connection,
                 self._metadata,
             )
-            metric_repository = SqliteMetricRepository(connection, self._metadata)
+            metric_repository = SqliteMetricRepository(self._realm_codec_registry, connection, self._metadata)
             metric_entry_repository = SqliteMetricEntryRepository(
-                connection,
+                self._realm_codec_registry, connection,
                 self._metadata,
             )
             person_collection_repository = SqlitePersonCollectionRepository(
-                connection,
+                self._realm_codec_registry, connection,
                 self._metadata,
             )
-            person_repository = SqlitePersonRepository(connection, self._metadata)
+            person_repository = SqlitePersonRepository(self._realm_codec_registry, connection, self._metadata)
             push_integration_group_repository = SqlitePushIntegrationGroupRepository(
-                connection,
+                self._realm_codec_registry, connection,
                 self._metadata,
             )
             slack_task_collection_repository = SqliteSlackTaskCollectionRepository(
-                connection,
+                self._realm_codec_registry, connection,
                 self._metadata,
             )
             slack_task_repository = SqliteSlackTaskRepository(
-                connection,
+                self._realm_codec_registry, connection,
                 self._metadata,
             )
             email_task_collection_repository = SqliteEmailTaskCollectionRepository(
-                connection,
+                self._realm_codec_registry, connection,
                 self._metadata,
             )
             email_task_repository = SqliteEmailTaskRepository(
-                connection,
+                self._realm_codec_registry, connection,
                 self._metadata,
             )
             note_collection_repository = SqliteNoteCollectionRepository(
-                connection,
+                self._realm_codec_registry, connection,
                 self._metadata,
             )
-            note_repository = SqliteNoteRepository(connection, self._metadata)
+            note_repository = SqliteNoteRepository(self._realm_codec_registry, connection, self._metadata)
             fast_info_repository = SqliteFastInfoRepository(connection)
-            gen_log_repository = SqliteGenLogRepository(connection, self._metadata)
+            gen_log_repository = SqliteGenLogRepository(self._realm_codec_registry, connection, self._metadata)
             gen_log_entry_repository = SqliteGenLogEntryRepository(
-                connection, self._metadata
+                self._realm_codec_registry, connection, self._metadata
             )
-            gc_log_repository = SqliteGCLogRepository(connection, self._metadata)
+            gc_log_repository = SqliteGCLogRepository(self._realm_codec_registry, connection, self._metadata)
             gc_log_entry_repository = SqliteGCLogEntryRepository(
-                connection, self._metadata
+                self._realm_codec_registry, connection, self._metadata
             )
 
             yield SqliteDomainUnitOfWork(
@@ -878,11 +881,13 @@ class SqliteSearchUnitOfWork(SearchUnitOfWork):
 class SqliteSearchStorageEngine(SearchStorageEngine):
     """An Sqlite specific engine."""
 
+    _realm_codec_registry: Final[RealmCodecRegistry]
     _sql_engine: Final[AsyncEngine]
     _metadata: Final[MetaData]
 
-    def __init__(self, connection: SqliteConnection) -> None:
+    def __init__(self, realm_codec_registry: RealmCodecRegistry, connection: SqliteConnection) -> None:
         """Constructor."""
+        self._realm_codec_registry = realm_codec_registry
         self._sql_engine = connection.sql_engine
         self._metadata = MetaData(bind=self._sql_engine)
 
@@ -890,5 +895,5 @@ class SqliteSearchStorageEngine(SearchStorageEngine):
     async def get_unit_of_work(self) -> AsyncIterator[SearchUnitOfWork]:
         """Get the unit of work."""
         async with self._sql_engine.begin() as connection:
-            search_repository = SqliteSearchRepository(connection, self._metadata)
+            search_repository = SqliteSearchRepository(self._realm_codec_registry, connection, self._metadata)
             yield SqliteSearchUnitOfWork(search_repository=search_repository)
