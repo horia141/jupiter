@@ -26,7 +26,7 @@ from jupiter.core.framework.entity import (
     StubEntity,
     TrunkEntity,
 )
-from jupiter.core.framework.realm import RealmCodecRegistry
+from jupiter.core.framework.realm import DatabaseRealm, RealmCodecRegistry
 from jupiter.core.framework.repository import (
     EntityAlreadyExistsError,
     EntityNotFoundError,
@@ -48,6 +48,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncConnection
+from sqlalchemy.engine.row import Row
 
 _EntityT = TypeVar("_EntityT", bound=Entity)
 
@@ -59,6 +60,7 @@ class SqliteEntityRepository(Generic[_EntityT], abc.ABC):
     _connection: Final[AsyncConnection]
     _table: Final[Table]
     _event_table: Final[Table]
+    _entity_type: type[_EntityT]
     _already_exists_err_cls: Final[type[Exception]]
     _not_found_err_cls: Final[type[Exception]]
 
@@ -76,6 +78,7 @@ class SqliteEntityRepository(Generic[_EntityT], abc.ABC):
         self._connection = connection
         self._table = table
         self._event_table = build_event_table(self._table, metadata)
+        self._entity_type = self._infer_entity_class()
         self._already_exists_err_cls = already_exists_err_cls
         self._not_found_err_cls = not_found_err_cls
 
@@ -92,11 +95,11 @@ class SqliteEntityRepository(Generic[_EntityT], abc.ABC):
         except IntegrityError as err:
             if isinstance(entity, CrownEntity):
                 raise self._already_exists_err_cls(
-                    f"Entity of type {self._infer_entity_class()} with name {entity.name} already exists",
+                    f"Entity of type {self._entity_type.__name__} with name {entity.name} already exists",
                 ) from err
             else:
                 raise self._already_exists_err_cls(
-                    f"Entity of type {self._infer_entity_class()} already exists",
+                    f"Entity of type {self._entity_type.__name__} already exists",
                 ) from err
         entity = entity.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
         await upsert_events(
@@ -117,11 +120,11 @@ class SqliteEntityRepository(Generic[_EntityT], abc.ABC):
         except IntegrityError as err:
             if isinstance(entity, CrownEntity):
                 raise self._already_exists_err_cls(
-                    f"Entity of type {self._infer_entity_class()} with name {entity.name} already exists",
+                    f"Entity of type {self._entity_type.__name__} with name {entity.name} already exists",
                 ) from err
             else:
                 raise self._already_exists_err_cls(
-                    f"Entity of type {self._infer_entity_class()} already exists",
+                    f"Entity of type {self._entity_type.__name__} already exists",
                 ) from err
         if result.rowcount == 0:
             raise self._not_found_err_cls(
@@ -133,14 +136,19 @@ class SqliteEntityRepository(Generic[_EntityT], abc.ABC):
             entity,
         )
         return entity
+    
 
-    @abc.abstractmethod
     def _entity_to_row(self, entity: _EntityT) -> RowType:
-        """Convert an entity to a row."""
+        encoder = self._realm_codec_registry.get_encoder(
+            self._entity_type, DatabaseRealm
+        )
+        return cast(RowType, encoder.encode(entity))
 
-    @abc.abstractmethod
-    def _row_to_entity(self, row: RowType) -> _EntityT:
-        """Convert a row to an entity."""
+    def _row_to_entity(self, row: Row) -> _EntityT:
+        decoder = self._realm_codec_registry.get_decoder(
+            self._entity_type, DatabaseRealm
+        )
+        return decoder.decode(row._mapping)
 
     def _infer_entity_class(self) -> type[_EntityT]:
         """Infer the entity class from the table."""
@@ -160,14 +168,13 @@ class SqliteEntityRepository(Generic[_EntityT], abc.ABC):
         )
 
     def _get_parent_field_name(self) -> str:
-        entity_class = self._infer_entity_class()
-        all_fields = dataclasses.fields(entity_class)
+        all_fields = dataclasses.fields(self._entity_type)
         for field in all_fields:
             if field.type == ParentLink:
                 return field.name + "_ref_id"
 
         raise Exception(
-            f"Critical exception, missiong parent field for class {entity_class}"
+            f"Critical exception, missiong parent field for class {self._entity_type.__name__}"
         )
 
 
@@ -204,7 +211,7 @@ class SqliteRootEntityRepository(
         result = (await self._connection.execute(query_stmt)).first()
         if result is None:
             raise self._not_found_err_cls(
-                f"Entity of type {self._infer_entity_class()} and id {str(entity_id)} not found."
+                f"Entity of type {self._entity_type.__name__} and id {str(entity_id)} not found."
             )
         return self._row_to_entity(result)
 
@@ -252,7 +259,7 @@ class SqliteTrunkEntityRepository(
         result = (await self._connection.execute(query_stmt)).first()
         if result is None:
             raise self._not_found_err_cls(
-                f"Entity of type {self._infer_entity_class()} and parent id {str(parent_ref_id)} not found."
+                f"Entity of type {self._entity_type.__name__} and parent id {str(parent_ref_id)} not found."
             )
         return self._row_to_entity(result)
 
@@ -268,7 +275,7 @@ class SqliteTrunkEntityRepository(
         result = (await self._connection.execute(query_stmt)).first()
         if result is None:
             raise self._not_found_err_cls(
-                f"Entity of type {self._infer_entity_class()} and id {str(entity_id)} not found."
+                f"Entity of type {self._entity_type.__name__} and id {str(entity_id)} not found."
             )
         return self._row_to_entity(result)
 
@@ -289,7 +296,7 @@ class SqliteStubEntityRepository(
         result = (await self._connection.execute(query_stmt)).first()
         if result is None:
             raise self._not_found_err_cls(
-                f"Entity of type {self._infer_entity_class()} and parent id {str(parent_ref_id)} not found."
+                f"Entity of type {self._entity_type.__name__} and parent id {str(parent_ref_id)} not found."
             )
         return self._row_to_entity(result)
 
@@ -316,7 +323,7 @@ class SqliteCrownEntityRepository(
         result = (await self._connection.execute(query_stmt)).first()
         if result is None:
             raise self._not_found_err_cls(
-                f"Entity of type {self._infer_entity_class()} identified by {ref_id} does not exist"
+                f"Entity of type {self._entity_type.__name__} identified by {ref_id} does not exist"
             )
         return self._row_to_entity(result)
 
@@ -362,7 +369,7 @@ class SqliteCrownEntityRepository(
         result = (await self._connection.execute(query_stmt)).first()
         if result is None:
             raise self._not_found_err_cls(
-                f"Entity of type {self._infer_entity_class()} identified by {ref_id} does not exist"
+                f"Entity of type {self._entity_type.__name__} identified by {ref_id} does not exist"
             )
         await self._connection.execute(
             delete(self._table).where(

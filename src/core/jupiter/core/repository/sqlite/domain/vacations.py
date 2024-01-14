@@ -72,32 +72,6 @@ class SqliteVacationCollectionRepository(
             ),
         )
 
-    def _entity_to_row(self, entity: VacationCollection) -> RowType:
-        return {
-            "version": entity.version,
-            "archived": entity.archived,
-            "created_time": entity.created_time.to_db(),
-            "last_modified_time": entity.last_modified_time.to_db(),
-            "archived_time": entity.archived_time.to_db()
-            if entity.archived_time
-            else None,
-            "workspace_ref_id": entity.workspace.as_int(),
-        }
-
-    def _row_to_entity(self, row: RowType) -> VacationCollection:
-        return VacationCollection(
-            ref_id=EntityId.from_raw(str(row["ref_id"])),
-            version=row["version"],
-            archived=row["archived"],
-            created_time=Timestamp.from_db(row["created_time"]),
-            archived_time=Timestamp.from_db(row["archived_time"])
-            if row["archived_time"]
-            else None,
-            last_modified_time=Timestamp.from_db(row["last_modified_time"]),
-            events=[],
-            workspace=ParentLink(EntityId.from_raw(str(row["workspace_ref_id"]))),
-        )
-
 
 class SqliteVacationRepository(
     SqliteLeafEntityRepository[Vacation], VacationRepository
@@ -136,15 +110,3 @@ class SqliteVacationRepository(
                 keep_existing=True,
             ),
         )
-
-    def _entity_to_row(self, entity: Vacation) -> RowType:
-        vacation_encoder = self._realm_codec_registry.get_encoder(
-            Vacation, DatabaseRealm
-        )
-        return cast(RowType, vacation_encoder.encode(entity))
-
-    def _row_to_entity(self, row: Row) -> Vacation:
-        vacation_decoder = self._realm_codec_registry.get_decoder(
-            Vacation, DatabaseRealm
-        )
-        return vacation_decoder.decode(row._mapping)
