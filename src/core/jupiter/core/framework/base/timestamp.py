@@ -9,6 +9,13 @@ import pendulum.parsing
 import pendulum.tz
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.primitive import Primitive
+from jupiter.core.framework.realm import (
+    DatabaseRealm,
+    RealmConcept,
+    RealmDecoder,
+    RealmDecodingError,
+    RealmEncoder,
+)
 from jupiter.core.framework.value import AtomicValue, value
 from pendulum.date import Date
 from pendulum.datetime import DateTime
@@ -60,8 +67,13 @@ class Timestamp(AtomicValue):
     @classmethod
     def from_raw(cls, value: Primitive) -> "Timestamp":
         """Validate and clean an optional timestamp."""
-        if not isinstance(value, str):
+        if not isinstance(value, (str, Date, DateTime)):
             raise InputValidationError("Expected timestamp to be string")
+
+        if isinstance(value, DateTime):
+            return Timestamp.from_date_and_time(value)
+        elif isinstance(value, Date):
+            return Timestamp.from_date(value)
 
         try:
             timestamp = pendulum.parser.parse(
@@ -141,3 +153,22 @@ class Timestamp(AtomicValue):
     def __str__(self) -> str:
         """Transform this to a string version."""
         return cast(str, self.the_ts.to_datetime_string())  # type: ignore
+
+
+class TimestampDatabaseEncoder(RealmEncoder[Timestamp, DatabaseRealm]):
+    """An encoder for timestamps in databases."""
+
+    def encode(self, value: Timestamp) -> RealmConcept:
+        return value.as_datetime()
+
+
+class TimestampDatabaseDecoder(RealmDecoder[Timestamp, DatabaseRealm]):
+    """A decoder for timestamps in databases."""
+
+    def decode(self, value: RealmConcept) -> Timestamp:
+        if not isinstance(value, (type(None), bool, int, float, str, Date, DateTime)):
+            raise RealmDecodingError(
+                f"Expected value for {self.__class__} to be primitive"
+            )
+
+        return Timestamp.from_raw(value)

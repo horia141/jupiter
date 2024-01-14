@@ -4,9 +4,11 @@ from typing import Literal, cast
 
 from jupiter.core.domain.core.url import URL
 from jupiter.core.domain.named_entity_tag import NamedEntityTag
-from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.base.entity_id import EntityId, EntityIdDatabaseDecoder
 from jupiter.core.framework.json import JSONDictType
 from jupiter.core.framework.value import CompositeValue, value
+
+_ENTITY_ID_DECODER = EntityIdDatabaseDecoder()
 
 
 @value
@@ -62,7 +64,7 @@ class ParagraphBlock(NoteContentBlock):
         """Create a paragraph block from JSON."""
         return ParagraphBlock(
             kind="paragraph",
-            correlation_id=EntityId.from_raw(json["correlation_id"]),
+            correlation_id=_ENTITY_ID_DECODER.decode(json["correlation_id"]),
             text=str(json["text"]),
         )
 
@@ -89,7 +91,7 @@ class HeadingBlock(NoteContentBlock):
         """Create a heading block from JSON."""
         return HeadingBlock(
             kind="heading",
-            correlation_id=EntityId.from_raw(json["correlation_id"]),
+            correlation_id=_ENTITY_ID_DECODER.decode(json["correlation_id"]),
             text=str(json["text"]),
             level=cast(int, json["level"]) if "level" in json else 1,
         )
@@ -148,7 +150,7 @@ class BulletedListBlock(NoteContentBlock):
         """Create a bulleted list block from JSON."""
         return BulletedListBlock(
             kind="bulleted-list",
-            correlation_id=EntityId.from_raw(json["correlation_id"]),
+            correlation_id=_ENTITY_ID_DECODER.decode(json["correlation_id"]),
             items=[
                 ListItem.from_json(item)
                 for item in cast(list[JSONDictType | str], json["items"])
@@ -177,7 +179,7 @@ class NumberedListBlock(NoteContentBlock):
         """Create a numbered list block from JSON."""
         return NumberedListBlock(
             kind="numbered-list",
-            correlation_id=EntityId.from_raw(json["correlation_id"]),
+            correlation_id=_ENTITY_ID_DECODER.decode(json["correlation_id"]),
             items=[
                 ListItem.from_json(item)
                 for item in cast(list[JSONDictType | str], json["items"])
@@ -229,7 +231,7 @@ class ChecklistBlock(NoteContentBlock):
         """Create a checklist block from JSON."""
         return ChecklistBlock(
             kind="checklist",
-            correlation_id=EntityId.from_raw(json["correlation_id"]),
+            correlation_id=_ENTITY_ID_DECODER.decode(json["correlation_id"]),
             items=[
                 ChecklistItem.from_json(item)
                 for item in cast(list[JSONDictType], json["items"])
@@ -258,7 +260,7 @@ class TableBlock(NoteContentBlock):
         """Create a table block from JSON."""
         return TableBlock(
             kind="table",
-            correlation_id=EntityId.from_raw(json["correlation_id"]),
+            correlation_id=_ENTITY_ID_DECODER.decode(json["correlation_id"]),
             with_header=bool(json["with_header"]),
             contents=[
                 [str(cell) for cell in row]
@@ -291,7 +293,7 @@ class CodeBlock(NoteContentBlock):
         """Create a code block from JSON."""
         return CodeBlock(
             kind="code",
-            correlation_id=EntityId.from_raw(json["correlation_id"]),
+            correlation_id=_ENTITY_ID_DECODER.decode(json["correlation_id"]),
             code=str(json["code"]),
             language=str(json["language"]),
             show_line_numbers=bool(json["show_line_numbers"])
@@ -323,7 +325,7 @@ class QuoteBlock(NoteContentBlock):
         """Create a quote block from JSON."""
         return QuoteBlock(
             kind="quote",
-            correlation_id=EntityId.from_raw(json["correlation_id"]),
+            correlation_id=_ENTITY_ID_DECODER.decode(json["correlation_id"]),
             text=str(json["text"]),
         )
 
@@ -348,7 +350,7 @@ class DividerBlock(NoteContentBlock):
         """Create a divider block from JSON."""
         return DividerBlock(
             kind="divider",
-            correlation_id=EntityId.from_raw(json["correlation_id"]),
+            correlation_id=_ENTITY_ID_DECODER.decode(json["correlation_id"]),
         )
 
     def to_json(self) -> JSONDictType:
@@ -372,7 +374,7 @@ class LinkBlock(NoteContentBlock):
         """Create a link block from JSON."""
         return LinkBlock(
             kind="link",
-            correlation_id=EntityId.from_raw(json["correlation_id"]),
+            correlation_id=_ENTITY_ID_DECODER.decode(json["correlation_id"]),
             url=URL.from_raw(cast(str, json["url"])),
         )
 
@@ -399,9 +401,9 @@ class EntityReferenceBlock(NoteContentBlock):
         """Create an entity reference block from JSON."""
         return EntityReferenceBlock(
             kind="entity-reference",
-            correlation_id=EntityId.from_raw(json["correlation_id"]),
+            correlation_id=_ENTITY_ID_DECODER.decode(json["correlation_id"]),
             entity_tag=NamedEntityTag(json["entity_tag"]),
-            ref_id=EntityId.from_raw(json["ref_id"]),
+            ref_id=_ENTITY_ID_DECODER.decode(json["ref_id"]),
         )
 
     def to_json(self) -> JSONDictType:
