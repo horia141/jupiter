@@ -63,8 +63,7 @@ class SqliteProjectCollectionRepository(
             ),
         )
 
-    @staticmethod
-    def _entity_to_row(entity: ProjectCollection) -> RowType:
+    def _entity_to_row(self, entity: ProjectCollection) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -76,8 +75,7 @@ class SqliteProjectCollectionRepository(
             "workspace_ref_id": entity.workspace.as_int(),
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> ProjectCollection:
+    def _row_to_entity(self, row: RowType) -> ProjectCollection:
         return ProjectCollection(
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             version=row["version"],
@@ -139,8 +137,7 @@ class SqliteProjectRepository(SqliteLeafEntityRepository[Project], ProjectReposi
         results = await self._connection.execute(query_stmt)
         return [self._row_to_entity(row) for row in results]
 
-    @staticmethod
-    def _entity_to_row(entity: Project) -> RowType:
+    def _entity_to_row(self, entity: Project) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -153,8 +150,7 @@ class SqliteProjectRepository(SqliteLeafEntityRepository[Project], ProjectReposi
             "name": str(entity.name),
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> Project:
+    def _row_to_entity(self, row: RowType) -> Project:
         return Project(
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             version=row["version"],

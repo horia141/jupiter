@@ -84,8 +84,7 @@ class SqliteMetricCollectionRepository(
             ),
         )
 
-    @staticmethod
-    def _entity_to_row(entity: MetricCollection) -> RowType:
+    def _entity_to_row(self, entity: MetricCollection) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -98,8 +97,7 @@ class SqliteMetricCollectionRepository(
             "collection_project_ref_id": entity.collection_project_ref_id.as_int(),
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> MetricCollection:
+    def _row_to_entity(self, row: RowType) -> MetricCollection:
         return MetricCollection(
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             version=row["version"],
@@ -155,8 +153,7 @@ class SqliteMetricRepository(SqliteBranchEntityRepository[Metric], MetricReposit
             ),
         )
 
-    @staticmethod
-    def _entity_to_row(entity: Metric) -> RowType:
+    def _entity_to_row(self, entity: Metric) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -196,8 +193,7 @@ class SqliteMetricRepository(SqliteBranchEntityRepository[Metric], MetricReposit
             "metric_unit": entity.metric_unit.value if entity.metric_unit else None,
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> Metric:
+    def _row_to_entity(self, row: RowType) -> Metric:
         return Metric(
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             version=row["version"],
@@ -284,8 +280,7 @@ class SqliteMetricEntryRepository(
             ),
         )
 
-    @staticmethod
-    def _entity_to_row(entity: MetricEntry) -> RowType:
+    def _entity_to_row(self, entity: MetricEntry) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -299,8 +294,7 @@ class SqliteMetricEntryRepository(
             "value": entity.value,
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> MetricEntry:
+    def _row_to_entity(self, row: RowType) -> MetricEntry:
         return MetricEntry(
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             version=row["version"],

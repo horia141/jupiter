@@ -51,8 +51,7 @@ class SqliteWorkspaceRepository(
             not_found_err_cls=WorkspaceNotFoundError,
         )
 
-    @staticmethod
-    def _entity_to_row(entity: Workspace) -> RowType:
+    def _entity_to_row(self, entity: Workspace) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -66,8 +65,7 @@ class SqliteWorkspaceRepository(
             "feature_flags": {f.value: v for f, v in entity.feature_flags.items()},
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> Workspace:
+    def _row_to_entity(self, row: RowType) -> Workspace:
         return Workspace(
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             version=row["version"],

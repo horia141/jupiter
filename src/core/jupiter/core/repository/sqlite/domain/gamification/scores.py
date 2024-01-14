@@ -83,8 +83,7 @@ class SqliteScoreLogRepository(
             ),
         )
 
-    @staticmethod
-    def _entity_to_row(entity: ScoreLog) -> RowType:
+    def _entity_to_row(self, entity: ScoreLog) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -96,8 +95,7 @@ class SqliteScoreLogRepository(
             "user_ref_id": entity.user.as_int(),
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> ScoreLog:
+    def _row_to_entity(self, row: RowType) -> ScoreLog:
         return ScoreLog(
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             version=row["version"],
@@ -147,8 +145,7 @@ class SqliteScoreLogEntryRepository(
             ),
         )
 
-    @staticmethod
-    def _entity_to_row(entity: ScoreLogEntry) -> RowType:
+    def _entity_to_row(self, entity: ScoreLogEntry) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -166,8 +163,7 @@ class SqliteScoreLogEntryRepository(
             "score": entity.score,
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> ScoreLogEntry:
+    def _row_to_entity(self, row: RowType) -> ScoreLogEntry:
         return ScoreLogEntry(
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             version=row["version"],

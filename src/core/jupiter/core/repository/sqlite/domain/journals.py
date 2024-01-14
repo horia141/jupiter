@@ -83,8 +83,7 @@ class SqliteJournalCollectionRepository(
             ),
         )
 
-    @staticmethod
-    def _entity_to_row(entity: JournalCollection) -> RowType:
+    def _entity_to_row(self, entity: JournalCollection) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -102,8 +101,7 @@ class SqliteJournalCollectionRepository(
             ),
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> JournalCollection:
+    def _row_to_entity(self, row: RowType) -> JournalCollection:
         return JournalCollection(
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             version=row["version"],
@@ -164,8 +162,7 @@ class SqliteJournalRepository(SqliteLeafEntityRepository[Journal], JournalReposi
             already_exists_err_cls=JournalExistsForDatePeriodCombinationError,
         )
 
-    @staticmethod
-    def _entity_to_row(entity: Journal) -> RowType:
+    def _entity_to_row(self, entity: Journal) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -183,8 +180,7 @@ class SqliteJournalRepository(SqliteLeafEntityRepository[Journal], JournalReposi
             "report": entity.report,  # JSON serialisation at engine-level via pydantic does the trick
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> Journal:
+    def _row_to_entity(self, row: RowType) -> Journal:
         return Journal(
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             version=row["version"],

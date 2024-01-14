@@ -78,8 +78,7 @@ class SqliteSmartListCollectionRepository(
             ),
         )
 
-    @staticmethod
-    def _entity_to_row(entity: SmartListCollection) -> RowType:
+    def _entity_to_row(self, entity: SmartListCollection) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -91,8 +90,7 @@ class SqliteSmartListCollectionRepository(
             "workspace_ref_id": entity.workspace.as_int(),
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> SmartListCollection:
+    def _row_to_entity(self, row: RowType) -> SmartListCollection:
         return SmartListCollection(
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             version=row["version"],
@@ -138,8 +136,7 @@ class SqliteSmartListRepository(
             ),
         )
 
-    @staticmethod
-    def _entity_to_row(entity: SmartList) -> RowType:
+    def _entity_to_row(self, entity: SmartList) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -153,8 +150,7 @@ class SqliteSmartListRepository(
             "icon": entity.icon.to_safe() if entity.icon else None,
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> SmartList:
+    def _row_to_entity(self, row: RowType) -> SmartList:
         return SmartList(
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             version=row["version"],
@@ -231,8 +227,7 @@ class SqliteSmartListTagRepository(
         results = await self._connection.execute(query_stmt)
         return [self._row_to_entity(row) for row in results]
 
-    @staticmethod
-    def _entity_to_row(entity: SmartListTag) -> RowType:
+    def _entity_to_row(self, entity: SmartListTag) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -245,8 +240,7 @@ class SqliteSmartListTagRepository(
             "tag_name": str(entity.tag_name),
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> SmartListTag:
+    def _row_to_entity(self, row: RowType) -> SmartListTag:
         return SmartListTag(
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             version=row["version"],
@@ -332,8 +326,7 @@ class SqliteSmartListItemRepository(
             ]
         return all_entities
 
-    @staticmethod
-    def _entity_to_row(entity: SmartListItem) -> RowType:
+    def _entity_to_row(self, entity: SmartListItem) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -349,8 +342,7 @@ class SqliteSmartListItemRepository(
             "url": str(entity.url) if entity.url else None,
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> SmartListItem:
+    def _row_to_entity(self, row: RowType) -> SmartListItem:
         return SmartListItem(
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             version=row["version"],

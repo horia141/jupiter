@@ -72,8 +72,7 @@ class SqliteHabitCollectionRepository(
             ),
         )
 
-    @staticmethod
-    def _entity_to_row(entity: HabitCollection) -> RowType:
+    def _entity_to_row(self, entity: HabitCollection) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -85,8 +84,7 @@ class SqliteHabitCollectionRepository(
             "workspace_ref_id": entity.workspace.as_int(),
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> HabitCollection:
+    def _row_to_entity(self, row: RowType) -> HabitCollection:
         return HabitCollection(
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             version=row["version"],
@@ -173,8 +171,7 @@ class SqliteHabitRepository(SqliteLeafEntityRepository[Habit], HabitRepository):
         results = await self._connection.execute(query_stmt)
         return [self._row_to_entity(row) for row in results]
 
-    @staticmethod
-    def _entity_to_row(entity: Habit) -> RowType:
+    def _entity_to_row(self, entity: Habit) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -215,8 +212,7 @@ class SqliteHabitRepository(SqliteLeafEntityRepository[Habit], HabitRepository):
             "suspended": entity.suspended,
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> Habit:
+    def _row_to_entity(self, row: RowType) -> Habit:
         return Habit(
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             version=row["version"],

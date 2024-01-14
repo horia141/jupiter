@@ -67,8 +67,7 @@ class SqliteGenLogRepository(SqliteTrunkEntityRepository[GenLog], GenLogReposito
             ),
         )
 
-    @staticmethod
-    def _entity_to_row(entity: GenLog) -> RowType:
+    def _entity_to_row(self, entity: GenLog) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -80,8 +79,7 @@ class SqliteGenLogRepository(SqliteTrunkEntityRepository[GenLog], GenLogReposito
             "workspace_ref_id": entity.workspace.as_int(),
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> GenLog:
+    def _row_to_entity(self, row: RowType) -> GenLog:
         return GenLog(
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             version=row["version"],
@@ -156,8 +154,7 @@ class SqliteGenLogEntryRepository(
         result = await self._connection.execute(query_stmt)
         return [self._row_to_entity(row) for row in result]
 
-    @staticmethod
-    def _entity_to_row(entity: GenLogEntry) -> RowType:
+    def _entity_to_row(self, entity: GenLogEntry) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -209,8 +206,7 @@ class SqliteGenLogEntryRepository(
             ],
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> GenLogEntry:
+    def _row_to_entity(self, row: RowType) -> GenLogEntry:
         return GenLogEntry(
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             version=row["version"],

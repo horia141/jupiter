@@ -54,8 +54,7 @@ class SqlitePushIntegrationGroupRepository(
             ),
         )
 
-    @staticmethod
-    def _entity_to_row(entity: PushIntegrationGroup) -> RowType:
+    def _entity_to_row(self, entity: PushIntegrationGroup) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -67,8 +66,7 @@ class SqlitePushIntegrationGroupRepository(
             "workspace_ref_id": entity.workspace.as_int(),
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> PushIntegrationGroup:
+    def _row_to_entity(self, row: RowType) -> PushIntegrationGroup:
         return PushIntegrationGroup(
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             version=row["version"],

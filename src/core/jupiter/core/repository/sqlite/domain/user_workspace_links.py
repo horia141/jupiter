@@ -75,8 +75,7 @@ class SqliteUserWorkspaceLinkRepository(
             )
         return self._row_to_entity(result)
 
-    @staticmethod
-    def _entity_to_row(entity: UserWorkspaceLink) -> RowType:
+    def _entity_to_row(self, entity: UserWorkspaceLink) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -89,8 +88,7 @@ class SqliteUserWorkspaceLinkRepository(
             "workspace_ref_id": entity.workspace_ref_id.as_int(),
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> UserWorkspaceLink:
+    def _row_to_entity(self, row: RowType) -> UserWorkspaceLink:
         return UserWorkspaceLink(
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             version=row["version"],

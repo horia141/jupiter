@@ -129,14 +129,12 @@ class SqliteEntityRepository(Generic[_EntityT], abc.ABC):
         )
         return entity
 
-    @staticmethod
     @abc.abstractmethod
-    def _entity_to_row(entity: _EntityT) -> RowType:
+    def _entity_to_row(self, entity: _EntityT) -> RowType:
         """Convert an entity to a row."""
 
-    @staticmethod
     @abc.abstractmethod
-    def _row_to_entity(row: RowType) -> _EntityT:
+    def _row_to_entity(self, row: RowType) -> _EntityT:
         """Convert a row to an entity."""
 
     def _infer_entity_class(self) -> type[_EntityT]:

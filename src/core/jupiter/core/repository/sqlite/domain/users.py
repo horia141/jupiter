@@ -73,8 +73,7 @@ class SqliteUserRepository(SqliteRootEntityRepository[User], UserRepository):
             raise UserNotFoundError(f"User with email {email_address} does not exist")
         return self._row_to_entity(result)
 
-    @staticmethod
-    def _entity_to_row(entity: User) -> RowType:
+    def _entity_to_row(self, entity: User) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -90,8 +89,7 @@ class SqliteUserRepository(SqliteRootEntityRepository[User], UserRepository):
             "feature_flags": {f.value: v for f, v in entity.feature_flags.items()},
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> User:
+    def _row_to_entity(self, row: RowType) -> User:
         return User(
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             version=row["version"],

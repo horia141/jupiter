@@ -73,8 +73,7 @@ class SqliteChoreCollectionRepository(
             ),
         )
 
-    @staticmethod
-    def _entity_to_row(entity: ChoreCollection) -> RowType:
+    def _entity_to_row(self, entity: ChoreCollection) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -86,8 +85,7 @@ class SqliteChoreCollectionRepository(
             "workspace_ref_id": entity.workspace.as_int(),
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> ChoreCollection:
+    def _row_to_entity(self, row: RowType) -> ChoreCollection:
         return ChoreCollection(
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             version=row["version"],
@@ -176,8 +174,7 @@ class SqliteChoreRepository(SqliteLeafEntityRepository[Chore], ChoreRepository):
         results = await self._connection.execute(query_stmt)
         return [self._row_to_entity(row) for row in results]
 
-    @staticmethod
-    def _entity_to_row(entity: Chore) -> RowType:
+    def _entity_to_row(self, entity: Chore) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -219,8 +216,7 @@ class SqliteChoreRepository(SqliteLeafEntityRepository[Chore], ChoreRepository):
             "end_at_date": entity.end_at_date.to_db() if entity.end_at_date else None,
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> Chore:
+    def _row_to_entity(self, row: RowType) -> Chore:
         return Chore(
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             version=row["version"],

@@ -73,8 +73,7 @@ class SqliteEmailTaskCollectionRepository(
             ),
         )
 
-    @staticmethod
-    def _entity_to_row(entity: EmailTaskCollection) -> RowType:
+    def _entity_to_row(self, entity: EmailTaskCollection) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -87,8 +86,7 @@ class SqliteEmailTaskCollectionRepository(
             "generation_project_ref_id": entity.generation_project_ref_id.as_int(),
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> EmailTaskCollection:
+    def _row_to_entity(self, row: RowType) -> EmailTaskCollection:
         return EmailTaskCollection(
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             version=row["version"],
@@ -146,8 +144,7 @@ class SqliteEmailTaskRepository(
             ),
         )
 
-    @staticmethod
-    def _entity_to_row(entity: EmailTask) -> RowType:
+    def _entity_to_row(self, entity: EmailTask) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -166,8 +163,7 @@ class SqliteEmailTaskRepository(
             "has_generated_task": entity.has_generated_task,
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> EmailTask:
+    def _row_to_entity(self, row: RowType) -> EmailTask:
         return EmailTask(
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             version=row["version"],

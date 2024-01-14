@@ -63,8 +63,7 @@ class SqliteDocCollectionRepository(
             ),
         )
 
-    @staticmethod
-    def _entity_to_row(entity: DocCollection) -> RowType:
+    def _entity_to_row(self, entity: DocCollection) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -76,8 +75,7 @@ class SqliteDocCollectionRepository(
             "workspace_ref_id": entity.workspace.as_int(),
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> DocCollection:
+    def _row_to_entity(self, row: RowType) -> DocCollection:
         return DocCollection(
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             version=row["version"],
@@ -162,8 +160,7 @@ class SqliteDocRepository(SqliteLeafEntityRepository[Doc], DocRepository):
         results = await self._connection.execute(query_stmt)
         return [self._row_to_entity(row) for row in results]
 
-    @staticmethod
-    def _entity_to_row(entity: Doc) -> RowType:
+    def _entity_to_row(self, entity: Doc) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -179,8 +176,7 @@ class SqliteDocRepository(SqliteLeafEntityRepository[Doc], DocRepository):
             "name": str(entity.name),
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> Doc:
+    def _row_to_entity(self, row: RowType) -> Doc:
         return Doc(
             ref_id=EntityId(str(row["ref_id"])),
             version=row["version"],

@@ -64,8 +64,7 @@ class SqliteGCLogRepository(SqliteTrunkEntityRepository[GCLog], GCLogRepository)
             ),
         )
 
-    @staticmethod
-    def _entity_to_row(entity: GCLog) -> RowType:
+    def _entity_to_row(self, entity: GCLog) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -77,8 +76,7 @@ class SqliteGCLogRepository(SqliteTrunkEntityRepository[GCLog], GCLogRepository)
             "workspace_ref_id": entity.workspace.as_int(),
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> GCLog:
+    def _row_to_entity(self, row: RowType) -> GCLog:
         return GCLog(
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             version=row["version"],
@@ -141,8 +139,7 @@ class SqliteGCLogEntryRepository(
         result = await self._connection.execute(query_stmt)
         return [self._row_to_entity(row) for row in result]
 
-    @staticmethod
-    def _entity_to_row(entity: GCLogEntry) -> RowType:
+    def _entity_to_row(self, entity: GCLogEntry) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -158,8 +155,7 @@ class SqliteGCLogEntryRepository(
             "entity_records": [r.to_json() for r in entity.entity_records],
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> GCLogEntry:
+    def _row_to_entity(self, row: RowType) -> GCLogEntry:
         return GCLogEntry(
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             version=row["version"],

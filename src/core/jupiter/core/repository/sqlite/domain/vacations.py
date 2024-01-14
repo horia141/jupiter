@@ -63,8 +63,7 @@ class SqliteVacationCollectionRepository(
             ),
         )
 
-    @staticmethod
-    def _entity_to_row(entity: VacationCollection) -> RowType:
+    def _entity_to_row(self, entity: VacationCollection) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -76,8 +75,7 @@ class SqliteVacationCollectionRepository(
             "workspace_ref_id": entity.workspace.as_int(),
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> VacationCollection:
+    def _row_to_entity(self, row: RowType) -> VacationCollection:
         return VacationCollection(
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             version=row["version"],
@@ -124,8 +122,7 @@ class SqliteVacationRepository(
             ),
         )
 
-    @staticmethod
-    def _entity_to_row(entity: Vacation) -> RowType:
+    def _entity_to_row(self, entity: Vacation) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -140,8 +137,7 @@ class SqliteVacationRepository(
             "end_date": entity.end_date.to_db(),
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> Vacation:
+    def _row_to_entity(self, row: RowType) -> Vacation:
         return Vacation(
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             version=row["version"],

@@ -66,8 +66,7 @@ class SqliteBigPlanCollectionRepository(
             ),
         )
 
-    @staticmethod
-    def _entity_to_row(entity: BigPlanCollection) -> RowType:
+    def _entity_to_row(self, entity: BigPlanCollection) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -79,8 +78,7 @@ class SqliteBigPlanCollectionRepository(
             "workspace_ref_id": entity.workspace.as_int(),
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> BigPlanCollection:
+    def _row_to_entity(self, row: RowType) -> BigPlanCollection:
         return BigPlanCollection(
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             version=row["version"],
@@ -162,8 +160,7 @@ class SqliteBigPlanRepository(SqliteLeafEntityRepository[BigPlan], BigPlanReposi
         results = await self._connection.execute(query_stmt)
         return [self._row_to_entity(row) for row in results]
 
-    @staticmethod
-    def _entity_to_row(entity: BigPlan) -> RowType:
+    def _entity_to_row(self, entity: BigPlan) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -191,8 +188,7 @@ class SqliteBigPlanRepository(SqliteLeafEntityRepository[BigPlan], BigPlanReposi
             else None,
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> BigPlan:
+    def _row_to_entity(self, row: RowType) -> BigPlan:
         return BigPlan(
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             version=row["version"],

@@ -57,8 +57,7 @@ class SqliteAuthRepository(SqliteStubEntityRepository[Auth], AuthRepository):
             ),
         )
 
-    @staticmethod
-    def _entity_to_row(entity: Auth) -> RowType:
+    def _entity_to_row(self, entity: Auth) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -72,8 +71,7 @@ class SqliteAuthRepository(SqliteStubEntityRepository[Auth], AuthRepository):
             "recovery_token_hash": entity.recovery_token_hash.token_hash_raw,
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> Auth:
+    def _row_to_entity(self, row: RowType) -> Auth:
         return Auth(
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             version=row["version"],

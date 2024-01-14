@@ -69,8 +69,7 @@ class SqliteInboxTaskCollectionRepository(
             ),
         )
 
-    @staticmethod
-    def _entity_to_row(entity: InboxTaskCollection) -> RowType:
+    def _entity_to_row(self, entity: InboxTaskCollection) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -82,8 +81,7 @@ class SqliteInboxTaskCollectionRepository(
             "workspace_ref_id": entity.workspace.as_int(),
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> InboxTaskCollection:
+    def _row_to_entity(self, row: RowType) -> InboxTaskCollection:
         return InboxTaskCollection(
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             version=row["version"],
@@ -289,8 +287,7 @@ class SqliteInboxTaskRepository(
         results = await self._connection.execute(query_stmt)
         return [self._row_to_entity(row) for row in results]
 
-    @staticmethod
-    def _entity_to_row(entity: InboxTask) -> RowType:
+    def _entity_to_row(self, entity: InboxTask) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -351,8 +348,7 @@ class SqliteInboxTaskRepository(
             else None,
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> InboxTask:
+    def _row_to_entity(self, row: RowType) -> InboxTask:
         return InboxTask(
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             version=row["version"],

@@ -75,8 +75,7 @@ class SqlitePersonCollectionRepository(
             ),
         )
 
-    @staticmethod
-    def _entity_to_row(entity: PersonCollection) -> RowType:
+    def _entity_to_row(self, entity: PersonCollection) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -89,8 +88,7 @@ class SqlitePersonCollectionRepository(
             "catch_up_project_ref_id": entity.catch_up_project_ref_id.as_int(),
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> PersonCollection:
+    def _row_to_entity(self, row: RowType) -> PersonCollection:
         return PersonCollection(
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             version=row["version"],
@@ -146,8 +144,7 @@ class SqlitePersonRepository(SqliteLeafEntityRepository[Person], PersonRepositor
             ),
         )
 
-    @staticmethod
-    def _entity_to_row(entity: Person) -> RowType:
+    def _entity_to_row(self, entity: Person) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -186,8 +183,7 @@ class SqlitePersonRepository(SqliteLeafEntityRepository[Person], PersonRepositor
             "birthday": str(entity.birthday) if entity.birthday else None,
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> Person:
+    def _row_to_entity(self, row: RowType) -> Person:
         return Person(
             ref_id=EntityId(str(row["ref_id"])),
             version=row["version"],

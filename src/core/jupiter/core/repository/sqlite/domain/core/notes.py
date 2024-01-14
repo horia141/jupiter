@@ -67,8 +67,7 @@ class SqliteNoteCollectionRepository(
             ),
         )
 
-    @staticmethod
-    def _entity_to_row(entity: NoteCollection) -> RowType:
+    def _entity_to_row(self, entity: NoteCollection) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -80,8 +79,7 @@ class SqliteNoteCollectionRepository(
             "workspace_ref_id": entity.workspace.as_int(),
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> NoteCollection:
+    def _row_to_entity(self, row: RowType) -> NoteCollection:
         return NoteCollection(
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             version=row["version"],
@@ -195,8 +193,7 @@ class SqliteNoteRepository(SqliteLeafEntityRepository[Note], NoteRepository):
         results = await self._connection.execute(query_stmt)
         return [self._row_to_entity(row) for row in results]
 
-    @staticmethod
-    def _entity_to_row(entity: Note) -> RowType:
+    def _entity_to_row(self, entity: Note) -> RowType:
         return {
             "version": entity.version,
             "archived": entity.archived,
@@ -211,8 +208,7 @@ class SqliteNoteRepository(SqliteLeafEntityRepository[Note], NoteRepository):
             "content": [cb.to_json() for cb in entity.content],
         }
 
-    @staticmethod
-    def _row_to_entity(row: RowType) -> Note:
+    def _row_to_entity(self, row: RowType) -> Note:
         return Note(
             ref_id=EntityId(str(row["ref_id"])),
             version=row["version"],
