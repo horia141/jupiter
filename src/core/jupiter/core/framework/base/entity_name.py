@@ -11,7 +11,13 @@ from typing import (
 
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.primitive import Primitive
-from jupiter.core.framework.realm import DatabaseRealm, RealmConcept, RealmDecoder, RealmDecodingError, RealmEncoder
+from jupiter.core.framework.realm import (
+    DatabaseRealm,
+    RealmConcept,
+    RealmDecoder,
+    RealmDecodingError,
+    RealmEncoder,
+)
 from jupiter.core.framework.value import AtomicValue, hashable_value
 
 _ENTITY_NAME_RE: Final[Pattern[str]] = re.compile(r"^.+$")
@@ -74,9 +80,11 @@ class EntityName(AtomicValue):
             )
 
         return entity_name
-    
 
-class EntityNameDatabaseEncoder(Generic[_EntityNameT], RealmEncoder[_EntityNameT, DatabaseRealm]):
+
+class EntityNameDatabaseEncoder(
+    Generic[_EntityNameT], RealmEncoder[_EntityNameT, DatabaseRealm]
+):
     """Encode an entity name for the database."""
 
     _the_type: type[_EntityNameT]
@@ -88,9 +96,11 @@ class EntityNameDatabaseEncoder(Generic[_EntityNameT], RealmEncoder[_EntityNameT
     def encode(self, value: _EntityNameT) -> str:
         """Encode an entity name for the database."""
         return value.the_name
-    
 
-class EntityNameDatabaseDecoder(Generic[_EntityNameT], RealmDecoder[_EntityNameT, DatabaseRealm]):
+
+class EntityNameDatabaseDecoder(
+    Generic[_EntityNameT], RealmDecoder[_EntityNameT, DatabaseRealm]
+):
     """Decode an entity name from the database."""
 
     _the_type: type[_EntityNameT]
@@ -105,7 +115,7 @@ class EntityNameDatabaseDecoder(Generic[_EntityNameT], RealmDecoder[_EntityNameT
             raise RealmDecodingError(
                 f"Expected value for {self.__class__} to be primitive"
             )
-        
+
         return self._the_type.from_raw(value)
 
 
