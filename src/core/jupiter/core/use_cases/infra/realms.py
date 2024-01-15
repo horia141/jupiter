@@ -1,11 +1,11 @@
 """Application-specific realm helpers."""
-from collections.abc import Mapping
 import dataclasses
-from datetime import date, datetime
 import importlib
 import pkgutil
 import types
 import typing
+from collections.abc import Mapping
+from datetime import date, datetime
 from types import GenericAlias, ModuleType
 from typing import Final, Generic, Iterator, TypeVar, cast, get_args, get_origin
 
@@ -78,7 +78,9 @@ class _StandardAtomicValueDatabaseDecoder(
 
     def decode(self, value: RealmConcept) -> _AtomicValueT:
         """Decode a realm from a string."""
-        if not isinstance(value, (type(None), bool, int, float, str, date, datetime, Date, DateTime)):
+        if not isinstance(
+            value, (type(None), bool, int, float, str, date, datetime, Date, DateTime)
+        ):
             raise RealmDecodingError(
                 f"Expected value for {self._the_type.__name__} in {self.__class__} to be primitive"
             )
@@ -107,7 +109,8 @@ class _StandardCompositeValueDatabaseEncoder(
         for field in all_fields:
             field_value = getattr(value, field.name)
             if isinstance(
-                field_value, (type(None), bool, int, float, str, date, datetime, Date, DateTime)
+                field_value,
+                (type(None), bool, int, float, str, date, datetime, Date, DateTime),
             ):
                 result[field.name] = field_value
             elif isinstance(field_value, (AtomicValue, CompositeValue, EnumValue)):
@@ -120,7 +123,17 @@ class _StandardCompositeValueDatabaseEncoder(
                 else:
                     if isinstance(
                         field_value[0],
-                        (type(None), bool, int, float, str, date, datetime, Date, DateTime),
+                        (
+                            type(None),
+                            bool,
+                            int,
+                            float,
+                            str,
+                            date,
+                            datetime,
+                            Date,
+                            DateTime,
+                        ),
                     ):
                         result[field.name] = [v for v in field_value]
                     else:
@@ -169,7 +182,17 @@ class _StandardCompositeValueDatabaseDecoder(
 
             field_value = value[field.name]
 
-            if field.type in (type(None), bool, int, float, str, date, datetime, Date, DateTime):
+            if field.type in (
+                type(None),
+                bool,
+                int,
+                float,
+                str,
+                date,
+                datetime,
+                Date,
+                DateTime,
+            ):
                 if type(field_value) is not field.type:
                     raise RealmDecodingError(
                         f"Expected value of type {self._the_type.__name__} to have field {field.name} to be {field.type} but was {type(field_value)}"
@@ -200,7 +223,8 @@ class _StandardCompositeValueDatabaseDecoder(
                         int,
                         float,
                         str,
-                        date, datetime, 
+                        date,
+                        datetime,
                         Date,
                         DateTime,
                     ):
@@ -331,7 +355,8 @@ class _StandardEntityDatabaseEncoder(
             if field.name == "events":
                 continue
             if isinstance(
-                field_value, (type(None), bool, int, float, str, date, datetime, Date, DateTime)
+                field_value,
+                (type(None), bool, int, float, str, date, datetime, Date, DateTime),
             ):
                 result[field.name] = field_value
             elif isinstance(field_value, ParentLink):
@@ -346,7 +371,17 @@ class _StandardEntityDatabaseEncoder(
                 else:
                     if isinstance(
                         field_value[0],
-                        (type(None), bool, int, float, str, date, datetime, Date, DateTime),
+                        (
+                            type(None),
+                            bool,
+                            int,
+                            float,
+                            str,
+                            date,
+                            datetime,
+                            Date,
+                            DateTime,
+                        ),
                     ):
                         result[field.name] = [v for v in field_value]
                     else:
@@ -458,7 +493,17 @@ class _StandardEntityDatabaseDecoder(
                     f"Expected value of type {self._the_type.__name__} to have field {field.name}"
                 )
 
-            if field.type in (type(None), bool, int, float, str, date, datetime, Date, DateTime):
+            if field.type in (
+                type(None),
+                bool,
+                int,
+                float,
+                str,
+                date,
+                datetime,
+                Date,
+                DateTime,
+            ):
                 if type(field_value) is not field.type:
                     raise RealmDecodingError(
                         f"Expected value of type {self._the_type.__name__} to have field {field.name} to be {field.type} but was {type(field_value)}"
@@ -492,7 +537,9 @@ class _StandardEntityDatabaseDecoder(
                         bool,
                         int,
                         float,
-                        str,date, datetime, 
+                        str,
+                        date,
+                        datetime,
                         Date,
                         DateTime,
                     ):
@@ -587,7 +634,8 @@ class _StandardRecordDatabaseEncoder(
         for field in all_fields:
             field_value = getattr(value, field.name)
             if isinstance(
-                field_value, (type(None), bool, int, float, str, date, datetime, Date, DateTime)
+                field_value,
+                (type(None), bool, int, float, str, date, datetime, Date, DateTime),
             ):
                 result[field.name] = field_value
             elif isinstance(field_value, ParentLink):
@@ -602,7 +650,17 @@ class _StandardRecordDatabaseEncoder(
                 else:
                     if isinstance(
                         field_value[0],
-                        (type(None), bool, int, float, str, date, datetime, Date, DateTime),
+                        (
+                            type(None),
+                            bool,
+                            int,
+                            float,
+                            str,
+                            date,
+                            datetime,
+                            Date,
+                            DateTime,
+                        ),
                     ):
                         result[field.name] = [v for v in field_value]
                     else:
@@ -677,7 +735,17 @@ class _StandardRecordDatabaseDecoder(
                     f"Expected value of type {self._the_type.__name__} to have field {field.name}"
                 )
 
-            if field.type in (type(None), bool, int, float, str, date, datetime, Date, DateTime):
+            if field.type in (
+                type(None),
+                bool,
+                int,
+                float,
+                str,
+                date,
+                datetime,
+                Date,
+                DateTime,
+            ):
                 if type(field_value) is not field.type:
                     raise RealmDecodingError(
                         f"Expected value of type {self._the_type.__name__} to have field {field.name} to be {field.type} but was {type(field_value)}"
@@ -711,7 +779,9 @@ class _StandardRecordDatabaseDecoder(
                         bool,
                         int,
                         float,
-                        str,date, datetime, 
+                        str,
+                        date,
+                        datetime,
                         Date,
                         DateTime,
                     ):

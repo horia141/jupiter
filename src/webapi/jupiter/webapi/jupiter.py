@@ -4,6 +4,7 @@ from types import FrameType
 from typing import Annotated, Any, Callable, Dict, Mapping, Union
 
 import aiohttp
+import jupiter.core.domain
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import Depends, FastAPI
 from fastapi.routing import APIRoute
@@ -530,14 +531,15 @@ from jupiter.webapi.websocket_progress_reporter import WebsocketProgressReporter
 from starlette import status
 from starlette.requests import Request
 from starlette.responses import JSONResponse, PlainTextResponse
-import jupiter.core.domain
 
 request_time_provider = PerRequestTimeProvider()
 cron_run_time_provider = CronRunTimeProvider()
 
 no_timezone_global_properties = build_global_properties()
 
-realm_codec_registry = ModuleExplorerRealmCodecRegistry.build_from_module_root(jupiter.core.domain)
+realm_codec_registry = ModuleExplorerRealmCodecRegistry.build_from_module_root(
+    jupiter.core.domain
+)
 
 sqlite_connection = SqliteConnection(
     SqliteConnection.Config(
@@ -549,8 +551,12 @@ sqlite_connection = SqliteConnection(
 
 global_properties = build_global_properties()
 
-domain_storage_engine = SqliteDomainStorageEngine(realm_codec_registry, sqlite_connection)
-search_storage_engine = SqliteSearchStorageEngine(realm_codec_registry, sqlite_connection)
+domain_storage_engine = SqliteDomainStorageEngine(
+    realm_codec_registry, sqlite_connection
+)
+search_storage_engine = SqliteSearchStorageEngine(
+    realm_codec_registry, sqlite_connection
+)
 usecase_storage_engine = SqliteUseCaseStorageEngine(sqlite_connection)
 
 auth_token_stamper = AuthTokenStamper(

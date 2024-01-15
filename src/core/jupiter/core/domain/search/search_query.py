@@ -17,6 +17,10 @@ class SearchQuery(AtomicValue):
         self.the_query = self._clean_the_query(self.the_query)
 
     @classmethod
+    def base_type_hack(cls) -> type[Primitive]:
+        return str
+
+    @classmethod
     def from_raw(cls, value: Primitive) -> "SearchQuery":
         """Validate and clean the search query."""
         if not isinstance(value, str):

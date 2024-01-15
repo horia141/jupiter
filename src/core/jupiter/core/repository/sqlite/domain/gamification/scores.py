@@ -205,7 +205,12 @@ class SqliteScoreStatsRepository(ScoreStatsRepository):
     _connection: Final[AsyncConnection]
     _score_stats_table: Final[Table]
 
-    def __init__(self, realm_codec_registry: RealmCodecRegistry, connection: AsyncConnection, metadata: MetaData) -> None:
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        connection: AsyncConnection,
+        metadata: MetaData,
+    ) -> None:
         """Constructor."""
         self._realm_codec_registry = realm_codec_registry
         self._connection = connection
@@ -390,7 +395,12 @@ class SqliteScorePeriodBestRepository(ScorePeriodBestRepository):
     _connection: Final[AsyncConnection]
     _score_period_best_table: Final[Table]
 
-    def __init__(self, realm_codec_registry: RealmCodecRegistry, connection: AsyncConnection, metadata: MetaData) -> None:
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        connection: AsyncConnection,
+        metadata: MetaData,
+    ) -> None:
         """Constructor."""
         self._realm_codec_registry = realm_codec_registry
         self._connection = connection

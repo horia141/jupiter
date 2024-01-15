@@ -19,6 +19,10 @@ class URL(AtomicValue):
         self.the_url = self._clean_the_url(self.the_url)
 
     @classmethod
+    def base_type_hack(cls) -> type[Primitive]:
+        return str
+
+    @classmethod
     def from_raw(cls, value: Primitive) -> "URL":
         """Validate and clean a url."""
         if not isinstance(value, str):

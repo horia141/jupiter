@@ -19,6 +19,10 @@ class SearchLimit(AtomicValue):
         self.the_limit = self._clean_the_limit(self.the_limit)
 
     @classmethod
+    def base_type_hack(cls) -> type[Primitive]:
+        return int
+
+    @classmethod
     def from_raw(cls, value: Primitive) -> "SearchLimit":
         """Validate and clean the search limit."""
         if not isinstance(value, int):

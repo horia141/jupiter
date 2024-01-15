@@ -20,6 +20,11 @@ class EmailAddress(AtomicValue):
         self.the_address = self._clean_the_address(self.the_address)
 
     @classmethod
+    def base_type_hack(cls) -> type[Primitive]:
+        """Get the base type of this value."""
+        return str
+
+    @classmethod
     def from_raw(cls, value: Primitive) -> "EmailAddress":
         """Validate and clean a url."""
         if not isinstance(value, str):

@@ -25,6 +25,10 @@ class Avatar(AtomicValue):
         return Avatar(avatar_as_data_url)
 
     @classmethod
+    def base_type_hack(cls) -> type[Primitive]:
+        return str
+
+    @classmethod
     def from_raw(cls, value: Primitive) -> "Avatar":
         """Construct an avatar from a string representation."""
         if not isinstance(value, str):

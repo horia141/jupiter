@@ -25,6 +25,10 @@ class TagName(AtomicValue):
         self.the_tag = self._clean_the_tag(self.the_tag)
 
     @classmethod
+    def base_type_hack(cls) -> type[Primitive]:
+        return str
+
+    @classmethod
     def from_raw(cls: Type[_TagNameT], tag_raw: Primitive) -> _TagNameT:
         """Validate and clean an tag."""
         if not isinstance(tag_raw, str):

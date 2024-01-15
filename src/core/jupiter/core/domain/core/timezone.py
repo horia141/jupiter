@@ -21,6 +21,10 @@ class Timezone(AtomicValue):
         self.the_timezone = self._clean_the_timezone(self.the_timezone)
 
     @classmethod
+    def base_type_hack(cls) -> type[Primitive]:
+        return str
+
+    @classmethod
     def from_raw(cls, value: Primitive) -> "Timezone":
         """Validate and clean a timezone."""
         if not isinstance(value, str):

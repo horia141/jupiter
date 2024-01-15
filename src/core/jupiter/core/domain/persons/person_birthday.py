@@ -40,6 +40,10 @@ class PersonBirthday(AtomicValue):
         self.month = month
 
     @classmethod
+    def base_type_hack(cls) -> type[Primitive]:
+        return str
+
+    @classmethod
     def from_raw(cls, value: Primitive) -> "PersonBirthday":
         """Validate and clean a raw birthday given as 12 May."""
         if not isinstance(value, str):

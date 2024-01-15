@@ -93,6 +93,11 @@ class ADate(AtomicValue):
             ) from error
 
     @classmethod
+    def base_type_hack(cls) -> type[Primitive]:
+        """The base type."""
+        return Date
+
+    @classmethod
     def from_raw(cls, value: Primitive) -> "ADate":
         """Validate and clean an ADate."""
         if not isinstance(value, (str, date, datetime, Date, DateTime)):

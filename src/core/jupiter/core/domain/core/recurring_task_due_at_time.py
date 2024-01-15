@@ -20,6 +20,10 @@ class RecurringTaskDueAtTime(AtomicValue):
         self.the_time = self._clean_the_time(self.the_time)
 
     @classmethod
+    def base_type_hack(cls) -> type[Primitive]:
+        return str
+
+    @classmethod
     def from_raw(
         cls,
         value: Primitive,

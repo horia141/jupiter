@@ -36,6 +36,11 @@ class AtomicValue(Value, abc.ABC):
 
     @classmethod
     @abc.abstractmethod
+    def base_type_hack(cls: type[_AtomicValueT]) -> type[Primitive]:
+        """Get the base type of this value."""
+
+    @classmethod
+    @abc.abstractmethod
     def from_raw(cls: type[_AtomicValueT], value: Primitive) -> _AtomicValueT:
         """Build an atomic value from the raw representation."""
 

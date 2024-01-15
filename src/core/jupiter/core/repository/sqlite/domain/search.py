@@ -42,7 +42,12 @@ class SqliteSearchRepository(SearchRepository):
     _connection: Final[AsyncConnection]
     _search_index_table: Final[Table]
 
-    def __init__(self, realm_codec_registry: RealmCodecRegistry, connection: AsyncConnection, metadata: MetaData) -> None:
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        connection: AsyncConnection,
+        metadata: MetaData,
+    ) -> None:
         """Constructor."""
         self._realm_codec_registry = realm_codec_registry
         self._connection = connection

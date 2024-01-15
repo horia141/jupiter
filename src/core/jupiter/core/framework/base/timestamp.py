@@ -42,6 +42,10 @@ class Timestamp(AtomicValue):
                 tzinfo=UTC,
             )
 
+    @classmethod
+    def base_type_hack(cls) -> type[Primitive]:
+        return DateTime
+
     @staticmethod
     def from_date(date: Date) -> "Timestamp":
         """Construct a Timestamp from a date object."""
@@ -67,8 +71,12 @@ class Timestamp(AtomicValue):
     @classmethod
     def from_raw(cls, value: Primitive) -> "Timestamp":
         """Validate and clean an optional timestamp."""
-        if not isinstance(value, (str, datetime.date, datetime.datetime, Date, DateTime)):
-            raise RealmDecodingError("Expected timestamp to be string or date or datetime")
+        if not isinstance(
+            value, (str, datetime.date, datetime.datetime, Date, DateTime)
+        ):
+            raise RealmDecodingError(
+                "Expected timestamp to be string or date or datetime"
+            )
 
         if isinstance(value, DateTime):
             return Timestamp.from_date_and_time(value)
@@ -115,12 +123,16 @@ class Timestamp(AtomicValue):
                 f"Expected timestamp '{timestamp_raw}' to be in a proper timestamp format",
             )
         return Timestamp(timestamp)
-    
+
     @staticmethod
     def from_dbx(timestamp_raw: datetime.date) -> "Timestamp":
         """Parse a timestamp from a DB representation."""
-        return Timestamp(pendulum.datetime(timestamp_raw.year, timestamp_raw.month, timestamp_raw.day, tz="UTC"))
-    
+        return Timestamp(
+            pendulum.datetime(
+                timestamp_raw.year, timestamp_raw.month, timestamp_raw.day, tz="UTC"
+            )
+        )
+
     @staticmethod
     def from_db(timestamp_raw: datetime.datetime) -> "Timestamp":
         """Parse a timestamp from a DB representation."""
@@ -175,7 +187,9 @@ class TimestampDatabaseDecoder(RealmDecoder[Timestamp, DatabaseRealm]):
     """A decoder for timestamps in databases."""
 
     def decode(self, value: RealmConcept) -> Timestamp:
-        if not isinstance(value, (str, datetime.date, datetime.datetime, Date, DateTime)):
+        if not isinstance(
+            value, (str, datetime.date, datetime.datetime, Date, DateTime)
+        ):
             raise RealmDecodingError(
                 f"Expected value for {self.__class__} to be primitive"
             )

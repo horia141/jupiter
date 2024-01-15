@@ -20,6 +20,10 @@ class SlackChannelName(AtomicValue):
         self.the_name = self._clean_the_name(self.the_name)
 
     @classmethod
+    def base_type_hack(cls) -> type[Primitive]:
+        return str
+
+    @classmethod
     def from_raw(cls, value: Primitive) -> "SlackChannelName":
         """Validate and clean a Slack channel name."""
         if not isinstance(value, str):

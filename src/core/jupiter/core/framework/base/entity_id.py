@@ -29,6 +29,10 @@ class EntityId(AtomicValue):
         self.the_id = self._clean_the_id(self.the_id)
 
     @classmethod
+    def base_type_hack(cls) -> type[Primitive]:
+        return str
+
+    @classmethod
     def from_raw(cls, value: Primitive) -> "EntityId":
         """Validate and clean an entity id."""
         if not isinstance(value, (str, int)):

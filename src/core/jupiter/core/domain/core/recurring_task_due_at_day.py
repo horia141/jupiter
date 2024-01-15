@@ -39,6 +39,10 @@ class RecurringTaskDueAtDay(AtomicValue):
         )
 
     @classmethod
+    def base_type_hack(cls) -> type[Primitive]:
+        return int
+
+    @classmethod
     def from_raw(
         cls,
         value: Primitive,

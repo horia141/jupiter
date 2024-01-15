@@ -6,7 +6,7 @@ import sys
 from typing import List
 
 import aiohttp
-from jupiter.core.use_cases.infra.realms import ModuleExplorerRealmCodecRegistry
+import jupiter.core.domain
 from jupiter.cli.command.auth_change_password import AuthChangePassword
 from jupiter.cli.command.big_plan_archive import BigPlanArchive
 from jupiter.cli.command.big_plan_change_project import BigPlanChangeProject
@@ -191,6 +191,7 @@ from jupiter.core.use_cases.inbox_tasks.update import InboxTaskUpdateUseCase
 from jupiter.core.use_cases.infra.persistent_mutation_use_case_recoder import (
     PersistentMutationUseCaseInvocationRecorder,
 )
+from jupiter.core.use_cases.infra.realms import ModuleExplorerRealmCodecRegistry
 from jupiter.core.use_cases.infra.use_cases import AppGuestUseCaseSession
 from jupiter.core.use_cases.init import InitUseCase
 from jupiter.core.use_cases.load_top_level_info import (
@@ -285,7 +286,6 @@ from jupiter.core.utils.progress_reporter import (
 from jupiter.core.utils.time_provider import TimeProvider
 from rich.console import Console
 from rich.panel import Panel
-import jupiter.core.domain
 
 # import coverage
 
@@ -298,7 +298,9 @@ async def main() -> None:
 
     global_properties = build_global_properties()
 
-    realm_codec_registry = ModuleExplorerRealmCodecRegistry.build_from_module_root(jupiter.core.domain)
+    realm_codec_registry = ModuleExplorerRealmCodecRegistry.build_from_module_root(
+        jupiter.core.domain
+    )
 
     sqlite_connection = SqliteConnection(
         SqliteConnection.Config(
@@ -308,8 +310,12 @@ async def main() -> None:
         ),
     )
 
-    domain_storage_engine = SqliteDomainStorageEngine(realm_codec_registry, sqlite_connection)
-    search_storage_engine = SqliteSearchStorageEngine(realm_codec_registry, sqlite_connection)
+    domain_storage_engine = SqliteDomainStorageEngine(
+        realm_codec_registry, sqlite_connection
+    )
+    search_storage_engine = SqliteSearchStorageEngine(
+        realm_codec_registry, sqlite_connection
+    )
     usecase_storage_engine = SqliteUseCaseStorageEngine(sqlite_connection)
 
     session_storage = SessionStorage(global_properties.session_info_path)

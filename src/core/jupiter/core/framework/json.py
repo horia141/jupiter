@@ -2,6 +2,7 @@
 import dataclasses
 import typing
 import uuid
+from datetime import date, datetime
 from typing import Any, Dict, List, Union
 
 from jupiter.core.framework.value import AtomicValue, EnumValue, SecretValue
@@ -66,7 +67,7 @@ def process_primitive_to_json(
         return f"Redacted {str(primitive)}"
     elif isinstance(primitive, AtomicValue):
         atomic_value = primitive.to_primitive()
-        if isinstance(atomic_value, Date):
+        if isinstance(atomic_value, (date, datetime, Date)):
             return str(atomic_value)
         else:
             return atomic_value

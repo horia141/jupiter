@@ -47,6 +47,10 @@ class RecurringTaskDueAtMonth(AtomicValue):
         )
 
     @classmethod
+    def base_type_hack(cls) -> type[Primitive]:
+        return int
+
+    @classmethod
     def from_raw(cls, value: Primitive) -> "RecurringTaskDueAtMonth":
         """Build a recurring task due at month from the raw representation."""
         if not isinstance(value, int):

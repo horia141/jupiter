@@ -6,6 +6,7 @@ from typing import Dict
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.json import JSONDictType, process_primitive_to_json
 from jupiter.core.framework.update_action import UpdateAction
+from jupiter.core.framework.value import EnumValue, enum_value
 
 
 @enum.unique
@@ -21,8 +22,8 @@ class EventKind(enum.Enum):
         return str(self.value)
 
 
-@enum.unique
-class EventSource(enum.Enum):
+@enum_value
+class EventSource(EnumValue):
     """The source of the modification which this event records."""
 
     CLI = "cli"

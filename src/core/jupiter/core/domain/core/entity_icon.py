@@ -18,6 +18,11 @@ class EntityIcon(AtomicValue):
         self.the_icon = self._clean_the_icon(self.the_icon)
 
     @classmethod
+    def base_type_hack(cls) -> type[Primitive]:
+        """Get the base type of this value."""
+        return str
+
+    @classmethod
     def from_raw(cls, value: Primitive) -> "EntityIcon":
         """Validate and clean an entity icon."""
         if not isinstance(value, str):

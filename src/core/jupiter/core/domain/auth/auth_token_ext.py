@@ -26,6 +26,11 @@ class AuthTokenExt(AtomicValue):
         self.auth_token_str = auth_token_str
 
     @classmethod
+    def base_type_hack(cls) -> type[Primitive]:
+        """Get the base type of this value."""
+        return str
+
+    @classmethod
     def from_raw(cls, value: Primitive) -> "AuthTokenExt":
         """Build an auth token from the raw representation."""
         if not isinstance(value, str):

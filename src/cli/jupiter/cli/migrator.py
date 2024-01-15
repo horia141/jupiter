@@ -1,15 +1,13 @@
 """A temporary migrator."""
 import asyncio
-from jupiter.core.framework.realm import RealmCodecRegistry
 
+import jupiter.core.domain
 from jupiter.core.repository.sqlite.connection import SqliteConnection
 from jupiter.core.repository.sqlite.domain.storage_engine import (
     SqliteDomainStorageEngine,
 )
 from jupiter.core.use_cases.infra.realms import ModuleExplorerRealmCodecRegistry
 from jupiter.core.utils.global_properties import build_global_properties
-from jupiter.core.utils.time_provider import TimeProvider
-import jupiter.core.domain
 
 
 async def main() -> None:
@@ -24,8 +22,10 @@ async def main() -> None:
     #         )
     #     ],
     # )
-    
-    realm_codec_registry = ModuleExplorerRealmCodecRegistry.build_from_module_root(jupiter.core.domain)
+
+    realm_codec_registry = ModuleExplorerRealmCodecRegistry.build_from_module_root(
+        jupiter.core.domain
+    )
 
     global_properties = build_global_properties()
 

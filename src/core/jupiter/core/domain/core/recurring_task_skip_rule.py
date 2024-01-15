@@ -28,6 +28,10 @@ class RecurringTaskSkipRule(AtomicValue):
             RecurringTaskSkipRule._clean_skip_rule(value),
         )
 
+    @classmethod
+    def base_type_hack(cls) -> type[Primitive]:
+        return str
+
     def to_primitive(self) -> Primitive:
         return self.skip_rule
 
