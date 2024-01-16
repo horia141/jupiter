@@ -11,10 +11,10 @@ from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.realm import (
     DatabaseRealm,
-    RealmConcept,
     RealmDecoder,
     RealmDecodingError,
     RealmEncoder,
+    RealmThing,
 )
 from jupiter.core.framework.value import AtomicValue, value
 from pendulum.date import Date
@@ -179,14 +179,14 @@ class Timestamp(AtomicValue):
 class TimestampDatabaseEncoder(RealmEncoder[Timestamp, DatabaseRealm]):
     """An encoder for timestamps in databases."""
 
-    def encode(self, value: Timestamp) -> RealmConcept:
+    def encode(self, value: Timestamp) -> RealmThing:
         return value.as_datetime()
 
 
 class TimestampDatabaseDecoder(RealmDecoder[Timestamp, DatabaseRealm]):
     """A decoder for timestamps in databases."""
 
-    def decode(self, value: RealmConcept) -> Timestamp:
+    def decode(self, value: RealmThing) -> Timestamp:
         if not isinstance(
             value, (str, datetime.date, datetime.datetime, Date, DateTime)
         ):

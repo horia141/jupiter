@@ -2,8 +2,8 @@
 import abc
 from typing import Generic, Mapping, TypeVar
 
-from jupiter.core.framework.concept import Concept
 from jupiter.core.framework.primitive import Primitive
+from jupiter.core.framework.thing import Thing
 
 
 class Realm:
@@ -32,30 +32,30 @@ class EmailRealm(Realm):
 
 AllRealms = DatabaseRealm | SearchRealm | WebRealm | CliRealm | EmailRealm
 
-RealmConcept = Primitive | list["RealmConcept"] | Mapping[str, "RealmConcept"]
+RealmThing = Primitive | list["RealmThing"] | Mapping[str, "RealmThing"]
 
-_ConceptT = TypeVar("_ConceptT", bound=Concept)
+_ThingT = TypeVar("_ThingT", bound=Thing)
 _RealmT = TypeVar("_RealmT", bound=Realm)
 
 
 class RealmDecodingError(Exception):
-    """Error raised when a concept from a realm cannot be decoded to a domain model."""
+    """Error raised when a concept from a realm cannot be decoded to the domain model."""
 
 
-class RealmEncoder(Generic[_ConceptT, _RealmT], abc.ABC):
+class RealmEncoder(Generic[_ThingT, _RealmT], abc.ABC):
     """A encoder and decoder for a realm and a particular type."""
 
     @abc.abstractmethod
-    def encode(self, value: _ConceptT) -> RealmConcept:
-        """Encode a realm to a string."""
+    def encode(self, value: _ThingT) -> RealmThing:
+        """Encode a domain thing to a realm."""
 
 
-class RealmDecoder(Generic[_ConceptT, _RealmT], abc.ABC):
+class RealmDecoder(Generic[_ThingT, _RealmT], abc.ABC):
     """A encoder and decoder for a realm and a particular type."""
 
     @abc.abstractmethod
-    def decode(self, value: RealmConcept) -> _ConceptT:
-        """Decode a realm from a string."""
+    def decode(self, value: RealmThing) -> _ThingT:
+        """Decode a domain thing from realm thing."""
 
 
 class RealmCodecRegistry(abc.ABC):
@@ -64,15 +64,15 @@ class RealmCodecRegistry(abc.ABC):
     @abc.abstractmethod
     def get_encoder(
         self,
-        concept_type: type[_ConceptT],
+        concept_type: type[_ThingT],
         realm: type[_RealmT],
-    ) -> RealmEncoder[_ConceptT, _RealmT]:
+    ) -> RealmEncoder[_ThingT, _RealmT]:
         """Get an encoder for a realm and a concept type."""
 
     @abc.abstractmethod
     def get_decoder(
         self,
-        concept_type: type[_ConceptT],
+        concept_type: type[_ThingT],
         realm: type[_RealmT],
-    ) -> RealmDecoder[_ConceptT, _RealmT]:
+    ) -> RealmDecoder[_ThingT, _RealmT]:
         """Get a decoder for a realm and a concept type."""

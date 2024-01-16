@@ -13,10 +13,10 @@ from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.realm import (
     DatabaseRealm,
-    RealmConcept,
     RealmDecoder,
     RealmDecodingError,
     RealmEncoder,
+    RealmThing,
 )
 from jupiter.core.framework.value import AtomicValue, hashable_value
 
@@ -113,7 +113,7 @@ class EntityNameDatabaseDecoder(
         """Initialize with the type of the entity name."""
         self._the_type = the_type
 
-    def decode(self, value: RealmConcept) -> _EntityNameT:
+    def decode(self, value: RealmThing) -> _EntityNameT:
         """Decode an entity name from the database."""
         if not isinstance(value, str):
             raise RealmDecodingError(

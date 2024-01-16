@@ -7,10 +7,10 @@ from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.realm import (
     DatabaseRealm,
-    RealmConcept,
     RealmDecoder,
     RealmDecodingError,
     RealmEncoder,
+    RealmThing,
 )
 from jupiter.core.framework.value import AtomicValue, hashable_value
 
@@ -37,7 +37,7 @@ class EntityId(AtomicValue):
         """Validate and clean an entity id."""
         if not isinstance(value, (str, int)):
             raise InputValidationError("Expected entity id to be string")
-        
+
         if isinstance(value, int):
             if value == -1:
                 return BAD_REF_ID
@@ -88,14 +88,14 @@ class EntityId(AtomicValue):
 class EntityIdDatabaseEncoder(RealmEncoder[EntityId, DatabaseRealm]):
     """Entity id encoder for the database realm."""
 
-    def encode(self, value: EntityId) -> RealmConcept:
+    def encode(self, value: EntityId) -> RealmThing:
         return value.as_int()
 
 
 class EntityIdDatabaseDecoder(RealmDecoder[EntityId, DatabaseRealm]):
     """Entity id decoder for the database realm."""
 
-    def decode(self, value: RealmConcept) -> EntityId:
+    def decode(self, value: RealmThing) -> EntityId:
         if not isinstance(value, (int, str)):
             raise RealmDecodingError(
                 f"Expected value for {self.__class__} to be an int or string"

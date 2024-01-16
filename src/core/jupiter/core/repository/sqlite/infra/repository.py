@@ -19,7 +19,6 @@ from typing import (
 )
 
 import inflection
-from jupiter.core.framework.primitive import Primitive
 import pendulum
 from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.core.framework.base.entity_name import EntityName
@@ -35,6 +34,7 @@ from jupiter.core.framework.entity import (
     StubEntity,
     TrunkEntity,
 )
+from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.realm import DatabaseRealm, RealmCodecRegistry
 from jupiter.core.framework.repository import (
     EntityAlreadyExistsError,
@@ -214,7 +214,9 @@ class SqliteEntityRepository(Generic[_EntityT], abc.ABC):
         def extract_entity_table_name() -> str:
             return inflection.underscore(entity_type.__name__)
 
-        def extract_field_type(field: dataclasses.Field[Primitive | object]) -> tuple[type[object], bool]:
+        def extract_field_type(
+            field: dataclasses.Field[Primitive | object],
+        ) -> tuple[type[object], bool]:
             field_type_origin = get_origin(field.type)
             if field_type_origin is None:
                 return field.type, False
