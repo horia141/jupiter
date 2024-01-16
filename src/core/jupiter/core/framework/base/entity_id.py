@@ -37,13 +37,11 @@ class EntityId(AtomicValue):
         """Validate and clean an entity id."""
         if not isinstance(value, (str, int)):
             raise InputValidationError("Expected entity id to be string")
-        if not value:
-            raise InputValidationError("Expected entity id to be non-null")
-
+        
         if isinstance(value, int):
             if value == -1:
                 return BAD_REF_ID
-            if value <= 0:
+            if value < 0:
                 raise InputValidationError(
                     "Expected entity id to be a positive integer"
                 )

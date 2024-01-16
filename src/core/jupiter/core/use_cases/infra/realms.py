@@ -592,6 +592,12 @@ class _StandardEntityDatabaseDecoder(
                             ctor_args[field.name] = field_decoder.decode(field_value)
                     else:
                         raise Exception("Not implemented - union")
+                elif field_type_origin is list:
+                    raise Exception("List decoding not implemented yet")
+                elif field_type_origin is set:
+                    raise Exception("Set decoding not implemented yet")
+                elif field_type_origin is dict:
+                    raise Exception("Dict decoding not implemented yet")
                 else:
                     raise Exception(
                         f"Could not decode field {field.name} of type {field.type} for value {self._the_type.__name__}"
