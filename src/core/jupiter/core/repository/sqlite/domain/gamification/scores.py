@@ -2,7 +2,6 @@
 from typing import Final, List, Tuple
 
 from jupiter.core.domain.core.adate import ADate
-from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.gamification.infra.score_log_entry_repository import (
     ScoreLogEntryRepository,
@@ -19,10 +18,8 @@ from jupiter.core.domain.gamification.infra.score_stats_repository import (
 from jupiter.core.domain.gamification.score_log import ScoreLog
 from jupiter.core.domain.gamification.score_log_entry import ScoreLogEntry
 from jupiter.core.domain.gamification.score_period_best import ScorePeriodBest
-from jupiter.core.domain.gamification.score_source import ScoreSource
 from jupiter.core.domain.gamification.score_stats import ScoreStats
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.entity import ParentLink
 from jupiter.core.framework.realm import RealmCodecRegistry
@@ -36,7 +33,6 @@ from jupiter.core.repository.sqlite.infra.repository import (
 )
 from jupiter.core.repository.sqlite.infra.row import RowType
 from sqlalchemy import (
-    Boolean,
     Column,
     DateTime,
     ForeignKey,
@@ -69,51 +65,7 @@ class SqliteScoreLogRepository(
             realm_codec_registry,
             connection,
             metadata,
-            Table(
-                "gamification_score_log",
-                metadata,
-                Column("ref_id", Integer, primary_key=True, autoincrement=True),
-                Column("version", Integer, nullable=False),
-                Column("archived", Boolean, nullable=False),
-                Column("created_time", DateTime, nullable=False),
-                Column("last_modified_time", DateTime, nullable=False),
-                Column("archived_time", DateTime, nullable=True),
-                Column(
-                    "user_ref_id",
-                    Integer,
-                    ForeignKey("user.ref_id"),
-                    unique=True,
-                    index=True,
-                    nullable=False,
-                ),
-                keep_existing=True,
-            ),
-        )
-
-    def _entity_to_row(self, entity: ScoreLog) -> RowType:
-        return {
-            "version": entity.version,
-            "archived": entity.archived,
-            "created_time": entity.created_time.to_db(),
-            "last_modified_time": entity.last_modified_time.to_db(),
-            "archived_time": entity.archived_time.to_db()
-            if entity.archived_time
-            else None,
-            "user_ref_id": entity.user.as_int(),
-        }
-
-    def _row_to_entity(self, row: RowType) -> ScoreLog:
-        return ScoreLog(
-            ref_id=EntityId.from_raw(str(row["ref_id"])),
-            version=row["version"],
-            archived=row["archived"],
-            created_time=Timestamp.from_db(row["created_time"]),
-            archived_time=Timestamp.from_db(row["archived_time"])
-            if row["archived_time"]
-            else None,
-            last_modified_time=Timestamp.from_db(row["last_modified_time"]),
-            events=[],
-            user=ParentLink(EntityId.from_raw(str(row["user_ref_id"]))),
+            table_name="gamification_score_log",
         )
 
 
@@ -133,68 +85,7 @@ class SqliteScoreLogEntryRepository(
             realm_codec_registry,
             connection,
             metadata,
-            Table(
-                "gamification_score_log_entry",
-                metadata,
-                Column("ref_id", Integer, primary_key=True, autoincrement=True),
-                Column("version", Integer, nullable=False),
-                Column("archived", Boolean, nullable=False),
-                Column("created_time", DateTime, nullable=False),
-                Column("last_modified_time", DateTime, nullable=False),
-                Column("archived_time", DateTime, nullable=True),
-                Column(
-                    "score_log_ref_id",
-                    Integer,
-                    ForeignKey("gamification_score_log.ref_id"),
-                    nullable=False,
-                ),
-                Column("source", String, nullable=False),
-                Column("task_ref_id", Integer, nullable=False),
-                Column("difficulty", String, nullable=True),
-                Column("has_lucky_puppy_bonus", Boolean, nullable=True),
-                Column("success", Boolean, nullable=False),
-                Column("score", Integer, nullable=False),
-                keep_existing=True,
-            ),
-        )
-
-    def _entity_to_row(self, entity: ScoreLogEntry) -> RowType:
-        return {
-            "version": entity.version,
-            "archived": entity.archived,
-            "created_time": entity.created_time.to_db(),
-            "last_modified_time": entity.last_modified_time.to_db(),
-            "archived_time": entity.archived_time.to_db()
-            if entity.archived_time
-            else None,
-            "score_log_ref_id": entity.score_log.as_int(),
-            "source": entity.source.value,
-            "task_ref_id": entity.task_ref_id.as_int(),
-            "difficulty": entity.difficulty.value if entity.difficulty else None,
-            "success": entity.success,
-            "has_lucky_puppy_bonus": entity.has_lucky_puppy_bonus,
-            "score": entity.score,
-        }
-
-    def _row_to_entity(self, row: RowType) -> ScoreLogEntry:
-        return ScoreLogEntry(
-            ref_id=EntityId.from_raw(str(row["ref_id"])),
-            version=row["version"],
-            archived=row["archived"],
-            created_time=Timestamp.from_db(row["created_time"]),
-            archived_time=Timestamp.from_db(row["archived_time"])
-            if row["archived_time"]
-            else None,
-            last_modified_time=Timestamp.from_db(row["last_modified_time"]),
-            events=[],
-            name=EntityName(row["name"]),
-            score_log=ParentLink(EntityId.from_raw(str(row["score_log_ref_id"]))),
-            source=ScoreSource(row["source"]),
-            task_ref_id=EntityId.from_raw(str(row["task_ref_id"])),
-            difficulty=Difficulty(row["difficulty"]) if row["difficulty"] else None,
-            success=row["success"],
-            has_lucky_puppy_bonus=row["has_lucky_puppy_bonus"],
-            score=row["score"],
+            table_name="gamification_score_log_entry",
         )
 
 

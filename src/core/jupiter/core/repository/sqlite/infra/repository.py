@@ -93,6 +93,7 @@ class SqliteEntityRepository(Generic[_EntityT], abc.ABC):
         realm_codec_registry: RealmCodecRegistry,
         connection: AsyncConnection,
         metadata: MetaData,
+        table_name: str | None = None,
         table: Table | None = None,
         already_exists_err_cls: type[Exception] = EntityAlreadyExistsError,
         not_found_err_cls: type[Exception] = EntityNotFoundError,
@@ -104,7 +105,9 @@ class SqliteEntityRepository(Generic[_EntityT], abc.ABC):
         self._table = (
             table
             if table is not None
-            else SqliteEntityRepository._build_table_for_entity(metadata, entity_type)
+            else SqliteEntityRepository._build_table_for_entity(
+                table_name, metadata, entity_type
+            )
         )
         self._event_table = build_event_table(self._table, metadata)
         self._entity_type = entity_type
@@ -207,7 +210,7 @@ class SqliteEntityRepository(Generic[_EntityT], abc.ABC):
 
     @staticmethod
     def _build_table_for_entity(
-        metadata: MetaData, entity_type: type[_EntityT]
+        table_name: str | None, metadata: MetaData, entity_type: type[_EntityT]
     ) -> Table:
         """Build the table for an entity."""
 
@@ -241,7 +244,7 @@ class SqliteEntityRepository(Generic[_EntityT], abc.ABC):
 
         all_fields = dataclasses.fields(entity_type)
 
-        entity_table_name = extract_entity_table_name()
+        entity_table_name = table_name or extract_entity_table_name()
 
         table = Table(
             entity_table_name,
