@@ -3,7 +3,6 @@ from typing import Iterable
 
 from jupiter.core.domain.docs.doc import Doc
 from jupiter.core.domain.docs.doc_collection import DocCollection
-from jupiter.core.domain.docs.doc_name import DocName
 from jupiter.core.domain.docs.infra.doc_collection_repository import (
     DocCollectionRepository,
 )
@@ -11,26 +10,13 @@ from jupiter.core.domain.docs.infra.doc_repository import (
     DocRepository,
 )
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.base.timestamp import Timestamp
-from jupiter.core.framework.entity import ParentLink
-from jupiter.core.framework.realm import RealmCodecRegistry
 from jupiter.core.repository.sqlite.infra.repository import (
     SqliteLeafEntityRepository,
     SqliteTrunkEntityRepository,
 )
-from jupiter.core.repository.sqlite.infra.row import RowType
 from sqlalchemy import (
-    Boolean,
-    Column,
-    DateTime,
-    ForeignKey,
-    Integer,
-    MetaData,
-    Table,
-    Unicode,
     select,
 )
-from sqlalchemy.ext.asyncio import AsyncConnection
 
 
 class SqliteDocCollectionRepository(
@@ -38,104 +24,9 @@ class SqliteDocCollectionRepository(
 ):
     """The doc collection repository."""
 
-    def __init__(
-        self,
-        realm_codec_registry: RealmCodecRegistry,
-        connection: AsyncConnection,
-        metadata: MetaData,
-    ) -> None:
-        """Constructor."""
-        super().__init__(
-            realm_codec_registry,
-            connection,
-            metadata,
-            Table(
-                "doc_collection",
-                metadata,
-                Column("ref_id", Integer, primary_key=True, autoincrement=True),
-                Column("version", Integer, nullable=False),
-                Column("archived", Boolean, nullable=False),
-                Column("created_time", DateTime, nullable=False),
-                Column("last_modified_time", DateTime, nullable=False),
-                Column("archived_time", DateTime, nullable=True),
-                Column(
-                    "workspace_ref_id",
-                    Integer,
-                    ForeignKey("workspace_ref_id.ref_id"),
-                    unique=True,
-                    index=True,
-                    nullable=False,
-                ),
-                keep_existing=True,
-            ),
-        )
-
-    def _entity_to_row(self, entity: DocCollection) -> RowType:
-        return {
-            "version": entity.version,
-            "archived": entity.archived,
-            "created_time": entity.created_time.to_db(),
-            "last_modified_time": entity.last_modified_time.to_db(),
-            "archived_time": entity.archived_time.to_db()
-            if entity.archived_time
-            else None,
-            "workspace_ref_id": entity.workspace.as_int(),
-        }
-
-    def _row_to_entity(self, row: RowType) -> DocCollection:
-        return DocCollection(
-            ref_id=EntityId.from_raw(str(row["ref_id"])),
-            version=row["version"],
-            archived=row["archived"],
-            created_time=Timestamp.from_db(row["created_time"]),
-            archived_time=Timestamp.from_db(row["archived_time"])
-            if row["archived_time"]
-            else None,
-            last_modified_time=Timestamp.from_db(row["last_modified_time"]),
-            events=[],
-            workspace=ParentLink(EntityId.from_raw(str(row["workspace_ref_id"]))),
-        )
-
 
 class SqliteDocRepository(SqliteLeafEntityRepository[Doc], DocRepository):
     """A repository of docs."""
-
-    def __init__(
-        self,
-        realm_codec_registry: RealmCodecRegistry,
-        connection: AsyncConnection,
-        metadata: MetaData,
-    ) -> None:
-        """Constructor."""
-        super().__init__(
-            realm_codec_registry,
-            connection,
-            metadata,
-            Table(
-                "doc",
-                metadata,
-                Column("ref_id", Integer, primary_key=True, autoincrement=True),
-                Column("version", Integer, nullable=False),
-                Column("archived", Boolean, nullable=False),
-                Column("created_time", DateTime, nullable=False),
-                Column("last_modified_time", DateTime, nullable=False),
-                Column("archived_time", DateTime, nullable=True),
-                Column(
-                    "doc_collection_ref_id",
-                    Integer,
-                    ForeignKey("doc_collection.ref_id"),
-                    nullable=False,
-                ),
-                Column(
-                    "parent_doc_ref_id",
-                    Integer(),
-                    ForeignKey("doc.ref_id"),
-                    nullable=True,
-                ),
-                Column("name", Unicode(), nullable=False),
-                keep_existing=True,
-            ),
-        )
 
     async def find_all_with_filters(
         self,
@@ -172,41 +63,3 @@ class SqliteDocRepository(SqliteLeafEntityRepository[Doc], DocRepository):
                 )
         results = await self._connection.execute(query_stmt)
         return [self._row_to_entity(row) for row in results]
-
-    def _entity_to_row(self, entity: Doc) -> RowType:
-        return {
-            "version": entity.version,
-            "archived": entity.archived,
-            "created_time": entity.created_time.to_db(),
-            "last_modified_time": entity.last_modified_time.to_db(),
-            "archived_time": entity.archived_time.to_db()
-            if entity.archived_time
-            else None,
-            "doc_collection_ref_id": entity.doc_collection.as_int(),
-            "parent_doc_ref_id": entity.parent_doc_ref_id.as_int()
-            if entity.parent_doc_ref_id
-            else None,
-            "name": str(entity.name),
-        }
-
-    def _row_to_entity(self, row: RowType) -> Doc:
-        return Doc(
-            ref_id=EntityId(str(row["ref_id"])),
-            version=row["version"],
-            archived=row["archived"],
-            created_time=Timestamp.from_db(row["created_time"]),
-            archived_time=Timestamp.from_db(row["archived_time"])
-            if row["archived_time"]
-            else None,
-            last_modified_time=Timestamp.from_db(row["last_modified_time"]),
-            events=[],
-            doc_collection=ParentLink(
-                EntityId.from_raw(
-                    str(row["doc_collection_ref_id"]),
-                )
-            ),
-            parent_doc_ref_id=EntityId.from_raw(str(row["parent_doc_ref_id"]))
-            if row["parent_doc_ref_id"]
-            else None,
-            name=DocName.from_raw(row["name"]),
-        )
