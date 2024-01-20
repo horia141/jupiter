@@ -49,7 +49,12 @@ from jupiter.core.framework.realm import (
 )
 from jupiter.core.framework.record import Record
 from jupiter.core.framework.thing import Thing, ValueIsh
-from jupiter.core.framework.value import AtomicValue, CompositeValue, EnumValue
+from jupiter.core.framework.value import (
+    AtomicValue,
+    CompositeValue,
+    EnumValue,
+    SecretValue,
+)
 from pendulum.date import Date
 from pendulum.datetime import DateTime
 
@@ -1511,6 +1516,7 @@ def _is_value_ish(
         or isinstance(the_type, AtomicValue)
         or isinstance(the_type, CompositeValue)
         or isinstance(the_type, EnumValue)
+        or isinstance(the_type, SecretValue)
     )
 
 
@@ -1521,5 +1527,5 @@ def _is_value_ish_type(
         the_type in (type(None), bool, int, float, str, date, datetime, Date, DateTime)
         or isinstance(the_type, type)
         and get_origin(the_type) is None
-        and issubclass(the_type, (AtomicValue, CompositeValue, EnumValue))
+        and issubclass(the_type, (AtomicValue, CompositeValue, EnumValue, SecretValue))
     )
