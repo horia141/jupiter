@@ -10,15 +10,17 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '9a2848c9a2e4'
-down_revision = '37dd9d715387'
+revision = "9a2848c9a2e4"
+down_revision = "37dd9d715387"
 branch_labels = None
 depends_on = None
 
 
 def upgrade() -> None:
     with op.batch_alter_table("journal_collection") as batch_op:
-        batch_op.add_column(sa.Column("writing_task_gen_params", sa.JSON, nullable=True))
+        batch_op.add_column(
+            sa.Column("writing_task_gen_params", sa.JSON, nullable=True)
+        )
 
     op.execute(
         """

@@ -466,7 +466,7 @@ class _StandardEnumValueDatabaseDecoder(
                 f"Expected value for {self._the_type.__name__} to be string"
             )
 
-        value_clean: str = value.strip().lower()
+        value_clean: str = value.strip()
 
         try:
             return cast(_EnumValueT, self._the_type(value_clean))
@@ -666,14 +666,39 @@ class _StandardEntityDatabaseDecoder(
                 ):
                     field_args = get_args(field.type)
                     for field_arg in field_args:
-                        field_decoder = self._realm_codec_registry.get_decoder(
-                            field_arg, DatabaseRealm
-                        )
-                        try:
-                            ctor_args[field.name] = field_decoder.decode(field_value)
-                            break
-                        except (RealmDecodingError, InputValidationError):
-                            pass
+                        if _is_value_ish_type(field_arg):
+                            field_decoder = self._realm_codec_registry.get_decoder(
+                                field_arg, DatabaseRealm
+                            )
+                            try:
+                                ctor_args[field.name] = field_decoder.decode(
+                                    field_value
+                                )
+                                break
+                            except (RealmDecodingError, InputValidationError):
+                                pass
+                        elif get_origin(field_arg) is not None:
+                            field_arg_origin = get_origin(field_arg)
+
+                            if field_arg_origin is list:
+                                list_item_type = cast(
+                                    type[Thing], get_args(field_arg)[0]
+                                )
+                                if not isinstance(field_value, list):
+                                    continue
+                                list_item_decoder = (
+                                    self._realm_codec_registry.get_decoder(
+                                        list_item_type, DatabaseRealm
+                                    )
+                                )
+                                ctor_args[field.name] = [
+                                    list_item_decoder.decode(v) for v in field_value
+                                ]
+                                break
+                            else:
+                                continue
+                        else:
+                            continue
                     else:
                         raise RealmDecodingError(
                             f"Could not decode field {field.name} of type {field.type} for value {self._the_type.__name__}"
@@ -703,14 +728,14 @@ class _StandardEntityDatabaseDecoder(
                             for field_item in field_value:
                                 list_item_type_args = get_args(list_item_type)
                                 for list_item_type_arg in list_item_type_args:
-                                    list_item_decoder = (
+                                    list_subitem_decoder = (
                                         self._realm_codec_registry.get_decoder(
                                             list_item_type_arg, DatabaseRealm
                                         )
                                     )
                                     try:
                                         union_field_result.append(
-                                            list_item_decoder.decode(field_item)
+                                            list_subitem_decoder.decode(field_item)
                                         )
                                         break
                                     except (RealmDecodingError, InputValidationError):

@@ -38,7 +38,7 @@ class NamedEntityTag(EnumValue):
 
         if named_entity_tag_str not in NamedEntityTag.all_values():
             raise InputValidationError(
-                f"Expected entity tag '{named_entity_tag_raw}' to be one of '{','.join(NamedEntityTag.all_values())}'",
+                f"Expected entity tag '{named_entity_tag_raw}' to be one of '{','.join(NamedEntityTag.all_values())}' but was {named_entity_tag_str}",
             )
 
         return NamedEntityTag(named_entity_tag_str)
