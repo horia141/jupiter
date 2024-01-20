@@ -3,7 +3,9 @@ import { useFetcher } from "@remix-run/react";
 import { Note } from "jupiter-gen";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { ClientOnly } from "remix-utils";
+import { SomeErrorNoData } from "~/logic/action-result";
 import { OneOfNoteContentBlock } from "~/logic/domain/notes";
+import { FieldError, GlobalError } from "./infra/errors";
 
 const BlockEditor = lazy(() => import("~/components/infra/block-editor"));
 
@@ -16,7 +18,7 @@ export function EntityNoteEditor({
   initialNote,
   inputsEnabled,
 }: EntityNoteEditorProps) {
-  const cardActionFetcher = useFetcher();
+  const cardActionFetcher = useFetcher<SomeErrorNoData>();
 
   const [dataModified, setDataModified] = useState(false);
   const [isActing, setIsActing] = useState(false);
@@ -66,6 +68,9 @@ export function EntityNoteEditor({
 
   return (
     <>
+      <GlobalError actionResult={cardActionFetcher.data} />
+      <FieldError actionResult={cardActionFetcher.data} fieldName="/content" />
+
       <ClientOnly fallback={<div>Loading... </div>}>
         {() => (
           <Suspense fallback={<div>Loading...</div>}>

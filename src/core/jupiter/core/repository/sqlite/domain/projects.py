@@ -9,28 +9,14 @@ from jupiter.core.domain.projects.infra.project_repository import (
 )
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.projects.project_collection import ProjectCollection
-from jupiter.core.domain.projects.project_name import ProjectName
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.base.timestamp import Timestamp
-from jupiter.core.framework.entity import ParentLink
-from jupiter.core.framework.realm import RealmCodecRegistry
 from jupiter.core.repository.sqlite.infra.repository import (
     SqliteLeafEntityRepository,
     SqliteTrunkEntityRepository,
 )
-from jupiter.core.repository.sqlite.infra.row import RowType
 from sqlalchemy import (
-    Boolean,
-    Column,
-    DateTime,
-    ForeignKey,
-    Integer,
-    MetaData,
-    String,
-    Table,
     select,
 )
-from sqlalchemy.ext.asyncio import AsyncConnection
 
 
 class SqliteProjectCollectionRepository(
@@ -38,98 +24,9 @@ class SqliteProjectCollectionRepository(
 ):
     """The project collection repository."""
 
-    def __init__(
-        self,
-        realm_codec_registry: RealmCodecRegistry,
-        connection: AsyncConnection,
-        metadata: MetaData,
-    ) -> None:
-        """Constructor."""
-        super().__init__(
-            realm_codec_registry,
-            connection,
-            metadata,
-            Table(
-                "project_collection",
-                metadata,
-                Column("ref_id", Integer, primary_key=True, autoincrement=True),
-                Column("version", Integer, nullable=False),
-                Column("archived", Boolean, nullable=False),
-                Column("created_time", DateTime, nullable=False),
-                Column("last_modified_time", DateTime, nullable=False),
-                Column("archived_time", DateTime, nullable=True),
-                Column(
-                    "workspace_ref_id",
-                    Integer,
-                    ForeignKey("workspace.ref_id"),
-                    unique=True,
-                    index=True,
-                    nullable=False,
-                ),
-                keep_existing=True,
-            ),
-        )
-
-    def _entity_to_row(self, entity: ProjectCollection) -> RowType:
-        return {
-            "version": entity.version,
-            "archived": entity.archived,
-            "created_time": entity.created_time.to_db(),
-            "last_modified_time": entity.last_modified_time.to_db(),
-            "archived_time": entity.archived_time.to_db()
-            if entity.archived_time
-            else None,
-            "workspace_ref_id": entity.workspace.as_int(),
-        }
-
-    def _row_to_entity(self, row: RowType) -> ProjectCollection:
-        return ProjectCollection(
-            ref_id=EntityId.from_raw(str(row["ref_id"])),
-            version=row["version"],
-            archived=row["archived"],
-            created_time=Timestamp.from_db(row["created_time"]),
-            archived_time=Timestamp.from_db(row["archived_time"])
-            if row["archived_time"]
-            else None,
-            last_modified_time=Timestamp.from_db(row["last_modified_time"]),
-            events=[],
-            workspace=ParentLink(EntityId.from_raw(str(row["workspace_ref_id"]))),
-        )
-
 
 class SqliteProjectRepository(SqliteLeafEntityRepository[Project], ProjectRepository):
     """A repository for projects."""
-
-    def __init__(
-        self,
-        realm_codec_registry: RealmCodecRegistry,
-        connection: AsyncConnection,
-        metadata: MetaData,
-    ) -> None:
-        """Constructor."""
-        super().__init__(
-            realm_codec_registry,
-            connection,
-            metadata,
-            Table(
-                "project",
-                metadata,
-                Column("ref_id", Integer, primary_key=True, autoincrement=True),
-                Column("version", Integer, nullable=False),
-                Column("archived", Boolean, nullable=False),
-                Column("created_time", DateTime, nullable=False),
-                Column("last_modified_time", DateTime, nullable=False),
-                Column("archived_time", DateTime, nullable=True),
-                Column(
-                    "project_collection_ref_id",
-                    Integer,
-                    ForeignKey("project_collection.ref_id"),
-                    nullable=False,
-                ),
-                Column("name", String(100), nullable=False),
-                keep_existing=True,
-            ),
-        )
 
     async def find_all_with_filters(
         self,
@@ -149,35 +46,3 @@ class SqliteProjectRepository(SqliteLeafEntityRepository[Project], ProjectReposi
             )
         results = await self._connection.execute(query_stmt)
         return [self._row_to_entity(row) for row in results]
-
-    def _entity_to_row(self, entity: Project) -> RowType:
-        return {
-            "version": entity.version,
-            "archived": entity.archived,
-            "created_time": entity.created_time.to_db(),
-            "last_modified_time": entity.last_modified_time.to_db(),
-            "archived_time": entity.archived_time.to_db()
-            if entity.archived_time
-            else None,
-            "project_collection_ref_id": entity.project_collection.as_int(),
-            "name": str(entity.name),
-        }
-
-    def _row_to_entity(self, row: RowType) -> Project:
-        return Project(
-            ref_id=EntityId.from_raw(str(row["ref_id"])),
-            version=row["version"],
-            archived=row["archived"],
-            created_time=Timestamp.from_db(row["created_time"]),
-            archived_time=Timestamp.from_db(row["archived_time"])
-            if row["archived_time"]
-            else None,
-            last_modified_time=Timestamp.from_db(row["last_modified_time"]),
-            events=[],
-            project_collection=ParentLink(
-                EntityId.from_raw(
-                    str(row["project_collection_ref_id"]),
-                )
-            ),
-            name=ProjectName.from_raw(row["name"]),
-        )

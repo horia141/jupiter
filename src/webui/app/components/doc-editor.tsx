@@ -3,7 +3,9 @@ import { useFetcher } from "@remix-run/react";
 import { Doc, Note } from "jupiter-gen";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { ClientOnly } from "remix-utils";
+import { SomeErrorNoData } from "~/logic/action-result";
 import { OneOfNoteContentBlock } from "~/logic/domain/notes";
+import { FieldError, GlobalError } from "./infra/errors";
 
 const BlockEditor = lazy(() => import("~/components/infra/block-editor"));
 
@@ -18,7 +20,7 @@ export function DocEditor({
   initialNote,
   inputsEnabled,
 }: DocEditorProps) {
-  const cardActionFetcher = useFetcher();
+  const cardActionFetcher = useFetcher<SomeErrorNoData>();
 
   const [dataModified, setDataModified] = useState(false);
   const [isActing, setIsActing] = useState(false);
@@ -101,6 +103,8 @@ export function DocEditor({
 
   return (
     <>
+      <GlobalError actionResult={cardActionFetcher.data} />
+
       <TextField
         label="Name"
         name="name"
@@ -114,6 +118,9 @@ export function DocEditor({
           setNoteName(e.target.value);
         }}
       />
+      <FieldError actionResult={cardActionFetcher.data} fieldName="/name" />
+
+      <FieldError actionResult={cardActionFetcher.data} fieldName="/content" />
 
       <ClientOnly fallback={<div>Loading... </div>}>
         {() => (

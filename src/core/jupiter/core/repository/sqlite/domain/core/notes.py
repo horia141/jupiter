@@ -9,32 +9,16 @@ from jupiter.core.domain.core.notes.infra.note_repository import (
 )
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_collection import NoteCollection
-from jupiter.core.domain.core.notes.note_content_block import NoteContentBlock
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.base.entity_name import NOT_USED_NAME
-from jupiter.core.framework.base.timestamp import Timestamp
-from jupiter.core.framework.entity import ParentLink
-from jupiter.core.framework.realm import RealmCodecRegistry
 from jupiter.core.framework.repository import EntityNotFoundError
 from jupiter.core.repository.sqlite.infra.repository import (
     SqliteLeafEntityRepository,
     SqliteTrunkEntityRepository,
 )
-from jupiter.core.repository.sqlite.infra.row import RowType
 from sqlalchemy import (
-    JSON,
-    Boolean,
-    Column,
-    DateTime,
-    ForeignKey,
-    Integer,
-    MetaData,
-    String,
-    Table,
     select,
 )
-from sqlalchemy.ext.asyncio import AsyncConnection
 
 
 class SqliteNoteCollectionRepository(
@@ -42,100 +26,9 @@ class SqliteNoteCollectionRepository(
 ):
     """The note collection repository."""
 
-    def __init__(
-        self,
-        realm_codec_registry: RealmCodecRegistry,
-        connection: AsyncConnection,
-        metadata: MetaData,
-    ) -> None:
-        """Constructor."""
-        super().__init__(
-            realm_codec_registry,
-            connection,
-            metadata,
-            Table(
-                "note_collection",
-                metadata,
-                Column("ref_id", Integer, primary_key=True, autoincrement=True),
-                Column("version", Integer, nullable=False),
-                Column("archived", Boolean, nullable=False),
-                Column("created_time", DateTime, nullable=False),
-                Column("last_modified_time", DateTime, nullable=False),
-                Column("archived_time", DateTime, nullable=True),
-                Column(
-                    "workspace_ref_id",
-                    Integer,
-                    ForeignKey("workspace_ref_id.ref_id"),
-                    unique=True,
-                    index=True,
-                    nullable=False,
-                ),
-                keep_existing=True,
-            ),
-        )
-
-    def _entity_to_row(self, entity: NoteCollection) -> RowType:
-        return {
-            "version": entity.version,
-            "archived": entity.archived,
-            "created_time": entity.created_time.to_db(),
-            "last_modified_time": entity.last_modified_time.to_db(),
-            "archived_time": entity.archived_time.to_db()
-            if entity.archived_time
-            else None,
-            "workspace_ref_id": entity.workspace.as_int(),
-        }
-
-    def _row_to_entity(self, row: RowType) -> NoteCollection:
-        return NoteCollection(
-            ref_id=EntityId.from_raw(str(row["ref_id"])),
-            version=row["version"],
-            archived=row["archived"],
-            created_time=Timestamp.from_db(row["created_time"]),
-            archived_time=Timestamp.from_db(row["archived_time"])
-            if row["archived_time"]
-            else None,
-            last_modified_time=Timestamp.from_db(row["last_modified_time"]),
-            events=[],
-            workspace=ParentLink(EntityId.from_raw(str(row["workspace_ref_id"]))),
-        )
-
 
 class SqliteNoteRepository(SqliteLeafEntityRepository[Note], NoteRepository):
     """A repository of notes."""
-
-    def __init__(
-        self,
-        realm_codec_registry: RealmCodecRegistry,
-        connection: AsyncConnection,
-        metadata: MetaData,
-    ) -> None:
-        """Constructor."""
-        super().__init__(
-            realm_codec_registry,
-            connection,
-            metadata,
-            Table(
-                "note",
-                metadata,
-                Column("ref_id", Integer, primary_key=True, autoincrement=True),
-                Column("version", Integer, nullable=False),
-                Column("archived", Boolean, nullable=False),
-                Column("created_time", DateTime, nullable=False),
-                Column("last_modified_time", DateTime, nullable=False),
-                Column("archived_time", DateTime, nullable=True),
-                Column(
-                    "note_collection_ref_id",
-                    Integer,
-                    ForeignKey("note_collection.ref_id"),
-                    nullable=False,
-                ),
-                Column("domain", String(), nullable=False),
-                Column("source_entity_ref_id", Integer(), nullable=False),
-                Column("content", JSON(), nullable=False),
-                keep_existing=True,
-            ),
-        )
 
     async def load_for_source(
         self,
@@ -205,40 +98,3 @@ class SqliteNoteRepository(SqliteLeafEntityRepository[Note], NoteRepository):
             )
         results = await self._connection.execute(query_stmt)
         return [self._row_to_entity(row) for row in results]
-
-    def _entity_to_row(self, entity: Note) -> RowType:
-        return {
-            "version": entity.version,
-            "archived": entity.archived,
-            "created_time": entity.created_time.to_db(),
-            "last_modified_time": entity.last_modified_time.to_db(),
-            "archived_time": entity.archived_time.to_db()
-            if entity.archived_time
-            else None,
-            "note_collection_ref_id": entity.note_collection.as_int(),
-            "domain": entity.domain.value,
-            "source_entity_ref_id": entity.source_entity_ref_id.as_int(),
-            "content": [cb.to_json() for cb in entity.content],
-        }
-
-    def _row_to_entity(self, row: RowType) -> Note:
-        return Note(
-            ref_id=EntityId(str(row["ref_id"])),
-            version=row["version"],
-            archived=row["archived"],
-            created_time=Timestamp.from_db(row["created_time"]),
-            archived_time=Timestamp.from_db(row["archived_time"])
-            if row["archived_time"]
-            else None,
-            last_modified_time=Timestamp.from_db(row["last_modified_time"]),
-            events=[],
-            name=NOT_USED_NAME,
-            note_collection=ParentLink(
-                EntityId.from_raw(
-                    str(row["note_collection_ref_id"]),
-                )
-            ),
-            domain=NoteDomain(row["domain"]),
-            source_entity_ref_id=EntityId.from_raw(str(row["source_entity_ref_id"])),
-            content=[NoteContentBlock.from_json(cb) for cb in row["content"]],
-        )

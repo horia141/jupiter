@@ -1,30 +1,16 @@
 """The SQLIte based user repository."""
 
 from jupiter.core.domain.core.email_address import EmailAddress
-from jupiter.core.domain.core.timezone import Timezone
-from jupiter.core.domain.features import UserFeature
-from jupiter.core.domain.user.avatar import Avatar
 from jupiter.core.domain.user.infra.user_repository import (
     UserAlreadyExistsError,
     UserNotFoundError,
     UserRepository,
 )
 from jupiter.core.domain.user.user import User
-from jupiter.core.domain.user.user_name import UserName
-from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.realm import RealmCodecRegistry
 from jupiter.core.repository.sqlite.infra.repository import SqliteRootEntityRepository
-from jupiter.core.repository.sqlite.infra.row import RowType
 from sqlalchemy import (
-    JSON,
-    Boolean,
-    Column,
-    DateTime,
-    Integer,
     MetaData,
-    String,
-    Table,
     select,
 )
 from sqlalchemy.ext.asyncio import AsyncConnection

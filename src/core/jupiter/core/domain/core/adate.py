@@ -100,7 +100,7 @@ class ADate(AtomicValue):
     @classmethod
     def from_raw(cls, value: Primitive) -> "ADate":
         """Validate and clean an ADate."""
-        if not isinstance(value, (str, date, datetime, Date, DateTime)):
+        if not isinstance(value, (str, date, datetime, Date, DateTime, dict)):
             raise InputValidationError(
                 "Expected datetime to be string or a date or a datetime"
             )
@@ -117,7 +117,7 @@ class ADate(AtomicValue):
         try:
             adate = pendulum.parser.parse(
                 value,
-                tz=pendulum.tz.timezone(str(UTC)),
+                tz=pendulum.tz.timezone(UTC.name),
                 exact=True,
             )
 

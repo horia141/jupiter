@@ -91,7 +91,7 @@ class SmartListFindUseCase(
                     filter_ref_ids=args.filter_tag_ref_id,
                 ):
                     if (
-                        smart_list_tag.smart_list
+                        smart_list_tag.smart_list.ref_id
                         not in smart_list_tags_by_smart_list_ref_ids
                     ):
                         smart_list_tags_by_smart_list_ref_ids[
@@ -117,7 +117,7 @@ class SmartListFindUseCase(
                     filter_tag_ref_ids=args.filter_tag_ref_id,
                 ):
                     if (
-                        smart_list_item.smart_list
+                        smart_list_item.smart_list.ref_id
                         not in smart_list_items_by_smart_list_ref_ids
                     ):
                         smart_list_items_by_smart_list_ref_ids[

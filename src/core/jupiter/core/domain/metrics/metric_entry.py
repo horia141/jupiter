@@ -56,6 +56,9 @@ class MetricEntry(LeafEntity):
         """Change the metric entry."""
         return self._new_version(
             ctx,
+            name=MetricEntry.build_name(
+                collection_time.or_else(self.collection_time), value.or_else(self.value)
+            ),
             collection_time=collection_time.or_else(self.collection_time),
             value=value.or_else(self.value),
         )

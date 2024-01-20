@@ -3,7 +3,7 @@ from typing import cast
 
 from jupiter.core.domain.smart_lists.smart_list_tag_name import SmartListTagName
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.base.entity_name import EntityName
+from jupiter.core.framework.base.entity_name import NOT_USED_NAME
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     BranchTagEntity,
@@ -31,7 +31,7 @@ class SmartListTag(BranchTagEntity):
         """Create a smart list tag."""
         return SmartListTag._create(
             ctx,
-            name=EntityName(tag_name.the_tag),
+            name=NOT_USED_NAME,
             smart_list=ParentLink(smart_list_ref_id),
             tag_name=tag_name,
         )
@@ -45,5 +45,6 @@ class SmartListTag(BranchTagEntity):
         """Change the smart list tag."""
         return self._new_version(
             ctx,
+            name=NOT_USED_NAME,
             tag_name=tag_name.or_else(cast(SmartListTagName, self.tag_name)),
         )
