@@ -68,6 +68,33 @@ _EntityT = TypeVar("_EntityT", bound=Entity)
 _RecordT = TypeVar("_RecordT", bound=Record)
 
 
+# What can we handle with the things here, let's take a look!
+#
+# A Thing is:
+#     Literal[str]
+#     ValueIsh = Primitive | Value
+#       where Value = AtomicValue | CompositeValue | EnumValue | SecretValue
+#     ComplexIsh = Entity | Record
+#
+# A CompositeValue is a collection of fields, each of which can be:
+#     ValueFieldType:
+#       Literal[str]
+#       Primitive
+#       Value
+#       list[ValueFieldType]
+#       dict[Primitive | AtomicValue | EnumValue, ValueFieldType]
+#       union[*ValueFieldType]
+#
+# An Entity is a collection of fields, each of which can be:
+#     ValueFieldType
+#     ParentLink
+#     EntityLink
+# A Record is a collection of fields, each of which can be:
+#     ValueFieldType
+#     ParentLink
+#     EntityLink
+
+
 class _StandardPrimitiveDatabaseEncoder(
     Generic[_PrimitiveT], RealmEncoder[_PrimitiveT, DatabaseRealm]
 ):
