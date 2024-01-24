@@ -6,9 +6,8 @@ from jupiter.core.domain.user.user_name import UserName
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
     ProgressReporter,
-    UseCaseArgsBase,
-    use_case_args,
 )
+from jupiter.core.framework.use_case_io import UseCaseArgsBase, use_case_args
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,

@@ -34,16 +34,6 @@ from rich.tree import Tree
 class HabitShow(LoggedInReadonlyCommand[HabitFindUseCase]):
     """UseCase class for showing the habits."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "habit-show"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Show the list of habits"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

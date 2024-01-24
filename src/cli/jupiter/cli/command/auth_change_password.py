@@ -18,40 +18,6 @@ from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
 class AuthChangePassword(LoggedInMutationCommand[ChangePasswordUseCase]):
     """Use case for changin a password."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "auth-change-password"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Change the password for the user"
-
-    def build_parser(self, parser: ArgumentParser) -> None:
-        """Construct a argparse parser for the command."""
-        parser.add_argument(
-            "--current-password",
-            type=PasswordPlain.from_raw,
-            dest="current_password",
-            required=True,
-            help="The current password for the user",
-        )
-        parser.add_argument(
-            "--new-password",
-            type=PasswordNewPlain.from_raw,
-            dest="new_password",
-            required=True,
-            help="The new password",
-        )
-        parser.add_argument(
-            "--new-password-repeat",
-            type=PasswordNewPlain.from_raw,
-            dest="new_password_repeat",
-            required=True,
-            help="A repeat of the new password",
-        )
-
     async def _run(
         self,
         session_info: SessionInfo,

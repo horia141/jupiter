@@ -14,16 +14,6 @@ from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
 class InboxTaskArchive(LoggedInMutationCommand[InboxTaskArchiveUseCase]):
     """UseCase class for archiving an inbox task."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "inbox-task-archive"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Archive an inbox task"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

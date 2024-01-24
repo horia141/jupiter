@@ -32,16 +32,6 @@ from rich.tree import Tree
 class InboxTaskShow(LoggedInReadonlyCommand[InboxTaskFindUseCase]):
     """UseCase class for showing the inbox tasks."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "inbox-task-show"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Show the list of inbox tasks"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

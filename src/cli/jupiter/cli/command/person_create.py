@@ -19,16 +19,6 @@ from jupiter.core.use_cases.persons.create import PersonCreateArgs, PersonCreate
 class PersonCreate(LoggedInMutationCommand[PersonCreateUseCase]):
     """UseCase class for adding a person."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "person-create"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Add a new person"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

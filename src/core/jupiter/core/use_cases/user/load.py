@@ -13,12 +13,10 @@ from jupiter.core.domain.gamification.user_score_history import UserScoreHistory
 from jupiter.core.domain.gamification.user_score_overview import UserScoreOverview
 from jupiter.core.domain.storage_engine import DomainStorageEngine, DomainUnitOfWork
 from jupiter.core.domain.user.user import User
-from jupiter.core.framework.use_case import (
-    UseCaseArgsBase,
-    UseCaseResultBase,
-    use_case_args,
+from jupiter.core.framework.use_case_io import (
     use_case_result,
 )
+from jupiter.core.framework.use_case_io import UseCaseArgsBase, UseCaseResultBase, use_case_args
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCaseContext,
     AppTransactionalLoggedInReadOnlyUseCase,

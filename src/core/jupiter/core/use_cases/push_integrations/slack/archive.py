@@ -8,9 +8,8 @@ from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     ProgressReporter,
-    UseCaseArgsBase,
-    use_case_args,
 )
+from jupiter.core.framework.use_case_io import UseCaseArgsBase, use_case_args
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,

@@ -36,11 +36,10 @@ from jupiter.core.framework.use_case import (
     ProgressReporterFactory,
     ReadonlyUseCase,
     UseCase,
-    UseCaseArgsBase,
     UseCaseContextBase,
-    UseCaseResultBase,
     UseCaseSessionBase,
 )
+from jupiter.core.framework.use_case_io import UseCaseArgsBase, UseCaseResultBase
 from jupiter.core.utils.time_provider import TimeProvider
 
 UseCaseSession = TypeVar("UseCaseSession", bound=UseCaseSessionBase)

@@ -14,16 +14,6 @@ from jupiter.core.use_cases.push_integrations.email.archive import (
 class EmailTaskArchive(LoggedInMutationCommand[EmailTaskArchiveUseCase]):
     """UseCase class for archiving an email task."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "email-task-archive"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Archive an email task"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

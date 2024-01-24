@@ -7,6 +7,7 @@ from typing import List
 
 import aiohttp
 import jupiter.core.domain
+import jupiter.core.use_cases
 from jupiter.cli.command.auth_change_password import AuthChangePassword
 from jupiter.cli.command.big_plan_archive import BigPlanArchive
 from jupiter.cli.command.big_plan_change_project import BigPlanChangeProject
@@ -139,7 +140,7 @@ from jupiter.core.domain.workspaces.infra.workspace_repository import (
     WorkspaceNotFoundError,
 )
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.repository import LeafEntityNotFoundError
+from jupiter.core.framework.repository import EntityNotFoundError
 from jupiter.core.framework.storage import ConnectionPrepareError
 from jupiter.core.repository.sqlite.connection import SqliteConnection
 from jupiter.core.repository.sqlite.domain.storage_engine import (
@@ -299,7 +300,7 @@ async def main() -> None:
     global_properties = build_global_properties()
 
     realm_codec_registry = ModuleExplorerRealmCodecRegistry.build_from_module_root(
-        jupiter.core.domain
+        jupiter.core.domain, jupiter.core.use_cases
     )
 
     sqlite_connection = SqliteConnection(
@@ -359,7 +360,7 @@ async def main() -> None:
         workspace=top_level_info.workspace,
     )
 
-    no_session_command = [
+    no_session_command: list[Command] = [
         Initialize(
             session_storage=session_storage,
             top_level_context=top_level_context,
@@ -389,6 +390,7 @@ async def main() -> None:
             [
                 # Complex commands.
                 AuthChangePassword(
+                    realm_codec_registry=realm_codec_registry,
                     session_storage=session_storage,
                     top_level_context=top_level_context.to_logged_in(),
                     use_case=ChangePasswordUseCase(
@@ -412,6 +414,7 @@ async def main() -> None:
                 ),
                 Search(
                     session_storage=session_storage,
+                    realm_codec_registry=realm_codec_registry,
                     top_level_context=top_level_context.to_logged_in(),
                     global_properties=global_properties,
                     time_provider=time_provider,
@@ -424,6 +427,7 @@ async def main() -> None:
                 GenDo(
                     global_properties,
                     time_provider,
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     GenDoUseCase(
@@ -436,6 +440,7 @@ async def main() -> None:
                     ),
                 ),
                 GenShow(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     GenLoadRunsUseCase(
@@ -445,12 +450,14 @@ async def main() -> None:
                 ),
                 Report(
                     global_properties,
+                    realm_codec_registry,
                     time_provider,
                     session_storage,
                     top_level_context.to_logged_in(),
                     ReportUseCase(auth_token_stamper, domain_storage_engine),
                 ),
                 GCDo(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     GCDoUseCase(
@@ -463,6 +470,7 @@ async def main() -> None:
                     ),
                 ),
                 GCShow(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     GCLoadRunsUseCase(
@@ -471,6 +479,7 @@ async def main() -> None:
                     ),
                 ),
                 Pomodoro(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     NoOpUseCase(
@@ -481,6 +490,7 @@ async def main() -> None:
                 Logout(session_storage=session_storage),
                 # CRUD Commands.
                 UserUpdate(
+                    realm_codec_registry=realm_codec_registry,
                     session_storage=session_storage,
                     top_level_context=top_level_context.to_logged_in(),
                     use_case=UserUpdateUseCase(
@@ -493,6 +503,7 @@ async def main() -> None:
                     ),
                 ),
                 UserChangeFeatureFlags(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     UserChangeFeatureFlagsUseCase(
@@ -506,6 +517,7 @@ async def main() -> None:
                     ),
                 ),
                 UserShow(
+                    realm_codec_registry=realm_codec_registry,
                     session_storage=session_storage,
                     top_level_context=top_level_context.to_logged_in(),
                     use_case=UserLoadUseCase(
@@ -515,6 +527,7 @@ async def main() -> None:
                     ),
                 ),
                 WorkspaceUpdate(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     WorkspaceUpdateUseCase(
@@ -527,6 +540,7 @@ async def main() -> None:
                     ),
                 ),
                 WorkspaceChangeDefaultProject(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     WorkspaceChangeDefaultProjectUseCase(
@@ -539,6 +553,7 @@ async def main() -> None:
                     ),
                 ),
                 WorkspaceChangeFeatureFlags(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     WorkspaceChangeFeatureFlagsUseCase(
@@ -552,12 +567,14 @@ async def main() -> None:
                     ),
                 ),
                 WorkspaceShow(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     WorkspaceLoadUseCase(auth_token_stamper, domain_storage_engine),
                 ),
                 InboxTaskCreate(
                     global_properties,
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     InboxTaskCreateUseCase(
@@ -570,6 +587,7 @@ async def main() -> None:
                     ),
                 ),
                 InboxTaskArchive(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     InboxTaskArchiveUseCase(
@@ -582,6 +600,7 @@ async def main() -> None:
                     ),
                 ),
                 InboxTaskChangeProject(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     InboxTaskChangeProjectUseCase(
@@ -594,6 +613,7 @@ async def main() -> None:
                     ),
                 ),
                 InboxTaskAssociateWithBigPlan(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     InboxTaskAssociateWithBigPlanUseCase(
@@ -606,6 +626,7 @@ async def main() -> None:
                     ),
                 ),
                 InboxTaskRemove(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     InboxTaskRemoveUseCase(
@@ -619,6 +640,7 @@ async def main() -> None:
                 ),
                 InboxTaskUpdate(
                     global_properties,
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     InboxTaskUpdateUseCase(
@@ -631,11 +653,13 @@ async def main() -> None:
                     ),
                 ),
                 InboxTaskShow(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     InboxTaskFindUseCase(auth_token_stamper, domain_storage_engine),
                 ),
                 HabitCreate(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     HabitCreateUseCase(
@@ -648,6 +672,7 @@ async def main() -> None:
                     ),
                 ),
                 HabitArchive(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     HabitArchiveUseCase(
@@ -660,6 +685,7 @@ async def main() -> None:
                     ),
                 ),
                 HabitChangeProject(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     HabitChangeProjectUseCase(
@@ -672,6 +698,7 @@ async def main() -> None:
                     ),
                 ),
                 HabitSuspend(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     HabitSuspendUseCase(
@@ -684,6 +711,7 @@ async def main() -> None:
                     ),
                 ),
                 HabitUnsuspend(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     HabitUnsuspendUseCase(
@@ -696,6 +724,7 @@ async def main() -> None:
                     ),
                 ),
                 HabitUpdate(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     HabitUpdateUseCase(
@@ -708,6 +737,7 @@ async def main() -> None:
                     ),
                 ),
                 HabitRemove(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     HabitRemoveUseCase(
@@ -720,12 +750,14 @@ async def main() -> None:
                     ),
                 ),
                 HabitShow(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     HabitFindUseCase(auth_token_stamper, domain_storage_engine),
                 ),
                 ChoreCreate(
                     global_properties,
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     ChoreCreateUseCase(
@@ -738,6 +770,7 @@ async def main() -> None:
                     ),
                 ),
                 ChoreArchive(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     ChoreArchiveUseCase(
@@ -750,6 +783,7 @@ async def main() -> None:
                     ),
                 ),
                 ChoreChangeProject(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     ChoreChangeProjectUseCase(
@@ -762,6 +796,7 @@ async def main() -> None:
                     ),
                 ),
                 ChoreSuspend(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     ChoreSuspendUseCase(
@@ -774,6 +809,7 @@ async def main() -> None:
                     ),
                 ),
                 ChoreUnsuspend(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     ChoreUnsuspendUseCase(
@@ -787,6 +823,7 @@ async def main() -> None:
                 ),
                 ChoreUpdate(
                     global_properties,
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     ChoreUpdateUseCase(
@@ -799,6 +836,7 @@ async def main() -> None:
                     ),
                 ),
                 ChoreRemove(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     ChoreRemoveUseCase(
@@ -812,12 +850,14 @@ async def main() -> None:
                 ),
                 ChoreShow(
                     global_properties,
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     ChoreFindUseCase(auth_token_stamper, domain_storage_engine),
                 ),
                 BigPlanCreate(
                     global_properties,
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     BigPlanCreateUseCase(
@@ -830,6 +870,7 @@ async def main() -> None:
                     ),
                 ),
                 BigPlanArchive(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     BigPlanArchiveUseCase(
@@ -842,6 +883,7 @@ async def main() -> None:
                     ),
                 ),
                 BigPlanRemove(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     BigPlanRemoveUseCase(
@@ -854,6 +896,7 @@ async def main() -> None:
                     ),
                 ),
                 BigPlanChangeProject(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     BigPlanChangeProjectUseCase(
@@ -867,6 +910,7 @@ async def main() -> None:
                 ),
                 BigPlanUpdate(
                     global_properties,
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     BigPlanUpdateUseCase(
@@ -879,12 +923,14 @@ async def main() -> None:
                     ),
                 ),
                 BigPlanShow(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     BigPlanFindUseCase(auth_token_stamper, domain_storage_engine),
                 ),
                 VacationCreate(
                     global_properties,
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     VacationCreateUseCase(
@@ -897,6 +943,7 @@ async def main() -> None:
                     ),
                 ),
                 VacationArchive(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     VacationArchiveUseCase(
@@ -910,6 +957,7 @@ async def main() -> None:
                 ),
                 VacationUpdate(
                     global_properties,
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     VacationUpdateUseCase(
@@ -922,6 +970,7 @@ async def main() -> None:
                     ),
                 ),
                 VacationRemove(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     VacationRemoveUseCase(
@@ -935,11 +984,13 @@ async def main() -> None:
                 ),
                 VacationsShow(
                     global_properties,
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     VacationFindUseCase(auth_token_stamper, domain_storage_engine),
                 ),
                 ProjectCreate(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     ProjectCreateUseCase(
@@ -952,6 +1003,7 @@ async def main() -> None:
                     ),
                 ),
                 ProjectArchive(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     ProjectArchiveUseCase(
@@ -964,6 +1016,7 @@ async def main() -> None:
                     ),
                 ),
                 ProjectUpdate(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     ProjectUpdateUseCase(
@@ -976,11 +1029,13 @@ async def main() -> None:
                     ),
                 ),
                 ProjectShow(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     ProjectFindUseCase(auth_token_stamper, domain_storage_engine),
                 ),
                 ProjectRemove(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     ProjectRemoveUseCase(
@@ -993,6 +1048,7 @@ async def main() -> None:
                     ),
                 ),
                 SmartListCreate(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     SmartListCreateUseCase(
@@ -1005,6 +1061,7 @@ async def main() -> None:
                     ),
                 ),
                 SmartListArchive(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     SmartListArchiveUseCase(
@@ -1017,6 +1074,7 @@ async def main() -> None:
                     ),
                 ),
                 SmartListUpdate(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     SmartListUpdateUseCase(
@@ -1029,11 +1087,13 @@ async def main() -> None:
                     ),
                 ),
                 SmartListShow(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     SmartListFindUseCase(auth_token_stamper, domain_storage_engine),
                 ),
                 SmartListsRemove(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     SmartListRemoveUseCase(
@@ -1046,6 +1106,7 @@ async def main() -> None:
                     ),
                 ),
                 SmartListTagCreate(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     SmartListTagCreateUseCase(
@@ -1058,6 +1119,7 @@ async def main() -> None:
                     ),
                 ),
                 SmartListTagArchive(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     SmartListTagArchiveUseCase(
@@ -1070,6 +1132,7 @@ async def main() -> None:
                     ),
                 ),
                 SmartListTagUpdate(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     SmartListTagUpdateUseCase(
@@ -1082,6 +1145,7 @@ async def main() -> None:
                     ),
                 ),
                 SmartListTagRemove(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     SmartListTagRemoveUseCase(
@@ -1094,6 +1158,7 @@ async def main() -> None:
                     ),
                 ),
                 SmartListItemCreate(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     SmartListItemCreateUseCase(
@@ -1106,6 +1171,7 @@ async def main() -> None:
                     ),
                 ),
                 SmartListItemArchive(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     SmartListItemArchiveUseCase(
@@ -1118,6 +1184,7 @@ async def main() -> None:
                     ),
                 ),
                 SmartListItemUpdate(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     SmartListItemUpdateUseCase(
@@ -1130,6 +1197,7 @@ async def main() -> None:
                     ),
                 ),
                 SmartListItemRemove(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     SmartListItemRemoveUseCase(
@@ -1142,6 +1210,7 @@ async def main() -> None:
                     ),
                 ),
                 MetricChangeCollectionProject(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     MetricChangeCollectionProjectUseCase(
@@ -1154,6 +1223,7 @@ async def main() -> None:
                     ),
                 ),
                 MetricCreate(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     MetricCreateUseCase(
@@ -1166,6 +1236,7 @@ async def main() -> None:
                     ),
                 ),
                 MetricArchive(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     MetricArchiveUseCase(
@@ -1178,6 +1249,7 @@ async def main() -> None:
                     ),
                 ),
                 MetricUpdate(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     MetricUpdateUseCase(
@@ -1190,11 +1262,13 @@ async def main() -> None:
                     ),
                 ),
                 MetricShow(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     MetricFindUseCase(auth_token_stamper, domain_storage_engine),
                 ),
                 MetricRemove(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     MetricRemoveUseCase(
@@ -1207,6 +1281,7 @@ async def main() -> None:
                     ),
                 ),
                 MetricEntryCreate(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     MetricEntryCreateUseCase(
@@ -1219,6 +1294,7 @@ async def main() -> None:
                     ),
                 ),
                 MetricEntryArchive(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     MetricEntryArchiveUseCase(
@@ -1231,6 +1307,7 @@ async def main() -> None:
                     ),
                 ),
                 MetricEntryUpdate(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     MetricEntryUpdateUseCase(
@@ -1243,6 +1320,7 @@ async def main() -> None:
                     ),
                 ),
                 MetricEntryRemove(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     MetricEntryRemoveUseCase(
@@ -1255,6 +1333,7 @@ async def main() -> None:
                     ),
                 ),
                 PersonChangeCatchUpProject(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     PersonChangeCatchUpProjectUseCase(
@@ -1267,6 +1346,7 @@ async def main() -> None:
                     ),
                 ),
                 PersonCreate(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     PersonCreateUseCase(
@@ -1279,6 +1359,7 @@ async def main() -> None:
                     ),
                 ),
                 PersonArchive(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     PersonArchiveUseCase(
@@ -1291,6 +1372,7 @@ async def main() -> None:
                     ),
                 ),
                 PersonUpdate(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     PersonUpdateUseCase(
@@ -1303,6 +1385,7 @@ async def main() -> None:
                     ),
                 ),
                 PersonRemove(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     PersonRemoveUseCase(
@@ -1315,11 +1398,13 @@ async def main() -> None:
                     ),
                 ),
                 PersonShow(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     PersonFindUseCase(auth_token_stamper, domain_storage_engine),
                 ),
                 SlackTaskArchive(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     SlackTaskArchiveUseCase(
@@ -1332,6 +1417,7 @@ async def main() -> None:
                     ),
                 ),
                 SlackTaskRemove(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     SlackTaskRemoveUseCase(
@@ -1345,6 +1431,7 @@ async def main() -> None:
                 ),
                 SlackTaskUpdate(
                     global_properties,
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     SlackTaskUpdateUseCase(
@@ -1357,6 +1444,7 @@ async def main() -> None:
                     ),
                 ),
                 SlackTaskChangeGenerationProject(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     SlackTaskChangeGenerationProjectUseCase(
@@ -1369,11 +1457,13 @@ async def main() -> None:
                     ),
                 ),
                 SlackTaskShow(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     SlackTaskFindUseCase(auth_token_stamper, domain_storage_engine),
                 ),
                 EmailTaskArchive(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     EmailTaskArchiveUseCase(
@@ -1386,6 +1476,7 @@ async def main() -> None:
                     ),
                 ),
                 EmailTaskRemove(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     EmailTaskRemoveUseCase(
@@ -1399,6 +1490,7 @@ async def main() -> None:
                 ),
                 EmailTaskUpdate(
                     global_properties,
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     EmailTaskUpdateUseCase(
@@ -1411,6 +1503,7 @@ async def main() -> None:
                     ),
                 ),
                 EmailTaskChangeGenerationProject(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     EmailTaskChangeGenerationProjectUseCase(
@@ -1423,6 +1516,7 @@ async def main() -> None:
                     ),
                 ),
                 EmailTaskShow(
+                    realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     EmailTaskFindUseCase(auth_token_stamper, domain_storage_engine),
@@ -1517,7 +1611,7 @@ async def main() -> None:
             break
     except SessionInfoNotFoundError:
         print(
-            f"There doesn't seem to be a workspace. Please run '{Initialize.name()}' or '{Login.name()}' to create a workspace!",
+            "There doesn't seem to be a workspace. Please run 'init' or 'login' to create a workspace!",
         )
         print(
             f"For more information checkout: {global_properties.docs_init_workspace_url}",
@@ -1535,16 +1629,14 @@ async def main() -> None:
         print("Please try creating another user.")
         sys.exit(1)
     except ExpiredAuthTokenError:
-        print(
-            f"Your session seems to be expired! Please run '{Login.name()}' to login."
-        )
+        print("Your session seems to be expired! Please run 'login' to login.")
         sys.exit(1)
     except InvalidLoginCredentialsError:
         print("The user and/or password are invalid!")
         print("You can:")
-        print(f" * Run `{Login.name()}` to login.")
-        print(f" * Run '{Initialize.name()}' to create a user and workspace!")
-        print(f" * Run '{ResetPassword.name()}' to reset your password!")
+        print(" * Run `login` to login.")
+        print(" * Run 'init' to create a user and workspace!")
+        print(" * Run 'reset-password' to reset your password!")
         print(
             f"For more information checkout: {global_properties.docs_init_workspace_url}",
         )
@@ -1553,12 +1645,12 @@ async def main() -> None:
         print(f"The selected project is still being used. Reason: {err}")
         print("Please select a backup project via --backup-project-id")
         sys.exit(1)
-    except LeafEntityNotFoundError as err:
+    except EntityNotFoundError as err:
         print(str(err))
         sys.exit(1)
     except InvalidAuthTokenError:
         print(
-            f"Your session seems to be invalid! Please run '{Initialize.name()}' or '{Login.name()}' to fix this!"
+            "Your session seems to be invalid! Please run 'init' or 'login' to fix this!"
         )
         print(
             f"For more information checkout: {global_properties.docs_init_workspace_url}",
@@ -1571,7 +1663,7 @@ async def main() -> None:
         sys.exit(2)
     except UserNotFoundError:
         print(
-            f"The user you're trying to operate as does't seem to exist! Please run `{Initialize.name()}` to create a user and workspace."
+            "The user you're trying to operate as does't seem to exist! Please run `init` to create a user and workspace."
         )
         print(
             f"For more information checkout: {global_properties.docs_init_workspace_url}",
@@ -1579,7 +1671,7 @@ async def main() -> None:
         sys.exit(2)
     except WorkspaceNotFoundError:
         print(
-            f"The workspace you're trying to operate in does't seem to exist! Please run `{Initialize.name()}` to create a user and workspace."
+            "The workspace you're trying to operate in does't seem to exist! Please run `init` to create a user and workspace."
         )
         print(
             f"For more information checkout: {global_properties.docs_init_workspace_url}",

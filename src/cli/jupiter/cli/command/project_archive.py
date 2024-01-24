@@ -14,16 +14,6 @@ from jupiter.core.use_cases.projects.archive import (
 class ProjectArchive(LoggedInMutationCommand[ProjectArchiveUseCase]):
     """UseCase class for archiving projects."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "project-archive"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Archive a project"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

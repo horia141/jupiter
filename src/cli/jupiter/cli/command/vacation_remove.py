@@ -14,16 +14,6 @@ from jupiter.core.use_cases.vacations.remove import (
 class VacationRemove(LoggedInMutationCommand[VacationRemoveUseCase]):
     """UseCase class for hard removing vacations."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "vacation-remove"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Remove a vacation"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

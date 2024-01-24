@@ -21,16 +21,6 @@ from rich.text import Text
 class ResetPassword(GuestMutationCommand[ResetPasswordUseCase]):
     """Use case for resetting a password."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "reset-password"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Reset the password for the user"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

@@ -15,16 +15,6 @@ from jupiter.core.use_cases.vacations.archive import (
 class VacationArchive(LoggedInMutationCommand[VacationArchiveUseCase]):
     """UseCase class for removing a vacation."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "vacation-archive"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Archive a vacation"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

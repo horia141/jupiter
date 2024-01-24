@@ -9,12 +9,10 @@ from jupiter.core.domain.report.report_period_result import (
 )
 from jupiter.core.domain.report.service.report_service import ReportService
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.use_case import (
-    UseCaseArgsBase,
-    UseCaseResultBase,
-    use_case_args,
+from jupiter.core.framework.use_case_io import (
     use_case_result,
 )
+from jupiter.core.framework.use_case_io import UseCaseArgsBase, UseCaseResultBase, use_case_args
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCase,
     AppLoggedInReadonlyUseCaseContext,

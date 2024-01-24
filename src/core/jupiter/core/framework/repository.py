@@ -187,10 +187,6 @@ class CrownEntityRepository(EntityRepository[CrownEntityT], abc.ABC):
         """Hard remove a crown - an irreversible operation."""
 
 
-class BranchEntityNotFoundError(EntityNotFoundError):
-    """Error raised when a branch entity is not found."""
-
-
 BranchEntityT = TypeVar("BranchEntityT", bound=BranchEntity)
 
 
@@ -200,10 +196,6 @@ class BranchEntityRepository(
     abc.ABC,
 ):
     """A repository for branch entities."""
-
-
-class LeafEntityNotFoundError(EntityNotFoundError):
-    """Error raised when a leaf entity is not found."""
 
 
 LeafEntityT = TypeVar("LeafEntityT", bound=LeafEntity)

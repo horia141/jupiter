@@ -15,16 +15,6 @@ from jupiter.core.use_cases.login import LoginArgs, LoginUseCase
 class Login(GuestReadonlyCommand[LoginUseCase]):
     """Command for logging in."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "login"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Login to the application"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

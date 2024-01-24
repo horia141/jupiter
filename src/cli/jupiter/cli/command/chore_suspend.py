@@ -11,16 +11,6 @@ from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
 class ChoreSuspend(LoggedInMutationCommand[ChoreSuspendUseCase]):
     """UseCase class for suspending a chore."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "chore-suspend"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Suspend a chore"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

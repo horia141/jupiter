@@ -17,16 +17,6 @@ from jupiter.core.use_cases.metrics.entry.update import (
 class MetricEntryUpdate(LoggedInMutationCommand[MetricEntryUpdateUseCase]):
     """UseCase for updating a metric entry's properties."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "metric-entry-update"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Update a metric entry"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

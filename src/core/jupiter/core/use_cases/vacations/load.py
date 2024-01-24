@@ -5,12 +5,10 @@ from jupiter.core.domain.infra.generic_loader import generic_loader
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.vacations.vacation import Vacation
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.use_case import (
-    UseCaseArgsBase,
-    UseCaseResultBase,
-    use_case_args,
+from jupiter.core.framework.use_case_io import (
     use_case_result,
 )
+from jupiter.core.framework.use_case_io import UseCaseArgsBase, UseCaseResultBase, use_case_args
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCaseContext,
     AppTransactionalLoggedInReadOnlyUseCase,

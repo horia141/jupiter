@@ -2,6 +2,8 @@
 from argparse import ArgumentParser, Namespace
 from typing import Final, List
 
+from jupiter.core.framework.realm import RealmCodecRegistry
+
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     entity_id_to_rich_text,
@@ -58,25 +60,16 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
     def __init__(
         self,
         global_properties: GlobalProperties,
+        realm_codec_registry: RealmCodecRegistry,
         time_provider: TimeProvider,
         session_storage: SessionStorage,
         top_level_context: LoggedInTopLevelContext,
         use_case: ReportUseCase,
     ) -> None:
         """Constructor."""
-        super().__init__(session_storage, top_level_context, use_case)
+        super().__init__(realm_codec_registry, session_storage, top_level_context, use_case)
         self._global_properties = global_properties
         self._time_provider = time_provider
-
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "report"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Report on progress"
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""

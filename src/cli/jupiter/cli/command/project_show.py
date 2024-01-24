@@ -17,16 +17,6 @@ from rich.tree import Tree
 class ProjectShow(LoggedInReadonlyCommand[ProjectFindUseCase]):
     """UseCase class for showing the projects."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "project-show"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Show the projects"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

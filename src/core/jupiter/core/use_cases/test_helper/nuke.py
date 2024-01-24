@@ -8,9 +8,8 @@ from jupiter.core.framework.use_case import (
     EmptyContext,
     ProgressReporter,
     ProgressReporterFactory,
-    UseCaseArgsBase,
-    use_case_args,
 )
+from jupiter.core.framework.use_case_io import UseCaseArgsBase, use_case_args
 from jupiter.core.use_cases.infra.use_cases import AppTestHelperUseCase
 
 LOGGER = logging.getLogger(__name__)

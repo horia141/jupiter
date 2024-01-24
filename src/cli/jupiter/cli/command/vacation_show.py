@@ -2,6 +2,8 @@
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
+from jupiter.core.framework.realm import RealmCodecRegistry
+
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     end_date_to_rich_text,
@@ -28,42 +30,33 @@ class VacationsShow(LoggedInReadonlyCommand[VacationFindUseCase]):
     def __init__(
         self,
         global_properties: GlobalProperties,
+        realm_codec_registry: RealmCodecRegistry,
         session_storage: SessionStorage,
         top_level_context: LoggedInTopLevelContext,
         use_case: VacationFindUseCase,
     ) -> None:
         """Constructor."""
-        super().__init__(session_storage, top_level_context, use_case)
+        super().__init__(realm_codec_registry, session_storage, top_level_context, use_case)
         self._global_properties = global_properties
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "vacation-show"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Show the list of vacations"
-
-    def build_parser(self, parser: ArgumentParser) -> None:
-        """Construct a argparse parser for the command."""
-        parser.add_argument(
-            "--show-archived",
-            dest="show_archived",
-            default=False,
-            action="store_true",
-            help="Whether to show archived vacations or not",
-        )
-        parser.add_argument(
-            "--id",
-            type=str,
-            dest="ref_ids",
-            default=[],
-            action="append",
-            required=False,
-            help="Show only tasks selected by this id",
-        )
+    # def build_parser(self, parser: ArgumentParser) -> None:
+    #     """Construct a argparse parser for the command."""
+    #     parser.add_argument(
+    #         "--show-archived",
+    #         dest="show_archived",
+    #         default=False,
+    #         action="store_true",
+    #         help="Whether to show archived vacations or not",
+    #     )
+    #     parser.add_argument(
+    #         "--id",
+    #         type=str,
+    #         dest="ref_ids",
+    #         default=[],
+    #         action="append",
+    #         required=False,
+    #         help="Show only tasks selected by this id",
+    #     )
 
     async def _run(
         self,
@@ -71,13 +64,13 @@ class VacationsShow(LoggedInReadonlyCommand[VacationFindUseCase]):
         args: Namespace,
     ) -> None:
         """Callback to execute when the command is invoked."""
-        show_archived = args.show_archived
-        ref_ids = [EntityId.from_raw(rid) for rid in args.ref_ids]
+        allow_archived = args.allow_archived
+        ref_ids = [EntityId.from_raw(rid) for rid in args.filter_ref_ids]
 
         result = await self._use_case.execute(
             AppLoggedInUseCaseSession(session_info.auth_token_ext),
             VacationFindArgs(
-                allow_archived=show_archived,
+                allow_archived=allow_archived,
                 filter_ref_ids=ref_ids if len(ref_ids) > 0 else None,
             ),
         )

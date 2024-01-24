@@ -10,6 +10,7 @@ from jupiter.core.framework.secure import secure_class
 from typing_extensions import dataclass_transform
 
 
+
 class Value(Concept):
     """A value object in the domain."""
 
@@ -58,6 +59,11 @@ class CompositeValue(Value):
 class EnumValue(Value, enum.Enum):
     """A value that is also an enum."""
 
+    @classmethod
+    def get_all_values(cls: type["EnumValue"]) -> list[str]:
+        """Get all the values for this enum."""
+        return list(s.value for s in cls)
+
 
 _EnumValueT = TypeVar("_EnumValueT", bound=EnumValue)
 
@@ -90,3 +96,5 @@ _SecretValueT = TypeVar("_SecretValueT", bound=SecretValue)
 @dataclass_transform()
 def secret_value(cls: type[_SecretValueT]) -> type[_SecretValueT]:
     return dataclass(repr=False)(secure_class(cls))
+
+

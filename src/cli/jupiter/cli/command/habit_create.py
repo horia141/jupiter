@@ -20,16 +20,6 @@ from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
 class HabitCreate(LoggedInMutationCommand[HabitCreateUseCase]):
     """UseCase class for creating a habit."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "habit-create"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Create a new habit"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         if self._top_level_context.workspace.is_feature_available(

@@ -21,16 +21,6 @@ from jupiter.core.use_cases.persons.update import PersonUpdateArgs, PersonUpdate
 class PersonUpdate(LoggedInMutationCommand[PersonUpdateUseCase]):
     """UseCase class for updating a person."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "person-update"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Update a person"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

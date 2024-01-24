@@ -16,16 +16,6 @@ from jupiter.core.use_cases.projects.update import (
 class ProjectUpdate(LoggedInMutationCommand[ProjectUpdateUseCase]):
     """UseCase class for updating projects."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "project-update"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Create a project"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

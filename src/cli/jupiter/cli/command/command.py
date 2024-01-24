@@ -2,20 +2,35 @@
 
 import abc
 from argparse import ArgumentParser, Namespace
-from typing import Any, Final, Generic, TypeVar
+import dataclasses
+from datetime import date, datetime
+import types
+from typing import Any, Final, Generic, TypeVar, cast, get_args, get_origin
+import typing
 
+import inflection
+from jupiter.core.framework.primitive import Primitive
+from jupiter.core.framework.realm import CliRealm, RealmCodecRegistry
+from jupiter.core.framework.thing import Thing
+from jupiter.core.framework.update_action import UpdateAction
+from jupiter.core.framework.use_case_io import UseCaseArgsBase, UseCaseResultBase
+from jupiter.core.framework.value import AtomicValue, CompositeValue, EnumValue, SecretValue
 from jupiter.cli.session_storage import SessionInfo, SessionStorage
 from jupiter.cli.top_level_context import LoggedInTopLevelContext
 from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.user.user import User
 from jupiter.core.domain.workspaces.workspace import Workspace
+from jupiter.core.framework.use_case import UseCase, UseCaseArgs
 from jupiter.core.use_cases.infra.use_cases import (
     AppGuestMutationUseCase,
     AppGuestReadonlyUseCase,
     AppLoggedInMutationUseCase,
     AppLoggedInReadonlyUseCase,
+    AppLoggedInUseCaseSession,
 )
 from rich.text import Text
+from pendulum.date import Date
+from pendulum.datetime import DateTime
 
 
 class Command(abc.ABC):
@@ -23,14 +38,12 @@ class Command(abc.ABC):
 
     _postscript: Text | None = None
 
-    @staticmethod
     @abc.abstractmethod
-    def name() -> str:
+    def name(self) -> str:
         """The name of the command."""
 
-    @staticmethod
     @abc.abstractmethod
-    def description() -> str:
+    def description(self) -> str:
         """The description of the command."""
 
     @abc.abstractmethod
@@ -71,23 +84,362 @@ class Command(abc.ABC):
         return self._postscript
 
 
+UseCaseT = TypeVar("UseCaseT", bound=UseCase[Any, Any, Any, Any])
+UseCaseArgsT = TypeVar("UseCaseArgsT", bound=UseCaseArgsBase)
+UseCaseResultT = TypeVar("UseCaseResultT", bound=UseCaseResultBase)
+
+
+class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
+    """Base class for commands based on use cases."""
+
+    _use_case: UseCaseT
+    _args_type: type[UseCaseArgsBase]
+
+    def __init__(self, use_case: UseCaseT) -> None:
+        """Constructor."""
+        self._use_case = use_case
+        self._args_type = self._infer_args_class(use_case)
+
+    def name(self) -> str:
+        """The name of the command."""
+        return inflection.dasherize(
+            inflection.underscore(self._use_case.__class__.__name__)
+        ).replace("-use-case", "")
+
+    def description(self) -> str:
+        """The description of the command."""
+        return self._use_case.__doc__ or ""
+    
+    def build_parser(self, parser: ArgumentParser) -> None:
+        """Construct a argparse parser for the command."""
+        self._build_parser_for_use_case_args(self._args_type, parser)
+
+
+    @staticmethod
+    def _infer_args_class(use_case: UseCaseT) -> type[UseCaseArgsBase]:
+        use_case_type = use_case.__class__
+        if not hasattr(use_case_type, "__orig_bases__"):
+            raise Exception("No args class found")
+        for base in use_case_type.__orig_bases__:  # type: ignore
+            args = get_args(base)
+            if len(args) > 0:
+                return cast(type[UseCaseArgsBase], args[0])
+        raise Exception("No args class found")
+    
+    @staticmethod
+    def _build_parser_for_use_case_args(args_type: type[UseCaseArgsBase], parser: ArgumentParser) -> None:
+        def field_name_to_arg_name(field_name: str) -> str:
+            return inflection.dasherize(field_name)
+        
+        def extract_field_type(
+            field_type: type[Primitive | object],
+        ) -> tuple[type[object], bool]:
+            field_type_origin = get_origin(field_type)
+            if field_type_origin is None:
+                return field_type, False
+
+            if field_type_origin is typing.Union or (
+                isinstance(field_type_origin, type)
+                and issubclass(field_type_origin, types.UnionType)
+            ):
+                field_args = get_args(field_type)
+                if len(field_args) == 2 and (
+                    field_args[0] is type(None) and field_args[1] is not type(None)
+                ):
+                    return field_args[1], True
+                elif len(field_args) == 2 and (
+                    field_args[1] is type(None) and field_args[0] is not type(None)
+                ):
+                    return field_args[0], True
+                else:
+                    raise Exception("Not implemented - union")
+            else:
+                return field_type, False
+            
+        def add_bool_field(
+            field: dataclasses.Field[Thing],
+        ) -> None:
+            bool_field = parser.add_mutually_exclusive_group()
+            bool_field.add_argument(
+                f"--{field_name_to_arg_name(field.name)}",
+                dest=field.name,
+                default=field.default if field.default is not dataclasses.MISSING else False,
+                action="store_true",
+                help=field.metadata.get("help", ""),
+            )
+            bool_field.add_argument(
+                f"--no-{field_name_to_arg_name(field.name)}",
+                dest=field.name,
+                default=field.default if field.default is not dataclasses.MISSING else False,
+                action="store_false",
+                help=field.metadata.get("help", ""),
+            )
+
+        def add_field(
+            field: dataclasses.Field[Thing],
+            field_type: type[int | float | str | date | datetime | Date | DateTime],
+            field_optional: bool,
+        ) -> None:
+            if not field_optional:
+                parser.add_argument(
+                    f"--{field_name_to_arg_name(field.name)}",
+                    dest=field.name,
+                    required=True,
+                    type=field_type if field_type in (int, float) else str,
+                    help=field.metadata.get("help", ""),
+                )
+            else:
+                a_field = parser.add_mutually_exclusive_group()
+                a_field.add_argument(
+                    f"--{field_name_to_arg_name(field.name)}",
+                    dest=field.name,
+                    required=False,
+                    type=field_type if field_type in (int, float) else str,
+                    default=field.default if field.default is not dataclasses.MISSING else None,
+                    help=field.metadata.get("help", ""),
+                )
+                a_field.add_argument(
+                    f"--no-{field_name_to_arg_name(field.name)}",
+                    dest=field.name,
+                    required=False,
+                    action="store_const",
+                    const=None,
+                    help=field.metadata.get("help", ""),
+                )
+
+        def add_update_field(
+            field: dataclasses.Field[Thing],
+            field_type: type[int | float | str | date | datetime | Date | DateTime],
+            field_optional: bool,
+        ) -> None:
+            if not field_optional:
+                parser.add_argument(
+                    f"--{field_name_to_arg_name(field.name)}",
+                    dest=field.name,
+                    required=False,
+                    default=None,
+                    type=field_type if field_type in (int, float) else str,
+                    help=field.metadata.get("help", ""),
+                )
+            else:
+                a_field = parser.add_mutually_exclusive_group()
+                a_field.add_argument(
+                    f"--{field_name_to_arg_name(field.name)}",
+                    dest=field.name,
+                    required=False,
+                    type=field_type if field_type in (int, float) else str,
+                    default=field.default if field.default is not dataclasses.MISSING else None,
+                    help=field.metadata.get("help", ""),
+                )
+                a_field.add_argument(
+                    f"--clear-{field_name_to_arg_name(field.name)}",
+                    dest=f"clear_{field.name}",
+                    required=False,
+                    action="store_const",
+                    const=True,
+                    help=field.metadata.get("help", ""),
+                )
+            
+
+        def add_field_list(
+            field: dataclasses.Field[Thing],
+            field_type: type[int | float | str | date | datetime | Date | DateTime],
+            field_optional: bool,
+        ) -> None:
+            parser.add_argument(
+                f"--{field_name_to_arg_name(field.name)}",
+                dest=field.name,
+                action="append",
+                required=not field_optional,
+                type=field_type if field_type in (int, float) else str,
+                default=None,
+                help=field.metadata.get("help", ""),
+            )
+
+        def add_enum_field(
+            field: dataclasses.Field[Thing],
+            field_type: type[EnumValue],
+            field_optional: bool,
+        ) -> None:
+            parser.add_argument(
+                f"--{field_name_to_arg_name(field.name)}",
+                dest=field.name,
+                required=not field_optional,
+                choices=field_type.get_all_values(),
+                help=field.metadata.get("help", ""),
+            )
+
+        def add_update_enum_field(
+            field: dataclasses.Field[Thing],
+            field_type: type[EnumValue],
+        ) -> None:
+            parser.add_argument(
+                f"--{field_name_to_arg_name(field.name)}",
+                dest=field.name,
+                required=False,
+                default=None,
+                choices=field_type.get_all_values(),
+                help=field.metadata.get("help", ""),
+            )
+
+        def add_enum_field_list(
+            field: dataclasses.Field[Thing],
+            field_type: type[EnumValue],
+            field_optional: bool,
+        ) -> None:
+            parser.add_argument(
+                f"--{field_name_to_arg_name(field.name)}",
+                dest=field.name,
+                action="append",
+                required=not field_optional,
+                default=[],
+                choices=field_type.get_all_values(),
+                help=field.metadata.get("help", ""),
+            )
+
+        def process_one_concept(a_thing: type[UseCaseArgsBase]) -> None:     
+            all_fields = dataclasses.fields(a_thing)
+
+            for field in all_fields:
+                field_type, field_optional = extract_field_type(field.type)
+
+                if field_type is bool:
+                    add_bool_field(field)
+                elif isinstance(field_type, type) and issubclass(field_type, (int, float, str, date, datetime, Date, DateTime)):
+                    add_field(field, field_type, field_optional)
+                elif (
+                    isinstance(field_type, type)
+                    and get_origin(field_type) is None
+                    and issubclass(field_type, AtomicValue)
+                ):
+                    basic_field_type = field_type.base_type_hack()
+                    if basic_field_type is bool:
+                        add_bool_field(field)
+                    elif issubclass(basic_field_type, (int, float, str, date, datetime, Date, DateTime)):
+                        add_field(field, basic_field_type, field_optional)
+                    else:
+                        raise Exception(
+                            f"Unsupported field type {field_type}+{basic_field_type} for {args_type.__name__}:{field.name}"
+                        )
+                elif (
+                    isinstance(field_type, type)
+                    and get_origin(field_type) is None
+                    and issubclass(field_type, CompositeValue)
+                ):
+                    raise Exception(f"Unsupported fiedl type {field_type}+{basic_field_type} for {args_type.__name__}:{field.name}")
+                elif (
+                    isinstance(field_type, type)
+                    and get_origin(field_type) is None
+                    and issubclass(field_type, EnumValue)
+                ):
+                    add_enum_field(field, field_type, field_optional)
+                elif (
+                    isinstance(field_type, type)
+                    and get_origin(field_type) is None
+                    and issubclass(field_type, SecretValue)
+                ):
+                    add_field(field, str, field_optional)
+                elif get_origin(field_type) is not None:
+                    origin_field_type = get_origin(field_type)
+                    if origin_field_type is UpdateAction:
+                        update_field = get_args(field_type)[0]
+                        update_field_type, update_field_optional = extract_field_type(update_field)
+
+                        if update_field_type is bool:
+                            add_bool_field(field)
+                        elif issubclass(update_field_type, (int, float, str, date, datetime, Date, DateTime)):
+                            add_update_field(field, update_field_type, update_field_optional)
+                        elif (
+                            isinstance(update_field_type, type)
+                            and get_origin(update_field_type) is None
+                            and issubclass(update_field_type, AtomicValue)
+                        ):
+                            basic_update_field_type = update_field_type.base_type_hack()
+                            if basic_update_field_type is bool:
+                                add_bool_field(field)
+                            elif issubclass(basic_update_field_type, (int, float, str, date, datetime, Date, DateTime)):
+                                add_update_field(field, basic_update_field_type, update_field_optional)
+                            else:
+                                raise Exception(
+                                    f"Unsupported field type {field_type}+{basic_field_type} for {args_type.__name__}:{field.name}"
+                                )
+                        elif (
+                            isinstance(update_field_type, type)
+                            and get_origin(update_field_type) is None
+                            and issubclass(update_field_type, EnumValue)
+                        ):
+                            if update_field_optional:
+                                raise Exception(
+                                    f"Unsupported field type {field_type} for {args_type.__name__}:{field.name}"
+                                )
+                            add_update_enum_field(field, update_field_type)
+                        else:
+                            raise Exception(
+                                f"Unsupported field type {field_type} for {args_type.__name__}:{field.name}"
+                            )
+                    elif origin_field_type in (list, set):
+                        list_item_type = get_args(field_type)[0]
+                        if list_item_type in (int, float, str, date, datetime, Date, DateTime):
+                            add_field_list(field, list_item_type, field_optional)
+                        elif (
+                            isinstance(list_item_type, type)
+                            and get_origin(list_item_type) is None
+                            and issubclass(list_item_type, AtomicValue)
+                        ):
+                            basic_field_type = list_item_type.base_type_hack()
+                            if issubclass(basic_field_type, (int, float, str, date, datetime, Date, DateTime)):
+                                add_field_list(field, basic_field_type, field_optional)
+                            else:
+                                raise Exception(
+                                    f"Unsupported field type {field_type}+{basic_field_type} for {args_type.__name__}:{field.name}"
+                                )
+                        elif (
+                            isinstance(list_item_type, type)
+                            and get_origin(list_item_type) is None
+                            and issubclass(list_item_type, EnumValue)
+                        ):
+                            add_enum_field_list(field, list_item_type, field_optional)
+                        else:
+                            raise Exception(
+                                f"Unsupported field type {field_type} for {args_type.__name__}:{field.name}"
+                            )
+                    elif origin_field_type == dict:
+                        raise Exception(
+                            f"Unsupported field type {field_type} for {args_type.__name__}:{field.name}"
+                        )
+                    else:
+                        raise Exception(
+                            f"Unsupported field type {field_type} for {args_type.__name__}:{field.name}"
+                        )
+                else:
+                    raise Exception(
+                        f"Unsupported field type {field_type} for {args_type.__name__}:{field.name}"
+                    )
+                
+        process_one_concept(args_type)
+        
+
+
 GuestMutationCommandUseCase = TypeVar(
     "GuestMutationCommandUseCase", bound=AppGuestMutationUseCase[Any, Any]
 )
 
 
-class GuestMutationCommand(Generic[GuestMutationCommandUseCase], Command, abc.ABC):
+class GuestMutationCommand(
+    Generic[GuestMutationCommandUseCase],
+    UseCaseCommand[GuestMutationCommandUseCase],
+    abc.ABC,
+):
     """Base class for commands which do not require authentication."""
 
     _session_storage: Final[SessionStorage]
-    _use_case: GuestMutationCommandUseCase
 
     def __init__(
         self, session_storage: SessionStorage, use_case: GuestMutationCommandUseCase
     ) -> None:
         """Constructor."""
+        super().__init__(use_case)
         self._session_storage = session_storage
-        self._use_case = use_case
 
     async def run(
         self,
@@ -111,18 +463,21 @@ GuestReadonlyCommandUseCase = TypeVar(
 )
 
 
-class GuestReadonlyCommand(Generic[GuestReadonlyCommandUseCase], Command, abc.ABC):
+class GuestReadonlyCommand(
+    Generic[GuestReadonlyCommandUseCase],
+    UseCaseCommand[GuestReadonlyCommandUseCase],
+    abc.ABC,
+):
     """Base class for commands which just read and present data."""
 
     _session_storage: Final[SessionStorage]
-    _use_case: GuestReadonlyCommandUseCase
 
     def __init__(
         self, session_storage: SessionStorage, use_case: GuestReadonlyCommandUseCase
     ) -> None:
         """Constructor."""
+        super().__init__(use_case)
         self._session_storage = session_storage
-        self._use_case = use_case
 
     async def run(
         self,
@@ -152,24 +507,28 @@ LoggedInMutationCommandUseCase = TypeVar(
 
 
 class LoggedInMutationCommand(
-    Generic[LoggedInMutationCommandUseCase], Command, abc.ABC
+    Generic[LoggedInMutationCommandUseCase],
+    UseCaseCommand[LoggedInMutationCommandUseCase],
+    abc.ABC,
 ):
     """Base class for commands which require authentication."""
 
+    _realm_codec_registry: Final[RealmCodecRegistry]
     _session_storage: Final[SessionStorage]
     _top_level_context: Final[LoggedInTopLevelContext]
-    _use_case: LoggedInMutationCommandUseCase
 
     def __init__(
         self,
+        realm_codec_registry: RealmCodecRegistry,
         session_storage: SessionStorage,
         top_level_context: LoggedInTopLevelContext,
         use_case: LoggedInMutationCommandUseCase,
     ) -> None:
         """Constructor."""
+        super().__init__(use_case)
+        self._realm_codec_registry = realm_codec_registry
         self._session_storage = session_storage
         self._top_level_context = top_level_context
-        self._use_case = use_case
 
     async def run(
         self,
@@ -179,13 +538,22 @@ class LoggedInMutationCommand(
         session_info = self._session_storage.load()
         await self._run(session_info, args)
 
-    @abc.abstractmethod
     async def _run(
         self,
         session: SessionInfo,
         args: Namespace,
     ) -> None:
         """Callback to execute when the command is invoked."""
+        parsed_args = self._realm_codec_registry.get_decoder(self._args_type, CliRealm).decode(vars(args))
+        result = await self._use_case.execute(
+            AppLoggedInUseCaseSession(session.auth_token_ext),
+            parsed_args,
+        )
+        self._render_result(result)
+
+    def _render_result(self, result: UseCaseResultT) -> None:
+        """Render the result."""
+        pass
 
     def is_allowed_for_user(self, user: User) -> bool:
         """Is this command allowed for a particular user."""
@@ -224,24 +592,28 @@ LoggedInReadonlyCommandUseCase = TypeVar(
 
 
 class LoggedInReadonlyCommand(
-    Generic[LoggedInReadonlyCommandUseCase], Command, abc.ABC
+    Generic[LoggedInReadonlyCommandUseCase],
+    UseCaseCommand[LoggedInReadonlyCommandUseCase],
+    abc.ABC,
 ):
     """Base class for commands which just read and present data."""
 
+    _realm_codec_registry: Final[RealmCodecRegistry]
     _session_storage: Final[SessionStorage]
     _top_level_context: Final[LoggedInTopLevelContext]
-    _use_case: LoggedInReadonlyCommandUseCase
 
     def __init__(
         self,
+        realm_codec_registry: RealmCodecRegistry,
         session_storage: SessionStorage,
         top_level_context: LoggedInTopLevelContext,
         use_case: LoggedInReadonlyCommandUseCase,
     ) -> None:
         """Constructor."""
+        super().__init__(use_case)
+        self._realm_codec_registry = realm_codec_registry
         self._session_storage = session_storage
         self._top_level_context = top_level_context
-        self._use_case = use_case
 
     async def run(
         self,
@@ -251,13 +623,22 @@ class LoggedInReadonlyCommand(
         session_info = self._session_storage.load()
         await self._run(session_info, args)
 
-    @abc.abstractmethod
     async def _run(
         self,
         session: SessionInfo,
         args: Namespace,
     ) -> None:
         """Callback to execute when the command is invoked."""
+        parsed_args = self._realm_codec_registry.get_decoder(self._args_type, CliRealm).decode(vars(args))
+        result = await self._use_case.execute(
+            AppLoggedInUseCaseSession(session.auth_token_ext),
+            parsed_args,
+        )
+        self._render_result(result)
+
+    def _render_result(self, result: UseCaseResultT) -> None:
+        """Render the result."""
+        pass
 
     def is_allowed_for_user(self, user: User) -> bool:
         """Is this command allowed for a particular user."""

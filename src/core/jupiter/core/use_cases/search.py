@@ -9,12 +9,10 @@ from jupiter.core.domain.search.infra.search_repository import SearchMatch
 from jupiter.core.domain.search.search_limit import SearchLimit
 from jupiter.core.domain.search.search_query import SearchQuery
 from jupiter.core.domain.storage_engine import DomainStorageEngine, SearchStorageEngine
-from jupiter.core.framework.use_case import (
-    UseCaseArgsBase,
-    UseCaseResultBase,
-    use_case_args,
+from jupiter.core.framework.use_case_io import (
     use_case_result,
 )
+from jupiter.core.framework.use_case_io import UseCaseArgsBase, UseCaseResultBase, use_case_args
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCase,
     AppLoggedInReadonlyUseCaseContext,

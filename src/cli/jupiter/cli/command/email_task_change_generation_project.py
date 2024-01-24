@@ -17,16 +17,6 @@ class EmailTaskChangeGenerationProject(
 ):
     """Use case for updating the email task generation project."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "email-task-change-generation-project"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Change the generation project for email tasks"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         generation_project_group = parser.add_mutually_exclusive_group()

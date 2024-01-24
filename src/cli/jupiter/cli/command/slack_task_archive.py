@@ -14,16 +14,6 @@ from jupiter.core.use_cases.push_integrations.slack.archive import (
 class SlackTaskArchive(LoggedInMutationCommand[SlackTaskArchiveUseCase]):
     """UseCase class for archiving a slack task."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "slack-task-archive"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Archive a slack task"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

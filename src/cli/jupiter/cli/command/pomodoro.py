@@ -14,16 +14,6 @@ _TIMER_SECONDS = 60 * 25
 class Pomodoro(LoggedInReadonlyCommand[NoOpUseCase]):
     """Command for running a pomodoro timer."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "pomodoro"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Run a pomodoro timer"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
 

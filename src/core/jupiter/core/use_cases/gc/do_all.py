@@ -8,9 +8,8 @@ from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
     EmptyContext,
     ProgressReporterFactory,
-    UseCaseArgsBase,
-    use_case_args,
 )
+from jupiter.core.framework.use_case_io import UseCaseArgsBase, use_case_args
 from jupiter.core.use_cases.infra.use_cases import AppBackgroundMutationUseCase
 from jupiter.core.utils.time_provider import TimeProvider
 

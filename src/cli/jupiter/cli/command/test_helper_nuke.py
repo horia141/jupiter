@@ -16,13 +16,11 @@ class TestHelperNuke(TestHelperCommand):
         """Constructor."""
         self._use_case = use_case
 
-    @staticmethod
-    def name() -> str:
+    def name(self) -> str:
         """The name of the command."""
         return "test-helper-nuke"
 
-    @staticmethod
-    def description() -> str:
+    def description(self) -> str:
         """The description of the command."""
         return "Completely destroy a workspace"
 

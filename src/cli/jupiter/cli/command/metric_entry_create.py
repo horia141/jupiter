@@ -15,16 +15,6 @@ from jupiter.core.use_cases.metrics.entry.create import (
 class MetricEntryCreate(LoggedInMutationCommand[MetricEntryCreateUseCase]):
     """UseCase for creating a metric entry."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "metric-entry-create"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Create a new metric entry"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

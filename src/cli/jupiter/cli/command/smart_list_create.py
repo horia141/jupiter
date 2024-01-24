@@ -15,16 +15,6 @@ from jupiter.core.use_cases.smart_lists.create import (
 class SmartListCreate(LoggedInMutationCommand[SmartListCreateUseCase]):
     """UseCase for creating a smart list."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "smart-list-create"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Create a new smart list"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

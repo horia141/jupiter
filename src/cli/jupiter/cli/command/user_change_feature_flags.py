@@ -14,16 +14,6 @@ from jupiter.core.use_cases.user.change_feature_flags import (
 class UserChangeFeatureFlags(LoggedInMutationCommand[UserChangeFeatureFlagsUseCase]):
     """Command for changint the feature flags for a user."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "user-change-feature-flags"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Change the user feature flags"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

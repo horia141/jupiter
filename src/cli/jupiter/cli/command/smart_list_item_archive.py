@@ -14,16 +14,6 @@ from jupiter.core.use_cases.smart_lists.item.archive import (
 class SmartListItemArchive(LoggedInMutationCommand[SmartListItemArchiveUseCase]):
     """UseCase for archiving of a smart list item."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "smart-list-item-archive"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Archive a smart list item"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

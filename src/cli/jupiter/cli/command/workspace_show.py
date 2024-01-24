@@ -19,19 +19,6 @@ from rich.tree import Tree
 class WorkspaceShow(LoggedInReadonlyCommand[WorkspaceLoadUseCase]):
     """UseCase class for showing the workspace."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "workspace-show"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Show the current information about the workspace"
-
-    def build_parser(self, parser: ArgumentParser) -> None:
-        """Construct a argparse parser for the command."""
-
     async def _run(
         self,
         session_info: SessionInfo,

@@ -14,16 +14,6 @@ from jupiter.core.use_cases.push_integrations.email.remove import (
 class EmailTaskRemove(LoggedInMutationCommand[EmailTaskRemoveUseCase]):
     """UseCase class for hard removing email tasks."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "email-task-remove"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Hard remove email tasks"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

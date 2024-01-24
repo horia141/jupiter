@@ -409,6 +409,7 @@ export default function Person() {
                   <MenuItem value={29}>29th</MenuItem>
                   <MenuItem value={30}>30th</MenuItem>
                   <MenuItem value={31}>31st</MenuItem>
+                  <MenuItem value={32}>32st</MenuItem>
                 </Select>
 
                 <FieldError actionResult={actionData} fieldName="/birthday" />

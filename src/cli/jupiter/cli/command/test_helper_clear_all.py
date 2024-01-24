@@ -33,13 +33,11 @@ class TestHelperClearAll(TestHelperCommand):
         self._session_storage = session_storage
         self._use_case = use_case
 
-    @staticmethod
-    def name() -> str:
+    def name(self) -> str:
         """The name of the command."""
         return "test-helper-clear-all"
 
-    @staticmethod
-    def description() -> str:
+    def description(self) -> str:
         """The description of the command."""
         return "Clear all the data in the workspace"
 

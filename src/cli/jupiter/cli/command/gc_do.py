@@ -12,16 +12,6 @@ from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
 class GCDo(LoggedInMutationCommand[GCDoUseCase]):
     """UseCase class for archiving done tasks."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "gc-do"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Garbage collect entities that are done."
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

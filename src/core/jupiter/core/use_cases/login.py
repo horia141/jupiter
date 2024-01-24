@@ -5,12 +5,10 @@ from jupiter.core.domain.auth.password_plain import PasswordPlain
 from jupiter.core.domain.core.email_address import EmailAddress
 from jupiter.core.domain.user.infra.user_repository import UserNotFoundError
 from jupiter.core.framework.secure import secure_class
-from jupiter.core.framework.use_case import (
-    UseCaseArgsBase,
-    UseCaseResultBase,
-    use_case_args,
+from jupiter.core.framework.use_case_io import (
     use_case_result,
 )
+from jupiter.core.framework.use_case_io import UseCaseArgsBase, UseCaseResultBase, use_case_args
 from jupiter.core.use_cases.infra.use_cases import (
     AppGuestReadonlyUseCase,
     AppGuestReadonlyUseCaseContext,

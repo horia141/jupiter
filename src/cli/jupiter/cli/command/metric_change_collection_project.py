@@ -17,16 +17,6 @@ class MetricChangeCollectionProject(
 ):
     """Use case for updating the metric collection project."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "metric-change-collection-project"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Change the collection project for metrics"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         collection_project_group = parser.add_mutually_exclusive_group()

@@ -25,16 +25,6 @@ from rich.tree import Tree
 class SmartListShow(LoggedInReadonlyCommand[SmartListFindUseCase]):
     """UseCase for showing the smart list."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "smart-list-show"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Show the list of smart lists"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

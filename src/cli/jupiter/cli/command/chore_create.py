@@ -2,6 +2,8 @@
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
+from jupiter.core.framework.realm import RealmCodecRegistry
+
 from jupiter.cli.command.command import LoggedInMutationCommand
 from jupiter.cli.session_storage import SessionInfo, SessionStorage
 from jupiter.cli.top_level_context import LoggedInTopLevelContext
@@ -29,116 +31,107 @@ class ChoreCreate(LoggedInMutationCommand[ChoreCreateUseCase]):
     def __init__(
         self,
         global_properties: GlobalProperties,
+        realm_codec_registry: RealmCodecRegistry,
         session_storage: SessionStorage,
         top_level_context: LoggedInTopLevelContext,
         use_case: ChoreCreateUseCase,
     ) -> None:
         """Constructor."""
-        super().__init__(session_storage, top_level_context, use_case)
+        super().__init__(realm_codec_registry, session_storage, top_level_context, use_case)
         self._global_properties = global_properties
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "chore-create"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Create a new chore"
-
-    def build_parser(self, parser: ArgumentParser) -> None:
-        """Construct a argparse parser for the command."""
-        if self._top_level_context.workspace.is_feature_available(
-            WorkspaceFeature.PROJECTS
-        ):
-            parser.add_argument(
-                "--project-id",
-                dest="project_ref_id",
-                required=False,
-                help="The project to add the task to",
-            )
-        parser.add_argument(
-            "--name",
-            dest="name",
-            required=True,
-            help="The name of the chore",
-        )
-        parser.add_argument(
-            "--period",
-            dest="period",
-            choices=RecurringTaskPeriod.all_values(),
-            required=True,
-            help="The period for the chore",
-        )
-        parser.add_argument(
-            "--eisen",
-            dest="eisen",
-            choices=Eisen.all_values(),
-            help="The Eisenhower matrix values to use for task",
-        )
-        parser.add_argument(
-            "--difficulty",
-            dest="difficulty",
-            choices=Difficulty.all_values(),
-            help="The difficulty to use for tasks",
-        )
-        parser.add_argument(
-            "--actionable-from-day",
-            type=int,
-            dest="actionable_from_day",
-            metavar="DAY",
-            help="The day of the interval the task will be actionable from",
-        )
-        parser.add_argument(
-            "--actionable-from-month",
-            type=int,
-            dest="actionable_from_month",
-            metavar="MONTH",
-            help="The month of the interval the task will be actionable from",
-        )
-        parser.add_argument(
-            "--due-at-time",
-            dest="due_at_time",
-            metavar="HH:MM",
-            help="The time a task will be due on",
-        )
-        parser.add_argument(
-            "--due-at-day",
-            type=int,
-            dest="due_at_day",
-            metavar="DAY",
-            help="The day of the interval the task will be due on",
-        )
-        parser.add_argument(
-            "--due-at-month",
-            type=int,
-            dest="due_at_month",
-            metavar="MONTH",
-            help="The month of the interval the task will be due on",
-        )
-        parser.add_argument(
-            "--start-at-date",
-            dest="start_at_date",
-            help="The date from which tasks should be generated",
-        )
-        parser.add_argument(
-            "--end-at-date",
-            dest="end_at_date",
-            help="The date until which tasks should be generated",
-        )
-        parser.add_argument(
-            "--must-do",
-            dest="must_do",
-            default=False,
-            action="store_true",
-            help="Whether to treat this task as must do or not",
-        )
-        parser.add_argument(
-            "--skip-rule",
-            dest="skip_rule",
-            help="The skip rule for the task",
-        )
+    # def build_parser(self, parser: ArgumentParser) -> None:
+    #     """Construct a argparse parser for the command."""
+    #     if self._top_level_context.workspace.is_feature_available(
+    #         WorkspaceFeature.PROJECTS
+    #     ):
+    #         parser.add_argument(
+    #             "--project-id",
+    #             dest="project_ref_id",
+    #             required=False,
+    #             help="The project to add the task to",
+    #         )
+    #     parser.add_argument(
+    #         "--name",
+    #         dest="name",
+    #         required=True,
+    #         help="The name of the chore",
+    #     )
+    #     parser.add_argument(
+    #         "--period",
+    #         dest="period",
+    #         choices=RecurringTaskPeriod.all_values(),
+    #         required=True,
+    #         help="The period for the chore",
+    #     )
+    #     parser.add_argument(
+    #         "--eisen",
+    #         dest="eisen",
+    #         choices=Eisen.all_values(),
+    #         help="The Eisenhower matrix values to use for task",
+    #     )
+    #     parser.add_argument(
+    #         "--difficulty",
+    #         dest="difficulty",
+    #         choices=Difficulty.all_values(),
+    #         help="The difficulty to use for tasks",
+    #     )
+    #     parser.add_argument(
+    #         "--actionable-from-day",
+    #         type=int,
+    #         dest="actionable_from_day",
+    #         metavar="DAY",
+    #         help="The day of the interval the task will be actionable from",
+    #     )
+    #     parser.add_argument(
+    #         "--actionable-from-month",
+    #         type=int,
+    #         dest="actionable_from_month",
+    #         metavar="MONTH",
+    #         help="The month of the interval the task will be actionable from",
+    #     )
+    #     parser.add_argument(
+    #         "--due-at-time",
+    #         dest="due_at_time",
+    #         metavar="HH:MM",
+    #         help="The time a task will be due on",
+    #     )
+    #     parser.add_argument(
+    #         "--due-at-day",
+    #         type=int,
+    #         dest="due_at_day",
+    #         metavar="DAY",
+    #         help="The day of the interval the task will be due on",
+    #     )
+    #     parser.add_argument(
+    #         "--due-at-month",
+    #         type=int,
+    #         dest="due_at_month",
+    #         metavar="MONTH",
+    #         help="The month of the interval the task will be due on",
+    #     )
+    #     parser.add_argument(
+    #         "--start-at-date",
+    #         dest="start_at_date",
+    #         help="The date from which tasks should be generated",
+    #     )
+    #     parser.add_argument(
+    #         "--end-at-date",
+    #         dest="end_at_date",
+    #         help="The date until which tasks should be generated",
+    #     )
+    #     parser.add_argument(
+    #         "--must-do",
+    #         dest="must_do",
+    #         default=False,
+    #         action="store_true",
+    #         help="Whether to treat this task as must do or not",
+    #     )
+    #     parser.add_argument(
+    #         "--skip-rule",
+    #         dest="skip_rule",
+    #         help="The skip rule for the task",
+    #     )
 
     async def _run(
         self,

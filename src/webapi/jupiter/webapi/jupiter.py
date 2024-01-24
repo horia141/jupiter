@@ -31,7 +31,7 @@ from jupiter.core.domain.workspaces.infra.workspace_repository import (
     WorkspaceNotFoundError,
 )
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.repository import LeafEntityNotFoundError
+from jupiter.core.framework.repository import EntityNotFoundError
 from jupiter.core.framework.secure import secure_fn
 from jupiter.core.framework.use_case import EmptySession
 from jupiter.core.repository.sqlite.connection import SqliteConnection
@@ -1495,10 +1495,10 @@ async def project_in_significant_use_error_handler(
     )
 
 
-@app.exception_handler(LeafEntityNotFoundError)
+@app.exception_handler(EntityNotFoundError)
 async def leaf_entity_not_found_error_handler(
     _request: Request,
-    _exc: LeafEntityNotFoundError,
+    _exc: EntityNotFoundError,
 ) -> PlainTextResponse:
     """Transform LeafEntityNotFoundError to something that signals clients the entity does not exist."""
     return PlainTextResponse(

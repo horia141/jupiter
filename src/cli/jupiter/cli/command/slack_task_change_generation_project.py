@@ -17,16 +17,6 @@ class SlackTaskChangeGenerationProject(
 ):
     """Use case for updating the slack task generation project."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "slack-task-change-generation-project"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Change the generation project for Slack tasks"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         generation_project_group = parser.add_mutually_exclusive_group()

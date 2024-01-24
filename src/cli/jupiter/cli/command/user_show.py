@@ -19,16 +19,6 @@ from rich.tree import Tree
 class UserShow(LoggedInReadonlyCommand[UserLoadUseCase]):
     """Command class for showing the user."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "user-show"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Show the current information about the user"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
 

@@ -23,16 +23,6 @@ from rich.tree import Tree
 class PersonShow(LoggedInReadonlyCommand[PersonFindUseCase]):
     """UseCase for showing the persons."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "person-show"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Show the persons"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

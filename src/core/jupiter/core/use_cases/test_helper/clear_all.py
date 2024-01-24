@@ -41,9 +41,8 @@ from jupiter.core.framework.use_case import (
     MutationUseCaseInvocationRecorder,
     ProgressReporter,
     ProgressReporterFactory,
-    UseCaseArgsBase,
-    use_case_args,
 )
+from jupiter.core.framework.use_case_io import UseCaseArgsBase, use_case_args
 from jupiter.core.use_cases.infra.storage_engine import UseCaseStorageEngine
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,

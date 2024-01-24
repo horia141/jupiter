@@ -31,16 +31,6 @@ from rich.tree import Tree
 class MetricShow(LoggedInReadonlyCommand[MetricFindUseCase]):
     """UseCase for showing metrics."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "metric-show"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Show the metrics"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

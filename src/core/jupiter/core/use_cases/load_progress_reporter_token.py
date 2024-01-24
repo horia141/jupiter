@@ -3,12 +3,10 @@
 from jupiter.core.domain.auth.auth_token_ext import AuthTokenExt
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.secure import secure_class
-from jupiter.core.framework.use_case import (
-    UseCaseArgsBase,
-    UseCaseResultBase,
-    use_case_args,
+from jupiter.core.framework.use_case_io import (
     use_case_result,
 )
+from jupiter.core.framework.use_case_io import UseCaseArgsBase, UseCaseResultBase, use_case_args
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCaseContext,
     AppTransactionalLoggedInReadOnlyUseCase,

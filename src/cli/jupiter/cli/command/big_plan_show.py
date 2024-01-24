@@ -16,7 +16,7 @@ from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.use_cases.big_plans.find import BigPlanFindArgs, BigPlanFindUseCase
+from jupiter.core.use_cases.big_plans.find import BigPlanFindArgs, BigPlanFindResult, BigPlanFindUseCase
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
 from rich.console import Console
 from rich.text import Text
@@ -26,87 +26,7 @@ from rich.tree import Tree
 class BigPlanShow(LoggedInReadonlyCommand[BigPlanFindUseCase]):
     """UseCase class for showing the big plans."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "big-plan-show"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Show the list of big plans"
-
-    def build_parser(self, parser: ArgumentParser) -> None:
-        """Construct a argparse parser for the command."""
-        parser.add_argument(
-            "--show-archived",
-            dest="show_archived",
-            default=False,
-            action="store_true",
-            help="Whether to show archived big plans or not",
-        )
-        parser.add_argument(
-            "--id",
-            type=str,
-            dest="ref_ids",
-            default=[],
-            action="append",
-            help="The id of the big plan to modify",
-        )
-        if self._top_level_context.workspace.is_feature_available(
-            WorkspaceFeature.PROJECTS
-        ):
-            parser.add_argument(
-                "--project-id",
-                dest="project_ref_ids",
-                default=[],
-                action="append",
-                help="Allow only big plans from this project",
-            )
-        parser.add_argument(
-            "--show-inbox-tasks",
-            dest="show_inbox_tasks",
-            default=False,
-            action="store_const",
-            const=True,
-            help="Show inbox tasks for the big plan",
-        )
-
-    async def _run(
-        self,
-        session_info: SessionInfo,
-        args: Namespace,
-    ) -> None:
-        """Callback to execute when the command is invoked."""
-        show_archived = args.show_archived
-        ref_ids = (
-            [EntityId.from_raw(rid) for rid in args.ref_ids]
-            if len(args.ref_ids) > 0
-            else None
-        )
-        if self._top_level_context.workspace.is_feature_available(
-            WorkspaceFeature.PROJECTS
-        ):
-            project_ref_ids = (
-                [EntityId.from_raw(pk) for pk in args.project_ref_ids]
-                if len(args.project_ref_ids) > 0
-                else None
-            )
-        else:
-            project_ref_ids = None
-        show_inbox_tasks = args.show_inbox_tasks
-
-        result = await self._use_case.execute(
-            AppLoggedInUseCaseSession(session_info.auth_token_ext),
-            BigPlanFindArgs(
-                allow_archived=show_archived,
-                include_project=True,
-                include_inbox_tasks=show_inbox_tasks,
-                filter_ref_ids=ref_ids,
-                filter_project_ref_ids=project_ref_ids,
-            ),
-        )
-
+    def _render_result(self, result: BigPlanFindResult) -> None:
         sorted_big_plans = sorted(
             result.entries,
             key=lambda bpe: (
@@ -143,7 +63,7 @@ class BigPlanShow(LoggedInReadonlyCommand[BigPlanFindUseCase]):
                 big_plan_info_text.append(" ")
                 big_plan_info_text.append(due_date_to_rich_text(big_plan.due_date))
 
-            if self._top_level_context.workspace.is_feature_available(
+            if project is not None and self._top_level_context.workspace.is_feature_available(
                 WorkspaceFeature.PROJECTS
             ):
                 big_plan_info_text.append(" ")
@@ -159,8 +79,6 @@ class BigPlanShow(LoggedInReadonlyCommand[BigPlanFindUseCase]):
             )
             big_plan_tree.add(big_plan_info_text)
 
-            if not show_inbox_tasks:
-                continue
             if inbox_tasks is None or len(inbox_tasks) == 0:
                 continue
 

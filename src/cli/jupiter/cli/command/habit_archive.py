@@ -11,16 +11,6 @@ from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
 class HabitArchive(LoggedInMutationCommand[HabitArchiveUseCase]):
     """UseCase class for removing a habit."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "habit-archive"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Remove a habit"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

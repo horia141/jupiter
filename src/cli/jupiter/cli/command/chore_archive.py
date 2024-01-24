@@ -11,16 +11,6 @@ from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
 class ChoreArchive(LoggedInMutationCommand[ChoreArchiveUseCase]):
     """UseCase class for removing a chore."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "chore-archive"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Remove a chore"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

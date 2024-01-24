@@ -16,16 +16,6 @@ class WorkspaceChangeDefaultProject(
 ):
     """UseCase class for changing the default project of the workspace."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "workspace-change-default-project"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Update the workspace"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

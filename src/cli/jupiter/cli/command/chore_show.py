@@ -2,6 +2,8 @@
 from argparse import ArgumentParser, Namespace
 from typing import Final, cast
 
+from jupiter.core.framework.realm import RealmCodecRegistry
+
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     actionable_from_day_to_rich_text,
@@ -43,23 +45,14 @@ class ChoreShow(LoggedInReadonlyCommand[ChoreFindUseCase]):
     def __init__(
         self,
         global_properties: GlobalProperties,
+        realm_codec_registry: RealmCodecRegistry,
         session_storage: SessionStorage,
         top_level_context: LoggedInTopLevelContext,
         use_case: ChoreFindUseCase,
     ) -> None:
         """Constructor."""
-        super().__init__(session_storage, top_level_context, use_case)
+        super().__init__(realm_codec_registry, session_storage, top_level_context, use_case)
         self._global_properties = global_properties
-
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "chore-show"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Show the list of chores"
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""

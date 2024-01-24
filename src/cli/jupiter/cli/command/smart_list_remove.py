@@ -14,16 +14,6 @@ from jupiter.core.use_cases.smart_lists.remove import (
 class SmartListsRemove(LoggedInMutationCommand[SmartListRemoveUseCase]):
     """UseCase for hard removing of a smart list."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "smart-list-remove"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Hard remove a smart list"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

@@ -17,13 +17,11 @@ class Logout(Command):
         """Constructor."""
         self._session_storage = session_storage
 
-    @staticmethod
-    def name() -> str:
+    def name(self) -> str:
         """The name of the command."""
         return "logout"
 
-    @staticmethod
-    def description() -> str:
+    def description(self) -> str:
         """The description of the command."""
         return "Logout of the application"
 

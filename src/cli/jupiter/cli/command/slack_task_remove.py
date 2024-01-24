@@ -14,16 +14,6 @@ from jupiter.core.use_cases.push_integrations.slack.remove import (
 class SlackTaskRemove(LoggedInMutationCommand[SlackTaskRemoveUseCase]):
     """UseCase class for hard removing slack tasks."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "slack-task-remove"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Hard remove slack tasks"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

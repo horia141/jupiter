@@ -14,16 +14,6 @@ from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
 class InboxTaskChangeProject(LoggedInMutationCommand[InboxTaskChangeProjectUseCase]):
     """UseCase class for hard removing inbox tasks."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "inbox-task-change-project"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Change the project for an inbox task"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

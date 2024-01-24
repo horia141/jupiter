@@ -40,16 +40,6 @@ class Initialize(GuestMutationCommand[InitUseCase]):
         super().__init__(session_storage, use_case)
         self._top_level_context = top_level_context
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "init"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Initialise a workspace"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

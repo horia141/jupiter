@@ -11,16 +11,6 @@ from jupiter.core.use_cases.persons.remove import PersonRemoveArgs, PersonRemove
 class PersonRemove(LoggedInMutationCommand[PersonRemoveUseCase]):
     """UseCase for removing a person."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "person-remove"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Remove a person"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

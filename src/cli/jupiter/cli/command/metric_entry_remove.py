@@ -14,16 +14,6 @@ from jupiter.core.use_cases.metrics.entry.remove import (
 class MetricEntryRemove(LoggedInMutationCommand[MetricEntryRemoveUseCase]):
     """UseCase for hard removing a metric."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "metric-entry-remove"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Hard remove a metric entry"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

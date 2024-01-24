@@ -16,16 +16,6 @@ class WorkspaceChangeFeatureFlags(
 ):
     """Command for changint the feature flags for a workspace."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "workspace-change-feature-flags"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Change the workspace feature flags"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

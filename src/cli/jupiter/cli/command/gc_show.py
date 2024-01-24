@@ -21,16 +21,6 @@ from rich.tree import Tree
 class GCShow(LoggedInReadonlyCommand[GCLoadRunsUseCase]):
     """Command for loading previous runs of GC."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "gc-show"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Show the log of GC runs."
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
 

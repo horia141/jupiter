@@ -14,16 +14,6 @@ from jupiter.core.use_cases.metrics.entry.archive import (
 class MetricEntryArchive(LoggedInMutationCommand[MetricEntryArchiveUseCase]):
     """UseCase for archiving a metric entry."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "metric-entry-archive"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Archive a metric entry"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

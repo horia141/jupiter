@@ -18,16 +18,6 @@ from jupiter.core.use_cases.smart_lists.update import (
 class SmartListUpdate(LoggedInMutationCommand[SmartListUpdateUseCase]):
     """UseCase for updating a smart list."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "smart-list-update"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Update a new smart list"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

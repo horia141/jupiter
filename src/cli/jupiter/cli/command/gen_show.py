@@ -24,16 +24,6 @@ from rich.tree import Tree
 class GenShow(LoggedInReadonlyCommand[GenLoadRunsUseCase]):
     """Command for loading previous runs of task generation."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "gen-show"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Show the log of task generation runs."
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
 

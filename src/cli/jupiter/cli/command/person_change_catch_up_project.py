@@ -17,16 +17,6 @@ class PersonChangeCatchUpProject(
 ):
     """UseCase for updating the person database."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "person-change-catch-up-project"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Change the catch up project"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         catch_up_project_group = parser.add_mutually_exclusive_group()

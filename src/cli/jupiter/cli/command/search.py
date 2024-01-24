@@ -2,6 +2,8 @@
 from argparse import ArgumentParser, Namespace
 from typing import Final, cast
 
+from jupiter.core.framework.realm import RealmCodecRegistry
+
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     entity_id_to_rich_text,
@@ -33,25 +35,16 @@ class Search(LoggedInReadonlyCommand[SearchUseCase]):
     def __init__(
         self,
         session_storage: SessionStorage,
+                    realm_codec_registry: RealmCodecRegistry,
         top_level_context: LoggedInTopLevelContext,
         global_properties: GlobalProperties,
         time_provider: TimeProvider,
         use_case: SearchUseCase,
     ) -> None:
         """Constructor."""
-        super().__init__(session_storage, top_level_context, use_case)
+        super().__init__(realm_codec_registry, session_storage, top_level_context, use_case)
         self._global_properties = global_properties
         self._time_provider = time_provider
-
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "search"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Search"
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""

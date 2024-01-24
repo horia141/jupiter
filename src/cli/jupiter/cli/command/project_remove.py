@@ -14,16 +14,6 @@ from jupiter.core.use_cases.projects.remove import (
 class ProjectRemove(LoggedInMutationCommand[ProjectRemoveUseCase]):
     """UseCase class for removing projects."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "project-remove"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Remove a project"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

@@ -17,16 +17,6 @@ class InboxTaskAssociateWithBigPlan(
 ):
     """UseCase class for associating an inbox task with a big plan."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "inbox-task-associate-with-big-plan"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Associate an inbox task with a big plan"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(

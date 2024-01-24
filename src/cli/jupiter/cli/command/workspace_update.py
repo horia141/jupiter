@@ -16,16 +16,6 @@ from jupiter.core.use_cases.workspaces.update import (
 class WorkspaceUpdate(LoggedInMutationCommand[WorkspaceUpdateUseCase]):
     """UseCase class for updating the workspace."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "workspace-update"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Update the workspace"
-
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument("--name", required=False, help="The workspace name to use")
