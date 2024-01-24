@@ -10,7 +10,6 @@ from jupiter.core.framework.secure import secure_class
 from typing_extensions import dataclass_transform
 
 
-
 class Value(Concept):
     """A value object in the domain."""
 
@@ -96,5 +95,3 @@ _SecretValueT = TypeVar("_SecretValueT", bound=SecretValue)
 @dataclass_transform()
 def secret_value(cls: type[_SecretValueT]) -> type[_SecretValueT]:
     return dataclass(repr=False)(secure_class(cls))
-
-

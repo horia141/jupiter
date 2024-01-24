@@ -36,7 +36,7 @@ class JournalUpdateReportUseCase(
         async with self._domain_storage_engine.get_unit_of_work() as uow:
             journal = await uow.journal_repository.load_by_id(args.ref_id)
 
-        report_service = ReportService(self._domain_storage_engine)
+        report_service = ReportService(self._domain_storage_engine, self._time_provider)
 
         report_period_result = await report_service.do_it(
             user=context.user,

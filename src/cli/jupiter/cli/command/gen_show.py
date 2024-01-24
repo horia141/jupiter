@@ -1,6 +1,5 @@
 """ommand for loading previous runs of Gen."""
 
-from argparse import ArgumentParser, Namespace
 
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
@@ -13,9 +12,7 @@ from jupiter.cli.command.rendering import (
     period_to_rich_text,
     sync_target_to_rich_text,
 )
-from jupiter.cli.session_storage import SessionInfo
-from jupiter.core.use_cases.gen.load_runs import GenLoadRunsArgs, GenLoadRunsUseCase
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
+from jupiter.core.use_cases.gen.load_runs import GenLoadRunsResult, GenLoadRunsUseCase
 from rich.console import Console
 from rich.text import Text
 from rich.tree import Tree
@@ -24,20 +21,7 @@ from rich.tree import Tree
 class GenShow(LoggedInReadonlyCommand[GenLoadRunsUseCase]):
     """Command for loading previous runs of task generation."""
 
-    def build_parser(self, parser: ArgumentParser) -> None:
-        """Construct a argparse parser for the command."""
-
-    async def _run(
-        self,
-        session_info: SessionInfo,
-        args: Namespace,
-    ) -> None:
-        """Callback to execute when the command is invoked."""
-        result = await self._use_case.execute(
-            AppLoggedInUseCaseSession(session_info.auth_token_ext),
-            GenLoadRunsArgs(),
-        )
-
+    def _render_result(self, result: GenLoadRunsResult) -> None:
         rich_tree = Tree("🗑  Task Generation", guide_style="bold bright_blue")
 
         for entry in result.entries:

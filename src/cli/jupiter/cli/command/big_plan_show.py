@@ -1,5 +1,4 @@
 """UseCase for showing the big plans."""
-from argparse import ArgumentParser, Namespace
 from typing import cast
 
 from jupiter.cli.command.command import LoggedInReadonlyCommand
@@ -11,13 +10,10 @@ from jupiter.cli.command.rendering import (
     inbox_task_summary_to_rich_text,
     project_to_rich_text,
 )
-from jupiter.cli.session_storage import SessionInfo
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.projects.project import Project
-from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.use_cases.big_plans.find import BigPlanFindArgs, BigPlanFindResult, BigPlanFindUseCase
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
+from jupiter.core.use_cases.big_plans.find import BigPlanFindResult, BigPlanFindUseCase
 from rich.console import Console
 from rich.text import Text
 from rich.tree import Tree
@@ -63,8 +59,11 @@ class BigPlanShow(LoggedInReadonlyCommand[BigPlanFindUseCase]):
                 big_plan_info_text.append(" ")
                 big_plan_info_text.append(due_date_to_rich_text(big_plan.due_date))
 
-            if project is not None and self._top_level_context.workspace.is_feature_available(
-                WorkspaceFeature.PROJECTS
+            if (
+                project is not None
+                and self._top_level_context.workspace.is_feature_available(
+                    WorkspaceFeature.PROJECTS
+                )
             ):
                 big_plan_info_text.append(" ")
                 big_plan_info_text.append(project_to_rich_text(project.name))

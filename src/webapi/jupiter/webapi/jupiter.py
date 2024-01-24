@@ -632,6 +632,7 @@ gen_load_runs_use_case = GenLoadRunsUseCase(
 )
 
 report_use_case = ReportUseCase(
+    time_provider=request_time_provider,
     auth_token_stamper=auth_token_stamper,
     storage_engine=domain_storage_engine,
 )

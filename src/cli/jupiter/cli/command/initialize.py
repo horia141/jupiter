@@ -1,5 +1,5 @@
 """UseCase for initialising a workspace."""
-from argparse import ArgumentParser, Namespace
+from argparse import Namespace
 from typing import Final, cast
 
 from jupiter.cli.command.command import GuestMutationCommand
@@ -39,81 +39,6 @@ class Initialize(GuestMutationCommand[InitUseCase]):
         """Constructor."""
         super().__init__(session_storage, use_case)
         self._top_level_context = top_level_context
-
-    def build_parser(self, parser: ArgumentParser) -> None:
-        """Construct a argparse parser for the command."""
-        parser.add_argument(
-            "--user-email",
-            dest="user_email_address",
-            required=True,
-            help="The email address you use to log in to Jupiter",
-        )
-        parser.add_argument(
-            "--user-name",
-            dest="user_name",
-            required=True,
-            help="Your name",
-        )
-        parser.add_argument(
-            "--user-timezone",
-            dest="user_timezone",
-            required=True,
-            help="The timezone you're currently in",
-        )
-        parser.add_argument(
-            "--user-feature",
-            dest="user_feature_flag_enabled",
-            default=[],
-            action="append",
-            choices=UserFeature.all_values(),
-        )
-        parser.add_argument(
-            "--user-no-feature",
-            dest="user_feature_flag_disable",
-            default=[],
-            action="append",
-            choices=UserFeature.all_values(),
-        )
-        parser.add_argument(
-            "--auth-password",
-            dest="auth_password",
-            type=PasswordNewPlain.from_raw,
-            required=True,
-            help="The password you use to log in to Jupiter",
-        )
-        parser.add_argument(
-            "--auth-password-repeat",
-            dest="auth_password_repeat",
-            type=PasswordNewPlain.from_raw,
-            required=True,
-            help="Repeat the password you use to log in to Jupiter",
-        )
-        parser.add_argument(
-            "--workspace-name",
-            dest="workspace_name",
-            default=str(self._top_level_context.default_workspace_name),
-            help="The workspace name to use",
-        )
-        parser.add_argument(
-            "--workspace-project-name",
-            dest="workspace_first_project_name",
-            default=str(self._top_level_context.default_first_project_name),
-            help="The name of the first project",
-        )
-        parser.add_argument(
-            "--workspace-feature",
-            dest="workspace_feature_flag_enabled",
-            default=[],
-            action="append",
-            choices=WorkspaceFeature.all_values(),
-        )
-        parser.add_argument(
-            "--workspace-no-feature",
-            dest="workspace_feature_flag_disable",
-            default=[],
-            action="append",
-            choices=WorkspaceFeature.all_values(),
-        )
 
     async def _run(
         self,

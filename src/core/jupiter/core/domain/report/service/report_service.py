@@ -48,22 +48,27 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.errors import InputValidationError
+from jupiter.core.utils.time_provider import TimeProvider
 
 
 class ReportService:
     """The domain service which constructs a report."""
 
     _storage_engine: Final[DomainStorageEngine]
+    _time_provider: Final[TimeProvider]
 
-    def __init__(self, domain_storage_engine: DomainStorageEngine) -> None:
+    def __init__(
+        self, domain_storage_engine: DomainStorageEngine, time_provider: TimeProvider
+    ) -> None:
         """Constructor."""
         self._storage_engine = domain_storage_engine
+        self._time_provider = time_provider
 
     async def do_it(
         self,
         user: User,
         workspace: Workspace,
-        today: ADate,
+        today: Optional[ADate],
         period: RecurringTaskPeriod,
         filter_sources: Optional[Iterable[InboxTaskSource]] = None,
         filter_project_ref_ids: Optional[Iterable[EntityId]] = None,
@@ -112,6 +117,8 @@ class ReportService:
             and filter_email_task_ref_ids is not None
         ):
             raise FeatureUnavailableError(WorkspaceFeature.EMAIL_TASKS)
+
+        today = today or self._time_provider.get_current_date()
 
         filter_sources = (
             filter_sources

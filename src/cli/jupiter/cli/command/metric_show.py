@@ -1,5 +1,4 @@
 """UseCase for showing metrics."""
-from argparse import ArgumentParser, Namespace
 from typing import Optional, cast
 
 from jupiter.cli.command.command import LoggedInReadonlyCommand
@@ -16,13 +15,10 @@ from jupiter.cli.command.rendering import (
     metric_unit_to_rich_text,
     period_to_rich_text,
 )
-from jupiter.cli.session_storage import SessionInfo
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.notes.note_content_block import ParagraphBlock
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
-from jupiter.core.use_cases.metrics.find import MetricFindArgs, MetricFindUseCase
+from jupiter.core.use_cases.metrics.find import MetricFindResult, MetricFindUseCase
 from rich.console import Console
 from rich.text import Text
 from rich.tree import Tree
@@ -31,58 +27,7 @@ from rich.tree import Tree
 class MetricShow(LoggedInReadonlyCommand[MetricFindUseCase]):
     """UseCase for showing metrics."""
 
-    def build_parser(self, parser: ArgumentParser) -> None:
-        """Construct a argparse parser for the command."""
-        parser.add_argument(
-            "--show-archived",
-            dest="show_archived",
-            default=False,
-            action="store_true",
-            help="Whether to show archived vacations or not",
-        )
-        parser.add_argument(
-            "--id",
-            dest="ref_ids",
-            required=False,
-            default=[],
-            action="append",
-            help="The key of the metric",
-        )
-        parser.add_argument(
-            "--show-inbox-tasks",
-            dest="show_inbox_tasks",
-            default=False,
-            action="store_const",
-            const=True,
-            help="Show inbox tasks",
-        )
-
-    async def _run(
-        self,
-        session_info: SessionInfo,
-        args: Namespace,
-    ) -> None:
-        """Callback to execute when the command is invoked."""
-        show_archived = args.show_archived
-        ref_ids = (
-            [EntityId.from_raw(mk) for mk in args.ref_ids]
-            if len(args.ref_ids) > 0
-            else None
-        )
-
-        show_inbox_tasks = args.show_inbox_tasks
-
-        result = await self._use_case.execute(
-            AppLoggedInUseCaseSession(session_info.auth_token_ext),
-            MetricFindArgs(
-                allow_archived=show_archived,
-                include_entries=True,
-                include_collection_inbox_tasks=True,
-                include_metric_entry_notes=True,
-                filter_ref_ids=ref_ids,
-            ),
-        )
-
+    def _render_result(self, result: MetricFindResult) -> None:
         sorted_metrics = sorted(
             result.entries,
             key=lambda me: (me.metric.archived, me.metric.created_time),
@@ -228,8 +173,6 @@ class MetricShow(LoggedInReadonlyCommand[MetricFindUseCase]):
 
                     previous_value = metric_entry.value
 
-            if not show_inbox_tasks:
-                continue
             if collection_inbox_tasks is None or len(collection_inbox_tasks) == 0:
                 continue
 

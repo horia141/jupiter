@@ -41,9 +41,6 @@ class UseCaseContextBase(abc.ABC):
         """The owner workspace id."""
 
 
-
-
-
 UseCaseSession = TypeVar("UseCaseSession", bound=UseCaseSessionBase)
 UseCaseContext = TypeVar("UseCaseContext", bound=UseCaseContextBase)
 UseCaseArgs = TypeVar("UseCaseArgs", bound=UseCaseArgsBase)

@@ -2,8 +2,6 @@
 from argparse import ArgumentParser, Namespace
 from typing import Final, List
 
-from jupiter.core.framework.realm import RealmCodecRegistry
-
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     entity_id_to_rich_text,
@@ -25,6 +23,7 @@ from jupiter.core.domain.report.report_period_result import (
 )
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.errors import InputValidationError
+from jupiter.core.framework.realm import RealmCodecRegistry
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
 from jupiter.core.use_cases.report import (
     ReportArgs,
@@ -67,7 +66,9 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
         use_case: ReportUseCase,
     ) -> None:
         """Constructor."""
-        super().__init__(realm_codec_registry, session_storage, top_level_context, use_case)
+        super().__init__(
+            realm_codec_registry, session_storage, top_level_context, use_case
+        )
         self._global_properties = global_properties
         self._time_provider = time_provider
 

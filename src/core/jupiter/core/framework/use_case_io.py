@@ -1,10 +1,9 @@
+from dataclasses import dataclass, fields
 from typing import TypeVar
-from typing_extensions import dataclass_transform
+
 from jupiter.core.framework.json import JSONDictType, process_primitive_to_json
 from jupiter.core.framework.update_action import UpdateAction
-
-
-from dataclasses import dataclass, fields
+from typing_extensions import dataclass_transform
 
 
 @dataclass
@@ -47,7 +46,9 @@ def use_case_args(cls: type[_UseCaseArgsT]) -> type[_UseCaseArgsT]:
 class UseCaseResultBase(UseCaseIOBase):
     """The base class for use case args results."""
 
+
 _UseCaseResultT = TypeVar("_UseCaseResultT", bound=UseCaseResultBase)
+
 
 @dataclass_transform()
 def use_case_result(cls: type[_UseCaseResultT]) -> type[_UseCaseResultT]:

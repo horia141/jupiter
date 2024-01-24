@@ -1,14 +1,11 @@
 """UseCase for showing the workspace."""
-from argparse import ArgumentParser, Namespace
 
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     project_to_rich_text,
 )
-from jupiter.cli.session_storage import SessionInfo
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
 from jupiter.core.use_cases.workspaces.load import (
-    WorkspaceLoadArgs,
+    WorkspaceLoadResult,
     WorkspaceLoadUseCase,
 )
 from rich.console import Console
@@ -19,17 +16,7 @@ from rich.tree import Tree
 class WorkspaceShow(LoggedInReadonlyCommand[WorkspaceLoadUseCase]):
     """UseCase class for showing the workspace."""
 
-    async def _run(
-        self,
-        session_info: SessionInfo,
-        args: Namespace,
-    ) -> None:
-        """Callback to execute when the command is invoked."""
-        result = await self._use_case.execute(
-            AppLoggedInUseCaseSession(session_info.auth_token_ext),
-            WorkspaceLoadArgs(),
-        )
-
+    def _render_result(self, result: WorkspaceLoadResult) -> None:
         rich_tree = Tree(f"⭐ {result.workspace.name}", guide_style="bold bright_blue")
 
         workspace_text = Text("Default ")

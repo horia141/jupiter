@@ -8,7 +8,12 @@ from jupiter.core.domain.vacations.vacation_name import VacationName
 from jupiter.core.framework.use_case import (
     ProgressReporter,
 )
-from jupiter.core.framework.use_case_io import UseCaseArgsBase, UseCaseResultBase, use_case_args, use_case_result
+from jupiter.core.framework.use_case_io import (
+    UseCaseArgsBase,
+    UseCaseResultBase,
+    use_case_args,
+    use_case_result,
+)
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,

@@ -1,5 +1,4 @@
 """UseCase for showing the slack tasks."""
-from argparse import ArgumentParser, Namespace
 
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
@@ -14,12 +13,9 @@ from jupiter.cli.command.rendering import (
     slack_task_message_to_rich_text,
     slack_user_name_to_rich_text,
 )
-from jupiter.cli.session_storage import SessionInfo
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
 from jupiter.core.use_cases.push_integrations.slack.find import (
-    SlackTaskFindArgs,
+    SlackTaskFindResult,
     SlackTaskFindUseCase,
 )
 from rich.console import Console
@@ -30,55 +26,7 @@ from rich.tree import Tree
 class SlackTaskShow(LoggedInReadonlyCommand[SlackTaskFindUseCase]):
     """UseCase class for showing the slack tasks."""
 
-    def build_parser(self, parser: ArgumentParser) -> None:
-        """Construct a argparse parser for the command."""
-        parser.add_argument(
-            "--show-archived",
-            dest="show_archived",
-            default=False,
-            action="store_true",
-            help="Whether to show archived vacations or not",
-        )
-        parser.add_argument(
-            "--id",
-            type=str,
-            dest="ref_ids",
-            default=[],
-            action="append",
-            help="The id of the vacations to modify",
-        )
-        parser.add_argument(
-            "--show-inbox-tasks",
-            dest="show_inbox_tasks",
-            default=False,
-            action="store_const",
-            const=True,
-            help="Show inbox tasks",
-        )
-
-    async def _run(
-        self,
-        session_info: SessionInfo,
-        args: Namespace,
-    ) -> None:
-        """Callback to execute when the command is invoked."""
-        show_archived = args.show_archived
-        ref_ids = (
-            [EntityId.from_raw(rid) for rid in args.ref_ids]
-            if len(args.ref_ids) > 0
-            else None
-        )
-        show_inbox_tasks = args.show_inbox_tasks
-
-        result = await self._use_case.execute(
-            AppLoggedInUseCaseSession(session_info.auth_token_ext),
-            SlackTaskFindArgs(
-                allow_archived=show_archived,
-                include_inbox_tasks=show_inbox_tasks,
-                filter_ref_ids=ref_ids,
-            ),
-        )
-
+    def _render_result(self, result: SlackTaskFindResult) -> None:
         sorted_slack_tasks = sorted(
             result.entries,
             key=lambda ste: (ste.slack_task.archived, ste.slack_task.created_time),
@@ -157,8 +105,6 @@ class SlackTaskShow(LoggedInReadonlyCommand[SlackTaskFindUseCase]):
                 slack_task_text.stylize("gray62")
                 slack_task_info_text.stylize("gray62")
 
-            if not show_inbox_tasks:
-                continue
             if inbox_task is None:
                 continue
 

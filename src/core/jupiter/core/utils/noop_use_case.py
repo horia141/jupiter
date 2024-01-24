@@ -1,7 +1,6 @@
 """A use case that doesn't do anything."""
 
-from jupiter.core.framework.use_case_io import use_case_args
-from jupiter.core.framework.use_case_io import UseCaseArgsBase
+from jupiter.core.framework.use_case_io import UseCaseArgsBase, use_case_args
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCase,
     AppLoggedInUseCaseContext,

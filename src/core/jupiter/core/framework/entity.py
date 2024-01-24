@@ -174,7 +174,9 @@ class ParentLink:
         return self.ref_id.as_int()
 
 
-EntityLinkFilterRaw = None | AtomicValue | EnumValue | IsRefId | IsParentLink | IsOneOfRefId
+EntityLinkFilterRaw = (
+    None | AtomicValue | EnumValue | IsRefId | IsParentLink | IsOneOfRefId
+)
 EntityLinkFilterCompiled = None | AtomicValue | EnumValue | list[EntityId]
 EntityLinkFiltersRaw = dict[str, EntityLinkFilterRaw]
 EntityLinkFiltersCompiled = dict[str, EntityLinkFilterCompiled]

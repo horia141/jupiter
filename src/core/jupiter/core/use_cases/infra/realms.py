@@ -48,17 +48,14 @@ from jupiter.core.framework.realm import (
     RealmThing,
 )
 from jupiter.core.framework.record import Record
-from jupiter.core.framework.thing import Thing
+from jupiter.core.framework.thing import Thing, is_value_ish, is_value_ish_type
 from jupiter.core.framework.update_action import UpdateAction
-from jupiter.core.framework.use_case import UseCaseArgs
 from jupiter.core.framework.use_case_io import UseCaseArgsBase
 from jupiter.core.framework.value import (
     AtomicValue,
     CompositeValue,
     EnumValue,
 )
-from jupiter.core.framework.thing import is_value_ish
-from jupiter.core.framework.thing import is_value_ish_type
 from pendulum.date import Date
 from pendulum.datetime import DateTime
 
@@ -423,7 +420,7 @@ class _StandardCompositeValueDatabaseDecoder(
                         raise RealmDecodingError(
                             f"Expected value of type {self._the_type.__name__} to have field {field.name} to be a list"
                         )
-        
+
                     set_item_decoder: RealmDecoder[
                         Thing, DatabaseRealm
                     ] = self._realm_codec_registry.get_decoder(
@@ -1096,7 +1093,7 @@ class _StandardRecordDatabaseDecoder(
             last_modified_time=last_modified_time,
             **ctor_args,
         )
-    
+
 
 class _StandardUseCaseArgsCliDecoder(
     Generic[_UseCaseArgsT], RealmDecoder[_UseCaseArgsT, CliRealm]
@@ -1119,7 +1116,13 @@ class _StandardUseCaseArgsCliDecoder(
         all_fields = dataclasses.fields(self._the_type)
 
         ctor_args: dict[
-            str, ParentLink | Thing | list[Thing] | set[Thing] | dict[Thing, Thing] | UpdateAction[Thing]
+            str,
+            ParentLink
+            | Thing
+            | list[Thing]
+            | set[Thing]
+            | dict[Thing, Thing]
+            | UpdateAction[Thing],
         ] = {}
 
         for field in all_fields:
@@ -1194,9 +1197,9 @@ class _StandardUseCaseArgsCliDecoder(
                         if field_value is None:
                             ctor_args[field.name] = UpdateAction.do_nothing()
                         else:
-                            ctor_args[field.name] = UpdateAction.change_to(update_action_decoder.decode(
-                                field_value
-                            ))
+                            ctor_args[field.name] = UpdateAction.change_to(
+                                update_action_decoder.decode(field_value)
+                            )
                     elif get_origin(update_action_type) is not None:
                         update_action_origin_type = get_origin(update_action_type)
                         if update_action_origin_type is typing.Union or (
@@ -1204,17 +1207,24 @@ class _StandardUseCaseArgsCliDecoder(
                             and issubclass(update_action_origin_type, types.UnionType)
                         ):
                             field_args = get_args(update_action_type)
-                            if f"clear_{field.name}" in value and value[f"clear_{field.name}"] is True:
+                            if (
+                                f"clear_{field.name}" in value
+                                and value[f"clear_{field.name}"] is True
+                            ):
                                 ctor_args[field.name] = UpdateAction.change_to(None)
                             elif field_value is None:
                                 ctor_args[field.name] = UpdateAction.do_nothing()
                             else:
                                 for field_arg in field_args:
-                                    field_decoder = self._realm_codec_registry.get_decoder(
-                                        field_arg, DatabaseRealm
+                                    field_decoder = (
+                                        self._realm_codec_registry.get_decoder(
+                                            field_arg, DatabaseRealm
+                                        )
                                     )
                                     try:
-                                        ctor_args[field.name] = UpdateAction.change_to(field_decoder.decode(field_value))
+                                        ctor_args[field.name] = UpdateAction.change_to(
+                                            field_decoder.decode(field_value)
+                                        )
                                         break
                                     except (RealmDecodingError, InputValidationError):
                                         pass
@@ -1228,8 +1238,8 @@ class _StandardUseCaseArgsCliDecoder(
                             )
                     else:
                         raise Exception(
-                                f"Could not decode field {field.name} of type {field.type} for value {self._the_type.__name__}"
-                            )
+                            f"Could not decode field {field.name} of type {field.type} for value {self._the_type.__name__}"
+                        )
                 elif field_type_origin is list:
                     list_item_type = cast(type[Thing], get_args(field.type)[0])
                     if not isinstance(field_value, list):
@@ -1449,7 +1459,9 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
             tuple[type[Concept], type[Realm], type[RealmEncoder[Concept, Realm]]]
         ]:
             for name, obj in the_module.__dict__.items():
-                if not hasattr(obj, "__parameters__") or not hasattr(obj.__parameters__, "__len__"):
+                if not hasattr(obj, "__parameters__") or not hasattr(
+                    obj.__parameters__, "__len__"
+                ):
                     continue
 
                 if len(obj.__parameters__) > 0:
@@ -1482,7 +1494,9 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
             tuple[type[Concept], type[Realm], type[RealmDecoder[Concept, Realm]]]
         ]:
             for name, obj in the_module.__dict__.items():
-                if not hasattr(obj, "__parameters__") or not hasattr(obj.__parameters__, "__len__"):
+                if not hasattr(obj, "__parameters__") or not hasattr(
+                    obj.__parameters__, "__len__"
+                ):
                     continue
 
                 if len(obj.__parameters__) > 0:
@@ -1769,4 +1783,3 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
         self._decoders_registry[
             cast(tuple[type[Thing], type[Realm]], (thing_type, realm))
         ] = cast(RealmDecoder[Thing, Realm], decoder)
-

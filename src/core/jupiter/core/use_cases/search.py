@@ -10,14 +10,17 @@ from jupiter.core.domain.search.search_limit import SearchLimit
 from jupiter.core.domain.search.search_query import SearchQuery
 from jupiter.core.domain.storage_engine import DomainStorageEngine, SearchStorageEngine
 from jupiter.core.framework.use_case_io import (
+    UseCaseArgsBase,
+    UseCaseResultBase,
+    use_case_args,
     use_case_result,
 )
-from jupiter.core.framework.use_case_io import UseCaseArgsBase, UseCaseResultBase, use_case_args
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCase,
     AppLoggedInReadonlyUseCaseContext,
     readonly_use_case,
 )
+from jupiter.core.utils.time_provider import TimeProvider
 
 
 @use_case_args
@@ -40,6 +43,7 @@ class SearchArgs(UseCaseArgsBase):
 class SearchResult(UseCaseResultBase):
     """Search result."""
 
+    search_time: ADate
     matches: List[SearchMatch]
 
 
@@ -48,9 +52,11 @@ class SearchUseCase(AppLoggedInReadonlyUseCase[SearchArgs, SearchResult]):
     """Use case for free form searching through Jupiter."""
 
     _search_storage_engine: Final[SearchStorageEngine]
+    _time_provider: Final[TimeProvider]
 
     def __init__(
         self,
+        time_provider: TimeProvider,
         auth_token_stamper: AuthTokenStamper,
         domain_storage_engine: DomainStorageEngine,
         search_storage_engine: SearchStorageEngine,
@@ -59,6 +65,7 @@ class SearchUseCase(AppLoggedInReadonlyUseCase[SearchArgs, SearchResult]):
         super().__init__(
             auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
         )
+        self._time_provider = time_provider
         self._search_storage_engine = search_storage_engine
 
     async def _execute(
@@ -97,4 +104,7 @@ class SearchUseCase(AppLoggedInReadonlyUseCase[SearchArgs, SearchResult]):
                 filter_archived_time_before=args.filter_archived_time_before,
             )
 
-        return SearchResult(matches=matches)
+        return SearchResult(
+            search_time=self._time_provider.get_current_date(),
+            matches=matches,
+        )

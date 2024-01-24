@@ -1,5 +1,5 @@
 """Command for logging in."""
-from argparse import ArgumentParser, Namespace
+from argparse import Namespace
 from typing import cast
 
 from jupiter.cli.command.command import GuestReadonlyCommand
@@ -14,22 +14,6 @@ from jupiter.core.use_cases.login import LoginArgs, LoginUseCase
 @secure_class
 class Login(GuestReadonlyCommand[LoginUseCase]):
     """Command for logging in."""
-
-    def build_parser(self, parser: ArgumentParser) -> None:
-        """Construct a argparse parser for the command."""
-        parser.add_argument(
-            "--email",
-            dest="email_address",
-            required=True,
-            help="The email address you use to log in to Jupiter",
-        )
-        parser.add_argument(
-            "--password",
-            dest="password",
-            type=PasswordPlain.from_raw,
-            required=True,
-            help="The password you use to log in",
-        )
 
     async def _run(
         self,

@@ -1,26 +1,31 @@
 """Module for command base class."""
 
 import abc
-from argparse import ArgumentParser, Namespace
 import dataclasses
-from datetime import date, datetime
 import types
-from typing import Any, Final, Generic, TypeVar, cast, get_args, get_origin
 import typing
+from argparse import ArgumentParser, Namespace
+from datetime import date, datetime
+from typing import Any, Final, Generic, TypeVar, cast, get_args, get_origin
 
 import inflection
-from jupiter.core.framework.primitive import Primitive
-from jupiter.core.framework.realm import CliRealm, RealmCodecRegistry
-from jupiter.core.framework.thing import Thing
-from jupiter.core.framework.update_action import UpdateAction
-from jupiter.core.framework.use_case_io import UseCaseArgsBase, UseCaseResultBase
-from jupiter.core.framework.value import AtomicValue, CompositeValue, EnumValue, SecretValue
 from jupiter.cli.session_storage import SessionInfo, SessionStorage
 from jupiter.cli.top_level_context import LoggedInTopLevelContext
 from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.user.user import User
 from jupiter.core.domain.workspaces.workspace import Workspace
-from jupiter.core.framework.use_case import UseCase, UseCaseArgs
+from jupiter.core.framework.primitive import Primitive
+from jupiter.core.framework.realm import CliRealm, RealmCodecRegistry
+from jupiter.core.framework.thing import Thing
+from jupiter.core.framework.update_action import UpdateAction
+from jupiter.core.framework.use_case import UseCase
+from jupiter.core.framework.use_case_io import UseCaseArgsBase, UseCaseResultBase
+from jupiter.core.framework.value import (
+    AtomicValue,
+    CompositeValue,
+    EnumValue,
+    SecretValue,
+)
 from jupiter.core.use_cases.infra.use_cases import (
     AppGuestMutationUseCase,
     AppGuestReadonlyUseCase,
@@ -28,9 +33,9 @@ from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCase,
     AppLoggedInUseCaseSession,
 )
-from rich.text import Text
 from pendulum.date import Date
 from pendulum.datetime import DateTime
+from rich.text import Text
 
 
 class Command(abc.ABC):
@@ -109,11 +114,10 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
     def description(self) -> str:
         """The description of the command."""
         return self._use_case.__doc__ or ""
-    
+
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         self._build_parser_for_use_case_args(self._args_type, parser)
-
 
     @staticmethod
     def _infer_args_class(use_case: UseCaseT) -> type[UseCaseArgsBase]:
@@ -125,12 +129,14 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
             if len(args) > 0:
                 return cast(type[UseCaseArgsBase], args[0])
         raise Exception("No args class found")
-    
+
     @staticmethod
-    def _build_parser_for_use_case_args(args_type: type[UseCaseArgsBase], parser: ArgumentParser) -> None:
+    def _build_parser_for_use_case_args(
+        args_type: type[UseCaseArgsBase], parser: ArgumentParser
+    ) -> None:
         def field_name_to_arg_name(field_name: str) -> str:
             return inflection.dasherize(field_name)
-        
+
         def extract_field_type(
             field_type: type[Primitive | object],
         ) -> tuple[type[object], bool]:
@@ -155,7 +161,7 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
                     raise Exception("Not implemented - union")
             else:
                 return field_type, False
-            
+
         def add_bool_field(
             field: dataclasses.Field[Thing],
         ) -> None:
@@ -163,14 +169,18 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
             bool_field.add_argument(
                 f"--{field_name_to_arg_name(field.name)}",
                 dest=field.name,
-                default=field.default if field.default is not dataclasses.MISSING else False,
+                default=field.default
+                if field.default is not dataclasses.MISSING
+                else False,
                 action="store_true",
                 help=field.metadata.get("help", ""),
             )
             bool_field.add_argument(
                 f"--no-{field_name_to_arg_name(field.name)}",
                 dest=field.name,
-                default=field.default if field.default is not dataclasses.MISSING else False,
+                default=field.default
+                if field.default is not dataclasses.MISSING
+                else False,
                 action="store_false",
                 help=field.metadata.get("help", ""),
             )
@@ -195,7 +205,9 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
                     dest=field.name,
                     required=False,
                     type=field_type if field_type in (int, float) else str,
-                    default=field.default if field.default is not dataclasses.MISSING else None,
+                    default=field.default
+                    if field.default is not dataclasses.MISSING
+                    else None,
                     help=field.metadata.get("help", ""),
                 )
                 a_field.add_argument(
@@ -228,7 +240,7 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
                     dest=field.name,
                     required=False,
                     type=field_type if field_type in (int, float) else str,
-                    default=field.default if field.default is not dataclasses.MISSING else None,
+                    default=None,
                     help=field.metadata.get("help", ""),
                 )
                 a_field.add_argument(
@@ -239,7 +251,6 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
                     const=True,
                     help=field.metadata.get("help", ""),
                 )
-            
 
         def add_field_list(
             field: dataclasses.Field[Thing],
@@ -272,15 +283,35 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
         def add_update_enum_field(
             field: dataclasses.Field[Thing],
             field_type: type[EnumValue],
+            field_optional: bool,
         ) -> None:
-            parser.add_argument(
-                f"--{field_name_to_arg_name(field.name)}",
-                dest=field.name,
-                required=False,
-                default=None,
-                choices=field_type.get_all_values(),
-                help=field.metadata.get("help", ""),
-            )
+            if not field_optional:
+                parser.add_argument(
+                    f"--{field_name_to_arg_name(field.name)}",
+                    dest=field.name,
+                    required=False,
+                    default=None,
+                    choices=field_type.get_all_values(),
+                    help=field.metadata.get("help", ""),
+                )
+            else:
+                a_field = parser.add_mutually_exclusive_group()
+                a_field.add_argument(
+                    f"--{field_name_to_arg_name(field.name)}",
+                    dest=field.name,
+                    required=False,
+                    choices=field_type.get_all_values(),
+                    default=None,
+                    help=field.metadata.get("help", ""),
+                )
+                a_field.add_argument(
+                    f"--clear-{field_name_to_arg_name(field.name)}",
+                    dest=f"clear_{field.name}",
+                    required=False,
+                    action="store_const",
+                    const=True,
+                    help=field.metadata.get("help", ""),
+                )
 
         def add_enum_field_list(
             field: dataclasses.Field[Thing],
@@ -297,7 +328,7 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
                 help=field.metadata.get("help", ""),
             )
 
-        def process_one_concept(a_thing: type[UseCaseArgsBase]) -> None:     
+        def process_one_concept(a_thing: type[UseCaseArgsBase]) -> None:
             all_fields = dataclasses.fields(a_thing)
 
             for field in all_fields:
@@ -305,7 +336,9 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
 
                 if field_type is bool:
                     add_bool_field(field)
-                elif isinstance(field_type, type) and issubclass(field_type, (int, float, str, date, datetime, Date, DateTime)):
+                elif isinstance(field_type, type) and issubclass(
+                    field_type, (int, float, str, date, datetime, Date, DateTime)
+                ):
                     add_field(field, field_type, field_optional)
                 elif (
                     isinstance(field_type, type)
@@ -315,7 +348,10 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
                     basic_field_type = field_type.base_type_hack()
                     if basic_field_type is bool:
                         add_bool_field(field)
-                    elif issubclass(basic_field_type, (int, float, str, date, datetime, Date, DateTime)):
+                    elif issubclass(
+                        basic_field_type,
+                        (int, float, str, date, datetime, Date, DateTime),
+                    ):
                         add_field(field, basic_field_type, field_optional)
                     else:
                         raise Exception(
@@ -326,7 +362,9 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
                     and get_origin(field_type) is None
                     and issubclass(field_type, CompositeValue)
                 ):
-                    raise Exception(f"Unsupported fiedl type {field_type}+{basic_field_type} for {args_type.__name__}:{field.name}")
+                    raise Exception(
+                        f"Unsupported fiedl type {field_type}+{basic_field_type} for {args_type.__name__}:{field.name}"
+                    )
                 elif (
                     isinstance(field_type, type)
                     and get_origin(field_type) is None
@@ -343,12 +381,19 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
                     origin_field_type = get_origin(field_type)
                     if origin_field_type is UpdateAction:
                         update_field = get_args(field_type)[0]
-                        update_field_type, update_field_optional = extract_field_type(update_field)
+                        update_field_type, update_field_optional = extract_field_type(
+                            update_field
+                        )
 
                         if update_field_type is bool:
                             add_bool_field(field)
-                        elif issubclass(update_field_type, (int, float, str, date, datetime, Date, DateTime)):
-                            add_update_field(field, update_field_type, update_field_optional)
+                        elif issubclass(
+                            update_field_type,
+                            (int, float, str, date, datetime, Date, DateTime),
+                        ):
+                            add_update_field(
+                                field, update_field_type, update_field_optional
+                            )
                         elif (
                             isinstance(update_field_type, type)
                             and get_origin(update_field_type) is None
@@ -357,8 +402,15 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
                             basic_update_field_type = update_field_type.base_type_hack()
                             if basic_update_field_type is bool:
                                 add_bool_field(field)
-                            elif issubclass(basic_update_field_type, (int, float, str, date, datetime, Date, DateTime)):
-                                add_update_field(field, basic_update_field_type, update_field_optional)
+                            elif issubclass(
+                                basic_update_field_type,
+                                (int, float, str, date, datetime, Date, DateTime),
+                            ):
+                                add_update_field(
+                                    field,
+                                    basic_update_field_type,
+                                    update_field_optional,
+                                )
                             else:
                                 raise Exception(
                                     f"Unsupported field type {field_type}+{basic_field_type} for {args_type.__name__}:{field.name}"
@@ -368,18 +420,24 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
                             and get_origin(update_field_type) is None
                             and issubclass(update_field_type, EnumValue)
                         ):
-                            if update_field_optional:
-                                raise Exception(
-                                    f"Unsupported field type {field_type} for {args_type.__name__}:{field.name}"
-                                )
-                            add_update_enum_field(field, update_field_type)
+                            add_update_enum_field(
+                                field, update_field_type, update_field_optional
+                            )
                         else:
                             raise Exception(
                                 f"Unsupported field type {field_type} for {args_type.__name__}:{field.name}"
                             )
                     elif origin_field_type in (list, set):
                         list_item_type = get_args(field_type)[0]
-                        if list_item_type in (int, float, str, date, datetime, Date, DateTime):
+                        if list_item_type in (
+                            int,
+                            float,
+                            str,
+                            date,
+                            datetime,
+                            Date,
+                            DateTime,
+                        ):
                             add_field_list(field, list_item_type, field_optional)
                         elif (
                             isinstance(list_item_type, type)
@@ -387,7 +445,10 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
                             and issubclass(list_item_type, AtomicValue)
                         ):
                             basic_field_type = list_item_type.base_type_hack()
-                            if issubclass(basic_field_type, (int, float, str, date, datetime, Date, DateTime)):
+                            if issubclass(
+                                basic_field_type,
+                                (int, float, str, date, datetime, Date, DateTime),
+                            ):
                                 add_field_list(field, basic_field_type, field_optional)
                             else:
                                 raise Exception(
@@ -415,9 +476,8 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
                     raise Exception(
                         f"Unsupported field type {field_type} for {args_type.__name__}:{field.name}"
                     )
-                
+
         process_one_concept(args_type)
-        
 
 
 GuestMutationCommandUseCase = TypeVar(
@@ -544,7 +604,9 @@ class LoggedInMutationCommand(
         args: Namespace,
     ) -> None:
         """Callback to execute when the command is invoked."""
-        parsed_args = self._realm_codec_registry.get_decoder(self._args_type, CliRealm).decode(vars(args))
+        parsed_args = self._realm_codec_registry.get_decoder(
+            self._args_type, CliRealm
+        ).decode(vars(args))
         result = await self._use_case.execute(
             AppLoggedInUseCaseSession(session.auth_token_ext),
             parsed_args,
@@ -553,7 +615,6 @@ class LoggedInMutationCommand(
 
     def _render_result(self, result: UseCaseResultT) -> None:
         """Render the result."""
-        pass
 
     def is_allowed_for_user(self, user: User) -> bool:
         """Is this command allowed for a particular user."""
@@ -629,7 +690,9 @@ class LoggedInReadonlyCommand(
         args: Namespace,
     ) -> None:
         """Callback to execute when the command is invoked."""
-        parsed_args = self._realm_codec_registry.get_decoder(self._args_type, CliRealm).decode(vars(args))
+        parsed_args = self._realm_codec_registry.get_decoder(
+            self._args_type, CliRealm
+        ).decode(vars(args))
         result = await self._use_case.execute(
             AppLoggedInUseCaseSession(session.auth_token_ext),
             parsed_args,
@@ -638,7 +701,6 @@ class LoggedInReadonlyCommand(
 
     def _render_result(self, result: UseCaseResultT) -> None:
         """Render the result."""
-        pass
 
     def is_allowed_for_user(self, user: User) -> bool:
         """Is this command allowed for a particular user."""
@@ -688,3 +750,7 @@ class TestHelperCommand(Command, abc.ABC):
     def should_have_streaming_progress_report(self) -> bool:
         """Whether the main script should have a streaming progress reporter."""
         return False
+
+
+class CliApp:
+    """A CLI application."""

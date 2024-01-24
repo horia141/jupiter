@@ -1,6 +1,7 @@
 """The command for reporting on progress."""
-from typing import Iterable, Optional
+from typing import Final, Iterable, Optional
 
+from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
@@ -8,23 +9,27 @@ from jupiter.core.domain.report.report_period_result import (
     ReportPeriodResult,
 )
 from jupiter.core.domain.report.service.report_service import ReportService
+from jupiter.core.domain.storage_engine import DomainStorageEngine
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case_io import (
+    UseCaseArgsBase,
+    UseCaseResultBase,
+    use_case_args,
     use_case_result,
 )
-from jupiter.core.framework.use_case_io import UseCaseArgsBase, UseCaseResultBase, use_case_args
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCase,
     AppLoggedInReadonlyUseCaseContext,
     readonly_use_case,
 )
+from jupiter.core.utils.time_provider import TimeProvider
 
 
 @use_case_args
 class ReportArgs(UseCaseArgsBase):
     """Report args."""
 
-    today: ADate
+    today: Optional[ADate]
     period: RecurringTaskPeriod
     filter_sources: Optional[Iterable[InboxTaskSource]] = None
     filter_project_ref_ids: Optional[Iterable[EntityId]] = None
@@ -49,6 +54,17 @@ class ReportResult(UseCaseResultBase):
 class ReportUseCase(AppLoggedInReadonlyUseCase[ReportArgs, ReportResult]):
     """The command for reporting on progress."""
 
+    _time_provider: Final[TimeProvider]
+
+    def __init__(
+        self,
+        time_provider: TimeProvider,
+        auth_token_stamper: AuthTokenStamper,
+        storage_engine: DomainStorageEngine,
+    ) -> None:
+        super().__init__(auth_token_stamper, storage_engine)
+        self._time_provider = time_provider
+
     async def _execute(
         self,
         context: AppLoggedInReadonlyUseCaseContext,
@@ -58,7 +74,7 @@ class ReportUseCase(AppLoggedInReadonlyUseCase[ReportArgs, ReportResult]):
         user = context.user
         workspace = context.workspace
 
-        report_service = ReportService(self._storage_engine)
+        report_service = ReportService(self._storage_engine, self._time_provider)
 
         report_period_result = await report_service.do_it(
             user=user,

@@ -416,8 +416,6 @@ async def main() -> None:
                     session_storage=session_storage,
                     realm_codec_registry=realm_codec_registry,
                     top_level_context=top_level_context.to_logged_in(),
-                    global_properties=global_properties,
-                    time_provider=time_provider,
                     use_case=SearchUseCase(
                         auth_token_stamper=auth_token_stamper,
                         domain_storage_engine=domain_storage_engine,
@@ -425,8 +423,6 @@ async def main() -> None:
                     ),
                 ),
                 GenDo(
-                    global_properties,
-                    time_provider,
                     realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
@@ -449,12 +445,12 @@ async def main() -> None:
                     ),
                 ),
                 Report(
-                    global_properties,
                     realm_codec_registry,
-                    time_provider,
                     session_storage,
                     top_level_context.to_logged_in(),
-                    ReportUseCase(auth_token_stamper, domain_storage_engine),
+                    ReportUseCase(
+                        time_provider, auth_token_stamper, domain_storage_engine
+                    ),
                 ),
                 GCDo(
                     realm_codec_registry,
@@ -573,7 +569,6 @@ async def main() -> None:
                     WorkspaceLoadUseCase(auth_token_stamper, domain_storage_engine),
                 ),
                 InboxTaskCreate(
-                    global_properties,
                     realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
@@ -639,7 +634,6 @@ async def main() -> None:
                     ),
                 ),
                 InboxTaskUpdate(
-                    global_properties,
                     realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
@@ -756,7 +750,6 @@ async def main() -> None:
                     HabitFindUseCase(auth_token_stamper, domain_storage_engine),
                 ),
                 ChoreCreate(
-                    global_properties,
                     realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
@@ -822,7 +815,6 @@ async def main() -> None:
                     ),
                 ),
                 ChoreUpdate(
-                    global_properties,
                     realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
@@ -849,14 +841,12 @@ async def main() -> None:
                     ),
                 ),
                 ChoreShow(
-                    global_properties,
                     realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
                     ChoreFindUseCase(auth_token_stamper, domain_storage_engine),
                 ),
                 BigPlanCreate(
-                    global_properties,
                     realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
@@ -909,7 +899,6 @@ async def main() -> None:
                     ),
                 ),
                 BigPlanUpdate(
-                    global_properties,
                     realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
@@ -929,7 +918,6 @@ async def main() -> None:
                     BigPlanFindUseCase(auth_token_stamper, domain_storage_engine),
                 ),
                 VacationCreate(
-                    global_properties,
                     realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
@@ -956,7 +944,6 @@ async def main() -> None:
                     ),
                 ),
                 VacationUpdate(
-                    global_properties,
                     realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
@@ -983,7 +970,6 @@ async def main() -> None:
                     ),
                 ),
                 VacationsShow(
-                    global_properties,
                     realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
@@ -1430,7 +1416,6 @@ async def main() -> None:
                     ),
                 ),
                 SlackTaskUpdate(
-                    global_properties,
                     realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
@@ -1489,7 +1474,6 @@ async def main() -> None:
                     ),
                 ),
                 EmailTaskUpdate(
-                    global_properties,
                     realm_codec_registry,
                     session_storage,
                     top_level_context.to_logged_in(),
@@ -1645,9 +1629,6 @@ async def main() -> None:
         print(f"The selected project is still being used. Reason: {err}")
         print("Please select a backup project via --backup-project-id")
         sys.exit(1)
-    except EntityNotFoundError as err:
-        print(str(err))
-        sys.exit(1)
     except InvalidAuthTokenError:
         print(
             "Your session seems to be invalid! Please run 'init' or 'login' to fix this!"
@@ -1677,6 +1658,9 @@ async def main() -> None:
             f"For more information checkout: {global_properties.docs_init_workspace_url}",
         )
         sys.exit(2)
+    except EntityNotFoundError as err:
+        print(str(err))
+        sys.exit(1)
     finally:
         try:
             await sqlite_connection.dispose()

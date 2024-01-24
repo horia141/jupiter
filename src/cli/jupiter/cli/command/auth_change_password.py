@@ -1,5 +1,5 @@
 """Command for changing a password."""
-from argparse import ArgumentParser, Namespace
+from argparse import Namespace
 from typing import cast
 
 from jupiter.cli.command.command import LoggedInMutationCommand
