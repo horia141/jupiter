@@ -1,37 +1,14 @@
 """Command for logging in."""
-from argparse import Namespace
-from typing import cast
 
 from jupiter.cli.command.command import GuestReadonlyCommand
 from jupiter.cli.session_storage import SessionInfo
-from jupiter.core.domain.auth.password_plain import PasswordPlain
-from jupiter.core.domain.core.email_address import EmailAddress
 from jupiter.core.framework.secure import secure_class
-from jupiter.core.use_cases.infra.use_cases import AppGuestUseCaseSession
-from jupiter.core.use_cases.login import LoginArgs, LoginUseCase
+from jupiter.core.use_cases.login import LoginResult, LoginUseCase
 
 
 @secure_class
 class Login(GuestReadonlyCommand[LoginUseCase]):
     """Command for logging in."""
 
-    async def _run(
-        self,
-        session_info: SessionInfo | None,
-        args: Namespace,
-    ) -> None:
-        """Callback to execute when the command is invoked."""
-        email_address = EmailAddress.from_raw(args.email_address)
-        password = cast(PasswordPlain, args.password)
-
-        result = await self._use_case.execute(
-            AppGuestUseCaseSession(
-                session_info.auth_token_ext if session_info else None
-            ),
-            LoginArgs(
-                email_address=email_address,
-                password=password,
-            ),
-        )
-
+    def _render_result(self, result: LoginResult) -> None:
         self._session_storage.store(SessionInfo(auth_token_ext=result.auth_token_ext))

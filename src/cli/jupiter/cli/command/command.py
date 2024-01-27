@@ -1,16 +1,17 @@
 """Module for command base class."""
 
 import abc
+import argparse
 import dataclasses
 import types
 import typing
 from argparse import ArgumentParser, Namespace
 from datetime import date, datetime
-from typing import Any, Final, Generic, TypeVar, cast, get_args, get_origin
+from typing import Any, Callable, Final, Generic, TypeVar, cast, get_args, get_origin
 
 import inflection
 from jupiter.cli.session_storage import SessionInfo, SessionStorage
-from jupiter.cli.top_level_context import LoggedInTopLevelContext
+from jupiter.cli.top_level_context import LoggedInTopLevelContext, TopLevelContext
 from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.user.user import User
 from jupiter.core.domain.workspaces.workspace import Workspace
@@ -18,7 +19,11 @@ from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.realm import CliRealm, RealmCodecRegistry
 from jupiter.core.framework.thing import Thing
 from jupiter.core.framework.update_action import UpdateAction
-from jupiter.core.framework.use_case import UseCase
+from jupiter.core.framework.use_case import (
+    UseCase,
+    UseCaseContextBase,
+    UseCaseSessionBase,
+)
 from jupiter.core.framework.use_case_io import UseCaseArgsBase, UseCaseResultBase
 from jupiter.core.framework.value import (
     AtomicValue,
@@ -29,10 +34,12 @@ from jupiter.core.framework.value import (
 from jupiter.core.use_cases.infra.use_cases import (
     AppGuestMutationUseCase,
     AppGuestReadonlyUseCase,
+    AppGuestUseCaseSession,
     AppLoggedInMutationUseCase,
     AppLoggedInReadonlyUseCase,
     AppLoggedInUseCaseSession,
 )
+from jupiter.core.utils.global_properties import GlobalProperties
 from pendulum.date import Date
 from pendulum.datetime import DateTime
 from rich.text import Text
@@ -185,6 +192,25 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
                 help=field.metadata.get("help", ""),
             )
 
+        def add_update_bool_field(
+            field: dataclasses.Field[Thing],
+        ) -> None:
+            bool_field = parser.add_mutually_exclusive_group()
+            bool_field.add_argument(
+                f"--{field_name_to_arg_name(field.name)}",
+                dest=field.name,
+                default=None,
+                action="store_true",
+                help=field.metadata.get("help", ""),
+            )
+            bool_field.add_argument(
+                f"--no-{field_name_to_arg_name(field.name)}",
+                dest=field.name,
+                default=None,
+                action="store_false",
+                help=field.metadata.get("help", ""),
+            )
+
         def add_field(
             field: dataclasses.Field[Thing],
             field_type: type[int | float | str | date | datetime | Date | DateTime],
@@ -323,10 +349,45 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
                 dest=field.name,
                 action="append",
                 required=not field_optional,
-                default=[],
+                default=None,
                 choices=field_type.get_all_values(),
                 help=field.metadata.get("help", ""),
             )
+
+        def add_update_field_list(
+            field: dataclasses.Field[Thing],
+            field_type: type[int | float | str | date | datetime | Date | DateTime],
+            field_optional: bool,
+        ) -> None:
+            if not field_optional:
+                parser.add_argument(
+                    f"--{field_name_to_arg_name(field.name)}",
+                    dest=field.name,
+                    action="append",
+                    required=False,
+                    default=None,
+                    type=field_type if field_type in (int, float) else str,
+                    help=field.metadata.get("help", ""),
+                )
+            else:
+                a_field = parser.add_mutually_exclusive_group()
+                a_field.add_argument(
+                    f"--{field_name_to_arg_name(field.name)}",
+                    dest=field.name,
+                    action="append",
+                    required=False,
+                    type=field_type if field_type in (int, float) else str,
+                    default=None,
+                    help=field.metadata.get("help", ""),
+                )
+                a_field.add_argument(
+                    f"--clear-{field_name_to_arg_name(field.name)}",
+                    dest=f"clear_{field.name}",
+                    required=False,
+                    action="store_const",
+                    const=True,
+                    help=field.metadata.get("help", ""),
+                )
 
         def process_one_concept(a_thing: type[UseCaseArgsBase]) -> None:
             all_fields = dataclasses.fields(a_thing)
@@ -386,10 +447,14 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
                         )
 
                         if update_field_type is bool:
-                            add_bool_field(field)
-                        elif issubclass(
-                            update_field_type,
-                            (int, float, str, date, datetime, Date, DateTime),
+                            add_update_bool_field(field)
+                        elif (
+                            isinstance(update_field_type, type)
+                            and get_origin(update_field_type) is None
+                            and issubclass(
+                                update_field_type,
+                                (int, float, str, date, datetime, Date, DateTime),
+                            )
                         ):
                             add_update_field(
                                 field, update_field_type, update_field_optional
@@ -423,6 +488,74 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
                             add_update_enum_field(
                                 field, update_field_type, update_field_optional
                             )
+                        elif get_origin(update_field_type) is not None:
+                            origin_update_field_type = get_origin(update_field_type)
+                            if origin_update_field_type in (list, set):
+                                update_field_list_item = get_args(update_field_type)[0]
+                                (
+                                    update_field_list_item_type,
+                                    update_field_list_item_optional,
+                                ) = extract_field_type(update_field_list_item)
+                                if (
+                                    isinstance(update_field_list_item_type, type)
+                                    and get_origin(update_field_list_item_type) is None
+                                    and issubclass(
+                                        update_field_list_item_type,
+                                        (
+                                            int,
+                                            float,
+                                            str,
+                                            date,
+                                            datetime,
+                                            Date,
+                                            DateTime,
+                                        ),
+                                    )
+                                ):
+                                    add_update_field_list(
+                                        field,
+                                        update_field_list_item_type,
+                                        update_field_list_item_optional,
+                                    )
+                                elif (
+                                    isinstance(update_field_list_item_type, type)
+                                    and get_origin(update_field_list_item_type) is None
+                                    and issubclass(
+                                        update_field_list_item_type, AtomicValue
+                                    )
+                                ):
+                                    basic_field_item_type_type = (
+                                        update_field_list_item_type.base_type_hack()
+                                    )
+                                    if issubclass(
+                                        basic_field_item_type_type,
+                                        (
+                                            int,
+                                            float,
+                                            str,
+                                            date,
+                                            datetime,
+                                            Date,
+                                            DateTime,
+                                        ),
+                                    ):
+                                        add_update_field_list(
+                                            field,
+                                            basic_field_item_type_type,
+                                            update_field_list_item_optional,
+                                        )
+                                    else:
+                                        raise Exception(
+                                            f"Unsupported field type {field_type}+{basic_field_type} for {args_type.__name__}:{field.name}"
+                                        )
+                                else:
+                                    raise Exception(
+                                        f"Unsupported field type {field_type} for {args_type.__name__}:{field.name}"
+                                    )
+                            else:
+                                raise Exception(
+                                    f"Unsupported field type {field_type} for {args_type.__name__}:{field.name}"
+                                )
                         else:
                             raise Exception(
                                 f"Unsupported field type {field_type} for {args_type.__name__}:{field.name}"
@@ -492,13 +625,18 @@ class GuestMutationCommand(
 ):
     """Base class for commands which do not require authentication."""
 
+    _realm_codec_registry: Final[RealmCodecRegistry]
     _session_storage: Final[SessionStorage]
 
     def __init__(
-        self, session_storage: SessionStorage, use_case: GuestMutationCommandUseCase
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        session_storage: SessionStorage,
+        use_case: GuestMutationCommandUseCase,
     ) -> None:
         """Constructor."""
         super().__init__(use_case)
+        self._realm_codec_registry = realm_codec_registry
         self._session_storage = session_storage
 
     async def run(
@@ -509,13 +647,25 @@ class GuestMutationCommand(
         session_info = self._session_storage.load_optional()
         await self._run(session_info, args)
 
-    @abc.abstractmethod
     async def _run(
         self,
-        session: SessionInfo | None,
+        session_info: SessionInfo | None,
         args: Namespace,
     ) -> None:
         """Callback to execute when the command is invoked."""
+        parsed_args = self._realm_codec_registry.get_decoder(
+            self._args_type, CliRealm
+        ).decode(vars(args))
+        result = await self._use_case.execute(
+            AppGuestUseCaseSession(
+                session_info.auth_token_ext if session_info else None
+            ),
+            parsed_args,
+        )
+        self._render_result(result)
+
+    def _render_result(self, result: UseCaseResultT) -> None:
+        """Render the result."""
 
 
 GuestReadonlyCommandUseCase = TypeVar(
@@ -530,13 +680,18 @@ class GuestReadonlyCommand(
 ):
     """Base class for commands which just read and present data."""
 
+    _realm_codec_registry: Final[RealmCodecRegistry]
     _session_storage: Final[SessionStorage]
 
     def __init__(
-        self, session_storage: SessionStorage, use_case: GuestReadonlyCommandUseCase
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        session_storage: SessionStorage,
+        use_case: GuestReadonlyCommandUseCase,
     ) -> None:
         """Constructor."""
         super().__init__(use_case)
+        self._realm_codec_registry = realm_codec_registry
         self._session_storage = session_storage
 
     async def run(
@@ -547,13 +702,25 @@ class GuestReadonlyCommand(
         session_info = self._session_storage.load_optional()
         await self._run(session_info, args)
 
-    @abc.abstractmethod
     async def _run(
         self,
-        session: SessionInfo | None,
+        session_info: SessionInfo | None,
         args: Namespace,
     ) -> None:
         """Callback to execute when the command is invoked."""
+        parsed_args = self._realm_codec_registry.get_decoder(
+            self._args_type, CliRealm
+        ).decode(vars(args))
+        result = await self._use_case.execute(
+            AppGuestUseCaseSession(
+                session_info.auth_token_ext if session_info else None
+            ),
+            parsed_args,
+        )
+        self._render_result(result)
+
+    def _render_result(self, result: UseCaseResultT) -> None:
+        """Render the result."""
 
     @property
     def should_have_streaming_progress_report(self) -> bool:
@@ -754,3 +921,146 @@ class TestHelperCommand(Command, abc.ABC):
 
 class CliApp:
     """A CLI application."""
+
+    @dataclasses.dataclass
+    class GuestMutationEntry:
+        """A guest mutation use case entry."""
+
+        use_case: AppGuestMutationUseCase[UseCaseArgsBase, UseCaseResultBase]
+        renderer: Callable[[UseCaseResultBase], None] | None
+
+    @dataclasses.dataclass
+    class GuestReadonlyEntry:
+        """A guest readonly use case entry."""
+
+        use_case: AppGuestReadonlyUseCase[UseCaseArgsBase, UseCaseResultBase]
+        renderer: Callable[[UseCaseResultBase], None] | None
+
+    @dataclasses.dataclass
+    class LoggedInMutationEntry:
+        """A logged in mutation use case entry."""
+
+        use_case: AppLoggedInMutationUseCase[UseCaseArgsBase, UseCaseResultBase]
+        renderer: Callable[[UseCaseResultBase], None] | None
+
+    @dataclasses.dataclass
+    class LoggedInReadonlyEntry:
+        """A logged in readonly use case entry."""
+
+        use_case: AppLoggedInReadonlyUseCase[UseCaseArgsBase, UseCaseResultBase]
+        renderer: Callable[[UseCaseResultBase], None] | None
+
+    _global_properties: GlobalProperties
+    _top_level_context: TopLevelContext
+    _realm_codec_registry: RealmCodecRegistry
+    _session_storage: SessionStorage
+    _guest_mutation_use_cases: Final[list[GuestMutationEntry]]
+    _guest_readonly_use_cases: Final[list[GuestReadonlyEntry]]
+    _loggedin_mutation_use_cases: Final[list[LoggedInMutationEntry]]
+    _loggedin_readonly_use_cases: Final[list[LoggedInReadonlyEntry]]
+
+    def __init__(
+        self,
+        global_properties: GlobalProperties,
+        top_level_context: TopLevelContext,
+        realm_codec_registry: RealmCodecRegistry,
+        session_storage: SessionStorage,
+    ) -> None:
+        """Constructor."""
+        self._global_properties = global_properties
+        self._top_level_context = top_level_context
+        self._realm_codec_registry = realm_codec_registry
+        self._session_storage = session_storage
+        self._guest_readonly_use_cases = []
+        self._guest_mutation_use_cases = []
+        self._loggedin_readonly_use_cases = []
+        self._loggedin_mutation_use_cases = []
+
+    def add_use_case(
+        self,
+        use_case: UseCase[
+            UseCaseSessionBase, UseCaseContextBase, UseCaseArgsBase, UseCaseResultBase
+        ],
+        renderer: Callable[[UseCaseResultBase], None] | None = None,
+    ) -> "CliApp":
+        """Add a use case to the app."""
+        if isinstance(use_case, AppGuestMutationUseCase):
+            self._guest_mutation_use_cases.append(
+                CliApp.GuestMutationEntry(use_case=use_case, renderer=renderer)
+            )
+        elif isinstance(use_case, AppGuestReadonlyUseCase):
+            self._guest_readonly_use_cases.append(
+                CliApp.GuestReadonlyEntry(use_case=use_case, renderer=renderer)
+            )
+        elif isinstance(use_case, AppLoggedInMutationUseCase):
+            self._loggedin_mutation_use_cases.append(
+                CliApp.LoggedInMutationEntry(use_case=use_case, renderer=renderer)
+            )
+        elif isinstance(use_case, AppLoggedInReadonlyUseCase):
+            self._loggedin_readonly_use_cases.append(
+                CliApp.LoggedInReadonlyEntry(use_case=use_case, renderer=renderer)
+            )
+        else:
+            raise Exception(f"Unsupported use case type {use_case}")
+
+        return self
+
+    def run(self, args: list[str]) -> None:
+        """Run the app."""
+        commands: list[Command] = []
+
+        for use_case_gm in self._guest_mutation_use_cases:
+            commands.append(
+                GuestMutationCommand(
+                    realm_codec_registry=self._realm_codec_registry,
+                    session_storage=self._session_storage,
+                    use_case=use_case_gm.use_case,
+                )
+            )
+
+        for use_case_gr in self._guest_readonly_use_cases:
+            commands.append(
+                GuestReadonlyCommand(
+                    realm_codec_registry=self._realm_codec_registry,
+                    session_storage=self._session_storage,
+                    use_case=use_case_gr.use_case,
+                )
+            )
+
+        for use_case_lm in self._loggedin_mutation_use_cases:
+            commands.append(
+                LoggedInMutationCommand(
+                    realm_codec_registry=self._realm_codec_registry,
+                    session_storage=self._session_storage,
+                    top_level_context=self._top_level_context.to_logged_in(),
+                    use_case=use_case_lm.use_case,
+                )
+            )
+
+        for use_case_lr in self._loggedin_readonly_use_cases:
+            commands.append(
+                LoggedInReadonlyCommand(
+                    realm_codec_registry=self._realm_codec_registry,
+                    session_storage=self._session_storage,
+                    top_level_context=self._top_level_context.to_logged_in(),
+                    use_case=use_case_lr.use_case,
+                )
+            )
+
+        parser = argparse.ArgumentParser(
+            description=self._global_properties.description
+        )
+        parser.add_argument(
+            "--version",
+            dest="just_show_version",
+            action="store_const",
+            default=False,
+            const=True,
+            help="Show the version of the application",
+        )
+
+        parser.add_subparsers(
+            dest="subparser_name",
+            help="Sub-command help",
+            metavar="{command}",
+        )

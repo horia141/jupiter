@@ -67,6 +67,7 @@ class JournalCreateUseCase(
             journal_collection_ref_id=journal_collection.ref_id,
             right_now=args.right_now,
             period=args.period,
+            sources=workspace.infer_sources_for_enabled_features(None),
         )
         new_journal = await generic_creator(uow, progress_reporter, new_journal)
 

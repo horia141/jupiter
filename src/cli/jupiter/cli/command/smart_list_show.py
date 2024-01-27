@@ -1,13 +1,10 @@
 """UseCase for showing a smart list."""
-from typing import List, cast
 
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     entity_id_to_rich_text,
     entity_name_to_rich_text,
 )
-from jupiter.core.domain.smart_lists.smart_list_item import SmartListItem
-from jupiter.core.domain.smart_lists.smart_list_tag import SmartListTag
 from jupiter.core.use_cases.smart_lists.find import (
     SmartListFindResult,
     SmartListFindUseCase,
@@ -30,10 +27,11 @@ class SmartListShow(LoggedInReadonlyCommand[SmartListFindUseCase]):
 
         for smart_list_entry in sorted_smart_lists:
             smart_list = smart_list_entry.smart_list
-            smart_list_tags_set = {
-                t.ref_id: t
-                for t in cast(List[SmartListTag], smart_list_entry.smart_list_tags)
-            }
+            smart_list_tags_set = (
+                {t.ref_id: t for t in smart_list_entry.smart_list_tags}
+                if smart_list_entry.smart_list_tags
+                else {}
+            )
 
             smart_list_text = Text("")
             smart_list_text.append(entity_id_to_rich_text(smart_list.ref_id))
@@ -64,9 +62,10 @@ class SmartListShow(LoggedInReadonlyCommand[SmartListFindUseCase]):
             )
             smart_list_tree.add(smart_list_info_text)
 
-            for smart_list_item in cast(
-                List[SmartListItem], smart_list_entry.smart_list_items
-            ):
+            if smart_list_entry.smart_list_items is None:
+                continue
+
+            for smart_list_item in smart_list_entry.smart_list_items:
                 smart_list_item_text = Text("")
                 smart_list_item_text.append(
                     entity_id_to_rich_text(smart_list_item.ref_id),

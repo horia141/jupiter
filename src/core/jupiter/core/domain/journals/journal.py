@@ -48,6 +48,7 @@ class Journal(LeafEntity):
         journal_collection_ref_id: EntityId,
         right_now: ADate,
         period: RecurringTaskPeriod,
+        sources: list[InboxTaskSource],
     ) -> "Journal":
         """Create a journal."""
         return Journal._create(
@@ -58,7 +59,7 @@ class Journal(LeafEntity):
             right_now=right_now,
             period=period,
             timeline=infer_timeline(period, right_now.to_timestamp_at_end_of_day()),
-            report=ReportPeriodResult.empty(right_now, period),
+            report=ReportPeriodResult.empty(right_now, period, sources),
         )
 
     @staticmethod

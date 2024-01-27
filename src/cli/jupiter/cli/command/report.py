@@ -1,6 +1,5 @@
 """UseCase for generating reports of progress."""
-from argparse import ArgumentParser, Namespace
-from typing import Final, List
+from typing import List
 
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
@@ -10,27 +9,20 @@ from jupiter.cli.command.rendering import (
     period_to_rich_text,
     user_score_overview_to_rich,
 )
-from jupiter.cli.session_storage import SessionInfo, SessionStorage
-from jupiter.cli.top_level_context import LoggedInTopLevelContext
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
+from jupiter.core.domain.report.report_breakdown import ReportBreakdown
 from jupiter.core.domain.report.report_period_result import (
     InboxTasksSummary,
     WorkableSummary,
 )
-from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.realm import RealmCodecRegistry
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
 from jupiter.core.use_cases.report import (
-    ReportArgs,
+    ReportResult,
     ReportUseCase,
 )
-from jupiter.core.utils.global_properties import GlobalProperties
-from jupiter.core.utils.time_provider import TimeProvider
 from rich.console import Console
 from rich.table import Table
 from rich.text import Text
@@ -40,352 +32,13 @@ from rich.tree import Tree
 class Report(LoggedInReadonlyCommand[ReportUseCase]):
     """UseCase class for reporting progress."""
 
-    _SOURCES_TO_REPORT = [
-        InboxTaskSource.USER,
-        InboxTaskSource.HABIT,
-        InboxTaskSource.CHORE,
-        InboxTaskSource.BIG_PLAN,
-        InboxTaskSource.JOURNAL,
-        InboxTaskSource.METRIC,
-        InboxTaskSource.PERSON_CATCH_UP,
-        InboxTaskSource.PERSON_BIRTHDAY,
-        InboxTaskSource.SLACK_TASK,
-        InboxTaskSource.EMAIL_TASK,
-    ]
+    def _render_result(self, result: ReportResult) -> None:
+        sources_to_present = result.period_result.sources
 
-    _global_properties: Final[GlobalProperties]
-    _time_provider: Final[TimeProvider]
-
-    def __init__(
-        self,
-        global_properties: GlobalProperties,
-        realm_codec_registry: RealmCodecRegistry,
-        time_provider: TimeProvider,
-        session_storage: SessionStorage,
-        top_level_context: LoggedInTopLevelContext,
-        use_case: ReportUseCase,
-    ) -> None:
-        """Constructor."""
-        super().__init__(
-            realm_codec_registry, session_storage, top_level_context, use_case
-        )
-        self._global_properties = global_properties
-        self._time_provider = time_provider
-
-    def build_parser(self, parser: ArgumentParser) -> None:
-        """Construct a argparse parser for the command."""
-        parser.add_argument(
-            "--today",
-            help="The date on which the upsert should run at",
-        )
-        parser.add_argument(
-            "--source",
-            dest="sources",
-            default=[],
-            action="append",
-            choices=self._top_level_context.workspace.infer_sources_for_enabled_features(
-                None
-            ),
-            help="Allow only inbox tasks form this particular source. Defaults to all",
-        )
-        if self._top_level_context.workspace.is_feature_available(
-            WorkspaceFeature.PROJECTS
-        ):
-            parser.add_argument(
-                "--project-id",
-                dest="project_ref_ids",
-                default=[],
-                action="append",
-                help="Allow only tasks from this project",
-            )
-        if self._top_level_context.workspace.is_feature_available(
-            WorkspaceFeature.HABITS
-        ):
-            parser.add_argument(
-                "--habit-id",
-                dest="habit_ref_ids",
-                default=[],
-                action="append",
-                help="Allow only tasks from these habits",
-            )
-        if self._top_level_context.workspace.is_feature_available(
-            WorkspaceFeature.CHORES
-        ):
-            parser.add_argument(
-                "--chore-id",
-                dest="chore_ref_ids",
-                default=[],
-                action="append",
-                help="Allow only tasks from these chores",
-            )
-        if self._top_level_context.workspace.is_feature_available(
-            WorkspaceFeature.BIG_PLANS
-        ):
-            parser.add_argument(
-                "--big-plan-id",
-                dest="big_plan_ref_ids",
-                default=[],
-                action="append",
-                help="Allow only tasks from these big plans",
-            )
-        if self._top_level_context.workspace.is_feature_available(
-            WorkspaceFeature.METRICS
-        ):
-            parser.add_argument(
-                "--metric-id",
-                dest="metric_ref_ids",
-                required=False,
-                default=[],
-                action="append",
-                help="Allow only tasks from this metric",
-            )
-        if self._top_level_context.workspace.is_feature_available(
-            WorkspaceFeature.PERSONS
-        ):
-            parser.add_argument(
-                "--person-id",
-                dest="person_ref_ids",
-                default=[],
-                action="append",
-                help="Allow only tasks from these persons",
-            )
-        if self._top_level_context.workspace.is_feature_available(
-            WorkspaceFeature.SLACK_TASKS
-        ):
-            parser.add_argument(
-                "--slack-task-id",
-                dest="slack_task_ref_ids",
-                default=[],
-                action="append",
-                help="Allow only these Slack tasks",
-            )
-        if self._top_level_context.workspace.is_feature_available(
-            WorkspaceFeature.EMAIL_TASKS
-        ):
-            parser.add_argument(
-                "--email-task-id",
-                dest="email_task_ref_ids",
-                default=[],
-                action="append",
-                help="Allow only these email tasks",
-            )
-        if self._top_level_context.workspace.is_feature_available(
-            WorkspaceFeature.BIG_PLANS
-        ):
-            parser.add_argument(
-                "--cover",
-                dest="covers",
-                default=["inbox-tasks", "big-plans"],
-                choices=["inbox-tasks", "big-plans"],
-                help="Show reporting info about certain parts",
-            )
-        allowed_breakdowns = ["global", "periods"]
-        if self._top_level_context.workspace.is_feature_available(
-            WorkspaceFeature.PROJECTS
-        ):
-            allowed_breakdowns.append("projects")
-        if self._top_level_context.workspace.is_feature_available(
-            WorkspaceFeature.HABITS
-        ):
-            allowed_breakdowns.append("habits")
-        if self._top_level_context.workspace.is_feature_available(
-            WorkspaceFeature.CHORES
-        ):
-            allowed_breakdowns.append("chores")
-        if self._top_level_context.workspace.is_feature_available(
-            WorkspaceFeature.BIG_PLANS
-        ):
-            allowed_breakdowns.append("big-plans")
-        parser.add_argument(
-            "--breakdown",
-            dest="breakdowns",
-            default=[],
-            action="append",
-            choices=[
-                "global",
-                "periods",
-                "projects",
-                "habits",
-                "chores",
-                "big-plans",
-            ],
-            help="Breakdown report by one or more dimensions",
-        )
-        parser.add_argument(
-            "--sub-period",
-            dest="breakdown_period",
-            default=None,
-            choices=RecurringTaskPeriod.all_values(),
-            help="Specify subperiod to use when breaking down by period",
-        )
-        parser.add_argument(
-            "--period",
-            default=RecurringTaskPeriod.WEEKLY.value,
-            dest="period",
-            choices=RecurringTaskPeriod.all_values(),
-            help="The period to report on",
-        )
-        parser.add_argument(
-            "--show-archived",
-            default=False,
-            dest="show_archived",
-            action="store_const",
-            const=True,
-            help="Whether to show archived entities",
-        )
-
-    async def _run(
-        self,
-        session_info: SessionInfo,
-        args: Namespace,
-    ) -> None:
-        """Callback to execute when the command is invoked."""
-        today = (
-            ADate.from_raw_in_tz(self._global_properties.timezone, args.today)
-            if args.today
-            else self._time_provider.get_current_date()
-        )
-        sources = (
-            [InboxTaskSource.from_raw(s) for s in args.sources]
-            if len(args.sources) > 0
-            else None
-        )
-        if self._top_level_context.workspace.is_feature_available(
-            WorkspaceFeature.PROJECTS
-        ):
-            project_ref_ids = (
-                [EntityId.from_raw(pk) for pk in args.project_ref_ids]
-                if len(args.project_ref_ids) > 0
-                else None
-            )
-        else:
-            project_ref_ids = None
-        if self._top_level_context.workspace.is_feature_available(
-            WorkspaceFeature.HABITS
-        ):
-            habit_ref_ids = (
-                [EntityId.from_raw(rt) for rt in args.habit_ref_ids]
-                if len(args.habit_ref_ids) > 0
-                else None
-            )
-        else:
-            habit_ref_ids = None
-        if self._top_level_context.workspace.is_feature_available(
-            WorkspaceFeature.CHORES
-        ):
-            chore_ref_ids = (
-                [EntityId.from_raw(rt) for rt in args.chore_ref_ids]
-                if len(args.chore_ref_ids) > 0
-                else None
-            )
-        else:
-            chore_ref_ids = None
-        if self._top_level_context.workspace.is_feature_available(
-            WorkspaceFeature.BIG_PLANS
-        ):
-            big_plan_ref_ids = (
-                [EntityId.from_raw(bp) for bp in args.big_plan_ref_ids]
-                if len(args.big_plan_ref_ids) > 0
-                else None
-            )
-        else:
-            big_plan_ref_ids = None
-        if self._top_level_context.workspace.is_feature_available(
-            WorkspaceFeature.METRICS
-        ):
-            metric_ref_ids = (
-                [EntityId.from_raw(mk) for mk in args.metric_ref_ids]
-                if len(args.metric_ref_ids) > 0
-                else None
-            )
-        else:
-            metric_ref_ids = None
-        if self._top_level_context.workspace.is_feature_available(
-            WorkspaceFeature.PERSONS
-        ):
-            person_ref_ids = (
-                [EntityId.from_raw(bp) for bp in args.person_ref_ids]
-                if len(args.person_ref_ids) > 0
-                else None
-            )
-        else:
-            person_ref_ids = None
-        if self._top_level_context.workspace.is_feature_available(
-            WorkspaceFeature.SLACK_TASKS
-        ):
-            slack_task_ref_ids = (
-                [EntityId.from_raw(rid) for rid in args.slack_task_ref_ids]
-                if len(args.slack_task_ref_ids) > 0
-                else None
-            )
-        else:
-            slack_task_ref_ids = None
-        if self._top_level_context.workspace.is_feature_available(
-            WorkspaceFeature.EMAIL_TASKS
-        ):
-            email_task_ref_ids = (
-                [EntityId.from_raw(rid) for rid in args.email_task_ref_ids]
-                if len(args.email_task_ref_ids) > 0
-                else None
-            )
-        else:
-            email_task_ref_ids = None
-        if self._top_level_context.workspace.is_feature_available(
-            WorkspaceFeature.BIG_PLANS
-        ):
-            covers = args.covers
-        else:
-            covers = ["inbox-tasks"]
-        breakdowns = (
-            args.breakdowns if len(args.breakdowns) > 0 else ["global", "habits"]
-        )
-        breakdown_period_raw = (
-            RecurringTaskPeriod.from_raw(args.breakdown_period)
-            if args.breakdown_period
-            else None
-        )
-        period = RecurringTaskPeriod.from_raw(args.period)
-        show_archived = args.show_archived
-
-        breakdown_period = None
-        if "periods" in breakdowns:
-            if breakdown_period_raw is None:
-                breakdown_period = self._one_smaller_than_period(period)
-            else:
-                breakdown_period = breakdown_period_raw
-
-        result = await self._use_case.execute(
-            AppLoggedInUseCaseSession(session_info.auth_token_ext),
-            ReportArgs(
-                today=today,
-                filter_project_ref_ids=project_ref_ids,
-                filter_sources=sources,
-                filter_big_plan_ref_ids=big_plan_ref_ids,
-                filter_habit_ref_ids=habit_ref_ids,
-                filter_chore_ref_ids=chore_ref_ids,
-                filter_metric_ref_ids=metric_ref_ids,
-                filter_person_ref_ids=person_ref_ids,
-                filter_slack_task_ref_ids=slack_task_ref_ids,
-                filter_email_task_ref_ids=email_task_ref_ids,
-                period=period,
-                breakdown_period=breakdown_period,
-            ),
-        )
-
-        sources_to_present = (
-            self._top_level_context.workspace.infer_sources_for_enabled_features(
-                (
-                    [s for s in Report._SOURCES_TO_REPORT if s in sources]
-                    if sources
-                    else Report._SOURCES_TO_REPORT
-                )
-            )
-        )
-
-        today_str = ADate.to_user_date_str(today)
+        today_str = ADate.to_user_date_str(result.period_result.today)
 
         rich_text = Text("🚀 ")
-        rich_text.append(period_to_rich_text(period))
+        rich_text.append(period_to_rich_text(result.period_result.period))
         rich_text.append(f" as of {today_str}:")
 
         rich_tree = Tree(
@@ -398,23 +51,19 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
                 user_score_overview_to_rich(result.period_result.user_score_overview)
             )
 
-        if "global" in breakdowns:
+        if ReportBreakdown.GLOBAL in result.period_result.breakdowns:
             global_text = Text("🌍 Global:")
 
             global_tree = rich_tree.add(global_text)
 
-            if "inbox-tasks" in covers:
-                inbox_task_table = self._build_inbox_tasks_summary_table(
-                    result.period_result.global_inbox_tasks_summary,
-                    sources_to_present,
-                )
-                global_tree.add(inbox_task_table)
+            inbox_task_table = self._build_inbox_tasks_summary_table(
+                result.period_result.global_inbox_tasks_summary,
+                sources_to_present,
+            )
+            global_tree.add(inbox_task_table)
 
-            if (
-                self._top_level_context.workspace.is_feature_available(
-                    WorkspaceFeature.BIG_PLANS
-                )
-                and "big-plans" in covers
+            if self._top_level_context.workspace.is_feature_available(
+                WorkspaceFeature.BIG_PLANS
             ):
                 big_plan_tree = self._build_big_plans_summary_tree(
                     result.period_result.global_big_plans_summary,
@@ -425,7 +74,7 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
             self._top_level_context.workspace.is_feature_available(
                 WorkspaceFeature.PROJECTS
             )
-            and "projects" in breakdowns
+            and ReportBreakdown.PROJECTS in result.period_result.breakdowns
         ):
             global_text = Text("💡 By Projects:")
 
@@ -436,25 +85,21 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
 
                 project_tree = global_tree.add(project_text)
 
-                if "inbox-tasks" in covers:
-                    inbox_task_table = self._build_inbox_tasks_summary_table(
-                        project_item.inbox_tasks_summary,
-                        sources_to_present,
-                    )
-                    project_tree.add(inbox_task_table)
+                inbox_task_table = self._build_inbox_tasks_summary_table(
+                    project_item.inbox_tasks_summary,
+                    sources_to_present,
+                )
+                project_tree.add(inbox_task_table)
 
-                if (
-                    self._top_level_context.workspace.is_feature_available(
-                        WorkspaceFeature.BIG_PLANS
-                    )
-                    and "big-plans" in covers
+                if self._top_level_context.workspace.is_feature_available(
+                    WorkspaceFeature.BIG_PLANS
                 ):
                     big_plan_tree = self._build_big_plans_summary_tree(
                         project_item.big_plans_summary,
                     )
                     global_tree.add(big_plan_tree)
 
-        if "periods" in breakdowns:
+        if ReportBreakdown.PERIODS in result.period_result.breakdowns:
             global_text = Text("⌛ By Periods:")
 
             global_tree = rich_tree.add(global_text)
@@ -469,14 +114,15 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
 
                 period_tree = global_tree.add(period_text)
 
-                if "inbox-tasks" in covers:
-                    inbox_task_table = self._build_inbox_tasks_summary_table(
-                        period_item.inbox_tasks_summary,
-                        sources_to_present,
-                    )
-                    period_tree.add(inbox_task_table)
+                inbox_task_table = self._build_inbox_tasks_summary_table(
+                    period_item.inbox_tasks_summary,
+                    sources_to_present,
+                )
+                period_tree.add(inbox_task_table)
 
-                if "big-plans" in covers:
+                if self._top_level_context.workspace.is_feature_available(
+                    WorkspaceFeature.BIG_PLANS
+                ):
                     big_plan_tree = self._build_big_plans_summary_tree(
                         period_item.big_plans_summary,
                     )
@@ -486,7 +132,7 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
             self._top_level_context.workspace.is_feature_available(
                 WorkspaceFeature.HABITS
             )
-            and "habits" in breakdowns
+            and ReportBreakdown.HABITS in result.period_result.breakdowns
         ):
             global_text = Text("💪 By Habits:")
 
@@ -538,7 +184,7 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
                 period_table.add_column(habit_done_text, width=12, justify="right")
 
                 for habit_item in result.period_result.per_habit_breakdown:
-                    if not show_archived and habit_item.archived:
+                    if habit_item.archived:
                         continue
                     if habit_item.period != print_period:
                         continue
@@ -590,7 +236,7 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
             self._top_level_context.workspace.is_feature_available(
                 WorkspaceFeature.CHORES
             )
-            and "chores" in breakdowns
+            and ReportBreakdown.CHORES in result.period_result.breakdowns
         ):
             global_text = Text("♻️ By Chores:")
 
@@ -632,7 +278,7 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
                 period_table.add_column(chore_done_text, width=12, justify="right")
 
                 for chore_item in result.period_result.per_chore_breakdown:
-                    if not show_archived and chore_item.archived:
+                    if chore_item.archived:
                         continue
                     if chore_item.period != print_period:
                         continue
@@ -680,7 +326,7 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
             self._top_level_context.workspace.is_feature_available(
                 WorkspaceFeature.BIG_PLANS
             )
-            and "big-plans" in breakdowns
+            and ReportBreakdown.BIG_PLANS in result.period_result.breakdowns
         ):
             global_table = Table(
                 title="🌍 By Big Plan:",
@@ -766,19 +412,6 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
 
         console = Console()
         console.print(rich_tree)
-
-    @staticmethod
-    def _one_smaller_than_period(period: RecurringTaskPeriod) -> RecurringTaskPeriod:
-        if period == RecurringTaskPeriod.YEARLY:
-            return RecurringTaskPeriod.QUARTERLY
-        elif period == RecurringTaskPeriod.QUARTERLY:
-            return RecurringTaskPeriod.MONTHLY
-        elif period == RecurringTaskPeriod.MONTHLY:
-            return RecurringTaskPeriod.WEEKLY
-        elif period == RecurringTaskPeriod.WEEKLY:
-            return RecurringTaskPeriod.DAILY
-        else:
-            raise InputValidationError("Cannot breakdown daily by period")
 
     @staticmethod
     def _build_inbox_tasks_summary_table(

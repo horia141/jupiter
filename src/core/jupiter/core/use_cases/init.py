@@ -16,8 +16,8 @@ from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.core.timezone import Timezone
 from jupiter.core.domain.docs.doc_collection import DocCollection
 from jupiter.core.domain.features import (
-    UserFeatureFlags,
-    WorkspaceFeatureFlags,
+    UserFeature,
+    WorkspaceFeature,
 )
 from jupiter.core.domain.gamification.score_log import ScoreLog
 from jupiter.core.domain.gc.gc_log import GCLog
@@ -77,12 +77,12 @@ class InitArgs(UseCaseArgsBase):
     user_email_address: EmailAddress
     user_name: UserName
     user_timezone: Timezone
-    user_feature_flags: UserFeatureFlags
+    user_feature_flags: set[UserFeature]
     auth_password: PasswordNewPlain
     auth_password_repeat: PasswordNewPlain
     workspace_name: WorkspaceName
     workspace_first_project_name: ProjectName
-    workspace_feature_flags: WorkspaceFeatureFlags
+    workspace_feature_flags: set[WorkspaceFeature]
 
 
 @use_case_result
@@ -137,6 +137,16 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             workspace_feature_flags_controls,
         ) = infer_feature_flag_controls(self._global_properties)
 
+        user_feature_flags = {}
+        for user_feature in UserFeature:
+            user_feature_flags[user_feature] = user_feature in args.user_feature_flags
+
+        workspace_feature_flags = {}
+        for workspace_feature in WorkspaceFeature:
+            workspace_feature_flags[workspace_feature] = (
+                workspace_feature in args.workspace_feature_flags
+            )
+
         async with self._storage_engine.get_unit_of_work() as uow:
             new_user = User.new_user(
                 ctx=context.domain_context,
@@ -144,7 +154,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 name=args.user_name,
                 timezone=args.user_timezone,
                 feature_flag_controls=user_feature_flags_controls,
-                feature_flags=args.user_feature_flags,
+                feature_flags=user_feature_flags,
             )
             new_user = await uow.user_repository.create(new_user)
 
@@ -166,7 +176,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 ctx=context.domain_context,
                 name=args.workspace_name,
                 feature_flag_controls=workspace_feature_flags_controls,
-                feature_flags=args.workspace_feature_flags,
+                feature_flags=workspace_feature_flags,
             )
             new_workspace = await uow.workspace_repository.create(new_workspace)
 

@@ -7,6 +7,7 @@ from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.gamification.user_score_overview import UserScoreOverview
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
+from jupiter.core.domain.report.report_breakdown import ReportBreakdown
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.value import CompositeValue, value
@@ -147,6 +148,9 @@ class ReportPeriodResult(CompositeValue):
 
     today: ADate
     period: RecurringTaskPeriod
+    sources: list[InboxTaskSource]
+    breakdowns: list[ReportBreakdown]
+    breakdown_period: RecurringTaskPeriod | None
     global_inbox_tasks_summary: InboxTasksSummary
     global_big_plans_summary: WorkableSummary
     per_project_breakdown: list[PerProjectBreakdownItem]
@@ -157,11 +161,16 @@ class ReportPeriodResult(CompositeValue):
     user_score_overview: UserScoreOverview | None
 
     @staticmethod
-    def empty(today: ADate, period: RecurringTaskPeriod) -> "ReportPeriodResult":
+    def empty(
+        today: ADate, period: RecurringTaskPeriod, sources: list[InboxTaskSource]
+    ) -> "ReportPeriodResult":
         """Construct an empty report."""
         return ReportPeriodResult(
             today=today,
             period=period,
+            sources=sources,
+            breakdowns=[ReportBreakdown.GLOBAL, ReportBreakdown.BIG_PLANS],
+            breakdown_period=None,
             global_inbox_tasks_summary=InboxTasksSummary(
                 created=NestedResult(
                     total_cnt=0,

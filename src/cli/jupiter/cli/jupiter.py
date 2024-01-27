@@ -362,8 +362,8 @@ async def main() -> None:
 
     no_session_command: list[Command] = [
         Initialize(
+            realm_codec_registry=realm_codec_registry,
             session_storage=session_storage,
-            top_level_context=top_level_context,
             use_case=InitUseCase(
                 time_provider,
                 invocation_recorder,
@@ -375,6 +375,7 @@ async def main() -> None:
             ),
         ),
         Login(
+            realm_codec_registry=realm_codec_registry,
             session_storage=session_storage,
             use_case=LoginUseCase(
                 auth_token_stamper,
@@ -403,6 +404,7 @@ async def main() -> None:
                     ),
                 ),
                 ResetPassword(
+                    realm_codec_registry=realm_codec_registry,
                     session_storage=session_storage,
                     use_case=ResetPasswordUseCase(
                         time_provider=time_provider,
@@ -417,6 +419,7 @@ async def main() -> None:
                     realm_codec_registry=realm_codec_registry,
                     top_level_context=top_level_context.to_logged_in(),
                     use_case=SearchUseCase(
+                        time_provider=time_provider,
                         auth_token_stamper=auth_token_stamper,
                         domain_storage_engine=domain_storage_engine,
                         search_storage_engine=search_storage_engine,

@@ -525,7 +525,8 @@ class _StandardEntityDatabaseEncoder(
     def encode(self, value: _EntityT) -> RealmThing:
         """Encode an entity."""
         result: dict[str, RealmThing] = {}
-        all_fields = dataclasses.fields(value)
+        all_fields = dataclasses.fields(value.__class__)
+
         for field in all_fields:
             field_value = getattr(value, field.name)
             if field.name == "events":
@@ -548,7 +549,7 @@ class _StandardEntityDatabaseEncoder(
                         field_item.__class__, DatabaseRealm
                     )
                     field_list_result.append(field_item_encoder.encode(field_item))
-                result[field.name] = []
+                result[field.name] = field_list_result
             elif isinstance(field_value, dict):
                 field_dict_result = {}
                 for field_key, field_item in field_value.items():
@@ -1122,7 +1123,8 @@ class _StandardUseCaseArgsCliDecoder(
             | list[Thing]
             | set[Thing]
             | dict[Thing, Thing]
-            | UpdateAction[Thing],
+            | UpdateAction[Thing]
+            | UpdateAction[list[Thing]],
         ] = {}
 
         for field in all_fields:
@@ -1211,7 +1213,7 @@ class _StandardUseCaseArgsCliDecoder(
                                 f"clear_{field.name}" in value
                                 and value[f"clear_{field.name}"] is True
                             ):
-                                ctor_args[field.name] = UpdateAction.change_to(None)
+                                ctor_args[field.name] = UpdateAction.change_to(None)  # type: ignore
                             elif field_value is None:
                                 ctor_args[field.name] = UpdateAction.do_nothing()
                             else:
@@ -1222,7 +1224,7 @@ class _StandardUseCaseArgsCliDecoder(
                                         )
                                     )
                                     try:
-                                        ctor_args[field.name] = UpdateAction.change_to(
+                                        ctor_args[field.name] = UpdateAction.change_to(  # type: ignore
                                             field_decoder.decode(field_value)
                                         )
                                         break
@@ -1232,6 +1234,28 @@ class _StandardUseCaseArgsCliDecoder(
                                     raise RealmDecodingError(
                                         f"Could not decode field {field.name} of type {field.type} for value {self._the_type.__name__}"
                                     )
+                        elif update_action_origin_type is list:
+                            list_item_type = cast(
+                                type[Thing], get_args(update_action_type)[0]
+                            )
+                            if field_value is None:
+                                ctor_args[field.name] = UpdateAction.do_nothing()
+                            if not isinstance(field_value, list):
+                                raise RealmDecodingError(
+                                    f"Expected value of type {self._the_type.__name__} to have field {field.name} to be a list"
+                                )
+                            update_list_item_decoder: RealmDecoder[
+                                Thing, DatabaseRealm
+                            ] = self._realm_codec_registry.get_decoder(
+                                list_item_type, DatabaseRealm
+                            )
+                            partial_result = UpdateAction.change_to(
+                                [
+                                    update_list_item_decoder.decode(v)
+                                    for v in field_value
+                                ]
+                            )
+                            ctor_args[field.name] = partial_result
                         else:
                             raise Exception(
                                 f"Could not decode field {field.name} of type {field.type} for value {self._the_type.__name__}"

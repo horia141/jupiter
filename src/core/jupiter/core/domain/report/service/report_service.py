@@ -26,6 +26,7 @@ from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.core.domain.metrics.metric import Metric
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.projects.project_name import ProjectName
+from jupiter.core.domain.report.report_breakdown import ReportBreakdown
 from jupiter.core.domain.report.report_period_result import (
     BigPlanWorkSummary,
     InboxTasksSummary,
@@ -70,7 +71,8 @@ class ReportService:
         workspace: Workspace,
         today: Optional[ADate],
         period: RecurringTaskPeriod,
-        filter_sources: Optional[Iterable[InboxTaskSource]] = None,
+        sources: Optional[list[InboxTaskSource]] = None,
+        breakdowns: list[ReportBreakdown] | None = None,
         filter_project_ref_ids: Optional[Iterable[EntityId]] = None,
         filter_big_plan_ref_ids: Optional[Iterable[EntityId]] = None,
         filter_habit_ref_ids: Optional[Iterable[EntityId]] = None,
@@ -120,21 +122,31 @@ class ReportService:
 
         today = today or self._time_provider.get_current_date()
 
-        filter_sources = (
-            filter_sources
-            if filter_sources is not None
+        sources = (
+            sources
+            if sources is not None
             else workspace.infer_sources_for_enabled_features(None)
         )
 
         big_diff = list(
-            set(filter_sources).difference(
-                workspace.infer_sources_for_enabled_features(filter_sources)
+            set(sources).difference(
+                workspace.infer_sources_for_enabled_features(sources)
             )
         )
         if len(big_diff) > 0:
             raise FeatureUnavailableError(
                 f"Sources {','.join(s.value for s in big_diff)} are not supported in this workspace"
             )
+
+        breakdowns = (
+            breakdowns
+            if breakdowns is not None and len(breakdowns) > 0
+            else [ReportBreakdown.GLOBAL]
+        )
+
+        if ReportBreakdown.PERIODS in breakdowns:
+            if breakdown_period is None:
+                breakdown_period = self._one_smaller_than_period(period)
 
         if breakdown_period:
             self._check_period_against_breakdown_period(
@@ -209,7 +221,7 @@ class ReportService:
             raw_all_inbox_tasks = await uow.inbox_task_repository.find_all_with_filters(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
-                filter_sources=filter_sources,
+                filter_sources=sources,
                 filter_project_ref_ids=filter_project_ref_ids,
                 filter_last_modified_time_start=schedule.first_day.start_of_day(),
                 filter_last_modified_time_end=schedule.end_day.next_day(),
@@ -546,6 +558,9 @@ class ReportService:
         return ReportPeriodResult(
             today=today,
             period=period,
+            sources=sources,
+            breakdowns=breakdowns,
+            breakdown_period=breakdown_period,
             global_inbox_tasks_summary=global_inbox_tasks_summary,
             global_big_plans_summary=global_big_plans_summary,
             per_project_breakdown=per_project_breakdown,
@@ -829,6 +844,19 @@ class ReportService:
             not_done_big_plans=not_done_projects,
             done_big_plans=done_projects,
         )
+
+    @staticmethod
+    def _one_smaller_than_period(period: RecurringTaskPeriod) -> RecurringTaskPeriod:
+        if period == RecurringTaskPeriod.YEARLY:
+            return RecurringTaskPeriod.QUARTERLY
+        elif period == RecurringTaskPeriod.QUARTERLY:
+            return RecurringTaskPeriod.MONTHLY
+        elif period == RecurringTaskPeriod.MONTHLY:
+            return RecurringTaskPeriod.WEEKLY
+        elif period == RecurringTaskPeriod.WEEKLY:
+            return RecurringTaskPeriod.DAILY
+        else:
+            raise InputValidationError("Cannot breakdown daily by period")
 
     @staticmethod
     def _check_period_against_breakdown_period(

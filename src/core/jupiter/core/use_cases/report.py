@@ -1,10 +1,11 @@
 """The command for reporting on progress."""
-from typing import Final, Iterable, Optional
+from typing import Final, Optional
 
 from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
+from jupiter.core.domain.report.report_breakdown import ReportBreakdown
 from jupiter.core.domain.report.report_period_result import (
     ReportPeriodResult,
 )
@@ -31,15 +32,16 @@ class ReportArgs(UseCaseArgsBase):
 
     today: Optional[ADate]
     period: RecurringTaskPeriod
-    filter_sources: Optional[Iterable[InboxTaskSource]] = None
-    filter_project_ref_ids: Optional[Iterable[EntityId]] = None
-    filter_big_plan_ref_ids: Optional[Iterable[EntityId]] = None
-    filter_habit_ref_ids: Optional[Iterable[EntityId]] = None
-    filter_chore_ref_ids: Optional[Iterable[EntityId]] = None
-    filter_metric_ref_ids: Optional[Iterable[EntityId]] = None
-    filter_person_ref_ids: Optional[Iterable[EntityId]] = None
-    filter_slack_task_ref_ids: Optional[Iterable[EntityId]] = None
-    filter_email_task_ref_ids: Optional[Iterable[EntityId]] = None
+    sources: Optional[list[InboxTaskSource]] = None
+    breakdowns: list[ReportBreakdown] | None = None
+    filter_project_ref_ids: Optional[list[EntityId]] = None
+    filter_big_plan_ref_ids: Optional[list[EntityId]] = None
+    filter_habit_ref_ids: Optional[list[EntityId]] = None
+    filter_chore_ref_ids: Optional[list[EntityId]] = None
+    filter_metric_ref_ids: Optional[list[EntityId]] = None
+    filter_person_ref_ids: Optional[list[EntityId]] = None
+    filter_slack_task_ref_ids: Optional[list[EntityId]] = None
+    filter_email_task_ref_ids: Optional[list[EntityId]] = None
     breakdown_period: Optional[RecurringTaskPeriod] = None
 
 
@@ -81,7 +83,8 @@ class ReportUseCase(AppLoggedInReadonlyUseCase[ReportArgs, ReportResult]):
             workspace=workspace,
             today=args.today,
             period=args.period,
-            filter_sources=args.filter_sources,
+            sources=args.sources,
+            breakdowns=args.breakdowns,
             filter_project_ref_ids=args.filter_project_ref_ids,
             filter_big_plan_ref_ids=args.filter_big_plan_ref_ids,
             filter_habit_ref_ids=args.filter_habit_ref_ids,
