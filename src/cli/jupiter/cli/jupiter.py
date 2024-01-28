@@ -65,6 +65,8 @@ from jupiter.core.utils.progress_reporter import (
     NoOpProgressReporterFactory,
 )
 from jupiter.core.utils.time_provider import TimeProvider
+import jupiter.core.use_cases
+import jupiter.cli.command
 from rich.console import Console
 
 # import coverage
@@ -139,13 +141,20 @@ async def main() -> None:
         workspace=top_level_info.workspace,
     )
 
-    cli_app = CliApp(
-        global_properties=global_properties,
-        top_level_context=top_level_context,
-        console=console,
-        progress_reporter_factory=progress_reporter_factory,
-        realm_codec_registry=realm_codec_registry,
-        session_storage=session_storage,
+    cli_app = CliApp.build_from_module_root(
+        global_properties,
+        top_level_context,
+        console,
+        time_provider,
+        invocation_recorder,
+        progress_reporter_factory,
+        realm_codec_registry,
+        session_storage,
+        auth_token_stamper,
+        domain_storage_engine,
+        search_storage_engine,
+        jupiter.core.use_cases,
+        jupiter.cli.command,
     )
 
     cli_app.add_command(

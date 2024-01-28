@@ -51,6 +51,7 @@ from jupiter.core.framework.record import Record
 from jupiter.core.framework.thing import Thing, is_value_ish, is_value_ish_type
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case_io import UseCaseArgsBase
+from jupiter.core.framework.utils import find_all_modules
 from jupiter.core.framework.value import (
     AtomicValue,
     CompositeValue,
@@ -1363,27 +1364,15 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
         *module_roots: ModuleType,
     ) -> "ModuleExplorerRealmCodecRegistry":
         """Build a registry from a module root using magick."""
-
-        def find_all_modules() -> list[ModuleType]:
-            all_modules = []
-
-            def explore_module_tree(the_module: ModuleType) -> None:
-                for _, name, is_pkg in pkgutil.iter_modules(the_module.__path__):
-                    full_name = the_module.__name__ + "." + name
-                    all_modules.append(importlib.import_module(full_name))
-                    if is_pkg:
-                        submodule = getattr(the_module, name)
-                        explore_module_tree(submodule)
-
-            for mr in module_roots:
-                explore_module_tree(mr)
-            return all_modules
-
         def extract_atomic_values(
             the_module: ModuleType,
         ) -> Iterator[type[AtomicValue]]:
             for _name, obj in the_module.__dict__.items():
                 if not (isinstance(obj, type) and issubclass(obj, AtomicValue)):
+                    continue
+
+                if obj.__module__ != the_module.__name__:
+                    # This is an import, and not a definition!
                     continue
 
                 yield obj
@@ -1395,6 +1384,10 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                 if not (isinstance(obj, type) and issubclass(obj, CompositeValue)):
                     continue
 
+                if obj.__module__ != the_module.__name__:
+                    # This is an import, and not a definition!
+                    continue
+
                 yield obj
 
         def extract_enum_values(
@@ -1402,6 +1395,10 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
         ) -> Iterator[type[EnumValue]]:
             for _name, obj in the_module.__dict__.items():
                 if not (isinstance(obj, type) and issubclass(obj, EnumValue)):
+                    continue
+
+                if obj.__module__ != the_module.__name__:
+                    # This is an import, and not a definition!
                     continue
 
                 yield obj
@@ -1413,6 +1410,10 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                 if not (isinstance(obj, type) and issubclass(obj, Entity)):
                     continue
 
+                if obj.__module__ != the_module.__name__:
+                    # This is an import, and not a definition!
+                    continue
+
                 yield obj
 
         def extract_records(
@@ -1422,6 +1423,10 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                 if not (isinstance(obj, type) and issubclass(obj, Record)):
                     continue
 
+                if obj.__module__ != the_module.__name__:
+                    # This is an import, and not a definition!
+                    continue
+
                 yield obj
 
         def extract_use_case_args(
@@ -1429,6 +1434,10 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
         ) -> Iterator[type[UseCaseArgsBase]]:
             for _name, obj in the_module.__dict__.items():
                 if not (isinstance(obj, type) and issubclass(obj, UseCaseArgsBase)):
+                    continue
+
+                if obj.__module__ != the_module.__name__:
+                    # This is an import, and not a definition!
                     continue
 
                 yield obj
@@ -1618,7 +1627,7 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
         registry._add_encoder(Timestamp, DatabaseRealm, TimestampDatabaseEncoder())
         registry._add_decoder(Timestamp, DatabaseRealm, TimestampDatabaseDecoder())
 
-        for m in find_all_modules():
+        for m in find_all_modules(*module_roots):
             for concept_type, realm_type, encoder_type in extract_concept_encoders(m):
                 registry._add_encoder(concept_type, realm_type, encoder_type())
 
