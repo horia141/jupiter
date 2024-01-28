@@ -1,14 +1,12 @@
 """Use case for free form searching through Jupiter."""
-from typing import Final, List, Optional
+from typing import List, Optional
 
-from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.features import FeatureUnavailableError
 from jupiter.core.domain.named_entity_tag import NamedEntityTag
 from jupiter.core.domain.search.infra.search_repository import SearchMatch
 from jupiter.core.domain.search.search_limit import SearchLimit
 from jupiter.core.domain.search.search_query import SearchQuery
-from jupiter.core.domain.storage_engine import DomainStorageEngine, SearchStorageEngine
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,
@@ -20,7 +18,6 @@ from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCaseContext,
     readonly_use_case,
 )
-from jupiter.core.utils.time_provider import TimeProvider
 
 
 @use_case_args
@@ -50,23 +47,6 @@ class SearchResult(UseCaseResultBase):
 @readonly_use_case()
 class SearchUseCase(AppLoggedInReadonlyUseCase[SearchArgs, SearchResult]):
     """Use case for free form searching through Jupiter."""
-
-    _search_storage_engine: Final[SearchStorageEngine]
-    _time_provider: Final[TimeProvider]
-
-    def __init__(
-        self,
-        time_provider: TimeProvider,
-        auth_token_stamper: AuthTokenStamper,
-        domain_storage_engine: DomainStorageEngine,
-        search_storage_engine: SearchStorageEngine,
-    ) -> None:
-        """Constructor."""
-        super().__init__(
-            auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
-        )
-        self._time_provider = time_provider
-        self._search_storage_engine = search_storage_engine
 
     async def _execute(
         self, context: AppLoggedInReadonlyUseCaseContext, args: SearchArgs

@@ -1,7 +1,5 @@
 """Application-specific realm helpers."""
 import dataclasses
-import importlib
-import pkgutil
 import types
 import typing
 from collections.abc import Mapping
@@ -1364,6 +1362,7 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
         *module_roots: ModuleType,
     ) -> "ModuleExplorerRealmCodecRegistry":
         """Build a registry from a module root using magick."""
+
         def extract_atomic_values(
             the_module: ModuleType,
         ) -> Iterator[type[AtomicValue]]:

@@ -27,7 +27,7 @@ from rich.tree import Tree
 class InboxTaskShow(LoggedInReadonlyCommand[InboxTaskFindUseCase]):
     """UseCase class for showing the inbox tasks."""
 
-    def _render_result(self, result: InboxTaskFindResult) -> None:
+    def _render_result(self, console: Console, result: InboxTaskFindResult) -> None:
         sorted_inbox_tasks = sorted(
             result.entries,
             key=lambda it: (
@@ -168,5 +168,4 @@ class InboxTaskShow(LoggedInReadonlyCommand[InboxTaskFindUseCase]):
             )
             inbox_task_tree.add(inbox_task_info_text)
 
-        console = Console()
         console.print(rich_tree)

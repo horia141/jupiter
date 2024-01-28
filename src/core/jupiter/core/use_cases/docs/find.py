@@ -8,6 +8,7 @@ from jupiter.core.domain.docs.doc import Doc
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,
@@ -48,7 +49,7 @@ class DocFindResult(UseCaseResultBase):
     entries: List[DocFindResultEntry]
 
 
-@readonly_use_case(WorkspaceFeature.DOCS)
+@readonly_use_case(WorkspaceFeature.DOCS, exclude_app=[EventSource.CLI])
 class DocFindUseCase(
     AppTransactionalLoggedInReadOnlyUseCase[DocFindArgs, DocFindResult]
 ):

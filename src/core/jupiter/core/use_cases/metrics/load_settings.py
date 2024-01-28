@@ -3,6 +3,7 @@
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
+from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,
@@ -28,7 +29,7 @@ class MetricLoadSettingsResult(UseCaseResultBase):
     collection_project: Project
 
 
-@readonly_use_case(WorkspaceFeature.METRICS)
+@readonly_use_case(WorkspaceFeature.METRICS, exclude_app=[EventSource.CLI])
 class MetricLoadSettingsUseCase(
     AppTransactionalLoggedInReadOnlyUseCase[
         MetricLoadSettingsArgs, MetricLoadSettingsResult

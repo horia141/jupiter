@@ -3,23 +3,23 @@
 import abc
 import argparse
 import dataclasses
+import itertools
 import types
 import typing
 from argparse import ArgumentParser, Namespace
 from datetime import date, datetime
-from typing import Any, Callable, Final, Generic, Iterator, TypeVar, Union, cast, get_args, get_origin
+from typing import Any, Final, Generic, Iterator, TypeVar, cast, get_args, get_origin
 
 import inflection
-from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
-from jupiter.core.domain.storage_engine import DomainStorageEngine, SearchStorageEngine
-from jupiter.core.framework.utils import find_all_modules
-from jupiter.core.utils.time_provider import TimeProvider
 from jupiter.cli.command.rendering import RichConsoleProgressReporterFactory
 from jupiter.cli.session_storage import SessionInfo, SessionStorage
 from jupiter.cli.top_level_context import LoggedInTopLevelContext, TopLevelContext
+from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
 from jupiter.core.domain.features import UserFeature, WorkspaceFeature
+from jupiter.core.domain.storage_engine import DomainStorageEngine, SearchStorageEngine
 from jupiter.core.domain.user.user import User
 from jupiter.core.domain.workspaces.workspace import Workspace
+from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.realm import CliRealm, RealmCodecRegistry
 from jupiter.core.framework.thing import Thing
@@ -31,12 +31,14 @@ from jupiter.core.framework.use_case import (
     UseCaseSessionBase,
 )
 from jupiter.core.framework.use_case_io import UseCaseArgsBase, UseCaseResultBase
+from jupiter.core.framework.utils import find_all_modules
 from jupiter.core.framework.value import (
     AtomicValue,
     CompositeValue,
     EnumValue,
     SecretValue,
 )
+from jupiter.core.use_cases.infra.storage_engine import UseCaseStorageEngine
 from jupiter.core.use_cases.infra.use_cases import (
     AppGuestMutationUseCase,
     AppGuestReadonlyUseCase,
@@ -46,6 +48,7 @@ from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInUseCaseSession,
 )
 from jupiter.core.utils.global_properties import GlobalProperties
+from jupiter.core.utils.time_provider import TimeProvider
 from pendulum.date import Date
 from pendulum.datetime import DateTime
 from rich.console import Console
@@ -56,7 +59,13 @@ from rich.text import Text
 class Command(abc.ABC):
     """The base class for command."""
 
-    _postscript: Text | None = None
+    _postscript: Text | None
+    _session_storage: Final[SessionStorage]
+
+    def __init__(self, session_storage: SessionStorage) -> None:
+        """Constructor."""
+        self._postscript = None
+        self._session_storage = session_storage
 
     @abc.abstractmethod
     def name(self) -> str:
@@ -77,6 +86,11 @@ class Command(abc.ABC):
         args: Namespace,
     ) -> None:
         """Callback to execute when the command is invoked."""
+
+    @property
+    def is_allowed_for_cli(self) -> bool:
+        """Is this command allowed for the CLI."""
+        return True
 
     @property
     def should_appear_in_global_help(self) -> bool:
@@ -111,13 +125,14 @@ UseCaseContextT = TypeVar("UseCaseContextT", bound=UseCaseContextBase)
 UseCaseArgsT = TypeVar("UseCaseArgsT", bound=UseCaseArgsBase)
 UseCaseResultT = TypeVar("UseCaseResultT", bound=UseCaseResultBase | None)
 
+
 class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
     """Base class for commands based on use cases."""
 
     _realm_codec_registry: Final[RealmCodecRegistry]
-    _session_storage: Final[SessionStorage]
     _top_level_context: Final[LoggedInTopLevelContext]
     _args_type: type[UseCaseArgsBase]
+    _use_case: UseCaseT
 
     def __init__(
         self,
@@ -127,10 +142,11 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
         use_case: UseCaseT,
     ) -> None:
         """Constructor."""
+        super().__init__(session_storage)
         self._realm_codec_registry = realm_codec_registry
-        self._session_storage = session_storage
         self._top_level_context = top_level_context
         self._args_type = self._infer_args_class(use_case)
+        self._use_case = use_case
 
     def name(self) -> str:
         """The name of the command."""
@@ -764,6 +780,14 @@ class LoggedInMutationCommand(
     def _render_result(self, console: Console, result: UseCaseResultT) -> None:
         """Render the result."""
 
+    @property
+    def is_allowed_for_cli(self) -> bool:
+        """Is this command allowed for the CLI."""
+        scoped_to_app = self._use_case.get_scoped_to_app()
+        if scoped_to_app is None:
+            return True
+        return EventSource.CLI in scoped_to_app
+
     def is_allowed_for_user(self, user: User) -> bool:
         """Is this command allowed for a particular user."""
         scoped_feature = self._use_case.get_scoped_to_feature()
@@ -835,6 +859,14 @@ class LoggedInReadonlyCommand(
     def _render_result(self, console: Console, result: UseCaseResultT) -> None:
         """Render the result."""
 
+    @property
+    def is_allowed_for_cli(self) -> bool:
+        """Is this command allowed for the CLI."""
+        scoped_to_app = self._use_case.get_scoped_to_app()
+        if scoped_to_app is None:
+            return True
+        return EventSource.CLI in scoped_to_app
+
     def is_allowed_for_user(self, user: User) -> bool:
         """Is this command allowed for a particular user."""
         scoped_feature = self._use_case.get_scoped_to_feature()
@@ -871,7 +903,7 @@ class LoggedInReadonlyCommand(
         return False
 
 
-class TestHelperCommand(Command, abc.ABC):
+class TestHelperCommand(Generic[UseCaseT], UseCaseCommand[UseCaseT], abc.ABC):
     """Base class for commands used in tests."""
 
     @property
@@ -883,7 +915,7 @@ class TestHelperCommand(Command, abc.ABC):
     def should_have_streaming_progress_report(self) -> bool:
         """Whether the main script should have a streaming progress reporter."""
         return False
-    
+
 
 class CliApp:
     """A CLI application."""
@@ -899,7 +931,18 @@ class CliApp:
     _auth_token_stamper: Final[AuthTokenStamper]
     _domain_storage_engine: Final[DomainStorageEngine]
     _search_storage_engine: Final[SearchStorageEngine]
-    _use_case_commands: dict[type[UseCase[UseCaseSessionBase, UseCaseContextBase, UseCaseArgsBase, UseCaseResultBase | None]], Command]
+    _use_case_storage_engine: Final[UseCaseStorageEngine]
+    _use_case_commands: dict[
+        type[
+            UseCase[
+                UseCaseSessionBase,
+                UseCaseContextBase,
+                UseCaseArgsBase,
+                UseCaseResultBase | None,
+            ]
+        ],
+        Command,
+    ]
     _commands: dict[str, Command]
 
     def __init__(
@@ -915,6 +958,7 @@ class CliApp:
         auth_token_stamper: AuthTokenStamper,
         domain_storage_engine: DomainStorageEngine,
         search_storage_engine: SearchStorageEngine,
+        use_case_storage_engine: UseCaseStorageEngine,
     ) -> None:
         """Constructor."""
         self._global_properties = global_properties
@@ -928,6 +972,7 @@ class CliApp:
         self._auth_token_stamper = auth_token_stamper
         self._domain_storage_engine = domain_storage_engine
         self._search_storage_engine = search_storage_engine
+        self._use_case_storage_engine = use_case_storage_engine
         self._use_case_commands = {}
         self._commands = {}
 
@@ -944,44 +989,37 @@ class CliApp:
         auth_token_stamper: AuthTokenStamper,
         domain_storage_engine: DomainStorageEngine,
         search_storage_engine: SearchStorageEngine,
+        use_case_storage_engine: UseCaseStorageEngine,
         *module_root: types.ModuleType,
     ) -> "CliApp":
         """Build a CLI app from the module root."""
-        def extract_use_case_command(the_module: types.ModuleType) -> Iterator[
-            tuple[type[UseCaseCommand[UseCase[UseCaseSessionBase, UseCaseContextBase, UseCaseArgsBase, UseCaseResultBase | None]]], 
-                  type[UseCase[UseCaseSessionBase, UseCaseContextBase, UseCaseArgsBase, UseCaseResultBase | None]]]]:
+
+        def extract_use_case_command(
+            the_module: types.ModuleType,
+        ) -> Iterator[
+            tuple[
+                type[
+                    UseCaseCommand[
+                        UseCase[
+                            UseCaseSessionBase,
+                            UseCaseContextBase,
+                            UseCaseArgsBase,
+                            UseCaseResultBase | None,
+                        ]
+                    ]
+                ],
+                type[
+                    UseCase[
+                        UseCaseSessionBase,
+                        UseCaseContextBase,
+                        UseCaseArgsBase,
+                        UseCaseResultBase | None,
+                    ]
+                ],
+            ]
+        ]:
             for _name, obj in the_module.__dict__.items():
-                if not (isinstance(obj, type) and issubclass(
-                    obj, UseCaseCommand
-                )):
-                    continue
-
-                if obj.__module__ != the_module.__name__:
-                    # This is an import, and not a definition!
-                    continue
-
-                use_case_type = get_args(obj.__orig_bases__[0])[0]
-
-                yield obj, use_case_type
-
-        def extract_command(the_module: types.ModuleType) -> Iterator[type[Command]]:
-            for _name, obj in the_module.__dict__.items():
-                if not (isinstance(obj, type) and issubclass(
-                    obj, Command
-                ) and not issubclass(obj, UseCaseCommand)):
-                    continue
-
-                if obj.__module__ != the_module.__name__:
-                    # This is an import, and not a definition!
-                    continue
-
-                yield obj
-
-        def extract_use_case(the_module: types.ModuleType) -> Iterator[type[UseCase[UseCaseSessionBase, UseCaseContextBase, UseCaseArgsBase, UseCaseResultBase | None]]]:
-            for _name, obj in the_module.__dict__.items():
-                if not (isinstance(obj, type) and issubclass(
-                    obj, UseCase
-                )):
+                if not (isinstance(obj, type) and issubclass(obj, UseCaseCommand)):
                     continue
 
                 if obj.__module__ != the_module.__name__:
@@ -997,7 +1035,57 @@ class CliApp:
                     # This is not a concret type and we can move on
                     continue
 
-                    
+                use_case_type = get_args(obj.__orig_bases__[0])[0]
+
+                yield obj, use_case_type
+
+        def extract_command(the_module: types.ModuleType) -> Iterator[type[Command]]:
+            for _name, obj in the_module.__dict__.items():
+                if not (
+                    isinstance(obj, type)
+                    and issubclass(obj, Command)
+                    and not issubclass(obj, UseCaseCommand)
+                ):
+                    continue
+
+                if obj is Command or obj is TestHelperCommand:
+                    continue
+
+                if obj.__module__ != the_module.__name__:
+                    # This is an import, and not a definition!
+                    continue
+
+                yield obj
+
+        def extract_use_case(
+            the_module: types.ModuleType,
+        ) -> Iterator[
+            type[
+                UseCase[
+                    UseCaseSessionBase,
+                    UseCaseContextBase,
+                    UseCaseArgsBase,
+                    UseCaseResultBase | None,
+                ]
+            ]
+        ]:
+            for _name, obj in the_module.__dict__.items():
+                if not (isinstance(obj, type) and issubclass(obj, UseCase)):
+                    continue
+
+                if obj.__module__ != the_module.__name__:
+                    # This is an import, and not a definition!
+                    continue
+
+                if not hasattr(obj, "__parameters__") or not hasattr(
+                    obj.__parameters__, "__len__"
+                ):
+                    continue
+
+                if len(obj.__parameters__) > 0:
+                    # This is not a concret type and we can move on
+                    continue
+
                 yield obj
 
         cli_app = CliApp(
@@ -1012,230 +1100,179 @@ class CliApp:
             auth_token_stamper=auth_token_stamper,
             domain_storage_engine=domain_storage_engine,
             search_storage_engine=search_storage_engine,
+            use_case_storage_engine=use_case_storage_engine,
         )
 
         for m in find_all_modules(*module_root):
             for use_case_command_type, use_case_type in extract_use_case_command(m):
-                print(use_case_command_type, use_case_type)
                 cli_app._add_use_case_command(use_case_command_type, use_case_type)
 
+        for m in find_all_modules(*module_root):
             for command_type in extract_command(m):
-                print(command_type)
-                # cli_app._add_command(command_type)
+                cli_app._add_command(command_type)
 
+        for m in find_all_modules(*module_root):
             for use_case_type in extract_use_case(m):
-                print(use_case_type)
                 if use_case_type in cli_app._use_case_commands:
                     continue
                 cli_app._add_use_case_type(use_case_type)
 
         return cli_app
-    
-    def _add_use_case_command(self, use_case_command_type: type[Command], use_case_type: type[UseCase[UseCaseSessionT, UseCaseContextT, UseCaseArgsT, UseCaseResultT]]) -> "CliApp":
+
+    def _add_use_case_command(
+        self,
+        use_case_command_type: type[Command],
+        use_case_type: type[
+            UseCase[UseCaseSessionT, UseCaseContextT, UseCaseArgsT, UseCaseResultT]
+        ],
+    ) -> "CliApp":
         if use_case_command_type in self._use_case_commands:
-            raise Exception(f"Use case command type {use_case_command_type} already added")
+            raise Exception(
+                f"Use case command type {use_case_command_type} already added"
+            )
         if issubclass(use_case_type, AppGuestMutationUseCase):
-            self._use_case_commands[use_case_type] = \
-                use_case_command_type(
-                    realm_codec_registry=self._realm_codec_registry,
-                    session_storage=self._session_storage,
-                    top_level_context=self._top_level_context,
-                    use_case=use_case_type(
-                        time_provider=self._time_provider,
-                        invocation_recorder=self._invocation_recorder,
-                        progress_reporter_factory=self._progress_reporter_factory,
-                        global_properties=self._global_properties,
-                        auth_token_stamper=self._auth_token_stamper,
-                        domain_storage_engine=self._domain_storage_engine,
-                        search_storage_engine=self._search_storage_engine
-                    )
-                )
+            self._use_case_commands[use_case_type] = use_case_command_type(
+                realm_codec_registry=self._realm_codec_registry,
+                session_storage=self._session_storage,
+                top_level_context=self._top_level_context,
+                use_case=use_case_type(
+                    time_provider=self._time_provider,
+                    invocation_recorder=self._invocation_recorder,
+                    progress_reporter_factory=self._progress_reporter_factory,
+                    global_properties=self._global_properties,
+                    auth_token_stamper=self._auth_token_stamper,
+                    domain_storage_engine=self._domain_storage_engine,
+                    search_storage_engine=self._search_storage_engine,
+                ),
+            )
         elif issubclass(use_case_type, AppGuestReadonlyUseCase):
-            self._use_case_commands[use_case_type] = \
-                use_case_command_type(
-                    realm_codec_registry=self._realm_codec_registry,
-                    session_storage=self._session_storage,
-                    top_level_context=self._top_level_context,
-                    use_case=use_case_type(
-                        global_properties=self._global_properties,
-                        auth_token_stamper=self._auth_token_stamper,
-                        domain_storage_engine=self._domain_storage_engine,
-                        search_storage_engine=self._search_storage_engine
-                    )
-                )
+            self._use_case_commands[use_case_type] = use_case_command_type(
+                realm_codec_registry=self._realm_codec_registry,
+                session_storage=self._session_storage,
+                top_level_context=self._top_level_context,
+                use_case=use_case_type(
+                    global_properties=self._global_properties,
+                    time_provider=self._time_provider,
+                    auth_token_stamper=self._auth_token_stamper,
+                    domain_storage_engine=self._domain_storage_engine,
+                    search_storage_engine=self._search_storage_engine,
+                ),
+            )
         elif issubclass(use_case_type, AppLoggedInMutationUseCase):
-            self._use_case_commands[use_case_type] = \
-                use_case_command_type(
-                    realm_codec_registry=self._realm_codec_registry,
-                    session_storage=self._session_storage,
-                    top_level_context=self._top_level_context.to_logged_in(),
-                    use_case=use_case_type(
-                        time_provider=self._time_provider,
-                        invocation_recorder=self._invocation_recorder,
-                        progress_reporter_factory=self._progress_reporter_factory,
-                        global_properties=self._global_properties,
-                        auth_token_stamper=self._auth_token_stamper,
-                        domain_storage_engine=self._domain_storage_engine,
-                        search_storage_engine=self._search_storage_engine
-                    )
-                )
+            self._use_case_commands[use_case_type] = use_case_command_type(
+                realm_codec_registry=self._realm_codec_registry,
+                session_storage=self._session_storage,
+                top_level_context=self._top_level_context.to_logged_in(),
+                use_case=use_case_type(
+                    time_provider=self._time_provider,
+                    invocation_recorder=self._invocation_recorder,
+                    progress_reporter_factory=self._progress_reporter_factory,
+                    global_properties=self._global_properties,
+                    auth_token_stamper=self._auth_token_stamper,
+                    domain_storage_engine=self._domain_storage_engine,
+                    search_storage_engine=self._search_storage_engine,
+                    use_case_storage_engine=self._use_case_storage_engine,
+                ),
+            )
         elif issubclass(use_case_type, AppLoggedInReadonlyUseCase):
-            self._use_case_commands[use_case_type] = \
-                use_case_command_type(
-                    realm_codec_registry=self._realm_codec_registry,
-                    session_storage=self._session_storage,
-                    top_level_context=self._top_level_context.to_logged_in(),
-                    use_case=use_case_type(
-                        global_properties=self._global_properties,
-                        auth_token_stamper=self._auth_token_stamper,
-                        domain_storage_engine=self._domain_storage_engine,
-                        search_storage_engine=self._search_storage_engine
-                    )
-                )
+            self._use_case_commands[use_case_type] = use_case_command_type(
+                realm_codec_registry=self._realm_codec_registry,
+                session_storage=self._session_storage,
+                top_level_context=self._top_level_context.to_logged_in(),
+                use_case=use_case_type(
+                    global_properties=self._global_properties,
+                    time_provider=self._time_provider,
+                    auth_token_stamper=self._auth_token_stamper,
+                    domain_storage_engine=self._domain_storage_engine,
+                    search_storage_engine=self._search_storage_engine,
+                ),
+            )
         else:
             pass
 
         return self
 
-    def _add_use_case_type(self, use_case_type: type[UseCase[UseCaseSessionT, UseCaseContextT, UseCaseArgsT, UseCaseResultT]]) -> "CliApp":
-        print(use_case_type)
+    def _add_command(self, command_type: type[Command]) -> "CliApp":
+        command = command_type(
+            session_storage=self._session_storage,
+        )
+        if command.name() in self._commands:
+            raise Exception(f"Command type {command} already added")
+        self._commands[command.name()] = command
+
+    def _add_use_case_type(
+        self,
+        use_case_type: type[
+            UseCase[UseCaseSessionT, UseCaseContextT, UseCaseArgsT, UseCaseResultT]
+        ],
+    ) -> "CliApp":
         if use_case_type in self._use_case_commands:
             raise Exception(f"Use case type {use_case_type} already added")
         if issubclass(use_case_type, AppGuestMutationUseCase):
-            self._use_case_commands[use_case_type] = \
-                GuestMutationCommand(
-                    realm_codec_registry=self._realm_codec_registry,
-                    session_storage=self._session_storage,
-                    top_level_context=self._top_level_context,
-                    use_case=use_case_type(
-                        time_provider=self._time_provider,
-                        invocation_recorder=self._invocation_recorder,
-                        progress_reporter_factory=self._progress_reporter_factory,
-                        auth_token_stamper=self._auth_token_stamper,
-                        domain_storage_engine=self._domain_storage_engine
-                    )
-                )
+            self._use_case_commands[use_case_type] = GuestMutationCommand(
+                realm_codec_registry=self._realm_codec_registry,
+                session_storage=self._session_storage,
+                top_level_context=self._top_level_context,
+                use_case=use_case_type(
+                    time_provider=self._time_provider,
+                    invocation_recorder=self._invocation_recorder,
+                    progress_reporter_factory=self._progress_reporter_factory,
+                    global_properties=self._global_properties,
+                    auth_token_stamper=self._auth_token_stamper,
+                    domain_storage_engine=self._domain_storage_engine,
+                    search_storage_engine=self._search_storage_engine,
+                ),
+            )
         elif issubclass(use_case_type, AppGuestReadonlyUseCase):
-            self._use_case_commands[use_case_type] = \
-                GuestReadonlyCommand(
-                    realm_codec_registry=self._realm_codec_registry,
-                    session_storage=self._session_storage,
-                    top_level_context=self._top_level_context,
-                    use_case=use_case_type(
-                        auth_token_stamper=self._auth_token_stamper,
-                        domain_storage_engine=self._domain_storage_engine
-                    )
-                )
+            self._use_case_commands[use_case_type] = GuestReadonlyCommand(
+                realm_codec_registry=self._realm_codec_registry,
+                session_storage=self._session_storage,
+                top_level_context=self._top_level_context,
+                use_case=use_case_type(
+                    global_properties=self._global_properties,
+                    time_provider=self._time_provider,
+                    auth_token_stamper=self._auth_token_stamper,
+                    domain_storage_engine=self._domain_storage_engine,
+                    search_storage_engine=self._search_storage_engine,
+                ),
+            )
         elif issubclass(use_case_type, AppLoggedInMutationUseCase):
-            self._use_case_commands[use_case_type] = \
-                LoggedInMutationCommand(
-                    realm_codec_registry=self._realm_codec_registry,
-                    session_storage=self._session_storage,
-                    top_level_context=self._top_level_context.to_logged_in(),
-                    use_case=use_case_type(
-                        time_provider=self._time_provider,
-                        invocation_recorder=self._invocation_recorder,
-                        progress_reporter_factory=self._progress_reporter_factory,
-                        auth_token_stamper=self._auth_token_stamper,
-                        domain_storage_engine=self._domain_storage_engine,
-                        search_storage_engine=self._search_storage_engine
-                    )
-                )
+            self._use_case_commands[use_case_type] = LoggedInMutationCommand(
+                realm_codec_registry=self._realm_codec_registry,
+                session_storage=self._session_storage,
+                top_level_context=self._top_level_context.to_logged_in(),
+                use_case=use_case_type(
+                    global_properties=self._global_properties,
+                    time_provider=self._time_provider,
+                    invocation_recorder=self._invocation_recorder,
+                    progress_reporter_factory=self._progress_reporter_factory,
+                    auth_token_stamper=self._auth_token_stamper,
+                    domain_storage_engine=self._domain_storage_engine,
+                    search_storage_engine=self._search_storage_engine,
+                    use_case_storage_engine=self._use_case_storage_engine,
+                ),
+            )
         elif issubclass(use_case_type, AppLoggedInReadonlyUseCase):
-            self._use_case_commands[use_case_type] = \
-                LoggedInReadonlyCommand(
-                    realm_codec_registry=self._realm_codec_registry,
-                    session_storage=self._session_storage,
-                    top_level_context=self._top_level_context.to_logged_in(),
-                    use_case=use_case_type(
-                        auth_token_stamper=self._auth_token_stamper,
-                        domain_storage_engine=self._domain_storage_engine
-                    )
-                )
+            self._use_case_commands[use_case_type] = LoggedInReadonlyCommand(
+                realm_codec_registry=self._realm_codec_registry,
+                session_storage=self._session_storage,
+                top_level_context=self._top_level_context.to_logged_in(),
+                use_case=use_case_type(
+                    global_properties=self._global_properties,
+                    time_provider=self._time_provider,
+                    auth_token_stamper=self._auth_token_stamper,
+                    domain_storage_engine=self._domain_storage_engine,
+                    search_storage_engine=self._search_storage_engine,
+                ),
+            )
         else:
             pass
             # raise Exception(f"Unsupported use case type {use_case_type}")
 
         return self
 
-    def add_command(
-        self,
-        command: Command,
-    ) -> "CliApp":
-        """Add a command to the app."""
-        self._use_case_commands.append(command)
-        return self
-
-    def add_use_case(
-        self,
-        use_case: UseCase[
-            UseCaseSessionT, UseCaseContextT, UseCaseArgsT, UseCaseResultT
-        ],
-    ) -> "CliApp":
-        """Add a use case to the app."""
-        if isinstance(use_case, AppGuestMutationUseCase):
-            self._guest_mutation_use_cases.append(
-                CliApp.GuestMutationEntry(use_case=use_case)
-            )
-        elif isinstance(use_case, AppGuestReadonlyUseCase):
-            self._guest_readonly_use_cases.append(
-                CliApp.GuestReadonlyEntry(use_case=use_case)
-            )
-        elif isinstance(use_case, AppLoggedInMutationUseCase):
-            self._loggedin_mutation_use_cases.append(
-                CliApp.LoggedInMutationEntry(use_case=use_case)
-            )
-        elif isinstance(use_case, AppLoggedInReadonlyUseCase):
-            self._loggedin_readonly_use_cases.append(
-                CliApp.LoggedInReadonlyEntry(use_case=use_case)
-            )
-        else:
-            raise Exception(f"Unsupported use case type {use_case}")
-
-        return self
-
     async def run(self, argv: list[str]) -> None:
         """Run the app."""
-        commands: list[Command] = list(self._use_case_commands)
-
-        for use_case_gm in self._guest_mutation_use_cases:
-            commands.append(
-                GuestMutationCommand(
-                    realm_codec_registry=self._realm_codec_registry,
-                    session_storage=self._session_storage,
-                    use_case=use_case_gm.use_case,
-                )
-            )
-
-        for use_case_gr in self._guest_readonly_use_cases:
-            commands.append(
-                GuestReadonlyCommand(
-                    realm_codec_registry=self._realm_codec_registry,
-                    session_storage=self._session_storage,
-                    use_case=use_case_gr.use_case,
-                )
-            )
-
-        for use_case_lm in self._loggedin_mutation_use_cases:
-            commands.append(
-                LoggedInMutationCommand(
-                    realm_codec_registry=self._realm_codec_registry,
-                    session_storage=self._session_storage,
-                    top_level_context=self._top_level_context.to_logged_in(),
-                    use_case=use_case_lm.use_case,
-                )
-            )
-
-        for use_case_lr in self._loggedin_readonly_use_cases:
-            commands.append(
-                LoggedInReadonlyCommand(
-                    realm_codec_registry=self._realm_codec_registry,
-                    session_storage=self._session_storage,
-                    top_level_context=self._top_level_context.to_logged_in(),
-                    use_case=use_case_lr.use_case,
-                )
-            )
-
         parser = argparse.ArgumentParser(
             description=self._global_properties.description
         )
@@ -1254,7 +1291,12 @@ class CliApp:
             metavar="{command}",
         )
 
-        for command in commands:
+        for command in itertools.chain(
+            self._commands.values(), self._use_case_commands.values()
+        ):
+            if not command.is_allowed_for_cli:
+                continue
+
             if (
                 command.should_appear_in_global_help
                 and (
@@ -1288,7 +1330,9 @@ class CliApp:
             )
             return
 
-        for command in commands:
+        for command in itertools.chain(
+            self._commands.values(), self._use_case_commands.values()
+        ):
             if args.subparser_name != command.name():
                 continue
 

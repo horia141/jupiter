@@ -14,7 +14,7 @@ from rich.tree import Tree
 class ProjectShow(LoggedInReadonlyCommand[ProjectFindUseCase]):
     """UseCase class for showing the projects."""
 
-    def _render_result(self, result: ProjectFindResult) -> None:
+    def _render_result(self, console: Console, result: ProjectFindResult) -> None:
         sorted_projects = sorted(
             result.projects,
             key=lambda pe: (pe.archived, pe.created_time),
@@ -33,5 +33,4 @@ class ProjectShow(LoggedInReadonlyCommand[ProjectFindUseCase]):
 
             rich_tree.add(project_text)
 
-        console = Console()
         console.print(rich_tree)

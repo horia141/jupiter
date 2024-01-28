@@ -27,7 +27,7 @@ from rich.tree import Tree
 class MetricShow(LoggedInReadonlyCommand[MetricFindUseCase]):
     """UseCase for showing metrics."""
 
-    def _render_result(self, result: MetricFindResult) -> None:
+    def _render_result(self, console: Console, result: MetricFindResult) -> None:
         sorted_metrics = sorted(
             result.entries,
             key=lambda me: (me.metric.archived, me.metric.created_time),
@@ -191,5 +191,4 @@ class MetricShow(LoggedInReadonlyCommand[MetricFindUseCase]):
                 inbox_task_text = inbox_task_summary_to_rich_text(inbox_task)
                 collection_inbox_task_tree.add(inbox_task_text)
 
-        console = Console()
         console.print(rich_tree)

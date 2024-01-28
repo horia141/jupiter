@@ -6,6 +6,7 @@ from jupiter.core.domain.docs.service.doc_remove_service import (
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
     ProgressReporter,
 )
@@ -24,7 +25,7 @@ class DocRemoveArgs(UseCaseArgsBase):
     ref_id: EntityId
 
 
-@mutation_use_case(WorkspaceFeature.DOCS)
+@mutation_use_case(WorkspaceFeature.DOCS, exclude_app=[EventSource.CLI])
 class DocRemoveUseCase(AppTransactionalLoggedInMutationUseCase[DocRemoveArgs, None]):
     """The command for removing a doc."""
 

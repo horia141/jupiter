@@ -12,14 +12,13 @@ from rich.text import Text
 class Initialize(GuestMutationCommand[InitUseCase]):
     """UseCase class for initialising a workspace."""
 
-    def _render_result(self, result: InitResult) -> None:
+    def _render_result(self, console: Console, result: InitResult) -> None:
         self._session_storage.store(SessionInfo(auth_token_ext=result.auth_token_ext))
 
         rich_text = Text("Your recovery token is ")
         rich_text.append(result.recovery_token.token, style="bold green")
         rich_text.append("\nStore it in a safe place!", style="bold red")
 
-        console = Console()
         console.print(rich_text)
 
     @property

@@ -1,6 +1,5 @@
 """ommand for loading previous runs of Gen."""
 
-from argparse import ArgumentParser, Namespace
 
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
@@ -13,9 +12,7 @@ from jupiter.cli.command.rendering import (
     period_to_rich_text,
     sync_target_to_rich_text,
 )
-from jupiter.cli.session_storage import SessionInfo
-from jupiter.core.use_cases.gen.load_runs import GenLoadRunsArgs, GenLoadRunsResult, GenLoadRunsUseCase
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
+from jupiter.core.use_cases.gen.load_runs import GenLoadRunsResult, GenLoadRunsUseCase
 from rich.console import Console
 from rich.text import Text
 from rich.tree import Tree

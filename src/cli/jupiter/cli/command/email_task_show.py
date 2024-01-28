@@ -26,7 +26,7 @@ from rich.tree import Tree
 class EmailTaskShow(LoggedInReadonlyCommand[EmailTaskFindUseCase]):
     """UseCase class for showing the email tasks."""
 
-    def _render_result(self, result: EmailTaskFindResult) -> None:
+    def _render_result(self, console: Console, result: EmailTaskFindResult) -> None:
         sorted_email_tasks = sorted(
             result.entries,
             key=lambda ste: (ste.email_task.archived, ste.email_task.created_time),
@@ -109,5 +109,4 @@ class EmailTaskShow(LoggedInReadonlyCommand[EmailTaskFindUseCase]):
             inbox_task_text = inbox_task_summary_to_rich_text(inbox_task)
             email_task_tree.add(inbox_task_text)
 
-        console = Console()
         console.print(rich_tree)

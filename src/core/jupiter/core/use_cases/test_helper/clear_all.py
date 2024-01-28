@@ -1,7 +1,5 @@
 """The command for clearing all branch and leaf type entities."""
-from typing import Final
 
-from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
 from jupiter.core.domain.auth.password_new_plain import PasswordNewPlain
 from jupiter.core.domain.auth.password_plain import PasswordPlain
 from jupiter.core.domain.big_plans.service.remove_service import BigPlanRemoveService
@@ -9,7 +7,7 @@ from jupiter.core.domain.chores.service.remove_service import ChoreRemoveService
 from jupiter.core.domain.core.notes.service.note_remove_service import NoteRemoveService
 from jupiter.core.domain.core.timezone import Timezone
 from jupiter.core.domain.docs.service.doc_remove_service import DocRemoveService
-from jupiter.core.domain.features import UserFeatureFlags, WorkspaceFeatureFlags
+from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.habits.service.remove_service import HabitRemoveService
 from jupiter.core.domain.inbox_tasks.service.remove_service import (
     InboxTaskRemoveService,
@@ -28,9 +26,7 @@ from jupiter.core.domain.smart_lists.service.remove_service import (
     SmartListRemoveService,
 )
 from jupiter.core.domain.storage_engine import (
-    DomainStorageEngine,
     DomainUnitOfWork,
-    SearchStorageEngine,
 )
 from jupiter.core.domain.user.user_name import UserName
 from jupiter.core.domain.vacations.vacation import Vacation
@@ -38,20 +34,15 @@ from jupiter.core.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
-    MutationUseCaseInvocationRecorder,
     ProgressReporter,
-    ProgressReporterFactory,
 )
 from jupiter.core.framework.use_case_io import UseCaseArgsBase, use_case_args
-from jupiter.core.use_cases.infra.storage_engine import UseCaseStorageEngine
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
     mutation_use_case,
 )
 from jupiter.core.utils.feature_flag_controls import infer_feature_flag_controls
-from jupiter.core.utils.global_properties import GlobalProperties
-from jupiter.core.utils.time_provider import TimeProvider
 
 
 @use_case_args
@@ -60,46 +51,18 @@ class ClearAllArgs(UseCaseArgsBase):
 
     user_name: UserName
     user_timezone: Timezone
-    user_feature_flags: UserFeatureFlags
+    user_feature_flags: set[UserFeature]
     auth_current_password: PasswordPlain
     auth_new_password: PasswordNewPlain
     auth_new_password_repeat: PasswordNewPlain
     workspace_name: WorkspaceName
     workspace_default_project_ref_id: EntityId
-    workspace_feature_flags: WorkspaceFeatureFlags
+    workspace_feature_flags: set[WorkspaceFeature]
 
 
 @mutation_use_case()
 class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None]):
     """The command for clearing all branch and leaf type entities."""
-
-    _use_case_storage_engine: Final[UseCaseStorageEngine]
-    _global_properties: Final[GlobalProperties]
-
-    def __init__(
-        self,
-        time_provider: TimeProvider,
-        invocation_recorder: MutationUseCaseInvocationRecorder,
-        progress_reporter_factory: ProgressReporterFactory[
-            AppLoggedInMutationUseCaseContext
-        ],
-        auth_token_stamper: AuthTokenStamper,
-        domain_storage_engine: DomainStorageEngine,
-        search_storage_engine: SearchStorageEngine,
-        use_case_storage_engine: UseCaseStorageEngine,
-        global_properties: GlobalProperties,
-    ) -> None:
-        """Constructor."""
-        super().__init__(
-            time_provider,
-            invocation_recorder,
-            progress_reporter_factory,
-            auth_token_stamper,
-            domain_storage_engine,
-            search_storage_engine,
-        )
-        self._use_case_storage_engine = use_case_storage_engine
-        self._global_properties = global_properties
 
     async def _perform_transactional_mutation(
         self,
@@ -172,6 +135,16 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
             workspace.ref_id
         )
 
+        user_feature_flags = {}
+        for user_feature in UserFeature:
+            user_feature_flags[user_feature] = user_feature in args.user_feature_flags
+
+        workspace_feature_flags = {}
+        for workspace_feature in WorkspaceFeature:
+            workspace_feature_flags[workspace_feature] = (
+                workspace_feature in args.workspace_feature_flags
+            )
+
         async with progress_reporter.section("Resseting user"):
             user = user.update(
                 ctx=context.domain_context,
@@ -182,7 +155,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
             user = user.change_feature_flags(
                 ctx=context.domain_context,
                 feature_flag_controls=user_feature_flags_controls,
-                feature_flags=args.user_feature_flags,
+                feature_flags=user_feature_flags,
             )
             await uow.user_repository.save(user)
 
@@ -235,7 +208,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
             workspace = workspace.change_feature_flags(
                 ctx=context.domain_context,
                 feature_flag_controls=workspace_feature_flags_controls,
-                feature_flags=args.workspace_feature_flags,
+                feature_flags=workspace_feature_flags,
             )
 
             await uow.workspace_repository.save(workspace)

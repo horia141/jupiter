@@ -3,6 +3,7 @@
 from jupiter.core.domain.core.notes.note_content_block import OneOfNoteContentBlock
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
     ProgressReporter,
@@ -23,7 +24,7 @@ class NoteUpdateArgs(UseCaseArgsBase):
     content: UpdateAction[list[OneOfNoteContentBlock]]
 
 
-@mutation_use_case()
+@mutation_use_case(exclude_app=[EventSource.CLI])
 class NoteUpdateUseCase(AppTransactionalLoggedInMutationUseCase[NoteUpdateArgs, None]):
     """Update a note use case."""
 

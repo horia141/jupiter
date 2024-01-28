@@ -26,7 +26,7 @@ from rich.tree import Tree
 class SlackTaskShow(LoggedInReadonlyCommand[SlackTaskFindUseCase]):
     """UseCase class for showing the slack tasks."""
 
-    def _render_result(self, result: SlackTaskFindResult) -> None:
+    def _render_result(self, console: Console, result: SlackTaskFindResult) -> None:
         sorted_slack_tasks = sorted(
             result.entries,
             key=lambda ste: (ste.slack_task.archived, ste.slack_task.created_time),
@@ -111,5 +111,4 @@ class SlackTaskShow(LoggedInReadonlyCommand[SlackTaskFindUseCase]):
             inbox_task_text = inbox_task_summary_to_rich_text(inbox_task)
             slack_task_tree.add(inbox_task_text)
 
-        console = Console()
         console.print(rich_tree)

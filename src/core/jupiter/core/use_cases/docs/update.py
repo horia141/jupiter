@@ -4,6 +4,7 @@ from jupiter.core.domain.docs.doc_name import DocName
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
     ProgressReporter,
@@ -24,7 +25,7 @@ class DocUpdateArgs(UseCaseArgsBase):
     name: UpdateAction[DocName]
 
 
-@mutation_use_case(WorkspaceFeature.DOCS)
+@mutation_use_case(WorkspaceFeature.DOCS, exclude_app=[EventSource.CLI])
 class DocUpdateUseCase(AppTransactionalLoggedInMutationUseCase[DocUpdateArgs, None]):
     """Update a doc use case."""
 

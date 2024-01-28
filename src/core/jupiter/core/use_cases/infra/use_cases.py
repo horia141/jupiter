@@ -40,6 +40,7 @@ from jupiter.core.framework.use_case import (
     UseCaseSessionBase,
 )
 from jupiter.core.framework.use_case_io import UseCaseArgsBase, UseCaseResultBase
+from jupiter.core.use_cases.infra.storage_engine import UseCaseStorageEngine
 from jupiter.core.utils.global_properties import GlobalProperties
 from jupiter.core.utils.time_provider import TimeProvider
 
@@ -146,6 +147,7 @@ class AppGuestReadonlyUseCase(
     """A query which does not mutate anything, and does not assume a logged-in user."""
 
     _global_properties: Final[GlobalProperties]
+    _time_provider: Final[TimeProvider]
     _auth_token_stamper: Final[AuthTokenStamper]
     _domain_storage_engine: Final[DomainStorageEngine]
     _search_storage_engine: Final[SearchStorageEngine]
@@ -153,6 +155,7 @@ class AppGuestReadonlyUseCase(
     def __init__(
         self,
         global_properties: GlobalProperties,
+        time_provider: TimeProvider,
         auth_token_stamper: AuthTokenStamper,
         domain_storage_engine: DomainStorageEngine,
         search_storage_engine: SearchStorageEngine,
@@ -160,6 +163,7 @@ class AppGuestReadonlyUseCase(
         """Constructor."""
         super().__init__()
         self._global_properties = global_properties
+        self._time_provider = time_provider
         self._auth_token_stamper = auth_token_stamper
         self._domain_storage_engine = domain_storage_engine
         self._search_storage_engine = search_storage_engine
@@ -229,10 +233,16 @@ class AppLoggedInMutationUseCase(
     _auth_token_stamper: Final[AuthTokenStamper]
     _domain_storage_engine: Final[DomainStorageEngine]
     _search_storage_engine: Final[SearchStorageEngine]
+    _use_case_storage_engine: Final[UseCaseStorageEngine]
 
     @staticmethod
     def get_scoped_to_feature() -> FeatureScope:
         """The feature the use case is scope to."""
+        return None
+
+    @staticmethod
+    def get_scoped_to_app() -> list[EventSource] | None:
+        """The apps the command is available in."""
         return None
 
     def __init__(
@@ -246,6 +256,7 @@ class AppLoggedInMutationUseCase(
         auth_token_stamper: AuthTokenStamper,
         domain_storage_engine: DomainStorageEngine,
         search_storage_engine: SearchStorageEngine,
+        use_case_storage_engine: UseCaseStorageEngine,
     ) -> None:
         """Constructor."""
         super().__init__(time_provider, invocation_recorder, progress_reporter_factory)
@@ -253,6 +264,7 @@ class AppLoggedInMutationUseCase(
         self._auth_token_stamper = auth_token_stamper
         self._domain_storage_engine = domain_storage_engine
         self._search_storage_engine = search_storage_engine
+        self._use_case_storage_engine = use_case_storage_engine
 
     async def _build_context(
         self, session: AppLoggedInUseCaseSession
@@ -380,6 +392,7 @@ class AppLoggedInReadonlyUseCase(
     """A command which does some sort of read in the app, and assumes a logged-in user."""
 
     _global_properties: Final[GlobalProperties]
+    _time_provider: Final[TimeProvider]
     _auth_token_stamper: Final[AuthTokenStamper]
     _domain_storage_engine: Final[DomainStorageEngine]
     _search_storage_engine: Final[SearchStorageEngine]
@@ -389,16 +402,23 @@ class AppLoggedInReadonlyUseCase(
         """The feature the use case is scope to."""
         return None
 
+    @staticmethod
+    def get_scoped_to_app() -> list[EventSource] | None:
+        """The apps the command is available in."""
+        return None
+
     def __init__(
-        self, 
+        self,
         global_properties: GlobalProperties,
-        auth_token_stamper: AuthTokenStamper, 
+        time_provider: TimeProvider,
+        auth_token_stamper: AuthTokenStamper,
         domain_storage_engine: DomainStorageEngine,
         search_storage_engine: SearchStorageEngine,
     ) -> None:
         """Constructor."""
         super().__init__()
         self._global_properties = global_properties
+        self._time_provider = time_provider
         self._auth_token_stamper = auth_token_stamper
         self._domain_storage_engine = domain_storage_engine
         self._search_storage_engine = search_storage_engine
@@ -505,57 +525,20 @@ class AppBackgroundMutationUseCase(
         """Execute the command's action."""
 
 
-class AppTestHelperUseCase(
-    Generic[UseCaseArgs, UseCaseResult],
-    UseCase[EmptySession, EmptyContext, UseCaseArgs, UseCaseResult],
-    abc.ABC,
-):
-    """A command which does some sort of test mutation."""
-
-    _progress_reporter_factory: ProgressReporterFactory[EmptyContext]
-
-    def __init__(
-        self, progress_reporter_factory: ProgressReporterFactory[EmptyContext]
-    ) -> None:
-        """Constructor."""
-        self._progress_reporter_factory = progress_reporter_factory
-
-    async def _build_context(self, session: EmptySession) -> EmptyContext:
-        """Construct the context for the use case."""
-        return EmptyContext()
-
-    async def execute(
-        self,
-        session: EmptySession,
-        args: UseCaseArgs,
-    ) -> UseCaseResult:
-        """Execute the command's action."""
-        # A hacky hack!
-        uc.LOGGER.info(
-            f"Invoking test helper command {self.__class__.__name__} with args {args}",
-        )
-        context = await self._build_context(session)
-        progress_reporter = self._progress_reporter_factory.new_reporter(context)
-        return await self._execute(progress_reporter, context, args)
-
-    @abc.abstractmethod
-    async def _execute(
-        self,
-        progress_reporter: ProgressReporter,
-        context: EmptyContext,
-        args: UseCaseArgs,
-    ) -> UseCaseResult:
-        """Execute the command's action."""
-
-
 _MutationUseCaseT = TypeVar("_MutationUseCaseT", bound=AppLoggedInMutationUseCase[Any, Any])  # type: ignore
 
 
-def mutation_use_case(feature_scope: FeatureScope = None) -> Callable[[Type[_MutationUseCaseT]], Type[_MutationUseCaseT]]:  # type: ignore
+def mutation_use_case(feature_scope: FeatureScope = None, exclude_app: list[EventSource] | None = None) -> Callable[[Type[_MutationUseCaseT]], Type[_MutationUseCaseT]]:  # type: ignore
     """A decorator for use cases that scopes them to a feature."""
 
     def decorator(cls: Type[_MutationUseCaseT]) -> Type[_MutationUseCaseT]:  # type: ignore
+        app_scope = [
+            s
+            for s in EventSource
+            if (True if exclude_app is None else s not in exclude_app)
+        ]
         cls.get_scoped_to_feature = lambda _: feature_scope  # type: ignore
+        cls.get_scoped_to_app = lambda _: app_scope  # type: ignore
         return cls
 
     return decorator
@@ -564,11 +547,17 @@ def mutation_use_case(feature_scope: FeatureScope = None) -> Callable[[Type[_Mut
 _ReadonlyUseCaseT = TypeVar("_ReadonlyUseCaseT", bound=AppLoggedInReadonlyUseCase[Any, Any])  # type: ignore
 
 
-def readonly_use_case(feature_scope: FeatureScope = None) -> Callable[[Type[_ReadonlyUseCaseT]], Type[_ReadonlyUseCaseT]]:  # type: ignore
+def readonly_use_case(feature_scope: FeatureScope = None, exclude_app: list[EventSource] | None = None) -> Callable[[Type[_ReadonlyUseCaseT]], Type[_ReadonlyUseCaseT]]:  # type: ignore
     """A decorator for use cases that scopes them to a feature."""
 
     def decorator(cls: Type[_ReadonlyUseCaseT]) -> Type[_ReadonlyUseCaseT]:  # type: ignore
+        app_scope = [
+            s
+            for s in EventSource
+            if (True if exclude_app is None else s not in exclude_app)
+        ]
         cls.get_scoped_to_feature = lambda _: feature_scope  # type: ignore
+        cls.get_scoped_to_app = lambda _: app_scope  # type: ignore
         return cls
 
     return decorator

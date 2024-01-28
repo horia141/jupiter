@@ -18,7 +18,7 @@ from rich.tree import Tree
 class GCShow(LoggedInReadonlyCommand[GCLoadRunsUseCase]):
     """Command for loading previous runs of GC."""
 
-    def _render_result(self, result: GCLoadRunsResult) -> None:
+    def _render_result(self, console: Console, result: GCLoadRunsResult) -> None:
         rich_tree = Tree("🗑  GC", guide_style="bold bright_blue")
 
         for entry in result.entries:
@@ -45,5 +45,4 @@ class GCShow(LoggedInReadonlyCommand[GCLoadRunsUseCase]):
                 )
                 entry_tree.add(record_text)
 
-        console = Console()
         console.print(rich_tree)

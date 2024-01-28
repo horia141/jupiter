@@ -30,7 +30,7 @@ from rich.tree import Tree
 class HabitShow(LoggedInReadonlyCommand[HabitFindUseCase]):
     """UseCase class for showing the habits."""
 
-    def _render_result(self, result: HabitFindResult) -> None:
+    def _render_result(self, console: Console, result: HabitFindResult) -> None:
         rich_tree = Tree("💪️ Habits", guide_style="bold bright_blue")
 
         sorted_habits = sorted(
@@ -144,5 +144,4 @@ class HabitShow(LoggedInReadonlyCommand[HabitFindUseCase]):
                 inbox_task_text = inbox_task_summary_to_rich_text(inbox_task)
                 habit_tree.add(inbox_task_text)
 
-        console = Console()
         console.print(rich_tree)

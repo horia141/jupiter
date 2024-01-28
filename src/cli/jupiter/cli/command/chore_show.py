@@ -32,7 +32,7 @@ from rich.tree import Tree
 class ChoreShow(LoggedInReadonlyCommand[ChoreFindUseCase]):
     """UseCase class for showing the chores."""
 
-    def _render_result(self, result: ChoreFindResult) -> None:
+    def _render_result(self, console: Console, result: ChoreFindResult) -> None:
         rich_tree = Tree("♻️  Chores", guide_style="bold bright_blue")
 
         sorted_chores = sorted(
@@ -154,5 +154,4 @@ class ChoreShow(LoggedInReadonlyCommand[ChoreFindUseCase]):
                 inbox_task_text = inbox_task_summary_to_rich_text(inbox_task)
                 chore_tree.add(inbox_task_text)
 
-        console = Console()
         console.print(rich_tree)

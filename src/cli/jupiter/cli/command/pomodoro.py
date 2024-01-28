@@ -1,6 +1,6 @@
 """Command for running a pomodoro timer."""
 import asyncio
-from argparse import ArgumentParser, Namespace
+from argparse import Namespace
 
 import beepy
 from jupiter.cli.command.command import LoggedInReadonlyCommand
@@ -13,9 +13,6 @@ _TIMER_SECONDS = 60 * 25
 
 class Pomodoro(LoggedInReadonlyCommand[NoOpUseCase]):
     """Command for running a pomodoro timer."""
-
-    def build_parser(self, parser: ArgumentParser) -> None:
-        """Construct a argparse parser for the command."""
 
     async def _run(
         self,

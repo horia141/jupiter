@@ -5,6 +5,7 @@ from jupiter.core.domain.core.notes.note_content_block import OneOfNoteContentBl
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
     ProgressReporter,
 )
@@ -37,7 +38,7 @@ class NoteCreateResult(UseCaseResultBase):
     new_note: Note
 
 
-@mutation_use_case()
+@mutation_use_case(exclude_app=[EventSource.CLI])
 class NoteCreateUseCase(
     AppTransactionalLoggedInMutationUseCase[NoteCreateArgs, NoteCreateResult]
 ):

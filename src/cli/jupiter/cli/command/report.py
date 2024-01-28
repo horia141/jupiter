@@ -32,7 +32,7 @@ from rich.tree import Tree
 class Report(LoggedInReadonlyCommand[ReportUseCase]):
     """UseCase class for reporting progress."""
 
-    def _render_result(self, result: ReportResult) -> None:
+    def _render_result(self, console: Console, result: ReportResult) -> None:
         sources_to_present = result.period_result.sources
 
         today_str = ADate.to_user_date_str(result.period_result.today)
@@ -410,7 +410,6 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
 
             rich_tree.add(global_table)
 
-        console = Console()
         console.print(rich_tree)
 
     @staticmethod

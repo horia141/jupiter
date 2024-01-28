@@ -6,13 +6,14 @@ from jupiter.core.use_cases.big_plans.update import (
     BigPlanUpdateResult,
     BigPlanUpdateUseCase,
 )
+from rich.console import Console
 from rich.text import Text
 
 
 class BigPlanUpdate(LoggedInMutationCommand[BigPlanUpdateUseCase]):
     """UseCase class for updating big plans."""
 
-    def _render_result(self, result: BigPlanUpdateResult) -> None:
+    def _render_result(self, console: Console, result: BigPlanUpdateResult) -> None:
         if result.record_score_result is not None:
             if result.record_score_result.latest_task_score > 0:
                 color = "green"

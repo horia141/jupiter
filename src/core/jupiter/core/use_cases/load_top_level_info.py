@@ -1,7 +1,6 @@
 """The command for loading workspaces if they exist."""
-from typing import Final, Optional
+from typing import Optional
 
-from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
 from jupiter.core.domain.features import (
     BASIC_USER_FEATURE_FLAGS,
     BASIC_WORKSPACE_FEATURE_FLAGS,
@@ -18,7 +17,6 @@ from jupiter.core.domain.gamification.service.score_overview_service import (
 from jupiter.core.domain.gamification.user_score_overview import UserScoreOverview
 from jupiter.core.domain.hosting import Hosting
 from jupiter.core.domain.projects.project_name import ProjectName
-from jupiter.core.domain.storage_engine import DomainStorageEngine
 from jupiter.core.domain.user.infra.user_repository import UserNotFoundError
 from jupiter.core.domain.user.user import User
 from jupiter.core.domain.workspaces.infra.workspace_repository import (
@@ -38,8 +36,6 @@ from jupiter.core.use_cases.infra.use_cases import (
     AppGuestReadonlyUseCaseContext,
 )
 from jupiter.core.utils.feature_flag_controls import infer_feature_flag_controls
-from jupiter.core.utils.global_properties import GlobalProperties
-from jupiter.core.utils.time_provider import TimeProvider
 
 
 @use_case_args
@@ -70,21 +66,6 @@ class LoadTopLevelInfoUseCase(
     AppGuestReadonlyUseCase[LoadTopLevelInfoArgs, LoadTopLevelInfoResult],
 ):
     """The command for loading a user and workspace if they exist and other data too."""
-
-    _global_properties: Final[GlobalProperties]
-    _time_provider: Final[TimeProvider]
-
-    def __init__(
-        self,
-        auth_token_stamper: AuthTokenStamper,
-        storage_engine: DomainStorageEngine,
-        global_properties: GlobalProperties,
-        time_provider: TimeProvider,
-    ) -> None:
-        """Constructor."""
-        super().__init__(auth_token_stamper, storage_engine)
-        self._global_properties = global_properties
-        self._time_provider = time_provider
 
     async def _execute(
         self,

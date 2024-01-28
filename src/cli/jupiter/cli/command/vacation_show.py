@@ -20,7 +20,7 @@ from rich.tree import Tree
 class VacationsShow(LoggedInReadonlyCommand[VacationFindUseCase]):
     """UseCase class for showing the vacations."""
 
-    def _render_result(self, result: VacationFindResult) -> None:
+    def _render_result(self, console: Console, result: VacationFindResult) -> None:
         sorted_vacations = sorted(
             result.vacations,
             key=lambda v: (v.archived, v.start_date, v.end_date),
@@ -43,5 +43,4 @@ class VacationsShow(LoggedInReadonlyCommand[VacationFindUseCase]):
 
             rich_tree.add(vacation_text)
 
-        console = Console()
         console.print(rich_tree)

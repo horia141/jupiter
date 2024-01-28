@@ -1,7 +1,6 @@
 """The command for reporting on progress."""
-from typing import Final, Optional
+from typing import Optional
 
-from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
@@ -10,7 +9,6 @@ from jupiter.core.domain.report.report_period_result import (
     ReportPeriodResult,
 )
 from jupiter.core.domain.report.service.report_service import ReportService
-from jupiter.core.domain.storage_engine import DomainStorageEngine
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
@@ -23,7 +21,6 @@ from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCaseContext,
     readonly_use_case,
 )
-from jupiter.core.utils.time_provider import TimeProvider
 
 
 @use_case_args
@@ -55,17 +52,6 @@ class ReportResult(UseCaseResultBase):
 @readonly_use_case()
 class ReportUseCase(AppLoggedInReadonlyUseCase[ReportArgs, ReportResult]):
     """The command for reporting on progress."""
-
-    _time_provider: Final[TimeProvider]
-
-    def __init__(
-        self,
-        time_provider: TimeProvider,
-        auth_token_stamper: AuthTokenStamper,
-        storage_engine: DomainStorageEngine,
-    ) -> None:
-        super().__init__(auth_token_stamper, storage_engine)
-        self._time_provider = time_provider
 
     async def _execute(
         self,

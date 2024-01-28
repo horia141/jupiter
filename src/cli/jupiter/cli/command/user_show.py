@@ -16,7 +16,7 @@ from rich.tree import Tree
 class UserShow(LoggedInReadonlyCommand[UserLoadUseCase]):
     """Command class for showing the user."""
 
-    def _render_result(self, result: UserLoadResult) -> None:
+    def _render_result(self, console: Console, result: UserLoadResult) -> None:
         rich_tree = Tree(f"⭐ {result.user.name}", guide_style="bold bright_blue")
 
         user_text = Text("")
@@ -40,5 +40,4 @@ class UserShow(LoggedInReadonlyCommand[UserLoadUseCase]):
         if result.user_score_overview is not None:
             rich_tree.add(user_score_overview_to_rich(result.user_score_overview))
 
-        console = Console()
         console.print(rich_tree)

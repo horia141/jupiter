@@ -19,7 +19,7 @@ from rich.tree import Tree
 class PersonShow(LoggedInReadonlyCommand[PersonFindUseCase]):
     """UseCase for showing the persons."""
 
-    def _render_result(self, result: PersonFindResult) -> None:
+    def _render_result(self, console: Console, result: PersonFindResult) -> None:
         sorted_entries = sorted(
             result.entries,
             key=lambda p: (
@@ -64,5 +64,4 @@ class PersonShow(LoggedInReadonlyCommand[PersonFindUseCase]):
 
             rich_tree.add(person_text)
 
-        console = Console()
         console.print(rich_tree)

@@ -17,7 +17,7 @@ from rich.tree import Tree
 class SmartListShow(LoggedInReadonlyCommand[SmartListFindUseCase]):
     """UseCase for showing the smart list."""
 
-    def _render_result(self, result: SmartListFindResult) -> None:
+    def _render_result(self, console: Console, result: SmartListFindResult) -> None:
         sorted_smart_lists = sorted(
             result.entries,
             key=lambda sl: (sl.smart_list.archived, sl.smart_list.created_time),
@@ -97,5 +97,4 @@ class SmartListShow(LoggedInReadonlyCommand[SmartListFindUseCase]):
 
                 smart_list_tree.add(smart_list_item_text)
 
-        console = Console()
         console.print(rich_tree)

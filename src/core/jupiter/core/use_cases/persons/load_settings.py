@@ -3,6 +3,7 @@
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
+from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,
@@ -28,7 +29,7 @@ class PersonLoadSettingsResult(UseCaseResultBase):
     catch_up_project: Project
 
 
-@readonly_use_case(WorkspaceFeature.PERSONS)
+@readonly_use_case(WorkspaceFeature.PERSONS, exclude_app=[EventSource.CLI])
 class PersonLoadSettingsUseCase(
     AppTransactionalLoggedInReadOnlyUseCase[
         PersonLoadSettingsArgs, PersonLoadSettingsResult
