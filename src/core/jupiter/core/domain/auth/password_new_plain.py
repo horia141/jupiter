@@ -4,6 +4,7 @@ from re import Pattern
 from typing import Final, Optional
 
 from jupiter.core.framework.errors import InputValidationError
+from jupiter.core.framework.realm import DatabaseRealm, RealmDecoder, RealmEncoder, RealmThing
 from jupiter.core.framework.value import SecretValue, secret_value
 
 _PASSWORD_PLAIN_RE: Final[Pattern[str]] = re.compile(r"^\S+$")
@@ -44,3 +45,23 @@ class PasswordNewPlain(SecretValue):
             )
 
         return password_str_raw
+
+
+class PasswordNewPlainDatabaseEncoder(RealmEncoder[PasswordNewPlain, DatabaseRealm]):
+    """Encode a password newplain for storage in the database."""
+
+    def encode(self, value: PasswordNewPlain) -> RealmThing:
+        """Encode a password newplain for storage in the database."""
+        return value.password_raw
+
+
+class PasswordNewPlainDatabaseDecoder(RealmDecoder[PasswordNewPlain, DatabaseRealm]):
+    """Decode a password newplain from storage in the database."""
+
+    def decode(self, value: RealmThing) -> PasswordNewPlain:
+        """Decode a password newplain from storage in the database."""
+        if not isinstance(value, str):
+            raise InputValidationError(
+                f"Expected password newplain to be a string, got {value}"
+            )
+        return PasswordNewPlain.from_raw(value)

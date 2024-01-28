@@ -22,7 +22,7 @@ from rich.tree import Tree
 class BigPlanShow(LoggedInReadonlyCommand[BigPlanFindUseCase]):
     """UseCase class for showing the big plans."""
 
-    def _render_result(self, result: BigPlanFindResult) -> None:
+    def _render_result(self, console: Console, result: BigPlanFindResult) -> None:
         sorted_big_plans = sorted(
             result.entries,
             key=lambda bpe: (
@@ -94,5 +94,4 @@ class BigPlanShow(LoggedInReadonlyCommand[BigPlanFindUseCase]):
                 inbox_task_text = inbox_task_summary_to_rich_text(inbox_task)
                 big_plan_tree.add(inbox_task_text)
 
-        console = Console()
         console.print(rich_tree)

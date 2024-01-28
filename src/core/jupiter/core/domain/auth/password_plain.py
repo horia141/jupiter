@@ -2,6 +2,7 @@
 from typing import Optional
 
 from jupiter.core.framework.errors import InputValidationError
+from jupiter.core.framework.realm import DatabaseRealm, RealmDecoder, RealmEncoder, RealmThing
 from jupiter.core.framework.value import SecretValue, secret_value
 
 
@@ -32,3 +33,23 @@ class PasswordPlain(SecretValue):
             raise InputValidationError("Expected password to be non-empty")
 
         return password_str_raw
+
+
+class PasswordPlainDatabaseEncoder(RealmEncoder[PasswordPlain, DatabaseRealm]):
+    """Encode a password plain for storage in the database."""
+
+    def encode(self, value: PasswordPlain) -> RealmThing:
+        """Encode a password plain for storage in the database."""
+        return value.password_raw
+
+
+class PasswordPlainDatabaseDecoder(RealmDecoder[PasswordPlain, DatabaseRealm]):
+    """Decode a password plain from storage in the database."""
+
+    def decode(self, value: RealmThing) -> PasswordPlain:
+        """Decode a password plain from storage in the database."""
+        if not isinstance(value, str):
+            raise InputValidationError(
+                f"Expected password plain to be a string, got {value}"
+            )
+        return PasswordPlain.from_raw(value)

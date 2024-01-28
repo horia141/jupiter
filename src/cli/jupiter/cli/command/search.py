@@ -1,5 +1,6 @@
 """Command for free form searching across all of Jupiter."""
-from typing import cast
+from argparse import ArgumentParser, Namespace
+from typing import Final, cast
 
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
@@ -7,8 +8,17 @@ from jupiter.cli.command.rendering import (
     entity_summary_snippet_to_rich_text,
     entity_tag_to_rich_text,
 )
+from jupiter.cli.session_storage import SessionInfo, SessionStorage
+from jupiter.cli.top_level_context import LoggedInTopLevelContext
+from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.named_entity_tag import NamedEntityTag
+from jupiter.core.domain.search.search_limit import SearchLimit
+from jupiter.core.domain.search.search_query import SearchQuery
 from jupiter.core.framework.base.timestamp import Timestamp
-from jupiter.core.use_cases.search import SearchResult, SearchUseCase
+from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
+from jupiter.core.use_cases.search import SearchArgs, SearchResult, SearchUseCase
+from jupiter.core.utils.global_properties import GlobalProperties
+from jupiter.core.utils.time_provider import TimeProvider
 from rich.console import Console
 from rich.text import Text
 from rich.tree import Tree
@@ -17,7 +27,7 @@ from rich.tree import Tree
 class Search(LoggedInReadonlyCommand[SearchUseCase]):
     """Command for free form searching across all of Jupiter."""
 
-    def _render_result(self, result: SearchResult) -> None:
+    def _render_result(self, console: Console, result: SearchResult) -> None:
         result_page_text = Text(f"🚀 Showing {len(result.matches)} matches:")
 
         rich_tree = Tree(result_page_text, guide_style="bold bright_blue")
@@ -52,5 +62,4 @@ class Search(LoggedInReadonlyCommand[SearchUseCase]):
 
             rich_tree.add(match_text)
 
-        console = Console()
         console.print(rich_tree)

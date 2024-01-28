@@ -7,9 +7,10 @@ import types
 import typing
 from argparse import ArgumentParser, Namespace
 from datetime import date, datetime
-from typing import Any, Callable, Final, Generic, TypeVar, cast, get_args, get_origin
+from typing import Any, Callable, Final, Generic, TypeVar, Union, cast, get_args, get_origin
 
 import inflection
+from jupiter.cli.command.rendering import RichConsoleProgressReporterFactory
 from jupiter.cli.session_storage import SessionInfo, SessionStorage
 from jupiter.cli.top_level_context import LoggedInTopLevelContext, TopLevelContext
 from jupiter.core.domain.features import UserFeature, WorkspaceFeature
@@ -42,6 +43,8 @@ from jupiter.core.use_cases.infra.use_cases import (
 from jupiter.core.utils.global_properties import GlobalProperties
 from pendulum.date import Date
 from pendulum.datetime import DateTime
+from rich.console import Console
+from rich.panel import Panel
 from rich.text import Text
 
 
@@ -65,6 +68,7 @@ class Command(abc.ABC):
     @abc.abstractmethod
     async def run(
         self,
+        console: Console,
         args: Namespace,
     ) -> None:
         """Callback to execute when the command is invoked."""
@@ -97,20 +101,23 @@ class Command(abc.ABC):
 
 
 UseCaseT = TypeVar("UseCaseT", bound=UseCase[Any, Any, Any, Any])
+UseCaseSessionT = TypeVar("UseCaseSessionT", bound=UseCaseSessionBase)
+UseCaseContextT = TypeVar("UseCaseContextT", bound=UseCaseContextBase)
 UseCaseArgsT = TypeVar("UseCaseArgsT", bound=UseCaseArgsBase)
-UseCaseResultT = TypeVar("UseCaseResultT", bound=UseCaseResultBase)
-
+UseCaseResultT = TypeVar("UseCaseResultT", bound=UseCaseResultBase | None)
 
 class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
     """Base class for commands based on use cases."""
 
     _use_case: UseCaseT
     _args_type: type[UseCaseArgsBase]
+    _renderer: Final[Callable[[Console, UseCaseResultBase | None], None] | None]
 
-    def __init__(self, use_case: UseCaseT) -> None:
+    def __init__(self, use_case: UseCaseT, renderer: Callable[[Console, UseCaseResultBase | None], None] | None = None) -> None:
         """Constructor."""
         self._use_case = use_case
         self._args_type = self._infer_args_class(use_case)
+        self._renderer = renderer
 
     def name(self) -> str:
         """The name of the command."""
@@ -633,22 +640,25 @@ class GuestMutationCommand(
         realm_codec_registry: RealmCodecRegistry,
         session_storage: SessionStorage,
         use_case: GuestMutationCommandUseCase,
+        renderer: Callable[[Console, UseCaseResultBase | None], None] | None = None
     ) -> None:
         """Constructor."""
-        super().__init__(use_case)
+        super().__init__(use_case, renderer)
         self._realm_codec_registry = realm_codec_registry
         self._session_storage = session_storage
 
     async def run(
         self,
+        console: Console,
         args: Namespace,
     ) -> None:
         """Callback to execute when the command is invoked."""
         session_info = self._session_storage.load_optional()
-        await self._run(session_info, args)
+        await self._run(console, session_info, args)
 
     async def _run(
         self,
+        console: Console,
         session_info: SessionInfo | None,
         args: Namespace,
     ) -> None:
@@ -662,10 +672,12 @@ class GuestMutationCommand(
             ),
             parsed_args,
         )
-        self._render_result(result)
+        self._render_result(console, result)
 
-    def _render_result(self, result: UseCaseResultT) -> None:
+    def _render_result(self, console: Console, result: UseCaseResultT) -> None:
         """Render the result."""
+        if self._renderer:
+            self._renderer(console, result)
 
 
 GuestReadonlyCommandUseCase = TypeVar(
@@ -688,22 +700,25 @@ class GuestReadonlyCommand(
         realm_codec_registry: RealmCodecRegistry,
         session_storage: SessionStorage,
         use_case: GuestReadonlyCommandUseCase,
+        renderer: Callable[[Console, UseCaseResultBase | None], None] | None = None
     ) -> None:
         """Constructor."""
-        super().__init__(use_case)
+        super().__init__(use_case, renderer)
         self._realm_codec_registry = realm_codec_registry
         self._session_storage = session_storage
 
     async def run(
         self,
+        console: Console,
         args: Namespace,
     ) -> None:
         """Callback to execute when the command is invoked."""
         session_info = self._session_storage.load_optional()
-        await self._run(session_info, args)
+        await self._run(console, session_info, args)
 
     async def _run(
         self,
+        console: Console,
         session_info: SessionInfo | None,
         args: Namespace,
     ) -> None:
@@ -717,10 +732,12 @@ class GuestReadonlyCommand(
             ),
             parsed_args,
         )
-        self._render_result(result)
+        self._render_result(console, result)
 
-    def _render_result(self, result: UseCaseResultT) -> None:
+    def _render_result(self, console: Console, result: UseCaseResultT) -> None:
         """Render the result."""
+        if self._renderer:
+            self._renderer(console, result)
 
     @property
     def should_have_streaming_progress_report(self) -> bool:
@@ -750,23 +767,26 @@ class LoggedInMutationCommand(
         session_storage: SessionStorage,
         top_level_context: LoggedInTopLevelContext,
         use_case: LoggedInMutationCommandUseCase,
+        renderer: Callable[[Console, UseCaseResultBase | None], None] | None
     ) -> None:
         """Constructor."""
-        super().__init__(use_case)
+        super().__init__(use_case, renderer)
         self._realm_codec_registry = realm_codec_registry
         self._session_storage = session_storage
         self._top_level_context = top_level_context
 
     async def run(
         self,
+        console: Console,
         args: Namespace,
     ) -> None:
         """Callback to execute when the command is invoked."""
         session_info = self._session_storage.load()
-        await self._run(session_info, args)
+        await self._run(console, session_info, args)
 
     async def _run(
         self,
+        console: Console,
         session: SessionInfo,
         args: Namespace,
     ) -> None:
@@ -778,10 +798,12 @@ class LoggedInMutationCommand(
             AppLoggedInUseCaseSession(session.auth_token_ext),
             parsed_args,
         )
-        self._render_result(result)
+        self._render_result(console, result)
 
-    def _render_result(self, result: UseCaseResultT) -> None:
+    def _render_result(self, console: Console, result: UseCaseResultT) -> None:
         """Render the result."""
+        if self._renderer:
+            self._renderer(console, result)
 
     def is_allowed_for_user(self, user: User) -> bool:
         """Is this command allowed for a particular user."""
@@ -836,23 +858,26 @@ class LoggedInReadonlyCommand(
         session_storage: SessionStorage,
         top_level_context: LoggedInTopLevelContext,
         use_case: LoggedInReadonlyCommandUseCase,
+        renderer: Callable[[Console, UseCaseResultBase | None], None] | None
     ) -> None:
         """Constructor."""
-        super().__init__(use_case)
+        super().__init__(use_case, renderer)
         self._realm_codec_registry = realm_codec_registry
         self._session_storage = session_storage
         self._top_level_context = top_level_context
 
     async def run(
         self,
+        console: Console,
         args: Namespace,
     ) -> None:
         """Callback to execute when the command is invoked."""
         session_info = self._session_storage.load()
-        await self._run(session_info, args)
+        await self._run(console, session_info, args)
 
     async def _run(
         self,
+        console: Console,
         session: SessionInfo,
         args: Namespace,
     ) -> None:
@@ -864,10 +889,12 @@ class LoggedInReadonlyCommand(
             AppLoggedInUseCaseSession(session.auth_token_ext),
             parsed_args,
         )
-        self._render_result(result)
+        self._render_result(console, result)
 
-    def _render_result(self, result: UseCaseResultT) -> None:
+    def _render_result(self, console: Console, result: UseCaseResultT) -> None:
         """Render the result."""
+        if self._renderer:
+            self._renderer(console, result)
 
     def is_allowed_for_user(self, user: User) -> bool:
         """Is this command allowed for a particular user."""
@@ -917,7 +944,7 @@ class TestHelperCommand(Command, abc.ABC):
     def should_have_streaming_progress_report(self) -> bool:
         """Whether the main script should have a streaming progress reporter."""
         return False
-
+    
 
 class CliApp:
     """A CLI application."""
@@ -927,33 +954,36 @@ class CliApp:
         """A guest mutation use case entry."""
 
         use_case: AppGuestMutationUseCase[UseCaseArgsBase, UseCaseResultBase]
-        renderer: Callable[[UseCaseResultBase], None] | None
+        renderer: Callable[[Console, UseCaseResultBase | None], None] | None
 
     @dataclasses.dataclass
     class GuestReadonlyEntry:
         """A guest readonly use case entry."""
 
         use_case: AppGuestReadonlyUseCase[UseCaseArgsBase, UseCaseResultBase]
-        renderer: Callable[[UseCaseResultBase], None] | None
+        renderer: Callable[[Console, UseCaseResultBase | None], None] | None
 
     @dataclasses.dataclass
     class LoggedInMutationEntry:
         """A logged in mutation use case entry."""
 
         use_case: AppLoggedInMutationUseCase[UseCaseArgsBase, UseCaseResultBase]
-        renderer: Callable[[UseCaseResultBase], None] | None
+        renderer: Callable[[Console, UseCaseResultBase | None], None] | None
 
     @dataclasses.dataclass
     class LoggedInReadonlyEntry:
         """A logged in readonly use case entry."""
 
         use_case: AppLoggedInReadonlyUseCase[UseCaseArgsBase, UseCaseResultBase]
-        renderer: Callable[[UseCaseResultBase], None] | None
+        renderer: Callable[[Console, UseCaseResultBase | None], None] | None
 
-    _global_properties: GlobalProperties
-    _top_level_context: TopLevelContext
-    _realm_codec_registry: RealmCodecRegistry
-    _session_storage: SessionStorage
+    _global_properties: Final[GlobalProperties]
+    _top_level_context: Final[TopLevelContext]
+    _console: Final[Console]
+    _progress_reporter_factory: Final[RichConsoleProgressReporterFactory]
+    _realm_codec_registry: Final[RealmCodecRegistry]
+    _session_storage: Final[SessionStorage]
+    _commands: Final[list[Command]]
     _guest_mutation_use_cases: Final[list[GuestMutationEntry]]
     _guest_readonly_use_cases: Final[list[GuestReadonlyEntry]]
     _loggedin_mutation_use_cases: Final[list[LoggedInMutationEntry]]
@@ -963,25 +993,38 @@ class CliApp:
         self,
         global_properties: GlobalProperties,
         top_level_context: TopLevelContext,
+        console: Console,
+        progress_reporter_factory: RichConsoleProgressReporterFactory,
         realm_codec_registry: RealmCodecRegistry,
         session_storage: SessionStorage,
     ) -> None:
         """Constructor."""
         self._global_properties = global_properties
         self._top_level_context = top_level_context
+        self._console = console
+        self._progress_reporter_factory = progress_reporter_factory
         self._realm_codec_registry = realm_codec_registry
         self._session_storage = session_storage
+        self._commands = []
         self._guest_readonly_use_cases = []
         self._guest_mutation_use_cases = []
         self._loggedin_readonly_use_cases = []
         self._loggedin_mutation_use_cases = []
 
+    def add_command(
+        self,
+        command: Command,
+    ) -> "CliApp":
+        """Add a command to the app."""
+        self._commands.append(command)
+        return self
+
     def add_use_case(
         self,
         use_case: UseCase[
-            UseCaseSessionBase, UseCaseContextBase, UseCaseArgsBase, UseCaseResultBase
+            UseCaseSessionT, UseCaseContextT, UseCaseArgsT, UseCaseResultT
         ],
-        renderer: Callable[[UseCaseResultBase], None] | None = None,
+        renderer: Callable[[Console, UseCaseResultT], None] | None = None,
     ) -> "CliApp":
         """Add a use case to the app."""
         if isinstance(use_case, AppGuestMutationUseCase):
@@ -1005,9 +1048,9 @@ class CliApp:
 
         return self
 
-    def run(self, args: list[str]) -> None:
+    async def run(self, argv: list[str]) -> None:
         """Run the app."""
-        commands: list[Command] = []
+        commands: list[Command] = list(self._commands)
 
         for use_case_gm in self._guest_mutation_use_cases:
             commands.append(
@@ -1015,6 +1058,7 @@ class CliApp:
                     realm_codec_registry=self._realm_codec_registry,
                     session_storage=self._session_storage,
                     use_case=use_case_gm.use_case,
+                    renderer=use_case_gm.renderer,
                 )
             )
 
@@ -1024,6 +1068,7 @@ class CliApp:
                     realm_codec_registry=self._realm_codec_registry,
                     session_storage=self._session_storage,
                     use_case=use_case_gr.use_case,
+                    renderer=use_case_gr.renderer,
                 )
             )
 
@@ -1034,6 +1079,7 @@ class CliApp:
                     session_storage=self._session_storage,
                     top_level_context=self._top_level_context.to_logged_in(),
                     use_case=use_case_lm.use_case,
+                    renderer=use_case_lm.renderer,
                 )
             )
 
@@ -1044,6 +1090,7 @@ class CliApp:
                     session_storage=self._session_storage,
                     top_level_context=self._top_level_context.to_logged_in(),
                     use_case=use_case_lr.use_case,
+                    renderer=use_case_lr.renderer,
                 )
             )
 
@@ -1059,8 +1106,60 @@ class CliApp:
             help="Show the version of the application",
         )
 
-        parser.add_subparsers(
+        subparsers = parser.add_subparsers(
             dest="subparser_name",
             help="Sub-command help",
             metavar="{command}",
         )
+
+        for command in commands:
+            if (
+                command.should_appear_in_global_help
+                and (
+                    self._top_level_context.user is None
+                    or command.is_allowed_for_user(self._top_level_context.user)
+                )
+                and (
+                    self._top_level_context.workspace is None
+                    or command.is_allowed_for_workspace(
+                        self._top_level_context.workspace
+                    )
+                )
+            ):
+                command_parser = subparsers.add_parser(
+                    command.name(),
+                    help=command.description(),
+                    description=command.description(),
+                )
+            else:
+                command_parser = subparsers.add_parser(
+                    command.name(),
+                    description=command.description(),
+                )
+            command.build_parser(command_parser)
+
+        args = parser.parse_args(argv[1:])
+
+        if args.just_show_version:
+            print(
+                f"{self._global_properties.description} {self._global_properties.version}"
+            )
+            return
+
+        for command in commands:
+            if args.subparser_name != command.name():
+                continue
+
+            with self._progress_reporter_factory.envelope(
+                command.should_have_streaming_progress_report, command.name(), args
+            ):
+                await command.run(self._console, args)
+
+            command_postscript = command.get_postscript()
+            if command_postscript is not None:
+                postscript_panel = Panel(
+                    command_postscript, title="PS.", title_align="left"
+                )
+                self._console.print(postscript_panel)
+
+            break
