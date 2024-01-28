@@ -40,6 +40,7 @@ from jupiter.core.framework.use_case import (
     UseCaseSessionBase,
 )
 from jupiter.core.framework.use_case_io import UseCaseArgsBase, UseCaseResultBase
+from jupiter.core.utils.global_properties import GlobalProperties
 from jupiter.core.utils.time_provider import TimeProvider
 
 UseCaseSession = TypeVar("UseCaseSession", bound=UseCaseSessionBase)
@@ -81,8 +82,10 @@ class AppGuestMutationUseCase(
 ):
     """A command which does some sort of mutation for the app, but does not assume a logged-in user."""
 
+    _global_properties: Final[GlobalProperties]
     _auth_token_stamper: Final[AuthTokenStamper]
-    _storage_engine: Final[DomainStorageEngine]
+    _domain_storage_engine: Final[DomainStorageEngine]
+    _search_storage_engine: Final[SearchStorageEngine]
 
     def __init__(
         self,
@@ -91,13 +94,17 @@ class AppGuestMutationUseCase(
         progress_reporter_factory: ProgressReporterFactory[
             AppGuestMutationUseCaseContext
         ],
+        global_properties: GlobalProperties,
         auth_token_stamper: AuthTokenStamper,
-        storage_engine: DomainStorageEngine,
+        domain_storage_engine: DomainStorageEngine,
+        search_storage_engine: SearchStorageEngine,
     ) -> None:
         """Constructor."""
         super().__init__(time_provider, invocation_recorder, progress_reporter_factory)
+        self._global_properties = global_properties
         self._auth_token_stamper = auth_token_stamper
-        self._storage_engine = storage_engine
+        self._domain_storage_engine = domain_storage_engine
+        self._search_storage_engine = search_storage_engine
 
     async def _build_context(
         self, session: AppGuestUseCaseSession
@@ -138,18 +145,24 @@ class AppGuestReadonlyUseCase(
 ):
     """A query which does not mutate anything, and does not assume a logged-in user."""
 
+    _global_properties: Final[GlobalProperties]
     _auth_token_stamper: Final[AuthTokenStamper]
-    _storage_engine: Final[DomainStorageEngine]
+    _domain_storage_engine: Final[DomainStorageEngine]
+    _search_storage_engine: Final[SearchStorageEngine]
 
     def __init__(
         self,
+        global_properties: GlobalProperties,
         auth_token_stamper: AuthTokenStamper,
-        storage_engine: DomainStorageEngine,
+        domain_storage_engine: DomainStorageEngine,
+        search_storage_engine: SearchStorageEngine,
     ) -> None:
         """Constructor."""
         super().__init__()
+        self._global_properties = global_properties
         self._auth_token_stamper = auth_token_stamper
-        self._storage_engine = storage_engine
+        self._domain_storage_engine = domain_storage_engine
+        self._search_storage_engine = search_storage_engine
 
     async def _build_context(
         self, session: AppGuestUseCaseSession
@@ -212,6 +225,7 @@ class AppLoggedInMutationUseCase(
 ):
     """A command which does some sort of mutation for the app, and assumes a logged-in user."""
 
+    _global_properties: Final[GlobalProperties]
     _auth_token_stamper: Final[AuthTokenStamper]
     _domain_storage_engine: Final[DomainStorageEngine]
     _search_storage_engine: Final[SearchStorageEngine]
@@ -228,12 +242,14 @@ class AppLoggedInMutationUseCase(
         progress_reporter_factory: ProgressReporterFactory[
             AppLoggedInMutationUseCaseContext
         ],
+        global_properties: GlobalProperties,
         auth_token_stamper: AuthTokenStamper,
         domain_storage_engine: DomainStorageEngine,
         search_storage_engine: SearchStorageEngine,
     ) -> None:
         """Constructor."""
         super().__init__(time_provider, invocation_recorder, progress_reporter_factory)
+        self._global_properties = global_properties
         self._auth_token_stamper = auth_token_stamper
         self._domain_storage_engine = domain_storage_engine
         self._search_storage_engine = search_storage_engine
@@ -363,8 +379,10 @@ class AppLoggedInReadonlyUseCase(
 ):
     """A command which does some sort of read in the app, and assumes a logged-in user."""
 
+    _global_properties: Final[GlobalProperties]
     _auth_token_stamper: Final[AuthTokenStamper]
-    _storage_engine: Final[DomainStorageEngine]
+    _domain_storage_engine: Final[DomainStorageEngine]
+    _search_storage_engine: Final[SearchStorageEngine]
 
     @staticmethod
     def get_scoped_to_feature() -> FeatureScope:
@@ -372,12 +390,18 @@ class AppLoggedInReadonlyUseCase(
         return None
 
     def __init__(
-        self, auth_token_stamper: AuthTokenStamper, storage_engine: DomainStorageEngine
+        self, 
+        global_properties: GlobalProperties,
+        auth_token_stamper: AuthTokenStamper, 
+        domain_storage_engine: DomainStorageEngine,
+        search_storage_engine: SearchStorageEngine,
     ) -> None:
         """Constructor."""
         super().__init__()
+        self._global_properties = global_properties
         self._auth_token_stamper = auth_token_stamper
-        self._storage_engine = storage_engine
+        self._domain_storage_engine = domain_storage_engine
+        self._search_storage_engine = search_storage_engine
 
     async def _build_context(
         self, session: AppLoggedInUseCaseSession
@@ -385,7 +409,7 @@ class AppLoggedInReadonlyUseCase(
         auth_token = self._auth_token_stamper.verify_auth_token_general(
             session.auth_token_ext
         )
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             user = await uow.user_repository.load_by_id(auth_token.user_ref_id)
             user_workspace_link = await uow.user_workspace_link_repository.load_by_user(
                 auth_token.user_ref_id
@@ -427,7 +451,7 @@ class AppTransactionalLoggedInReadOnlyUseCase(
         args: UseCaseArgs,
     ) -> UseCaseResult:
         """Execute the command's action."""
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             return await self._perform_transactional_read(uow, context, args)
 
     @abc.abstractmethod

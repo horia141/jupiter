@@ -583,7 +583,7 @@ init_use_case = InitUseCase(
 )
 
 login_use_case = LoginUseCase(
-    storage_engine=domain_storage_engine,
+    domain_storage_engine=domain_storage_engine,
     auth_token_stamper=auth_token_stamper,
 )
 
@@ -601,7 +601,7 @@ auth_reset_password_use_case = ResetPasswordUseCase(
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=NoOpProgressReporterFactory(),
     auth_token_stamper=auth_token_stamper,
-    storage_engine=domain_storage_engine,
+    domain_storage_engine=domain_storage_engine,
 )
 
 search_use_case = SearchUseCase(
@@ -628,7 +628,7 @@ gen_do_all_use_case = GenDoAllUseCase(
 
 gen_load_runs_use_case = GenLoadRunsUseCase(
     auth_token_stamper=auth_token_stamper,
-    storage_engine=domain_storage_engine,
+    domain_storage_engine=domain_storage_engine,
 )
 
 report_use_case = ReportUseCase(
@@ -655,7 +655,7 @@ gc_do_all_use_case = GCDoAllUseCase(
 
 gc_load_runs_use_case = GCLoadRunsUseCase(
     auth_token_stamper=auth_token_stamper,
-    storage_engine=domain_storage_engine,
+    domain_storage_engine=domain_storage_engine,
 )
 
 load_top_level_info_use_case = LoadTopLevelInfoUseCase(
@@ -666,12 +666,12 @@ load_top_level_info_use_case = LoadTopLevelInfoUseCase(
 )
 
 load_progress_reporter_token_use_case = LoadProgressReporterTokenUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
 )
 
 get_summaries_use_case = GetSummariesUseCase(
     auth_token_stamper=auth_token_stamper,
-    storage_engine=domain_storage_engine,
+    domain_storage_engine=domain_storage_engine,
 )
 
 user_update_use_case = UserUpdateUseCase(
@@ -725,7 +725,7 @@ workspace_change_feature_flags_use_case = WorkspaceChangeFeatureFlagsUseCase(
     global_properties=global_properties,
 )
 workspace_load_use_case = WorkspaceLoadUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
 )
 
 inbox_task_create_use_case = InboxTaskCreateUseCase(
@@ -769,10 +769,10 @@ inbox_task_associate_with_big_plan = InboxTaskAssociateWithBigPlanUseCase(
     search_storage_engine=search_storage_engine,
 )
 inbox_task_load_use_case = InboxTaskLoadUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
 )
 inbox_task_find_use_case = InboxTaskFindUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
 )
 
 habit_create_use_case = HabitCreateUseCase(
@@ -824,10 +824,10 @@ habit_unsuspend_use_case = HabitUnsuspendUseCase(
     search_storage_engine=search_storage_engine,
 )
 habit_load_use_case = HabitLoadUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
 )
 habit_find_use_case = HabitFindUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
 )
 
 chore_create_use_case = ChoreCreateUseCase(
@@ -879,10 +879,10 @@ chore_unsuspend_use_case = ChoreUnsuspendUseCase(
     search_storage_engine=search_storage_engine,
 )
 chore_load_use_case = ChoreLoadUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
 )
 chore_find_use_case = ChoreFindUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
 )
 
 big_plan_create_use_case = BigPlanCreateUseCase(
@@ -918,10 +918,10 @@ big_plan_change_project_use_case = BigPlanChangeProjectUseCase(
     search_storage_engine=search_storage_engine,
 )
 big_plan_load_use_case = BigPlanLoadUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
 )
 big_plan_find_use_case = BigPlanFindUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
 )
 
 journal_create_use_case = JournalCreateUseCase(
@@ -957,10 +957,10 @@ journal_update_report_use_case = JournalUpdateReportUseCase(
     search_storage_engine=search_storage_engine,
 )
 journal_find_use_case = JournalFindUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
 )
 journal_load_use_case = JournalLoadUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
 )
 
 
@@ -997,10 +997,10 @@ doc_change_parent_use_case = DocChangeParentUseCase(
     search_storage_engine=search_storage_engine,
 )
 doc_load_use_case = DocLoadUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
 )
 doc_find_use_case = DocFindUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
 )
 
 vacation_create_use_case = VacationCreateUseCase(
@@ -1028,10 +1028,10 @@ vacation_update_use_case = VacationUpdateUseCase(
     search_storage_engine=search_storage_engine,
 )
 vacation_load_use_case = VacationLoadUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
 )
 vacation_find_use_case = VacationFindUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
 )
 
 project_create_use_case = ProjectCreateUseCase(
@@ -1059,10 +1059,10 @@ project_update_use_case = ProjectUpdateUseCase(
     search_storage_engine=search_storage_engine,
 )
 project_load_use_case = ProjectLoadUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
 )
 project_find_use_case = ProjectFindUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
 )
 
 smart_list_create_use_case = SmartListCreateUseCase(
@@ -1090,10 +1090,10 @@ smart_list_update_use_case = SmartListUpdateUseCase(
     search_storage_engine=search_storage_engine,
 )
 smart_list_load_use_case = SmartListLoadUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
 )
 smart_list_find_use_case = SmartListFindUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
 )
 smart_list_tag_create_use_case = SmartListTagCreateUseCase(
     time_provider=request_time_provider,
@@ -1112,7 +1112,7 @@ smart_list_tag_archive_use_case = SmartListTagArchiveUseCase(
     search_storage_engine=search_storage_engine,
 )
 smart_list_tag_load_use_case = SmartListTagLoadUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
 )
 smart_list_tag_update_use_case = SmartListTagUpdateUseCase(
     time_provider=request_time_provider,
@@ -1147,7 +1147,7 @@ smart_list_item_update_use_case = SmartListItemUpdateUseCase(
     search_storage_engine=search_storage_engine,
 )
 smart_list_item_load_use_case = SmartListItemLoadUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
 )
 
 
@@ -1177,7 +1177,7 @@ metric_update_use_case = MetricUpdateUseCase(
 )
 metric_load_settings_use_case = MetricLoadSettingsUseCase(
     auth_token_stamper=auth_token_stamper,
-    storage_engine=domain_storage_engine,
+    domain_storage_engine=domain_storage_engine,
 )
 metric_change_collection_project_use_case = MetricChangeCollectionProjectUseCase(
     time_provider=request_time_provider,
@@ -1188,10 +1188,10 @@ metric_change_collection_project_use_case = MetricChangeCollectionProjectUseCase
     search_storage_engine=search_storage_engine,
 )
 metric_load_use_case = MetricLoadUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
 )
 metric_find_use_case = MetricFindUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
 )
 metric_entry_create_use_case = MetricEntryCreateUseCase(
     time_provider=request_time_provider,
@@ -1218,7 +1218,7 @@ metric_entry_archive_use_case = MetricEntryArchiveUseCase(
     search_storage_engine=search_storage_engine,
 )
 metric_entry_load_use_case = MetricEntryLoadUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
 )
 
 person_create_use_case = PersonCreateUseCase(
@@ -1247,7 +1247,7 @@ person_update_use_case = PersonUpdateUseCase(
 )
 person_load_settings_use_case = PersonLoadSettingsUseCase(
     auth_token_stamper=auth_token_stamper,
-    storage_engine=domain_storage_engine,
+    domain_storage_engine=domain_storage_engine,
 )
 person_change_catch_up_project_use_case = PersonChangeCatchUpProjectUseCase(
     time_provider=request_time_provider,
@@ -1258,10 +1258,10 @@ person_change_catch_up_project_use_case = PersonChangeCatchUpProjectUseCase(
     search_storage_engine=search_storage_engine,
 )
 person_load_use_case = PersonLoadUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
 )
 person_find_use_case = PersonFindUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
 )
 
 slack_task_archive_use_case = SlackTaskArchiveUseCase(
@@ -1282,7 +1282,7 @@ slack_task_update_use_case = SlackTaskUpdateUseCase(
 )
 slack_task_load_settings_use_case = SlackTaskLoadSettingsUseCase(
     auth_token_stamper=auth_token_stamper,
-    storage_engine=domain_storage_engine,
+    domain_storage_engine=domain_storage_engine,
 )
 slack_task_change_generation_project_use_case = SlackTaskChangeGenerationProjectUseCase(
     time_provider=request_time_provider,
@@ -1293,10 +1293,10 @@ slack_task_change_generation_project_use_case = SlackTaskChangeGenerationProject
     search_storage_engine=search_storage_engine,
 )
 slack_task_load_use_case = SlackTaskLoadUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
 )
 slack_task_find_use_case = SlackTaskFindUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
 )
 
 email_task_archive_use_case = EmailTaskArchiveUseCase(
@@ -1317,7 +1317,7 @@ email_task_update_use_case = EmailTaskUpdateUseCase(
 )
 email_task_load_settings_use_case = EmailTaskLoadSettingsUseCase(
     auth_token_stamper=auth_token_stamper,
-    storage_engine=domain_storage_engine,
+    domain_storage_engine=domain_storage_engine,
 )
 email_task_change_generation_project_use_case = EmailTaskChangeGenerationProjectUseCase(
     time_provider=request_time_provider,
@@ -1328,10 +1328,10 @@ email_task_change_generation_project_use_case = EmailTaskChangeGenerationProject
     search_storage_engine=search_storage_engine,
 )
 email_task_load_use_case = EmailTaskLoadUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
 )
 email_task_find_use_case = EmailTaskFindUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
 )
 
 note_create_use_case = NoteCreateUseCase(

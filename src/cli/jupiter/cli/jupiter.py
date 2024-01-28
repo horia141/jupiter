@@ -203,7 +203,7 @@ async def main() -> None:
                     invocation_recorder=invocation_recorder,
                     progress_reporter_factory=NoOpProgressReporterFactory(),
                     auth_token_stamper=auth_token_stamper,
-                    storage_engine=domain_storage_engine,
+                    domain_storage_engine=domain_storage_engine,
                 ),
                 
             )

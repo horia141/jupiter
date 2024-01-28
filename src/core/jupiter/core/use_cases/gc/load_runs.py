@@ -36,7 +36,7 @@ class GCLoadRunsUseCase(AppLoggedInReadonlyUseCase[GCLoadRunsArgs, GCLoadRunsRes
         args: GCLoadRunsArgs,
     ) -> GCLoadRunsResult:
         """Execute the use case."""
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             gc_log = await uow.gc_log_repository.load_by_parent(
                 context.workspace.ref_id
             )

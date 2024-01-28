@@ -97,7 +97,7 @@ class LoadTopLevelInfoUseCase(
             workspace_feature_flags_controls,
         ) = infer_feature_flag_controls(self._global_properties)
 
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             if context.auth_token is None:
                 user = None
                 workspace = None

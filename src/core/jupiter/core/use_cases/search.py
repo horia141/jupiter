@@ -63,7 +63,7 @@ class SearchUseCase(AppLoggedInReadonlyUseCase[SearchArgs, SearchResult]):
     ) -> None:
         """Constructor."""
         super().__init__(
-            auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+            auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
         )
         self._time_provider = time_provider
         self._search_storage_engine = search_storage_engine

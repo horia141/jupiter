@@ -38,7 +38,7 @@ class GenLoadRunsUseCase(
         args: GenLoadRunsArgs,
     ) -> GenLoadRunsResult:
         """Execute the use case."""
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             gen_log = await uow.gen_log_repository.load_by_parent(
                 context.workspace.ref_id
             )

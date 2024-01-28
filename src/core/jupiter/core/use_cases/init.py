@@ -99,32 +99,6 @@ class InitResult(UseCaseResultBase):
 class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
     """UseCase for initialising the workspace."""
 
-    _global_properties: Final[GlobalProperties]
-    _search_storage_engine: Final[SearchStorageEngine]
-
-    def __init__(
-        self,
-        time_provider: TimeProvider,
-        invocation_recorder: MutationUseCaseInvocationRecorder,
-        progress_reporter_factory: ProgressReporterFactory[
-            AppGuestMutationUseCaseContext
-        ],
-        auth_token_stamper: AuthTokenStamper,
-        domain_storage_engine: DomainStorageEngine,
-        search_storage_engine: SearchStorageEngine,
-        global_properties: GlobalProperties,
-    ) -> None:
-        """Constructor."""
-        super().__init__(
-            time_provider,
-            invocation_recorder,
-            progress_reporter_factory,
-            auth_token_stamper,
-            domain_storage_engine,
-        )
-        self._global_properties = global_properties
-        self._search_storage_engine = search_storage_engine
-
     async def _execute(
         self,
         progress_reporter: ProgressReporter,
@@ -147,7 +121,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 workspace_feature in args.workspace_feature_flags
             )
 
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             new_user = User.new_user(
                 ctx=context.domain_context,
                 email_address=args.user_email_address,

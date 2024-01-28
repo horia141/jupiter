@@ -46,7 +46,7 @@ class LoginUseCase(AppGuestReadonlyUseCase[LoginArgs, LoginResult]):
         args: LoginArgs,
     ) -> LoginResult:
         """Execute the command."""
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             try:
                 user = await uow.user_repository.load_by_email_address(
                     args.email_address

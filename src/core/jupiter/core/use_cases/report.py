@@ -76,7 +76,7 @@ class ReportUseCase(AppLoggedInReadonlyUseCase[ReportArgs, ReportResult]):
         user = context.user
         workspace = context.workspace
 
-        report_service = ReportService(self._storage_engine, self._time_provider)
+        report_service = ReportService(self._domain_storage_engine, self._time_provider)
 
         report_period_result = await report_service.do_it(
             user=user,

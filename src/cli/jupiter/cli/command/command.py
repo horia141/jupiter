@@ -1044,8 +1044,10 @@ class CliApp:
                         time_provider=self._time_provider,
                         invocation_recorder=self._invocation_recorder,
                         progress_reporter_factory=self._progress_reporter_factory,
+                        global_properties=self._global_properties,
                         auth_token_stamper=self._auth_token_stamper,
-                        storage_engine=self._domain_storage_engine
+                        domain_storage_engine=self._domain_storage_engine,
+                        search_storage_engine=self._search_storage_engine
                     )
                 )
         elif issubclass(use_case_type, AppGuestReadonlyUseCase):
@@ -1055,8 +1057,10 @@ class CliApp:
                     session_storage=self._session_storage,
                     top_level_context=self._top_level_context,
                     use_case=use_case_type(
+                        global_properties=self._global_properties,
                         auth_token_stamper=self._auth_token_stamper,
-                        storage_engine=self._domain_storage_engine
+                        domain_storage_engine=self._domain_storage_engine,
+                        search_storage_engine=self._search_storage_engine
                     )
                 )
         elif issubclass(use_case_type, AppLoggedInMutationUseCase):
@@ -1069,6 +1073,7 @@ class CliApp:
                         time_provider=self._time_provider,
                         invocation_recorder=self._invocation_recorder,
                         progress_reporter_factory=self._progress_reporter_factory,
+                        global_properties=self._global_properties,
                         auth_token_stamper=self._auth_token_stamper,
                         domain_storage_engine=self._domain_storage_engine,
                         search_storage_engine=self._search_storage_engine
@@ -1081,8 +1086,10 @@ class CliApp:
                     session_storage=self._session_storage,
                     top_level_context=self._top_level_context.to_logged_in(),
                     use_case=use_case_type(
+                        global_properties=self._global_properties,
                         auth_token_stamper=self._auth_token_stamper,
-                        storage_engine=self._domain_storage_engine
+                        domain_storage_engine=self._domain_storage_engine,
+                        search_storage_engine=self._search_storage_engine
                     )
                 )
         else:
@@ -1105,7 +1112,7 @@ class CliApp:
                         invocation_recorder=self._invocation_recorder,
                         progress_reporter_factory=self._progress_reporter_factory,
                         auth_token_stamper=self._auth_token_stamper,
-                        storage_engine=self._domain_storage_engine
+                        domain_storage_engine=self._domain_storage_engine
                     )
                 )
         elif issubclass(use_case_type, AppGuestReadonlyUseCase):
@@ -1116,7 +1123,7 @@ class CliApp:
                     top_level_context=self._top_level_context,
                     use_case=use_case_type(
                         auth_token_stamper=self._auth_token_stamper,
-                        storage_engine=self._domain_storage_engine
+                        domain_storage_engine=self._domain_storage_engine
                     )
                 )
         elif issubclass(use_case_type, AppLoggedInMutationUseCase):
@@ -1142,7 +1149,7 @@ class CliApp:
                     top_level_context=self._top_level_context.to_logged_in(),
                     use_case=use_case_type(
                         auth_token_stamper=self._auth_token_stamper,
-                        storage_engine=self._domain_storage_engine
+                        domain_storage_engine=self._domain_storage_engine
                     )
                 )
         else:
