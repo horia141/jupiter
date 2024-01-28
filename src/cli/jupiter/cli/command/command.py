@@ -111,13 +111,11 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
 
     _use_case: UseCaseT
     _args_type: type[UseCaseArgsBase]
-    _renderer: Final[Callable[[Console, UseCaseResultBase | None], None] | None]
 
-    def __init__(self, use_case: UseCaseT, renderer: Callable[[Console, UseCaseResultBase | None], None] | None = None) -> None:
+    def __init__(self, use_case: UseCaseT) -> None:
         """Constructor."""
         self._use_case = use_case
         self._args_type = self._infer_args_class(use_case)
-        self._renderer = renderer
 
     def name(self) -> str:
         """The name of the command."""
@@ -639,11 +637,9 @@ class GuestMutationCommand(
         self,
         realm_codec_registry: RealmCodecRegistry,
         session_storage: SessionStorage,
-        use_case: GuestMutationCommandUseCase,
-        renderer: Callable[[Console, UseCaseResultBase | None], None] | None = None
-    ) -> None:
+        use_case: GuestMutationCommandUseCase) -> None:
         """Constructor."""
-        super().__init__(use_case, renderer)
+        super().__init__(use_case)
         self._realm_codec_registry = realm_codec_registry
         self._session_storage = session_storage
 
@@ -676,8 +672,6 @@ class GuestMutationCommand(
 
     def _render_result(self, console: Console, result: UseCaseResultT) -> None:
         """Render the result."""
-        if self._renderer:
-            self._renderer(console, result)
 
 
 GuestReadonlyCommandUseCase = TypeVar(
@@ -700,10 +694,9 @@ class GuestReadonlyCommand(
         realm_codec_registry: RealmCodecRegistry,
         session_storage: SessionStorage,
         use_case: GuestReadonlyCommandUseCase,
-        renderer: Callable[[Console, UseCaseResultBase | None], None] | None = None
     ) -> None:
         """Constructor."""
-        super().__init__(use_case, renderer)
+        super().__init__(use_case)
         self._realm_codec_registry = realm_codec_registry
         self._session_storage = session_storage
 
@@ -736,8 +729,6 @@ class GuestReadonlyCommand(
 
     def _render_result(self, console: Console, result: UseCaseResultT) -> None:
         """Render the result."""
-        if self._renderer:
-            self._renderer(console, result)
 
     @property
     def should_have_streaming_progress_report(self) -> bool:
@@ -767,10 +758,9 @@ class LoggedInMutationCommand(
         session_storage: SessionStorage,
         top_level_context: LoggedInTopLevelContext,
         use_case: LoggedInMutationCommandUseCase,
-        renderer: Callable[[Console, UseCaseResultBase | None], None] | None
     ) -> None:
         """Constructor."""
-        super().__init__(use_case, renderer)
+        super().__init__(use_case)
         self._realm_codec_registry = realm_codec_registry
         self._session_storage = session_storage
         self._top_level_context = top_level_context
@@ -802,8 +792,6 @@ class LoggedInMutationCommand(
 
     def _render_result(self, console: Console, result: UseCaseResultT) -> None:
         """Render the result."""
-        if self._renderer:
-            self._renderer(console, result)
 
     def is_allowed_for_user(self, user: User) -> bool:
         """Is this command allowed for a particular user."""
@@ -858,10 +846,9 @@ class LoggedInReadonlyCommand(
         session_storage: SessionStorage,
         top_level_context: LoggedInTopLevelContext,
         use_case: LoggedInReadonlyCommandUseCase,
-        renderer: Callable[[Console, UseCaseResultBase | None], None] | None
     ) -> None:
         """Constructor."""
-        super().__init__(use_case, renderer)
+        super().__init__(use_case)
         self._realm_codec_registry = realm_codec_registry
         self._session_storage = session_storage
         self._top_level_context = top_level_context
@@ -893,8 +880,6 @@ class LoggedInReadonlyCommand(
 
     def _render_result(self, console: Console, result: UseCaseResultT) -> None:
         """Render the result."""
-        if self._renderer:
-            self._renderer(console, result)
 
     def is_allowed_for_user(self, user: User) -> bool:
         """Is this command allowed for a particular user."""
@@ -954,28 +939,24 @@ class CliApp:
         """A guest mutation use case entry."""
 
         use_case: AppGuestMutationUseCase[UseCaseArgsBase, UseCaseResultBase]
-        renderer: Callable[[Console, UseCaseResultBase | None], None] | None
 
     @dataclasses.dataclass
     class GuestReadonlyEntry:
         """A guest readonly use case entry."""
 
         use_case: AppGuestReadonlyUseCase[UseCaseArgsBase, UseCaseResultBase]
-        renderer: Callable[[Console, UseCaseResultBase | None], None] | None
 
     @dataclasses.dataclass
     class LoggedInMutationEntry:
         """A logged in mutation use case entry."""
 
         use_case: AppLoggedInMutationUseCase[UseCaseArgsBase, UseCaseResultBase]
-        renderer: Callable[[Console, UseCaseResultBase | None], None] | None
 
     @dataclasses.dataclass
     class LoggedInReadonlyEntry:
         """A logged in readonly use case entry."""
 
         use_case: AppLoggedInReadonlyUseCase[UseCaseArgsBase, UseCaseResultBase]
-        renderer: Callable[[Console, UseCaseResultBase | None], None] | None
 
     _global_properties: Final[GlobalProperties]
     _top_level_context: Final[TopLevelContext]
@@ -1024,24 +1005,23 @@ class CliApp:
         use_case: UseCase[
             UseCaseSessionT, UseCaseContextT, UseCaseArgsT, UseCaseResultT
         ],
-        renderer: Callable[[Console, UseCaseResultT], None] | None = None,
     ) -> "CliApp":
         """Add a use case to the app."""
         if isinstance(use_case, AppGuestMutationUseCase):
             self._guest_mutation_use_cases.append(
-                CliApp.GuestMutationEntry(use_case=use_case, renderer=renderer)
+                CliApp.GuestMutationEntry(use_case=use_case)
             )
         elif isinstance(use_case, AppGuestReadonlyUseCase):
             self._guest_readonly_use_cases.append(
-                CliApp.GuestReadonlyEntry(use_case=use_case, renderer=renderer)
+                CliApp.GuestReadonlyEntry(use_case=use_case)
             )
         elif isinstance(use_case, AppLoggedInMutationUseCase):
             self._loggedin_mutation_use_cases.append(
-                CliApp.LoggedInMutationEntry(use_case=use_case, renderer=renderer)
+                CliApp.LoggedInMutationEntry(use_case=use_case)
             )
         elif isinstance(use_case, AppLoggedInReadonlyUseCase):
             self._loggedin_readonly_use_cases.append(
-                CliApp.LoggedInReadonlyEntry(use_case=use_case, renderer=renderer)
+                CliApp.LoggedInReadonlyEntry(use_case=use_case)
             )
         else:
             raise Exception(f"Unsupported use case type {use_case}")
@@ -1058,7 +1038,6 @@ class CliApp:
                     realm_codec_registry=self._realm_codec_registry,
                     session_storage=self._session_storage,
                     use_case=use_case_gm.use_case,
-                    renderer=use_case_gm.renderer,
                 )
             )
 
@@ -1068,7 +1047,6 @@ class CliApp:
                     realm_codec_registry=self._realm_codec_registry,
                     session_storage=self._session_storage,
                     use_case=use_case_gr.use_case,
-                    renderer=use_case_gr.renderer,
                 )
             )
 
@@ -1079,7 +1057,6 @@ class CliApp:
                     session_storage=self._session_storage,
                     top_level_context=self._top_level_context.to_logged_in(),
                     use_case=use_case_lm.use_case,
-                    renderer=use_case_lm.renderer,
                 )
             )
 
@@ -1090,7 +1067,6 @@ class CliApp:
                     session_storage=self._session_storage,
                     top_level_context=self._top_level_context.to_logged_in(),
                     use_case=use_case_lr.use_case,
-                    renderer=use_case_lr.renderer,
                 )
             )
 

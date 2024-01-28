@@ -16,7 +16,7 @@ from rich.tree import Tree
 class WorkspaceShow(LoggedInReadonlyCommand[WorkspaceLoadUseCase]):
     """UseCase class for showing the workspace."""
 
-    def _render_result(self, result: WorkspaceLoadResult) -> None:
+    def _render_result(self, console: Console, result: WorkspaceLoadResult) -> None:
         rich_tree = Tree(f"⭐ {result.workspace.name}", guide_style="bold bright_blue")
 
         workspace_text = Text("Default ")
@@ -33,5 +33,4 @@ class WorkspaceShow(LoggedInReadonlyCommand[WorkspaceLoadUseCase]):
         rich_tree.add(workspace_text)
         rich_tree.add(feature_flags_tree)
 
-        console = Console()
         console.print(rich_tree)

@@ -196,7 +196,7 @@ async def main() -> None:
                     auth_token_stamper=auth_token_stamper,
                     storage_engine=domain_storage_engine,
                 ),
-                renderer=None
+                
             )
         )
         cli_app.add_command(
@@ -210,7 +210,7 @@ async def main() -> None:
                     domain_storage_engine=domain_storage_engine,
                     search_storage_engine=search_storage_engine,
                 ),
-                renderer=None
+                
             ))
         cli_app.add_use_case(
             GenDoUseCase(
@@ -231,7 +231,7 @@ async def main() -> None:
                     auth_token_stamper,
                     domain_storage_engine,
                 ),
-                renderer=None
+                
             )
         )
 
