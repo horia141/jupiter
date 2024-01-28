@@ -1,5 +1,6 @@
 """UseCase for showing the slack tasks."""
 
+from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     actionable_date_to_rich_text,
@@ -23,10 +24,10 @@ from rich.text import Text
 from rich.tree import Tree
 
 
-class SlackTaskShow(LoggedInReadonlyCommand[SlackTaskFindUseCase]):
+class SlackTaskShow(LoggedInReadonlyCommand[SlackTaskFindUseCase, SlackTaskFindResult]):
     """UseCase class for showing the slack tasks."""
 
-    def _render_result(self, console: Console, result: SlackTaskFindResult) -> None:
+    def _render_result(self, console: Console, context: AppLoggedInReadonlyUseCaseContext, result: SlackTaskFindResult) -> None:
         sorted_slack_tasks = sorted(
             result.entries,
             key=lambda ste: (ste.slack_task.archived, ste.slack_task.created_time),
@@ -34,7 +35,7 @@ class SlackTaskShow(LoggedInReadonlyCommand[SlackTaskFindUseCase]):
 
         rich_tree = Tree("💬 Slack Tasks", guide_style="bold bright_blue")
 
-        if self._top_level_context.workspace.is_feature_available(
+        if context.workspace.is_feature_available(
             WorkspaceFeature.PROJECTS
         ):
             generation_project_text = Text(

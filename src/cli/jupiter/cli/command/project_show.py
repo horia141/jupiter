@@ -1,5 +1,6 @@
 """UseCase for showing the projects."""
 
+from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     entity_id_to_rich_text,
@@ -11,10 +12,10 @@ from rich.text import Text
 from rich.tree import Tree
 
 
-class ProjectShow(LoggedInReadonlyCommand[ProjectFindUseCase]):
+class ProjectShow(LoggedInReadonlyCommand[ProjectFindUseCase, ProjectFindResult]):
     """UseCase class for showing the projects."""
 
-    def _render_result(self, console: Console, result: ProjectFindResult) -> None:
+    def _render_result(self, console: Console, context: AppLoggedInReadonlyUseCaseContext, result: ProjectFindResult) -> None:
         sorted_projects = sorted(
             result.projects,
             key=lambda pe: (pe.archived, pe.created_time),

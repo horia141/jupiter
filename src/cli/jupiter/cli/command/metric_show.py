@@ -1,6 +1,8 @@
 """UseCase for showing metrics."""
 from typing import Optional, cast
 
+from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
+
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     actionable_from_day_to_rich_text,
@@ -24,10 +26,10 @@ from rich.text import Text
 from rich.tree import Tree
 
 
-class MetricShow(LoggedInReadonlyCommand[MetricFindUseCase]):
+class MetricShow(LoggedInReadonlyCommand[MetricFindUseCase, MetricFindResult]):
     """UseCase for showing metrics."""
 
-    def _render_result(self, console: Console, result: MetricFindResult) -> None:
+    def _render_result(self, console: Console, context: AppLoggedInReadonlyUseCaseContext, result: MetricFindResult) -> None:
         sorted_metrics = sorted(
             result.entries,
             key=lambda me: (me.metric.archived, me.metric.created_time),
@@ -35,7 +37,7 @@ class MetricShow(LoggedInReadonlyCommand[MetricFindUseCase]):
 
         rich_tree = Tree("📈 Metrics", guide_style="bold bright_blue")
 
-        if self._top_level_context.workspace.is_feature_available(
+        if context.workspace.is_feature_available(
             WorkspaceFeature.PROJECTS
         ):
             collection_project_text = Text(

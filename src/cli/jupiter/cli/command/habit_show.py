@@ -1,6 +1,8 @@
 """UseCase for showing the habits."""
 from typing import cast
 
+from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
+
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     actionable_from_day_to_rich_text,
@@ -27,10 +29,10 @@ from rich.text import Text
 from rich.tree import Tree
 
 
-class HabitShow(LoggedInReadonlyCommand[HabitFindUseCase]):
+class HabitShow(LoggedInReadonlyCommand[HabitFindUseCase, HabitFindResult]):
     """UseCase class for showing the habits."""
 
-    def _render_result(self, console: Console, result: HabitFindResult) -> None:
+    def _render_result(self, console: Console, context: AppLoggedInReadonlyUseCaseContext, result: HabitFindResult) -> None:
         rich_tree = Tree("💪️ Habits", guide_style="bold bright_blue")
 
         sorted_habits = sorted(
@@ -106,7 +108,7 @@ class HabitShow(LoggedInReadonlyCommand[HabitFindUseCase]):
 
             if (
                 project is not None
-                and self._top_level_context.workspace.is_feature_available(
+                and context.workspace.is_feature_available(
                     WorkspaceFeature.PROJECTS
                 )
             ):

@@ -1,6 +1,7 @@
 """ommand for loading previous runs of Gen."""
 
 
+from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     boolean_to_rich_text,
@@ -18,10 +19,10 @@ from rich.text import Text
 from rich.tree import Tree
 
 
-class GenShow(LoggedInReadonlyCommand[GenLoadRunsUseCase]):
+class GenShow(LoggedInReadonlyCommand[GenLoadRunsUseCase, GenLoadRunsResult]):
     """Command for loading previous runs of task generation."""
 
-    def _render_result(self, console: Console, result: GenLoadRunsResult) -> None:
+    def _render_result(self, console: Console, context: AppLoggedInReadonlyUseCaseContext, result: GenLoadRunsResult) -> None:
         rich_tree = Tree("🗑  Task Generation", guide_style="bold bright_blue")
 
         for entry in result.entries:

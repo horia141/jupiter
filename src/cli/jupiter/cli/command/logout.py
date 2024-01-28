@@ -4,6 +4,8 @@ from argparse import ArgumentParser, Namespace
 from jupiter.cli.command.command import Command
 from jupiter.core.framework.secure import secure_class
 
+from rich.console import Console
+
 
 @secure_class
 class Logout(Command):
@@ -22,6 +24,7 @@ class Logout(Command):
 
     async def run(
         self,
+        console: Console,
         args: Namespace,
     ) -> None:
         """Callback to execute when the command is invoked."""

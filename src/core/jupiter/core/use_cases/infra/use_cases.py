@@ -507,14 +507,15 @@ class AppBackgroundMutationUseCase(
         self,
         session: EmptySession,
         args: UseCaseArgs,
-    ) -> UseCaseResult:
+    ) -> tuple[EmptyContext, UseCaseResult]:
         """Execute the command's action."""
         # A hacky hack!
         uc.LOGGER.info(
             f"Invoking background mutation command {self.__class__.__name__} with args {args}",
         )
         context = await self._build_context(session)
-        return await self._execute(context, args)
+        result = await self._execute(context, args)
+        return context, result
 
     @abc.abstractmethod
     async def _execute(

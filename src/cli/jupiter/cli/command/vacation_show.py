@@ -1,6 +1,7 @@
 """UseCase for showing the vacations."""
 
 
+from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     end_date_to_rich_text,
@@ -17,10 +18,10 @@ from rich.text import Text
 from rich.tree import Tree
 
 
-class VacationsShow(LoggedInReadonlyCommand[VacationFindUseCase]):
+class VacationsShow(LoggedInReadonlyCommand[VacationFindUseCase, VacationFindResult]):
     """UseCase class for showing the vacations."""
 
-    def _render_result(self, console: Console, result: VacationFindResult) -> None:
+    def _render_result(self, console: Console, context: AppLoggedInReadonlyUseCaseContext, result: VacationFindResult) -> None:
         sorted_vacations = sorted(
             result.vacations,
             key=lambda v: (v.archived, v.start_date, v.end_date),

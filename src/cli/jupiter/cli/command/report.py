@@ -1,6 +1,8 @@
 """UseCase for generating reports of progress."""
 from typing import List
 
+from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
+
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     entity_id_to_rich_text,
@@ -29,10 +31,10 @@ from rich.text import Text
 from rich.tree import Tree
 
 
-class Report(LoggedInReadonlyCommand[ReportUseCase]):
+class Report(LoggedInReadonlyCommand[ReportUseCase, ReportResult]):
     """UseCase class for reporting progress."""
 
-    def _render_result(self, console: Console, result: ReportResult) -> None:
+    def _render_result(self, console: Console, context: AppLoggedInReadonlyUseCaseContext, result: ReportResult) -> None:
         sources_to_present = result.period_result.sources
 
         today_str = ADate.to_user_date_str(result.period_result.today)
@@ -62,7 +64,7 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
             )
             global_tree.add(inbox_task_table)
 
-            if self._top_level_context.workspace.is_feature_available(
+            if context.workspace.is_feature_available(
                 WorkspaceFeature.BIG_PLANS
             ):
                 big_plan_tree = self._build_big_plans_summary_tree(
@@ -71,7 +73,7 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
                 global_tree.add(big_plan_tree)
 
         if (
-            self._top_level_context.workspace.is_feature_available(
+            context.workspace.is_feature_available(
                 WorkspaceFeature.PROJECTS
             )
             and ReportBreakdown.PROJECTS in result.period_result.breakdowns
@@ -91,7 +93,7 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
                 )
                 project_tree.add(inbox_task_table)
 
-                if self._top_level_context.workspace.is_feature_available(
+                if context.workspace.is_feature_available(
                     WorkspaceFeature.BIG_PLANS
                 ):
                     big_plan_tree = self._build_big_plans_summary_tree(
@@ -120,7 +122,7 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
                 )
                 period_tree.add(inbox_task_table)
 
-                if self._top_level_context.workspace.is_feature_available(
+                if context.workspace.is_feature_available(
                     WorkspaceFeature.BIG_PLANS
                 ):
                     big_plan_tree = self._build_big_plans_summary_tree(
@@ -129,7 +131,7 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
                     global_tree.add(big_plan_tree)
 
         if (
-            self._top_level_context.workspace.is_feature_available(
+            context.workspace.is_feature_available(
                 WorkspaceFeature.HABITS
             )
             and ReportBreakdown.HABITS in result.period_result.breakdowns
@@ -233,7 +235,7 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
                 global_tree.add(period_table)
 
         if (
-            self._top_level_context.workspace.is_feature_available(
+            context.workspace.is_feature_available(
                 WorkspaceFeature.CHORES
             )
             and ReportBreakdown.CHORES in result.period_result.breakdowns
@@ -323,7 +325,7 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
                 global_tree.add(period_table)
 
         if (
-            self._top_level_context.workspace.is_feature_available(
+            context.workspace.is_feature_available(
                 WorkspaceFeature.BIG_PLANS
             )
             and ReportBreakdown.BIG_PLANS in result.period_result.breakdowns

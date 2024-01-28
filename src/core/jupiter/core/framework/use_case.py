@@ -175,7 +175,7 @@ class UseCase(
         self,
         session: UseCaseSession,
         args: UseCaseArgs,
-    ) -> UseCaseResult:
+    ) -> tuple[UseCaseContext, UseCaseResult]:
         """Execute the command's action."""
 
     @abc.abstractmethod
@@ -229,7 +229,7 @@ class MutationUseCase(
         self,
         session: UseCaseSession,
         args: UseCaseArgs,
-    ) -> UseCaseResult:
+    ) -> tuple[UseCaseContext, UseCaseResult]:
         """Execute the command's action."""
         LOGGER.info(
             f"Invoking mutation command {self.__class__.__name__} with args {args}",
@@ -273,7 +273,7 @@ class MutationUseCase(
             args=args,
         )
         await self._invocation_recorder.record(invocation_record)
-        return result
+        return context, result
 
     @abc.abstractmethod
     async def _execute(
@@ -296,13 +296,14 @@ class ReadonlyUseCase(
         self,
         session: UseCaseSession,
         args: UseCaseArgs,
-    ) -> UseCaseResult:
+    ) -> tuple[UseCaseContext, UseCaseResult]:
         """Execute the command's action."""
         LOGGER.info(
             f"Invoking readonly command {self.__class__.__name__} with args {args}",
         )
         context = await self._build_context(session)
-        return await self._execute(context, args)
+        result = await self._execute(context, args)
+        return context, result
 
     @abc.abstractmethod
     async def _execute(

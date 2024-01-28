@@ -1,6 +1,8 @@
 """Command for free form searching across all of Jupiter."""
 from typing import cast
 
+from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
+
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     entity_id_to_rich_text,
@@ -14,10 +16,10 @@ from rich.text import Text
 from rich.tree import Tree
 
 
-class Search(LoggedInReadonlyCommand[SearchUseCase]):
+class Search(LoggedInReadonlyCommand[SearchUseCase, SearchResult]):
     """Command for free form searching across all of Jupiter."""
 
-    def _render_result(self, console: Console, result: SearchResult) -> None:
+    def _render_result(self, console: Console, context: AppLoggedInReadonlyUseCaseContext, result: SearchResult) -> None:
         result_page_text = Text(f"🚀 Showing {len(result.matches)} matches:")
 
         rich_tree = Tree(result_page_text, guide_style="bold bright_blue")
@@ -35,12 +37,12 @@ class Search(LoggedInReadonlyCommand[SearchUseCase]):
             if not match.summary.archived:
                 modified_time_str = f"""Modified {(
                     match.summary.last_modified_time.as_datetime().diff_for_humans(
-                        result.search_time.to_db()
+                        result.search_time.to_timestamp_at_end_of_day().as_datetime()
                     )
                 )}"""
             else:
                 modified_time_str = f"""Archived {(cast(Timestamp, match.summary.archived_time).as_datetime().diff_for_humans(
-                    result.search_time.to_db()
+                    result.search_time.to_timestamp_at_end_of_day().as_datetime()
                 ))}"""
 
             match_text.append(" [")

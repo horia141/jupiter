@@ -1,5 +1,6 @@
 """UseCase for initialising a workspace."""
 
+from jupiter.core.use_cases.infra.use_cases import AppGuestMutationUseCaseContext
 from jupiter.cli.command.command import GuestMutationCommand
 from jupiter.cli.session_storage import SessionInfo
 from jupiter.core.framework.secure import secure_class
@@ -9,10 +10,10 @@ from rich.text import Text
 
 
 @secure_class
-class Initialize(GuestMutationCommand[InitUseCase]):
+class Initialize(GuestMutationCommand[InitUseCase, InitResult]):
     """UseCase class for initialising a workspace."""
 
-    def _render_result(self, console: Console, result: InitResult) -> None:
+    def _render_result(self, console: Console, context: AppGuestMutationUseCaseContext, result: InitResult) -> None:
         self._session_storage.store(SessionInfo(auth_token_ext=result.auth_token_ext))
 
         rich_text = Text("Your recovery token is ")

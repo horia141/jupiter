@@ -1,5 +1,6 @@
 """UseCase for showing the persons."""
 
+from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     entity_id_to_rich_text,
@@ -16,10 +17,10 @@ from rich.text import Text
 from rich.tree import Tree
 
 
-class PersonShow(LoggedInReadonlyCommand[PersonFindUseCase]):
+class PersonShow(LoggedInReadonlyCommand[PersonFindUseCase, PersonFindResult]):
     """UseCase for showing the persons."""
 
-    def _render_result(self, console: Console, result: PersonFindResult) -> None:
+    def _render_result(self, console: Console, context: AppLoggedInReadonlyUseCaseContext, result: PersonFindResult) -> None:
         sorted_entries = sorted(
             result.entries,
             key=lambda p: (
@@ -33,7 +34,7 @@ class PersonShow(LoggedInReadonlyCommand[PersonFindUseCase]):
 
         rich_tree = Tree("👨 Persons", guide_style="bold bright_blue")
 
-        if self._top_level_context.workspace.is_feature_available(
+        if context.workspace.is_feature_available(
             WorkspaceFeature.PROJECTS
         ):
             catch_up_project_text = Text(

@@ -1,5 +1,6 @@
 """UseCase for showing the inbox tasks."""
 
+from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     actionable_date_to_rich_text,
@@ -24,10 +25,10 @@ from rich.text import Text
 from rich.tree import Tree
 
 
-class InboxTaskShow(LoggedInReadonlyCommand[InboxTaskFindUseCase]):
+class InboxTaskShow(LoggedInReadonlyCommand[InboxTaskFindUseCase, InboxTaskFindResult]):
     """UseCase class for showing the inbox tasks."""
 
-    def _render_result(self, console: Console, result: InboxTaskFindResult) -> None:
+    def _render_result(self, console: Console, context: AppLoggedInReadonlyUseCaseContext, result: InboxTaskFindResult) -> None:
         sorted_inbox_tasks = sorted(
             result.entries,
             key=lambda it: (
@@ -74,7 +75,7 @@ class InboxTaskShow(LoggedInReadonlyCommand[InboxTaskFindUseCase]):
 
             if (
                 habit is not None
-                and self._top_level_context.workspace.is_feature_available(
+                and context.workspace.is_feature_available(
                     WorkspaceFeature.HABITS
                 )
             ):
@@ -82,7 +83,7 @@ class InboxTaskShow(LoggedInReadonlyCommand[InboxTaskFindUseCase]):
                 inbox_task_info_text.append(parent_entity_name_to_rich_text(habit.name))
             elif (
                 chore is not None
-                and self._top_level_context.workspace.is_feature_available(
+                and context.workspace.is_feature_available(
                     WorkspaceFeature.CHORES
                 )
             ):
@@ -90,7 +91,7 @@ class InboxTaskShow(LoggedInReadonlyCommand[InboxTaskFindUseCase]):
                 inbox_task_info_text.append(parent_entity_name_to_rich_text(chore.name))
             elif (
                 big_plan is not None
-                and self._top_level_context.workspace.is_feature_available(
+                and context.workspace.is_feature_available(
                     WorkspaceFeature.BIG_PLANS
                 )
             ):
@@ -100,7 +101,7 @@ class InboxTaskShow(LoggedInReadonlyCommand[InboxTaskFindUseCase]):
                 )
             elif (
                 metric is not None
-                and self._top_level_context.workspace.is_feature_available(
+                and context.workspace.is_feature_available(
                     WorkspaceFeature.METRICS
                 )
             ):
@@ -110,7 +111,7 @@ class InboxTaskShow(LoggedInReadonlyCommand[InboxTaskFindUseCase]):
                 )
             elif (
                 person is not None
-                and self._top_level_context.workspace.is_feature_available(
+                and context.workspace.is_feature_available(
                     WorkspaceFeature.PERSONS
                 )
             ):
@@ -120,7 +121,7 @@ class InboxTaskShow(LoggedInReadonlyCommand[InboxTaskFindUseCase]):
                 )
             elif (
                 slack_task is not None
-                and self._top_level_context.workspace.is_feature_available(
+                and context.workspace.is_feature_available(
                     WorkspaceFeature.SLACK_TASKS
                 )
             ):
@@ -130,7 +131,7 @@ class InboxTaskShow(LoggedInReadonlyCommand[InboxTaskFindUseCase]):
                 )
             elif (
                 email_task is not None
-                and self._top_level_context.workspace.is_feature_available(
+                and context.workspace.is_feature_available(
                     WorkspaceFeature.EMAIL_TASKS
                 )
             ):
@@ -151,7 +152,7 @@ class InboxTaskShow(LoggedInReadonlyCommand[InboxTaskFindUseCase]):
 
             if (
                 project is not None
-                and self._top_level_context.workspace.is_feature_available(
+                and context.workspace.is_feature_available(
                     WorkspaceFeature.PROJECTS
                 )
             ):

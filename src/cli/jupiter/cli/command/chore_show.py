@@ -1,6 +1,8 @@
 """UseCase for showing the chores."""
 from typing import cast
 
+from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
+
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     actionable_from_day_to_rich_text,
@@ -29,10 +31,10 @@ from rich.text import Text
 from rich.tree import Tree
 
 
-class ChoreShow(LoggedInReadonlyCommand[ChoreFindUseCase]):
+class ChoreShow(LoggedInReadonlyCommand[ChoreFindUseCase, ChoreFindResult]):
     """UseCase class for showing the chores."""
 
-    def _render_result(self, console: Console, result: ChoreFindResult) -> None:
+    def _render_result(self, console: Console, context: AppLoggedInReadonlyUseCaseContext, result: ChoreFindResult) -> None:
         rich_tree = Tree("♻️  Chores", guide_style="bold bright_blue")
 
         sorted_chores = sorted(
@@ -116,7 +118,7 @@ class ChoreShow(LoggedInReadonlyCommand[ChoreFindUseCase]):
 
             if (
                 project is not None
-                and self._top_level_context.workspace.is_feature_available(
+                and context.workspace.is_feature_available(
                     WorkspaceFeature.PROJECTS
                 )
             ):

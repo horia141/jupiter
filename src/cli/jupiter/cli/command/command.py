@@ -41,10 +41,14 @@ from jupiter.core.framework.value import (
 from jupiter.core.use_cases.infra.storage_engine import UseCaseStorageEngine
 from jupiter.core.use_cases.infra.use_cases import (
     AppGuestMutationUseCase,
+    AppGuestMutationUseCaseContext,
     AppGuestReadonlyUseCase,
+    AppGuestReadonlyUseCaseContext,
     AppGuestUseCaseSession,
     AppLoggedInMutationUseCase,
+    AppLoggedInMutationUseCaseContext,
     AppLoggedInReadonlyUseCase,
+    AppLoggedInReadonlyUseCaseContext,
     AppLoggedInUseCaseSession,
 )
 from jupiter.core.utils.global_properties import GlobalProperties
@@ -130,7 +134,6 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
     """Base class for commands based on use cases."""
 
     _realm_codec_registry: Final[RealmCodecRegistry]
-    _top_level_context: Final[LoggedInTopLevelContext]
     _args_type: type[UseCaseArgsBase]
     _use_case: UseCaseT
 
@@ -138,13 +141,11 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
         self,
         realm_codec_registry: RealmCodecRegistry,
         session_storage: SessionStorage,
-        top_level_context: LoggedInTopLevelContext,
         use_case: UseCaseT,
     ) -> None:
         """Constructor."""
         super().__init__(session_storage)
         self._realm_codec_registry = realm_codec_registry
-        self._top_level_context = top_level_context
         self._args_type = self._infer_args_class(use_case)
         self._use_case = use_case
 
@@ -655,7 +656,7 @@ GuestMutationCommandUseCase = TypeVar(
 
 
 class GuestMutationCommand(
-    Generic[GuestMutationCommandUseCase],
+    Generic[GuestMutationCommandUseCase, UseCaseResultT],
     UseCaseCommand[GuestMutationCommandUseCase],
     abc.ABC,
 ):
@@ -680,15 +681,15 @@ class GuestMutationCommand(
         parsed_args = self._realm_codec_registry.get_decoder(
             self._args_type, CliRealm
         ).decode(vars(args))
-        result = await self._use_case.execute(
+        context, result = await self._use_case.execute(
             AppGuestUseCaseSession(
                 session_info.auth_token_ext if session_info else None
             ),
             parsed_args,
         )
-        self._render_result(console, result)
+        self._render_result(console, context, result)
 
-    def _render_result(self, console: Console, result: UseCaseResultT) -> None:
+    def _render_result(self, console: Console, context: AppGuestMutationUseCaseContext, result: UseCaseResultT) -> None:
         """Render the result."""
 
 
@@ -698,7 +699,7 @@ GuestReadonlyCommandUseCase = TypeVar(
 
 
 class GuestReadonlyCommand(
-    Generic[GuestReadonlyCommandUseCase],
+    Generic[GuestReadonlyCommandUseCase, UseCaseResultT],
     UseCaseCommand[GuestReadonlyCommandUseCase],
     abc.ABC,
 ):
@@ -723,15 +724,15 @@ class GuestReadonlyCommand(
         parsed_args = self._realm_codec_registry.get_decoder(
             self._args_type, CliRealm
         ).decode(vars(args))
-        result = await self._use_case.execute(
+        context, result = await self._use_case.execute(
             AppGuestUseCaseSession(
                 session_info.auth_token_ext if session_info else None
             ),
             parsed_args,
         )
-        self._render_result(console, result)
+        self._render_result(console, context, result)
 
-    def _render_result(self, console: Console, result: UseCaseResultT) -> None:
+    def _render_result(self, console: Console, context: AppGuestReadonlyUseCaseContext, result: UseCaseResultT) -> None:
         """Render the result."""
 
     @property
@@ -746,7 +747,7 @@ LoggedInMutationCommandUseCase = TypeVar(
 
 
 class LoggedInMutationCommand(
-    Generic[LoggedInMutationCommandUseCase],
+    Generic[LoggedInMutationCommandUseCase, UseCaseResultT],
     UseCaseCommand[LoggedInMutationCommandUseCase],
     abc.ABC,
 ):
@@ -771,13 +772,13 @@ class LoggedInMutationCommand(
         parsed_args = self._realm_codec_registry.get_decoder(
             self._args_type, CliRealm
         ).decode(vars(args))
-        result = await self._use_case.execute(
+        context, result = await self._use_case.execute(
             AppLoggedInUseCaseSession(session.auth_token_ext),
             parsed_args,
         )
-        self._render_result(console, result)
+        self._render_result(console, context, result)
 
-    def _render_result(self, console: Console, result: UseCaseResultT) -> None:
+    def _render_result(self, console: Console, context: AppLoggedInMutationUseCaseContext, result: UseCaseResultT) -> None:
         """Render the result."""
 
     @property
@@ -825,7 +826,7 @@ LoggedInReadonlyCommandUseCase = TypeVar(
 
 
 class LoggedInReadonlyCommand(
-    Generic[LoggedInReadonlyCommandUseCase],
+    Generic[LoggedInReadonlyCommandUseCase, UseCaseResultT],
     UseCaseCommand[LoggedInReadonlyCommandUseCase],
     abc.ABC,
 ):
@@ -850,13 +851,13 @@ class LoggedInReadonlyCommand(
         parsed_args = self._realm_codec_registry.get_decoder(
             self._args_type, CliRealm
         ).decode(vars(args))
-        result = await self._use_case.execute(
+        context, result = await self._use_case.execute(
             AppLoggedInUseCaseSession(session.auth_token_ext),
             parsed_args,
         )
-        self._render_result(console, result)
+        self._render_result(console, context, result)
 
-    def _render_result(self, console: Console, result: UseCaseResultT) -> None:
+    def _render_result(self, console: Console, context: AppLoggedInReadonlyUseCaseContext, result: UseCaseResultT) -> None:
         """Render the result."""
 
     @property
@@ -1031,11 +1032,11 @@ class CliApp:
                 ):
                     continue
 
-                if len(obj.__parameters__) > 0:
+                if len(obj.__parameters__) > 0:  # type: ignore
                     # This is not a concret type and we can move on
                     continue
 
-                use_case_type = get_args(obj.__orig_bases__[0])[0]
+                use_case_type = get_args(obj.__orig_bases__[0])[0]  # type: ignore
 
                 yield obj, use_case_type
 
@@ -1082,7 +1083,7 @@ class CliApp:
                 ):
                     continue
 
-                if len(obj.__parameters__) > 0:
+                if len(obj.__parameters__) > 0:  # type: ignore
                     # This is not a concret type and we can move on
                     continue
 
@@ -1121,12 +1122,12 @@ class CliApp:
 
     def _add_use_case_command(
         self,
-        use_case_command_type: type[Command],
+        use_case_command_type: type[UseCaseCommand[UseCaseT]],
         use_case_type: type[
             UseCase[UseCaseSessionT, UseCaseContextT, UseCaseArgsT, UseCaseResultT]
         ],
     ) -> "CliApp":
-        if use_case_command_type in self._use_case_commands:
+        if use_case_type in self._use_case_commands:
             raise Exception(
                 f"Use case command type {use_case_command_type} already added"
             )
@@ -1134,8 +1135,7 @@ class CliApp:
             self._use_case_commands[use_case_type] = use_case_command_type(
                 realm_codec_registry=self._realm_codec_registry,
                 session_storage=self._session_storage,
-                top_level_context=self._top_level_context,
-                use_case=use_case_type(
+                use_case=use_case_type( # type: ignore
                     time_provider=self._time_provider,
                     invocation_recorder=self._invocation_recorder,
                     progress_reporter_factory=self._progress_reporter_factory,
@@ -1149,8 +1149,7 @@ class CliApp:
             self._use_case_commands[use_case_type] = use_case_command_type(
                 realm_codec_registry=self._realm_codec_registry,
                 session_storage=self._session_storage,
-                top_level_context=self._top_level_context,
-                use_case=use_case_type(
+                use_case=use_case_type( # type: ignore
                     global_properties=self._global_properties,
                     time_provider=self._time_provider,
                     auth_token_stamper=self._auth_token_stamper,
@@ -1162,8 +1161,7 @@ class CliApp:
             self._use_case_commands[use_case_type] = use_case_command_type(
                 realm_codec_registry=self._realm_codec_registry,
                 session_storage=self._session_storage,
-                top_level_context=self._top_level_context.to_logged_in(),
-                use_case=use_case_type(
+                use_case=use_case_type( # type: ignore
                     time_provider=self._time_provider,
                     invocation_recorder=self._invocation_recorder,
                     progress_reporter_factory=self._progress_reporter_factory,
@@ -1178,8 +1176,7 @@ class CliApp:
             self._use_case_commands[use_case_type] = use_case_command_type(
                 realm_codec_registry=self._realm_codec_registry,
                 session_storage=self._session_storage,
-                top_level_context=self._top_level_context.to_logged_in(),
-                use_case=use_case_type(
+                use_case=use_case_type( # type: ignore
                     global_properties=self._global_properties,
                     time_provider=self._time_provider,
                     auth_token_stamper=self._auth_token_stamper,
@@ -1199,6 +1196,7 @@ class CliApp:
         if command.name() in self._commands:
             raise Exception(f"Command type {command} already added")
         self._commands[command.name()] = command
+        return self
 
     def _add_use_case_type(
         self,
@@ -1212,8 +1210,7 @@ class CliApp:
             self._use_case_commands[use_case_type] = GuestMutationCommand(
                 realm_codec_registry=self._realm_codec_registry,
                 session_storage=self._session_storage,
-                top_level_context=self._top_level_context,
-                use_case=use_case_type(
+                use_case=use_case_type( # type: ignore
                     time_provider=self._time_provider,
                     invocation_recorder=self._invocation_recorder,
                     progress_reporter_factory=self._progress_reporter_factory,
@@ -1227,8 +1224,7 @@ class CliApp:
             self._use_case_commands[use_case_type] = GuestReadonlyCommand(
                 realm_codec_registry=self._realm_codec_registry,
                 session_storage=self._session_storage,
-                top_level_context=self._top_level_context,
-                use_case=use_case_type(
+                use_case=use_case_type( # type: ignore
                     global_properties=self._global_properties,
                     time_provider=self._time_provider,
                     auth_token_stamper=self._auth_token_stamper,
@@ -1240,8 +1236,7 @@ class CliApp:
             self._use_case_commands[use_case_type] = LoggedInMutationCommand(
                 realm_codec_registry=self._realm_codec_registry,
                 session_storage=self._session_storage,
-                top_level_context=self._top_level_context.to_logged_in(),
-                use_case=use_case_type(
+                use_case=use_case_type( # type: ignore
                     global_properties=self._global_properties,
                     time_provider=self._time_provider,
                     invocation_recorder=self._invocation_recorder,
@@ -1256,8 +1251,7 @@ class CliApp:
             self._use_case_commands[use_case_type] = LoggedInReadonlyCommand(
                 realm_codec_registry=self._realm_codec_registry,
                 session_storage=self._session_storage,
-                top_level_context=self._top_level_context.to_logged_in(),
-                use_case=use_case_type(
+                use_case=use_case_type( # type: ignore
                     global_properties=self._global_properties,
                     time_provider=self._time_provider,
                     auth_token_stamper=self._auth_token_stamper,
