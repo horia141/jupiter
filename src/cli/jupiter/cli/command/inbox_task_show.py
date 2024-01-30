@@ -1,6 +1,5 @@
 """UseCase for showing the inbox tasks."""
 
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     actionable_date_to_rich_text,
@@ -20,6 +19,7 @@ from jupiter.core.use_cases.inbox_tasks.find import (
     InboxTaskFindResult,
     InboxTaskFindUseCase,
 )
+from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
 from rich.console import Console
 from rich.text import Text
 from rich.tree import Tree
@@ -28,7 +28,12 @@ from rich.tree import Tree
 class InboxTaskShow(LoggedInReadonlyCommand[InboxTaskFindUseCase, InboxTaskFindResult]):
     """UseCase class for showing the inbox tasks."""
 
-    def _render_result(self, console: Console, context: AppLoggedInReadonlyUseCaseContext, result: InboxTaskFindResult) -> None:
+    def _render_result(
+        self,
+        console: Console,
+        context: AppLoggedInReadonlyUseCaseContext,
+        result: InboxTaskFindResult,
+    ) -> None:
         sorted_inbox_tasks = sorted(
             result.entries,
             key=lambda it: (
@@ -73,67 +78,46 @@ class InboxTaskShow(LoggedInReadonlyCommand[InboxTaskFindUseCase, InboxTaskFindR
                     difficulty_to_rich_text(inbox_task.difficulty),
                 )
 
-            if (
-                habit is not None
-                and context.workspace.is_feature_available(
-                    WorkspaceFeature.HABITS
-                )
+            if habit is not None and context.workspace.is_feature_available(
+                WorkspaceFeature.HABITS
             ):
                 inbox_task_info_text.append(" ")
                 inbox_task_info_text.append(parent_entity_name_to_rich_text(habit.name))
-            elif (
-                chore is not None
-                and context.workspace.is_feature_available(
-                    WorkspaceFeature.CHORES
-                )
+            elif chore is not None and context.workspace.is_feature_available(
+                WorkspaceFeature.CHORES
             ):
                 inbox_task_info_text.append(" ")
                 inbox_task_info_text.append(parent_entity_name_to_rich_text(chore.name))
-            elif (
-                big_plan is not None
-                and context.workspace.is_feature_available(
-                    WorkspaceFeature.BIG_PLANS
-                )
+            elif big_plan is not None and context.workspace.is_feature_available(
+                WorkspaceFeature.BIG_PLANS
             ):
                 inbox_task_info_text.append(" ")
                 inbox_task_info_text.append(
                     parent_entity_name_to_rich_text(big_plan.name),
                 )
-            elif (
-                metric is not None
-                and context.workspace.is_feature_available(
-                    WorkspaceFeature.METRICS
-                )
+            elif metric is not None and context.workspace.is_feature_available(
+                WorkspaceFeature.METRICS
             ):
                 inbox_task_info_text.append(" ")
                 inbox_task_info_text.append(
                     parent_entity_name_to_rich_text(metric.name),
                 )
-            elif (
-                person is not None
-                and context.workspace.is_feature_available(
-                    WorkspaceFeature.PERSONS
-                )
+            elif person is not None and context.workspace.is_feature_available(
+                WorkspaceFeature.PERSONS
             ):
                 inbox_task_info_text.append(" ")
                 inbox_task_info_text.append(
                     parent_entity_name_to_rich_text(person.name),
                 )
-            elif (
-                slack_task is not None
-                and context.workspace.is_feature_available(
-                    WorkspaceFeature.SLACK_TASKS
-                )
+            elif slack_task is not None and context.workspace.is_feature_available(
+                WorkspaceFeature.SLACK_TASKS
             ):
                 inbox_task_info_text.append(" ")
                 inbox_task_info_text.append(
                     parent_entity_name_to_rich_text(slack_task.name),
                 )
-            elif (
-                email_task is not None
-                and context.workspace.is_feature_available(
-                    WorkspaceFeature.EMAIL_TASKS
-                )
+            elif email_task is not None and context.workspace.is_feature_available(
+                WorkspaceFeature.EMAIL_TASKS
             ):
                 inbox_task_info_text.append(" ")
                 inbox_task_info_text.append(
@@ -150,11 +134,8 @@ class InboxTaskShow(LoggedInReadonlyCommand[InboxTaskFindUseCase, InboxTaskFindR
                 inbox_task_info_text.append(" ")
                 inbox_task_info_text.append(due_date_to_rich_text(inbox_task.due_date))
 
-            if (
-                project is not None
-                and context.workspace.is_feature_available(
-                    WorkspaceFeature.PROJECTS
-                )
+            if project is not None and context.workspace.is_feature_available(
+                WorkspaceFeature.PROJECTS
             ):
                 inbox_task_info_text.append(" ")
                 inbox_task_info_text.append(project_to_rich_text(project.name))

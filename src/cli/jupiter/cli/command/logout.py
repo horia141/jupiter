@@ -3,7 +3,6 @@ from argparse import ArgumentParser, Namespace
 
 from jupiter.cli.command.command import Command
 from jupiter.core.framework.secure import secure_class
-
 from rich.console import Console
 
 

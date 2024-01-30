@@ -13,7 +13,7 @@ from typing import Any, Final, Generic, Iterator, TypeVar, cast, get_args, get_o
 import inflection
 from jupiter.cli.command.rendering import RichConsoleProgressReporterFactory
 from jupiter.cli.session_storage import SessionInfo, SessionStorage
-from jupiter.cli.top_level_context import LoggedInTopLevelContext, TopLevelContext
+from jupiter.cli.top_level_context import TopLevelContext
 from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
 from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainStorageEngine, SearchStorageEngine
@@ -689,7 +689,12 @@ class GuestMutationCommand(
         )
         self._render_result(console, context, result)
 
-    def _render_result(self, console: Console, context: AppGuestMutationUseCaseContext, result: UseCaseResultT) -> None:
+    def _render_result(
+        self,
+        console: Console,
+        context: AppGuestMutationUseCaseContext,
+        result: UseCaseResultT,
+    ) -> None:
         """Render the result."""
 
 
@@ -732,7 +737,12 @@ class GuestReadonlyCommand(
         )
         self._render_result(console, context, result)
 
-    def _render_result(self, console: Console, context: AppGuestReadonlyUseCaseContext, result: UseCaseResultT) -> None:
+    def _render_result(
+        self,
+        console: Console,
+        context: AppGuestReadonlyUseCaseContext,
+        result: UseCaseResultT,
+    ) -> None:
         """Render the result."""
 
     @property
@@ -778,7 +788,12 @@ class LoggedInMutationCommand(
         )
         self._render_result(console, context, result)
 
-    def _render_result(self, console: Console, context: AppLoggedInMutationUseCaseContext, result: UseCaseResultT) -> None:
+    def _render_result(
+        self,
+        console: Console,
+        context: AppLoggedInMutationUseCaseContext,
+        result: UseCaseResultT,
+    ) -> None:
         """Render the result."""
 
     @property
@@ -857,7 +872,12 @@ class LoggedInReadonlyCommand(
         )
         self._render_result(console, context, result)
 
-    def _render_result(self, console: Console, context: AppLoggedInReadonlyUseCaseContext, result: UseCaseResultT) -> None:
+    def _render_result(
+        self,
+        console: Console,
+        context: AppLoggedInReadonlyUseCaseContext,
+        result: UseCaseResultT,
+    ) -> None:
         """Render the result."""
 
     @property
@@ -1135,7 +1155,7 @@ class CliApp:
             self._use_case_commands[use_case_type] = use_case_command_type(
                 realm_codec_registry=self._realm_codec_registry,
                 session_storage=self._session_storage,
-                use_case=use_case_type( # type: ignore
+                use_case=use_case_type(  # type: ignore
                     time_provider=self._time_provider,
                     invocation_recorder=self._invocation_recorder,
                     progress_reporter_factory=self._progress_reporter_factory,
@@ -1149,7 +1169,7 @@ class CliApp:
             self._use_case_commands[use_case_type] = use_case_command_type(
                 realm_codec_registry=self._realm_codec_registry,
                 session_storage=self._session_storage,
-                use_case=use_case_type( # type: ignore
+                use_case=use_case_type(  # type: ignore
                     global_properties=self._global_properties,
                     time_provider=self._time_provider,
                     auth_token_stamper=self._auth_token_stamper,
@@ -1161,7 +1181,7 @@ class CliApp:
             self._use_case_commands[use_case_type] = use_case_command_type(
                 realm_codec_registry=self._realm_codec_registry,
                 session_storage=self._session_storage,
-                use_case=use_case_type( # type: ignore
+                use_case=use_case_type(  # type: ignore
                     time_provider=self._time_provider,
                     invocation_recorder=self._invocation_recorder,
                     progress_reporter_factory=self._progress_reporter_factory,
@@ -1176,7 +1196,7 @@ class CliApp:
             self._use_case_commands[use_case_type] = use_case_command_type(
                 realm_codec_registry=self._realm_codec_registry,
                 session_storage=self._session_storage,
-                use_case=use_case_type( # type: ignore
+                use_case=use_case_type(  # type: ignore
                     global_properties=self._global_properties,
                     time_provider=self._time_provider,
                     auth_token_stamper=self._auth_token_stamper,
@@ -1210,7 +1230,7 @@ class CliApp:
             self._use_case_commands[use_case_type] = GuestMutationCommand(
                 realm_codec_registry=self._realm_codec_registry,
                 session_storage=self._session_storage,
-                use_case=use_case_type( # type: ignore
+                use_case=use_case_type(  # type: ignore
                     time_provider=self._time_provider,
                     invocation_recorder=self._invocation_recorder,
                     progress_reporter_factory=self._progress_reporter_factory,
@@ -1224,7 +1244,7 @@ class CliApp:
             self._use_case_commands[use_case_type] = GuestReadonlyCommand(
                 realm_codec_registry=self._realm_codec_registry,
                 session_storage=self._session_storage,
-                use_case=use_case_type( # type: ignore
+                use_case=use_case_type(  # type: ignore
                     global_properties=self._global_properties,
                     time_provider=self._time_provider,
                     auth_token_stamper=self._auth_token_stamper,
@@ -1236,7 +1256,7 @@ class CliApp:
             self._use_case_commands[use_case_type] = LoggedInMutationCommand(
                 realm_codec_registry=self._realm_codec_registry,
                 session_storage=self._session_storage,
-                use_case=use_case_type( # type: ignore
+                use_case=use_case_type(  # type: ignore
                     global_properties=self._global_properties,
                     time_provider=self._time_provider,
                     invocation_recorder=self._invocation_recorder,
@@ -1251,7 +1271,7 @@ class CliApp:
             self._use_case_commands[use_case_type] = LoggedInReadonlyCommand(
                 realm_codec_registry=self._realm_codec_registry,
                 session_storage=self._session_storage,
-                use_case=use_case_type( # type: ignore
+                use_case=use_case_type(  # type: ignore
                     global_properties=self._global_properties,
                     time_provider=self._time_provider,
                     auth_token_stamper=self._auth_token_stamper,

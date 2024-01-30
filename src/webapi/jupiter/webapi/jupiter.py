@@ -573,50 +573,61 @@ invocation_recorder = PersistentMutationUseCaseInvocationRecorder(
 )
 
 init_use_case = InitUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=NoOpProgressReporterFactory(),
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
-    global_properties=global_properties,
 )
 
 login_use_case = LoginUseCase(
+    global_properties=global_properties,
+    time_provider=request_time_provider,
     domain_storage_engine=domain_storage_engine,
     auth_token_stamper=auth_token_stamper,
+    search_storage_engine=search_storage_engine,
 )
 
 auth_change_password_use_case = ChangePasswordUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 
 auth_reset_password_use_case = ResetPasswordUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=NoOpProgressReporterFactory(),
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 
 search_use_case = SearchUseCase(
+    time_provider=request_time_provider,
+    global_properties=global_properties,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
 )
 
 gen_do_use_case = GenDoUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 
 gen_do_all_use_case = GenDoAllUseCase(
@@ -627,23 +638,30 @@ gen_do_all_use_case = GenDoAllUseCase(
 )
 
 gen_load_runs_use_case = GenLoadRunsUseCase(
+    time_provider=request_time_provider,
+    global_properties=global_properties,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 
 report_use_case = ReportUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     auth_token_stamper=auth_token_stamper,
-    storage_engine=domain_storage_engine,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 
 gc_do_use_case = GCDoUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 
 gc_do_all_use_case = GCDoAllUseCase(
@@ -654,709 +672,991 @@ gc_do_all_use_case = GCDoAllUseCase(
 )
 
 gc_load_runs_use_case = GCLoadRunsUseCase(
+    global_properties=global_properties,
+    time_provider=request_time_provider,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 
 load_top_level_info_use_case = LoadTopLevelInfoUseCase(
-    auth_token_stamper=auth_token_stamper,
-    storage_engine=domain_storage_engine,
     global_properties=global_properties,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
     time_provider=request_time_provider,
 )
 
 load_progress_reporter_token_use_case = LoadProgressReporterTokenUseCase(
-    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
+    time_provider=request_time_provider,
+    global_properties=global_properties,
+    search_storage_engine=search_storage_engine,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
 )
 
 get_summaries_use_case = GetSummariesUseCase(
+    global_properties=global_properties,
     auth_token_stamper=auth_token_stamper,
+    time_provider=request_time_provider,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 
 user_update_use_case = UserUpdateUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 
 user_change_feature_flags_use_case = UserChangeFeatureFlagsUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
-    global_properties=global_properties,
+    use_case_storage_engine=usecase_storage_engine,
 )
 
 user_load_use_case = UserLoadUseCase(
-    auth_token_stamper=auth_token_stamper,
-    storage_engine=domain_storage_engine,
     time_provider=request_time_provider,
+    global_properties=global_properties,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 
 workspace_update_use_case = WorkspaceUpdateUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 workspace_change_default_project_use_case = WorkspaceChangeDefaultProjectUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 workspace_change_feature_flags_use_case = WorkspaceChangeFeatureFlagsUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
-    global_properties=global_properties,
+    use_case_storage_engine=usecase_storage_engine,
 )
 workspace_load_use_case = WorkspaceLoadUseCase(
-    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
+    time_provider=request_time_provider,
+    global_properties=global_properties,
+    search_storage_engine=search_storage_engine,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
 )
 
 inbox_task_create_use_case = InboxTaskCreateUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 inbox_task_update_use_case = InboxTaskUpdateUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 inbox_task_archive_use_case = InboxTaskArchiveUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 inbox_task_change_project_use_case = InboxTaskChangeProjectUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 inbox_task_associate_with_big_plan = InboxTaskAssociateWithBigPlanUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 inbox_task_load_use_case = InboxTaskLoadUseCase(
-    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
+    time_provider=request_time_provider,
+    global_properties=global_properties,
+    search_storage_engine=search_storage_engine,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
 )
 inbox_task_find_use_case = InboxTaskFindUseCase(
-    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
+    time_provider=request_time_provider,
+    global_properties=global_properties,
+    search_storage_engine=search_storage_engine,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
 )
 
 habit_create_use_case = HabitCreateUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 habit_archive_use_case = HabitArchiveUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 habit_update_use_case = HabitUpdateUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 habit_change_project_use_case = HabitChangeProjectUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 habit_suspend_use_case = HabitSuspendUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 habit_unsuspend_use_case = HabitUnsuspendUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 habit_load_use_case = HabitLoadUseCase(
-    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
+    time_provider=request_time_provider,
+    global_properties=global_properties,
+    search_storage_engine=search_storage_engine,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
 )
 habit_find_use_case = HabitFindUseCase(
-    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
+    time_provider=request_time_provider,
+    global_properties=global_properties,
+    search_storage_engine=search_storage_engine,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
 )
 
 chore_create_use_case = ChoreCreateUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 chore_archive_use_case = ChoreArchiveUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 chore_update_use_case = ChoreUpdateUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 chore_change_project_use_case = ChoreChangeProjectUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 chore_suspend_use_case = ChoreSuspendUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 chore_unsuspend_use_case = ChoreUnsuspendUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 chore_load_use_case = ChoreLoadUseCase(
-    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
+    time_provider=request_time_provider,
+    global_properties=global_properties,
+    search_storage_engine=search_storage_engine,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
 )
 chore_find_use_case = ChoreFindUseCase(
-    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
+    time_provider=request_time_provider,
+    global_properties=global_properties,
+    search_storage_engine=search_storage_engine,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
 )
 
 big_plan_create_use_case = BigPlanCreateUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
+
 big_plan_archive_use_case = BigPlanArchiveUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 big_plan_update_use_case = BigPlanUpdateUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 big_plan_change_project_use_case = BigPlanChangeProjectUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 big_plan_load_use_case = BigPlanLoadUseCase(
-    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
+    time_provider=request_time_provider,
+    global_properties=global_properties,
+    search_storage_engine=search_storage_engine,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
 )
 big_plan_find_use_case = BigPlanFindUseCase(
-    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
+    time_provider=request_time_provider,
+    global_properties=global_properties,
+    search_storage_engine=search_storage_engine,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
 )
 
 journal_create_use_case = JournalCreateUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 journal_archive_use_case = JournalArchiveUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 journal_change_time_config_use_case = JournalChangeTimeConfigUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 journal_update_report_use_case = JournalUpdateReportUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 journal_find_use_case = JournalFindUseCase(
-    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
+    time_provider=request_time_provider,
+    global_properties=global_properties,
+    search_storage_engine=search_storage_engine,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
 )
 journal_load_use_case = JournalLoadUseCase(
-    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
+    time_provider=request_time_provider,
+    global_properties=global_properties,
+    search_storage_engine=search_storage_engine,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
 )
 
 
 doc_create_use_case = DocCreateUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 doc_archive_use_case = DocArchiveUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 doc_update_use_case = DocUpdateUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 doc_change_parent_use_case = DocChangeParentUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 doc_load_use_case = DocLoadUseCase(
-    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
+    time_provider=request_time_provider,
+    global_properties=global_properties,
+    search_storage_engine=search_storage_engine,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
 )
 doc_find_use_case = DocFindUseCase(
-    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
+    time_provider=request_time_provider,
+    global_properties=global_properties,
+    search_storage_engine=search_storage_engine,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
 )
 
 vacation_create_use_case = VacationCreateUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 vacation_archive_use_case = VacationArchiveUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 vacation_update_use_case = VacationUpdateUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 vacation_load_use_case = VacationLoadUseCase(
-    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
+    time_provider=request_time_provider,
+    global_properties=global_properties,
+    search_storage_engine=search_storage_engine,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
 )
 vacation_find_use_case = VacationFindUseCase(
-    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
+    time_provider=request_time_provider,
+    global_properties=global_properties,
+    search_storage_engine=search_storage_engine,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
 )
 
 project_create_use_case = ProjectCreateUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 project_archive_use_case = ProjectArchiveUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 project_update_use_case = ProjectUpdateUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 project_load_use_case = ProjectLoadUseCase(
-    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
+    time_provider=request_time_provider,
+    global_properties=global_properties,
+    search_storage_engine=search_storage_engine,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
 )
 project_find_use_case = ProjectFindUseCase(
-    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
+    time_provider=request_time_provider,
+    global_properties=global_properties,
+    search_storage_engine=search_storage_engine,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
 )
 
 smart_list_create_use_case = SmartListCreateUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 smart_list_archive_use_case = SmartListArchiveUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 smart_list_update_use_case = SmartListUpdateUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 smart_list_load_use_case = SmartListLoadUseCase(
-    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
+    time_provider=request_time_provider,
+    global_properties=global_properties,
+    search_storage_engine=search_storage_engine,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
 )
 smart_list_find_use_case = SmartListFindUseCase(
-    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
+    time_provider=request_time_provider,
+    global_properties=global_properties,
+    search_storage_engine=search_storage_engine,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
 )
 smart_list_tag_create_use_case = SmartListTagCreateUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 smart_list_tag_archive_use_case = SmartListTagArchiveUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 smart_list_tag_load_use_case = SmartListTagLoadUseCase(
-    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
+    time_provider=request_time_provider,
+    global_properties=global_properties,
+    search_storage_engine=search_storage_engine,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
 )
 smart_list_tag_update_use_case = SmartListTagUpdateUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 smart_list_item_create_use_case = SmartListItemCreateUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 smart_list_item_archive_use_case = SmartListItemArchiveUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 smart_list_item_update_use_case = SmartListItemUpdateUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 smart_list_item_load_use_case = SmartListItemLoadUseCase(
-    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
+    time_provider=request_time_provider,
+    global_properties=global_properties,
+    search_storage_engine=search_storage_engine,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
 )
 
 
 metric_create_use_case = MetricCreateUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 metric_archive_use_case = MetricArchiveUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 metric_update_use_case = MetricUpdateUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 metric_load_settings_use_case = MetricLoadSettingsUseCase(
+    global_properties=global_properties,
     auth_token_stamper=auth_token_stamper,
+    time_provider=request_time_provider,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 metric_change_collection_project_use_case = MetricChangeCollectionProjectUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 metric_load_use_case = MetricLoadUseCase(
-    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
+    time_provider=request_time_provider,
+    global_properties=global_properties,
+    search_storage_engine=search_storage_engine,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
 )
 metric_find_use_case = MetricFindUseCase(
-    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
+    time_provider=request_time_provider,
+    global_properties=global_properties,
+    search_storage_engine=search_storage_engine,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
 )
 metric_entry_create_use_case = MetricEntryCreateUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 metric_entry_update_use_case = MetricEntryUpdateUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 metric_entry_archive_use_case = MetricEntryArchiveUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 metric_entry_load_use_case = MetricEntryLoadUseCase(
-    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
+    time_provider=request_time_provider,
+    global_properties=global_properties,
+    search_storage_engine=search_storage_engine,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
 )
 
 person_create_use_case = PersonCreateUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 person_archive_use_case = PersonArchiveUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 person_update_use_case = PersonUpdateUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 person_load_settings_use_case = PersonLoadSettingsUseCase(
+    time_provider=request_time_provider,
+    global_properties=global_properties,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 person_change_catch_up_project_use_case = PersonChangeCatchUpProjectUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 person_load_use_case = PersonLoadUseCase(
-    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
+    time_provider=request_time_provider,
+    global_properties=global_properties,
+    search_storage_engine=search_storage_engine,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
 )
 person_find_use_case = PersonFindUseCase(
-    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
+    time_provider=request_time_provider,
+    global_properties=global_properties,
+    search_storage_engine=search_storage_engine,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
 )
 
 slack_task_archive_use_case = SlackTaskArchiveUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 slack_task_update_use_case = SlackTaskUpdateUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 slack_task_load_settings_use_case = SlackTaskLoadSettingsUseCase(
+    time_provider=request_time_provider,
+    global_properties=global_properties,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 slack_task_change_generation_project_use_case = SlackTaskChangeGenerationProjectUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 slack_task_load_use_case = SlackTaskLoadUseCase(
-    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
+    time_provider=request_time_provider,
+    global_properties=global_properties,
+    search_storage_engine=search_storage_engine,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
 )
 slack_task_find_use_case = SlackTaskFindUseCase(
-    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
+    time_provider=request_time_provider,
+    global_properties=global_properties,
+    search_storage_engine=search_storage_engine,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
 )
 
 email_task_archive_use_case = EmailTaskArchiveUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 email_task_update_use_case = EmailTaskUpdateUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 email_task_load_settings_use_case = EmailTaskLoadSettingsUseCase(
+    time_provider=request_time_provider,
+    global_properties=global_properties,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 email_task_change_generation_project_use_case = EmailTaskChangeGenerationProjectUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 email_task_load_use_case = EmailTaskLoadUseCase(
-    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
+    time_provider=request_time_provider,
+    global_properties=global_properties,
+    search_storage_engine=search_storage_engine,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
 )
 email_task_find_use_case = EmailTaskFindUseCase(
-    auth_token_stamper=auth_token_stamper, domain_storage_engine=domain_storage_engine
+    time_provider=request_time_provider,
+    global_properties=global_properties,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 
 note_create_use_case = NoteCreateUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 note_archive_use_case = NoteArchiveUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 note_update_use_case = NoteUpdateUseCase(
+    global_properties=global_properties,
     time_provider=request_time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+    use_case_storage_engine=usecase_storage_engine,
 )
 
 standard_responses: Dict[Union[int, str], Dict[str, Any]] = {  # type: ignore
@@ -1685,7 +1985,7 @@ async def old_skool_login(
     email_address = EmailAddress.from_raw(form_data.username)
     password = PasswordPlain.from_raw(form_data.password)
 
-    result = await login_use_case.execute(
+    _, result = await login_use_case.execute(
         AppGuestUseCaseSession(),
         LoginArgs(email_address=email_address, password=password),
     )
@@ -1705,14 +2005,14 @@ async def old_skool_login(
 )
 async def init(args: InitArgs, session: GuestSession) -> InitResult:
     """Initialise a new workspace."""
-    return await init_use_case.execute(session, args)
+    return (await init_use_case.execute(session, args))[1]
 
 
 @secure_fn
 @app.post("/login", response_model=LoginResult, tags=["login"], **standard_config)
 async def login(args: LoginArgs, session: GuestSession) -> LoginResult:
     """Login to a workspace."""
-    return await login_use_case.execute(session, args)
+    return (await login_use_case.execute(session, args))[1]
 
 
 @secure_fn
@@ -1738,7 +2038,7 @@ async def reset_password(
     args: ResetPasswordArgs, session: GuestSession
 ) -> ResetPasswordResult:
     """Reset password."""
-    return await auth_reset_password_use_case.execute(session, args)
+    return (await auth_reset_password_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -1749,7 +2049,7 @@ async def reset_password(
 )
 async def search(args: SearchArgs, session: LoggedInSession) -> SearchResult:
     """Search entities."""
-    return await search_use_case.execute(session, args)
+    return (await search_use_case.execute(session, args))[1]
 
 
 @app.post("/gen/do", response_model=None, tags=["gen"], **standard_config)
@@ -1768,7 +2068,7 @@ async def gen_load_runs(
     args: GenLoadRunsArgs, session: LoggedInSession
 ) -> GenLoadRunsResult:
     """Load history of task generation runs."""
-    return await gen_load_runs_use_case.execute(session, args)
+    return (await gen_load_runs_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -1779,7 +2079,7 @@ async def gen_load_runs(
 )
 async def report(args: ReportArgs, session: LoggedInSession) -> ReportResult:
     """Report."""
-    return await report_use_case.execute(session, args)
+    return (await report_use_case.execute(session, args))[1]
 
 
 @app.post("/gc/do", response_model=None, tags=["gc"], **standard_config)
@@ -1798,7 +2098,7 @@ async def gc_load_runs(
     args: GCLoadRunsArgs, session: LoggedInSession
 ) -> GCLoadRunsResult:
     """Load history of GC runs."""
-    return await gc_load_runs_use_case.execute(session, args)
+    return (await gc_load_runs_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -1811,7 +2111,7 @@ async def load_top_level_info(
     args: LoadTopLevelInfoArgs, session: GuestSession
 ) -> LoadTopLevelInfoResult:
     """Load a user and workspace if they exist and other assorted data."""
-    return await load_top_level_info_use_case.execute(session, args)
+    return (await load_top_level_info_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -1824,7 +2124,7 @@ async def load_progress_reporter_token(
     args: LoadProgressReporterTokenArgs, session: LoggedInSession
 ) -> LoadProgressReporterTokenResult:
     """Load a temporary access token useful for reading progress reporter updates."""
-    return await load_progress_reporter_token_use_case.execute(session, args)
+    return (await load_progress_reporter_token_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -1837,7 +2137,7 @@ async def get_summaries(
     args: GetSummariesArgs, session: LoggedInSession
 ) -> GetSummariesResult:
     """Get summaries about entities."""
-    return await get_summaries_use_case.execute(session, args)
+    return (await get_summaries_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -1872,7 +2172,7 @@ async def change_user_feature_flags(
 )
 async def load_user(args: UserLoadArgs, session: LoggedInSession) -> UserLoadResult:
     """Load a user."""
-    return await user_load_use_case.execute(session, args)
+    return (await user_load_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -1922,7 +2222,7 @@ async def load_workspace(
     args: WorkspaceLoadArgs, session: LoggedInSession
 ) -> WorkspaceLoadResult:
     """Load a workspace."""
-    return await workspace_load_use_case.execute(session, args)
+    return (await workspace_load_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -1935,7 +2235,7 @@ async def create_inbox_task(
     args: InboxTaskCreateArgs, session: LoggedInSession
 ) -> InboxTaskCreateResult:
     """Create a inbox task."""
-    return await inbox_task_create_use_case.execute(session, args)
+    return (await inbox_task_create_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -1948,7 +2248,7 @@ async def update_inbox_task(
     args: InboxTaskUpdateArgs, session: LoggedInSession
 ) -> InboxTaskUpdateResult:
     """Update a inbox task."""
-    return await inbox_task_update_use_case.execute(session, args)
+    return (await inbox_task_update_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2000,7 +2300,7 @@ async def load_inbox_task(
     args: InboxTaskLoadArgs, session: LoggedInSession
 ) -> InboxTaskLoadResult:
     """Load a inbox task."""
-    return await inbox_task_load_use_case.execute(session, args)
+    return (await inbox_task_load_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2013,7 +2313,7 @@ async def find_inbox_task(
     args: InboxTaskFindArgs, session: LoggedInSession
 ) -> InboxTaskFindResult:
     """Find all inbox tasks, filtering by id."""
-    return await inbox_task_find_use_case.execute(session, args)
+    return (await inbox_task_find_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2026,7 +2326,7 @@ async def create_habit(
     args: HabitCreateArgs, session: LoggedInSession
 ) -> HabitCreateResult:
     """Create a habit."""
-    return await habit_create_use_case.execute(session, args)
+    return (await habit_create_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2094,7 +2394,7 @@ async def unsuspend_habit(args: HabitUnsuspendArgs, session: LoggedInSession) ->
 )
 async def load_habit(args: HabitLoadArgs, session: LoggedInSession) -> HabitLoadResult:
     """Load a habit."""
-    return await habit_load_use_case.execute(session, args)
+    return (await habit_load_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2105,7 +2405,7 @@ async def load_habit(args: HabitLoadArgs, session: LoggedInSession) -> HabitLoad
 )
 async def find_habit(args: HabitFindArgs, session: LoggedInSession) -> HabitFindResult:
     """Find all habits, filtering by id.."""
-    return await habit_find_use_case.execute(session, args)
+    return (await habit_find_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2118,7 +2418,7 @@ async def create_chore(
     args: ChoreCreateArgs, session: LoggedInSession
 ) -> ChoreCreateResult:
     """Create a chore."""
-    return await chore_create_use_case.execute(session, args)
+    return (await chore_create_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2186,7 +2486,7 @@ async def unsuspend_chore(args: ChoreUnsuspendArgs, session: LoggedInSession) ->
 )
 async def load_chore(args: ChoreLoadArgs, session: LoggedInSession) -> ChoreLoadResult:
     """Load a chore."""
-    return await chore_load_use_case.execute(session, args)
+    return (await chore_load_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2197,7 +2497,7 @@ async def load_chore(args: ChoreLoadArgs, session: LoggedInSession) -> ChoreLoad
 )
 async def find_chore(args: ChoreFindArgs, session: LoggedInSession) -> ChoreFindResult:
     """Find all chores, filtering by id.."""
-    return await chore_find_use_case.execute(session, args)
+    return (await chore_find_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2210,7 +2510,7 @@ async def create_big_plan(
     args: BigPlanCreateArgs, session: LoggedInSession
 ) -> BigPlanCreateResult:
     """Create a big plan."""
-    return await big_plan_create_use_case.execute(session, args)
+    return (await big_plan_create_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2234,7 +2534,7 @@ async def update_big_plan(
     args: BigPlanUpdateArgs, session: LoggedInSession
 ) -> BigPlanUpdateResult:
     """Update a big plan."""
-    return await big_plan_update_use_case.execute(session, args)
+    return (await big_plan_update_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2260,7 +2560,7 @@ async def load_big_plan(
     args: BigPlanLoadArgs, session: LoggedInSession
 ) -> BigPlanLoadResult:
     """Load a big plan."""
-    return await big_plan_load_use_case.execute(session, args)
+    return (await big_plan_load_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2273,7 +2573,7 @@ async def find_big_plan(
     args: BigPlanFindArgs, session: LoggedInSession
 ) -> BigPlanFindResult:
     """Find all big plans, filtering by id."""
-    return await big_plan_find_use_case.execute(session, args)
+    return (await big_plan_find_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2286,7 +2586,7 @@ async def create_journal(
     args: JournalCreateArgs, session: LoggedInSession
 ) -> JournalCreateResult:
     """Create a journal."""
-    return await journal_create_use_case.execute(session, args)
+    return (await journal_create_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2336,7 +2636,7 @@ async def find_journal(
     args: JournalFindArgs, session: LoggedInSession
 ) -> JournalFindResult:
     """Find all journals, filtering by id."""
-    return await journal_find_use_case.execute(session, args)
+    return (await journal_find_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2349,7 +2649,7 @@ async def load_journal(
     args: JournalLoadArgs, session: LoggedInSession
 ) -> JournalLoadResult:
     """Load a journal."""
-    return await journal_load_use_case.execute(session, args)
+    return (await journal_load_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2360,7 +2660,7 @@ async def load_journal(
 )
 async def create_doc(args: DocCreateArgs, session: LoggedInSession) -> DocCreateResult:
     """Create a doc."""
-    return await doc_create_use_case.execute(session, args)
+    return (await doc_create_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2406,7 +2706,7 @@ async def change_doc_parent(
 )
 async def load_doc(args: DocLoadArgs, session: LoggedInSession) -> DocLoadResult:
     """Load a doc."""
-    return await doc_load_use_case.execute(session, args)
+    return (await doc_load_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2417,7 +2717,7 @@ async def load_doc(args: DocLoadArgs, session: LoggedInSession) -> DocLoadResult
 )
 async def find_doc(args: DocFindArgs, session: LoggedInSession) -> DocFindResult:
     """Find all docs, filtering by id."""
-    return await doc_find_use_case.execute(session, args)
+    return (await doc_find_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2430,7 +2730,7 @@ async def create_vacation(
     args: VacationCreateArgs, session: LoggedInSession
 ) -> VacationCreateResult:
     """Create a vacation."""
-    return await vacation_create_use_case.execute(session, args)
+    return (await vacation_create_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2465,7 +2765,7 @@ async def load_vacation(
     args: VacationLoadArgs, session: LoggedInSession
 ) -> VacationLoadResult:
     """Load all vacations, filtering by id."""
-    return await vacation_load_use_case.execute(session, args)
+    return (await vacation_load_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2478,7 +2778,7 @@ async def find_vacation(
     args: VacationFindArgs, session: LoggedInSession
 ) -> VacationFindResult:
     """Find all vacations, filtering by id."""
-    return await vacation_find_use_case.execute(session, args)
+    return (await vacation_find_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2491,7 +2791,7 @@ async def create_project(
     args: ProjectCreateArgs, session: LoggedInSession
 ) -> ProjectCreateResult:
     """Create a project."""
-    return await project_create_use_case.execute(session, args)
+    return (await project_create_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2526,7 +2826,7 @@ async def load_project(
     args: ProjectLoadArgs, session: LoggedInSession
 ) -> ProjectLoadResult:
     """Load a project, filtering by id."""
-    return await project_load_use_case.execute(session, args)
+    return (await project_load_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2539,7 +2839,7 @@ async def find_project(
     args: ProjectFindArgs, session: LoggedInSession
 ) -> ProjectFindResult:
     """Find a project, filtering by id."""
-    return await project_find_use_case.execute(session, args)
+    return (await project_find_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2552,7 +2852,7 @@ async def create_smart_list(
     args: SmartListCreateArgs, session: LoggedInSession
 ) -> SmartListCreateResult:
     """Create a smart list."""
-    return await smart_list_create_use_case.execute(session, args)
+    return (await smart_list_create_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2591,7 +2891,7 @@ async def load_smart_list(
     args: SmartListLoadArgs, session: LoggedInSession
 ) -> SmartListLoadResult:
     """Load a smart list."""
-    return await smart_list_load_use_case.execute(session, args)
+    return (await smart_list_load_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2604,7 +2904,7 @@ async def find_smart_list(
     args: SmartListFindArgs, session: LoggedInSession
 ) -> SmartListFindResult:
     """Find all smart lists, filtering by id."""
-    return await smart_list_find_use_case.execute(session, args)
+    return (await smart_list_find_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2617,7 +2917,7 @@ async def create_smart_list_tag(
     args: SmartListTagCreateArgs, session: LoggedInSession
 ) -> SmartListTagCreateResult:
     """Create a smart list tag."""
-    return await smart_list_tag_create_use_case.execute(session, args)
+    return (await smart_list_tag_create_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2656,7 +2956,7 @@ async def load_smart_list_tag(
     args: SmartListTagLoadArgs, session: LoggedInSession
 ) -> SmartListTagLoadResult:
     """Load a smart list tag."""
-    return await smart_list_tag_load_use_case.execute(session, args)
+    return (await smart_list_tag_load_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2669,7 +2969,7 @@ async def create_smart_list_item(
     args: SmartListItemCreateArgs, session: LoggedInSession
 ) -> SmartListItemCreateResult:
     """Create a smart list item."""
-    return await smart_list_item_create_use_case.execute(session, args)
+    return (await smart_list_item_create_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2708,7 +3008,7 @@ async def load_smart_list_item(
     args: SmartListItemLoadArgs, session: LoggedInSession
 ) -> SmartListItemLoadResult:
     """Load a smart list item."""
-    return await smart_list_item_load_use_case.execute(session, args)
+    return (await smart_list_item_load_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2721,7 +3021,7 @@ async def create_metric(
     args: MetricCreateArgs, session: LoggedInSession
 ) -> MetricCreateResult:
     """Create a metric."""
-    return await metric_create_use_case.execute(session, args)
+    return (await metric_create_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2756,7 +3056,7 @@ async def load_metric_settings(
     args: MetricLoadSettingsArgs, session: LoggedInSession
 ) -> MetricLoadSettingsResult:
     """Load settings for metrics."""
-    return await metric_load_settings_use_case.execute(session, args)
+    return (await metric_load_settings_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2782,7 +3082,7 @@ async def load_metric(
     args: MetricLoadArgs, session: LoggedInSession
 ) -> MetricLoadResult:
     """Load a metric."""
-    return await metric_load_use_case.execute(session, args)
+    return (await metric_load_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2795,7 +3095,7 @@ async def find_metric(
     args: MetricFindArgs, session: LoggedInSession
 ) -> MetricFindResult:
     """Find all metrics, filtering by id."""
-    return await metric_find_use_case.execute(session, args)
+    return (await metric_find_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2808,7 +3108,7 @@ async def create_metric_entry(
     args: MetricEntryCreateArgs, session: LoggedInSession
 ) -> MetricEntryCreateResult:
     """Create a metric entry."""
-    return await metric_entry_create_use_case.execute(session, args)
+    return (await metric_entry_create_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2847,7 +3147,7 @@ async def load_metric_entry(
     args: MetricEntryLoadArgs, session: LoggedInSession
 ) -> MetricEntryLoadResult:
     """Load a metric entry."""
-    return await metric_entry_load_use_case.execute(session, args)
+    return (await metric_entry_load_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2860,7 +3160,7 @@ async def create_person(
     args: PersonCreateArgs, session: LoggedInSession
 ) -> PersonCreateResult:
     """Create a person."""
-    return await person_create_use_case.execute(session, args)
+    return (await person_create_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2895,7 +3195,7 @@ async def load_person_settings(
     args: PersonLoadSettingsArgs, session: LoggedInSession
 ) -> PersonLoadSettingsResult:
     """Change the catch up project for persons."""
-    return await person_load_settings_use_case.execute(session, args)
+    return (await person_load_settings_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2921,7 +3221,7 @@ async def load_person(
     args: PersonLoadArgs, session: LoggedInSession
 ) -> PersonLoadResult:
     """Load a person, filtering by id."""
-    return await person_load_use_case.execute(session, args)
+    return (await person_load_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2934,7 +3234,7 @@ async def find_person(
     args: PersonFindArgs, session: LoggedInSession
 ) -> PersonFindResult:
     """Find a person, filtering by id."""
-    return await person_find_use_case.execute(session, args)
+    return (await person_find_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2973,7 +3273,7 @@ async def load_slack_task_settings(
     args: SlackTaskLoadSettingsArgs, session: LoggedInSession
 ) -> SlackTaskLoadSettingsResult:
     """Change the project for a slack task."""
-    return await slack_task_load_settings_use_case.execute(session, args)
+    return (await slack_task_load_settings_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -2999,7 +3299,7 @@ async def load_slack_task(
     args: SlackTaskLoadArgs, session: LoggedInSession
 ) -> SlackTaskLoadResult:
     """Load a slack task."""
-    return await slack_task_load_use_case.execute(session, args)
+    return (await slack_task_load_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -3012,7 +3312,7 @@ async def find_slack_task(
     args: SlackTaskFindArgs, session: LoggedInSession
 ) -> SlackTaskFindResult:
     """Find all slack tasks, filtering by id."""
-    return await slack_task_find_use_case.execute(session, args)
+    return (await slack_task_find_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -3051,7 +3351,7 @@ async def load_email_task_settings(
     args: EmailTaskLoadSettingsArgs, session: LoggedInSession
 ) -> EmailTaskLoadSettingsResult:
     """Change the project for a email task."""
-    return await email_task_load_settings_use_case.execute(session, args)
+    return (await email_task_load_settings_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -3077,7 +3377,7 @@ async def load_email_task(
     args: EmailTaskLoadArgs, session: LoggedInSession
 ) -> EmailTaskLoadResult:
     """Load an email task."""
-    return await email_task_load_use_case.execute(session, args)
+    return (await email_task_load_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -3090,7 +3390,7 @@ async def find_email_task(
     args: EmailTaskFindArgs, session: LoggedInSession
 ) -> EmailTaskFindResult:
     """Find all email tasks, filtering by id."""
-    return await email_task_find_use_case.execute(session, args)
+    return (await email_task_find_use_case.execute(session, args))[1]
 
 
 @app.post(
@@ -3103,7 +3403,7 @@ async def create_note(
     args: NoteCreateArgs, session: LoggedInSession
 ) -> NoteCreateResult:
     """Create a note."""
-    return await note_create_use_case.execute(session, args)
+    return (await note_create_use_case.execute(session, args))[1]
 
 
 @app.post(

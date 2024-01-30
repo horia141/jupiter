@@ -1,8 +1,6 @@
 """UseCase for showing the chores."""
 from typing import cast
 
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
-
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     actionable_from_day_to_rich_text,
@@ -26,6 +24,7 @@ from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.use_cases.chores.find import ChoreFindResult, ChoreFindUseCase
+from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
 from rich.console import Console
 from rich.text import Text
 from rich.tree import Tree
@@ -34,7 +33,12 @@ from rich.tree import Tree
 class ChoreShow(LoggedInReadonlyCommand[ChoreFindUseCase, ChoreFindResult]):
     """UseCase class for showing the chores."""
 
-    def _render_result(self, console: Console, context: AppLoggedInReadonlyUseCaseContext, result: ChoreFindResult) -> None:
+    def _render_result(
+        self,
+        console: Console,
+        context: AppLoggedInReadonlyUseCaseContext,
+        result: ChoreFindResult,
+    ) -> None:
         rich_tree = Tree("♻️  Chores", guide_style="bold bright_blue")
 
         sorted_chores = sorted(
@@ -116,11 +120,8 @@ class ChoreShow(LoggedInReadonlyCommand[ChoreFindUseCase, ChoreFindResult]):
                 chore_info_text.append(" ")
                 chore_info_text.append(end_date_to_rich_text(chore.end_at_date))
 
-            if (
-                project is not None
-                and context.workspace.is_feature_available(
-                    WorkspaceFeature.PROJECTS
-                )
+            if project is not None and context.workspace.is_feature_available(
+                WorkspaceFeature.PROJECTS
             ):
                 chore_info_text.append(" ")
                 chore_info_text.append(project_to_rich_text(project.name))

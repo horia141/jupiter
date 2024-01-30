@@ -1,20 +1,27 @@
 """UseCase for updating inbox tasks."""
 
 
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInMutationUseCaseContext
 from jupiter.cli.command.command import LoggedInMutationCommand
 from jupiter.core.use_cases.inbox_tasks.update import (
     InboxTaskUpdateResult,
     InboxTaskUpdateUseCase,
 )
+from jupiter.core.use_cases.infra.use_cases import AppLoggedInMutationUseCaseContext
 from rich.console import Console
 from rich.text import Text
 
 
-class InboxTaskUpdate(LoggedInMutationCommand[InboxTaskUpdateUseCase, InboxTaskUpdateResult]):
+class InboxTaskUpdate(
+    LoggedInMutationCommand[InboxTaskUpdateUseCase, InboxTaskUpdateResult]
+):
     """UseCase class for updating inbox tasks."""
 
-    def _render_result(self, console: Console, context: AppLoggedInMutationUseCaseContext, result: InboxTaskUpdateResult) -> None:
+    def _render_result(
+        self,
+        console: Console,
+        context: AppLoggedInMutationUseCaseContext,
+        result: InboxTaskUpdateResult,
+    ) -> None:
         if result.record_score_result is not None:
             if result.record_score_result.latest_task_score > 0:
                 color = "green"

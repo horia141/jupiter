@@ -1,6 +1,5 @@
 """Command for showing the user."""
 
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     email_address_to_rich_text,
@@ -8,6 +7,7 @@ from jupiter.cli.command.rendering import (
     timezone_to_rich_text,
     user_score_overview_to_rich,
 )
+from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
 from jupiter.core.use_cases.user.load import UserLoadResult, UserLoadUseCase
 from rich.console import Console
 from rich.text import Text
@@ -17,7 +17,12 @@ from rich.tree import Tree
 class UserShow(LoggedInReadonlyCommand[UserLoadUseCase, UserLoadResult]):
     """Command class for showing the user."""
 
-    def _render_result(self, console: Console, context: AppLoggedInReadonlyUseCaseContext, result: UserLoadResult) -> None:
+    def _render_result(
+        self,
+        console: Console,
+        context: AppLoggedInReadonlyUseCaseContext,
+        result: UserLoadResult,
+    ) -> None:
         rich_tree = Tree(f"⭐ {result.user.name}", guide_style="bold bright_blue")
 
         user_text = Text("")

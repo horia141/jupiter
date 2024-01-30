@@ -1,8 +1,6 @@
 """UseCase for showing the big plans."""
 from typing import cast
 
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
-
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     actionable_date_to_rich_text,
@@ -16,6 +14,7 @@ from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.use_cases.big_plans.find import BigPlanFindResult, BigPlanFindUseCase
+from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
 from rich.console import Console
 from rich.text import Text
 from rich.tree import Tree
@@ -24,7 +23,12 @@ from rich.tree import Tree
 class BigPlanShow(LoggedInReadonlyCommand[BigPlanFindUseCase, BigPlanFindResult]):
     """UseCase class for showing the big plans."""
 
-    def _render_result(self, console: Console, context: AppLoggedInReadonlyUseCaseContext, result: BigPlanFindResult) -> None:
+    def _render_result(
+        self,
+        console: Console,
+        context: AppLoggedInReadonlyUseCaseContext,
+        result: BigPlanFindResult,
+    ) -> None:
         sorted_big_plans = sorted(
             result.entries,
             key=lambda bpe: (
@@ -61,11 +65,8 @@ class BigPlanShow(LoggedInReadonlyCommand[BigPlanFindUseCase, BigPlanFindResult]
                 big_plan_info_text.append(" ")
                 big_plan_info_text.append(due_date_to_rich_text(big_plan.due_date))
 
-            if (
-                project is not None
-                and context.workspace.is_feature_available(
-                    WorkspaceFeature.PROJECTS
-                )
+            if project is not None and context.workspace.is_feature_available(
+                WorkspaceFeature.PROJECTS
             ):
                 big_plan_info_text.append(" ")
                 big_plan_info_text.append(project_to_rich_text(project.name))

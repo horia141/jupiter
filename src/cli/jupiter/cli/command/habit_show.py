@@ -1,8 +1,6 @@
 """UseCase for showing the habits."""
 from typing import cast
 
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
-
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     actionable_from_day_to_rich_text,
@@ -24,6 +22,7 @@ from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.use_cases.habits.find import HabitFindResult, HabitFindUseCase
+from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
 from rich.console import Console
 from rich.text import Text
 from rich.tree import Tree
@@ -32,7 +31,12 @@ from rich.tree import Tree
 class HabitShow(LoggedInReadonlyCommand[HabitFindUseCase, HabitFindResult]):
     """UseCase class for showing the habits."""
 
-    def _render_result(self, console: Console, context: AppLoggedInReadonlyUseCaseContext, result: HabitFindResult) -> None:
+    def _render_result(
+        self,
+        console: Console,
+        context: AppLoggedInReadonlyUseCaseContext,
+        result: HabitFindResult,
+    ) -> None:
         rich_tree = Tree("💪️ Habits", guide_style="bold bright_blue")
 
         sorted_habits = sorted(
@@ -106,11 +110,8 @@ class HabitShow(LoggedInReadonlyCommand[HabitFindUseCase, HabitFindResult]):
                     due_at_month_to_rich_text(habit.gen_params.due_at_month),
                 )
 
-            if (
-                project is not None
-                and context.workspace.is_feature_available(
-                    WorkspaceFeature.PROJECTS
-                )
+            if project is not None and context.workspace.is_feature_available(
+                WorkspaceFeature.PROJECTS
             ):
                 habit_info_text.append(" ")
                 habit_info_text.append(project_to_rich_text(project.name))

@@ -1,6 +1,5 @@
 """UseCase for showing the slack tasks."""
 
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     actionable_date_to_rich_text,
@@ -15,6 +14,7 @@ from jupiter.cli.command.rendering import (
     slack_user_name_to_rich_text,
 )
 from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
 from jupiter.core.use_cases.push_integrations.slack.find import (
     SlackTaskFindResult,
     SlackTaskFindUseCase,
@@ -27,7 +27,12 @@ from rich.tree import Tree
 class SlackTaskShow(LoggedInReadonlyCommand[SlackTaskFindUseCase, SlackTaskFindResult]):
     """UseCase class for showing the slack tasks."""
 
-    def _render_result(self, console: Console, context: AppLoggedInReadonlyUseCaseContext, result: SlackTaskFindResult) -> None:
+    def _render_result(
+        self,
+        console: Console,
+        context: AppLoggedInReadonlyUseCaseContext,
+        result: SlackTaskFindResult,
+    ) -> None:
         sorted_slack_tasks = sorted(
             result.entries,
             key=lambda ste: (ste.slack_task.archived, ste.slack_task.created_time),
@@ -35,9 +40,7 @@ class SlackTaskShow(LoggedInReadonlyCommand[SlackTaskFindUseCase, SlackTaskFindR
 
         rich_tree = Tree("💬 Slack Tasks", guide_style="bold bright_blue")
 
-        if context.workspace.is_feature_available(
-            WorkspaceFeature.PROJECTS
-        ):
+        if context.workspace.is_feature_available(WorkspaceFeature.PROJECTS):
             generation_project_text = Text(
                 f"The generation project is {result.generation_project.name}",
             )

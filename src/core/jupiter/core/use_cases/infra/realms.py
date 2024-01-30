@@ -1623,6 +1623,9 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
         registry._add_encoder(EntityId, DatabaseRealm, EntityIdDatabaseEncoder())
         registry._add_decoder(EntityId, DatabaseRealm, EntityIdDatabaseDecoder())
 
+        registry._add_encoder(EntityName, DatabaseRealm, EntityNameDatabaseEncoder(EntityName))
+        registry._add_decoder(EntityName, DatabaseRealm, EntityNameDatabaseDecoder(EntityName))
+
         registry._add_encoder(Timestamp, DatabaseRealm, TimestampDatabaseEncoder())
         registry._add_decoder(Timestamp, DatabaseRealm, TimestampDatabaseDecoder())
 
