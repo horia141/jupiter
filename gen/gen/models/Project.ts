@@ -3,8 +3,8 @@
 /* eslint-disable */
 
 import type { EntityId } from './EntityId';
-import type { EntityName } from './EntityName';
 import type { ParentLink } from './ParentLink';
+import type { ProjectName } from './ProjectName';
 import type { Timestamp } from './Timestamp';
 
 export type Project = {
@@ -14,7 +14,7 @@ export type Project = {
     created_time: Timestamp;
     last_modified_time: Timestamp;
     archived_time: Timestamp;
-    name: EntityName;
+    name: ProjectName;
     project_collection: ParentLink;
 };
 

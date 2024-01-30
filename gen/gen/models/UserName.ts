@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type BigPlanName = {
+export type UserName = {
     the_name: string;
 };
 

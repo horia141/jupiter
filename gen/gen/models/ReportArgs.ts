@@ -6,11 +6,13 @@ import type { ADate } from './ADate';
 import type { EntityId } from './EntityId';
 import type { InboxTaskSource } from './InboxTaskSource';
 import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
+import type { ReportBreakdown } from './ReportBreakdown';
 
 export type ReportArgs = {
     today: ADate;
     period: RecurringTaskPeriod;
-    filter_sources?: Array<InboxTaskSource>;
+    sources?: Array<InboxTaskSource>;
+    breakdowns?: Array<ReportBreakdown>;
     filter_project_ref_ids?: Array<EntityId>;
     filter_big_plan_ref_ids?: Array<EntityId>;
     filter_habit_ref_ids?: Array<EntityId>;

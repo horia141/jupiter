@@ -2,10 +2,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { EntityId } from './EntityId';
+import type { CorrelationId } from './CorrelationId';
 
 export type ParagraphBlock = {
-    correlation_id: EntityId;
+    correlation_id: CorrelationId;
     kind: ParagraphBlock.kind;
     text: string;
 };

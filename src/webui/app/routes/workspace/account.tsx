@@ -87,17 +87,8 @@ export async function action({ request }: ActionArgs) {
       }
 
       case "change-feature-flags": {
-        const featureFlags: Record<string, boolean> = {};
-        for (const feature of Object.values(UserFeature)) {
-          if (form.featureFlags.find((v) => v == feature)) {
-            featureFlags[feature] = true;
-          } else {
-            featureFlags[feature] = false;
-          }
-        }
-
         await getLoggedInApiClient(session).user.changeUserFeatureFlags({
-          feature_flags: featureFlags,
+          feature_flags: form.featureFlags,
         });
 
         return redirect(`/workspace/account`);

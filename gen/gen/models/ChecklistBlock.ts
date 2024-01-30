@@ -3,10 +3,10 @@
 /* eslint-disable */
 
 import type { ChecklistItem } from './ChecklistItem';
-import type { EntityId } from './EntityId';
+import type { CorrelationId } from './CorrelationId';
 
 export type ChecklistBlock = {
-    correlation_id: EntityId;
+    correlation_id: CorrelationId;
     kind: ChecklistBlock.kind;
     items: Array<ChecklistItem>;
 };

@@ -2,13 +2,13 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { EntityName } from './EntityName';
 import type { Timezone } from './Timezone';
+import type { UserName } from './UserName';
 
 export type UserUpdateArgs = {
     name: {
         should_change: boolean;
-        value?: EntityName;
+        value?: UserName;
     };
     timezone: {
         should_change: boolean;

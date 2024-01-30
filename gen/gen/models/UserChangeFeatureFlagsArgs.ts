@@ -2,7 +2,9 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { UserFeature } from './UserFeature';
+
 export type UserChangeFeatureFlagsArgs = {
-    feature_flags: Record<string, boolean>;
+    feature_flags: Array<UserFeature>;
 };
 

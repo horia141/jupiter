@@ -2,10 +2,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { EntityId } from './EntityId';
+import type { CorrelationId } from './CorrelationId';
 
 export type CodeBlock = {
-    correlation_id: EntityId;
+    correlation_id: CorrelationId;
     kind: CodeBlock.kind;
     code: string;
     language?: string;

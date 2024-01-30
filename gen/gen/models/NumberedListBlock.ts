@@ -2,11 +2,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { EntityId } from './EntityId';
+import type { CorrelationId } from './CorrelationId';
 import type { ListItem } from './ListItem';
 
 export type NumberedListBlock = {
-    correlation_id: EntityId;
+    correlation_id: CorrelationId;
     kind: NumberedListBlock.kind;
     items: Array<ListItem>;
 };
