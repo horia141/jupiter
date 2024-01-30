@@ -1,5 +1,4 @@
 """Even features are expressed here."""
-from functools import lru_cache
 from typing import Dict, Final, Iterable
 
 from jupiter.core.framework.errors import InputValidationError
@@ -68,12 +67,6 @@ class UserFeature(EnumValue):
 
     GAMIFICATION = "gamification"
 
-    @staticmethod
-    @lru_cache(maxsize=1)
-    def all_values() -> Iterable[str]:
-        """The possible values for user features."""
-        return list(p.value for p in UserFeature)
-
 
 UserFeatureFlags = Dict[UserFeature, bool]
 
@@ -122,12 +115,6 @@ class WorkspaceFeature(EnumValue):
     PERSONS = "persons"
     SLACK_TASKS = "slack-tasks"
     EMAIL_TASKS = "email-tasks"
-
-    @staticmethod
-    @lru_cache(maxsize=1)
-    def all_values() -> Iterable[str]:
-        """The possible values for workspace features."""
-        return list(p.value for p in WorkspaceFeature)
 
 
 WorkspaceFeatureFlags = Dict[WorkspaceFeature, bool]

@@ -76,3 +76,26 @@ class RealmCodecRegistry(abc.ABC):
         realm: type[_RealmT],
     ) -> RealmDecoder[_ThingT, _RealmT]:
         """Get a decoder for a realm and a concept type."""
+
+
+class PlaceholderRealmCodecRegistry(RealmCodecRegistry):
+    """A registry for realm codecs."""
+
+    def get_encoder(
+        self,
+        concept_type: type[_ThingT],
+        realm: type[_RealmT],
+    ) -> RealmEncoder[_ThingT, _RealmT]:
+        """Get an encoder for a realm and a concept type."""
+        raise NotImplementedError
+
+    def get_decoder(
+        self,
+        concept_type: type[_ThingT],
+        realm: type[_RealmT],
+    ) -> RealmDecoder[_ThingT, _RealmT]:
+        """Get a decoder for a realm and a concept type."""
+        raise NotImplementedError
+
+
+PROVIDE_VIA_REGISTRY = PlaceholderRealmCodecRegistry()

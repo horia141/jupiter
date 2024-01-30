@@ -1,8 +1,6 @@
 """The relationship the user has with a person."""
-from functools import lru_cache, total_ordering
-from typing import Iterable, List, Optional, cast
+from functools import total_ordering
 
-from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.value import EnumValue, enum_value
 
 
@@ -19,34 +17,6 @@ class PersonRelationship(EnumValue):
     COLLEAGUE = "colleague"
     OTHER = "other"
 
-    def to_nice(self) -> str:
-        """A prettier version of the value."""
-        return " ".join(s.capitalize() for s in str(self.value).split("-"))
-
-    @staticmethod
-    def from_raw(person_relationship_raw: Optional[str]) -> "PersonRelationship":
-        """Validate and clean a raw person relationship value."""
-        if not person_relationship_raw:
-            raise InputValidationError("Expected sync target to be non-null")
-
-        person_relationship_str: str = "-".join(
-            person_relationship_raw.strip().lower().split(),
-        )
-
-        if person_relationship_str not in PersonRelationship.all_values():
-            raise InputValidationError(
-                f"Expected sync prefer '{person_relationship_raw}' to be one of "
-                + f"'{','.join(PersonRelationship.all_values())}'",
-            )
-
-        return PersonRelationship(person_relationship_str)
-
-    @staticmethod
-    @lru_cache(maxsize=1)
-    def all_values() -> Iterable[str]:
-        """The possible values for sync targets."""
-        return list(st.value for st in PersonRelationship)
-
     def __lt__(self, other: object) -> bool:
         """Compare this with another."""
         if not isinstance(other, PersonRelationship):
@@ -54,6 +24,6 @@ class PersonRelationship(EnumValue):
                 f"Cannot compare an entity id with {other.__class__.__name__}",
             )
 
-        all_values = cast(List[str], self.all_values())
+        all_values = self.get_all_values()
 
         return all_values.index(self.value) < all_values.index(other.value)

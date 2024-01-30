@@ -418,7 +418,9 @@ class Report(LoggedInReadonlyCommand[ReportUseCase, ReportResult]):
         inbox_tasks_table.add_column("State", width=16)
         inbox_tasks_table.add_column("Total", width=8, justify="right")
         for source in sources_to_present:
-            inbox_tasks_table.add_column(source.to_nice(), width=10, justify="right")
+            inbox_tasks_table.add_column(
+                str(source).capitalize(), width=10, justify="right"
+            )
 
         created_renderables = [
             Text("📥 Created"),

@@ -36,6 +36,7 @@ from jupiter.core.framework.entity import Entity, ParentLink
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.realm import (
+    PROVIDE_VIA_REGISTRY,
     CliRealm,
     DatabaseRealm,
     Realm,
@@ -1623,18 +1624,26 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
         registry._add_encoder(EntityId, DatabaseRealm, EntityIdDatabaseEncoder())
         registry._add_decoder(EntityId, DatabaseRealm, EntityIdDatabaseDecoder())
 
-        registry._add_encoder(EntityName, DatabaseRealm, EntityNameDatabaseEncoder(EntityName))
-        registry._add_decoder(EntityName, DatabaseRealm, EntityNameDatabaseDecoder(EntityName))
+        registry._add_encoder(
+            EntityName, DatabaseRealm, EntityNameDatabaseEncoder(EntityName)
+        )
+        registry._add_decoder(
+            EntityName, DatabaseRealm, EntityNameDatabaseDecoder(EntityName)
+        )
 
         registry._add_encoder(Timestamp, DatabaseRealm, TimestampDatabaseEncoder())
         registry._add_decoder(Timestamp, DatabaseRealm, TimestampDatabaseDecoder())
 
         for m in find_all_modules(*module_roots):
             for concept_type, realm_type, encoder_type in extract_concept_encoders(m):
-                registry._add_encoder(concept_type, realm_type, encoder_type())
+                registry._add_encoder(
+                    concept_type, realm_type, registry._build_encoder(encoder_type)
+                )
 
             for concept_type, realm_type, decoder_type in extract_concept_decoders(m):
-                registry._add_decoder(concept_type, realm_type, decoder_type())
+                registry._add_decoder(
+                    concept_type, realm_type, registry._build_decoder(decoder_type)
+                )
 
             for atomic_value_type in extract_atomic_values(m):
                 if not registry._has_encoder(atomic_value_type, DatabaseRealm):
@@ -1818,3 +1827,29 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
         self._decoders_registry[
             cast(tuple[type[Thing], type[Realm]], (thing_type, realm))
         ] = cast(RealmDecoder[Thing, Realm], decoder)
+
+    def _build_encoder(
+        self, encoder_type: type[RealmEncoder[Concept, Realm]]
+    ) -> RealmEncoder[Concept, Realm]:
+        new_encoder = encoder_type()
+        for name in new_encoder.__class__.__dict__:
+            if name != "_realm_codec_registry":
+                continue
+            codec_registry_ref = getattr(new_encoder, name)
+            if codec_registry_ref is not PROVIDE_VIA_REGISTRY:
+                continue
+            setattr(new_encoder, name, self)
+        return new_encoder
+
+    def _build_decoder(
+        self, decoder_type: type[RealmDecoder[Concept, Realm]]
+    ) -> RealmDecoder[Concept, Realm]:
+        new_decoder = decoder_type()
+        for name in new_decoder.__class__.__dict__:
+            if name != "_realm_codec_registry":
+                continue
+            codec_registry_ref = getattr(new_decoder, name)
+            if codec_registry_ref is not PROVIDE_VIA_REGISTRY:
+                continue
+            setattr(new_decoder, name, self)
+        return new_decoder

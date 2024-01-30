@@ -409,17 +409,17 @@ def parent_entity_name_to_rich_text(parent_name: EntityName) -> Text:
 
 def period_to_rich_text(period: RecurringTaskPeriod) -> Text:
     """Transform a period into text."""
-    return Text(period.to_nice(), style="underline")
+    return Text(str(period).capitalize(), style="underline")
 
 
 def eisen_to_rich_text(eisen: Eisen) -> Text:
     """Transform an eisenhower value into text."""
-    return Text(eisen.to_nice(), style="underline green")
+    return Text(str(eisen).capitalize(), style="underline green")
 
 
 def person_relationship_to_rich_text(person_relationship: PersonRelationship) -> Text:
     """Transform person relationship into text."""
-    return Text(person_relationship.to_nice(), style="underline yellow")
+    return Text(str(person_relationship).capitalize(), style="underline yellow")
 
 
 def person_birthday_to_rich_text(birthday: PersonBirthday) -> Text:
@@ -429,17 +429,17 @@ def person_birthday_to_rich_text(birthday: PersonBirthday) -> Text:
 
 def metric_unit_to_rich_text(metric_unit: MetricUnit) -> Text:
     """Transform a metric unit into text."""
-    return Text(metric_unit.to_nice(), style="italic")
+    return Text(str(metric_unit).capitalize(), style="italic")
 
 
 def source_to_rich_text(source: InboxTaskSource) -> Text:
     """Transform a source value into text."""
-    return Text(source.to_nice(), style="underline italic blue")
+    return Text(str(source).capitalize(), style="underline italic blue")
 
 
 def difficulty_to_rich_text(difficulty: Difficulty) -> Text:
     """Transform a difficulty value into text."""
-    return Text(difficulty.to_nice(), style="underline")
+    return Text(str(difficulty).capitalize(), style="underline")
 
 
 def skip_rule_to_rich_text(skip_rule: RecurringTaskSkipRule) -> Text:

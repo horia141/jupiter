@@ -869,5 +869,5 @@ class ReportService:
         period_idx = [v.value for v in RecurringTaskPeriod].index(period.value)
         if breakdown_period_idx >= period_idx:
             raise InputValidationError(
-                f"Cannot breakdown {period.to_nice()} with {breakdown_period.to_nice()}",
+                f"Cannot breakdown {period} with {breakdown_period}",
             )
