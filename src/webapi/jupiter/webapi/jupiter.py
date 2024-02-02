@@ -1663,6 +1663,7 @@ standard_config: Mapping[str, Any] = {  # type: ignore
 webapp = WebServiceApp.build_from_module_root(
     global_properties,
         request_time_provider,
+        cron_run_time_provider,
         invocation_recorder,
         progress_reporter_factory,
         realm_codec_registry,

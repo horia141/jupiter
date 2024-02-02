@@ -1,9 +1,10 @@
 """The app, part of the framework."""
 import abc
 import types
-from typing import Any, Final, Generic, Iterator, TypeVar, cast, get_args
-from fastapi import FastAPI
+from typing import Any, Final, Generic, Iterator, TypeVar, cast, get_args, Callable
+from fastapi import FastAPI, Request
 from fastapi.routing import APIRoute
+from fastapi.types import DecoratedCallable
 from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
 from jupiter.core.domain.storage_engine import DomainStorageEngine, SearchStorageEngine
 from jupiter.core.framework.realm import RealmCodecRegistry
@@ -16,8 +17,10 @@ from jupiter.core.utils.global_properties import GlobalProperties
 from jupiter.core.utils.progress_reporter import EmptyProgressReporterFactory, NoOpProgressReporterFactory
 from jupiter.core.utils.time_provider import TimeProvider
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from jupiter.webapi.websocket_progress_reporter import WebsocketProgressReporterFactory
+from jupiter.webapi.time_provider import CronRunTimeProvider, PerRequestTimeProvider
 
 
 class Command(abc.ABC):
@@ -131,7 +134,8 @@ class WebServiceApp:
     """The app."""
 
     _global_properties: Final[GlobalProperties]
-    _time_provider: Final[TimeProvider]
+    _request_time_provider: Final[PerRequestTimeProvider]
+    _cron_time_provider: Final[CronRunTimeProvider]
     _invocation_recorder: Final[MutationUseCaseInvocationRecorder]
     _progress_reporter_factory: Final[WebsocketProgressReporterFactory]
     _realm_codec_registry: Final[RealmCodecRegistry]
@@ -156,7 +160,8 @@ class WebServiceApp:
     def __init__(
         self,
         global_properties: GlobalProperties,
-        time_provider: TimeProvider,
+        request_time_provider: PerRequestTimeProvider,
+        cron_time_provider: CronRunTimeProvider,
         invocation_recorder: MutationUseCaseInvocationRecorder,
         progress_reporter_factory: WebsocketProgressReporterFactory,
         realm_codec_registry: RealmCodecRegistry,
@@ -167,7 +172,8 @@ class WebServiceApp:
     ) -> None:
         """Constructor."""
         self._global_properties = global_properties
-        self._time_provider = time_provider
+        self._request_time_provider = request_time_provider
+        self._cron_time_provider = cron_time_provider
         self._invocation_recorder = invocation_recorder
         self._progress_reporter_factory = progress_reporter_factory
         self._realm_codec_registry = realm_codec_registry
@@ -187,7 +193,8 @@ class WebServiceApp:
     @staticmethod
     def build_from_module_root(
         global_properties: GlobalProperties,
-        time_provider: TimeProvider,
+        request_time_provider: PerRequestTimeProvider,
+        cron_run_time_provider: CronRunTimeProvider,
         invocation_recorder: MutationUseCaseInvocationRecorder,
         progress_reporter_factory: WebsocketProgressReporterFactory,
         realm_codec_registry: RealmCodecRegistry,
@@ -231,7 +238,8 @@ class WebServiceApp:
                 
         app = WebServiceApp(
             global_properties,
-            time_provider,
+            request_time_provider,
+            cron_run_time_provider,
             invocation_recorder,
             progress_reporter_factory,
             realm_codec_registry,
@@ -252,6 +260,7 @@ class WebServiceApp:
     def run(self) -> None:
         """Run the app."""
 
+        self._fast_app.add_middleware(BaseHTTPMiddleware, dispatch=self._time_provider_middleware)
         self._fast_app.add_event_handler("startup", self._on_startup)
     
     @property
@@ -263,6 +272,11 @@ class WebServiceApp:
     def _custom_generate_unique_id(self, route: APIRoute) -> str:
         """Generate a OpenAPI unique id from just the route name."""
         return f"{route.name}"
+    
+    async def _time_provider_middleware(self, request: Request, call_next: DecoratedCallable) -> Callable[[DecoratedCallable], DecoratedCallable]:  # type: ignore  # noqa: E501
+        """Middleware to provide the time provider."""
+        self._request_time_provider.set_request_time()
+        return await call_next(request)
     
     async def _on_startup(self) -> None:
         scheduler = AsyncIOScheduler()
@@ -292,7 +306,7 @@ class WebServiceApp:
             self._use_case_commands[use_case_type] = GuestMutationCommand(
                 realm_codec_registry=self._realm_codec_registry,
                 use_case=use_case_type(  # type: ignore
-                    time_provider=self._time_provider,
+                    time_provider=self._request_time_provider,
                     invocation_recorder=self._invocation_recorder,
                     progress_reporter_factory=NoOpProgressReporterFactory(),
                     global_properties=self._global_properties,
@@ -306,7 +320,7 @@ class WebServiceApp:
                 realm_codec_registry=self._realm_codec_registry,
                 use_case=use_case_type(  # type: ignore
                     global_properties=self._global_properties,
-                    time_provider=self._time_provider,
+                    time_provider=self._request_time_provider,
                     auth_token_stamper=self._auth_token_stamper,
                     domain_storage_engine=self._domain_storage_engine,
                     search_storage_engine=self._search_storage_engine,
@@ -317,7 +331,7 @@ class WebServiceApp:
                 realm_codec_registry=self._realm_codec_registry,
                 use_case=use_case_type(  # type: ignore
                     global_properties=self._global_properties,
-                    time_provider=self._time_provider,
+                    time_provider=self._request_time_provider,
                     invocation_recorder=self._invocation_recorder,
                     progress_reporter_factory=self._progress_reporter_factory,
                     auth_token_stamper=self._auth_token_stamper,
@@ -331,7 +345,7 @@ class WebServiceApp:
                 realm_codec_registry=self._realm_codec_registry,
                 use_case=use_case_type(  # type: ignore
                     global_properties=self._global_properties,
-                    time_provider=self._time_provider,
+                    time_provider=self._request_time_provider,
                     auth_token_stamper=self._auth_token_stamper,
                     domain_storage_engine=self._domain_storage_engine,
                     search_storage_engine=self._search_storage_engine,
@@ -341,7 +355,7 @@ class WebServiceApp:
             self._use_case_commands[use_case_type] = CronCommand(
                 realm_codec_registry=self._realm_codec_registry,
                 use_case=use_case_type(  # type: ignore
-                    time_provider=self._time_provider,
+                    time_provider=self._cron_time_provider,
                     progress_reporter_factory=EmptyProgressReporterFactory(),
                     domain_storage_engine=self._domain_storage_engine,
                     search_storage_engine=self._search_storage_engine,
