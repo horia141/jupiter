@@ -22,23 +22,6 @@ class GenDoAllArgs(UseCaseArgsBase):
 class GenDoAllUseCase(AppBackgroundMutationUseCase[GenDoAllArgs, None]):
     """The command for doing task generation for all workspaces."""
 
-    _time_provider: Final[TimeProvider]
-    _domain_storage_engine: Final[DomainStorageEngine]
-    _search_storage_engine: Final[SearchStorageEngine]
-
-    def __init__(
-        self,
-        time_provider: TimeProvider,
-        progress_reporter_factory: ProgressReporterFactory[EmptyContext],
-        domain_storage_engine: DomainStorageEngine,
-        search_storage_engine: SearchStorageEngine,
-    ) -> None:
-        """Constructor."""
-        super().__init__(progress_reporter_factory)
-        self._time_provider = time_provider
-        self._domain_storage_engine = domain_storage_engine
-        self._search_storage_engine = search_storage_engine
-
     async def _execute(
         self,
         context: EmptyContext,

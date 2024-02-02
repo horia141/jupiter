@@ -317,6 +317,7 @@ export type { WorkspaceLoadArgs } from './models/WorkspaceLoadArgs';
 export type { WorkspaceLoadResult } from './models/WorkspaceLoadResult';
 export type { WorkspaceName } from './models/WorkspaceName';
 export type { WorkspaceUpdateArgs } from './models/WorkspaceUpdateArgs';
+export type { x } from './models/x';
 
 export { AuthService } from './services/AuthService';
 export { BigPlanService } from './services/BigPlanService';

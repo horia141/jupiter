@@ -526,11 +526,15 @@ from jupiter.core.utils.progress_reporter import (
     EmptyProgressReporterFactory,
     NoOpProgressReporterFactory,
 )
+from pydantic import create_model
 from jupiter.webapi.time_provider import CronRunTimeProvider, PerRequestTimeProvider
 from jupiter.webapi.websocket_progress_reporter import WebsocketProgressReporterFactory
 from starlette import status
 from starlette.requests import Request
 from starlette.responses import JSONResponse, PlainTextResponse
+import jupiter.core.use_cases
+
+from jupiter.webapi.app import WebServiceApp
 
 request_time_provider = PerRequestTimeProvider()
 cron_run_time_provider = CronRunTimeProvider()
@@ -630,13 +634,6 @@ gen_do_use_case = GenDoUseCase(
     use_case_storage_engine=usecase_storage_engine,
 )
 
-gen_do_all_use_case = GenDoAllUseCase(
-    time_provider=cron_run_time_provider,
-    progress_reporter_factory=EmptyProgressReporterFactory(),
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
-
 gen_load_runs_use_case = GenLoadRunsUseCase(
     time_provider=request_time_provider,
     global_properties=global_properties,
@@ -662,13 +659,6 @@ gc_do_use_case = GCDoUseCase(
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
     use_case_storage_engine=usecase_storage_engine,
-)
-
-gc_do_all_use_case = GCDoAllUseCase(
-    time_provider=cron_run_time_provider,
-    progress_reporter_factory=EmptyProgressReporterFactory(),
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
 )
 
 gc_load_runs_use_case = GCLoadRunsUseCase(
@@ -1670,27 +1660,29 @@ standard_config: Mapping[str, Any] = {  # type: ignore
 }
 
 
-def custom_generate_unique_id(route: APIRoute) -> str:
-    """Generate a OpenAPI unique id from just the route name."""
-    return f"{route.name}"
+webapp = WebServiceApp.build_from_module_root(
+    global_properties,
+        request_time_provider,
+        invocation_recorder,
+        progress_reporter_factory,
+        realm_codec_registry,
+        auth_token_stamper,
+        domain_storage_engine,
+        search_storage_engine,
+        usecase_storage_engine,
+        jupiter.core.use_cases)
+
+webapp.run()
 
 
-app = FastAPI(
-    generate_unique_id_function=custom_generate_unique_id,
-    openapi_url="/openapi.json" if global_properties.env.is_development else None,
-    docs_url="/docs" if global_properties.env.is_development else None,
-    redoc_url="/redoc" if global_properties.env.is_development else None,
-)
-
-
-@app.middleware("http")
+@webapp.fast_app.middleware("http")
 async def time_provider_middleware(request: Request, call_next: DecoratedCallable) -> Callable[[DecoratedCallable], DecoratedCallable]:  # type: ignore
     """Middleware which provides the time for a particular request on a thread."""
     request_time_provider.set_request_time()
     return await call_next(request)  # type: ignore
 
 
-@app.exception_handler(InputValidationError)
+@webapp.fast_app.exception_handler(InputValidationError)
 async def input_validation_error_handler(
     _request: Request, exc: InputValidationError
 ) -> JSONResponse:
@@ -1711,7 +1703,7 @@ async def input_validation_error_handler(
     )
 
 
-@app.exception_handler(FeatureUnavailableError)
+@webapp.fast_app.exception_handler(FeatureUnavailableError)
 async def feature_unavailable_error_handler(
     _request: Request, exc: FeatureUnavailableError
 ) -> JSONResponse:
@@ -1722,7 +1714,7 @@ async def feature_unavailable_error_handler(
     )
 
 
-@app.exception_handler(UserAlreadyExistsError)
+@webapp.fast_app.exception_handler(UserAlreadyExistsError)
 async def user_already_exists_error_handler(
     _request: Request, exc: UserAlreadyExistsError
 ) -> JSONResponse:
@@ -1743,7 +1735,7 @@ async def user_already_exists_error_handler(
     )
 
 
-@app.exception_handler(ExpiredAuthTokenError)
+@webapp.fast_app.exception_handler(ExpiredAuthTokenError)
 async def expired_auth_token_error_handler(
     _request: Request, exc: ExpiredAuthTokenError
 ) -> JSONResponse:
@@ -1754,7 +1746,7 @@ async def expired_auth_token_error_handler(
     )
 
 
-@app.exception_handler(InvalidLoginCredentialsError)
+@webapp.fast_app.exception_handler(InvalidLoginCredentialsError)
 async def invalid_login_credentials_error_handler(
     _request: Request, exc: InvalidLoginCredentialsError
 ) -> JSONResponse:
@@ -1775,7 +1767,7 @@ async def invalid_login_credentials_error_handler(
     )
 
 
-@app.exception_handler(ProjectInSignificantUseError)
+@webapp.fast_app.exception_handler(ProjectInSignificantUseError)
 async def project_in_significant_use_error_handler(
     _request: Request, exc: ProjectInSignificantUseError
 ) -> JSONResponse:
@@ -1796,7 +1788,7 @@ async def project_in_significant_use_error_handler(
     )
 
 
-@app.exception_handler(EntityNotFoundError)
+@webapp.fast_app.exception_handler(EntityNotFoundError)
 async def leaf_entity_not_found_error_handler(
     _request: Request,
     _exc: EntityNotFoundError,
@@ -1808,7 +1800,7 @@ async def leaf_entity_not_found_error_handler(
     )
 
 
-@app.exception_handler(InvalidAuthTokenError)
+@webapp.fast_app.exception_handler(InvalidAuthTokenError)
 async def invalid_auth_token_error(
     _request: Request, exc: InvalidAuthTokenError
 ) -> JSONResponse:
@@ -1819,7 +1811,7 @@ async def invalid_auth_token_error(
     )
 
 
-@app.exception_handler(UserNotFoundError)
+@webapp.fast_app.exception_handler(UserNotFoundError)
 async def user_not_found_error(
     _request: Request,
     _exc: UserNotFoundError,
@@ -1831,7 +1823,7 @@ async def user_not_found_error(
     )
 
 
-@app.exception_handler(WorkspaceNotFoundError)
+@webapp.fast_app.exception_handler(WorkspaceNotFoundError)
 async def workspace_not_found_error_handler(
     _request: Request,
     _exc: WorkspaceNotFoundError,
@@ -1843,7 +1835,7 @@ async def workspace_not_found_error_handler(
     )
 
 
-@app.exception_handler(JournalExistsForDatePeriodCombinationError)
+@webapp.fast_app.exception_handler(JournalExistsForDatePeriodCombinationError)
 async def journal_exists_for_period_and_date_error_handler(
     _request: Request,
     _exc: JournalExistsForDatePeriodCombinationError,
@@ -1855,18 +1847,13 @@ async def journal_exists_for_period_and_date_error_handler(
     )
 
 
-@app.on_event("startup")
+@webapp.fast_app.on_event("startup")
 async def startup_event() -> None:
     """The startup event for the whole service."""
     await sqlite_connection.prepare()
-    # aio_session = aiohttp.ClientSession()
-    scheduler = AsyncIOScheduler()
-    scheduler.add_job(do_gen_run, "cron", day="*", hour="2")
-    scheduler.add_job(do_gc_run, "cron", day="*", hour="1")
-    scheduler.start()
 
 
-@app.on_event("shutdown")
+@webapp.fast_app.on_event("shutdown")
 async def shutdown_event() -> None:
     """The shutdown event for the whole service."""
     try:
@@ -1935,7 +1922,7 @@ LoggedInSession = Annotated[
 ]
 
 
-# @app.websocket("/progress-reporter")
+# @webapp.fast_app.websocket("/progress-reporter")
 # async def progress_reporter_websocket(websocket: WebSocket, token: str | None) -> None:
 #     """Handle the whole lifecycle of the progress reporter websocket."""
 #     if token is None:
@@ -1970,14 +1957,14 @@ LoggedInSession = Annotated[
 #         )
 
 
-@app.get("/healthz", status_code=status.HTTP_200_OK)
+@webapp.fast_app.get("/healthz", status_code=status.HTTP_200_OK)
 async def healthz() -> None:
     """Health check endpoint."""
     return None
 
 
 @secure_fn
-@app.post("/old-skool-login")
+@webapp.fast_app.post("/old-skool-login")
 async def old_skool_login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
 ) -> Dict[str, str]:
@@ -1996,8 +1983,9 @@ async def old_skool_login(
     }
 
 
+
 @secure_fn
-@app.post(
+@webapp.fast_app.post(
     "/init",
     response_model=InitResult,
     tags=["init"],
@@ -2009,14 +1997,14 @@ async def init(args: InitArgs, session: GuestSession) -> InitResult:
 
 
 @secure_fn
-@app.post("/login", response_model=LoginResult, tags=["login"], **standard_config)
+@webapp.fast_app.post("/login", response_model=LoginResult, tags=["login"], **standard_config)
 async def login(args: LoginArgs, session: GuestSession) -> LoginResult:
     """Login to a workspace."""
     return (await login_use_case.execute(session, args))[1]
 
 
 @secure_fn
-@app.post(
+@webapp.fast_app.post(
     "/auth/change-password",
     response_model=None,
     tags=["auth"],
@@ -2028,7 +2016,7 @@ async def change_password(args: ChangePasswordArgs, session: LoggedInSession) ->
 
 
 @secure_fn
-@app.post(
+@webapp.fast_app.post(
     "/auth/reset-password",
     response_model=ResetPasswordResult,
     tags=["auth"],
@@ -2041,7 +2029,7 @@ async def reset_password(
     return (await auth_reset_password_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/search",
     response_model=SearchResult,
     tags=["search"],
@@ -2052,13 +2040,13 @@ async def search(args: SearchArgs, session: LoggedInSession) -> SearchResult:
     return (await search_use_case.execute(session, args))[1]
 
 
-@app.post("/gen/do", response_model=None, tags=["gen"], **standard_config)
+@webapp.fast_app.post("/gen/do", response_model=None, tags=["gen"], **standard_config)
 async def gen_do(args: GenDoArgs, session: LoggedInSession) -> None:
     """Generate inbox tasks."""
     await gen_do_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/gen/load-runs",
     response_model=GenLoadRunsResult,
     tags=["gen"],
@@ -2071,7 +2059,7 @@ async def gen_load_runs(
     return (await gen_load_runs_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/report",
     response_model=ReportResult,
     tags=["report"],
@@ -2082,13 +2070,13 @@ async def report(args: ReportArgs, session: LoggedInSession) -> ReportResult:
     return (await report_use_case.execute(session, args))[1]
 
 
-@app.post("/gc/do", response_model=None, tags=["gc"], **standard_config)
+@webapp.fast_app.post("/gc/do", response_model=None, tags=["gc"], **standard_config)
 async def gc_do(args: GCDoArgs, session: LoggedInSession) -> None:
     """Perform a garbage collect."""
     await gc_do_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/gc/load-runs",
     response_model=GCLoadRunsResult,
     tags=["gc"],
@@ -2101,7 +2089,7 @@ async def gc_load_runs(
     return (await gc_load_runs_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/load-top-level-info",
     response_model=LoadTopLevelInfoResult,
     tags=["load-top-level-info"],
@@ -2114,7 +2102,7 @@ async def load_top_level_info(
     return (await load_top_level_info_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/load-progress-reporter-token",
     response_model=LoadProgressReporterTokenResult,
     tags=["load-progress-reporter-token"],
@@ -2127,7 +2115,7 @@ async def load_progress_reporter_token(
     return (await load_progress_reporter_token_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/get-summaries",
     response_model=GetSummariesResult,
     tags=["get-summaries"],
@@ -2140,7 +2128,7 @@ async def get_summaries(
     return (await get_summaries_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/user/update",
     response_model=None,
     tags=["user"],
@@ -2151,7 +2139,7 @@ async def update_user(args: UserUpdateArgs, session: LoggedInSession) -> None:
     await user_update_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/user/change-feature-flags",
     response_model=None,
     tags=["user"],
@@ -2164,7 +2152,7 @@ async def change_user_feature_flags(
     await user_change_feature_flags_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/user/load",
     response_model=UserLoadResult,
     tags=["user"],
@@ -2175,7 +2163,7 @@ async def load_user(args: UserLoadArgs, session: LoggedInSession) -> UserLoadRes
     return (await user_load_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/workspace/update",
     response_model=None,
     tags=["workspace"],
@@ -2186,7 +2174,7 @@ async def update_workspace(args: WorkspaceUpdateArgs, session: LoggedInSession) 
     await workspace_update_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/workspace/change-default-project",
     response_model=None,
     tags=["workspace"],
@@ -2199,7 +2187,7 @@ async def change_workspace_default_project(
     await workspace_change_default_project_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/workspace/change-feature-flags",
     response_model=None,
     tags=["workspace"],
@@ -2212,7 +2200,7 @@ async def change_workspace_feature_flags(
     await workspace_change_feature_flags_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/workspace/load",
     response_model=WorkspaceLoadResult,
     tags=["workspace"],
@@ -2225,7 +2213,7 @@ async def load_workspace(
     return (await workspace_load_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/inbox-task/create",
     response_model=InboxTaskCreateResult,
     tags=["inbox-task"],
@@ -2238,7 +2226,7 @@ async def create_inbox_task(
     return (await inbox_task_create_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/inbox-task/update",
     response_model=InboxTaskUpdateResult,
     tags=["inbox-task"],
@@ -2251,7 +2239,7 @@ async def update_inbox_task(
     return (await inbox_task_update_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/inbox-task/archive",
     response_model=None,
     tags=["inbox-task"],
@@ -2264,7 +2252,7 @@ async def archive_inbox_task(
     await inbox_task_archive_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/inbox-task/change-project",
     response_model=None,
     tags=["inbox-task"],
@@ -2277,7 +2265,7 @@ async def change_inbox_task_project(
     await inbox_task_change_project_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/inbox-task/associate-with-big-plan",
     response_model=None,
     tags=["inbox-task"],
@@ -2290,7 +2278,7 @@ async def associate_inbox_task_with_big_plan(
     await inbox_task_associate_with_big_plan.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/inbox-task/load",
     response_model=InboxTaskLoadResult,
     tags=["inbox-task"],
@@ -2303,7 +2291,7 @@ async def load_inbox_task(
     return (await inbox_task_load_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/inbox-task/find",
     response_model=InboxTaskFindResult,
     tags=["inbox-task"],
@@ -2316,7 +2304,7 @@ async def find_inbox_task(
     return (await inbox_task_find_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/habit/create",
     response_model=HabitCreateResult,
     tags=["habit"],
@@ -2329,7 +2317,7 @@ async def create_habit(
     return (await habit_create_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/habit/archive",
     response_model=None,
     tags=["habit"],
@@ -2340,7 +2328,7 @@ async def archive_habit(args: HabitArchiveArgs, session: LoggedInSession) -> Non
     await habit_archive_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/habit/update",
     response_model=None,
     tags=["habit"],
@@ -2351,7 +2339,7 @@ async def update_habit(args: HabitUpdateArgs, session: LoggedInSession) -> None:
     await habit_update_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/habit/change-project",
     response_model=None,
     tags=["habit"],
@@ -2364,7 +2352,7 @@ async def change_habit_project(
     await habit_change_project_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/habit/suspend",
     response_model=None,
     tags=["habit"],
@@ -2375,7 +2363,7 @@ async def suspend_habit(args: HabitSuspendArgs, session: LoggedInSession) -> Non
     await habit_suspend_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/habit/unsuspend",
     response_model=None,
     tags=["habit"],
@@ -2386,7 +2374,7 @@ async def unsuspend_habit(args: HabitUnsuspendArgs, session: LoggedInSession) ->
     await habit_unsuspend_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/habit/load",
     response_model=HabitLoadResult,
     tags=["habit"],
@@ -2397,7 +2385,7 @@ async def load_habit(args: HabitLoadArgs, session: LoggedInSession) -> HabitLoad
     return (await habit_load_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/habit/find",
     response_model=HabitFindResult,
     tags=["habit"],
@@ -2408,7 +2396,7 @@ async def find_habit(args: HabitFindArgs, session: LoggedInSession) -> HabitFind
     return (await habit_find_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/chore/create",
     response_model=ChoreCreateResult,
     tags=["chore"],
@@ -2421,7 +2409,7 @@ async def create_chore(
     return (await chore_create_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/chore/archive",
     response_model=None,
     tags=["chore"],
@@ -2432,7 +2420,7 @@ async def archive_chore(args: ChoreArchiveArgs, session: LoggedInSession) -> Non
     await chore_archive_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/chore/update",
     response_model=None,
     tags=["chore"],
@@ -2443,7 +2431,7 @@ async def update_chore(args: ChoreUpdateArgs, session: LoggedInSession) -> None:
     await chore_update_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/chore/change-project",
     response_model=None,
     tags=["chore"],
@@ -2456,7 +2444,7 @@ async def change_chore_project(
     await chore_change_project_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/chore/suspend",
     response_model=None,
     tags=["chore"],
@@ -2467,7 +2455,7 @@ async def suspend_chore(args: ChoreSuspendArgs, session: LoggedInSession) -> Non
     await chore_suspend_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/chore/unsuspend",
     response_model=None,
     tags=["chore"],
@@ -2478,7 +2466,7 @@ async def unsuspend_chore(args: ChoreUnsuspendArgs, session: LoggedInSession) ->
     await chore_unsuspend_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/chore/load",
     response_model=ChoreLoadResult,
     tags=["chore"],
@@ -2489,7 +2477,7 @@ async def load_chore(args: ChoreLoadArgs, session: LoggedInSession) -> ChoreLoad
     return (await chore_load_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/chore/find",
     response_model=ChoreFindResult,
     tags=["chore"],
@@ -2500,7 +2488,7 @@ async def find_chore(args: ChoreFindArgs, session: LoggedInSession) -> ChoreFind
     return (await chore_find_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/big-plan/create",
     response_model=BigPlanCreateResult,
     tags=["big-plan"],
@@ -2513,7 +2501,7 @@ async def create_big_plan(
     return (await big_plan_create_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/big-plan/archive",
     response_model=None,
     tags=["big-plan"],
@@ -2524,7 +2512,7 @@ async def archive_big_plan(args: BigPlanArchiveArgs, session: LoggedInSession) -
     await big_plan_archive_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/big-plan/update",
     response_model=BigPlanUpdateResult,
     tags=["big-plan"],
@@ -2537,7 +2525,7 @@ async def update_big_plan(
     return (await big_plan_update_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/big-plan/change-project",
     response_model=None,
     tags=["big-plan"],
@@ -2550,7 +2538,7 @@ async def change_big_plan_project(
     await big_plan_change_project_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/big-plan/load",
     response_model=BigPlanLoadResult,
     tags=["big-plan"],
@@ -2563,7 +2551,7 @@ async def load_big_plan(
     return (await big_plan_load_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/big-plan/find",
     response_model=BigPlanFindResult,
     tags=["big-plan"],
@@ -2576,7 +2564,7 @@ async def find_big_plan(
     return (await big_plan_find_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/journal/create",
     response_model=JournalCreateResult,
     tags=["journal"],
@@ -2589,7 +2577,7 @@ async def create_journal(
     return (await journal_create_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/journal/archive",
     response_model=None,
     tags=["journal"],
@@ -2600,7 +2588,7 @@ async def archive_journal(args: JournalArchiveArgs, session: LoggedInSession) ->
     await journal_archive_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/journal/change-time-config",
     response_model=None,
     tags=["journal"],
@@ -2613,7 +2601,7 @@ async def change_time_config_for_journal(
     await journal_change_time_config_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/journal/update-report",
     response_model=None,
     tags=["journal"],
@@ -2626,7 +2614,7 @@ async def update_report_for_jorunal(
     await journal_update_report_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/journal/find",
     response_model=JournalFindResult,
     tags=["journal"],
@@ -2639,7 +2627,7 @@ async def find_journal(
     return (await journal_find_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/journal/load",
     response_model=JournalLoadResult,
     tags=["journal"],
@@ -2652,7 +2640,7 @@ async def load_journal(
     return (await journal_load_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/doc/create",
     response_model=DocCreateResult,
     tags=["doc"],
@@ -2663,7 +2651,7 @@ async def create_doc(args: DocCreateArgs, session: LoggedInSession) -> DocCreate
     return (await doc_create_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/doc/archive",
     response_model=None,
     tags=["doc"],
@@ -2674,7 +2662,7 @@ async def archive_doc(args: DocArchiveArgs, session: LoggedInSession) -> None:
     await doc_archive_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/doc/update",
     response_model=None,
     tags=["doc"],
@@ -2685,7 +2673,7 @@ async def update_doc(args: DocUpdateArgs, session: LoggedInSession) -> None:
     await doc_update_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/doc/change-parent",
     response_model=None,
     tags=["doc"],
@@ -2698,7 +2686,7 @@ async def change_doc_parent(
     await doc_change_parent_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/doc/load",
     response_model=DocLoadResult,
     tags=["doc"],
@@ -2709,7 +2697,7 @@ async def load_doc(args: DocLoadArgs, session: LoggedInSession) -> DocLoadResult
     return (await doc_load_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/doc/find",
     response_model=DocFindResult,
     tags=["doc"],
@@ -2720,7 +2708,7 @@ async def find_doc(args: DocFindArgs, session: LoggedInSession) -> DocFindResult
     return (await doc_find_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/vacation/create",
     response_model=VacationCreateResult,
     tags=["vacation"],
@@ -2733,7 +2721,7 @@ async def create_vacation(
     return (await vacation_create_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/vacation/archive",
     response_model=None,
     tags=["vacation"],
@@ -2744,7 +2732,7 @@ async def archive_vacation(args: VacationArchiveArgs, session: LoggedInSession) 
     await vacation_archive_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/vacation/update",
     response_model=None,
     tags=["vacation"],
@@ -2755,7 +2743,7 @@ async def update_vacation(args: VacationUpdateArgs, session: LoggedInSession) ->
     await vacation_update_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/vacation/load",
     response_model=VacationLoadResult,
     tags=["vacation"],
@@ -2768,7 +2756,7 @@ async def load_vacation(
     return (await vacation_load_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/vacation/find",
     response_model=VacationFindResult,
     tags=["vacation"],
@@ -2781,7 +2769,7 @@ async def find_vacation(
     return (await vacation_find_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/project/create",
     response_model=ProjectCreateResult,
     tags=["project"],
@@ -2794,7 +2782,7 @@ async def create_project(
     return (await project_create_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/project/archive",
     response_model=None,
     tags=["project"],
@@ -2805,7 +2793,7 @@ async def archive_project(args: ProjectArchiveArgs, session: LoggedInSession) ->
     await project_archive_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/project/update",
     response_model=None,
     tags=["project"],
@@ -2816,7 +2804,7 @@ async def update_project(args: ProjectUpdateArgs, session: LoggedInSession) -> N
     await project_update_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/project/load",
     response_model=ProjectLoadResult,
     tags=["project"],
@@ -2829,7 +2817,7 @@ async def load_project(
     return (await project_load_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/project/find",
     response_model=ProjectFindResult,
     tags=["project"],
@@ -2842,7 +2830,7 @@ async def find_project(
     return (await project_find_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/smart-list/create",
     response_model=SmartListCreateResult,
     tags=["smart-list"],
@@ -2855,7 +2843,7 @@ async def create_smart_list(
     return (await smart_list_create_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/smart-list/archive",
     response_model=None,
     tags=["smart-list"],
@@ -2868,7 +2856,7 @@ async def archive_smart_list(
     await smart_list_archive_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/smart-list/update",
     response_model=None,
     tags=["smart-list"],
@@ -2881,7 +2869,7 @@ async def update_smart_list(
     await smart_list_update_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/smart-list/load",
     response_model=SmartListLoadResult,
     tags=["smart-list"],
@@ -2894,7 +2882,7 @@ async def load_smart_list(
     return (await smart_list_load_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/smart-list/find",
     response_model=SmartListFindResult,
     tags=["smart-list"],
@@ -2907,7 +2895,7 @@ async def find_smart_list(
     return (await smart_list_find_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/smart-list/tag/create",
     response_model=SmartListTagCreateResult,
     tags=["smart-list"],
@@ -2920,7 +2908,7 @@ async def create_smart_list_tag(
     return (await smart_list_tag_create_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/smart-list/tag/archive",
     response_model=None,
     tags=["smart-list"],
@@ -2933,7 +2921,7 @@ async def archive_smart_list_tag(
     await smart_list_tag_archive_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/smart-list/tag/update",
     response_model=None,
     tags=["smart-list"],
@@ -2946,7 +2934,7 @@ async def update_smart_list_tag(
     await smart_list_tag_update_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/smart-list/tag/load",
     response_model=SmartListTagLoadResult,
     tags=["smart-list"],
@@ -2959,7 +2947,7 @@ async def load_smart_list_tag(
     return (await smart_list_tag_load_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/smart-list/item/create",
     response_model=SmartListItemCreateResult,
     tags=["smart-list"],
@@ -2972,7 +2960,7 @@ async def create_smart_list_item(
     return (await smart_list_item_create_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/smart-list/item/archive",
     response_model=None,
     tags=["smart-list"],
@@ -2985,7 +2973,7 @@ async def archive_smart_list_item(
     await smart_list_item_archive_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/smart-list/item/update",
     response_model=None,
     tags=["smart-list"],
@@ -2998,7 +2986,7 @@ async def update_smart_list_item(
     await smart_list_item_update_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/smart-list/item/load",
     response_model=SmartListItemLoadResult,
     tags=["smart-list"],
@@ -3011,7 +2999,7 @@ async def load_smart_list_item(
     return (await smart_list_item_load_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/metric/create",
     response_model=MetricCreateResult,
     tags=["metric"],
@@ -3024,7 +3012,7 @@ async def create_metric(
     return (await metric_create_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/metric/archive",
     response_model=None,
     tags=["metric"],
@@ -3035,7 +3023,7 @@ async def archive_metric(args: MetricArchiveArgs, session: LoggedInSession) -> N
     await metric_archive_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/metric/update",
     response_model=None,
     tags=["metric"],
@@ -3046,7 +3034,7 @@ async def update_metric(args: MetricUpdateArgs, session: LoggedInSession) -> Non
     await metric_update_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/metric/load-settings",
     response_model=MetricLoadSettingsResult,
     tags=["metric"],
@@ -3059,7 +3047,7 @@ async def load_metric_settings(
     return (await metric_load_settings_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/metric/change-collection-project",
     response_model=None,
     tags=["metric"],
@@ -3072,7 +3060,7 @@ async def change_metric_collection_project(
     await metric_change_collection_project_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/metric/load",
     response_model=MetricLoadResult,
     tags=["metric"],
@@ -3085,7 +3073,7 @@ async def load_metric(
     return (await metric_load_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/metric/find",
     response_model=MetricFindResult,
     tags=["metric"],
@@ -3098,7 +3086,7 @@ async def find_metric(
     return (await metric_find_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/metric/entry/create",
     response_model=MetricEntryCreateResult,
     tags=["metric"],
@@ -3111,7 +3099,7 @@ async def create_metric_entry(
     return (await metric_entry_create_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/metric/entry/archive",
     response_model=None,
     tags=["metric"],
@@ -3124,7 +3112,7 @@ async def archive_metric_entry(
     await metric_entry_archive_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/metric/entry/update",
     response_model=None,
     tags=["metric"],
@@ -3137,7 +3125,7 @@ async def update_metric_entry(
     await metric_entry_update_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/metric/entry/load",
     response_model=MetricEntryLoadResult,
     tags=["metric"],
@@ -3150,7 +3138,7 @@ async def load_metric_entry(
     return (await metric_entry_load_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/person/create",
     response_model=PersonCreateResult,
     tags=["person"],
@@ -3163,7 +3151,7 @@ async def create_person(
     return (await person_create_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/person/archive",
     response_model=None,
     tags=["person"],
@@ -3174,7 +3162,7 @@ async def archive_person(args: PersonArchiveArgs, session: LoggedInSession) -> N
     await person_archive_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/person/update",
     response_model=None,
     tags=["person"],
@@ -3185,7 +3173,7 @@ async def update_person(args: PersonUpdateArgs, session: LoggedInSession) -> Non
     await person_update_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/person/load-settings",
     response_model=PersonLoadSettingsResult,
     tags=["person"],
@@ -3198,7 +3186,7 @@ async def load_person_settings(
     return (await person_load_settings_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/person/change-catch-up-project",
     response_model=None,
     tags=["person"],
@@ -3211,7 +3199,7 @@ async def update_change_catch_up_project(
     await person_change_catch_up_project_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/person/load",
     response_model=PersonLoadResult,
     tags=["person"],
@@ -3224,7 +3212,7 @@ async def load_person(
     return (await person_load_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/person/find",
     response_model=PersonFindResult,
     tags=["person"],
@@ -3237,7 +3225,7 @@ async def find_person(
     return (await person_find_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/slack-task/archive",
     response_model=None,
     tags=["slack-task"],
@@ -3250,7 +3238,7 @@ async def archive_slack_task(
     await slack_task_archive_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/slack-task/update",
     response_model=None,
     tags=["slack-task"],
@@ -3263,7 +3251,7 @@ async def update_slack_task(
     await slack_task_update_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/slack-task/load-settings",
     response_model=SlackTaskLoadSettingsResult,
     tags=["slack-task"],
@@ -3276,7 +3264,7 @@ async def load_slack_task_settings(
     return (await slack_task_load_settings_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/slack-task/change-project",
     response_model=None,
     tags=["slack-task"],
@@ -3289,7 +3277,7 @@ async def change_slack_task_generation_project(
     await slack_task_change_generation_project_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/slack-task/load",
     response_model=SlackTaskLoadResult,
     tags=["slack-task"],
@@ -3302,7 +3290,7 @@ async def load_slack_task(
     return (await slack_task_load_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/slack-task/find",
     response_model=SlackTaskFindResult,
     tags=["slack-task"],
@@ -3315,7 +3303,7 @@ async def find_slack_task(
     return (await slack_task_find_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/email-task/archive",
     response_model=None,
     tags=["email-task"],
@@ -3328,7 +3316,7 @@ async def archive_email_task(
     await email_task_archive_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/email-task/update",
     response_model=None,
     tags=["email-task"],
@@ -3341,7 +3329,7 @@ async def update_email_task(
     await email_task_update_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/email-task/load-settings",
     response_model=EmailTaskLoadSettingsResult,
     tags=["email-task"],
@@ -3354,7 +3342,7 @@ async def load_email_task_settings(
     return (await email_task_load_settings_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/email-task/change-project",
     response_model=None,
     tags=["email-task"],
@@ -3367,7 +3355,7 @@ async def change_email_task_generation_project(
     await email_task_change_generation_project_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/email-task/load",
     response_model=EmailTaskLoadResult,
     tags=["email-task"],
@@ -3380,7 +3368,7 @@ async def load_email_task(
     return (await email_task_load_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/email-task/find",
     response_model=EmailTaskFindResult,
     tags=["email-task"],
@@ -3393,7 +3381,7 @@ async def find_email_task(
     return (await email_task_find_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/core/note/create",
     response_model=NoteCreateResult,
     tags=["note"],
@@ -3406,7 +3394,7 @@ async def create_note(
     return (await note_create_use_case.execute(session, args))[1]
 
 
-@app.post(
+@webapp.fast_app.post(
     "/core/note/archive",
     response_model=None,
     tags=["note"],
@@ -3417,7 +3405,7 @@ async def archive_note(args: NoteArchiveArgs, session: LoggedInSession) -> None:
     await note_archive_use_case.execute(session, args)
 
 
-@app.post(
+@webapp.fast_app.post(
     "/core/note/update",
     response_model=None,
     tags=["note"],
@@ -3427,12 +3415,16 @@ async def update_note(args: NoteUpdateArgs, session: LoggedInSession) -> None:
     """Update a note."""
     await note_update_use_case.execute(session, args)
 
+# x = create_model("x", foo=(int, ...), bar=(str, ...))
 
-async def do_gen_run() -> None:
-    """A periodic task generation run for all workspaces."""
-    await gen_do_all_use_case.execute(EmptySession(), GenDoAllArgs())
+# async def do_x(args: x, session: LoggedInSession) -> None:
+#     """Update a note."""
+#     pass
 
-
-async def do_gc_run() -> None:
-    """A periodic GC run for all workspaces."""
-    await gc_do_all_use_case.execute(EmptySession(), GCDoAllArgs())
+# app.add_api_route(
+#     "/x",
+#     do_x,
+#     response_model=x,
+#     tags=["note"],
+#     **standard_config,
+# )

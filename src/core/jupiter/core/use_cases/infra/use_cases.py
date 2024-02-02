@@ -491,13 +491,24 @@ class AppBackgroundMutationUseCase(
 ):
     """A command which does some sort of mutation for the app in the background."""
 
+    _time_provider: Final[TimeProvider]
     _progress_reporter_factory: ProgressReporterFactory[EmptyContext]
+    _domain_storage_engine: Final[DomainStorageEngine]
+    _search_storage_engine: Final[SearchStorageEngine]
 
     def __init__(
-        self, progress_reporter_factory: ProgressReporterFactory[EmptyContext]
+        self,
+        time_provider: TimeProvider,
+        progress_reporter_factory: ProgressReporterFactory[EmptyContext],
+        domain_storage_engine: DomainStorageEngine,
+        search_storage_engine: SearchStorageEngine,
     ) -> None:
         """Constructor."""
+        self._time_provider = time_provider
         self._progress_reporter_factory = progress_reporter_factory
+        self._domain_storage_engine = domain_storage_engine
+        self._search_storage_engine = search_storage_engine
+
 
     async def _build_context(self, session: EmptySession) -> EmptyContext:
         """Construct the context for the use case."""

@@ -39,6 +39,9 @@ disallow_untyped_calls = False
 [mypy-jupiter.cli.command.*]
 disallow_any_explicit = False
 
+[mypy-jupiter.webapi.app.*]
+disallow_any_explicit = False
+
 [mypy-tests.integration.infra.*]
 allow_untyped_calls = True
 

@@ -5,6 +5,7 @@ import type { NoteArchiveArgs } from '../models/NoteArchiveArgs';
 import type { NoteCreateArgs } from '../models/NoteCreateArgs';
 import type { NoteCreateResult } from '../models/NoteCreateResult';
 import type { NoteUpdateArgs } from '../models/NoteUpdateArgs';
+import type { x } from '../models/x';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
@@ -72,6 +73,29 @@ export class NoteService {
         return this.httpRequest.request({
             method: 'POST',
             url: '/core/note/update',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Do X
+     * Update a note.
+     * @param requestBody
+     * @returns x Successful Response
+     * @throws ApiError
+     */
+    public doX(
+        requestBody: x,
+    ): CancelablePromise<x> {
+        return this.httpRequest.request({
+            method: 'GET',
+            url: '/x',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

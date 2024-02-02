@@ -11,6 +11,7 @@ from datetime import date, datetime
 from typing import Any, Final, Generic, Iterator, TypeVar, cast, get_args, get_origin
 
 import inflection
+from jupiter.core.utils.progress_reporter import NoOpProgressReporterFactory
 from jupiter.cli.command.rendering import RichConsoleProgressReporterFactory
 from jupiter.cli.session_storage import SessionInfo, SessionStorage
 from jupiter.cli.top_level_context import TopLevelContext
@@ -134,7 +135,7 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
     """Base class for commands based on use cases."""
 
     _realm_codec_registry: Final[RealmCodecRegistry]
-    _args_type: type[UseCaseArgsBase]
+    _args_type: Final[type[UseCaseArgsBase]]
     _use_case: UseCaseT
 
     def __init__(
@@ -1158,7 +1159,7 @@ class CliApp:
                 use_case=use_case_type(  # type: ignore
                     time_provider=self._time_provider,
                     invocation_recorder=self._invocation_recorder,
-                    progress_reporter_factory=self._progress_reporter_factory,
+                    progress_reporter_factory=NoOpProgressReporterFactory(),
                     global_properties=self._global_properties,
                     auth_token_stamper=self._auth_token_stamper,
                     domain_storage_engine=self._domain_storage_engine,
@@ -1233,7 +1234,7 @@ class CliApp:
                 use_case=use_case_type(  # type: ignore
                     time_provider=self._time_provider,
                     invocation_recorder=self._invocation_recorder,
-                    progress_reporter_factory=self._progress_reporter_factory,
+                    progress_reporter_factory=NoOpProgressReporterFactory(),
                     global_properties=self._global_properties,
                     auth_token_stamper=self._auth_token_stamper,
                     domain_storage_engine=self._domain_storage_engine,
