@@ -76,7 +76,7 @@ class SqliteSearchRepository(SearchRepository):
         await self._connection.execute(
             insert(self._search_index_table).values(
                 workspace_ref_id=workspace_ref_id.as_int(),
-                entity_tag=str(NamedEntityTag.from_entity(entity)),
+                entity_tag=str(NamedEntityTag.from_entity(entity).value),
                 parent_ref_id=self._realm_codec_registry.get_encoder(
                     EntityId, DatabaseRealm
                 ).encode(entity.parent_ref_id),
@@ -105,14 +105,13 @@ class SqliteSearchRepository(SearchRepository):
 
     async def update(self, workspace_ref_id: EntityId, entity: CrownEntity) -> None:
         """Update an entity in the index."""
-        result = await self._connection.execute(
-            update(self._search_index_table)
+        query = (update(self._search_index_table)
             .where(
                 self._search_index_table.c.workspace_ref_id == workspace_ref_id.as_int()
             )
             .where(
                 self._search_index_table.c.entity_tag
-                == str(NamedEntityTag.from_entity(entity))
+                == str(NamedEntityTag.from_entity(entity).value)
             )
             .where(self._search_index_table.c.ref_id == entity.ref_id.as_int())
             .values(
@@ -130,8 +129,8 @@ class SqliteSearchRepository(SearchRepository):
                 ).encode(entity.archived_time)
                 if entity.archived_time
                 else None,
-            )
-        )
+            ))
+        result = await self._connection.execute(query)
         if result.rowcount == 0:
             raise EntityNotFoundError(
                 "The entity does not exist",
@@ -201,7 +200,7 @@ class SqliteSearchRepository(SearchRepository):
         if filter_entity_tags is not None:
             query_stmt = query_stmt.where(
                 self._search_index_table.c.entity_tag.in_(
-                    str(f) for f in filter_entity_tags
+                    str(f.value) for f in filter_entity_tags
                 )
             )
 

@@ -1676,13 +1676,6 @@ webapp = WebServiceApp.build_from_module_root(
 webapp.run()
 
 
-@webapp.fast_app.middleware("http")
-async def time_provider_middleware(request: Request, call_next: DecoratedCallable) -> Callable[[DecoratedCallable], DecoratedCallable]:  # type: ignore
-    """Middleware which provides the time for a particular request on a thread."""
-    request_time_provider.set_request_time()
-    return await call_next(request)  # type: ignore
-
-
 @webapp.fast_app.exception_handler(InputValidationError)
 async def input_validation_error_handler(
     _request: Request, exc: InputValidationError
