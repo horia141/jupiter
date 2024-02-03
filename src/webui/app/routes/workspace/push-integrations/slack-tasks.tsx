@@ -37,7 +37,9 @@ export const handle = {
 
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
-  const response = await getLoggedInApiClient(session).slackTask.findSlackTask({
+  const response = await getLoggedInApiClient(
+    session
+  ).pushIntegrations.slackTaskFind({
     allow_archived: false,
     include_inbox_tasks: false,
   });

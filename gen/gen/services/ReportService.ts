@@ -12,8 +12,8 @@ export class ReportService {
     constructor(public readonly httpRequest: BaseHttpRequest) {}
 
     /**
-     * Report
-     * Report.
+     * The command for reporting on progress.
+     * The command for reporting on progress.
      * @param requestBody
      * @returns ReportResult Successful Response
      * @throws ApiError

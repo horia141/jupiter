@@ -12,8 +12,8 @@ export class GetSummariesService {
     constructor(public readonly httpRequest: BaseHttpRequest) {}
 
     /**
-     * Get Summaries
-     * Get summaries about entities.
+     * The use case for retrieving summaries about entities.
+     * The use case for retrieving summaries about entities.
      * @param requestBody
      * @returns GetSummariesResult Successful Response
      * @throws ApiError

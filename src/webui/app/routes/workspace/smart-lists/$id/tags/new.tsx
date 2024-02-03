@@ -47,7 +47,7 @@ export async function loader({ request, params }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const { id } = parseParams(params, ParamsSchema);
 
-  const result = await getLoggedInApiClient(session).smartList.loadSmartList({
+  const result = await getLoggedInApiClient(session).smartLists.smartListLoad({
     allow_archived: true,
     ref_id: { the_id: id },
   });
@@ -65,7 +65,7 @@ export async function action({ request, params }: ActionArgs) {
   try {
     const response = await getLoggedInApiClient(
       session
-    ).smartList.createSmartListTag({
+    ).smartLists.smartListTagCreate({
       smart_list_ref_id: { the_id: id },
       tag_name: { the_tag: form.name },
     });

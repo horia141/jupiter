@@ -68,7 +68,7 @@ export async function action({ request }: ActionArgs) {
   const form = await parseForm(request, CreateFormSchema);
 
   try {
-    const result = await getLoggedInApiClient(session).person.createPerson({
+    const result = await getLoggedInApiClient(session).persons.personCreate({
       name: { the_name: form.name },
       relationship: form.relationship as PersonRelationship,
       catch_up_period:

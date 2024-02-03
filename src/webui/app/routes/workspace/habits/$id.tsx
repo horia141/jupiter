@@ -90,7 +90,7 @@ export async function loader({ request, params }: LoaderArgs) {
   });
 
   try {
-    const result = await getLoggedInApiClient(session).habit.loadHabit({
+    const result = await getLoggedInApiClient(session).habits.habitLoad({
       ref_id: { the_id: id },
       allow_archived: true,
     });
@@ -122,7 +122,7 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (intent) {
       case "update": {
-        await getLoggedInApiClient(session).habit.updateHabit({
+        await getLoggedInApiClient(session).habits.habitUpdate({
           ref_id: { the_id: id },
           name: {
             should_change: true,
@@ -199,7 +199,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "change-project": {
-        await getLoggedInApiClient(session).habit.changeHabitProject({
+        await getLoggedInApiClient(session).habits.habitChangeProject({
           ref_id: { the_id: id },
           project_ref_id: { the_id: form.project },
         });
@@ -208,7 +208,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).habit.archiveHabit({
+        await getLoggedInApiClient(session).habits.habitArchive({
           ref_id: { the_id: id },
         });
 

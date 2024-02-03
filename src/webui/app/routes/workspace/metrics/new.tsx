@@ -67,7 +67,7 @@ export async function action({ request }: ActionArgs) {
   const form = await parseForm(request, CreateFormSchema);
 
   try {
-    const result = await getLoggedInApiClient(session).metric.createMetric({
+    const result = await getLoggedInApiClient(session).metrics.metricCreate({
       name: { the_name: form.name },
       icon: form.icon ? { the_icon: form.icon } : undefined,
       collection_period:

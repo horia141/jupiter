@@ -1,38 +1,38 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ChoreArchiveArgs } from '../models/ChoreArchiveArgs';
-import type { ChoreChangeProjectArgs } from '../models/ChoreChangeProjectArgs';
-import type { ChoreCreateArgs } from '../models/ChoreCreateArgs';
-import type { ChoreCreateResult } from '../models/ChoreCreateResult';
-import type { ChoreFindArgs } from '../models/ChoreFindArgs';
-import type { ChoreFindResult } from '../models/ChoreFindResult';
-import type { ChoreLoadArgs } from '../models/ChoreLoadArgs';
-import type { ChoreLoadResult } from '../models/ChoreLoadResult';
-import type { ChoreSuspendArgs } from '../models/ChoreSuspendArgs';
-import type { ChoreUnsuspendArgs } from '../models/ChoreUnsuspendArgs';
-import type { ChoreUpdateArgs } from '../models/ChoreUpdateArgs';
+import type { BigPlanArchiveArgs } from '../models/BigPlanArchiveArgs';
+import type { BigPlanChangeProjectArgs } from '../models/BigPlanChangeProjectArgs';
+import type { BigPlanCreateArgs } from '../models/BigPlanCreateArgs';
+import type { BigPlanCreateResult } from '../models/BigPlanCreateResult';
+import type { BigPlanFindArgs } from '../models/BigPlanFindArgs';
+import type { BigPlanFindResult } from '../models/BigPlanFindResult';
+import type { BigPlanLoadArgs } from '../models/BigPlanLoadArgs';
+import type { BigPlanLoadResult } from '../models/BigPlanLoadResult';
+import type { BigPlanRemoveArgs } from '../models/BigPlanRemoveArgs';
+import type { BigPlanUpdateArgs } from '../models/BigPlanUpdateArgs';
+import type { BigPlanUpdateResult } from '../models/BigPlanUpdateResult';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
 
-export class ChoreService {
+export class BigPlansService {
 
     constructor(public readonly httpRequest: BaseHttpRequest) {}
 
     /**
-     * Create Chore
-     * Create a chore.
+     * The command for archiving a big plan.
+     * The command for archiving a big plan.
      * @param requestBody
-     * @returns ChoreCreateResult Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
-    public createChore(
-        requestBody: ChoreCreateArgs,
-    ): CancelablePromise<ChoreCreateResult> {
+    public bigPlanArchive(
+        requestBody: BigPlanArchiveArgs,
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/chore/create',
+            url: '/big-plan-archive',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -44,18 +44,18 @@ export class ChoreService {
     }
 
     /**
-     * Archive Chore
-     * Archive a chore.
+     * The command for changing the project of a big plan.
+     * The command for changing the project of a big plan.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
-    public archiveChore(
-        requestBody: ChoreArchiveArgs,
-    ): CancelablePromise<any> {
+    public bigPlanChangeProject(
+        requestBody: BigPlanChangeProjectArgs,
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/chore/archive',
+            url: '/big-plan-change-project',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -67,18 +67,18 @@ export class ChoreService {
     }
 
     /**
-     * Update Chore
-     * Update a chore.
+     * The command for creating a big plan.
+     * The command for creating a big plan.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns BigPlanCreateResult Successful Response
      * @throws ApiError
      */
-    public updateChore(
-        requestBody: ChoreUpdateArgs,
-    ): CancelablePromise<any> {
+    public bigPlanCreate(
+        requestBody: BigPlanCreateArgs,
+    ): CancelablePromise<BigPlanCreateResult> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/chore/update',
+            url: '/big-plan-create',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -90,18 +90,18 @@ export class ChoreService {
     }
 
     /**
-     * Change Chore Project
-     * Change the project for a chore.
+     * The command for finding a big plan.
+     * The command for finding a big plan.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns BigPlanFindResult Successful Response
      * @throws ApiError
      */
-    public changeChoreProject(
-        requestBody: ChoreChangeProjectArgs,
-    ): CancelablePromise<any> {
+    public bigPlanFind(
+        requestBody: BigPlanFindArgs,
+    ): CancelablePromise<BigPlanFindResult> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/chore/change-project',
+            url: '/big-plan-find',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -113,18 +113,18 @@ export class ChoreService {
     }
 
     /**
-     * Suspend Chore
-     * Suspend a chore.
+     * The use case for loading a particular big plan.
+     * The use case for loading a particular big plan.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns BigPlanLoadResult Successful Response
      * @throws ApiError
      */
-    public suspendChore(
-        requestBody: ChoreSuspendArgs,
-    ): CancelablePromise<any> {
+    public bigPlanLoad(
+        requestBody: BigPlanLoadArgs,
+    ): CancelablePromise<BigPlanLoadResult> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/chore/suspend',
+            url: '/big-plan-load',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -136,18 +136,18 @@ export class ChoreService {
     }
 
     /**
-     * Unsuspend Chore
-     * Unsuspend a chore.
+     * The command for removing a big plan.
+     * The command for removing a big plan.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
-    public unsuspendChore(
-        requestBody: ChoreUnsuspendArgs,
-    ): CancelablePromise<any> {
+    public bigPlanRemove(
+        requestBody: BigPlanRemoveArgs,
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/chore/unsuspend',
+            url: '/big-plan-remove',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -159,41 +159,18 @@ export class ChoreService {
     }
 
     /**
-     * Load Chore
-     * Load a chore.
+     * The command for updating a big plan.
+     * The command for updating a big plan.
      * @param requestBody
-     * @returns ChoreLoadResult Successful Response
+     * @returns BigPlanUpdateResult Successful Response
      * @throws ApiError
      */
-    public loadChore(
-        requestBody: ChoreLoadArgs,
-    ): CancelablePromise<ChoreLoadResult> {
+    public bigPlanUpdate(
+        requestBody: BigPlanUpdateArgs,
+    ): CancelablePromise<BigPlanUpdateResult> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/chore/load',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * Find Chore
-     * Find all chores, filtering by id..
-     * @param requestBody
-     * @returns ChoreFindResult Successful Response
-     * @throws ApiError
-     */
-    public findChore(
-        requestBody: ChoreFindArgs,
-    ): CancelablePromise<ChoreFindResult> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/chore/find',
+            url: '/big-plan-update',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

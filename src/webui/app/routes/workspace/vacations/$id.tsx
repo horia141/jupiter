@@ -53,7 +53,7 @@ export async function loader({ request, params }: LoaderArgs) {
   const { id } = parseParams(params, ParamsSchema);
 
   try {
-    const result = await getLoggedInApiClient(session).vacation.loadVacation({
+    const result = await getLoggedInApiClient(session).vacations.vacationLoad({
       ref_id: { the_id: id },
       allow_archived: true,
     });
@@ -79,7 +79,7 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (form.intent) {
       case "update": {
-        await getLoggedInApiClient(session).vacation.updateVacation({
+        await getLoggedInApiClient(session).vacations.vacationUpdate({
           ref_id: { the_id: id },
           name: {
             should_change: true,
@@ -99,7 +99,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).vacation.archiveVacation({
+        await getLoggedInApiClient(session).vacations.vacationArchive({
           ref_id: { the_id: id },
         });
         return redirect(`/workspace/vacations/${id}`);

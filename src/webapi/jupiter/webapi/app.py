@@ -1,32 +1,57 @@
 """The app, part of the framework."""
 import abc
 import types
-from typing import Annotated, Any, Final, Generic, Iterator, TypeVar, cast, get_args, Callable
+from typing import (
+    Annotated,
+    Any,
+    Callable,
+    Final,
+    Generic,
+    Iterator,
+    Mapping,
+    TypeVar,
+    cast,
+    get_args,
+)
+
+import inflection
+import uvicorn
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import Depends, FastAPI, Request
 from fastapi.routing import APIRoute
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.types import DecoratedCallable
-import inflection
 from jupiter.core.domain.auth.auth_token_ext import AuthTokenExt
 from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
 from jupiter.core.domain.storage_engine import DomainStorageEngine, SearchStorageEngine
 from jupiter.core.framework.realm import RealmCodecRegistry
-from jupiter.core.framework.use_case import EmptySession, MutationUseCaseInvocationRecorder, UseCase, UseCaseContextBase, UseCaseSessionBase
+from jupiter.core.framework.use_case import (
+    EmptySession,
+    MutationUseCaseInvocationRecorder,
+    UseCase,
+    UseCaseContextBase,
+    UseCaseSessionBase,
+)
 from jupiter.core.framework.use_case_io import UseCaseArgsBase, UseCaseResultBase
 from jupiter.core.framework.utils import find_all_modules
 from jupiter.core.use_cases.infra.storage_engine import UseCaseStorageEngine
-from jupiter.core.use_cases.infra.use_cases import AppBackgroundMutationUseCase, AppGuestMutationUseCase, AppGuestReadonlyUseCase, AppGuestUseCaseSession, AppLoggedInMutationUseCase, AppLoggedInReadonlyUseCase, AppLoggedInUseCaseSession
+from jupiter.core.use_cases.infra.use_cases import (
+    AppBackgroundMutationUseCase,
+    AppGuestMutationUseCase,
+    AppGuestReadonlyUseCase,
+    AppGuestUseCaseSession,
+    AppLoggedInMutationUseCase,
+    AppLoggedInReadonlyUseCase,
+    AppLoggedInUseCaseSession,
+)
 from jupiter.core.utils.global_properties import GlobalProperties
-from jupiter.core.utils.progress_reporter import EmptyProgressReporterFactory, NoOpProgressReporterFactory
-from jupiter.core.utils.time_provider import TimeProvider
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from starlette.middleware.base import BaseHTTPMiddleware
-import uvicorn
-from typing import Mapping
-
-from jupiter.webapi.websocket_progress_reporter import WebsocketProgressReporterFactory
+from jupiter.core.utils.progress_reporter import (
+    EmptyProgressReporterFactory,
+    NoOpProgressReporterFactory,
+)
 from jupiter.webapi.time_provider import CronRunTimeProvider, PerRequestTimeProvider
-
+from jupiter.webapi.websocket_progress_reporter import WebsocketProgressReporterFactory
+from starlette.middleware.base import BaseHTTPMiddleware
 
 STANDARD_RESPONSES: dict[int | str, dict[str, Any]] = {
     410: {"description": "Workspace Or User Not Found", "content": {"plain/text": {}}},
@@ -78,7 +103,7 @@ LoggedInSession = Annotated[
 ]
 
 
-class Command(abc.ABC):
+class Command:
     """The base class for all commands."""
 
 
@@ -121,33 +146,41 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
             if len(args) > 0:
                 return cast(type[UseCaseArgsBase], args[0])
         raise Exception("No args class found")
-    
+
     @staticmethod
     def _infer_result_class(use_case: UseCaseT) -> type[UseCaseResultBase | None]:
         use_case_type = use_case.__class__
         if not hasattr(use_case_type, "__orig_bases__"):
             raise Exception("No result class found")
-        for base in use_case_type.__orig_bases__:
+        for base in use_case_type.__orig_bases__:  # type: ignore
             args = get_args(base)
             if len(args) > 1:
                 return cast(type[UseCaseResultBase | None], args[1])
         raise Exception("No result class found")
-    
-    def _build_name(self) -> str:
+
+    def _build_http_name(self) -> str:
         return inflection.dasherize(
             inflection.underscore(self._use_case.__class__.__name__)
         ).replace("-use-case", "")
-    
+
+    def _build_api_name(self) -> str:
+        return self._use_case.__class__.__name__.replace("UseCase", "")
+
     def _build_description(self) -> str:
         return self._use_case.__doc__ or ""
-    
+
     def _build_tag(self) -> str:
-        return inflection.dasherize(self._use_case.__module__[len(self._root_module.__name__)+1:].split(".")[0])
-    
+        return inflection.dasherize(
+            self._use_case.__module__[len(self._root_module.__name__) + 1 :].split(".")[
+                0
+            ]
+        )
+
     @abc.abstractmethod
     def attach_route(self, app: FastAPI) -> None:
         """Attach the route to the app."""
-    
+
+
 GuestMutationCommandUseCase = TypeVar(
     "GuestMutationCommandUseCase", bound=AppGuestMutationUseCase[Any, Any]
 )
@@ -164,15 +197,18 @@ class GuestMutationCommand(
         """Attach the route to the app."""
 
         @app.post(
-            f"/{self._build_name()}",
+            f"/{self._build_http_name()}",
+            name=self._build_api_name(),
             response_model=self._result_type,
             summary=self._build_description(),
             description=self._build_description(),
             tags=[self._build_tag()],
             **STANDARD_CONFIG,
         )
-        async def do_it(args: self._args_type, session: GuestSession) -> UseCaseResultT:
-            return (await self._use_case.execute(session, args))[1]
+        async def do_it(args: self._args_type, session: GuestSession) -> UseCaseResultT:  # type: ignore[name-defined]
+            return cast(
+                UseCaseResultT, (await self._use_case.execute(session, args))[1]
+            )
 
 
 GuestReadonlyCommandUseCase = TypeVar(
@@ -190,16 +226,19 @@ class GuestReadonlyCommand(
     def attach_route(self, app: FastAPI) -> None:
         """Attach the route to the app."""
 
-        @app.get(
-            f"/{self._build_name()}",
+        @app.post(
+            f"/{self._build_http_name()}",
+            name=self._build_api_name(),
             response_model=self._result_type,
             summary=self._build_description(),
             description=self._build_description(),
             tags=[self._build_tag()],
             **STANDARD_CONFIG,
         )
-        async def do_it(args: self._args_type, session: GuestSession) -> UseCaseResultT:
-            return await self._use_case.execute(session, args)
+        async def do_it(args: self._args_type, session: GuestSession) -> UseCaseResultT:  # type: ignore[name-defined]
+            return cast(
+                UseCaseResultT, (await self._use_case.execute(session, args))[1]
+            )
 
 
 LoggedInMutationCommandUseCase = TypeVar(
@@ -218,15 +257,19 @@ class LoggedInMutationCommand(
         """Attach the route to the app."""
 
         @app.post(
-            f"/{self._build_name()}",
+            f"/{self._build_http_name()}",
+            name=self._build_api_name(),
             response_model=self._result_type,
             summary=self._build_description(),
             description=self._build_description(),
             tags=[self._build_tag()],
             **STANDARD_CONFIG,
         )
-        async def do_it(args: self._args_type, session: LoggedInSession) -> UseCaseResultT:
-            return (await self._use_case.execute(session, args))[1]
+        async def do_it(args: self._args_type, session: LoggedInSession) -> UseCaseResultT:  # type: ignore[name-defined]
+            return cast(
+                UseCaseResultT, (await self._use_case.execute(session, args))[1]
+            )
+
 
 LoggedInReadonlyCommandUseCase = TypeVar(
     "LoggedInReadonlyCommandUseCase", bound=AppLoggedInReadonlyUseCase[Any, Any]
@@ -243,16 +286,19 @@ class LoggedInReadonlyCommand(
     def attach_route(self, app: FastAPI) -> None:
         """Attach the route to the app."""
 
-        @app.get(
-            f"/{self._build_name()}",
+        @app.post(
+            f"/{self._build_http_name()}",
+            name=self._build_api_name(),
             response_model=self._result_type,
             summary=self._build_description(),
             description=self._build_description(),
             tags=[self._build_tag()],
             **STANDARD_CONFIG,
         )
-        async def do_it(args: self._args_type, session: LoggedInSession) -> UseCaseResultT:
-            return await self._use_case.execute(session, args)
+        async def do_it(args: self._args_type, session: LoggedInSession) -> UseCaseResultT:  # type: ignore[name-defined]
+            return cast(
+                UseCaseResultT, (await self._use_case.execute(session, args))[1]
+            )
 
 
 BackgroundMutationUseCase = TypeVar(
@@ -289,17 +335,19 @@ class WebServiceApp:
     _domain_storage_engine: Final[DomainStorageEngine]
     _search_storage_engine: Final[SearchStorageEngine]
     _use_case_storage_engine: Final[UseCaseStorageEngine]
-    _use_case_commands: Final[dict[
-        type[
-            UseCase[
-                UseCaseSessionBase,
-                UseCaseContextBase,
-                UseCaseArgsBase,
-                UseCaseResultBase | None,
-            ]
-        ],
-        Command,
-    ]]
+    _use_case_commands: Final[
+        dict[
+            type[
+                UseCase[
+                    UseCaseSessionBase,
+                    UseCaseContextBase,
+                    UseCaseArgsBase,
+                    UseCaseResultBase | None,
+                ]
+            ],
+            Command,
+        ]
+    ]
     _commands: Final[dict[str, Command]]
     _fast_app: Final[FastAPI]
     _scheduler: Final[AsyncIOScheduler]
@@ -332,7 +380,9 @@ class WebServiceApp:
         self._commands = {}
         self._fast_app = FastAPI(
             generate_unique_id_function=self._custom_generate_unique_id,
-            openapi_url="/openapi.json" if global_properties.env.is_development else None,
+            openapi_url="/openapi.json"
+            if global_properties.env.is_development
+            else None,
             docs_url="/docs" if global_properties.env.is_development else None,
             redoc_url="/redoc" if global_properties.env.is_development else None,
         )
@@ -350,9 +400,10 @@ class WebServiceApp:
         domain_storage_engine: DomainStorageEngine,
         search_storage_engine: SearchStorageEngine,
         use_case_storage_engine: UseCaseStorageEngine,
-        *module_root: types.ModuleType
+        *module_root: types.ModuleType,
     ) -> "WebServiceApp":
         """Build the app from the module root."""
+
         def extract_use_case(
             the_module: types.ModuleType,
         ) -> Iterator[
@@ -383,7 +434,7 @@ class WebServiceApp:
                     continue
 
                 yield obj
-                
+
         app = WebServiceApp(
             global_properties,
             request_time_provider,
@@ -394,7 +445,7 @@ class WebServiceApp:
             auth_token_stamper,
             domain_storage_engine,
             search_storage_engine,
-            use_case_storage_engine
+            use_case_storage_engine,
         )
 
         for mr in module_root:
@@ -414,21 +465,27 @@ class WebServiceApp:
                     day="*",
                     hour="1",
                 )
-            else:
+            elif isinstance(command, UseCaseCommand):
                 command.attach_route(app.fast_app)
+            else:
+                raise Exception(f"Unknown command type {command}")
 
         return app
-    
+
     async def run(self) -> None:
         """Run the app."""
         self._scheduler.start()
 
-        self._fast_app.add_middleware(BaseHTTPMiddleware, dispatch=self._time_provider_middleware)
-        
-        config = uvicorn.Config(self._fast_app, port=self._global_properties.port, log_level="info")
+        self._fast_app.add_middleware(
+            BaseHTTPMiddleware, dispatch=self._time_provider_middleware
+        )
+
+        config = uvicorn.Config(
+            self._fast_app, port=self._global_properties.port, log_level="info"
+        )
         server = uvicorn.Server(config)
         await server.serve()
-    
+
     @property
     def fast_app(self) -> FastAPI:
         """Get the FastAPI app."""
@@ -437,12 +494,12 @@ class WebServiceApp:
     def _custom_generate_unique_id(self, route: APIRoute) -> str:
         """Generate a OpenAPI unique id from just the route name."""
         return f"{route.name}"
-    
-    async def _time_provider_middleware(self, request: Request, call_next: DecoratedCallable) -> Callable[[DecoratedCallable], DecoratedCallable]:  # type: ignore  # noqa: E501
+
+    async def _time_provider_middleware(self, request: Request, call_next: DecoratedCallable) -> Callable[[DecoratedCallable], DecoratedCallable]:  # type: ignore
         """Middleware to provide the time provider."""
         self._request_time_provider.set_request_time()
-        return await call_next(request)     
-    
+        return await call_next(request)  # type: ignore
+
     def _add_use_case_type(
         self,
         use_case_type: type[

@@ -46,7 +46,7 @@ export async function action({ request }: ActionArgs) {
   try {
     const result = await getLoggedInApiClient(
       session
-    ).smartList.createSmartList({
+    ).smartLists.smartListCreate({
       name: { the_name: form.name },
       icon: form.icon ? { the_icon: form.icon } : undefined,
     });

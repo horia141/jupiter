@@ -116,10 +116,12 @@ export async function loader({ request, params }: LoaderArgs) {
   });
 
   try {
-    const result = await getLoggedInApiClient(session).inboxTask.loadInboxTask({
-      ref_id: { the_id: id },
-      allow_archived: true,
-    });
+    const result = await getLoggedInApiClient(session).inboxTasks.inboxTaskLoad(
+      {
+        ref_id: { the_id: id },
+        allow_archived: true,
+      }
+    );
 
     return json({
       info: result,
@@ -153,7 +155,7 @@ export async function action({ request, params }: ActionArgs) {
       case "update": {
         const result = await getLoggedInApiClient(
           session
-        ).inboxTask.updateInboxTask({
+        ).inboxTasks.inboxTaskUpdate({
           ref_id: { the_id: id },
           name: corePropertyEditable
             ? {
@@ -206,7 +208,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "change-project": {
-        await getLoggedInApiClient(session).inboxTask.changeInboxTaskProject({
+        await getLoggedInApiClient(session).inboxTasks.inboxTaskChangeProject({
           ref_id: { the_id: id },
           project_ref_id: form.project ? { the_id: form.project } : undefined,
         });
@@ -217,7 +219,7 @@ export async function action({ request, params }: ActionArgs) {
       case "associate-with-big-plan": {
         await getLoggedInApiClient(
           session
-        ).inboxTask.associateInboxTaskWithBigPlan({
+        ).inboxTasks.inboxTaskAssociateWithBigPlan({
           ref_id: { the_id: id },
           big_plan_ref_id:
             form.bigPlan !== undefined && form.bigPlan !== "none"
@@ -229,7 +231,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "create-note": {
-        await getLoggedInApiClient(session).note.createNote({
+        await getLoggedInApiClient(session).core.noteCreate({
           domain: NoteDomain.INBOX_TASK,
           source_entity_ref_id: { the_id: id },
           content: [],
@@ -239,7 +241,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).inboxTask.archiveInboxTask({
+        await getLoggedInApiClient(session).inboxTasks.inboxTaskArchive({
           ref_id: { the_id: id },
         });
 

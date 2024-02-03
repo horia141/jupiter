@@ -3,8 +3,8 @@
 /* eslint-disable */
 
 import type { ADate } from './ADate';
+import type { ChoreName } from './ChoreName';
 import type { EntityId } from './EntityId';
-import type { EntityName } from './EntityName';
 import type { ParentLink } from './ParentLink';
 import type { RecurringTaskGenParams } from './RecurringTaskGenParams';
 import type { RecurringTaskSkipRule } from './RecurringTaskSkipRule';
@@ -17,7 +17,7 @@ export type Chore = {
     created_time: Timestamp;
     last_modified_time: Timestamp;
     archived_time: Timestamp;
-    name: EntityName;
+    name: ChoreName;
     chore_collection: ParentLink;
     project_ref_id: EntityId;
     gen_params: RecurringTaskGenParams;

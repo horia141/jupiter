@@ -12,8 +12,8 @@ export class InitService {
     constructor(public readonly httpRequest: BaseHttpRequest) {}
 
     /**
-     * Init
-     * Initialise a new workspace.
+     * UseCase for initialising the workspace.
+     * UseCase for initialising the workspace.
      * @param requestBody
      * @returns InitResult Successful Response
      * @throws ApiError

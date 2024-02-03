@@ -55,7 +55,7 @@ export async function loader({ request }: LoaderArgs) {
 
   const slackTaskSettingsResponse = await getLoggedInApiClient(
     session
-  ).slackTask.loadSlackTaskSettings({});
+  ).pushIntegrations.slackTaskLoadSettings({});
 
   return json({
     generationProject: slackTaskSettingsResponse.generation_project,
@@ -75,7 +75,7 @@ export async function action({ request }: ActionArgs) {
 
     await getLoggedInApiClient(
       session
-    ).slackTask.changeSlackTaskGenerationProject({
+    ).pushIntegrations.slackTaskChangeGenerationProject({
       generation_project_ref_id: { the_id: form.project },
     });
 

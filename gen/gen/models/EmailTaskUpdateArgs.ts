@@ -8,6 +8,7 @@ import type { Eisen } from './Eisen';
 import type { EmailAddress } from './EmailAddress';
 import type { EntityId } from './EntityId';
 import type { EntityName } from './EntityName';
+import type { InboxTaskName } from './InboxTaskName';
 import type { InboxTaskStatus } from './InboxTaskStatus';
 
 export type EmailTaskUpdateArgs = {
@@ -34,7 +35,7 @@ export type EmailTaskUpdateArgs = {
     };
     generation_name: {
         should_change: boolean;
-        value?: EntityName;
+        value?: InboxTaskName;
     };
     generation_status: {
         should_change: boolean;

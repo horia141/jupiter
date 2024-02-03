@@ -51,7 +51,7 @@ export async function loader({ request, params }: LoaderArgs) {
   const { id } = parseParams(params, ParamsSchema);
 
   try {
-    const response = await getLoggedInApiClient(session).project.loadProject({
+    const response = await getLoggedInApiClient(session).projects.projectLoad({
       ref_id: { the_id: id },
       allow_archived: true,
     });
@@ -79,7 +79,7 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (intent) {
       case "update": {
-        await getLoggedInApiClient(session).project.updateProject({
+        await getLoggedInApiClient(session).projects.projectUpdate({
           ref_id: { the_id: id },
           name: {
             should_change: true,
@@ -91,7 +91,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).project.archiveProject({
+        await getLoggedInApiClient(session).projects.projectArchive({
           ref_id: { the_id: id },
         });
 

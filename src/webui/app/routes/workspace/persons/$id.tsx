@@ -89,7 +89,7 @@ export async function loader({ request, params }: LoaderArgs) {
   const { id } = parseParams(params, ParamsSchema);
 
   try {
-    const result = await getLoggedInApiClient(session).person.loadPerson({
+    const result = await getLoggedInApiClient(session).persons.personLoad({
       ref_id: { the_id: id },
       allow_archived: true,
     });
@@ -121,7 +121,7 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (intent) {
       case "update": {
-        await getLoggedInApiClient(session).person.updatePerson({
+        await getLoggedInApiClient(session).persons.personUpdate({
           ref_id: { the_id: id },
           name: {
             should_change: true,
@@ -225,7 +225,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "create-note": {
-        await getLoggedInApiClient(session).note.createNote({
+        await getLoggedInApiClient(session).core.noteCreate({
           domain: NoteDomain.PERSON,
           source_entity_ref_id: { the_id: id },
           content: [],
@@ -235,7 +235,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).person.archivePerson({
+        await getLoggedInApiClient(session).persons.personArchive({
           ref_id: { the_id: id },
         });
 

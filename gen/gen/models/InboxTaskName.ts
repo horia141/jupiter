@@ -2,8 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type x = {
-    foo: number;
-    bar: string;
+export type InboxTaskName = {
+    the_name: string;
 };
 

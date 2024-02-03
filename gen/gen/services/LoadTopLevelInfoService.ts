@@ -12,8 +12,8 @@ export class LoadTopLevelInfoService {
     constructor(public readonly httpRequest: BaseHttpRequest) {}
 
     /**
-     * Load Top Level Info
-     * Load a user and workspace if they exist and other assorted data.
+     * The command for loading a user and workspace if they exist and other data too.
+     * The command for loading a user and workspace if they exist and other data too.
      * @param requestBody
      * @returns LoadTopLevelInfoResult Successful Response
      * @throws ApiError

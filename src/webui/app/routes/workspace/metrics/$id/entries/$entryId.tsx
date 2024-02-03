@@ -57,7 +57,7 @@ export async function loader({ request, params }: LoaderArgs) {
   const { entryId } = parseParams(params, ParamsSchema);
 
   try {
-    const result = await getLoggedInApiClient(session).metric.loadMetricEntry({
+    const result = await getLoggedInApiClient(session).metrics.metricEntryLoad({
       ref_id: { the_id: entryId },
       allow_archived: true,
     });
@@ -86,7 +86,7 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (form.intent) {
       case "update": {
-        await getLoggedInApiClient(session).metric.updateMetricEntry({
+        await getLoggedInApiClient(session).metrics.metricEntryUpdate({
           ref_id: { the_id: entryId },
           collection_time: {
             should_change: true,
@@ -102,7 +102,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "create-note": {
-        await getLoggedInApiClient(session).note.createNote({
+        await getLoggedInApiClient(session).core.noteCreate({
           domain: NoteDomain.METRIC_ENTRY,
           source_entity_ref_id: { the_id: entryId },
           content: [],
@@ -112,7 +112,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).metric.archiveMetricEntry({
+        await getLoggedInApiClient(session).metrics.metricEntryArchive({
           ref_id: { the_id: entryId },
         });
 

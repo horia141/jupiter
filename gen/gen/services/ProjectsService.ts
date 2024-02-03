@@ -1,36 +1,36 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { EmailTaskArchiveArgs } from '../models/EmailTaskArchiveArgs';
-import type { EmailTaskChangeGenerationProjectArgs } from '../models/EmailTaskChangeGenerationProjectArgs';
-import type { EmailTaskFindArgs } from '../models/EmailTaskFindArgs';
-import type { EmailTaskFindResult } from '../models/EmailTaskFindResult';
-import type { EmailTaskLoadArgs } from '../models/EmailTaskLoadArgs';
-import type { EmailTaskLoadResult } from '../models/EmailTaskLoadResult';
-import type { EmailTaskLoadSettingsArgs } from '../models/EmailTaskLoadSettingsArgs';
-import type { EmailTaskLoadSettingsResult } from '../models/EmailTaskLoadSettingsResult';
-import type { EmailTaskUpdateArgs } from '../models/EmailTaskUpdateArgs';
+import type { ProjectArchiveArgs } from '../models/ProjectArchiveArgs';
+import type { ProjectCreateArgs } from '../models/ProjectCreateArgs';
+import type { ProjectCreateResult } from '../models/ProjectCreateResult';
+import type { ProjectFindArgs } from '../models/ProjectFindArgs';
+import type { ProjectFindResult } from '../models/ProjectFindResult';
+import type { ProjectLoadArgs } from '../models/ProjectLoadArgs';
+import type { ProjectLoadResult } from '../models/ProjectLoadResult';
+import type { ProjectRemoveArgs } from '../models/ProjectRemoveArgs';
+import type { ProjectUpdateArgs } from '../models/ProjectUpdateArgs';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
 
-export class EmailTaskService {
+export class ProjectsService {
 
     constructor(public readonly httpRequest: BaseHttpRequest) {}
 
     /**
-     * Archive Email Task
-     * Archive a email task.
+     * The command for archiving a project.
+     * The command for archiving a project.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
-    public archiveEmailTask(
-        requestBody: EmailTaskArchiveArgs,
-    ): CancelablePromise<any> {
+    public projectArchive(
+        requestBody: ProjectArchiveArgs,
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/email-task/archive',
+            url: '/project-archive',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -42,18 +42,18 @@ export class EmailTaskService {
     }
 
     /**
-     * Update Email Task
-     * Update a email task.
+     * The command for creating a project.
+     * The command for creating a project.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns ProjectCreateResult Successful Response
      * @throws ApiError
      */
-    public updateEmailTask(
-        requestBody: EmailTaskUpdateArgs,
-    ): CancelablePromise<any> {
+    public projectCreate(
+        requestBody: ProjectCreateArgs,
+    ): CancelablePromise<ProjectCreateResult> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/email-task/update',
+            url: '/project-create',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -65,18 +65,18 @@ export class EmailTaskService {
     }
 
     /**
-     * Load Email Task Settings
-     * Change the project for a email task.
+     * The command for finding projects.
+     * The command for finding projects.
      * @param requestBody
-     * @returns EmailTaskLoadSettingsResult Successful Response
+     * @returns ProjectFindResult Successful Response
      * @throws ApiError
      */
-    public loadEmailTaskSettings(
-        requestBody: EmailTaskLoadSettingsArgs,
-    ): CancelablePromise<EmailTaskLoadSettingsResult> {
+    public projectFind(
+        requestBody: ProjectFindArgs,
+    ): CancelablePromise<ProjectFindResult> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/email-task/load-settings',
+            url: '/project-find',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -88,18 +88,18 @@ export class EmailTaskService {
     }
 
     /**
-     * Change Email Task Generation Project
-     * Change the project for a email task.
+     * Use case for loading a particular project.
+     * Use case for loading a particular project.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns ProjectLoadResult Successful Response
      * @throws ApiError
      */
-    public changeEmailTaskGenerationProject(
-        requestBody: EmailTaskChangeGenerationProjectArgs,
-    ): CancelablePromise<any> {
+    public projectLoad(
+        requestBody: ProjectLoadArgs,
+    ): CancelablePromise<ProjectLoadResult> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/email-task/change-project',
+            url: '/project-load',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -111,18 +111,18 @@ export class EmailTaskService {
     }
 
     /**
-     * Load Email Task
-     * Load an email task.
+     * The command for removing a project.
+     * The command for removing a project.
      * @param requestBody
-     * @returns EmailTaskLoadResult Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
-    public loadEmailTask(
-        requestBody: EmailTaskLoadArgs,
-    ): CancelablePromise<EmailTaskLoadResult> {
+    public projectRemove(
+        requestBody: ProjectRemoveArgs,
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/email-task/load',
+            url: '/project-remove',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -134,18 +134,18 @@ export class EmailTaskService {
     }
 
     /**
-     * Find Email Task
-     * Find all email tasks, filtering by id.
+     * The command for updating a project.
+     * The command for updating a project.
      * @param requestBody
-     * @returns EmailTaskFindResult Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
-    public findEmailTask(
-        requestBody: EmailTaskFindArgs,
-    ): CancelablePromise<EmailTaskFindResult> {
+    public projectUpdate(
+        requestBody: ProjectUpdateArgs,
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/email-task/find',
+            url: '/project-update',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

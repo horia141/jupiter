@@ -12,8 +12,8 @@ export class SearchService {
     constructor(public readonly httpRequest: BaseHttpRequest) {}
 
     /**
-     * Search
-     * Search entities.
+     * Use case for free form searching through Jupiter.
+     * Use case for free form searching through Jupiter.
      * @param requestBody
      * @returns SearchResult Successful Response
      * @throws ApiError

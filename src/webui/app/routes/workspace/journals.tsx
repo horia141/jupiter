@@ -37,7 +37,7 @@ export const handle = {
 
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
-  const response = await getLoggedInApiClient(session).journal.findJournal({
+  const response = await getLoggedInApiClient(session).journals.journalFind({
     allow_archived: false,
     include_notes: false,
     include_writing_tasks: false,

@@ -10,46 +10,23 @@ import type { WorkspaceUpdateArgs } from '../models/WorkspaceUpdateArgs';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
 
-export class WorkspaceService {
+export class WorkspacesService {
 
     constructor(public readonly httpRequest: BaseHttpRequest) {}
 
     /**
-     * Update Workspace
-     * Update a workspace.
+     * UseCase for changing the default project of a workspace.
+     * UseCase for changing the default project of a workspace.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
-    public updateWorkspace(
-        requestBody: WorkspaceUpdateArgs,
-    ): CancelablePromise<any> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/workspace/update',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * Change Workspace Default Project
-     * Change the default project for a workspace.
-     * @param requestBody
-     * @returns any Successful Response
-     * @throws ApiError
-     */
-    public changeWorkspaceDefaultProject(
+    public workspaceChangeDefaultProject(
         requestBody: WorkspaceChangeDefaultProjectArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/workspace/change-default-project',
+            url: '/workspace-change-default-project',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -61,18 +38,18 @@ export class WorkspaceService {
     }
 
     /**
-     * Change Workspace Feature Flags
-     * Change the feature flags for a workspace.
+     * Usecase for changing the feature flags for the workspace.
+     * Usecase for changing the feature flags for the workspace.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
-    public changeWorkspaceFeatureFlags(
+    public workspaceChangeFeatureFlags(
         requestBody: WorkspaceChangeFeatureFlagsArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/workspace/change-feature-flags',
+            url: '/workspace-change-feature-flags',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -84,18 +61,41 @@ export class WorkspaceService {
     }
 
     /**
-     * Load Workspace
-     * Load a workspace.
+     * The command for loading workspaces.
+     * The command for loading workspaces.
      * @param requestBody
      * @returns WorkspaceLoadResult Successful Response
      * @throws ApiError
      */
-    public loadWorkspace(
+    public workspaceLoad(
         requestBody: WorkspaceLoadArgs,
     ): CancelablePromise<WorkspaceLoadResult> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/workspace/load',
+            url: '/workspace-load',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * UseCase for updating a workspace.
+     * UseCase for updating a workspace.
+     * @param requestBody
+     * @returns null Successful Response
+     * @throws ApiError
+     */
+    public workspaceUpdate(
+        requestBody: WorkspaceUpdateArgs,
+    ): CancelablePromise<null> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/workspace-update',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

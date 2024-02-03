@@ -59,7 +59,7 @@ export async function loader({ request }: LoaderArgs) {
     include_default_project: true,
     include_projects: true,
   });
-  const result = await getLoggedInApiClient(session).workspace.loadWorkspace(
+  const result = await getLoggedInApiClient(session).workspaces.workspaceLoad(
     {}
   );
 
@@ -79,7 +79,7 @@ export async function action({ request }: ActionArgs) {
   try {
     switch (intent) {
       case "update": {
-        await getLoggedInApiClient(session).workspace.updateWorkspace({
+        await getLoggedInApiClient(session).workspaces.workspaceUpdate({
           name: {
             should_change: true,
             value: { the_name: form.name },
@@ -92,7 +92,7 @@ export async function action({ request }: ActionArgs) {
       case "change-default-project": {
         await getLoggedInApiClient(
           session
-        ).workspace.changeWorkspaceDefaultProject({
+        ).workspaces.workspaceChangeDefaultProject({
           default_project_ref_id: { the_id: form.defaultProject },
         });
 
@@ -102,7 +102,7 @@ export async function action({ request }: ActionArgs) {
       case "change-feature-flags": {
         await getLoggedInApiClient(
           session
-        ).workspace.changeWorkspaceFeatureFlags({
+        ).workspaces.workspaceChangeFeatureFlags({
           feature_flags: form.featureFlags,
         });
 

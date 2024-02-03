@@ -14,41 +14,18 @@ export class UserService {
     constructor(public readonly httpRequest: BaseHttpRequest) {}
 
     /**
-     * Update User
-     * Update a user.
+     * Usecase for changing the feature flags for the user.
+     * Usecase for changing the feature flags for the user.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
-    public updateUser(
-        requestBody: UserUpdateArgs,
-    ): CancelablePromise<any> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/user/update',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * Change User Feature Flags
-     * Change the feature flags for a user.
-     * @param requestBody
-     * @returns any Successful Response
-     * @throws ApiError
-     */
-    public changeUserFeatureFlags(
+    public userChangeFeatureFlags(
         requestBody: UserChangeFeatureFlagsArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/user/change-feature-flags',
+            url: '/user-change-feature-flags',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -60,18 +37,41 @@ export class UserService {
     }
 
     /**
-     * Load User
-     * Load a user.
+     * The command for loading the current user.
+     * The command for loading the current user.
      * @param requestBody
      * @returns UserLoadResult Successful Response
      * @throws ApiError
      */
-    public loadUser(
+    public userLoad(
         requestBody: UserLoadArgs,
     ): CancelablePromise<UserLoadResult> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/user/load',
+            url: '/user-load',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * The command for updating a user's properties.
+     * The command for updating a user's properties.
+     * @param requestBody
+     * @returns null Successful Response
+     * @throws ApiError
+     */
+    public userUpdate(
+        requestBody: UserUpdateArgs,
+    ): CancelablePromise<null> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/user-update',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

@@ -28,7 +28,7 @@ export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const smartListResponse = await getLoggedInApiClient(
     session
-  ).smartList.findSmartList({
+  ).smartLists.smartListFind({
     allow_archived: false,
     include_tags: false,
     include_items: false,

@@ -70,7 +70,7 @@ export async function loader({ request, params }: LoaderArgs) {
   const { id } = parseParams(params, ParamsSchema);
 
   try {
-    const result = await getLoggedInApiClient(session).journal.loadJournal({
+    const result = await getLoggedInApiClient(session).journals.journalLoad({
       ref_id: { the_id: id },
       allow_archived: true,
     });
@@ -100,7 +100,7 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (form.intent) {
       case "change-time-config": {
-        await getLoggedInApiClient(session).journal.changeTimeConfigForJournal({
+        await getLoggedInApiClient(session).journals.journalChangeTimeConfig({
           ref_id: { the_id: id },
           right_now: {
             should_change: true,
@@ -118,14 +118,14 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "update-report": {
-        await getLoggedInApiClient(session).journal.updateReportForJorunal({
+        await getLoggedInApiClient(session).journals.journalUpdateReport({
           ref_id: { the_id: id },
         });
         return redirect(`/workspace/journals/${id}`);
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).journal.archiveJournal({
+        await getLoggedInApiClient(session).journals.journalArchive({
           ref_id: { the_id: id },
         });
         return redirect(`/workspace/journals/${id}`);

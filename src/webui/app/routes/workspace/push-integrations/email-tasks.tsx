@@ -37,7 +37,9 @@ export const handle = {
 
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
-  const response = await getLoggedInApiClient(session).emailTask.findEmailTask({
+  const response = await getLoggedInApiClient(
+    session
+  ).pushIntegrations.emailTaskFind({
     allow_archived: false,
     include_inbox_task: false,
   });

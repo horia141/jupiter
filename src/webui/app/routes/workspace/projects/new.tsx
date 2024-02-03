@@ -42,9 +42,11 @@ export async function action({ request }: ActionArgs) {
   const form = await parseForm(request, CreateFormSchema);
 
   try {
-    const response = await getLoggedInApiClient(session).project.createProject({
-      name: { the_name: form.name },
-    });
+    const response = await getLoggedInApiClient(session).projects.projectCreate(
+      {
+        name: { the_name: form.name },
+      }
+    );
 
     return redirect(
       `/workspace/projects/${response.new_project.ref_id.the_id}`

@@ -36,12 +36,14 @@ export const handle = {
 
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
-  const metricResponse = await getLoggedInApiClient(session).metric.findMetric({
-    allow_archived: false,
-    include_entries: false,
-    include_collection_inbox_tasks: false,
-    include_metric_entry_notes: false,
-  });
+  const metricResponse = await getLoggedInApiClient(session).metrics.metricFind(
+    {
+      allow_archived: false,
+      include_entries: false,
+      include_collection_inbox_tasks: false,
+      include_metric_entry_notes: false,
+    }
+  );
 
   return json({
     entries: metricResponse.entries,

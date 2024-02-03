@@ -2,7 +2,6 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type WorkspaceName = {
-    the_name: string;
+export type JournalLoadSettingsArgs = {
 };
 

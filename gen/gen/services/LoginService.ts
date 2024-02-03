@@ -12,8 +12,8 @@ export class LoginService {
     constructor(public readonly httpRequest: BaseHttpRequest) {}
 
     /**
-     * Login
-     * Login to a workspace.
+     * Use case for logging in as a particular user.
+     * Use case for logging in as a particular user.
      * @param requestBody
      * @returns LoginResult Successful Response
      * @throws ApiError

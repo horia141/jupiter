@@ -61,7 +61,7 @@ export async function loader({ request, params }: LoaderArgs) {
   try {
     const result = await getLoggedInApiClient(
       session
-    ).smartList.loadSmartListItem({
+    ).smartLists.smartListItemLoad({
       ref_id: { the_id: itemId },
       allow_archived: true,
     });
@@ -93,7 +93,7 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (form.intent) {
       case "update": {
-        await getLoggedInApiClient(session).smartList.updateSmartListItem({
+        await getLoggedInApiClient(session).smartLists.smartListItemUpdate({
           ref_id: { the_id: itemId },
           name: {
             should_change: true,
@@ -117,7 +117,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).smartList.archiveSmartListItem({
+        await getLoggedInApiClient(session).smartLists.smartListItemArchive({
           ref_id: { the_id: itemId },
         });
 

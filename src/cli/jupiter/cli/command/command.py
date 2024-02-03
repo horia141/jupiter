@@ -11,7 +11,6 @@ from datetime import date, datetime
 from typing import Any, Final, Generic, Iterator, TypeVar, cast, get_args, get_origin
 
 import inflection
-from jupiter.core.utils.progress_reporter import NoOpProgressReporterFactory
 from jupiter.cli.command.rendering import RichConsoleProgressReporterFactory
 from jupiter.cli.session_storage import SessionInfo, SessionStorage
 from jupiter.cli.top_level_context import TopLevelContext
@@ -53,6 +52,7 @@ from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInUseCaseSession,
 )
 from jupiter.core.utils.global_properties import GlobalProperties
+from jupiter.core.utils.progress_reporter import NoOpProgressReporterFactory
 from jupiter.core.utils.time_provider import TimeProvider
 from pendulum.date import Date
 from pendulum.datetime import DateTime

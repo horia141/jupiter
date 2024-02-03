@@ -40,7 +40,7 @@ export const handle = {
 
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
-  const body = await getLoggedInApiClient(session).person.findPerson({
+  const body = await getLoggedInApiClient(session).persons.personFind({
     allow_archived: false,
     include_catch_up_inbox_tasks: false,
     include_birthday_inbox_tasks: false,

@@ -1,38 +1,37 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { InboxTaskArchiveArgs } from '../models/InboxTaskArchiveArgs';
-import type { InboxTaskAssociateWithBigPlanArgs } from '../models/InboxTaskAssociateWithBigPlanArgs';
-import type { InboxTaskChangeProjectArgs } from '../models/InboxTaskChangeProjectArgs';
-import type { InboxTaskCreateArgs } from '../models/InboxTaskCreateArgs';
-import type { InboxTaskCreateResult } from '../models/InboxTaskCreateResult';
-import type { InboxTaskFindArgs } from '../models/InboxTaskFindArgs';
-import type { InboxTaskFindResult } from '../models/InboxTaskFindResult';
-import type { InboxTaskLoadArgs } from '../models/InboxTaskLoadArgs';
-import type { InboxTaskLoadResult } from '../models/InboxTaskLoadResult';
-import type { InboxTaskUpdateArgs } from '../models/InboxTaskUpdateArgs';
-import type { InboxTaskUpdateResult } from '../models/InboxTaskUpdateResult';
+import type { DocArchiveArgs } from '../models/DocArchiveArgs';
+import type { DocChangeParentArgs } from '../models/DocChangeParentArgs';
+import type { DocCreateArgs } from '../models/DocCreateArgs';
+import type { DocCreateResult } from '../models/DocCreateResult';
+import type { DocFindArgs } from '../models/DocFindArgs';
+import type { DocFindResult } from '../models/DocFindResult';
+import type { DocLoadArgs } from '../models/DocLoadArgs';
+import type { DocLoadResult } from '../models/DocLoadResult';
+import type { DocRemoveArgs } from '../models/DocRemoveArgs';
+import type { DocUpdateArgs } from '../models/DocUpdateArgs';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
 
-export class InboxTaskService {
+export class DocsService {
 
     constructor(public readonly httpRequest: BaseHttpRequest) {}
 
     /**
-     * Create Inbox Task
-     * Create a inbox task.
+     * Use case for archiving a doc.
+     * Use case for archiving a doc.
      * @param requestBody
-     * @returns InboxTaskCreateResult Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
-    public createInboxTask(
-        requestBody: InboxTaskCreateArgs,
-    ): CancelablePromise<InboxTaskCreateResult> {
+    public docArchive(
+        requestBody: DocArchiveArgs,
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/inbox-task/create',
+            url: '/doc-archive',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -44,18 +43,18 @@ export class InboxTaskService {
     }
 
     /**
-     * Update Inbox Task
-     * Update a inbox task.
+     * The command for changing the parent for a doc .
+     * The command for changing the parent for a doc .
      * @param requestBody
-     * @returns InboxTaskUpdateResult Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
-    public updateInboxTask(
-        requestBody: InboxTaskUpdateArgs,
-    ): CancelablePromise<InboxTaskUpdateResult> {
+    public docChangeParent(
+        requestBody: DocChangeParentArgs,
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/inbox-task/update',
+            url: '/doc-change-parent',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -67,18 +66,18 @@ export class InboxTaskService {
     }
 
     /**
-     * Archive Inbox Task
-     * Archive a inbox task.
+     * Use case for creating a doc.
+     * Use case for creating a doc.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns DocCreateResult Successful Response
      * @throws ApiError
      */
-    public archiveInboxTask(
-        requestBody: InboxTaskArchiveArgs,
-    ): CancelablePromise<any> {
+    public docCreate(
+        requestBody: DocCreateArgs,
+    ): CancelablePromise<DocCreateResult> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/inbox-task/archive',
+            url: '/doc-create',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -90,18 +89,18 @@ export class InboxTaskService {
     }
 
     /**
-     * Change Inbox Task Project
-     * Change the project for a inbox task.
+     * The use case for finding docs.
+     * The use case for finding docs.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns DocFindResult Successful Response
      * @throws ApiError
      */
-    public changeInboxTaskProject(
-        requestBody: InboxTaskChangeProjectArgs,
-    ): CancelablePromise<any> {
+    public docFind(
+        requestBody: DocFindArgs,
+    ): CancelablePromise<DocFindResult> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/inbox-task/change-project',
+            url: '/doc-find',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -113,18 +112,18 @@ export class InboxTaskService {
     }
 
     /**
-     * Associate Inbox Task With Big Plan
-     * Change the inbox task for a project.
+     * Use case for loading a particular doc.
+     * Use case for loading a particular doc.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns DocLoadResult Successful Response
      * @throws ApiError
      */
-    public associateInboxTaskWithBigPlan(
-        requestBody: InboxTaskAssociateWithBigPlanArgs,
-    ): CancelablePromise<any> {
+    public docLoad(
+        requestBody: DocLoadArgs,
+    ): CancelablePromise<DocLoadResult> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/inbox-task/associate-with-big-plan',
+            url: '/doc-load',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -136,18 +135,18 @@ export class InboxTaskService {
     }
 
     /**
-     * Load Inbox Task
-     * Load a inbox task.
+     * The command for removing a doc.
+     * The command for removing a doc.
      * @param requestBody
-     * @returns InboxTaskLoadResult Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
-    public loadInboxTask(
-        requestBody: InboxTaskLoadArgs,
-    ): CancelablePromise<InboxTaskLoadResult> {
+    public docRemove(
+        requestBody: DocRemoveArgs,
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/inbox-task/load',
+            url: '/doc-remove',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -159,18 +158,18 @@ export class InboxTaskService {
     }
 
     /**
-     * Find Inbox Task
-     * Find all inbox tasks, filtering by id.
+     * Update a doc use case.
+     * Update a doc use case.
      * @param requestBody
-     * @returns InboxTaskFindResult Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
-    public findInboxTask(
-        requestBody: InboxTaskFindArgs,
-    ): CancelablePromise<InboxTaskFindResult> {
+    public docUpdate(
+        requestBody: DocUpdateArgs,
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/inbox-task/find',
+            url: '/doc-update',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

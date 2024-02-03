@@ -49,7 +49,7 @@ export async function loader({ request, params }: LoaderArgs) {
   try {
     const response = await getLoggedInApiClient(
       session
-    ).smartList.loadSmartList({
+    ).smartLists.smartListLoad({
       ref_id: { the_id: id },
       allow_archived: false,
     });

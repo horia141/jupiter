@@ -24,7 +24,7 @@ export async function action({ request }: ActionArgs) {
   const form = await parseForm(request, CreateFormSchema);
 
   try {
-    const result = await getLoggedInApiClient(session).doc.createDoc({
+    const result = await getLoggedInApiClient(session).docs.docCreate({
       name: { the_name: form.name },
       content: form.content,
     });

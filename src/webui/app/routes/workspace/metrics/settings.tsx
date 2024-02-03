@@ -55,7 +55,7 @@ export async function loader({ request }: LoaderArgs) {
 
   const metricSettingsResponse = await getLoggedInApiClient(
     session
-  ).metric.loadMetricSettings({});
+  ).metrics.metricLoadSettings({});
 
   return json({
     collectionProject: metricSettingsResponse.collection_project,
@@ -73,7 +73,7 @@ export async function action({ request }: ActionArgs) {
       throw new Error("Invalid application state");
     }
 
-    await getLoggedInApiClient(session).metric.changeMetricCollectionProject({
+    await getLoggedInApiClient(session).metrics.metricChangeCollectionProject({
       collection_project_ref_id: { the_id: form.project },
     });
 

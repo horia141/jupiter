@@ -13,18 +13,18 @@ export class AuthService {
     constructor(public readonly httpRequest: BaseHttpRequest) {}
 
     /**
-     * Change Password
-     * Change password.
+     * Use case for changing a password.
+     * Use case for changing a password.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
     public changePassword(
         requestBody: ChangePasswordArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/auth/change-password',
+            url: '/change-password',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -36,8 +36,8 @@ export class AuthService {
     }
 
     /**
-     * Reset Password
-     * Reset password.
+     * Use case for reseting a password.
+     * Use case for reseting a password.
      * @param requestBody
      * @returns ResetPasswordResult Successful Response
      * @throws ApiError
@@ -47,7 +47,7 @@ export class AuthService {
     ): CancelablePromise<ResetPasswordResult> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/auth/reset-password',
+            url: '/reset-password',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

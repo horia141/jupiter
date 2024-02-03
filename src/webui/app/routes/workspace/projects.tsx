@@ -23,7 +23,7 @@ export const handle = {
 
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
-  const response = await getLoggedInApiClient(session).project.findProject({
+  const response = await getLoggedInApiClient(session).projects.projectFind({
     allow_archived: false,
   });
   return json(response.projects);

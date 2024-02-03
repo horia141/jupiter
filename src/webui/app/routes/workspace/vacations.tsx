@@ -43,7 +43,7 @@ export const handle = {
 
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
-  const response = await getLoggedInApiClient(session).vacation.findVacation({
+  const response = await getLoggedInApiClient(session).vacations.vacationFind({
     allow_archived: false,
   });
   return json(response.vacations);

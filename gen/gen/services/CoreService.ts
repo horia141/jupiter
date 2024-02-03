@@ -4,29 +4,52 @@
 import type { NoteArchiveArgs } from '../models/NoteArchiveArgs';
 import type { NoteCreateArgs } from '../models/NoteCreateArgs';
 import type { NoteCreateResult } from '../models/NoteCreateResult';
+import type { NoteRemoveArgs } from '../models/NoteRemoveArgs';
 import type { NoteUpdateArgs } from '../models/NoteUpdateArgs';
-import type { x } from '../models/x';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
 
-export class NoteService {
+export class CoreService {
 
     constructor(public readonly httpRequest: BaseHttpRequest) {}
 
     /**
-     * Create Note
-     * Create a note.
+     * Use case for archiving a note.
+     * Use case for archiving a note.
+     * @param requestBody
+     * @returns null Successful Response
+     * @throws ApiError
+     */
+    public noteArchive(
+        requestBody: NoteArchiveArgs,
+    ): CancelablePromise<null> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/note-archive',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Use case for creating a note.
+     * Use case for creating a note.
      * @param requestBody
      * @returns NoteCreateResult Successful Response
      * @throws ApiError
      */
-    public createNote(
+    public noteCreate(
         requestBody: NoteCreateArgs,
     ): CancelablePromise<NoteCreateResult> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/core/note/create',
+            url: '/note-create',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -38,18 +61,18 @@ export class NoteService {
     }
 
     /**
-     * Archive Note
-     * Archive a note.
+     * The command for removing a note.
+     * The command for removing a note.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
-    public archiveNote(
-        requestBody: NoteArchiveArgs,
-    ): CancelablePromise<any> {
+    public noteRemove(
+        requestBody: NoteRemoveArgs,
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/core/note/archive',
+            url: '/note-remove',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -61,41 +84,18 @@ export class NoteService {
     }
 
     /**
-     * Update Note
-     * Update a note.
+     * Update a note use case.
+     * Update a note use case.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
-    public updateNote(
+    public noteUpdate(
         requestBody: NoteUpdateArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/core/note/update',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * Do X
-     * Update a note.
-     * @param requestBody
-     * @returns x Successful Response
-     * @throws ApiError
-     */
-    public doX(
-        requestBody: x,
-    ): CancelablePromise<x> {
-        return this.httpRequest.request({
-            method: 'GET',
-            url: '/x',
+            url: '/note-update',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

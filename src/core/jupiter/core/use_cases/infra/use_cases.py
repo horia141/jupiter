@@ -509,7 +509,6 @@ class AppBackgroundMutationUseCase(
         self._domain_storage_engine = domain_storage_engine
         self._search_storage_engine = search_storage_engine
 
-
     async def _build_context(self, session: EmptySession) -> EmptyContext:
         """Construct the context for the use case."""
         return EmptyContext()

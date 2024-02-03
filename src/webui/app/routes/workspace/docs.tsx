@@ -28,7 +28,7 @@ export const handle = {
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
 
-  const body = await getLoggedInApiClient(session).doc.findDoc({
+  const body = await getLoggedInApiClient(session).docs.docFind({
     include_notes: false,
     allow_archived: false,
     include_subdocs: false,

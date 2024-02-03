@@ -48,7 +48,7 @@ export async function loader({ request, params }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const { id } = parseParams(params, ParamsSchema);
 
-  const response = await getLoggedInApiClient(session).metric.loadMetric({
+  const response = await getLoggedInApiClient(session).metrics.metricLoad({
     allow_archived: true,
     ref_id: { the_id: id },
   });
@@ -66,7 +66,7 @@ export async function action({ params, request }: ActionArgs) {
   try {
     const response = await getLoggedInApiClient(
       session
-    ).metric.createMetricEntry({
+    ).metrics.metricEntryCreate({
       metric_ref_id: { the_id: id },
       collection_time: {
         the_date: form.collectionTime,

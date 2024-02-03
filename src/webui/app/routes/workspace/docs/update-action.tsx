@@ -26,11 +26,11 @@ export async function action({ request }: ActionArgs) {
   const form = await parseForm(request, UpdateFormSchema);
 
   try {
-    await getLoggedInApiClient(session).doc.updateDoc({
+    await getLoggedInApiClient(session).docs.docUpdate({
       ref_id: { the_id: form.docId },
       name: { should_change: true, value: { the_name: form.name } },
     });
-    await getLoggedInApiClient(session).note.updateNote({
+    await getLoggedInApiClient(session).core.noteUpdate({
       ref_id: { the_id: form.noteId },
       content: { should_change: true, value: form.content },
     });

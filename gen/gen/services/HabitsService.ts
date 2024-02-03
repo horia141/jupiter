@@ -9,6 +9,7 @@ import type { HabitFindArgs } from '../models/HabitFindArgs';
 import type { HabitFindResult } from '../models/HabitFindResult';
 import type { HabitLoadArgs } from '../models/HabitLoadArgs';
 import type { HabitLoadResult } from '../models/HabitLoadResult';
+import type { HabitRemoveArgs } from '../models/HabitRemoveArgs';
 import type { HabitSuspendArgs } from '../models/HabitSuspendArgs';
 import type { HabitUnsuspendArgs } from '../models/HabitUnsuspendArgs';
 import type { HabitUpdateArgs } from '../models/HabitUpdateArgs';
@@ -16,23 +17,69 @@ import type { HabitUpdateArgs } from '../models/HabitUpdateArgs';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
 
-export class HabitService {
+export class HabitsService {
 
     constructor(public readonly httpRequest: BaseHttpRequest) {}
 
     /**
-     * Create Habit
-     * Create a habit.
+     * The command for archiving a habit.
+     * The command for archiving a habit.
+     * @param requestBody
+     * @returns null Successful Response
+     * @throws ApiError
+     */
+    public habitArchive(
+        requestBody: HabitArchiveArgs,
+    ): CancelablePromise<null> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/habit-archive',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * The command for changing the project of a habit.
+     * The command for changing the project of a habit.
+     * @param requestBody
+     * @returns null Successful Response
+     * @throws ApiError
+     */
+    public habitChangeProject(
+        requestBody: HabitChangeProjectArgs,
+    ): CancelablePromise<null> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/habit-change-project',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * The command for creating a habit.
+     * The command for creating a habit.
      * @param requestBody
      * @returns HabitCreateResult Successful Response
      * @throws ApiError
      */
-    public createHabit(
+    public habitCreate(
         requestBody: HabitCreateArgs,
     ): CancelablePromise<HabitCreateResult> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/habit/create',
+            url: '/habit-create',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -44,156 +91,133 @@ export class HabitService {
     }
 
     /**
-     * Archive Habit
-     * Archive a habit.
-     * @param requestBody
-     * @returns any Successful Response
-     * @throws ApiError
-     */
-    public archiveHabit(
-        requestBody: HabitArchiveArgs,
-    ): CancelablePromise<any> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/habit/archive',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * Update Habit
-     * Update a habit.
-     * @param requestBody
-     * @returns any Successful Response
-     * @throws ApiError
-     */
-    public updateHabit(
-        requestBody: HabitUpdateArgs,
-    ): CancelablePromise<any> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/habit/update',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * Change Habit Project
-     * Change the project for a habit.
-     * @param requestBody
-     * @returns any Successful Response
-     * @throws ApiError
-     */
-    public changeHabitProject(
-        requestBody: HabitChangeProjectArgs,
-    ): CancelablePromise<any> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/habit/change-project',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * Suspend Habit
-     * Suspend a habit.
-     * @param requestBody
-     * @returns any Successful Response
-     * @throws ApiError
-     */
-    public suspendHabit(
-        requestBody: HabitSuspendArgs,
-    ): CancelablePromise<any> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/habit/suspend',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * Unsuspend Habit
-     * Unsuspend a habit.
-     * @param requestBody
-     * @returns any Successful Response
-     * @throws ApiError
-     */
-    public unsuspendHabit(
-        requestBody: HabitUnsuspendArgs,
-    ): CancelablePromise<any> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/habit/unsuspend',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * Load Habit
-     * Load a habit.
-     * @param requestBody
-     * @returns HabitLoadResult Successful Response
-     * @throws ApiError
-     */
-    public loadHabit(
-        requestBody: HabitLoadArgs,
-    ): CancelablePromise<HabitLoadResult> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/habit/load',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * Find Habit
-     * Find all habits, filtering by id..
+     * The command for finding a habit.
+     * The command for finding a habit.
      * @param requestBody
      * @returns HabitFindResult Successful Response
      * @throws ApiError
      */
-    public findHabit(
+    public habitFind(
         requestBody: HabitFindArgs,
     ): CancelablePromise<HabitFindResult> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/habit/find',
+            url: '/habit-find',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Use case for loading a particular habit.
+     * Use case for loading a particular habit.
+     * @param requestBody
+     * @returns HabitLoadResult Successful Response
+     * @throws ApiError
+     */
+    public habitLoad(
+        requestBody: HabitLoadArgs,
+    ): CancelablePromise<HabitLoadResult> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/habit-load',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * The command for removing a habit.
+     * The command for removing a habit.
+     * @param requestBody
+     * @returns null Successful Response
+     * @throws ApiError
+     */
+    public habitRemove(
+        requestBody: HabitRemoveArgs,
+    ): CancelablePromise<null> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/habit-remove',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * The command for suspending a habit.
+     * The command for suspending a habit.
+     * @param requestBody
+     * @returns null Successful Response
+     * @throws ApiError
+     */
+    public habitSuspend(
+        requestBody: HabitSuspendArgs,
+    ): CancelablePromise<null> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/habit-suspend',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * The command for unsuspending a habit.
+     * The command for unsuspending a habit.
+     * @param requestBody
+     * @returns null Successful Response
+     * @throws ApiError
+     */
+    public habitUnsuspend(
+        requestBody: HabitUnsuspendArgs,
+    ): CancelablePromise<null> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/habit-unsuspend',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * The command for updating a habit.
+     * The command for updating a habit.
+     * @param requestBody
+     * @returns null Successful Response
+     * @throws ApiError
+     */
+    public habitUpdate(
+        requestBody: HabitUpdateArgs,
+    ): CancelablePromise<null> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/habit-update',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

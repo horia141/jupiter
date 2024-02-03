@@ -67,7 +67,7 @@ export async function action({ request }: ActionArgs) {
   const form = await parseForm(request, CreateFormSchema);
 
   try {
-    const result = await getLoggedInApiClient(session).bigPlan.createBigPlan({
+    const result = await getLoggedInApiClient(session).bigPlans.bigPlanCreate({
       name: { the_name: form.name },
       project_ref_id:
         form.project !== undefined ? { the_id: form.project } : undefined,

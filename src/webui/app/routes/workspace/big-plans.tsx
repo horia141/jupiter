@@ -69,7 +69,7 @@ export async function loader({ request }: LoaderArgs) {
   ).getSummaries.getSummaries({
     include_projects: true,
   });
-  const response = await getLoggedInApiClient(session).bigPlan.findBigPlan({
+  const response = await getLoggedInApiClient(session).bigPlans.bigPlanFind({
     allow_archived: false,
     include_project: true,
     include_inbox_tasks: false,

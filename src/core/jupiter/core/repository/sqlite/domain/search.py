@@ -105,7 +105,8 @@ class SqliteSearchRepository(SearchRepository):
 
     async def update(self, workspace_ref_id: EntityId, entity: CrownEntity) -> None:
         """Update an entity in the index."""
-        query = (update(self._search_index_table)
+        query = (
+            update(self._search_index_table)
             .where(
                 self._search_index_table.c.workspace_ref_id == workspace_ref_id.as_int()
             )
@@ -129,7 +130,8 @@ class SqliteSearchRepository(SearchRepository):
                 ).encode(entity.archived_time)
                 if entity.archived_time
                 else None,
-            ))
+            )
+        )
         result = await self._connection.execute(query)
         if result.rowcount == 0:
             raise EntityNotFoundError(

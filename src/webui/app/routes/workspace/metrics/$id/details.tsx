@@ -86,7 +86,7 @@ export async function loader({ request, params }: LoaderArgs) {
   const { id } = parseParams(params, ParamsSchema);
 
   try {
-    const response = await getLoggedInApiClient(session).metric.loadMetric({
+    const response = await getLoggedInApiClient(session).metrics.metricLoad({
       ref_id: { the_id: id },
       allow_archived: true,
     });
@@ -117,7 +117,7 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (intent) {
       case "update": {
-        await getLoggedInApiClient(session).metric.updateMetric({
+        await getLoggedInApiClient(session).metrics.metricUpdate({
           ref_id: { the_id: id },
           name: {
             should_change: true,
@@ -208,7 +208,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).metric.archiveMetric({
+        await getLoggedInApiClient(session).metrics.metricArchive({
           ref_id: { the_id: id },
         });
 

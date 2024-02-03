@@ -50,7 +50,7 @@ export async function action({ request }: ActionArgs) {
   const form = await parseForm(request, CreateFormSchema);
 
   try {
-    const result = await getLoggedInApiClient(session).journal.createJournal({
+    const result = await getLoggedInApiClient(session).journals.journalCreate({
       right_now: { the_date: form.rightNow, the_datetime: undefined },
       period: form.period,
     });

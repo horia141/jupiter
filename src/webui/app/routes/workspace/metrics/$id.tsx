@@ -49,7 +49,7 @@ export async function loader({ request, params }: LoaderArgs) {
   const { id } = parseParams(params, ParamsSchema);
 
   try {
-    const response = await getLoggedInApiClient(session).metric.loadMetric({
+    const response = await getLoggedInApiClient(session).metrics.metricLoad({
       ref_id: { the_id: id },
       allow_archived: false,
     });

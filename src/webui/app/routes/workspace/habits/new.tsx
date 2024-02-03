@@ -85,7 +85,7 @@ export async function action({ request }: ActionArgs) {
   const form = await parseForm(request, CreateFormSchema);
 
   try {
-    const result = await getLoggedInApiClient(session).habit.createHabit({
+    const result = await getLoggedInApiClient(session).habits.habitCreate({
       name: { the_name: form.name },
       project_ref_id:
         form.project !== undefined ? { the_id: form.project } : undefined,

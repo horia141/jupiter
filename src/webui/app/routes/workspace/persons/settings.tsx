@@ -55,7 +55,7 @@ export async function loader({ request }: LoaderArgs) {
 
   const personSettingsResponse = await getLoggedInApiClient(
     session
-  ).person.loadPersonSettings({});
+  ).persons.personLoadSettings({});
 
   return json({
     catchUpProject: personSettingsResponse.catch_up_project,
@@ -73,7 +73,7 @@ export async function action({ request }: ActionArgs) {
       throw new Error("Invalid application state");
     }
 
-    await getLoggedInApiClient(session).person.updateChangeCatchUpProject({
+    await getLoggedInApiClient(session).persons.personChangeCatchUpProject({
       catch_up_project_ref_id: { the_id: form.project },
     });
 

@@ -12,8 +12,8 @@ export class LoadProgressReporterTokenService {
     constructor(public readonly httpRequest: BaseHttpRequest) {}
 
     /**
-     * Load Progress Reporter Token
-     * Load a temporary access token useful for reading progress reporter updates.
+     * The use case for retrieving summaries about entities.
+     * The use case for retrieving summaries about entities.
      * @param requestBody
      * @returns LoadProgressReporterTokenResult Successful Response
      * @throws ApiError

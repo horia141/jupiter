@@ -1,36 +1,36 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { JournalArchiveArgs } from '../models/JournalArchiveArgs';
-import type { JournalChangeTimeConfigArgs } from '../models/JournalChangeTimeConfigArgs';
-import type { JournalCreateArgs } from '../models/JournalCreateArgs';
-import type { JournalCreateResult } from '../models/JournalCreateResult';
-import type { JournalFindArgs } from '../models/JournalFindArgs';
-import type { JournalFindResult } from '../models/JournalFindResult';
-import type { JournalLoadArgs } from '../models/JournalLoadArgs';
-import type { JournalLoadResult } from '../models/JournalLoadResult';
-import type { JournalUpdateReportArgs } from '../models/JournalUpdateReportArgs';
+import type { VacationArchiveArgs } from '../models/VacationArchiveArgs';
+import type { VacationCreateArgs } from '../models/VacationCreateArgs';
+import type { VacationCreateResult } from '../models/VacationCreateResult';
+import type { VacationFindArgs } from '../models/VacationFindArgs';
+import type { VacationFindResult } from '../models/VacationFindResult';
+import type { VacationLoadArgs } from '../models/VacationLoadArgs';
+import type { VacationLoadResult } from '../models/VacationLoadResult';
+import type { VacationRemoveArgs } from '../models/VacationRemoveArgs';
+import type { VacationUpdateArgs } from '../models/VacationUpdateArgs';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
 
-export class JournalService {
+export class VacationsService {
 
     constructor(public readonly httpRequest: BaseHttpRequest) {}
 
     /**
-     * Create Journal
-     * Create a journal.
+     * The command for archiving a vacation.
+     * The command for archiving a vacation.
      * @param requestBody
-     * @returns JournalCreateResult Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
-    public createJournal(
-        requestBody: JournalCreateArgs,
-    ): CancelablePromise<JournalCreateResult> {
+    public vacationArchive(
+        requestBody: VacationArchiveArgs,
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/journal/create',
+            url: '/vacation-archive',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -42,18 +42,18 @@ export class JournalService {
     }
 
     /**
-     * Archive Journal
-     * Archive a journal.
+     * The command for creating a vacation.
+     * The command for creating a vacation.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns VacationCreateResult Successful Response
      * @throws ApiError
      */
-    public archiveJournal(
-        requestBody: JournalArchiveArgs,
-    ): CancelablePromise<any> {
+    public vacationCreate(
+        requestBody: VacationCreateArgs,
+    ): CancelablePromise<VacationCreateResult> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/journal/archive',
+            url: '/vacation-create',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -65,18 +65,18 @@ export class JournalService {
     }
 
     /**
-     * Change Time Config For Journal
-     * Change time config for a journal.
+     * The command for finding vacations.
+     * The command for finding vacations.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns VacationFindResult Successful Response
      * @throws ApiError
      */
-    public changeTimeConfigForJournal(
-        requestBody: JournalChangeTimeConfigArgs,
-    ): CancelablePromise<any> {
+    public vacationFind(
+        requestBody: VacationFindArgs,
+    ): CancelablePromise<VacationFindResult> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/journal/change-time-config',
+            url: '/vacation-find',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -88,18 +88,18 @@ export class JournalService {
     }
 
     /**
-     * Update Report For Jorunal
-     * Change time config for a journal.
+     * Use case for loading a particular vacation.
+     * Use case for loading a particular vacation.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns VacationLoadResult Successful Response
      * @throws ApiError
      */
-    public updateReportForJorunal(
-        requestBody: JournalUpdateReportArgs,
-    ): CancelablePromise<any> {
+    public vacationLoad(
+        requestBody: VacationLoadArgs,
+    ): CancelablePromise<VacationLoadResult> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/journal/update-report',
+            url: '/vacation-load',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -111,18 +111,18 @@ export class JournalService {
     }
 
     /**
-     * Find Journal
-     * Find all journals, filtering by id.
+     * The command for removing a vacation.
+     * The command for removing a vacation.
      * @param requestBody
-     * @returns JournalFindResult Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
-    public findJournal(
-        requestBody: JournalFindArgs,
-    ): CancelablePromise<JournalFindResult> {
+    public vacationRemove(
+        requestBody: VacationRemoveArgs,
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/journal/find',
+            url: '/vacation-remove',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -134,18 +134,18 @@ export class JournalService {
     }
 
     /**
-     * Load Journal
-     * Load a journal.
+     * The command for updating a vacation's properties.
+     * The command for updating a vacation's properties.
      * @param requestBody
-     * @returns JournalLoadResult Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
-    public loadJournal(
-        requestBody: JournalLoadArgs,
-    ): CancelablePromise<JournalLoadResult> {
+    public vacationUpdate(
+        requestBody: VacationUpdateArgs,
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/journal/load',
+            url: '/vacation-update',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

@@ -42,7 +42,7 @@ export async function loader({ request, params }: LoaderArgs) {
   const { id } = parseParams(params, ParamsSchema);
 
   try {
-    const result = await getLoggedInApiClient(session).doc.loadDoc({
+    const result = await getLoggedInApiClient(session).docs.docLoad({
       ref_id: { the_id: id },
       allow_archived: true,
     });
@@ -71,7 +71,7 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (form.intent) {
       case "archive": {
-        await getLoggedInApiClient(session).doc.archiveDoc({
+        await getLoggedInApiClient(session).docs.docArchive({
           ref_id: { the_id: id },
         });
         return redirect(`/workspace/docs/${id}`);

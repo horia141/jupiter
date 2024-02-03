@@ -95,7 +95,7 @@ export async function loader({ request, params }: LoaderArgs) {
   });
 
   try {
-    const result = await getLoggedInApiClient(session).chore.loadChore({
+    const result = await getLoggedInApiClient(session).chores.choreLoad({
       ref_id: { the_id: id },
       allow_archived: true,
     });
@@ -127,7 +127,7 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (intent) {
       case "update": {
-        await getLoggedInApiClient(session).chore.updateChore({
+        await getLoggedInApiClient(session).chores.choreUpdate({
           ref_id: { the_id: id },
           name: {
             should_change: true,
@@ -216,7 +216,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "change-project": {
-        await getLoggedInApiClient(session).chore.changeChoreProject({
+        await getLoggedInApiClient(session).chores.choreChangeProject({
           ref_id: { the_id: id },
           project_ref_id: { the_id: form.project },
         });
@@ -225,7 +225,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).chore.archiveChore({
+        await getLoggedInApiClient(session).chores.choreArchive({
           ref_id: { the_id: id },
         });
 

@@ -18,7 +18,7 @@ export const handle = {
 
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
-  const result = await getLoggedInApiClient(session).user.loadUser({});
+  const result = await getLoggedInApiClient(session).user.userLoad({});
 
   return json({
     userScoreOverview: result.user_score_overview,

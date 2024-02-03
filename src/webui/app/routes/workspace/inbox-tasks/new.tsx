@@ -93,7 +93,7 @@ export async function loader({ request }: LoaderArgs) {
 
     const bigPlanResult = await getLoggedInApiClient(
       session
-    ).bigPlan.loadBigPlan({
+    ).bigPlans.bigPlanLoad({
       allow_archived: false,
       ref_id: { the_id: query.bigPlanRefId },
     });
@@ -141,7 +141,7 @@ export async function action({ request }: ActionArgs) {
 
     const result = await getLoggedInApiClient(
       session
-    ).inboxTask.createInboxTask({
+    ).inboxTasks.inboxTaskCreate({
       name: { the_name: form.name },
       project_ref_id:
         form.project !== undefined ? { the_id: form.project } : undefined,

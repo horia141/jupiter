@@ -88,7 +88,7 @@ export async function action({ request }: ActionArgs) {
   const form = await parseForm(request, CreateFormSchema);
 
   try {
-    const result = await getLoggedInApiClient(session).chore.createChore({
+    const result = await getLoggedInApiClient(session).chores.choreCreate({
       name: { the_name: form.name },
       project_ref_id:
         form.project !== undefined ? { the_id: form.project } : undefined,

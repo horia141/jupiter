@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type UserName = {
+export type ChoreName = {
     the_name: string;
 };
 
