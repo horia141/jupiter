@@ -8,7 +8,7 @@ from jupiter.cli.command.rendering import (
     user_score_overview_to_rich,
 )
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
-from jupiter.core.use_cases.user.load import UserLoadResult, UserLoadUseCase
+from jupiter.core.use_cases.users.load import UserLoadResult, UserLoadUseCase
 from rich.console import Console
 from rich.text import Text
 from rich.tree import Tree

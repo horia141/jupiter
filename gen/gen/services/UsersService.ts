@@ -9,7 +9,7 @@ import type { UserUpdateArgs } from '../models/UserUpdateArgs';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
 
-export class UserService {
+export class UsersService {
 
     constructor(public readonly httpRequest: BaseHttpRequest) {}
 

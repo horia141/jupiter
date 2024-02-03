@@ -56,7 +56,7 @@ export const handle = {
 
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
-  const result = await getLoggedInApiClient(session).user.userLoad({});
+  const result = await getLoggedInApiClient(session).users.userLoad({});
 
   return json({
     user: result.user,
@@ -72,7 +72,7 @@ export async function action({ request }: ActionArgs) {
   try {
     switch (intent) {
       case "update": {
-        await getLoggedInApiClient(session).user.userUpdate({
+        await getLoggedInApiClient(session).users.userUpdate({
           name: {
             should_change: true,
             value: { the_name: form.name },
@@ -87,7 +87,7 @@ export async function action({ request }: ActionArgs) {
       }
 
       case "change-feature-flags": {
-        await getLoggedInApiClient(session).user.userChangeFeatureFlags({
+        await getLoggedInApiClient(session).users.userChangeFeatureFlags({
           feature_flags: form.featureFlags,
         });
 

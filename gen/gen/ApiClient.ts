@@ -9,7 +9,6 @@ import { AuthService } from './services/AuthService';
 import { BigPlansService } from './services/BigPlansService';
 import { ChoresService } from './services/ChoresService';
 import { CoreService } from './services/CoreService';
-import { DefaultService } from './services/DefaultService';
 import { DocsService } from './services/DocsService';
 import { GcService } from './services/GcService';
 import { GenService } from './services/GenService';
@@ -29,7 +28,7 @@ import { ReportService } from './services/ReportService';
 import { SearchService } from './services/SearchService';
 import { SmartListsService } from './services/SmartListsService';
 import { TestHelperService } from './services/TestHelperService';
-import { UserService } from './services/UserService';
+import { UsersService } from './services/UsersService';
 import { VacationsService } from './services/VacationsService';
 import { WorkspacesService } from './services/WorkspacesService';
 
@@ -41,7 +40,6 @@ export class ApiClient {
     public readonly bigPlans: BigPlansService;
     public readonly chores: ChoresService;
     public readonly core: CoreService;
-    public readonly default: DefaultService;
     public readonly docs: DocsService;
     public readonly gc: GcService;
     public readonly gen: GenService;
@@ -61,7 +59,7 @@ export class ApiClient {
     public readonly search: SearchService;
     public readonly smartLists: SmartListsService;
     public readonly testHelper: TestHelperService;
-    public readonly user: UserService;
+    public readonly users: UsersService;
     public readonly vacations: VacationsService;
     public readonly workspaces: WorkspacesService;
 
@@ -84,7 +82,6 @@ export class ApiClient {
         this.bigPlans = new BigPlansService(this.request);
         this.chores = new ChoresService(this.request);
         this.core = new CoreService(this.request);
-        this.default = new DefaultService(this.request);
         this.docs = new DocsService(this.request);
         this.gc = new GcService(this.request);
         this.gen = new GenService(this.request);
@@ -104,7 +101,7 @@ export class ApiClient {
         this.search = new SearchService(this.request);
         this.smartLists = new SmartListsService(this.request);
         this.testHelper = new TestHelperService(this.request);
-        this.user = new UserService(this.request);
+        this.users = new UsersService(this.request);
         this.vacations = new VacationsService(this.request);
         this.workspaces = new WorkspacesService(this.request);
     }
