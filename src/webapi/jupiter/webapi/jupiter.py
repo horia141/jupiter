@@ -1955,1436 +1955,1436 @@ async def main() -> None:
 
 
 
-    @secure_fn
-    @web_app.fast_app.post(
-        "/init",
-        response_model=InitResult,
-        tags=["init"],
-        **standard_config,
-    )
-    async def init(args: InitArgs, session: GuestSession) -> InitResult:
-        """Initialise a new workspace."""
-        return (await init_use_case.execute(session, args))[1]
-
-
-    @secure_fn
-    @web_app.fast_app.post("/login", response_model=LoginResult, tags=["login"], **standard_config)
-    async def login(args: LoginArgs, session: GuestSession) -> LoginResult:
-        """Login to a workspace."""
-        return (await login_use_case.execute(session, args))[1]
-
-
-    @secure_fn
-    @web_app.fast_app.post(
-        "/auth/change-password",
-        response_model=None,
-        tags=["auth"],
-        **standard_config,
-    )
-    async def change_password(args: ChangePasswordArgs, session: LoggedInSession) -> None:
-        """Change password."""
-        await auth_change_password_use_case.execute(session, args)
-
-
-    @secure_fn
-    @web_app.fast_app.post(
-        "/auth/reset-password",
-        response_model=ResetPasswordResult,
-        tags=["auth"],
-        **standard_config,
-    )
-    async def reset_password(
-        args: ResetPasswordArgs, session: GuestSession
-    ) -> ResetPasswordResult:
-        """Reset password."""
-        return (await auth_reset_password_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/search",
-        response_model=SearchResult,
-        tags=["search"],
-        **standard_config,
-    )
-    async def search(args: SearchArgs, session: LoggedInSession) -> SearchResult:
-        """Search entities."""
-        return (await search_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post("/gen/do", response_model=None, tags=["gen"], **standard_config)
-    async def gen_do(args: GenDoArgs, session: LoggedInSession) -> None:
-        """Generate inbox tasks."""
-        await gen_do_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/gen/load-runs",
-        response_model=GenLoadRunsResult,
-        tags=["gen"],
-        **standard_config,
-    )
-    async def gen_load_runs(
-        args: GenLoadRunsArgs, session: LoggedInSession
-    ) -> GenLoadRunsResult:
-        """Load history of task generation runs."""
-        return (await gen_load_runs_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/report",
-        response_model=ReportResult,
-        tags=["report"],
-        **standard_config,
-    )
-    async def report(args: ReportArgs, session: LoggedInSession) -> ReportResult:
-        """Report."""
-        return (await report_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post("/gc/do", response_model=None, tags=["gc"], **standard_config)
-    async def gc_do(args: GCDoArgs, session: LoggedInSession) -> None:
-        """Perform a garbage collect."""
-        await gc_do_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/gc/load-runs",
-        response_model=GCLoadRunsResult,
-        tags=["gc"],
-        **standard_config,
-    )
-    async def gc_load_runs(
-        args: GCLoadRunsArgs, session: LoggedInSession
-    ) -> GCLoadRunsResult:
-        """Load history of GC runs."""
-        return (await gc_load_runs_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/load-top-level-info",
-        response_model=LoadTopLevelInfoResult,
-        tags=["load-top-level-info"],
-        **standard_config,
-    )
-    async def load_top_level_info(
-        args: LoadTopLevelInfoArgs, session: GuestSession
-    ) -> LoadTopLevelInfoResult:
-        """Load a user and workspace if they exist and other assorted data."""
-        return (await load_top_level_info_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/load-progress-reporter-token",
-        response_model=LoadProgressReporterTokenResult,
-        tags=["load-progress-reporter-token"],
-        **standard_config,
-    )
-    async def load_progress_reporter_token(
-        args: LoadProgressReporterTokenArgs, session: LoggedInSession
-    ) -> LoadProgressReporterTokenResult:
-        """Load a temporary access token useful for reading progress reporter updates."""
-        return (await load_progress_reporter_token_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/get-summaries",
-        response_model=GetSummariesResult,
-        tags=["get-summaries"],
-        **standard_config,
-    )
-    async def get_summaries(
-        args: GetSummariesArgs, session: LoggedInSession
-    ) -> GetSummariesResult:
-        """Get summaries about entities."""
-        return (await get_summaries_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/user/update",
-        response_model=None,
-        tags=["user"],
-        **standard_config,
-    )
-    async def update_user(args: UserUpdateArgs, session: LoggedInSession) -> None:
-        """Update a user."""
-        await user_update_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/user/change-feature-flags",
-        response_model=None,
-        tags=["user"],
-        **standard_config,
-    )
-    async def change_user_feature_flags(
-        args: UserChangeFeatureFlagsArgs, session: LoggedInSession
-    ) -> None:
-        """Change the feature flags for a user."""
-        await user_change_feature_flags_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/user/load",
-        response_model=UserLoadResult,
-        tags=["user"],
-        **standard_config,
-    )
-    async def load_user(args: UserLoadArgs, session: LoggedInSession) -> UserLoadResult:
-        """Load a user."""
-        return (await user_load_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/workspace/update",
-        response_model=None,
-        tags=["workspace"],
-        **standard_config,
-    )
-    async def update_workspace(args: WorkspaceUpdateArgs, session: LoggedInSession) -> None:
-        """Update a workspace."""
-        await workspace_update_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/workspace/change-default-project",
-        response_model=None,
-        tags=["workspace"],
-        **standard_config,
-    )
-    async def change_workspace_default_project(
-        args: WorkspaceChangeDefaultProjectArgs, session: LoggedInSession
-    ) -> None:
-        """Change the default project for a workspace."""
-        await workspace_change_default_project_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/workspace/change-feature-flags",
-        response_model=None,
-        tags=["workspace"],
-        **standard_config,
-    )
-    async def change_workspace_feature_flags(
-        args: WorkspaceChangeFeatureFlagsArgs, session: LoggedInSession
-    ) -> None:
-        """Change the feature flags for a workspace."""
-        await workspace_change_feature_flags_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/workspace/load",
-        response_model=WorkspaceLoadResult,
-        tags=["workspace"],
-        **standard_config,
-    )
-    async def load_workspace(
-        args: WorkspaceLoadArgs, session: LoggedInSession
-    ) -> WorkspaceLoadResult:
-        """Load a workspace."""
-        return (await workspace_load_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/inbox-task/create",
-        response_model=InboxTaskCreateResult,
-        tags=["inbox-task"],
-        **standard_config,
-    )
-    async def create_inbox_task(
-        args: InboxTaskCreateArgs, session: LoggedInSession
-    ) -> InboxTaskCreateResult:
-        """Create a inbox task."""
-        return (await inbox_task_create_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/inbox-task/update",
-        response_model=InboxTaskUpdateResult,
-        tags=["inbox-task"],
-        **standard_config,
-    )
-    async def update_inbox_task(
-        args: InboxTaskUpdateArgs, session: LoggedInSession
-    ) -> InboxTaskUpdateResult:
-        """Update a inbox task."""
-        return (await inbox_task_update_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/inbox-task/archive",
-        response_model=None,
-        tags=["inbox-task"],
-        **standard_config,
-    )
-    async def archive_inbox_task(
-        args: InboxTaskArchiveArgs, session: LoggedInSession
-    ) -> None:
-        """Archive a inbox task."""
-        await inbox_task_archive_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/inbox-task/change-project",
-        response_model=None,
-        tags=["inbox-task"],
-        **standard_config,
-    )
-    async def change_inbox_task_project(
-        args: InboxTaskChangeProjectArgs, session: LoggedInSession
-    ) -> None:
-        """Change the project for a inbox task."""
-        await inbox_task_change_project_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/inbox-task/associate-with-big-plan",
-        response_model=None,
-        tags=["inbox-task"],
-        **standard_config,
-    )
-    async def associate_inbox_task_with_big_plan(
-        args: InboxTaskAssociateWithBigPlanArgs, session: LoggedInSession
-    ) -> None:
-        """Change the inbox task for a project."""
-        await inbox_task_associate_with_big_plan.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/inbox-task/load",
-        response_model=InboxTaskLoadResult,
-        tags=["inbox-task"],
-        **standard_config,
-    )
-    async def load_inbox_task(
-        args: InboxTaskLoadArgs, session: LoggedInSession
-    ) -> InboxTaskLoadResult:
-        """Load a inbox task."""
-        return (await inbox_task_load_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/inbox-task/find",
-        response_model=InboxTaskFindResult,
-        tags=["inbox-task"],
-        **standard_config,
-    )
-    async def find_inbox_task(
-        args: InboxTaskFindArgs, session: LoggedInSession
-    ) -> InboxTaskFindResult:
-        """Find all inbox tasks, filtering by id."""
-        return (await inbox_task_find_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/habit/create",
-        response_model=HabitCreateResult,
-        tags=["habit"],
-        **standard_config,
-    )
-    async def create_habit(
-        args: HabitCreateArgs, session: LoggedInSession
-    ) -> HabitCreateResult:
-        """Create a habit."""
-        return (await habit_create_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/habit/archive",
-        response_model=None,
-        tags=["habit"],
-        **standard_config,
-    )
-    async def archive_habit(args: HabitArchiveArgs, session: LoggedInSession) -> None:
-        """Archive a habit."""
-        await habit_archive_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/habit/update",
-        response_model=None,
-        tags=["habit"],
-        **standard_config,
-    )
-    async def update_habit(args: HabitUpdateArgs, session: LoggedInSession) -> None:
-        """Update a habit."""
-        await habit_update_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/habit/change-project",
-        response_model=None,
-        tags=["habit"],
-        **standard_config,
-    )
-    async def change_habit_project(
-        args: HabitChangeProjectArgs, session: LoggedInSession
-    ) -> None:
-        """Change the project for a habit."""
-        await habit_change_project_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/habit/suspend",
-        response_model=None,
-        tags=["habit"],
-        **standard_config,
-    )
-    async def suspend_habit(args: HabitSuspendArgs, session: LoggedInSession) -> None:
-        """Suspend a habit."""
-        await habit_suspend_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/habit/unsuspend",
-        response_model=None,
-        tags=["habit"],
-        **standard_config,
-    )
-    async def unsuspend_habit(args: HabitUnsuspendArgs, session: LoggedInSession) -> None:
-        """Unsuspend a habit."""
-        await habit_unsuspend_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/habit/load",
-        response_model=HabitLoadResult,
-        tags=["habit"],
-        **standard_config,
-    )
-    async def load_habit(args: HabitLoadArgs, session: LoggedInSession) -> HabitLoadResult:
-        """Load a habit."""
-        return (await habit_load_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/habit/find",
-        response_model=HabitFindResult,
-        tags=["habit"],
-        **standard_config,
-    )
-    async def find_habit(args: HabitFindArgs, session: LoggedInSession) -> HabitFindResult:
-        """Find all habits, filtering by id.."""
-        return (await habit_find_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/chore/create",
-        response_model=ChoreCreateResult,
-        tags=["chore"],
-        **standard_config,
-    )
-    async def create_chore(
-        args: ChoreCreateArgs, session: LoggedInSession
-    ) -> ChoreCreateResult:
-        """Create a chore."""
-        return (await chore_create_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/chore/archive",
-        response_model=None,
-        tags=["chore"],
-        **standard_config,
-    )
-    async def archive_chore(args: ChoreArchiveArgs, session: LoggedInSession) -> None:
-        """Archive a chore."""
-        await chore_archive_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/chore/update",
-        response_model=None,
-        tags=["chore"],
-        **standard_config,
-    )
-    async def update_chore(args: ChoreUpdateArgs, session: LoggedInSession) -> None:
-        """Update a chore."""
-        await chore_update_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/chore/change-project",
-        response_model=None,
-        tags=["chore"],
-        **standard_config,
-    )
-    async def change_chore_project(
-        args: ChoreChangeProjectArgs, session: LoggedInSession
-    ) -> None:
-        """Change the project for a chore."""
-        await chore_change_project_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/chore/suspend",
-        response_model=None,
-        tags=["chore"],
-        **standard_config,
-    )
-    async def suspend_chore(args: ChoreSuspendArgs, session: LoggedInSession) -> None:
-        """Suspend a chore."""
-        await chore_suspend_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/chore/unsuspend",
-        response_model=None,
-        tags=["chore"],
-        **standard_config,
-    )
-    async def unsuspend_chore(args: ChoreUnsuspendArgs, session: LoggedInSession) -> None:
-        """Unsuspend a chore."""
-        await chore_unsuspend_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/chore/load",
-        response_model=ChoreLoadResult,
-        tags=["chore"],
-        **standard_config,
-    )
-    async def load_chore(args: ChoreLoadArgs, session: LoggedInSession) -> ChoreLoadResult:
-        """Load a chore."""
-        return (await chore_load_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/chore/find",
-        response_model=ChoreFindResult,
-        tags=["chore"],
-        **standard_config,
-    )
-    async def find_chore(args: ChoreFindArgs, session: LoggedInSession) -> ChoreFindResult:
-        """Find all chores, filtering by id.."""
-        return (await chore_find_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/big-plan/create",
-        response_model=BigPlanCreateResult,
-        tags=["big-plan"],
-        **standard_config,
-    )
-    async def create_big_plan(
-        args: BigPlanCreateArgs, session: LoggedInSession
-    ) -> BigPlanCreateResult:
-        """Create a big plan."""
-        return (await big_plan_create_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/big-plan/archive",
-        response_model=None,
-        tags=["big-plan"],
-        **standard_config,
-    )
-    async def archive_big_plan(args: BigPlanArchiveArgs, session: LoggedInSession) -> None:
-        """Archive a big plan."""
-        await big_plan_archive_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/big-plan/update",
-        response_model=BigPlanUpdateResult,
-        tags=["big-plan"],
-        **standard_config,
-    )
-    async def update_big_plan(
-        args: BigPlanUpdateArgs, session: LoggedInSession
-    ) -> BigPlanUpdateResult:
-        """Update a big plan."""
-        return (await big_plan_update_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/big-plan/change-project",
-        response_model=None,
-        tags=["big-plan"],
-        **standard_config,
-    )
-    async def change_big_plan_project(
-        args: BigPlanChangeProjectArgs, session: LoggedInSession
-    ) -> None:
-        """Change the project for a big plan."""
-        await big_plan_change_project_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/big-plan/load",
-        response_model=BigPlanLoadResult,
-        tags=["big-plan"],
-        **standard_config,
-    )
-    async def load_big_plan(
-        args: BigPlanLoadArgs, session: LoggedInSession
-    ) -> BigPlanLoadResult:
-        """Load a big plan."""
-        return (await big_plan_load_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/big-plan/find",
-        response_model=BigPlanFindResult,
-        tags=["big-plan"],
-        **standard_config,
-    )
-    async def find_big_plan(
-        args: BigPlanFindArgs, session: LoggedInSession
-    ) -> BigPlanFindResult:
-        """Find all big plans, filtering by id."""
-        return (await big_plan_find_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/journal/create",
-        response_model=JournalCreateResult,
-        tags=["journal"],
-        **standard_config,
-    )
-    async def create_journal(
-        args: JournalCreateArgs, session: LoggedInSession
-    ) -> JournalCreateResult:
-        """Create a journal."""
-        return (await journal_create_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/journal/archive",
-        response_model=None,
-        tags=["journal"],
-        **standard_config,
-    )
-    async def archive_journal(args: JournalArchiveArgs, session: LoggedInSession) -> None:
-        """Archive a journal."""
-        await journal_archive_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/journal/change-time-config",
-        response_model=None,
-        tags=["journal"],
-        **standard_config,
-    )
-    async def change_time_config_for_journal(
-        args: JournalChangeTimeConfigArgs, session: LoggedInSession
-    ) -> None:
-        """Change time config for a journal."""
-        await journal_change_time_config_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/journal/update-report",
-        response_model=None,
-        tags=["journal"],
-        **standard_config,
-    )
-    async def update_report_for_jorunal(
-        args: JournalUpdateReportArgs, session: LoggedInSession
-    ) -> None:
-        """Change time config for a journal."""
-        await journal_update_report_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/journal/find",
-        response_model=JournalFindResult,
-        tags=["journal"],
-        **standard_config,
-    )
-    async def find_journal(
-        args: JournalFindArgs, session: LoggedInSession
-    ) -> JournalFindResult:
-        """Find all journals, filtering by id."""
-        return (await journal_find_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/journal/load",
-        response_model=JournalLoadResult,
-        tags=["journal"],
-        **standard_config,
-    )
-    async def load_journal(
-        args: JournalLoadArgs, session: LoggedInSession
-    ) -> JournalLoadResult:
-        """Load a journal."""
-        return (await journal_load_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/doc/create",
-        response_model=DocCreateResult,
-        tags=["doc"],
-        **standard_config,
-    )
-    async def create_doc(args: DocCreateArgs, session: LoggedInSession) -> DocCreateResult:
-        """Create a doc."""
-        return (await doc_create_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/doc/archive",
-        response_model=None,
-        tags=["doc"],
-        **standard_config,
-    )
-    async def archive_doc(args: DocArchiveArgs, session: LoggedInSession) -> None:
-        """Archive a doc."""
-        await doc_archive_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/doc/update",
-        response_model=None,
-        tags=["doc"],
-        **standard_config,
-    )
-    async def update_doc(args: DocUpdateArgs, session: LoggedInSession) -> None:
-        """Update a doc."""
-        await doc_update_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/doc/change-parent",
-        response_model=None,
-        tags=["doc"],
-        **standard_config,
-    )
-    async def change_doc_parent(
-        args: DocChangeParentArgs, session: LoggedInSession
-    ) -> None:
-        """Change the parent for a doc."""
-        await doc_change_parent_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/doc/load",
-        response_model=DocLoadResult,
-        tags=["doc"],
-        **standard_config,
-    )
-    async def load_doc(args: DocLoadArgs, session: LoggedInSession) -> DocLoadResult:
-        """Load a doc."""
-        return (await doc_load_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/doc/find",
-        response_model=DocFindResult,
-        tags=["doc"],
-        **standard_config,
-    )
-    async def find_doc(args: DocFindArgs, session: LoggedInSession) -> DocFindResult:
-        """Find all docs, filtering by id."""
-        return (await doc_find_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/vacation/create",
-        response_model=VacationCreateResult,
-        tags=["vacation"],
-        **standard_config,
-    )
-    async def create_vacation(
-        args: VacationCreateArgs, session: LoggedInSession
-    ) -> VacationCreateResult:
-        """Create a vacation."""
-        return (await vacation_create_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/vacation/archive",
-        response_model=None,
-        tags=["vacation"],
-        **standard_config,
-    )
-    async def archive_vacation(args: VacationArchiveArgs, session: LoggedInSession) -> None:
-        """Archive a vacation."""
-        await vacation_archive_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/vacation/update",
-        response_model=None,
-        tags=["vacation"],
-        **standard_config,
-    )
-    async def update_vacation(args: VacationUpdateArgs, session: LoggedInSession) -> None:
-        """Update a vacation."""
-        await vacation_update_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/vacation/load",
-        response_model=VacationLoadResult,
-        tags=["vacation"],
-        **standard_config,
-    )
-    async def load_vacation(
-        args: VacationLoadArgs, session: LoggedInSession
-    ) -> VacationLoadResult:
-        """Load all vacations, filtering by id."""
-        return (await vacation_load_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/vacation/find",
-        response_model=VacationFindResult,
-        tags=["vacation"],
-        **standard_config,
-    )
-    async def find_vacation(
-        args: VacationFindArgs, session: LoggedInSession
-    ) -> VacationFindResult:
-        """Find all vacations, filtering by id."""
-        return (await vacation_find_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/project/create",
-        response_model=ProjectCreateResult,
-        tags=["project"],
-        **standard_config,
-    )
-    async def create_project(
-        args: ProjectCreateArgs, session: LoggedInSession
-    ) -> ProjectCreateResult:
-        """Create a project."""
-        return (await project_create_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/project/archive",
-        response_model=None,
-        tags=["project"],
-        **standard_config,
-    )
-    async def archive_project(args: ProjectArchiveArgs, session: LoggedInSession) -> None:
-        """Create a project."""
-        await project_archive_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/project/update",
-        response_model=None,
-        tags=["project"],
-        **standard_config,
-    )
-    async def update_project(args: ProjectUpdateArgs, session: LoggedInSession) -> None:
-        """Update a project."""
-        await project_update_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/project/load",
-        response_model=ProjectLoadResult,
-        tags=["project"],
-        **standard_config,
-    )
-    async def load_project(
-        args: ProjectLoadArgs, session: LoggedInSession
-    ) -> ProjectLoadResult:
-        """Load a project, filtering by id."""
-        return (await project_load_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/project/find",
-        response_model=ProjectFindResult,
-        tags=["project"],
-        **standard_config,
-    )
-    async def find_project(
-        args: ProjectFindArgs, session: LoggedInSession
-    ) -> ProjectFindResult:
-        """Find a project, filtering by id."""
-        return (await project_find_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/smart-list/create",
-        response_model=SmartListCreateResult,
-        tags=["smart-list"],
-        **standard_config,
-    )
-    async def create_smart_list(
-        args: SmartListCreateArgs, session: LoggedInSession
-    ) -> SmartListCreateResult:
-        """Create a smart list."""
-        return (await smart_list_create_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/smart-list/archive",
-        response_model=None,
-        tags=["smart-list"],
-        **standard_config,
-    )
-    async def archive_smart_list(
-        args: SmartListArchiveArgs, session: LoggedInSession
-    ) -> None:
-        """Archive a smart list."""
-        await smart_list_archive_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/smart-list/update",
-        response_model=None,
-        tags=["smart-list"],
-        **standard_config,
-    )
-    async def update_smart_list(
-        args: SmartListUpdateArgs, session: LoggedInSession
-    ) -> None:
-        """Update a smart list."""
-        await smart_list_update_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/smart-list/load",
-        response_model=SmartListLoadResult,
-        tags=["smart-list"],
-        **standard_config,
-    )
-    async def load_smart_list(
-        args: SmartListLoadArgs, session: LoggedInSession
-    ) -> SmartListLoadResult:
-        """Load a smart list."""
-        return (await smart_list_load_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/smart-list/find",
-        response_model=SmartListFindResult,
-        tags=["smart-list"],
-        **standard_config,
-    )
-    async def find_smart_list(
-        args: SmartListFindArgs, session: LoggedInSession
-    ) -> SmartListFindResult:
-        """Find all smart lists, filtering by id."""
-        return (await smart_list_find_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/smart-list/tag/create",
-        response_model=SmartListTagCreateResult,
-        tags=["smart-list"],
-        **standard_config,
-    )
-    async def create_smart_list_tag(
-        args: SmartListTagCreateArgs, session: LoggedInSession
-    ) -> SmartListTagCreateResult:
-        """Create a smart list tag."""
-        return (await smart_list_tag_create_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/smart-list/tag/archive",
-        response_model=None,
-        tags=["smart-list"],
-        **standard_config,
-    )
-    async def archive_smart_list_tag(
-        args: SmartListTagArchiveArgs, session: LoggedInSession
-    ) -> None:
-        """Archive a smart list tag."""
-        await smart_list_tag_archive_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/smart-list/tag/update",
-        response_model=None,
-        tags=["smart-list"],
-        **standard_config,
-    )
-    async def update_smart_list_tag(
-        args: SmartListTagUpdateArgs, session: LoggedInSession
-    ) -> None:
-        """Update a smart list tag."""
-        await smart_list_tag_update_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/smart-list/tag/load",
-        response_model=SmartListTagLoadResult,
-        tags=["smart-list"],
-        **standard_config,
-    )
-    async def load_smart_list_tag(
-        args: SmartListTagLoadArgs, session: LoggedInSession
-    ) -> SmartListTagLoadResult:
-        """Load a smart list tag."""
-        return (await smart_list_tag_load_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/smart-list/item/create",
-        response_model=SmartListItemCreateResult,
-        tags=["smart-list"],
-        **standard_config,
-    )
-    async def create_smart_list_item(
-        args: SmartListItemCreateArgs, session: LoggedInSession
-    ) -> SmartListItemCreateResult:
-        """Create a smart list item."""
-        return (await smart_list_item_create_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/smart-list/item/archive",
-        response_model=None,
-        tags=["smart-list"],
-        **standard_config,
-    )
-    async def archive_smart_list_item(
-        args: SmartListItemArchiveArgs, session: LoggedInSession
-    ) -> None:
-        """Archive a smart list item."""
-        await smart_list_item_archive_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/smart-list/item/update",
-        response_model=None,
-        tags=["smart-list"],
-        **standard_config,
-    )
-    async def update_smart_list_item(
-        args: SmartListItemUpdateArgs, session: LoggedInSession
-    ) -> None:
-        """Update a smart list item."""
-        await smart_list_item_update_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/smart-list/item/load",
-        response_model=SmartListItemLoadResult,
-        tags=["smart-list"],
-        **standard_config,
-    )
-    async def load_smart_list_item(
-        args: SmartListItemLoadArgs, session: LoggedInSession
-    ) -> SmartListItemLoadResult:
-        """Load a smart list item."""
-        return (await smart_list_item_load_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/metric/create",
-        response_model=MetricCreateResult,
-        tags=["metric"],
-        **standard_config,
-    )
-    async def create_metric(
-        args: MetricCreateArgs, session: LoggedInSession
-    ) -> MetricCreateResult:
-        """Create a metric."""
-        return (await metric_create_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/metric/archive",
-        response_model=None,
-        tags=["metric"],
-        **standard_config,
-    )
-    async def archive_metric(args: MetricArchiveArgs, session: LoggedInSession) -> None:
-        """Archive a metric."""
-        await metric_archive_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/metric/update",
-        response_model=None,
-        tags=["metric"],
-        **standard_config,
-    )
-    async def update_metric(args: MetricUpdateArgs, session: LoggedInSession) -> None:
-        """Update a metric."""
-        await metric_update_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/metric/load-settings",
-        response_model=MetricLoadSettingsResult,
-        tags=["metric"],
-        **standard_config,
-    )
-    async def load_metric_settings(
-        args: MetricLoadSettingsArgs, session: LoggedInSession
-    ) -> MetricLoadSettingsResult:
-        """Load settings for metrics."""
-        return (await metric_load_settings_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/metric/change-collection-project",
-        response_model=None,
-        tags=["metric"],
-        **standard_config,
-    )
-    async def change_metric_collection_project(
-        args: MetricChangeCollectionProjectArgs, session: LoggedInSession
-    ) -> None:
-        """Change the collection project for metric."""
-        await metric_change_collection_project_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/metric/load",
-        response_model=MetricLoadResult,
-        tags=["metric"],
-        **standard_config,
-    )
-    async def load_metric(
-        args: MetricLoadArgs, session: LoggedInSession
-    ) -> MetricLoadResult:
-        """Load a metric."""
-        return (await metric_load_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/metric/find",
-        response_model=MetricFindResult,
-        tags=["metric"],
-        **standard_config,
-    )
-    async def find_metric(
-        args: MetricFindArgs, session: LoggedInSession
-    ) -> MetricFindResult:
-        """Find all metrics, filtering by id."""
-        return (await metric_find_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/metric/entry/create",
-        response_model=MetricEntryCreateResult,
-        tags=["metric"],
-        **standard_config,
-    )
-    async def create_metric_entry(
-        args: MetricEntryCreateArgs, session: LoggedInSession
-    ) -> MetricEntryCreateResult:
-        """Create a metric entry."""
-        return (await metric_entry_create_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/metric/entry/archive",
-        response_model=None,
-        tags=["metric"],
-        **standard_config,
-    )
-    async def archive_metric_entry(
-        args: MetricEntryArchiveArgs, session: LoggedInSession
-    ) -> None:
-        """Archive a metric entry."""
-        await metric_entry_archive_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/metric/entry/update",
-        response_model=None,
-        tags=["metric"],
-        **standard_config,
-    )
-    async def update_metric_entry(
-        args: MetricEntryUpdateArgs, session: LoggedInSession
-    ) -> None:
-        """Update a metric entry."""
-        await metric_entry_update_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/metric/entry/load",
-        response_model=MetricEntryLoadResult,
-        tags=["metric"],
-        **standard_config,
-    )
-    async def load_metric_entry(
-        args: MetricEntryLoadArgs, session: LoggedInSession
-    ) -> MetricEntryLoadResult:
-        """Load a metric entry."""
-        return (await metric_entry_load_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/person/create",
-        response_model=PersonCreateResult,
-        tags=["person"],
-        **standard_config,
-    )
-    async def create_person(
-        args: PersonCreateArgs, session: LoggedInSession
-    ) -> PersonCreateResult:
-        """Create a person."""
-        return (await person_create_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/person/archive",
-        response_model=None,
-        tags=["person"],
-        **standard_config,
-    )
-    async def archive_person(args: PersonArchiveArgs, session: LoggedInSession) -> None:
-        """Archive a person."""
-        await person_archive_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/person/update",
-        response_model=None,
-        tags=["person"],
-        **standard_config,
-    )
-    async def update_person(args: PersonUpdateArgs, session: LoggedInSession) -> None:
-        """Update a person."""
-        await person_update_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/person/load-settings",
-        response_model=PersonLoadSettingsResult,
-        tags=["person"],
-        **standard_config,
-    )
-    async def load_person_settings(
-        args: PersonLoadSettingsArgs, session: LoggedInSession
-    ) -> PersonLoadSettingsResult:
-        """Change the catch up project for persons."""
-        return (await person_load_settings_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/person/change-catch-up-project",
-        response_model=None,
-        tags=["person"],
-        **standard_config,
-    )
-    async def update_change_catch_up_project(
-        args: PersonChangeCatchUpProjectArgs, session: LoggedInSession
-    ) -> None:
-        """Change the catch up project for persons."""
-        await person_change_catch_up_project_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/person/load",
-        response_model=PersonLoadResult,
-        tags=["person"],
-        **standard_config,
-    )
-    async def load_person(
-        args: PersonLoadArgs, session: LoggedInSession
-    ) -> PersonLoadResult:
-        """Load a person, filtering by id."""
-        return (await person_load_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/person/find",
-        response_model=PersonFindResult,
-        tags=["person"],
-        **standard_config,
-    )
-    async def find_person(
-        args: PersonFindArgs, session: LoggedInSession
-    ) -> PersonFindResult:
-        """Find a person, filtering by id."""
-        return (await person_find_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/slack-task/archive",
-        response_model=None,
-        tags=["slack-task"],
-        **standard_config,
-    )
-    async def archive_slack_task(
-        args: SlackTaskArchiveArgs, session: LoggedInSession
-    ) -> None:
-        """Archive a slack task."""
-        await slack_task_archive_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/slack-task/update",
-        response_model=None,
-        tags=["slack-task"],
-        **standard_config,
-    )
-    async def update_slack_task(
-        args: SlackTaskUpdateArgs, session: LoggedInSession
-    ) -> None:
-        """Update a slack task."""
-        await slack_task_update_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/slack-task/load-settings",
-        response_model=SlackTaskLoadSettingsResult,
-        tags=["slack-task"],
-        **standard_config,
-    )
-    async def load_slack_task_settings(
-        args: SlackTaskLoadSettingsArgs, session: LoggedInSession
-    ) -> SlackTaskLoadSettingsResult:
-        """Change the project for a slack task."""
-        return (await slack_task_load_settings_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/slack-task/change-project",
-        response_model=None,
-        tags=["slack-task"],
-        **standard_config,
-    )
-    async def change_slack_task_generation_project(
-        args: SlackTaskChangeGenerationProjectArgs, session: LoggedInSession
-    ) -> None:
-        """Change the project for a slack task."""
-        await slack_task_change_generation_project_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/slack-task/load",
-        response_model=SlackTaskLoadResult,
-        tags=["slack-task"],
-        **standard_config,
-    )
-    async def load_slack_task(
-        args: SlackTaskLoadArgs, session: LoggedInSession
-    ) -> SlackTaskLoadResult:
-        """Load a slack task."""
-        return (await slack_task_load_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/slack-task/find",
-        response_model=SlackTaskFindResult,
-        tags=["slack-task"],
-        **standard_config,
-    )
-    async def find_slack_task(
-        args: SlackTaskFindArgs, session: LoggedInSession
-    ) -> SlackTaskFindResult:
-        """Find all slack tasks, filtering by id."""
-        return (await slack_task_find_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/email-task/archive",
-        response_model=None,
-        tags=["email-task"],
-        **standard_config,
-    )
-    async def archive_email_task(
-        args: EmailTaskArchiveArgs, session: LoggedInSession
-    ) -> None:
-        """Archive a email task."""
-        await email_task_archive_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/email-task/update",
-        response_model=None,
-        tags=["email-task"],
-        **standard_config,
-    )
-    async def update_email_task(
-        args: EmailTaskUpdateArgs, session: LoggedInSession
-    ) -> None:
-        """Update a email task."""
-        await email_task_update_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/email-task/load-settings",
-        response_model=EmailTaskLoadSettingsResult,
-        tags=["email-task"],
-        **standard_config,
-    )
-    async def load_email_task_settings(
-        args: EmailTaskLoadSettingsArgs, session: LoggedInSession
-    ) -> EmailTaskLoadSettingsResult:
-        """Change the project for a email task."""
-        return (await email_task_load_settings_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/email-task/change-project",
-        response_model=None,
-        tags=["email-task"],
-        **standard_config,
-    )
-    async def change_email_task_generation_project(
-        args: EmailTaskChangeGenerationProjectArgs, session: LoggedInSession
-    ) -> None:
-        """Change the project for a email task."""
-        await email_task_change_generation_project_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/email-task/load",
-        response_model=EmailTaskLoadResult,
-        tags=["email-task"],
-        **standard_config,
-    )
-    async def load_email_task(
-        args: EmailTaskLoadArgs, session: LoggedInSession
-    ) -> EmailTaskLoadResult:
-        """Load an email task."""
-        return (await email_task_load_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/email-task/find",
-        response_model=EmailTaskFindResult,
-        tags=["email-task"],
-        **standard_config,
-    )
-    async def find_email_task(
-        args: EmailTaskFindArgs, session: LoggedInSession
-    ) -> EmailTaskFindResult:
-        """Find all email tasks, filtering by id."""
-        return (await email_task_find_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/core/note/create",
-        response_model=NoteCreateResult,
-        tags=["note"],
-        **standard_config,
-    )
-    async def create_note(
-        args: NoteCreateArgs, session: LoggedInSession
-    ) -> NoteCreateResult:
-        """Create a note."""
-        return (await note_create_use_case.execute(session, args))[1]
-
-
-    @web_app.fast_app.post(
-        "/core/note/archive",
-        response_model=None,
-        tags=["note"],
-        **standard_config,
-    )
-    async def archive_note(args: NoteArchiveArgs, session: LoggedInSession) -> None:
-        """Archive a note."""
-        await note_archive_use_case.execute(session, args)
-
-
-    @web_app.fast_app.post(
-        "/core/note/update",
-        response_model=None,
-        tags=["note"],
-        **standard_config,
-    )
-    async def update_note(args: NoteUpdateArgs, session: LoggedInSession) -> None:
-        """Update a note."""
-        await note_update_use_case.execute(session, args)
+    # @secure_fn
+    # @web_app.fast_app.post(
+    #     "/init",
+    #     response_model=InitResult,
+    #     tags=["init"],
+    #     **standard_config,
+    # )
+    # async def init(args: InitArgs, session: GuestSession) -> InitResult:
+    #     """Initialise a new workspace."""
+    #     return (await init_use_case.execute(session, args))[1]
+
+
+    # @secure_fn
+    # @web_app.fast_app.post("/login", response_model=LoginResult, tags=["login"], **standard_config)
+    # async def login(args: LoginArgs, session: GuestSession) -> LoginResult:
+    #     """Login to a workspace."""
+    #     return (await login_use_case.execute(session, args))[1]
+
+
+    # @secure_fn
+    # @web_app.fast_app.post(
+    #     "/auth/change-password",
+    #     response_model=None,
+    #     tags=["auth"],
+    #     **standard_config,
+    # )
+    # async def change_password(args: ChangePasswordArgs, session: LoggedInSession) -> None:
+    #     """Change password."""
+    #     await auth_change_password_use_case.execute(session, args)
+
+
+    # @secure_fn
+    # @web_app.fast_app.post(
+    #     "/auth/reset-password",
+    #     response_model=ResetPasswordResult,
+    #     tags=["auth"],
+    #     **standard_config,
+    # )
+    # async def reset_password(
+    #     args: ResetPasswordArgs, session: GuestSession
+    # ) -> ResetPasswordResult:
+    #     """Reset password."""
+    #     return (await auth_reset_password_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/search",
+    #     response_model=SearchResult,
+    #     tags=["search"],
+    #     **standard_config,
+    # )
+    # async def search(args: SearchArgs, session: LoggedInSession) -> SearchResult:
+    #     """Search entities."""
+    #     return (await search_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post("/gen/do", response_model=None, tags=["gen"], **standard_config)
+    # async def gen_do(args: GenDoArgs, session: LoggedInSession) -> None:
+    #     """Generate inbox tasks."""
+    #     await gen_do_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/gen/load-runs",
+    #     response_model=GenLoadRunsResult,
+    #     tags=["gen"],
+    #     **standard_config,
+    # )
+    # async def gen_load_runs(
+    #     args: GenLoadRunsArgs, session: LoggedInSession
+    # ) -> GenLoadRunsResult:
+    #     """Load history of task generation runs."""
+    #     return (await gen_load_runs_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/report",
+    #     response_model=ReportResult,
+    #     tags=["report"],
+    #     **standard_config,
+    # )
+    # async def report(args: ReportArgs, session: LoggedInSession) -> ReportResult:
+    #     """Report."""
+    #     return (await report_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post("/gc/do", response_model=None, tags=["gc"], **standard_config)
+    # async def gc_do(args: GCDoArgs, session: LoggedInSession) -> None:
+    #     """Perform a garbage collect."""
+    #     await gc_do_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/gc/load-runs",
+    #     response_model=GCLoadRunsResult,
+    #     tags=["gc"],
+    #     **standard_config,
+    # )
+    # async def gc_load_runs(
+    #     args: GCLoadRunsArgs, session: LoggedInSession
+    # ) -> GCLoadRunsResult:
+    #     """Load history of GC runs."""
+    #     return (await gc_load_runs_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/load-top-level-info",
+    #     response_model=LoadTopLevelInfoResult,
+    #     tags=["load-top-level-info"],
+    #     **standard_config,
+    # )
+    # async def load_top_level_info(
+    #     args: LoadTopLevelInfoArgs, session: GuestSession
+    # ) -> LoadTopLevelInfoResult:
+    #     """Load a user and workspace if they exist and other assorted data."""
+    #     return (await load_top_level_info_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/load-progress-reporter-token",
+    #     response_model=LoadProgressReporterTokenResult,
+    #     tags=["load-progress-reporter-token"],
+    #     **standard_config,
+    # )
+    # async def load_progress_reporter_token(
+    #     args: LoadProgressReporterTokenArgs, session: LoggedInSession
+    # ) -> LoadProgressReporterTokenResult:
+    #     """Load a temporary access token useful for reading progress reporter updates."""
+    #     return (await load_progress_reporter_token_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/get-summaries",
+    #     response_model=GetSummariesResult,
+    #     tags=["get-summaries"],
+    #     **standard_config,
+    # )
+    # async def get_summaries(
+    #     args: GetSummariesArgs, session: LoggedInSession
+    # ) -> GetSummariesResult:
+    #     """Get summaries about entities."""
+    #     return (await get_summaries_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/user/update",
+    #     response_model=None,
+    #     tags=["user"],
+    #     **standard_config,
+    # )
+    # async def update_user(args: UserUpdateArgs, session: LoggedInSession) -> None:
+    #     """Update a user."""
+    #     await user_update_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/user/change-feature-flags",
+    #     response_model=None,
+    #     tags=["user"],
+    #     **standard_config,
+    # )
+    # async def change_user_feature_flags(
+    #     args: UserChangeFeatureFlagsArgs, session: LoggedInSession
+    # ) -> None:
+    #     """Change the feature flags for a user."""
+    #     await user_change_feature_flags_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/user/load",
+    #     response_model=UserLoadResult,
+    #     tags=["user"],
+    #     **standard_config,
+    # )
+    # async def load_user(args: UserLoadArgs, session: LoggedInSession) -> UserLoadResult:
+    #     """Load a user."""
+    #     return (await user_load_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/workspace/update",
+    #     response_model=None,
+    #     tags=["workspace"],
+    #     **standard_config,
+    # )
+    # async def update_workspace(args: WorkspaceUpdateArgs, session: LoggedInSession) -> None:
+    #     """Update a workspace."""
+    #     await workspace_update_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/workspace/change-default-project",
+    #     response_model=None,
+    #     tags=["workspace"],
+    #     **standard_config,
+    # )
+    # async def change_workspace_default_project(
+    #     args: WorkspaceChangeDefaultProjectArgs, session: LoggedInSession
+    # ) -> None:
+    #     """Change the default project for a workspace."""
+    #     await workspace_change_default_project_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/workspace/change-feature-flags",
+    #     response_model=None,
+    #     tags=["workspace"],
+    #     **standard_config,
+    # )
+    # async def change_workspace_feature_flags(
+    #     args: WorkspaceChangeFeatureFlagsArgs, session: LoggedInSession
+    # ) -> None:
+    #     """Change the feature flags for a workspace."""
+    #     await workspace_change_feature_flags_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/workspace/load",
+    #     response_model=WorkspaceLoadResult,
+    #     tags=["workspace"],
+    #     **standard_config,
+    # )
+    # async def load_workspace(
+    #     args: WorkspaceLoadArgs, session: LoggedInSession
+    # ) -> WorkspaceLoadResult:
+    #     """Load a workspace."""
+    #     return (await workspace_load_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/inbox-task/create",
+    #     response_model=InboxTaskCreateResult,
+    #     tags=["inbox-task"],
+    #     **standard_config,
+    # )
+    # async def create_inbox_task(
+    #     args: InboxTaskCreateArgs, session: LoggedInSession
+    # ) -> InboxTaskCreateResult:
+    #     """Create a inbox task."""
+    #     return (await inbox_task_create_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/inbox-task/update",
+    #     response_model=InboxTaskUpdateResult,
+    #     tags=["inbox-task"],
+    #     **standard_config,
+    # )
+    # async def update_inbox_task(
+    #     args: InboxTaskUpdateArgs, session: LoggedInSession
+    # ) -> InboxTaskUpdateResult:
+    #     """Update a inbox task."""
+    #     return (await inbox_task_update_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/inbox-task/archive",
+    #     response_model=None,
+    #     tags=["inbox-task"],
+    #     **standard_config,
+    # )
+    # async def archive_inbox_task(
+    #     args: InboxTaskArchiveArgs, session: LoggedInSession
+    # ) -> None:
+    #     """Archive a inbox task."""
+    #     await inbox_task_archive_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/inbox-task/change-project",
+    #     response_model=None,
+    #     tags=["inbox-task"],
+    #     **standard_config,
+    # )
+    # async def change_inbox_task_project(
+    #     args: InboxTaskChangeProjectArgs, session: LoggedInSession
+    # ) -> None:
+    #     """Change the project for a inbox task."""
+    #     await inbox_task_change_project_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/inbox-task/associate-with-big-plan",
+    #     response_model=None,
+    #     tags=["inbox-task"],
+    #     **standard_config,
+    # )
+    # async def associate_inbox_task_with_big_plan(
+    #     args: InboxTaskAssociateWithBigPlanArgs, session: LoggedInSession
+    # ) -> None:
+    #     """Change the inbox task for a project."""
+    #     await inbox_task_associate_with_big_plan.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/inbox-task/load",
+    #     response_model=InboxTaskLoadResult,
+    #     tags=["inbox-task"],
+    #     **standard_config,
+    # )
+    # async def load_inbox_task(
+    #     args: InboxTaskLoadArgs, session: LoggedInSession
+    # ) -> InboxTaskLoadResult:
+    #     """Load a inbox task."""
+    #     return (await inbox_task_load_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/inbox-task/find",
+    #     response_model=InboxTaskFindResult,
+    #     tags=["inbox-task"],
+    #     **standard_config,
+    # )
+    # async def find_inbox_task(
+    #     args: InboxTaskFindArgs, session: LoggedInSession
+    # ) -> InboxTaskFindResult:
+    #     """Find all inbox tasks, filtering by id."""
+    #     return (await inbox_task_find_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/habit/create",
+    #     response_model=HabitCreateResult,
+    #     tags=["habit"],
+    #     **standard_config,
+    # )
+    # async def create_habit(
+    #     args: HabitCreateArgs, session: LoggedInSession
+    # ) -> HabitCreateResult:
+    #     """Create a habit."""
+    #     return (await habit_create_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/habit/archive",
+    #     response_model=None,
+    #     tags=["habit"],
+    #     **standard_config,
+    # )
+    # async def archive_habit(args: HabitArchiveArgs, session: LoggedInSession) -> None:
+    #     """Archive a habit."""
+    #     await habit_archive_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/habit/update",
+    #     response_model=None,
+    #     tags=["habit"],
+    #     **standard_config,
+    # )
+    # async def update_habit(args: HabitUpdateArgs, session: LoggedInSession) -> None:
+    #     """Update a habit."""
+    #     await habit_update_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/habit/change-project",
+    #     response_model=None,
+    #     tags=["habit"],
+    #     **standard_config,
+    # )
+    # async def change_habit_project(
+    #     args: HabitChangeProjectArgs, session: LoggedInSession
+    # ) -> None:
+    #     """Change the project for a habit."""
+    #     await habit_change_project_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/habit/suspend",
+    #     response_model=None,
+    #     tags=["habit"],
+    #     **standard_config,
+    # )
+    # async def suspend_habit(args: HabitSuspendArgs, session: LoggedInSession) -> None:
+    #     """Suspend a habit."""
+    #     await habit_suspend_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/habit/unsuspend",
+    #     response_model=None,
+    #     tags=["habit"],
+    #     **standard_config,
+    # )
+    # async def unsuspend_habit(args: HabitUnsuspendArgs, session: LoggedInSession) -> None:
+    #     """Unsuspend a habit."""
+    #     await habit_unsuspend_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/habit/load",
+    #     response_model=HabitLoadResult,
+    #     tags=["habit"],
+    #     **standard_config,
+    # )
+    # async def load_habit(args: HabitLoadArgs, session: LoggedInSession) -> HabitLoadResult:
+    #     """Load a habit."""
+    #     return (await habit_load_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/habit/find",
+    #     response_model=HabitFindResult,
+    #     tags=["habit"],
+    #     **standard_config,
+    # )
+    # async def find_habit(args: HabitFindArgs, session: LoggedInSession) -> HabitFindResult:
+    #     """Find all habits, filtering by id.."""
+    #     return (await habit_find_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/chore/create",
+    #     response_model=ChoreCreateResult,
+    #     tags=["chore"],
+    #     **standard_config,
+    # )
+    # async def create_chore(
+    #     args: ChoreCreateArgs, session: LoggedInSession
+    # ) -> ChoreCreateResult:
+    #     """Create a chore."""
+    #     return (await chore_create_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/chore/archive",
+    #     response_model=None,
+    #     tags=["chore"],
+    #     **standard_config,
+    # )
+    # async def archive_chore(args: ChoreArchiveArgs, session: LoggedInSession) -> None:
+    #     """Archive a chore."""
+    #     await chore_archive_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/chore/update",
+    #     response_model=None,
+    #     tags=["chore"],
+    #     **standard_config,
+    # )
+    # async def update_chore(args: ChoreUpdateArgs, session: LoggedInSession) -> None:
+    #     """Update a chore."""
+    #     await chore_update_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/chore/change-project",
+    #     response_model=None,
+    #     tags=["chore"],
+    #     **standard_config,
+    # )
+    # async def change_chore_project(
+    #     args: ChoreChangeProjectArgs, session: LoggedInSession
+    # ) -> None:
+    #     """Change the project for a chore."""
+    #     await chore_change_project_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/chore/suspend",
+    #     response_model=None,
+    #     tags=["chore"],
+    #     **standard_config,
+    # )
+    # async def suspend_chore(args: ChoreSuspendArgs, session: LoggedInSession) -> None:
+    #     """Suspend a chore."""
+    #     await chore_suspend_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/chore/unsuspend",
+    #     response_model=None,
+    #     tags=["chore"],
+    #     **standard_config,
+    # )
+    # async def unsuspend_chore(args: ChoreUnsuspendArgs, session: LoggedInSession) -> None:
+    #     """Unsuspend a chore."""
+    #     await chore_unsuspend_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/chore/load",
+    #     response_model=ChoreLoadResult,
+    #     tags=["chore"],
+    #     **standard_config,
+    # )
+    # async def load_chore(args: ChoreLoadArgs, session: LoggedInSession) -> ChoreLoadResult:
+    #     """Load a chore."""
+    #     return (await chore_load_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/chore/find",
+    #     response_model=ChoreFindResult,
+    #     tags=["chore"],
+    #     **standard_config,
+    # )
+    # async def find_chore(args: ChoreFindArgs, session: LoggedInSession) -> ChoreFindResult:
+    #     """Find all chores, filtering by id.."""
+    #     return (await chore_find_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/big-plan/create",
+    #     response_model=BigPlanCreateResult,
+    #     tags=["big-plan"],
+    #     **standard_config,
+    # )
+    # async def create_big_plan(
+    #     args: BigPlanCreateArgs, session: LoggedInSession
+    # ) -> BigPlanCreateResult:
+    #     """Create a big plan."""
+    #     return (await big_plan_create_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/big-plan/archive",
+    #     response_model=None,
+    #     tags=["big-plan"],
+    #     **standard_config,
+    # )
+    # async def archive_big_plan(args: BigPlanArchiveArgs, session: LoggedInSession) -> None:
+    #     """Archive a big plan."""
+    #     await big_plan_archive_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/big-plan/update",
+    #     response_model=BigPlanUpdateResult,
+    #     tags=["big-plan"],
+    #     **standard_config,
+    # )
+    # async def update_big_plan(
+    #     args: BigPlanUpdateArgs, session: LoggedInSession
+    # ) -> BigPlanUpdateResult:
+    #     """Update a big plan."""
+    #     return (await big_plan_update_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/big-plan/change-project",
+    #     response_model=None,
+    #     tags=["big-plan"],
+    #     **standard_config,
+    # )
+    # async def change_big_plan_project(
+    #     args: BigPlanChangeProjectArgs, session: LoggedInSession
+    # ) -> None:
+    #     """Change the project for a big plan."""
+    #     await big_plan_change_project_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/big-plan/load",
+    #     response_model=BigPlanLoadResult,
+    #     tags=["big-plan"],
+    #     **standard_config,
+    # )
+    # async def load_big_plan(
+    #     args: BigPlanLoadArgs, session: LoggedInSession
+    # ) -> BigPlanLoadResult:
+    #     """Load a big plan."""
+    #     return (await big_plan_load_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/big-plan/find",
+    #     response_model=BigPlanFindResult,
+    #     tags=["big-plan"],
+    #     **standard_config,
+    # )
+    # async def find_big_plan(
+    #     args: BigPlanFindArgs, session: LoggedInSession
+    # ) -> BigPlanFindResult:
+    #     """Find all big plans, filtering by id."""
+    #     return (await big_plan_find_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/journal/create",
+    #     response_model=JournalCreateResult,
+    #     tags=["journal"],
+    #     **standard_config,
+    # )
+    # async def create_journal(
+    #     args: JournalCreateArgs, session: LoggedInSession
+    # ) -> JournalCreateResult:
+    #     """Create a journal."""
+    #     return (await journal_create_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/journal/archive",
+    #     response_model=None,
+    #     tags=["journal"],
+    #     **standard_config,
+    # )
+    # async def archive_journal(args: JournalArchiveArgs, session: LoggedInSession) -> None:
+    #     """Archive a journal."""
+    #     await journal_archive_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/journal/change-time-config",
+    #     response_model=None,
+    #     tags=["journal"],
+    #     **standard_config,
+    # )
+    # async def change_time_config_for_journal(
+    #     args: JournalChangeTimeConfigArgs, session: LoggedInSession
+    # ) -> None:
+    #     """Change time config for a journal."""
+    #     await journal_change_time_config_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/journal/update-report",
+    #     response_model=None,
+    #     tags=["journal"],
+    #     **standard_config,
+    # )
+    # async def update_report_for_jorunal(
+    #     args: JournalUpdateReportArgs, session: LoggedInSession
+    # ) -> None:
+    #     """Change time config for a journal."""
+    #     await journal_update_report_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/journal/find",
+    #     response_model=JournalFindResult,
+    #     tags=["journal"],
+    #     **standard_config,
+    # )
+    # async def find_journal(
+    #     args: JournalFindArgs, session: LoggedInSession
+    # ) -> JournalFindResult:
+    #     """Find all journals, filtering by id."""
+    #     return (await journal_find_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/journal/load",
+    #     response_model=JournalLoadResult,
+    #     tags=["journal"],
+    #     **standard_config,
+    # )
+    # async def load_journal(
+    #     args: JournalLoadArgs, session: LoggedInSession
+    # ) -> JournalLoadResult:
+    #     """Load a journal."""
+    #     return (await journal_load_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/doc/create",
+    #     response_model=DocCreateResult,
+    #     tags=["doc"],
+    #     **standard_config,
+    # )
+    # async def create_doc(args: DocCreateArgs, session: LoggedInSession) -> DocCreateResult:
+    #     """Create a doc."""
+    #     return (await doc_create_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/doc/archive",
+    #     response_model=None,
+    #     tags=["doc"],
+    #     **standard_config,
+    # )
+    # async def archive_doc(args: DocArchiveArgs, session: LoggedInSession) -> None:
+    #     """Archive a doc."""
+    #     await doc_archive_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/doc/update",
+    #     response_model=None,
+    #     tags=["doc"],
+    #     **standard_config,
+    # )
+    # async def update_doc(args: DocUpdateArgs, session: LoggedInSession) -> None:
+    #     """Update a doc."""
+    #     await doc_update_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/doc/change-parent",
+    #     response_model=None,
+    #     tags=["doc"],
+    #     **standard_config,
+    # )
+    # async def change_doc_parent(
+    #     args: DocChangeParentArgs, session: LoggedInSession
+    # ) -> None:
+    #     """Change the parent for a doc."""
+    #     await doc_change_parent_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/doc/load",
+    #     response_model=DocLoadResult,
+    #     tags=["doc"],
+    #     **standard_config,
+    # )
+    # async def load_doc(args: DocLoadArgs, session: LoggedInSession) -> DocLoadResult:
+    #     """Load a doc."""
+    #     return (await doc_load_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/doc/find",
+    #     response_model=DocFindResult,
+    #     tags=["doc"],
+    #     **standard_config,
+    # )
+    # async def find_doc(args: DocFindArgs, session: LoggedInSession) -> DocFindResult:
+    #     """Find all docs, filtering by id."""
+    #     return (await doc_find_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/vacation/create",
+    #     response_model=VacationCreateResult,
+    #     tags=["vacation"],
+    #     **standard_config,
+    # )
+    # async def create_vacation(
+    #     args: VacationCreateArgs, session: LoggedInSession
+    # ) -> VacationCreateResult:
+    #     """Create a vacation."""
+    #     return (await vacation_create_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/vacation/archive",
+    #     response_model=None,
+    #     tags=["vacation"],
+    #     **standard_config,
+    # )
+    # async def archive_vacation(args: VacationArchiveArgs, session: LoggedInSession) -> None:
+    #     """Archive a vacation."""
+    #     await vacation_archive_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/vacation/update",
+    #     response_model=None,
+    #     tags=["vacation"],
+    #     **standard_config,
+    # )
+    # async def update_vacation(args: VacationUpdateArgs, session: LoggedInSession) -> None:
+    #     """Update a vacation."""
+    #     await vacation_update_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/vacation/load",
+    #     response_model=VacationLoadResult,
+    #     tags=["vacation"],
+    #     **standard_config,
+    # )
+    # async def load_vacation(
+    #     args: VacationLoadArgs, session: LoggedInSession
+    # ) -> VacationLoadResult:
+    #     """Load all vacations, filtering by id."""
+    #     return (await vacation_load_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/vacation/find",
+    #     response_model=VacationFindResult,
+    #     tags=["vacation"],
+    #     **standard_config,
+    # )
+    # async def find_vacation(
+    #     args: VacationFindArgs, session: LoggedInSession
+    # ) -> VacationFindResult:
+    #     """Find all vacations, filtering by id."""
+    #     return (await vacation_find_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/project/create",
+    #     response_model=ProjectCreateResult,
+    #     tags=["project"],
+    #     **standard_config,
+    # )
+    # async def create_project(
+    #     args: ProjectCreateArgs, session: LoggedInSession
+    # ) -> ProjectCreateResult:
+    #     """Create a project."""
+    #     return (await project_create_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/project/archive",
+    #     response_model=None,
+    #     tags=["project"],
+    #     **standard_config,
+    # )
+    # async def archive_project(args: ProjectArchiveArgs, session: LoggedInSession) -> None:
+    #     """Create a project."""
+    #     await project_archive_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/project/update",
+    #     response_model=None,
+    #     tags=["project"],
+    #     **standard_config,
+    # )
+    # async def update_project(args: ProjectUpdateArgs, session: LoggedInSession) -> None:
+    #     """Update a project."""
+    #     await project_update_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/project/load",
+    #     response_model=ProjectLoadResult,
+    #     tags=["project"],
+    #     **standard_config,
+    # )
+    # async def load_project(
+    #     args: ProjectLoadArgs, session: LoggedInSession
+    # ) -> ProjectLoadResult:
+    #     """Load a project, filtering by id."""
+    #     return (await project_load_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/project/find",
+    #     response_model=ProjectFindResult,
+    #     tags=["project"],
+    #     **standard_config,
+    # )
+    # async def find_project(
+    #     args: ProjectFindArgs, session: LoggedInSession
+    # ) -> ProjectFindResult:
+    #     """Find a project, filtering by id."""
+    #     return (await project_find_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/smart-list/create",
+    #     response_model=SmartListCreateResult,
+    #     tags=["smart-list"],
+    #     **standard_config,
+    # )
+    # async def create_smart_list(
+    #     args: SmartListCreateArgs, session: LoggedInSession
+    # ) -> SmartListCreateResult:
+    #     """Create a smart list."""
+    #     return (await smart_list_create_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/smart-list/archive",
+    #     response_model=None,
+    #     tags=["smart-list"],
+    #     **standard_config,
+    # )
+    # async def archive_smart_list(
+    #     args: SmartListArchiveArgs, session: LoggedInSession
+    # ) -> None:
+    #     """Archive a smart list."""
+    #     await smart_list_archive_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/smart-list/update",
+    #     response_model=None,
+    #     tags=["smart-list"],
+    #     **standard_config,
+    # )
+    # async def update_smart_list(
+    #     args: SmartListUpdateArgs, session: LoggedInSession
+    # ) -> None:
+    #     """Update a smart list."""
+    #     await smart_list_update_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/smart-list/load",
+    #     response_model=SmartListLoadResult,
+    #     tags=["smart-list"],
+    #     **standard_config,
+    # )
+    # async def load_smart_list(
+    #     args: SmartListLoadArgs, session: LoggedInSession
+    # ) -> SmartListLoadResult:
+    #     """Load a smart list."""
+    #     return (await smart_list_load_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/smart-list/find",
+    #     response_model=SmartListFindResult,
+    #     tags=["smart-list"],
+    #     **standard_config,
+    # )
+    # async def find_smart_list(
+    #     args: SmartListFindArgs, session: LoggedInSession
+    # ) -> SmartListFindResult:
+    #     """Find all smart lists, filtering by id."""
+    #     return (await smart_list_find_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/smart-list/tag/create",
+    #     response_model=SmartListTagCreateResult,
+    #     tags=["smart-list"],
+    #     **standard_config,
+    # )
+    # async def create_smart_list_tag(
+    #     args: SmartListTagCreateArgs, session: LoggedInSession
+    # ) -> SmartListTagCreateResult:
+    #     """Create a smart list tag."""
+    #     return (await smart_list_tag_create_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/smart-list/tag/archive",
+    #     response_model=None,
+    #     tags=["smart-list"],
+    #     **standard_config,
+    # )
+    # async def archive_smart_list_tag(
+    #     args: SmartListTagArchiveArgs, session: LoggedInSession
+    # ) -> None:
+    #     """Archive a smart list tag."""
+    #     await smart_list_tag_archive_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/smart-list/tag/update",
+    #     response_model=None,
+    #     tags=["smart-list"],
+    #     **standard_config,
+    # )
+    # async def update_smart_list_tag(
+    #     args: SmartListTagUpdateArgs, session: LoggedInSession
+    # ) -> None:
+    #     """Update a smart list tag."""
+    #     await smart_list_tag_update_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/smart-list/tag/load",
+    #     response_model=SmartListTagLoadResult,
+    #     tags=["smart-list"],
+    #     **standard_config,
+    # )
+    # async def load_smart_list_tag(
+    #     args: SmartListTagLoadArgs, session: LoggedInSession
+    # ) -> SmartListTagLoadResult:
+    #     """Load a smart list tag."""
+    #     return (await smart_list_tag_load_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/smart-list/item/create",
+    #     response_model=SmartListItemCreateResult,
+    #     tags=["smart-list"],
+    #     **standard_config,
+    # )
+    # async def create_smart_list_item(
+    #     args: SmartListItemCreateArgs, session: LoggedInSession
+    # ) -> SmartListItemCreateResult:
+    #     """Create a smart list item."""
+    #     return (await smart_list_item_create_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/smart-list/item/archive",
+    #     response_model=None,
+    #     tags=["smart-list"],
+    #     **standard_config,
+    # )
+    # async def archive_smart_list_item(
+    #     args: SmartListItemArchiveArgs, session: LoggedInSession
+    # ) -> None:
+    #     """Archive a smart list item."""
+    #     await smart_list_item_archive_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/smart-list/item/update",
+    #     response_model=None,
+    #     tags=["smart-list"],
+    #     **standard_config,
+    # )
+    # async def update_smart_list_item(
+    #     args: SmartListItemUpdateArgs, session: LoggedInSession
+    # ) -> None:
+    #     """Update a smart list item."""
+    #     await smart_list_item_update_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/smart-list/item/load",
+    #     response_model=SmartListItemLoadResult,
+    #     tags=["smart-list"],
+    #     **standard_config,
+    # )
+    # async def load_smart_list_item(
+    #     args: SmartListItemLoadArgs, session: LoggedInSession
+    # ) -> SmartListItemLoadResult:
+    #     """Load a smart list item."""
+    #     return (await smart_list_item_load_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/metric/create",
+    #     response_model=MetricCreateResult,
+    #     tags=["metric"],
+    #     **standard_config,
+    # )
+    # async def create_metric(
+    #     args: MetricCreateArgs, session: LoggedInSession
+    # ) -> MetricCreateResult:
+    #     """Create a metric."""
+    #     return (await metric_create_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/metric/archive",
+    #     response_model=None,
+    #     tags=["metric"],
+    #     **standard_config,
+    # )
+    # async def archive_metric(args: MetricArchiveArgs, session: LoggedInSession) -> None:
+    #     """Archive a metric."""
+    #     await metric_archive_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/metric/update",
+    #     response_model=None,
+    #     tags=["metric"],
+    #     **standard_config,
+    # )
+    # async def update_metric(args: MetricUpdateArgs, session: LoggedInSession) -> None:
+    #     """Update a metric."""
+    #     await metric_update_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/metric/load-settings",
+    #     response_model=MetricLoadSettingsResult,
+    #     tags=["metric"],
+    #     **standard_config,
+    # )
+    # async def load_metric_settings(
+    #     args: MetricLoadSettingsArgs, session: LoggedInSession
+    # ) -> MetricLoadSettingsResult:
+    #     """Load settings for metrics."""
+    #     return (await metric_load_settings_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/metric/change-collection-project",
+    #     response_model=None,
+    #     tags=["metric"],
+    #     **standard_config,
+    # )
+    # async def change_metric_collection_project(
+    #     args: MetricChangeCollectionProjectArgs, session: LoggedInSession
+    # ) -> None:
+    #     """Change the collection project for metric."""
+    #     await metric_change_collection_project_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/metric/load",
+    #     response_model=MetricLoadResult,
+    #     tags=["metric"],
+    #     **standard_config,
+    # )
+    # async def load_metric(
+    #     args: MetricLoadArgs, session: LoggedInSession
+    # ) -> MetricLoadResult:
+    #     """Load a metric."""
+    #     return (await metric_load_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/metric/find",
+    #     response_model=MetricFindResult,
+    #     tags=["metric"],
+    #     **standard_config,
+    # )
+    # async def find_metric(
+    #     args: MetricFindArgs, session: LoggedInSession
+    # ) -> MetricFindResult:
+    #     """Find all metrics, filtering by id."""
+    #     return (await metric_find_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/metric/entry/create",
+    #     response_model=MetricEntryCreateResult,
+    #     tags=["metric"],
+    #     **standard_config,
+    # )
+    # async def create_metric_entry(
+    #     args: MetricEntryCreateArgs, session: LoggedInSession
+    # ) -> MetricEntryCreateResult:
+    #     """Create a metric entry."""
+    #     return (await metric_entry_create_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/metric/entry/archive",
+    #     response_model=None,
+    #     tags=["metric"],
+    #     **standard_config,
+    # )
+    # async def archive_metric_entry(
+    #     args: MetricEntryArchiveArgs, session: LoggedInSession
+    # ) -> None:
+    #     """Archive a metric entry."""
+    #     await metric_entry_archive_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/metric/entry/update",
+    #     response_model=None,
+    #     tags=["metric"],
+    #     **standard_config,
+    # )
+    # async def update_metric_entry(
+    #     args: MetricEntryUpdateArgs, session: LoggedInSession
+    # ) -> None:
+    #     """Update a metric entry."""
+    #     await metric_entry_update_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/metric/entry/load",
+    #     response_model=MetricEntryLoadResult,
+    #     tags=["metric"],
+    #     **standard_config,
+    # )
+    # async def load_metric_entry(
+    #     args: MetricEntryLoadArgs, session: LoggedInSession
+    # ) -> MetricEntryLoadResult:
+    #     """Load a metric entry."""
+    #     return (await metric_entry_load_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/person/create",
+    #     response_model=PersonCreateResult,
+    #     tags=["person"],
+    #     **standard_config,
+    # )
+    # async def create_person(
+    #     args: PersonCreateArgs, session: LoggedInSession
+    # ) -> PersonCreateResult:
+    #     """Create a person."""
+    #     return (await person_create_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/person/archive",
+    #     response_model=None,
+    #     tags=["person"],
+    #     **standard_config,
+    # )
+    # async def archive_person(args: PersonArchiveArgs, session: LoggedInSession) -> None:
+    #     """Archive a person."""
+    #     await person_archive_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/person/update",
+    #     response_model=None,
+    #     tags=["person"],
+    #     **standard_config,
+    # )
+    # async def update_person(args: PersonUpdateArgs, session: LoggedInSession) -> None:
+    #     """Update a person."""
+    #     await person_update_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/person/load-settings",
+    #     response_model=PersonLoadSettingsResult,
+    #     tags=["person"],
+    #     **standard_config,
+    # )
+    # async def load_person_settings(
+    #     args: PersonLoadSettingsArgs, session: LoggedInSession
+    # ) -> PersonLoadSettingsResult:
+    #     """Change the catch up project for persons."""
+    #     return (await person_load_settings_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/person/change-catch-up-project",
+    #     response_model=None,
+    #     tags=["person"],
+    #     **standard_config,
+    # )
+    # async def update_change_catch_up_project(
+    #     args: PersonChangeCatchUpProjectArgs, session: LoggedInSession
+    # ) -> None:
+    #     """Change the catch up project for persons."""
+    #     await person_change_catch_up_project_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/person/load",
+    #     response_model=PersonLoadResult,
+    #     tags=["person"],
+    #     **standard_config,
+    # )
+    # async def load_person(
+    #     args: PersonLoadArgs, session: LoggedInSession
+    # ) -> PersonLoadResult:
+    #     """Load a person, filtering by id."""
+    #     return (await person_load_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/person/find",
+    #     response_model=PersonFindResult,
+    #     tags=["person"],
+    #     **standard_config,
+    # )
+    # async def find_person(
+    #     args: PersonFindArgs, session: LoggedInSession
+    # ) -> PersonFindResult:
+    #     """Find a person, filtering by id."""
+    #     return (await person_find_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/slack-task/archive",
+    #     response_model=None,
+    #     tags=["slack-task"],
+    #     **standard_config,
+    # )
+    # async def archive_slack_task(
+    #     args: SlackTaskArchiveArgs, session: LoggedInSession
+    # ) -> None:
+    #     """Archive a slack task."""
+    #     await slack_task_archive_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/slack-task/update",
+    #     response_model=None,
+    #     tags=["slack-task"],
+    #     **standard_config,
+    # )
+    # async def update_slack_task(
+    #     args: SlackTaskUpdateArgs, session: LoggedInSession
+    # ) -> None:
+    #     """Update a slack task."""
+    #     await slack_task_update_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/slack-task/load-settings",
+    #     response_model=SlackTaskLoadSettingsResult,
+    #     tags=["slack-task"],
+    #     **standard_config,
+    # )
+    # async def load_slack_task_settings(
+    #     args: SlackTaskLoadSettingsArgs, session: LoggedInSession
+    # ) -> SlackTaskLoadSettingsResult:
+    #     """Change the project for a slack task."""
+    #     return (await slack_task_load_settings_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/slack-task/change-project",
+    #     response_model=None,
+    #     tags=["slack-task"],
+    #     **standard_config,
+    # )
+    # async def change_slack_task_generation_project(
+    #     args: SlackTaskChangeGenerationProjectArgs, session: LoggedInSession
+    # ) -> None:
+    #     """Change the project for a slack task."""
+    #     await slack_task_change_generation_project_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/slack-task/load",
+    #     response_model=SlackTaskLoadResult,
+    #     tags=["slack-task"],
+    #     **standard_config,
+    # )
+    # async def load_slack_task(
+    #     args: SlackTaskLoadArgs, session: LoggedInSession
+    # ) -> SlackTaskLoadResult:
+    #     """Load a slack task."""
+    #     return (await slack_task_load_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/slack-task/find",
+    #     response_model=SlackTaskFindResult,
+    #     tags=["slack-task"],
+    #     **standard_config,
+    # )
+    # async def find_slack_task(
+    #     args: SlackTaskFindArgs, session: LoggedInSession
+    # ) -> SlackTaskFindResult:
+    #     """Find all slack tasks, filtering by id."""
+    #     return (await slack_task_find_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/email-task/archive",
+    #     response_model=None,
+    #     tags=["email-task"],
+    #     **standard_config,
+    # )
+    # async def archive_email_task(
+    #     args: EmailTaskArchiveArgs, session: LoggedInSession
+    # ) -> None:
+    #     """Archive a email task."""
+    #     await email_task_archive_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/email-task/update",
+    #     response_model=None,
+    #     tags=["email-task"],
+    #     **standard_config,
+    # )
+    # async def update_email_task(
+    #     args: EmailTaskUpdateArgs, session: LoggedInSession
+    # ) -> None:
+    #     """Update a email task."""
+    #     await email_task_update_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/email-task/load-settings",
+    #     response_model=EmailTaskLoadSettingsResult,
+    #     tags=["email-task"],
+    #     **standard_config,
+    # )
+    # async def load_email_task_settings(
+    #     args: EmailTaskLoadSettingsArgs, session: LoggedInSession
+    # ) -> EmailTaskLoadSettingsResult:
+    #     """Change the project for a email task."""
+    #     return (await email_task_load_settings_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/email-task/change-project",
+    #     response_model=None,
+    #     tags=["email-task"],
+    #     **standard_config,
+    # )
+    # async def change_email_task_generation_project(
+    #     args: EmailTaskChangeGenerationProjectArgs, session: LoggedInSession
+    # ) -> None:
+    #     """Change the project for a email task."""
+    #     await email_task_change_generation_project_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/email-task/load",
+    #     response_model=EmailTaskLoadResult,
+    #     tags=["email-task"],
+    #     **standard_config,
+    # )
+    # async def load_email_task(
+    #     args: EmailTaskLoadArgs, session: LoggedInSession
+    # ) -> EmailTaskLoadResult:
+    #     """Load an email task."""
+    #     return (await email_task_load_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/email-task/find",
+    #     response_model=EmailTaskFindResult,
+    #     tags=["email-task"],
+    #     **standard_config,
+    # )
+    # async def find_email_task(
+    #     args: EmailTaskFindArgs, session: LoggedInSession
+    # ) -> EmailTaskFindResult:
+    #     """Find all email tasks, filtering by id."""
+    #     return (await email_task_find_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/core/note/create",
+    #     response_model=NoteCreateResult,
+    #     tags=["note"],
+    #     **standard_config,
+    # )
+    # async def create_note(
+    #     args: NoteCreateArgs, session: LoggedInSession
+    # ) -> NoteCreateResult:
+    #     """Create a note."""
+    #     return (await note_create_use_case.execute(session, args))[1]
+
+
+    # @web_app.fast_app.post(
+    #     "/core/note/archive",
+    #     response_model=None,
+    #     tags=["note"],
+    #     **standard_config,
+    # )
+    # async def archive_note(args: NoteArchiveArgs, session: LoggedInSession) -> None:
+    #     """Archive a note."""
+    #     await note_archive_use_case.execute(session, args)
+
+
+    # @web_app.fast_app.post(
+    #     "/core/note/update",
+    #     response_model=None,
+    #     tags=["note"],
+    #     **standard_config,
+    # )
+    # async def update_note(args: NoteUpdateArgs, session: LoggedInSession) -> None:
+    #     """Update a note."""
+    #     await note_update_use_case.execute(session, args)
 
     
     await sqlite_connection.prepare()
