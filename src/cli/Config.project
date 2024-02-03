@@ -1,6 +1,7 @@
 ENV=local
 HOSTING=local
 BASENAME=jupiter-cli
+PORT=0
 DESCRIPTION="The CLI client for Jupiter"
 DOCS_URL=https://jupiter-goals.readthedocs.io
 DOCS_INIT_WORKSPACE_URL=${DOCS_URL}/en/stable/tutorial/

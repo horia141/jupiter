@@ -1,6 +1,7 @@
 _ENV=WILL-BE-FILLED-BY-RENDER
 HOSTING=hosted-global
 BASENAME=jupiter-webapi
+_PORT=WILL-BE-FILLED-BY-RENDER
 DESCRIPTION="The Web RPC API client for Jupiter"
 SQLITE_DB_URL=sqlite+aiosqlite:////data/jupiter.sqlite
 SESSION_INFO_PATH=FAKEFAKE

@@ -1,6 +1,7 @@
 ENV=local
 HOSTING=local
 BASENAME=jupiter-webapi
+PORT=8010
 DESCRIPTION="The Web RPC API client for Jupiter"
 SQLITE_DB_URL=sqlite+aiosqlite:///jupiter.sqlite
 SESSION_INFO_PATH=FAKEFAKE

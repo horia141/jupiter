@@ -1,4 +1,5 @@
 """The Jupiter Web RPC API."""
+import asyncio
 import signal
 from types import FrameType
 from typing import Annotated, Any, Callable, Dict, Mapping, Union
@@ -536,2889 +537,2896 @@ import jupiter.core.use_cases
 
 from jupiter.webapi.app import WebServiceApp
 
-request_time_provider = PerRequestTimeProvider()
-cron_run_time_provider = CronRunTimeProvider()
+async def main() -> None:
+    """Application main function."""
+    request_time_provider = PerRequestTimeProvider()
+    cron_run_time_provider = CronRunTimeProvider()
 
-no_timezone_global_properties = build_global_properties()
+    no_timezone_global_properties = build_global_properties()
 
-realm_codec_registry = ModuleExplorerRealmCodecRegistry.build_from_module_root(
-    jupiter.core.domain
-)
+    realm_codec_registry = ModuleExplorerRealmCodecRegistry.build_from_module_root(
+        jupiter.core.domain
+    )
 
-sqlite_connection = SqliteConnection(
-    SqliteConnection.Config(
-        no_timezone_global_properties.sqlite_db_url,
-        no_timezone_global_properties.alembic_ini_path,
-        no_timezone_global_properties.alembic_migrations_path,
-    ),
-)
+    sqlite_connection = SqliteConnection(
+        SqliteConnection.Config(
+            no_timezone_global_properties.sqlite_db_url,
+            no_timezone_global_properties.alembic_ini_path,
+            no_timezone_global_properties.alembic_migrations_path,
+        ),
+    )
 
-global_properties = build_global_properties()
+    global_properties = build_global_properties()
 
-domain_storage_engine = SqliteDomainStorageEngine(
-    realm_codec_registry, sqlite_connection
-)
-search_storage_engine = SqliteSearchStorageEngine(
-    realm_codec_registry, sqlite_connection
-)
-usecase_storage_engine = SqliteUseCaseStorageEngine(sqlite_connection)
+    domain_storage_engine = SqliteDomainStorageEngine(
+        realm_codec_registry, sqlite_connection
+    )
+    search_storage_engine = SqliteSearchStorageEngine(
+        realm_codec_registry, sqlite_connection
+    )
+    usecase_storage_engine = SqliteUseCaseStorageEngine(sqlite_connection)
 
-auth_token_stamper = AuthTokenStamper(
-    auth_token_secret=global_properties.auth_token_secret,
-    time_provider=request_time_provider,
-)
+    auth_token_stamper = AuthTokenStamper(
+        auth_token_secret=global_properties.auth_token_secret,
+        time_provider=request_time_provider,
+    )
 
-aio_session = aiohttp.ClientSession()
+    aio_session = aiohttp.ClientSession()
 
-progress_reporter_factory = WebsocketProgressReporterFactory()
+    progress_reporter_factory = WebsocketProgressReporterFactory()
 
-invocation_recorder = PersistentMutationUseCaseInvocationRecorder(
-    storage_engine=usecase_storage_engine,
-)
+    invocation_recorder = PersistentMutationUseCaseInvocationRecorder(
+        storage_engine=usecase_storage_engine,
+    )
 
-init_use_case = InitUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=NoOpProgressReporterFactory(),
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
+    init_use_case = InitUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=NoOpProgressReporterFactory(),
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+    )
 
-login_use_case = LoginUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    domain_storage_engine=domain_storage_engine,
-    auth_token_stamper=auth_token_stamper,
-    search_storage_engine=search_storage_engine,
-)
+    login_use_case = LoginUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        domain_storage_engine=domain_storage_engine,
+        auth_token_stamper=auth_token_stamper,
+        search_storage_engine=search_storage_engine,
+    )
 
-auth_change_password_use_case = ChangePasswordUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
+    auth_change_password_use_case = ChangePasswordUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
 
-auth_reset_password_use_case = ResetPasswordUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=NoOpProgressReporterFactory(),
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
+    auth_reset_password_use_case = ResetPasswordUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=NoOpProgressReporterFactory(),
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+    )
 
-search_use_case = SearchUseCase(
-    time_provider=request_time_provider,
-    global_properties=global_properties,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
+    search_use_case = SearchUseCase(
+        time_provider=request_time_provider,
+        global_properties=global_properties,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+    )
 
-gen_do_use_case = GenDoUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
+    gen_do_use_case = GenDoUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
 
-gen_load_runs_use_case = GenLoadRunsUseCase(
-    time_provider=request_time_provider,
-    global_properties=global_properties,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
+    gen_load_runs_use_case = GenLoadRunsUseCase(
+        time_provider=request_time_provider,
+        global_properties=global_properties,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+    )
 
-report_use_case = ReportUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
+    report_use_case = ReportUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+    )
 
-gc_do_use_case = GCDoUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
+    gc_do_use_case = GCDoUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
 
-gc_load_runs_use_case = GCLoadRunsUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
+    gc_load_runs_use_case = GCLoadRunsUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+    )
 
-load_top_level_info_use_case = LoadTopLevelInfoUseCase(
-    global_properties=global_properties,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    time_provider=request_time_provider,
-)
+    load_top_level_info_use_case = LoadTopLevelInfoUseCase(
+        global_properties=global_properties,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        time_provider=request_time_provider,
+    )
 
-load_progress_reporter_token_use_case = LoadProgressReporterTokenUseCase(
-    time_provider=request_time_provider,
-    global_properties=global_properties,
-    search_storage_engine=search_storage_engine,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-)
+    load_progress_reporter_token_use_case = LoadProgressReporterTokenUseCase(
+        time_provider=request_time_provider,
+        global_properties=global_properties,
+        search_storage_engine=search_storage_engine,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+    )
 
-get_summaries_use_case = GetSummariesUseCase(
-    global_properties=global_properties,
-    auth_token_stamper=auth_token_stamper,
-    time_provider=request_time_provider,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
+    get_summaries_use_case = GetSummariesUseCase(
+        global_properties=global_properties,
+        auth_token_stamper=auth_token_stamper,
+        time_provider=request_time_provider,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+    )
 
-user_update_use_case = UserUpdateUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
+    user_update_use_case = UserUpdateUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
 
-user_change_feature_flags_use_case = UserChangeFeatureFlagsUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
+    user_change_feature_flags_use_case = UserChangeFeatureFlagsUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
 
-user_load_use_case = UserLoadUseCase(
-    time_provider=request_time_provider,
-    global_properties=global_properties,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
+    user_load_use_case = UserLoadUseCase(
+        time_provider=request_time_provider,
+        global_properties=global_properties,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+    )
 
-workspace_update_use_case = WorkspaceUpdateUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-workspace_change_default_project_use_case = WorkspaceChangeDefaultProjectUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-workspace_change_feature_flags_use_case = WorkspaceChangeFeatureFlagsUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-workspace_load_use_case = WorkspaceLoadUseCase(
-    time_provider=request_time_provider,
-    global_properties=global_properties,
-    search_storage_engine=search_storage_engine,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-)
+    workspace_update_use_case = WorkspaceUpdateUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    workspace_change_default_project_use_case = WorkspaceChangeDefaultProjectUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    workspace_change_feature_flags_use_case = WorkspaceChangeFeatureFlagsUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    workspace_load_use_case = WorkspaceLoadUseCase(
+        time_provider=request_time_provider,
+        global_properties=global_properties,
+        search_storage_engine=search_storage_engine,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+    )
 
-inbox_task_create_use_case = InboxTaskCreateUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-inbox_task_update_use_case = InboxTaskUpdateUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-inbox_task_archive_use_case = InboxTaskArchiveUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-inbox_task_change_project_use_case = InboxTaskChangeProjectUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-inbox_task_associate_with_big_plan = InboxTaskAssociateWithBigPlanUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-inbox_task_load_use_case = InboxTaskLoadUseCase(
-    time_provider=request_time_provider,
-    global_properties=global_properties,
-    search_storage_engine=search_storage_engine,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-)
-inbox_task_find_use_case = InboxTaskFindUseCase(
-    time_provider=request_time_provider,
-    global_properties=global_properties,
-    search_storage_engine=search_storage_engine,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-)
+    inbox_task_create_use_case = InboxTaskCreateUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    inbox_task_update_use_case = InboxTaskUpdateUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    inbox_task_archive_use_case = InboxTaskArchiveUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    inbox_task_change_project_use_case = InboxTaskChangeProjectUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    inbox_task_associate_with_big_plan = InboxTaskAssociateWithBigPlanUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    inbox_task_load_use_case = InboxTaskLoadUseCase(
+        time_provider=request_time_provider,
+        global_properties=global_properties,
+        search_storage_engine=search_storage_engine,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+    )
+    inbox_task_find_use_case = InboxTaskFindUseCase(
+        time_provider=request_time_provider,
+        global_properties=global_properties,
+        search_storage_engine=search_storage_engine,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+    )
 
-habit_create_use_case = HabitCreateUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-habit_archive_use_case = HabitArchiveUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-habit_update_use_case = HabitUpdateUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-habit_change_project_use_case = HabitChangeProjectUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-habit_suspend_use_case = HabitSuspendUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-habit_unsuspend_use_case = HabitUnsuspendUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-habit_load_use_case = HabitLoadUseCase(
-    time_provider=request_time_provider,
-    global_properties=global_properties,
-    search_storage_engine=search_storage_engine,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-)
-habit_find_use_case = HabitFindUseCase(
-    time_provider=request_time_provider,
-    global_properties=global_properties,
-    search_storage_engine=search_storage_engine,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-)
+    habit_create_use_case = HabitCreateUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    habit_archive_use_case = HabitArchiveUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    habit_update_use_case = HabitUpdateUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    habit_change_project_use_case = HabitChangeProjectUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    habit_suspend_use_case = HabitSuspendUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    habit_unsuspend_use_case = HabitUnsuspendUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    habit_load_use_case = HabitLoadUseCase(
+        time_provider=request_time_provider,
+        global_properties=global_properties,
+        search_storage_engine=search_storage_engine,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+    )
+    habit_find_use_case = HabitFindUseCase(
+        time_provider=request_time_provider,
+        global_properties=global_properties,
+        search_storage_engine=search_storage_engine,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+    )
 
-chore_create_use_case = ChoreCreateUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-chore_archive_use_case = ChoreArchiveUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-chore_update_use_case = ChoreUpdateUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-chore_change_project_use_case = ChoreChangeProjectUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-chore_suspend_use_case = ChoreSuspendUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-chore_unsuspend_use_case = ChoreUnsuspendUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-chore_load_use_case = ChoreLoadUseCase(
-    time_provider=request_time_provider,
-    global_properties=global_properties,
-    search_storage_engine=search_storage_engine,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-)
-chore_find_use_case = ChoreFindUseCase(
-    time_provider=request_time_provider,
-    global_properties=global_properties,
-    search_storage_engine=search_storage_engine,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-)
+    chore_create_use_case = ChoreCreateUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    chore_archive_use_case = ChoreArchiveUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    chore_update_use_case = ChoreUpdateUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    chore_change_project_use_case = ChoreChangeProjectUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    chore_suspend_use_case = ChoreSuspendUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    chore_unsuspend_use_case = ChoreUnsuspendUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    chore_load_use_case = ChoreLoadUseCase(
+        time_provider=request_time_provider,
+        global_properties=global_properties,
+        search_storage_engine=search_storage_engine,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+    )
+    chore_find_use_case = ChoreFindUseCase(
+        time_provider=request_time_provider,
+        global_properties=global_properties,
+        search_storage_engine=search_storage_engine,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+    )
 
-big_plan_create_use_case = BigPlanCreateUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
+    big_plan_create_use_case = BigPlanCreateUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
 
-big_plan_archive_use_case = BigPlanArchiveUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-big_plan_update_use_case = BigPlanUpdateUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-big_plan_change_project_use_case = BigPlanChangeProjectUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-big_plan_load_use_case = BigPlanLoadUseCase(
-    time_provider=request_time_provider,
-    global_properties=global_properties,
-    search_storage_engine=search_storage_engine,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-)
-big_plan_find_use_case = BigPlanFindUseCase(
-    time_provider=request_time_provider,
-    global_properties=global_properties,
-    search_storage_engine=search_storage_engine,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-)
+    big_plan_archive_use_case = BigPlanArchiveUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    big_plan_update_use_case = BigPlanUpdateUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    big_plan_change_project_use_case = BigPlanChangeProjectUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    big_plan_load_use_case = BigPlanLoadUseCase(
+        time_provider=request_time_provider,
+        global_properties=global_properties,
+        search_storage_engine=search_storage_engine,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+    )
+    big_plan_find_use_case = BigPlanFindUseCase(
+        time_provider=request_time_provider,
+        global_properties=global_properties,
+        search_storage_engine=search_storage_engine,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+    )
 
-journal_create_use_case = JournalCreateUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-journal_archive_use_case = JournalArchiveUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-journal_change_time_config_use_case = JournalChangeTimeConfigUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-journal_update_report_use_case = JournalUpdateReportUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-journal_find_use_case = JournalFindUseCase(
-    time_provider=request_time_provider,
-    global_properties=global_properties,
-    search_storage_engine=search_storage_engine,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-)
-journal_load_use_case = JournalLoadUseCase(
-    time_provider=request_time_provider,
-    global_properties=global_properties,
-    search_storage_engine=search_storage_engine,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-)
-
-
-doc_create_use_case = DocCreateUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-doc_archive_use_case = DocArchiveUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-doc_update_use_case = DocUpdateUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-doc_change_parent_use_case = DocChangeParentUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-doc_load_use_case = DocLoadUseCase(
-    time_provider=request_time_provider,
-    global_properties=global_properties,
-    search_storage_engine=search_storage_engine,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-)
-doc_find_use_case = DocFindUseCase(
-    time_provider=request_time_provider,
-    global_properties=global_properties,
-    search_storage_engine=search_storage_engine,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-)
-
-vacation_create_use_case = VacationCreateUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-vacation_archive_use_case = VacationArchiveUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-vacation_update_use_case = VacationUpdateUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-vacation_load_use_case = VacationLoadUseCase(
-    time_provider=request_time_provider,
-    global_properties=global_properties,
-    search_storage_engine=search_storage_engine,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-)
-vacation_find_use_case = VacationFindUseCase(
-    time_provider=request_time_provider,
-    global_properties=global_properties,
-    search_storage_engine=search_storage_engine,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-)
-
-project_create_use_case = ProjectCreateUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-project_archive_use_case = ProjectArchiveUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-project_update_use_case = ProjectUpdateUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-project_load_use_case = ProjectLoadUseCase(
-    time_provider=request_time_provider,
-    global_properties=global_properties,
-    search_storage_engine=search_storage_engine,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-)
-project_find_use_case = ProjectFindUseCase(
-    time_provider=request_time_provider,
-    global_properties=global_properties,
-    search_storage_engine=search_storage_engine,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-)
-
-smart_list_create_use_case = SmartListCreateUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-smart_list_archive_use_case = SmartListArchiveUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-smart_list_update_use_case = SmartListUpdateUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-smart_list_load_use_case = SmartListLoadUseCase(
-    time_provider=request_time_provider,
-    global_properties=global_properties,
-    search_storage_engine=search_storage_engine,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-)
-smart_list_find_use_case = SmartListFindUseCase(
-    time_provider=request_time_provider,
-    global_properties=global_properties,
-    search_storage_engine=search_storage_engine,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-)
-smart_list_tag_create_use_case = SmartListTagCreateUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-smart_list_tag_archive_use_case = SmartListTagArchiveUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-smart_list_tag_load_use_case = SmartListTagLoadUseCase(
-    time_provider=request_time_provider,
-    global_properties=global_properties,
-    search_storage_engine=search_storage_engine,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-)
-smart_list_tag_update_use_case = SmartListTagUpdateUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-smart_list_item_create_use_case = SmartListItemCreateUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-smart_list_item_archive_use_case = SmartListItemArchiveUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-smart_list_item_update_use_case = SmartListItemUpdateUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-smart_list_item_load_use_case = SmartListItemLoadUseCase(
-    time_provider=request_time_provider,
-    global_properties=global_properties,
-    search_storage_engine=search_storage_engine,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-)
-
-
-metric_create_use_case = MetricCreateUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-metric_archive_use_case = MetricArchiveUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-metric_update_use_case = MetricUpdateUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-metric_load_settings_use_case = MetricLoadSettingsUseCase(
-    global_properties=global_properties,
-    auth_token_stamper=auth_token_stamper,
-    time_provider=request_time_provider,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
-metric_change_collection_project_use_case = MetricChangeCollectionProjectUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-metric_load_use_case = MetricLoadUseCase(
-    time_provider=request_time_provider,
-    global_properties=global_properties,
-    search_storage_engine=search_storage_engine,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-)
-metric_find_use_case = MetricFindUseCase(
-    time_provider=request_time_provider,
-    global_properties=global_properties,
-    search_storage_engine=search_storage_engine,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-)
-metric_entry_create_use_case = MetricEntryCreateUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-metric_entry_update_use_case = MetricEntryUpdateUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-metric_entry_archive_use_case = MetricEntryArchiveUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-metric_entry_load_use_case = MetricEntryLoadUseCase(
-    time_provider=request_time_provider,
-    global_properties=global_properties,
-    search_storage_engine=search_storage_engine,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-)
-
-person_create_use_case = PersonCreateUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-person_archive_use_case = PersonArchiveUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-person_update_use_case = PersonUpdateUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-person_load_settings_use_case = PersonLoadSettingsUseCase(
-    time_provider=request_time_provider,
-    global_properties=global_properties,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
-person_change_catch_up_project_use_case = PersonChangeCatchUpProjectUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-person_load_use_case = PersonLoadUseCase(
-    time_provider=request_time_provider,
-    global_properties=global_properties,
-    search_storage_engine=search_storage_engine,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-)
-person_find_use_case = PersonFindUseCase(
-    time_provider=request_time_provider,
-    global_properties=global_properties,
-    search_storage_engine=search_storage_engine,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-)
-
-slack_task_archive_use_case = SlackTaskArchiveUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-slack_task_update_use_case = SlackTaskUpdateUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-slack_task_load_settings_use_case = SlackTaskLoadSettingsUseCase(
-    time_provider=request_time_provider,
-    global_properties=global_properties,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
-slack_task_change_generation_project_use_case = SlackTaskChangeGenerationProjectUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-slack_task_load_use_case = SlackTaskLoadUseCase(
-    time_provider=request_time_provider,
-    global_properties=global_properties,
-    search_storage_engine=search_storage_engine,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-)
-slack_task_find_use_case = SlackTaskFindUseCase(
-    time_provider=request_time_provider,
-    global_properties=global_properties,
-    search_storage_engine=search_storage_engine,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-)
-
-email_task_archive_use_case = EmailTaskArchiveUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-email_task_update_use_case = EmailTaskUpdateUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-email_task_load_settings_use_case = EmailTaskLoadSettingsUseCase(
-    time_provider=request_time_provider,
-    global_properties=global_properties,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
-email_task_change_generation_project_use_case = EmailTaskChangeGenerationProjectUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-email_task_load_use_case = EmailTaskLoadUseCase(
-    time_provider=request_time_provider,
-    global_properties=global_properties,
-    search_storage_engine=search_storage_engine,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-)
-email_task_find_use_case = EmailTaskFindUseCase(
-    time_provider=request_time_provider,
-    global_properties=global_properties,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
-
-note_create_use_case = NoteCreateUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-note_archive_use_case = NoteArchiveUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-note_update_use_case = NoteUpdateUseCase(
-    global_properties=global_properties,
-    time_provider=request_time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-    use_case_storage_engine=usecase_storage_engine,
-)
-
-standard_responses: Dict[Union[int, str], Dict[str, Any]] = {  # type: ignore
-    410: {"description": "Workspace Or User Not Found", "content": {"plain/text": {}}},
-    406: {"description": "Feature Not Available", "content": {"plain/text": {}}},
-}
-
-standard_config: Mapping[str, Any] = {  # type: ignore
-    "responses": standard_responses,
-    "response_model_exclude_defaults": True,
-}
-
-
-webapp = WebServiceApp.build_from_module_root(
-    global_properties,
-        request_time_provider,
-        cron_run_time_provider,
-        invocation_recorder,
-        progress_reporter_factory,
-        realm_codec_registry,
-        auth_token_stamper,
-        domain_storage_engine,
-        search_storage_engine,
-        usecase_storage_engine,
-        jupiter.core.use_cases)
-
-webapp.run()
-
-
-@webapp.fast_app.exception_handler(InputValidationError)
-async def input_validation_error_handler(
-    _request: Request, exc: InputValidationError
-) -> JSONResponse:
-    """Transform InputValidationErrors from the core to the same thing FastAPI would do."""
-    return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={
-            "detail": [
-                {
-                    "loc": [
-                        "body",
-                    ],
-                    "msg": f"{exc}",
-                    "type": "value_error.inputvalidationerror",
-                },
-            ],
-        },
+    journal_create_use_case = JournalCreateUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    journal_archive_use_case = JournalArchiveUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    journal_change_time_config_use_case = JournalChangeTimeConfigUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    journal_update_report_use_case = JournalUpdateReportUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    journal_find_use_case = JournalFindUseCase(
+        time_provider=request_time_provider,
+        global_properties=global_properties,
+        search_storage_engine=search_storage_engine,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+    )
+    journal_load_use_case = JournalLoadUseCase(
+        time_provider=request_time_provider,
+        global_properties=global_properties,
+        search_storage_engine=search_storage_engine,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
     )
 
 
-@webapp.fast_app.exception_handler(FeatureUnavailableError)
-async def feature_unavailable_error_handler(
-    _request: Request, exc: FeatureUnavailableError
-) -> JSONResponse:
-    """Transform FeatureUnavailableError from the core to the same thing FastAPI would do."""
-    return JSONResponse(
-        status_code=status.HTTP_406_NOT_ACCEPTABLE,
-        content=f"{exc}",
+    doc_create_use_case = DocCreateUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    doc_archive_use_case = DocArchiveUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    doc_update_use_case = DocUpdateUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    doc_change_parent_use_case = DocChangeParentUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    doc_load_use_case = DocLoadUseCase(
+        time_provider=request_time_provider,
+        global_properties=global_properties,
+        search_storage_engine=search_storage_engine,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+    )
+    doc_find_use_case = DocFindUseCase(
+        time_provider=request_time_provider,
+        global_properties=global_properties,
+        search_storage_engine=search_storage_engine,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+    )
+
+    vacation_create_use_case = VacationCreateUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    vacation_archive_use_case = VacationArchiveUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    vacation_update_use_case = VacationUpdateUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    vacation_load_use_case = VacationLoadUseCase(
+        time_provider=request_time_provider,
+        global_properties=global_properties,
+        search_storage_engine=search_storage_engine,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+    )
+    vacation_find_use_case = VacationFindUseCase(
+        time_provider=request_time_provider,
+        global_properties=global_properties,
+        search_storage_engine=search_storage_engine,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+    )
+
+    project_create_use_case = ProjectCreateUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    project_archive_use_case = ProjectArchiveUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    project_update_use_case = ProjectUpdateUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    project_load_use_case = ProjectLoadUseCase(
+        time_provider=request_time_provider,
+        global_properties=global_properties,
+        search_storage_engine=search_storage_engine,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+    )
+    project_find_use_case = ProjectFindUseCase(
+        time_provider=request_time_provider,
+        global_properties=global_properties,
+        search_storage_engine=search_storage_engine,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+    )
+
+    smart_list_create_use_case = SmartListCreateUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    smart_list_archive_use_case = SmartListArchiveUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    smart_list_update_use_case = SmartListUpdateUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    smart_list_load_use_case = SmartListLoadUseCase(
+        time_provider=request_time_provider,
+        global_properties=global_properties,
+        search_storage_engine=search_storage_engine,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+    )
+    smart_list_find_use_case = SmartListFindUseCase(
+        time_provider=request_time_provider,
+        global_properties=global_properties,
+        search_storage_engine=search_storage_engine,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+    )
+    smart_list_tag_create_use_case = SmartListTagCreateUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    smart_list_tag_archive_use_case = SmartListTagArchiveUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    smart_list_tag_load_use_case = SmartListTagLoadUseCase(
+        time_provider=request_time_provider,
+        global_properties=global_properties,
+        search_storage_engine=search_storage_engine,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+    )
+    smart_list_tag_update_use_case = SmartListTagUpdateUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    smart_list_item_create_use_case = SmartListItemCreateUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    smart_list_item_archive_use_case = SmartListItemArchiveUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    smart_list_item_update_use_case = SmartListItemUpdateUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    smart_list_item_load_use_case = SmartListItemLoadUseCase(
+        time_provider=request_time_provider,
+        global_properties=global_properties,
+        search_storage_engine=search_storage_engine,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
     )
 
 
-@webapp.fast_app.exception_handler(UserAlreadyExistsError)
-async def user_already_exists_error_handler(
-    _request: Request, exc: UserAlreadyExistsError
-) -> JSONResponse:
-    """Transform UserAlreadyExistsError from the core to the same thing FastAPI would do."""
-    return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={
-            "detail": [
-                {
-                    "loc": [
-                        "body",
-                    ],
-                    "msg": f"{exc}",
-                    "type": "value_error.useralreadyexistserror",
-                },
-            ],
-        },
+    metric_create_use_case = MetricCreateUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    metric_archive_use_case = MetricArchiveUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    metric_update_use_case = MetricUpdateUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    metric_load_settings_use_case = MetricLoadSettingsUseCase(
+        global_properties=global_properties,
+        auth_token_stamper=auth_token_stamper,
+        time_provider=request_time_provider,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+    )
+    metric_change_collection_project_use_case = MetricChangeCollectionProjectUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    metric_load_use_case = MetricLoadUseCase(
+        time_provider=request_time_provider,
+        global_properties=global_properties,
+        search_storage_engine=search_storage_engine,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+    )
+    metric_find_use_case = MetricFindUseCase(
+        time_provider=request_time_provider,
+        global_properties=global_properties,
+        search_storage_engine=search_storage_engine,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+    )
+    metric_entry_create_use_case = MetricEntryCreateUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    metric_entry_update_use_case = MetricEntryUpdateUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    metric_entry_archive_use_case = MetricEntryArchiveUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    metric_entry_load_use_case = MetricEntryLoadUseCase(
+        time_provider=request_time_provider,
+        global_properties=global_properties,
+        search_storage_engine=search_storage_engine,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
     )
 
-
-@webapp.fast_app.exception_handler(ExpiredAuthTokenError)
-async def expired_auth_token_error_handler(
-    _request: Request, exc: ExpiredAuthTokenError
-) -> JSONResponse:
-    """Transform ExpiredAuthTokenError from the core to the same thing FastAPI would do."""
-    return JSONResponse(
-        status_code=status.HTTP_426_UPGRADE_REQUIRED,
-        content="Your session seems to be expired",
+    person_create_use_case = PersonCreateUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    person_archive_use_case = PersonArchiveUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    person_update_use_case = PersonUpdateUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    person_load_settings_use_case = PersonLoadSettingsUseCase(
+        time_provider=request_time_provider,
+        global_properties=global_properties,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+    )
+    person_change_catch_up_project_use_case = PersonChangeCatchUpProjectUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    person_load_use_case = PersonLoadUseCase(
+        time_provider=request_time_provider,
+        global_properties=global_properties,
+        search_storage_engine=search_storage_engine,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+    )
+    person_find_use_case = PersonFindUseCase(
+        time_provider=request_time_provider,
+        global_properties=global_properties,
+        search_storage_engine=search_storage_engine,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
     )
 
-
-@webapp.fast_app.exception_handler(InvalidLoginCredentialsError)
-async def invalid_login_credentials_error_handler(
-    _request: Request, exc: InvalidLoginCredentialsError
-) -> JSONResponse:
-    """Transform InvalidLoginCredentialsError from the core to the same thing FastAPI would do."""
-    return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={
-            "detail": [
-                {
-                    "loc": [
-                        "body",
-                    ],
-                    "msg": "User email or password invalid",
-                    "type": "value_error.invalidlogincredentialserror",
-                },
-            ],
-        },
+    slack_task_archive_use_case = SlackTaskArchiveUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    slack_task_update_use_case = SlackTaskUpdateUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    slack_task_load_settings_use_case = SlackTaskLoadSettingsUseCase(
+        time_provider=request_time_provider,
+        global_properties=global_properties,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+    )
+    slack_task_change_generation_project_use_case = SlackTaskChangeGenerationProjectUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    slack_task_load_use_case = SlackTaskLoadUseCase(
+        time_provider=request_time_provider,
+        global_properties=global_properties,
+        search_storage_engine=search_storage_engine,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+    )
+    slack_task_find_use_case = SlackTaskFindUseCase(
+        time_provider=request_time_provider,
+        global_properties=global_properties,
+        search_storage_engine=search_storage_engine,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
     )
 
-
-@webapp.fast_app.exception_handler(ProjectInSignificantUseError)
-async def project_in_significant_use_error_handler(
-    _request: Request, exc: ProjectInSignificantUseError
-) -> JSONResponse:
-    """Transform ProjectInSignificantUseError from the core to the same thing FastAPI would do."""
-    return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={
-            "detail": [
-                {
-                    "loc": [
-                        "body",
-                    ],
-                    "msg": f"Cannot remove because: {exc}",
-                    "type": "value_error.projectinsignificantuserror",
-                },
-            ],
-        },
+    email_task_archive_use_case = EmailTaskArchiveUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    email_task_update_use_case = EmailTaskUpdateUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    email_task_load_settings_use_case = EmailTaskLoadSettingsUseCase(
+        time_provider=request_time_provider,
+        global_properties=global_properties,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+    )
+    email_task_change_generation_project_use_case = EmailTaskChangeGenerationProjectUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    email_task_load_use_case = EmailTaskLoadUseCase(
+        time_provider=request_time_provider,
+        global_properties=global_properties,
+        search_storage_engine=search_storage_engine,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+    )
+    email_task_find_use_case = EmailTaskFindUseCase(
+        time_provider=request_time_provider,
+        global_properties=global_properties,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
     )
 
-
-@webapp.fast_app.exception_handler(EntityNotFoundError)
-async def leaf_entity_not_found_error_handler(
-    _request: Request,
-    _exc: EntityNotFoundError,
-) -> PlainTextResponse:
-    """Transform LeafEntityNotFoundError to something that signals clients the entity does not exist."""
-    return PlainTextResponse(
-        status_code=status.HTTP_404_NOT_FOUND,
-        content="Entity does not exist",
+    note_create_use_case = NoteCreateUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    note_archive_use_case = NoteArchiveUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
+    )
+    note_update_use_case = NoteUpdateUseCase(
+        global_properties=global_properties,
+        time_provider=request_time_provider,
+        invocation_recorder=invocation_recorder,
+        progress_reporter_factory=progress_reporter_factory,
+        auth_token_stamper=auth_token_stamper,
+        domain_storage_engine=domain_storage_engine,
+        search_storage_engine=search_storage_engine,
+        use_case_storage_engine=usecase_storage_engine,
     )
 
+    standard_responses: Dict[Union[int, str], Dict[str, Any]] = {  # type: ignore
+        410: {"description": "Workspace Or User Not Found", "content": {"plain/text": {}}},
+        406: {"description": "Feature Not Available", "content": {"plain/text": {}}},
+    }
 
-@webapp.fast_app.exception_handler(InvalidAuthTokenError)
-async def invalid_auth_token_error(
-    _request: Request, exc: InvalidAuthTokenError
-) -> JSONResponse:
-    """Transform InvalidAuthTokenError from the core to the same thing FastAPI would do."""
-    return JSONResponse(
-        status_code=status.HTTP_426_UPGRADE_REQUIRED,
-        content="Your session token seems to be busted",
-    )
-
-
-@webapp.fast_app.exception_handler(UserNotFoundError)
-async def user_not_found_error(
-    _request: Request,
-    _exc: UserNotFoundError,
-) -> PlainTextResponse:
-    """Transform UserNotFoundError to something that signals clients the app is in a not-ready state."""
-    return PlainTextResponse(
-        status_code=status.HTTP_410_GONE,
-        content="User does not exist",
-    )
-
-
-@webapp.fast_app.exception_handler(WorkspaceNotFoundError)
-async def workspace_not_found_error_handler(
-    _request: Request,
-    _exc: WorkspaceNotFoundError,
-) -> PlainTextResponse:
-    """Transform WorkspaceNotFoundErrors to something that signals clients the app is in a not-ready state."""
-    return PlainTextResponse(
-        status_code=status.HTTP_410_GONE,
-        content="Workspace does not exist",
-    )
-
-
-@webapp.fast_app.exception_handler(JournalExistsForDatePeriodCombinationError)
-async def journal_exists_for_period_and_date_error_handler(
-    _request: Request,
-    _exc: JournalExistsForDatePeriodCombinationError,
-) -> PlainTextResponse:
-    """Transform JournalExistsForPeriodAndDateError to something that signals clients the app is in a not-ready state."""
-    return PlainTextResponse(
-        status_code=status.HTTP_409_CONFLICT,
-        content="Journal already exists for this date and period combination",
-    )
-
-
-@webapp.fast_app.on_event("startup")
-async def startup_event() -> None:
-    """The startup event for the whole service."""
-    await sqlite_connection.prepare()
-
-
-@webapp.fast_app.on_event("shutdown")
-async def shutdown_event() -> None:
-    """The shutdown event for the whole service."""
-    try:
-        await sqlite_connection.dispose()
-    finally:
-        pass
-    try:
-        await aio_session.close()
-    finally:
-        pass
-    try:
-        await progress_reporter_factory.unregister_all_websockets()
-    finally:
-        pass
-
-
-websocket_should_close = False
-
-
-def signal_websocket_to_close(_signum: int, _frame: FrameType | None) -> None:
-    """Called when the server receives a SIGTERM to signal to the progress reporter to close its websockets."""
-    # This is needed in order to allow FastAPI to proceed with its shutdown procedure.
-    global websocket_should_close
-    websocket_should_close = True
-
-
-signal.signal(signal.SIGTERM, signal_websocket_to_close)
-
-oauth2_guest_scheme = OAuth2PasswordBearer(tokenUrl="guest-login", auto_error=False)
-oauth2_logged_in_schemea = OAuth2PasswordBearer(tokenUrl="old-skool-login")
-
-
-def construct_guest_auth_token_ext(
-    token_raw: Annotated[str | None, Depends(oauth2_guest_scheme)]
-) -> AuthTokenExt | None:
-    """Construct a Token from the raw token string."""
-    return AuthTokenExt.from_raw(token_raw) if token_raw else None
-
-
-def construct_logged_in_auth_token_ext(
-    token_raw: Annotated[str, Depends(oauth2_logged_in_schemea)]
-) -> AuthTokenExt:
-    """Construct a Token from the raw token string."""
-    return AuthTokenExt.from_raw(token_raw)
-
-
-def construct_guest_session(
-    auth_token_ext: Annotated[
-        AuthTokenExt | None, Depends(construct_guest_auth_token_ext)
-    ]
-) -> AppGuestUseCaseSession:
-    """Construct a GuestSession from the AuthTokenExt."""
-    return AppGuestUseCaseSession(auth_token_ext)
-
-
-def construct_logged_in_session(
-    auth_token_ext: Annotated[AuthTokenExt, Depends(construct_logged_in_auth_token_ext)]
-) -> AppLoggedInUseCaseSession:
-    """Construct a LoggedInSession from the AuthTokenExt."""
-    return AppLoggedInUseCaseSession(auth_token_ext)
-
-
-GuestSession = Annotated[AppGuestUseCaseSession, Depends(construct_guest_session)]
-LoggedInSession = Annotated[
-    AppLoggedInUseCaseSession, Depends(construct_logged_in_session)
-]
-
-
-# @webapp.fast_app.websocket("/progress-reporter")
-# async def progress_reporter_websocket(websocket: WebSocket, token: str | None) -> None:
-#     """Handle the whole lifecycle of the progress reporter websocket."""
-#     if token is None:
-#         raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
-#     try:
-#         progress_reporter_token_ext = AuthTokenExt.from_raw(token)
-#         progress_reporter_token = (
-#             auth_token_stamper.verify_auth_token_progress_reporter(
-#                 progress_reporter_token_ext
-#             )
-#         )
-#     except (InputValidationError, ExpiredAuthTokenError, InvalidAuthTokenError) as err:
-#         raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION) from err
-
-#     await websocket.accept()
-#     await progress_reporter_factory.register_socket(
-#         websocket, progress_reporter_token.user_ref_id
-#     )
-#     # Seems like this just needs to stay alive for the socket to not expire ...
-#     try:
-#         while True:
-#             await asyncio.sleep(1)  # Sleep one second
-#             global websocket_should_close
-#             if websocket_should_close:
-#                 await progress_reporter_factory.unregister_websocket(
-#                     progress_reporter_token.user_ref_id
-#                 )
-#                 return
-#     except WebSocketDisconnect:
-#         await progress_reporter_factory.unregister_websocket(
-#             progress_reporter_token.user_ref_id
-#         )
-
-
-@webapp.fast_app.get("/healthz", status_code=status.HTTP_200_OK)
-async def healthz() -> None:
-    """Health check endpoint."""
-    return None
-
-
-@secure_fn
-@webapp.fast_app.post("/old-skool-login")
-async def old_skool_login(
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
-) -> Dict[str, str]:
-    """Login via OAuth2 password flow and return an auth token."""
-    email_address = EmailAddress.from_raw(form_data.username)
-    password = PasswordPlain.from_raw(form_data.password)
-
-    _, result = await login_use_case.execute(
-        AppGuestUseCaseSession(),
-        LoginArgs(email_address=email_address, password=password),
-    )
-
-    return {
-        "access_token": result.auth_token_ext.auth_token_str,
-        "token_type": "bearer",
+    standard_config: Mapping[str, Any] = {  # type: ignore
+        "responses": standard_responses,
+        "response_model_exclude_defaults": True,
     }
 
 
-
-@secure_fn
-@webapp.fast_app.post(
-    "/init",
-    response_model=InitResult,
-    tags=["init"],
-    **standard_config,
-)
-async def init(args: InitArgs, session: GuestSession) -> InitResult:
-    """Initialise a new workspace."""
-    return (await init_use_case.execute(session, args))[1]
-
-
-@secure_fn
-@webapp.fast_app.post("/login", response_model=LoginResult, tags=["login"], **standard_config)
-async def login(args: LoginArgs, session: GuestSession) -> LoginResult:
-    """Login to a workspace."""
-    return (await login_use_case.execute(session, args))[1]
-
-
-@secure_fn
-@webapp.fast_app.post(
-    "/auth/change-password",
-    response_model=None,
-    tags=["auth"],
-    **standard_config,
-)
-async def change_password(args: ChangePasswordArgs, session: LoggedInSession) -> None:
-    """Change password."""
-    await auth_change_password_use_case.execute(session, args)
-
-
-@secure_fn
-@webapp.fast_app.post(
-    "/auth/reset-password",
-    response_model=ResetPasswordResult,
-    tags=["auth"],
-    **standard_config,
-)
-async def reset_password(
-    args: ResetPasswordArgs, session: GuestSession
-) -> ResetPasswordResult:
-    """Reset password."""
-    return (await auth_reset_password_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/search",
-    response_model=SearchResult,
-    tags=["search"],
-    **standard_config,
-)
-async def search(args: SearchArgs, session: LoggedInSession) -> SearchResult:
-    """Search entities."""
-    return (await search_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post("/gen/do", response_model=None, tags=["gen"], **standard_config)
-async def gen_do(args: GenDoArgs, session: LoggedInSession) -> None:
-    """Generate inbox tasks."""
-    await gen_do_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/gen/load-runs",
-    response_model=GenLoadRunsResult,
-    tags=["gen"],
-    **standard_config,
-)
-async def gen_load_runs(
-    args: GenLoadRunsArgs, session: LoggedInSession
-) -> GenLoadRunsResult:
-    """Load history of task generation runs."""
-    return (await gen_load_runs_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/report",
-    response_model=ReportResult,
-    tags=["report"],
-    **standard_config,
-)
-async def report(args: ReportArgs, session: LoggedInSession) -> ReportResult:
-    """Report."""
-    return (await report_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post("/gc/do", response_model=None, tags=["gc"], **standard_config)
-async def gc_do(args: GCDoArgs, session: LoggedInSession) -> None:
-    """Perform a garbage collect."""
-    await gc_do_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/gc/load-runs",
-    response_model=GCLoadRunsResult,
-    tags=["gc"],
-    **standard_config,
-)
-async def gc_load_runs(
-    args: GCLoadRunsArgs, session: LoggedInSession
-) -> GCLoadRunsResult:
-    """Load history of GC runs."""
-    return (await gc_load_runs_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/load-top-level-info",
-    response_model=LoadTopLevelInfoResult,
-    tags=["load-top-level-info"],
-    **standard_config,
-)
-async def load_top_level_info(
-    args: LoadTopLevelInfoArgs, session: GuestSession
-) -> LoadTopLevelInfoResult:
-    """Load a user and workspace if they exist and other assorted data."""
-    return (await load_top_level_info_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/load-progress-reporter-token",
-    response_model=LoadProgressReporterTokenResult,
-    tags=["load-progress-reporter-token"],
-    **standard_config,
-)
-async def load_progress_reporter_token(
-    args: LoadProgressReporterTokenArgs, session: LoggedInSession
-) -> LoadProgressReporterTokenResult:
-    """Load a temporary access token useful for reading progress reporter updates."""
-    return (await load_progress_reporter_token_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/get-summaries",
-    response_model=GetSummariesResult,
-    tags=["get-summaries"],
-    **standard_config,
-)
-async def get_summaries(
-    args: GetSummariesArgs, session: LoggedInSession
-) -> GetSummariesResult:
-    """Get summaries about entities."""
-    return (await get_summaries_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/user/update",
-    response_model=None,
-    tags=["user"],
-    **standard_config,
-)
-async def update_user(args: UserUpdateArgs, session: LoggedInSession) -> None:
-    """Update a user."""
-    await user_update_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/user/change-feature-flags",
-    response_model=None,
-    tags=["user"],
-    **standard_config,
-)
-async def change_user_feature_flags(
-    args: UserChangeFeatureFlagsArgs, session: LoggedInSession
-) -> None:
-    """Change the feature flags for a user."""
-    await user_change_feature_flags_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/user/load",
-    response_model=UserLoadResult,
-    tags=["user"],
-    **standard_config,
-)
-async def load_user(args: UserLoadArgs, session: LoggedInSession) -> UserLoadResult:
-    """Load a user."""
-    return (await user_load_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/workspace/update",
-    response_model=None,
-    tags=["workspace"],
-    **standard_config,
-)
-async def update_workspace(args: WorkspaceUpdateArgs, session: LoggedInSession) -> None:
-    """Update a workspace."""
-    await workspace_update_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/workspace/change-default-project",
-    response_model=None,
-    tags=["workspace"],
-    **standard_config,
-)
-async def change_workspace_default_project(
-    args: WorkspaceChangeDefaultProjectArgs, session: LoggedInSession
-) -> None:
-    """Change the default project for a workspace."""
-    await workspace_change_default_project_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/workspace/change-feature-flags",
-    response_model=None,
-    tags=["workspace"],
-    **standard_config,
-)
-async def change_workspace_feature_flags(
-    args: WorkspaceChangeFeatureFlagsArgs, session: LoggedInSession
-) -> None:
-    """Change the feature flags for a workspace."""
-    await workspace_change_feature_flags_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/workspace/load",
-    response_model=WorkspaceLoadResult,
-    tags=["workspace"],
-    **standard_config,
-)
-async def load_workspace(
-    args: WorkspaceLoadArgs, session: LoggedInSession
-) -> WorkspaceLoadResult:
-    """Load a workspace."""
-    return (await workspace_load_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/inbox-task/create",
-    response_model=InboxTaskCreateResult,
-    tags=["inbox-task"],
-    **standard_config,
-)
-async def create_inbox_task(
-    args: InboxTaskCreateArgs, session: LoggedInSession
-) -> InboxTaskCreateResult:
-    """Create a inbox task."""
-    return (await inbox_task_create_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/inbox-task/update",
-    response_model=InboxTaskUpdateResult,
-    tags=["inbox-task"],
-    **standard_config,
-)
-async def update_inbox_task(
-    args: InboxTaskUpdateArgs, session: LoggedInSession
-) -> InboxTaskUpdateResult:
-    """Update a inbox task."""
-    return (await inbox_task_update_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/inbox-task/archive",
-    response_model=None,
-    tags=["inbox-task"],
-    **standard_config,
-)
-async def archive_inbox_task(
-    args: InboxTaskArchiveArgs, session: LoggedInSession
-) -> None:
-    """Archive a inbox task."""
-    await inbox_task_archive_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/inbox-task/change-project",
-    response_model=None,
-    tags=["inbox-task"],
-    **standard_config,
-)
-async def change_inbox_task_project(
-    args: InboxTaskChangeProjectArgs, session: LoggedInSession
-) -> None:
-    """Change the project for a inbox task."""
-    await inbox_task_change_project_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/inbox-task/associate-with-big-plan",
-    response_model=None,
-    tags=["inbox-task"],
-    **standard_config,
-)
-async def associate_inbox_task_with_big_plan(
-    args: InboxTaskAssociateWithBigPlanArgs, session: LoggedInSession
-) -> None:
-    """Change the inbox task for a project."""
-    await inbox_task_associate_with_big_plan.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/inbox-task/load",
-    response_model=InboxTaskLoadResult,
-    tags=["inbox-task"],
-    **standard_config,
-)
-async def load_inbox_task(
-    args: InboxTaskLoadArgs, session: LoggedInSession
-) -> InboxTaskLoadResult:
-    """Load a inbox task."""
-    return (await inbox_task_load_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/inbox-task/find",
-    response_model=InboxTaskFindResult,
-    tags=["inbox-task"],
-    **standard_config,
-)
-async def find_inbox_task(
-    args: InboxTaskFindArgs, session: LoggedInSession
-) -> InboxTaskFindResult:
-    """Find all inbox tasks, filtering by id."""
-    return (await inbox_task_find_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/habit/create",
-    response_model=HabitCreateResult,
-    tags=["habit"],
-    **standard_config,
-)
-async def create_habit(
-    args: HabitCreateArgs, session: LoggedInSession
-) -> HabitCreateResult:
-    """Create a habit."""
-    return (await habit_create_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/habit/archive",
-    response_model=None,
-    tags=["habit"],
-    **standard_config,
-)
-async def archive_habit(args: HabitArchiveArgs, session: LoggedInSession) -> None:
-    """Archive a habit."""
-    await habit_archive_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/habit/update",
-    response_model=None,
-    tags=["habit"],
-    **standard_config,
-)
-async def update_habit(args: HabitUpdateArgs, session: LoggedInSession) -> None:
-    """Update a habit."""
-    await habit_update_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/habit/change-project",
-    response_model=None,
-    tags=["habit"],
-    **standard_config,
-)
-async def change_habit_project(
-    args: HabitChangeProjectArgs, session: LoggedInSession
-) -> None:
-    """Change the project for a habit."""
-    await habit_change_project_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/habit/suspend",
-    response_model=None,
-    tags=["habit"],
-    **standard_config,
-)
-async def suspend_habit(args: HabitSuspendArgs, session: LoggedInSession) -> None:
-    """Suspend a habit."""
-    await habit_suspend_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/habit/unsuspend",
-    response_model=None,
-    tags=["habit"],
-    **standard_config,
-)
-async def unsuspend_habit(args: HabitUnsuspendArgs, session: LoggedInSession) -> None:
-    """Unsuspend a habit."""
-    await habit_unsuspend_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/habit/load",
-    response_model=HabitLoadResult,
-    tags=["habit"],
-    **standard_config,
-)
-async def load_habit(args: HabitLoadArgs, session: LoggedInSession) -> HabitLoadResult:
-    """Load a habit."""
-    return (await habit_load_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/habit/find",
-    response_model=HabitFindResult,
-    tags=["habit"],
-    **standard_config,
-)
-async def find_habit(args: HabitFindArgs, session: LoggedInSession) -> HabitFindResult:
-    """Find all habits, filtering by id.."""
-    return (await habit_find_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/chore/create",
-    response_model=ChoreCreateResult,
-    tags=["chore"],
-    **standard_config,
-)
-async def create_chore(
-    args: ChoreCreateArgs, session: LoggedInSession
-) -> ChoreCreateResult:
-    """Create a chore."""
-    return (await chore_create_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/chore/archive",
-    response_model=None,
-    tags=["chore"],
-    **standard_config,
-)
-async def archive_chore(args: ChoreArchiveArgs, session: LoggedInSession) -> None:
-    """Archive a chore."""
-    await chore_archive_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/chore/update",
-    response_model=None,
-    tags=["chore"],
-    **standard_config,
-)
-async def update_chore(args: ChoreUpdateArgs, session: LoggedInSession) -> None:
-    """Update a chore."""
-    await chore_update_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/chore/change-project",
-    response_model=None,
-    tags=["chore"],
-    **standard_config,
-)
-async def change_chore_project(
-    args: ChoreChangeProjectArgs, session: LoggedInSession
-) -> None:
-    """Change the project for a chore."""
-    await chore_change_project_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/chore/suspend",
-    response_model=None,
-    tags=["chore"],
-    **standard_config,
-)
-async def suspend_chore(args: ChoreSuspendArgs, session: LoggedInSession) -> None:
-    """Suspend a chore."""
-    await chore_suspend_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/chore/unsuspend",
-    response_model=None,
-    tags=["chore"],
-    **standard_config,
-)
-async def unsuspend_chore(args: ChoreUnsuspendArgs, session: LoggedInSession) -> None:
-    """Unsuspend a chore."""
-    await chore_unsuspend_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/chore/load",
-    response_model=ChoreLoadResult,
-    tags=["chore"],
-    **standard_config,
-)
-async def load_chore(args: ChoreLoadArgs, session: LoggedInSession) -> ChoreLoadResult:
-    """Load a chore."""
-    return (await chore_load_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/chore/find",
-    response_model=ChoreFindResult,
-    tags=["chore"],
-    **standard_config,
-)
-async def find_chore(args: ChoreFindArgs, session: LoggedInSession) -> ChoreFindResult:
-    """Find all chores, filtering by id.."""
-    return (await chore_find_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/big-plan/create",
-    response_model=BigPlanCreateResult,
-    tags=["big-plan"],
-    **standard_config,
-)
-async def create_big_plan(
-    args: BigPlanCreateArgs, session: LoggedInSession
-) -> BigPlanCreateResult:
-    """Create a big plan."""
-    return (await big_plan_create_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/big-plan/archive",
-    response_model=None,
-    tags=["big-plan"],
-    **standard_config,
-)
-async def archive_big_plan(args: BigPlanArchiveArgs, session: LoggedInSession) -> None:
-    """Archive a big plan."""
-    await big_plan_archive_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/big-plan/update",
-    response_model=BigPlanUpdateResult,
-    tags=["big-plan"],
-    **standard_config,
-)
-async def update_big_plan(
-    args: BigPlanUpdateArgs, session: LoggedInSession
-) -> BigPlanUpdateResult:
-    """Update a big plan."""
-    return (await big_plan_update_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/big-plan/change-project",
-    response_model=None,
-    tags=["big-plan"],
-    **standard_config,
-)
-async def change_big_plan_project(
-    args: BigPlanChangeProjectArgs, session: LoggedInSession
-) -> None:
-    """Change the project for a big plan."""
-    await big_plan_change_project_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/big-plan/load",
-    response_model=BigPlanLoadResult,
-    tags=["big-plan"],
-    **standard_config,
-)
-async def load_big_plan(
-    args: BigPlanLoadArgs, session: LoggedInSession
-) -> BigPlanLoadResult:
-    """Load a big plan."""
-    return (await big_plan_load_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/big-plan/find",
-    response_model=BigPlanFindResult,
-    tags=["big-plan"],
-    **standard_config,
-)
-async def find_big_plan(
-    args: BigPlanFindArgs, session: LoggedInSession
-) -> BigPlanFindResult:
-    """Find all big plans, filtering by id."""
-    return (await big_plan_find_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/journal/create",
-    response_model=JournalCreateResult,
-    tags=["journal"],
-    **standard_config,
-)
-async def create_journal(
-    args: JournalCreateArgs, session: LoggedInSession
-) -> JournalCreateResult:
-    """Create a journal."""
-    return (await journal_create_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/journal/archive",
-    response_model=None,
-    tags=["journal"],
-    **standard_config,
-)
-async def archive_journal(args: JournalArchiveArgs, session: LoggedInSession) -> None:
-    """Archive a journal."""
-    await journal_archive_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/journal/change-time-config",
-    response_model=None,
-    tags=["journal"],
-    **standard_config,
-)
-async def change_time_config_for_journal(
-    args: JournalChangeTimeConfigArgs, session: LoggedInSession
-) -> None:
-    """Change time config for a journal."""
-    await journal_change_time_config_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/journal/update-report",
-    response_model=None,
-    tags=["journal"],
-    **standard_config,
-)
-async def update_report_for_jorunal(
-    args: JournalUpdateReportArgs, session: LoggedInSession
-) -> None:
-    """Change time config for a journal."""
-    await journal_update_report_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/journal/find",
-    response_model=JournalFindResult,
-    tags=["journal"],
-    **standard_config,
-)
-async def find_journal(
-    args: JournalFindArgs, session: LoggedInSession
-) -> JournalFindResult:
-    """Find all journals, filtering by id."""
-    return (await journal_find_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/journal/load",
-    response_model=JournalLoadResult,
-    tags=["journal"],
-    **standard_config,
-)
-async def load_journal(
-    args: JournalLoadArgs, session: LoggedInSession
-) -> JournalLoadResult:
-    """Load a journal."""
-    return (await journal_load_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/doc/create",
-    response_model=DocCreateResult,
-    tags=["doc"],
-    **standard_config,
-)
-async def create_doc(args: DocCreateArgs, session: LoggedInSession) -> DocCreateResult:
-    """Create a doc."""
-    return (await doc_create_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/doc/archive",
-    response_model=None,
-    tags=["doc"],
-    **standard_config,
-)
-async def archive_doc(args: DocArchiveArgs, session: LoggedInSession) -> None:
-    """Archive a doc."""
-    await doc_archive_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/doc/update",
-    response_model=None,
-    tags=["doc"],
-    **standard_config,
-)
-async def update_doc(args: DocUpdateArgs, session: LoggedInSession) -> None:
-    """Update a doc."""
-    await doc_update_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/doc/change-parent",
-    response_model=None,
-    tags=["doc"],
-    **standard_config,
-)
-async def change_doc_parent(
-    args: DocChangeParentArgs, session: LoggedInSession
-) -> None:
-    """Change the parent for a doc."""
-    await doc_change_parent_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/doc/load",
-    response_model=DocLoadResult,
-    tags=["doc"],
-    **standard_config,
-)
-async def load_doc(args: DocLoadArgs, session: LoggedInSession) -> DocLoadResult:
-    """Load a doc."""
-    return (await doc_load_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/doc/find",
-    response_model=DocFindResult,
-    tags=["doc"],
-    **standard_config,
-)
-async def find_doc(args: DocFindArgs, session: LoggedInSession) -> DocFindResult:
-    """Find all docs, filtering by id."""
-    return (await doc_find_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/vacation/create",
-    response_model=VacationCreateResult,
-    tags=["vacation"],
-    **standard_config,
-)
-async def create_vacation(
-    args: VacationCreateArgs, session: LoggedInSession
-) -> VacationCreateResult:
-    """Create a vacation."""
-    return (await vacation_create_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/vacation/archive",
-    response_model=None,
-    tags=["vacation"],
-    **standard_config,
-)
-async def archive_vacation(args: VacationArchiveArgs, session: LoggedInSession) -> None:
-    """Archive a vacation."""
-    await vacation_archive_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/vacation/update",
-    response_model=None,
-    tags=["vacation"],
-    **standard_config,
-)
-async def update_vacation(args: VacationUpdateArgs, session: LoggedInSession) -> None:
-    """Update a vacation."""
-    await vacation_update_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/vacation/load",
-    response_model=VacationLoadResult,
-    tags=["vacation"],
-    **standard_config,
-)
-async def load_vacation(
-    args: VacationLoadArgs, session: LoggedInSession
-) -> VacationLoadResult:
-    """Load all vacations, filtering by id."""
-    return (await vacation_load_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/vacation/find",
-    response_model=VacationFindResult,
-    tags=["vacation"],
-    **standard_config,
-)
-async def find_vacation(
-    args: VacationFindArgs, session: LoggedInSession
-) -> VacationFindResult:
-    """Find all vacations, filtering by id."""
-    return (await vacation_find_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/project/create",
-    response_model=ProjectCreateResult,
-    tags=["project"],
-    **standard_config,
-)
-async def create_project(
-    args: ProjectCreateArgs, session: LoggedInSession
-) -> ProjectCreateResult:
-    """Create a project."""
-    return (await project_create_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/project/archive",
-    response_model=None,
-    tags=["project"],
-    **standard_config,
-)
-async def archive_project(args: ProjectArchiveArgs, session: LoggedInSession) -> None:
-    """Create a project."""
-    await project_archive_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/project/update",
-    response_model=None,
-    tags=["project"],
-    **standard_config,
-)
-async def update_project(args: ProjectUpdateArgs, session: LoggedInSession) -> None:
-    """Update a project."""
-    await project_update_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/project/load",
-    response_model=ProjectLoadResult,
-    tags=["project"],
-    **standard_config,
-)
-async def load_project(
-    args: ProjectLoadArgs, session: LoggedInSession
-) -> ProjectLoadResult:
-    """Load a project, filtering by id."""
-    return (await project_load_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/project/find",
-    response_model=ProjectFindResult,
-    tags=["project"],
-    **standard_config,
-)
-async def find_project(
-    args: ProjectFindArgs, session: LoggedInSession
-) -> ProjectFindResult:
-    """Find a project, filtering by id."""
-    return (await project_find_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/smart-list/create",
-    response_model=SmartListCreateResult,
-    tags=["smart-list"],
-    **standard_config,
-)
-async def create_smart_list(
-    args: SmartListCreateArgs, session: LoggedInSession
-) -> SmartListCreateResult:
-    """Create a smart list."""
-    return (await smart_list_create_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/smart-list/archive",
-    response_model=None,
-    tags=["smart-list"],
-    **standard_config,
-)
-async def archive_smart_list(
-    args: SmartListArchiveArgs, session: LoggedInSession
-) -> None:
-    """Archive a smart list."""
-    await smart_list_archive_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/smart-list/update",
-    response_model=None,
-    tags=["smart-list"],
-    **standard_config,
-)
-async def update_smart_list(
-    args: SmartListUpdateArgs, session: LoggedInSession
-) -> None:
-    """Update a smart list."""
-    await smart_list_update_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/smart-list/load",
-    response_model=SmartListLoadResult,
-    tags=["smart-list"],
-    **standard_config,
-)
-async def load_smart_list(
-    args: SmartListLoadArgs, session: LoggedInSession
-) -> SmartListLoadResult:
-    """Load a smart list."""
-    return (await smart_list_load_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/smart-list/find",
-    response_model=SmartListFindResult,
-    tags=["smart-list"],
-    **standard_config,
-)
-async def find_smart_list(
-    args: SmartListFindArgs, session: LoggedInSession
-) -> SmartListFindResult:
-    """Find all smart lists, filtering by id."""
-    return (await smart_list_find_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/smart-list/tag/create",
-    response_model=SmartListTagCreateResult,
-    tags=["smart-list"],
-    **standard_config,
-)
-async def create_smart_list_tag(
-    args: SmartListTagCreateArgs, session: LoggedInSession
-) -> SmartListTagCreateResult:
-    """Create a smart list tag."""
-    return (await smart_list_tag_create_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/smart-list/tag/archive",
-    response_model=None,
-    tags=["smart-list"],
-    **standard_config,
-)
-async def archive_smart_list_tag(
-    args: SmartListTagArchiveArgs, session: LoggedInSession
-) -> None:
-    """Archive a smart list tag."""
-    await smart_list_tag_archive_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/smart-list/tag/update",
-    response_model=None,
-    tags=["smart-list"],
-    **standard_config,
-)
-async def update_smart_list_tag(
-    args: SmartListTagUpdateArgs, session: LoggedInSession
-) -> None:
-    """Update a smart list tag."""
-    await smart_list_tag_update_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/smart-list/tag/load",
-    response_model=SmartListTagLoadResult,
-    tags=["smart-list"],
-    **standard_config,
-)
-async def load_smart_list_tag(
-    args: SmartListTagLoadArgs, session: LoggedInSession
-) -> SmartListTagLoadResult:
-    """Load a smart list tag."""
-    return (await smart_list_tag_load_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/smart-list/item/create",
-    response_model=SmartListItemCreateResult,
-    tags=["smart-list"],
-    **standard_config,
-)
-async def create_smart_list_item(
-    args: SmartListItemCreateArgs, session: LoggedInSession
-) -> SmartListItemCreateResult:
-    """Create a smart list item."""
-    return (await smart_list_item_create_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/smart-list/item/archive",
-    response_model=None,
-    tags=["smart-list"],
-    **standard_config,
-)
-async def archive_smart_list_item(
-    args: SmartListItemArchiveArgs, session: LoggedInSession
-) -> None:
-    """Archive a smart list item."""
-    await smart_list_item_archive_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/smart-list/item/update",
-    response_model=None,
-    tags=["smart-list"],
-    **standard_config,
-)
-async def update_smart_list_item(
-    args: SmartListItemUpdateArgs, session: LoggedInSession
-) -> None:
-    """Update a smart list item."""
-    await smart_list_item_update_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/smart-list/item/load",
-    response_model=SmartListItemLoadResult,
-    tags=["smart-list"],
-    **standard_config,
-)
-async def load_smart_list_item(
-    args: SmartListItemLoadArgs, session: LoggedInSession
-) -> SmartListItemLoadResult:
-    """Load a smart list item."""
-    return (await smart_list_item_load_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/metric/create",
-    response_model=MetricCreateResult,
-    tags=["metric"],
-    **standard_config,
-)
-async def create_metric(
-    args: MetricCreateArgs, session: LoggedInSession
-) -> MetricCreateResult:
-    """Create a metric."""
-    return (await metric_create_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/metric/archive",
-    response_model=None,
-    tags=["metric"],
-    **standard_config,
-)
-async def archive_metric(args: MetricArchiveArgs, session: LoggedInSession) -> None:
-    """Archive a metric."""
-    await metric_archive_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/metric/update",
-    response_model=None,
-    tags=["metric"],
-    **standard_config,
-)
-async def update_metric(args: MetricUpdateArgs, session: LoggedInSession) -> None:
-    """Update a metric."""
-    await metric_update_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/metric/load-settings",
-    response_model=MetricLoadSettingsResult,
-    tags=["metric"],
-    **standard_config,
-)
-async def load_metric_settings(
-    args: MetricLoadSettingsArgs, session: LoggedInSession
-) -> MetricLoadSettingsResult:
-    """Load settings for metrics."""
-    return (await metric_load_settings_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/metric/change-collection-project",
-    response_model=None,
-    tags=["metric"],
-    **standard_config,
-)
-async def change_metric_collection_project(
-    args: MetricChangeCollectionProjectArgs, session: LoggedInSession
-) -> None:
-    """Change the collection project for metric."""
-    await metric_change_collection_project_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/metric/load",
-    response_model=MetricLoadResult,
-    tags=["metric"],
-    **standard_config,
-)
-async def load_metric(
-    args: MetricLoadArgs, session: LoggedInSession
-) -> MetricLoadResult:
-    """Load a metric."""
-    return (await metric_load_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/metric/find",
-    response_model=MetricFindResult,
-    tags=["metric"],
-    **standard_config,
-)
-async def find_metric(
-    args: MetricFindArgs, session: LoggedInSession
-) -> MetricFindResult:
-    """Find all metrics, filtering by id."""
-    return (await metric_find_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/metric/entry/create",
-    response_model=MetricEntryCreateResult,
-    tags=["metric"],
-    **standard_config,
-)
-async def create_metric_entry(
-    args: MetricEntryCreateArgs, session: LoggedInSession
-) -> MetricEntryCreateResult:
-    """Create a metric entry."""
-    return (await metric_entry_create_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/metric/entry/archive",
-    response_model=None,
-    tags=["metric"],
-    **standard_config,
-)
-async def archive_metric_entry(
-    args: MetricEntryArchiveArgs, session: LoggedInSession
-) -> None:
-    """Archive a metric entry."""
-    await metric_entry_archive_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/metric/entry/update",
-    response_model=None,
-    tags=["metric"],
-    **standard_config,
-)
-async def update_metric_entry(
-    args: MetricEntryUpdateArgs, session: LoggedInSession
-) -> None:
-    """Update a metric entry."""
-    await metric_entry_update_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/metric/entry/load",
-    response_model=MetricEntryLoadResult,
-    tags=["metric"],
-    **standard_config,
-)
-async def load_metric_entry(
-    args: MetricEntryLoadArgs, session: LoggedInSession
-) -> MetricEntryLoadResult:
-    """Load a metric entry."""
-    return (await metric_entry_load_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/person/create",
-    response_model=PersonCreateResult,
-    tags=["person"],
-    **standard_config,
-)
-async def create_person(
-    args: PersonCreateArgs, session: LoggedInSession
-) -> PersonCreateResult:
-    """Create a person."""
-    return (await person_create_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/person/archive",
-    response_model=None,
-    tags=["person"],
-    **standard_config,
-)
-async def archive_person(args: PersonArchiveArgs, session: LoggedInSession) -> None:
-    """Archive a person."""
-    await person_archive_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/person/update",
-    response_model=None,
-    tags=["person"],
-    **standard_config,
-)
-async def update_person(args: PersonUpdateArgs, session: LoggedInSession) -> None:
-    """Update a person."""
-    await person_update_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/person/load-settings",
-    response_model=PersonLoadSettingsResult,
-    tags=["person"],
-    **standard_config,
-)
-async def load_person_settings(
-    args: PersonLoadSettingsArgs, session: LoggedInSession
-) -> PersonLoadSettingsResult:
-    """Change the catch up project for persons."""
-    return (await person_load_settings_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/person/change-catch-up-project",
-    response_model=None,
-    tags=["person"],
-    **standard_config,
-)
-async def update_change_catch_up_project(
-    args: PersonChangeCatchUpProjectArgs, session: LoggedInSession
-) -> None:
-    """Change the catch up project for persons."""
-    await person_change_catch_up_project_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/person/load",
-    response_model=PersonLoadResult,
-    tags=["person"],
-    **standard_config,
-)
-async def load_person(
-    args: PersonLoadArgs, session: LoggedInSession
-) -> PersonLoadResult:
-    """Load a person, filtering by id."""
-    return (await person_load_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/person/find",
-    response_model=PersonFindResult,
-    tags=["person"],
-    **standard_config,
-)
-async def find_person(
-    args: PersonFindArgs, session: LoggedInSession
-) -> PersonFindResult:
-    """Find a person, filtering by id."""
-    return (await person_find_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/slack-task/archive",
-    response_model=None,
-    tags=["slack-task"],
-    **standard_config,
-)
-async def archive_slack_task(
-    args: SlackTaskArchiveArgs, session: LoggedInSession
-) -> None:
-    """Archive a slack task."""
-    await slack_task_archive_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/slack-task/update",
-    response_model=None,
-    tags=["slack-task"],
-    **standard_config,
-)
-async def update_slack_task(
-    args: SlackTaskUpdateArgs, session: LoggedInSession
-) -> None:
-    """Update a slack task."""
-    await slack_task_update_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/slack-task/load-settings",
-    response_model=SlackTaskLoadSettingsResult,
-    tags=["slack-task"],
-    **standard_config,
-)
-async def load_slack_task_settings(
-    args: SlackTaskLoadSettingsArgs, session: LoggedInSession
-) -> SlackTaskLoadSettingsResult:
-    """Change the project for a slack task."""
-    return (await slack_task_load_settings_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/slack-task/change-project",
-    response_model=None,
-    tags=["slack-task"],
-    **standard_config,
-)
-async def change_slack_task_generation_project(
-    args: SlackTaskChangeGenerationProjectArgs, session: LoggedInSession
-) -> None:
-    """Change the project for a slack task."""
-    await slack_task_change_generation_project_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/slack-task/load",
-    response_model=SlackTaskLoadResult,
-    tags=["slack-task"],
-    **standard_config,
-)
-async def load_slack_task(
-    args: SlackTaskLoadArgs, session: LoggedInSession
-) -> SlackTaskLoadResult:
-    """Load a slack task."""
-    return (await slack_task_load_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/slack-task/find",
-    response_model=SlackTaskFindResult,
-    tags=["slack-task"],
-    **standard_config,
-)
-async def find_slack_task(
-    args: SlackTaskFindArgs, session: LoggedInSession
-) -> SlackTaskFindResult:
-    """Find all slack tasks, filtering by id."""
-    return (await slack_task_find_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/email-task/archive",
-    response_model=None,
-    tags=["email-task"],
-    **standard_config,
-)
-async def archive_email_task(
-    args: EmailTaskArchiveArgs, session: LoggedInSession
-) -> None:
-    """Archive a email task."""
-    await email_task_archive_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/email-task/update",
-    response_model=None,
-    tags=["email-task"],
-    **standard_config,
-)
-async def update_email_task(
-    args: EmailTaskUpdateArgs, session: LoggedInSession
-) -> None:
-    """Update a email task."""
-    await email_task_update_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/email-task/load-settings",
-    response_model=EmailTaskLoadSettingsResult,
-    tags=["email-task"],
-    **standard_config,
-)
-async def load_email_task_settings(
-    args: EmailTaskLoadSettingsArgs, session: LoggedInSession
-) -> EmailTaskLoadSettingsResult:
-    """Change the project for a email task."""
-    return (await email_task_load_settings_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/email-task/change-project",
-    response_model=None,
-    tags=["email-task"],
-    **standard_config,
-)
-async def change_email_task_generation_project(
-    args: EmailTaskChangeGenerationProjectArgs, session: LoggedInSession
-) -> None:
-    """Change the project for a email task."""
-    await email_task_change_generation_project_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/email-task/load",
-    response_model=EmailTaskLoadResult,
-    tags=["email-task"],
-    **standard_config,
-)
-async def load_email_task(
-    args: EmailTaskLoadArgs, session: LoggedInSession
-) -> EmailTaskLoadResult:
-    """Load an email task."""
-    return (await email_task_load_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/email-task/find",
-    response_model=EmailTaskFindResult,
-    tags=["email-task"],
-    **standard_config,
-)
-async def find_email_task(
-    args: EmailTaskFindArgs, session: LoggedInSession
-) -> EmailTaskFindResult:
-    """Find all email tasks, filtering by id."""
-    return (await email_task_find_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/core/note/create",
-    response_model=NoteCreateResult,
-    tags=["note"],
-    **standard_config,
-)
-async def create_note(
-    args: NoteCreateArgs, session: LoggedInSession
-) -> NoteCreateResult:
-    """Create a note."""
-    return (await note_create_use_case.execute(session, args))[1]
-
-
-@webapp.fast_app.post(
-    "/core/note/archive",
-    response_model=None,
-    tags=["note"],
-    **standard_config,
-)
-async def archive_note(args: NoteArchiveArgs, session: LoggedInSession) -> None:
-    """Archive a note."""
-    await note_archive_use_case.execute(session, args)
-
-
-@webapp.fast_app.post(
-    "/core/note/update",
-    response_model=None,
-    tags=["note"],
-    **standard_config,
-)
-async def update_note(args: NoteUpdateArgs, session: LoggedInSession) -> None:
-    """Update a note."""
-    await note_update_use_case.execute(session, args)
-
-# x = create_model("x", foo=(int, ...), bar=(str, ...))
-
-# async def do_x(args: x, session: LoggedInSession) -> None:
-#     """Update a note."""
-#     pass
-
-# app.add_api_route(
-#     "/x",
-#     do_x,
-#     response_model=x,
-#     tags=["note"],
-#     **standard_config,
-# )
+    web_app = WebServiceApp.build_from_module_root(
+        global_properties,
+            request_time_provider,
+            cron_run_time_provider,
+            invocation_recorder,
+            progress_reporter_factory,
+            realm_codec_registry,
+            auth_token_stamper,
+            domain_storage_engine,
+            search_storage_engine,
+            usecase_storage_engine,
+            jupiter.core.use_cases)
+
+    @web_app.fast_app.exception_handler(InputValidationError)
+    async def input_validation_error_handler(
+        _request: Request, exc: InputValidationError
+    ) -> JSONResponse:
+        """Transform InputValidationErrors from the core to the same thing FastAPI would do."""
+        return JSONResponse(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            content={
+                "detail": [
+                    {
+                        "loc": [
+                            "body",
+                        ],
+                        "msg": f"{exc}",
+                        "type": "value_error.inputvalidationerror",
+                    },
+                ],
+            },
+        )
+
+
+    @web_app.fast_app.exception_handler(FeatureUnavailableError)
+    async def feature_unavailable_error_handler(
+        _request: Request, exc: FeatureUnavailableError
+    ) -> JSONResponse:
+        """Transform FeatureUnavailableError from the core to the same thing FastAPI would do."""
+        return JSONResponse(
+            status_code=status.HTTP_406_NOT_ACCEPTABLE,
+            content=f"{exc}",
+        )
+
+
+    @web_app.fast_app.exception_handler(UserAlreadyExistsError)
+    async def user_already_exists_error_handler(
+        _request: Request, exc: UserAlreadyExistsError
+    ) -> JSONResponse:
+        """Transform UserAlreadyExistsError from the core to the same thing FastAPI would do."""
+        return JSONResponse(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            content={
+                "detail": [
+                    {
+                        "loc": [
+                            "body",
+                        ],
+                        "msg": f"{exc}",
+                        "type": "value_error.useralreadyexistserror",
+                    },
+                ],
+            },
+        )
+
+
+    @web_app.fast_app.exception_handler(ExpiredAuthTokenError)
+    async def expired_auth_token_error_handler(
+        _request: Request, exc: ExpiredAuthTokenError
+    ) -> JSONResponse:
+        """Transform ExpiredAuthTokenError from the core to the same thing FastAPI would do."""
+        return JSONResponse(
+            status_code=status.HTTP_426_UPGRADE_REQUIRED,
+            content="Your session seems to be expired",
+        )
+
+
+    @web_app.fast_app.exception_handler(InvalidLoginCredentialsError)
+    async def invalid_login_credentials_error_handler(
+        _request: Request, exc: InvalidLoginCredentialsError
+    ) -> JSONResponse:
+        """Transform InvalidLoginCredentialsError from the core to the same thing FastAPI would do."""
+        return JSONResponse(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            content={
+                "detail": [
+                    {
+                        "loc": [
+                            "body",
+                        ],
+                        "msg": "User email or password invalid",
+                        "type": "value_error.invalidlogincredentialserror",
+                    },
+                ],
+            },
+        )
+
+
+    @web_app.fast_app.exception_handler(ProjectInSignificantUseError)
+    async def project_in_significant_use_error_handler(
+        _request: Request, exc: ProjectInSignificantUseError
+    ) -> JSONResponse:
+        """Transform ProjectInSignificantUseError from the core to the same thing FastAPI would do."""
+        return JSONResponse(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            content={
+                "detail": [
+                    {
+                        "loc": [
+                            "body",
+                        ],
+                        "msg": f"Cannot remove because: {exc}",
+                        "type": "value_error.projectinsignificantuserror",
+                    },
+                ],
+            },
+        )
+
+
+    @web_app.fast_app.exception_handler(EntityNotFoundError)
+    async def leaf_entity_not_found_error_handler(
+        _request: Request,
+        _exc: EntityNotFoundError,
+    ) -> PlainTextResponse:
+        """Transform LeafEntityNotFoundError to something that signals clients the entity does not exist."""
+        return PlainTextResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content="Entity does not exist",
+        )
+
+
+    @web_app.fast_app.exception_handler(InvalidAuthTokenError)
+    async def invalid_auth_token_error(
+        _request: Request, exc: InvalidAuthTokenError
+    ) -> JSONResponse:
+        """Transform InvalidAuthTokenError from the core to the same thing FastAPI would do."""
+        return JSONResponse(
+            status_code=status.HTTP_426_UPGRADE_REQUIRED,
+            content="Your session token seems to be busted",
+        )
+
+
+    @web_app.fast_app.exception_handler(UserNotFoundError)
+    async def user_not_found_error(
+        _request: Request,
+        _exc: UserNotFoundError,
+    ) -> PlainTextResponse:
+        """Transform UserNotFoundError to something that signals clients the app is in a not-ready state."""
+        return PlainTextResponse(
+            status_code=status.HTTP_410_GONE,
+            content="User does not exist",
+        )
+
+
+    @web_app.fast_app.exception_handler(WorkspaceNotFoundError)
+    async def workspace_not_found_error_handler(
+        _request: Request,
+        _exc: WorkspaceNotFoundError,
+    ) -> PlainTextResponse:
+        """Transform WorkspaceNotFoundErrors to something that signals clients the app is in a not-ready state."""
+        return PlainTextResponse(
+            status_code=status.HTTP_410_GONE,
+            content="Workspace does not exist",
+        )
+
+
+    @web_app.fast_app.exception_handler(JournalExistsForDatePeriodCombinationError)
+    async def journal_exists_for_period_and_date_error_handler(
+        _request: Request,
+        _exc: JournalExistsForDatePeriodCombinationError,
+    ) -> PlainTextResponse:
+        """Transform JournalExistsForPeriodAndDateError to something that signals clients the app is in a not-ready state."""
+        return PlainTextResponse(
+            status_code=status.HTTP_409_CONFLICT,
+            content="Journal already exists for this date and period combination",
+        )
+
+
+    @web_app.fast_app.on_event("startup")
+    async def startup_event() -> None:
+        """The startup event for the whole service."""
+        await sqlite_connection.prepare()
+
+
+    @web_app.fast_app.on_event("shutdown")
+    async def shutdown_event() -> None:
+        """The shutdown event for the whole service."""
+        try:
+            await sqlite_connection.dispose()
+        finally:
+            pass
+        try:
+            await aio_session.close()
+        finally:
+            pass
+        try:
+            await progress_reporter_factory.unregister_all_websockets()
+        finally:
+            pass
+
+
+    websocket_should_close = False
+
+
+    def signal_websocket_to_close(_signum: int, _frame: FrameType | None) -> None:
+        """Called when the server receives a SIGTERM to signal to the progress reporter to close its websockets."""
+        # This is needed in order to allow FastAPI to proceed with its shutdown procedure.
+        global websocket_should_close
+        websocket_should_close = True
+
+
+    signal.signal(signal.SIGTERM, signal_websocket_to_close)
+
+    oauth2_guest_scheme = OAuth2PasswordBearer(tokenUrl="guest-login", auto_error=False)
+    oauth2_logged_in_schemea = OAuth2PasswordBearer(tokenUrl="old-skool-login")
+
+
+    def construct_guest_auth_token_ext(
+        token_raw: Annotated[str | None, Depends(oauth2_guest_scheme)]
+    ) -> AuthTokenExt | None:
+        """Construct a Token from the raw token string."""
+        return AuthTokenExt.from_raw(token_raw) if token_raw else None
+
+
+    def construct_logged_in_auth_token_ext(
+        token_raw: Annotated[str, Depends(oauth2_logged_in_schemea)]
+    ) -> AuthTokenExt:
+        """Construct a Token from the raw token string."""
+        return AuthTokenExt.from_raw(token_raw)
+
+
+    def construct_guest_session(
+        auth_token_ext: Annotated[
+            AuthTokenExt | None, Depends(construct_guest_auth_token_ext)
+        ]
+    ) -> AppGuestUseCaseSession:
+        """Construct a GuestSession from the AuthTokenExt."""
+        return AppGuestUseCaseSession(auth_token_ext)
+
+
+    def construct_logged_in_session(
+        auth_token_ext: Annotated[AuthTokenExt, Depends(construct_logged_in_auth_token_ext)]
+    ) -> AppLoggedInUseCaseSession:
+        """Construct a LoggedInSession from the AuthTokenExt."""
+        return AppLoggedInUseCaseSession(auth_token_ext)
+
+
+    GuestSession = Annotated[AppGuestUseCaseSession, Depends(construct_guest_session)]
+    LoggedInSession = Annotated[
+        AppLoggedInUseCaseSession, Depends(construct_logged_in_session)
+    ]
+
+
+    # @webapp.fast_app.websocket("/progress-reporter")
+    # async def progress_reporter_websocket(websocket: WebSocket, token: str | None) -> None:
+    #     """Handle the whole lifecycle of the progress reporter websocket."""
+    #     if token is None:
+    #         raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
+    #     try:
+    #         progress_reporter_token_ext = AuthTokenExt.from_raw(token)
+    #         progress_reporter_token = (
+    #             auth_token_stamper.verify_auth_token_progress_reporter(
+    #                 progress_reporter_token_ext
+    #             )
+    #         )
+    #     except (InputValidationError, ExpiredAuthTokenError, InvalidAuthTokenError) as err:
+    #         raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION) from err
+
+    #     await websocket.accept()
+    #     await progress_reporter_factory.register_socket(
+    #         websocket, progress_reporter_token.user_ref_id
+    #     )
+    #     # Seems like this just needs to stay alive for the socket to not expire ...
+    #     try:
+    #         while True:
+    #             await asyncio.sleep(1)  # Sleep one second
+    #             global websocket_should_close
+    #             if websocket_should_close:
+    #                 await progress_reporter_factory.unregister_websocket(
+    #                     progress_reporter_token.user_ref_id
+    #                 )
+    #                 return
+    #     except WebSocketDisconnect:
+    #         await progress_reporter_factory.unregister_websocket(
+    #             progress_reporter_token.user_ref_id
+    #         )
+
+
+    @web_app.fast_app.get("/healthz", status_code=status.HTTP_200_OK)
+    async def healthz() -> None:
+        """Health check endpoint."""
+        return None
+
+
+    @secure_fn
+    @web_app.fast_app.post("/old-skool-login")
+    async def old_skool_login(
+        form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
+    ) -> Dict[str, str]:
+        """Login via OAuth2 password flow and return an auth token."""
+        email_address = EmailAddress.from_raw(form_data.username)
+        password = PasswordPlain.from_raw(form_data.password)
+
+        _, result = await login_use_case.execute(
+            AppGuestUseCaseSession(),
+            LoginArgs(email_address=email_address, password=password),
+        )
+
+        return {
+            "access_token": result.auth_token_ext.auth_token_str,
+            "token_type": "bearer",
+        }
+
+
+
+    @secure_fn
+    @web_app.fast_app.post(
+        "/init",
+        response_model=InitResult,
+        tags=["init"],
+        **standard_config,
+    )
+    async def init(args: InitArgs, session: GuestSession) -> InitResult:
+        """Initialise a new workspace."""
+        return (await init_use_case.execute(session, args))[1]
+
+
+    @secure_fn
+    @web_app.fast_app.post("/login", response_model=LoginResult, tags=["login"], **standard_config)
+    async def login(args: LoginArgs, session: GuestSession) -> LoginResult:
+        """Login to a workspace."""
+        return (await login_use_case.execute(session, args))[1]
+
+
+    @secure_fn
+    @web_app.fast_app.post(
+        "/auth/change-password",
+        response_model=None,
+        tags=["auth"],
+        **standard_config,
+    )
+    async def change_password(args: ChangePasswordArgs, session: LoggedInSession) -> None:
+        """Change password."""
+        await auth_change_password_use_case.execute(session, args)
+
+
+    @secure_fn
+    @web_app.fast_app.post(
+        "/auth/reset-password",
+        response_model=ResetPasswordResult,
+        tags=["auth"],
+        **standard_config,
+    )
+    async def reset_password(
+        args: ResetPasswordArgs, session: GuestSession
+    ) -> ResetPasswordResult:
+        """Reset password."""
+        return (await auth_reset_password_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/search",
+        response_model=SearchResult,
+        tags=["search"],
+        **standard_config,
+    )
+    async def search(args: SearchArgs, session: LoggedInSession) -> SearchResult:
+        """Search entities."""
+        return (await search_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post("/gen/do", response_model=None, tags=["gen"], **standard_config)
+    async def gen_do(args: GenDoArgs, session: LoggedInSession) -> None:
+        """Generate inbox tasks."""
+        await gen_do_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/gen/load-runs",
+        response_model=GenLoadRunsResult,
+        tags=["gen"],
+        **standard_config,
+    )
+    async def gen_load_runs(
+        args: GenLoadRunsArgs, session: LoggedInSession
+    ) -> GenLoadRunsResult:
+        """Load history of task generation runs."""
+        return (await gen_load_runs_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/report",
+        response_model=ReportResult,
+        tags=["report"],
+        **standard_config,
+    )
+    async def report(args: ReportArgs, session: LoggedInSession) -> ReportResult:
+        """Report."""
+        return (await report_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post("/gc/do", response_model=None, tags=["gc"], **standard_config)
+    async def gc_do(args: GCDoArgs, session: LoggedInSession) -> None:
+        """Perform a garbage collect."""
+        await gc_do_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/gc/load-runs",
+        response_model=GCLoadRunsResult,
+        tags=["gc"],
+        **standard_config,
+    )
+    async def gc_load_runs(
+        args: GCLoadRunsArgs, session: LoggedInSession
+    ) -> GCLoadRunsResult:
+        """Load history of GC runs."""
+        return (await gc_load_runs_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/load-top-level-info",
+        response_model=LoadTopLevelInfoResult,
+        tags=["load-top-level-info"],
+        **standard_config,
+    )
+    async def load_top_level_info(
+        args: LoadTopLevelInfoArgs, session: GuestSession
+    ) -> LoadTopLevelInfoResult:
+        """Load a user and workspace if they exist and other assorted data."""
+        return (await load_top_level_info_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/load-progress-reporter-token",
+        response_model=LoadProgressReporterTokenResult,
+        tags=["load-progress-reporter-token"],
+        **standard_config,
+    )
+    async def load_progress_reporter_token(
+        args: LoadProgressReporterTokenArgs, session: LoggedInSession
+    ) -> LoadProgressReporterTokenResult:
+        """Load a temporary access token useful for reading progress reporter updates."""
+        return (await load_progress_reporter_token_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/get-summaries",
+        response_model=GetSummariesResult,
+        tags=["get-summaries"],
+        **standard_config,
+    )
+    async def get_summaries(
+        args: GetSummariesArgs, session: LoggedInSession
+    ) -> GetSummariesResult:
+        """Get summaries about entities."""
+        return (await get_summaries_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/user/update",
+        response_model=None,
+        tags=["user"],
+        **standard_config,
+    )
+    async def update_user(args: UserUpdateArgs, session: LoggedInSession) -> None:
+        """Update a user."""
+        await user_update_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/user/change-feature-flags",
+        response_model=None,
+        tags=["user"],
+        **standard_config,
+    )
+    async def change_user_feature_flags(
+        args: UserChangeFeatureFlagsArgs, session: LoggedInSession
+    ) -> None:
+        """Change the feature flags for a user."""
+        await user_change_feature_flags_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/user/load",
+        response_model=UserLoadResult,
+        tags=["user"],
+        **standard_config,
+    )
+    async def load_user(args: UserLoadArgs, session: LoggedInSession) -> UserLoadResult:
+        """Load a user."""
+        return (await user_load_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/workspace/update",
+        response_model=None,
+        tags=["workspace"],
+        **standard_config,
+    )
+    async def update_workspace(args: WorkspaceUpdateArgs, session: LoggedInSession) -> None:
+        """Update a workspace."""
+        await workspace_update_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/workspace/change-default-project",
+        response_model=None,
+        tags=["workspace"],
+        **standard_config,
+    )
+    async def change_workspace_default_project(
+        args: WorkspaceChangeDefaultProjectArgs, session: LoggedInSession
+    ) -> None:
+        """Change the default project for a workspace."""
+        await workspace_change_default_project_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/workspace/change-feature-flags",
+        response_model=None,
+        tags=["workspace"],
+        **standard_config,
+    )
+    async def change_workspace_feature_flags(
+        args: WorkspaceChangeFeatureFlagsArgs, session: LoggedInSession
+    ) -> None:
+        """Change the feature flags for a workspace."""
+        await workspace_change_feature_flags_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/workspace/load",
+        response_model=WorkspaceLoadResult,
+        tags=["workspace"],
+        **standard_config,
+    )
+    async def load_workspace(
+        args: WorkspaceLoadArgs, session: LoggedInSession
+    ) -> WorkspaceLoadResult:
+        """Load a workspace."""
+        return (await workspace_load_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/inbox-task/create",
+        response_model=InboxTaskCreateResult,
+        tags=["inbox-task"],
+        **standard_config,
+    )
+    async def create_inbox_task(
+        args: InboxTaskCreateArgs, session: LoggedInSession
+    ) -> InboxTaskCreateResult:
+        """Create a inbox task."""
+        return (await inbox_task_create_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/inbox-task/update",
+        response_model=InboxTaskUpdateResult,
+        tags=["inbox-task"],
+        **standard_config,
+    )
+    async def update_inbox_task(
+        args: InboxTaskUpdateArgs, session: LoggedInSession
+    ) -> InboxTaskUpdateResult:
+        """Update a inbox task."""
+        return (await inbox_task_update_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/inbox-task/archive",
+        response_model=None,
+        tags=["inbox-task"],
+        **standard_config,
+    )
+    async def archive_inbox_task(
+        args: InboxTaskArchiveArgs, session: LoggedInSession
+    ) -> None:
+        """Archive a inbox task."""
+        await inbox_task_archive_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/inbox-task/change-project",
+        response_model=None,
+        tags=["inbox-task"],
+        **standard_config,
+    )
+    async def change_inbox_task_project(
+        args: InboxTaskChangeProjectArgs, session: LoggedInSession
+    ) -> None:
+        """Change the project for a inbox task."""
+        await inbox_task_change_project_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/inbox-task/associate-with-big-plan",
+        response_model=None,
+        tags=["inbox-task"],
+        **standard_config,
+    )
+    async def associate_inbox_task_with_big_plan(
+        args: InboxTaskAssociateWithBigPlanArgs, session: LoggedInSession
+    ) -> None:
+        """Change the inbox task for a project."""
+        await inbox_task_associate_with_big_plan.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/inbox-task/load",
+        response_model=InboxTaskLoadResult,
+        tags=["inbox-task"],
+        **standard_config,
+    )
+    async def load_inbox_task(
+        args: InboxTaskLoadArgs, session: LoggedInSession
+    ) -> InboxTaskLoadResult:
+        """Load a inbox task."""
+        return (await inbox_task_load_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/inbox-task/find",
+        response_model=InboxTaskFindResult,
+        tags=["inbox-task"],
+        **standard_config,
+    )
+    async def find_inbox_task(
+        args: InboxTaskFindArgs, session: LoggedInSession
+    ) -> InboxTaskFindResult:
+        """Find all inbox tasks, filtering by id."""
+        return (await inbox_task_find_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/habit/create",
+        response_model=HabitCreateResult,
+        tags=["habit"],
+        **standard_config,
+    )
+    async def create_habit(
+        args: HabitCreateArgs, session: LoggedInSession
+    ) -> HabitCreateResult:
+        """Create a habit."""
+        return (await habit_create_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/habit/archive",
+        response_model=None,
+        tags=["habit"],
+        **standard_config,
+    )
+    async def archive_habit(args: HabitArchiveArgs, session: LoggedInSession) -> None:
+        """Archive a habit."""
+        await habit_archive_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/habit/update",
+        response_model=None,
+        tags=["habit"],
+        **standard_config,
+    )
+    async def update_habit(args: HabitUpdateArgs, session: LoggedInSession) -> None:
+        """Update a habit."""
+        await habit_update_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/habit/change-project",
+        response_model=None,
+        tags=["habit"],
+        **standard_config,
+    )
+    async def change_habit_project(
+        args: HabitChangeProjectArgs, session: LoggedInSession
+    ) -> None:
+        """Change the project for a habit."""
+        await habit_change_project_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/habit/suspend",
+        response_model=None,
+        tags=["habit"],
+        **standard_config,
+    )
+    async def suspend_habit(args: HabitSuspendArgs, session: LoggedInSession) -> None:
+        """Suspend a habit."""
+        await habit_suspend_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/habit/unsuspend",
+        response_model=None,
+        tags=["habit"],
+        **standard_config,
+    )
+    async def unsuspend_habit(args: HabitUnsuspendArgs, session: LoggedInSession) -> None:
+        """Unsuspend a habit."""
+        await habit_unsuspend_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/habit/load",
+        response_model=HabitLoadResult,
+        tags=["habit"],
+        **standard_config,
+    )
+    async def load_habit(args: HabitLoadArgs, session: LoggedInSession) -> HabitLoadResult:
+        """Load a habit."""
+        return (await habit_load_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/habit/find",
+        response_model=HabitFindResult,
+        tags=["habit"],
+        **standard_config,
+    )
+    async def find_habit(args: HabitFindArgs, session: LoggedInSession) -> HabitFindResult:
+        """Find all habits, filtering by id.."""
+        return (await habit_find_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/chore/create",
+        response_model=ChoreCreateResult,
+        tags=["chore"],
+        **standard_config,
+    )
+    async def create_chore(
+        args: ChoreCreateArgs, session: LoggedInSession
+    ) -> ChoreCreateResult:
+        """Create a chore."""
+        return (await chore_create_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/chore/archive",
+        response_model=None,
+        tags=["chore"],
+        **standard_config,
+    )
+    async def archive_chore(args: ChoreArchiveArgs, session: LoggedInSession) -> None:
+        """Archive a chore."""
+        await chore_archive_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/chore/update",
+        response_model=None,
+        tags=["chore"],
+        **standard_config,
+    )
+    async def update_chore(args: ChoreUpdateArgs, session: LoggedInSession) -> None:
+        """Update a chore."""
+        await chore_update_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/chore/change-project",
+        response_model=None,
+        tags=["chore"],
+        **standard_config,
+    )
+    async def change_chore_project(
+        args: ChoreChangeProjectArgs, session: LoggedInSession
+    ) -> None:
+        """Change the project for a chore."""
+        await chore_change_project_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/chore/suspend",
+        response_model=None,
+        tags=["chore"],
+        **standard_config,
+    )
+    async def suspend_chore(args: ChoreSuspendArgs, session: LoggedInSession) -> None:
+        """Suspend a chore."""
+        await chore_suspend_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/chore/unsuspend",
+        response_model=None,
+        tags=["chore"],
+        **standard_config,
+    )
+    async def unsuspend_chore(args: ChoreUnsuspendArgs, session: LoggedInSession) -> None:
+        """Unsuspend a chore."""
+        await chore_unsuspend_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/chore/load",
+        response_model=ChoreLoadResult,
+        tags=["chore"],
+        **standard_config,
+    )
+    async def load_chore(args: ChoreLoadArgs, session: LoggedInSession) -> ChoreLoadResult:
+        """Load a chore."""
+        return (await chore_load_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/chore/find",
+        response_model=ChoreFindResult,
+        tags=["chore"],
+        **standard_config,
+    )
+    async def find_chore(args: ChoreFindArgs, session: LoggedInSession) -> ChoreFindResult:
+        """Find all chores, filtering by id.."""
+        return (await chore_find_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/big-plan/create",
+        response_model=BigPlanCreateResult,
+        tags=["big-plan"],
+        **standard_config,
+    )
+    async def create_big_plan(
+        args: BigPlanCreateArgs, session: LoggedInSession
+    ) -> BigPlanCreateResult:
+        """Create a big plan."""
+        return (await big_plan_create_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/big-plan/archive",
+        response_model=None,
+        tags=["big-plan"],
+        **standard_config,
+    )
+    async def archive_big_plan(args: BigPlanArchiveArgs, session: LoggedInSession) -> None:
+        """Archive a big plan."""
+        await big_plan_archive_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/big-plan/update",
+        response_model=BigPlanUpdateResult,
+        tags=["big-plan"],
+        **standard_config,
+    )
+    async def update_big_plan(
+        args: BigPlanUpdateArgs, session: LoggedInSession
+    ) -> BigPlanUpdateResult:
+        """Update a big plan."""
+        return (await big_plan_update_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/big-plan/change-project",
+        response_model=None,
+        tags=["big-plan"],
+        **standard_config,
+    )
+    async def change_big_plan_project(
+        args: BigPlanChangeProjectArgs, session: LoggedInSession
+    ) -> None:
+        """Change the project for a big plan."""
+        await big_plan_change_project_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/big-plan/load",
+        response_model=BigPlanLoadResult,
+        tags=["big-plan"],
+        **standard_config,
+    )
+    async def load_big_plan(
+        args: BigPlanLoadArgs, session: LoggedInSession
+    ) -> BigPlanLoadResult:
+        """Load a big plan."""
+        return (await big_plan_load_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/big-plan/find",
+        response_model=BigPlanFindResult,
+        tags=["big-plan"],
+        **standard_config,
+    )
+    async def find_big_plan(
+        args: BigPlanFindArgs, session: LoggedInSession
+    ) -> BigPlanFindResult:
+        """Find all big plans, filtering by id."""
+        return (await big_plan_find_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/journal/create",
+        response_model=JournalCreateResult,
+        tags=["journal"],
+        **standard_config,
+    )
+    async def create_journal(
+        args: JournalCreateArgs, session: LoggedInSession
+    ) -> JournalCreateResult:
+        """Create a journal."""
+        return (await journal_create_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/journal/archive",
+        response_model=None,
+        tags=["journal"],
+        **standard_config,
+    )
+    async def archive_journal(args: JournalArchiveArgs, session: LoggedInSession) -> None:
+        """Archive a journal."""
+        await journal_archive_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/journal/change-time-config",
+        response_model=None,
+        tags=["journal"],
+        **standard_config,
+    )
+    async def change_time_config_for_journal(
+        args: JournalChangeTimeConfigArgs, session: LoggedInSession
+    ) -> None:
+        """Change time config for a journal."""
+        await journal_change_time_config_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/journal/update-report",
+        response_model=None,
+        tags=["journal"],
+        **standard_config,
+    )
+    async def update_report_for_jorunal(
+        args: JournalUpdateReportArgs, session: LoggedInSession
+    ) -> None:
+        """Change time config for a journal."""
+        await journal_update_report_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/journal/find",
+        response_model=JournalFindResult,
+        tags=["journal"],
+        **standard_config,
+    )
+    async def find_journal(
+        args: JournalFindArgs, session: LoggedInSession
+    ) -> JournalFindResult:
+        """Find all journals, filtering by id."""
+        return (await journal_find_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/journal/load",
+        response_model=JournalLoadResult,
+        tags=["journal"],
+        **standard_config,
+    )
+    async def load_journal(
+        args: JournalLoadArgs, session: LoggedInSession
+    ) -> JournalLoadResult:
+        """Load a journal."""
+        return (await journal_load_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/doc/create",
+        response_model=DocCreateResult,
+        tags=["doc"],
+        **standard_config,
+    )
+    async def create_doc(args: DocCreateArgs, session: LoggedInSession) -> DocCreateResult:
+        """Create a doc."""
+        return (await doc_create_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/doc/archive",
+        response_model=None,
+        tags=["doc"],
+        **standard_config,
+    )
+    async def archive_doc(args: DocArchiveArgs, session: LoggedInSession) -> None:
+        """Archive a doc."""
+        await doc_archive_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/doc/update",
+        response_model=None,
+        tags=["doc"],
+        **standard_config,
+    )
+    async def update_doc(args: DocUpdateArgs, session: LoggedInSession) -> None:
+        """Update a doc."""
+        await doc_update_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/doc/change-parent",
+        response_model=None,
+        tags=["doc"],
+        **standard_config,
+    )
+    async def change_doc_parent(
+        args: DocChangeParentArgs, session: LoggedInSession
+    ) -> None:
+        """Change the parent for a doc."""
+        await doc_change_parent_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/doc/load",
+        response_model=DocLoadResult,
+        tags=["doc"],
+        **standard_config,
+    )
+    async def load_doc(args: DocLoadArgs, session: LoggedInSession) -> DocLoadResult:
+        """Load a doc."""
+        return (await doc_load_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/doc/find",
+        response_model=DocFindResult,
+        tags=["doc"],
+        **standard_config,
+    )
+    async def find_doc(args: DocFindArgs, session: LoggedInSession) -> DocFindResult:
+        """Find all docs, filtering by id."""
+        return (await doc_find_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/vacation/create",
+        response_model=VacationCreateResult,
+        tags=["vacation"],
+        **standard_config,
+    )
+    async def create_vacation(
+        args: VacationCreateArgs, session: LoggedInSession
+    ) -> VacationCreateResult:
+        """Create a vacation."""
+        return (await vacation_create_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/vacation/archive",
+        response_model=None,
+        tags=["vacation"],
+        **standard_config,
+    )
+    async def archive_vacation(args: VacationArchiveArgs, session: LoggedInSession) -> None:
+        """Archive a vacation."""
+        await vacation_archive_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/vacation/update",
+        response_model=None,
+        tags=["vacation"],
+        **standard_config,
+    )
+    async def update_vacation(args: VacationUpdateArgs, session: LoggedInSession) -> None:
+        """Update a vacation."""
+        await vacation_update_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/vacation/load",
+        response_model=VacationLoadResult,
+        tags=["vacation"],
+        **standard_config,
+    )
+    async def load_vacation(
+        args: VacationLoadArgs, session: LoggedInSession
+    ) -> VacationLoadResult:
+        """Load all vacations, filtering by id."""
+        return (await vacation_load_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/vacation/find",
+        response_model=VacationFindResult,
+        tags=["vacation"],
+        **standard_config,
+    )
+    async def find_vacation(
+        args: VacationFindArgs, session: LoggedInSession
+    ) -> VacationFindResult:
+        """Find all vacations, filtering by id."""
+        return (await vacation_find_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/project/create",
+        response_model=ProjectCreateResult,
+        tags=["project"],
+        **standard_config,
+    )
+    async def create_project(
+        args: ProjectCreateArgs, session: LoggedInSession
+    ) -> ProjectCreateResult:
+        """Create a project."""
+        return (await project_create_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/project/archive",
+        response_model=None,
+        tags=["project"],
+        **standard_config,
+    )
+    async def archive_project(args: ProjectArchiveArgs, session: LoggedInSession) -> None:
+        """Create a project."""
+        await project_archive_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/project/update",
+        response_model=None,
+        tags=["project"],
+        **standard_config,
+    )
+    async def update_project(args: ProjectUpdateArgs, session: LoggedInSession) -> None:
+        """Update a project."""
+        await project_update_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/project/load",
+        response_model=ProjectLoadResult,
+        tags=["project"],
+        **standard_config,
+    )
+    async def load_project(
+        args: ProjectLoadArgs, session: LoggedInSession
+    ) -> ProjectLoadResult:
+        """Load a project, filtering by id."""
+        return (await project_load_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/project/find",
+        response_model=ProjectFindResult,
+        tags=["project"],
+        **standard_config,
+    )
+    async def find_project(
+        args: ProjectFindArgs, session: LoggedInSession
+    ) -> ProjectFindResult:
+        """Find a project, filtering by id."""
+        return (await project_find_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/smart-list/create",
+        response_model=SmartListCreateResult,
+        tags=["smart-list"],
+        **standard_config,
+    )
+    async def create_smart_list(
+        args: SmartListCreateArgs, session: LoggedInSession
+    ) -> SmartListCreateResult:
+        """Create a smart list."""
+        return (await smart_list_create_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/smart-list/archive",
+        response_model=None,
+        tags=["smart-list"],
+        **standard_config,
+    )
+    async def archive_smart_list(
+        args: SmartListArchiveArgs, session: LoggedInSession
+    ) -> None:
+        """Archive a smart list."""
+        await smart_list_archive_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/smart-list/update",
+        response_model=None,
+        tags=["smart-list"],
+        **standard_config,
+    )
+    async def update_smart_list(
+        args: SmartListUpdateArgs, session: LoggedInSession
+    ) -> None:
+        """Update a smart list."""
+        await smart_list_update_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/smart-list/load",
+        response_model=SmartListLoadResult,
+        tags=["smart-list"],
+        **standard_config,
+    )
+    async def load_smart_list(
+        args: SmartListLoadArgs, session: LoggedInSession
+    ) -> SmartListLoadResult:
+        """Load a smart list."""
+        return (await smart_list_load_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/smart-list/find",
+        response_model=SmartListFindResult,
+        tags=["smart-list"],
+        **standard_config,
+    )
+    async def find_smart_list(
+        args: SmartListFindArgs, session: LoggedInSession
+    ) -> SmartListFindResult:
+        """Find all smart lists, filtering by id."""
+        return (await smart_list_find_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/smart-list/tag/create",
+        response_model=SmartListTagCreateResult,
+        tags=["smart-list"],
+        **standard_config,
+    )
+    async def create_smart_list_tag(
+        args: SmartListTagCreateArgs, session: LoggedInSession
+    ) -> SmartListTagCreateResult:
+        """Create a smart list tag."""
+        return (await smart_list_tag_create_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/smart-list/tag/archive",
+        response_model=None,
+        tags=["smart-list"],
+        **standard_config,
+    )
+    async def archive_smart_list_tag(
+        args: SmartListTagArchiveArgs, session: LoggedInSession
+    ) -> None:
+        """Archive a smart list tag."""
+        await smart_list_tag_archive_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/smart-list/tag/update",
+        response_model=None,
+        tags=["smart-list"],
+        **standard_config,
+    )
+    async def update_smart_list_tag(
+        args: SmartListTagUpdateArgs, session: LoggedInSession
+    ) -> None:
+        """Update a smart list tag."""
+        await smart_list_tag_update_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/smart-list/tag/load",
+        response_model=SmartListTagLoadResult,
+        tags=["smart-list"],
+        **standard_config,
+    )
+    async def load_smart_list_tag(
+        args: SmartListTagLoadArgs, session: LoggedInSession
+    ) -> SmartListTagLoadResult:
+        """Load a smart list tag."""
+        return (await smart_list_tag_load_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/smart-list/item/create",
+        response_model=SmartListItemCreateResult,
+        tags=["smart-list"],
+        **standard_config,
+    )
+    async def create_smart_list_item(
+        args: SmartListItemCreateArgs, session: LoggedInSession
+    ) -> SmartListItemCreateResult:
+        """Create a smart list item."""
+        return (await smart_list_item_create_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/smart-list/item/archive",
+        response_model=None,
+        tags=["smart-list"],
+        **standard_config,
+    )
+    async def archive_smart_list_item(
+        args: SmartListItemArchiveArgs, session: LoggedInSession
+    ) -> None:
+        """Archive a smart list item."""
+        await smart_list_item_archive_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/smart-list/item/update",
+        response_model=None,
+        tags=["smart-list"],
+        **standard_config,
+    )
+    async def update_smart_list_item(
+        args: SmartListItemUpdateArgs, session: LoggedInSession
+    ) -> None:
+        """Update a smart list item."""
+        await smart_list_item_update_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/smart-list/item/load",
+        response_model=SmartListItemLoadResult,
+        tags=["smart-list"],
+        **standard_config,
+    )
+    async def load_smart_list_item(
+        args: SmartListItemLoadArgs, session: LoggedInSession
+    ) -> SmartListItemLoadResult:
+        """Load a smart list item."""
+        return (await smart_list_item_load_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/metric/create",
+        response_model=MetricCreateResult,
+        tags=["metric"],
+        **standard_config,
+    )
+    async def create_metric(
+        args: MetricCreateArgs, session: LoggedInSession
+    ) -> MetricCreateResult:
+        """Create a metric."""
+        return (await metric_create_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/metric/archive",
+        response_model=None,
+        tags=["metric"],
+        **standard_config,
+    )
+    async def archive_metric(args: MetricArchiveArgs, session: LoggedInSession) -> None:
+        """Archive a metric."""
+        await metric_archive_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/metric/update",
+        response_model=None,
+        tags=["metric"],
+        **standard_config,
+    )
+    async def update_metric(args: MetricUpdateArgs, session: LoggedInSession) -> None:
+        """Update a metric."""
+        await metric_update_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/metric/load-settings",
+        response_model=MetricLoadSettingsResult,
+        tags=["metric"],
+        **standard_config,
+    )
+    async def load_metric_settings(
+        args: MetricLoadSettingsArgs, session: LoggedInSession
+    ) -> MetricLoadSettingsResult:
+        """Load settings for metrics."""
+        return (await metric_load_settings_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/metric/change-collection-project",
+        response_model=None,
+        tags=["metric"],
+        **standard_config,
+    )
+    async def change_metric_collection_project(
+        args: MetricChangeCollectionProjectArgs, session: LoggedInSession
+    ) -> None:
+        """Change the collection project for metric."""
+        await metric_change_collection_project_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/metric/load",
+        response_model=MetricLoadResult,
+        tags=["metric"],
+        **standard_config,
+    )
+    async def load_metric(
+        args: MetricLoadArgs, session: LoggedInSession
+    ) -> MetricLoadResult:
+        """Load a metric."""
+        return (await metric_load_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/metric/find",
+        response_model=MetricFindResult,
+        tags=["metric"],
+        **standard_config,
+    )
+    async def find_metric(
+        args: MetricFindArgs, session: LoggedInSession
+    ) -> MetricFindResult:
+        """Find all metrics, filtering by id."""
+        return (await metric_find_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/metric/entry/create",
+        response_model=MetricEntryCreateResult,
+        tags=["metric"],
+        **standard_config,
+    )
+    async def create_metric_entry(
+        args: MetricEntryCreateArgs, session: LoggedInSession
+    ) -> MetricEntryCreateResult:
+        """Create a metric entry."""
+        return (await metric_entry_create_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/metric/entry/archive",
+        response_model=None,
+        tags=["metric"],
+        **standard_config,
+    )
+    async def archive_metric_entry(
+        args: MetricEntryArchiveArgs, session: LoggedInSession
+    ) -> None:
+        """Archive a metric entry."""
+        await metric_entry_archive_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/metric/entry/update",
+        response_model=None,
+        tags=["metric"],
+        **standard_config,
+    )
+    async def update_metric_entry(
+        args: MetricEntryUpdateArgs, session: LoggedInSession
+    ) -> None:
+        """Update a metric entry."""
+        await metric_entry_update_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/metric/entry/load",
+        response_model=MetricEntryLoadResult,
+        tags=["metric"],
+        **standard_config,
+    )
+    async def load_metric_entry(
+        args: MetricEntryLoadArgs, session: LoggedInSession
+    ) -> MetricEntryLoadResult:
+        """Load a metric entry."""
+        return (await metric_entry_load_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/person/create",
+        response_model=PersonCreateResult,
+        tags=["person"],
+        **standard_config,
+    )
+    async def create_person(
+        args: PersonCreateArgs, session: LoggedInSession
+    ) -> PersonCreateResult:
+        """Create a person."""
+        return (await person_create_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/person/archive",
+        response_model=None,
+        tags=["person"],
+        **standard_config,
+    )
+    async def archive_person(args: PersonArchiveArgs, session: LoggedInSession) -> None:
+        """Archive a person."""
+        await person_archive_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/person/update",
+        response_model=None,
+        tags=["person"],
+        **standard_config,
+    )
+    async def update_person(args: PersonUpdateArgs, session: LoggedInSession) -> None:
+        """Update a person."""
+        await person_update_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/person/load-settings",
+        response_model=PersonLoadSettingsResult,
+        tags=["person"],
+        **standard_config,
+    )
+    async def load_person_settings(
+        args: PersonLoadSettingsArgs, session: LoggedInSession
+    ) -> PersonLoadSettingsResult:
+        """Change the catch up project for persons."""
+        return (await person_load_settings_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/person/change-catch-up-project",
+        response_model=None,
+        tags=["person"],
+        **standard_config,
+    )
+    async def update_change_catch_up_project(
+        args: PersonChangeCatchUpProjectArgs, session: LoggedInSession
+    ) -> None:
+        """Change the catch up project for persons."""
+        await person_change_catch_up_project_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/person/load",
+        response_model=PersonLoadResult,
+        tags=["person"],
+        **standard_config,
+    )
+    async def load_person(
+        args: PersonLoadArgs, session: LoggedInSession
+    ) -> PersonLoadResult:
+        """Load a person, filtering by id."""
+        return (await person_load_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/person/find",
+        response_model=PersonFindResult,
+        tags=["person"],
+        **standard_config,
+    )
+    async def find_person(
+        args: PersonFindArgs, session: LoggedInSession
+    ) -> PersonFindResult:
+        """Find a person, filtering by id."""
+        return (await person_find_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/slack-task/archive",
+        response_model=None,
+        tags=["slack-task"],
+        **standard_config,
+    )
+    async def archive_slack_task(
+        args: SlackTaskArchiveArgs, session: LoggedInSession
+    ) -> None:
+        """Archive a slack task."""
+        await slack_task_archive_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/slack-task/update",
+        response_model=None,
+        tags=["slack-task"],
+        **standard_config,
+    )
+    async def update_slack_task(
+        args: SlackTaskUpdateArgs, session: LoggedInSession
+    ) -> None:
+        """Update a slack task."""
+        await slack_task_update_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/slack-task/load-settings",
+        response_model=SlackTaskLoadSettingsResult,
+        tags=["slack-task"],
+        **standard_config,
+    )
+    async def load_slack_task_settings(
+        args: SlackTaskLoadSettingsArgs, session: LoggedInSession
+    ) -> SlackTaskLoadSettingsResult:
+        """Change the project for a slack task."""
+        return (await slack_task_load_settings_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/slack-task/change-project",
+        response_model=None,
+        tags=["slack-task"],
+        **standard_config,
+    )
+    async def change_slack_task_generation_project(
+        args: SlackTaskChangeGenerationProjectArgs, session: LoggedInSession
+    ) -> None:
+        """Change the project for a slack task."""
+        await slack_task_change_generation_project_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/slack-task/load",
+        response_model=SlackTaskLoadResult,
+        tags=["slack-task"],
+        **standard_config,
+    )
+    async def load_slack_task(
+        args: SlackTaskLoadArgs, session: LoggedInSession
+    ) -> SlackTaskLoadResult:
+        """Load a slack task."""
+        return (await slack_task_load_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/slack-task/find",
+        response_model=SlackTaskFindResult,
+        tags=["slack-task"],
+        **standard_config,
+    )
+    async def find_slack_task(
+        args: SlackTaskFindArgs, session: LoggedInSession
+    ) -> SlackTaskFindResult:
+        """Find all slack tasks, filtering by id."""
+        return (await slack_task_find_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/email-task/archive",
+        response_model=None,
+        tags=["email-task"],
+        **standard_config,
+    )
+    async def archive_email_task(
+        args: EmailTaskArchiveArgs, session: LoggedInSession
+    ) -> None:
+        """Archive a email task."""
+        await email_task_archive_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/email-task/update",
+        response_model=None,
+        tags=["email-task"],
+        **standard_config,
+    )
+    async def update_email_task(
+        args: EmailTaskUpdateArgs, session: LoggedInSession
+    ) -> None:
+        """Update a email task."""
+        await email_task_update_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/email-task/load-settings",
+        response_model=EmailTaskLoadSettingsResult,
+        tags=["email-task"],
+        **standard_config,
+    )
+    async def load_email_task_settings(
+        args: EmailTaskLoadSettingsArgs, session: LoggedInSession
+    ) -> EmailTaskLoadSettingsResult:
+        """Change the project for a email task."""
+        return (await email_task_load_settings_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/email-task/change-project",
+        response_model=None,
+        tags=["email-task"],
+        **standard_config,
+    )
+    async def change_email_task_generation_project(
+        args: EmailTaskChangeGenerationProjectArgs, session: LoggedInSession
+    ) -> None:
+        """Change the project for a email task."""
+        await email_task_change_generation_project_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/email-task/load",
+        response_model=EmailTaskLoadResult,
+        tags=["email-task"],
+        **standard_config,
+    )
+    async def load_email_task(
+        args: EmailTaskLoadArgs, session: LoggedInSession
+    ) -> EmailTaskLoadResult:
+        """Load an email task."""
+        return (await email_task_load_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/email-task/find",
+        response_model=EmailTaskFindResult,
+        tags=["email-task"],
+        **standard_config,
+    )
+    async def find_email_task(
+        args: EmailTaskFindArgs, session: LoggedInSession
+    ) -> EmailTaskFindResult:
+        """Find all email tasks, filtering by id."""
+        return (await email_task_find_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/core/note/create",
+        response_model=NoteCreateResult,
+        tags=["note"],
+        **standard_config,
+    )
+    async def create_note(
+        args: NoteCreateArgs, session: LoggedInSession
+    ) -> NoteCreateResult:
+        """Create a note."""
+        return (await note_create_use_case.execute(session, args))[1]
+
+
+    @web_app.fast_app.post(
+        "/core/note/archive",
+        response_model=None,
+        tags=["note"],
+        **standard_config,
+    )
+    async def archive_note(args: NoteArchiveArgs, session: LoggedInSession) -> None:
+        """Archive a note."""
+        await note_archive_use_case.execute(session, args)
+
+
+    @web_app.fast_app.post(
+        "/core/note/update",
+        response_model=None,
+        tags=["note"],
+        **standard_config,
+    )
+    async def update_note(args: NoteUpdateArgs, session: LoggedInSession) -> None:
+        """Update a note."""
+        await note_update_use_case.execute(session, args)
+
+    await web_app.run()
+
+    # x = create_model("x", foo=(int, ...), bar=(str, ...))
+
+    # async def do_x(args: x, session: LoggedInSession) -> None:
+    #     """Update a note."""
+    #     pass
+
+    # app.add_api_route(
+    #     "/x",
+    #     do_x,
+    #     response_model=x,
+    #     tags=["note"],
+    #     **standard_config,
+    # )
+
+def sync_main() -> None:
+    asyncio.run(main())
+
+if __name__ == "__main__":
+    sync_main()

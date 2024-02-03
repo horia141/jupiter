@@ -2,6 +2,5 @@
 
 set -ex
 
-export PORT=10020
-(cd src/webui && npm run dev) &
-(cd src/webapi && SQLITE_DB_URL=sqlite+aiosqlite:///../../.build-cache/juiter-fixed.sqlite  uvicorn jupiter.webapi.jupiter:webapp.fast_app --port 8010 --reload --reload-dir . --reload-dir ../core)
+(cd src/webui && PORT=10020 npm run dev) &
+(cd src/webapi && SQLITE_DB_URL=sqlite+aiosqlite:///../../.build-cache/juiter-fixed.sqlite  python -m watchfiles jupiter.webapi.jupiter.sync_main . ../core)

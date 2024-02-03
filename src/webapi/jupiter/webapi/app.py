@@ -18,6 +18,7 @@ from jupiter.core.utils.progress_reporter import EmptyProgressReporterFactory, N
 from jupiter.core.utils.time_provider import TimeProvider
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from starlette.middleware.base import BaseHTTPMiddleware
+import uvicorn
 
 from jupiter.webapi.websocket_progress_reporter import WebsocketProgressReporterFactory
 from jupiter.webapi.time_provider import CronRunTimeProvider, PerRequestTimeProvider
@@ -257,17 +258,19 @@ class WebServiceApp:
 
         return app
     
-    def run(self) -> None:
+    async def run(self) -> None:
         """Run the app."""
-
         self._fast_app.add_middleware(BaseHTTPMiddleware, dispatch=self._time_provider_middleware)
         self._fast_app.add_event_handler("startup", self._on_startup)
+
+        config = uvicorn.Config(self._fast_app, port=self._global_properties.port, log_level="info")
+        server = uvicorn.Server(config)
+        await server.serve()
     
     @property
     def fast_app(self) -> FastAPI:
         """Get the FastAPI app."""
         return self._fast_app
-        
 
     def _custom_generate_unique_id(self, route: APIRoute) -> str:
         """Generate a OpenAPI unique id from just the route name."""
