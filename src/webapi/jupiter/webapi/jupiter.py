@@ -1841,29 +1841,6 @@ async def main() -> None:
         )
 
 
-    @web_app.fast_app.on_event("startup")
-    async def startup_event() -> None:
-        """The startup event for the whole service."""
-        await sqlite_connection.prepare()
-
-
-    @web_app.fast_app.on_event("shutdown")
-    async def shutdown_event() -> None:
-        """The shutdown event for the whole service."""
-        try:
-            await sqlite_connection.dispose()
-        finally:
-            pass
-        try:
-            await aio_session.close()
-        finally:
-            pass
-        try:
-            await progress_reporter_factory.unregister_all_websockets()
-        finally:
-            pass
-
-
     websocket_should_close = False
 
 
@@ -3409,7 +3386,24 @@ async def main() -> None:
         """Update a note."""
         await note_update_use_case.execute(session, args)
 
-    await web_app.run()
+    
+    await sqlite_connection.prepare()
+
+    try:
+        await web_app.run()
+    finally:
+        try:
+            await sqlite_connection.dispose()
+        finally:
+            pass
+        try:
+            await aio_session.close()
+        finally:
+            pass
+        try:
+            await progress_reporter_factory.unregister_all_websockets()
+        finally:
+            pass
 
     # x = create_model("x", foo=(int, ...), bar=(str, ...))
 

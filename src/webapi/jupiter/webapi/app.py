@@ -260,9 +260,23 @@ class WebServiceApp:
     
     async def run(self) -> None:
         """Run the app."""
-        self._fast_app.add_middleware(BaseHTTPMiddleware, dispatch=self._time_provider_middleware)
-        self._fast_app.add_event_handler("startup", self._on_startup)
+        scheduler = AsyncIOScheduler()
 
+        for use_case, command in self._use_case_commands.items():
+            if isinstance(command, CronCommand):
+                scheduler.add_job(
+                    command.execute,
+                    id=use_case.__name__,
+                    name=use_case.__name__,
+                    trigger="cron",
+                    day="*",
+                    hour="1",
+                )
+
+        scheduler.start()
+
+        self._fast_app.add_middleware(BaseHTTPMiddleware, dispatch=self._time_provider_middleware)
+        
         config = uvicorn.Config(self._fast_app, port=self._global_properties.port, log_level="info")
         server = uvicorn.Server(config)
         await server.serve()
@@ -279,23 +293,7 @@ class WebServiceApp:
     async def _time_provider_middleware(self, request: Request, call_next: DecoratedCallable) -> Callable[[DecoratedCallable], DecoratedCallable]:  # type: ignore  # noqa: E501
         """Middleware to provide the time provider."""
         self._request_time_provider.set_request_time()
-        return await call_next(request)
-    
-    async def _on_startup(self) -> None:
-        scheduler = AsyncIOScheduler()
-
-        for use_case, command in self._use_case_commands.items():
-            if isinstance(command, CronCommand):
-                scheduler.add_job(
-                    command.execute,
-                    id=use_case.__name__,
-                    name=use_case.__name__,
-                    trigger="cron",
-                    day="*",
-                    hour="1",
-                )
-
-        scheduler.start()
+        return await call_next(request)     
     
     def _add_use_case_type(
         self,
