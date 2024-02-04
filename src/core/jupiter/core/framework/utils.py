@@ -55,6 +55,14 @@ def is_thing_ish_type(  # type: ignore
         and get_origin(the_type) is None
         and issubclass(
             the_type,
-            (AtomicValue, CompositeValue, EnumValue, SecretValue, Entity, Record, UseCaseArgsBase),
+            (
+                AtomicValue,
+                CompositeValue,
+                EnumValue,
+                SecretValue,
+                Entity,
+                Record,
+                UseCaseArgsBase,
+            ),
         )
     )

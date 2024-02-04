@@ -49,7 +49,7 @@ from jupiter.core.framework.realm import (
     RealmThing,
 )
 from jupiter.core.framework.record import Record
-from jupiter.core.framework.thing import Thing, is_value_ish_type
+from jupiter.core.framework.thing import Thing
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case_io import UseCaseArgsBase
 from jupiter.core.framework.utils import find_all_modules, is_thing_ish_type
@@ -841,16 +841,7 @@ class _StandardUseCaseArgsCliDecoder(
 
         all_fields = dataclasses.fields(self._the_type)
 
-        ctor_args: dict[
-            str,
-            ParentLink
-            | Thing
-            | list[Thing]
-            | set[Thing]
-            | dict[Thing, Thing]
-            | UpdateAction[Thing]
-            | UpdateAction[list[Thing]],
-        ] = {}
+        ctor_args: dict[str, ParentLink | DomainThing | UpdateAction[DomainThing]] = {}
 
         for field in all_fields:
             if field.name not in value:
@@ -860,88 +851,29 @@ class _StandardUseCaseArgsCliDecoder(
 
             field_value = value[field.name]
 
-            if (field_type_origin := get_origin(field.type)) is not None:
-                if field_type_origin is UpdateAction:
-                    update_action_type = cast(type[Thing], get_args(field.type)[0])
-                    if is_value_ish_type(update_action_type):
-                        update_action_decoder: RealmDecoder[
-                            Thing, DatabaseRealm
-                        ] = self._realm_codec_registry.get_decoder(
-                            update_action_type, DatabaseRealm
-                        )
+            if (
+                field_type_origin := get_origin(field.type)
+            ) is not None and field_type_origin is UpdateAction:
+                update_action_type = cast(type[DomainThing], get_args(field.type)[0])
 
-                        if field_value is None:
-                            ctor_args[field.name] = UpdateAction.do_nothing()
-                        else:
-                            ctor_args[field.name] = UpdateAction.change_to(
-                                update_action_decoder.decode(field_value)
-                            )
-                    elif get_origin(update_action_type) is not None:
-                        update_action_origin_type = get_origin(update_action_type)
-                        if update_action_origin_type is typing.Union or (
-                            isinstance(update_action_origin_type, type)
-                            and issubclass(update_action_origin_type, types.UnionType)
-                        ):
-                            field_args = get_args(update_action_type)
-                            if (
-                                f"clear_{field.name}" in value
-                                and value[f"clear_{field.name}"] is True
-                            ):
-                                ctor_args[field.name] = UpdateAction.change_to(None)  # type: ignore
-                            elif field_value is None:
-                                ctor_args[field.name] = UpdateAction.do_nothing()
-                            else:
-                                for field_arg in field_args:
-                                    field_decoder = (
-                                        self._realm_codec_registry.get_decoder(
-                                            field_arg, DatabaseRealm
-                                        )
-                                    )
-                                    try:
-                                        ctor_args[field.name] = UpdateAction.change_to(  # type: ignore
-                                            field_decoder.decode(field_value)
-                                        )
-                                        break
-                                    except (RealmDecodingError, InputValidationError):
-                                        pass
-                                else:
-                                    raise RealmDecodingError(
-                                        f"Could not decode field {field.name} of type {field.type} for value {self._the_type.__name__}"
-                                    )
-                        elif update_action_origin_type is list:
-                            list_item_type = cast(
-                                type[Thing], get_args(update_action_type)[0]
-                            )
-                            if field_value is None:
-                                ctor_args[field.name] = UpdateAction.do_nothing()
-                            if not isinstance(field_value, list):
-                                raise RealmDecodingError(
-                                    f"Expected value of type {self._the_type.__name__} to have field {field.name} to be a list"
-                                )
-                            update_list_item_decoder: RealmDecoder[
-                                Thing, DatabaseRealm
-                            ] = self._realm_codec_registry.get_decoder(
-                                list_item_type, DatabaseRealm
-                            )
-                            partial_result = UpdateAction.change_to(
-                                [
-                                    update_list_item_decoder.decode(v)
-                                    for v in field_value
-                                ]
-                            )
-                            ctor_args[field.name] = partial_result
-                        else:
-                            raise Exception(
-                                f"Could not decode field {field.name} of type {field.type} for value {self._the_type.__name__}"
-                            )
-                    else:
-                        raise Exception(
-                            f"Could not decode field {field.name} of type {field.type} for value {self._the_type.__name__}"
-                        )
+                final_value: UpdateAction[DomainThing]
+                if (
+                    f"clear_{field.name}" in value
+                    and value[f"clear_{field.name}"] is True
+                ):
+                    final_value = UpdateAction.change_to(None)
+                elif field_value is None:
+                    final_value = UpdateAction.do_nothing()
                 else:
-                    raise Exception(
-                        f"Could not decode field {field.name} of type {field.type} for value {self._the_type.__name__}"
+                    update_action_decoder = self._realm_codec_registry.get_decoder(
+                        update_action_type, CliRealm
                     )
+
+                    final_value = UpdateAction.change_to(
+                        update_action_decoder.decode(field_value)
+                    )
+
+                ctor_args[field.name] = final_value
             else:
                 decoder = self._realm_codec_registry.get_decoder(
                     field.type, DatabaseRealm, self._the_type
