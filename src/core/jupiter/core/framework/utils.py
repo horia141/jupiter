@@ -8,6 +8,7 @@ from typing import Any, TypeGuard, get_origin
 from jupiter.core.framework.entity import Entity
 from jupiter.core.framework.record import Record
 from jupiter.core.framework.thing import Thing
+from jupiter.core.framework.use_case_io import UseCaseArgsBase
 from jupiter.core.framework.value import (
     AtomicValue,
     CompositeValue,
@@ -54,6 +55,6 @@ def is_thing_ish_type(  # type: ignore
         and get_origin(the_type) is None
         and issubclass(
             the_type,
-            (AtomicValue, CompositeValue, EnumValue, SecretValue, Entity, Record),
+            (AtomicValue, CompositeValue, EnumValue, SecretValue, Entity, Record, UseCaseArgsBase),
         )
     )

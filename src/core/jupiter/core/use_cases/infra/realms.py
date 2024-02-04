@@ -1229,6 +1229,9 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                 if not (isinstance(obj, type) and issubclass(obj, RealmEncoder)):
                     continue
 
+                if obj.__module__ == ModuleExplorerRealmCodecRegistry.__module__:
+                    continue
+
                 if obj.__module__ != the_module.__name__:
                     # This is an import, and not a definition!
                     continue
@@ -1262,6 +1265,9 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                     continue
 
                 if not (isinstance(obj, type) and issubclass(obj, RealmDecoder)):
+                    continue
+
+                if obj.__module__ == ModuleExplorerRealmCodecRegistry.__module__:
                     continue
 
                 if obj.__module__ != the_module.__name__:
