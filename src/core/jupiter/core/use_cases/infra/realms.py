@@ -860,59 +860,8 @@ class _StandardUseCaseArgsCliDecoder(
 
             field_value = value[field.name]
 
-            if is_value_ish_type(field.type):
-                ctor_args[field.name] = self._realm_codec_registry.get_decoder(
-                    field.type, DatabaseRealm
-                ).decode(field_value)
-            elif get_origin(field.type) is not None:
-                field_type_origin = get_origin(field.type)
-                if field_type_origin is typing.Union or (
-                    isinstance(field_type_origin, type)
-                    and issubclass(field_type_origin, types.UnionType)
-                ):
-                    field_args = get_args(field.type)
-                    for field_arg in field_args:
-                        if is_value_ish_type(field_arg):
-                            field_decoder = self._realm_codec_registry.get_decoder(
-                                field_arg, DatabaseRealm
-                            )
-                            try:
-                                ctor_args[field.name] = field_decoder.decode(
-                                    field_value
-                                )
-                                break
-                            except (RealmDecodingError, InputValidationError):
-                                pass
-                        elif get_origin(field_arg) is not None:
-                            field_arg_origin = get_origin(field_arg)
-
-                            if field_arg_origin is list:
-                                list_item_type = cast(
-                                    type[Thing], get_args(field_arg)[0]
-                                )
-                                if not isinstance(field_value, list):
-                                    continue
-                                list_item_decoder = (
-                                    self._realm_codec_registry.get_decoder(
-                                        list_item_type, DatabaseRealm
-                                    )
-                                )
-                                try:
-                                    ctor_args[field.name] = [
-                                        list_item_decoder.decode(v) for v in field_value
-                                    ]
-                                except (RealmDecodingError, InputValidationError):
-                                    continue
-                                break
-                            else:
-                                continue
-                        else:
-                            continue
-                    else:
-                        raise RealmDecodingError(
-                            f"Could not decode field {field.name} of type {field.type} for value {self._the_type.__name__}"
-                        )
-                elif field_type_origin is UpdateAction:
+            if (field_type_origin := get_origin(field.type)) is not None:
+                if field_type_origin is UpdateAction:
                     update_action_type = cast(type[Thing], get_args(field.type)[0])
                     if is_value_ish_type(update_action_type):
                         update_action_decoder: RealmDecoder[
@@ -989,79 +938,15 @@ class _StandardUseCaseArgsCliDecoder(
                         raise Exception(
                             f"Could not decode field {field.name} of type {field.type} for value {self._the_type.__name__}"
                         )
-                elif field_type_origin is list:
-                    list_item_type = cast(type[Thing], get_args(field.type)[0])
-                    if not isinstance(field_value, list):
-                        raise RealmDecodingError(
-                            f"Expected value of type {self._the_type.__name__} to have field {field.name} to be a list"
-                        )
-
-                    if is_value_ish_type(list_item_type):
-                        list_item_decoder2: RealmDecoder[
-                            Thing, DatabaseRealm
-                        ] = self._realm_codec_registry.get_decoder(
-                            list_item_type, DatabaseRealm
-                        )
-                        ctor_args[field.name] = [
-                            list_item_decoder2.decode(v) for v in field_value
-                        ]
-                    elif get_origin(list_item_type) is not None:
-                        list_item_type_origin = get_origin(list_item_type)
-                        if list_item_type_origin is typing.Union or (
-                            isinstance(list_item_type_origin, type)
-                            and issubclass(list_item_type_origin, types.UnionType)
-                        ):
-                            field_list_result = []
-                            for field_item in field_value:
-                                list_item_type_args = get_args(list_item_type)
-                                for list_item_type_arg in list_item_type_args:
-                                    list_item_decoder = (
-                                        self._realm_codec_registry.get_decoder(
-                                            list_item_type_arg, DatabaseRealm
-                                        )
-                                    )
-                                    try:
-                                        field_list_result.append(
-                                            list_item_decoder.decode(field_item)
-                                        )
-                                        break
-                                    except (RealmDecodingError, InputValidationError):
-                                        pass
-                                else:
-                                    raise RealmDecodingError(
-                                        f"Could not decode field {field.name} of type {field.type} for value {self._the_type.__name__}"
-                                    )
-                            ctor_args[field.name] = field_list_result
-                        else:
-                            raise Exception(
-                                f"Could not decode field {field.name} of type {field.type} for value {self._the_type.__name__}"
-                            )
-                    else:
-                        raise Exception(
-                            f"Could not decode field {field.name} of type {field.type} for value {self._the_type.__name__}"
-                        )
-                elif field_type_origin is set:
-                    set_item_type = cast(type[Thing], get_args(field.type)[0])
-                    if not isinstance(field_value, list):
-                        raise RealmDecodingError(
-                            f"Expected value of type {self._the_type.__name__} to have field {field.name} to be a list"
-                        )
-                    set_item_decoder: RealmDecoder[
-                        Thing, DatabaseRealm
-                    ] = self._realm_codec_registry.get_decoder(
-                        set_item_type, DatabaseRealm
-                    )
-                    ctor_args[field.name] = set(
-                        set_item_decoder.decode(v) for v in field_value
-                    )
                 else:
                     raise Exception(
                         f"Could not decode field {field.name} of type {field.type} for value {self._the_type.__name__}"
                     )
             else:
-                raise Exception(
-                    f"Could not decode field {field.name} of type {field.type} for value {self._the_type.__name__}"
+                decoder = self._realm_codec_registry.get_decoder(
+                    field.type, DatabaseRealm, self._the_type
                 )
+                ctor_args[field.name] = decoder.decode(field_value)
 
         return self._the_type(**ctor_args)
 
