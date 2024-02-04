@@ -20,19 +20,6 @@ Thing = Concept | Primitive | UseCaseArgsBase
 ValueIsh = Value | Primitive
 
 
-def is_value_ish(
-    the_type: Thing,
-) -> TypeGuard[ValueIsh]:
-    return (
-        type(the_type)
-        in (type(None), bool, int, float, str, date, datetime, Date, DateTime)
-        or isinstance(the_type, AtomicValue)
-        or isinstance(the_type, CompositeValue)
-        or isinstance(the_type, EnumValue)
-        or isinstance(the_type, SecretValue)
-    )
-
-
 def is_value_ish_type(
     the_type: type[Thing],
 ) -> TypeGuard[type[ValueIsh]]:

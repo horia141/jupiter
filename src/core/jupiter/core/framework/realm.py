@@ -1,6 +1,6 @@
 """A realm denotes the storage existance and validation correctness of a particular Jupiter concept (value, record, entity)."""
 import abc
-from typing import Generic, Mapping, TypeVar
+from typing import ForwardRef, Generic, Mapping, TypeVar, Union
 
 from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.thing import Thing
@@ -32,9 +32,18 @@ class EmailRealm(Realm):
 
 AllRealms = DatabaseRealm | SearchRealm | WebRealm | CliRealm | EmailRealm
 
+DomainThing = (
+    Thing
+    | Union[Thing, Thing]
+    | Union[Thing, Thing, Thing]
+    | Union[Thing, Thing, Thing, Thing]
+    | list["DomainThing"]
+    | set["DomainThing"]
+    | dict["DomainThing", "DomainThing"]
+)
 RealmThing = Primitive | list["RealmThing"] | Mapping[str, "RealmThing"]
 
-_ThingT = TypeVar("_ThingT", bound=Thing)
+_DomainThingT = TypeVar("_DomainThingT", bound=DomainThing)
 _RealmT = TypeVar("_RealmT", bound=Realm)
 
 
@@ -42,19 +51,19 @@ class RealmDecodingError(Exception):
     """Error raised when a concept from a realm cannot be decoded to the domain model."""
 
 
-class RealmEncoder(Generic[_ThingT, _RealmT], abc.ABC):
+class RealmEncoder(Generic[_DomainThingT, _RealmT], abc.ABC):
     """A encoder and decoder for a realm and a particular type."""
 
     @abc.abstractmethod
-    def encode(self, value: _ThingT) -> RealmThing:
+    def encode(self, value: _DomainThingT) -> RealmThing:
         """Encode a domain thing to a realm."""
 
 
-class RealmDecoder(Generic[_ThingT, _RealmT], abc.ABC):
+class RealmDecoder(Generic[_DomainThingT, _RealmT], abc.ABC):
     """A encoder and decoder for a realm and a particular type."""
 
     @abc.abstractmethod
-    def decode(self, value: RealmThing) -> _ThingT:
+    def decode(self, value: RealmThing) -> _DomainThingT:
         """Decode a domain thing from realm thing."""
 
 
@@ -64,17 +73,19 @@ class RealmCodecRegistry(abc.ABC):
     @abc.abstractmethod
     def get_encoder(
         self,
-        concept_type: type[_ThingT],
+        concept_type: type[_DomainThingT] | ForwardRef | str,
         realm: type[_RealmT],
-    ) -> RealmEncoder[_ThingT, _RealmT]:
+        root_type: type[DomainThing] | None = None,
+    ) -> RealmEncoder[_DomainThingT, _RealmT]:
         """Get an encoder for a realm and a concept type."""
 
     @abc.abstractmethod
     def get_decoder(
         self,
-        concept_type: type[_ThingT],
+        concept_type: type[_DomainThingT] | ForwardRef | str,
         realm: type[_RealmT],
-    ) -> RealmDecoder[_ThingT, _RealmT]:
+        root_type: type[DomainThing] | None = None,
+    ) -> RealmDecoder[_DomainThingT, _RealmT]:
         """Get a decoder for a realm and a concept type."""
 
 
@@ -83,17 +94,19 @@ class PlaceholderRealmCodecRegistry(RealmCodecRegistry):
 
     def get_encoder(
         self,
-        concept_type: type[_ThingT],
+        concept_type: type[_DomainThingT] | ForwardRef | str,
         realm: type[_RealmT],
-    ) -> RealmEncoder[_ThingT, _RealmT]:
+        root_type: type[DomainThing] | None = None,
+    ) -> RealmEncoder[_DomainThingT, _RealmT]:
         """Get an encoder for a realm and a concept type."""
         raise NotImplementedError
 
     def get_decoder(
         self,
-        concept_type: type[_ThingT],
+        concept_type: type[_DomainThingT] | ForwardRef | str,
         realm: type[_RealmT],
-    ) -> RealmDecoder[_ThingT, _RealmT]:
+        root_type: type[DomainThing] | None = None,
+    ) -> RealmDecoder[_DomainThingT, _RealmT]:
         """Get a decoder for a realm and a concept type."""
         raise NotImplementedError
 

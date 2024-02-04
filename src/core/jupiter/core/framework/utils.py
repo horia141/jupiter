@@ -1,7 +1,21 @@
 """Some utilities."""
 import importlib
 import pkgutil
+from datetime import date, datetime
 from types import ModuleType
+from typing import Any, TypeGuard, get_origin
+
+from jupiter.core.framework.entity import Entity
+from jupiter.core.framework.record import Record
+from jupiter.core.framework.thing import Thing
+from jupiter.core.framework.value import (
+    AtomicValue,
+    CompositeValue,
+    EnumValue,
+    SecretValue,
+)
+from pendulum.date import Date
+from pendulum.datetime import DateTime
 
 
 def find_all_modules(
@@ -20,3 +34,26 @@ def find_all_modules(
     for mr in module_roots:
         explore_module_tree(mr)
     return all_modules
+
+
+def is_thing_ish_type(  # type: ignore
+    the_type: type[Any],
+) -> TypeGuard[type[Thing]]:
+    return the_type in (
+        type(None),
+        bool,
+        int,
+        float,
+        str,
+        date,
+        datetime,
+        Date,
+        DateTime,
+    ) or (
+        isinstance(the_type, type)
+        and get_origin(the_type) is None
+        and issubclass(
+            the_type,
+            (AtomicValue, CompositeValue, EnumValue, SecretValue, Entity, Record),
+        )
+    )

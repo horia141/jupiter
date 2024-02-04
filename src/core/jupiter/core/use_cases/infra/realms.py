@@ -7,6 +7,7 @@ from datetime import date, datetime
 from types import GenericAlias, ModuleType
 from typing import (
     Final,
+    ForwardRef,
     Generic,
     Iterator,
     TypeVar,
@@ -39,6 +40,7 @@ from jupiter.core.framework.realm import (
     PROVIDE_VIA_REGISTRY,
     CliRealm,
     DatabaseRealm,
+    DomainThing,
     Realm,
     RealmCodecRegistry,
     RealmDecoder,
@@ -47,10 +49,10 @@ from jupiter.core.framework.realm import (
     RealmThing,
 )
 from jupiter.core.framework.record import Record
-from jupiter.core.framework.thing import Thing, is_value_ish, is_value_ish_type
+from jupiter.core.framework.thing import Thing, is_value_ish_type
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case_io import UseCaseArgsBase
-from jupiter.core.framework.utils import find_all_modules
+from jupiter.core.framework.utils import find_all_modules, is_thing_ish_type
 from jupiter.core.framework.value import (
     AtomicValue,
     CompositeValue,
@@ -60,7 +62,7 @@ from pendulum.date import Date
 from pendulum.datetime import DateTime
 
 _RealmT = TypeVar("_RealmT", bound=Realm)
-_ThingT = TypeVar("_ThingT", bound=Thing)
+_DomainThingT = TypeVar("_DomainThingT", bound=DomainThing)
 _PrimitiveT = TypeVar("_PrimitiveT", bound=Primitive)
 _AtomicValueT = TypeVar("_AtomicValueT", bound=AtomicValue)
 _CompositeValueT = TypeVar("_CompositeValueT", bound=CompositeValue)
@@ -95,6 +97,283 @@ _UseCaseArgsT = TypeVar("_UseCaseArgsT", bound=UseCaseArgsBase)
 #     ValueFieldType
 #     ParentLink
 #     EntityLink
+
+
+class _LiteralDatabaseEncoder(RealmEncoder[str, DatabaseRealm]):
+
+    _allowed_values: list[str]
+
+    def __init__(self, allowed_values: list[str]) -> None:
+        self._allowed_values = allowed_values
+
+    def encode(self, value: str) -> RealmThing:
+        if value not in self._allowed_values:
+            raise Exception(f"Expected value to be one of {self._allowed_values}")
+        return value
+
+
+class _LiteralDatabaseDecoder(RealmDecoder[str, DatabaseRealm]):
+
+    _allowed_values: list[str]
+
+    def __init__(self, allowed_values: list[str]) -> None:
+        self._allowed_values = allowed_values
+
+    def decode(self, value: RealmThing) -> str:
+        if not isinstance(value, str) or value not in self._allowed_values:
+            raise RealmDecodingError(
+                f"Expected value to be one of {self._allowed_values}"
+            )
+        return value
+
+
+class _UnionDatabaseEncoder(RealmEncoder[DomainThing, DatabaseRealm]):
+    """An encoder for unions."""
+
+    _realm_codec_registry: Final[RealmCodecRegistry]
+    _root_type: type[DomainThing] | None
+    _the_types: list[type[DomainThing] | ForwardRef | str]
+
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        root_type: type[DomainThing] | None,
+        the_types: list[type[DomainThing] | ForwardRef | str],
+    ) -> None:
+        self._realm_codec_registry = realm_codec_registry
+        self._root_type = root_type
+        self._the_types = the_types
+
+    def encode(self, value: DomainThing) -> RealmThing:
+        """Encode a realm to a string."""
+        for attempt_type in self._the_types:
+            try:
+                encoder = self._realm_codec_registry.get_encoder(
+                    attempt_type, DatabaseRealm, self._root_type
+                )
+                return encoder.encode(value)
+            except (RealmDecodingError, Exception):
+                pass
+
+        raise RealmDecodingError(
+            f"Could not encode value {value} of type {value.__class__.__name__}"
+        )
+
+
+class _UnionDatabaseDecoder(RealmDecoder[DomainThing, DatabaseRealm]):
+    """An ecnoder for unions."""
+
+    _realm_codec_registry: Final[RealmCodecRegistry]
+    _root_type: type[DomainThing] | None
+    _the_types: list[type[DomainThing] | ForwardRef | str]
+
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        root_type: type[DomainThing] | None,
+        the_types: list[type[DomainThing] | ForwardRef | str],
+    ) -> None:
+        self._realm_codec_registry = realm_codec_registry
+        self._root_type = root_type
+        self._the_types = the_types
+
+    def decode(self, value: RealmThing) -> DomainThing:
+        """Decode a realm from a string."""
+        for attempt_type in self._the_types:
+            try:
+                return self._realm_codec_registry.get_decoder(
+                    attempt_type, DatabaseRealm, self._root_type
+                ).decode(value)
+            except (InputValidationError, RealmDecodingError):
+                pass
+
+        raise RealmDecodingError(
+            f"Could not decode value {value} of type {value.__class__.__name__}"
+        )
+
+
+class _ListDatabaseEncoder(RealmEncoder[list[DomainThing], DatabaseRealm]):
+    """An encoder for lists."""
+
+    _realm_codec_registry: Final[RealmCodecRegistry]
+    _root_type: type[DomainThing] | None
+    _the_type: type[DomainThing] | ForwardRef | str
+
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        root_type: type[DomainThing] | None,
+        the_type: type[DomainThing] | ForwardRef | str,
+    ) -> None:
+        self._realm_codec_registry = realm_codec_registry
+        self._root_type = root_type
+        self._the_type = the_type
+
+    def encode(self, value: list[DomainThing]) -> RealmThing:
+        """Encode a realm to a string."""
+        encoder = self._realm_codec_registry.get_encoder(
+            self._the_type, DatabaseRealm, self._root_type
+        )
+        return [encoder.encode(v) for v in value]
+
+
+class _ListDatabaseDecoder(RealmDecoder[list[DomainThing], DatabaseRealm]):
+    """An encoder for lists."""
+
+    _realm_codec_registry: Final[RealmCodecRegistry]
+    _root_type: type[DomainThing] | None
+    _the_type: type[DomainThing] | ForwardRef | str
+
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        root_type: type[DomainThing] | None,
+        the_type: type[DomainThing] | ForwardRef | str,
+    ) -> None:
+        self._realm_codec_registry = realm_codec_registry
+        self._root_type = root_type
+        self._the_type = the_type
+
+    def decode(self, value: RealmThing) -> list[DomainThing]:
+        """Decode a realm from a string."""
+        if not isinstance(value, list):
+            raise RealmDecodingError(
+                f"Expected value for {value.__class__.__name__} to be a list"
+            )
+        decoder = self._realm_codec_registry.get_decoder(
+            self._the_type, DatabaseRealm, self._root_type
+        )
+        return [decoder.decode(v) for v in value]
+
+
+class _SetDatabaseEncoder(RealmEncoder[set[DomainThing], DatabaseRealm]):
+    """An encoder for sets."""
+
+    _realm_codec_registry: Final[RealmCodecRegistry]
+    _root_type: type[DomainThing] | None
+    _the_type: type[DomainThing] | ForwardRef | str
+
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        root_type: type[DomainThing] | None,
+        the_type: type[DomainThing] | ForwardRef | str,
+    ) -> None:
+        self._realm_codec_registry = realm_codec_registry
+        self._root_type = root_type
+        self._the_type = the_type
+
+    def encode(self, value: set[DomainThing]) -> RealmThing:
+        """Encode a realm to a string."""
+        encoder = self._realm_codec_registry.get_encoder(
+            self._the_type, DatabaseRealm, self._root_type
+        )
+        return [encoder.encode(v) for v in value]
+
+
+class _SetDatabaseDecoder(RealmDecoder[set[DomainThing], DatabaseRealm]):
+    """An encoder for sets."""
+
+    _realm_codec_registry: Final[RealmCodecRegistry]
+    _root_type: type[DomainThing] | None
+    _the_type: type[DomainThing] | ForwardRef | str
+
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        root_type: type[DomainThing] | None,
+        the_type: type[DomainThing] | ForwardRef | str,
+    ) -> None:
+        self._realm_codec_registry = realm_codec_registry
+        self._root_type = root_type
+        self._the_type = the_type
+
+    def decode(self, value: RealmThing) -> set[DomainThing]:
+        """Decode a realm from a string."""
+        if not isinstance(value, list):
+            raise RealmDecodingError(
+                f"Expected value for {value.__class__.__name__} to be a list"
+            )
+        decoder = self._realm_codec_registry.get_decoder(
+            self._the_type, DatabaseRealm, self._root_type
+        )
+        return {decoder.decode(v) for v in value}
+
+
+class _DictDatabaseEncoder(RealmEncoder[dict[DomainThing, DomainThing], DatabaseRealm]):
+    """An encoder for dicts."""
+
+    _realm_codec_registry: Final[RealmCodecRegistry]
+    _root_type: type[DomainThing] | None
+    _the_key_type: type[DomainThing] | ForwardRef | str
+    _the_value_type: type[DomainThing] | ForwardRef | str
+
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        root_type: type[DomainThing] | None,
+        the_key_type: type[DomainThing] | ForwardRef | str,
+        the_value_type: type[DomainThing] | ForwardRef | str,
+    ) -> None:
+        self._realm_codec_registry = realm_codec_registry
+        self._root_type = root_type
+        self._the_key_type = the_key_type
+        self._the_value_type = the_value_type
+
+    def encode(self, value: dict[DomainThing, DomainThing]) -> RealmThing:
+        """Encode a realm to a string."""
+        key_encoder = self._realm_codec_registry.get_encoder(
+            self._the_key_type, DatabaseRealm, self._root_type
+        )
+        value_encoder = self._realm_codec_registry.get_encoder(
+            self._the_value_type, DatabaseRealm, self._root_type
+        )
+        result = {}
+        for k, v in value.items():
+            encoded_key = key_encoder.encode(k)
+            if not isinstance(encoded_key, str):
+                raise RealmDecodingError(
+                    f"Expected encoded key for {k} to be a string, got {encoded_key}"
+                )
+            result[encoded_key] = value_encoder.encode(v)
+        return result
+
+
+class _DictDatabaseDecoder(RealmDecoder[dict[DomainThing, DomainThing], DatabaseRealm]):
+    """An encoder for dicts."""
+
+    _realm_codec_registry: Final[RealmCodecRegistry]
+    _root_type: type[DomainThing] | None
+    _the_key_type: type[DomainThing] | ForwardRef | str
+    _the_value_type: type[DomainThing] | ForwardRef | str
+
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        root_type: type[DomainThing] | None,
+        the_key_type: type[DomainThing] | ForwardRef | str,
+        the_value_type: type[DomainThing] | ForwardRef | str,
+    ) -> None:
+        self._realm_codec_registry = realm_codec_registry
+        self._root_type = root_type
+        self._the_key_type = the_key_type
+        self._the_value_type = the_value_type
+
+    def decode(self, value: RealmThing) -> dict[DomainThing, DomainThing]:
+        """Decode a realm from a string."""
+        if not isinstance(value, dict):
+            raise RealmDecodingError(
+                f"Expected value of {value.__class__.__name__} to be a dict object"
+            )
+        key_decoder = self._realm_codec_registry.get_decoder(
+            self._the_key_type, DatabaseRealm, self._root_type
+        )
+        value_decoder = self._realm_codec_registry.get_decoder(
+            self._the_value_type, DatabaseRealm, self._root_type
+        )
+        return {
+            key_decoder.decode(k): value_decoder.decode(v) for k, v in value.items()
+        }
 
 
 class _StandardPrimitiveDatabaseEncoder(
@@ -193,72 +472,11 @@ class _StandardCompositeValueDatabaseEncoder(
         result: dict[str, RealmThing] = {}
         all_fields = dataclasses.fields(self._the_type)
         for field in all_fields:
+            encoder = self._realm_codec_registry.get_encoder(
+                field.type, DatabaseRealm, self._the_type
+            )
             field_value = getattr(value, field.name)
-            if is_value_ish(field_value):
-                result[field.name] = self._realm_codec_registry.get_encoder(
-                    field_value.__class__, DatabaseRealm
-                ).encode(field_value)
-            elif isinstance(field_value, (list, set)):
-                field_list_result = []
-                for field_item in field_value:
-                    if is_value_ish(field_item):
-                        field_item_encoder = self._realm_codec_registry.get_encoder(
-                            field_item.__class__, DatabaseRealm
-                        )
-                        field_list_result.append(field_item_encoder.encode(field_item))
-                    elif isinstance(field_value, (list, set)):
-                        field_subresult = []
-                        for field_subitem in field_item:
-                            if is_value_ish(field_subitem):
-                                field_subitem_encoder = (
-                                    self._realm_codec_registry.get_encoder(
-                                        field_subitem.__class__, DatabaseRealm
-                                    )
-                                )
-                                field_subresult.append(
-                                    field_subitem_encoder.encode(field_subitem)
-                                )
-                            else:
-                                raise Exception(
-                                    f"Could not encode field {field.name} of type {field.type} for value {value.__class__.__name__}"
-                                )
-                        field_list_result.append(field_subresult)
-                    else:
-                        raise Exception(
-                            f"Could not encode field {field.name} of type {field.type} for value {value.__class__.__name__}"
-                        )
-                result[field.name] = field_list_result
-            elif isinstance(field_value, dict):
-                field_dict_result = {}
-                for field_key, field_item in field_value.items():
-                    if not is_value_ish(field_key):
-                        raise Exception(
-                            f"Could not encode field {field.name} of type {field.type} for value {value.__class__.__name__}"
-                        )
-                    if not is_value_ish(field_item):
-                        raise Exception(
-                            f"Could not encode field {field.name} of type {field.type} for value {value.__class__.__name__}"
-                        )
-                    field_key_encoder = self._realm_codec_registry.get_encoder(
-                        field_key.__class__, DatabaseRealm
-                    )
-                    field_item_encoder = self._realm_codec_registry.get_encoder(
-                        field_item.__class__, DatabaseRealm
-                    )
-                    encoded_field_key = field_key_encoder.encode(field_key)
-
-                    if not isinstance(encoded_field_key, str):
-                        raise Exception(
-                            f"Could not encode field {field.name} of type {field.type} for value {value.__class__.__name__}"
-                        )
-                    field_dict_result[encoded_field_key] = field_item_encoder.encode(
-                        field_item
-                    )
-                result[field.name] = field_dict_result
-            else:
-                raise Exception(
-                    f"Could not encode field {field.name} of type {field.type} for value {value.__class__.__name__}"
-                )
+            result[field.name] = encoder.encode(field_value)
         return result
 
 
@@ -284,10 +502,7 @@ class _StandardCompositeValueDatabaseDecoder(
 
         all_fields = dataclasses.fields(self._the_type)
 
-        ctor_args: dict[
-            str,
-            Thing | list[Thing] | set[Thing] | dict[Thing, Thing] | list[list[Thing]],
-        ] = {}
+        ctor_args: dict[str, DomainThing] = {}
 
         for field in all_fields:
             if field.name not in value:
@@ -295,172 +510,11 @@ class _StandardCompositeValueDatabaseDecoder(
                     f"Expected value of type {self._the_type.__name__} to have field {field.name}"
                 )
 
+            decoder = self._realm_codec_registry.get_decoder(
+                field.type, DatabaseRealm, self._the_type
+            )
             field_value = value[field.name]
-
-            if isinstance(field.type, str) and field.type == self._the_type.__name__:  # type: ignore
-                # A recursive type
-                ctor_args[field.name] = self.decode(field_value)  # type: ignore
-            elif is_value_ish_type(field.type):
-                ctor_args[field.name] = self._realm_codec_registry.get_decoder(
-                    field.type, DatabaseRealm
-                ).decode(field_value)
-            elif isinstance(field.type, typing._GenericAlias) and field.type.__name__ == "Literal":  # type: ignore
-                if field_value not in field.type.__args__:
-                    raise RealmDecodingError(
-                        f"Expected value for {self._the_type.__name__} to be one of {field.type.__args__}"
-                    )
-                ctor_args[field.name] = field_value
-            elif get_origin(field.type) is not None:
-                field_type_origin = get_origin(field.type)
-                if field_type_origin is typing.Union or (
-                    isinstance(field_type_origin, type)
-                    and issubclass(field_type_origin, types.UnionType)
-                ):
-                    field_args = get_args(field.type)
-                    for field_arg in field_args:
-                        field_decoder = self._realm_codec_registry.get_decoder(
-                            field_arg, DatabaseRealm
-                        )
-                        try:
-                            ctor_args[field.name] = field_decoder.decode(field_value)
-                            break
-                        except (RealmDecodingError, InputValidationError):
-                            pass
-                    else:
-                        raise RealmDecodingError(
-                            f"Could not decode field {field.name} of type {field.type} for value {self._the_type.__name__}"
-                        )
-                elif field_type_origin is list:
-                    list_item_type = cast(type[Thing], get_args(field.type)[0])
-                    if not isinstance(field_value, list):
-                        raise RealmDecodingError(
-                            f"Expected value of type {self._the_type.__name__} to have field {field.name} to be a list"
-                        )
-
-                    if isinstance(list_item_type, str) and list_item_type == self._the_type.__name__:  # type: ignore
-                        # A recursive type
-                        ctor_args[field.name] = [  # type: ignore
-                            self.decode(item) for item in field_value
-                        ]
-                    elif is_value_ish_type(list_item_type):
-                        list_item_decoder: RealmDecoder[
-                            Thing, DatabaseRealm
-                        ] = self._realm_codec_registry.get_decoder(
-                            list_item_type, DatabaseRealm
-                        )
-                        ctor_args[field.name] = [
-                            list_item_decoder.decode(v) for v in field_value
-                        ]
-                    elif get_origin(list_item_type) is not None:
-                        list_item_type_origin = get_origin(list_item_type)
-                        if list_item_type_origin is typing.Union or (
-                            isinstance(list_item_type_origin, type)
-                            and issubclass(list_item_type_origin, types.UnionType)
-                        ):
-                            field_list_result = []
-                            for field_item in field_value:
-                                list_item_type_args = get_args(list_item_type)
-                                for list_item_type_arg in list_item_type_args:
-                                    list_item_decoder = (
-                                        self._realm_codec_registry.get_decoder(
-                                            list_item_type_arg, DatabaseRealm
-                                        )
-                                    )
-                                    try:
-                                        field_list_result.append(
-                                            list_item_decoder.decode(field_item)
-                                        )
-                                        break
-                                    except (RealmDecodingError, InputValidationError):
-                                        pass
-                                else:
-                                    raise RealmDecodingError(
-                                        f"Could not decode field {field.name} of type {field.type} for value {self._the_type.__name__}"
-                                    )
-                            ctor_args[field.name] = field_list_result
-                        elif list_item_type_origin is list:
-                            list_item_item_type = cast(
-                                type[Thing], get_args(list_item_type)[0]
-                            )
-                            if not isinstance(field_value, list):
-                                raise RealmDecodingError(
-                                    f"Expected value of type {self._the_type.__name__} to have field {field.name} to be a list"
-                                )
-                            if isinstance(list_item_item_type, str) and list_item_item_type == self._the_type.__name__:  # type: ignore
-                                # A recursive type
-                                ctor_args[field.name] = [[self.decode(item) for item in item_list] for item_list in field_value]  # type: ignore
-                            elif is_value_ish_type(list_item_item_type):
-                                list_item_item_decoder: RealmDecoder[
-                                    Thing, DatabaseRealm
-                                ] = self._realm_codec_registry.get_decoder(
-                                    list_item_item_type, DatabaseRealm
-                                )
-                                ctor_args[field.name] = [
-                                    [
-                                        list_item_item_decoder.decode(v)
-                                        for v in item_list
-                                    ]
-                                    for item_list in field_value
-                                ]
-                            else:
-                                raise Exception(
-                                    f"Could not decode field {field.name} of type {field.type} for value {self._the_type.__name__}"
-                                )
-                        else:
-                            raise Exception(
-                                f"Could not decode field {field.name} of type {field.type} for value {self._the_type.__name__}"
-                            )
-                    else:
-                        raise Exception(
-                            f"Could not decode field {field.name} of type {field.type} for value {self._the_type.__name__}"
-                        )
-                elif field_type_origin is set:
-                    set_item_type = cast(type[Thing], get_args(field.type)[0])
-                    if not isinstance(field_value, list):
-                        raise RealmDecodingError(
-                            f"Expected value of type {self._the_type.__name__} to have field {field.name} to be a list"
-                        )
-
-                    set_item_decoder: RealmDecoder[
-                        Thing, DatabaseRealm
-                    ] = self._realm_codec_registry.get_decoder(
-                        set_item_type, DatabaseRealm
-                    )
-                    ctor_args[field.name] = set(
-                        set_item_decoder.decode(v) for v in field_value
-                    )
-                elif field_type_origin is dict:
-                    dict_key_type = cast(type[Thing], get_args(field.type)[0])
-                    dict_value_type = cast(type[Thing], get_args(field.type)[1])
-                    if not isinstance(field_value, dict):
-                        raise RealmDecodingError(
-                            f"Expected value of type {self._the_type.__name__} to have field {field.name} to be a dict"
-                        )
-                    if len(field_value) == 0:
-                        ctor_args[field.name] = {}
-                    else:
-                        dict_key_decoder: RealmDecoder[
-                            Thing, DatabaseRealm
-                        ] = self._realm_codec_registry.get_decoder(
-                            dict_key_type, DatabaseRealm
-                        )
-                        dict_value_decoder: RealmDecoder[
-                            Thing, DatabaseRealm
-                        ] = self._realm_codec_registry.get_decoder(
-                            dict_value_type, DatabaseRealm
-                        )
-                        ctor_args[field.name] = {
-                            dict_key_decoder.decode(k): dict_value_decoder.decode(v)
-                            for k, v in field_value.items()
-                        }
-                else:
-                    raise Exception(
-                        f"Could not decode field {field.name} of type {field.type} for value {self._the_type.__name__}"
-                    )
-            else:
-                raise Exception(
-                    f"Could not decode field {field.name} of type {field.type} for value {self._the_type.__name__}"
-                )
+            ctor_args[field.name] = decoder.decode(field_value)
 
         return self._the_type(**ctor_args)
 
@@ -532,55 +586,14 @@ class _StandardEntityDatabaseEncoder(
             if field.name == "events":
                 continue
 
-            if is_value_ish(field_value):
-                result[field.name] = self._realm_codec_registry.get_encoder(
-                    field_value.__class__, DatabaseRealm
-                ).encode(field_value)
-            elif isinstance(field_value, ParentLink):
+            if isinstance(field_value, ParentLink):
                 result[field.name + "_ref_id"] = field_value.as_int()
-            elif isinstance(field_value, (list, set)):
-                field_list_result = []
-                for field_item in field_value:
-                    if not is_value_ish(field_item):
-                        raise Exception(
-                            f"Could not encode field {field.name} of type {field.type} for value {value.__class__.__name__}"
-                        )
-                    field_item_encoder = self._realm_codec_registry.get_encoder(
-                        field_item.__class__, DatabaseRealm
-                    )
-                    field_list_result.append(field_item_encoder.encode(field_item))
-                result[field.name] = field_list_result
-            elif isinstance(field_value, dict):
-                field_dict_result = {}
-                for field_key, field_item in field_value.items():
-                    if not is_value_ish(field_key):
-                        raise Exception(
-                            f"Could not encode field {field.name} of type {field.type} for value {value.__class__.__name__}"
-                        )
-                    if not is_value_ish(field_item):
-                        raise Exception(
-                            f"Could not encode field {field.name} of type {field.type} for value {value.__class__.__name__}"
-                        )
-                    field_key_encoder = self._realm_codec_registry.get_encoder(
-                        field_key.__class__, DatabaseRealm
-                    )
-                    field_item_encoder = self._realm_codec_registry.get_encoder(
-                        field_item.__class__, DatabaseRealm
-                    )
-                    encoded_field_key = field_key_encoder.encode(field_key)
-
-                    if not isinstance(encoded_field_key, str):
-                        raise Exception(
-                            f"Could not encode field {field.name} of type {field.type} for value {value.__class__.__name__}"
-                        )
-                    field_dict_result[encoded_field_key] = field_item_encoder.encode(
-                        field_item
-                    )
-                result[field.name] = field_dict_result
             else:
-                raise Exception(
-                    f"Could not encode field {field.name} of type {field.type} for value {value.__class__.__name__}"
+                encoder = self._realm_codec_registry.get_encoder(
+                    field.type, DatabaseRealm, self._the_type
                 )
+                result[field.name] = encoder.encode(field_value)
+
         return result
 
 
@@ -604,9 +617,7 @@ class _StandardEntityDatabaseDecoder(
 
         all_fields = dataclasses.fields(self._the_type)
 
-        ctor_args: dict[
-            str, ParentLink | Thing | list[Thing] | set[Thing] | dict[Thing, Thing]
-        ] = {}
+        ctor_args: dict[str, DomainThing | ParentLink] = {}
 
         entity_id_decoder = self._realm_codec_registry.get_decoder(
             EntityId, DatabaseRealm
@@ -683,157 +694,15 @@ class _StandardEntityDatabaseDecoder(
                     f"Expected value of type {self._the_type.__name__} to have field {field.name}"
                 )
 
-            if is_value_ish_type(field.type):
-                ctor_args[field.name] = self._realm_codec_registry.get_decoder(
-                    field.type, DatabaseRealm
-                ).decode(field_value)
-            elif field.type is ParentLink:
+            if field.type is ParentLink:
                 ctor_args[field.name] = ParentLink(
                     entity_id_decoder.decode(field_value)
                 )
-            elif get_origin(field.type) is not None:
-                field_type_origin = get_origin(field.type)
-                if field_type_origin is typing.Union or (
-                    isinstance(field_type_origin, type)
-                    and issubclass(field_type_origin, types.UnionType)
-                ):
-                    field_args = get_args(field.type)
-                    for field_arg in field_args:
-                        if is_value_ish_type(field_arg):
-                            field_decoder = self._realm_codec_registry.get_decoder(
-                                field_arg, DatabaseRealm
-                            )
-                            try:
-                                ctor_args[field.name] = field_decoder.decode(
-                                    field_value
-                                )
-                                break
-                            except (RealmDecodingError, InputValidationError):
-                                pass
-                        elif get_origin(field_arg) is not None:
-                            field_arg_origin = get_origin(field_arg)
-
-                            if field_arg_origin is list:
-                                list_item_type = cast(
-                                    type[Thing], get_args(field_arg)[0]
-                                )
-                                if not isinstance(field_value, list):
-                                    continue
-                                list_item_decoder = (
-                                    self._realm_codec_registry.get_decoder(
-                                        list_item_type, DatabaseRealm
-                                    )
-                                )
-                                try:
-                                    ctor_args[field.name] = [
-                                        list_item_decoder.decode(v) for v in field_value
-                                    ]
-                                except (RealmDecodingError, InputValidationError):
-                                    continue
-                                break
-                            else:
-                                continue
-                        else:
-                            continue
-                    else:
-                        raise RealmDecodingError(
-                            f"Could not decode field {field.name} of type {field.type} for value {self._the_type.__name__}"
-                        )
-                elif field_type_origin is list:
-                    list_item_type = cast(type[Thing], get_args(field.type)[0])
-                    if not isinstance(field_value, list):
-                        raise RealmDecodingError(
-                            f"Expected value of type {self._the_type.__name__} to have field {field.name} to be a list"
-                        )
-                    if is_value_ish_type(list_item_type):
-                        list_item_decoder2: RealmDecoder[
-                            Thing, DatabaseRealm
-                        ] = self._realm_codec_registry.get_decoder(
-                            list_item_type, DatabaseRealm
-                        )
-                        ctor_args[field.name] = [
-                            list_item_decoder2.decode(v) for v in field_value
-                        ]
-                    elif get_origin(list_item_type) is not None:
-                        list_item_type_origin = get_origin(list_item_type)
-                        if list_item_type_origin is typing.Union or (
-                            isinstance(list_item_type_origin, type)
-                            and issubclass(list_item_type_origin, types.UnionType)
-                        ):
-                            union_field_result = []
-                            for field_item in field_value:
-                                list_item_type_args = get_args(list_item_type)
-                                for list_item_type_arg in list_item_type_args:
-                                    list_subitem_decoder = (
-                                        self._realm_codec_registry.get_decoder(
-                                            list_item_type_arg, DatabaseRealm
-                                        )
-                                    )
-                                    try:
-                                        union_field_result.append(
-                                            list_subitem_decoder.decode(field_item)
-                                        )
-                                        break
-                                    except (RealmDecodingError, InputValidationError):
-                                        pass
-                                else:
-                                    raise RealmDecodingError(
-                                        f"Could not decode field {field.name} of type {field.type} for value {self._the_type.__name__}"
-                                    )
-                            ctor_args[field.name] = union_field_result
-                        else:
-                            raise Exception(
-                                f"Could not decode field {field.name} of type {field.type} for value {self._the_type.__name__}"
-                            )
-                elif field_type_origin is set:
-                    set_item_type = cast(type[Thing], get_args(field.type)[0])
-                    if not isinstance(field_value, list):
-                        raise RealmDecodingError(
-                            f"Expected value of type {self._the_type.__name__} to have field {field.name} to be a list"
-                        )
-                    if len(field_value) == 0:
-                        ctor_args[field.name] = set()
-                    else:
-                        set_item_decoder: RealmDecoder[
-                            Thing, DatabaseRealm
-                        ] = self._realm_codec_registry.get_decoder(
-                            set_item_type, DatabaseRealm
-                        )
-                        ctor_args[field.name] = set(
-                            set_item_decoder.decode(v) for v in field_value
-                        )
-                elif field_type_origin is dict:
-                    dict_key_type = cast(type[Thing], get_args(field.type)[0])
-                    dict_value_type = cast(type[Thing], get_args(field.type)[1])
-                    if not isinstance(field_value, dict):
-                        raise RealmDecodingError(
-                            f"Expected value of type {self._the_type.__name__} to have field {field.name} to be a dict"
-                        )
-                    if len(field_value) == 0:
-                        ctor_args[field.name] = {}
-                    else:
-                        dict_key_decoder: RealmDecoder[
-                            Thing, DatabaseRealm
-                        ] = self._realm_codec_registry.get_decoder(
-                            dict_key_type, DatabaseRealm
-                        )
-                        dict_value_decoder: RealmDecoder[
-                            Thing, DatabaseRealm
-                        ] = self._realm_codec_registry.get_decoder(
-                            dict_value_type, DatabaseRealm
-                        )
-                        ctor_args[field.name] = {
-                            dict_key_decoder.decode(k): dict_value_decoder.decode(v)
-                            for k, v in field_value.items()
-                        }
-                else:
-                    raise Exception(
-                        f"Could not decode field {field.name} of type {field.type} for value {self._the_type.__name__}"
-                    )
             else:
-                raise Exception(
-                    f"Could not decode field {field.name} of type {field.type} for value {self._the_type.__name__}"
+                decoder = self._realm_codec_registry.get_decoder(
+                    field.type, DatabaseRealm, self._the_type
                 )
+                ctor_args[field.name] = decoder.decode(field_value)
 
         return self._the_type(
             ref_id=ref_id,
@@ -868,62 +737,14 @@ class _StandardRecordDatabaseEncoder(
         for field in all_fields:
             field_value = getattr(value, field.name)
 
-            if is_value_ish(field_value):
-                result[field.name] = self._realm_codec_registry.get_encoder(
-                    field_value.__class__, DatabaseRealm
-                ).encode(field_value)
-            elif isinstance(field_value, ParentLink):
+            if isinstance(field_value, ParentLink):
                 result[field.name + "_ref_id"] = field_value.as_int()
-            elif isinstance(field_value, (list, set)):
-                if len(field_value) == 0:
-                    result[field.name] = []
-                else:
-                    first_value = next(iter(field_value))
-                    if not is_value_ish(first_value):
-                        raise Exception(
-                            f"Could not encode field {field.name} of type {field.type} for value {value.__class__.__name__}"
-                        )
-                    list_item_encoder = self._realm_codec_registry.get_encoder(
-                        first_value.__class__, DatabaseRealm
-                    )
-                    result[field.name] = [
-                        list_item_encoder.encode(v) for v in field_value
-                    ]
-            elif isinstance(field_value, dict):
-                if len(field_value) == 0:
-                    result[field.name] = {}
-                else:
-                    first_key, first_value = next(iter(field_value.items()))
-                    if not is_value_ish(first_key):
-                        raise Exception(
-                            f"Could not encode field {field.name} of type {field.type} for value {value.__class__.__name__}"
-                        )
-                    if not is_value_ish(first_value):
-                        raise Exception(
-                            f"Could not encode field {field.name} of type {field.type} for value {value.__class__.__name__}"
-                        )
-
-                    dict_key_encoder = self._realm_codec_registry.get_encoder(
-                        first_key.__class__, DatabaseRealm
-                    )
-                    dict_value_encoder = self._realm_codec_registry.get_encoder(
-                        first_value.__class__, DatabaseRealm
-                    )
-
-                    encoded_dict_key = dict_key_encoder.encode(first_key)
-
-                    if not isinstance(encoded_dict_key, str):
-                        raise Exception(
-                            f"Could not encode field {field.name} of type {field.type} for value {value.__class__.__name__}"
-                        )
-
-                    result[field.name] = {
-                        k: dict_value_encoder.encode(v) for k, v in field_value.items()
-                    }
             else:
-                raise Exception(
-                    f"Could not encode field {field.name} of type {field.type} for value {value.__class__.__name__}"
+                encoder = self._realm_codec_registry.get_encoder(
+                    field.type, DatabaseRealm, self._the_type
                 )
+                result[field.name] = encoder.encode(field_value)
+
         return result
 
 
@@ -947,9 +768,7 @@ class _StandardRecordDatabaseDecoder(
 
         all_fields = dataclasses.fields(self._the_type)
 
-        ctor_args: dict[
-            str, ParentLink | Thing | list[Thing] | set[Thing] | dict[Thing, Thing]
-        ] = {}
+        ctor_args: dict[str, DomainThing | ParentLink] = {}
 
         entity_id_decoder = self._realm_codec_registry.get_decoder(
             EntityId, DatabaseRealm
@@ -985,109 +804,15 @@ class _StandardRecordDatabaseDecoder(
                     f"Expected value of type {self._the_type.__name__} to have field {field.name}"
                 )
 
-            if is_value_ish_type(field.type):
-                ctor_args[field.name] = self._realm_codec_registry.get_decoder(
-                    field.type, DatabaseRealm
-                ).decode(field_value)
-            elif field.type is ParentLink:
+            if field.type is ParentLink:
                 ctor_args[field.name] = ParentLink(
                     entity_id_decoder.decode(field_value)
                 )
-            elif get_origin(field.type) is not None:
-                field_type_origin = get_origin(field.type)
-                if field_type_origin is typing.Union or (
-                    isinstance(field_type_origin, type)
-                    and issubclass(field_type_origin, types.UnionType)
-                ):
-                    field_args = get_args(field.type)
-                    if len(field_args) == 2 and (
-                        (
-                            field_args[0] is type(None)
-                            and field_args[1] is not type(None)
-                        )
-                        or (
-                            field_args[1] is type(None)
-                            and field_args[0] is not type(None)
-                        )
-                    ):
-                        if field_value is None:
-                            ctor_args[field.name] = None
-                        else:
-                            field_decoder = self._realm_codec_registry.get_decoder(
-                                field_args[0]
-                                if field_args[1] is type(None)
-                                else field_args[1],
-                                DatabaseRealm,
-                            )
-                            ctor_args[field.name] = field_decoder.decode(field_value)
-                    else:
-                        raise Exception("Not implemented - union")
-                elif field_type_origin is list:
-                    list_item_type = cast(type[Thing], get_args(field.type)[0])
-                    if not isinstance(field_value, list):
-                        raise RealmDecodingError(
-                            f"Expected value of type {self._the_type.__name__} to have field {field.name} to be a list"
-                        )
-                    if len(field_value) == 0:
-                        ctor_args[field.name] = []
-                    else:
-                        list_item_decoder: RealmDecoder[
-                            Thing, DatabaseRealm
-                        ] = self._realm_codec_registry.get_decoder(
-                            list_item_type, DatabaseRealm
-                        )
-                        ctor_args[field.name] = [
-                            list_item_decoder.decode(v) for v in field_value
-                        ]
-                elif field_type_origin is set:
-                    set_item_type = cast(type[Thing], get_args(field.type)[0])
-                    if not isinstance(field_value, list):
-                        raise RealmDecodingError(
-                            f"Expected value of type {self._the_type.__name__} to have field {field.name} to be a list"
-                        )
-                    if len(field_value) == 0:
-                        ctor_args[field.name] = set()
-                    else:
-                        set_item_decoder: RealmDecoder[
-                            Thing, DatabaseRealm
-                        ] = self._realm_codec_registry.get_decoder(
-                            set_item_type, DatabaseRealm
-                        )
-                        ctor_args[field.name] = set(
-                            set_item_decoder.decode(v) for v in field_value
-                        )
-                elif field_type_origin is dict:
-                    dict_key_type = cast(type[Thing], get_args(field.type)[0])
-                    dict_value_type = cast(type[Thing], get_args(field.type)[1])
-                    if not isinstance(field_value, dict):
-                        raise RealmDecodingError(
-                            f"Expected value of type {self._the_type.__name__} to have field {field.name} to be a dict"
-                        )
-                    if len(field_value) == 0:
-                        ctor_args[field.name] = {}
-                    else:
-                        dict_key_decoder: RealmDecoder[
-                            Thing, DatabaseRealm
-                        ] = self._realm_codec_registry.get_decoder(
-                            dict_key_type, DatabaseRealm
-                        )
-                        dict_value_decoder: RealmDecoder[
-                            Thing, DatabaseRealm
-                        ] = self._realm_codec_registry.get_decoder(
-                            dict_value_type, DatabaseRealm
-                        )
-                        ctor_args[field.name] = {
-                            dict_key_decoder.decode(k): dict_value_decoder.decode(v)
-                            for k, v in field_value.items()
-                        }
-                else:
-                    raise Exception(
-                        f"Could not decode field {field.name} of type {field.type} for value {self._the_type.__name__}"
-                    )
             else:
-                raise Exception(
-                    f"Could not decode field {field.name} of type {field.type} for value {self._the_type.__name__}"
+                decoder = self._realm_codec_registry.get_decoder(
+                    field.type, DatabaseRealm, self._the_type
                 )
+                ctor_args[field.name] = decoder.decode(field_value)
 
         return self._the_type(
             created_time=created_time,
@@ -1750,41 +1475,200 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
 
     def get_encoder(
         self,
-        thing_type: type[_ThingT],
+        thing_type: type[_DomainThingT] | ForwardRef | str,
         realm: type[_RealmT],
-    ) -> RealmEncoder[_ThingT, _RealmT]:
+        root_type: type[_DomainThingT] | None = None,
+    ) -> RealmEncoder[_DomainThingT, _RealmT]:
         """Get a codec for a realm and a thing type."""
-        if (thing_type, realm) not in self._encoders_registry:
+        if isinstance(thing_type, typing._GenericAlias) and thing_type.__name__ == "Literal":  # type: ignore
+            return cast(
+                RealmEncoder[_DomainThingT, _RealmT],
+                _LiteralDatabaseEncoder(thing_type.__args__),
+            )  # type: ignore
+        elif isinstance(thing_type, ForwardRef):
+            if root_type is None:
+                raise Exception("Cannot infer the type of a string without a root type")
+            if f"'{root_type.__name__}'" not in str(thing_type):
+                raise Exception(
+                    f"Recursive types are only allowed to be encoded as root types, but {thing_type} is not the root type {root_type.__name__}"
+                )
+            return self.get_encoder(root_type, realm, root_type)
+        elif isinstance(thing_type, str):
+            if root_type is None:
+                raise Exception("Cannot infer the type of a string without a root type")
+            if thing_type != root_type.__name__:
+                raise Exception(
+                    f"Recursive types are only allowed to be encoded as root types, but {thing_type} is not the root type {root_type.__name__}"
+                )
+            return self.get_encoder(root_type, realm, root_type)
+        elif is_thing_ish_type(thing_type):
+            if (thing_type, realm) not in self._encoders_registry:
+                raise Exception(
+                    f"Could not find encoder for realm {realm} and thing {thing_type.__name__}"
+                )
+            return cast(
+                RealmEncoder[_DomainThingT, _RealmT],
+                self._encoders_registry[
+                    cast(tuple[type[Thing], type[Realm]], (thing_type, realm))
+                ],
+            )
+        elif (thing_type_origin := get_origin(thing_type)) is not None:
+            if thing_type_origin is typing.Union or (
+                isinstance(thing_type_origin, type)
+                and issubclass(thing_type_origin, types.UnionType)
+            ):
+                field_args = cast(
+                    list[type[DomainThing] | ForwardRef | str], get_args(thing_type)
+                )
+                return cast(
+                    RealmEncoder[_DomainThingT, _RealmT],
+                    _UnionDatabaseEncoder(
+                        self, cast(type[DomainThing] | None, root_type), field_args
+                    ),
+                )
+            elif thing_type_origin is list:
+                list_item_type = cast(
+                    type[DomainThing] | ForwardRef | str, get_args(thing_type)[0]
+                )
+                return cast(
+                    RealmEncoder[_DomainThingT, _RealmT],
+                    _ListDatabaseEncoder(
+                        self, cast(type[DomainThing] | None, root_type), list_item_type
+                    ),
+                )
+            elif thing_type_origin is set:
+                set_item_type = cast(
+                    type[DomainThing] | ForwardRef | str, get_args(thing_type)[0]
+                )
+                return cast(
+                    RealmEncoder[_DomainThingT, _RealmT],
+                    _SetDatabaseEncoder(
+                        self, cast(type[DomainThing] | None, root_type), set_item_type
+                    ),
+                )
+            elif thing_type_origin is dict:
+                dict_key_type = cast(
+                    type[DomainThing] | ForwardRef | str, get_args(thing_type)[0]
+                )
+                dict_value_type = cast(
+                    type[DomainThing] | ForwardRef | str, get_args(thing_type)[1]
+                )
+                return cast(
+                    RealmEncoder[_DomainThingT, _RealmT],
+                    _DictDatabaseEncoder(
+                        self,
+                        cast(type[DomainThing] | None, root_type),
+                        dict_key_type,
+                        dict_value_type,
+                    ),
+                )
+            else:
+                raise Exception(
+                    f"Could not find encoder for realm {realm} and thing {thing_type.__name__}"
+                )
+        else:
             raise Exception(
                 f"Could not find encoder for realm {realm} and thing {thing_type.__name__}"
             )
-        return cast(
-            RealmEncoder[_ThingT, _RealmT],
-            self._encoders_registry[
-                cast(tuple[type[Thing], type[Realm]], (thing_type, realm))
-            ],
-        )
 
     def get_decoder(
         self,
-        thing_type: type[_ThingT],
+        thing_type: type[_DomainThingT] | ForwardRef | str,
         realm: type[_RealmT],
-    ) -> RealmDecoder[_ThingT, _RealmT]:
+        root_type: type[_DomainThingT] | None = None,
+    ) -> RealmDecoder[_DomainThingT, _RealmT]:
         """Get a codec for a realm and a thing type."""
-        if (thing_type, realm) not in self._decoders_registry:
+        if isinstance(thing_type, typing._GenericAlias) and thing_type.__name__ == "Literal":  # type: ignore
+            return cast(RealmDecoder[_DomainThingT, _RealmT], _LiteralDatabaseDecoder(thing_type.__args__))  # type: ignore
+        elif isinstance(thing_type, ForwardRef):
+            if root_type is None:
+                raise Exception("Cannot infer the type of a string without a root type")
+            if f"'{root_type.__name__}'" not in str(thing_type):
+                raise Exception(
+                    f"Recursive types are only allowed to be encoded as root types, but {thing_type} is not the root type {root_type.__name__}"
+                )
+            return self.get_decoder(root_type, realm, root_type)
+        elif isinstance(thing_type, str):
+            if root_type is None:
+                raise Exception("Cannot infer the type of a string without a root type")
+            if thing_type != root_type.__name__:
+                raise Exception(
+                    f"Recursive types are only allowed to be encoded as root types, but {thing_type} is not the root type {root_type.__name__}"
+                )
+            return self.get_decoder(root_type, realm, root_type)
+        elif is_thing_ish_type(thing_type):
+            if (thing_type, realm) not in self._decoders_registry:
+                raise Exception(
+                    f"Could not find decoder for realm {realm} and thing {thing_type.__name__}"
+                )
+            return cast(
+                RealmDecoder[_DomainThingT, _RealmT],
+                self._decoders_registry[
+                    cast(tuple[type[Thing], type[Realm]], (thing_type, realm))
+                ],
+            )
+        elif (thing_type_origin := get_origin(thing_type)) is not None:
+            if thing_type_origin is typing.Union or (
+                isinstance(thing_type_origin, type)
+                and issubclass(thing_type_origin, types.UnionType)
+            ):
+                field_args = cast(
+                    list[type[DomainThing] | ForwardRef | str], get_args(thing_type)
+                )
+                return cast(
+                    RealmDecoder[_DomainThingT, _RealmT],
+                    _UnionDatabaseDecoder(
+                        self, cast(type[DomainThing] | None, root_type), field_args
+                    ),
+                )
+            elif thing_type_origin is list:
+                list_item_type = cast(
+                    type[DomainThing] | ForwardRef | str, get_args(thing_type)[0]
+                )
+                return cast(
+                    RealmDecoder[_DomainThingT, _RealmT],
+                    _ListDatabaseDecoder(
+                        self, cast(type[DomainThing] | None, root_type), list_item_type
+                    ),
+                )
+            elif thing_type_origin is set:
+                set_item_type = cast(
+                    type[DomainThing] | ForwardRef | str, get_args(thing_type)[0]
+                )
+                return cast(
+                    RealmDecoder[_DomainThingT, _RealmT],
+                    _SetDatabaseDecoder(
+                        self, cast(type[DomainThing] | None, root_type), set_item_type
+                    ),
+                )
+            elif thing_type_origin is dict:
+                dict_key_type = cast(
+                    type[DomainThing] | ForwardRef | str, get_args(thing_type)[0]
+                )
+                dict_value_type = cast(
+                    type[DomainThing] | ForwardRef | str, get_args(thing_type)[1]
+                )
+                return cast(
+                    RealmDecoder[_DomainThingT, _RealmT],
+                    _DictDatabaseDecoder(
+                        self,
+                        cast(type[DomainThing] | None, root_type),
+                        dict_key_type,
+                        dict_value_type,
+                    ),
+                )
+            else:
+                raise Exception(
+                    f"Could not find decoder for realm {realm} and thing {thing_type.__name__}"
+                )
+        else:
             raise Exception(
                 f"Could not find decoder for realm {realm} and thing {thing_type.__name__}"
             )
-        return cast(
-            RealmDecoder[_ThingT, _RealmT],
-            self._decoders_registry[
-                cast(tuple[type[Thing], type[Realm]], (thing_type, realm))
-            ],
-        )
 
     def _has_encoder(
         self,
-        thing_type: type[_ThingT],
+        thing_type: type[_DomainThingT],
         realm: type[_RealmT],
     ) -> bool:
         """Get a codec for a realm and a thing type."""
@@ -1792,9 +1676,9 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
 
     def _add_encoder(
         self,
-        thing_type: type[_ThingT],
+        thing_type: type[_DomainThingT],
         realm: type[_RealmT],
-        encoder: RealmEncoder[_ThingT, _RealmT],
+        encoder: RealmEncoder[_DomainThingT, _RealmT],
     ) -> None:
         """Add a codec for a realm and a thing type."""
         if self._has_encoder(thing_type, realm):
@@ -1807,7 +1691,7 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
 
     def _has_decoder(
         self,
-        thing_type: type[_ThingT],
+        thing_type: type[_DomainThingT],
         realm: type[_RealmT],
     ) -> bool:
         """Get a codec for a realm and a thing type."""
@@ -1815,9 +1699,9 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
 
     def _add_decoder(
         self,
-        thing_type: type[_ThingT],
+        thing_type: type[_DomainThingT],
         realm: type[_RealmT],
-        decoder: RealmDecoder[_ThingT, _RealmT],
+        decoder: RealmDecoder[_DomainThingT, _RealmT],
     ) -> None:
         """Add a codec for a realm and a thing type."""
         if self._has_decoder(thing_type, realm):
