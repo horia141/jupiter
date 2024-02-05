@@ -119,7 +119,9 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
 
     _realm_codec_registry: Final[RealmCodecRegistry]
     _args_type: type[UseCaseArgsBase]
+    _pydantic_arg_model: BaseModel
     _result_type: type[UseCaseResultBase | None]
+    _pydantic_result_model: BaseModel | None
     _use_case: UseCaseT
     _root_module: Final[types.ModuleType]
 
@@ -132,7 +134,9 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
         """Constructor."""
         self._realm_codec_registry = realm_codec_registry
         self._args_type = self._infer_args_class(use_case)
+        self._pydantic_arg_model = self._build_model(realm_codec_registry, self._args_type)
         self._result_type = self._infer_result_class(use_case)
+        self._pydantic_result_model = self._build_model(realm_codec_registry, self._result_type) if self._result_type else None
         self._use_case = use_case
         self._root_module = root_module
 
@@ -157,6 +161,12 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
             if len(args) > 1:
                 return cast(type[UseCaseResultBase | None], args[1])
         raise Exception("No result class found")
+
+    @staticmethod
+    def _build_model(realm_codec_registry: RealmCodecRegistry, the_type: type[UseCaseArgsBase | UseCaseResultBase]) -> BaseModel:
+        decoder = realm_codec_registry.get_decoder(the_type, DatabaseRealm)
+        model = create_model(f"Model{the_type.__name__}", envelop=(the_type, (v) => decoder.decode(v)))
+        return model
 
     def _build_http_name(self) -> str:
         return inflection.dasherize(
@@ -199,13 +209,13 @@ class GuestMutationCommand(
         @app.post(
             f"/{self._build_http_name()}",
             name=self._build_api_name(),
-            response_model=self._result_type,
+            response_model=self._pydantic_result_model,
             summary=self._build_description(),
             description=self._build_description(),
             tags=[self._build_tag()],
             **STANDARD_CONFIG,
         )
-        async def do_it(args: self._args_type, session: GuestSession) -> UseCaseResultT:  # type: ignore[name-defined]
+        async def do_it(args: self._pydantic_arg_model, session: GuestSession) -> UseCaseResultT:  # type: ignore[name-defined]
             return cast(
                 UseCaseResultT, (await self._use_case.execute(session, args))[1]
             )
@@ -229,13 +239,13 @@ class GuestReadonlyCommand(
         @app.post(
             f"/{self._build_http_name()}",
             name=self._build_api_name(),
-            response_model=self._result_type,
+            response_model=self._pydantic_result_model,
             summary=self._build_description(),
             description=self._build_description(),
             tags=[self._build_tag()],
             **STANDARD_CONFIG,
         )
-        async def do_it(args: self._args_type, session: GuestSession) -> UseCaseResultT:  # type: ignore[name-defined]
+        async def do_it(args: self._pydantic_arg_model, session: GuestSession) -> UseCaseResultT:  # type: ignore[name-defined]
             return cast(
                 UseCaseResultT, (await self._use_case.execute(session, args))[1]
             )
@@ -259,13 +269,13 @@ class LoggedInMutationCommand(
         @app.post(
             f"/{self._build_http_name()}",
             name=self._build_api_name(),
-            response_model=self._result_type,
+            response_model=self._pydantic_result_model,
             summary=self._build_description(),
             description=self._build_description(),
             tags=[self._build_tag()],
             **STANDARD_CONFIG,
         )
-        async def do_it(args: self._args_type, session: LoggedInSession) -> UseCaseResultT:  # type: ignore[name-defined]
+        async def do_it(args: self._pydantic_arg_model, session: LoggedInSession) -> UseCaseResultT:  # type: ignore[name-defined]
             return cast(
                 UseCaseResultT, (await self._use_case.execute(session, args))[1]
             )
@@ -286,16 +296,18 @@ class LoggedInReadonlyCommand(
     def attach_route(self, app: FastAPI) -> None:
         """Attach the route to the app."""
 
+        
+
         @app.post(
             f"/{self._build_http_name()}",
             name=self._build_api_name(),
-            response_model=self._result_type,
+            response_model=self._pydantic_result_model,
             summary=self._build_description(),
             description=self._build_description(),
             tags=[self._build_tag()],
             **STANDARD_CONFIG,
         )
-        async def do_it(args: self._args_type, session: LoggedInSession) -> UseCaseResultT:  # type: ignore[name-defined]
+        async def do_it(args: self._pydantic_arg_model, session: LoggedInSession) -> UseCaseResultT:  # type: ignore[name-defined]
             return cast(
                 UseCaseResultT, (await self._use_case.execute(session, args))[1]
             )
