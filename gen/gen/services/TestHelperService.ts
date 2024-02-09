@@ -1,25 +1,22 @@
+/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
 import type { ClearAllArgs } from '../models/ClearAllArgs';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class TestHelperService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * The command for clearing all branch and leaf type entities.
      * The command for clearing all branch and leaf type entities.
      * @param requestBody
-     * @returns null Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public clearAll(
         requestBody: ClearAllArgs,
-    ): CancelablePromise<null> {
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/clear-all',
@@ -32,5 +29,4 @@ export class TestHelperService {
             },
         });
     }
-
 }

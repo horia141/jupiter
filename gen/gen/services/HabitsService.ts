@@ -1,36 +1,33 @@
+/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
 import type { HabitArchiveArgs } from '../models/HabitArchiveArgs';
 import type { HabitChangeProjectArgs } from '../models/HabitChangeProjectArgs';
 import type { HabitCreateArgs } from '../models/HabitCreateArgs';
-import type { HabitCreateResult } from '../models/HabitCreateResult';
 import type { HabitFindArgs } from '../models/HabitFindArgs';
-import type { HabitFindResult } from '../models/HabitFindResult';
 import type { HabitLoadArgs } from '../models/HabitLoadArgs';
-import type { HabitLoadResult } from '../models/HabitLoadResult';
 import type { HabitRemoveArgs } from '../models/HabitRemoveArgs';
 import type { HabitSuspendArgs } from '../models/HabitSuspendArgs';
 import type { HabitUnsuspendArgs } from '../models/HabitUnsuspendArgs';
 import type { HabitUpdateArgs } from '../models/HabitUpdateArgs';
-
+import type { ModelHabitCreateResult } from '../models/ModelHabitCreateResult';
+import type { ModelHabitFindResult } from '../models/ModelHabitFindResult';
+import type { ModelHabitLoadResult } from '../models/ModelHabitLoadResult';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class HabitsService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * The command for archiving a habit.
      * The command for archiving a habit.
      * @param requestBody
-     * @returns null Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public habitArchive(
         requestBody: HabitArchiveArgs,
-    ): CancelablePromise<null> {
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/habit-archive',
@@ -43,17 +40,16 @@ export class HabitsService {
             },
         });
     }
-
     /**
      * The command for changing the project of a habit.
      * The command for changing the project of a habit.
      * @param requestBody
-     * @returns null Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public habitChangeProject(
         requestBody: HabitChangeProjectArgs,
-    ): CancelablePromise<null> {
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/habit-change-project',
@@ -66,17 +62,16 @@ export class HabitsService {
             },
         });
     }
-
     /**
      * The command for creating a habit.
      * The command for creating a habit.
      * @param requestBody
-     * @returns HabitCreateResult Successful Response
+     * @returns ModelHabitCreateResult Successful Response
      * @throws ApiError
      */
     public habitCreate(
         requestBody: HabitCreateArgs,
-    ): CancelablePromise<HabitCreateResult> {
+    ): CancelablePromise<ModelHabitCreateResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/habit-create',
@@ -89,17 +84,16 @@ export class HabitsService {
             },
         });
     }
-
     /**
      * The command for finding a habit.
      * The command for finding a habit.
      * @param requestBody
-     * @returns HabitFindResult Successful Response
+     * @returns ModelHabitFindResult Successful Response
      * @throws ApiError
      */
     public habitFind(
         requestBody: HabitFindArgs,
-    ): CancelablePromise<HabitFindResult> {
+    ): CancelablePromise<ModelHabitFindResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/habit-find',
@@ -112,17 +106,16 @@ export class HabitsService {
             },
         });
     }
-
     /**
      * Use case for loading a particular habit.
      * Use case for loading a particular habit.
      * @param requestBody
-     * @returns HabitLoadResult Successful Response
+     * @returns ModelHabitLoadResult Successful Response
      * @throws ApiError
      */
     public habitLoad(
         requestBody: HabitLoadArgs,
-    ): CancelablePromise<HabitLoadResult> {
+    ): CancelablePromise<ModelHabitLoadResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/habit-load',
@@ -135,17 +128,16 @@ export class HabitsService {
             },
         });
     }
-
     /**
      * The command for removing a habit.
      * The command for removing a habit.
      * @param requestBody
-     * @returns null Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public habitRemove(
         requestBody: HabitRemoveArgs,
-    ): CancelablePromise<null> {
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/habit-remove',
@@ -158,17 +150,16 @@ export class HabitsService {
             },
         });
     }
-
     /**
      * The command for suspending a habit.
      * The command for suspending a habit.
      * @param requestBody
-     * @returns null Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public habitSuspend(
         requestBody: HabitSuspendArgs,
-    ): CancelablePromise<null> {
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/habit-suspend',
@@ -181,17 +172,16 @@ export class HabitsService {
             },
         });
     }
-
     /**
      * The command for unsuspending a habit.
      * The command for unsuspending a habit.
      * @param requestBody
-     * @returns null Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public habitUnsuspend(
         requestBody: HabitUnsuspendArgs,
-    ): CancelablePromise<null> {
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/habit-unsuspend',
@@ -204,17 +194,16 @@ export class HabitsService {
             },
         });
     }
-
     /**
      * The command for updating a habit.
      * The command for updating a habit.
      * @param requestBody
-     * @returns null Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public habitUpdate(
         requestBody: HabitUpdateArgs,
-    ): CancelablePromise<null> {
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/habit-update',
@@ -227,5 +216,4 @@ export class HabitsService {
             },
         });
     }
-
 }

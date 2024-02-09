@@ -1,7 +1,7 @@
+/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { ADate } from './ADate';
 import type { EntityId } from './EntityId';
 import type { EntityName } from './EntityName';
@@ -10,7 +10,6 @@ import type { ParentLink } from './ParentLink';
 import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
 import type { ReportPeriodResult } from './ReportPeriodResult';
 import type { Timestamp } from './Timestamp';
-
 export type Journal = {
     ref_id: EntityId;
     version: number;

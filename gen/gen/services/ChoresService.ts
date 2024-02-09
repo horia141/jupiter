@@ -1,36 +1,33 @@
+/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
 import type { ChoreArchiveArgs } from '../models/ChoreArchiveArgs';
 import type { ChoreChangeProjectArgs } from '../models/ChoreChangeProjectArgs';
 import type { ChoreCreateArgs } from '../models/ChoreCreateArgs';
-import type { ChoreCreateResult } from '../models/ChoreCreateResult';
 import type { ChoreFindArgs } from '../models/ChoreFindArgs';
-import type { ChoreFindResult } from '../models/ChoreFindResult';
 import type { ChoreLoadArgs } from '../models/ChoreLoadArgs';
-import type { ChoreLoadResult } from '../models/ChoreLoadResult';
 import type { ChoreRemoveArgs } from '../models/ChoreRemoveArgs';
 import type { ChoreSuspendArgs } from '../models/ChoreSuspendArgs';
 import type { ChoreUnsuspendArgs } from '../models/ChoreUnsuspendArgs';
 import type { ChoreUpdateArgs } from '../models/ChoreUpdateArgs';
-
+import type { ModelChoreCreateResult } from '../models/ModelChoreCreateResult';
+import type { ModelChoreFindResult } from '../models/ModelChoreFindResult';
+import type { ModelChoreLoadResult } from '../models/ModelChoreLoadResult';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class ChoresService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * The command for archiving a chore.
      * The command for archiving a chore.
      * @param requestBody
-     * @returns null Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public choreArchive(
         requestBody: ChoreArchiveArgs,
-    ): CancelablePromise<null> {
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/chore-archive',
@@ -43,17 +40,16 @@ export class ChoresService {
             },
         });
     }
-
     /**
      * The command for changing the project of a chore.
      * The command for changing the project of a chore.
      * @param requestBody
-     * @returns null Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public choreChangeProject(
         requestBody: ChoreChangeProjectArgs,
-    ): CancelablePromise<null> {
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/chore-change-project',
@@ -66,17 +62,16 @@ export class ChoresService {
             },
         });
     }
-
     /**
      * The command for creating a chore.
      * The command for creating a chore.
      * @param requestBody
-     * @returns ChoreCreateResult Successful Response
+     * @returns ModelChoreCreateResult Successful Response
      * @throws ApiError
      */
     public choreCreate(
         requestBody: ChoreCreateArgs,
-    ): CancelablePromise<ChoreCreateResult> {
+    ): CancelablePromise<ModelChoreCreateResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/chore-create',
@@ -89,17 +84,16 @@ export class ChoresService {
             },
         });
     }
-
     /**
      * The command for finding a chore.
      * The command for finding a chore.
      * @param requestBody
-     * @returns ChoreFindResult Successful Response
+     * @returns ModelChoreFindResult Successful Response
      * @throws ApiError
      */
     public choreFind(
         requestBody: ChoreFindArgs,
-    ): CancelablePromise<ChoreFindResult> {
+    ): CancelablePromise<ModelChoreFindResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/chore-find',
@@ -112,17 +106,16 @@ export class ChoresService {
             },
         });
     }
-
     /**
      * Use case for loading a particular chore.
      * Use case for loading a particular chore.
      * @param requestBody
-     * @returns ChoreLoadResult Successful Response
+     * @returns ModelChoreLoadResult Successful Response
      * @throws ApiError
      */
     public choreLoad(
         requestBody: ChoreLoadArgs,
-    ): CancelablePromise<ChoreLoadResult> {
+    ): CancelablePromise<ModelChoreLoadResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/chore-load',
@@ -135,17 +128,16 @@ export class ChoresService {
             },
         });
     }
-
     /**
      * The command for removing a chore.
      * The command for removing a chore.
      * @param requestBody
-     * @returns null Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public choreRemove(
         requestBody: ChoreRemoveArgs,
-    ): CancelablePromise<null> {
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/chore-remove',
@@ -158,17 +150,16 @@ export class ChoresService {
             },
         });
     }
-
     /**
      * The command for suspending a chore.
      * The command for suspending a chore.
      * @param requestBody
-     * @returns null Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public choreSuspend(
         requestBody: ChoreSuspendArgs,
-    ): CancelablePromise<null> {
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/chore-suspend',
@@ -181,17 +172,16 @@ export class ChoresService {
             },
         });
     }
-
     /**
      * The command for unsuspending a chore.
      * The command for unsuspending a chore.
      * @param requestBody
-     * @returns null Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public choreUnsuspend(
         requestBody: ChoreUnsuspendArgs,
-    ): CancelablePromise<null> {
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/chore-unsuspend',
@@ -204,17 +194,16 @@ export class ChoresService {
             },
         });
     }
-
     /**
      * The command for updating a chore.
      * The command for updating a chore.
      * @param requestBody
-     * @returns null Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public choreUpdate(
         requestBody: ChoreUpdateArgs,
-    ): CancelablePromise<null> {
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/chore-update',
@@ -227,5 +216,4 @@ export class ChoresService {
             },
         });
     }
-
 }

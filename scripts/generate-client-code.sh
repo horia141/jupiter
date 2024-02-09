@@ -16,7 +16,7 @@ cd ../..
 sleep 5
 
 rm -f .build-cache/apigen/openapi.json
-http --timeout 2 get localhost:${PORT}/openapi.json > .build-cache/apigen/openapi.json
+http --timeout 2 get 127.0.0.1:${PORT}/openapi.json > .build-cache/apigen/openapi.json
 
 kill $WEBAPI_PID
 

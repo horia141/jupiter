@@ -1,14 +1,13 @@
+/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { EntityId } from './EntityId';
 import type { EntityName } from './EntityName';
 import type { ParentLink } from './ParentLink';
 import type { PushGenerationExtraInfo } from './PushGenerationExtraInfo';
 import type { SlackChannelName } from './SlackChannelName';
 import type { Timestamp } from './Timestamp';
-
 export type SlackTask = {
     ref_id: EntityId;
     version: number;

@@ -1,26 +1,23 @@
+/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { ModelReportResult } from '../models/ModelReportResult';
 import type { ReportArgs } from '../models/ReportArgs';
-import type { ReportResult } from '../models/ReportResult';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class ReportService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * The command for reporting on progress.
      * The command for reporting on progress.
      * @param requestBody
-     * @returns ReportResult Successful Response
+     * @returns ModelReportResult Successful Response
      * @throws ApiError
      */
     public report(
         requestBody: ReportArgs,
-    ): CancelablePromise<ReportResult> {
+    ): CancelablePromise<ModelReportResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/report',
@@ -33,5 +30,4 @@ export class ReportService {
             },
         });
     }
-
 }

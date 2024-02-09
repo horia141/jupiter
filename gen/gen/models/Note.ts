@@ -1,7 +1,7 @@
+/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { BulletedListBlock } from './BulletedListBlock';
 import type { ChecklistBlock } from './ChecklistBlock';
 import type { CodeBlock } from './CodeBlock';
@@ -18,7 +18,6 @@ import type { ParentLink } from './ParentLink';
 import type { QuoteBlock } from './QuoteBlock';
 import type { TableBlock } from './TableBlock';
 import type { Timestamp } from './Timestamp';
-
 export type Note = {
     ref_id: EntityId;
     version: number;

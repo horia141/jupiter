@@ -1,5 +1,6 @@
 """The app, part of the framework."""
 import abc
+import dataclasses
 import types
 from typing import (
     Annotated,
@@ -13,7 +14,7 @@ from typing import (
     cast,
     get_args,
 )
-from jupiter.core.framework.realm import DatabaseRealm
+from jupiter.core.framework.realm import DatabaseRealm, WebRealm
 
 import inflection
 from jupiter.core.framework.thing import Thing
@@ -36,7 +37,7 @@ from jupiter.core.framework.use_case import (
     UseCaseSessionBase,
 )
 from jupiter.core.framework.use_case_io import UseCaseArgsBase, UseCaseResultBase
-from jupiter.core.framework.utils import find_all_modules
+from jupiter.core.framework.utils import find_all_modules, normalize_optional
 from jupiter.core.use_cases.infra.storage_engine import UseCaseStorageEngine
 from jupiter.core.use_cases.infra.use_cases import (
     AppBackgroundMutationUseCase,
@@ -137,9 +138,9 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
         """Constructor."""
         self._realm_codec_registry = realm_codec_registry
         self._args_type = self._infer_args_class(use_case)
-        self._pydantic_arg_model = self._build_model(realm_codec_registry, self._args_type)
+        self._pydantic_arg_model = self._build_args_model(realm_codec_registry, self._args_type)
         self._result_type = self._infer_result_class(use_case)
-        self._pydantic_result_model = self._build_model(realm_codec_registry, self._result_type) if self._result_type is not type(None) else None # type: ignore 
+        self._pydantic_result_model = self._build_result_model(realm_codec_registry, self._result_type) if self._result_type is not type(None) else None # type: ignore 
         self._use_case = use_case
         self._root_module = root_module
 
@@ -166,10 +167,28 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
         raise Exception("No result class found")
 
     @staticmethod
-    def _build_model(realm_codec_registry: RealmCodecRegistry, the_type: type[Thing]) -> type[BaseModel]:
-        decoder = realm_codec_registry.get_decoder(the_type, DatabaseRealm)
+    def _build_args_model(realm_codec_registry: RealmCodecRegistry, the_type: type[UseCaseArgsBase]) -> type[BaseModel]:
+        fields = {}
+        validators = {}
+
+        for field in dataclasses.fields(the_type):
+            real_type, is_optional = normalize_optional(field.type)
+            if is_optional:
+                fields[field.name] = (real_type | None, ...)
+            else:
+                fields[field.name] = (field.type, ...)
+            field_decoder = realm_codec_registry.get_decoder(field.type, WebRealm)
+            validators[field.name] = validator(field.name, pre=True, allow_reuse=True)(lambda cls, v: field_decoder.decode(v))
+
+        model = create_model(the_type.__name__, **fields, __validators__=validators)
+
+        return model
+    
+    @staticmethod
+    def _build_result_model(realm_codec_registry: RealmCodecRegistry, the_type: type[UseCaseResultBase]) -> type[BaseModel]:
+        decoder = realm_codec_registry.get_encoder(the_type, WebRealm)
         validators = {
-            'enveop': validator("envelop")(lambda cls, v: decoder.decode(v))
+            'enveop': validator("envelop", pre=True, allow_reuse=True)(lambda cls, v: decoder.encode(v))
         }
         model = create_model(f"Model{the_type.__name__}", envelop=(the_type, ...), __validators__=validators)
         return model

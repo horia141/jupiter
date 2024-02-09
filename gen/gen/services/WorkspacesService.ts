@@ -1,29 +1,26 @@
+/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { ModelWorkspaceLoadResult } from '../models/ModelWorkspaceLoadResult';
 import type { WorkspaceChangeDefaultProjectArgs } from '../models/WorkspaceChangeDefaultProjectArgs';
 import type { WorkspaceChangeFeatureFlagsArgs } from '../models/WorkspaceChangeFeatureFlagsArgs';
 import type { WorkspaceLoadArgs } from '../models/WorkspaceLoadArgs';
-import type { WorkspaceLoadResult } from '../models/WorkspaceLoadResult';
 import type { WorkspaceUpdateArgs } from '../models/WorkspaceUpdateArgs';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class WorkspacesService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * UseCase for changing the default project of a workspace.
      * UseCase for changing the default project of a workspace.
      * @param requestBody
-     * @returns null Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public workspaceChangeDefaultProject(
         requestBody: WorkspaceChangeDefaultProjectArgs,
-    ): CancelablePromise<null> {
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/workspace-change-default-project',
@@ -36,17 +33,16 @@ export class WorkspacesService {
             },
         });
     }
-
     /**
      * Usecase for changing the feature flags for the workspace.
      * Usecase for changing the feature flags for the workspace.
      * @param requestBody
-     * @returns null Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public workspaceChangeFeatureFlags(
         requestBody: WorkspaceChangeFeatureFlagsArgs,
-    ): CancelablePromise<null> {
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/workspace-change-feature-flags',
@@ -59,17 +55,16 @@ export class WorkspacesService {
             },
         });
     }
-
     /**
      * The command for loading workspaces.
      * The command for loading workspaces.
      * @param requestBody
-     * @returns WorkspaceLoadResult Successful Response
+     * @returns ModelWorkspaceLoadResult Successful Response
      * @throws ApiError
      */
     public workspaceLoad(
         requestBody: WorkspaceLoadArgs,
-    ): CancelablePromise<WorkspaceLoadResult> {
+    ): CancelablePromise<ModelWorkspaceLoadResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/workspace-load',
@@ -82,17 +77,16 @@ export class WorkspacesService {
             },
         });
     }
-
     /**
      * UseCase for updating a workspace.
      * UseCase for updating a workspace.
      * @param requestBody
-     * @returns null Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public workspaceUpdate(
         requestBody: WorkspaceUpdateArgs,
-    ): CancelablePromise<null> {
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/workspace-update',
@@ -105,5 +99,4 @@ export class WorkspacesService {
             },
         });
     }
-
 }

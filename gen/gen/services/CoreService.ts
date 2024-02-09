@@ -1,29 +1,26 @@
+/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { ModelNoteCreateResult } from '../models/ModelNoteCreateResult';
 import type { NoteArchiveArgs } from '../models/NoteArchiveArgs';
 import type { NoteCreateArgs } from '../models/NoteCreateArgs';
-import type { NoteCreateResult } from '../models/NoteCreateResult';
 import type { NoteRemoveArgs } from '../models/NoteRemoveArgs';
 import type { NoteUpdateArgs } from '../models/NoteUpdateArgs';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class CoreService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * Use case for archiving a note.
      * Use case for archiving a note.
      * @param requestBody
-     * @returns null Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public noteArchive(
         requestBody: NoteArchiveArgs,
-    ): CancelablePromise<null> {
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/note-archive',
@@ -36,17 +33,16 @@ export class CoreService {
             },
         });
     }
-
     /**
      * Use case for creating a note.
      * Use case for creating a note.
      * @param requestBody
-     * @returns NoteCreateResult Successful Response
+     * @returns ModelNoteCreateResult Successful Response
      * @throws ApiError
      */
     public noteCreate(
         requestBody: NoteCreateArgs,
-    ): CancelablePromise<NoteCreateResult> {
+    ): CancelablePromise<ModelNoteCreateResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/note-create',
@@ -59,17 +55,16 @@ export class CoreService {
             },
         });
     }
-
     /**
      * The command for removing a note.
      * The command for removing a note.
      * @param requestBody
-     * @returns null Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public noteRemove(
         requestBody: NoteRemoveArgs,
-    ): CancelablePromise<null> {
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/note-remove',
@@ -82,17 +77,16 @@ export class CoreService {
             },
         });
     }
-
     /**
      * Update a note use case.
      * Update a note use case.
      * @param requestBody
-     * @returns null Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public noteUpdate(
         requestBody: NoteUpdateArgs,
-    ): CancelablePromise<null> {
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/note-update',
@@ -105,5 +99,4 @@ export class CoreService {
             },
         });
     }
-
 }

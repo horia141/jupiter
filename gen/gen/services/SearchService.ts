@@ -1,26 +1,23 @@
+/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { ModelSearchResult } from '../models/ModelSearchResult';
 import type { SearchArgs } from '../models/SearchArgs';
-import type { SearchResult } from '../models/SearchResult';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class SearchService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * Use case for free form searching through Jupiter.
      * Use case for free form searching through Jupiter.
      * @param requestBody
-     * @returns SearchResult Successful Response
+     * @returns ModelSearchResult Successful Response
      * @throws ApiError
      */
     public search(
         requestBody: SearchArgs,
-    ): CancelablePromise<SearchResult> {
+    ): CancelablePromise<ModelSearchResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/search',
@@ -33,5 +30,4 @@ export class SearchService {
             },
         });
     }
-
 }

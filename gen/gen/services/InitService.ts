@@ -1,26 +1,23 @@
+/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
 import type { InitArgs } from '../models/InitArgs';
-import type { InitResult } from '../models/InitResult';
-
+import type { ModelInitResult } from '../models/ModelInitResult';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class InitService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * UseCase for initialising the workspace.
      * UseCase for initialising the workspace.
      * @param requestBody
-     * @returns InitResult Successful Response
+     * @returns ModelInitResult Successful Response
      * @throws ApiError
      */
     public init(
         requestBody: InitArgs,
-    ): CancelablePromise<InitResult> {
+    ): CancelablePromise<ModelInitResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/init',
@@ -33,5 +30,4 @@ export class InitService {
             },
         });
     }
-
 }

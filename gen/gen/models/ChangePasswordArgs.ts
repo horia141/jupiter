@@ -1,10 +1,9 @@
+/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { PasswordNewPlain } from './PasswordNewPlain';
 import type { PasswordPlain } from './PasswordPlain';
-
 export type ChangePasswordArgs = {
     current_password: PasswordPlain;
     new_password: PasswordNewPlain;

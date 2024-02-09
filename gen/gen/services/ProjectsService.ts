@@ -1,33 +1,30 @@
+/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { ModelProjectCreateResult } from '../models/ModelProjectCreateResult';
+import type { ModelProjectFindResult } from '../models/ModelProjectFindResult';
+import type { ModelProjectLoadResult } from '../models/ModelProjectLoadResult';
 import type { ProjectArchiveArgs } from '../models/ProjectArchiveArgs';
 import type { ProjectCreateArgs } from '../models/ProjectCreateArgs';
-import type { ProjectCreateResult } from '../models/ProjectCreateResult';
 import type { ProjectFindArgs } from '../models/ProjectFindArgs';
-import type { ProjectFindResult } from '../models/ProjectFindResult';
 import type { ProjectLoadArgs } from '../models/ProjectLoadArgs';
-import type { ProjectLoadResult } from '../models/ProjectLoadResult';
 import type { ProjectRemoveArgs } from '../models/ProjectRemoveArgs';
 import type { ProjectUpdateArgs } from '../models/ProjectUpdateArgs';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class ProjectsService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * The command for archiving a project.
      * The command for archiving a project.
      * @param requestBody
-     * @returns null Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public projectArchive(
         requestBody: ProjectArchiveArgs,
-    ): CancelablePromise<null> {
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/project-archive',
@@ -40,17 +37,16 @@ export class ProjectsService {
             },
         });
     }
-
     /**
      * The command for creating a project.
      * The command for creating a project.
      * @param requestBody
-     * @returns ProjectCreateResult Successful Response
+     * @returns ModelProjectCreateResult Successful Response
      * @throws ApiError
      */
     public projectCreate(
         requestBody: ProjectCreateArgs,
-    ): CancelablePromise<ProjectCreateResult> {
+    ): CancelablePromise<ModelProjectCreateResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/project-create',
@@ -63,17 +59,16 @@ export class ProjectsService {
             },
         });
     }
-
     /**
      * The command for finding projects.
      * The command for finding projects.
      * @param requestBody
-     * @returns ProjectFindResult Successful Response
+     * @returns ModelProjectFindResult Successful Response
      * @throws ApiError
      */
     public projectFind(
         requestBody: ProjectFindArgs,
-    ): CancelablePromise<ProjectFindResult> {
+    ): CancelablePromise<ModelProjectFindResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/project-find',
@@ -86,17 +81,16 @@ export class ProjectsService {
             },
         });
     }
-
     /**
      * Use case for loading a particular project.
      * Use case for loading a particular project.
      * @param requestBody
-     * @returns ProjectLoadResult Successful Response
+     * @returns ModelProjectLoadResult Successful Response
      * @throws ApiError
      */
     public projectLoad(
         requestBody: ProjectLoadArgs,
-    ): CancelablePromise<ProjectLoadResult> {
+    ): CancelablePromise<ModelProjectLoadResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/project-load',
@@ -109,17 +103,16 @@ export class ProjectsService {
             },
         });
     }
-
     /**
      * The command for removing a project.
      * The command for removing a project.
      * @param requestBody
-     * @returns null Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public projectRemove(
         requestBody: ProjectRemoveArgs,
-    ): CancelablePromise<null> {
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/project-remove',
@@ -132,17 +125,16 @@ export class ProjectsService {
             },
         });
     }
-
     /**
      * The command for updating a project.
      * The command for updating a project.
      * @param requestBody
-     * @returns null Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public projectUpdate(
         requestBody: ProjectUpdateArgs,
-    ): CancelablePromise<null> {
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/project-update',
@@ -155,5 +147,4 @@ export class ProjectsService {
             },
         });
     }
-
 }

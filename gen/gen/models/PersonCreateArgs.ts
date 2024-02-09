@@ -1,7 +1,7 @@
+/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { Difficulty } from './Difficulty';
 import type { Eisen } from './Eisen';
 import type { EntityName } from './EntityName';
@@ -11,18 +11,17 @@ import type { RecurringTaskDueAtDay } from './RecurringTaskDueAtDay';
 import type { RecurringTaskDueAtMonth } from './RecurringTaskDueAtMonth';
 import type { RecurringTaskDueAtTime } from './RecurringTaskDueAtTime';
 import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
-
 export type PersonCreateArgs = {
     name: EntityName;
     relationship: PersonRelationship;
-    catch_up_period?: RecurringTaskPeriod;
-    catch_up_eisen?: Eisen;
-    catch_up_difficulty?: Difficulty;
-    catch_up_actionable_from_day?: RecurringTaskDueAtDay;
-    catch_up_actionable_from_month?: RecurringTaskDueAtMonth;
-    catch_up_due_at_time?: RecurringTaskDueAtTime;
-    catch_up_due_at_day?: RecurringTaskDueAtDay;
-    catch_up_due_at_month?: RecurringTaskDueAtMonth;
-    birthday?: PersonBirthday;
+    catch_up_period: RecurringTaskPeriod;
+    catch_up_eisen: Eisen;
+    catch_up_difficulty: Difficulty;
+    catch_up_actionable_from_day: RecurringTaskDueAtDay;
+    catch_up_actionable_from_month: RecurringTaskDueAtMonth;
+    catch_up_due_at_time: RecurringTaskDueAtTime;
+    catch_up_due_at_day: RecurringTaskDueAtDay;
+    catch_up_due_at_month: RecurringTaskDueAtMonth;
+    birthday: PersonBirthday;
 };
 

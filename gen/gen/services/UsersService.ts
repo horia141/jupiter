@@ -1,28 +1,25 @@
+/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { ModelUserLoadResult } from '../models/ModelUserLoadResult';
 import type { UserChangeFeatureFlagsArgs } from '../models/UserChangeFeatureFlagsArgs';
 import type { UserLoadArgs } from '../models/UserLoadArgs';
-import type { UserLoadResult } from '../models/UserLoadResult';
 import type { UserUpdateArgs } from '../models/UserUpdateArgs';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class UsersService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * Usecase for changing the feature flags for the user.
      * Usecase for changing the feature flags for the user.
      * @param requestBody
-     * @returns null Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public userChangeFeatureFlags(
         requestBody: UserChangeFeatureFlagsArgs,
-    ): CancelablePromise<null> {
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/user-change-feature-flags',
@@ -35,17 +32,16 @@ export class UsersService {
             },
         });
     }
-
     /**
      * The command for loading the current user.
      * The command for loading the current user.
      * @param requestBody
-     * @returns UserLoadResult Successful Response
+     * @returns ModelUserLoadResult Successful Response
      * @throws ApiError
      */
     public userLoad(
         requestBody: UserLoadArgs,
-    ): CancelablePromise<UserLoadResult> {
+    ): CancelablePromise<ModelUserLoadResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/user-load',
@@ -58,17 +54,16 @@ export class UsersService {
             },
         });
     }
-
     /**
      * The command for updating a user's properties.
      * The command for updating a user's properties.
      * @param requestBody
-     * @returns null Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public userUpdate(
         requestBody: UserUpdateArgs,
-    ): CancelablePromise<null> {
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/user-update',
@@ -81,5 +76,4 @@ export class UsersService {
             },
         });
     }
-
 }

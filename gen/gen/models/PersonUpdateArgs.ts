@@ -1,7 +1,7 @@
+/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { Difficulty } from './Difficulty';
 import type { Eisen } from './Eisen';
 import type { EntityId } from './EntityId';
@@ -12,7 +12,6 @@ import type { RecurringTaskDueAtDay } from './RecurringTaskDueAtDay';
 import type { RecurringTaskDueAtMonth } from './RecurringTaskDueAtMonth';
 import type { RecurringTaskDueAtTime } from './RecurringTaskDueAtTime';
 import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
-
 export type PersonUpdateArgs = {
     ref_id: EntityId;
     name: {

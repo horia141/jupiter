@@ -1,14 +1,13 @@
+/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { ADate } from './ADate';
 import type { Difficulty } from './Difficulty';
 import type { Eisen } from './Eisen';
 import type { EntityId } from './EntityId';
 import type { InboxTaskName } from './InboxTaskName';
 import type { InboxTaskStatus } from './InboxTaskStatus';
-
 export type InboxTaskUpdateArgs = {
     ref_id: EntityId;
     name: {

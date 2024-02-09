@@ -1,7 +1,7 @@
+/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { ADate } from './ADate';
 import type { ChoreName } from './ChoreName';
 import type { Difficulty } from './Difficulty';
@@ -12,7 +12,6 @@ import type { RecurringTaskDueAtMonth } from './RecurringTaskDueAtMonth';
 import type { RecurringTaskDueAtTime } from './RecurringTaskDueAtTime';
 import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
 import type { RecurringTaskSkipRule } from './RecurringTaskSkipRule';
-
 export type ChoreUpdateArgs = {
     ref_id: EntityId;
     name: {

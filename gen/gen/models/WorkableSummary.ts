@@ -1,9 +1,8 @@
+/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { WorkableBigPlan } from './WorkableBigPlan';
-
 export type WorkableSummary = {
     created_cnt: number;
     accepted_cnt: number;

@@ -35,6 +35,7 @@ from jupiter.core.framework.base.timestamp import (
 from jupiter.core.framework.concept import Concept
 from jupiter.core.framework.entity import Entity, ParentLink
 from jupiter.core.framework.errors import InputValidationError
+from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.realm import (
     PROVIDE_VIA_REGISTRY,
@@ -127,6 +128,51 @@ class _LiteralDatabaseDecoder(RealmDecoder[str, DatabaseRealm]):
                 f"Expected value to be one of {self._allowed_values}"
             )
         return value
+
+
+class _UpdateActionWebDecoder(RealmDecoder[UpdateAction[DomainThing], WebRealm]):
+    """An encoder for update actions in CLI realm."""
+
+    _realm_codec_registry: Final[RealmCodecRegistry]
+    _root_type: type[DomainThing] | None
+    _the_type: type[DomainThing] | ForwardRef | str
+
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        root_type: type[DomainThing] | None,
+        the_type: type[DomainThing] | ForwardRef | str,
+    ) -> None:
+        self._realm_codec_registry = realm_codec_registry
+        self._root_type = root_type
+        self._the_type = the_type
+
+    def decode(self, value: RealmThing) -> UpdateAction[DomainThing]:
+        if not isinstance(value, dict):
+            raise RealmDecodingError(f"Expected value of type update action for {self._the_type}")
+        
+        if "should_change" not in value:
+            raise RealmDecodingError(f"Expected field to have a should_change field for {self._the_type}")
+        
+        final_value: UpdateAction[DomainThing]
+        
+        if value["should_change"] is False:
+            final_value = UpdateAction.do_nothing()
+        else:
+            if "value" not in value:
+                raise RealmDecodingError(f"Expected field to have a value field for {self._the_type}")
+
+            update_action_decoder = self._realm_codec_registry.get_decoder(
+                self._the_type, CliRealm, self._root_type
+            )
+
+            final_value = UpdateAction.change_to(
+                update_action_decoder.decode(value["value"])
+            )
+
+        return final_value
+
+        
 
 
 class _UnionDatabaseEncoder(RealmEncoder[DomainThing, DatabaseRealm]):
@@ -914,40 +960,10 @@ class _StandardUseCaseArgsWebDecoder(
                 )
 
             field_value = value[field.name]
-
-            if (
-                field_type_origin := get_origin(field.type)
-            ) is not None and field_type_origin is UpdateAction:
-                update_action_type = cast(type[DomainThing], get_args(field.type)[0])
-
-                if not isinstance(field_value, dict):
-                    raise RealmDecodingError(f"Expected value of type update action for {field.name} in {self._the_type}")
-                
-                if "should_change" not in field_value:
-                    raise RealmDecodingError(f"Expected field {field.name} to have a should_change field for {self._the_type}")
-                
-                final_value: UpdateAction[DomainThing]
-                
-                if field_value["should_change"] is False:
-                    final_value = UpdateAction.do_nothing()
-                else:
-                    if "value" not in field_value:
-                        raise RealmDecodingError(f"Expected field {field.name} to have a value field for {self._the_type}")
-
-                    update_action_decoder = self._realm_codec_registry.get_decoder(
-                        update_action_type, CliRealm
-                    )
-
-                    final_value = UpdateAction.change_to(
-                        update_action_decoder.decode(field_value["value"])
-                    )
-
-                ctor_args[field.name] = final_value
-            else:
-                decoder = self._realm_codec_registry.get_decoder(
-                    field.type, DatabaseRealm, self._the_type
-                )
-                ctor_args[field.name] = decoder.decode(field_value)
+            decoder = self._realm_codec_registry.get_decoder(
+                field.type, DatabaseRealm, self._the_type
+            )
+            ctor_args[field.name] = decoder.decode(field_value)
 
         return self._the_type(**ctor_args)
     
@@ -1291,6 +1307,9 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
         registry._add_encoder(Timestamp, DatabaseRealm, TimestampDatabaseEncoder())
         registry._add_decoder(Timestamp, DatabaseRealm, TimestampDatabaseDecoder())
 
+        registry._add_encoder(EventSource, DatabaseRealm, _StandardEnumValueDatabaseEncoder(EventSource))
+        registry._add_decoder(EventSource, DatabaseRealm, _StandardEnumValueDatabaseDecoder(EventSource))
+
         for m in find_all_modules(*module_roots):
             for concept_type, realm_type, encoder_type in extract_concept_encoders(m):
                 registry._add_encoder(
@@ -1545,8 +1564,15 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
             return self.get_decoder(root_type, realm, root_type)
         elif is_thing_ish_type(thing_type):
             if (thing_type, realm) not in self._decoders_registry:
-                raise Exception(
-                    f"Could not find decoder for realm {realm} and thing {thing_type.__name__}"
+                if (thing_type, DatabaseRealm) not in self._decoders_registry:
+                    raise Exception(
+                        f"Could not find decoder for realm {realm} and thing {thing_type.__name__}"
+                    )
+                return cast(
+                    RealmDecoder[_DomainThingT, _RealmT],
+                    self._decoders_registry[
+                        cast(tuple[type[Thing], type[Realm]], (thing_type, DatabaseRealm))
+                    ],
                 )
             return cast(
                 RealmDecoder[_DomainThingT, _RealmT],
@@ -1567,6 +1593,14 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                     _UnionDatabaseDecoder(
                         self, cast(type[DomainThing] | None, root_type), field_args
                     ),
+                )
+            elif thing_type_origin is UpdateAction and realm is WebRealm:
+                update_action_type = cast(type[DomainThing] | ForwardRef | str, get_args(thing_type)[0])
+                return cast(
+                    RealmEncoder[_DomainThingT, _RealmT],
+                    _UpdateActionWebDecoder(
+                        self, cast(type[DomainThing], root_type), update_action_type
+                    )
                 )
             elif thing_type_origin is list:
                 list_item_type = cast(

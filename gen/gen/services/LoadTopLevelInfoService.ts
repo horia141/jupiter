@@ -1,26 +1,23 @@
+/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
 import type { LoadTopLevelInfoArgs } from '../models/LoadTopLevelInfoArgs';
-import type { LoadTopLevelInfoResult } from '../models/LoadTopLevelInfoResult';
-
+import type { ModelLoadTopLevelInfoResult } from '../models/ModelLoadTopLevelInfoResult';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class LoadTopLevelInfoService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * The command for loading a user and workspace if they exist and other data too.
      * The command for loading a user and workspace if they exist and other data too.
      * @param requestBody
-     * @returns LoadTopLevelInfoResult Successful Response
+     * @returns ModelLoadTopLevelInfoResult Successful Response
      * @throws ApiError
      */
     public loadTopLevelInfo(
         requestBody: LoadTopLevelInfoArgs,
-    ): CancelablePromise<LoadTopLevelInfoResult> {
+    ): CancelablePromise<ModelLoadTopLevelInfoResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/load-top-level-info',
@@ -33,5 +30,4 @@ export class LoadTopLevelInfoService {
             },
         });
     }
-
 }

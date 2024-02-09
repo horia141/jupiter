@@ -1,7 +1,7 @@
+/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { EntityName } from './EntityName';
 import type { Env } from './Env';
 import type { Hosting } from './Hosting';
@@ -13,7 +13,6 @@ import type { UserScoreOverview } from './UserScoreOverview';
 import type { Workspace } from './Workspace';
 import type { WorkspaceFeature } from './WorkspaceFeature';
 import type { WorkspaceFeatureFlagsControls } from './WorkspaceFeatureFlagsControls';
-
 export type LoadTopLevelInfoResult = {
     env: Env;
     hosting: Hosting;

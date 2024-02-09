@@ -1,7 +1,7 @@
+/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { BulletedListBlock } from './BulletedListBlock';
 import type { ChecklistBlock } from './ChecklistBlock';
 import type { CodeBlock } from './CodeBlock';
@@ -15,10 +15,9 @@ import type { NumberedListBlock } from './NumberedListBlock';
 import type { ParagraphBlock } from './ParagraphBlock';
 import type { QuoteBlock } from './QuoteBlock';
 import type { TableBlock } from './TableBlock';
-
 export type DocCreateArgs = {
     name: EntityName;
     content: Array<(ParagraphBlock | HeadingBlock | BulletedListBlock | NumberedListBlock | ChecklistBlock | TableBlock | CodeBlock | QuoteBlock | DividerBlock | LinkBlock | EntityReferenceBlock)>;
-    parent_doc_ref_id?: EntityId;
+    parent_doc_ref_id: EntityId;
 };
 

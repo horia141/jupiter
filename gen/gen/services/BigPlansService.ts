@@ -1,35 +1,32 @@
+/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
 import type { BigPlanArchiveArgs } from '../models/BigPlanArchiveArgs';
 import type { BigPlanChangeProjectArgs } from '../models/BigPlanChangeProjectArgs';
 import type { BigPlanCreateArgs } from '../models/BigPlanCreateArgs';
-import type { BigPlanCreateResult } from '../models/BigPlanCreateResult';
 import type { BigPlanFindArgs } from '../models/BigPlanFindArgs';
-import type { BigPlanFindResult } from '../models/BigPlanFindResult';
 import type { BigPlanLoadArgs } from '../models/BigPlanLoadArgs';
-import type { BigPlanLoadResult } from '../models/BigPlanLoadResult';
 import type { BigPlanRemoveArgs } from '../models/BigPlanRemoveArgs';
 import type { BigPlanUpdateArgs } from '../models/BigPlanUpdateArgs';
-import type { BigPlanUpdateResult } from '../models/BigPlanUpdateResult';
-
+import type { ModelBigPlanCreateResult } from '../models/ModelBigPlanCreateResult';
+import type { ModelBigPlanFindResult } from '../models/ModelBigPlanFindResult';
+import type { ModelBigPlanLoadResult } from '../models/ModelBigPlanLoadResult';
+import type { ModelBigPlanUpdateResult } from '../models/ModelBigPlanUpdateResult';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class BigPlansService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * The command for archiving a big plan.
      * The command for archiving a big plan.
      * @param requestBody
-     * @returns null Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public bigPlanArchive(
         requestBody: BigPlanArchiveArgs,
-    ): CancelablePromise<null> {
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/big-plan-archive',
@@ -42,17 +39,16 @@ export class BigPlansService {
             },
         });
     }
-
     /**
      * The command for changing the project of a big plan.
      * The command for changing the project of a big plan.
      * @param requestBody
-     * @returns null Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public bigPlanChangeProject(
         requestBody: BigPlanChangeProjectArgs,
-    ): CancelablePromise<null> {
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/big-plan-change-project',
@@ -65,17 +61,16 @@ export class BigPlansService {
             },
         });
     }
-
     /**
      * The command for creating a big plan.
      * The command for creating a big plan.
      * @param requestBody
-     * @returns BigPlanCreateResult Successful Response
+     * @returns ModelBigPlanCreateResult Successful Response
      * @throws ApiError
      */
     public bigPlanCreate(
         requestBody: BigPlanCreateArgs,
-    ): CancelablePromise<BigPlanCreateResult> {
+    ): CancelablePromise<ModelBigPlanCreateResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/big-plan-create',
@@ -88,17 +83,16 @@ export class BigPlansService {
             },
         });
     }
-
     /**
      * The command for finding a big plan.
      * The command for finding a big plan.
      * @param requestBody
-     * @returns BigPlanFindResult Successful Response
+     * @returns ModelBigPlanFindResult Successful Response
      * @throws ApiError
      */
     public bigPlanFind(
         requestBody: BigPlanFindArgs,
-    ): CancelablePromise<BigPlanFindResult> {
+    ): CancelablePromise<ModelBigPlanFindResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/big-plan-find',
@@ -111,17 +105,16 @@ export class BigPlansService {
             },
         });
     }
-
     /**
      * The use case for loading a particular big plan.
      * The use case for loading a particular big plan.
      * @param requestBody
-     * @returns BigPlanLoadResult Successful Response
+     * @returns ModelBigPlanLoadResult Successful Response
      * @throws ApiError
      */
     public bigPlanLoad(
         requestBody: BigPlanLoadArgs,
-    ): CancelablePromise<BigPlanLoadResult> {
+    ): CancelablePromise<ModelBigPlanLoadResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/big-plan-load',
@@ -134,17 +127,16 @@ export class BigPlansService {
             },
         });
     }
-
     /**
      * The command for removing a big plan.
      * The command for removing a big plan.
      * @param requestBody
-     * @returns null Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public bigPlanRemove(
         requestBody: BigPlanRemoveArgs,
-    ): CancelablePromise<null> {
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/big-plan-remove',
@@ -157,17 +149,16 @@ export class BigPlansService {
             },
         });
     }
-
     /**
      * The command for updating a big plan.
      * The command for updating a big plan.
      * @param requestBody
-     * @returns BigPlanUpdateResult Successful Response
+     * @returns ModelBigPlanUpdateResult Successful Response
      * @throws ApiError
      */
     public bigPlanUpdate(
         requestBody: BigPlanUpdateArgs,
-    ): CancelablePromise<BigPlanUpdateResult> {
+    ): CancelablePromise<ModelBigPlanUpdateResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/big-plan-update',
@@ -180,5 +171,4 @@ export class BigPlansService {
             },
         });
     }
-
 }

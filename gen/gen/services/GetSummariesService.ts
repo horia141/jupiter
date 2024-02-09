@@ -1,26 +1,23 @@
+/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
 import type { GetSummariesArgs } from '../models/GetSummariesArgs';
-import type { GetSummariesResult } from '../models/GetSummariesResult';
-
+import type { ModelGetSummariesResult } from '../models/ModelGetSummariesResult';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class GetSummariesService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * The use case for retrieving summaries about entities.
      * The use case for retrieving summaries about entities.
      * @param requestBody
-     * @returns GetSummariesResult Successful Response
+     * @returns ModelGetSummariesResult Successful Response
      * @throws ApiError
      */
     public getSummaries(
         requestBody: GetSummariesArgs,
-    ): CancelablePromise<GetSummariesResult> {
+    ): CancelablePromise<ModelGetSummariesResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/get-summaries',
@@ -33,5 +30,4 @@ export class GetSummariesService {
             },
         });
     }
-
 }

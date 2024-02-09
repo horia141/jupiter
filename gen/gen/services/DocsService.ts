@@ -1,34 +1,31 @@
+/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
 import type { DocArchiveArgs } from '../models/DocArchiveArgs';
 import type { DocChangeParentArgs } from '../models/DocChangeParentArgs';
 import type { DocCreateArgs } from '../models/DocCreateArgs';
-import type { DocCreateResult } from '../models/DocCreateResult';
 import type { DocFindArgs } from '../models/DocFindArgs';
-import type { DocFindResult } from '../models/DocFindResult';
 import type { DocLoadArgs } from '../models/DocLoadArgs';
-import type { DocLoadResult } from '../models/DocLoadResult';
 import type { DocRemoveArgs } from '../models/DocRemoveArgs';
 import type { DocUpdateArgs } from '../models/DocUpdateArgs';
-
+import type { ModelDocCreateResult } from '../models/ModelDocCreateResult';
+import type { ModelDocFindResult } from '../models/ModelDocFindResult';
+import type { ModelDocLoadResult } from '../models/ModelDocLoadResult';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class DocsService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * Use case for archiving a doc.
      * Use case for archiving a doc.
      * @param requestBody
-     * @returns null Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public docArchive(
         requestBody: DocArchiveArgs,
-    ): CancelablePromise<null> {
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/doc-archive',
@@ -41,17 +38,16 @@ export class DocsService {
             },
         });
     }
-
     /**
      * The command for changing the parent for a doc .
      * The command for changing the parent for a doc .
      * @param requestBody
-     * @returns null Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public docChangeParent(
         requestBody: DocChangeParentArgs,
-    ): CancelablePromise<null> {
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/doc-change-parent',
@@ -64,17 +60,16 @@ export class DocsService {
             },
         });
     }
-
     /**
      * Use case for creating a doc.
      * Use case for creating a doc.
      * @param requestBody
-     * @returns DocCreateResult Successful Response
+     * @returns ModelDocCreateResult Successful Response
      * @throws ApiError
      */
     public docCreate(
         requestBody: DocCreateArgs,
-    ): CancelablePromise<DocCreateResult> {
+    ): CancelablePromise<ModelDocCreateResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/doc-create',
@@ -87,17 +82,16 @@ export class DocsService {
             },
         });
     }
-
     /**
      * The use case for finding docs.
      * The use case for finding docs.
      * @param requestBody
-     * @returns DocFindResult Successful Response
+     * @returns ModelDocFindResult Successful Response
      * @throws ApiError
      */
     public docFind(
         requestBody: DocFindArgs,
-    ): CancelablePromise<DocFindResult> {
+    ): CancelablePromise<ModelDocFindResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/doc-find',
@@ -110,17 +104,16 @@ export class DocsService {
             },
         });
     }
-
     /**
      * Use case for loading a particular doc.
      * Use case for loading a particular doc.
      * @param requestBody
-     * @returns DocLoadResult Successful Response
+     * @returns ModelDocLoadResult Successful Response
      * @throws ApiError
      */
     public docLoad(
         requestBody: DocLoadArgs,
-    ): CancelablePromise<DocLoadResult> {
+    ): CancelablePromise<ModelDocLoadResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/doc-load',
@@ -133,17 +126,16 @@ export class DocsService {
             },
         });
     }
-
     /**
      * The command for removing a doc.
      * The command for removing a doc.
      * @param requestBody
-     * @returns null Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public docRemove(
         requestBody: DocRemoveArgs,
-    ): CancelablePromise<null> {
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/doc-remove',
@@ -156,17 +148,16 @@ export class DocsService {
             },
         });
     }
-
     /**
      * Update a doc use case.
      * Update a doc use case.
      * @param requestBody
-     * @returns null Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public docUpdate(
         requestBody: DocUpdateArgs,
-    ): CancelablePromise<null> {
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/doc-update',
@@ -179,5 +170,4 @@ export class DocsService {
             },
         });
     }
-
 }

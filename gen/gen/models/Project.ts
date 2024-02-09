@@ -1,12 +1,11 @@
+/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { EntityId } from './EntityId';
 import type { ParentLink } from './ParentLink';
 import type { ProjectName } from './ProjectName';
 import type { Timestamp } from './Timestamp';
-
 export type Project = {
     ref_id: EntityId;
     version: number;

@@ -1,12 +1,11 @@
+/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { EntityId } from './EntityId';
-
 export type EmailTaskFindArgs = {
     allow_archived: boolean;
     include_inbox_task: boolean;
-    filter_ref_ids?: Array<EntityId>;
+    filter_ref_ids: Array<EntityId>;
 };
 
