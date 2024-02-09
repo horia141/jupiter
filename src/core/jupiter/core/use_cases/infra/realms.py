@@ -47,11 +47,12 @@ from jupiter.core.framework.realm import (
     RealmDecodingError,
     RealmEncoder,
     RealmThing,
+    WebRealm,
 )
 from jupiter.core.framework.record import Record
 from jupiter.core.framework.thing import Thing
 from jupiter.core.framework.update_action import UpdateAction
-from jupiter.core.framework.use_case_io import UseCaseArgsBase
+from jupiter.core.framework.use_case_io import UseCaseArgsBase, UseCaseResultBase
 from jupiter.core.framework.utils import find_all_modules, is_thing_ish_type
 from jupiter.core.framework.value import (
     AtomicValue,
@@ -70,6 +71,7 @@ _EnumValueT = TypeVar("_EnumValueT", bound=EnumValue)
 _EntityT = TypeVar("_EntityT", bound=Entity)
 _RecordT = TypeVar("_RecordT", bound=Record)
 _UseCaseArgsT = TypeVar("_UseCaseArgsT", bound=UseCaseArgsBase)
+_UseCaseResultT = TypeVar("_UseCaseResultT", bound=UseCaseResultBase)
 
 
 # What can we handle with the things here, let's take a look!
@@ -841,7 +843,7 @@ class _StandardUseCaseArgsCliDecoder(
 
         all_fields = dataclasses.fields(self._the_type)
 
-        ctor_args: dict[str, ParentLink | DomainThing | UpdateAction[DomainThing]] = {}
+        ctor_args: dict[str, DomainThing | UpdateAction[DomainThing]] = {}
 
         for field in all_fields:
             if field.name not in value:
@@ -881,6 +883,100 @@ class _StandardUseCaseArgsCliDecoder(
                 ctor_args[field.name] = decoder.decode(field_value)
 
         return self._the_type(**ctor_args)
+    
+
+class _StandardUseCaseArgsWebDecoder(
+    Generic[_UseCaseArgsT], RealmDecoder[_UseCaseArgsT, WebRealm]
+):
+    """A decoder for use case args."""
+
+    _realm_codec_registry: Final[RealmCodecRegistry]
+    _the_type: type[_UseCaseArgsT]
+
+    def __init__(
+        self, realm_codec_registry: RealmCodecRegistry, the_type: type[_UseCaseArgsT]
+    ) -> None:
+        self._realm_codec_registry = realm_codec_registry
+        self._the_type = the_type
+
+    def decode(self, value: RealmThing) -> _UseCaseArgsT:
+        if not isinstance(value, Mapping):
+            raise RealmDecodingError("Expected value to be a dictonary object")
+
+        all_fields = dataclasses.fields(self._the_type)
+
+        ctor_args: dict[str, DomainThing | UpdateAction[DomainThing]] = {}
+
+        for field in all_fields:
+            if field.name not in value:
+                raise RealmDecodingError(
+                    f"Expected value of type {self._the_type.__name__} to have field {field.name}"
+                )
+
+            field_value = value[field.name]
+
+            if (
+                field_type_origin := get_origin(field.type)
+            ) is not None and field_type_origin is UpdateAction:
+                update_action_type = cast(type[DomainThing], get_args(field.type)[0])
+
+                if not isinstance(field_value, dict):
+                    raise RealmDecodingError(f"Expected value of type update action for {field.name} in {self._the_type}")
+                
+                if "should_change" not in field_value:
+                    raise RealmDecodingError(f"Expected field {field.name} to have a should_change field for {self._the_type}")
+                
+                final_value: UpdateAction[DomainThing]
+                
+                if field_value["should_change"] is False:
+                    final_value = UpdateAction.do_nothing()
+                else:
+                    if "value" not in field_value:
+                        raise RealmDecodingError(f"Expected field {field.name} to have a value field for {self._the_type}")
+
+                    update_action_decoder = self._realm_codec_registry.get_decoder(
+                        update_action_type, CliRealm
+                    )
+
+                    final_value = UpdateAction.change_to(
+                        update_action_decoder.decode(field_value["value"])
+                    )
+
+                ctor_args[field.name] = final_value
+            else:
+                decoder = self._realm_codec_registry.get_decoder(
+                    field.type, DatabaseRealm, self._the_type
+                )
+                ctor_args[field.name] = decoder.decode(field_value)
+
+        return self._the_type(**ctor_args)
+    
+
+class _StandardUseCaseResultWebEncoder(
+    Generic[_UseCaseResultT], RealmEncoder[_UseCaseResultT, WebRealm]
+):
+    """An encoder for use case args."""
+
+    _realm_codec_registry: Final[RealmCodecRegistry]
+    _the_type: type[_UseCaseResultT]
+
+    def __init__(
+        self, realm_codec_registry: RealmCodecRegistry, the_type: type[_UseCaseResultT]
+    ) -> None:
+        self._realm_codec_registry = realm_codec_registry
+        self._the_type = the_type
+
+    def encode(self, value: _UseCaseResultT) -> RealmThing:
+        """Encode a realm to a string."""
+        result: dict[str, RealmThing] = {}
+        all_fields = dataclasses.fields(self._the_type)
+        for field in all_fields:
+            encoder = self._realm_codec_registry.get_encoder(
+                field.type, DatabaseRealm, self._the_type
+            )
+            field_value = getattr(value, field.name)
+            result[field.name] = encoder.encode(field_value)
+        return result
 
 
 class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
@@ -976,6 +1072,19 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
         ) -> Iterator[type[UseCaseArgsBase]]:
             for _name, obj in the_module.__dict__.items():
                 if not (isinstance(obj, type) and issubclass(obj, UseCaseArgsBase)):
+                    continue
+
+                if obj.__module__ != the_module.__name__:
+                    # This is an import, and not a definition!
+                    continue
+
+                yield obj
+
+        def extract_use_case_result(
+            the_module: ModuleType,
+        ) -> Iterator[type[UseCaseResultBase]]:
+            for _name, obj in the_module.__dict__.items():
+                if not (isinstance(obj, type) and issubclass(obj, UseCaseResultBase)):
                     continue
 
                 if obj.__module__ != the_module.__name__:
@@ -1292,6 +1401,21 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                         use_case_args,
                         CliRealm,
                         _StandardUseCaseArgsCliDecoder(registry, use_case_args),
+                    )
+
+                if not registry._has_decoder(use_case_args, WebRealm):
+                    registry._add_decoder(
+                        use_case_args,
+                        WebRealm,
+                        _StandardUseCaseArgsWebDecoder(registry, use_case_args)
+                    )
+
+            for use_case_result in extract_use_case_result(m):
+                if not registry._has_encoder(use_case_result, WebRealm):
+                    registry._add_encoder(
+                        use_case_result,
+                        WebRealm,
+                        _StandardUseCaseResultWebEncoder(registry, use_case_result)
                     )
 
         return registry

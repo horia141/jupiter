@@ -55,7 +55,8 @@ async def main() -> None:
     no_timezone_global_properties = build_global_properties()
 
     realm_codec_registry = ModuleExplorerRealmCodecRegistry.build_from_module_root(
-        jupiter.core.domain
+        jupiter.core.domain,
+        jupiter.core.use_cases
     )
 
     sqlite_connection = SqliteConnection(
