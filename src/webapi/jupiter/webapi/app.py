@@ -13,8 +13,11 @@ from typing import (
     cast,
     get_args,
 )
+from jupiter.core.framework.realm import DatabaseRealm
 
 import inflection
+from jupiter.core.framework.thing import Thing
+from pydantic import BaseModel, create_model, validator
 import uvicorn
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import Depends, FastAPI, Request
@@ -119,9 +122,9 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
 
     _realm_codec_registry: Final[RealmCodecRegistry]
     _args_type: type[UseCaseArgsBase]
-    _pydantic_arg_model: BaseModel
+    _pydantic_arg_model: type[BaseModel]
     _result_type: type[UseCaseResultBase | None]
-    _pydantic_result_model: BaseModel | None
+    _pydantic_result_model: type[BaseModel] | None
     _use_case: UseCaseT
     _root_module: Final[types.ModuleType]
 
@@ -136,7 +139,7 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
         self._args_type = self._infer_args_class(use_case)
         self._pydantic_arg_model = self._build_model(realm_codec_registry, self._args_type)
         self._result_type = self._infer_result_class(use_case)
-        self._pydantic_result_model = self._build_model(realm_codec_registry, self._result_type) if self._result_type else None
+        self._pydantic_result_model = self._build_model(realm_codec_registry, self._result_type) if self._result_type is not type(None) else None # type: ignore 
         self._use_case = use_case
         self._root_module = root_module
 
@@ -163,9 +166,12 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
         raise Exception("No result class found")
 
     @staticmethod
-    def _build_model(realm_codec_registry: RealmCodecRegistry, the_type: type[UseCaseArgsBase | UseCaseResultBase]) -> BaseModel:
+    def _build_model(realm_codec_registry: RealmCodecRegistry, the_type: type[Thing]) -> type[BaseModel]:
         decoder = realm_codec_registry.get_decoder(the_type, DatabaseRealm)
-        model = create_model(f"Model{the_type.__name__}", envelop=(the_type, (v) => decoder.decode(v)))
+        validators = {
+            'enveop': validator("envelop")(lambda cls, v: decoder.decode(v))
+        }
+        model = create_model(f"Model{the_type.__name__}", envelop=(the_type, ...), __validators__=validators)
         return model
 
     def _build_http_name(self) -> str:
