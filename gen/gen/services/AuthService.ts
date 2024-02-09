@@ -3,8 +3,8 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { ChangePasswordArgs } from '../models/ChangePasswordArgs';
-import type { ModelResetPasswordResult } from '../models/ModelResetPasswordResult';
 import type { ResetPasswordArgs } from '../models/ResetPasswordArgs';
+import type { ResetPasswordResult } from '../models/ResetPasswordResult';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
 export class AuthService {
@@ -13,12 +13,12 @@ export class AuthService {
      * Use case for changing a password.
      * Use case for changing a password.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
     public changePassword(
         requestBody: ChangePasswordArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/change-password',
@@ -35,12 +35,12 @@ export class AuthService {
      * Use case for reseting a password.
      * Use case for reseting a password.
      * @param requestBody
-     * @returns ModelResetPasswordResult Successful Response
+     * @returns ResetPasswordResult Successful Response
      * @throws ApiError
      */
     public resetPassword(
         requestBody: ResetPasswordArgs,
-    ): CancelablePromise<ModelResetPasswordResult> {
+    ): CancelablePromise<ResetPasswordResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/reset-password',

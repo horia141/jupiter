@@ -2,8 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { GenLoadRunsResult } from './GenLoadRunsResult';
-export type ModelGenLoadRunsResult = {
-    envelop: GenLoadRunsResult;
+export type HabitName = {
+    the_name: string;
 };
 

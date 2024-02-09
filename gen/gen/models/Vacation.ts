@@ -4,9 +4,9 @@
 /* eslint-disable */
 import type { ADate } from './ADate';
 import type { EntityId } from './EntityId';
-import type { EntityName } from './EntityName';
 import type { ParentLink } from './ParentLink';
 import type { Timestamp } from './Timestamp';
+import type { VacationName } from './VacationName';
 export type Vacation = {
     ref_id: EntityId;
     version: number;
@@ -14,7 +14,7 @@ export type Vacation = {
     created_time: Timestamp;
     last_modified_time: Timestamp;
     archived_time: Timestamp;
-    name: EntityName;
+    name: VacationName;
     vacation_collection: ParentLink;
     start_date: ADate;
     end_date: ADate;

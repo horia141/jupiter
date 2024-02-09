@@ -6,14 +6,14 @@ import type { InboxTaskArchiveArgs } from '../models/InboxTaskArchiveArgs';
 import type { InboxTaskAssociateWithBigPlanArgs } from '../models/InboxTaskAssociateWithBigPlanArgs';
 import type { InboxTaskChangeProjectArgs } from '../models/InboxTaskChangeProjectArgs';
 import type { InboxTaskCreateArgs } from '../models/InboxTaskCreateArgs';
+import type { InboxTaskCreateResult } from '../models/InboxTaskCreateResult';
 import type { InboxTaskFindArgs } from '../models/InboxTaskFindArgs';
+import type { InboxTaskFindResult } from '../models/InboxTaskFindResult';
 import type { InboxTaskLoadArgs } from '../models/InboxTaskLoadArgs';
+import type { InboxTaskLoadResult } from '../models/InboxTaskLoadResult';
 import type { InboxTaskRemoveArgs } from '../models/InboxTaskRemoveArgs';
 import type { InboxTaskUpdateArgs } from '../models/InboxTaskUpdateArgs';
-import type { ModelInboxTaskCreateResult } from '../models/ModelInboxTaskCreateResult';
-import type { ModelInboxTaskFindResult } from '../models/ModelInboxTaskFindResult';
-import type { ModelInboxTaskLoadResult } from '../models/ModelInboxTaskLoadResult';
-import type { ModelInboxTaskUpdateResult } from '../models/ModelInboxTaskUpdateResult';
+import type { InboxTaskUpdateResult } from '../models/InboxTaskUpdateResult';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
 export class InboxTasksService {
@@ -22,12 +22,12 @@ export class InboxTasksService {
      * The command for archiving a inbox task.
      * The command for archiving a inbox task.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
     public inboxTaskArchive(
         requestBody: InboxTaskArchiveArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/inbox-task-archive',
@@ -44,12 +44,12 @@ export class InboxTasksService {
      * The command for associating a inbox task with a big plan.
      * The command for associating a inbox task with a big plan.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
     public inboxTaskAssociateWithBigPlan(
         requestBody: InboxTaskAssociateWithBigPlanArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/inbox-task-associate-with-big-plan',
@@ -66,12 +66,12 @@ export class InboxTasksService {
      * The command for changing the project of a inbox task.
      * The command for changing the project of a inbox task.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
     public inboxTaskChangeProject(
         requestBody: InboxTaskChangeProjectArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/inbox-task-change-project',
@@ -88,12 +88,12 @@ export class InboxTasksService {
      * The command for creating a inbox task.
      * The command for creating a inbox task.
      * @param requestBody
-     * @returns ModelInboxTaskCreateResult Successful Response
+     * @returns InboxTaskCreateResult Successful Response
      * @throws ApiError
      */
     public inboxTaskCreate(
         requestBody: InboxTaskCreateArgs,
-    ): CancelablePromise<ModelInboxTaskCreateResult> {
+    ): CancelablePromise<InboxTaskCreateResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/inbox-task-create',
@@ -110,12 +110,12 @@ export class InboxTasksService {
      * The command for finding a inbox task.
      * The command for finding a inbox task.
      * @param requestBody
-     * @returns ModelInboxTaskFindResult Successful Response
+     * @returns InboxTaskFindResult Successful Response
      * @throws ApiError
      */
     public inboxTaskFind(
         requestBody: InboxTaskFindArgs,
-    ): CancelablePromise<ModelInboxTaskFindResult> {
+    ): CancelablePromise<InboxTaskFindResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/inbox-task-find',
@@ -132,12 +132,12 @@ export class InboxTasksService {
      * The use case for loading a particular inbox task.
      * The use case for loading a particular inbox task.
      * @param requestBody
-     * @returns ModelInboxTaskLoadResult Successful Response
+     * @returns InboxTaskLoadResult Successful Response
      * @throws ApiError
      */
     public inboxTaskLoad(
         requestBody: InboxTaskLoadArgs,
-    ): CancelablePromise<ModelInboxTaskLoadResult> {
+    ): CancelablePromise<InboxTaskLoadResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/inbox-task-load',
@@ -154,12 +154,12 @@ export class InboxTasksService {
      * The command for removing a inbox task.
      * The command for removing a inbox task.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
     public inboxTaskRemove(
         requestBody: InboxTaskRemoveArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/inbox-task-remove',
@@ -176,12 +176,12 @@ export class InboxTasksService {
      * The command for updating a inbox task.
      * The command for updating a inbox task.
      * @param requestBody
-     * @returns ModelInboxTaskUpdateResult Successful Response
+     * @returns InboxTaskUpdateResult Successful Response
      * @throws ApiError
      */
     public inboxTaskUpdate(
         requestBody: InboxTaskUpdateArgs,
-    ): CancelablePromise<ModelInboxTaskUpdateResult> {
+    ): CancelablePromise<InboxTaskUpdateResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/inbox-task-update',

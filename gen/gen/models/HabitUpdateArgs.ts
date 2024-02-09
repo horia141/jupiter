@@ -5,7 +5,7 @@
 import type { Difficulty } from './Difficulty';
 import type { Eisen } from './Eisen';
 import type { EntityId } from './EntityId';
-import type { EntityName } from './EntityName';
+import type { HabitName } from './HabitName';
 import type { RecurringTaskDueAtDay } from './RecurringTaskDueAtDay';
 import type { RecurringTaskDueAtMonth } from './RecurringTaskDueAtMonth';
 import type { RecurringTaskDueAtTime } from './RecurringTaskDueAtTime';
@@ -15,7 +15,7 @@ export type HabitUpdateArgs = {
     ref_id: EntityId;
     name: {
         should_change: boolean;
-        value?: EntityName;
+        value?: HabitName;
     };
     period: {
         should_change: boolean;

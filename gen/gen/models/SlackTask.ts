@@ -7,6 +7,7 @@ import type { EntityName } from './EntityName';
 import type { ParentLink } from './ParentLink';
 import type { PushGenerationExtraInfo } from './PushGenerationExtraInfo';
 import type { SlackChannelName } from './SlackChannelName';
+import type { SlackUserName } from './SlackUserName';
 import type { Timestamp } from './Timestamp';
 export type SlackTask = {
     ref_id: EntityId;
@@ -17,7 +18,7 @@ export type SlackTask = {
     archived_time: Timestamp;
     name: EntityName;
     slack_task_collection: ParentLink;
-    user: EntityName;
+    user: SlackUserName;
     message: string;
     generation_extra_info: PushGenerationExtraInfo;
     has_generated_task: boolean;

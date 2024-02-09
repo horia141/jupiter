@@ -2,8 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { HabitFindResult } from './HabitFindResult';
-export type ModelHabitFindResult = {
-    envelop: HabitFindResult;
+export type MetricName = {
+    the_name: string;
 };
 

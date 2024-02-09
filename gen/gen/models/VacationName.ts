@@ -2,8 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ProjectLoadResult } from './ProjectLoadResult';
-export type ModelProjectLoadResult = {
-    envelop: ProjectLoadResult;
+export type VacationName = {
+    the_name: string;
 };
 

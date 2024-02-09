@@ -5,22 +5,22 @@
 import type { MetricArchiveArgs } from '../models/MetricArchiveArgs';
 import type { MetricChangeCollectionProjectArgs } from '../models/MetricChangeCollectionProjectArgs';
 import type { MetricCreateArgs } from '../models/MetricCreateArgs';
+import type { MetricCreateResult } from '../models/MetricCreateResult';
 import type { MetricEntryArchiveArgs } from '../models/MetricEntryArchiveArgs';
 import type { MetricEntryCreateArgs } from '../models/MetricEntryCreateArgs';
+import type { MetricEntryCreateResult } from '../models/MetricEntryCreateResult';
 import type { MetricEntryLoadArgs } from '../models/MetricEntryLoadArgs';
+import type { MetricEntryLoadResult } from '../models/MetricEntryLoadResult';
 import type { MetricEntryRemoveArgs } from '../models/MetricEntryRemoveArgs';
 import type { MetricEntryUpdateArgs } from '../models/MetricEntryUpdateArgs';
 import type { MetricFindArgs } from '../models/MetricFindArgs';
+import type { MetricFindResult } from '../models/MetricFindResult';
 import type { MetricLoadArgs } from '../models/MetricLoadArgs';
+import type { MetricLoadResult } from '../models/MetricLoadResult';
 import type { MetricLoadSettingsArgs } from '../models/MetricLoadSettingsArgs';
+import type { MetricLoadSettingsResult } from '../models/MetricLoadSettingsResult';
 import type { MetricRemoveArgs } from '../models/MetricRemoveArgs';
 import type { MetricUpdateArgs } from '../models/MetricUpdateArgs';
-import type { ModelMetricCreateResult } from '../models/ModelMetricCreateResult';
-import type { ModelMetricEntryCreateResult } from '../models/ModelMetricEntryCreateResult';
-import type { ModelMetricEntryLoadResult } from '../models/ModelMetricEntryLoadResult';
-import type { ModelMetricFindResult } from '../models/ModelMetricFindResult';
-import type { ModelMetricLoadResult } from '../models/ModelMetricLoadResult';
-import type { ModelMetricLoadSettingsResult } from '../models/ModelMetricLoadSettingsResult';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
 export class MetricsService {
@@ -29,12 +29,12 @@ export class MetricsService {
      * The command for archiving a metric.
      * The command for archiving a metric.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
     public metricArchive(
         requestBody: MetricArchiveArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/metric-archive',
@@ -51,12 +51,12 @@ export class MetricsService {
      * The command for updating the collection up project for metrics.
      * The command for updating the collection up project for metrics.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
     public metricChangeCollectionProject(
         requestBody: MetricChangeCollectionProjectArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/metric-change-collection-project',
@@ -73,12 +73,12 @@ export class MetricsService {
      * The command for creating a metric.
      * The command for creating a metric.
      * @param requestBody
-     * @returns ModelMetricCreateResult Successful Response
+     * @returns MetricCreateResult Successful Response
      * @throws ApiError
      */
     public metricCreate(
         requestBody: MetricCreateArgs,
-    ): CancelablePromise<ModelMetricCreateResult> {
+    ): CancelablePromise<MetricCreateResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/metric-create',
@@ -95,12 +95,12 @@ export class MetricsService {
      * The command for archiving a metric entry.
      * The command for archiving a metric entry.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
     public metricEntryArchive(
         requestBody: MetricEntryArchiveArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/metric-entry-archive',
@@ -117,12 +117,12 @@ export class MetricsService {
      * The command for creating a metric entry.
      * The command for creating a metric entry.
      * @param requestBody
-     * @returns ModelMetricEntryCreateResult Successful Response
+     * @returns MetricEntryCreateResult Successful Response
      * @throws ApiError
      */
     public metricEntryCreate(
         requestBody: MetricEntryCreateArgs,
-    ): CancelablePromise<ModelMetricEntryCreateResult> {
+    ): CancelablePromise<MetricEntryCreateResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/metric-entry-create',
@@ -139,12 +139,12 @@ export class MetricsService {
      * Use case for loading a metric entry.
      * Use case for loading a metric entry.
      * @param requestBody
-     * @returns ModelMetricEntryLoadResult Successful Response
+     * @returns MetricEntryLoadResult Successful Response
      * @throws ApiError
      */
     public metricEntryLoad(
         requestBody: MetricEntryLoadArgs,
-    ): CancelablePromise<ModelMetricEntryLoadResult> {
+    ): CancelablePromise<MetricEntryLoadResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/metric-entry-load',
@@ -161,12 +161,12 @@ export class MetricsService {
      * The command for removing a metric entry.
      * The command for removing a metric entry.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
     public metricEntryRemove(
         requestBody: MetricEntryRemoveArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/metric-entry-remove',
@@ -183,12 +183,12 @@ export class MetricsService {
      * The command for updating a metric entry's properties.
      * The command for updating a metric entry's properties.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
     public metricEntryUpdate(
         requestBody: MetricEntryUpdateArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/metric-entry-update',
@@ -205,12 +205,12 @@ export class MetricsService {
      * The command for finding metrics.
      * The command for finding metrics.
      * @param requestBody
-     * @returns ModelMetricFindResult Successful Response
+     * @returns MetricFindResult Successful Response
      * @throws ApiError
      */
     public metricFind(
         requestBody: MetricFindArgs,
-    ): CancelablePromise<ModelMetricFindResult> {
+    ): CancelablePromise<MetricFindResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/metric-find',
@@ -227,12 +227,12 @@ export class MetricsService {
      * Use case for loading a metric.
      * Use case for loading a metric.
      * @param requestBody
-     * @returns ModelMetricLoadResult Successful Response
+     * @returns MetricLoadResult Successful Response
      * @throws ApiError
      */
     public metricLoad(
         requestBody: MetricLoadArgs,
-    ): CancelablePromise<ModelMetricLoadResult> {
+    ): CancelablePromise<MetricLoadResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/metric-load',
@@ -249,12 +249,12 @@ export class MetricsService {
      * The command for loading the settings around metrics.
      * The command for loading the settings around metrics.
      * @param requestBody
-     * @returns ModelMetricLoadSettingsResult Successful Response
+     * @returns MetricLoadSettingsResult Successful Response
      * @throws ApiError
      */
     public metricLoadSettings(
         requestBody: MetricLoadSettingsArgs,
-    ): CancelablePromise<ModelMetricLoadSettingsResult> {
+    ): CancelablePromise<MetricLoadSettingsResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/metric-load-settings',
@@ -271,12 +271,12 @@ export class MetricsService {
      * The command for removing a metric.
      * The command for removing a metric.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
     public metricRemove(
         requestBody: MetricRemoveArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/metric-remove',
@@ -293,12 +293,12 @@ export class MetricsService {
      * The command for updating a metric's properties.
      * The command for updating a metric's properties.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
     public metricUpdate(
         requestBody: MetricUpdateArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/metric-update',

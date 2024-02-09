@@ -4,7 +4,7 @@
 /* eslint-disable */
 import type { GenDoArgs } from '../models/GenDoArgs';
 import type { GenLoadRunsArgs } from '../models/GenLoadRunsArgs';
-import type { ModelGenLoadRunsResult } from '../models/ModelGenLoadRunsResult';
+import type { GenLoadRunsResult } from '../models/GenLoadRunsResult';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
 export class GenService {
@@ -13,12 +13,12 @@ export class GenService {
      * The command for generating new tasks.
      * The command for generating new tasks.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
     public genDo(
         requestBody: GenDoArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/gen-do',
@@ -35,12 +35,12 @@ export class GenService {
      * Load previous runs of task generation.
      * Load previous runs of task generation.
      * @param requestBody
-     * @returns ModelGenLoadRunsResult Successful Response
+     * @returns GenLoadRunsResult Successful Response
      * @throws ApiError
      */
     public genLoadRuns(
         requestBody: GenLoadRunsArgs,
-    ): CancelablePromise<ModelGenLoadRunsResult> {
+    ): CancelablePromise<GenLoadRunsResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/gen-load-runs',

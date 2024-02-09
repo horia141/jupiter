@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { EmailAddress } from './EmailAddress';
+import type { EmailUserName } from './EmailUserName';
 import type { EntityId } from './EntityId';
 import type { EntityName } from './EntityName';
 import type { ParentLink } from './ParentLink';
@@ -18,7 +19,7 @@ export type EmailTask = {
     name: EntityName;
     email_task_collection: ParentLink;
     from_address: EmailAddress;
-    from_name: EntityName;
+    from_name: EmailUserName;
     to_address: EmailAddress;
     subject: string;
     body: string;

@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { GetSummariesArgs } from '../models/GetSummariesArgs';
-import type { ModelGetSummariesResult } from '../models/ModelGetSummariesResult';
+import type { GetSummariesResult } from '../models/GetSummariesResult';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
 export class GetSummariesService {
@@ -12,12 +12,12 @@ export class GetSummariesService {
      * The use case for retrieving summaries about entities.
      * The use case for retrieving summaries about entities.
      * @param requestBody
-     * @returns ModelGetSummariesResult Successful Response
+     * @returns GetSummariesResult Successful Response
      * @throws ApiError
      */
     public getSummaries(
         requestBody: GetSummariesArgs,
-    ): CancelablePromise<ModelGetSummariesResult> {
+    ): CancelablePromise<GetSummariesResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/get-summaries',

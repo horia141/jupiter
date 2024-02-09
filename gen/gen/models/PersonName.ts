@@ -2,8 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { InitResult } from './InitResult';
-export type ModelInitResult = {
-    envelop: InitResult;
+export type PersonName = {
+    the_name: string;
 };
 

@@ -4,7 +4,7 @@
 /* eslint-disable */
 import type { EntityIcon } from './EntityIcon';
 import type { EntityId } from './EntityId';
-import type { EntityName } from './EntityName';
+import type { MetricName } from './MetricName';
 import type { MetricUnit } from './MetricUnit';
 import type { ParentLink } from './ParentLink';
 import type { RecurringTaskGenParams } from './RecurringTaskGenParams';
@@ -16,7 +16,7 @@ export type Metric = {
     created_time: Timestamp;
     last_modified_time: Timestamp;
     archived_time: Timestamp;
-    name: EntityName;
+    name: MetricName;
     metric_collection: ParentLink;
     icon?: EntityIcon;
     collection_params?: RecurringTaskGenParams;

@@ -2,16 +2,16 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ModelPersonCreateResult } from '../models/ModelPersonCreateResult';
-import type { ModelPersonFindResult } from '../models/ModelPersonFindResult';
-import type { ModelPersonLoadResult } from '../models/ModelPersonLoadResult';
-import type { ModelPersonLoadSettingsResult } from '../models/ModelPersonLoadSettingsResult';
 import type { PersonArchiveArgs } from '../models/PersonArchiveArgs';
 import type { PersonChangeCatchUpProjectArgs } from '../models/PersonChangeCatchUpProjectArgs';
 import type { PersonCreateArgs } from '../models/PersonCreateArgs';
+import type { PersonCreateResult } from '../models/PersonCreateResult';
 import type { PersonFindArgs } from '../models/PersonFindArgs';
+import type { PersonFindResult } from '../models/PersonFindResult';
 import type { PersonLoadArgs } from '../models/PersonLoadArgs';
+import type { PersonLoadResult } from '../models/PersonLoadResult';
 import type { PersonLoadSettingsArgs } from '../models/PersonLoadSettingsArgs';
+import type { PersonLoadSettingsResult } from '../models/PersonLoadSettingsResult';
 import type { PersonRemoveArgs } from '../models/PersonRemoveArgs';
 import type { PersonUpdateArgs } from '../models/PersonUpdateArgs';
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -22,12 +22,12 @@ export class PersonsService {
      * The command for archiving a person.
      * The command for archiving a person.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
     public personArchive(
         requestBody: PersonArchiveArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/person-archive',
@@ -44,12 +44,12 @@ export class PersonsService {
      * The command for updating the catch up project for persons.
      * The command for updating the catch up project for persons.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
     public personChangeCatchUpProject(
         requestBody: PersonChangeCatchUpProjectArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/person-change-catch-up-project',
@@ -66,12 +66,12 @@ export class PersonsService {
      * The command for creating a person.
      * The command for creating a person.
      * @param requestBody
-     * @returns ModelPersonCreateResult Successful Response
+     * @returns PersonCreateResult Successful Response
      * @throws ApiError
      */
     public personCreate(
         requestBody: PersonCreateArgs,
-    ): CancelablePromise<ModelPersonCreateResult> {
+    ): CancelablePromise<PersonCreateResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/person-create',
@@ -88,12 +88,12 @@ export class PersonsService {
      * The command for finding the persons.
      * The command for finding the persons.
      * @param requestBody
-     * @returns ModelPersonFindResult Successful Response
+     * @returns PersonFindResult Successful Response
      * @throws ApiError
      */
     public personFind(
         requestBody: PersonFindArgs,
-    ): CancelablePromise<ModelPersonFindResult> {
+    ): CancelablePromise<PersonFindResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/person-find',
@@ -110,12 +110,12 @@ export class PersonsService {
      * Use case for loading a person.
      * Use case for loading a person.
      * @param requestBody
-     * @returns ModelPersonLoadResult Successful Response
+     * @returns PersonLoadResult Successful Response
      * @throws ApiError
      */
     public personLoad(
         requestBody: PersonLoadArgs,
-    ): CancelablePromise<ModelPersonLoadResult> {
+    ): CancelablePromise<PersonLoadResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/person-load',
@@ -132,12 +132,12 @@ export class PersonsService {
      * The command for loading the settings around persons.
      * The command for loading the settings around persons.
      * @param requestBody
-     * @returns ModelPersonLoadSettingsResult Successful Response
+     * @returns PersonLoadSettingsResult Successful Response
      * @throws ApiError
      */
     public personLoadSettings(
         requestBody: PersonLoadSettingsArgs,
-    ): CancelablePromise<ModelPersonLoadSettingsResult> {
+    ): CancelablePromise<PersonLoadSettingsResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/person-load-settings',
@@ -154,12 +154,12 @@ export class PersonsService {
      * The command for removing a person.
      * The command for removing a person.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
     public personRemove(
         requestBody: PersonRemoveArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/person-remove',
@@ -176,12 +176,12 @@ export class PersonsService {
      * The command for updating a person.
      * The command for updating a person.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
     public personUpdate(
         requestBody: PersonUpdateArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/person-update',

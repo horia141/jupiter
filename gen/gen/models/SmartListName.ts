@@ -2,8 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { BigPlanLoadResult } from './BigPlanLoadResult';
-export type ModelBigPlanLoadResult = {
-    envelop: BigPlanLoadResult;
+export type SmartListName = {
+    the_name: string;
 };
 

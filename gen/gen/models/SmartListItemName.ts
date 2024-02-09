@@ -2,8 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { DocCreateResult } from './DocCreateResult';
-export type ModelDocCreateResult = {
-    envelop: DocCreateResult;
+export type SmartListItemName = {
+    the_name: string;
 };
 

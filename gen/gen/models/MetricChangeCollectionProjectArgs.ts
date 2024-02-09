@@ -4,6 +4,6 @@
 /* eslint-disable */
 import type { EntityId } from './EntityId';
 export type MetricChangeCollectionProjectArgs = {
-    collection_project_ref_id: EntityId;
+    collection_project_ref_id?: EntityId;
 };
 

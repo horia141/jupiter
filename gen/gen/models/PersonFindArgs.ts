@@ -8,6 +8,6 @@ export type PersonFindArgs = {
     include_catch_up_inbox_tasks: boolean;
     include_birthday_inbox_tasks: boolean;
     include_notes: boolean;
-    filter_person_ref_ids: Array<EntityId>;
+    filter_person_ref_ids?: Array<EntityId>;
 };
 

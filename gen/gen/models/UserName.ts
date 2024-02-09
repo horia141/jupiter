@@ -2,8 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ChoreFindResult } from './ChoreFindResult';
-export type ModelChoreFindResult = {
-    envelop: ChoreFindResult;
+export type UserName = {
+    the_name: string;
 };
 

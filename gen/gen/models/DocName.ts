@@ -2,8 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { GCLoadRunsResult } from './GCLoadRunsResult';
-export type ModelGCLoadRunsResult = {
-    envelop: GCLoadRunsResult;
+export type DocName = {
+    the_name: string;
 };
 

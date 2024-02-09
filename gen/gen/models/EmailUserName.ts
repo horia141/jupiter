@@ -2,8 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { MetricFindResult } from './MetricFindResult';
-export type ModelMetricFindResult = {
-    envelop: MetricFindResult;
+export type EmailUserName = {
+    the_name: string;
 };
 

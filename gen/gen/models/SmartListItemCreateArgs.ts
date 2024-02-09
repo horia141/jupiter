@@ -3,14 +3,14 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { EntityId } from './EntityId';
-import type { EntityName } from './EntityName';
+import type { SmartListItemName } from './SmartListItemName';
 import type { SmartListTagName } from './SmartListTagName';
 import type { URL } from './URL';
 export type SmartListItemCreateArgs = {
     smart_list_ref_id: EntityId;
-    name: EntityName;
+    name: SmartListItemName;
     is_done: boolean;
     tag_names: Array<SmartListTagName>;
-    url: URL;
+    url?: URL;
 };
 

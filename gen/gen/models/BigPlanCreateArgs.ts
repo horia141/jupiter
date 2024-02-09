@@ -7,8 +7,8 @@ import type { BigPlanName } from './BigPlanName';
 import type { EntityId } from './EntityId';
 export type BigPlanCreateArgs = {
     name: BigPlanName;
-    project_ref_id: EntityId;
-    actionable_date: ADate;
-    due_date: ADate;
+    project_ref_id?: EntityId;
+    actionable_date?: ADate;
+    due_date?: ADate;
 };
 

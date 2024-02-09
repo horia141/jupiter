@@ -2,26 +2,26 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ModelSmartListCreateResult } from '../models/ModelSmartListCreateResult';
-import type { ModelSmartListFindResult } from '../models/ModelSmartListFindResult';
-import type { ModelSmartListItemCreateResult } from '../models/ModelSmartListItemCreateResult';
-import type { ModelSmartListItemLoadResult } from '../models/ModelSmartListItemLoadResult';
-import type { ModelSmartListLoadResult } from '../models/ModelSmartListLoadResult';
-import type { ModelSmartListTagCreateResult } from '../models/ModelSmartListTagCreateResult';
-import type { ModelSmartListTagLoadResult } from '../models/ModelSmartListTagLoadResult';
 import type { SmartListArchiveArgs } from '../models/SmartListArchiveArgs';
 import type { SmartListCreateArgs } from '../models/SmartListCreateArgs';
+import type { SmartListCreateResult } from '../models/SmartListCreateResult';
 import type { SmartListFindArgs } from '../models/SmartListFindArgs';
+import type { SmartListFindResult } from '../models/SmartListFindResult';
 import type { SmartListItemArchiveArgs } from '../models/SmartListItemArchiveArgs';
 import type { SmartListItemCreateArgs } from '../models/SmartListItemCreateArgs';
+import type { SmartListItemCreateResult } from '../models/SmartListItemCreateResult';
 import type { SmartListItemLoadArgs } from '../models/SmartListItemLoadArgs';
+import type { SmartListItemLoadResult } from '../models/SmartListItemLoadResult';
 import type { SmartListItemRemoveArgs } from '../models/SmartListItemRemoveArgs';
 import type { SmartListItemUpdateArgs } from '../models/SmartListItemUpdateArgs';
 import type { SmartListLoadArgs } from '../models/SmartListLoadArgs';
+import type { SmartListLoadResult } from '../models/SmartListLoadResult';
 import type { SmartListRemoveArgs } from '../models/SmartListRemoveArgs';
 import type { SmartListTagArchiveArgs } from '../models/SmartListTagArchiveArgs';
 import type { SmartListTagCreateArgs } from '../models/SmartListTagCreateArgs';
+import type { SmartListTagCreateResult } from '../models/SmartListTagCreateResult';
 import type { SmartListTagLoadArgs } from '../models/SmartListTagLoadArgs';
+import type { SmartListTagLoadResult } from '../models/SmartListTagLoadResult';
 import type { SmartListTagRemoveArgs } from '../models/SmartListTagRemoveArgs';
 import type { SmartListTagUpdateArgs } from '../models/SmartListTagUpdateArgs';
 import type { SmartListUpdateArgs } from '../models/SmartListUpdateArgs';
@@ -33,12 +33,12 @@ export class SmartListsService {
      * The command for archiving a smart list.
      * The command for archiving a smart list.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
     public smartListArchive(
         requestBody: SmartListArchiveArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/smart-list-archive',
@@ -55,12 +55,12 @@ export class SmartListsService {
      * The command for creating a smart list.
      * The command for creating a smart list.
      * @param requestBody
-     * @returns ModelSmartListCreateResult Successful Response
+     * @returns SmartListCreateResult Successful Response
      * @throws ApiError
      */
     public smartListCreate(
         requestBody: SmartListCreateArgs,
-    ): CancelablePromise<ModelSmartListCreateResult> {
+    ): CancelablePromise<SmartListCreateResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/smart-list-create',
@@ -77,12 +77,12 @@ export class SmartListsService {
      * The command for finding smart lists.
      * The command for finding smart lists.
      * @param requestBody
-     * @returns ModelSmartListFindResult Successful Response
+     * @returns SmartListFindResult Successful Response
      * @throws ApiError
      */
     public smartListFind(
         requestBody: SmartListFindArgs,
-    ): CancelablePromise<ModelSmartListFindResult> {
+    ): CancelablePromise<SmartListFindResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/smart-list-find',
@@ -99,12 +99,12 @@ export class SmartListsService {
      * The command for archiving a smart list item.
      * The command for archiving a smart list item.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
     public smartListItemArchive(
         requestBody: SmartListItemArchiveArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/smart-list-item-archive',
@@ -121,12 +121,12 @@ export class SmartListsService {
      * The command for creating a smart list item.
      * The command for creating a smart list item.
      * @param requestBody
-     * @returns ModelSmartListItemCreateResult Successful Response
+     * @returns SmartListItemCreateResult Successful Response
      * @throws ApiError
      */
     public smartListItemCreate(
         requestBody: SmartListItemCreateArgs,
-    ): CancelablePromise<ModelSmartListItemCreateResult> {
+    ): CancelablePromise<SmartListItemCreateResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/smart-list-item-create',
@@ -143,12 +143,12 @@ export class SmartListsService {
      * Use case for loading a smart list item.
      * Use case for loading a smart list item.
      * @param requestBody
-     * @returns ModelSmartListItemLoadResult Successful Response
+     * @returns SmartListItemLoadResult Successful Response
      * @throws ApiError
      */
     public smartListItemLoad(
         requestBody: SmartListItemLoadArgs,
-    ): CancelablePromise<ModelSmartListItemLoadResult> {
+    ): CancelablePromise<SmartListItemLoadResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/smart-list-item-load',
@@ -165,12 +165,12 @@ export class SmartListsService {
      * The command for removing a smart list item.
      * The command for removing a smart list item.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
     public smartListItemRemove(
         requestBody: SmartListItemRemoveArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/smart-list-item-remove',
@@ -187,12 +187,12 @@ export class SmartListsService {
      * The command for updating a smart list item.
      * The command for updating a smart list item.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
     public smartListItemUpdate(
         requestBody: SmartListItemUpdateArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/smart-list-item-update',
@@ -209,12 +209,12 @@ export class SmartListsService {
      * Use case for loading a smart list.
      * Use case for loading a smart list.
      * @param requestBody
-     * @returns ModelSmartListLoadResult Successful Response
+     * @returns SmartListLoadResult Successful Response
      * @throws ApiError
      */
     public smartListLoad(
         requestBody: SmartListLoadArgs,
-    ): CancelablePromise<ModelSmartListLoadResult> {
+    ): CancelablePromise<SmartListLoadResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/smart-list-load',
@@ -231,12 +231,12 @@ export class SmartListsService {
      * The command for removing a smart list.
      * The command for removing a smart list.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
     public smartListRemove(
         requestBody: SmartListRemoveArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/smart-list-remove',
@@ -253,12 +253,12 @@ export class SmartListsService {
      * The command for archiving a smart list tag.
      * The command for archiving a smart list tag.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
     public smartListTagArchive(
         requestBody: SmartListTagArchiveArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/smart-list-tag-archive',
@@ -275,12 +275,12 @@ export class SmartListsService {
      * The command for creating a smart list tag.
      * The command for creating a smart list tag.
      * @param requestBody
-     * @returns ModelSmartListTagCreateResult Successful Response
+     * @returns SmartListTagCreateResult Successful Response
      * @throws ApiError
      */
     public smartListTagCreate(
         requestBody: SmartListTagCreateArgs,
-    ): CancelablePromise<ModelSmartListTagCreateResult> {
+    ): CancelablePromise<SmartListTagCreateResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/smart-list-tag-create',
@@ -297,12 +297,12 @@ export class SmartListsService {
      * Use case for loading a smart list tag.
      * Use case for loading a smart list tag.
      * @param requestBody
-     * @returns ModelSmartListTagLoadResult Successful Response
+     * @returns SmartListTagLoadResult Successful Response
      * @throws ApiError
      */
     public smartListTagLoad(
         requestBody: SmartListTagLoadArgs,
-    ): CancelablePromise<ModelSmartListTagLoadResult> {
+    ): CancelablePromise<SmartListTagLoadResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/smart-list-tag-load',
@@ -319,12 +319,12 @@ export class SmartListsService {
      * The command for removing a smart list tag.
      * The command for removing a smart list tag.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
     public smartListTagRemove(
         requestBody: SmartListTagRemoveArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/smart-list-tag-remove',
@@ -341,12 +341,12 @@ export class SmartListsService {
      * The command for updating a smart list tag.
      * The command for updating a smart list tag.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
     public smartListTagUpdate(
         requestBody: SmartListTagUpdateArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/smart-list-tag-update',
@@ -363,12 +363,12 @@ export class SmartListsService {
      * The command for updating a smart list.
      * The command for updating a smart list.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
     public smartListUpdate(
         requestBody: SmartListUpdateArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/smart-list-update',

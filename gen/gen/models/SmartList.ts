@@ -4,8 +4,8 @@
 /* eslint-disable */
 import type { EntityIcon } from './EntityIcon';
 import type { EntityId } from './EntityId';
-import type { EntityName } from './EntityName';
 import type { ParentLink } from './ParentLink';
+import type { SmartListName } from './SmartListName';
 import type { Timestamp } from './Timestamp';
 export type SmartList = {
     ref_id: EntityId;
@@ -14,7 +14,7 @@ export type SmartList = {
     created_time: Timestamp;
     last_modified_time: Timestamp;
     archived_time: Timestamp;
-    name: EntityName;
+    name: SmartListName;
     smart_list_collection: ParentLink;
     icon: EntityIcon;
 };

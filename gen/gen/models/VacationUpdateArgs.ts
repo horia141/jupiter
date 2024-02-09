@@ -4,12 +4,12 @@
 /* eslint-disable */
 import type { ADate } from './ADate';
 import type { EntityId } from './EntityId';
-import type { EntityName } from './EntityName';
+import type { VacationName } from './VacationName';
 export type VacationUpdateArgs = {
     ref_id: EntityId;
     name: {
         should_change: boolean;
-        value?: EntityName;
+        value?: VacationName;
     };
     start_date: {
         should_change: boolean;

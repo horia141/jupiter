@@ -3,9 +3,9 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { EntityId } from './EntityId';
-import type { EntityName } from './EntityName';
+import type { HabitName } from './HabitName';
 export type HabitSummary = {
     ref_id: EntityId;
-    name: EntityName;
+    name: HabitName;
 };
 

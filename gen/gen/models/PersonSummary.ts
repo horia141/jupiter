@@ -3,9 +3,9 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { EntityId } from './EntityId';
-import type { EntityName } from './EntityName';
+import type { PersonName } from './PersonName';
 export type PersonSummary = {
     ref_id: EntityId;
-    name: EntityName;
+    name: PersonName;
 };
 

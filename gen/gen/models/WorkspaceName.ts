@@ -2,8 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { UserLoadResult } from './UserLoadResult';
-export type ModelUserLoadResult = {
-    envelop: UserLoadResult;
+export type WorkspaceName = {
+    the_name: string;
 };
 

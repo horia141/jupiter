@@ -3,9 +3,9 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { ADate } from './ADate';
-import type { EntityName } from './EntityName';
+import type { VacationName } from './VacationName';
 export type VacationCreateArgs = {
-    name: EntityName;
+    name: VacationName;
     start_date: ADate;
     end_date: ADate;
 };

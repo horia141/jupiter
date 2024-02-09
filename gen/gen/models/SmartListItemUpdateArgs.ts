@@ -3,14 +3,14 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { EntityId } from './EntityId';
-import type { EntityName } from './EntityName';
+import type { SmartListItemName } from './SmartListItemName';
 import type { SmartListTagName } from './SmartListTagName';
 import type { URL } from './URL';
 export type SmartListItemUpdateArgs = {
     ref_id: EntityId;
     name: {
         should_change: boolean;
-        value?: EntityName;
+        value?: SmartListItemName;
     };
     is_done: {
         should_change: boolean;

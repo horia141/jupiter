@@ -2,10 +2,10 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ModelWorkspaceLoadResult } from '../models/ModelWorkspaceLoadResult';
 import type { WorkspaceChangeDefaultProjectArgs } from '../models/WorkspaceChangeDefaultProjectArgs';
 import type { WorkspaceChangeFeatureFlagsArgs } from '../models/WorkspaceChangeFeatureFlagsArgs';
 import type { WorkspaceLoadArgs } from '../models/WorkspaceLoadArgs';
+import type { WorkspaceLoadResult } from '../models/WorkspaceLoadResult';
 import type { WorkspaceUpdateArgs } from '../models/WorkspaceUpdateArgs';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
@@ -15,12 +15,12 @@ export class WorkspacesService {
      * UseCase for changing the default project of a workspace.
      * UseCase for changing the default project of a workspace.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
     public workspaceChangeDefaultProject(
         requestBody: WorkspaceChangeDefaultProjectArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/workspace-change-default-project',
@@ -37,12 +37,12 @@ export class WorkspacesService {
      * Usecase for changing the feature flags for the workspace.
      * Usecase for changing the feature flags for the workspace.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
     public workspaceChangeFeatureFlags(
         requestBody: WorkspaceChangeFeatureFlagsArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/workspace-change-feature-flags',
@@ -59,12 +59,12 @@ export class WorkspacesService {
      * The command for loading workspaces.
      * The command for loading workspaces.
      * @param requestBody
-     * @returns ModelWorkspaceLoadResult Successful Response
+     * @returns WorkspaceLoadResult Successful Response
      * @throws ApiError
      */
     public workspaceLoad(
         requestBody: WorkspaceLoadArgs,
-    ): CancelablePromise<ModelWorkspaceLoadResult> {
+    ): CancelablePromise<WorkspaceLoadResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/workspace-load',
@@ -81,12 +81,12 @@ export class WorkspacesService {
      * UseCase for updating a workspace.
      * UseCase for updating a workspace.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
     public workspaceUpdate(
         requestBody: WorkspaceUpdateArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/workspace-update',

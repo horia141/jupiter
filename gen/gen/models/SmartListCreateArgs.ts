@@ -3,9 +3,9 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { EntityIcon } from './EntityIcon';
-import type { EntityName } from './EntityName';
+import type { SmartListName } from './SmartListName';
 export type SmartListCreateArgs = {
-    name: EntityName;
-    icon: EntityIcon;
+    name: SmartListName;
+    icon?: EntityIcon;
 };
 

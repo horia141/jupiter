@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { LoadTopLevelInfoArgs } from '../models/LoadTopLevelInfoArgs';
-import type { ModelLoadTopLevelInfoResult } from '../models/ModelLoadTopLevelInfoResult';
+import type { LoadTopLevelInfoResult } from '../models/LoadTopLevelInfoResult';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
 export class LoadTopLevelInfoService {
@@ -12,12 +12,12 @@ export class LoadTopLevelInfoService {
      * The command for loading a user and workspace if they exist and other data too.
      * The command for loading a user and workspace if they exist and other data too.
      * @param requestBody
-     * @returns ModelLoadTopLevelInfoResult Successful Response
+     * @returns LoadTopLevelInfoResult Successful Response
      * @throws ApiError
      */
     public loadTopLevelInfo(
         requestBody: LoadTopLevelInfoArgs,
-    ): CancelablePromise<ModelLoadTopLevelInfoResult> {
+    ): CancelablePromise<LoadTopLevelInfoResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/load-top-level-info',

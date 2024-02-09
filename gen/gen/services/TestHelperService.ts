@@ -11,12 +11,12 @@ export class TestHelperService {
      * The command for clearing all branch and leaf type entities.
      * The command for clearing all branch and leaf type entities.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
     public clearAll(
         requestBody: ClearAllArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/clear-all',

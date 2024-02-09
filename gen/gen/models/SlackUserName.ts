@@ -2,8 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { LoginResult } from './LoginResult';
-export type ModelLoginResult = {
-    envelop: LoginResult;
+export type SlackUserName = {
+    the_name: string;
 };
 

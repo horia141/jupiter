@@ -125,7 +125,6 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
     _args_type: type[UseCaseArgsBase]
     _pydantic_arg_model: type[BaseModel]
     _result_type: type[UseCaseResultBase | None]
-    _pydantic_result_model: type[BaseModel] | None
     _use_case: UseCaseT
     _root_module: Final[types.ModuleType]
 
@@ -140,7 +139,6 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
         self._args_type = self._infer_args_class(use_case)
         self._pydantic_arg_model = self._build_args_model(realm_codec_registry, self._args_type)
         self._result_type = self._infer_result_class(use_case)
-        self._pydantic_result_model = self._build_result_model(realm_codec_registry, self._result_type) if self._result_type is not type(None) else None # type: ignore 
         self._use_case = use_case
         self._root_module = root_module
 
@@ -174,7 +172,7 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
         for field in dataclasses.fields(the_type):
             real_type, is_optional = normalize_optional(field.type)
             if is_optional:
-                fields[field.name] = (real_type | None, ...)
+                fields[field.name] = (field.type, None)
             else:
                 fields[field.name] = (field.type, ...)
             field_decoder = realm_codec_registry.get_decoder(field.type, WebRealm)
@@ -182,15 +180,6 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
 
         model = create_model(the_type.__name__, **fields, __validators__=validators)
 
-        return model
-    
-    @staticmethod
-    def _build_result_model(realm_codec_registry: RealmCodecRegistry, the_type: type[UseCaseResultBase]) -> type[BaseModel]:
-        decoder = realm_codec_registry.get_encoder(the_type, WebRealm)
-        validators = {
-            'enveop': validator("envelop", pre=True, allow_reuse=True)(lambda cls, v: decoder.encode(v))
-        }
-        model = create_model(f"Model{the_type.__name__}", envelop=(the_type, ...), __validators__=validators)
         return model
 
     def _build_http_name(self) -> str:
@@ -234,7 +223,7 @@ class GuestMutationCommand(
         @app.post(
             f"/{self._build_http_name()}",
             name=self._build_api_name(),
-            response_model=self._pydantic_result_model,
+            response_model=self._result_type,
             summary=self._build_description(),
             description=self._build_description(),
             tags=[self._build_tag()],
@@ -264,7 +253,7 @@ class GuestReadonlyCommand(
         @app.post(
             f"/{self._build_http_name()}",
             name=self._build_api_name(),
-            response_model=self._pydantic_result_model,
+            response_model=self._result_type,
             summary=self._build_description(),
             description=self._build_description(),
             tags=[self._build_tag()],
@@ -294,7 +283,7 @@ class LoggedInMutationCommand(
         @app.post(
             f"/{self._build_http_name()}",
             name=self._build_api_name(),
-            response_model=self._pydantic_result_model,
+            response_model=self._result_type,
             summary=self._build_description(),
             description=self._build_description(),
             tags=[self._build_tag()],
@@ -326,7 +315,7 @@ class LoggedInReadonlyCommand(
         @app.post(
             f"/{self._build_http_name()}",
             name=self._build_api_name(),
-            response_model=self._pydantic_result_model,
+            response_model=self._result_type,
             summary=self._build_description(),
             description=self._build_description(),
             tags=[self._build_tag()],

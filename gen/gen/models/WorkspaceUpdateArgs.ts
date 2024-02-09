@@ -2,11 +2,11 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { EntityName } from './EntityName';
+import type { WorkspaceName } from './WorkspaceName';
 export type WorkspaceUpdateArgs = {
     name: {
         should_change: boolean;
-        value?: EntityName;
+        value?: WorkspaceName;
     };
 };
 

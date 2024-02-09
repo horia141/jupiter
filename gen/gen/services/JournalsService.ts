@@ -6,15 +6,15 @@ import type { JournalArchiveArgs } from '../models/JournalArchiveArgs';
 import type { JournalChangePeriodsArgs } from '../models/JournalChangePeriodsArgs';
 import type { JournalChangeTimeConfigArgs } from '../models/JournalChangeTimeConfigArgs';
 import type { JournalCreateArgs } from '../models/JournalCreateArgs';
+import type { JournalCreateResult } from '../models/JournalCreateResult';
 import type { JournalFindArgs } from '../models/JournalFindArgs';
+import type { JournalFindResult } from '../models/JournalFindResult';
 import type { JournalLoadArgs } from '../models/JournalLoadArgs';
+import type { JournalLoadResult } from '../models/JournalLoadResult';
 import type { JournalLoadSettingsArgs } from '../models/JournalLoadSettingsArgs';
+import type { JournalLoadSettingsResult } from '../models/JournalLoadSettingsResult';
 import type { JournalremoveArgs } from '../models/JournalremoveArgs';
 import type { JournalUpdateReportArgs } from '../models/JournalUpdateReportArgs';
-import type { ModelJournalCreateResult } from '../models/ModelJournalCreateResult';
-import type { ModelJournalFindResult } from '../models/ModelJournalFindResult';
-import type { ModelJournalLoadResult } from '../models/ModelJournalLoadResult';
-import type { ModelJournalLoadSettingsResult } from '../models/ModelJournalLoadSettingsResult';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
 export class JournalsService {
@@ -23,12 +23,12 @@ export class JournalsService {
      * Use case for archiving a journal.
      * Use case for archiving a journal.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
     public journalArchive(
         requestBody: JournalArchiveArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/journal-archive',
@@ -45,12 +45,12 @@ export class JournalsService {
      * THe use case for changing periods for journals.
      * THe use case for changing periods for journals.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
     public journalChangePeriods(
         requestBody: JournalChangePeriodsArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/journal-change-periods',
@@ -67,12 +67,12 @@ export class JournalsService {
      * Command for updating the time configuration of a journal.
      * Command for updating the time configuration of a journal.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
     public journalChangeTimeConfig(
         requestBody: JournalChangeTimeConfigArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/journal-change-time-config',
@@ -89,12 +89,12 @@ export class JournalsService {
      * Use case for creating a journal.
      * Use case for creating a journal.
      * @param requestBody
-     * @returns ModelJournalCreateResult Successful Response
+     * @returns JournalCreateResult Successful Response
      * @throws ApiError
      */
     public journalCreate(
         requestBody: JournalCreateArgs,
-    ): CancelablePromise<ModelJournalCreateResult> {
+    ): CancelablePromise<JournalCreateResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/journal-create',
@@ -111,12 +111,12 @@ export class JournalsService {
      * The command for finding journals.
      * The command for finding journals.
      * @param requestBody
-     * @returns ModelJournalFindResult Successful Response
+     * @returns JournalFindResult Successful Response
      * @throws ApiError
      */
     public journalFind(
         requestBody: JournalFindArgs,
-    ): CancelablePromise<ModelJournalFindResult> {
+    ): CancelablePromise<JournalFindResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/journal-find',
@@ -133,12 +133,12 @@ export class JournalsService {
      * The command for loading details about a journal.
      * The command for loading details about a journal.
      * @param requestBody
-     * @returns ModelJournalLoadResult Successful Response
+     * @returns JournalLoadResult Successful Response
      * @throws ApiError
      */
     public journalLoad(
         requestBody: JournalLoadArgs,
-    ): CancelablePromise<ModelJournalLoadResult> {
+    ): CancelablePromise<JournalLoadResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/journal-load',
@@ -155,12 +155,12 @@ export class JournalsService {
      * The command for loading the settings around journals.
      * The command for loading the settings around journals.
      * @param requestBody
-     * @returns ModelJournalLoadSettingsResult Successful Response
+     * @returns JournalLoadSettingsResult Successful Response
      * @throws ApiError
      */
     public journalLoadSettings(
         requestBody: JournalLoadSettingsArgs,
-    ): CancelablePromise<ModelJournalLoadSettingsResult> {
+    ): CancelablePromise<JournalLoadSettingsResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/journal-load-settings',
@@ -177,12 +177,12 @@ export class JournalsService {
      * Use case for removing a journal.
      * Use case for removing a journal.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
     public journalRemove(
         requestBody: JournalremoveArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/journal-remove',
@@ -199,12 +199,12 @@ export class JournalsService {
      * Use case for updating a journal entry.
      * Use case for updating a journal entry.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns null Successful Response
      * @throws ApiError
      */
     public journalUpdateReport(
         requestBody: JournalUpdateReportArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<null> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/journal-update-report',

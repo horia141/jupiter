@@ -4,10 +4,10 @@
 /* eslint-disable */
 import type { EntityIcon } from './EntityIcon';
 import type { EntityId } from './EntityId';
-import type { EntityName } from './EntityName';
+import type { MetricName } from './MetricName';
 export type MetricSummary = {
     ref_id: EntityId;
-    name: EntityName;
+    name: MetricName;
     icon?: EntityIcon;
 };
 

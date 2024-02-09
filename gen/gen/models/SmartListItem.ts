@@ -3,8 +3,8 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { EntityId } from './EntityId';
-import type { EntityName } from './EntityName';
 import type { ParentLink } from './ParentLink';
+import type { SmartListItemName } from './SmartListItemName';
 import type { Timestamp } from './Timestamp';
 import type { URL } from './URL';
 export type SmartListItem = {
@@ -14,7 +14,7 @@ export type SmartListItem = {
     created_time: Timestamp;
     last_modified_time: Timestamp;
     archived_time: Timestamp;
-    name: EntityName;
+    name: SmartListItemName;
     smart_list: ParentLink;
     is_done: boolean;
     tags_ref_id: Array<EntityId>;

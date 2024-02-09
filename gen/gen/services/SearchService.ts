@@ -2,8 +2,8 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ModelSearchResult } from '../models/ModelSearchResult';
 import type { SearchArgs } from '../models/SearchArgs';
+import type { SearchResult } from '../models/SearchResult';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
 export class SearchService {
@@ -12,12 +12,12 @@ export class SearchService {
      * Use case for free form searching through Jupiter.
      * Use case for free form searching through Jupiter.
      * @param requestBody
-     * @returns ModelSearchResult Successful Response
+     * @returns SearchResult Successful Response
      * @throws ApiError
      */
     public search(
         requestBody: SearchArgs,
-    ): CancelablePromise<ModelSearchResult> {
+    ): CancelablePromise<SearchResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/search',

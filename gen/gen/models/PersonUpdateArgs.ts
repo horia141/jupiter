@@ -5,8 +5,8 @@
 import type { Difficulty } from './Difficulty';
 import type { Eisen } from './Eisen';
 import type { EntityId } from './EntityId';
-import type { EntityName } from './EntityName';
 import type { PersonBirthday } from './PersonBirthday';
+import type { PersonName } from './PersonName';
 import type { PersonRelationship } from './PersonRelationship';
 import type { RecurringTaskDueAtDay } from './RecurringTaskDueAtDay';
 import type { RecurringTaskDueAtMonth } from './RecurringTaskDueAtMonth';
@@ -16,7 +16,7 @@ export type PersonUpdateArgs = {
     ref_id: EntityId;
     name: {
         should_change: boolean;
-        value?: EntityName;
+        value?: PersonName;
     };
     relationship: {
         should_change: boolean;

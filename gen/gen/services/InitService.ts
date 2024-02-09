@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { InitArgs } from '../models/InitArgs';
-import type { ModelInitResult } from '../models/ModelInitResult';
+import type { InitResult } from '../models/InitResult';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
 export class InitService {
@@ -12,12 +12,12 @@ export class InitService {
      * UseCase for initialising the workspace.
      * UseCase for initialising the workspace.
      * @param requestBody
-     * @returns ModelInitResult Successful Response
+     * @returns InitResult Successful Response
      * @throws ApiError
      */
     public init(
         requestBody: InitArgs,
-    ): CancelablePromise<ModelInitResult> {
+    ): CancelablePromise<InitResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/init',

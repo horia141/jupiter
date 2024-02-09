@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { EntityId } from './EntityId';
-import type { EntityName } from './EntityName';
+import type { HabitName } from './HabitName';
 import type { ParentLink } from './ParentLink';
 import type { RecurringTaskGenParams } from './RecurringTaskGenParams';
 import type { RecurringTaskSkipRule } from './RecurringTaskSkipRule';
@@ -15,7 +15,7 @@ export type Habit = {
     created_time: Timestamp;
     last_modified_time: Timestamp;
     archived_time: Timestamp;
-    name: EntityName;
+    name: HabitName;
     habit_collection: ParentLink;
     project_ref_id: EntityId;
     gen_params: RecurringTaskGenParams;
