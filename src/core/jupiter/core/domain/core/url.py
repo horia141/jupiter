@@ -14,10 +14,6 @@ class URL(AtomicValue):
 
     the_url: str
 
-    def __post_init__(self) -> None:
-        """Validate after pydantic construction."""
-        self.the_url = self._clean_the_url(self.the_url)
-
     @classmethod
     def base_type_hack(cls) -> type[Primitive]:
         return str

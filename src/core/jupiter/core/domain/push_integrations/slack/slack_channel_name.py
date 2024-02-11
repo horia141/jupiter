@@ -15,10 +15,6 @@ class SlackChannelName(AtomicValue):
 
     the_name: str
 
-    def __post_init__(self) -> None:
-        """Validate after pydantic construction."""
-        self.the_name = self._clean_the_name(self.the_name)
-
     @classmethod
     def base_type_hack(cls) -> type[Primitive]:
         return str

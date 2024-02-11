@@ -20,10 +20,6 @@ class TagName(AtomicValue):
 
     the_tag: str
 
-    def __post_init__(self) -> None:
-        """Validate after pydantic construction."""
-        self.the_tag = self._clean_the_tag(self.the_tag)
-
     @classmethod
     def base_type_hack(cls) -> type[Primitive]:
         return str

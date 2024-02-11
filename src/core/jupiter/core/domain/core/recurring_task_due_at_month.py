@@ -23,13 +23,6 @@ class RecurringTaskDueAtMonth(AtomicValue):
 
     the_month: int
 
-    def __post_init__(self) -> None:
-        """Validate after pydantic construction."""
-        self.the_month = self._clean_the_month(
-            RecurringTaskPeriod.YEARLY,
-            self.the_month,
-        )
-
     @staticmethod
     def from_raw_with_period(
         period: RecurringTaskPeriod,

@@ -24,10 +24,6 @@ class EntityId(AtomicValue):
 
     the_id: str
 
-    def __post_init__(self) -> None:
-        """Validate after pydantic construction."""
-        self.the_id = self._clean_the_id(self.the_id)
-
     @classmethod
     def base_type_hack(cls) -> type[Primitive]:
         return str

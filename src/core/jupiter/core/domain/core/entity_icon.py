@@ -13,10 +13,6 @@ class EntityIcon(AtomicValue):
 
     the_icon: str
 
-    def __post_init__(self) -> None:
-        """Validate after pydantic construction."""
-        self.the_icon = self._clean_the_icon(self.the_icon)
-
     @classmethod
     def base_type_hack(cls) -> type[Primitive]:
         """Get the base type of this value."""

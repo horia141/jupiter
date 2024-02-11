@@ -14,10 +14,6 @@ class Avatar(AtomicValue):
 
     avatar_as_data_url: str
 
-    def __post_init__(self) -> None:
-        """Validate after pydantic construction."""
-        self.avatar_as_data_url = self._clean_the_avatar(self.avatar_as_data_url)
-
     @staticmethod
     def from_user_name(user_name: UserName) -> "Avatar":
         """Construct an avatar from a user name."""

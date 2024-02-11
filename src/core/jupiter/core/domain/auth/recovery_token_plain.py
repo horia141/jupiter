@@ -14,11 +14,6 @@ class RecoveryTokenPlain(SecretValue):
 
     token: str
 
-    def __post_init__(self) -> None:
-        """Validate after pydantic construction."""
-        token = self._clean_token(self.token)
-        self.token = token
-
     @staticmethod
     def new_recovery_token() -> "RecoveryTokenPlain":
         """Construct a new recovery token."""

@@ -29,19 +29,6 @@ class Timestamp(AtomicValue):
 
     the_ts: DateTime
 
-    def __post_init_post_parse__(self) -> None:
-        """Validate after pydantic construction."""
-        # When reconstructing automatically this might happen!
-        if isinstance(self.the_ts, datetime.datetime):
-            self.the_ts = pendulum.instance(self.the_ts)
-        elif isinstance(self.the_ts, datetime.date):  # type: ignore
-            self.the_ts = DateTime(
-                year=self.the_ts.year,
-                month=self.the_ts.month,
-                day=self.the_ts.day,
-                tzinfo=UTC,
-            )
-
     @classmethod
     def base_type_hack(cls) -> type[Primitive]:
         return DateTime

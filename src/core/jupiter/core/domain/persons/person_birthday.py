@@ -39,12 +39,6 @@ class PersonBirthday(AtomicValue):
         self.day = day
         self.month = month
 
-    # def __post_init__(self) -> None:
-    #     """Validate after pydantic construction."""
-    #     day, month = self._clean_the_day_and_month(self.day, self.month)
-    #     self.day = day
-    #     self.month = month
-
     @classmethod
     def base_type_hack(cls) -> type[Primitive]:
         return str

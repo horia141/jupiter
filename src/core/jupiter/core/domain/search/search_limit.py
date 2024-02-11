@@ -14,10 +14,6 @@ class SearchLimit(AtomicValue):
 
     the_limit: int
 
-    def __post_init__(self) -> None:
-        """Validate after pydantic construction."""
-        self.the_limit = self._clean_the_limit(self.the_limit)
-
     @classmethod
     def base_type_hack(cls) -> type[Primitive]:
         return int

@@ -20,11 +20,6 @@ class AuthTokenExt(AtomicValue):
 
     auth_token_str: str
 
-    def __post_init__(self) -> None:
-        """Validate after pydantic construction."""
-        auth_token_str = AuthTokenExt._clean_auth_token(self.auth_token_str)
-        self.auth_token_str = auth_token_str
-
     @classmethod
     def base_type_hack(cls) -> type[Primitive]:
         """Get the base type of this value."""

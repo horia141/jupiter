@@ -25,18 +25,6 @@ class ADate(AtomicValue):
     the_date: Optional[Date] = None
     the_datetime: Optional[DateTime] = None
 
-    def __post_init_post_parse__(self) -> None:
-        """Validate after pydantic construction."""
-        # When reconstructing automatically this might happen!
-        if isinstance(self.the_date, (date, datetime)):
-            self.the_date = Date(
-                self.the_date.year,
-                self.the_date.month,
-                self.the_date.day,
-            )
-        elif isinstance(self.the_datetime, datetime):
-            self.the_datetime = pendulum.instance(self.the_datetime)
-
     @staticmethod
     def from_date(date: Date) -> "ADate":
         """Construct an ADate from a date."""

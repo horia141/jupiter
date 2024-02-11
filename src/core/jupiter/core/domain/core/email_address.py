@@ -15,10 +15,6 @@ class EmailAddress(AtomicValue):
 
     the_address: str
 
-    def __post_init__(self) -> None:
-        """Validate after pydantic construction."""
-        self.the_address = self._clean_the_address(self.the_address)
-
     @classmethod
     def base_type_hack(cls) -> type[Primitive]:
         """Get the base type of this value."""

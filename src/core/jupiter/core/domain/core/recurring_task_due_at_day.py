@@ -21,10 +21,6 @@ class RecurringTaskDueAtDay(AtomicValue):
 
     the_day: int
 
-    def __post_init__(self) -> None:
-        """Validate after pydantic construction."""
-        self.the_day = self._clean_the_day(RecurringTaskPeriod.YEARLY, self.the_day)
-
     @staticmethod
     def from_raw_with_period(
         period: RecurringTaskPeriod,

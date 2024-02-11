@@ -17,11 +17,6 @@ class PasswordPlain(SecretValue):
 
     password_raw: str
 
-    def __post_init__(self) -> None:
-        """Validate after pydantic construction."""
-        password_raw = self._clean_password(self.password_raw)
-        self.password_raw = password_raw
-
     @staticmethod
     def from_raw(password_str: Optional[str]) -> "PasswordPlain":
         """Validate and clean a raw password."""

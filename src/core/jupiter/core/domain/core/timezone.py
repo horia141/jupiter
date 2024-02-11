@@ -16,10 +16,6 @@ class Timezone(AtomicValue):
 
     the_timezone: str
 
-    def __post_init__(self) -> None:
-        """Validate after pydantic construction."""
-        self.the_timezone = self._clean_the_timezone(self.the_timezone)
-
     @classmethod
     def base_type_hack(cls) -> type[Primitive]:
         return str

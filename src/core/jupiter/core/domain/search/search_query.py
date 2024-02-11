@@ -12,10 +12,6 @@ class SearchQuery(AtomicValue):
 
     the_query: str
 
-    def __post_init__(self) -> None:
-        """Validate after pydantic construction."""
-        self.the_query = self._clean_the_query(self.the_query)
-
     @classmethod
     def base_type_hack(cls) -> type[Primitive]:
         return str

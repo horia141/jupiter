@@ -11,10 +11,6 @@ class RecurringTaskSkipRule(AtomicValue):
 
     skip_rule: str
 
-    def __post_init__(self) -> None:
-        """Validate after pydantic construction."""
-        self.skip_rule = self._clean_skip_rule(self.skip_rule)
-
     @classmethod
     def from_raw(
         cls,
