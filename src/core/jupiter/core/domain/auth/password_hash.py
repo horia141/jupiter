@@ -11,6 +11,7 @@ from jupiter.core.framework.realm import (
     RealmDecoder,
     RealmEncoder,
     RealmThing,
+    only_in_realm,
 )
 from jupiter.core.framework.value import SecretValue, secret_value
 
@@ -19,6 +20,7 @@ _PASSWORD_HASHER = PasswordHasher.from_parameters(_PROFILE)
 
 
 @secret_value
+@only_in_realm(DatabaseRealm)
 class PasswordHash(SecretValue):
     """A hashed password, suitable for storage."""
 

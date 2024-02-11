@@ -8,6 +8,9 @@ import type { RecurringTaskDueAtDay } from './RecurringTaskDueAtDay';
 import type { RecurringTaskDueAtMonth } from './RecurringTaskDueAtMonth';
 import type { RecurringTaskDueAtTime } from './RecurringTaskDueAtTime';
 import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
+/**
+ * Parameters for metric collection.
+ */
 export type RecurringTaskGenParams = {
     period: RecurringTaskPeriod;
     eisen?: Eisen;

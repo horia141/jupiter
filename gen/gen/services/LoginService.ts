@@ -2,8 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { LoginArgs } from '../models/LoginArgs';
-import type { LoginResult } from '../models/LoginResult';
+import type { ChangePasswordArgs } from '../models/ChangePasswordArgs';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
 export class LoginService {
@@ -12,12 +11,12 @@ export class LoginService {
      * Use case for logging in as a particular user.
      * Use case for logging in as a particular user.
      * @param requestBody
-     * @returns LoginResult Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public login(
-        requestBody: LoginArgs,
-    ): CancelablePromise<LoginResult> {
+        requestBody?: ChangePasswordArgs,
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/login',

@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type EntityIcon = {
-    the_icon: string;
-};
-
+/**
+ * The icon for an entity.
+ */
+export type EntityIcon = string;

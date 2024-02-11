@@ -6,6 +6,9 @@ import type { ADate } from './ADate';
 import type { NamedEntityTag } from './NamedEntityTag';
 import type { SearchLimit } from './SearchLimit';
 import type { SearchQuery } from './SearchQuery';
+/**
+ * Search args.
+ */
 export type SearchArgs = {
     query: SearchQuery;
     limit: SearchLimit;

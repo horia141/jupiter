@@ -2,9 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { GenDoArgs } from '../models/GenDoArgs';
-import type { GenLoadRunsArgs } from '../models/GenLoadRunsArgs';
-import type { GenLoadRunsResult } from '../models/GenLoadRunsResult';
+import type { ChangePasswordArgs } from '../models/ChangePasswordArgs';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
 export class GenService {
@@ -13,12 +11,12 @@ export class GenService {
      * The command for generating new tasks.
      * The command for generating new tasks.
      * @param requestBody
-     * @returns null Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public genDo(
-        requestBody: GenDoArgs,
-    ): CancelablePromise<null> {
+        requestBody?: ChangePasswordArgs,
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/gen-do',
@@ -35,12 +33,12 @@ export class GenService {
      * Load previous runs of task generation.
      * Load previous runs of task generation.
      * @param requestBody
-     * @returns GenLoadRunsResult Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public genLoadRuns(
-        requestBody: GenLoadRunsArgs,
-    ): CancelablePromise<GenLoadRunsResult> {
+        requestBody?: ChangePasswordArgs,
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/gen-load-runs',

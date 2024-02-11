@@ -11,6 +11,9 @@ import type { RecurringTaskDueAtMonth } from './RecurringTaskDueAtMonth';
 import type { RecurringTaskDueAtTime } from './RecurringTaskDueAtTime';
 import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
 import type { RecurringTaskSkipRule } from './RecurringTaskSkipRule';
+/**
+ * PersonFindArgs.
+ */
 export type HabitUpdateArgs = {
     ref_id: EntityId;
     name: {

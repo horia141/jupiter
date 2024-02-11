@@ -4,6 +4,9 @@
 /* eslint-disable */
 import type { EntityId } from './EntityId';
 import type { SmartListTagName } from './SmartListTagName';
+/**
+ * PersonFindArgs.
+ */
 export type SmartListFindArgs = {
     allow_archived: boolean;
     include_tags: boolean;

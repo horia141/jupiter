@@ -2,8 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ReportArgs } from '../models/ReportArgs';
-import type { ReportResult } from '../models/ReportResult';
+import type { ChangePasswordArgs } from '../models/ChangePasswordArgs';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
 export class ReportService {
@@ -12,12 +11,12 @@ export class ReportService {
      * The command for reporting on progress.
      * The command for reporting on progress.
      * @param requestBody
-     * @returns ReportResult Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public report(
-        requestBody: ReportArgs,
-    ): CancelablePromise<ReportResult> {
+        requestBody?: ChangePasswordArgs,
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/report',

@@ -7,6 +7,9 @@ import type { EntityId } from './EntityId';
 import type { InboxTaskSource } from './InboxTaskSource';
 import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
 import type { ReportBreakdown } from './ReportBreakdown';
+/**
+ * Report args.
+ */
 export type ReportArgs = {
     today?: ADate;
     period: RecurringTaskPeriod;

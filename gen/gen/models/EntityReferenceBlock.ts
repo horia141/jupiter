@@ -5,6 +5,9 @@
 import type { CorrelationId } from './CorrelationId';
 import type { EntityId } from './EntityId';
 import type { NamedEntityTag } from './NamedEntityTag';
+/**
+ * A link.
+ */
 export type EntityReferenceBlock = {
     correlation_id: CorrelationId;
     kind: EntityReferenceBlock.kind;

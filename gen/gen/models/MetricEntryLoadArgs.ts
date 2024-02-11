@@ -3,6 +3,9 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { EntityId } from './EntityId';
+/**
+ * MetricEntryLoadArgs.
+ */
 export type MetricEntryLoadArgs = {
     ref_id: EntityId;
     allow_archived: boolean;

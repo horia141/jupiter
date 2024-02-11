@@ -2,8 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { LoadProgressReporterTokenArgs } from '../models/LoadProgressReporterTokenArgs';
-import type { LoadProgressReporterTokenResult } from '../models/LoadProgressReporterTokenResult';
+import type { ChangePasswordArgs } from '../models/ChangePasswordArgs';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
 export class LoadProgressReporterTokenService {
@@ -12,12 +11,12 @@ export class LoadProgressReporterTokenService {
      * The use case for retrieving summaries about entities.
      * The use case for retrieving summaries about entities.
      * @param requestBody
-     * @returns LoadProgressReporterTokenResult Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public loadProgressReporterToken(
-        requestBody: LoadProgressReporterTokenArgs,
-    ): CancelablePromise<LoadProgressReporterTokenResult> {
+        requestBody?: ChangePasswordArgs,
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/load-progress-reporter-token',

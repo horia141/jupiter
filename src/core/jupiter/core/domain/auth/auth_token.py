@@ -1,5 +1,6 @@
 """An authentication token allows for secure and fast authentication across a session."""
 from typing import ClassVar, Dict
+from jupiter.core.framework.realm import CliRealm, WebRealm, only_in_realm
 
 import jwt
 from jupiter.core.domain.auth.auth_token_ext import AuthTokenExt
@@ -19,6 +20,7 @@ class InvalidAuthTokenError(Exception):
 
 
 @secret_value
+@only_in_realm(CliRealm, WebRealm)
 class AuthToken(SecretValue):
     """An authentication token allows for secure and fast authentication across a session."""
 

@@ -11,6 +11,9 @@ import type { RecurringTaskDueAtDay } from './RecurringTaskDueAtDay';
 import type { RecurringTaskDueAtMonth } from './RecurringTaskDueAtMonth';
 import type { RecurringTaskDueAtTime } from './RecurringTaskDueAtTime';
 import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
+/**
+ * Person create args..
+ */
 export type PersonCreateArgs = {
     name: PersonName;
     relationship: PersonRelationship;

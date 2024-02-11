@@ -21,7 +21,7 @@ export type OpenAPIConfig = {
 
 export const OpenAPI: OpenAPIConfig = {
     BASE: '',
-    VERSION: '0.1.0',
+    VERSION: '1.0.6',
     WITH_CREDENTIALS: false,
     CREDENTIALS: 'include',
     TOKEN: undefined,

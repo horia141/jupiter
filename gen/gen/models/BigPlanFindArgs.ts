@@ -3,6 +3,9 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { EntityId } from './EntityId';
+/**
+ * PersonFindArgs.
+ */
 export type BigPlanFindArgs = {
     allow_archived: boolean;
     include_project: boolean;

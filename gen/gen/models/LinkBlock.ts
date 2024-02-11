@@ -4,6 +4,9 @@
 /* eslint-disable */
 import type { CorrelationId } from './CorrelationId';
 import type { URL } from './URL';
+/**
+ * A link.
+ */
 export type LinkBlock = {
     correlation_id: CorrelationId;
     kind: LinkBlock.kind;

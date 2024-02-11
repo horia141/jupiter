@@ -4,6 +4,9 @@
 /* eslint-disable */
 import type { EntityId } from './EntityId';
 import type { ProjectName } from './ProjectName';
+/**
+ * PersonFindArgs.
+ */
 export type ProjectUpdateArgs = {
     ref_id: EntityId;
     name: {

@@ -3,6 +3,9 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { CorrelationId } from './CorrelationId';
+/**
+ * A quote.
+ */
 export type QuoteBlock = {
     correlation_id: CorrelationId;
     kind: QuoteBlock.kind;

@@ -11,6 +11,9 @@ import type { PersonSummary } from './PersonSummary';
 import type { ProjectSummary } from './ProjectSummary';
 import type { SmartListSummary } from './SmartListSummary';
 import type { VacationSummary } from './VacationSummary';
+/**
+ * Get summaries result.
+ */
 export type GetSummariesResult = {
     default_project?: ProjectSummary;
     vacations?: Array<VacationSummary>;

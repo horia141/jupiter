@@ -2,6 +2,9 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+/**
+ * Get summaries args.
+ */
 export type GetSummariesArgs = {
     allow_archived?: boolean;
     include_default_project?: boolean;

@@ -15,6 +15,9 @@ import type { NumberedListBlock } from './NumberedListBlock';
 import type { ParagraphBlock } from './ParagraphBlock';
 import type { QuoteBlock } from './QuoteBlock';
 import type { TableBlock } from './TableBlock';
+/**
+ * DocCreate args.
+ */
 export type DocCreateArgs = {
     name: DocName;
     content: Array<(ParagraphBlock | HeadingBlock | BulletedListBlock | NumberedListBlock | ChecklistBlock | TableBlock | CodeBlock | QuoteBlock | DividerBlock | LinkBlock | EntityReferenceBlock)>;

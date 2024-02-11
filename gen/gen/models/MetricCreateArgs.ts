@@ -11,6 +11,9 @@ import type { RecurringTaskDueAtDay } from './RecurringTaskDueAtDay';
 import type { RecurringTaskDueAtMonth } from './RecurringTaskDueAtMonth';
 import type { RecurringTaskDueAtTime } from './RecurringTaskDueAtTime';
 import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
+/**
+ * PersonFindArgs.
+ */
 export type MetricCreateArgs = {
     name: MetricName;
     icon?: EntityIcon;

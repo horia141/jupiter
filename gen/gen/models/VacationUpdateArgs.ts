@@ -5,6 +5,9 @@
 import type { ADate } from './ADate';
 import type { EntityId } from './EntityId';
 import type { VacationName } from './VacationName';
+/**
+ * PersonFindArgs.
+ */
 export type VacationUpdateArgs = {
     ref_id: EntityId;
     name: {

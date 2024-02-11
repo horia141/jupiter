@@ -10,6 +10,9 @@ import type { UserFeature } from './UserFeature';
 import type { UserName } from './UserName';
 import type { WorkspaceFeature } from './WorkspaceFeature';
 import type { WorkspaceName } from './WorkspaceName';
+/**
+ * PersonFindArgs.
+ */
 export type ClearAllArgs = {
     user_name: UserName;
     user_timezone: Timezone;

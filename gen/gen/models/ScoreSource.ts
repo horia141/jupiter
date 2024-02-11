@@ -2,8 +2,10 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { EntityId } from './EntityId';
-export type ParentLink = {
-    ref_id: EntityId;
-};
-
+/**
+ * The source of a score.
+ */
+export enum ScoreSource {
+    INBOX_TASK = 'inbox-task',
+    BIG_PLAN = 'big-plan',
+}

@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type PersonName = {
-    the_name: string;
-};
-
+/**
+ * The person name.
+ */
+export type PersonName = string;

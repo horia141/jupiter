@@ -7,6 +7,9 @@ import type { EntityId } from './EntityId';
 import type { EventSource } from './EventSource';
 import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
 import type { SyncTarget } from './SyncTarget';
+/**
+ * PersonFindArgs.
+ */
 export type GenDoArgs = {
     source: EventSource;
     gen_even_if_not_modified: boolean;

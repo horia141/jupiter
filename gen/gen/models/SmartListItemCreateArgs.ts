@@ -6,6 +6,9 @@ import type { EntityId } from './EntityId';
 import type { SmartListItemName } from './SmartListItemName';
 import type { SmartListTagName } from './SmartListTagName';
 import type { URL } from './URL';
+/**
+ * SmartListItemCreate args.
+ */
 export type SmartListItemCreateArgs = {
     smart_list_ref_id: EntityId;
     name: SmartListItemName;

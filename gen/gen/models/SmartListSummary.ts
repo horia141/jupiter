@@ -5,6 +5,9 @@
 import type { EntityIcon } from './EntityIcon';
 import type { EntityId } from './EntityId';
 import type { SmartListName } from './SmartListName';
+/**
+ * Summary information about a smart list.
+ */
 export type SmartListSummary = {
     ref_id: EntityId;
     name: SmartListName;

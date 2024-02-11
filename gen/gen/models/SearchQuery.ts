@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type SearchQuery = {
-    the_query: string;
-};
-
+/**
+ * A search query parameter for searches.
+ */
+export type SearchQuery = string;

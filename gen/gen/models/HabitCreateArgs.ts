@@ -11,6 +11,9 @@ import type { RecurringTaskDueAtMonth } from './RecurringTaskDueAtMonth';
 import type { RecurringTaskDueAtTime } from './RecurringTaskDueAtTime';
 import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
 import type { RecurringTaskSkipRule } from './RecurringTaskSkipRule';
+/**
+ * HabitCreate args..
+ */
 export type HabitCreateArgs = {
     name: HabitName;
     period: RecurringTaskPeriod;

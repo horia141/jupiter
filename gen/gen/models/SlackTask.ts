@@ -4,20 +4,22 @@
 /* eslint-disable */
 import type { EntityId } from './EntityId';
 import type { EntityName } from './EntityName';
-import type { ParentLink } from './ParentLink';
 import type { PushGenerationExtraInfo } from './PushGenerationExtraInfo';
 import type { SlackChannelName } from './SlackChannelName';
 import type { SlackUserName } from './SlackUserName';
 import type { Timestamp } from './Timestamp';
+/**
+ * A Slack task which needs to be converted into an inbox task.
+ */
 export type SlackTask = {
     ref_id: EntityId;
     version: number;
     archived: boolean;
     created_time: Timestamp;
     last_modified_time: Timestamp;
-    archived_time: Timestamp;
+    archived_time?: Timestamp;
     name: EntityName;
-    slack_task_collection: ParentLink;
+    slack_task_collection: string;
     user: SlackUserName;
     message: string;
     generation_extra_info: PushGenerationExtraInfo;

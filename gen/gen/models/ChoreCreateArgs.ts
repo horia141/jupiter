@@ -12,6 +12,9 @@ import type { RecurringTaskDueAtMonth } from './RecurringTaskDueAtMonth';
 import type { RecurringTaskDueAtTime } from './RecurringTaskDueAtTime';
 import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
 import type { RecurringTaskSkipRule } from './RecurringTaskSkipRule';
+/**
+ * ChoreCreate args.
+ */
 export type ChoreCreateArgs = {
     name: ChoreName;
     period: RecurringTaskPeriod;

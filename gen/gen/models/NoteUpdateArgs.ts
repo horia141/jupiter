@@ -14,6 +14,9 @@ import type { NumberedListBlock } from './NumberedListBlock';
 import type { ParagraphBlock } from './ParagraphBlock';
 import type { QuoteBlock } from './QuoteBlock';
 import type { TableBlock } from './TableBlock';
+/**
+ * NoteUpdate args.
+ */
 export type NoteUpdateArgs = {
     ref_id: EntityId;
     content: {

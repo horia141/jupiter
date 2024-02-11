@@ -2,8 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { GetSummariesArgs } from '../models/GetSummariesArgs';
-import type { GetSummariesResult } from '../models/GetSummariesResult';
+import type { ChangePasswordArgs } from '../models/ChangePasswordArgs';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
 export class GetSummariesService {
@@ -12,12 +11,12 @@ export class GetSummariesService {
      * The use case for retrieving summaries about entities.
      * The use case for retrieving summaries about entities.
      * @param requestBody
-     * @returns GetSummariesResult Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public getSummaries(
-        requestBody: GetSummariesArgs,
-    ): CancelablePromise<GetSummariesResult> {
+        requestBody?: ChangePasswordArgs,
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/get-summaries',

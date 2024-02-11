@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type WorkspaceName = {
-    the_name: string;
-};
-
+/**
+ * The workspace name.
+ */
+export type WorkspaceName = string;

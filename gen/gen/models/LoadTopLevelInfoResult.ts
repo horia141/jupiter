@@ -13,6 +13,9 @@ import type { Workspace } from './Workspace';
 import type { WorkspaceFeature } from './WorkspaceFeature';
 import type { WorkspaceFeatureFlagsControls } from './WorkspaceFeatureFlagsControls';
 import type { WorkspaceName } from './WorkspaceName';
+/**
+ * Load user and workspace result.
+ */
 export type LoadTopLevelInfoResult = {
     env: Env;
     hosting: Hosting;

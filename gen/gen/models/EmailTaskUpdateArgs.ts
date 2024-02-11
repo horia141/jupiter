@@ -10,6 +10,9 @@ import type { EmailUserName } from './EmailUserName';
 import type { EntityId } from './EntityId';
 import type { InboxTaskName } from './InboxTaskName';
 import type { InboxTaskStatus } from './InboxTaskStatus';
+/**
+ * PersonFindArgs.
+ */
 export type EmailTaskUpdateArgs = {
     ref_id: EntityId;
     from_address: {

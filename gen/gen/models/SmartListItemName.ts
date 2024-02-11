@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type SmartListItemName = {
-    the_name: string;
-};
-
+/**
+ * The smart list item name.
+ */
+export type SmartListItemName = string;

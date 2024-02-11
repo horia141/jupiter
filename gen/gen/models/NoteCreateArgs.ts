@@ -15,6 +15,9 @@ import type { NumberedListBlock } from './NumberedListBlock';
 import type { ParagraphBlock } from './ParagraphBlock';
 import type { QuoteBlock } from './QuoteBlock';
 import type { TableBlock } from './TableBlock';
+/**
+ * NoteCreate args.
+ */
 export type NoteCreateArgs = {
     domain: NoteDomain;
     source_entity_ref_id: EntityId;

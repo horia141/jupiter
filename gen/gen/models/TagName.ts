@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type TagName = {
-    the_tag: string;
-};
-
+/**
+ * The base value object for any kind of tag tag.
+ */
+export type TagName = string;

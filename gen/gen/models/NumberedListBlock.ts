@@ -4,6 +4,9 @@
 /* eslint-disable */
 import type { CorrelationId } from './CorrelationId';
 import type { ListItem } from './ListItem';
+/**
+ * A numbered list.
+ */
 export type NumberedListBlock = {
     correlation_id: CorrelationId;
     kind: NumberedListBlock.kind;

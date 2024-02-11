@@ -26,7 +26,7 @@ import inflection
 from jupiter.core.framework.record import Record
 from jupiter.core.framework.thing import Thing
 from jupiter.core.framework.update_action import UpdateAction
-from jupiter.core.framework.value import AtomicValue, CompositeValue, EnumValue
+from jupiter.core.framework.value import AtomicValue, CompositeValue, EnumValue, SecretValue
 from pydantic import BaseModel, create_model, validator
 import uvicorn
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -74,6 +74,7 @@ from pendulum.datetime import DateTime
 STANDARD_RESPONSES: dict[int | str, dict[str, Any]] = {
     410: {"description": "Workspace Or User Not Found", "content": {"plain/text": {}}},
     406: {"description": "Feature Not Available", "content": {"plain/text": {}}},
+    422: {"description": "Validation Error", "content": {"application/json": {}}},
 }
 
 STANDARD_CONFIG: Mapping[str, Any] = {
@@ -709,7 +710,6 @@ class WebServiceApp:
                         type[DomainThing] | ForwardRef | str, get_args(field_type)[0]
                     )
                     return {
-                        "uniqueItems": "true",
                         "type": "array",
                         "items": build_composite_field(field, list_item_type)
                     }
@@ -718,11 +718,8 @@ class WebServiceApp:
                         type[DomainThing] | ForwardRef | str, get_args(field_type)[1]
                     )
                     return {
-                        "uniqueItems": "true",
                         "type": "object",
-                        "additionalProperties": {
-                            "type": build_composite_field(field, dict_value_type)
-                        }
+                        "additionalProperties": build_composite_field(field, dict_value_type)
                     }
                 else:
                     raise Exception(f"Invalid field {field.name} of type {field_type}")
@@ -744,20 +741,23 @@ class WebServiceApp:
                 "type": build_primitive_type(atomic_value_type.base_type_hack()),
             }
         
-        def build_composite_schema(composite_value_type: type[CompositeValue | Entity | Record | UseCaseArgsBase | UseCaseResultBase]) -> dict[str, Any]:
-            return {
+        def build_composite_schema(composite_value_type: type[CompositeValue | SecretValue | Entity | Record | UseCaseArgsBase | UseCaseResultBase]) -> dict[str, Any]:
+            requred = [f.name for f in dataclasses.fields(composite_value_type) if f.name is not "events" and not normalize_optional(f.type)[1]]
+            result = {
                 "title": composite_value_type.__name__,
                 "description": composite_value_type.__doc__,
                 "type": "object",
-                "required": [f.name for f in dataclasses.fields(composite_value_type) if f.name is not "events" and not normalize_optional(f.type)[1]],
                 "properties": {f.name: build_composite_field(f, f.type) for f in dataclasses.fields(composite_value_type) if f.name is not "events"}
             }
+            if len(requred) > 0:
+                result["required"] = requred
+            return result
 
         if self._fast_app.openapi_schema:
             return self._fast_app.openapi_schema
         openapi_schema = get_openapi(
             title="Jupiter API",
-            version="2.5.0",
+            version=self._global_properties.version,
             description="Jupiter API",
             routes=self._fast_app.routes,
         )
@@ -774,6 +774,9 @@ class WebServiceApp:
 
         for composite_value_type in self._realm_codec_registry.get_all_registered_types(CompositeValue, WebRealm):
             openapi_schema["components"]["schemas"][composite_value_type.__name__] = build_composite_schema(composite_value_type)
+
+        for secret_value_type in self._realm_codec_registry.get_all_registered_types(SecretValue, WebRealm):
+            openapi_schema["components"]["schemas"][secret_value_type.__name__] = build_composite_schema(secret_value_type)
         
         for entity_type in self._realm_codec_registry.get_all_registered_types(Entity, WebRealm):
             openapi_schema["components"]["schemas"][entity_type.__name__] = build_composite_schema(entity_type)
@@ -788,6 +791,17 @@ class WebServiceApp:
             openapi_schema["components"]["schemas"][use_case_result_type.__name__] = build_composite_schema(use_case_result_type)
         
         # Link api with components
+            
+        for path in openapi_schema["paths"].keys():
+            openapi_schema["paths"][path]["post"]["requestBody"] = {
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ChangePasswordArgs"
+                        }
+                    }
+                }
+            }
 
         self._fast_app.openapi_schema = openapi_schema
         return self._fast_app.openapi_schema

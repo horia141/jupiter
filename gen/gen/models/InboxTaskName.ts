@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type InboxTaskName = {
-    the_name: string;
-};
-
+/**
+ * The name of an inbox task.
+ */
+export type InboxTaskName = string;

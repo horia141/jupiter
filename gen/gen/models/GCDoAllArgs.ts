@@ -3,10 +3,8 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * The kind of an event.
+ * GCDoAllArgs.
  */
-export enum EventKind {
-    CREATED = 'Created',
-    UPDATED = 'Updated',
-    ARCHIVED = 'Archived',
-}
+export type GCDoAllArgs = {
+};
+

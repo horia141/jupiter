@@ -12,6 +12,9 @@ import type { RecurringTaskDueAtMonth } from './RecurringTaskDueAtMonth';
 import type { RecurringTaskDueAtTime } from './RecurringTaskDueAtTime';
 import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
 import type { RecurringTaskSkipRule } from './RecurringTaskSkipRule';
+/**
+ * PersonFindArgs.
+ */
 export type ChoreUpdateArgs = {
     ref_id: EntityId;
     name: {

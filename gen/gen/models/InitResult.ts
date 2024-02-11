@@ -6,6 +6,9 @@ import type { AuthTokenExt } from './AuthTokenExt';
 import type { RecoveryTokenPlain } from './RecoveryTokenPlain';
 import type { User } from './User';
 import type { Workspace } from './Workspace';
+/**
+ * Init use case result.
+ */
 export type InitResult = {
     new_user: User;
     new_workspace: Workspace;

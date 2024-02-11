@@ -3,6 +3,9 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { EntityId } from './EntityId';
+/**
+ * Args.
+ */
 export type JournalUpdateReportArgs = {
     ref_id: EntityId;
 };

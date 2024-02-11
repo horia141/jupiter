@@ -2,15 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { VacationArchiveArgs } from '../models/VacationArchiveArgs';
-import type { VacationCreateArgs } from '../models/VacationCreateArgs';
-import type { VacationCreateResult } from '../models/VacationCreateResult';
-import type { VacationFindArgs } from '../models/VacationFindArgs';
-import type { VacationFindResult } from '../models/VacationFindResult';
-import type { VacationLoadArgs } from '../models/VacationLoadArgs';
-import type { VacationLoadResult } from '../models/VacationLoadResult';
-import type { VacationRemoveArgs } from '../models/VacationRemoveArgs';
-import type { VacationUpdateArgs } from '../models/VacationUpdateArgs';
+import type { ChangePasswordArgs } from '../models/ChangePasswordArgs';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
 export class VacationsService {
@@ -19,12 +11,12 @@ export class VacationsService {
      * The command for archiving a vacation.
      * The command for archiving a vacation.
      * @param requestBody
-     * @returns null Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public vacationArchive(
-        requestBody: VacationArchiveArgs,
-    ): CancelablePromise<null> {
+        requestBody?: ChangePasswordArgs,
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/vacation-archive',
@@ -41,12 +33,12 @@ export class VacationsService {
      * The command for creating a vacation.
      * The command for creating a vacation.
      * @param requestBody
-     * @returns VacationCreateResult Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public vacationCreate(
-        requestBody: VacationCreateArgs,
-    ): CancelablePromise<VacationCreateResult> {
+        requestBody?: ChangePasswordArgs,
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/vacation-create',
@@ -63,12 +55,12 @@ export class VacationsService {
      * The command for finding vacations.
      * The command for finding vacations.
      * @param requestBody
-     * @returns VacationFindResult Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public vacationFind(
-        requestBody: VacationFindArgs,
-    ): CancelablePromise<VacationFindResult> {
+        requestBody?: ChangePasswordArgs,
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/vacation-find',
@@ -85,12 +77,12 @@ export class VacationsService {
      * Use case for loading a particular vacation.
      * Use case for loading a particular vacation.
      * @param requestBody
-     * @returns VacationLoadResult Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public vacationLoad(
-        requestBody: VacationLoadArgs,
-    ): CancelablePromise<VacationLoadResult> {
+        requestBody?: ChangePasswordArgs,
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/vacation-load',
@@ -107,12 +99,12 @@ export class VacationsService {
      * The command for removing a vacation.
      * The command for removing a vacation.
      * @param requestBody
-     * @returns null Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public vacationRemove(
-        requestBody: VacationRemoveArgs,
-    ): CancelablePromise<null> {
+        requestBody?: ChangePasswordArgs,
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/vacation-remove',
@@ -129,12 +121,12 @@ export class VacationsService {
      * The command for updating a vacation's properties.
      * The command for updating a vacation's properties.
      * @param requestBody
-     * @returns null Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
     public vacationUpdate(
-        requestBody: VacationUpdateArgs,
-    ): CancelablePromise<null> {
+        requestBody?: ChangePasswordArgs,
+    ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/vacation-update',

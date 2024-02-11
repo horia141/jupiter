@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type UserName = {
-    the_name: string;
-};
-
+/**
+ * The user name for a user of Jupiter.
+ */
+export type UserName = string;

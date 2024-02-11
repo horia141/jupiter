@@ -7,6 +7,9 @@ import type { Difficulty } from './Difficulty';
 import type { Eisen } from './Eisen';
 import type { EntityId } from './EntityId';
 import type { InboxTaskName } from './InboxTaskName';
+/**
+ * InboxTaskCreate args.
+ */
 export type InboxTaskCreateArgs = {
     name: InboxTaskName;
     project_ref_id?: EntityId;

@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type MetricName = {
-    the_name: string;
-};
-
+/**
+ * THe metric name.
+ */
+export type MetricName = string;

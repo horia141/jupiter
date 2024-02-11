@@ -4,6 +4,9 @@
 /* eslint-disable */
 import type { Timezone } from './Timezone';
 import type { UserName } from './UserName';
+/**
+ * User update args.
+ */
 export type UserUpdateArgs = {
     name: {
         should_change: boolean;

@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type EntityName = {
-    the_name: string;
-};
-
+/**
+ * The name for an entity which acts as both name and unique identifier.
+ */
+export type EntityName = string;

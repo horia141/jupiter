@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type DocName = {
-    the_name: string;
-};
-
+/**
+ * The doc name.
+ */
+export type DocName = string;

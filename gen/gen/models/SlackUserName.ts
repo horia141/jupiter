@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type SlackUserName = {
-    the_name: string;
-};
-
+/**
+ * A Slack user name.
+ */
+export type SlackUserName = string;

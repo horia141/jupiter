@@ -10,6 +10,9 @@ import type { InboxTaskName } from './InboxTaskName';
 import type { InboxTaskStatus } from './InboxTaskStatus';
 import type { SlackChannelName } from './SlackChannelName';
 import type { SlackUserName } from './SlackUserName';
+/**
+ * PersonFindArgs.
+ */
 export type SlackTaskUpdateArgs = {
     ref_id: EntityId;
     user: {

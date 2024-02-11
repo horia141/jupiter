@@ -5,6 +5,9 @@
 import type { InboxTask } from './InboxTask';
 import type { Journal } from './Journal';
 import type { Note } from './Note';
+/**
+ * Result.
+ */
 export type JournalLoadResult = {
     journal: Journal;
     note: Note;

@@ -9,17 +9,19 @@ import type { EntityId } from './EntityId';
 import type { InboxTaskName } from './InboxTaskName';
 import type { InboxTaskSource } from './InboxTaskSource';
 import type { InboxTaskStatus } from './InboxTaskStatus';
-import type { ParentLink } from './ParentLink';
 import type { Timestamp } from './Timestamp';
+/**
+ * An inbox task.
+ */
 export type InboxTask = {
     ref_id: EntityId;
     version: number;
     archived: boolean;
     created_time: Timestamp;
     last_modified_time: Timestamp;
-    archived_time: Timestamp;
+    archived_time?: Timestamp;
     name: InboxTaskName;
-    inbox_task_collection: ParentLink;
+    inbox_task_collection: string;
     source: InboxTaskSource;
     project_ref_id: EntityId;
     status: InboxTaskStatus;

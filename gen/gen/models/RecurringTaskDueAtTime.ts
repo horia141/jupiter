@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type RecurringTaskDueAtTime = {
-    the_time: string;
-};
-
+/**
+ * The due time for a recurring task.
+ */
+export type RecurringTaskDueAtTime = string;

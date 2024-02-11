@@ -3,6 +3,9 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { CorrelationId } from './CorrelationId';
+/**
+ * A divider.
+ */
 export type DividerBlock = {
     correlation_id: CorrelationId;
     kind: DividerBlock.kind;

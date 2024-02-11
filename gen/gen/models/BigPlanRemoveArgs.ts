@@ -3,6 +3,9 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { EntityId } from './EntityId';
+/**
+ * PersonFindArgs.
+ */
 export type BigPlanRemoveArgs = {
     ref_id: EntityId;
 };

@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type EntityId = {
-    the_id: string;
-};
-
+/**
+ * A generic entity id.
+ */
+export type EntityId = string;

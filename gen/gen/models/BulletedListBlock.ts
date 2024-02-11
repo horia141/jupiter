@@ -4,6 +4,9 @@
 /* eslint-disable */
 import type { CorrelationId } from './CorrelationId';
 import type { ListItem } from './ListItem';
+/**
+ * A bulleted list.
+ */
 export type BulletedListBlock = {
     correlation_id: CorrelationId;
     kind: BulletedListBlock.kind;

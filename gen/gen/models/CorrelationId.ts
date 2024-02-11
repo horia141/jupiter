@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type CorrelationId = {
-    the_id: string;
-};
-
+/**
+ * A generic entity id.
+ */
+export type CorrelationId = string;

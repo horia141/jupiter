@@ -6,6 +6,9 @@ import type { ADate } from './ADate';
 import type { BigPlanName } from './BigPlanName';
 import type { BigPlanStatus } from './BigPlanStatus';
 import type { EntityId } from './EntityId';
+/**
+ * PersonFindArgs.
+ */
 export type BigPlanUpdateArgs = {
     ref_id: EntityId;
     name: {

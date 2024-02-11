@@ -3,6 +3,9 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { CorrelationId } from './CorrelationId';
+/**
+ * A table.
+ */
 export type TableBlock = {
     correlation_id: CorrelationId;
     kind: TableBlock.kind;
