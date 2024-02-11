@@ -77,6 +77,9 @@ class UserFeatureFlagsControls(CompositeValue):
 
     controls: Dict[UserFeature, FeatureControl]
 
+    def standard_flag_for(self, feature: UserFeature) -> bool:
+        return self.controls[feature].standard_flag
+
     def validate_and_complete(
         self,
         feature_flags_delta: UserFeatureFlags,
@@ -125,6 +128,9 @@ class WorkspaceFeatureFlagsControls(CompositeValue):
     """Feature settings controls for the workspace."""
 
     controls: Dict[WorkspaceFeature, FeatureControl]
+
+    def standard_flag_for(self, feature: WorkspaceFeature) -> bool:
+        return self.controls[feature].standard_flag
 
     def validate_and_complete(
         self,

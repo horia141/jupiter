@@ -14,10 +14,12 @@ from typing import (
     cast,
     get_args,
 )
-from jupiter.core.framework.realm import DatabaseRealm, WebRealm
+from fastapi.responses import JSONResponse
+from jupiter.core.framework.realm import DatabaseRealm, WebRealm, RealmThing
 
 import inflection
 from jupiter.core.framework.thing import Thing
+from jupiter.core.framework.value import EnumValue
 from pydantic import BaseModel, create_model, validator
 import uvicorn
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -56,6 +58,7 @@ from jupiter.core.utils.progress_reporter import (
 from jupiter.webapi.time_provider import CronRunTimeProvider, PerRequestTimeProvider
 from jupiter.webapi.websocket_progress_reporter import WebsocketProgressReporterFactory
 from starlette.middleware.base import BaseHTTPMiddleware
+from fastapi.openapi.utils import get_openapi
 
 STANDARD_RESPONSES: dict[int | str, dict[str, Any]] = {
     410: {"description": "Workspace Or User Not Found", "content": {"plain/text": {}}},
@@ -123,7 +126,6 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
 
     _realm_codec_registry: Final[RealmCodecRegistry]
     _args_type: type[UseCaseArgsBase]
-    _pydantic_arg_model: type[BaseModel]
     _result_type: type[UseCaseResultBase | None]
     _use_case: UseCaseT
     _root_module: Final[types.ModuleType]
@@ -137,7 +139,6 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
         """Constructor."""
         self._realm_codec_registry = realm_codec_registry
         self._args_type = self._infer_args_class(use_case)
-        self._pydantic_arg_model = self._build_args_model(realm_codec_registry, self._args_type)
         self._result_type = self._infer_result_class(use_case)
         self._use_case = use_case
         self._root_module = root_module
@@ -163,24 +164,6 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
             if len(args) > 1:
                 return cast(type[UseCaseResultBase | None], args[1])
         raise Exception("No result class found")
-
-    @staticmethod
-    def _build_args_model(realm_codec_registry: RealmCodecRegistry, the_type: type[UseCaseArgsBase]) -> type[BaseModel]:
-        fields = {}
-        validators = {}
-
-        for field in dataclasses.fields(the_type):
-            real_type, is_optional = normalize_optional(field.type)
-            if is_optional:
-                fields[field.name] = (field.type, None)
-            else:
-                fields[field.name] = (field.type, ...)
-            field_decoder = realm_codec_registry.get_decoder(field.type, WebRealm)
-            validators[field.name] = validator(field.name, pre=True, allow_reuse=True)(lambda cls, v: field_decoder.decode(v))
-
-        model = create_model(the_type.__name__, **fields, __validators__=validators)
-
-        return model
 
     def _build_http_name(self) -> str:
         return inflection.dasherize(
@@ -223,16 +206,20 @@ class GuestMutationCommand(
         @app.post(
             f"/{self._build_http_name()}",
             name=self._build_api_name(),
-            response_model=self._result_type,
             summary=self._build_description(),
             description=self._build_description(),
             tags=[self._build_tag()],
             **STANDARD_CONFIG,
         )
-        async def do_it(args: self._pydantic_arg_model, session: GuestSession) -> UseCaseResultT:  # type: ignore[name-defined]
-            return cast(
-                UseCaseResultT, (await self._use_case.execute(session, args))[1]
+        async def do_it(request: Request, session: GuestSession):  # type: ignore[name-defined]
+            args_decoder = self._realm_codec_registry.get_decoder(self._args_type, WebRealm)
+            decoded_args = args_decoder.decode(await request.json())
+            result = cast(
+                UseCaseResultT, (await self._use_case.execute(session, decoded_args))[1]
             )
+            result_encoder = self._realm_codec_registry.get_encoder(self._result_type, WebRealm)
+            encoded_result = result_encoder.encode(result)
+            return encoded_result
 
 
 GuestReadonlyCommandUseCase = TypeVar(
@@ -253,16 +240,20 @@ class GuestReadonlyCommand(
         @app.post(
             f"/{self._build_http_name()}",
             name=self._build_api_name(),
-            response_model=self._result_type,
             summary=self._build_description(),
             description=self._build_description(),
             tags=[self._build_tag()],
             **STANDARD_CONFIG,
         )
-        async def do_it(args: self._pydantic_arg_model, session: GuestSession) -> UseCaseResultT:  # type: ignore[name-defined]
-            return cast(
-                UseCaseResultT, (await self._use_case.execute(session, args))[1]
+        async def do_it(request: Request, session: GuestSession):  # type: ignore[name-defined]
+            args_decoder = self._realm_codec_registry.get_decoder(self._args_type, WebRealm)
+            decoded_args = args_decoder.decode(await request.json())
+            result = cast(
+                UseCaseResultT, (await self._use_case.execute(session, decoded_args))[1]
             )
+            result_encoder = self._realm_codec_registry.get_encoder(self._result_type, WebRealm)
+            encoded_result = result_encoder.encode(result)
+            return encoded_result
 
 
 LoggedInMutationCommandUseCase = TypeVar(
@@ -283,16 +274,20 @@ class LoggedInMutationCommand(
         @app.post(
             f"/{self._build_http_name()}",
             name=self._build_api_name(),
-            response_model=self._result_type,
             summary=self._build_description(),
             description=self._build_description(),
             tags=[self._build_tag()],
             **STANDARD_CONFIG,
         )
-        async def do_it(args: self._pydantic_arg_model, session: LoggedInSession) -> UseCaseResultT:  # type: ignore[name-defined]
-            return cast(
-                UseCaseResultT, (await self._use_case.execute(session, args))[1]
+        async def do_it(request: Request, session: LoggedInSession):  # type: ignore[name-defined]
+            args_decoder = self._realm_codec_registry.get_decoder(self._args_type, WebRealm)
+            decoded_args = args_decoder.decode(await request.json())
+            result = cast(
+                UseCaseResultT, (await self._use_case.execute(session, decoded_args))[1]
             )
+            result_encoder = self._realm_codec_registry.get_encoder(self._result_type, WebRealm)
+            encoded_result = result_encoder.encode(result)
+            return encoded_result
 
 
 LoggedInReadonlyCommandUseCase = TypeVar(
@@ -315,16 +310,20 @@ class LoggedInReadonlyCommand(
         @app.post(
             f"/{self._build_http_name()}",
             name=self._build_api_name(),
-            response_model=self._result_type,
             summary=self._build_description(),
             description=self._build_description(),
             tags=[self._build_tag()],
             **STANDARD_CONFIG,
         )
-        async def do_it(args: self._pydantic_arg_model, session: LoggedInSession) -> UseCaseResultT:  # type: ignore[name-defined]
-            return cast(
-                UseCaseResultT, (await self._use_case.execute(session, args))[1]
+        async def do_it(request: Request, session: LoggedInSession):  # type: ignore[name-defined]
+            args_decoder = self._realm_codec_registry.get_decoder(self._args_type, WebRealm)
+            decoded_args = args_decoder.decode(await request.json())
+            result = cast(
+                UseCaseResultT, (await self._use_case.execute(session, decoded_args))[1]
             )
+            result_encoder = self._realm_codec_registry.get_encoder(self._result_type, WebRealm)
+            encoded_result = result_encoder.encode(result)
+            return encoded_result
 
 
 BackgroundMutationUseCase = TypeVar(
@@ -412,6 +411,7 @@ class WebServiceApp:
             docs_url="/docs" if global_properties.env.is_development else None,
             redoc_url="/redoc" if global_properties.env.is_development else None,
         )
+        self._fast_app.openapi = self._custom_openapi
         self._scheduler = AsyncIOScheduler()
 
     @staticmethod
@@ -604,3 +604,43 @@ class WebServiceApp:
             # raise Exception(f"Unsupported use case type {use_case_type}")
 
         return self
+    
+    def _custom_openapi(self):
+
+        def build_enum_value_schema(enum_value: type[EnumValue]):
+            return {
+                "title": enum_value.__name__,
+                "enum": enum_value.get_all_values(),
+                "description": enum_value.__doc__
+            }
+
+        if self._fast_app.openapi_schema:
+            return self._fast_app.openapi_schema
+        openapi_schema = get_openapi(
+            title="Jupiter API",
+            version="2.5.0",
+            description="Jupiter API",
+            routes=self._fast_app.routes,
+        )
+
+        # Generate all components
+
+        openapi_schema["components"]["schemas"] = {}
+
+        # Work on enum values as string
+
+        from rich import print
+        for enum_type in self._realm_codec_registry.get_all_registered_types(EnumValue, WebRealm):
+            openapi_schema["components"]["schemas"][enum_type.__name__] = build_enum_value_schema(enum_type)
+            print(enum_type)
+        # Work on atomic values
+        # Work on composite values
+        # Work on entities
+        # Work on records
+        # Work on args
+        # Work on result
+
+        # Link api with components
+
+        self._fast_app.openapi_schema = openapi_schema
+        return self._fast_app.openapi_schema

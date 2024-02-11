@@ -1,9 +1,10 @@
 """A realm denotes the storage existance and validation correctness of a particular Jupiter concept (value, record, entity)."""
 import abc
-from typing import ForwardRef, Generic, Mapping, TypeVar, Union
+from typing import ForwardRef, Generic, Iterator, Mapping, TypeVar, Union
 
 from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.thing import Thing
+from jupiter.core.framework.update_action import UpdateAction
 
 
 class Realm:
@@ -34,6 +35,7 @@ AllRealms = DatabaseRealm | SearchRealm | WebRealm | CliRealm | EmailRealm
 
 DomainThing = (
     Thing
+    | UpdateAction["DomainThing"]
     | Union[Thing, Thing]
     | Union[Thing, Thing, Thing]
     | Union[Thing, Thing, Thing, Thing]
@@ -71,6 +73,10 @@ class RealmCodecRegistry(abc.ABC):
     """A registry for realm codecs."""
 
     @abc.abstractmethod
+    def get_all_registered_types(self, base_type: type[Thing], realm: type[Realm]) -> Iterator[type[Thing]]:
+        """Get all types registered that derive from base type."""
+
+    @abc.abstractmethod
     def get_encoder(
         self,
         concept_type: type[_DomainThingT] | ForwardRef | str,
@@ -92,6 +98,10 @@ class RealmCodecRegistry(abc.ABC):
 class PlaceholderRealmCodecRegistry(RealmCodecRegistry):
     """A registry for realm codecs."""
 
+    def get_all_registered_types(self, base_type: type[Thing], realm: type[Realm]) -> Iterator[type[Thing]]:
+        """Get all types registered that derive from base type."""
+        raise NotImplementedError()
+
     def get_encoder(
         self,
         concept_type: type[_DomainThingT] | ForwardRef | str,
@@ -99,7 +109,7 @@ class PlaceholderRealmCodecRegistry(RealmCodecRegistry):
         root_type: type[DomainThing] | None = None,
     ) -> RealmEncoder[_DomainThingT, _RealmT]:
         """Get an encoder for a realm and a concept type."""
-        raise NotImplementedError
+        raise NotImplementedError()
 
     def get_decoder(
         self,
@@ -108,7 +118,7 @@ class PlaceholderRealmCodecRegistry(RealmCodecRegistry):
         root_type: type[DomainThing] | None = None,
     ) -> RealmDecoder[_DomainThingT, _RealmT]:
         """Get a decoder for a realm and a concept type."""
-        raise NotImplementedError
+        raise NotImplementedError()
 
 
 PROVIDE_VIA_REGISTRY = PlaceholderRealmCodecRegistry()

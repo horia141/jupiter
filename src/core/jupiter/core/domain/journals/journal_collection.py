@@ -47,8 +47,8 @@ class JournalCollection(TrunkEntity):
             ctx,
             workspace=ParentLink(workspace_ref_id),
             periods=periods,
-            writing_project_ref_id=writing_project_ref_id,
-            writing_gen_params=RecurringTaskGenParams(
+            writing_task_project_ref_id=writing_project_ref_id,
+            writing_task_gen_params=RecurringTaskGenParams(
                 period=RecurringTaskPeriod.DAILY,
                 eisen=writing_task_eisen,
                 difficulty=writing_task_difficulty,

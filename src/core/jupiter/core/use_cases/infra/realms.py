@@ -1438,6 +1438,24 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                     )
 
         return registry
+    
+    def get_all_registered_types(self, base_type: type[Thing], realm: type[Realm]) -> Iterator[type[Thing]]:
+        r"""Get all types registered that derive from base type."""
+        yielded_types: set[type[Thing]] = set()
+
+        for (the_type, type_realm) in self._encoders_registry.keys():
+            if the_type in yielded_types:
+                continue
+            if issubclass(the_type, base_type) and (type_realm is realm or type_realm is DatabaseRealm):
+                yielded_types.add(the_type)
+                yield the_type
+
+        for (the_type, type_realm) in self._decoders_registry.keys():
+            if the_type in yielded_types:
+                continue
+            if issubclass(the_type, base_type) and (type_realm is realm or type_realm is DatabaseRealm):
+                yielded_types.add(the_type)
+                yield the_type
 
     def get_encoder(
         self,
@@ -1597,7 +1615,7 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
             elif thing_type_origin is UpdateAction and realm is WebRealm:
                 update_action_type = cast(type[DomainThing] | ForwardRef | str, get_args(thing_type)[0])
                 return cast(
-                    RealmEncoder[_DomainThingT, _RealmT],
+                    RealmDecoder[_DomainThingT, _RealmT],
                     _UpdateActionWebDecoder(
                         self, cast(type[DomainThing], root_type), update_action_type
                     )

@@ -3,7 +3,6 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { ChangePasswordArgs } from '../models/ChangePasswordArgs';
-import type { ResetPasswordArgs } from '../models/ResetPasswordArgs';
 import type { ResetPasswordResult } from '../models/ResetPasswordResult';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
@@ -34,22 +33,16 @@ export class AuthService {
     /**
      * Use case for reseting a password.
      * Use case for reseting a password.
-     * @param requestBody
      * @returns ResetPasswordResult Successful Response
      * @throws ApiError
      */
-    public resetPassword(
-        requestBody: ResetPasswordArgs,
-    ): CancelablePromise<ResetPasswordResult> {
+    public resetPassword(): CancelablePromise<ResetPasswordResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/reset-password',
-            body: requestBody,
-            mediaType: 'application/json',
             errors: {
                 406: `Feature Not Available`,
                 410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
             },
         });
     }
