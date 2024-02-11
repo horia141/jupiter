@@ -75,7 +75,7 @@ async def main() -> None:
     search_storage_engine = SqliteSearchStorageEngine(
         realm_codec_registry, sqlite_connection
     )
-    usecase_storage_engine = SqliteUseCaseStorageEngine(sqlite_connection)
+    usecase_storage_engine = SqliteUseCaseStorageEngine(realm_codec_registry, sqlite_connection)
 
     auth_token_stamper = AuthTokenStamper(
         auth_token_secret=global_properties.auth_token_secret,

@@ -135,6 +135,7 @@ class SqliteEntityRepository(Generic[_EntityT], abc.ABC):
                 ) from err
         entity = entity.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
         await upsert_events(
+            self._realm_codec_registry,
             self._connection,
             self._event_table,
             entity,
@@ -163,6 +164,7 @@ class SqliteEntityRepository(Generic[_EntityT], abc.ABC):
                 f"Entity of type {entity.__class__} and id {str(entity.ref_id)} not found."
             )
         await upsert_events(
+            self._realm_codec_registry,
             self._connection,
             self._event_table,
             entity,

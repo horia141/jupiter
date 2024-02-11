@@ -79,7 +79,7 @@ async def main() -> None:
     search_storage_engine = SqliteSearchStorageEngine(
         realm_codec_registry, sqlite_connection
     )
-    usecase_storage_engine = SqliteUseCaseStorageEngine(sqlite_connection)
+    usecase_storage_engine = SqliteUseCaseStorageEngine(realm_codec_registry, sqlite_connection)
 
     session_storage = SessionStorage(global_properties.session_info_path)
 

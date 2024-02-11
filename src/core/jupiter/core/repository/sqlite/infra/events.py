@@ -1,6 +1,7 @@
 """Common toolin for SQLite repositories."""
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.entity import Entity
+from jupiter.core.framework.realm import RealmCodecRegistry
 from sqlalchemy import (
     JSON,
     Column,
@@ -39,6 +40,7 @@ def build_event_table(entity_table: Table, metadata: MetaData) -> Table:
 
 
 async def upsert_events(
+    realm_codec_registry: RealmCodecRegistry,
     connection: AsyncConnection,
     event_table: Table,
     aggreggate_root: Entity,
@@ -56,7 +58,7 @@ async def upsert_events(
                 source=event.source.to_db(),
                 owner_version=event.entity_version,
                 kind=event.kind.to_db(),
-                data=event.to_serializable_dict(),
+                data=event.to_serializable_dict(realm_codec_registry),
             ),
             # .on_conflict_do_nothing(
             #    index_elements=["owner_ref_id", "timestamp", "session_index", "name"]

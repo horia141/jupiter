@@ -18,7 +18,7 @@ from jupiter.core.domain.named_entity_tag import NamedEntityTag
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.entity import CrownEntity
-from jupiter.core.framework.json import JSONDictType
+from jupiter.core.framework.realm import RealmThing
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     ProgressReporterFactory,
@@ -68,7 +68,7 @@ class _WebsocketHandle:
             await self._websocket.close()
         self._websocket = None
 
-    async def send_json(self, data: JSONDictType) -> None:
+    async def send_json(self, data: RealmThing) -> None:
         """Send some json down the websocket."""
         loop = asyncio.get_running_loop()
         task = loop.create_task(self._try_send_json(data))
@@ -80,7 +80,7 @@ class _WebsocketHandle:
         for task in self._send_tasks_ref:
             task.cancel()
 
-    async def _try_send_json(self, data: JSONDictType) -> None:
+    async def _try_send_json(self, data: RealmThing) -> None:
         if self._websocket is None:
             return
         try:
