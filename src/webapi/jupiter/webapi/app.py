@@ -18,10 +18,12 @@ from typing import (
     get_origin,
 )
 from fastapi.responses import JSONResponse
+from jupiter.core.framework.entity import Entity, ParentLink
 from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.realm import DatabaseRealm, DomainThing, WebRealm, RealmThing
 
 import inflection
+from jupiter.core.framework.record import Record
 from jupiter.core.framework.thing import Thing
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.value import AtomicValue, CompositeValue, EnumValue
@@ -220,7 +222,7 @@ class GuestMutationCommand(
             tags=[self._build_tag()],
             **STANDARD_CONFIG,
         )
-        async def do_it(request: Request, session: GuestSession):  # type: ignore[name-defined]
+        async def do_it(request: Request, session: GuestSession):  # type: ignore[no-untyped-def]
             args_decoder = self._realm_codec_registry.get_decoder(self._args_type, WebRealm)
             decoded_args = args_decoder.decode(await request.json())
             result = cast(
@@ -254,7 +256,7 @@ class GuestReadonlyCommand(
             tags=[self._build_tag()],
             **STANDARD_CONFIG,
         )
-        async def do_it(request: Request, session: GuestSession):  # type: ignore[name-defined]
+        async def do_it(request: Request, session: GuestSession):  # type: ignore[no-untyped-def]
             args_decoder = self._realm_codec_registry.get_decoder(self._args_type, WebRealm)
             decoded_args = args_decoder.decode(await request.json())
             result = cast(
@@ -288,7 +290,7 @@ class LoggedInMutationCommand(
             tags=[self._build_tag()],
             **STANDARD_CONFIG,
         )
-        async def do_it(request: Request, session: LoggedInSession):  # type: ignore[name-defined]
+        async def do_it(request: Request, session: LoggedInSession):  # type: ignore[no-untyped-def]
             args_decoder = self._realm_codec_registry.get_decoder(self._args_type, WebRealm)
             decoded_args = args_decoder.decode(await request.json())
             result = cast(
@@ -324,7 +326,7 @@ class LoggedInReadonlyCommand(
             tags=[self._build_tag()],
             **STANDARD_CONFIG,
         )
-        async def do_it(request: Request, session: LoggedInSession):  # type: ignore[name-defined]
+        async def do_it(request: Request, session: LoggedInSession):  # type: ignore[no-untyped-def]
             args_decoder = self._realm_codec_registry.get_decoder(self._args_type, WebRealm)
             decoded_args = args_decoder.decode(await request.json())
             result = cast(
@@ -420,7 +422,7 @@ class WebServiceApp:
             docs_url="/docs" if global_properties.env.is_development else None,
             redoc_url="/redoc" if global_properties.env.is_development else None,
         )
-        self._fast_app.openapi = self._custom_openapi
+        self._fast_app.openapi = self._custom_openapi  # type: ignore[method-assign]
         self._scheduler = AsyncIOScheduler()
 
     @staticmethod
@@ -614,7 +616,7 @@ class WebServiceApp:
 
         return self
     
-    def _custom_openapi(self):
+    def _custom_openapi(self) -> dict[str, Any]:  # type: ignore
 
         def build_primitive_type(primitive_type: type[Primitive]) -> str:
             if primitive_type is type(None):
@@ -638,7 +640,7 @@ class WebServiceApp:
             else:
                 raise Exception(f"Invalid primitive type {primitive_type}")
             
-        def build_composite_field(field: dataclasses.Field, field_type: type[Thing]):
+        def build_composite_field(field: dataclasses.Field[DomainThing], field_type: type[DomainThing] | ForwardRef | str | type[ParentLink]) -> dict[str, Any]:
             if isinstance(field_type, typing._GenericAlias) and field_type.__name__ == "Literal":  # type: ignore
                 return {
                     "title": field.name.capitalize(),
@@ -650,6 +652,11 @@ class WebServiceApp:
             elif isinstance(field_type, str):
                 return {
                     "$ref": f"#/components/schemas/{field_type}"
+                }
+            elif field_type is ParentLink:
+                return {
+                    "title": f"{field.name.capitalize()} RefId",
+                    "type": "string"
                 }
             elif is_primitive_type(field_type):
                 return {
@@ -723,27 +730,27 @@ class WebServiceApp:
                 raise Exception(f"Invalid field {field.name} of type {field_type}")
 
 
-        def build_enum_value_schema(enum_value_type: type[EnumValue]):
+        def build_enum_value_schema(enum_value_type: type[EnumValue]) -> dict[str, Any]:
             return {
                 "title": enum_value_type.__name__,
                 "description": enum_value_type.__doc__,
                 "enum": enum_value_type.get_all_values(),
             }
         
-        def build_atomic_value_schema(atomic_value_type: type[AtomicValue]):
+        def build_atomic_value_schema(atomic_value_type: type[AtomicValue]) -> dict[str, Any]:
             return {
                 "title": atomic_value_type.__name__,
                 "description": atomic_value_type.__doc__,
                 "type": build_primitive_type(atomic_value_type.base_type_hack()),
             }
         
-        def build_composite_value_schema(composite_value_type: type[CompositeValue]):
+        def build_composite_schema(composite_value_type: type[CompositeValue | Entity | Record | UseCaseArgsBase | UseCaseResultBase]) -> dict[str, Any]:
             return {
                 "title": composite_value_type.__name__,
                 "description": composite_value_type.__doc__,
                 "type": "object",
-                "required": [f.name for f in dataclasses.fields(composite_value_type) if not normalize_optional(f.type)[1]],
-                "properties": {f.name: build_composite_field(f, f.type) for f in dataclasses.fields(composite_value_type)}
+                "required": [f.name for f in dataclasses.fields(composite_value_type) if f.name is not "events" and not normalize_optional(f.type)[1]],
+                "properties": {f.name: build_composite_field(f, f.type) for f in dataclasses.fields(composite_value_type) if f.name is not "events"}
             }
 
         if self._fast_app.openapi_schema:
@@ -759,27 +766,27 @@ class WebServiceApp:
 
         openapi_schema["components"]["schemas"] = {}
 
-        # Work on enum values as string
-
-        from rich import print
         for enum_value_type in self._realm_codec_registry.get_all_registered_types(EnumValue, WebRealm):
             openapi_schema["components"]["schemas"][enum_value_type.__name__] = build_enum_value_schema(enum_value_type)
 
-        # Work on atomic values
-            
-        for atomic_value_type in self._realm_codec_registry.get_all_registered_types(AtomicValue, WebRealm):
+        for atomic_value_type in self._realm_codec_registry.get_all_registered_types(AtomicValue, WebRealm):  # type: ignore[type-abstract]
             openapi_schema["components"]["schemas"][atomic_value_type.__name__] = build_atomic_value_schema(atomic_value_type)
 
-        # Work on composite values
-            
         for composite_value_type in self._realm_codec_registry.get_all_registered_types(CompositeValue, WebRealm):
-            openapi_schema["components"]["schemas"][composite_value_type.__name__] = build_composite_value_schema(composite_value_type)
+            openapi_schema["components"]["schemas"][composite_value_type.__name__] = build_composite_schema(composite_value_type)
         
-        # Work on entities
-        # Work on records
-        # Work on args
-        # Work on result
+        for entity_type in self._realm_codec_registry.get_all_registered_types(Entity, WebRealm):
+            openapi_schema["components"]["schemas"][entity_type.__name__] = build_composite_schema(entity_type)
 
+        for record_type in self._realm_codec_registry.get_all_registered_types(Record, WebRealm):
+            openapi_schema["components"]["schemas"][record_type.__name__] = build_composite_schema(record_type)
+
+        for use_case_args_type in self._realm_codec_registry.get_all_registered_types(UseCaseArgsBase, WebRealm):
+            openapi_schema["components"]["schemas"][use_case_args_type.__name__] = build_composite_schema(use_case_args_type)
+        
+        for use_case_result_type in self._realm_codec_registry.get_all_registered_types(UseCaseResultBase, WebRealm):
+            openapi_schema["components"]["schemas"][use_case_result_type.__name__] = build_composite_schema(use_case_result_type)
+        
         # Link api with components
 
         self._fast_app.openapi_schema = openapi_schema

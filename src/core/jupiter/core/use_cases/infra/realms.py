@@ -1439,7 +1439,7 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
 
         return registry
     
-    def get_all_registered_types(self, base_type: type[Thing], realm: type[Realm]) -> Iterator[type[Thing]]:
+    def get_all_registered_types(self, base_type: type[_DomainThingT], realm: type[Realm]) -> Iterator[type[_DomainThingT]]:
         r"""Get all types registered that derive from base type."""
         yielded_types: set[type[Thing]] = set()
 

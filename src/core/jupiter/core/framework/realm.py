@@ -73,7 +73,7 @@ class RealmCodecRegistry(abc.ABC):
     """A registry for realm codecs."""
 
     @abc.abstractmethod
-    def get_all_registered_types(self, base_type: type[Thing], realm: type[Realm]) -> Iterator[type[Thing]]:
+    def get_all_registered_types(self, base_type: type[_DomainThingT], realm: type[Realm]) -> Iterator[type[_DomainThingT]]:
         """Get all types registered that derive from base type."""
 
     @abc.abstractmethod
@@ -98,7 +98,7 @@ class RealmCodecRegistry(abc.ABC):
 class PlaceholderRealmCodecRegistry(RealmCodecRegistry):
     """A registry for realm codecs."""
 
-    def get_all_registered_types(self, base_type: type[Thing], realm: type[Realm]) -> Iterator[type[Thing]]:
+    def get_all_registered_types(self, base_type: type[_DomainThingT], realm: type[Realm]) -> Iterator[type[_DomainThingT]]:
         """Get all types registered that derive from base type."""
         raise NotImplementedError()
 
