@@ -1,4 +1,5 @@
 """Application-specific realm helpers."""
+import abc
 import dataclasses
 import types
 import typing
@@ -461,6 +462,47 @@ class _StandardPrimitiveDatabaseDecoder(
             )
 
         return cast(_PrimitiveT, value)
+    
+
+class PrimitiveAtomicValueDatabaseEncoder(
+    Generic[_AtomicValueT, _PrimitiveT], RealmEncoder[_AtomicValueT, DatabaseRealm], abc.ABC
+):
+    """An encoder for atomic values."""
+
+    def encode(self, value: _AtomicValueT) -> _PrimitiveT:
+        """Encode a realm to a string."""
+        return self.to_primitive(value)
+        
+    @abc.abstractmethod
+    def to_primitive(self, value: _AtomicValueT) -> _PrimitiveT:
+        """Return a primitive form of this atomic value."""
+
+
+class PrimitiveAtomicValueDatabaseDecoder(
+    Generic[_AtomicValueT, _PrimitiveT], RealmDecoder[_AtomicValueT, DatabaseRealm], abc.ABC
+):
+    """An encoder for atomic values."""
+
+    _primitive_type: type[_PrimitiveT]
+
+    def __init__(self) -> None:
+        self._primitive_type = cast(type[_PrimitiveT], get_args(self.__class__.__orig_bases__[0])[1])
+
+    def decode(self, value: RealmThing) -> _AtomicValueT:
+        """Decode a realm from a string."""
+        if not isinstance(
+            value, self._primitive_type
+        ):
+
+            raise RealmDecodingError(
+                f"Expected value for in {self.__class__} to be a primitive of type {self._primitive_type}"
+            )
+
+        return self.from_raw(value)
+
+    @abc.abstractmethod
+    def from_raw(self, primitive: _PrimitiveT) -> _AtomicValueT:
+        """Transform a primitive form of this atomic value."""
 
 
 class _StandardAtomicValueDatabaseEncoder(

@@ -7,6 +7,7 @@ from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.secure import secure_class
 from jupiter.core.framework.value import AtomicValue, value
+from jupiter.core.use_cases.infra.realms import PrimitiveAtomicValueDatabaseDecoder, PrimitiveAtomicValueDatabaseEncoder
 
 _JWT_RE: Final[Pattern[str]] = re.compile(
     r"([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_\-\+\/=]*)"
@@ -41,3 +42,16 @@ class AuthTokenExt(AtomicValue):
         if not _JWT_RE.match(auth_token_str_raw):
             raise InputValidationError("Expected auth token to be a valid JWT")
         return auth_token_str_raw
+
+class AutoTokenExtDatabaseEncoder(PrimitiveAtomicValueDatabaseEncoder[AuthTokenExt, str]):
+
+    def to_primitive(self, value: AuthTokenExt) -> str:
+        return value.auth_token_str
+    
+
+class AuthTokenExtDatabaseDecoder(PrimitiveAtomicValueDatabaseDecoder[AuthTokenExt, str]):
+
+    def from_raw(self, primitive: str) -> AuthTokenExt:
+        if not _JWT_RE.match(primitive):
+            raise InputValidationError("Expected auth token to be a valid JWT")
+        return AuthTokenExt(primitive)
