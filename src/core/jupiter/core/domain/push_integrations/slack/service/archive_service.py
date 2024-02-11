@@ -9,10 +9,11 @@ from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.use_case import ProgressReporter
 from jupiter.core.framework.use_case_io import use_case_result_part
+from jupiter.core.framework.value import CompositeValue, value
 
 
-@use_case_result_part
-class SlackTaskArchiveServiceResult:
+@value
+class SlackTaskArchiveServiceResult(CompositeValue):
     """The result of the archive operation."""
 
     archived_inbox_tasks: list[InboxTask]

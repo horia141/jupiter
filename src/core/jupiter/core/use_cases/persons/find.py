@@ -37,7 +37,7 @@ class PersonFindArgs(UseCaseArgsBase):
 
 
 @use_case_result_part
-class PersonFindResultEntry:
+class PersonFindResultEntry(UseCaseResultBase):
     """A single person result."""
 
     person: Person

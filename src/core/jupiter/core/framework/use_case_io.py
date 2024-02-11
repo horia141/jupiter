@@ -56,5 +56,5 @@ def use_case_result(cls: type[_UseCaseResultT]) -> type[_UseCaseResultT]:
 
 
 @dataclass_transform()
-def use_case_result_part(cls: type[object]) -> type[object]:
+def use_case_result_part(cls: type[_UseCaseResultT]) -> type[_UseCaseResultT]:
     return dataclass(cls)

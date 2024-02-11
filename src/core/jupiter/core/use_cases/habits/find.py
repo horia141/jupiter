@@ -36,7 +36,7 @@ class HabitFindArgs(UseCaseArgsBase):
 
 
 @use_case_result_part
-class HabitFindResultEntry:
+class HabitFindResultEntry(UseCaseResultBase):
     """A single entry in the load all habits response."""
 
     habit: Habit

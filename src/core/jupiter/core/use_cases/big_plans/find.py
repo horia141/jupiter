@@ -36,7 +36,7 @@ class BigPlanFindArgs(UseCaseArgsBase):
 
 
 @use_case_result_part
-class BigPlanFindResultEntry:
+class BigPlanFindResultEntry(UseCaseResultBase):
     """A single big plan result."""
 
     big_plan: BigPlan

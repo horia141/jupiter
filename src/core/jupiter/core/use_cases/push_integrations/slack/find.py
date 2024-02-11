@@ -32,7 +32,7 @@ class SlackTaskFindArgs(UseCaseArgsBase):
 
 
 @use_case_result_part
-class SlackTaskFindResultEntry:
+class SlackTaskFindResultEntry(UseCaseResultBase):
     """A single slack task result."""
 
     slack_task: SlackTask

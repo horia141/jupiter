@@ -34,7 +34,7 @@ class DocFindArgs(UseCaseArgsBase):
 
 
 @use_case_result_part
-class DocFindResultEntry:
+class DocFindResultEntry(UseCaseResultBase):
     """A single entry in the load all docs response."""
 
     doc: Doc

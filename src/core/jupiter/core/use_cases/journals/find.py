@@ -32,7 +32,7 @@ class JournalFindArgs(UseCaseArgsBase):
 
 
 @use_case_result_part
-class JournalFindResultEntry:
+class JournalFindResultEntry(UseCaseResultBase):
     """Result part."""
 
     journal: Journal

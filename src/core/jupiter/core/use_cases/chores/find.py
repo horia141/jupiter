@@ -36,7 +36,7 @@ class ChoreFindArgs(UseCaseArgsBase):
 
 
 @use_case_result_part
-class ChoreFindResultEntry:
+class ChoreFindResultEntry(UseCaseResultBase):
     """A single entry in the load all chores response."""
 
     chore: Chore

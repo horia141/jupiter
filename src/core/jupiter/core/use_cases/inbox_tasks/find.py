@@ -46,7 +46,7 @@ class InboxTaskFindArgs(UseCaseArgsBase):
 
 
 @use_case_result_part
-class InboxTaskFindResultEntry:
+class InboxTaskFindResultEntry(UseCaseResultBase):
     """A single entry in the load all inbox tasks response."""
 
     inbox_task: InboxTask

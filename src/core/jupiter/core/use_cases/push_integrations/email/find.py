@@ -32,7 +32,7 @@ class EmailTaskFindArgs(UseCaseArgsBase):
 
 
 @use_case_result_part
-class EmailTaskFindResultEntry:
+class EmailTaskFindResultEntry(UseCaseResultBase):
     """A single email task result."""
 
     email_task: EmailTask

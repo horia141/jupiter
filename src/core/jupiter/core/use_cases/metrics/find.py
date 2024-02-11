@@ -41,7 +41,7 @@ class MetricFindArgs(UseCaseArgsBase):
 
 
 @use_case_result_part
-class MetricFindResponseEntry:
+class MetricFindResponseEntry(UseCaseResultBase):
     """A single entry in the LoadAllMetricsResponse."""
 
     metric: Metric

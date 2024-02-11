@@ -37,7 +37,7 @@ class SmartListFindArgs(UseCaseArgsBase):
 
 
 @use_case_result_part
-class SmartListFindResponseEntry:
+class SmartListFindResponseEntry(UseCaseResultBase):
     """A single entry in the LoadAllSmartListsResponse."""
 
     smart_list: SmartList
