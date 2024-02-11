@@ -6,6 +6,7 @@ from types import ModuleType, UnionType
 from typing import Any, TypeGuard, Union, get_args, get_origin
 
 from jupiter.core.framework.entity import Entity
+from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.record import Record
 from jupiter.core.framework.thing import Thing
 from jupiter.core.framework.use_case_io import UseCaseArgsBase, UseCaseResultBase
@@ -66,6 +67,21 @@ def is_thing_ish_type(  # type: ignore
                 UseCaseResultBase
             ),
         )
+    )
+
+def is_primitive_type(  # type: ignore
+    the_type: type[Any]
+) -> TypeGuard[type[Primitive]]:
+    return the_type in (
+        type(None),
+        bool,
+        int,
+        float,
+        str,
+        date,
+        datetime,
+        Date,
+        DateTime,
     )
 
 def normalize_optional(the_type: type[Any]) -> tuple[type[Any], bool]:  # type: ignore

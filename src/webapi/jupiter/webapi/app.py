@@ -2,24 +2,28 @@
 import abc
 import dataclasses
 import types
+import typing
 from typing import (
     Annotated,
     Any,
     Callable,
     Final,
+    ForwardRef,
     Generic,
     Iterator,
     Mapping,
     TypeVar,
     cast,
     get_args,
+    get_origin,
 )
 from fastapi.responses import JSONResponse
 from jupiter.core.framework.primitive import Primitive
-from jupiter.core.framework.realm import DatabaseRealm, WebRealm, RealmThing
+from jupiter.core.framework.realm import DatabaseRealm, DomainThing, WebRealm, RealmThing
 
 import inflection
 from jupiter.core.framework.thing import Thing
+from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.value import AtomicValue, CompositeValue, EnumValue
 from pydantic import BaseModel, create_model, validator
 import uvicorn
@@ -40,7 +44,7 @@ from jupiter.core.framework.use_case import (
     UseCaseSessionBase,
 )
 from jupiter.core.framework.use_case_io import UseCaseArgsBase, UseCaseResultBase
-from jupiter.core.framework.utils import find_all_modules, normalize_optional
+from jupiter.core.framework.utils import find_all_modules, is_primitive_type, is_thing_ish_type, normalize_optional
 from jupiter.core.use_cases.infra.storage_engine import UseCaseStorageEngine
 from jupiter.core.use_cases.infra.use_cases import (
     AppBackgroundMutationUseCase,
@@ -633,20 +637,113 @@ class WebServiceApp:
                 return "string"
             else:
                 raise Exception(f"Invalid primitive type {primitive_type}")
+            
+        def build_composite_field(field: dataclasses.Field, field_type: type[Thing]):
+            if isinstance(field_type, typing._GenericAlias) and field_type.__name__ == "Literal":  # type: ignore
+                return {
+                    "title": field.name.capitalize(),
+                    "enum": field_type.__args__,
+                    "type": "string"
+                }
+            elif isinstance(field_type, ForwardRef):
+                raise Exception(f"Invalid forward ref field {field.name} of type {field_type}")
+            elif isinstance(field_type, str):
+                return {
+                    "$ref": f"#/components/schemas/{field_type}"
+                }
+            elif is_primitive_type(field_type):
+                return {
+                    "title": field.name.capitalize(),
+                    "type": build_primitive_type(field_type)
+                }
+            elif is_thing_ish_type(field_type):
+                return {
+                    "$ref": f"#/components/schemas/{field_type.__name__}"
+                }
+            elif (field_type_origin := get_origin(field_type)) is not None:
+                if field_type_origin is typing.Union or (
+                    isinstance(field_type_origin, type)
+                    and issubclass(field_type_origin, types.UnionType)
+                ):
+                    field_type_no, is_optional = normalize_optional(field_type)
+                    if is_optional:
+                        return build_composite_field(field, field_type_no)
+                
+                    field_args = cast(
+                        list[type[DomainThing] | ForwardRef | str], get_args(field_type)
+                    )
+                    return {
+                        "anyOf": [build_composite_field(field, fa) for fa in field_args]
+                    }
+                elif field_type_origin is UpdateAction:
+                    update_action_type = cast(type[DomainThing] | ForwardRef | str, get_args(field_type)[0])
+                    return {
+                        "title": field.name.capitalize(),
+                        "type": "object",
+                        "required": ["should_change"],
+                        "properties": {
+                            "should_change": {
+                                "title": "Should Change",
+                                "type": "boolean"
+                            },
+                            "value": build_composite_field(field, update_action_type)
+                        }
+                    }
+                elif field_type_origin is list:
+                    list_item_type = cast(
+                        type[DomainThing] | ForwardRef | str, get_args(field_type)[0]
+                    )
+                    return {
+                        "type": "array",
+                        "items": build_composite_field(field, list_item_type)
+                    }
+                elif field_type_origin is set:
+                    list_item_type = cast(
+                        type[DomainThing] | ForwardRef | str, get_args(field_type)[0]
+                    )
+                    return {
+                        "uniqueItems": "true",
+                        "type": "array",
+                        "items": build_composite_field(field, list_item_type)
+                    }
+                elif field_type_origin is dict:
+                    dict_value_type = cast(
+                        type[DomainThing] | ForwardRef | str, get_args(field_type)[1]
+                    )
+                    return {
+                        "uniqueItems": "true",
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": build_composite_field(field, dict_value_type)
+                        }
+                    }
+                else:
+                    raise Exception(f"Invalid field {field.name} of type {field_type}")
+            else:
+                raise Exception(f"Invalid field {field.name} of type {field_type}")
 
 
         def build_enum_value_schema(enum_value_type: type[EnumValue]):
             return {
                 "title": enum_value_type.__name__,
+                "description": enum_value_type.__doc__,
                 "enum": enum_value_type.get_all_values(),
-                "description": enum_value_type.__doc__
             }
         
         def build_atomic_value_schema(atomic_value_type: type[AtomicValue]):
             return {
                 "title": atomic_value_type.__name__,
+                "description": atomic_value_type.__doc__,
                 "type": build_primitive_type(atomic_value_type.base_type_hack()),
-                "description": atomic_value_type.__doc__
+            }
+        
+        def build_composite_value_schema(composite_value_type: type[CompositeValue]):
+            return {
+                "title": composite_value_type.__name__,
+                "description": composite_value_type.__doc__,
+                "type": "object",
+                "required": [f.name for f in dataclasses.fields(composite_value_type) if not normalize_optional(f.type)[1]],
+                "properties": {f.name: build_composite_field(f, f.type) for f in dataclasses.fields(composite_value_type)}
             }
 
         if self._fast_app.openapi_schema:
@@ -675,9 +772,10 @@ class WebServiceApp:
 
         # Work on composite values
             
-        # for composite_value_type in self._realm_codec_registry.get_all_registered_types(CompositeValue, WebRealm):
-        #     openapi_schema["components"]["schema"][composite_value_type.__name__] = build_composite_value_schema(composite_value_type)
-        # # Work on entities
+        for composite_value_type in self._realm_codec_registry.get_all_registered_types(CompositeValue, WebRealm):
+            openapi_schema["components"]["schemas"][composite_value_type.__name__] = build_composite_value_schema(composite_value_type)
+        
+        # Work on entities
         # Work on records
         # Work on args
         # Work on result
