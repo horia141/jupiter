@@ -1,11 +1,9 @@
 """An environment for a Jupiter application."""
+from jupiter.core.framework.value import EnumValue, enum_value
 
 
-import enum
-
-
-@enum.unique
-class Env(enum.Enum):
+@enum_value
+class Env(EnumValue):
     """An environment for a Jupiter application."""
 
     PRODUCTION = "production"  # Something a real life user is interacting with

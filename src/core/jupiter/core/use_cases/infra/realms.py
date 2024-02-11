@@ -49,6 +49,7 @@ from jupiter.core.framework.realm import (
     RealmEncoder,
     RealmThing,
     WebRealm,
+    allowed_in_realm,
 )
 from jupiter.core.framework.record import Record
 from jupiter.core.framework.thing import Thing
@@ -1322,6 +1323,9 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                 )
 
             for atomic_value_type in extract_atomic_values(m):
+                if not allowed_in_realm(atomic_value_type, DatabaseRealm):
+                    continue
+
                 if not registry._has_encoder(atomic_value_type, DatabaseRealm):
                     if issubclass(atomic_value_type, EntityName):
                         registry._add_encoder(
@@ -1351,6 +1355,9 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                         )
 
             for composite_value_type in extract_composite_values(m):
+                if not allowed_in_realm(composite_value_type, DatabaseRealm):
+                    continue
+
                 if not registry._has_encoder(composite_value_type, DatabaseRealm):
                     registry._add_encoder(
                         composite_value_type,
@@ -1370,6 +1377,9 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                     )
 
             for enum_value_type in extract_enum_values(m):
+                if not allowed_in_realm(enum_value_type, DatabaseRealm):
+                    continue
+
                 if not registry._has_encoder(enum_value_type, DatabaseRealm):
                     registry._add_encoder(
                         enum_value_type,
@@ -1385,6 +1395,9 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                     )
 
             for entity in extract_entities(m):
+                if not allowed_in_realm(entity, DatabaseRealm):
+                    continue
+
                 if not registry._has_encoder(entity, DatabaseRealm):
                     registry._add_encoder(
                         entity,
@@ -1400,6 +1413,9 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                     )
 
             for record in extract_records(m):
+                if not allowed_in_realm(record, DatabaseRealm):
+                    continue
+
                 if not registry._has_encoder(record, DatabaseRealm):
                     registry._add_encoder(
                         record,
@@ -1415,6 +1431,9 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                     )
 
             for use_case_args in extract_use_case_args(m):
+                if not allowed_in_realm(use_case_args, CliRealm):
+                    continue
+
                 if not registry._has_decoder(use_case_args, CliRealm):
                     registry._add_decoder(
                         use_case_args,
@@ -1430,6 +1449,9 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                     )
 
             for use_case_result in extract_use_case_result(m):
+                if not allowed_in_realm(use_case_args, WebRealm):
+                    continue
+
                 if not registry._has_encoder(use_case_result, WebRealm):
                     registry._add_encoder(
                         use_case_result,
@@ -1446,12 +1468,16 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
         for (the_type, type_realm) in self._encoders_registry.keys():
             if the_type in yielded_types:
                 continue
+            if not allowed_in_realm(the_type, realm):
+                continue
             if issubclass(the_type, base_type) and (type_realm is realm or type_realm is DatabaseRealm):
                 yielded_types.add(the_type)
                 yield the_type
 
         for (the_type, type_realm) in self._decoders_registry.keys():
             if the_type in yielded_types:
+                continue
+            if not allowed_in_realm(the_type, realm):
                 continue
             if issubclass(the_type, base_type) and (type_realm is realm or type_realm is DatabaseRealm):
                 yielded_types.add(the_type)

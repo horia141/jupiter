@@ -1,6 +1,7 @@
 """A realm denotes the storage existance and validation correctness of a particular Jupiter concept (value, record, entity)."""
 import abc
-from typing import ForwardRef, Generic, Iterator, Mapping, TypeVar, Union
+from typing import Callable, ForwardRef, Generic, Iterator, Mapping, TypeVar, Union
+from jupiter.core.framework.concept import Concept
 
 from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.thing import Thing
@@ -122,3 +123,25 @@ class PlaceholderRealmCodecRegistry(RealmCodecRegistry):
 
 
 PROVIDE_VIA_REGISTRY = PlaceholderRealmCodecRegistry()
+
+_ThingT = TypeVar("_ThingT", bound=Thing)
+
+
+def only_in_realm(*realms: type[Realm]) -> Callable[[type[_ThingT]], type[_ThingT]]:
+    def decorator(cls: type[_ThingT]) -> type[_ThingT]:
+        setattr(cls, "__allowed_realms", list(realms))
+        return cls
+    
+    return decorator
+
+def allowed_in_realm(cls: type[_ThingT], realm: type[Realm]) -> bool:
+    """Check that a particular concep can be represented in a given realm."""
+    if not hasattr(cls, "__allowed_realms"):
+        return True
+    
+    allowed_realms = getattr(cls, "__allowed_realms")
+
+    if not isinstance(allowed_realms, list):
+        raise Exception("Invalid realms check")
+    
+    return realm in allowed_realms
