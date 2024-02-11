@@ -68,7 +68,7 @@ from pendulum.datetime import DateTime
 _RealmT = TypeVar("_RealmT", bound=Realm)
 _DomainThingT = TypeVar("_DomainThingT", bound=DomainThing)
 _PrimitiveT = TypeVar("_PrimitiveT", bound=Primitive)
-_AtomicValueT = TypeVar("_AtomicValueT", bound=AtomicValue)
+_AtomicValueT = TypeVar("_AtomicValueT", bound=AtomicValue[Primitive])
 _CompositeValueT = TypeVar("_CompositeValueT", bound=CompositeValue)
 _EnumValueT = TypeVar("_EnumValueT", bound=EnumValue)
 _EntityT = TypeVar("_EntityT", bound=Entity)
@@ -486,7 +486,7 @@ class PrimitiveAtomicValueDatabaseDecoder(
     _atomic_value_type: type[_AtomicValueT]
 
     def __init__(self) -> None:
-        self._atomic_value_type = cast(type[_AtomicValueT], get_args(self.__class__.__orig_bases__[0])[0])
+        self._atomic_value_type = cast(type[_AtomicValueT], get_args(self.__class__.__orig_bases__[0])[0])  # type: ignore[attr-defined]
 
     def decode(self, value: RealmThing) -> _AtomicValueT:
         """Decode a realm from a string."""
@@ -499,18 +499,18 @@ class PrimitiveAtomicValueDatabaseDecoder(
                 f"Expected value for in {self.__class__} to be a primitive of type {base_type_hack}"
             )
         
-        if base_type_hack is bool:
+        if base_type_hack is bool and isinstance(value, bool):
             return self.from_raw_bool(value)
-        elif base_type_hack is int:
+        elif base_type_hack is int and isinstance(value, int):
             return self.from_raw_int(value)
-        elif base_type_hack is float:
+        elif base_type_hack is float and isinstance(value, float):
             return self.from_raw_float(value)
-        elif base_type_hack is str:
+        elif base_type_hack is str and isinstance(value, str):
             return self.from_raw_str(value)
-        elif base_type_hack is Date:
-            return self.from_raw_date(value)
-        elif base_type_hack is DateTime:
+        elif base_type_hack is DateTime and isinstance(value, (datetime, DateTime)):
             return self.from_raw_datetime(value)
+        elif base_type_hack is Date and isinstance(value, (date, Date)):
+            return self.from_raw_date(value)
         else:
             raise Exception("Off the beaten codepath")
 
@@ -530,11 +530,11 @@ class PrimitiveAtomicValueDatabaseDecoder(
         """Transform a primitive form of this atomic value."""
         raise Exception("Off the beaten codepath")
     
-    def from_raw_date(self, primitive: Date) -> _AtomicValueT:
+    def from_raw_date(self, primitive: date | Date) -> _AtomicValueT:
         """Transform a primitive form of this atomic value."""
         raise Exception("Off the beaten codepath")
     
-    def from_raw_datetime(self, primitive: DateTime) -> _AtomicValueT:
+    def from_raw_datetime(self, primitive: datetime | DateTime) -> _AtomicValueT:
         """Transform a primitive form of this atomic value."""
         raise Exception("Off the beaten codepath")
 
@@ -1375,7 +1375,7 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                     )
 
                 if not registry._has_decoder(atomic_value_type, DatabaseRealm):
-                    if issubclass(atomic_value_type, EntityName):
+                    if not issubclass(atomic_value_type, EntityName):
                         continue
 
                     registry._add_decoder(

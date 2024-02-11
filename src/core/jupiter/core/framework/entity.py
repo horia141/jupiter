@@ -22,6 +22,7 @@ from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.concept import Concept
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.event import Event, EventKind
+from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.value import AtomicValue, EnumValue, Value
 from typing_extensions import dataclass_transform, get_args
 
@@ -175,9 +176,9 @@ class ParentLink:
 
 
 EntityLinkFilterRaw = (
-    None | AtomicValue | EnumValue | IsRefId | IsParentLink | IsOneOfRefId
+    None | AtomicValue[Primitive] | EnumValue | IsRefId | IsParentLink | IsOneOfRefId
 )
-EntityLinkFilterCompiled = None | AtomicValue | EnumValue | list[EntityId]
+EntityLinkFilterCompiled = None | AtomicValue[Primitive] | EnumValue | list[EntityId]
 EntityLinkFiltersRaw = dict[str, EntityLinkFilterRaw]
 EntityLinkFiltersCompiled = dict[str, EntityLinkFilterCompiled]
 

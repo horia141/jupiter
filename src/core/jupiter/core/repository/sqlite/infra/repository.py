@@ -589,7 +589,7 @@ class SqliteCrownEntityRepository(
         if not allow_archived:
             query_stmt = query_stmt.where(self._table.c.archived.is_(False))
 
-        query_stmt = compile_query_relative_to(query_stmt, self._table, kwargs)
+        query_stmt = compile_query_relative_to(self._realm_codec_registry, query_stmt, self._table, kwargs)
 
         results = await self._connection.execute(query_stmt)
         return [self._row_to_entity(row) for row in results]

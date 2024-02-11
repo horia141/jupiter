@@ -1,13 +1,14 @@
 """A simpler type of entity."""
 import dataclasses
 from dataclasses import dataclass
-from typing import Any, Callable, Generic, TypeVar, Union, cast, get_args, get_origin
+from typing import Any, Callable, Generic, TypeAlias, TypeVar, Union, cast, get_args, get_origin
 
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.concept import Concept
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import IsOneOfRefId, IsRefId, ParentLink
+from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.value import AtomicValue, EnumValue
 from typing_extensions import dataclass_transform
 
@@ -61,8 +62,8 @@ def record(cls: type[_RecordT]) -> type[_RecordT]:
     return dataclass(cls)
 
 
-RecordLinkFilterRaw = None | AtomicValue | EnumValue | IsRefId
-RecordLinkFilterCompiled = None | AtomicValue | EnumValue | EntityId
+RecordLinkFilterRaw: TypeAlias = (None | AtomicValue[Primitive] | EnumValue | IsRefId)
+RecordLinkFilterCompiled = (None | AtomicValue[Primitive] | EnumValue | EntityId)
 RecordLinkFiltersRaw = dict[str, RecordLinkFilterRaw]
 RecordLinkFiltersCompiled = dict[str, RecordLinkFilterCompiled]
 

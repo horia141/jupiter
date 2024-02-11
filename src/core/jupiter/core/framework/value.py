@@ -14,23 +14,23 @@ class Value(Concept):
     """A value object in the domain."""
 
 
-_ValueT = TypeVar("_ValueT", bound="AtomicValue[Any] | CompositeValue")  # type: ignore[misc]
+_ValueT = TypeVar("_ValueT", bound="AtomicValue[Primitive] | CompositeValue")
 
 
 @dataclass_transform()
-def value(cls: type[_ValueT]) -> type[_ValueT]: # type: ignore[misc]
+def value(cls: type[_ValueT]) -> type[_ValueT]:
     return dataclass(cls)
 
 
 @dataclass_transform()
-def hashable_value(cls: type[_ValueT]) -> type[_ValueT]: # type: ignore[misc]
+def hashable_value(cls: type[_ValueT]) -> type[_ValueT]:
     return dataclass(eq=True, unsafe_hash=True)(cls)
 
 
 
-_PrimitiveT = TypeVar("_PrimitiveT", bound=Primitive)
+_PrimitiveT = TypeVar("_PrimitiveT", bound=Primitive, covariant=True)
 
-_AtomicValueT = TypeVar("_AtomicValueT", bound="AtomicValue[Any]")  # type: ignore[misc]
+_AtomicValueT = TypeVar("_AtomicValueT", bound="AtomicValue[Primitive]")
 
 
 @dataclass
@@ -38,7 +38,7 @@ class AtomicValue(Generic[_PrimitiveT], Value,):
     """An atomic value object in the domain."""
 
     @classmethod
-    def base_type_hack(cls: type[_AtomicValueT]) -> type[_PrimitiveT]:   # type: ignore[misc]
+    def base_type_hack(cls: type[_AtomicValueT]) -> type[_PrimitiveT]:
         """Get the base type of this value."""
         return cast(type[_PrimitiveT], get_args(cls.__orig_bases__[0])[0])  # type: ignore[attr-defined]
 
