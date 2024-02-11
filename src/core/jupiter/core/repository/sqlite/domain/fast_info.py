@@ -3,7 +3,7 @@ from typing import Final, List
 
 from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.core.domain.chores.chore_name import ChoreName
-from jupiter.core.domain.core.entity_icon import EntityIcon
+from jupiter.core.domain.core.entity_icon import EntityIcon, EntityIconDatabaseDecoder
 from jupiter.core.domain.fast_info_repository import (
     BigPlanSummary,
     ChoreSummary,
@@ -21,11 +21,25 @@ from jupiter.core.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.core.domain.metrics.metric_name import MetricName
 from jupiter.core.domain.persons.person_name import PersonName
 from jupiter.core.domain.projects.project_name import ProjectName
+from jupiter.core.domain.smart_lists.smart_list_item_name import SmartListItemName
 from jupiter.core.domain.smart_lists.smart_list_name import SmartListName
 from jupiter.core.domain.vacations.vacation_name import VacationName
-from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.base.entity_id import EntityId, EntityIdDatabaseDecoder
+from jupiter.core.framework.base.entity_name import EntityNameDatabaseDecoder
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncConnection
+
+_ENTITY_ID_DECODER = EntityIdDatabaseDecoder()
+_VACATION_NAME_DECODER = EntityNameDatabaseDecoder(VacationName)
+_INBOX_TASK_NAME_DECODER = EntityNameDatabaseDecoder(InboxTaskName)
+_PROJECT_NAME_DECODER = EntityNameDatabaseDecoder(ProjectName)
+_HABIT_NAME_DECODER = EntityNameDatabaseDecoder(HabitName)
+_CHORE_NAME_DECODER = EntityNameDatabaseDecoder(ChoreName)
+_BIG_PLAN_NAME_DECODER = EntityNameDatabaseDecoder(BigPlanName)
+_SMART_LIST_NAME_DECODER = EntityNameDatabaseDecoder(SmartListName)
+_METRIC_NAME_DECODER = EntityNameDatabaseDecoder(MetricName)
+_PERSON_NAME_DECODER = EntityNameDatabaseDecoder(PersonName)
+_ENTITY_ICON_DECODER = EntityIconDatabaseDecoder()
 
 
 class SqliteFastInfoRepository(FastInfoRepository):
@@ -53,8 +67,8 @@ class SqliteFastInfoRepository(FastInfoRepository):
         ).fetchall()
         return [
             VacationSummary(
-                ref_id=EntityId.from_raw(str(row["ref_id"])),
-                name=VacationName.from_raw(row["name"]),
+                ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
+                name=_VACATION_NAME_DECODER.decode(row["name"]),
             )
             for row in result
         ]
@@ -75,8 +89,8 @@ class SqliteFastInfoRepository(FastInfoRepository):
         ).fetchall()
         return [
             ProjectSummary(
-                ref_id=EntityId.from_raw(str(row["ref_id"])),
-                name=ProjectName.from_raw(row["name"]),
+                ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
+                name=_PROJECT_NAME_DECODER.decode(row["name"]),
             )
             for row in result
         ]
@@ -97,8 +111,8 @@ class SqliteFastInfoRepository(FastInfoRepository):
         ).fetchall()
         return [
             InboxTaskSummary(
-                ref_id=EntityId.from_raw(str(row["ref_id"])),
-                name=InboxTaskName.from_raw(row["name"]),
+                ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
+                name=_INBOX_TASK_NAME_DECODER.decode(row["name"]),
             )
             for row in result
         ]
@@ -119,8 +133,8 @@ class SqliteFastInfoRepository(FastInfoRepository):
         ).fetchall()
         return [
             HabitSummary(
-                ref_id=EntityId.from_raw(str(row["ref_id"])),
-                name=HabitName.from_raw(row["name"]),
+                ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
+                name=_HABIT_NAME_DECODER.decode(row["name"]),
             )
             for row in result
         ]
@@ -141,8 +155,8 @@ class SqliteFastInfoRepository(FastInfoRepository):
         ).fetchall()
         return [
             ChoreSummary(
-                ref_id=EntityId.from_raw(str(row["ref_id"])),
-                name=ChoreName.from_raw(row["name"]),
+                ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
+                name=_CHORE_NAME_DECODER.decode(row["name"]),
             )
             for row in result
         ]
@@ -163,9 +177,9 @@ class SqliteFastInfoRepository(FastInfoRepository):
         ).fetchall()
         return [
             BigPlanSummary(
-                ref_id=EntityId.from_raw(str(row["ref_id"])),
-                name=BigPlanName.from_raw(row["name"]),
-                project_ref_id=EntityId.from_raw(str(row["project_ref_id"])),
+                ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
+                name=_BIG_PLAN_NAME_DECODER.decode(row["name"]),
+                project_ref_id=_ENTITY_ID_DECODER.decode(str(row["project_ref_id"])),
             )
             for row in result
         ]
@@ -186,9 +200,9 @@ class SqliteFastInfoRepository(FastInfoRepository):
         ).fetchall()
         return [
             SmartListSummary(
-                ref_id=EntityId.from_raw(str(row["ref_id"])),
-                name=SmartListName.from_raw(row["name"]),
-                icon=EntityIcon.from_raw(row["icon"]) if row["icon"] else None,
+                ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
+                name=_SMART_LIST_NAME_DECODER.decode(row["name"]),
+                icon=_ENTITY_ICON_DECODER.decode(row["icon"]) if row["icon"] else None,
             )
             for row in result
         ]
@@ -209,9 +223,9 @@ class SqliteFastInfoRepository(FastInfoRepository):
         ).fetchall()
         return [
             MetricSummary(
-                ref_id=EntityId.from_raw(str(row["ref_id"])),
-                name=MetricName.from_raw(row["name"]),
-                icon=EntityIcon.from_raw(row["icon"]) if row["icon"] else None,
+                ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
+                name=_METRIC_NAME_DECODER.decode(row["name"]),
+                icon=_ENTITY_ICON_DECODER.decode(row["icon"]) if row["icon"] else None,
             )
             for row in result
         ]
@@ -232,8 +246,8 @@ class SqliteFastInfoRepository(FastInfoRepository):
         ).fetchall()
         return [
             PersonSummary(
-                ref_id=EntityId.from_raw(str(row["ref_id"])),
-                name=PersonName.from_raw(row["name"]),
+                ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
+                name=_PERSON_NAME_DECODER.decode(row["name"]),
             )
             for row in result
         ]

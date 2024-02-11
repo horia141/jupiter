@@ -16,42 +16,21 @@ _JWT_RE: Final[Pattern[str]] = re.compile(
 
 @value
 @secure_class
-class AuthTokenExt(AtomicValue):
+class AuthTokenExt(AtomicValue[str]):
     """An externally facing authentication token."""
 
     auth_token_str: str
 
-    @classmethod
-    def base_type_hack(cls) -> type[Primitive]:
-        """Get the base type of this value."""
-        return str
 
-    @classmethod
-    def from_raw(cls, value: Primitive) -> "AuthTokenExt":
-        """Build an auth token from the raw representation."""
-        if not isinstance(value, str):
-            raise InputValidationError("Expected auth token to be a string")
-        auth_token_str = AuthTokenExt._clean_auth_token(value)
-        return AuthTokenExt(auth_token_str)
-
-    def to_primitive(self) -> Primitive:
-        return self.auth_token_str
-
-    @staticmethod
-    def _clean_auth_token(auth_token_str_raw: str) -> str:
-        if not _JWT_RE.match(auth_token_str_raw):
-            raise InputValidationError("Expected auth token to be a valid JWT")
-        return auth_token_str_raw
-
-class AutoTokenExtDatabaseEncoder(PrimitiveAtomicValueDatabaseEncoder[AuthTokenExt, str]):
+class AutoTokenExtDatabaseEncoder(PrimitiveAtomicValueDatabaseEncoder[AuthTokenExt]):
 
     def to_primitive(self, value: AuthTokenExt) -> str:
         return value.auth_token_str
     
 
-class AuthTokenExtDatabaseDecoder(PrimitiveAtomicValueDatabaseDecoder[AuthTokenExt, str]):
+class AuthTokenExtDatabaseDecoder(PrimitiveAtomicValueDatabaseDecoder[AuthTokenExt]):
 
-    def from_raw(self, primitive: str) -> AuthTokenExt:
+    def from_raw_str(self, primitive: str) -> AuthTokenExt:
         if not _JWT_RE.match(primitive):
             raise InputValidationError("Expected auth token to be a valid JWT")
         return AuthTokenExt(primitive)

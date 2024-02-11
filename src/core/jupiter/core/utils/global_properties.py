@@ -5,10 +5,12 @@ from pathlib import Path
 from typing import Union, cast
 
 import dotenv
-from jupiter.core.domain.core.timezone import Timezone
+from jupiter.core.domain.core.timezone import Timezone, TimezoneDatabaseDecoder
 from jupiter.core.domain.hosting import Hosting
 from jupiter.core.domain.env import Env
 from jupiter.core.framework.secure import secure_fn
+
+_TIMEZONE_DECODER = TimezoneDatabaseDecoder()
 
 
 @dataclass
@@ -82,7 +84,7 @@ def build_global_properties() -> GlobalProperties:
         description=description,
         port=port,
         version=version,
-        timezone=Timezone.from_raw(str(timezone)),
+        timezone=_TIMEZONE_DECODER.decode(timezone),
         docs_init_workspace_url=docs_init_workspace_url,
         session_info_path=session_info_path,
         sqlite_db_url=sqlite_db_url,

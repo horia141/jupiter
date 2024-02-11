@@ -1,5 +1,6 @@
 """An URL in this domain."""
 from functools import total_ordering
+from jupiter.core.use_cases.infra.realms import PrimitiveAtomicValueDatabaseDecoder, PrimitiveAtomicValueDatabaseEncoder
 
 import validators
 from jupiter.core.framework.errors import InputValidationError
@@ -9,25 +10,10 @@ from jupiter.core.framework.value import AtomicValue, value
 
 @value
 @total_ordering
-class URL(AtomicValue):
+class URL(AtomicValue[str]):
     """A URL in this domain."""
 
     the_url: str
-
-    @classmethod
-    def base_type_hack(cls) -> type[Primitive]:
-        return str
-
-    @classmethod
-    def from_raw(cls, value: Primitive) -> "URL":
-        """Validate and clean a url."""
-        if not isinstance(value, str):
-            raise InputValidationError("Expected url to be a string")
-
-        return URL(URL._clean_the_url(value))
-
-    def to_primitive(self) -> Primitive:
-        return self.the_url
 
     def __lt__(self, other: object) -> bool:
         """Compare this with another."""
@@ -39,11 +25,21 @@ class URL(AtomicValue):
         """Transform this to a string version."""
         return self.the_url
 
-    @staticmethod
-    def _clean_the_url(url_raw: str) -> str:
-        url_str: str = url_raw.strip()
+
+
+
+class URLDatabaseEncoder(PrimitiveAtomicValueDatabaseEncoder[URL]):
+
+    def to_primitive(self, value: URL) -> Primitive:
+        return value.the_url
+    
+
+class URLDatabaseDecoder(PrimitiveAtomicValueDatabaseDecoder[URL]):
+
+    def from_raw_str(self, value: str) -> URL:
+        url_str: str = value.strip()
 
         validation_result = validators.url(url_str)
         if validation_result is not True:
-            raise InputValidationError(f"Invalid URL '{url_raw}'")
-        return url_str
+            raise InputValidationError(f"Invalid URL '{value}'")
+        return URL(url_str)

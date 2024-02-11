@@ -6,10 +6,11 @@ from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.value import AtomicValue, hashable_value
+from jupiter.core.use_cases.infra.realms import PrimitiveAtomicValueDatabaseDecoder, PrimitiveAtomicValueDatabaseEncoder
 
 
 @hashable_value
-class PersonBirthday(AtomicValue):
+class PersonBirthday(AtomicValue[str]):
     """The birthday of a person."""
 
     _MONTH_NAME_INDEX: ClassVar[Dict[str, int]] = {
@@ -35,51 +36,44 @@ class PersonBirthday(AtomicValue):
 
     def __init__(self, day: int, month: int) -> None:
         """Construct a new birthday."""
-        day, month = self._clean_the_day_and_month(day, month)
+        _ = RecurringTaskDueAtDay(RecurringTaskPeriod.MONTHLY, day)
+        if month < 1 or month > 12:
+            raise InputValidationError(f"Month is out of bounds with value {month}")
         self.day = day
         self.month = month
 
-    @classmethod
-    def base_type_hack(cls) -> type[Primitive]:
-        return str
+    def __str__(self) -> str:
+        """String representation."""
+        return f"{self.day} {self._MONTH_INDEX_NAME[self.month]}"
 
-    @classmethod
-    def from_raw(cls, value: Primitive) -> "PersonBirthday":
-        """Validate and clean a raw birthday given as 12 May."""
-        if not isinstance(value, str):
-            raise InputValidationError("Expected birthday to be a string")
 
-        parts = value.strip().split(" ")
+
+class PersonBirthdayDatabaseEncoder(PrimitiveAtomicValueDatabaseEncoder[PersonBirthday]):
+
+    def to_primitive(self, value: PersonBirthday) -> Primitive:
+        return f"{value.day} {PersonBirthday._MONTH_INDEX_NAME[value.month]}"
+    
+
+class PersonBirthdayDatabaseDecoder(PrimitiveAtomicValueDatabaseDecoder[PersonBirthday]):
+
+    def from_raw_str(self, primitive: str) -> PersonBirthday:
+        parts = primitive.strip().split(" ")
         if len(parts) != 2:
-            raise InputValidationError(f"Invalid format for birthday '{value}'")
+            raise InputValidationError(f"Invalid format for birthday '{primitive}'")
 
         try:
-            day = RecurringTaskDueAtDay.from_raw_with_period(
+            day = RecurringTaskDueAtDay(
                 RecurringTaskPeriod.MONTHLY,
                 int(parts[0], base=10),
             )
             month = PersonBirthday._MONTH_NAME_INDEX[parts[1].capitalize()]
         except ValueError as err:
             raise InputValidationError(
-                f"Invalid format for day part of birthday '{value}'",
+                f"Invalid format for day part of birthday '{primitive}'",
             ) from err
         except KeyError as err:
             raise InputValidationError(
-                f"Invalid format for month part of birthday '{value}'",
+                f"Invalid format for month part of birthday '{primitive}'",
             ) from err
 
         return PersonBirthday(day.as_int(), month)
-
-    def to_primitive(self) -> Primitive:
-        return f"{self.day} {self._MONTH_INDEX_NAME[self.month]}"
-
-    def __str__(self) -> str:
-        """String representation."""
-        return f"{self.day} {self._MONTH_INDEX_NAME[self.month]}"
-
-    @staticmethod
-    def _clean_the_day_and_month(day: int, month: int) -> Tuple[int, int]:
-        _ = RecurringTaskDueAtDay.from_raw_with_period(RecurringTaskPeriod.MONTHLY, day)
-        if month < 1 or month > 12:
-            raise InputValidationError(f"Month is out of bounds with value {month}")
-        return day, month

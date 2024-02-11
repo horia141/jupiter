@@ -54,6 +54,7 @@ class Habit(LeafEntity):
     ) -> "Habit":
         """Create a habit."""
         Habit._check_actionable_and_due_date_configs(
+            gen_params.period,
             gen_params.actionable_from_day,
             gen_params.actionable_from_month,
             gen_params.due_at_day,
@@ -104,6 +105,7 @@ class Habit(LeafEntity):
         """Update the habit."""
         if gen_params.should_change:
             Habit._check_actionable_and_due_date_configs(
+                gen_params.just_the_value.period,
                 gen_params.just_the_value.actionable_from_day,
                 gen_params.just_the_value.actionable_from_month,
                 gen_params.just_the_value.due_at_day,
@@ -156,15 +158,16 @@ class Habit(LeafEntity):
 
     @staticmethod
     def _check_actionable_and_due_date_configs(
+        period: RecurringTaskPeriod,
         actionable_from_day: Optional[RecurringTaskDueAtDay],
         actionable_from_month: Optional[RecurringTaskDueAtMonth],
         due_at_day: Optional[RecurringTaskDueAtDay],
         due_at_month: Optional[RecurringTaskDueAtMonth],
     ) -> None:
-        actionable_from_day = actionable_from_day or RecurringTaskDueAtDay(1)
-        actionable_from_month = actionable_from_month or RecurringTaskDueAtMonth(1)
-        due_at_day = due_at_day or RecurringTaskDueAtDay(31)
-        due_at_month = due_at_month or RecurringTaskDueAtMonth(12)
+        actionable_from_day = actionable_from_day or RecurringTaskDueAtDay.first_of(period)
+        actionable_from_month = actionable_from_month or RecurringTaskDueAtMonth.first_of(period)
+        due_at_day = due_at_day or RecurringTaskDueAtDay.end_of(period)
+        due_at_month = due_at_month or RecurringTaskDueAtMonth.end_of(period)
         if actionable_from_month.as_int() > due_at_month.as_int():
             raise InputValidationError(
                 f"Actionable month {actionable_from_month} should be before due month {due_at_month}",

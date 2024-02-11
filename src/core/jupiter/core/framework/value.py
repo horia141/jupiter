@@ -2,7 +2,7 @@
 import abc
 import enum
 from dataclasses import dataclass
-from typing import TypeVar
+from typing import Generic, TypeVar, Any, cast, get_args
 
 from jupiter.core.framework.concept import Concept
 from jupiter.core.framework.primitive import Primitive
@@ -14,39 +14,34 @@ class Value(Concept):
     """A value object in the domain."""
 
 
-_ValueT = TypeVar("_ValueT", bound="AtomicValue | CompositeValue")
+_ValueT = TypeVar("_ValueT", bound="AtomicValue[Any] | CompositeValue")  # type: ignore[misc]
 
 
 @dataclass_transform()
-def value(cls: type[_ValueT]) -> type[_ValueT]:
+def value(cls: type[_ValueT]) -> type[_ValueT]: # type: ignore[misc]
     return dataclass(cls)
 
 
 @dataclass_transform()
-def hashable_value(cls: type[_ValueT]) -> type[_ValueT]:
+def hashable_value(cls: type[_ValueT]) -> type[_ValueT]: # type: ignore[misc]
     return dataclass(eq=True, unsafe_hash=True)(cls)
 
 
-_AtomicValueT = TypeVar("_AtomicValueT", bound="AtomicValue")
+
+_PrimitiveT = TypeVar("_PrimitiveT", bound=Primitive)
+
+_AtomicValueT = TypeVar("_AtomicValueT", bound="AtomicValue[Any]")  # type: ignore[misc]
 
 
 @dataclass
-class AtomicValue(Value, abc.ABC):
+class AtomicValue(Generic[_PrimitiveT], Value,):
     """An atomic value object in the domain."""
 
     @classmethod
-    @abc.abstractmethod
-    def base_type_hack(cls: type[_AtomicValueT]) -> type[Primitive]:
+    def base_type_hack(cls: type[_AtomicValueT]) -> type[_PrimitiveT]:   # type: ignore[misc]
         """Get the base type of this value."""
+        return cast(type[_PrimitiveT], get_args(cls.__orig_bases__[0])[0])  # type: ignore[attr-defined]
 
-    @classmethod
-    @abc.abstractmethod
-    def from_raw(cls: type[_AtomicValueT], value: Primitive) -> _AtomicValueT:
-        """Build an atomic value from the raw representation."""
-
-    @abc.abstractmethod
-    def to_primitive(self) -> Primitive:
-        """Get the primitive representation of this value."""
 
 
 @dataclass

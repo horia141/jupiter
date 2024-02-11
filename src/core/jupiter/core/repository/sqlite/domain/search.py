@@ -237,7 +237,7 @@ class SqliteSearchRepository(SearchRepository):
                 self._search_index_table.c.archived_time
                 <= adate_encoder.encode(filter_archived_time_before)
             )
-        query_stmt = query_stmt.limit(limit.as_int)
+        query_stmt = query_stmt.limit(limit.the_limit)
         query_stmt = query_stmt.order_by(text("rank"))
         query_stmt = query_stmt.order_by(self._search_index_table.c.archived)
         query_stmt = query_stmt.order_by(

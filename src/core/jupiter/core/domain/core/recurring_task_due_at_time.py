@@ -5,43 +5,34 @@ from typing import Final, Pattern
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.value import AtomicValue, value
+from jupiter.core.use_cases.infra.realms import PrimitiveAtomicValueDatabaseDecoder, PrimitiveAtomicValueDatabaseEncoder
 
 _DUE_AT_TIME_RE: Final[Pattern[str]] = re.compile(r"^[0-9][0-9]:[0-9][0-9]$")
 
 
 @value
-class RecurringTaskDueAtTime(AtomicValue):
+class RecurringTaskDueAtTime(AtomicValue[str]):
     """The due time for a recurring task."""
 
     the_time: str
-
-    @classmethod
-    def base_type_hack(cls) -> type[Primitive]:
-        return str
-
-    @classmethod
-    def from_raw(
-        cls,
-        value: Primitive,
-    ) -> "RecurringTaskDueAtTime":
-        """Validate and clean the due at time info."""
-        if not isinstance(value, str):
-            raise InputValidationError("Expected the due time info to be string")
-
-        return RecurringTaskDueAtTime(
-            RecurringTaskDueAtTime._clean_the_time(value),
-        )
-
-    def to_primitive(self) -> Primitive:
-        return self.the_time
 
     def __str__(self) -> str:
         """String version of this."""
         return self.the_time
 
-    @staticmethod
-    def _clean_the_time(the_time: str) -> str:
-        the_time = the_time.strip().lower()
+
+
+
+class RecurringTaskDueAtTimeDatabaseEncoder(PrimitiveAtomicValueDatabaseEncoder[RecurringTaskDueAtTime]):
+
+    def to_primitive(self, value: RecurringTaskDueAtTime) -> Primitive:
+        return value.the_time
+    
+
+class RecurringTaskDueAtTimeDatabaseDecoder(PrimitiveAtomicValueDatabaseDecoder[RecurringTaskDueAtTime]):
+
+    def from_raw_str(self, value: str) -> RecurringTaskDueAtTime:
+        the_time = value.strip().lower()
 
         if len(the_time) == 0:
             raise InputValidationError("Expected due time info to be non-empty")
@@ -52,4 +43,4 @@ class RecurringTaskDueAtTime(AtomicValue):
                 + f"match '{_DUE_AT_TIME_RE.pattern}'",
             )
 
-        return the_time
+        return RecurringTaskDueAtTime(the_time)

@@ -14,39 +14,32 @@ from jupiter.core.framework.value import (
     hashable_value,
     value,
 )
+from jupiter.core.use_cases.infra.realms import PrimitiveAtomicValueDatabaseDecoder, PrimitiveAtomicValueDatabaseEncoder
 
-_ENTITY_ID_DECODER = EntityIdDatabaseDecoder()
 
 
 @hashable_value
-class CorrelationId(AtomicValue):
+class CorrelationId(AtomicValue[str]):
     """A generic entity id."""
 
     the_id: str
+    
 
-    @classmethod
-    def base_type_hack(cls) -> type[Primitive]:
-        return str
+class CorrelationIdDatabaseEncoder(PrimitiveAtomicValueDatabaseEncoder[CorrelationId]):
 
-    @classmethod
-    def from_raw(cls, value: Primitive) -> "CorrelationId":
-        """Validate and clean an correlation id."""
-        if not isinstance(value, str):
-            raise InputValidationError("Expected correlation id to be string")
+    def to_primitive(self, value: CorrelationId) -> str:
+        return value.the_id
+    
 
-        return CorrelationId(CorrelationId._clean_the_id(value))
+class CorrelationIdDatabaseDecoder(PrimitiveAtomicValueDatabaseDecoder[CorrelationId]):
 
-    def to_primitive(self) -> Primitive:
-        return self.the_id
-
-    @staticmethod
-    def _clean_the_id(correlation_id_raw: str) -> str:
-        correlation_id: str = correlation_id_raw.strip()
+    def from_raw_str(self, primitive: str) -> CorrelationId:
+        correlation_id: str = primitive.strip()
 
         if len(correlation_id) == 0:
             raise RealmDecodingError("Expected correlation id to be non-empty")
 
-        return correlation_id
+        return CorrelationId(correlation_id)
 
 
 @value

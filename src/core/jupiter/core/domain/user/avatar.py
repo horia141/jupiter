@@ -1,15 +1,14 @@
 """A user avatar image."""
-
-
 import avinit
 from jupiter.core.domain.user.user_name import UserName
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.value import AtomicValue, hashable_value
+from jupiter.core.use_cases.infra.realms import PrimitiveAtomicValueDatabaseDecoder, PrimitiveAtomicValueDatabaseEncoder
 
 
 @hashable_value
-class Avatar(AtomicValue):
+class Avatar(AtomicValue[str]):
     """A user avatar image."""
 
     avatar_as_data_url: str
@@ -20,24 +19,17 @@ class Avatar(AtomicValue):
         avatar_as_data_url = avinit.get_avatar_data_url(user_name.the_name)
         return Avatar(avatar_as_data_url)
 
-    @classmethod
-    def base_type_hack(cls) -> type[Primitive]:
-        return str
 
-    @classmethod
-    def from_raw(cls, value: Primitive) -> "Avatar":
-        """Construct an avatar from a string representation."""
-        if not isinstance(value, str):
-            raise InputValidationError("Expected avatar to be a string")
+class AvatarDatabaseEncoder(PrimitiveAtomicValueDatabaseEncoder[Avatar]):
 
-        return Avatar(Avatar._clean_the_avatar(value))
+    def to_primitive(self, value: Avatar) -> Primitive:
+        return value.avatar_as_data_url
+    
 
-    def to_primitive(self) -> Primitive:
-        return self.avatar_as_data_url
+class AvatarDatabaseDecoder(PrimitiveAtomicValueDatabaseDecoder[Avatar]):
 
-    @staticmethod
-    def _clean_the_avatar(avatar_raw: str) -> str:
-        if not avatar_raw.startswith("data:image/svg+xml;base64,"):
+    def from_raw_str(self, primitive: str) -> Avatar:
+        if not primitive.startswith("data:image/svg+xml;base64,"):
             raise InputValidationError("Seems like the avatar doesn't look right")
 
-        return avatar_raw
+        return Avatar(primitive)

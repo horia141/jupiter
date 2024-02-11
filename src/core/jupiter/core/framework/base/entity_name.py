@@ -28,30 +28,10 @@ _EntityNameT = TypeVar("_EntityNameT", bound="EntityName")
 
 @hashable_value
 @total_ordering
-class EntityName(AtomicValue):
+class EntityName(AtomicValue[str]):
     """The name for an entity which acts as both name and unique identifier."""
 
     the_name: str
-
-    @classmethod
-    def base_type_hack(cls) -> type[Primitive]:
-        return str
-
-    @classmethod
-    def from_raw(
-        cls: Type[_EntityNameT],
-        value: Primitive,
-    ) -> _EntityNameT:
-        """Validate and clean an entity name."""
-        if not isinstance(value, str):
-            raise InputValidationError("Expected entity name to be non-null")
-
-        entity_name = EntityName._clean_the_name(value)
-
-        return cls(entity_name)
-
-    def to_primitive(self) -> Primitive:
-        return self.the_name
 
     def __lt__(self, other: object) -> bool:
         """Compare this with another."""
@@ -64,22 +44,6 @@ class EntityName(AtomicValue):
     def __str__(self) -> str:
         """Transform this to a string version."""
         return self.the_name
-
-    @staticmethod
-    def _clean_the_name(entity_name_raw: str) -> str:
-        entity_name: str = " ".join(
-            word for word in entity_name_raw.strip().split(" ") if len(word) > 0
-        )
-
-        if len(entity_name) == 0:
-            raise InputValidationError("Expected entity name to be non-empty")
-
-        if not _ENTITY_NAME_RE.match(entity_name):
-            raise InputValidationError(
-                f"Expected entity name '{entity_name_raw}' to match '{_ENTITY_NAME_RE.pattern}",
-            )
-
-        return entity_name
 
 
 class EntityNameDatabaseEncoder(
@@ -115,8 +79,20 @@ class EntityNameDatabaseDecoder(
             raise RealmDecodingError(
                 f"Expected value for {self.__class__} to be a string"
             )
+       
+        entity_name: str = " ".join(
+           word for word in value.strip().split(" ") if len(word) > 0
+        )
 
-        return self._the_type.from_raw(value)
+        if len(entity_name) == 0:
+            raise InputValidationError("Expected entity name to be non-empty")
+
+        if not _ENTITY_NAME_RE.match(entity_name):
+            raise InputValidationError(
+                f"Expected entity name '{value}' to match '{_ENTITY_NAME_RE.pattern}",
+            )
+
+        return self._the_type(entity_name)
 
 
 NOT_USED_NAME = EntityName("NOT-USED")

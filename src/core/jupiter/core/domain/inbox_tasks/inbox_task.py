@@ -882,7 +882,7 @@ class InboxTask(LeafEntity):
         repeat_index: Optional[int],
     ) -> InboxTaskName:
         if repeat_index is not None:
-            return InboxTaskName.from_raw(f"{name} [{repeat_index + 1}]")
+            return InboxTaskName(f"{name} [{repeat_index + 1}]")
         else:
             return name
 
@@ -890,21 +890,21 @@ class InboxTask(LeafEntity):
     def _build_name_for_writing_journal(
         period: RecurringTaskPeriod, right_now: ADate
     ) -> InboxTaskName:
-        return InboxTaskName.from_raw(
+        return InboxTaskName(
             f"Write {period} journal entry for for {ADate.to_user_date_str(right_now)}"
         )
 
     @staticmethod
     def _build_name_for_collection_task(name: InboxTaskName) -> InboxTaskName:
-        return InboxTaskName.from_raw(f"Collect value for metric {name}")
+        return InboxTaskName(f"Collect value for metric {name}")
 
     @staticmethod
     def _build_name_for_catch_up_task(name: InboxTaskName) -> InboxTaskName:
-        return InboxTaskName.from_raw(f"Catch up with {name}")
+        return InboxTaskName(f"Catch up with {name}")
 
     @staticmethod
     def _build_name_for_birthday_task(name: InboxTaskName) -> InboxTaskName:
-        return InboxTaskName.from_raw(f"Wish happy birthday to {name}")
+        return InboxTaskName(f"Wish happy birthday to {name}")
 
     @staticmethod
     def _build_name_for_slack_task(

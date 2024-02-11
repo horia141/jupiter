@@ -3,38 +3,27 @@
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.value import AtomicValue, value
+from jupiter.core.use_cases.infra.realms import PrimitiveAtomicValueDatabaseDecoder, PrimitiveAtomicValueDatabaseEncoder
 
 
 @value
-class RecurringTaskSkipRule(AtomicValue):
+class RecurringTaskSkipRule(AtomicValue[str]):
     """The rules for skipping a recurring task."""
 
     skip_rule: str
-
-    @classmethod
-    def from_raw(
-        cls,
-        value: Primitive,
-    ) -> "RecurringTaskSkipRule":
-        """Validate and clean the recurring task skip rule."""
-        if not isinstance(value, str):
-            raise InputValidationError("Expected the skip rule info to be a string")
-
-        return RecurringTaskSkipRule(
-            RecurringTaskSkipRule._clean_skip_rule(value),
-        )
-
-    @classmethod
-    def base_type_hack(cls) -> type[Primitive]:
-        return str
-
-    def to_primitive(self) -> Primitive:
-        return self.skip_rule
 
     def __str__(self) -> str:
         """Transform this to a string version."""
         return self.skip_rule
 
-    @staticmethod
-    def _clean_skip_rule(recurring_task_skip_rule_raw: str) -> str:
-        return recurring_task_skip_rule_raw.strip().lower()
+
+class RecurringTaskSkipRuleDatabaseEncoder(PrimitiveAtomicValueDatabaseEncoder[RecurringTaskSkipRule]):
+
+    def to_primitive(self, value: RecurringTaskSkipRule) -> Primitive:
+        return value.skip_rule
+    
+
+class RecurringTaskSkipRuleDatabaseDecoder(PrimitiveAtomicValueDatabaseDecoder[RecurringTaskSkipRule]):
+
+    def from_raw_str(self, value: str) -> RecurringTaskSkipRule:
+        return RecurringTaskSkipRule(value.strip().lower())

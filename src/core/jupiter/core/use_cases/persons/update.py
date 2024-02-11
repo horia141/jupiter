@@ -242,11 +242,11 @@ class PersonUpdateUseCase(
                     None,
                     None,
                     None,
-                    RecurringTaskDueAtDay.from_raw_with_period(
-                        RecurringTaskPeriod.MONTHLY,
+                    RecurringTaskDueAtDay(
+                        RecurringTaskPeriod.YEARLY,
                         person.birthday.day,
                     ),
-                    RecurringTaskDueAtMonth.from_raw_with_period(
+                    RecurringTaskDueAtMonth(
                         RecurringTaskPeriod.YEARLY,
                         person.birthday.month,
                     ),

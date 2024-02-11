@@ -4,11 +4,12 @@ from jupiter.core.framework.realm import CliRealm, WebRealm, only_in_realm
 
 import jwt
 from jupiter.core.domain.auth.auth_token_ext import AuthTokenExt
-from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.base.entity_id import EntityId, EntityIdDatabaseDecoder
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.value import SecretValue, secret_value
 
 _ALGORITHM = "HS256"
+_ENTITY_ID_DECODER = EntityIdDatabaseDecoder()
 
 
 class ExpiredAuthTokenError(Exception):
@@ -126,7 +127,7 @@ class AuthToken(SecretValue):
                 audience=audience,
             )
 
-            user_ref_id = EntityId.from_raw(auth_token_json["user_ref_id"])
+            user_ref_id = _ENTITY_ID_DECODER.decode(auth_token_json["user_ref_id"])
             issue_time = Timestamp.from_unix_timestamp(auth_token_json["iat"])
             expiration_time = Timestamp.from_unix_timestamp(auth_token_json["exp"])
 

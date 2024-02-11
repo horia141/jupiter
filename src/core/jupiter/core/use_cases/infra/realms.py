@@ -465,83 +465,79 @@ class _StandardPrimitiveDatabaseDecoder(
     
 
 class PrimitiveAtomicValueDatabaseEncoder(
-    Generic[_AtomicValueT, _PrimitiveT], RealmEncoder[_AtomicValueT, DatabaseRealm], abc.ABC
+    Generic[_AtomicValueT], RealmEncoder[_AtomicValueT, DatabaseRealm], abc.ABC
 ):
     """An encoder for atomic values."""
 
-    def encode(self, value: _AtomicValueT) -> _PrimitiveT:
+    def encode(self, value: _AtomicValueT) -> RealmThing:
         """Encode a realm to a string."""
         return self.to_primitive(value)
         
     @abc.abstractmethod
-    def to_primitive(self, value: _AtomicValueT) -> _PrimitiveT:
+    def to_primitive(self, value: _AtomicValueT) -> Primitive:
         """Return a primitive form of this atomic value."""
 
 
 class PrimitiveAtomicValueDatabaseDecoder(
-    Generic[_AtomicValueT, _PrimitiveT], RealmDecoder[_AtomicValueT, DatabaseRealm], abc.ABC
+    Generic[_AtomicValueT], RealmDecoder[_AtomicValueT, DatabaseRealm],
 ):
     """An encoder for atomic values."""
 
-    _primitive_type: type[_PrimitiveT]
+    _atomic_value_type: type[_AtomicValueT]
 
     def __init__(self) -> None:
-        self._primitive_type = cast(type[_PrimitiveT], get_args(self.__class__.__orig_bases__[0])[1])
+        self._atomic_value_type = cast(type[_AtomicValueT], get_args(self.__class__.__orig_bases__[0])[0])
 
     def decode(self, value: RealmThing) -> _AtomicValueT:
         """Decode a realm from a string."""
+        base_type_hack = self._atomic_value_type.base_type_hack()
         if not isinstance(
-            value, self._primitive_type
+            value, base_type_hack
         ):
 
             raise RealmDecodingError(
-                f"Expected value for in {self.__class__} to be a primitive of type {self._primitive_type}"
+                f"Expected value for in {self.__class__} to be a primitive of type {base_type_hack}"
             )
+        
+        if base_type_hack is bool:
+            return self.from_raw_bool(value)
+        elif base_type_hack is int:
+            return self.from_raw_int(value)
+        elif base_type_hack is float:
+            return self.from_raw_float(value)
+        elif base_type_hack is str:
+            return self.from_raw_str(value)
+        elif base_type_hack is Date:
+            return self.from_raw_date(value)
+        elif base_type_hack is DateTime:
+            return self.from_raw_datetime(value)
+        else:
+            raise Exception("Off the beaten codepath")
 
-        return self.from_raw(value)
-
-    @abc.abstractmethod
-    def from_raw(self, primitive: _PrimitiveT) -> _AtomicValueT:
+    def from_raw_bool(self, primitive: bool) -> _AtomicValueT:
         """Transform a primitive form of this atomic value."""
+        raise Exception("Off the beaten codepath")
+    
+    def from_raw_int(self, primitive: int) -> _AtomicValueT:
+        """Transform a primitive form of this atomic value."""
+        raise Exception("Off the beaten codepath")
+    
+    def from_raw_float(self, primitive: float) -> _AtomicValueT:
+        """Transform a primitive form of this atomic value."""
+        raise Exception("Off the beaten codepath")
+    
+    def from_raw_str(self, primitive: str) -> _AtomicValueT:
+        """Transform a primitive form of this atomic value."""
+        raise Exception("Off the beaten codepath")
+    
+    def from_raw_date(self, primitive: Date) -> _AtomicValueT:
+        """Transform a primitive form of this atomic value."""
+        raise Exception("Off the beaten codepath")
+    
+    def from_raw_datetime(self, primitive: DateTime) -> _AtomicValueT:
+        """Transform a primitive form of this atomic value."""
+        raise Exception("Off the beaten codepath")
 
-
-class _StandardAtomicValueDatabaseEncoder(
-    Generic[_AtomicValueT], RealmEncoder[_AtomicValueT, DatabaseRealm]
-):
-    """An encoder for atomic values."""
-
-    _the_type: type[_AtomicValueT]
-
-    def __init__(self, the_type: type[_AtomicValueT]) -> None:
-        """Initialize the encoder."""
-        self._the_type = the_type
-
-    def encode(self, value: _AtomicValueT) -> RealmThing:
-        """Encode a realm to a string."""
-        return value.to_primitive()
-
-
-class _StandardAtomicValueDatabaseDecoder(
-    Generic[_AtomicValueT], RealmDecoder[_AtomicValueT, DatabaseRealm]
-):
-    """A decoder for atomic values."""
-
-    _the_type: type[_AtomicValueT]
-
-    def __init__(self, the_type: type[_AtomicValueT]) -> None:
-        self._the_type = the_type
-
-    def decode(self, value: RealmThing) -> _AtomicValueT:
-        """Decode a realm from a string."""
-        if not isinstance(
-            value, (type(None), bool, int, float, str, date, datetime, Date, DateTime)
-        ):
-
-            raise RealmDecodingError(
-                f"Expected value for {self._the_type.__name__} in {self.__class__} to be primitive"
-            )
-
-        return self._the_type.from_raw(value)
 
 
 class _StandardCompositeValueDatabaseEncoder(
@@ -1063,7 +1059,7 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
 
         def extract_atomic_values(
             the_module: ModuleType,
-        ) -> Iterator[type[AtomicValue]]:
+        ) -> Iterator[type[AtomicValue[Primitive]]]:
             for _name, obj in the_module.__dict__.items():
                 if not (isinstance(obj, type) and issubclass(obj, AtomicValue)):
                     continue
@@ -1369,32 +1365,24 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                     continue
 
                 if not registry._has_encoder(atomic_value_type, DatabaseRealm):
-                    if issubclass(atomic_value_type, EntityName):
-                        registry._add_encoder(
-                            atomic_value_type,
-                            DatabaseRealm,
-                            EntityNameDatabaseEncoder(atomic_value_type),
-                        )
-                    else:
-                        registry._add_encoder(
-                            atomic_value_type,
-                            DatabaseRealm,
-                            _StandardAtomicValueDatabaseEncoder(atomic_value_type),
-                        )
+                    if not issubclass(atomic_value_type, EntityName):
+                        continue
+
+                    registry._add_encoder(
+                        atomic_value_type,
+                        DatabaseRealm,
+                        EntityNameDatabaseEncoder(atomic_value_type),
+                    )
 
                 if not registry._has_decoder(atomic_value_type, DatabaseRealm):
                     if issubclass(atomic_value_type, EntityName):
-                        registry._add_decoder(
-                            atomic_value_type,
-                            DatabaseRealm,
-                            EntityNameDatabaseDecoder(atomic_value_type),
-                        )
-                    else:
-                        registry._add_decoder(
-                            atomic_value_type,
-                            DatabaseRealm,
-                            _StandardAtomicValueDatabaseDecoder(atomic_value_type),
-                        )
+                        continue
+
+                    registry._add_decoder(
+                        atomic_value_type,
+                        DatabaseRealm,
+                        EntityNameDatabaseDecoder(atomic_value_type),
+                    )
 
             for composite_value_type in extract_composite_values(m):
                 if not allowed_in_realm(composite_value_type, DatabaseRealm):

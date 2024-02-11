@@ -4,38 +4,32 @@
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.value import AtomicValue, value
+from jupiter.core.use_cases.infra.realms import PrimitiveAtomicValueDatabaseDecoder, PrimitiveAtomicValueDatabaseEncoder
 
 
 @value
-class SearchQuery(AtomicValue):
+class SearchQuery(AtomicValue[str]):
     """A search query parameter for searches."""
 
     the_query: str
-
-    @classmethod
-    def base_type_hack(cls) -> type[Primitive]:
-        return str
-
-    @classmethod
-    def from_raw(cls, value: Primitive) -> "SearchQuery":
-        """Validate and clean the search query."""
-        if not isinstance(value, str):
-            raise InputValidationError("Expected query to be a string")
-
-        return SearchQuery(SearchQuery._clean_the_query(value))
-
-    def to_primitive(self) -> Primitive:
-        return self.the_query
 
     def __str__(self) -> str:
         """Transform this to a string version."""
         return str(self.the_query)
 
-    @staticmethod
-    def _clean_the_query(query_raw: str) -> str:
-        query_nows = query_raw.strip()
+
+class SearchQueryDatabaseEncoder(PrimitiveAtomicValueDatabaseEncoder[SearchQuery]):
+
+    def to_primitive(self, value: SearchQuery) -> Primitive:
+        return value.the_query
+    
+
+class SearchQueryDatabaseDecoder(PrimitiveAtomicValueDatabaseDecoder[SearchQuery]):
+
+    def from_raw_str(self, primitive: str) -> SearchQuery:
+        query_nows = primitive.strip()
 
         if len(query_nows) == 0:
             raise InputValidationError("Expected query to be non empty.")
 
-        return query_nows
+        return SearchQuery(query_nows)

@@ -270,7 +270,7 @@ class SqliteScoreStatsRepository(ScoreStatsRepository):
         return ScoreStats(
             created_time=Timestamp.from_db(row["created_time"]),
             last_modified_time=Timestamp.from_db(row["last_modified_time"]),
-            score_log=ParentLink(EntityId.from_raw(str(row["score_log_ref_id"]))),
+            score_log=ParentLink(EntityId(str(row["score_log_ref_id"]))),
             period=RecurringTaskPeriod(row["period"]) if row["period"] else None,
             timeline=row["timeline"],
             total_score=row["total_score"],
@@ -450,7 +450,7 @@ class SqliteScorePeriodBestRepository(ScorePeriodBestRepository):
         return ScorePeriodBest(
             created_time=Timestamp.from_db(row["created_time"]),
             last_modified_time=Timestamp.from_db(row["last_modified_time"]),
-            score_log=ParentLink(EntityId.from_raw(str(row["score_log_ref_id"]))),
+            score_log=ParentLink(EntityId(str(row["score_log_ref_id"]))),
             period=RecurringTaskPeriod(row["period"]) if row["period"] else None,
             timeline=row["timeline"],
             sub_period=RecurringTaskPeriod(row["sub_period"]),

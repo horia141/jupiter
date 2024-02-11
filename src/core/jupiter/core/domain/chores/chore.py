@@ -6,6 +6,7 @@ from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
+from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.core.recurring_task_skip_rule import RecurringTaskSkipRule
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
@@ -59,6 +60,7 @@ class Chore(LeafEntity):
         """Create a chore."""
         today = ADate.from_date(ctx.action_timestamp.as_date())
         Chore._check_actionable_and_due_date_configs(
+            gen_params.period,
             gen_params.actionable_from_day,
             gen_params.actionable_from_month,
             gen_params.due_at_day,
@@ -117,6 +119,7 @@ class Chore(LeafEntity):
         """Update the chore."""
         if gen_params.should_change:
             Chore._check_actionable_and_due_date_configs(
+                gen_params.just_the_value.period,
                 gen_params.just_the_value.actionable_from_day,
                 gen_params.just_the_value.actionable_from_month,
                 gen_params.just_the_value.due_at_day,
@@ -185,15 +188,16 @@ class Chore(LeafEntity):
 
     @staticmethod
     def _check_actionable_and_due_date_configs(
+        period: RecurringTaskPeriod,
         actionable_from_day: Optional[RecurringTaskDueAtDay],
         actionable_from_month: Optional[RecurringTaskDueAtMonth],
         due_at_day: Optional[RecurringTaskDueAtDay],
         due_at_month: Optional[RecurringTaskDueAtMonth],
     ) -> None:
-        actionable_from_day = actionable_from_day or RecurringTaskDueAtDay(1)
-        actionable_from_month = actionable_from_month or RecurringTaskDueAtMonth(1)
-        due_at_day = due_at_day or RecurringTaskDueAtDay(31)
-        due_at_month = due_at_month or RecurringTaskDueAtMonth(12)
+        actionable_from_day = actionable_from_day or RecurringTaskDueAtDay.first_of(period)
+        actionable_from_month = actionable_from_month or RecurringTaskDueAtMonth.first_of(period)
+        due_at_day = due_at_day or RecurringTaskDueAtDay.end_of(period)
+        due_at_month = due_at_month or RecurringTaskDueAtMonth.end_of(period)
         if actionable_from_month.as_int() > due_at_month.as_int():
             raise InputValidationError(
                 f"Actionable month {actionable_from_month} should be before due month {due_at_month}",
