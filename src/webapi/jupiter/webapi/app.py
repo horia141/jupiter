@@ -15,11 +15,12 @@ from typing import (
     get_args,
 )
 from fastapi.responses import JSONResponse
+from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.realm import DatabaseRealm, WebRealm, RealmThing
 
 import inflection
 from jupiter.core.framework.thing import Thing
-from jupiter.core.framework.value import EnumValue
+from jupiter.core.framework.value import AtomicValue, CompositeValue, EnumValue
 from pydantic import BaseModel, create_model, validator
 import uvicorn
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -59,6 +60,10 @@ from jupiter.webapi.time_provider import CronRunTimeProvider, PerRequestTimeProv
 from jupiter.webapi.websocket_progress_reporter import WebsocketProgressReporterFactory
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.openapi.utils import get_openapi
+from datetime import date, datetime
+
+from pendulum.date import Date
+from pendulum.datetime import DateTime
 
 STANDARD_RESPONSES: dict[int | str, dict[str, Any]] = {
     410: {"description": "Workspace Or User Not Found", "content": {"plain/text": {}}},
@@ -607,11 +612,41 @@ class WebServiceApp:
     
     def _custom_openapi(self):
 
-        def build_enum_value_schema(enum_value: type[EnumValue]):
+        def build_primitive_type(primitive_type: type[Primitive]) -> str:
+            if primitive_type is type(None):
+                return "null"
+            elif primitive_type is bool:
+                return "boolean"
+            elif primitive_type is int:
+                return "integer"
+            elif primitive_type is float:
+                return "number"
+            elif primitive_type is str:
+                return "string"
+            elif primitive_type is date:
+                return "string"
+            elif primitive_type is datetime:
+                return "string"
+            elif primitive_type is Date:
+                return "string"
+            elif primitive_type is DateTime:
+                return "string"
+            else:
+                raise Exception(f"Invalid primitive type {primitive_type}")
+
+
+        def build_enum_value_schema(enum_value_type: type[EnumValue]):
             return {
-                "title": enum_value.__name__,
-                "enum": enum_value.get_all_values(),
-                "description": enum_value.__doc__
+                "title": enum_value_type.__name__,
+                "enum": enum_value_type.get_all_values(),
+                "description": enum_value_type.__doc__
+            }
+        
+        def build_atomic_value_schema(atomic_value_type: type[AtomicValue]):
+            return {
+                "title": atomic_value_type.__name__,
+                "type": build_primitive_type(atomic_value_type.base_type_hack()),
+                "description": atomic_value_type.__doc__
             }
 
         if self._fast_app.openapi_schema:
@@ -630,12 +665,19 @@ class WebServiceApp:
         # Work on enum values as string
 
         from rich import print
-        for enum_type in self._realm_codec_registry.get_all_registered_types(EnumValue, WebRealm):
-            openapi_schema["components"]["schemas"][enum_type.__name__] = build_enum_value_schema(enum_type)
-            print(enum_type)
+        for enum_value_type in self._realm_codec_registry.get_all_registered_types(EnumValue, WebRealm):
+            openapi_schema["components"]["schemas"][enum_value_type.__name__] = build_enum_value_schema(enum_value_type)
+
         # Work on atomic values
+            
+        for atomic_value_type in self._realm_codec_registry.get_all_registered_types(AtomicValue, WebRealm):
+            openapi_schema["components"]["schemas"][atomic_value_type.__name__] = build_atomic_value_schema(atomic_value_type)
+
         # Work on composite values
-        # Work on entities
+            
+        # for composite_value_type in self._realm_codec_registry.get_all_registered_types(CompositeValue, WebRealm):
+        #     openapi_schema["components"]["schema"][composite_value_type.__name__] = build_composite_value_schema(composite_value_type)
+        # # Work on entities
         # Work on records
         # Work on args
         # Work on result
