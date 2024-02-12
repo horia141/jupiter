@@ -1,10 +1,10 @@
 """Common toolin for SQLite repositories."""
 from typing import cast
-from jupiter.core.framework import thing
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.entity import Entity
 from jupiter.core.framework.event import Event
 from jupiter.core.framework.realm import DatabaseRealm, RealmCodecRegistry, RealmThing
+from jupiter.core.framework.thing import Thing
 from jupiter.core.framework.utils import is_thing_ish_type
 from sqlalchemy import (
     JSON,
@@ -76,7 +76,7 @@ def _serialize_event(realm_codec_registry: RealmCodecRegistry, event: Event) -> 
         if not is_thing_ish_type(the_value.__class__):
             raise Exception(f"The domain should deal with things, but found {the_value.__class__}")
         encoder = realm_codec_registry.get_encoder(the_value.__class__, DatabaseRealm)
-        serialized_frame_args[the_key] = encoder.encode(cast(thing, the_value))
+        serialized_frame_args[the_key] = encoder.encode(cast(Thing, the_value))
     return serialized_frame_args
 
 
