@@ -1,13 +1,9 @@
 """Framework level elements for entity events."""
 import enum
 from dataclasses import dataclass
-from typing import Dict, cast
+from typing import Dict
 
 from jupiter.core.framework.base.timestamp import Timestamp
-from jupiter.core.framework.realm import DatabaseRealm, RealmCodecRegistry, RealmThing
-from jupiter.core.framework.thing import Thing
-from jupiter.core.framework.update_action import UpdateAction
-from jupiter.core.framework.utils import is_thing_ish_type
 from jupiter.core.framework.value import EnumValue, enum_value
 
 
@@ -50,13 +46,3 @@ class Event:
     frame_args: Dict[str, object]
     kind: EventKind
     name: str
-
-    def to_serializable_dict(self, realm_codec_registry: RealmCodecRegistry) -> RealmThing:
-        """Transform an event into a serialisation-ready dictionary."""
-        serialized_frame_args = {}
-        for the_key, the_value in self.frame_args.items():
-            if not is_thing_ish_type(the_value.__class__):
-                raise Exception(f"The domain should deal with things, but found {the_value.__class__}")
-            encoder = realm_codec_registry.get_encoder(the_value.__class__, DatabaseRealm)
-            serialized_frame_args[the_key] = encoder.encode(cast(Thing, the_value))
-        return serialized_frame_args

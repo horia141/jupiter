@@ -1,7 +1,11 @@
 """Common toolin for SQLite repositories."""
+from typing import cast
+from jupiter.core.framework import thing
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.entity import Entity
-from jupiter.core.framework.realm import RealmCodecRegistry
+from jupiter.core.framework.event import Event
+from jupiter.core.framework.realm import DatabaseRealm, RealmCodecRegistry, RealmThing
+from jupiter.core.framework.utils import is_thing_ish_type
 from sqlalchemy import (
     JSON,
     Column,
@@ -58,12 +62,22 @@ async def upsert_events(
                 source=event.source.to_db(),
                 owner_version=event.entity_version,
                 kind=event.kind.to_db(),
-                data=event.to_serializable_dict(realm_codec_registry),
+                data=_serialize_event(realm_codec_registry, event),
             ),
             # .on_conflict_do_nothing(
             #    index_elements=["owner_ref_id", "timestamp", "session_index", "name"]
             # )
         )
+
+def _serialize_event(realm_codec_registry: RealmCodecRegistry, event: Event) -> RealmThing:
+    """Transform an event into a serialisation-ready dictionary."""
+    serialized_frame_args = {}
+    for the_key, the_value in event.frame_args.items():
+        if not is_thing_ish_type(the_value.__class__):
+            raise Exception(f"The domain should deal with things, but found {the_value.__class__}")
+        encoder = realm_codec_registry.get_encoder(the_value.__class__, DatabaseRealm)
+        serialized_frame_args[the_key] = encoder.encode(cast(thing, the_value))
+    return serialized_frame_args
 
 
 async def remove_events(

@@ -1,12 +1,13 @@
 """A smart list tag."""
 from typing import cast
+from jupiter.core.domain.core.tags.tag_name import TagName
 
 from jupiter.core.domain.smart_lists.smart_list_tag_name import SmartListTagName
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.entity_name import NOT_USED_NAME
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
-    BranchTagEntity,
+    LeafSupportEntity,
     ParentLink,
     create_entity_action,
     entity,
@@ -16,10 +17,11 @@ from jupiter.core.framework.update_action import UpdateAction
 
 
 @entity
-class SmartListTag(BranchTagEntity):
+class SmartListTag(LeafSupportEntity):
     """A smart list tag."""
 
     smart_list: ParentLink
+    tag_name: TagName
 
     @staticmethod
     @create_entity_action

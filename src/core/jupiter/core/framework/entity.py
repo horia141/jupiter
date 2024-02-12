@@ -15,7 +15,6 @@ from typing import (
     get_origin,
 )
 
-from jupiter.core.domain.core.tags.tag_name import TagName
 from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.base.timestamp import Timestamp
@@ -419,12 +418,6 @@ class LeafSupportEntity(LeafEntity, abc.ABC):
 
     # examples: note, comment, attachment, etc.
 
-
-@dataclass
-class BranchTagEntity(LeafEntity, abc.ABC):
-    """A leaf entity serving as a tag for other entities on a branch.."""
-
-    tag_name: TagName
 
 
 def _check_entity_has_parent_field(cls: type[_EntityT]) -> None:
