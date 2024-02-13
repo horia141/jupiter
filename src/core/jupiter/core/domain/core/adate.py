@@ -2,6 +2,7 @@
 from datetime import date, datetime
 from functools import total_ordering
 from typing import Optional, cast
+from jupiter.core.framework.realm import DatabaseRealm, RealmDecoder, RealmDecodingError, RealmEncoder, RealmThing
 
 import pendulum
 import pendulum.parser
@@ -19,7 +20,7 @@ from pendulum.tz.timezone import UTC
 
 @hashable_value
 @total_ordering
-class ADate(AtomicValue):
+class ADate(AtomicValue[Date | DateTime]):
     """A date or possibly a datetime for the application."""
 
     the_date: Optional[Date] = None
@@ -34,11 +35,6 @@ class ADate(AtomicValue):
     def from_date_and_time(date_and_time: DateTime) -> "ADate":
         """Construct an ADate from a datetime."""
         return ADate(None, date_and_time)
-
-    @staticmethod
-    def from_timestamp(timestamp: Timestamp) -> "ADate":
-        """Construct an ADate from a timestamp."""
-        return ADate(None, timestamp.value)
 
     def to_timestamp_at_end_of_day(self) -> Timestamp:
         """Transform to a timestamp at the end of the day."""
@@ -55,74 +51,6 @@ class ADate(AtomicValue):
             )
 
     @staticmethod
-    def from_raw_in_tz(timezone: Timezone, datetime_raw: Optional[str]) -> "ADate":
-        """Validate and clean an ADate."""
-        if not datetime_raw:
-            raise InputValidationError("Expected datetime to be non-null")
-
-        try:
-            adate = pendulum.parser.parse(
-                datetime_raw,
-                tz=pendulum.tz.timezone(str(timezone)),
-                exact=True,
-            )
-
-            if isinstance(adate, DateTime):
-                return ADate(None, adate.in_timezone(UTC))
-            elif isinstance(adate, Date):
-                return ADate(adate, None)
-            else:
-                raise InputValidationError(
-                    f"Expected datetime '{datetime_raw}' to be in a proper datetime format",
-                )
-        except pendulum.parsing.exceptions.ParserError as error:
-            raise InputValidationError(
-                f"Expected datetime '{datetime_raw}' to be in a proper format",
-            ) from error
-
-    @classmethod
-    def base_type_hack(cls) -> type[Primitive]:
-        """The base type."""
-        return Date
-
-    @classmethod
-    def from_raw(cls, value: Primitive) -> "ADate":
-        """Validate and clean an ADate."""
-        if not isinstance(value, (str, date, datetime, Date, DateTime, dict)):
-            raise InputValidationError(
-                "Expected datetime to be string or a date or a datetime"
-            )
-
-        if isinstance(value, DateTime):
-            return ADate.from_date_and_time(value)
-        elif isinstance(value, datetime):
-            return ADate.from_db(value)
-        elif isinstance(value, Date):
-            return ADate.from_date(value)
-        elif isinstance(value, date):
-            return ADate.from_db(value)
-
-        try:
-            adate = pendulum.parser.parse(
-                value,
-                tz=pendulum.tz.timezone(UTC.name),
-                exact=True,
-            )
-
-            if isinstance(adate, DateTime):
-                return ADate(None, adate.in_timezone(UTC))
-            elif isinstance(adate, Date):
-                return ADate(adate, None)
-            else:
-                raise InputValidationError(
-                    f"Expected datetime '{value}' to be in a proper datetime format",
-                )
-        except pendulum.parsing.exceptions.ParserError as error:
-            raise InputValidationError(
-                f"Expected datetime '{value}' to be in a proper format",
-            ) from error
-
-    @staticmethod
     def from_str(date_raw: str) -> "ADate":
         """Parse a date from string."""
         return ADate(
@@ -136,40 +64,6 @@ class ADate(AtomicValue):
             ),
             None,
         )
-
-    @staticmethod
-    def from_db(timestamp_raw: datetime | date) -> "ADate":
-        """Parse a timestamp from a DB representation."""
-        if isinstance(timestamp_raw, datetime) and (
-            timestamp_raw.hour > 0
-            or timestamp_raw.minute > 0
-            or timestamp_raw.second > 0
-        ):
-            return ADate(None, pendulum.instance(timestamp_raw).in_timezone(UTC))
-        else:
-            return ADate(
-                Date(timestamp_raw.year, timestamp_raw.month, timestamp_raw.day),
-                None,
-            )
-
-    def to_primitive(self) -> Primitive:
-        """Get the primitive representation of this value."""
-        if self.the_datetime is not None:
-            return cast(DateTime, self.the_datetime)
-        else:
-            return cast(Date, self._surely_the_date)
-
-    def to_db(self) -> datetime:
-        """Transform a timestamp to a DB representation."""
-        if self.the_datetime is not None:
-            return cast(datetime, self.the_datetime)
-        else:
-            return datetime(
-                self._surely_the_date.year,
-                self._surely_the_date.month,
-                self._surely_the_date.day,
-                tzinfo=UTC,
-            )
 
     @staticmethod
     def to_user_str(timezone: Timezone, adate: Optional["ADate"]) -> str:
@@ -214,13 +108,6 @@ class ADate(AtomicValue):
         """The end of the day."""
         if self.the_datetime is not None:
             return ADate.from_date_and_time(self.the_datetime.end_of("day"))
-        else:
-            return self
-
-    def just_the_date(self) -> "ADate":
-        """Just the date part."""
-        if self.the_datetime is not None:
-            return ADate.from_date(self.the_datetime.date())
         else:
             return self
 
@@ -303,3 +190,44 @@ class ADate(AtomicValue):
         if self.the_date is None:
             raise Exception("Something bad has happened")
         return self.the_date
+
+
+
+class ADateDatabaseEncoder(RealmEncoder[ADate, DatabaseRealm]):
+    """An encoder for adates in databases."""
+
+    def encode(self, value: ADate) -> RealmThing:
+        if value.the_datetime is not None:
+           return cast(datetime, value.the_datetime)
+        else:
+            return datetime(
+                value._surely_the_date.year,
+                value._surely_the_date.month,
+                value._surely_the_date.day,
+                tzinfo=UTC,
+            )
+
+
+class ADateDatabaseDecoder(RealmDecoder[ADate, DatabaseRealm]):
+    """A decoder for adates in databases."""
+
+    def decode(self, value: RealmThing) -> ADate:
+        if not isinstance(
+            value, (datetime, DateTime, date, Date)
+        ):
+            raise RealmDecodingError(
+                f"Expected value for {self.__class__} to be datetime or DateTime"
+            )
+        
+        if isinstance(value, datetime) and (
+            value.hour > 0
+            or value.minute > 0
+            or value.second > 0
+        ):
+            return ADate(None, pendulum.instance(value).in_timezone(UTC))
+        else:
+            return ADate(
+                Date(value.year, value.month, value.day),
+                None,
+            )
+

@@ -17,7 +17,7 @@ class ScoreHistoryService:
         """Retrieve the history of scores for a user."""
         score_log = await uow.score_log_repository.load_by_parent(user.ref_id)
 
-        today = ADate.from_timestamp(right_now).just_the_date()
+        today = ADate.from_date(right_now.as_date())
         daily_lower_limit = today.subtract_days(90)
         weekly_lower_limit = today.subtract_days(365)
         monthly_lower_limit = today.subtract_days(365 * 2)

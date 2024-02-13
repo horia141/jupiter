@@ -121,12 +121,12 @@ class SqliteInboxTaskRepository(
         if filter_last_modified_time_start is not None:
             query_stmt = query_stmt.where(
                 self._table.c.last_modified_time
-                >= filter_last_modified_time_start.to_db(),
+                >= self._realm_codec_registry.db_encode(filter_last_modified_time_start),
             )
         if filter_last_modified_time_end is not None:
             query_stmt = query_stmt.where(
                 self._table.c.last_modified_time
-                < filter_last_modified_time_end.to_db(),
+                < self._realm_codec_registry.db_encode(filter_last_modified_time_end),
             )
         results = await self._connection.execute(query_stmt)
         return [self._row_to_entity(row) for row in results]

@@ -95,6 +95,16 @@ class RealmCodecRegistry(abc.ABC):
     ) -> RealmDecoder[_DomainThingT, _RealmT]:
         """Get a decoder for a realm and a concept type."""
 
+    def db_encode(self, domain_thing: _DomainThingT) -> RealmThing:
+        """Encode a value to the database realm."""
+        encoder = self.get_encoder(domain_thing.__class__, DatabaseRealm)
+        return encoder.encode(domain_thing)
+    
+    def db_decode(self, domain_thing_type: type[_DomainThingT], realm_thing: RealmThing) -> _DomainThingT:
+        """Decode a value from the database realm."""
+        decoder = self.get_decoder(domain_thing_type, DatabaseRealm)
+        return decoder.decode(realm_thing)
+
 
 class PlaceholderRealmCodecRegistry(RealmCodecRegistry):
     """A registry for realm codecs."""

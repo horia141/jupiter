@@ -1,5 +1,6 @@
 """SQlite based repository for the invocation record of mutation use cases."""
 from typing import Final
+from jupiter.core.framework.base.timestamp import TimestampDatabaseEncoder
 from jupiter.core.framework.realm import DatabaseRealm, RealmCodecRegistry
 
 from jupiter.core.framework.use_case import MutationUseCaseInvocationRecord, UseCaseArgs
@@ -57,15 +58,14 @@ class SqliteMutationUseCaseInvocationRecordRepository(
         invocation_record: MutationUseCaseInvocationRecord[UseCaseArgs],
     ) -> None:
         """Create a new invocation record."""
-        args_encoder = self._realm_codec_registry.get_encoder(invocation_record.args.__class__, DatabaseRealm)
         await self._connection.execute(
             insert(self._mutation_use_case_invocation_record_table).values(
-                user_ref_id=invocation_record.user_ref_id.as_int(),
-                workspace_ref_id=invocation_record.workspace_ref_id.as_int(),
-                timestamp=invocation_record.timestamp.to_db(),
+                user_ref_id=self._realm_codec_registry.db_encode(invocation_record.user_ref_id),
+                workspace_ref_id=self._realm_codec_registry.db_encode(invocation_record.workspace_ref_id),
+                timestamp=self._realm_codec_registry.db_encode(invocation_record.timestamp),
                 name=invocation_record.name,
-                args=args_encoder.encode(invocation_record.args),
-                result=invocation_record.result.to_db(),
+                args=self._realm_codec_registry.db_encode(invocation_record.args),
+                result=str(invocation_record.result.value),
                 error_str=invocation_record.error_str,
             ),
         )

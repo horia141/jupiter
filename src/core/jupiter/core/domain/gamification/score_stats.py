@@ -73,7 +73,7 @@ class ScoreStats(Record):
     def to_user_score_at_date(self) -> UserScoreAtDate:
         """Build a user score at time."""
         return UserScoreAtDate(
-            date=ADate.from_timestamp(self.created_time).just_the_date(),
+            date=ADate.from_date(self.created_time.as_date()),
             total_score=self.total_score,
             inbox_task_cnt=self.inbox_task_cnt,
             big_plan_cnt=self.big_plan_cnt,

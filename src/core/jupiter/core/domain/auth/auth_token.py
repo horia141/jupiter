@@ -73,13 +73,13 @@ class AuthToken(SecretValue):
         """Constract a new auth token."""
         issue_time = right_now
         expiration_time = Timestamp.from_date_and_time(
-            right_now.as_datetime().add(**duration)
+            right_now.value.add(**duration)
         )
         auth_token_str = jwt.encode(
             {
                 "user_ref_id": str(user_ref_id),
-                "iat": issue_time.as_datetime(),
-                "exp": expiration_time.as_datetime(),
+                "iat": issue_time.value,
+                "exp": expiration_time.value,
                 "aud": [audience],
             },
             secret,

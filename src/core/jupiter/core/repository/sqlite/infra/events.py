@@ -56,12 +56,12 @@ async def upsert_events(
             .prefix_with("OR IGNORE")
             .values(
                 owner_ref_id=aggreggate_root.ref_id.as_int(),
-                timestamp=event.timestamp.to_db(),
+                timestamp=realm_codec_registry.db_encode(event.timestamp),
                 session_index=event_idx,
                 name=str(event.name),
-                source=event.source.to_db(),
+                source=str(event.source.value),
                 owner_version=event.entity_version,
-                kind=event.kind.to_db(),
+                kind=str(event.kind.value),
                 data=_serialize_event(realm_codec_registry, event),
             ),
             # .on_conflict_do_nothing(

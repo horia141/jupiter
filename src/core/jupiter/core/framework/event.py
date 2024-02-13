@@ -15,10 +15,6 @@ class EventKind(enum.Enum):
     UPDATE = "Updated"
     ARCHIVE = "Archived"
 
-    def to_db(self) -> str:
-        """A database appropriate form of this enum."""
-        return str(self.value)
-
 
 @enum_value
 class EventSource(EnumValue):
@@ -30,10 +26,6 @@ class EventSource(EnumValue):
     EMAIL = "email"
     GC_CRON = "gc-cron"
     GEN_CRON = "gen-cron"
-
-    def to_db(self) -> str:
-        """A database appropriate form of this enum."""
-        return str(self.value)
 
 
 @dataclass

@@ -34,7 +34,7 @@ from fastapi import Depends, FastAPI, Request
 from fastapi.routing import APIRoute
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.types import DecoratedCallable
-from jupiter.core.domain.auth.auth_token_ext import AuthTokenExt
+from jupiter.core.domain.auth.auth_token_ext import AuthTokenExt, AuthTokenExtDatabaseDecoder
 from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
 from jupiter.core.domain.storage_engine import DomainStorageEngine, SearchStorageEngine
 from jupiter.core.framework.realm import RealmCodecRegistry
@@ -82,22 +82,23 @@ STANDARD_CONFIG: Mapping[str, Any] = {
     "response_model_exclude_defaults": True,
 }
 
-oauth2_guest_scheme = OAuth2PasswordBearer(tokenUrl="guest-login", auto_error=False)
-oauth2_logged_in_schemea = OAuth2PasswordBearer(tokenUrl="old-skool-login")
+AUTH_TOKEN_EXT_DECODER = AuthTokenExtDatabaseDecoder()
+OAUTH2_GUEST_SCHEMA = OAuth2PasswordBearer(tokenUrl="guest-login", auto_error=False)
+OAUTH2_LOGGED_IN_SCHEMA = OAuth2PasswordBearer(tokenUrl="old-skool-login")
 
 
 def construct_guest_auth_token_ext(
-    token_raw: Annotated[str | None, Depends(oauth2_guest_scheme)]
+    token_raw: Annotated[str | None, Depends(OAUTH2_GUEST_SCHEMA)]
 ) -> AuthTokenExt | None:
     """Construct a Token from the raw token string."""
-    return AuthTokenExt.from_raw(token_raw) if token_raw else None
+    return AUTH_TOKEN_EXT_DECODER.decode(token_raw) if token_raw else None
 
 
 def construct_logged_in_auth_token_ext(
-    token_raw: Annotated[str, Depends(oauth2_logged_in_schemea)]
+    token_raw: Annotated[str, Depends(OAUTH2_LOGGED_IN_SCHEMA)]
 ) -> AuthTokenExt:
     """Construct a Token from the raw token string."""
-    return AuthTokenExt.from_raw(token_raw)
+    return AUTH_TOKEN_EXT_DECODER.decode(token_raw)
 
 
 def construct_guest_session(
@@ -734,7 +735,7 @@ class WebServiceApp:
                 "enum": enum_value_type.get_all_values(),
             }
         
-        def build_atomic_value_schema(atomic_value_type: type[AtomicValue]) -> dict[str, Any]:
+        def build_atomic_value_schema(atomic_value_type: type[AtomicValue[Primitive]]) -> dict[str, Any]:
             return {
                 "title": atomic_value_type.__name__,
                 "description": atomic_value_type.__doc__,
@@ -743,7 +744,7 @@ class WebServiceApp:
         
         def build_composite_schema(composite_value_type: type[CompositeValue | SecretValue | Entity | Record | UseCaseArgsBase | UseCaseResultBase]) -> dict[str, Any]:
             requred = [f.name for f in dataclasses.fields(composite_value_type) if f.name is not "events" and not normalize_optional(f.type)[1]]
-            result = {
+            result: dict[str, None | str | list[str] | dict[str, Any]] = {
                 "title": composite_value_type.__name__,
                 "description": composite_value_type.__doc__,
                 "type": "object",

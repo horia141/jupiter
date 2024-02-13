@@ -54,10 +54,6 @@ class MutationUseCaseInvocationResult(enum.Enum):
     SUCCESS = "success"
     FAILURE = "failure"
 
-    def to_db(self) -> str:
-        """A database appropriate form of this enum."""
-        return str(self.value)
-
 
 @dataclass
 class MutationUseCaseInvocationRecord(Generic[UseCaseArgs]):

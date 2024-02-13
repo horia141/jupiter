@@ -40,13 +40,13 @@ class Search(LoggedInReadonlyCommand[SearchUseCase, SearchResult]):
 
             if not match.summary.archived:
                 modified_time_str = f"""Modified {(
-                    match.summary.last_modified_time.as_datetime().diff_for_humans(
-                        result.search_time.to_timestamp_at_end_of_day().as_datetime()
+                    match.summary.last_modified_time.value.diff_for_humans(
+                        result.search_time.to_timestamp_at_end_of_day().value
                     )
                 )}"""
             else:
-                modified_time_str = f"""Archived {(cast(Timestamp, match.summary.archived_time).as_datetime().diff_for_humans(
-                    result.search_time.to_timestamp_at_end_of_day().as_datetime()
+                modified_time_str = f"""Archived {(cast(Timestamp, match.summary.archived_time).value.diff_for_humans(
+                    result.search_time.to_timestamp_at_end_of_day().value
                 ))}"""
 
             match_text.append(" [")

@@ -19,8 +19,8 @@ from jupiter.core.domain.gamification.score_log import ScoreLog
 from jupiter.core.domain.gamification.score_log_entry import ScoreLogEntry
 from jupiter.core.domain.gamification.score_period_best import ScorePeriodBest
 from jupiter.core.domain.gamification.score_stats import ScoreStats
-from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.base.timestamp import Timestamp
+from jupiter.core.framework.base.entity_id import EntityId, EntityIdDatabaseDecoder
+from jupiter.core.framework.base.timestamp import Timestamp, TimestampDatabaseDecoder
 from jupiter.core.framework.entity import ParentLink
 from jupiter.core.framework.realm import RealmCodecRegistry
 from jupiter.core.framework.repository import (
@@ -47,6 +47,9 @@ from sqlalchemy import (
 )
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncConnection
+
+_ENTITY_ID_DECODER = EntityIdDatabaseDecoder()
+_TIMESTAMP_DECODER = TimestampDatabaseDecoder()
 
 
 class SqliteScoreLogRepository(
@@ -129,14 +132,7 @@ class SqliteScoreStatsRepository(ScoreStatsRepository):
         try:
             await self._connection.execute(
                 insert(self._score_stats_table).values(
-                    created_time=record.created_time.to_db(),
-                    last_modified_time=record.last_modified_time.to_db(),
-                    score_log_ref_id=record.score_log.as_int(),
-                    period=record.period.value if record.period else None,
-                    timeline=record.timeline,
-                    total_score=record.total_score,
-                    inbox_task_cnt=record.inbox_task_cnt,
-                    big_plan_cnt=record.big_plan_cnt,
+                    **self._realm_codec_registry.db_encode(record)
                 ),
             )
         except IntegrityError as err:
@@ -159,11 +155,7 @@ class SqliteScoreStatsRepository(ScoreStatsRepository):
             )
             .where(self._score_stats_table.c.timeline == record.timeline)
             .values(
-                created_time=record.created_time.to_db(),
-                last_modified_time=record.last_modified_time.to_db(),
-                total_score=record.total_score,
-                inbox_task_cnt=record.inbox_task_cnt,
-                big_plan_cnt=record.big_plan_cnt,
+                **self._realm_codec_registry.db_encode(record)
             ),
         )
         if result.rowcount == 0:
@@ -257,26 +249,17 @@ class SqliteScoreStatsRepository(ScoreStatsRepository):
                 self._score_stats_table.c.score_log_ref_id == score_log_ref_id.as_int()
             )
             .where(self._score_stats_table.c.period == period.value)
-            .where(self._score_stats_table.c.created_time >= start_date.to_db())
+            .where(self._score_stats_table.c.created_time >= self._realm_codec_registry.db_encode(start_date))
             .where(
                 self._score_stats_table.c.created_time
-                <= end_date.to_timestamp_at_end_of_day().to_db()
+                <= self._realm_codec_registry.db_encode(end_date.to_timestamp_at_end_of_day())
             )
         )
 
         return [self._row_to_entity(row) for row in result]
 
     def _row_to_entity(self, row: RowType) -> ScoreStats:
-        return ScoreStats(
-            created_time=Timestamp.from_db(row["created_time"]),
-            last_modified_time=Timestamp.from_db(row["last_modified_time"]),
-            score_log=ParentLink(EntityId(str(row["score_log_ref_id"]))),
-            period=RecurringTaskPeriod(row["period"]) if row["period"] else None,
-            timeline=row["timeline"],
-            total_score=row["total_score"],
-            inbox_task_cnt=row["inbox_task_cnt"],
-            big_plan_cnt=row["big_plan_cnt"],
-        )
+        return self._realm_codec_registry.db_decode(ScoreStats, row)
 
 
 class SqliteScorePeriodBestRepository(ScorePeriodBestRepository):
@@ -320,15 +303,7 @@ class SqliteScorePeriodBestRepository(ScorePeriodBestRepository):
         try:
             await self._connection.execute(
                 insert(self._score_period_best_table).values(
-                    created_time=record.created_time.to_db(),
-                    last_modified_time=record.last_modified_time.to_db(),
-                    score_log_ref_id=record.score_log.as_int(),
-                    period=record.period.value if record.period else None,
-                    timeline=record.timeline,
-                    sub_period=record.sub_period.value,
-                    total_score=record.total_score,
-                    inbox_task_cnt=record.inbox_task_cnt,
-                    big_plan_cnt=record.big_plan_cnt,
+                    **self._realm_codec_registry.db_encode(record)
                 ),
             )
         except IntegrityError as err:
@@ -355,11 +330,7 @@ class SqliteScorePeriodBestRepository(ScorePeriodBestRepository):
                 self._score_period_best_table.c.sub_period == record.sub_period.value
             )
             .values(
-                created_time=record.created_time.to_db(),
-                last_modified_time=record.last_modified_time.to_db(),
-                total_score=record.total_score,
-                inbox_task_cnt=record.inbox_task_cnt,
-                big_plan_cnt=record.big_plan_cnt,
+                **self._realm_codec_registry.db_encode(record)
             ),
         )
         if result.rowcount == 0:
@@ -447,14 +418,4 @@ class SqliteScorePeriodBestRepository(ScorePeriodBestRepository):
         return [self._row_to_entity(row) for row in result]
 
     def _row_to_entity(self, row: RowType) -> ScorePeriodBest:
-        return ScorePeriodBest(
-            created_time=Timestamp.from_db(row["created_time"]),
-            last_modified_time=Timestamp.from_db(row["last_modified_time"]),
-            score_log=ParentLink(EntityId(str(row["score_log_ref_id"]))),
-            period=RecurringTaskPeriod(row["period"]) if row["period"] else None,
-            timeline=row["timeline"],
-            sub_period=RecurringTaskPeriod(row["sub_period"]),
-            total_score=row["total_score"],
-            inbox_task_cnt=row["inbox_task_cnt"],
-            big_plan_cnt=row["big_plan_cnt"],
-        )
+        return self._realm_codec_registry.db_decode(ScorePeriodBest, row)
