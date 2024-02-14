@@ -577,11 +577,10 @@ class GenService:
             habit.gen_params.period,
             habit.name,
             today.to_timestamp_at_end_of_day(),
-            user.timezone,
+        
             habit.skip_rule,
             habit.gen_params.actionable_from_day,
             habit.gen_params.actionable_from_month,
-            habit.gen_params.due_at_time,
             habit.gen_params.due_at_day,
             habit.gen_params.due_at_month,
         )
@@ -620,7 +619,7 @@ class GenService:
                     timeline=schedule.timeline,
                     repeat_index=real_task_idx,
                     actionable_date=schedule.actionable_date,
-                    due_date=schedule.due_time,
+                    due_date=schedule.due_date,
                     eisen=habit.gen_params.eisen,
                     difficulty=habit.gen_params.difficulty,
                 )
@@ -645,7 +644,7 @@ class GenService:
                     eisen=habit.gen_params.eisen,
                     difficulty=habit.gen_params.difficulty,
                     actionable_date=schedule.actionable_date,
-                    due_date=schedule.due_time,
+                    due_date=schedule.due_date,
                 )
 
                 async with self._domain_storage_engine.get_unit_of_work() as uow:
@@ -702,11 +701,9 @@ class GenService:
             chore.gen_params.period,
             chore.name,
             today.to_timestamp_at_end_of_day(),
-            user.timezone,
             chore.skip_rule,
             chore.gen_params.actionable_from_day,
             chore.gen_params.actionable_from_month,
-            chore.gen_params.due_at_time,
             chore.gen_params.due_at_day,
             chore.gen_params.due_at_month,
         )
@@ -741,7 +738,7 @@ class GenService:
                 name=schedule.full_name,
                 timeline=schedule.timeline,
                 actionable_date=schedule.actionable_date,
-                due_date=schedule.due_time,
+                due_date=schedule.due_date,
                 eisen=chore.gen_params.eisen,
                 difficulty=chore.gen_params.difficulty,
             )
@@ -766,7 +763,7 @@ class GenService:
                 eisen=chore.gen_params.eisen,
                 difficulty=chore.gen_params.difficulty,
                 actionable_date=schedule.actionable_date,
-                due_date=schedule.due_time,
+                due_date=schedule.due_date,
             )
 
             async with self._domain_storage_engine.get_unit_of_work() as uow:
@@ -805,11 +802,9 @@ class GenService:
             typing.cast(RecurringTaskPeriod, collection_params.period),
             metric.name,
             today.to_timestamp_at_end_of_day(),
-            user.timezone,
             None,
             collection_params.actionable_from_day,
             collection_params.actionable_from_month,
-            collection_params.due_at_time,
             collection_params.due_at_day,
             collection_params.due_at_month,
         )
@@ -834,7 +829,7 @@ class GenService:
                 eisen=collection_params.eisen,
                 difficulty=collection_params.difficulty,
                 actionable_date=schedule.actionable_date,
-                due_time=schedule.due_time,
+                due_time=schedule.due_date,
             )
 
             async with self._domain_storage_engine.get_unit_of_work() as uow:
@@ -857,7 +852,7 @@ class GenService:
                 eisen=collection_params.eisen,
                 difficulty=collection_params.difficulty,
                 actionable_date=schedule.actionable_date,
-                due_date=schedule.due_time,
+                due_date=schedule.due_date,
             )
 
             async with self._domain_storage_engine.get_unit_of_work() as uow:
@@ -896,11 +891,9 @@ class GenService:
             typing.cast(RecurringTaskPeriod, catch_up_params.period),
             person.name,
             today.to_timestamp_at_end_of_day(),
-            user.timezone,
             None,
             catch_up_params.actionable_from_day,
             catch_up_params.actionable_from_month,
-            catch_up_params.due_at_time,
             catch_up_params.due_at_day,
             catch_up_params.due_at_month,
         )
@@ -925,7 +918,7 @@ class GenService:
                 eisen=catch_up_params.eisen,
                 difficulty=catch_up_params.difficulty,
                 actionable_date=schedule.actionable_date,
-                due_time=schedule.due_time,
+                due_time=schedule.due_date,
             )
 
             async with self._domain_storage_engine.get_unit_of_work() as uow:
@@ -948,7 +941,7 @@ class GenService:
                 eisen=catch_up_params.eisen,
                 difficulty=catch_up_params.difficulty,
                 actionable_date=schedule.actionable_date,
-                due_date=schedule.due_time,
+                due_date=schedule.due_date,
             )
 
             async with self._domain_storage_engine.get_unit_of_work() as uow:
@@ -983,8 +976,6 @@ class GenService:
             RecurringTaskPeriod.YEARLY,
             person.name,
             today.to_timestamp_at_end_of_day(),
-            user.timezone,
-            None,
             None,
             None,
             None,
@@ -1016,7 +1007,7 @@ class GenService:
                 name=schedule.full_name,
                 recurring_timeline=schedule.timeline,
                 preparation_days_cnt=person.preparation_days_cnt_for_birthday,
-                due_time=schedule.due_time,
+                due_time=schedule.due_date,
             )
 
             async with self._domain_storage_engine.get_unit_of_work() as uow:
@@ -1037,7 +1028,7 @@ class GenService:
                 recurring_task_timeline=schedule.timeline,
                 preparation_days_cnt=person.preparation_days_cnt_for_birthday,
                 recurring_task_gen_right_now=today.to_timestamp_at_end_of_day(),
-                due_date=schedule.due_time,
+                due_date=schedule.due_date,
             )
 
             async with self._domain_storage_engine.get_unit_of_work() as uow:

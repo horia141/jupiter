@@ -5,7 +5,6 @@ from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDueAtMonth
-from jupiter.core.domain.core.recurring_task_due_at_time import RecurringTaskDueAtTime
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import WorkspaceFeature
@@ -41,7 +40,6 @@ class PersonCreateArgs(UseCaseArgsBase):
     catch_up_difficulty: Optional[Difficulty] = None
     catch_up_actionable_from_day: Optional[RecurringTaskDueAtDay] = None
     catch_up_actionable_from_month: Optional[RecurringTaskDueAtMonth] = None
-    catch_up_due_at_time: Optional[RecurringTaskDueAtTime] = None
     catch_up_due_at_day: Optional[RecurringTaskDueAtDay] = None
     catch_up_due_at_month: Optional[RecurringTaskDueAtMonth] = None
     birthday: Optional[PersonBirthday] = None
@@ -82,7 +80,6 @@ class PersonCreateUseCase(
                 difficulty=args.catch_up_difficulty,
                 actionable_from_day=args.catch_up_actionable_from_day,
                 actionable_from_month=args.catch_up_actionable_from_month,
-                due_at_time=args.catch_up_due_at_time,
                 due_at_day=args.catch_up_due_at_day,
                 due_at_month=args.catch_up_due_at_month,
             )

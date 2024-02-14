@@ -743,12 +743,12 @@ class WebServiceApp:
             }
         
         def build_composite_schema(composite_value_type: type[CompositeValue | SecretValue | Entity | Record | UseCaseArgsBase | UseCaseResultBase]) -> dict[str, Any]:
-            requred = [f.name for f in dataclasses.fields(composite_value_type) if f.name is not "events" and not normalize_optional(f.type)[1]]
+            requred = [f.name for f in dataclasses.fields(composite_value_type) if f.name != "events" and not normalize_optional(f.type)[1]]
             result: dict[str, None | str | list[str] | dict[str, Any]] = {
                 "title": composite_value_type.__name__,
                 "description": composite_value_type.__doc__,
                 "type": "object",
-                "properties": {f.name: build_composite_field(f, f.type) for f in dataclasses.fields(composite_value_type) if f.name is not "events"}
+                "properties": {f.name: build_composite_field(f, f.type) for f in dataclasses.fields(composite_value_type) if f.name != "events"}
             }
             if len(requred) > 0:
                 result["required"] = requred

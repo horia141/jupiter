@@ -12,7 +12,6 @@ from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.core.email_address import EmailAddress
 from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDueAtMonth
-from jupiter.core.domain.core.recurring_task_due_at_time import RecurringTaskDueAtTime
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.core.recurring_task_skip_rule import RecurringTaskSkipRule
 from jupiter.core.domain.core.timezone import Timezone
@@ -459,11 +458,6 @@ def actionable_from_month_to_rich_text(
 ) -> Text:
     """Transform a actionable month to rich text."""
     return Text("From month ").append(str(actionable_from_month), style="underline")
-
-
-def due_at_time_to_rich_text(due_at_time: RecurringTaskDueAtTime) -> Text:
-    """Transform a due time to rich text."""
-    return Text("Due at ").append(str(due_at_time), style="underline")
 
 
 def due_at_day_to_rich_text(due_at_day: RecurringTaskDueAtDay) -> Text:

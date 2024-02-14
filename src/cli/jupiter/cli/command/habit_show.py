@@ -8,7 +8,6 @@ from jupiter.cli.command.rendering import (
     difficulty_to_rich_text,
     due_at_day_to_rich_text,
     due_at_month_to_rich_text,
-    due_at_time_to_rich_text,
     eisen_to_rich_text,
     entity_id_to_rich_text,
     inbox_task_summary_to_rich_text,
@@ -90,12 +89,6 @@ class HabitShow(LoggedInReadonlyCommand[HabitFindUseCase, HabitFindResult]):
                     actionable_from_month_to_rich_text(
                         habit.gen_params.actionable_from_month,
                     ),
-                )
-
-            if habit.gen_params.due_at_time:
-                habit_info_text.append(" ")
-                habit_info_text.append(
-                    due_at_time_to_rich_text(habit.gen_params.due_at_time),
                 )
 
             if habit.gen_params.due_at_day:

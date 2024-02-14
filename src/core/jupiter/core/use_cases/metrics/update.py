@@ -8,7 +8,6 @@ from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.core.entity_icon import EntityIcon
 from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDueAtMonth
-from jupiter.core.domain.core.recurring_task_due_at_time import RecurringTaskDueAtTime
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import WorkspaceFeature
@@ -44,7 +43,6 @@ class MetricUpdateArgs(UseCaseArgsBase):
     collection_difficulty: UpdateAction[Optional[Difficulty]]
     collection_actionable_from_day: UpdateAction[Optional[RecurringTaskDueAtDay]]
     collection_actionable_from_month: UpdateAction[Optional[RecurringTaskDueAtMonth]]
-    collection_due_at_time: UpdateAction[Optional[RecurringTaskDueAtTime]]
     collection_due_at_day: UpdateAction[Optional[RecurringTaskDueAtDay]]
     collection_due_at_month: UpdateAction[Optional[RecurringTaskDueAtMonth]]
 
@@ -81,7 +79,6 @@ class MetricUpdateUseCase(
             or args.collection_difficulty.should_change
             or args.collection_actionable_from_day.should_change
             or args.collection_actionable_from_month.should_change
-            or args.collection_due_at_time.should_change
             or args.collection_due_at_day.should_change
             or args.collection_due_at_month
         ):
@@ -126,14 +123,6 @@ class MetricUpdateUseCase(
                         metric.collection_params.actionable_from_month
                     )
 
-                new_collection_due_at_time = None
-                if args.collection_due_at_time.should_change:
-                    new_collection_due_at_time = (
-                        args.collection_due_at_time.just_the_value
-                    )
-                elif metric.collection_params is not None:
-                    new_collection_due_at_time = metric.collection_params.due_at_time
-
                 new_collection_due_at_day = None
                 if args.collection_due_at_day.should_change:
                     new_collection_due_at_day = (
@@ -157,7 +146,6 @@ class MetricUpdateUseCase(
                         difficulty=new_collection_difficulty,
                         actionable_from_day=new_collection_actionable_from_day,
                         actionable_from_month=new_collection_actionable_from_month,
-                        due_at_time=new_collection_due_at_time,
                         due_at_day=new_collection_due_at_day,
                         due_at_month=new_collection_due_at_month,
                     ),
@@ -209,11 +197,9 @@ class MetricUpdateUseCase(
                     metric.collection_params.period,
                     metric.name,
                     typing.cast(Timestamp, inbox_task.recurring_gen_right_now),
-                    user.timezone,
                     None,
                     metric.collection_params.actionable_from_day,
                     metric.collection_params.actionable_from_month,
-                    metric.collection_params.due_at_time,
                     metric.collection_params.due_at_day,
                     metric.collection_params.due_at_month,
                 )
@@ -226,7 +212,7 @@ class MetricUpdateUseCase(
                     eisen=metric.collection_params.eisen,
                     difficulty=metric.collection_params.difficulty,
                     actionable_date=schedule.actionable_date,
-                    due_time=schedule.due_time,
+                    due_time=schedule.due_date,
                 )
 
                 await uow.inbox_task_repository.save(inbox_task)

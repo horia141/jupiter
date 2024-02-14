@@ -8,7 +8,6 @@ from jupiter.cli.command.rendering import (
     difficulty_to_rich_text,
     due_at_day_to_rich_text,
     due_at_month_to_rich_text,
-    due_at_time_to_rich_text,
     eisen_to_rich_text,
     end_date_to_rich_text,
     entity_id_to_rich_text,
@@ -92,12 +91,6 @@ class ChoreShow(LoggedInReadonlyCommand[ChoreFindUseCase, ChoreFindResult]):
                     actionable_from_month_to_rich_text(
                         chore.gen_params.actionable_from_month,
                     ),
-                )
-
-            if chore.gen_params.due_at_time:
-                chore_info_text.append(" ")
-                chore_info_text.append(
-                    due_at_time_to_rich_text(chore.gen_params.due_at_time),
                 )
 
             if chore.gen_params.due_at_day:

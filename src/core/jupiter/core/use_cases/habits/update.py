@@ -6,7 +6,6 @@ from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDueAtMonth
-from jupiter.core.domain.core.recurring_task_due_at_time import RecurringTaskDueAtTime
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.core.recurring_task_skip_rule import RecurringTaskSkipRule
@@ -38,7 +37,6 @@ class HabitUpdateArgs(UseCaseArgsBase):
     difficulty: UpdateAction[Optional[Difficulty]]
     actionable_from_day: UpdateAction[Optional[RecurringTaskDueAtDay]]
     actionable_from_month: UpdateAction[Optional[RecurringTaskDueAtMonth]]
-    due_at_time: UpdateAction[Optional[RecurringTaskDueAtTime]]
     due_at_day: UpdateAction[Optional[RecurringTaskDueAtDay]]
     due_at_month: UpdateAction[Optional[RecurringTaskDueAtMonth]]
     skip_rule: UpdateAction[Optional[RecurringTaskSkipRule]]
@@ -73,7 +71,6 @@ class HabitUpdateUseCase(
             or args.difficulty.should_change
             or args.actionable_from_day.should_change
             or args.actionable_from_month.should_change
-            or args.due_at_time.should_change
             or args.due_at_day.should_change
             or args.due_at_month.should_change
             or args.repeats_in_period_count.should_change
@@ -85,7 +82,6 @@ class HabitUpdateUseCase(
             or args.difficulty.should_change
             or args.actionable_from_day.should_change
             or args.actionable_from_month.should_change
-            or args.due_at_time.should_change
             or args.due_at_day.should_change
             or args.due_at_month.should_change
         ):
@@ -101,7 +97,6 @@ class HabitUpdateUseCase(
                     args.actionable_from_month.or_else(
                         habit.gen_params.actionable_from_month,
                     ),
-                    args.due_at_time.or_else(habit.gen_params.due_at_time),
                     args.due_at_day.or_else(habit.gen_params.due_at_day),
                     args.due_at_month.or_else(habit.gen_params.due_at_month),
                 ),
@@ -137,11 +132,9 @@ class HabitUpdateUseCase(
                     habit.gen_params.period,
                     habit.name,
                     cast(Timestamp, inbox_task.recurring_gen_right_now),
-                    user.timezone,
                     habit.skip_rule,
                     habit.gen_params.actionable_from_day,
                     habit.gen_params.actionable_from_month,
-                    habit.gen_params.due_at_time,
                     habit.gen_params.due_at_day,
                     habit.gen_params.due_at_month,
                 )
@@ -153,7 +146,7 @@ class HabitUpdateUseCase(
                     timeline=schedule.timeline,
                     repeat_index=inbox_task.recurring_repeat_index,
                     actionable_date=schedule.actionable_date,
-                    due_date=schedule.due_time,
+                    due_date=schedule.due_date,
                     eisen=habit.gen_params.eisen,
                     difficulty=habit.gen_params.difficulty,
                 )

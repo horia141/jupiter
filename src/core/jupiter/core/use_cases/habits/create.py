@@ -5,7 +5,6 @@ from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDueAtMonth
-from jupiter.core.domain.core.recurring_task_due_at_time import RecurringTaskDueAtTime
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.core.recurring_task_skip_rule import RecurringTaskSkipRule
@@ -44,7 +43,6 @@ class HabitCreateArgs(UseCaseArgsBase):
     difficulty: Optional[Difficulty] = None
     actionable_from_day: Optional[RecurringTaskDueAtDay] = None
     actionable_from_month: Optional[RecurringTaskDueAtMonth] = None
-    due_at_time: Optional[RecurringTaskDueAtTime] = None
     due_at_day: Optional[RecurringTaskDueAtDay] = None
     due_at_month: Optional[RecurringTaskDueAtMonth] = None
     skip_rule: Optional[RecurringTaskSkipRule] = None
@@ -95,7 +93,6 @@ class HabitCreateUseCase(
                 difficulty=args.difficulty,
                 actionable_from_day=args.actionable_from_day,
                 actionable_from_month=args.actionable_from_month,
-                due_at_time=args.due_at_time,
                 due_at_day=args.due_at_day,
                 due_at_month=args.due_at_month,
             ),

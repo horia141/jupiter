@@ -7,7 +7,6 @@ from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDueAtMonth
-from jupiter.core.domain.core.recurring_task_due_at_time import RecurringTaskDueAtTime
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import WorkspaceFeature
@@ -45,7 +44,6 @@ class PersonUpdateArgs(UseCaseArgsBase):
     catch_up_difficulty: UpdateAction[Optional[Difficulty]]
     catch_up_actionable_from_day: UpdateAction[Optional[RecurringTaskDueAtDay]]
     catch_up_actionable_from_month: UpdateAction[Optional[RecurringTaskDueAtMonth]]
-    catch_up_due_at_time: UpdateAction[Optional[RecurringTaskDueAtTime]]
     catch_up_due_at_day: UpdateAction[Optional[RecurringTaskDueAtDay]]
     catch_up_due_at_month: UpdateAction[Optional[RecurringTaskDueAtMonth]]
     birthday: UpdateAction[Optional[PersonBirthday]]
@@ -81,7 +79,6 @@ class PersonUpdateUseCase(
             or args.catch_up_difficulty.should_change
             or args.catch_up_actionable_from_day.should_change
             or args.catch_up_actionable_from_month.should_change
-            or args.catch_up_due_at_time.should_change
             or args.catch_up_due_at_day.should_change
             or args.catch_up_due_at_month
         ):
@@ -124,12 +121,6 @@ class PersonUpdateUseCase(
                         person.catch_up_params.actionable_from_month
                     )
 
-                new_catch_up_due_at_time = None
-                if args.catch_up_due_at_time.should_change:
-                    new_catch_up_due_at_time = args.catch_up_due_at_time.just_the_value
-                elif person.catch_up_params is not None:
-                    new_catch_up_due_at_time = person.catch_up_params.due_at_time
-
                 new_catch_up_due_at_day = None
                 if args.catch_up_due_at_day.should_change:
                     new_catch_up_due_at_day = args.catch_up_due_at_day.just_the_value
@@ -151,7 +142,6 @@ class PersonUpdateUseCase(
                         difficulty=new_catch_up_difficulty,
                         actionable_from_day=new_catch_up_actionable_from_day,
                         actionable_from_month=new_catch_up_actionable_from_month,
-                        due_at_time=new_catch_up_due_at_time,
                         due_at_day=new_catch_up_due_at_day,
                         due_at_month=new_catch_up_due_at_month,
                     ),
@@ -199,11 +189,9 @@ class PersonUpdateUseCase(
                     person.catch_up_params.period,
                     person.name,
                     typing.cast(Timestamp, inbox_task.recurring_gen_right_now),
-                    user.timezone,
                     None,
                     person.catch_up_params.actionable_from_day,
                     person.catch_up_params.actionable_from_month,
-                    person.catch_up_params.due_at_time,
                     person.catch_up_params.due_at_day,
                     person.catch_up_params.due_at_month,
                 )
@@ -216,7 +204,7 @@ class PersonUpdateUseCase(
                     eisen=person.catch_up_params.eisen,
                     difficulty=person.catch_up_params.difficulty,
                     actionable_date=schedule.actionable_date,
-                    due_time=schedule.due_time,
+                    due_time=schedule.due_date,
                 )
                 # Situation 2a: we're handling the same project.
                 await uow.inbox_task_repository.save(inbox_task)
@@ -237,8 +225,6 @@ class PersonUpdateUseCase(
                     RecurringTaskPeriod.YEARLY,
                     person.name,
                     typing.cast(Timestamp, inbox_task.recurring_gen_right_now),
-                    user.timezone,
-                    None,
                     None,
                     None,
                     None,
@@ -258,7 +244,7 @@ class PersonUpdateUseCase(
                     name=schedule.full_name,
                     recurring_timeline=schedule.timeline,
                     preparation_days_cnt=person.preparation_days_cnt_for_birthday,
-                    due_time=schedule.due_time,
+                    due_time=schedule.due_date,
                 )
 
                 await uow.inbox_task_repository.save(inbox_task)

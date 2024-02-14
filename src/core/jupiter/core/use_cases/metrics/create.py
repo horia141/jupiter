@@ -6,7 +6,6 @@ from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.core.entity_icon import EntityIcon
 from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDueAtMonth
-from jupiter.core.domain.core.recurring_task_due_at_time import RecurringTaskDueAtTime
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import WorkspaceFeature
@@ -41,7 +40,6 @@ class MetricCreateArgs(UseCaseArgsBase):
     collection_difficulty: Optional[Difficulty] = None
     collection_actionable_from_day: Optional[RecurringTaskDueAtDay] = None
     collection_actionable_from_month: Optional[RecurringTaskDueAtMonth] = None
-    collection_due_at_time: Optional[RecurringTaskDueAtTime] = None
     collection_due_at_day: Optional[RecurringTaskDueAtDay] = None
     collection_due_at_month: Optional[RecurringTaskDueAtMonth] = None
     metric_unit: Optional[MetricUnit] = None
@@ -82,7 +80,6 @@ class MetricCreateUseCase(
                 difficulty=args.collection_difficulty,
                 actionable_from_day=args.collection_actionable_from_day,
                 actionable_from_month=args.collection_actionable_from_month,
-                due_at_time=args.collection_due_at_time,
                 due_at_day=args.collection_due_at_day,
                 due_at_month=args.collection_due_at_month,
             )

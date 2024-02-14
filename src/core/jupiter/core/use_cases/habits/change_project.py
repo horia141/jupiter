@@ -69,11 +69,9 @@ class HabitChangeProjectUseCase(
                 habit.gen_params.period,
                 habit.name,
                 cast(Timestamp, inbox_task.recurring_gen_right_now),
-                user.timezone,
                 habit.skip_rule,
                 habit.gen_params.actionable_from_day,
                 habit.gen_params.actionable_from_month,
-                habit.gen_params.due_at_time,
                 habit.gen_params.due_at_day,
                 habit.gen_params.due_at_month,
             )
@@ -85,7 +83,7 @@ class HabitChangeProjectUseCase(
                 timeline=schedule.timeline,
                 repeat_index=inbox_task.recurring_repeat_index,
                 actionable_date=schedule.actionable_date,
-                due_date=schedule.due_time,
+                due_date=schedule.due_date,
                 eisen=habit.gen_params.eisen,
                 difficulty=habit.gen_params.difficulty,
             )
