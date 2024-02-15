@@ -60,7 +60,7 @@ class MetricEntryCreateUseCase(
         collection_time = (
             args.collection_time
             if args.collection_time
-            else self._time_provider.get_current_date_time()
+            else self._time_provider.get_current_date()
         )
         new_metric_entry = MetricEntry.new_metric_entry(
             context.domain_context,

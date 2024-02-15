@@ -1,7 +1,7 @@
 """Extra information for how to generate an inbox task."""
 import argparse
 import shlex
-from typing import Optional
+from typing import Optional, cast
 
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.difficulty import Difficulty
@@ -52,11 +52,11 @@ class PushGenerationExtraInfoDatabaseEncoder(
             string_pieces.append(f"--difficulty={value.difficulty}")
         if value.actionable_date:
             string_pieces.append(
-                f"--actionable-date={ADate.to_user_str(value.timezone, value.actionable_date)}",
+                f"--actionable-date={value.actionable_date}",
             )
         if value.due_date:
             string_pieces.append(
-                f"--due-date={ADate.to_user_str(value.timezone, value.due_date)}",
+                f"--due-date={value.due_date}",
             )
         return " ".join(string_pieces)
 

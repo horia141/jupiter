@@ -67,5 +67,5 @@ class MetricEntry(LeafEntity):
     def build_name(collection_time: ADate, value: float) -> EntityName:
         """Construct a name."""
         return EntityName(
-            f"Entry for {ADate.to_user_date_str(collection_time)} value={value}",
+            f"Entry for {collection_time} value={value}",
         )

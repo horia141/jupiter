@@ -23,7 +23,3 @@ class TimeProvider:
     def get_current_date(self) -> ADate:
         """Get the current date."""
         return ADate.from_date(self._right_now.as_date())
-
-    def get_current_date_time(self) -> ADate:
-        """Get the current date and time."""
-        return ADate.from_date_and_time(self._right_now.value)

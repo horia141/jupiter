@@ -891,7 +891,7 @@ class InboxTask(LeafEntity):
         period: RecurringTaskPeriod, right_now: ADate
     ) -> InboxTaskName:
         return InboxTaskName(
-            f"Write {period} journal entry for for {ADate.to_user_date_str(right_now)}"
+            f"Write {period} journal entry for for {right_now}"
         )
 
     @staticmethod

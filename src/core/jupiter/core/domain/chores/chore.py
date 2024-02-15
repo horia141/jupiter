@@ -173,7 +173,7 @@ class Chore(LeafEntity):
     def is_in_active_interval(self, start_date: ADate, end_date: ADate) -> bool:
         """Checks whether a particular date range is in this active interval."""
         chore_start_date = self.start_at_date
-        chore_end_date = self.end_at_date.end_of_day() if self.end_at_date else None
+        chore_end_date = self.end_at_date if self.end_at_date else None
 
         if chore_end_date is None:
             # Just a start date interval, so at least the end date should be in it

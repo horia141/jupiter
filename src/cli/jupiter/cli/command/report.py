@@ -41,7 +41,7 @@ class Report(LoggedInReadonlyCommand[ReportUseCase, ReportResult]):
     ) -> None:
         sources_to_present = result.period_result.sources
 
-        today_str = ADate.to_user_date_str(result.period_result.today)
+        today_str = str(result.period_result.today)
 
         rich_text = Text("🚀 ")
         rich_text.append(period_to_rich_text(result.period_result.period))

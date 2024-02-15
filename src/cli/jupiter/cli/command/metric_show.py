@@ -146,7 +146,7 @@ class MetricShow(LoggedInReadonlyCommand[MetricFindUseCase, MetricFindResult]):
                     )
                     metric_entry_text.append(" ")
                     metric_entry_text.append(
-                        ADate.to_user_date_str(metric_entry.collection_time),
+                        str(metric_entry.collection_time),
                     )
                     metric_entry_text.append(" value=")
                     metric_entry_text.append(str(metric_entry.value))

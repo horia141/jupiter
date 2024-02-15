@@ -587,11 +587,11 @@ def get_schedule(
     period: RecurringTaskPeriod,
     name: EntityName,
     right_now: Timestamp,
-    skip_rule: Optional[RecurringTaskSkipRule],
-    actionable_from_day: Optional[RecurringTaskDueAtDay],
-    actionable_from_month: Optional[RecurringTaskDueAtMonth],
-    due_at_day: Optional[RecurringTaskDueAtDay],
-    due_at_month: Optional[RecurringTaskDueAtMonth],
+    skip_rule: Optional[RecurringTaskSkipRule] = None,
+    actionable_from_day: Optional[RecurringTaskDueAtDay] = None,
+    actionable_from_month: Optional[RecurringTaskDueAtMonth] = None,
+    due_at_day: Optional[RecurringTaskDueAtDay] = None,
+    due_at_month: Optional[RecurringTaskDueAtMonth] = None,
 ) -> Schedule:
     """Build an appropriate schedule from the given parameters."""
     if period == RecurringTaskPeriod.DAILY:

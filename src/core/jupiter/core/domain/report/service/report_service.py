@@ -221,7 +221,7 @@ class ReportService:
                 allow_archived=True,
                 filter_sources=sources,
                 filter_project_ref_ids=filter_project_ref_ids,
-                filter_last_modified_time_start=schedule.first_day.start_of_day(),
+                filter_last_modified_time_start=schedule.first_day,
                 filter_last_modified_time_end=schedule.end_day.next_day(),
             )
             all_inbox_tasks = [
@@ -404,9 +404,9 @@ class ReportService:
         per_period_breakdown = []
         if breakdown_period:
             all_schedules = {}
-            curr_date = schedule.first_day.start_of_day()
-            end_date = schedule.end_day.end_of_day()
-            while curr_date < end_date and curr_date <= today:
+            curr_date = schedule.first_day
+            end_date = schedule.end_day
+            while curr_date <= end_date and curr_date <= today:
                 phase_schedule = schedules.get_schedule(
                     breakdown_period,
                     EntityName("Sub-period"),

@@ -118,5 +118,5 @@ class Journal(LeafEntity):
     def build_name(right_now: ADate, period: RecurringTaskPeriod) -> EntityName:
         """Build the name of the journal."""
         return EntityName(
-            f"{period.value.capitalize()} journal for {ADate.to_user_date_str(right_now)}"
+            f"{period.value.capitalize()} journal for {right_now}"
         )

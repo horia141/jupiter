@@ -348,7 +348,7 @@ def big_plan_status_to_rich_text(status: BigPlanStatus, archived: bool) -> Text:
 def actionable_date_to_rich_text(actionable_date: ADate) -> Text:
     """Transform an actionable date into text."""
     return Text("From ").append(
-        ADate.to_user_date_str(actionable_date),
+str(        actionable_date),
         style="underline",
     )
 
@@ -356,24 +356,24 @@ def actionable_date_to_rich_text(actionable_date: ADate) -> Text:
 def start_date_to_rich_text(start_date: ADate) -> Text:
     """Transform a due date into text."""
     return Text("Start at ").append(
-        ADate.to_user_date_str(start_date),
+str(        start_date),
         style="underline",
     )
 
 
 def end_date_to_rich_text(end_date: ADate) -> Text:
     """Transform a due date into text."""
-    return Text("End at ").append(ADate.to_user_date_str(end_date), style="underline")
+    return Text("End at ").append(str(end_date), style="underline")
 
 
 def due_date_to_rich_text(due_date: ADate) -> Text:
     """Transform a due date into text."""
-    return Text("Due at ").append(ADate.to_user_date_str(due_date), style="underline")
+    return Text("Due at ").append(str(due_date), style="underline")
 
 
 def date_with_label_to_rich_text(due_date: ADate, label: str) -> Text:
     """Transform a due date into text."""
-    return Text(f"{label} ").append(ADate.to_user_date_str(due_date), style="underline")
+    return Text(f"{label} ").append(str(due_date), style="underline")
 
 
 def project_to_rich_text(project_name: ProjectName) -> Text:
