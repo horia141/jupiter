@@ -1,11 +1,14 @@
 """The due day for a recurring task."""
-from typing import Dict, Final, Optional, Tuple
+from typing import Dict, Final, Tuple
 
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.value import AtomicValue, value
-from jupiter.core.use_cases.infra.realms import PrimitiveAtomicValueDatabaseDecoder, PrimitiveAtomicValueDatabaseEncoder
+from jupiter.core.use_cases.infra.realms import (
+    PrimitiveAtomicValueDatabaseDecoder,
+    PrimitiveAtomicValueDatabaseEncoder,
+)
 
 _RECURRING_TASK_DUE_AT_DAY_BOUNDS: Final[Dict[RecurringTaskPeriod, Tuple[int, int]]] = {
     RecurringTaskPeriod.DAILY: (0, 0),
@@ -24,11 +27,15 @@ class RecurringTaskDueAtDay(AtomicValue[int]):
 
     @staticmethod
     def first_of(period: RecurringTaskPeriod) -> "RecurringTaskDueAtDay":
-        return RecurringTaskDueAtDay(period, _RECURRING_TASK_DUE_AT_DAY_BOUNDS[period][0])
-    
+        return RecurringTaskDueAtDay(
+            period, _RECURRING_TASK_DUE_AT_DAY_BOUNDS[period][0]
+        )
+
     @staticmethod
     def end_of(period: RecurringTaskPeriod) -> "RecurringTaskDueAtDay":
-        return RecurringTaskDueAtDay(period, _RECURRING_TASK_DUE_AT_DAY_BOUNDS[period][1])
+        return RecurringTaskDueAtDay(
+            period, _RECURRING_TASK_DUE_AT_DAY_BOUNDS[period][1]
+        )
 
     def __init__(self, period: RecurringTaskPeriod, value: int) -> None:
         bounds = _RECURRING_TASK_DUE_AT_DAY_BOUNDS[period]
@@ -37,7 +44,7 @@ class RecurringTaskDueAtDay(AtomicValue[int]):
             raise InputValidationError(
                 f"Expected the due day info for {str(period)} period to be a value between {bounds[0]} and {bounds[1]} but was {value}",
             )
-        
+
         self.value = value
 
     def as_int(self) -> int:
@@ -49,13 +56,15 @@ class RecurringTaskDueAtDay(AtomicValue[int]):
         return str(self.value)
 
 
-class RecurringTaskDueAtDayDatabaseEncoder(PrimitiveAtomicValueDatabaseEncoder[RecurringTaskDueAtDay]):
-
+class RecurringTaskDueAtDayDatabaseEncoder(
+    PrimitiveAtomicValueDatabaseEncoder[RecurringTaskDueAtDay]
+):
     def to_primitive(self, value: RecurringTaskDueAtDay) -> Primitive:
         return value.value
-    
 
-class RecurringTaskDueAtDayDatabaseDecoder(PrimitiveAtomicValueDatabaseDecoder[RecurringTaskDueAtDay]):
 
+class RecurringTaskDueAtDayDatabaseDecoder(
+    PrimitiveAtomicValueDatabaseDecoder[RecurringTaskDueAtDay]
+):
     def from_raw_int(self, value: int) -> RecurringTaskDueAtDay:
         return RecurringTaskDueAtDay(RecurringTaskPeriod.YEARLY, value)

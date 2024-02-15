@@ -577,7 +577,6 @@ class GenService:
             habit.gen_params.period,
             habit.name,
             today.to_timestamp_at_end_of_day(),
-        
             habit.skip_rule,
             habit.gen_params.actionable_from_day,
             habit.gen_params.actionable_from_month,

@@ -39,7 +39,6 @@ class ChoreChangeProjectUseCase(
         args: ChoreChangeProjectArgs,
     ) -> None:
         """Execute the command's action."""
-        user = context.user
         workspace = context.workspace
 
         chore = await uow.chore_repository.load_by_id(args.ref_id)

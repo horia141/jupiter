@@ -64,13 +64,14 @@ def is_thing_ish_type(  # type: ignore
                 Entity,
                 Record,
                 UseCaseArgsBase,
-                UseCaseResultBase
+                UseCaseResultBase,
             ),
         )
     )
 
+
 def is_primitive_type(  # type: ignore
-    the_type: type[Any]
+    the_type: type[Any],
 ) -> TypeGuard[type[Primitive]]:
     return the_type in (
         type(None),
@@ -84,11 +85,11 @@ def is_primitive_type(  # type: ignore
         DateTime,
     )
 
+
 def normalize_optional(the_type: type[Any]) -> tuple[type[Any], bool]:  # type: ignore
     if (orgin_type := get_origin(the_type)) is not None:
         if orgin_type is Union or (
-            isinstance(orgin_type, type)
-            and issubclass(orgin_type, UnionType)
+            isinstance(orgin_type, type) and issubclass(orgin_type, UnionType)
         ):
             field_args = get_args(the_type)
 

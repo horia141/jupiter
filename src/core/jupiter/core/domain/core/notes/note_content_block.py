@@ -4,9 +4,7 @@ from typing import Literal
 
 from jupiter.core.domain.core.url import URL
 from jupiter.core.domain.named_entity_tag import NamedEntityTag
-from jupiter.core.framework.base.entity_id import EntityId, EntityIdDatabaseDecoder
-from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.primitive import Primitive
+from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.realm import RealmDecodingError
 from jupiter.core.framework.value import (
     AtomicValue,
@@ -14,8 +12,10 @@ from jupiter.core.framework.value import (
     hashable_value,
     value,
 )
-from jupiter.core.use_cases.infra.realms import PrimitiveAtomicValueDatabaseDecoder, PrimitiveAtomicValueDatabaseEncoder
-
+from jupiter.core.use_cases.infra.realms import (
+    PrimitiveAtomicValueDatabaseDecoder,
+    PrimitiveAtomicValueDatabaseEncoder,
+)
 
 
 @hashable_value
@@ -23,16 +23,14 @@ class CorrelationId(AtomicValue[str]):
     """A generic entity id."""
 
     the_id: str
-    
+
 
 class CorrelationIdDatabaseEncoder(PrimitiveAtomicValueDatabaseEncoder[CorrelationId]):
-
     def to_primitive(self, value: CorrelationId) -> str:
         return value.the_id
-    
+
 
 class CorrelationIdDatabaseDecoder(PrimitiveAtomicValueDatabaseDecoder[CorrelationId]):
-
     def from_raw_str(self, primitive: str) -> CorrelationId:
         correlation_id: str = primitive.strip()
 

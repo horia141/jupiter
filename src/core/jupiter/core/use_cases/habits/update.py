@@ -57,7 +57,6 @@ class HabitUpdateUseCase(
         args: HabitUpdateArgs,
     ) -> None:
         """Execute the command's action."""
-        user = context.user
         workspace = context.workspace
 
         habit = await uow.habit_repository.load_by_id(args.ref_id)

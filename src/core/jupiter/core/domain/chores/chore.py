@@ -194,8 +194,12 @@ class Chore(LeafEntity):
         due_at_day: Optional[RecurringTaskDueAtDay],
         due_at_month: Optional[RecurringTaskDueAtMonth],
     ) -> None:
-        actionable_from_day = actionable_from_day or RecurringTaskDueAtDay.first_of(period)
-        actionable_from_month = actionable_from_month or RecurringTaskDueAtMonth.first_of(period)
+        actionable_from_day = actionable_from_day or RecurringTaskDueAtDay.first_of(
+            period
+        )
+        actionable_from_month = (
+            actionable_from_month or RecurringTaskDueAtMonth.first_of(period)
+        )
         due_at_day = due_at_day or RecurringTaskDueAtDay.end_of(period)
         due_at_month = due_at_month or RecurringTaskDueAtMonth.end_of(period)
         if actionable_from_month.as_int() > due_at_month.as_int():

@@ -8,7 +8,6 @@ from jupiter.core.domain.push_integrations.email.email_task import EmailTask
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.use_case import ProgressReporter
-from jupiter.core.framework.use_case_io import use_case_result_part
 from jupiter.core.framework.value import CompositeValue, value
 
 

@@ -106,12 +106,20 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
 
         user_feature_flags = {}
         for user_feature in UserFeature:
-            user_feature_flags[user_feature] = True if user_feature in args.user_feature_flags else user_feature_flags_controls.standard_flag_for(user_feature)
+            user_feature_flags[user_feature] = (
+                True
+                if user_feature in args.user_feature_flags
+                else user_feature_flags_controls.standard_flag_for(user_feature)
+            )
 
         workspace_feature_flags = {}
         for workspace_feature in WorkspaceFeature:
             workspace_feature_flags[workspace_feature] = (
-                True if workspace_feature in args.workspace_feature_flags else workspace_feature_flags_controls.standard_flag_for(workspace_feature)
+                True
+                if workspace_feature in args.workspace_feature_flags
+                else workspace_feature_flags_controls.standard_flag_for(
+                    workspace_feature
+                )
             )
 
         async with self._domain_storage_engine.get_unit_of_work() as uow:

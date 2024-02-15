@@ -1,7 +1,7 @@
 """A smart list tag."""
 from typing import cast
-from jupiter.core.domain.core.tags.tag_name import TagName
 
+from jupiter.core.domain.core.tags.tag_name import TagName
 from jupiter.core.domain.smart_lists.smart_list_tag_name import SmartListTagName
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.entity_name import NOT_USED_NAME

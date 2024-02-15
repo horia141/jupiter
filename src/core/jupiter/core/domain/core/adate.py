@@ -2,7 +2,6 @@
 from datetime import date, datetime
 from functools import total_ordering
 from typing import Optional, cast
-from jupiter.core.framework.realm import DatabaseRealm, RealmDecoder, RealmDecodingError, RealmEncoder, RealmThing
 
 import pendulum
 import pendulum.parser
@@ -10,8 +9,13 @@ import pendulum.parsing
 import pendulum.tz
 from jupiter.core.domain.core.timezone import Timezone
 from jupiter.core.framework.base.timestamp import Timestamp
-from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.primitive import Primitive
+from jupiter.core.framework.realm import (
+    DatabaseRealm,
+    RealmDecoder,
+    RealmDecodingError,
+    RealmEncoder,
+    RealmThing,
+)
 from jupiter.core.framework.value import AtomicValue, hashable_value
 from pendulum.date import Date
 from pendulum.datetime import DateTime
@@ -192,13 +196,12 @@ class ADate(AtomicValue[Date | DateTime]):
         return self.the_date
 
 
-
 class ADateDatabaseEncoder(RealmEncoder[ADate, DatabaseRealm]):
     """An encoder for adates in databases."""
 
     def encode(self, value: ADate) -> RealmThing:
         if value.the_datetime is not None:
-           return cast(datetime, value.the_datetime)
+            return cast(datetime, value.the_datetime)
         else:
             return datetime(
                 value._surely_the_date.year,
@@ -212,17 +215,13 @@ class ADateDatabaseDecoder(RealmDecoder[ADate, DatabaseRealm]):
     """A decoder for adates in databases."""
 
     def decode(self, value: RealmThing) -> ADate:
-        if not isinstance(
-            value, (datetime, DateTime, date, Date)
-        ):
+        if not isinstance(value, (datetime, DateTime, date, Date)):
             raise RealmDecodingError(
                 f"Expected value for {self.__class__} to be datetime or DateTime"
             )
-        
+
         if isinstance(value, datetime) and (
-            value.hour > 0
-            or value.minute > 0
-            or value.second > 0
+            value.hour > 0 or value.minute > 0 or value.second > 0
         ):
             return ADate(None, pendulum.instance(value).in_timezone(UTC))
         else:
@@ -230,4 +229,3 @@ class ADateDatabaseDecoder(RealmDecoder[ADate, DatabaseRealm]):
                 Date(value.year, value.month, value.day),
                 None,
             )
-

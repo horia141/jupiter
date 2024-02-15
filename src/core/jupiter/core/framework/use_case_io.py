@@ -1,7 +1,6 @@
-from dataclasses import dataclass, fields
+from dataclasses import dataclass
 from typing import TypeVar
 
-from jupiter.core.framework.update_action import UpdateAction
 from typing_extensions import dataclass_transform
 
 

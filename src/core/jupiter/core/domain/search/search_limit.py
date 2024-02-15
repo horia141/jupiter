@@ -4,7 +4,10 @@
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.value import AtomicValue, value
-from jupiter.core.use_cases.infra.realms import PrimitiveAtomicValueDatabaseDecoder, PrimitiveAtomicValueDatabaseEncoder
+from jupiter.core.use_cases.infra.realms import (
+    PrimitiveAtomicValueDatabaseDecoder,
+    PrimitiveAtomicValueDatabaseEncoder,
+)
 
 _MAX_QUERY_LIMIT = 1000
 
@@ -21,13 +24,11 @@ class SearchLimit(AtomicValue[int]):
 
 
 class SearchLimitDatabaseEncoder(PrimitiveAtomicValueDatabaseEncoder[SearchLimit]):
-
     def to_primitive(self, value: SearchLimit) -> Primitive:
         return value.the_limit
-    
+
 
 class SearchLimitDatabaseDecoder(PrimitiveAtomicValueDatabaseDecoder[SearchLimit]):
-
     def from_raw_int(self, value: int) -> SearchLimit:
         if value < 1:
             raise InputValidationError("Expected limit to be a positive number")

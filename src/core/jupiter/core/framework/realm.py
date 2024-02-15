@@ -1,7 +1,6 @@
 """A realm denotes the storage existance and validation correctness of a particular Jupiter concept (value, record, entity)."""
 import abc
 from typing import Callable, ForwardRef, Generic, Iterator, Mapping, TypeVar, Union
-from jupiter.core.framework.concept import Concept
 
 from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.thing import Thing
@@ -74,7 +73,9 @@ class RealmCodecRegistry(abc.ABC):
     """A registry for realm codecs."""
 
     @abc.abstractmethod
-    def get_all_registered_types(self, base_type: type[_DomainThingT], realm: type[Realm]) -> Iterator[type[_DomainThingT]]:
+    def get_all_registered_types(
+        self, base_type: type[_DomainThingT], realm: type[Realm]
+    ) -> Iterator[type[_DomainThingT]]:
         """Get all types registered that derive from base type."""
 
     @abc.abstractmethod
@@ -99,8 +100,10 @@ class RealmCodecRegistry(abc.ABC):
         """Encode a value to the database realm."""
         encoder = self.get_encoder(domain_thing.__class__, DatabaseRealm)
         return encoder.encode(domain_thing)
-    
-    def db_decode(self, domain_thing_type: type[_DomainThingT], realm_thing: RealmThing) -> _DomainThingT:
+
+    def db_decode(
+        self, domain_thing_type: type[_DomainThingT], realm_thing: RealmThing
+    ) -> _DomainThingT:
         """Decode a value from the database realm."""
         decoder = self.get_decoder(domain_thing_type, DatabaseRealm)
         return decoder.decode(realm_thing)
@@ -109,9 +112,11 @@ class RealmCodecRegistry(abc.ABC):
 class PlaceholderRealmCodecRegistry(RealmCodecRegistry):
     """A registry for realm codecs."""
 
-    def get_all_registered_types(self, base_type: type[_DomainThingT], realm: type[Realm]) -> Iterator[type[_DomainThingT]]:
+    def get_all_registered_types(
+        self, base_type: type[_DomainThingT], realm: type[Realm]
+    ) -> Iterator[type[_DomainThingT]]:
         """Get all types registered that derive from base type."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def get_encoder(
         self,
@@ -120,7 +125,7 @@ class PlaceholderRealmCodecRegistry(RealmCodecRegistry):
         root_type: type[DomainThing] | None = None,
     ) -> RealmEncoder[_DomainThingT, _RealmT]:
         """Get an encoder for a realm and a concept type."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def get_decoder(
         self,
@@ -129,7 +134,7 @@ class PlaceholderRealmCodecRegistry(RealmCodecRegistry):
         root_type: type[DomainThing] | None = None,
     ) -> RealmDecoder[_DomainThingT, _RealmT]:
         """Get a decoder for a realm and a concept type."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
 PROVIDE_VIA_REGISTRY = PlaceholderRealmCodecRegistry()
@@ -141,17 +146,18 @@ def only_in_realm(*realms: type[Realm]) -> Callable[[type[_ThingT]], type[_Thing
     def decorator(cls: type[_ThingT]) -> type[_ThingT]:
         setattr(cls, "__allowed_realms", list(realms))
         return cls
-    
+
     return decorator
+
 
 def allowed_in_realm(cls: type[_ThingT], realm: type[Realm]) -> bool:
     """Check that a particular concep can be represented in a given realm."""
     if not hasattr(cls, "__allowed_realms"):
         return True
-    
+
     allowed_realms = getattr(cls, "__allowed_realms")
 
     if not isinstance(allowed_realms, list):
         raise Exception("Invalid realms check")
-    
+
     return realm in allowed_realms

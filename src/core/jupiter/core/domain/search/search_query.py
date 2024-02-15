@@ -4,7 +4,10 @@
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.value import AtomicValue, value
-from jupiter.core.use_cases.infra.realms import PrimitiveAtomicValueDatabaseDecoder, PrimitiveAtomicValueDatabaseEncoder
+from jupiter.core.use_cases.infra.realms import (
+    PrimitiveAtomicValueDatabaseDecoder,
+    PrimitiveAtomicValueDatabaseEncoder,
+)
 
 
 @value
@@ -19,13 +22,11 @@ class SearchQuery(AtomicValue[str]):
 
 
 class SearchQueryDatabaseEncoder(PrimitiveAtomicValueDatabaseEncoder[SearchQuery]):
-
     def to_primitive(self, value: SearchQuery) -> Primitive:
         return value.the_query
-    
+
 
 class SearchQueryDatabaseDecoder(PrimitiveAtomicValueDatabaseDecoder[SearchQuery]):
-
     def from_raw_str(self, primitive: str) -> SearchQuery:
         query_nows = primitive.strip()
 

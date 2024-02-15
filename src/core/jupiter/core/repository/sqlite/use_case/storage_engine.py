@@ -2,8 +2,8 @@
 from contextlib import asynccontextmanager
 from types import TracebackType
 from typing import AsyncIterator, Final, Optional, Type
-from jupiter.core.framework.realm import RealmCodecRegistry
 
+from jupiter.core.framework.realm import RealmCodecRegistry
 from jupiter.core.repository.sqlite.connection import SqliteConnection
 from jupiter.core.repository.sqlite.use_case.mutation_use_case_invocation_records import (
     SqliteMutationUseCaseInvocationRecordRepository,
@@ -62,7 +62,9 @@ class SqliteUseCaseStorageEngine(UseCaseStorageEngine):
     _sql_engine: Final[AsyncEngine]
     _metadata: Final[MetaData]
 
-    def __init__(self, realm_codec_registry: RealmCodecRegistry, connection: SqliteConnection) -> None:
+    def __init__(
+        self, realm_codec_registry: RealmCodecRegistry, connection: SqliteConnection
+    ) -> None:
         """Constructor."""
         self._realm_codec_registry = realm_codec_registry
         self._sql_engine = connection.sql_engine

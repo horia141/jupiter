@@ -61,7 +61,6 @@ class MetricUpdateUseCase(
         args: MetricUpdateArgs,
     ) -> None:
         """Execute the command's action."""
-        user = context.user
         workspace = context.workspace
 
         metric_collection = await uow.metric_collection_repository.load_by_parent(

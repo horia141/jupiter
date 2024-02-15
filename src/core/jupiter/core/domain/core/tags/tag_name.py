@@ -1,12 +1,15 @@
 """The base value object for any kind of tag tag."""
 import re
 from functools import total_ordering
-from typing import Final, Pattern, Type, TypeVar
+from typing import Final, Pattern, TypeVar
 
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.value import AtomicValue, hashable_value
-from jupiter.core.use_cases.infra.realms import PrimitiveAtomicValueDatabaseDecoder, PrimitiveAtomicValueDatabaseEncoder
+from jupiter.core.use_cases.infra.realms import (
+    PrimitiveAtomicValueDatabaseDecoder,
+    PrimitiveAtomicValueDatabaseEncoder,
+)
 
 _TAG_RE: Final[Pattern[str]] = re.compile(r"^[a-zA-Z0-9]([a-zA-Z0-9]*-?)*$")
 
@@ -34,19 +37,14 @@ class TagName(AtomicValue[str]):
         return self.the_tag
 
 
-
 class TagNameDatabaseEncoder(PrimitiveAtomicValueDatabaseEncoder[TagName]):
-
     def to_primitive(self, value: TagName) -> Primitive:
         return value.the_tag
-    
+
 
 class TagNameDatabaseDecoder(PrimitiveAtomicValueDatabaseDecoder[TagName]):
-
     def from_raw_str(self, value: str) -> TagName:
-        tag: str = " ".join(
-            word for word in value.strip().split(" ") if len(word) > 0
-        )
+        tag: str = " ".join(word for word in value.strip().split(" ") if len(word) > 0)
 
         if len(tag) == 0:
             raise InputValidationError("Expected tag to be non-empty")

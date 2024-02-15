@@ -1,5 +1,6 @@
 """Common toolin for SQLite repositories."""
 from typing import cast
+
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.entity import Entity
 from jupiter.core.framework.event import Event
@@ -69,12 +70,17 @@ async def upsert_events(
             # )
         )
 
-def _serialize_event(realm_codec_registry: RealmCodecRegistry, event: Event) -> RealmThing:
+
+def _serialize_event(
+    realm_codec_registry: RealmCodecRegistry, event: Event
+) -> RealmThing:
     """Transform an event into a serialisation-ready dictionary."""
     serialized_frame_args = {}
     for the_key, the_value in event.frame_args.items():
         if not is_thing_ish_type(the_value.__class__):
-            raise Exception(f"The domain should deal with things, but found {the_value.__class__}")
+            raise Exception(
+                f"The domain should deal with things, but found {the_value.__class__}"
+            )
         encoder = realm_codec_registry.get_encoder(the_value.__class__, DatabaseRealm)
         serialized_frame_args[the_key] = encoder.encode(cast(Thing, the_value))
     return serialized_frame_args

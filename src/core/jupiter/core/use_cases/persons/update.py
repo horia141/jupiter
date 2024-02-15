@@ -63,7 +63,6 @@ class PersonUpdateUseCase(
         args: PersonUpdateArgs,
     ) -> None:
         """Execute the command's action."""
-        user = context.user
         workspace = context.workspace
 
         person_collection = await uow.person_collection_repository.load_by_parent(

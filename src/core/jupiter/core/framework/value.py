@@ -1,8 +1,7 @@
 """Framework level elements for value object."""
-import abc
 import enum
 from dataclasses import dataclass
-from typing import Generic, TypeVar, Any, cast, get_args
+from typing import Generic, TypeVar, cast, get_args
 
 from jupiter.core.framework.concept import Concept
 from jupiter.core.framework.primitive import Primitive
@@ -27,21 +26,22 @@ def hashable_value(cls: type[_ValueT]) -> type[_ValueT]:
     return dataclass(eq=True, unsafe_hash=True)(cls)
 
 
-
 _PrimitiveT = TypeVar("_PrimitiveT", bound=Primitive, covariant=True)
 
 _AtomicValueT = TypeVar("_AtomicValueT", bound="AtomicValue[Primitive]")
 
 
 @dataclass
-class AtomicValue(Generic[_PrimitiveT], Value,):
+class AtomicValue(
+    Generic[_PrimitiveT],
+    Value,
+):
     """An atomic value object in the domain."""
 
     @classmethod
     def base_type_hack(cls: type[_AtomicValueT]) -> type[_PrimitiveT]:
         """Get the base type of this value."""
         return cast(type[_PrimitiveT], get_args(cls.__orig_bases__[0])[0])  # type: ignore[attr-defined]
-
 
 
 @dataclass

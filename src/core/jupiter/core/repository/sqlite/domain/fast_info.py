@@ -3,7 +3,7 @@ from typing import Final, List
 
 from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.core.domain.chores.chore_name import ChoreName
-from jupiter.core.domain.core.entity_icon import EntityIcon, EntityIconDatabaseDecoder
+from jupiter.core.domain.core.entity_icon import EntityIconDatabaseDecoder
 from jupiter.core.domain.fast_info_repository import (
     BigPlanSummary,
     ChoreSummary,
@@ -21,7 +21,6 @@ from jupiter.core.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.core.domain.metrics.metric_name import MetricName
 from jupiter.core.domain.persons.person_name import PersonName
 from jupiter.core.domain.projects.project_name import ProjectName
-from jupiter.core.domain.smart_lists.smart_list_item_name import SmartListItemName
 from jupiter.core.domain.smart_lists.smart_list_name import SmartListName
 from jupiter.core.domain.vacations.vacation_name import VacationName
 from jupiter.core.framework.base.entity_id import EntityId, EntityIdDatabaseDecoder

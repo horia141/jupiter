@@ -10,8 +10,7 @@ from jupiter.core.domain.search.search_query import SearchQuery
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.entity import CrownEntity
 from jupiter.core.framework.repository import Repository
-from jupiter.core.framework.use_case_io import use_case_result_part
-from jupiter.core.framework.value import CompositeValue, Value, value
+from jupiter.core.framework.value import CompositeValue, value
 
 
 @value

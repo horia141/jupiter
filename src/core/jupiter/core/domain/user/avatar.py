@@ -4,7 +4,10 @@ from jupiter.core.domain.user.user_name import UserName
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.value import AtomicValue, hashable_value
-from jupiter.core.use_cases.infra.realms import PrimitiveAtomicValueDatabaseDecoder, PrimitiveAtomicValueDatabaseEncoder
+from jupiter.core.use_cases.infra.realms import (
+    PrimitiveAtomicValueDatabaseDecoder,
+    PrimitiveAtomicValueDatabaseEncoder,
+)
 
 
 @hashable_value
@@ -21,13 +24,11 @@ class Avatar(AtomicValue[str]):
 
 
 class AvatarDatabaseEncoder(PrimitiveAtomicValueDatabaseEncoder[Avatar]):
-
     def to_primitive(self, value: Avatar) -> Primitive:
         return value.avatar_as_data_url
-    
+
 
 class AvatarDatabaseDecoder(PrimitiveAtomicValueDatabaseDecoder[Avatar]):
-
     def from_raw_str(self, primitive: str) -> Avatar:
         if not primitive.startswith("data:image/svg+xml;base64,"):
             raise InputValidationError("Seems like the avatar doesn't look right")

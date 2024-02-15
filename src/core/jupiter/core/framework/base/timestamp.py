@@ -7,8 +7,6 @@ import pendulum
 import pendulum.parser
 import pendulum.parsing
 import pendulum.tz
-from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.realm import (
     DatabaseRealm,
     RealmDecoder,
@@ -77,9 +75,7 @@ class TimestampDatabaseDecoder(RealmDecoder[Timestamp, DatabaseRealm]):
     """A decoder for timestamps in databases."""
 
     def decode(self, value: RealmThing) -> Timestamp:
-        if not isinstance(
-            value, (datetime.datetime, DateTime)
-        ):
+        if not isinstance(value, (datetime.datetime, DateTime)):
             raise RealmDecodingError(
                 f"Expected value for {self.__class__} to be datetime or DateTime"
             )

@@ -1,12 +1,15 @@
 """The birthday of a person."""
-from typing import ClassVar, Dict, Tuple
+from typing import ClassVar, Dict
 
 from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.value import AtomicValue, hashable_value
-from jupiter.core.use_cases.infra.realms import PrimitiveAtomicValueDatabaseDecoder, PrimitiveAtomicValueDatabaseEncoder
+from jupiter.core.use_cases.infra.realms import (
+    PrimitiveAtomicValueDatabaseDecoder,
+    PrimitiveAtomicValueDatabaseEncoder,
+)
 
 
 @hashable_value
@@ -47,15 +50,16 @@ class PersonBirthday(AtomicValue[str]):
         return f"{self.day} {self._MONTH_INDEX_NAME[self.month]}"
 
 
-
-class PersonBirthdayDatabaseEncoder(PrimitiveAtomicValueDatabaseEncoder[PersonBirthday]):
-
+class PersonBirthdayDatabaseEncoder(
+    PrimitiveAtomicValueDatabaseEncoder[PersonBirthday]
+):
     def to_primitive(self, value: PersonBirthday) -> Primitive:
         return f"{value.day} {PersonBirthday._MONTH_INDEX_NAME[value.month]}"
-    
 
-class PersonBirthdayDatabaseDecoder(PrimitiveAtomicValueDatabaseDecoder[PersonBirthday]):
 
+class PersonBirthdayDatabaseDecoder(
+    PrimitiveAtomicValueDatabaseDecoder[PersonBirthday]
+):
     def from_raw_str(self, primitive: str) -> PersonBirthday:
         parts = primitive.strip().split(" ")
         if len(parts) != 2:

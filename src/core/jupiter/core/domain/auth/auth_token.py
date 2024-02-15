@@ -1,11 +1,11 @@
 """An authentication token allows for secure and fast authentication across a session."""
 from typing import ClassVar, Dict
-from jupiter.core.framework.realm import CliRealm, WebRealm, only_in_realm
 
 import jwt
 from jupiter.core.domain.auth.auth_token_ext import AuthTokenExt
 from jupiter.core.framework.base.entity_id import EntityId, EntityIdDatabaseDecoder
 from jupiter.core.framework.base.timestamp import Timestamp
+from jupiter.core.framework.realm import CliRealm, WebRealm, only_in_realm
 from jupiter.core.framework.value import SecretValue, secret_value
 
 _ALGORITHM = "HS256"
@@ -72,9 +72,7 @@ class AuthToken(SecretValue):
     ) -> "AuthToken":
         """Constract a new auth token."""
         issue_time = right_now
-        expiration_time = Timestamp.from_date_and_time(
-            right_now.value.add(**duration)
-        )
+        expiration_time = Timestamp.from_date_and_time(right_now.value.add(**duration))
         auth_token_str = jwt.encode(
             {
                 "user_ref_id": str(user_ref_id),

@@ -1,6 +1,7 @@
 """The command for loading workspaces if they exist."""
 from typing import Optional
 
+from jupiter.core.domain.env import Env
 from jupiter.core.domain.features import (
     BASIC_USER_FEATURE_FLAGS,
     BASIC_WORKSPACE_FEATURE_FLAGS,
@@ -24,7 +25,6 @@ from jupiter.core.domain.workspaces.infra.workspace_repository import (
 )
 from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.domain.workspaces.workspace_name import WorkspaceName
-from jupiter.core.domain.env import Env
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,

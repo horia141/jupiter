@@ -55,8 +55,7 @@ async def main() -> None:
     no_timezone_global_properties = build_global_properties()
 
     realm_codec_registry = ModuleExplorerRealmCodecRegistry.build_from_module_root(
-        jupiter.core.domain,
-        jupiter.core.use_cases
+        jupiter.core.domain, jupiter.core.use_cases
     )
 
     sqlite_connection = SqliteConnection(
@@ -75,7 +74,9 @@ async def main() -> None:
     search_storage_engine = SqliteSearchStorageEngine(
         realm_codec_registry, sqlite_connection
     )
-    usecase_storage_engine = SqliteUseCaseStorageEngine(realm_codec_registry, sqlite_connection)
+    usecase_storage_engine = SqliteUseCaseStorageEngine(
+        realm_codec_registry, sqlite_connection
+    )
 
     auth_token_stamper = AuthTokenStamper(
         auth_token_secret=global_properties.auth_token_secret,

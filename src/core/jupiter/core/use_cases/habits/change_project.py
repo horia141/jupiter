@@ -42,7 +42,6 @@ class HabitChangeProjectUseCase(
         args: HabitChangeProjectArgs,
     ) -> None:
         """Execute the command's action."""
-        user = context.user
         workspace = context.workspace
 
         if (

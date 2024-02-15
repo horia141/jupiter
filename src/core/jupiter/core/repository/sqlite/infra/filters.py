@@ -6,7 +6,10 @@ from sqlalchemy import Table, select
 
 
 def compile_query_relative_to(
-    realm_codec_registry: RealmCodecRegistry, query_stmt: select, table: Table, filters: EntityLinkFiltersCompiled
+    realm_codec_registry: RealmCodecRegistry,
+    query_stmt: select,
+    table: Table,
+    filters: EntityLinkFiltersCompiled,
 ) -> select:
     """Compile filters relative to a table."""
     for key, value in filters.items():

@@ -2,9 +2,6 @@
 import typing
 from typing import Callable, Final, Generic, Optional, TypeVar
 
-from pydantic import ValidationError
-from pydantic.fields import ModelField
-
 UpdateActionT = TypeVar("UpdateActionT")
 NewT = TypeVar("NewT")
 

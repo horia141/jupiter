@@ -419,7 +419,6 @@ class LeafSupportEntity(LeafEntity, abc.ABC):
     # examples: note, comment, attachment, etc.
 
 
-
 def _check_entity_has_parent_field(cls: type[_EntityT]) -> None:
     all_fields = dataclasses.fields(cls)
 

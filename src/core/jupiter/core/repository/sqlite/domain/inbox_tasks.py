@@ -121,7 +121,9 @@ class SqliteInboxTaskRepository(
         if filter_last_modified_time_start is not None:
             query_stmt = query_stmt.where(
                 self._table.c.last_modified_time
-                >= self._realm_codec_registry.db_encode(filter_last_modified_time_start),
+                >= self._realm_codec_registry.db_encode(
+                    filter_last_modified_time_start
+                ),
             )
         if filter_last_modified_time_end is not None:
             query_stmt = query_stmt.where(

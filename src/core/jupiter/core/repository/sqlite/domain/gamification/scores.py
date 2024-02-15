@@ -20,8 +20,7 @@ from jupiter.core.domain.gamification.score_log_entry import ScoreLogEntry
 from jupiter.core.domain.gamification.score_period_best import ScorePeriodBest
 from jupiter.core.domain.gamification.score_stats import ScoreStats
 from jupiter.core.framework.base.entity_id import EntityId, EntityIdDatabaseDecoder
-from jupiter.core.framework.base.timestamp import Timestamp, TimestampDatabaseDecoder
-from jupiter.core.framework.entity import ParentLink
+from jupiter.core.framework.base.timestamp import TimestampDatabaseDecoder
 from jupiter.core.framework.realm import RealmCodecRegistry
 from jupiter.core.framework.repository import (
     RecordAlreadyExistsError,
@@ -154,9 +153,7 @@ class SqliteScoreStatsRepository(ScoreStatsRepository):
                 else self._score_stats_table.c.period.is_(None)
             )
             .where(self._score_stats_table.c.timeline == record.timeline)
-            .values(
-                **self._realm_codec_registry.db_encode(record)
-            ),
+            .values(**self._realm_codec_registry.db_encode(record)),
         )
         if result.rowcount == 0:
             raise RecordNotFoundError(
@@ -249,10 +246,15 @@ class SqliteScoreStatsRepository(ScoreStatsRepository):
                 self._score_stats_table.c.score_log_ref_id == score_log_ref_id.as_int()
             )
             .where(self._score_stats_table.c.period == period.value)
-            .where(self._score_stats_table.c.created_time >= self._realm_codec_registry.db_encode(start_date))
             .where(
                 self._score_stats_table.c.created_time
-                <= self._realm_codec_registry.db_encode(end_date.to_timestamp_at_end_of_day())
+                >= self._realm_codec_registry.db_encode(start_date)
+            )
+            .where(
+                self._score_stats_table.c.created_time
+                <= self._realm_codec_registry.db_encode(
+                    end_date.to_timestamp_at_end_of_day()
+                )
             )
         )
 
@@ -329,9 +331,7 @@ class SqliteScorePeriodBestRepository(ScorePeriodBestRepository):
             .where(
                 self._score_period_best_table.c.sub_period == record.sub_period.value
             )
-            .values(
-                **self._realm_codec_registry.db_encode(record)
-            ),
+            .values(**self._realm_codec_registry.db_encode(record)),
         )
         if result.rowcount == 0:
             raise RecordNotFoundError(

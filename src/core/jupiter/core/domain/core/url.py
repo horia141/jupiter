@@ -1,11 +1,14 @@
 """An URL in this domain."""
 from functools import total_ordering
-from jupiter.core.use_cases.infra.realms import PrimitiveAtomicValueDatabaseDecoder, PrimitiveAtomicValueDatabaseEncoder
 
 import validators
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.value import AtomicValue, value
+from jupiter.core.use_cases.infra.realms import (
+    PrimitiveAtomicValueDatabaseDecoder,
+    PrimitiveAtomicValueDatabaseEncoder,
+)
 
 
 @value
@@ -26,16 +29,12 @@ class URL(AtomicValue[str]):
         return self.the_url
 
 
-
-
 class URLDatabaseEncoder(PrimitiveAtomicValueDatabaseEncoder[URL]):
-
     def to_primitive(self, value: URL) -> Primitive:
         return value.the_url
-    
+
 
 class URLDatabaseDecoder(PrimitiveAtomicValueDatabaseDecoder[URL]):
-
     def from_raw_str(self, value: str) -> URL:
         url_str: str = value.strip()
 

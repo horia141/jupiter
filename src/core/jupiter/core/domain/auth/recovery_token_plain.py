@@ -4,7 +4,12 @@ import uuid
 from typing import Optional
 
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.realm import CliRealm, DatabaseRealm, RealmDecoder, RealmEncoder, RealmThing, WebRealm
+from jupiter.core.framework.realm import (
+    DatabaseRealm,
+    RealmDecoder,
+    RealmEncoder,
+    RealmThing,
+)
 from jupiter.core.framework.value import SecretValue, secret_value
 
 
@@ -38,7 +43,10 @@ class RecoveryTokenPlain(SecretValue):
             raise InputValidationError("Recovery token has a bad format") from err
         return token_str
 
-class RecoveryTokenPlainDatabaseEncoder(RealmEncoder[RecoveryTokenPlain, DatabaseRealm]):
+
+class RecoveryTokenPlainDatabaseEncoder(
+    RealmEncoder[RecoveryTokenPlain, DatabaseRealm]
+):
     """Encode a password for storage in the cli."""
 
     def encode(self, value: RecoveryTokenPlain) -> RealmThing:
@@ -46,8 +54,9 @@ class RecoveryTokenPlainDatabaseEncoder(RealmEncoder[RecoveryTokenPlain, Databas
         return value.token
 
 
-
-class RecoveryTokenPlainDatabaseDecoder(RealmDecoder[RecoveryTokenPlain, DatabaseRealm]):
+class RecoveryTokenPlainDatabaseDecoder(
+    RealmDecoder[RecoveryTokenPlain, DatabaseRealm]
+):
     """Decode a password hash from storage in the database."""
 
     def decode(self, value: RealmThing) -> RecoveryTokenPlain:

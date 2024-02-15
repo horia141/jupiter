@@ -1,8 +1,7 @@
 """SQlite based repository for the invocation record of mutation use cases."""
 from typing import Final
-from jupiter.core.framework.base.timestamp import TimestampDatabaseEncoder
-from jupiter.core.framework.realm import DatabaseRealm, RealmCodecRegistry
 
+from jupiter.core.framework.realm import RealmCodecRegistry
 from jupiter.core.framework.use_case import MutationUseCaseInvocationRecord, UseCaseArgs
 from jupiter.core.use_cases.infra.mutation_use_case_invocation_record_repository import (
     MutationUseCaseInvocationRecordRepository,
@@ -31,7 +30,12 @@ class SqliteMutationUseCaseInvocationRecordRepository(
     _connection: Final[AsyncConnection]
     _mutation_use_case_invocation_record_table: Final[Table]
 
-    def __init__(self, realm_codec_registry: RealmCodecRegistry, connection: AsyncConnection, metadata: MetaData) -> None:
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        connection: AsyncConnection,
+        metadata: MetaData,
+    ) -> None:
         """Constructor."""
         self._realm_codec_registry = realm_codec_registry
         self._connection = connection
@@ -60,9 +64,15 @@ class SqliteMutationUseCaseInvocationRecordRepository(
         """Create a new invocation record."""
         await self._connection.execute(
             insert(self._mutation_use_case_invocation_record_table).values(
-                user_ref_id=self._realm_codec_registry.db_encode(invocation_record.user_ref_id),
-                workspace_ref_id=self._realm_codec_registry.db_encode(invocation_record.workspace_ref_id),
-                timestamp=self._realm_codec_registry.db_encode(invocation_record.timestamp),
+                user_ref_id=self._realm_codec_registry.db_encode(
+                    invocation_record.user_ref_id
+                ),
+                workspace_ref_id=self._realm_codec_registry.db_encode(
+                    invocation_record.workspace_ref_id
+                ),
+                timestamp=self._realm_codec_registry.db_encode(
+                    invocation_record.timestamp
+                ),
                 name=invocation_record.name,
                 args=self._realm_codec_registry.db_encode(invocation_record.args),
                 result=str(invocation_record.result.value),

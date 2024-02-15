@@ -151,18 +151,24 @@ class _UpdateActionWebDecoder(RealmDecoder[UpdateAction[DomainThing], WebRealm])
 
     def decode(self, value: RealmThing) -> UpdateAction[DomainThing]:
         if not isinstance(value, dict):
-            raise RealmDecodingError(f"Expected value of type update action for {self._the_type}")
-        
+            raise RealmDecodingError(
+                f"Expected value of type update action for {self._the_type}"
+            )
+
         if "should_change" not in value:
-            raise RealmDecodingError(f"Expected field to have a should_change field for {self._the_type}")
-        
+            raise RealmDecodingError(
+                f"Expected field to have a should_change field for {self._the_type}"
+            )
+
         final_value: UpdateAction[DomainThing]
-        
+
         if value["should_change"] is False:
             final_value = UpdateAction.do_nothing()
         else:
             if "value" not in value:
-                raise RealmDecodingError(f"Expected field to have a value field for {self._the_type}")
+                raise RealmDecodingError(
+                    f"Expected field to have a value field for {self._the_type}"
+                )
 
             update_action_decoder = self._realm_codec_registry.get_decoder(
                 self._the_type, CliRealm, self._root_type
@@ -173,8 +179,6 @@ class _UpdateActionWebDecoder(RealmDecoder[UpdateAction[DomainThing], WebRealm])
             )
 
         return final_value
-
-        
 
 
 class _UnionDatabaseEncoder(RealmEncoder[DomainThing, DatabaseRealm]):
@@ -462,7 +466,7 @@ class _StandardPrimitiveDatabaseDecoder(
             )
 
         return cast(_PrimitiveT, value)
-    
+
 
 class PrimitiveAtomicValueDatabaseEncoder(
     Generic[_AtomicValueT], RealmEncoder[_AtomicValueT, DatabaseRealm], abc.ABC
@@ -472,14 +476,15 @@ class PrimitiveAtomicValueDatabaseEncoder(
     def encode(self, value: _AtomicValueT) -> RealmThing:
         """Encode a realm to a string."""
         return self.to_primitive(value)
-        
+
     @abc.abstractmethod
     def to_primitive(self, value: _AtomicValueT) -> Primitive:
         """Return a primitive form of this atomic value."""
 
 
 class PrimitiveAtomicValueDatabaseDecoder(
-    Generic[_AtomicValueT], RealmDecoder[_AtomicValueT, DatabaseRealm],
+    Generic[_AtomicValueT],
+    RealmDecoder[_AtomicValueT, DatabaseRealm],
 ):
     """An encoder for atomic values."""
 
@@ -491,14 +496,12 @@ class PrimitiveAtomicValueDatabaseDecoder(
     def decode(self, value: RealmThing) -> _AtomicValueT:
         """Decode a realm from a string."""
         base_type_hack = self._atomic_value_type.base_type_hack()
-        if not isinstance(
-            value, base_type_hack
-        ):
+        if not isinstance(value, base_type_hack):
 
             raise RealmDecodingError(
                 f"Expected value for in {self.__class__} to be a primitive of type {base_type_hack}"
             )
-        
+
         if base_type_hack is bool and isinstance(value, bool):
             return self.from_raw_bool(value)
         elif base_type_hack is int and isinstance(value, int):
@@ -517,27 +520,26 @@ class PrimitiveAtomicValueDatabaseDecoder(
     def from_raw_bool(self, primitive: bool) -> _AtomicValueT:
         """Transform a primitive form of this atomic value."""
         raise Exception("Off the beaten codepath")
-    
+
     def from_raw_int(self, primitive: int) -> _AtomicValueT:
         """Transform a primitive form of this atomic value."""
         raise Exception("Off the beaten codepath")
-    
+
     def from_raw_float(self, primitive: float) -> _AtomicValueT:
         """Transform a primitive form of this atomic value."""
         raise Exception("Off the beaten codepath")
-    
+
     def from_raw_str(self, primitive: str) -> _AtomicValueT:
         """Transform a primitive form of this atomic value."""
         raise Exception("Off the beaten codepath")
-    
+
     def from_raw_date(self, primitive: date | Date) -> _AtomicValueT:
         """Transform a primitive form of this atomic value."""
         raise Exception("Off the beaten codepath")
-    
+
     def from_raw_datetime(self, primitive: datetime | DateTime) -> _AtomicValueT:
         """Transform a primitive form of this atomic value."""
         raise Exception("Off the beaten codepath")
-
 
 
 class _StandardCompositeValueDatabaseEncoder(
@@ -968,7 +970,7 @@ class _StandardUseCaseArgsCliDecoder(
                 ctor_args[field.name] = decoder.decode(field_value)
 
         return self._the_type(**ctor_args)
-    
+
 
 class _StandardUseCaseArgsWebDecoder(
     Generic[_UseCaseArgsT], RealmDecoder[_UseCaseArgsT, WebRealm]
@@ -1005,7 +1007,7 @@ class _StandardUseCaseArgsWebDecoder(
             ctor_args[field.name] = decoder.decode(field_value)
 
         return self._the_type(**ctor_args)
-    
+
 
 class _StandardUseCaseResultWebEncoder(
     Generic[_UseCaseResultT], RealmEncoder[_UseCaseResultT, WebRealm]
@@ -1346,8 +1348,12 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
         registry._add_encoder(Timestamp, DatabaseRealm, TimestampDatabaseEncoder())
         registry._add_decoder(Timestamp, DatabaseRealm, TimestampDatabaseDecoder())
 
-        registry._add_encoder(EventSource, DatabaseRealm, _StandardEnumValueDatabaseEncoder(EventSource))
-        registry._add_decoder(EventSource, DatabaseRealm, _StandardEnumValueDatabaseDecoder(EventSource))
+        registry._add_encoder(
+            EventSource, DatabaseRealm, _StandardEnumValueDatabaseEncoder(EventSource)
+        )
+        registry._add_decoder(
+            EventSource, DatabaseRealm, _StandardEnumValueDatabaseDecoder(EventSource)
+        )
 
         for m in find_all_modules(*module_roots):
             for concept_type, realm_type, encoder_type in extract_concept_encoders(m):
@@ -1475,7 +1481,7 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                     registry._add_decoder(
                         use_case_args,
                         WebRealm,
-                        _StandardUseCaseArgsWebDecoder(registry, use_case_args)
+                        _StandardUseCaseArgsWebDecoder(registry, use_case_args),
                     )
 
             for use_case_result in extract_use_case_result(m):
@@ -1486,12 +1492,14 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                     registry._add_encoder(
                         use_case_result,
                         WebRealm,
-                        _StandardUseCaseResultWebEncoder(registry, use_case_result)
+                        _StandardUseCaseResultWebEncoder(registry, use_case_result),
                     )
 
         return registry
-    
-    def get_all_registered_types(self, base_type: type[_DomainThingT], realm: type[Realm]) -> Iterator[type[_DomainThingT]]:
+
+    def get_all_registered_types(
+        self, base_type: type[_DomainThingT], realm: type[Realm]
+    ) -> Iterator[type[_DomainThingT]]:
         r"""Get all types registered that derive from base type."""
         yielded_types: set[type[Thing]] = set()
 
@@ -1500,7 +1508,9 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                 continue
             if not allowed_in_realm(the_type, realm):
                 continue
-            if issubclass(the_type, base_type) and (type_realm is realm or type_realm is DatabaseRealm):
+            if issubclass(the_type, base_type) and (
+                type_realm is realm or type_realm is DatabaseRealm
+            ):
                 yielded_types.add(the_type)
                 yield the_type
 
@@ -1509,7 +1519,9 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                 continue
             if not allowed_in_realm(the_type, realm):
                 continue
-            if issubclass(the_type, base_type) and (type_realm is realm or type_realm is DatabaseRealm):
+            if issubclass(the_type, base_type) and (
+                type_realm is realm or type_realm is DatabaseRealm
+            ):
                 yielded_types.add(the_type)
                 yield the_type
 
@@ -1645,7 +1657,9 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                 return cast(
                     RealmDecoder[_DomainThingT, _RealmT],
                     self._decoders_registry[
-                        cast(tuple[type[Thing], type[Realm]], (thing_type, DatabaseRealm))
+                        cast(
+                            tuple[type[Thing], type[Realm]], (thing_type, DatabaseRealm)
+                        )
                     ],
                 )
             return cast(
@@ -1669,12 +1683,14 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                     ),
                 )
             elif thing_type_origin is UpdateAction and realm is WebRealm:
-                update_action_type = cast(type[DomainThing] | ForwardRef | str, get_args(thing_type)[0])
+                update_action_type = cast(
+                    type[DomainThing] | ForwardRef | str, get_args(thing_type)[0]
+                )
                 return cast(
                     RealmDecoder[_DomainThingT, _RealmT],
                     _UpdateActionWebDecoder(
                         self, cast(type[DomainThing], root_type), update_action_type
-                    )
+                    ),
                 )
             elif thing_type_origin is list:
                 list_item_type = cast(

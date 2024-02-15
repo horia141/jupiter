@@ -5,12 +5,10 @@ from typing import (
     Final,
     Generic,
     Pattern,
-    Type,
     TypeVar,
 )
 
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.realm import (
     DatabaseRealm,
     RealmDecoder,
@@ -79,9 +77,9 @@ class EntityNameDatabaseDecoder(
             raise RealmDecodingError(
                 f"Expected value for {self.__class__} to be a string"
             )
-       
+
         entity_name: str = " ".join(
-           word for word in value.strip().split(" ") if len(word) > 0
+            word for word in value.strip().split(" ") if len(word) > 0
         )
 
         if len(entity_name) == 0:
