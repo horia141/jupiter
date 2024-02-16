@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Dict
 
 from jupiter.core.framework.base.timestamp import Timestamp
+from jupiter.core.framework.realm import DomainThing
 from jupiter.core.framework.value import EnumValue, enum_value
 
 
@@ -35,6 +36,6 @@ class Event:
     source: EventSource
     entity_version: int
     timestamp: Timestamp
-    frame_args: Dict[str, object]
+    frame_args: Dict[str, tuple[DomainThing, type[DomainThing]]]
     kind: EventKind
     name: str

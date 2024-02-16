@@ -1432,24 +1432,28 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                     continue
 
                 if not registry._has_encoder(atomic_value_type, DatabaseRealm):
-                    if not issubclass(atomic_value_type, EntityName):
+                    if issubclass(atomic_value_type, EntityName):
+                        registry._add_encoder(
+                            atomic_value_type,
+                            DatabaseRealm,
+                            EntityNameDatabaseEncoder(atomic_value_type),
+                        )
+                    elif registry._has_encoder(atomic_value_type, DatabaseRealm):
                         continue
-
-                    registry._add_encoder(
-                        atomic_value_type,
-                        DatabaseRealm,
-                        EntityNameDatabaseEncoder(atomic_value_type),
-                    )
+                    else:
+                        raise Exception(f"No encoder for {atomic_value_type}")
 
                 if not registry._has_decoder(atomic_value_type, DatabaseRealm):
-                    if not issubclass(atomic_value_type, EntityName):
+                    if issubclass(atomic_value_type, EntityName):
+                        registry._add_decoder(
+                            atomic_value_type,
+                            DatabaseRealm,
+                            EntityNameDatabaseDecoder(atomic_value_type),
+                        )
+                    elif registry._has_decoder(atomic_value_type, DatabaseRealm):
                         continue
-
-                    registry._add_decoder(
-                        atomic_value_type,
-                        DatabaseRealm,
-                        EntityNameDatabaseDecoder(atomic_value_type),
-                    )
+                    else:
+                        raise Exception(f"No decoder for {atomic_value_type}")
 
             for composite_value_type in extract_composite_values(m):
                 if not allowed_in_realm(composite_value_type, DatabaseRealm):

@@ -304,7 +304,7 @@ def _make_event_from_frame_args(  # type: ignore
             # Local variable, free to ignore
             continue
 
-        frame_args[arg_name] = arg_value
+        frame_args[arg_name] = (arg_value, f.__annotations__[arg_name])
 
     new_event = Event(
         source=ctx.event_source,
