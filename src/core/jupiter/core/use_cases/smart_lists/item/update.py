@@ -1,6 +1,7 @@
 """The command for updating a smart list item."""
 from typing import List, Optional
 
+from jupiter.core.domain.core.tags.tag_name import TagName
 from jupiter.core.domain.core.url import URL
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.infra.generic_creator import generic_creator
@@ -8,7 +9,6 @@ from jupiter.core.domain.infra.generic_loader import generic_loader
 from jupiter.core.domain.smart_lists.smart_list_item import SmartListItem
 from jupiter.core.domain.smart_lists.smart_list_item_name import SmartListItemName
 from jupiter.core.domain.smart_lists.smart_list_tag import SmartListTag
-from jupiter.core.domain.smart_lists.smart_list_tag_name import SmartListTagName
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.update_action import UpdateAction
@@ -30,7 +30,7 @@ class SmartListItemUpdateArgs(UseCaseArgsBase):
     ref_id: EntityId
     name: UpdateAction[SmartListItemName]
     is_done: UpdateAction[bool]
-    tags: UpdateAction[List[SmartListTagName]]
+    tags: UpdateAction[List[TagName]]
     url: UpdateAction[Optional[URL]]
 
 

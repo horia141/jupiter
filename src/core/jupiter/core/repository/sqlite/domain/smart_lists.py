@@ -1,6 +1,7 @@
 """The SQLite based smart lists repository."""
 from typing import Iterable, List, Optional
 
+from jupiter.core.domain.core.tags.tag_name import TagName
 from jupiter.core.domain.smart_lists.infra.smart_list_collection_repository import (
     SmartListCollectionRepository,
 )
@@ -17,7 +18,6 @@ from jupiter.core.domain.smart_lists.smart_list import SmartList
 from jupiter.core.domain.smart_lists.smart_list_collection import SmartListCollection
 from jupiter.core.domain.smart_lists.smart_list_item import SmartListItem
 from jupiter.core.domain.smart_lists.smart_list_tag import SmartListTag
-from jupiter.core.domain.smart_lists.smart_list_tag_name import SmartListTagName
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.repository.sqlite.infra.repository import (
     SqliteBranchEntityRepository,
@@ -51,7 +51,7 @@ class SqliteSmartListTagRepository(
         parent_ref_id: EntityId,
         allow_archived: bool = False,
         filter_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_tag_names: Optional[Iterable[SmartListTagName]] = None,
+        filter_tag_names: Optional[Iterable[TagName]] = None,
     ) -> List[SmartListTag]:
         """Find all smart list tags."""
         query_stmt = select(self._table).where(

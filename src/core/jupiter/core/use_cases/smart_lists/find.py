@@ -1,11 +1,11 @@
 """The command for finding smart lists."""
 from typing import List, Optional
 
+from jupiter.core.domain.core.tags.tag_name import TagName
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.smart_lists.smart_list import SmartList
 from jupiter.core.domain.smart_lists.smart_list_item import SmartListItem
 from jupiter.core.domain.smart_lists.smart_list_tag import SmartListTag
-from jupiter.core.domain.smart_lists.smart_list_tag_name import SmartListTagName
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case_io import (
@@ -31,7 +31,7 @@ class SmartListFindArgs(UseCaseArgsBase):
     include_items: bool
     filter_ref_ids: Optional[List[EntityId]] = None
     filter_is_done: Optional[bool] = None
-    filter_tag_names: Optional[List[SmartListTagName]] = None
+    filter_tag_names: Optional[List[TagName]] = None
     filter_tag_ref_id: Optional[List[EntityId]] = None
     filter_item_ref_id: Optional[List[EntityId]] = None
 

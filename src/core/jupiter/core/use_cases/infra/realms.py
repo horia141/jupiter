@@ -43,6 +43,7 @@ from jupiter.core.framework.realm import (
     CliRealm,
     DatabaseRealm,
     DomainThing,
+    EventStoreRealm,
     Realm,
     RealmCodecRegistry,
     RealmDecoder,
@@ -132,8 +133,41 @@ class _LiteralDatabaseDecoder(RealmDecoder[str, DatabaseRealm]):
         return value
 
 
+class _UpdateActionEventStoreEncoder(
+    RealmEncoder[UpdateAction[DomainThing], EventStoreRealm]
+):
+    """An encoder for update actions in the event store realm."""
+
+    _realm_codec_registry: Final[RealmCodecRegistry]
+    _root_type: type[DomainThing] | None
+    _the_type: type[DomainThing] | ForwardRef | str
+
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        root_type: type[DomainThing] | None,
+        the_type: type[DomainThing] | ForwardRef | str,
+    ) -> None:
+        self._realm_codec_registry = realm_codec_registry
+        self._root_type = root_type
+        self._the_type = the_type
+
+    def encode(self, value: UpdateAction[DomainThing]) -> RealmThing:
+        if not value.should_change:
+            return {"should_change": False}
+
+        encoder = self._realm_codec_registry.get_encoder(
+            self._the_type, EventStoreRealm, self._root_type
+        )
+
+        return {
+            "should_change": True,
+            "value": encoder.encode(value.just_the_value),
+        }
+
+
 class _UpdateActionWebDecoder(RealmDecoder[UpdateAction[DomainThing], WebRealm]):
-    """An encoder for update actions in CLI realm."""
+    """An decoder for update actions in web realm."""
 
     _realm_codec_registry: Final[RealmCodecRegistry]
     _root_type: type[DomainThing] | None
@@ -852,8 +886,8 @@ class _StandardRecordDatabaseDecoder(
         self._the_type = the_type
 
     def decode(self, value: RealmThing) -> _RecordT:
-        if not isinstance(value, dict):
-            raise RealmDecodingError("Expected value to be a dictionary object")
+        if not isinstance(value, Mapping):
+            raise RealmDecodingError("Expected value to be a dictonary object")
 
         all_fields = dataclasses.fields(self._the_type)
 
@@ -908,6 +942,33 @@ class _StandardRecordDatabaseDecoder(
             last_modified_time=last_modified_time,
             **ctor_args,
         )
+
+
+class _StandardUseCaseArgsEventStoreEncoder(
+    Generic[_UseCaseArgsT], RealmEncoder[_UseCaseArgsT, EventStoreRealm]
+):
+    """An encoder for use case args."""
+
+    _realm_codec_registry: Final[RealmCodecRegistry]
+    _the_type: type[_UseCaseArgsT]
+
+    def __init__(
+        self, realm_codec_registry: RealmCodecRegistry, the_type: type[_UseCaseArgsT]
+    ) -> None:
+        self._realm_codec_registry = realm_codec_registry
+        self._the_type = the_type
+
+    def encode(self, value: _UseCaseArgsT) -> RealmThing:
+        """Encode a realm to a string."""
+        result: dict[str, RealmThing] = {}
+        all_fields = dataclasses.fields(self._the_type)
+        for field in all_fields:
+            encoder = self._realm_codec_registry.get_encoder(
+                field.type, EventStoreRealm, self._the_type
+            )
+            field_value = getattr(value, field.name)
+            result[field.name] = encoder.encode(field_value)
+        return result
 
 
 class _StandardUseCaseArgsCliDecoder(
@@ -1470,6 +1531,13 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                 if not allowed_in_realm(use_case_args, CliRealm):
                     continue
 
+                if not registry._has_encoder(use_case_args, EventStoreRealm):
+                    registry._add_encoder(
+                        use_case_args,
+                        EventStoreRealm,
+                        _StandardUseCaseArgsEventStoreEncoder(registry, use_case_args),
+                    )
+
                 if not registry._has_decoder(use_case_args, CliRealm):
                     registry._add_decoder(
                         use_case_args,
@@ -1555,8 +1623,17 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
             return self.get_encoder(root_type, realm, root_type)
         elif is_thing_ish_type(thing_type):
             if (thing_type, realm) not in self._encoders_registry:
-                raise Exception(
-                    f"Could not find encoder for realm {realm} and thing {thing_type.__name__}"
+                if (thing_type, DatabaseRealm) not in self._encoders_registry:
+                    raise Exception(
+                        f"Could not find encoder for realm {realm} and thing {thing_type.__name__}"
+                    )
+                return cast(
+                    RealmEncoder[_DomainThingT, _RealmT],
+                    self._encoders_registry[
+                        cast(
+                            tuple[type[Thing], type[Realm]], (thing_type, DatabaseRealm)
+                        )
+                    ],
                 )
             return cast(
                 RealmEncoder[_DomainThingT, _RealmT],
@@ -1576,6 +1653,16 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                     RealmEncoder[_DomainThingT, _RealmT],
                     _UnionDatabaseEncoder(
                         self, cast(type[DomainThing] | None, root_type), field_args
+                    ),
+                )
+            elif thing_type_origin is UpdateAction and realm is EventStoreRealm:
+                update_action_type = cast(
+                    type[DomainThing] | ForwardRef | str, get_args(thing_type)[0]
+                )
+                return cast(
+                    RealmEncoder[_DomainThingT, _RealmT],
+                    _UpdateActionEventStoreEncoder(
+                        self, cast(type[DomainThing], root_type), update_action_type
                     ),
                 )
             elif thing_type_origin is list:

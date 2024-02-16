@@ -15,6 +15,10 @@ class DatabaseRealm(Realm):
     """The concept is stored in a database and is validated to be correct."""
 
 
+class EventStoreRealm(Realm):
+    """The concept in an event store and is validated to be correct."""
+
+
 class SearchRealm(Realm):
     """The concept is stored in a search index and is validated to be correct."""
 
@@ -96,16 +100,21 @@ class RealmCodecRegistry(abc.ABC):
     ) -> RealmDecoder[_DomainThingT, _RealmT]:
         """Get a decoder for a realm and a concept type."""
 
-    def db_encode(self, domain_thing: _DomainThingT) -> RealmThing:
+    def db_encode(
+        self, domain_thing: _DomainThingT, realm: type[Realm] = DatabaseRealm
+    ) -> RealmThing:
         """Encode a value to the database realm."""
-        encoder = self.get_encoder(domain_thing.__class__, DatabaseRealm)
+        encoder = self.get_encoder(domain_thing.__class__, realm)
         return encoder.encode(domain_thing)
 
     def db_decode(
-        self, domain_thing_type: type[_DomainThingT], realm_thing: RealmThing
+        self,
+        domain_thing_type: type[_DomainThingT],
+        realm_thing: RealmThing,
+        realm: type[Realm] = DatabaseRealm,
     ) -> _DomainThingT:
         """Decode a value from the database realm."""
-        decoder = self.get_decoder(domain_thing_type, DatabaseRealm)
+        decoder = self.get_decoder(domain_thing_type, realm)
         return decoder.decode(realm_thing)
 
 

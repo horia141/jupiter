@@ -1,8 +1,6 @@
 """A smart list tag."""
-from typing import cast
 
 from jupiter.core.domain.core.tags.tag_name import TagName
-from jupiter.core.domain.smart_lists.smart_list_tag_name import SmartListTagName
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.entity_name import NOT_USED_NAME
 from jupiter.core.framework.context import DomainContext
@@ -28,7 +26,7 @@ class SmartListTag(LeafSupportEntity):
     def new_smart_list_tag(
         ctx: DomainContext,
         smart_list_ref_id: EntityId,
-        tag_name: SmartListTagName,
+        tag_name: TagName,
     ) -> "SmartListTag":
         """Create a smart list tag."""
         return SmartListTag._create(
@@ -42,11 +40,11 @@ class SmartListTag(LeafSupportEntity):
     def update(
         self,
         ctx: DomainContext,
-        tag_name: UpdateAction[SmartListTagName],
+        tag_name: UpdateAction[TagName],
     ) -> "SmartListTag":
         """Change the smart list tag."""
         return self._new_version(
             ctx,
             name=NOT_USED_NAME,
-            tag_name=tag_name.or_else(cast(SmartListTagName, self.tag_name)),
+            tag_name=tag_name.or_else(self.tag_name),
         )

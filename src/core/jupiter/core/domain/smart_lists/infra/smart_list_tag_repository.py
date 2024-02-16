@@ -2,8 +2,8 @@
 import abc
 from typing import Iterable, List, Optional
 
+from jupiter.core.domain.core.tags.tag_name import TagName
 from jupiter.core.domain.smart_lists.smart_list_tag import SmartListTag
-from jupiter.core.domain.smart_lists.smart_list_tag_name import SmartListTagName
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.repository import (
     LeafEntityRepository,
@@ -19,6 +19,6 @@ class SmartListTagRepository(LeafEntityRepository[SmartListTag], abc.ABC):
         parent_ref_id: EntityId,
         allow_archived: bool = False,
         filter_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_tag_names: Optional[Iterable[SmartListTagName]] = None,
+        filter_tag_names: Optional[Iterable[TagName]] = None,
     ) -> List[SmartListTag]:
         """Retrieve all smart list tags for a given smart list."""

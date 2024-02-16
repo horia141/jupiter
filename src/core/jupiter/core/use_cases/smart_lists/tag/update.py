@@ -1,7 +1,7 @@
 """The command for updating a smart list tag."""
 
+from jupiter.core.domain.core.tags.tag_name import TagName
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.smart_lists.smart_list_tag_name import SmartListTagName
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.update_action import UpdateAction
@@ -21,7 +21,7 @@ class SmartListTagUpdateArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
     ref_id: EntityId
-    tag_name: UpdateAction[SmartListTagName]
+    tag_name: UpdateAction[TagName]
 
 
 @mutation_use_case(WorkspaceFeature.SMART_LISTS)

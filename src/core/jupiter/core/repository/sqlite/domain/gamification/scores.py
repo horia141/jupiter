@@ -261,7 +261,7 @@ class SqliteScoreStatsRepository(ScoreStatsRepository):
         return [self._row_to_entity(row) for row in result]
 
     def _row_to_entity(self, row: RowType) -> ScoreStats:
-        return self._realm_codec_registry.db_decode(ScoreStats, row)
+        return self._realm_codec_registry.db_decode(ScoreStats, row._mapping)  # type: ignore[attr-defined]
 
 
 class SqliteScorePeriodBestRepository(ScorePeriodBestRepository):
@@ -418,4 +418,4 @@ class SqliteScorePeriodBestRepository(ScorePeriodBestRepository):
         return [self._row_to_entity(row) for row in result]
 
     def _row_to_entity(self, row: RowType) -> ScorePeriodBest:
-        return self._realm_codec_registry.db_decode(ScorePeriodBest, row)
+        return self._realm_codec_registry.db_decode(ScorePeriodBest, row._mapping)  # type: ignore[attr-defined]

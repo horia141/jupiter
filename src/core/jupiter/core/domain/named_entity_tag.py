@@ -29,3 +29,6 @@ class NamedEntityTag(EnumValue):
     def from_entity(entity: CrownEntity) -> "NamedEntityTag":
         """Construct a tag from an entity."""
         return NamedEntityTag(entity.__class__.__name__)
+
+    def __str__(self) -> str:
+        return self.value
