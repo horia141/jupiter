@@ -13,7 +13,7 @@ from jupiter.core.use_cases.infra.realms import (
 _RECURRING_TASK_DUE_AT_DAY_BOUNDS: Final[Dict[RecurringTaskPeriod, Tuple[int, int]]] = {
     RecurringTaskPeriod.DAILY: (0, 0),
     RecurringTaskPeriod.WEEKLY: (1, 6),
-    RecurringTaskPeriod.DAILY: (1, 31),
+    RecurringTaskPeriod.MONTHLY: (1, 31),
     RecurringTaskPeriod.QUARTERLY: (1, 31),
     RecurringTaskPeriod.YEARLY: (1, 31),
 }

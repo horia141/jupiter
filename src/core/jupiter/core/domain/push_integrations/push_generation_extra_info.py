@@ -1,7 +1,7 @@
 """Extra information for how to generate an inbox task."""
 import argparse
 import shlex
-from typing import Optional, cast
+from typing import Optional
 
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.difficulty import Difficulty

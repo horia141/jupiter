@@ -348,7 +348,7 @@ def big_plan_status_to_rich_text(status: BigPlanStatus, archived: bool) -> Text:
 def actionable_date_to_rich_text(actionable_date: ADate) -> Text:
     """Transform an actionable date into text."""
     return Text("From ").append(
-str(        actionable_date),
+        str(actionable_date),
         style="underline",
     )
 
@@ -356,7 +356,7 @@ str(        actionable_date),
 def start_date_to_rich_text(start_date: ADate) -> Text:
     """Transform a due date into text."""
     return Text("Start at ").append(
-str(        start_date),
+        str(start_date),
         style="underline",
     )
 

@@ -890,9 +890,7 @@ class InboxTask(LeafEntity):
     def _build_name_for_writing_journal(
         period: RecurringTaskPeriod, right_now: ADate
     ) -> InboxTaskName:
-        return InboxTaskName(
-            f"Write {period} journal entry for for {right_now}"
-        )
+        return InboxTaskName(f"Write {period} journal entry for for {right_now}")
 
     @staticmethod
     def _build_name_for_collection_task(name: InboxTaskName) -> InboxTaskName:

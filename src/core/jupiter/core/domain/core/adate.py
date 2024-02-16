@@ -1,13 +1,12 @@
 """A date or possibly a datetime for the application."""
-from datetime import date, datetime
+from datetime import date
 from functools import total_ordering
-from typing import Optional, cast
+from typing import cast
 
 import pendulum
 import pendulum.parser
 import pendulum.parsing
 import pendulum.tz
-from jupiter.core.domain.core.timezone import Timezone
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.realm import (
     DatabaseRealm,
@@ -89,7 +88,6 @@ class ADate(AtomicValue[Date]):
                 f"Cannot compare an ADate name with {other.__class__.__name__}",
             )
 
-        
         return cast(bool, self.the_date < other.the_date)
 
     def __str__(self) -> str:
