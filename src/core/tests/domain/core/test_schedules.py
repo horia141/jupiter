@@ -671,6 +671,21 @@ def test_get_schedule_yearly_set_all_actionable_and_due(right_now: Timestamp) ->
     assert schedule.due_date == ADate.from_str("2023-05-20")
     assert schedule.full_name == InboxTaskName("A task 23")
 
+def test_contains_timestamp(right_now: Timestamp) -> None:
+    schedule = get_schedule(
+        period=RecurringTaskPeriod.WEEKLY,
+        name=EntityName("A task"),
+        right_now=right_now,
+    )
 
-# test for contains timestamp
-# test year two digits
+    assert not schedule.contains_timestamp(Timestamp.from_date_and_time(right_now.value.add(days=-3)))
+    assert not schedule.contains_timestamp(Timestamp.from_date_and_time(right_now.value.add(days=-2)))
+    assert schedule.contains_timestamp(Timestamp.from_date_and_time(right_now.value.add(days=-1)))
+    assert schedule.contains_timestamp(Timestamp.from_date_and_time(right_now.value.add(days=0)))
+    assert schedule.contains_timestamp(Timestamp.from_date_and_time(right_now.value.add(days=1)))
+    assert schedule.contains_timestamp(Timestamp.from_date_and_time(right_now.value.add(days=2)))
+    assert schedule.contains_timestamp(Timestamp.from_date_and_time(right_now.value.add(days=3)))
+    assert schedule.contains_timestamp(Timestamp.from_date_and_time(right_now.value.add(days=4)))
+    assert schedule.contains_timestamp(Timestamp.from_date_and_time(right_now.value.add(days=5)))
+    assert not schedule.contains_timestamp(Timestamp.from_date_and_time(right_now.value.add(days=6)))
+    assert not schedule.contains_timestamp(Timestamp.from_date_and_time(right_now.value.add(days=7)))
