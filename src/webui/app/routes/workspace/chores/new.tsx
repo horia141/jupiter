@@ -89,30 +89,21 @@ export async function action({ request }: ActionArgs) {
   try {
     const result = await getLoggedInApiClient(session).chores.choreCreate({
       name: form.name,
-      project_ref_id:
-        form.project !== undefined ? form.project : undefined,
+      project_ref_id: form.project !== undefined ? form.project : undefined,
       period: form.period,
       eisen: form.eisen,
       difficulty: form.difficulty === "default" ? undefined : form.difficulty,
-      actionable_from_day: form.actionableFromDay 
+      actionable_from_day: form.actionableFromDay
         ? parseInt(form.actionableFromDay)
         : undefined,
       actionable_from_month: form.actionableFromMonth
         ? parseInt(form.actionableFromMonth)
         : undefined,
-      due_at_day: form.dueAtDay
-        ? parseInt(form.dueAtDay)
-        : undefined,
-      due_at_month: form.dueAtMonth
-        ? parseInt(form.dueAtMonth)
-        : undefined,
+      due_at_day: form.dueAtDay ? parseInt(form.dueAtDay) : undefined,
+      due_at_month: form.dueAtMonth ? parseInt(form.dueAtMonth) : undefined,
       must_do: form.mustDo,
-      start_at_date: form.startAtDate
-        ?form.startAtDate
-        : undefined,
-      end_at_date: form.endAtDate
-        ? form.endAtDate
-        : undefined,
+      start_at_date: form.startAtDate ? form.startAtDate : undefined,
+      end_at_date: form.endAtDate ? form.endAtDate : undefined,
     });
 
     return redirect(`/workspace/chores/${result.new_chore.ref_id}`);

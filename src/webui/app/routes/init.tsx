@@ -88,8 +88,8 @@ export async function action({ request }: ActionArgs) {
       user_name: form.userName,
       user_timezone: form.userTimezone,
       user_feature_flags: form.userFeatureFlags,
-      auth_password: {password_raw: form.authPassword},
-      auth_password_repeat: {password_raw: form.authPasswordRepeat},
+      auth_password: { password_raw: form.authPassword },
+      auth_password_repeat: { password_raw: form.authPasswordRepeat },
       workspace_name: form.workspaceName,
       workspace_first_project_name: form.workspaceFirstProjectName,
       workspace_feature_flags: form.workspaceFeatureFlags,
@@ -247,9 +247,7 @@ export default function WorkspaceInit() {
                         label="First Project Name"
                         name="workspaceFirstProjectName"
                         readOnly={!inputsEnabled}
-                        defaultValue={
-                          loaderData.defaultFirstProjectName
-                        }
+                        defaultValue={loaderData.defaultFirstProjectName}
                       />
                       <FieldError
                         actionResult={actionData}

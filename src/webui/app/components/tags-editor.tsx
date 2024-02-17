@@ -32,9 +32,7 @@ export function TagsEditor({ allTags, defaultTags, readOnly }: Props) {
         }}
         options={allTagsAsOptions}
         readOnly={readOnly}
-        defaultValue={defaultTags.map(
-          (tid) => tagsByRefId[tid].tag_name
-        )}
+        defaultValue={defaultTags.map((tid) => tagsByRefId[tid].tag_name)}
         renderInput={(params) => <TextField {...params} label="Tags" />}
       />
       <input name="tags" type="hidden" value={tagsHiddenValue} />

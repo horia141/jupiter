@@ -150,10 +150,7 @@ export default function SmartListViewItems() {
                 <EntityNameComponent name={item.name} />
                 <Check isDone={item.is_done} />
                 {item.tags_ref_id.map((tid) => (
-                  <SmartListTagTag
-                    key={tid.the_id}
-                    tag={tagsByRefId[tid.the_id]}
-                  />
+                  <SmartListTagTag key={tid} tag={tagsByRefId[tid]} />
                 ))}
               </EntityLink>
             </EntityCard>

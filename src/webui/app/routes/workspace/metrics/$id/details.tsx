@@ -72,7 +72,6 @@ const UpdateFormSchema = {
     .optional(),
   collectionActionableFromDay: z.string().optional(),
   collectionActionableFromMonth: z.string().optional(),
-  collectionDueAtTime: z.string().optional(),
   collectionDueAtDay: z.string().optional(),
   collectionDueAtMonth: z.string().optional(),
 };
@@ -125,7 +124,7 @@ export async function action({ request, params }: ActionArgs) {
           },
           icon: {
             should_change: true,
-            value: form.icon ? { the_icon: form.icon } : undefined,
+            value: form.icon,
           },
           collection_period: {
             should_change: true,
@@ -160,7 +159,7 @@ export async function action({ request, params }: ActionArgs) {
                 : form.collectionActionableFromDay === undefined ||
                   form.collectionActionableFromDay === ""
                 ? undefined
-                : { the_day: parseInt(form.collectionActionableFromDay) },
+                : parseInt(form.collectionActionableFromDay),
           },
           collection_actionable_from_month: {
             should_change: true,
@@ -170,17 +169,7 @@ export async function action({ request, params }: ActionArgs) {
                 : form.collectionActionableFromMonth === undefined ||
                   form.collectionActionableFromMonth === ""
                 ? undefined
-                : { the_month: parseInt(form.collectionActionableFromMonth) },
-          },
-          collection_due_at_time: {
-            should_change: true,
-            value:
-              form.collectionPeriod === "none"
-                ? undefined
-                : form.collectionDueAtTime === undefined ||
-                  form.collectionDueAtTime === ""
-                ? undefined
-                : { the_time: form.collectionDueAtTime },
+                : parseInt(form.collectionActionableFromMonth),
           },
           collection_due_at_day: {
             should_change: true,
@@ -190,7 +179,7 @@ export async function action({ request, params }: ActionArgs) {
                 : form.collectionDueAtDay === undefined ||
                   form.collectionDueAtDay === ""
                 ? undefined
-                : { the_day: parseInt(form.collectionDueAtDay) },
+                : parseInt(form.collectionDueAtDay),
           },
           collection_due_at_month: {
             should_change: true,
@@ -200,7 +189,7 @@ export async function action({ request, params }: ActionArgs) {
                 : form.collectionDueAtMonth === undefined ||
                   form.collectionDueAtMonth === ""
                 ? undefined
-                : { the_month: parseInt(form.collectionDueAtMonth) },
+                : parseInt(form.collectionDueAtMonth),
           },
         });
 
@@ -319,7 +308,7 @@ export default function MetricDetails() {
               <InputLabel id="icon">Icon</InputLabel>
               <IconSelector
                 readOnly={!inputsEnabled}
-                defaultIcon={loaderData.metric.icon?.the_icon}
+                defaultIcon={loaderData.metric.icon}
               />
               <FieldError actionResult={actionData} fieldName="/icon" />
             </FormControl>
@@ -412,8 +401,8 @@ export default function MetricDetails() {
                     name="collectionActionableFromDay"
                     readOnly={!inputsEnabled}
                     defaultValue={
-                      loaderData.metric.collection_params?.actionable_from_day
-                        ?.the_day || ""
+                      loaderData.metric.collection_params
+                        ?.actionable_from_day || ""
                     }
                   />
                   <FieldError
@@ -432,31 +421,13 @@ export default function MetricDetails() {
                     name="collectionActionableFromMonth"
                     readOnly={!inputsEnabled}
                     defaultValue={
-                      loaderData.metric.collection_params?.actionable_from_month
-                        ?.the_month || ""
+                      loaderData.metric.collection_params
+                        ?.actionable_from_month || ""
                     }
                   />
                   <FieldError
                     actionResult={actionData}
                     fieldName="/collection_actionable_from_month"
-                  />
-                </FormControl>
-
-                <FormControl fullWidth>
-                  <InputLabel id="collectionDueAtTime">Due At Time</InputLabel>
-                  <OutlinedInput
-                    type="time"
-                    label="Due At Time"
-                    name="collectionDueAtTime"
-                    readOnly={!inputsEnabled}
-                    defaultValue={
-                      loaderData.metric.collection_params?.due_at_time
-                        ?.the_time || ""
-                    }
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/collection_due_at_time"
                   />
                 </FormControl>
 
@@ -468,8 +439,7 @@ export default function MetricDetails() {
                     name="collectionDueAtDay"
                     readOnly={!inputsEnabled}
                     defaultValue={
-                      loaderData.metric.collection_params?.due_at_day
-                        ?.the_day || ""
+                      loaderData.metric.collection_params?.due_at_day || ""
                     }
                   />
                   <FieldError
@@ -488,8 +458,7 @@ export default function MetricDetails() {
                     name="collectionDueAtMonth"
                     readOnly={!inputsEnabled}
                     defaultValue={
-                      loaderData.metric.collection_params?.due_at_month
-                        ?.the_month || ""
+                      loaderData.metric.collection_params?.due_at_month || ""
                     }
                   />
                   <FieldError

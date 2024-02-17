@@ -37,20 +37,20 @@ export default function Gamification() {
       <ToolPanel>
         <Stack useFlexGap gap={2}>
           {loaderData.userScoreOverview && (
-            <>
-              <Card>
-                <CardHeader title="💪 Scores Overview" />
-                <CardContent>
-                  <ScoreOverview scoreOverview={loaderData.userScoreOverview} />
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader title="💪 Scores History" />
-                <CardContent>
-                  <ScoreHistory scoreHistory={loaderData.userScoreHistory} />
-                </CardContent>
-              </Card>
-            </>
+            <Card>
+              <CardHeader title="💪 Scores Overview" />
+              <CardContent>
+                <ScoreOverview scoreOverview={loaderData.userScoreOverview} />
+              </CardContent>
+            </Card>
+          )}
+          {loaderData.userScoreHistory && (
+            <Card>
+              <CardHeader title="💪 Scores History" />
+              <CardContent>
+                <ScoreHistory scoreHistory={loaderData.userScoreHistory} />
+              </CardContent>
+            </Card>
           )}
         </Stack>
       </ToolPanel>

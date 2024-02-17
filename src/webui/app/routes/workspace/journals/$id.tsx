@@ -104,10 +104,7 @@ export async function action({ request, params }: ActionArgs) {
           ref_id: id,
           right_now: {
             should_change: true,
-            value: {
-              the_date: form.rightNow,
-              the_datetime: undefined,
-            },
+            value: form.rightNow,
           },
           period: {
             should_change: true,
@@ -220,7 +217,7 @@ export default function Journal() {
                 label="rightNow"
                 name="rightNow"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.journal.right_now.the_date}
+                defaultValue={loaderData.journal.right_now}
               />
 
               <FieldError actionResult={actionData} fieldName="/right_now" />

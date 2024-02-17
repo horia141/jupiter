@@ -883,11 +883,13 @@ class WebServiceApp:
                                 "$ref": f"#/components/schemas/{command._args_type.__name__}"
                             }
                         }
-                    }
+                    },
                 }
 
                 if command._result_type is not type(None):
-                    openapi_schema["paths"][f"/{command._build_http_name()}"]["post"]["responses"]["200"] = {
+                    openapi_schema["paths"][f"/{command._build_http_name()}"]["post"][
+                        "responses"
+                    ]["200"] = {
                         "description": "Successful response",
                         "content": {
                             "application/json": {
@@ -895,10 +897,12 @@ class WebServiceApp:
                                     "$ref": f"#/components/schemas/{command._result_type.__name__}"
                                 }
                             }
-                        }
+                        },
                     }
                 else:
-                    openapi_schema["paths"][f"/{command._build_http_name()}"]["post"]["responses"]["200"] = {
+                    openapi_schema["paths"][f"/{command._build_http_name()}"]["post"][
+                        "responses"
+                    ]["200"] = {
                         "description": "Successful response / Empty body",
                     }
 

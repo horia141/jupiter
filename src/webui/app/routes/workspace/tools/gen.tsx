@@ -209,7 +209,7 @@ export default function Gen() {
   const metricOptions =
     loaderData.summaries.metrics?.map((p) => ({
       refId: p.ref_id,
-      label: p.icon ? `${p.icon.the_icon} ${p.name}` : p.name,
+      label: p.icon ? `${p.icon} ${p.name}` : p.name,
     })) ?? [];
 
   const [selectedPersons, setSelectedPersons] = useState<PersonOptions[]>([]);
@@ -509,9 +509,7 @@ export default function Gen() {
                 Filter projects ref ids:{" "}
                 {entry.filter_project_ref_ids &&
                   entry.filter_project_ref_ids.map((refId) => (
-                    <React.Fragment key={refId.the_id}>
-                      {refId.the_id}
-                    </React.Fragment>
+                    <React.Fragment key={refId}>{refId}</React.Fragment>
                   ))}
                 {!entry.filter_project_ref_ids && <SlimChip label={"All"} />}
               </GenTargetsSection>
@@ -519,9 +517,7 @@ export default function Gen() {
                 Filter habits ref ids:{" "}
                 {entry.filter_habit_ref_ids &&
                   entry.filter_habit_ref_ids.map((refId) => (
-                    <React.Fragment key={refId.the_id}>
-                      {refId.the_id}
-                    </React.Fragment>
+                    <React.Fragment key={refId}>{refId}</React.Fragment>
                   ))}
                 {!entry.filter_habit_ref_ids && <SlimChip label={"All"} />}
               </GenTargetsSection>
@@ -529,9 +525,7 @@ export default function Gen() {
                 Filter chores ref ids:{" "}
                 {entry.filter_chore_ref_ids &&
                   entry.filter_chore_ref_ids.map((refId) => (
-                    <React.Fragment key={refId.the_id}>
-                      {refId.the_id}
-                    </React.Fragment>
+                    <React.Fragment key={refId}>{refId}</React.Fragment>
                   ))}
                 {!entry.filter_chore_ref_ids && <SlimChip label={"All"} />}
               </GenTargetsSection>
@@ -539,9 +533,7 @@ export default function Gen() {
                 Filter metrics ref ids:{" "}
                 {entry.filter_metric_ref_ids &&
                   entry.filter_metric_ref_ids.map((refId) => (
-                    <React.Fragment key={refId.the_id}>
-                      {refId.the_id}
-                    </React.Fragment>
+                    <React.Fragment key={refId}>{refId}</React.Fragment>
                   ))}
                 {!entry.filter_metric_ref_ids && <SlimChip label={"All"} />}
               </GenTargetsSection>
@@ -549,9 +541,7 @@ export default function Gen() {
                 Filter persons ref ids:{" "}
                 {entry.filter_person_ref_ids &&
                   entry.filter_person_ref_ids.map((refId) => (
-                    <React.Fragment key={refId.the_id}>
-                      {refId.the_id}
-                    </React.Fragment>
+                    <React.Fragment key={refId}>{refId}</React.Fragment>
                   ))}
                 {!entry.filter_person_ref_ids && <SlimChip label={"All"} />}
               </GenTargetsSection>
@@ -559,9 +549,7 @@ export default function Gen() {
                 Filter Slack task ref ids:{" "}
                 {entry.filter_slack_task_ref_ids &&
                   entry.filter_slack_task_ref_ids.map((refId) => (
-                    <React.Fragment key={refId.the_id}>
-                      {refId.the_id}
-                    </React.Fragment>
+                    <React.Fragment key={refId}>{refId}</React.Fragment>
                   ))}
                 {!entry.filter_slack_task_ref_ids && <SlimChip label={"All"} />}
               </GenTargetsSection>
@@ -569,9 +557,7 @@ export default function Gen() {
                 Filter email task ref ids:{" "}
                 {entry.filter_email_task_ref_ids &&
                   entry.filter_email_task_ref_ids.map((refId) => (
-                    <React.Fragment key={refId.the_id}>
-                      {refId.the_id}
-                    </React.Fragment>
+                    <React.Fragment key={refId}>{refId}</React.Fragment>
                   ))}
                 {!entry.filter_email_task_ref_ids && <SlimChip label={"All"} />}
               </GenTargetsSection>

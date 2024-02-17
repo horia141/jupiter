@@ -143,7 +143,7 @@ export default function Account() {
                     label="Your Email Address"
                     name="emailAddress"
                     disabled={true}
-                    defaultValue={loaderData.user.email_address.the_address}
+                    defaultValue={loaderData.user.email_address}
                   />
                 </FormControl>
 
@@ -161,7 +161,7 @@ export default function Account() {
                     id="timezone"
                     options={allTimezonesAsOptions}
                     readOnly={!inputsEnabled}
-                    defaultValue={loaderData.user.timezone.the_timezone}
+                    defaultValue={loaderData.user.timezone}
                     disableClearable={true}
                     renderInput={(params) => (
                       <TextField

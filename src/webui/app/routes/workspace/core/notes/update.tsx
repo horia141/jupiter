@@ -21,7 +21,7 @@ const UpdateForEntityFormSchema = {
 
 export async function action({ request }: ActionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
-  const form = await parseForm(request, UpdateForxEntityFormSchema);
+  const form = await parseForm(request, UpdateForEntityFormSchema);
 
   try {
     const result = await getLoggedInApiClient(session).core.noteUpdate({

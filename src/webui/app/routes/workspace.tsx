@@ -194,7 +194,7 @@ export default function Workspace() {
                 <Avatar
                   sx={{ width: "1.75rem", height: "1.75rem" }}
                   alt={loaderData.user.name}
-                  src={loaderData.user.avatar.avatar_as_data_url}
+                  src={loaderData.user.avatar}
                 />
               </Badge>
             </IconButton>

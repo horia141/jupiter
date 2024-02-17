@@ -245,7 +245,7 @@ export default function SlackTask() {
                 label="User"
                 name="user"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.slackTask.user.the_name}
+                defaultValue={loaderData.slackTask.user}
               />
               <FieldError actionResult={actionData} fieldName="/user" />
             </FormControl>
@@ -256,7 +256,7 @@ export default function SlackTask() {
                 label="Channel"
                 name="channel"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.slackTask.channel?.the_name}
+                defaultValue={loaderData.slackTask.channel}
               />
               <FieldError actionResult={actionData} fieldName="/channel" />
             </FormControl>
@@ -278,9 +278,7 @@ export default function SlackTask() {
                 label="Generation Name"
                 name="generationName"
                 readOnly={!inputsEnabled}
-                defaultValue={
-                  loaderData.slackTask.generation_extra_info?.name?.the_name
-                }
+                defaultValue={loaderData.slackTask.generation_extra_info?.name}
               />
               <FieldError
                 actionResult={actionData}

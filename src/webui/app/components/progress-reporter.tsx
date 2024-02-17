@@ -95,10 +95,7 @@ function ProgressReporterClientOnly(props: ProgressReporterProps) {
   const webApiProgressReporterUrl = new URL(
     globalProperties.webApiProgressReporterUrl
   );
-  webApiProgressReporterUrl.searchParams.append(
-    "token",
-    props.token
-  );
+  webApiProgressReporterUrl.searchParams.append("token", props.token);
 
   const { lastJsonMessage, readyState } = useWebSocket(
     webApiProgressReporterUrl.toString()

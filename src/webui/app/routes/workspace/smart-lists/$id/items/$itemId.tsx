@@ -200,7 +200,7 @@ export default function SmartListItem() {
                 label="Url"
                 name="url"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.smartListItem.url?.the_url}
+                defaultValue={loaderData.smartListItem.url}
               />
               <FieldError actionResult={actionData} fieldName="/url" />
             </FormControl>

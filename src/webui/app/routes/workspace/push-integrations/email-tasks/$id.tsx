@@ -133,9 +133,7 @@ export async function action({ request, params }: ActionArgs) {
           },
           generation_name: {
             should_change: true,
-            value: form.generationName
-              ? form.generationName
-              : undefined,
+            value: form.generationName ? form.generationName : undefined,
           },
           generation_status: {
             should_change: true,
@@ -257,7 +255,7 @@ export default function EmailTask() {
                 label="From Address"
                 name="fromAddress"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.emailTask.from_address.the_address}
+                defaultValue={loaderData.emailTask.from_address}
               />
               <FieldError actionResult={actionData} fieldName="/from_address" />
             </FormControl>
@@ -279,7 +277,7 @@ export default function EmailTask() {
                 label="To Address"
                 name="toAddress"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.emailTask.to_address.the_address}
+                defaultValue={loaderData.emailTask.to_address}
               />
               <FieldError actionResult={actionData} fieldName="/to_address" />
             </FormControl>
@@ -315,9 +313,7 @@ export default function EmailTask() {
                 label="Generation Name"
                 name="generationName"
                 readOnly={!inputsEnabled}
-                defaultValue={
-                  loaderData.emailTask.generation_extra_info?.name?.the_name
-                }
+                defaultValue={loaderData.emailTask.generation_extra_info?.name}
               />
               <FieldError
                 actionResult={actionData}

@@ -95,7 +95,7 @@ export async function loader({ request }: LoaderArgs) {
       session
     ).bigPlans.bigPlanLoad({
       allow_archived: false,
-      ref_id: { the_id: query.bigPlanRefId },
+      ref_id: query.bigPlanRefId,
     });
 
     ownerBigPlan = bigPlanResult.big_plan;
@@ -143,14 +143,13 @@ export async function action({ request }: ActionArgs) {
       session
     ).inboxTasks.inboxTaskCreate({
       name: form.name,
-      project_ref_id:
-        form.project !== undefined ? form.project : undefined,
+      project_ref_id: form.project !== undefined ? form.project : undefined,
       big_plan_ref_id:
         reason === "standard"
           ? form.bigPlan !== undefined && form.bigPlan !== "none"
-            ? { the_id: form.bigPlan }
+            ? form.bigPlan
             : undefined
-          : { the_id: query.bigPlanRefId as string },
+          : (query.bigPlanRefId as string),
       eisen: form.eisen,
       difficulty: form.difficulty !== "default" ? form.difficulty : undefined,
       actionable_date:

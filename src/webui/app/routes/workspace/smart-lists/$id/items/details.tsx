@@ -161,7 +161,7 @@ export default function SmartListDetails() {
               <InputLabel id="icon">Icon</InputLabel>
               <IconSelector
                 readOnly={!inputsEnabled}
-                defaultIcon={loaderData.smartList.icon?.the_icon}
+                defaultIcon={loaderData.smartList.icon}
               />
               <FieldError actionResult={actionData} fieldName="/icon" />
             </FormControl>

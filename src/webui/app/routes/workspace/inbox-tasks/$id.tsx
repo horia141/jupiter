@@ -223,7 +223,7 @@ export async function action({ request, params }: ActionArgs) {
           ref_id: id,
           big_plan_ref_id:
             form.bigPlan !== undefined && form.bigPlan !== "none"
-              ? { the_id: form.bigPlan }
+              ? form.bigPlan
               : undefined,
         });
 

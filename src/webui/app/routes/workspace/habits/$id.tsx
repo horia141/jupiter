@@ -399,9 +399,7 @@ export default function Habit() {
                 label="Actionable From Day"
                 name="actionableFromDay"
                 readOnly={!inputsEnabled}
-                defaultValue={
-                  loaderData.habit.gen_params.actionable_from_day?.the_day
-                }
+                defaultValue={loaderData.habit.gen_params.actionable_from_day}
               />
               <FieldError
                 actionResult={actionData}
@@ -417,9 +415,7 @@ export default function Habit() {
                 label="Actionable From Month"
                 name="actionableFromMonth"
                 readOnly={!inputsEnabled}
-                defaultValue={
-                  loaderData.habit.gen_params.actionable_from_month?.the_month
-                }
+                defaultValue={loaderData.habit.gen_params.actionable_from_month}
               />
               <FieldError
                 actionResult={actionData}
@@ -433,7 +429,7 @@ export default function Habit() {
                 label="Due At Day"
                 name="dueAtDay"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.habit.gen_params.due_at_day?.the_day}
+                defaultValue={loaderData.habit.gen_params.due_at_day}
               />
               <FieldError actionResult={actionData} fieldName="/due_at_day" />
             </FormControl>
@@ -444,9 +440,7 @@ export default function Habit() {
                 label="Due At Month"
                 name="dueAtMonth"
                 readOnly={!inputsEnabled}
-                defaultValue={
-                  loaderData.habit.gen_params.due_at_month?.the_month
-                }
+                defaultValue={loaderData.habit.gen_params.due_at_month}
               />
               <FieldError actionResult={actionData} fieldName="/due_at_month" />
             </FormControl>
@@ -457,7 +451,7 @@ export default function Habit() {
                 label="Skip Rule"
                 name="skipRule"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.habit.skip_rule?.skip_rule}
+                defaultValue={loaderData.habit.skip_rule}
               />
               <FieldError actionResult={actionData} fieldName="/skip_rule" />
             </FormControl>

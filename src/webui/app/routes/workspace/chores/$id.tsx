@@ -71,7 +71,6 @@ const UpdateFormSchema = {
     .optional(),
   actionableFromDay: z.string().optional(),
   actionableFromMonth: z.string().optional(),
-  dueAtTime: z.string().optional(),
   dueAtDay: z.string().optional(),
   dueAtMonth: z.string().optional(),
   mustDo: CheckboxAsString,
@@ -162,14 +161,7 @@ export async function action({ request, params }: ActionArgs) {
               form.actionableFromMonth === undefined ||
               form.actionableFromMonth === ""
                 ? undefined
-                : parseInt(form.actionableFromMonth) ,
-          },
-          due_at_time: {
-            should_change: true,
-            value:
-              form.dueAtTime === undefined || form.dueAtTime === ""
-                ? undefined
-                : { the_time: form.dueAtTime },
+                : parseInt(form.actionableFromMonth),
           },
           due_at_day: {
             should_change: true,
@@ -424,9 +416,7 @@ export default function Chore() {
                 label="Actionable From Day"
                 name="actionableFromDay"
                 readOnly={!inputsEnabled}
-                defaultValue={
-                  loaderData.chore.gen_params.actionable_from_day?.the_day
-                }
+                defaultValue={loaderData.chore.gen_params.actionable_from_day}
               />
               <FieldError
                 actionResult={actionData}
@@ -442,9 +432,7 @@ export default function Chore() {
                 label="Actionable From Month"
                 name="actionableFromMonth"
                 readOnly={!inputsEnabled}
-                defaultValue={
-                  loaderData.chore.gen_params.actionable_from_month?.the_month
-                }
+                defaultValue={loaderData.chore.gen_params.actionable_from_month}
               />
               <FieldError
                 actionResult={actionData}
@@ -453,23 +441,12 @@ export default function Chore() {
             </FormControl>
 
             <FormControl fullWidth>
-              <InputLabel id="dueAtTime">Due At Time</InputLabel>
-              <OutlinedInput
-                label="Due At Time"
-                name="dueAtTime"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.chore.gen_params.due_at_time?.the_time}
-              />
-              <FieldError actionResult={actionData} fieldName="/due_at_time" />
-            </FormControl>
-
-            <FormControl fullWidth>
               <InputLabel id="dueAtDay">Due At Day</InputLabel>
               <OutlinedInput
                 label="Due At Day"
                 name="dueAtDay"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.chore.gen_params.due_at_day?.the_day}
+                defaultValue={loaderData.chore.gen_params.due_at_day}
               />
               <FieldError actionResult={actionData} fieldName="/due_at_day" />
             </FormControl>
@@ -480,9 +457,7 @@ export default function Chore() {
                 label="Due At Month"
                 name="dueAtMonth"
                 readOnly={!inputsEnabled}
-                defaultValue={
-                  loaderData.chore.gen_params.due_at_month?.the_month
-                }
+                defaultValue={loaderData.chore.gen_params.due_at_month}
               />
               <FieldError actionResult={actionData} fieldName="/due_at_month" />
             </FormControl>
@@ -507,7 +482,7 @@ export default function Chore() {
                 label="Skip Rule"
                 name="skipRule"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.chore.skip_rule?.skip_rule}
+                defaultValue={loaderData.chore.skip_rule}
               />
               <FieldError actionResult={actionData} fieldName="/skip_rule" />
             </FormControl>

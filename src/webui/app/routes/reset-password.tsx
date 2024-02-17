@@ -45,16 +45,14 @@ export async function action({ request }: LoaderArgs) {
     const resetPasswordResult = await getGuestApiClient(
       session
     ).auth.resetPassword({
-      email_address: { the_address: form.emailAddress },
+      email_address: form.emailAddress,
       recovery_token: { token: form.recoveryToken },
       new_password: { password_raw: form.newPassword },
       new_password_repeat: { password_raw: form.newPasswordRepeat },
     });
 
     const loginResult = await getGuestApiClient(session).login.login({
-      email_address: {
-        the_address: form.emailAddress,
-      },
+      email_address: form.emailAddress,
       password: {
         password_raw: form.newPassword,
       },

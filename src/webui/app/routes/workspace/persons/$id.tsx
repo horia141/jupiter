@@ -48,7 +48,10 @@ import { difficultyName } from "~/logic/domain/difficulty";
 import { eisenName } from "~/logic/domain/eisen";
 import { sortInboxTasksNaturally } from "~/logic/domain/inbox-task";
 import { periodName } from "~/logic/domain/period";
-import { birthdayFromParts } from "~/logic/domain/person-birthday";
+import {
+  birthdayFromParts,
+  extractBirthday,
+} from "~/logic/domain/person-birthday";
 import { personRelationshipName } from "~/logic/domain/person-relationship";
 import { getIntent } from "~/logic/intent";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -76,7 +79,6 @@ const UpdateFormSchema = {
     .optional(),
   catchUpActionableFromDay: z.string().optional(),
   catchUpActionableFromMonth: z.string().optional(),
-  catchUpDueAtTime: z.string().optional(),
   catchUpDueAtDay: z.string().optional(),
   catchUpDueAtMonth: z.string().optional(),
 };
@@ -175,17 +177,7 @@ export async function action({ request, params }: ActionArgs) {
                 : form.catchUpActionableFromMonth === undefined ||
                   form.catchUpActionableFromMonth === ""
                 ? undefined
-                :parseInt(form.catchUpActionableFromMonth),
-          },
-          catch_up_due_at_time: {
-            should_change: true,
-            value:
-              form.catchUpPeriod === undefined || form.catchUpPeriod === "none"
-                ? undefined
-                : form.catchUpDueAtTime === undefined ||
-                  form.catchUpDueAtTime === ""
-                ? undefined
-                : form.catchUpDueAtTime,
+                : parseInt(form.catchUpActionableFromMonth),
           },
           catch_up_due_at_day: {
             should_change: true,
@@ -215,7 +207,10 @@ export async function action({ request, params }: ActionArgs) {
               form.birthdayMonth === undefined ||
               form.birthdayMonth === "N/A"
                 ? undefined
-                : birthdayFromParts(parseInt(form.birthdayDay), parseInt(form.birthdayMonth)),
+                : birthdayFromParts(
+                    parseInt(form.birthdayDay),
+                    parseInt(form.birthdayMonth)
+                  ),
           },
         });
 
@@ -265,6 +260,9 @@ export default function Person() {
   const topLevelInfo = useContext(TopLevelInfoContext);
 
   const person = loaderData.person;
+  const personBirthday = person.birthday
+    ? extractBirthday(person.birthday)
+    : undefined;
 
   const [showCatchUpParams, setShowCatchUpParams] = useState(
     person?.catch_up_params !== undefined
@@ -372,7 +370,7 @@ export default function Person() {
                   labelId="birthdayDay"
                   name="birthdayDay"
                   readOnly={!inputsEnabled}
-                  defaultValue={person.birthday?.day ?? "N/A"}
+                  defaultValue={personBirthday?.day ?? "N/A"}
                   label="Birthday Day"
                 >
                   <MenuItem value={"N/A"}>N/A</MenuItem>
@@ -419,7 +417,7 @@ export default function Person() {
                   labelId="birthdayMonth"
                   name="birthdayMonth"
                   readOnly={!inputsEnabled}
-                  defaultValue={person.birthday?.month ?? "N/A"}
+                  defaultValue={personBirthday?.month ?? "N/A"}
                   label="Birthday Month"
                 >
                   <MenuItem value={"N/A"}>N/A</MenuItem>
@@ -548,21 +546,6 @@ export default function Person() {
                   <FieldError
                     actionResult={actionData}
                     fieldName="/catch_up_actionable_from_month"
-                  />
-                </FormControl>
-
-                <FormControl fullWidth>
-                  <InputLabel id="catchUpDueAtTime">Due At Time</InputLabel>
-                  <OutlinedInput
-                    type="time"
-                    label="Due At Time"
-                    name="catchUpDueAtTime"
-                    readOnly={!inputsEnabled}
-                    defaultValue={person.catch_up_params?.due_at_time ?? ""}
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/catch_up_due_at_time"
                   />
                 </FormControl>
 

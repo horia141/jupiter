@@ -69,8 +69,7 @@ export async function action({ request }: ActionArgs) {
   try {
     const result = await getLoggedInApiClient(session).bigPlans.bigPlanCreate({
       name: form.name,
-      project_ref_id:
-        form.project !== undefined ? form.project : undefined,
+      project_ref_id: form.project !== undefined ? form.project : undefined,
       actionable_date:
         form.actionableDate !== undefined && form.actionableDate !== ""
           ? form.actionableDate

@@ -55,7 +55,6 @@ const CreateFormSchema = {
   catchUpDifficulty: z.string().optional(),
   catchUpActionableFromDay: z.string().optional(),
   catchUpActionableFromMonth: z.string().optional(),
-  catchUpTime: z.string().optional(),
   catchUpDueAtDay: z.string().optional(),
   catchUpDueAtMonth: z.string().optional(),
 };
@@ -102,12 +101,6 @@ export async function action({ request }: ActionArgs) {
             form.catchUpActionableFromMonth === ""
           ? undefined
           : parseInt(form.catchUpActionableFromMonth),
-      catch_up_due_at_time:
-        form.catchUpPeriod === "none"
-          ? undefined
-          : form.catchUpTime === undefined || form.catchUpTime === ""
-          ? undefined
-          : form.catchUpTime,
       catch_up_due_at_day:
         form.catchUpPeriod === "none"
           ? undefined
@@ -124,7 +117,10 @@ export async function action({ request }: ActionArgs) {
       birthday:
         form.birthdayDay === "N/A" || form.birthdayMonth === "N/A"
           ? undefined
-          : birthdayFromParts(parseInt(form.birthdayDay), parseInt(form.birthdayMonth)),
+          : birthdayFromParts(
+              parseInt(form.birthdayDay),
+              parseInt(form.birthdayMonth)
+            ),
     });
 
     return redirect(`/workspace/persons/${result.new_person.ref_id}`);
@@ -369,21 +365,6 @@ export default function NewPerson() {
                   <FieldError
                     actionResult={actionData}
                     fieldName="/catch_up_actionable_from_month"
-                  />
-                </FormControl>
-
-                <FormControl fullWidth>
-                  <InputLabel id="catchUpDueAtTime">Due At Time</InputLabel>
-                  <OutlinedInput
-                    type="time"
-                    label="Due At Time"
-                    name="catchUpDueAtTime"
-                    readOnly={!inputsEnabled}
-                    defaultValue={""}
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/catch_up_due_at_time"
                   />
                 </FormControl>
 

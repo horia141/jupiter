@@ -53,7 +53,6 @@ const CreateFormSchema = {
   difficulty: z.union([z.nativeEnum(Difficulty), z.literal("default")]),
   actionableFromDay: z.string().optional(),
   actionableFromMonth: z.string().optional(),
-  dueAtTime: z.string().optional(),
   dueAtDay: z.string().optional(),
   dueAtMonth: z.string().optional(),
   mustDo: CheckboxAsString,
@@ -87,8 +86,7 @@ export async function action({ request }: ActionArgs) {
   try {
     const result = await getLoggedInApiClient(session).habits.habitCreate({
       name: form.name,
-      project_ref_id:
-        form.project !== undefined ? form.project : undefined,
+      project_ref_id: form.project !== undefined ? form.project : undefined,
       period: form.period,
       eisen: form.eisen,
       difficulty: form.difficulty === "default" ? undefined : form.difficulty,
@@ -96,16 +94,11 @@ export async function action({ request }: ActionArgs) {
         ? parseInt(form.actionableFromDay)
         : undefined,
       actionable_from_month: form.actionableFromMonth
-        ? parseInt(form.actionableFromMonth) 
+        ? parseInt(form.actionableFromMonth)
         : undefined,
-      due_at_time: form.dueAtTime ? { the_time: form.dueAtTime } : undefined,
-      due_at_day: form.dueAtDay
-        ? parseInt(form.dueAtDay)
-        : undefined,
-      due_at_month: form.dueAtMonth
-        ? parseInt(form.dueAtMonth)
-        : undefined,
-      skip_rule: form.skipRule ? { skip_rule: form.skipRule } : undefined,
+      due_at_day: form.dueAtDay ? parseInt(form.dueAtDay) : undefined,
+      due_at_month: form.dueAtMonth ? parseInt(form.dueAtMonth) : undefined,
+      skip_rule: form.skipRule,
       repeats_in_period_count: form.repeatsInPeriodCount
         ? parseInt(form.repeatsInPeriodCount)
         : undefined,
@@ -259,16 +252,6 @@ export default function NewHabit() {
                 actionResult={actionData}
                 fieldName="/actionable_from_month"
               />
-            </FormControl>
-
-            <FormControl fullWidth>
-              <InputLabel id="dueAtTime">Due At Time</InputLabel>
-              <OutlinedInput
-                label="Due At Time"
-                name="dueAtTime"
-                readOnly={!inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/due_at_time" />
             </FormControl>
 
             <FormControl fullWidth>
