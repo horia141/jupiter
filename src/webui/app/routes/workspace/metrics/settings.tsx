@@ -74,7 +74,7 @@ export async function action({ request }: ActionArgs) {
     }
 
     await getLoggedInApiClient(session).metrics.metricChangeCollectionProject({
-      collection_project_ref_id: { the_id: form.project },
+      collection_project_ref_id: form.project,
     });
 
     return redirect(`/workspace/metrics/settings`);
@@ -122,12 +122,12 @@ export default function MetricsSettings() {
                   labelId="collectionProject"
                   name="project"
                   readOnly={!inputsEnabled}
-                  defaultValue={loaderData.collectionProject.ref_id.the_id}
+                  defaultValue={loaderData.collectionProject.ref_id}
                   label="Collection Project"
                 >
                   {loaderData.allProjects.map((p) => (
-                    <MenuItem key={p.ref_id.the_id} value={p.ref_id.the_id}>
-                      {p.name.the_name}
+                    <MenuItem key={p.ref_id} value={p.ref_id}>
+                      {p.name}
                     </MenuItem>
                   ))}
                 </Select>

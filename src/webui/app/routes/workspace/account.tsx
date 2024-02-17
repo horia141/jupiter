@@ -75,11 +75,11 @@ export async function action({ request }: ActionArgs) {
         await getLoggedInApiClient(session).users.userUpdate({
           name: {
             should_change: true,
-            value: { the_name: form.name },
+            value: form.name,
           },
           timezone: {
             should_change: true,
-            value: { the_timezone: form.timezone },
+            value: form.timezone,
           },
         });
 
@@ -151,7 +151,7 @@ export default function Account() {
                   <TextField
                     name="name"
                     label="Your Name"
-                    defaultValue={loaderData.user.name.the_name}
+                    defaultValue={loaderData.user.name}
                     disabled={!inputsEnabled}
                   />
                   <FieldError actionResult={actionData} fieldName="/name" />

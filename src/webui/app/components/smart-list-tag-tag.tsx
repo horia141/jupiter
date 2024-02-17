@@ -6,5 +6,5 @@ interface Props {
 }
 
 export function SmartListTagTag({ tag }: Props) {
-  return <SlimChip color="success" label={tag.tag_name.the_tag} />;
+  return <SlimChip color="success" label={tag.tag_name} />;
 }

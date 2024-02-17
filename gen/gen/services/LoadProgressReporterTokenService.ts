@@ -1,22 +1,26 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ChangePasswordArgs } from '../models/ChangePasswordArgs';
+import type { LoadProgressReporterTokenArgs } from '../models/LoadProgressReporterTokenArgs';
+import type { LoadProgressReporterTokenResult } from '../models/LoadProgressReporterTokenResult';
+
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
+
 export class LoadProgressReporterTokenService {
+
     constructor(public readonly httpRequest: BaseHttpRequest) {}
+
     /**
      * The use case for retrieving summaries about entities.
      * The use case for retrieving summaries about entities.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns LoadProgressReporterTokenResult Successful response
      * @throws ApiError
      */
     public loadProgressReporterToken(
-        requestBody?: ChangePasswordArgs,
-    ): CancelablePromise<any> {
+        requestBody?: LoadProgressReporterTokenArgs,
+    ): CancelablePromise<LoadProgressReporterTokenResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/load-progress-reporter-token',
@@ -29,4 +33,5 @@ export class LoadProgressReporterTokenService {
             },
         });
     }
+
 }

@@ -1,7 +1,7 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+
 import type { Env } from './Env';
 import type { Hosting } from './Hosting';
 import type { ProjectName } from './ProjectName';
@@ -13,6 +13,7 @@ import type { Workspace } from './Workspace';
 import type { WorkspaceFeature } from './WorkspaceFeature';
 import type { WorkspaceFeatureFlagsControls } from './WorkspaceFeatureFlagsControls';
 import type { WorkspaceName } from './WorkspaceName';
+
 /**
  * Load user and workspace result.
  */

@@ -76,7 +76,7 @@ export async function action({ request }: ActionArgs) {
     await getLoggedInApiClient(
       session
     ).pushIntegrations.slackTaskChangeGenerationProject({
-      generation_project_ref_id: { the_id: form.project },
+      generation_project_ref_id: form.project,
     });
 
     return redirect(`/workspace/push-integrations/slack-tasks/settings`);
@@ -122,12 +122,12 @@ export default function SlackTasksSettings() {
                   labelId="project"
                   name="project"
                   readOnly={!inputsEnabled}
-                  defaultValue={loaderData.generationProject.ref_id.the_id}
+                  defaultValue={loaderData.generationProject.ref_id}
                   label="Project"
                 >
                   {loaderData.allProjects.map((p) => (
-                    <MenuItem key={p.ref_id.the_id} value={p.ref_id.the_id}>
-                      {p.name.the_name}
+                    <MenuItem key={p.ref_id} value={p.ref_id}>
+                      {p.name}
                     </MenuItem>
                   ))}
                 </Select>

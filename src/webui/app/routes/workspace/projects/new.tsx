@@ -44,13 +44,11 @@ export async function action({ request }: ActionArgs) {
   try {
     const response = await getLoggedInApiClient(session).projects.projectCreate(
       {
-        name: { the_name: form.name },
+        name: form.name,
       }
     );
 
-    return redirect(
-      `/workspace/projects/${response.new_project.ref_id.the_id}`
-    );
+    return redirect(`/workspace/projects/${response.new_project.ref_id}`);
   } catch (error) {
     if (
       error instanceof ApiError &&

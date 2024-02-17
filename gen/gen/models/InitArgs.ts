@@ -1,7 +1,7 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+
 import type { EmailAddress } from './EmailAddress';
 import type { PasswordNewPlain } from './PasswordNewPlain';
 import type { ProjectName } from './ProjectName';
@@ -10,6 +10,7 @@ import type { UserFeature } from './UserFeature';
 import type { UserName } from './UserName';
 import type { WorkspaceFeature } from './WorkspaceFeature';
 import type { WorkspaceName } from './WorkspaceName';
+
 /**
  * Init use case arguments.
  */

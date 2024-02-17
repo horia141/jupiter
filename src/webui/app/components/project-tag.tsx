@@ -6,5 +6,5 @@ interface Props {
 }
 
 export function ProjectTag(props: Props) {
-  return <SlimChip label={props.project.name.the_name} color="info" />;
+  return <SlimChip label={props.project.name} color="info" />;
 }

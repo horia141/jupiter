@@ -1,12 +1,13 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+
 import type { ADate } from './ADate';
 import type { BigPlanName } from './BigPlanName';
 import type { BigPlanStatus } from './BigPlanStatus';
 import type { EntityId } from './EntityId';
 import type { Timestamp } from './Timestamp';
+
 /**
  * A big plan.
  */

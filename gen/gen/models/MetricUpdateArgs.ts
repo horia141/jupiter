@@ -1,7 +1,7 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+
 import type { Difficulty } from './Difficulty';
 import type { Eisen } from './Eisen';
 import type { EntityIcon } from './EntityIcon';
@@ -9,8 +9,8 @@ import type { EntityId } from './EntityId';
 import type { MetricName } from './MetricName';
 import type { RecurringTaskDueAtDay } from './RecurringTaskDueAtDay';
 import type { RecurringTaskDueAtMonth } from './RecurringTaskDueAtMonth';
-import type { RecurringTaskDueAtTime } from './RecurringTaskDueAtTime';
 import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
+
 /**
  * PersonFindArgs.
  */
@@ -43,10 +43,6 @@ export type MetricUpdateArgs = {
     collection_actionable_from_month: {
         should_change: boolean;
         value?: RecurringTaskDueAtMonth;
-    };
-    collection_due_at_time: {
-        should_change: boolean;
-        value?: RecurringTaskDueAtTime;
     };
     collection_due_at_day: {
         should_change: boolean;

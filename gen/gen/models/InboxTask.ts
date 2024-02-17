@@ -1,7 +1,7 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+
 import type { ADate } from './ADate';
 import type { Difficulty } from './Difficulty';
 import type { Eisen } from './Eisen';
@@ -10,6 +10,7 @@ import type { InboxTaskName } from './InboxTaskName';
 import type { InboxTaskSource } from './InboxTaskSource';
 import type { InboxTaskStatus } from './InboxTaskStatus';
 import type { Timestamp } from './Timestamp';
+
 /**
  * An inbox task.
  */

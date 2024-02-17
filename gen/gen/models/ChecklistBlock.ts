@@ -1,9 +1,10 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+
 import type { ChecklistItem } from './ChecklistItem';
 import type { CorrelationId } from './CorrelationId';
+
 /**
  * A todo list.
  */
@@ -12,9 +13,13 @@ export type ChecklistBlock = {
     kind: ChecklistBlock.kind;
     items: Array<ChecklistItem>;
 };
+
 export namespace ChecklistBlock {
+
     export enum kind {
         CHECKLIST = 'checklist',
     }
+
+
 }
 

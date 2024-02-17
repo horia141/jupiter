@@ -1,13 +1,14 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+
 import type { EmailAddress } from './EmailAddress';
 import type { EmailUserName } from './EmailUserName';
 import type { EntityId } from './EntityId';
 import type { EntityName } from './EntityName';
 import type { PushGenerationExtraInfo } from './PushGenerationExtraInfo';
 import type { Timestamp } from './Timestamp';
+
 /**
  * An email task which needs to be converted into an inbox task.
  */

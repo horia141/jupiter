@@ -141,11 +141,9 @@ export async function action({ request }: ActionArgs) {
       gen_even_if_not_modified: form.gen_even_if_not_modified,
       today:
         form.today !== undefined && form.today !== ""
-          ? {
-              the_date: DateTime.fromISO(form.today, {
-                zone: "utc",
-              }).toISODate(),
-            }
+          ? DateTime.fromISO(form.today, {
+              zone: "utc",
+            }).toISODate()
           : undefined,
       gen_targets: fixSelectOutputToEnum<SyncTarget>(form.gen_targets),
       period: fixSelectOutputToEnum<RecurringTaskPeriod>(form.period),
@@ -189,36 +187,36 @@ export default function Gen() {
   const [selectedProjects, setSelectedProjects] = useState<ProjectOption[]>([]);
   const projectOptions =
     loaderData.summaries.projects?.map((p) => ({
-      refId: p.ref_id.the_id,
-      label: p.name.the_name,
+      refId: p.ref_id,
+      label: p.name,
     })) ?? [];
 
   const [selectedHabits, setSelectedHabits] = useState<HabitOptions[]>([]);
   const habitOptions =
     loaderData.summaries.habits?.map((p) => ({
-      refId: p.ref_id.the_id,
-      label: p.name.the_name,
+      refId: p.ref_id,
+      label: p.name,
     })) ?? [];
 
   const [selectedChores, setSelectedChores] = useState<ChoreOptions[]>([]);
   const choreOptions =
     loaderData.summaries.chores?.map((p) => ({
-      refId: p.ref_id.the_id,
-      label: p.name.the_name,
+      refId: p.ref_id,
+      label: p.name,
     })) ?? [];
 
   const [selectedMetrics, setSelectedMetrics] = useState<MetricOptions[]>([]);
   const metricOptions =
     loaderData.summaries.metrics?.map((p) => ({
-      refId: p.ref_id.the_id,
-      label: p.icon ? `${p.icon.the_icon} ${p.name.the_name}` : p.name.the_name,
+      refId: p.ref_id,
+      label: p.icon ? `${p.icon.the_icon} ${p.name}` : p.name,
     })) ?? [];
 
   const [selectedPersons, setSelectedPersons] = useState<PersonOptions[]>([]);
   const personOptions =
     loaderData.summaries.persons?.map((p) => ({
-      refId: p.ref_id.the_id,
-      label: p.name.the_name,
+      refId: p.ref_id,
+      label: p.name,
     })) ?? [];
 
   return (
@@ -473,7 +471,7 @@ export default function Gen() {
 
       {loaderData.loadRuns.entries.map((entry) => {
         return (
-          <Accordion key={entry.ref_id.the_id}>
+          <Accordion key={entry.ref_id}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <AccordionHeader>
                 Run from <EventSourceTag source={entry.source} />
@@ -587,7 +585,7 @@ export default function Gen() {
                   </Divider>
 
                   {entry.entity_created_records.map((record) => (
-                    <EntityCard key={record.ref_id.the_id}>
+                    <EntityCard key={record.ref_id}>
                       <EntitySummaryLink summary={record} />
                     </EntityCard>
                   ))}
@@ -603,7 +601,7 @@ export default function Gen() {
                   </Divider>
 
                   {entry.entity_updated_records.map((record) => (
-                    <EntityCard key={record.ref_id.the_id}>
+                    <EntityCard key={record.ref_id}>
                       <EntitySummaryLink summary={record} />
                     </EntityCard>
                   ))}
@@ -619,7 +617,7 @@ export default function Gen() {
                   </Divider>
 
                   {entry.entity_removed_records.map((record) => (
-                    <EntityCard key={record.ref_id.the_id}>
+                    <EntityCard key={record.ref_id}>
                       <EntitySummaryLink summary={record} removed />
                     </EntityCard>
                   ))}

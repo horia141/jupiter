@@ -68,22 +68,20 @@ export async function action({ request }: ActionArgs) {
 
   try {
     const result = await getLoggedInApiClient(session).bigPlans.bigPlanCreate({
-      name: { the_name: form.name },
+      name: form.name,
       project_ref_id:
-        form.project !== undefined ? { the_id: form.project } : undefined,
+        form.project !== undefined ? form.project : undefined,
       actionable_date:
         form.actionableDate !== undefined && form.actionableDate !== ""
-          ? { the_date: form.actionableDate, the_datetime: undefined }
+          ? form.actionableDate
           : undefined,
       due_date:
         form.dueDate !== undefined && form.dueDate !== ""
-          ? { the_date: form.dueDate, the_datetime: undefined }
+          ? form.dueDate
           : undefined,
     });
 
-    return redirect(
-      `/workspace/big-plans/${result.new_big_plan.ref_id.the_id}`
-    );
+    return redirect(`/workspace/big-plans/${result.new_big_plan.ref_id}`);
   } catch (error) {
     if (
       error instanceof ApiError &&
@@ -134,12 +132,12 @@ export default function NewBigPlan() {
                   labelId="project"
                   name="project"
                   readOnly={!inputsEnabled}
-                  defaultValue={loaderData.defaultProject.ref_id.the_id}
+                  defaultValue={loaderData.defaultProject.ref_id}
                   label="Project"
                 >
                   {loaderData.allProjects.map((p) => (
-                    <MenuItem key={p.ref_id.the_id} value={p.ref_id.the_id}>
-                      {p.name.the_name}
+                    <MenuItem key={p.ref_id} value={p.ref_id}>
+                      {p.name}
                     </MenuItem>
                   ))}
                 </Select>

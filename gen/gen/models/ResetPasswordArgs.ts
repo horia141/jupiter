@@ -1,10 +1,11 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+
 import type { EmailAddress } from './EmailAddress';
 import type { PasswordNewPlain } from './PasswordNewPlain';
 import type { RecoveryTokenPlain } from './RecoveryTokenPlain';
+
 /**
  * Reset password args.
  */

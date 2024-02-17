@@ -1,13 +1,14 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+
 import type { EntityIcon } from './EntityIcon';
 import type { EntityId } from './EntityId';
 import type { MetricName } from './MetricName';
 import type { MetricUnit } from './MetricUnit';
 import type { RecurringTaskGenParams } from './RecurringTaskGenParams';
 import type { Timestamp } from './Timestamp';
+
 /**
  * A metric.
  */

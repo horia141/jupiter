@@ -1,22 +1,26 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ChangePasswordArgs } from '../models/ChangePasswordArgs';
+import type { LoadTopLevelInfoArgs } from '../models/LoadTopLevelInfoArgs';
+import type { LoadTopLevelInfoResult } from '../models/LoadTopLevelInfoResult';
+
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
+
 export class LoadTopLevelInfoService {
+
     constructor(public readonly httpRequest: BaseHttpRequest) {}
+
     /**
      * The command for loading a user and workspace if they exist and other data too.
      * The command for loading a user and workspace if they exist and other data too.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns LoadTopLevelInfoResult Successful response
      * @throws ApiError
      */
     public loadTopLevelInfo(
-        requestBody?: ChangePasswordArgs,
-    ): CancelablePromise<any> {
+        requestBody?: LoadTopLevelInfoArgs,
+    ): CancelablePromise<LoadTopLevelInfoResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/load-top-level-info',
@@ -29,4 +33,5 @@ export class LoadTopLevelInfoService {
             },
         });
     }
+
 }

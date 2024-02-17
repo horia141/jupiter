@@ -59,12 +59,12 @@ export function InboxTaskStack(props: InboxTaskStackProps) {
               {props.inboxTasks.map((it) => (
                 <InboxTaskCard
                   topLevelInfo={props.topLevelInfo}
-                  key={it.ref_id.the_id}
+                  key={it.ref_id}
                   allowSwipe={true}
                   showOptions={props.showOptions}
                   inboxTask={it}
-                  optimisticState={props.optimisticUpdates?.[it.ref_id.the_id]}
-                  parent={props.moreInfoByRefId?.[it.ref_id.the_id]}
+                  optimisticState={props.optimisticUpdates?.[it.ref_id]}
+                  parent={props.moreInfoByRefId?.[it.ref_id]}
                   onMarkDone={handleMarkDone}
                   onMarkNotDone={handleMarkNotDone}
                 />

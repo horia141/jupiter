@@ -74,7 +74,7 @@ export async function action({ request }: ActionArgs) {
     }
 
     await getLoggedInApiClient(session).persons.personChangeCatchUpProject({
-      catch_up_project_ref_id: { the_id: form.project },
+      catch_up_project_ref_id: form.project,
     });
 
     return redirect(`/workspace/persons/settings`);
@@ -119,12 +119,12 @@ export default function PersonsSettings() {
                   labelId="project"
                   name="project"
                   readOnly={!inputsEnabled}
-                  defaultValue={loaderData.catchUpProject.ref_id.the_id}
+                  defaultValue={loaderData.catchUpProject.ref_id}
                   label="Project"
                 >
                   {loaderData.allProjects.map((p) => (
-                    <MenuItem key={p.ref_id.the_id} value={p.ref_id.the_id}>
-                      {p.name.the_name}
+                    <MenuItem key={p.ref_id} value={p.ref_id}>
+                      {p.name}
                     </MenuItem>
                   ))}
                 </Select>

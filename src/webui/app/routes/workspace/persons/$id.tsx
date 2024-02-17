@@ -48,6 +48,7 @@ import { difficultyName } from "~/logic/domain/difficulty";
 import { eisenName } from "~/logic/domain/eisen";
 import { sortInboxTasksNaturally } from "~/logic/domain/inbox-task";
 import { periodName } from "~/logic/domain/period";
+import { birthdayFromParts } from "~/logic/domain/person-birthday";
 import { personRelationshipName } from "~/logic/domain/person-relationship";
 import { getIntent } from "~/logic/intent";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -90,7 +91,7 @@ export async function loader({ request, params }: LoaderArgs) {
 
   try {
     const result = await getLoggedInApiClient(session).persons.personLoad({
-      ref_id: { the_id: id },
+      ref_id: id,
       allow_archived: true,
     });
 
@@ -122,10 +123,10 @@ export async function action({ request, params }: ActionArgs) {
     switch (intent) {
       case "update": {
         await getLoggedInApiClient(session).persons.personUpdate({
-          ref_id: { the_id: id },
+          ref_id: id,
           name: {
             should_change: true,
-            value: { the_name: form.name },
+            value: form.name,
           },
           relationship: {
             should_change: true,
@@ -164,7 +165,7 @@ export async function action({ request, params }: ActionArgs) {
                 : form.catchUpActionableFromDay === undefined ||
                   form.catchUpActionableFromDay === ""
                 ? undefined
-                : { the_day: parseInt(form.catchUpActionableFromDay) },
+                : parseInt(form.catchUpActionableFromDay),
           },
           catch_up_actionable_from_month: {
             should_change: true,
@@ -174,7 +175,7 @@ export async function action({ request, params }: ActionArgs) {
                 : form.catchUpActionableFromMonth === undefined ||
                   form.catchUpActionableFromMonth === ""
                 ? undefined
-                : { the_month: parseInt(form.catchUpActionableFromMonth) },
+                :parseInt(form.catchUpActionableFromMonth),
           },
           catch_up_due_at_time: {
             should_change: true,
@@ -184,7 +185,7 @@ export async function action({ request, params }: ActionArgs) {
                 : form.catchUpDueAtTime === undefined ||
                   form.catchUpDueAtTime === ""
                 ? undefined
-                : { the_time: form.catchUpDueAtTime },
+                : form.catchUpDueAtTime,
           },
           catch_up_due_at_day: {
             should_change: true,
@@ -194,7 +195,7 @@ export async function action({ request, params }: ActionArgs) {
                 : form.catchUpDueAtDay === undefined ||
                   form.catchUpDueAtDay === ""
                 ? undefined
-                : { the_day: parseInt(form.catchUpDueAtDay) },
+                : parseInt(form.catchUpDueAtDay),
           },
           catch_up_due_at_month: {
             should_change: true,
@@ -204,7 +205,7 @@ export async function action({ request, params }: ActionArgs) {
                 : form.catchUpDueAtMonth === undefined ||
                   form.catchUpDueAtMonth === ""
                 ? undefined
-                : { the_month: parseInt(form.catchUpDueAtMonth) },
+                : parseInt(form.catchUpDueAtMonth),
           },
           birthday: {
             should_change: true,
@@ -214,10 +215,7 @@ export async function action({ request, params }: ActionArgs) {
               form.birthdayMonth === undefined ||
               form.birthdayMonth === "N/A"
                 ? undefined
-                : {
-                    day: parseInt(form.birthdayDay),
-                    month: parseInt(form.birthdayMonth),
-                  },
+                : birthdayFromParts(parseInt(form.birthdayDay), parseInt(form.birthdayMonth)),
           },
         });
 
@@ -227,7 +225,7 @@ export async function action({ request, params }: ActionArgs) {
       case "create-note": {
         await getLoggedInApiClient(session).core.noteCreate({
           domain: NoteDomain.PERSON,
-          source_entity_ref_id: { the_id: id },
+          source_entity_ref_id: id,
           content: [],
         });
 
@@ -236,7 +234,7 @@ export async function action({ request, params }: ActionArgs) {
 
       case "archive": {
         await getLoggedInApiClient(session).persons.personArchive({
-          ref_id: { the_id: id },
+          ref_id: id,
         });
 
         return redirect(`/workspace/persons/${id}`);
@@ -304,7 +302,7 @@ export default function Person() {
   function handleCardMarkDone(it: InboxTask) {
     cardActionFetcher.submit(
       {
-        id: it.ref_id.the_id,
+        id: it.ref_id,
         status: InboxTaskStatus.DONE,
       },
       {
@@ -317,7 +315,7 @@ export default function Person() {
   function handleCardMarkNotDone(it: InboxTask) {
     cardActionFetcher.submit(
       {
-        id: it.ref_id.the_id,
+        id: it.ref_id,
         status: InboxTaskStatus.NOT_DONE,
       },
       {
@@ -329,7 +327,7 @@ export default function Person() {
 
   return (
     <LeafPanel
-      key={person.ref_id.the_id}
+      key={person.ref_id}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/persons"
@@ -344,7 +342,7 @@ export default function Person() {
                 label="Name"
                 name="name"
                 readOnly={!inputsEnabled}
-                defaultValue={person.name.the_name}
+                defaultValue={person.name}
               />
               <FieldError actionResult={actionData} fieldName="/name" />
             </FormControl>

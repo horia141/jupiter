@@ -1,21 +1,28 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ChangePasswordArgs } from '../models/ChangePasswordArgs';
+import type { WorkspaceChangeDefaultProjectArgs } from '../models/WorkspaceChangeDefaultProjectArgs';
+import type { WorkspaceChangeFeatureFlagsArgs } from '../models/WorkspaceChangeFeatureFlagsArgs';
+import type { WorkspaceLoadArgs } from '../models/WorkspaceLoadArgs';
+import type { WorkspaceLoadResult } from '../models/WorkspaceLoadResult';
+import type { WorkspaceUpdateArgs } from '../models/WorkspaceUpdateArgs';
+
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
+
 export class WorkspacesService {
+
     constructor(public readonly httpRequest: BaseHttpRequest) {}
+
     /**
      * UseCase for changing the default project of a workspace.
      * UseCase for changing the default project of a workspace.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public workspaceChangeDefaultProject(
-        requestBody?: ChangePasswordArgs,
+        requestBody?: WorkspaceChangeDefaultProjectArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
@@ -29,15 +36,16 @@ export class WorkspacesService {
             },
         });
     }
+
     /**
      * Usecase for changing the feature flags for the workspace.
      * Usecase for changing the feature flags for the workspace.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public workspaceChangeFeatureFlags(
-        requestBody?: ChangePasswordArgs,
+        requestBody?: WorkspaceChangeFeatureFlagsArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
@@ -51,16 +59,17 @@ export class WorkspacesService {
             },
         });
     }
+
     /**
      * The command for loading workspaces.
      * The command for loading workspaces.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns WorkspaceLoadResult Successful response
      * @throws ApiError
      */
     public workspaceLoad(
-        requestBody?: ChangePasswordArgs,
-    ): CancelablePromise<any> {
+        requestBody?: WorkspaceLoadArgs,
+    ): CancelablePromise<WorkspaceLoadResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/workspace-load',
@@ -73,15 +82,16 @@ export class WorkspacesService {
             },
         });
     }
+
     /**
      * UseCase for updating a workspace.
      * UseCase for updating a workspace.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public workspaceUpdate(
-        requestBody?: ChangePasswordArgs,
+        requestBody?: WorkspaceUpdateArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
@@ -95,4 +105,5 @@ export class WorkspacesService {
             },
         });
     }
+
 }

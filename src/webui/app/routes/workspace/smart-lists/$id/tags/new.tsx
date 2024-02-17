@@ -49,7 +49,7 @@ export async function loader({ request, params }: LoaderArgs) {
 
   const result = await getLoggedInApiClient(session).smartLists.smartListLoad({
     allow_archived: true,
-    ref_id: { the_id: id },
+    ref_id: id,
   });
 
   return json({
@@ -66,12 +66,12 @@ export async function action({ request, params }: ActionArgs) {
     const response = await getLoggedInApiClient(
       session
     ).smartLists.smartListTagCreate({
-      smart_list_ref_id: { the_id: id },
-      tag_name: { the_tag: form.name },
+      smart_list_ref_id: id,
+      tag_name: form.name,
     });
 
     return redirect(
-      `/workspace/smart-lists/${id}/tags/${response.new_smart_list_tag.ref_id.the_id}`
+      `/workspace/smart-lists/${id}/tags/${response.new_smart_list_tag.ref_id}`
     );
   } catch (error) {
     if (
@@ -98,7 +98,7 @@ export default function NewSmartListTag() {
 
   return (
     <LeafPanel
-      key={loaderData.smartList.ref_id.the_id}
+      key={loaderData.smartList.ref_id}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation={`/workspace/smart-lists/${key}/tags`}

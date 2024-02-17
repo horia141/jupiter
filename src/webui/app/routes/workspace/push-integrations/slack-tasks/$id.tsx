@@ -77,7 +77,7 @@ export async function loader({ request, params }: LoaderArgs) {
     const response = await getLoggedInApiClient(
       session
     ).pushIntegrations.slackTaskLoad({
-      ref_id: { the_id: id },
+      ref_id: id,
       allow_archived: true,
     });
 
@@ -108,14 +108,14 @@ export async function action({ request, params }: ActionArgs) {
     switch (intent) {
       case "update": {
         await getLoggedInApiClient(session).pushIntegrations.slackTaskUpdate({
-          ref_id: { the_id: id },
+          ref_id: id,
           user: {
             should_change: true,
-            value: { the_name: form.user },
+            value: form.user,
           },
           channel: {
             should_change: true,
-            value: form.channel ? { the_name: form.channel } : undefined,
+            value: form.channel,
           },
           message: {
             should_change: true,
@@ -123,9 +123,7 @@ export async function action({ request, params }: ActionArgs) {
           },
           generation_name: {
             should_change: true,
-            value: form.generationName
-              ? { the_name: form.generationName }
-              : undefined,
+            value: form.generationName,
           },
           generation_status: {
             should_change: true,
@@ -151,10 +149,7 @@ export async function action({ request, params }: ActionArgs) {
             value:
               form.generationActionableDate !== undefined &&
               form.generationActionableDate !== ""
-                ? {
-                    the_date: form.generationActionableDate,
-                    the_datetime: undefined,
-                  }
+                ? form.generationActionableDate
                 : undefined,
           },
           generation_due_date: {
@@ -162,7 +157,7 @@ export async function action({ request, params }: ActionArgs) {
             value:
               form.generationDueDate !== undefined &&
               form.generationDueDate !== ""
-                ? { the_date: form.generationDueDate, the_datetime: undefined }
+                ? form.generationDueDate
                 : undefined,
           },
         });
@@ -172,7 +167,7 @@ export async function action({ request, params }: ActionArgs) {
 
       case "archive": {
         await getLoggedInApiClient(session).pushIntegrations.slackTaskArchive({
-          ref_id: { the_id: id },
+          ref_id: id,
         });
 
         return redirect(`/workspace/push-integrations/slack-tasks/${id}`);
@@ -210,7 +205,7 @@ export default function SlackTask() {
   function handleCardMarkDone(it: InboxTask) {
     cardActionFetcher.submit(
       {
-        id: it.ref_id.the_id,
+        id: it.ref_id,
         status: InboxTaskStatus.DONE,
       },
       {
@@ -223,7 +218,7 @@ export default function SlackTask() {
   function handleCardMarkNotDone(it: InboxTask) {
     cardActionFetcher.submit(
       {
-        id: it.ref_id.the_id,
+        id: it.ref_id,
         status: InboxTaskStatus.NOT_DONE,
       },
       {
@@ -235,7 +230,7 @@ export default function SlackTask() {
 
   return (
     <LeafPanel
-      key={loaderData.slackTask.ref_id.the_id}
+      key={loaderData.slackTask.ref_id}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/push-integrations/slack-tasks"

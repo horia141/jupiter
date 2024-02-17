@@ -44,8 +44,8 @@ export default function Projects() {
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
         <EntityStack>
           {projects.map((project) => (
-            <EntityCard key={project.ref_id.the_id}>
-              <EntityLink to={`/workspace/projects/${project.ref_id.the_id}`}>
+            <EntityCard key={project.ref_id}>
+              <EntityLink to={`/workspace/projects/${project.ref_id}`}>
                 <EntityNameComponent name={project.name} />
               </EntityLink>
             </EntityCard>

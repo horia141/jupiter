@@ -90,7 +90,7 @@ export async function action({ request, params }: ActionArgs) {
           ref_id: { the_id: entryId },
           collection_time: {
             should_change: true,
-            value: { the_date: form.collectionTime, the_datetime: undefined },
+            value: form.collectionTime,
           },
           value: {
             should_change: true,
@@ -148,7 +148,7 @@ export default function MetricEntry() {
 
   return (
     <LeafPanel
-      key={loaderData.metricEntry.ref_id.the_id}
+      key={loaderData.metricEntry.ref_id}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation={`/workspace/metrics/${id}`}

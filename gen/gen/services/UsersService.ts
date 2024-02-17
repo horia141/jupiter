@@ -1,21 +1,27 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ChangePasswordArgs } from '../models/ChangePasswordArgs';
+import type { UserChangeFeatureFlagsArgs } from '../models/UserChangeFeatureFlagsArgs';
+import type { UserLoadArgs } from '../models/UserLoadArgs';
+import type { UserLoadResult } from '../models/UserLoadResult';
+import type { UserUpdateArgs } from '../models/UserUpdateArgs';
+
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
+
 export class UsersService {
+
     constructor(public readonly httpRequest: BaseHttpRequest) {}
+
     /**
      * Usecase for changing the feature flags for the user.
      * Usecase for changing the feature flags for the user.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public userChangeFeatureFlags(
-        requestBody?: ChangePasswordArgs,
+        requestBody?: UserChangeFeatureFlagsArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
@@ -29,16 +35,17 @@ export class UsersService {
             },
         });
     }
+
     /**
      * The command for loading the current user.
      * The command for loading the current user.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns UserLoadResult Successful response
      * @throws ApiError
      */
     public userLoad(
-        requestBody?: ChangePasswordArgs,
-    ): CancelablePromise<any> {
+        requestBody?: UserLoadArgs,
+    ): CancelablePromise<UserLoadResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/user-load',
@@ -51,15 +58,16 @@ export class UsersService {
             },
         });
     }
+
     /**
      * The command for updating a user's properties.
      * The command for updating a user's properties.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public userUpdate(
-        requestBody?: ChangePasswordArgs,
+        requestBody?: UserUpdateArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
@@ -73,4 +81,5 @@ export class UsersService {
             },
         });
     }
+
 }

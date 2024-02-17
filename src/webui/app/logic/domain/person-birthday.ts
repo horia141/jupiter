@@ -15,6 +15,10 @@ const MONTH_NAME_INDEX = [
   "Dec",
 ];
 
+export function birthdayFromParts(day: number, month: number): PersonBirthday {
+  return `${day} ${MONTH_NAME_INDEX[month]}` as PersonBirthday;
+}
+
 export function personBirthdayToStr(personBirthday: PersonBirthday): string {
   return `${personBirthday.day} ${MONTH_NAME_INDEX[personBirthday.month - 1]}`;
 }

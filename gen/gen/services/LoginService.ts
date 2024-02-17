@@ -1,22 +1,26 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ChangePasswordArgs } from '../models/ChangePasswordArgs';
+import type { LoginArgs } from '../models/LoginArgs';
+import type { LoginResult } from '../models/LoginResult';
+
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
+
 export class LoginService {
+
     constructor(public readonly httpRequest: BaseHttpRequest) {}
+
     /**
      * Use case for logging in as a particular user.
      * Use case for logging in as a particular user.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns LoginResult Successful response
      * @throws ApiError
      */
     public login(
-        requestBody?: ChangePasswordArgs,
-    ): CancelablePromise<any> {
+        requestBody?: LoginArgs,
+    ): CancelablePromise<LoginResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/login',
@@ -29,4 +33,5 @@ export class LoginService {
             },
         });
     }
+
 }

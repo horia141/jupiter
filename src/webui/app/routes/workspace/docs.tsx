@@ -58,7 +58,7 @@ export default function Docs() {
       },
       {
         method: "post",
-        action: `/workspace/docs/${doc.ref_id.the_id}`,
+        action: `/workspace/docs/${doc.ref_id}`,
       }
     );
   }
@@ -72,12 +72,12 @@ export default function Docs() {
         <EntityStack>
           {loaderData.entries.map((entry) => (
             <EntityCard
-              key={entry.doc.ref_id.the_id}
+              key={entry.doc.ref_id}
               allowSwipe
               allowMarkNotDone
               onMarkNotDone={() => archiveDoc(entry.doc)}
             >
-              <EntityLink to={`/workspace/docs/${entry.doc.ref_id.the_id}`}>
+              <EntityLink to={`/workspace/docs/${entry.doc.ref_id}`}>
                 <EntityNameComponent name={entry.doc.name} />
               </EntityLink>
             </EntityCard>

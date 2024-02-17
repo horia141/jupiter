@@ -72,7 +72,7 @@ export default function EmailTasks() {
       },
       {
         method: "post",
-        action: `/workspace/push-integrations/email-tasks/${emailTask.ref_id.the_id}`,
+        action: `/workspace/push-integrations/email-tasks/${emailTask.ref_id}`,
       }
     );
   }
@@ -101,13 +101,13 @@ export default function EmailTasks() {
         <EntityStack>
           {sortedEntries.map((entry) => (
             <EntityCard
-              key={entry.email_task.ref_id.the_id}
+              key={entry.email_task.ref_id}
               allowSwipe
               allowMarkNotDone
               onMarkNotDone={() => archiveEmailTask(entry.email_task)}
             >
               <EntityLink
-                to={`/workspace/push-integrations/email-tasks/${entry.email_task.ref_id.the_id}`}
+                to={`/workspace/push-integrations/email-tasks/${entry.email_task.ref_id}`}
               >
                 <EntityNameComponent
                   name={emailTaskNiceName(entry.email_task as EmailTask)}

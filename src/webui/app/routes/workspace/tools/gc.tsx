@@ -136,7 +136,7 @@ export default function GC() {
 
       {entries.map((entry) => {
         return (
-          <Accordion key={entry.ref_id.the_id}>
+          <Accordion key={entry.ref_id}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <AccordionHeader>
                 Run from <EventSourceTag source={entry.source} />
@@ -157,7 +157,7 @@ export default function GC() {
               </GCTargetsSection>
 
               {entry.entity_records.map((record) => (
-                <EntityCard key={record.ref_id.the_id}>
+                <EntityCard key={record.ref_id}>
                   <EntitySummaryLink summary={record} />
                 </EntityCard>
               ))}

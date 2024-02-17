@@ -1,21 +1,32 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ChangePasswordArgs } from '../models/ChangePasswordArgs';
+import type { ProjectArchiveArgs } from '../models/ProjectArchiveArgs';
+import type { ProjectCreateArgs } from '../models/ProjectCreateArgs';
+import type { ProjectCreateResult } from '../models/ProjectCreateResult';
+import type { ProjectFindArgs } from '../models/ProjectFindArgs';
+import type { ProjectFindResult } from '../models/ProjectFindResult';
+import type { ProjectLoadArgs } from '../models/ProjectLoadArgs';
+import type { ProjectLoadResult } from '../models/ProjectLoadResult';
+import type { ProjectRemoveArgs } from '../models/ProjectRemoveArgs';
+import type { ProjectUpdateArgs } from '../models/ProjectUpdateArgs';
+
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
+
 export class ProjectsService {
+
     constructor(public readonly httpRequest: BaseHttpRequest) {}
+
     /**
      * The command for archiving a project.
      * The command for archiving a project.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public projectArchive(
-        requestBody?: ChangePasswordArgs,
+        requestBody?: ProjectArchiveArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
@@ -29,16 +40,17 @@ export class ProjectsService {
             },
         });
     }
+
     /**
      * The command for creating a project.
      * The command for creating a project.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns ProjectCreateResult Successful response
      * @throws ApiError
      */
     public projectCreate(
-        requestBody?: ChangePasswordArgs,
-    ): CancelablePromise<any> {
+        requestBody?: ProjectCreateArgs,
+    ): CancelablePromise<ProjectCreateResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/project-create',
@@ -51,16 +63,17 @@ export class ProjectsService {
             },
         });
     }
+
     /**
      * The command for finding projects.
      * The command for finding projects.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns ProjectFindResult Successful response
      * @throws ApiError
      */
     public projectFind(
-        requestBody?: ChangePasswordArgs,
-    ): CancelablePromise<any> {
+        requestBody?: ProjectFindArgs,
+    ): CancelablePromise<ProjectFindResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/project-find',
@@ -73,16 +86,17 @@ export class ProjectsService {
             },
         });
     }
+
     /**
      * Use case for loading a particular project.
      * Use case for loading a particular project.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns ProjectLoadResult Successful response
      * @throws ApiError
      */
     public projectLoad(
-        requestBody?: ChangePasswordArgs,
-    ): CancelablePromise<any> {
+        requestBody?: ProjectLoadArgs,
+    ): CancelablePromise<ProjectLoadResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/project-load',
@@ -95,15 +109,16 @@ export class ProjectsService {
             },
         });
     }
+
     /**
      * The command for removing a project.
      * The command for removing a project.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public projectRemove(
-        requestBody?: ChangePasswordArgs,
+        requestBody?: ProjectRemoveArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
@@ -117,15 +132,16 @@ export class ProjectsService {
             },
         });
     }
+
     /**
      * The command for updating a project.
      * The command for updating a project.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public projectUpdate(
-        requestBody?: ChangePasswordArgs,
+        requestBody?: ProjectUpdateArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
@@ -139,4 +155,5 @@ export class ProjectsService {
             },
         });
     }
+
 }

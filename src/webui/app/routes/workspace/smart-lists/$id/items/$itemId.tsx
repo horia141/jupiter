@@ -62,7 +62,7 @@ export async function loader({ request, params }: LoaderArgs) {
     const result = await getLoggedInApiClient(
       session
     ).smartLists.smartListItemLoad({
-      ref_id: { the_id: itemId },
+      ref_id: itemId,
       allow_archived: true,
     });
 
@@ -94,10 +94,10 @@ export async function action({ request, params }: ActionArgs) {
     switch (form.intent) {
       case "update": {
         await getLoggedInApiClient(session).smartLists.smartListItemUpdate({
-          ref_id: { the_id: itemId },
+          ref_id: itemId,
           name: {
             should_change: true,
-            value: { the_name: form.name },
+            value: form.name,
           },
           is_done: {
             should_change: true,
@@ -105,11 +105,11 @@ export async function action({ request, params }: ActionArgs) {
           },
           tags: {
             should_change: true,
-            value: form.tags.map((tag) => ({ the_tag: tag })),
+            value: form.tags,
           },
           url: {
             should_change: true,
-            value: form.url ? { the_url: form.url } : undefined,
+            value: form.url,
           },
         });
 
@@ -118,7 +118,7 @@ export async function action({ request, params }: ActionArgs) {
 
       case "archive": {
         await getLoggedInApiClient(session).smartLists.smartListItemArchive({
-          ref_id: { the_id: itemId },
+          ref_id: itemId,
         });
 
         return redirect(`/workspace/smart-lists/${id}/items/${itemId}`);
@@ -149,7 +149,7 @@ export default function SmartListItem() {
 
   return (
     <LeafPanel
-      key={loaderData.smartListItem.ref_id.the_id}
+      key={loaderData.smartListItem.ref_id}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation={`/workspace/smart-lists/${id}/items`}
@@ -162,7 +162,7 @@ export default function SmartListItem() {
               <InputLabel id="name">Name</InputLabel>
               <OutlinedInput
                 label="Name"
-                defaultValue={loaderData.smartListItem.name.the_name}
+                defaultValue={loaderData.smartListItem.name}
                 name="name"
                 readOnly={!inputsEnabled}
               />

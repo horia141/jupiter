@@ -1,11 +1,12 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+
 import type { EntityId } from './EntityId';
 import type { SmartListItemName } from './SmartListItemName';
-import type { SmartListTagName } from './SmartListTagName';
+import type { TagName } from './TagName';
 import type { URL } from './URL';
+
 /**
  * PersonFindArgs.
  */
@@ -21,7 +22,7 @@ export type SmartListItemUpdateArgs = {
     };
     tags: {
         should_change: boolean;
-        value?: Array<SmartListTagName>;
+        value?: Array<TagName>;
     };
     url: {
         should_change: boolean;

@@ -1,8 +1,9 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+
 import type { NestedResultPerSource } from './NestedResultPerSource';
+
 /**
  * A result broken down by the various sources of inbox tasks.
  */

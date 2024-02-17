@@ -1,11 +1,12 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+
 import type { EntityId } from './EntityId';
 import type { SmartListItemName } from './SmartListItemName';
 import type { Timestamp } from './Timestamp';
 import type { URL } from './URL';
+
 /**
  * A smart list item.
  */

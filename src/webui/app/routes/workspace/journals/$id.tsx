@@ -71,7 +71,7 @@ export async function loader({ request, params }: LoaderArgs) {
 
   try {
     const result = await getLoggedInApiClient(session).journals.journalLoad({
-      ref_id: { the_id: id },
+      ref_id: id,
       allow_archived: true,
     });
 
@@ -101,7 +101,7 @@ export async function action({ request, params }: ActionArgs) {
     switch (form.intent) {
       case "change-time-config": {
         await getLoggedInApiClient(session).journals.journalChangeTimeConfig({
-          ref_id: { the_id: id },
+          ref_id: id,
           right_now: {
             should_change: true,
             value: {
@@ -119,14 +119,14 @@ export async function action({ request, params }: ActionArgs) {
 
       case "update-report": {
         await getLoggedInApiClient(session).journals.journalUpdateReport({
-          ref_id: { the_id: id },
+          ref_id: id,
         });
         return redirect(`/workspace/journals/${id}`);
       }
 
       case "archive": {
         await getLoggedInApiClient(session).journals.journalArchive({
-          ref_id: { the_id: id },
+          ref_id: id,
         });
         return redirect(`/workspace/journals/${id}`);
       }
@@ -170,7 +170,7 @@ export default function Journal() {
   function handleCardMarkDone(it: InboxTask) {
     cardActionFetcher.submit(
       {
-        id: it.ref_id.the_id,
+        id: it.ref_id,
         status: InboxTaskStatus.DONE,
       },
       {
@@ -183,7 +183,7 @@ export default function Journal() {
   function handleCardMarkNotDone(it: InboxTask) {
     cardActionFetcher.submit(
       {
-        id: it.ref_id.the_id,
+        id: it.ref_id,
         status: InboxTaskStatus.NOT_DONE,
       },
       {
@@ -195,7 +195,7 @@ export default function Journal() {
 
   return (
     <LeafPanel
-      key={loaderData.journal.ref_id.the_id}
+      key={loaderData.journal.ref_id}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/journals"

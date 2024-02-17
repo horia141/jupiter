@@ -97,7 +97,7 @@ function ProgressReporterClientOnly(props: ProgressReporterProps) {
   );
   webApiProgressReporterUrl.searchParams.append(
     "token",
-    props.token.auth_token_str
+    props.token
   );
 
   const { lastJsonMessage, readyState } = useWebSocket(

@@ -1,21 +1,35 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ChangePasswordArgs } from '../models/ChangePasswordArgs';
+import type { HabitArchiveArgs } from '../models/HabitArchiveArgs';
+import type { HabitChangeProjectArgs } from '../models/HabitChangeProjectArgs';
+import type { HabitCreateArgs } from '../models/HabitCreateArgs';
+import type { HabitCreateResult } from '../models/HabitCreateResult';
+import type { HabitFindArgs } from '../models/HabitFindArgs';
+import type { HabitFindResult } from '../models/HabitFindResult';
+import type { HabitLoadArgs } from '../models/HabitLoadArgs';
+import type { HabitLoadResult } from '../models/HabitLoadResult';
+import type { HabitRemoveArgs } from '../models/HabitRemoveArgs';
+import type { HabitSuspendArgs } from '../models/HabitSuspendArgs';
+import type { HabitUnsuspendArgs } from '../models/HabitUnsuspendArgs';
+import type { HabitUpdateArgs } from '../models/HabitUpdateArgs';
+
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
+
 export class HabitsService {
+
     constructor(public readonly httpRequest: BaseHttpRequest) {}
+
     /**
      * The command for archiving a habit.
      * The command for archiving a habit.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public habitArchive(
-        requestBody?: ChangePasswordArgs,
+        requestBody?: HabitArchiveArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
@@ -29,15 +43,16 @@ export class HabitsService {
             },
         });
     }
+
     /**
      * The command for changing the project of a habit.
      * The command for changing the project of a habit.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public habitChangeProject(
-        requestBody?: ChangePasswordArgs,
+        requestBody?: HabitChangeProjectArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
@@ -51,16 +66,17 @@ export class HabitsService {
             },
         });
     }
+
     /**
      * The command for creating a habit.
      * The command for creating a habit.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns HabitCreateResult Successful response
      * @throws ApiError
      */
     public habitCreate(
-        requestBody?: ChangePasswordArgs,
-    ): CancelablePromise<any> {
+        requestBody?: HabitCreateArgs,
+    ): CancelablePromise<HabitCreateResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/habit-create',
@@ -73,16 +89,17 @@ export class HabitsService {
             },
         });
     }
+
     /**
      * The command for finding a habit.
      * The command for finding a habit.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns HabitFindResult Successful response
      * @throws ApiError
      */
     public habitFind(
-        requestBody?: ChangePasswordArgs,
-    ): CancelablePromise<any> {
+        requestBody?: HabitFindArgs,
+    ): CancelablePromise<HabitFindResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/habit-find',
@@ -95,16 +112,17 @@ export class HabitsService {
             },
         });
     }
+
     /**
      * Use case for loading a particular habit.
      * Use case for loading a particular habit.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns HabitLoadResult Successful response
      * @throws ApiError
      */
     public habitLoad(
-        requestBody?: ChangePasswordArgs,
-    ): CancelablePromise<any> {
+        requestBody?: HabitLoadArgs,
+    ): CancelablePromise<HabitLoadResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/habit-load',
@@ -117,15 +135,16 @@ export class HabitsService {
             },
         });
     }
+
     /**
      * The command for removing a habit.
      * The command for removing a habit.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public habitRemove(
-        requestBody?: ChangePasswordArgs,
+        requestBody?: HabitRemoveArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
@@ -139,15 +158,16 @@ export class HabitsService {
             },
         });
     }
+
     /**
      * The command for suspending a habit.
      * The command for suspending a habit.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public habitSuspend(
-        requestBody?: ChangePasswordArgs,
+        requestBody?: HabitSuspendArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
@@ -161,15 +181,16 @@ export class HabitsService {
             },
         });
     }
+
     /**
      * The command for unsuspending a habit.
      * The command for unsuspending a habit.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public habitUnsuspend(
-        requestBody?: ChangePasswordArgs,
+        requestBody?: HabitUnsuspendArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
@@ -183,15 +204,16 @@ export class HabitsService {
             },
         });
     }
+
     /**
      * The command for updating a habit.
      * The command for updating a habit.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public habitUpdate(
-        requestBody?: ChangePasswordArgs,
+        requestBody?: HabitUpdateArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
@@ -205,4 +227,5 @@ export class HabitsService {
             },
         });
     }
+
 }

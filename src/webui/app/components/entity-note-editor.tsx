@@ -32,7 +32,7 @@ export function EntityNoteEditor({
     // We already created this thing, we just need to update!
     cardActionFetcher.submit(
       {
-        id: initialNote.ref_id.the_id,
+        id: initialNote.ref_id,
         content: btoa(JSON.stringify(noteContent)),
       },
       {

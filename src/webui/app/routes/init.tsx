@@ -84,16 +84,14 @@ export async function action({ request }: ActionArgs) {
 
   try {
     const result = await getGuestApiClient(session).init.init({
-      user_email_address: { the_address: form.userEmailAddress },
-      user_name: { the_name: form.userName },
-      user_timezone: { the_timezone: form.userTimezone },
+      user_email_address: form.userEmailAddress,
+      user_name: form.userName,
+      user_timezone: form.userTimezone,
       user_feature_flags: form.userFeatureFlags,
-      auth_password: { password_raw: form.authPassword },
-      auth_password_repeat: { password_raw: form.authPasswordRepeat },
-      workspace_name: { the_name: form.workspaceName },
-      workspace_first_project_name: {
-        the_name: form.workspaceFirstProjectName,
-      },
+      auth_password: {password_raw: form.authPassword},
+      auth_password_repeat: {password_raw: form.authPasswordRepeat},
+      workspace_name: form.workspaceName,
+      workspace_first_project_name: form.workspaceFirstProjectName,
       workspace_feature_flags: form.workspaceFeatureFlags,
     });
 
@@ -235,7 +233,7 @@ export default function WorkspaceInit() {
                         label="Workspace Name"
                         name="workspaceName"
                         readOnly={!inputsEnabled}
-                        defaultValue={loaderData.defaultWorkspaceName.the_name}
+                        defaultValue={loaderData.defaultWorkspaceName}
                       />
                       <FieldError
                         actionResult={actionData}
@@ -250,7 +248,7 @@ export default function WorkspaceInit() {
                         name="workspaceFirstProjectName"
                         readOnly={!inputsEnabled}
                         defaultValue={
-                          loaderData.defaultFirstProjectName.the_name
+                          loaderData.defaultFirstProjectName
                         }
                       />
                       <FieldError

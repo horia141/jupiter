@@ -1,10 +1,11 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+
 import type { SmartList } from './SmartList';
 import type { SmartListItem } from './SmartListItem';
 import type { SmartListTag } from './SmartListTag';
+
 /**
  * A single entry in the LoadAllSmartListsResponse.
  */

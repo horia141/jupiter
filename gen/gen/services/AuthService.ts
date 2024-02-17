@@ -1,17 +1,22 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
 import type { ChangePasswordArgs } from '../models/ChangePasswordArgs';
+import type { ResetPasswordArgs } from '../models/ResetPasswordArgs';
+import type { ResetPasswordResult } from '../models/ResetPasswordResult';
+
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
+
 export class AuthService {
+
     constructor(public readonly httpRequest: BaseHttpRequest) {}
+
     /**
      * Use case for changing a password.
      * Use case for changing a password.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public changePassword(
@@ -29,16 +34,17 @@ export class AuthService {
             },
         });
     }
+
     /**
      * Use case for reseting a password.
      * Use case for reseting a password.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns ResetPasswordResult Successful response
      * @throws ApiError
      */
     public resetPassword(
-        requestBody?: ChangePasswordArgs,
-    ): CancelablePromise<any> {
+        requestBody?: ResetPasswordArgs,
+    ): CancelablePromise<ResetPasswordResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/reset-password',
@@ -51,4 +57,5 @@ export class AuthService {
             },
         });
     }
+
 }

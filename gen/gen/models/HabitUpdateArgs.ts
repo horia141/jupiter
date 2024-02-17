@@ -1,16 +1,16 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+
 import type { Difficulty } from './Difficulty';
 import type { Eisen } from './Eisen';
 import type { EntityId } from './EntityId';
 import type { HabitName } from './HabitName';
 import type { RecurringTaskDueAtDay } from './RecurringTaskDueAtDay';
 import type { RecurringTaskDueAtMonth } from './RecurringTaskDueAtMonth';
-import type { RecurringTaskDueAtTime } from './RecurringTaskDueAtTime';
 import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
 import type { RecurringTaskSkipRule } from './RecurringTaskSkipRule';
+
 /**
  * PersonFindArgs.
  */
@@ -39,10 +39,6 @@ export type HabitUpdateArgs = {
     actionable_from_month: {
         should_change: boolean;
         value?: RecurringTaskDueAtMonth;
-    };
-    due_at_time: {
-        should_change: boolean;
-        value?: RecurringTaskDueAtTime;
     };
     due_at_day: {
         should_change: boolean;

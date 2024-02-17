@@ -1,8 +1,9 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+
 import type { UserScoreAtDate } from './UserScoreAtDate';
+
 /**
  * A history of user scores over time.
  */

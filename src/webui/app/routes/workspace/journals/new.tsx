@@ -51,11 +51,11 @@ export async function action({ request }: ActionArgs) {
 
   try {
     const result = await getLoggedInApiClient(session).journals.journalCreate({
-      right_now: { the_date: form.rightNow, the_datetime: undefined },
+      right_now: form.rightNow,
       period: form.period,
     });
 
-    return redirect(`/workspace/journals/${result.new_journal.ref_id.the_id}`);
+    return redirect(`/workspace/journals/${result.new_journal.ref_id}`);
   } catch (error) {
     if (
       error instanceof ApiError &&

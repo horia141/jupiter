@@ -35,11 +35,11 @@ export async function action({ request }: ActionArgs) {
 
   try {
     const result = await getLoggedInApiClient(session).docs.docCreate({
-      name: { the_name: form.name },
+      name: form.name,
       content: [],
     });
 
-    return redirect(`/workspace/docs/${result.new_note.ref_id.the_id}`);
+    return redirect(`/workspace/docs/${result.new_note.ref_id}`);
   } catch (error) {
     if (
       error instanceof ApiError &&

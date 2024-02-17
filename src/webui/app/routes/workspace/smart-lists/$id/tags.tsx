@@ -50,7 +50,7 @@ export async function loader({ request, params }: LoaderArgs) {
     const response = await getLoggedInApiClient(
       session
     ).smartLists.smartListLoad({
-      ref_id: { the_id: id },
+      ref_id: id,
       allow_archived: false,
     });
 
@@ -81,7 +81,7 @@ export default function SmartListViewTags() {
 
   const tagsByRefId: { [tag: string]: SmartListTag } = {};
   for (const tag of loaderData.smartListTags) {
-    tagsByRefId[tag.ref_id.the_id] = tag;
+    tagsByRefId[tag.ref_id] = tag;
   }
 
   const archiveTagFetch = useFetcher();
@@ -94,19 +94,19 @@ export default function SmartListViewTags() {
       },
       {
         method: "post",
-        action: `/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/tags/${tag.ref_id.the_id}`,
+        action: `/workspace/smart-lists/${loaderData.smartList.ref_id}/tags/${tag.ref_id}`,
       }
     );
   }
 
   return (
     <BranchPanel
-      key={`${loaderData.smartList.ref_id.the_id}/tags`}
-      createLocation={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/tags/new`}
+      key={`${loaderData.smartList.ref_id}/tags`}
+      createLocation={`/workspace/smart-lists/${loaderData.smartList.ref_id}/tags/new`}
       extraControls={[
         <Button
           variant="outlined"
-          to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/items/details`}
+          to={`/workspace/smart-lists/${loaderData.smartList.ref_id}/items/details`}
           component={Link}
           startIcon={<TuneIcon />}
         >
@@ -116,7 +116,7 @@ export default function SmartListViewTags() {
         <ButtonGroup>
           <Button
             variant="outlined"
-            to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/items`}
+            to={`/workspace/smart-lists/${loaderData.smartList.ref_id}/items`}
             component={Link}
             startIcon={<ReorderIcon />}
           >
@@ -134,13 +134,13 @@ export default function SmartListViewTags() {
         <EntityStack>
           {loaderData.smartListTags.map((tag) => (
             <EntityCard
-              key={tag.ref_id.the_id}
+              key={tag.ref_id}
               allowSwipe
               allowMarkNotDone
               onMarkNotDone={() => archiveTag(tag)}
             >
               <Link
-                to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/tags/${tag.ref_id.the_id}`}
+                to={`/workspace/smart-lists/${loaderData.smartList.ref_id}/tags/${tag.ref_id}`}
                 prefetch="none"
               >
                 <SmartListTagTag tag={tag} />

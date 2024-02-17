@@ -87,7 +87,7 @@ export async function loader({ request, params }: LoaderArgs) {
 
   try {
     const response = await getLoggedInApiClient(session).metrics.metricLoad({
-      ref_id: { the_id: id },
+      ref_id: id,
       allow_archived: true,
     });
 
@@ -118,10 +118,10 @@ export async function action({ request, params }: ActionArgs) {
     switch (intent) {
       case "update": {
         await getLoggedInApiClient(session).metrics.metricUpdate({
-          ref_id: { the_id: id },
+          ref_id: id,
           name: {
             should_change: true,
-            value: { the_name: form.name },
+            value: form.name,
           },
           icon: {
             should_change: true,
@@ -209,7 +209,7 @@ export async function action({ request, params }: ActionArgs) {
 
       case "archive": {
         await getLoggedInApiClient(session).metrics.metricArchive({
-          ref_id: { the_id: id },
+          ref_id: id,
         });
 
         return redirect(`/workspace/metrics/${id}/details`);
@@ -270,7 +270,7 @@ export default function MetricDetails() {
   function handleCardMarkDone(it: InboxTask) {
     cardActionFetcher.submit(
       {
-        id: it.ref_id.the_id,
+        id: it.ref_id,
         status: InboxTaskStatus.DONE,
       },
       {
@@ -283,7 +283,7 @@ export default function MetricDetails() {
   function handleCardMarkNotDone(it: InboxTask) {
     cardActionFetcher.submit(
       {
-        id: it.ref_id.the_id,
+        id: it.ref_id,
         status: InboxTaskStatus.NOT_DONE,
       },
       {
@@ -295,7 +295,7 @@ export default function MetricDetails() {
 
   return (
     <LeafPanel
-      key={loaderData.metric.ref_id.the_id}
+      key={loaderData.metric.ref_id}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation={`/workspace/metrics/${id}`}
@@ -310,7 +310,7 @@ export default function MetricDetails() {
                 label="Name"
                 name="name"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.metric.name.the_name}
+                defaultValue={loaderData.metric.name}
               />
               <FieldError actionResult={actionData} fieldName="/name" />
             </FormControl>

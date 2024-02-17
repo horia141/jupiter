@@ -72,7 +72,7 @@ export default function Persons() {
       },
       {
         method: "post",
-        action: `/workspace/persons/${person.ref_id.the_id}`,
+        action: `/workspace/persons/${person.ref_id}`,
       }
     );
   }
@@ -105,14 +105,12 @@ export default function Persons() {
         <EntityStack>
           {loaderData.entries.map((entry) => (
             <EntityCard
-              key={entry.person.ref_id.the_id}
+              key={entry.person.ref_id}
               allowSwipe
               allowMarkNotDone
               onMarkNotDone={() => archivePerson(entry.person)}
             >
-              <EntityLink
-                to={`/workspace/persons/${entry.person.ref_id.the_id}`}
-              >
+              <EntityLink to={`/workspace/persons/${entry.person.ref_id}`}>
                 <EntityNameComponent name={entry.person.name} />
                 <PersonRelationshipTag
                   relationship={entry.person.relationship}

@@ -1,10 +1,10 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
 import type { BaseHttpRequest } from './core/BaseHttpRequest';
 import type { OpenAPIConfig } from './core/OpenAPI';
 import { FetchHttpRequest } from './core/FetchHttpRequest';
+
 import { AuthService } from './services/AuthService';
 import { BigPlansService } from './services/BigPlansService';
 import { ChoresService } from './services/ChoresService';
@@ -31,8 +31,11 @@ import { TestHelperService } from './services/TestHelperService';
 import { UsersService } from './services/UsersService';
 import { VacationsService } from './services/VacationsService';
 import { WorkspacesService } from './services/WorkspacesService';
+
 type HttpRequestConstructor = new (config: OpenAPIConfig) => BaseHttpRequest;
+
 export class ApiClient {
+
     public readonly auth: AuthService;
     public readonly bigPlans: BigPlansService;
     public readonly chores: ChoresService;
@@ -59,7 +62,9 @@ export class ApiClient {
     public readonly users: UsersService;
     public readonly vacations: VacationsService;
     public readonly workspaces: WorkspacesService;
+
     public readonly request: BaseHttpRequest;
+
     constructor(config?: Partial<OpenAPIConfig>, HttpRequest: HttpRequestConstructor = FetchHttpRequest) {
         this.request = new HttpRequest({
             BASE: config?.BASE ?? '',
@@ -72,6 +77,7 @@ export class ApiClient {
             HEADERS: config?.HEADERS,
             ENCODE_PATH: config?.ENCODE_PATH,
         });
+
         this.auth = new AuthService(this.request);
         this.bigPlans = new BigPlansService(this.request);
         this.chores = new ChoresService(this.request);

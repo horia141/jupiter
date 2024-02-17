@@ -70,7 +70,7 @@ export default function Metrics() {
       },
       {
         method: "post",
-        action: `/workspace/metric/${smartList.ref_id.the_id}/details`,
+        action: `/workspace/metric/${smartList.ref_id}/details`,
       }
     );
   }
@@ -106,14 +106,12 @@ export default function Metrics() {
         <EntityStack>
           {loaderData.entries.map((entry) => (
             <EntityCard
-              key={entry.metric.ref_id.the_id}
+              key={entry.metric.ref_id}
               allowSwipe
               allowMarkNotDone
               onMarkNotDone={() => archiveMetric(entry.metric)}
             >
-              <EntityLink
-                to={`/workspace/metrics/${entry.metric.ref_id.the_id}`}
-              >
+              <EntityLink to={`/workspace/metrics/${entry.metric.ref_id}`}>
                 {entry.metric.icon && (
                   <EntityIconComponent icon={entry.metric.icon} />
                 )}

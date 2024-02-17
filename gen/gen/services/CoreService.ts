@@ -1,21 +1,28 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ChangePasswordArgs } from '../models/ChangePasswordArgs';
+import type { NoteArchiveArgs } from '../models/NoteArchiveArgs';
+import type { NoteCreateArgs } from '../models/NoteCreateArgs';
+import type { NoteCreateResult } from '../models/NoteCreateResult';
+import type { NoteRemoveArgs } from '../models/NoteRemoveArgs';
+import type { NoteUpdateArgs } from '../models/NoteUpdateArgs';
+
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
+
 export class CoreService {
+
     constructor(public readonly httpRequest: BaseHttpRequest) {}
+
     /**
      * Use case for archiving a note.
      * Use case for archiving a note.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public noteArchive(
-        requestBody?: ChangePasswordArgs,
+        requestBody?: NoteArchiveArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
@@ -29,16 +36,17 @@ export class CoreService {
             },
         });
     }
+
     /**
      * Use case for creating a note.
      * Use case for creating a note.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns NoteCreateResult Successful response
      * @throws ApiError
      */
     public noteCreate(
-        requestBody?: ChangePasswordArgs,
-    ): CancelablePromise<any> {
+        requestBody?: NoteCreateArgs,
+    ): CancelablePromise<NoteCreateResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/note-create',
@@ -51,15 +59,16 @@ export class CoreService {
             },
         });
     }
+
     /**
      * The command for removing a note.
      * The command for removing a note.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public noteRemove(
-        requestBody?: ChangePasswordArgs,
+        requestBody?: NoteRemoveArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
@@ -73,15 +82,16 @@ export class CoreService {
             },
         });
     }
+
     /**
      * Update a note use case.
      * Update a note use case.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public noteUpdate(
-        requestBody?: ChangePasswordArgs,
+        requestBody?: NoteUpdateArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
@@ -95,4 +105,5 @@ export class CoreService {
             },
         });
     }
+
 }

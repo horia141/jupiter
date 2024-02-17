@@ -9,13 +9,7 @@ export function isADate(something: object): something is ADate {
 }
 
 export function aDateToDate(aDate: ADate): DateTime {
-  if (aDate.the_date) {
-    return DateTime.fromISO(aDate.the_date);
-  } else if (aDate.the_datetime) {
-    return DateTime.fromISO(aDate.the_datetime);
-  } else {
-    throw Error("Invalid ADate object with no date nor datetime");
-  }
+  return DateTime.fromISO(aDate);
 }
 
 export function compareADate(adate1?: ADate, adate2?: ADate): number {

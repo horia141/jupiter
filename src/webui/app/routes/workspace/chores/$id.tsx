@@ -96,7 +96,7 @@ export async function loader({ request, params }: LoaderArgs) {
 
   try {
     const result = await getLoggedInApiClient(session).chores.choreLoad({
-      ref_id: { the_id: id },
+      ref_id: id,
       allow_archived: true,
     });
 
@@ -128,10 +128,10 @@ export async function action({ request, params }: ActionArgs) {
     switch (intent) {
       case "update": {
         await getLoggedInApiClient(session).chores.choreUpdate({
-          ref_id: { the_id: id },
+          ref_id: id,
           name: {
             should_change: true,
-            value: { the_name: form.name },
+            value: form.name,
           },
           period: {
             should_change: true,
@@ -154,7 +154,7 @@ export async function action({ request, params }: ActionArgs) {
               form.actionableFromDay === undefined ||
               form.actionableFromDay === ""
                 ? undefined
-                : { the_day: parseInt(form.actionableFromDay) },
+                : parseInt(form.actionableFromDay),
           },
           actionable_from_month: {
             should_change: true,
@@ -162,7 +162,7 @@ export async function action({ request, params }: ActionArgs) {
               form.actionableFromMonth === undefined ||
               form.actionableFromMonth === ""
                 ? undefined
-                : { the_month: parseInt(form.actionableFromMonth) },
+                : parseInt(form.actionableFromMonth) ,
           },
           due_at_time: {
             should_change: true,
@@ -176,14 +176,14 @@ export async function action({ request, params }: ActionArgs) {
             value:
               form.dueAtDay === undefined || form.dueAtDay === ""
                 ? undefined
-                : { the_day: parseInt(form.dueAtDay) },
+                : parseInt(form.dueAtDay),
           },
           due_at_month: {
             should_change: true,
             value:
               form.dueAtMonth === undefined || form.dueAtMonth === ""
                 ? undefined
-                : { the_month: parseInt(form.dueAtMonth) },
+                : parseInt(form.dueAtMonth),
           },
           must_do: {
             should_change: true,
@@ -194,21 +194,21 @@ export async function action({ request, params }: ActionArgs) {
             value:
               form.skipRule === undefined || form.skipRule === ""
                 ? undefined
-                : { skip_rule: form.skipRule },
+                : form.skipRule,
           },
           start_at_date: {
             should_change: true,
             value:
               form.startAtDate === undefined || form.startAtDate === ""
                 ? undefined
-                : { the_date: form.startAtDate, the_datetime: undefined },
+                : form.startAtDate,
           },
           end_at_date: {
             should_change: true,
             value:
               form.endAtDate === undefined || form.endAtDate === ""
                 ? undefined
-                : { the_date: form.endAtDate, the_datetime: undefined },
+                : form.endAtDate,
           },
         });
 
@@ -217,8 +217,8 @@ export async function action({ request, params }: ActionArgs) {
 
       case "change-project": {
         await getLoggedInApiClient(session).chores.choreChangeProject({
-          ref_id: { the_id: id },
-          project_ref_id: { the_id: form.project },
+          ref_id: id,
+          project_ref_id: form.project,
         });
 
         return redirect(`/workspace/chores/${id}`);
@@ -226,7 +226,7 @@ export async function action({ request, params }: ActionArgs) {
 
       case "archive": {
         await getLoggedInApiClient(session).chores.choreArchive({
-          ref_id: { the_id: id },
+          ref_id: id,
         });
 
         return redirect(`/workspace/chores/${id}`);
@@ -261,10 +261,10 @@ export default function Chore() {
     transition.state === "idle" && !loaderData.chore.archived;
 
   const [selectedProject, setSelectedProject] = useState(
-    loaderData.project.ref_id.the_id
+    loaderData.project.ref_id
   );
   const selectedProjectIsDifferentFromCurrent =
-    loaderData.project.ref_id.the_id !== selectedProject;
+    loaderData.project.ref_id !== selectedProject;
 
   function handleChangeProject(e: SelectChangeEvent) {
     setSelectedProject(e.target.value);
@@ -279,7 +279,7 @@ export default function Chore() {
   function handleCardMarkDone(it: InboxTask) {
     cardActionFetcher.submit(
       {
-        id: it.ref_id.the_id,
+        id: it.ref_id,
         status: InboxTaskStatus.DONE,
       },
       {
@@ -292,7 +292,7 @@ export default function Chore() {
   function handleCardMarkNotDone(it: InboxTask) {
     cardActionFetcher.submit(
       {
-        id: it.ref_id.the_id,
+        id: it.ref_id,
         status: InboxTaskStatus.NOT_DONE,
       },
       {
@@ -306,12 +306,12 @@ export default function Chore() {
     // Update states based on loader data. This is necessary because these
     // two are not otherwise updated when the loader data changes. Which happens
     // on a navigation event.
-    setSelectedProject(loaderData.project.ref_id.the_id);
+    setSelectedProject(loaderData.project.ref_id);
   }, [loaderData]);
 
   return (
     <LeafPanel
-      key={loaderData.chore.ref_id.the_id}
+      key={loaderData.chore.ref_id}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/chores"
@@ -326,7 +326,7 @@ export default function Chore() {
                 label="Name"
                 name="name"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.chore.name.the_name}
+                defaultValue={loaderData.chore.name}
               />
               <FieldError actionResult={actionData} fieldName="/name" />
             </FormControl>
@@ -364,8 +364,8 @@ export default function Chore() {
                   label="Project"
                 >
                   {loaderData.allProjects.map((p: Project) => (
-                    <MenuItem key={p.ref_id.the_id} value={p.ref_id.the_id}>
-                      {p.name.the_name}
+                    <MenuItem key={p.ref_id} value={p.ref_id}>
+                      {p.name}
                     </MenuItem>
                   ))}
                 </Select>

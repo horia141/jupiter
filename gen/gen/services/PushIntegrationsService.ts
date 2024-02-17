@@ -1,21 +1,43 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ChangePasswordArgs } from '../models/ChangePasswordArgs';
+import type { EmailTaskArchiveArgs } from '../models/EmailTaskArchiveArgs';
+import type { EmailTaskChangeGenerationProjectArgs } from '../models/EmailTaskChangeGenerationProjectArgs';
+import type { EmailTaskFindArgs } from '../models/EmailTaskFindArgs';
+import type { EmailTaskFindResult } from '../models/EmailTaskFindResult';
+import type { EmailTaskLoadArgs } from '../models/EmailTaskLoadArgs';
+import type { EmailTaskLoadResult } from '../models/EmailTaskLoadResult';
+import type { EmailTaskLoadSettingsArgs } from '../models/EmailTaskLoadSettingsArgs';
+import type { EmailTaskLoadSettingsResult } from '../models/EmailTaskLoadSettingsResult';
+import type { EmailTaskRemoveArgs } from '../models/EmailTaskRemoveArgs';
+import type { EmailTaskUpdateArgs } from '../models/EmailTaskUpdateArgs';
+import type { SlackTaskArchiveArgs } from '../models/SlackTaskArchiveArgs';
+import type { SlackTaskChangeGenerationProjectArgs } from '../models/SlackTaskChangeGenerationProjectArgs';
+import type { SlackTaskFindArgs } from '../models/SlackTaskFindArgs';
+import type { SlackTaskFindResult } from '../models/SlackTaskFindResult';
+import type { SlackTaskLoadArgs } from '../models/SlackTaskLoadArgs';
+import type { SlackTaskLoadResult } from '../models/SlackTaskLoadResult';
+import type { SlackTaskLoadSettingsArgs } from '../models/SlackTaskLoadSettingsArgs';
+import type { SlackTaskLoadSettingsResult } from '../models/SlackTaskLoadSettingsResult';
+import type { SlackTaskRemoveArgs } from '../models/SlackTaskRemoveArgs';
+import type { SlackTaskUpdateArgs } from '../models/SlackTaskUpdateArgs';
+
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
+
 export class PushIntegrationsService {
+
     constructor(public readonly httpRequest: BaseHttpRequest) {}
+
     /**
      * The command for archiving a email task.
      * The command for archiving a email task.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public emailTaskArchive(
-        requestBody?: ChangePasswordArgs,
+        requestBody?: EmailTaskArchiveArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
@@ -29,15 +51,16 @@ export class PushIntegrationsService {
             },
         });
     }
+
     /**
      * The command for updating the generation up project for email tasks.
      * The command for updating the generation up project for email tasks.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public emailTaskChangeGenerationProject(
-        requestBody?: ChangePasswordArgs,
+        requestBody?: EmailTaskChangeGenerationProjectArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
@@ -51,16 +74,17 @@ export class PushIntegrationsService {
             },
         });
     }
+
     /**
      * The command for finding a email task.
      * The command for finding a email task.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns EmailTaskFindResult Successful response
      * @throws ApiError
      */
     public emailTaskFind(
-        requestBody?: ChangePasswordArgs,
-    ): CancelablePromise<any> {
+        requestBody?: EmailTaskFindArgs,
+    ): CancelablePromise<EmailTaskFindResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/email-task-find',
@@ -73,16 +97,17 @@ export class PushIntegrationsService {
             },
         });
     }
+
     /**
      * Use case for loading a particular email task.
      * Use case for loading a particular email task.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns EmailTaskLoadResult Successful response
      * @throws ApiError
      */
     public emailTaskLoad(
-        requestBody?: ChangePasswordArgs,
-    ): CancelablePromise<any> {
+        requestBody?: EmailTaskLoadArgs,
+    ): CancelablePromise<EmailTaskLoadResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/email-task-load',
@@ -95,16 +120,17 @@ export class PushIntegrationsService {
             },
         });
     }
+
     /**
      * The command for loading the settings around email tasks.
      * The command for loading the settings around email tasks.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns EmailTaskLoadSettingsResult Successful response
      * @throws ApiError
      */
     public emailTaskLoadSettings(
-        requestBody?: ChangePasswordArgs,
-    ): CancelablePromise<any> {
+        requestBody?: EmailTaskLoadSettingsArgs,
+    ): CancelablePromise<EmailTaskLoadSettingsResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/email-task-load-settings',
@@ -117,15 +143,16 @@ export class PushIntegrationsService {
             },
         });
     }
+
     /**
      * The command for archiving a email task.
      * The command for archiving a email task.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public emailTaskRemove(
-        requestBody?: ChangePasswordArgs,
+        requestBody?: EmailTaskRemoveArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
@@ -139,15 +166,16 @@ export class PushIntegrationsService {
             },
         });
     }
+
     /**
      * The command for updating a email task.
      * The command for updating a email task.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public emailTaskUpdate(
-        requestBody?: ChangePasswordArgs,
+        requestBody?: EmailTaskUpdateArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
@@ -161,15 +189,16 @@ export class PushIntegrationsService {
             },
         });
     }
+
     /**
      * The command for archiving a slack task.
      * The command for archiving a slack task.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public slackTaskArchive(
-        requestBody?: ChangePasswordArgs,
+        requestBody?: SlackTaskArchiveArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
@@ -183,15 +212,16 @@ export class PushIntegrationsService {
             },
         });
     }
+
     /**
      * The command for updating the generation up project for slack tasks.
      * The command for updating the generation up project for slack tasks.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public slackTaskChangeGenerationProject(
-        requestBody?: ChangePasswordArgs,
+        requestBody?: SlackTaskChangeGenerationProjectArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
@@ -205,16 +235,17 @@ export class PushIntegrationsService {
             },
         });
     }
+
     /**
      * The command for finding a slack task.
      * The command for finding a slack task.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns SlackTaskFindResult Successful response
      * @throws ApiError
      */
     public slackTaskFind(
-        requestBody?: ChangePasswordArgs,
-    ): CancelablePromise<any> {
+        requestBody?: SlackTaskFindArgs,
+    ): CancelablePromise<SlackTaskFindResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/slack-task-find',
@@ -227,16 +258,17 @@ export class PushIntegrationsService {
             },
         });
     }
+
     /**
      * Use case for loading a particular slack task.
      * Use case for loading a particular slack task.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns SlackTaskLoadResult Successful response
      * @throws ApiError
      */
     public slackTaskLoad(
-        requestBody?: ChangePasswordArgs,
-    ): CancelablePromise<any> {
+        requestBody?: SlackTaskLoadArgs,
+    ): CancelablePromise<SlackTaskLoadResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/slack-task-load',
@@ -249,16 +281,17 @@ export class PushIntegrationsService {
             },
         });
     }
+
     /**
      * The command for loading the settings around slack tasks.
      * The command for loading the settings around slack tasks.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns SlackTaskLoadSettingsResult Successful response
      * @throws ApiError
      */
     public slackTaskLoadSettings(
-        requestBody?: ChangePasswordArgs,
-    ): CancelablePromise<any> {
+        requestBody?: SlackTaskLoadSettingsArgs,
+    ): CancelablePromise<SlackTaskLoadSettingsResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/slack-task-load-settings',
@@ -271,15 +304,16 @@ export class PushIntegrationsService {
             },
         });
     }
+
     /**
      * The command for archiving a slack task.
      * The command for archiving a slack task.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public slackTaskRemove(
-        requestBody?: ChangePasswordArgs,
+        requestBody?: SlackTaskRemoveArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
@@ -293,15 +327,16 @@ export class PushIntegrationsService {
             },
         });
     }
+
     /**
      * The command for updating a slack task.
      * The command for updating a slack task.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public slackTaskUpdate(
-        requestBody?: ChangePasswordArgs,
+        requestBody?: SlackTaskUpdateArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
@@ -315,4 +350,5 @@ export class PushIntegrationsService {
             },
         });
     }
+
 }

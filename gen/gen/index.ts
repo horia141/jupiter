@@ -1,4 +1,3 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
@@ -263,7 +262,6 @@ export type { RecordScoreResult } from './models/RecordScoreResult';
 export type { RecoveryTokenPlain } from './models/RecoveryTokenPlain';
 export type { RecurringTaskDueAtDay } from './models/RecurringTaskDueAtDay';
 export type { RecurringTaskDueAtMonth } from './models/RecurringTaskDueAtMonth';
-export type { RecurringTaskDueAtTime } from './models/RecurringTaskDueAtTime';
 export type { RecurringTaskGenParams } from './models/RecurringTaskGenParams';
 export { RecurringTaskPeriod } from './models/RecurringTaskPeriod';
 export type { RecurringTaskSkipRule } from './models/RecurringTaskSkipRule';
@@ -328,7 +326,6 @@ export type { SmartListTagCreateArgs } from './models/SmartListTagCreateArgs';
 export type { SmartListTagCreateResult } from './models/SmartListTagCreateResult';
 export type { SmartListTagLoadArgs } from './models/SmartListTagLoadArgs';
 export type { SmartListTagLoadResult } from './models/SmartListTagLoadResult';
-export type { SmartListTagName } from './models/SmartListTagName';
 export type { SmartListTagRemoveArgs } from './models/SmartListTagRemoveArgs';
 export type { SmartListTagUpdateArgs } from './models/SmartListTagUpdateArgs';
 export type { SmartListUpdateArgs } from './models/SmartListUpdateArgs';

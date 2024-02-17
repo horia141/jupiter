@@ -54,7 +54,7 @@ export async function loader({ request, params }: LoaderArgs) {
 
   try {
     const result = await getLoggedInApiClient(session).vacations.vacationLoad({
-      ref_id: { the_id: id },
+      ref_id: id,
       allow_archived: true,
     });
 
@@ -80,18 +80,18 @@ export async function action({ request, params }: ActionArgs) {
     switch (form.intent) {
       case "update": {
         await getLoggedInApiClient(session).vacations.vacationUpdate({
-          ref_id: { the_id: id },
+          ref_id: id,
           name: {
             should_change: true,
-            value: { the_name: form.name },
+            value: form.name,
           },
           start_date: {
             should_change: true,
-            value: { the_date: form.startDate, the_datetime: undefined },
+            value: form.startDate,
           },
           end_date: {
             should_change: true,
-            value: { the_date: form.endDate, the_datetime: undefined },
+            value: form.endDate,
           },
         });
 
@@ -100,7 +100,7 @@ export async function action({ request, params }: ActionArgs) {
 
       case "archive": {
         await getLoggedInApiClient(session).vacations.vacationArchive({
-          ref_id: { the_id: id },
+          ref_id: id,
         });
         return redirect(`/workspace/vacations/${id}`);
       }
@@ -132,7 +132,7 @@ export default function Vacation() {
 
   return (
     <LeafPanel
-      key={vacation.ref_id.the_id}
+      key={vacation.ref_id}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/vacations"
@@ -147,7 +147,7 @@ export default function Vacation() {
                 label="name"
                 name="name"
                 readOnly={!inputsEnabled}
-                defaultValue={vacation.name.the_name}
+                defaultValue={vacation.name}
               />
               <FieldError actionResult={actionData} fieldName="/name" />
             </FormControl>

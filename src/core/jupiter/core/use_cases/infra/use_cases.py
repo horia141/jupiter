@@ -548,8 +548,8 @@ def mutation_use_case(feature_scope: FeatureScope = None, exclude_app: list[Even
             for s in EventSource
             if (True if exclude_app is None else s not in exclude_app)
         ]
-        cls.get_scoped_to_feature = lambda _: feature_scope  # type: ignore
-        cls.get_scoped_to_app = lambda _: app_scope  # type: ignore
+        cls.get_scoped_to_feature = lambda *args: feature_scope  # type: ignore
+        cls.get_scoped_to_app = lambda *args: app_scope  # type: ignore
         return cls
 
     return decorator
@@ -567,8 +567,8 @@ def readonly_use_case(feature_scope: FeatureScope = None, exclude_app: list[Even
             for s in EventSource
             if (True if exclude_app is None else s not in exclude_app)
         ]
-        cls.get_scoped_to_feature = lambda _: feature_scope  # type: ignore
-        cls.get_scoped_to_app = lambda _: app_scope  # type: ignore
+        cls.get_scoped_to_feature = lambda *args: feature_scope  # type: ignore
+        cls.get_scoped_to_app = lambda *args: app_scope  # type: ignore
         return cls
 
     return decorator

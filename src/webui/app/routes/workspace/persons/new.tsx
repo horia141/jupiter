@@ -39,6 +39,7 @@ import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { difficultyName } from "~/logic/domain/difficulty";
 import { eisenName } from "~/logic/domain/eisen";
 import { periodName } from "~/logic/domain/period";
+import { birthdayFromParts } from "~/logic/domain/person-birthday";
 import { personRelationshipName } from "~/logic/domain/person-relationship";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -69,7 +70,7 @@ export async function action({ request }: ActionArgs) {
 
   try {
     const result = await getLoggedInApiClient(session).persons.personCreate({
-      name: { the_name: form.name },
+      name: form.name,
       relationship: form.relationship as PersonRelationship,
       catch_up_period:
         form.catchUpPeriod === "none"
@@ -93,43 +94,40 @@ export async function action({ request }: ActionArgs) {
           : form.catchUpActionableFromDay === undefined ||
             form.catchUpActionableFromDay === ""
           ? undefined
-          : { the_day: parseInt(form.catchUpActionableFromDay) },
+          : parseInt(form.catchUpActionableFromDay),
       catch_up_actionable_from_month:
         form.catchUpPeriod === "none"
           ? undefined
           : form.catchUpActionableFromMonth === undefined ||
             form.catchUpActionableFromMonth === ""
           ? undefined
-          : { the_month: parseInt(form.catchUpActionableFromMonth) },
+          : parseInt(form.catchUpActionableFromMonth),
       catch_up_due_at_time:
         form.catchUpPeriod === "none"
           ? undefined
           : form.catchUpTime === undefined || form.catchUpTime === ""
           ? undefined
-          : { the_time: form.catchUpTime },
+          : form.catchUpTime,
       catch_up_due_at_day:
         form.catchUpPeriod === "none"
           ? undefined
           : form.catchUpDueAtDay === undefined || form.catchUpDueAtDay === ""
           ? undefined
-          : { the_day: parseInt(form.catchUpDueAtDay) },
+          : parseInt(form.catchUpDueAtDay),
       catch_up_due_at_month:
         form.catchUpPeriod === "none"
           ? undefined
           : form.catchUpDueAtMonth === undefined ||
             form.catchUpDueAtMonth === ""
           ? undefined
-          : { the_month: parseInt(form.catchUpDueAtMonth) },
+          : parseInt(form.catchUpDueAtMonth),
       birthday:
         form.birthdayDay === "N/A" || form.birthdayMonth === "N/A"
           ? undefined
-          : {
-              day: parseInt(form.birthdayDay),
-              month: parseInt(form.birthdayMonth),
-            },
+          : birthdayFromParts(parseInt(form.birthdayDay), parseInt(form.birthdayMonth)),
     });
 
-    return redirect(`/workspace/persons/${result.new_person.ref_id.the_id}`);
+    return redirect(`/workspace/persons/${result.new_person.ref_id}`);
   } catch (error) {
     if (
       error instanceof ApiError &&

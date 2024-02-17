@@ -52,7 +52,7 @@ export async function loader({ request, params }: LoaderArgs) {
     const response = await getLoggedInApiClient(
       session
     ).smartLists.smartListLoad({
-      ref_id: { the_id: id },
+      ref_id: id,
       allow_archived: false,
     });
 
@@ -84,7 +84,7 @@ export default function SmartListViewItems() {
 
   const tagsByRefId: { [tag: string]: SmartListTag } = {};
   for (const tag of loaderData.smartListTags) {
-    tagsByRefId[tag.ref_id.the_id] = tag;
+    tagsByRefId[tag.ref_id] = tag;
   }
 
   const archiveTagFetch = useFetcher();
@@ -100,19 +100,19 @@ export default function SmartListViewItems() {
       },
       {
         method: "post",
-        action: `/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/items/${item.ref_id.the_id}`,
+        action: `/workspace/smart-lists/${loaderData.smartList.ref_id}/items/${item.ref_id}`,
       }
     );
   }
 
   return (
     <BranchPanel
-      key={`${loaderData.smartList.ref_id.the_id}/items`}
-      createLocation={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/items/new`}
+      key={`${loaderData.smartList.ref_id}/items`}
+      createLocation={`/workspace/smart-lists/${loaderData.smartList.ref_id}/items/new`}
       extraControls={[
         <Button
           variant="outlined"
-          to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/items/details`}
+          to={`/workspace/smart-lists/${loaderData.smartList.ref_id}/items/details`}
           component={Link}
           startIcon={<TuneIcon />}
         >
@@ -125,7 +125,7 @@ export default function SmartListViewItems() {
 
           <Button
             variant="outlined"
-            to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/tags`}
+            to={`/workspace/smart-lists/${loaderData.smartList.ref_id}/tags`}
             startIcon={<TagIcon />}
             component={Link}
           >
@@ -139,13 +139,13 @@ export default function SmartListViewItems() {
         <EntityStack>
           {loaderData.smartListItems.map((item) => (
             <EntityCard
-              key={item.ref_id.the_id}
+              key={item.ref_id}
               allowSwipe
               allowMarkNotDone
               onMarkNotDone={() => archiveItem(item)}
             >
               <EntityLink
-                to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/items/${item.ref_id.the_id}`}
+                to={`/workspace/smart-lists/${loaderData.smartList.ref_id}/items/${item.ref_id}`}
               >
                 <EntityNameComponent name={item.name} />
                 <Check isDone={item.is_done} />

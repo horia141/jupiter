@@ -68,7 +68,6 @@ const UpdateFormSchema = {
     .optional(),
   actionableFromDay: z.string().optional(),
   actionableFromMonth: z.string().optional(),
-  dueAtTime: z.string().optional(),
   dueAtDay: z.string().optional(),
   dueAtMonth: z.string().optional(),
   skipRule: z.string().optional(),
@@ -91,7 +90,7 @@ export async function loader({ request, params }: LoaderArgs) {
 
   try {
     const result = await getLoggedInApiClient(session).habits.habitLoad({
-      ref_id: { the_id: id },
+      ref_id: id,
       allow_archived: true,
     });
 
@@ -123,10 +122,10 @@ export async function action({ request, params }: ActionArgs) {
     switch (intent) {
       case "update": {
         await getLoggedInApiClient(session).habits.habitUpdate({
-          ref_id: { the_id: id },
+          ref_id: id,
           name: {
             should_change: true,
-            value: { the_name: form.name },
+            value: form.name,
           },
           period: {
             should_change: true,
@@ -149,7 +148,7 @@ export async function action({ request, params }: ActionArgs) {
               form.actionableFromDay === undefined ||
               form.actionableFromDay === ""
                 ? undefined
-                : { the_day: parseInt(form.actionableFromDay) },
+                : parseInt(form.actionableFromDay),
           },
           actionable_from_month: {
             should_change: true,
@@ -157,35 +156,28 @@ export async function action({ request, params }: ActionArgs) {
               form.actionableFromMonth === undefined ||
               form.actionableFromMonth === ""
                 ? undefined
-                : { the_month: parseInt(form.actionableFromMonth) },
-          },
-          due_at_time: {
-            should_change: true,
-            value:
-              form.dueAtTime === undefined || form.dueAtTime === ""
-                ? undefined
-                : { the_time: form.dueAtTime },
+                : parseInt(form.actionableFromMonth),
           },
           due_at_day: {
             should_change: true,
             value:
               form.dueAtDay === undefined || form.dueAtDay === ""
                 ? undefined
-                : { the_day: parseInt(form.dueAtDay) },
+                : parseInt(form.dueAtDay),
           },
           due_at_month: {
             should_change: true,
             value:
               form.dueAtMonth === undefined || form.dueAtMonth === ""
                 ? undefined
-                : { the_month: parseInt(form.dueAtMonth) },
+                : parseInt(form.dueAtMonth),
           },
           skip_rule: {
             should_change: true,
             value:
               form.skipRule === undefined || form.skipRule === ""
                 ? undefined
-                : { skip_rule: form.skipRule },
+                : form.skipRule,
           },
           repeats_in_period_count: {
             should_change: true,
@@ -200,8 +192,8 @@ export async function action({ request, params }: ActionArgs) {
 
       case "change-project": {
         await getLoggedInApiClient(session).habits.habitChangeProject({
-          ref_id: { the_id: id },
-          project_ref_id: { the_id: form.project },
+          ref_id: id,
+          project_ref_id: form.project,
         });
 
         return redirect(`/workspace/habits/${id}`);
@@ -209,7 +201,7 @@ export async function action({ request, params }: ActionArgs) {
 
       case "archive": {
         await getLoggedInApiClient(session).habits.habitArchive({
-          ref_id: { the_id: id },
+          ref_id: id,
         });
 
         return redirect(`/workspace/habits/${id}`);
@@ -244,10 +236,10 @@ export default function Habit() {
     transition.state === "idle" && !loaderData.habit.archived;
 
   const [selectedProject, setSelectedProject] = useState(
-    loaderData.project.ref_id.the_id
+    loaderData.project.ref_id
   );
   const selectedProjectIsDifferentFromCurrent =
-    loaderData.project.ref_id.the_id !== selectedProject;
+    loaderData.project.ref_id !== selectedProject;
 
   function handleChangeProject(e: SelectChangeEvent) {
     setSelectedProject(e.target.value);
@@ -262,7 +254,7 @@ export default function Habit() {
   function handleCardMarkDone(it: InboxTask) {
     cardActionFetcher.submit(
       {
-        id: it.ref_id.the_id,
+        id: it.ref_id,
         status: InboxTaskStatus.DONE,
       },
       {
@@ -275,7 +267,7 @@ export default function Habit() {
   function handleCardMarkNotDone(it: InboxTask) {
     cardActionFetcher.submit(
       {
-        id: it.ref_id.the_id,
+        id: it.ref_id,
         status: InboxTaskStatus.NOT_DONE,
       },
       {
@@ -289,12 +281,12 @@ export default function Habit() {
     // Update states based on loader data. This is necessary because these
     // two are not otherwise updated when the loader data changes. Which happens
     // on a navigation event.
-    setSelectedProject(loaderData.project.ref_id.the_id);
+    setSelectedProject(loaderData.project.ref_id);
   }, [loaderData]);
 
   return (
     <LeafPanel
-      key={loaderData.habit.ref_id.the_id}
+      key={loaderData.habit.ref_id}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/habits"
@@ -309,7 +301,7 @@ export default function Habit() {
                 label="Name"
                 name="name"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.habit.name.the_name}
+                defaultValue={loaderData.habit.name}
               />
               <FieldError actionResult={actionData} fieldName="/name" />
             </FormControl>
@@ -347,8 +339,8 @@ export default function Habit() {
                   label="Project"
                 >
                   {loaderData.allProjects.map((p: Project) => (
-                    <MenuItem key={p.ref_id.the_id} value={p.ref_id.the_id}>
-                      {p.name.the_name}
+                    <MenuItem key={p.ref_id} value={p.ref_id}>
+                      {p.name}
                     </MenuItem>
                   ))}
                 </Select>
@@ -433,17 +425,6 @@ export default function Habit() {
                 actionResult={actionData}
                 fieldName="/actionable_from_month"
               />
-            </FormControl>
-
-            <FormControl fullWidth>
-              <InputLabel id="dueAtTime">Due At Time</InputLabel>
-              <OutlinedInput
-                label="Due At Time"
-                name="dueAtTime"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.habit.gen_params.due_at_time?.the_time}
-              />
-              <FieldError actionResult={actionData} fieldName="/due_at_time" />
             </FormControl>
 
             <FormControl fullWidth>

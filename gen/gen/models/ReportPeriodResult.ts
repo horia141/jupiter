@@ -1,7 +1,7 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+
 import type { ADate } from './ADate';
 import type { InboxTaskSource } from './InboxTaskSource';
 import type { InboxTasksSummary } from './InboxTasksSummary';
@@ -14,6 +14,7 @@ import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
 import type { ReportBreakdown } from './ReportBreakdown';
 import type { UserScoreOverview } from './UserScoreOverview';
 import type { WorkableSummary } from './WorkableSummary';
+
 /**
  * Report result.
  */

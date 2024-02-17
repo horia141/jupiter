@@ -1,21 +1,26 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ChangePasswordArgs } from '../models/ChangePasswordArgs';
+import type { GCDoArgs } from '../models/GCDoArgs';
+import type { GCLoadRunsArgs } from '../models/GCLoadRunsArgs';
+import type { GCLoadRunsResult } from '../models/GCLoadRunsResult';
+
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
+
 export class GcService {
+
     constructor(public readonly httpRequest: BaseHttpRequest) {}
+
     /**
      * The command for doing a garbage collection run.
      * The command for doing a garbage collection run.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public gcDo(
-        requestBody?: ChangePasswordArgs,
+        requestBody?: GCDoArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
@@ -29,16 +34,17 @@ export class GcService {
             },
         });
     }
+
     /**
      * Load previous runs of GC.
      * Load previous runs of GC.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns GCLoadRunsResult Successful response
      * @throws ApiError
      */
     public gcLoadRuns(
-        requestBody?: ChangePasswordArgs,
-    ): CancelablePromise<any> {
+        requestBody?: GCLoadRunsArgs,
+    ): CancelablePromise<GCLoadRunsResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/gc-load-runs',
@@ -51,4 +57,5 @@ export class GcService {
             },
         });
     }
+
 }

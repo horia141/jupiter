@@ -52,7 +52,7 @@ export async function loader({ request, params }: LoaderArgs) {
 
   try {
     const response = await getLoggedInApiClient(session).projects.projectLoad({
-      ref_id: { the_id: id },
+      ref_id: id,
       allow_archived: true,
     });
 
@@ -80,10 +80,10 @@ export async function action({ request, params }: ActionArgs) {
     switch (intent) {
       case "update": {
         await getLoggedInApiClient(session).projects.projectUpdate({
-          ref_id: { the_id: id },
+          ref_id: id,
           name: {
             should_change: true,
-            value: { the_name: form.name },
+            value: form.name,
           },
         });
 
@@ -92,7 +92,7 @@ export async function action({ request, params }: ActionArgs) {
 
       case "archive": {
         await getLoggedInApiClient(session).projects.projectArchive({
-          ref_id: { the_id: id },
+          ref_id: id,
         });
 
         return redirect(`/workspace/projects/${id}`);
@@ -125,7 +125,7 @@ export default function Project() {
 
   return (
     <LeafPanel
-      key={project.ref_id.the_id}
+      key={project.ref_id}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/projects"
@@ -140,7 +140,7 @@ export default function Project() {
                 label="name"
                 name="name"
                 readOnly={!inputsEnabled}
-                defaultValue={project.name.the_name}
+                defaultValue={project.name}
               />
               <FieldError actionResult={actionData} fieldName="/name" />
             </FormControl>

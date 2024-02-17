@@ -50,7 +50,7 @@ export async function loader({ request, params }: LoaderArgs) {
 
   const response = await getLoggedInApiClient(session).metrics.metricLoad({
     allow_archived: true,
-    ref_id: { the_id: id },
+    ref_id: id,
   });
 
   return json({
@@ -67,16 +67,13 @@ export async function action({ params, request }: ActionArgs) {
     const response = await getLoggedInApiClient(
       session
     ).metrics.metricEntryCreate({
-      metric_ref_id: { the_id: id },
-      collection_time: {
-        the_date: form.collectionTime,
-        the_datetime: undefined,
-      },
+      metric_ref_id: id,
+      collection_time: form.collectionTime,
       value: form.value,
     });
 
     return redirect(
-      `/workspace/metrics/${id}/entries/${response.new_metric_entry.ref_id.the_id}`
+      `/workspace/metrics/${id}/entries/${response.new_metric_entry.ref_id}`
     );
   } catch (error) {
     if (
@@ -102,8 +99,8 @@ export default function NewMetricEntry() {
 
   return (
     <LeafPanel
-      key={loaderData.metric.ref_id.the_id}
-      returnLocation={`/workspace/metrics/${loaderData.metric.ref_id.the_id}`}
+      key={loaderData.metric.ref_id}
+      returnLocation={`/workspace/metrics/${loaderData.metric.ref_id}`}
     >
       <Card>
         <GlobalError actionResult={actionData} />

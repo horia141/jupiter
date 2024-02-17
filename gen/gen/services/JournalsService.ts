@@ -1,21 +1,36 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ChangePasswordArgs } from '../models/ChangePasswordArgs';
+import type { JournalArchiveArgs } from '../models/JournalArchiveArgs';
+import type { JournalChangePeriodsArgs } from '../models/JournalChangePeriodsArgs';
+import type { JournalChangeTimeConfigArgs } from '../models/JournalChangeTimeConfigArgs';
+import type { JournalCreateArgs } from '../models/JournalCreateArgs';
+import type { JournalCreateResult } from '../models/JournalCreateResult';
+import type { JournalFindArgs } from '../models/JournalFindArgs';
+import type { JournalFindResult } from '../models/JournalFindResult';
+import type { JournalLoadArgs } from '../models/JournalLoadArgs';
+import type { JournalLoadResult } from '../models/JournalLoadResult';
+import type { JournalLoadSettingsArgs } from '../models/JournalLoadSettingsArgs';
+import type { JournalLoadSettingsResult } from '../models/JournalLoadSettingsResult';
+import type { JournalremoveArgs } from '../models/JournalremoveArgs';
+import type { JournalUpdateReportArgs } from '../models/JournalUpdateReportArgs';
+
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
+
 export class JournalsService {
+
     constructor(public readonly httpRequest: BaseHttpRequest) {}
+
     /**
      * Use case for archiving a journal.
      * Use case for archiving a journal.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public journalArchive(
-        requestBody?: ChangePasswordArgs,
+        requestBody?: JournalArchiveArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
@@ -29,15 +44,16 @@ export class JournalsService {
             },
         });
     }
+
     /**
      * THe use case for changing periods for journals.
      * THe use case for changing periods for journals.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public journalChangePeriods(
-        requestBody?: ChangePasswordArgs,
+        requestBody?: JournalChangePeriodsArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
@@ -51,15 +67,16 @@ export class JournalsService {
             },
         });
     }
+
     /**
      * Command for updating the time configuration of a journal.
      * Command for updating the time configuration of a journal.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public journalChangeTimeConfig(
-        requestBody?: ChangePasswordArgs,
+        requestBody?: JournalChangeTimeConfigArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
@@ -73,16 +90,17 @@ export class JournalsService {
             },
         });
     }
+
     /**
      * Use case for creating a journal.
      * Use case for creating a journal.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns JournalCreateResult Successful response
      * @throws ApiError
      */
     public journalCreate(
-        requestBody?: ChangePasswordArgs,
-    ): CancelablePromise<any> {
+        requestBody?: JournalCreateArgs,
+    ): CancelablePromise<JournalCreateResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/journal-create',
@@ -95,16 +113,17 @@ export class JournalsService {
             },
         });
     }
+
     /**
      * The command for finding journals.
      * The command for finding journals.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns JournalFindResult Successful response
      * @throws ApiError
      */
     public journalFind(
-        requestBody?: ChangePasswordArgs,
-    ): CancelablePromise<any> {
+        requestBody?: JournalFindArgs,
+    ): CancelablePromise<JournalFindResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/journal-find',
@@ -117,16 +136,17 @@ export class JournalsService {
             },
         });
     }
+
     /**
      * The command for loading details about a journal.
      * The command for loading details about a journal.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns JournalLoadResult Successful response
      * @throws ApiError
      */
     public journalLoad(
-        requestBody?: ChangePasswordArgs,
-    ): CancelablePromise<any> {
+        requestBody?: JournalLoadArgs,
+    ): CancelablePromise<JournalLoadResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/journal-load',
@@ -139,16 +159,17 @@ export class JournalsService {
             },
         });
     }
+
     /**
      * The command for loading the settings around journals.
      * The command for loading the settings around journals.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns JournalLoadSettingsResult Successful response
      * @throws ApiError
      */
     public journalLoadSettings(
-        requestBody?: ChangePasswordArgs,
-    ): CancelablePromise<any> {
+        requestBody?: JournalLoadSettingsArgs,
+    ): CancelablePromise<JournalLoadSettingsResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/journal-load-settings',
@@ -161,15 +182,16 @@ export class JournalsService {
             },
         });
     }
+
     /**
      * Use case for removing a journal.
      * Use case for removing a journal.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public journalRemove(
-        requestBody?: ChangePasswordArgs,
+        requestBody?: JournalremoveArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
@@ -183,15 +205,16 @@ export class JournalsService {
             },
         });
     }
+
     /**
      * Use case for updating a journal entry.
      * Use case for updating a journal entry.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public journalUpdateReport(
-        requestBody?: ChangePasswordArgs,
+        requestBody?: JournalUpdateReportArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
@@ -205,4 +228,5 @@ export class JournalsService {
             },
         });
     }
+
 }

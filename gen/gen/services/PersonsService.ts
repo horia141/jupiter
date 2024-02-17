@@ -1,21 +1,35 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ChangePasswordArgs } from '../models/ChangePasswordArgs';
+import type { PersonArchiveArgs } from '../models/PersonArchiveArgs';
+import type { PersonChangeCatchUpProjectArgs } from '../models/PersonChangeCatchUpProjectArgs';
+import type { PersonCreateArgs } from '../models/PersonCreateArgs';
+import type { PersonCreateResult } from '../models/PersonCreateResult';
+import type { PersonFindArgs } from '../models/PersonFindArgs';
+import type { PersonFindResult } from '../models/PersonFindResult';
+import type { PersonLoadArgs } from '../models/PersonLoadArgs';
+import type { PersonLoadResult } from '../models/PersonLoadResult';
+import type { PersonLoadSettingsArgs } from '../models/PersonLoadSettingsArgs';
+import type { PersonLoadSettingsResult } from '../models/PersonLoadSettingsResult';
+import type { PersonRemoveArgs } from '../models/PersonRemoveArgs';
+import type { PersonUpdateArgs } from '../models/PersonUpdateArgs';
+
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
+
 export class PersonsService {
+
     constructor(public readonly httpRequest: BaseHttpRequest) {}
+
     /**
      * The command for archiving a person.
      * The command for archiving a person.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public personArchive(
-        requestBody?: ChangePasswordArgs,
+        requestBody?: PersonArchiveArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
@@ -29,15 +43,16 @@ export class PersonsService {
             },
         });
     }
+
     /**
      * The command for updating the catch up project for persons.
      * The command for updating the catch up project for persons.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public personChangeCatchUpProject(
-        requestBody?: ChangePasswordArgs,
+        requestBody?: PersonChangeCatchUpProjectArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
@@ -51,16 +66,17 @@ export class PersonsService {
             },
         });
     }
+
     /**
      * The command for creating a person.
      * The command for creating a person.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns PersonCreateResult Successful response
      * @throws ApiError
      */
     public personCreate(
-        requestBody?: ChangePasswordArgs,
-    ): CancelablePromise<any> {
+        requestBody?: PersonCreateArgs,
+    ): CancelablePromise<PersonCreateResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/person-create',
@@ -73,16 +89,17 @@ export class PersonsService {
             },
         });
     }
+
     /**
      * The command for finding the persons.
      * The command for finding the persons.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns PersonFindResult Successful response
      * @throws ApiError
      */
     public personFind(
-        requestBody?: ChangePasswordArgs,
-    ): CancelablePromise<any> {
+        requestBody?: PersonFindArgs,
+    ): CancelablePromise<PersonFindResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/person-find',
@@ -95,16 +112,17 @@ export class PersonsService {
             },
         });
     }
+
     /**
      * Use case for loading a person.
      * Use case for loading a person.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns PersonLoadResult Successful response
      * @throws ApiError
      */
     public personLoad(
-        requestBody?: ChangePasswordArgs,
-    ): CancelablePromise<any> {
+        requestBody?: PersonLoadArgs,
+    ): CancelablePromise<PersonLoadResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/person-load',
@@ -117,16 +135,17 @@ export class PersonsService {
             },
         });
     }
+
     /**
      * The command for loading the settings around persons.
      * The command for loading the settings around persons.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns PersonLoadSettingsResult Successful response
      * @throws ApiError
      */
     public personLoadSettings(
-        requestBody?: ChangePasswordArgs,
-    ): CancelablePromise<any> {
+        requestBody?: PersonLoadSettingsArgs,
+    ): CancelablePromise<PersonLoadSettingsResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/person-load-settings',
@@ -139,15 +158,16 @@ export class PersonsService {
             },
         });
     }
+
     /**
      * The command for removing a person.
      * The command for removing a person.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public personRemove(
-        requestBody?: ChangePasswordArgs,
+        requestBody?: PersonRemoveArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
@@ -161,15 +181,16 @@ export class PersonsService {
             },
         });
     }
+
     /**
      * The command for updating a person.
      * The command for updating a person.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public personUpdate(
-        requestBody?: ChangePasswordArgs,
+        requestBody?: PersonUpdateArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
@@ -183,4 +204,5 @@ export class PersonsService {
             },
         });
     }
+
 }

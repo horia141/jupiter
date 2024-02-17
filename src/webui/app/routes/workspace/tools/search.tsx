@@ -71,41 +71,18 @@ export async function loader({ request }: LoaderArgs) {
     let searchResponse = undefined;
     if (query.query !== undefined) {
       searchResponse = await getLoggedInApiClient(session).search.search({
-        query: { the_query: query.query },
-        limit: {
-          the_limit: query.limit ? parseInt(query.limit) : DEFAULT_LIMIT,
-        },
+        query: query.query,
+        limit: query.limit ? parseInt(query.limit) : DEFAULT_LIMIT,
         include_archived: query.includeArchived,
         filter_entity_tags: fixSelectOutputToEnum<NamedEntityTag>(
           query.filterEntityTags
         ),
-        filter_created_time_after: query.filterCreatedTimeAfter
-          ? { the_date: query.filterCreatedTimeAfter, the_datetime: undefined }
-          : undefined,
-        filter_created_time_before: query.filterCreatedTimeBefore
-          ? { the_date: query.filterCreatedTimeBefore, the_datetime: undefined }
-          : undefined,
-        filter_last_modified_time_after: query.filterLastModifiedTimeAfter
-          ? {
-              the_date: query.filterLastModifiedTimeAfter,
-              the_datetime: undefined,
-            }
-          : undefined,
-        filter_last_modified_time_before: query.filterLastModifiedTimeBefore
-          ? {
-              the_date: query.filterLastModifiedTimeBefore,
-              the_datetime: undefined,
-            }
-          : undefined,
-        filter_archived_time_after: query.filterArchivedTimeAfter
-          ? { the_date: query.filterArchivedTimeAfter, the_datetime: undefined }
-          : undefined,
-        filter_archived_time_before: query.filterArchivedTimeBefore
-          ? {
-              the_date: query.filterArchivedTimeBefore,
-              the_datetime: undefined,
-            }
-          : undefined,
+        filter_created_time_after: query.filterCreatedTimeAfter,
+        filter_created_time_before: query.filterCreatedTimeBefore,
+        filter_last_modified_time_after: query.filterLastModifiedTimeAfter,
+        filter_last_modified_time_before: query.filterLastModifiedTimeBefore,
+        filter_archived_time_after: query.filterArchivedTimeAfter,
+        filter_archived_time_before: query.filterArchivedTimeBefore,
       });
     }
 
@@ -504,7 +481,7 @@ export default function Search() {
             return (
               <EntityCard
                 showAsArchived={match.summary.archived}
-                key={`${match.summary.entity_tag}:${match.summary.ref_id.the_id}`}
+                key={`${match.summary.entity_tag}:${match.summary.ref_id}`}
               >
                 <EntitySummaryLink summary={match.summary} />
               </EntityCard>

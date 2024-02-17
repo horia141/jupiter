@@ -1,10 +1,11 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+
 import type { DocName } from './DocName';
 import type { EntityId } from './EntityId';
 import type { Timestamp } from './Timestamp';
+
 /**
  * A doc in the docbook.
  */

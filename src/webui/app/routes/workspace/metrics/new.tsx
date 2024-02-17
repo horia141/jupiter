@@ -68,7 +68,7 @@ export async function action({ request }: ActionArgs) {
 
   try {
     const result = await getLoggedInApiClient(session).metrics.metricCreate({
-      name: { the_name: form.name },
+      name: form.name,
       icon: form.icon ? { the_icon: form.icon } : undefined,
       collection_period:
         form.collectionPeriod === "none"
@@ -123,7 +123,7 @@ export async function action({ request }: ActionArgs) {
           : { the_month: parseInt(form.collectionDueAtMonth) },
     });
 
-    return redirect(`/workspace/metrics/${result.new_metric.ref_id.the_id}`);
+    return redirect(`/workspace/metrics/${result.new_metric.ref_id}`);
   } catch (error) {
     if (
       error instanceof ApiError &&

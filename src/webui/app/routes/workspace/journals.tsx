@@ -58,7 +58,7 @@ export default function Journals() {
   const sortedJournals = sortJournalsNaturally(entries.map((e) => e.journal));
   const entriesByRefId = new Map<string, JournalFindResultEntry>();
   for (const entry of entries) {
-    entriesByRefId.set(entry.journal.ref_id.the_id, entry);
+    entriesByRefId.set(entry.journal.ref_id, entry);
   }
 
   const archiveJournalFetch = useFetcher();
@@ -70,7 +70,7 @@ export default function Journals() {
       },
       {
         method: "post",
-        action: `/workspace/journals/${journal.ref_id.the_id}`,
+        action: `/workspace/journals/${journal.ref_id}`,
       }
     );
   }
@@ -84,18 +84,16 @@ export default function Journals() {
         <EntityStack>
           {sortedJournals.map((journal) => {
             const entry = entriesByRefId.get(
-              journal.ref_id.the_id
+              journal.ref_id
             ) as JournalFindResultEntry;
             return (
               <EntityCard
-                key={entry.journal.ref_id.the_id}
+                key={entry.journal.ref_id}
                 allowSwipe
                 allowMarkNotDone
                 onMarkNotDone={() => archiveJournal(entry.journal)}
               >
-                <EntityLink
-                  to={`/workspace/journals/${entry.journal.ref_id.the_id}`}
-                >
+                <EntityLink to={`/workspace/journals/${entry.journal.ref_id}`}>
                   <EntityNameComponent name={entry.journal.name} />
                   <JournalSourceTag source={entry.journal.source} />
                   <PeriodTag period={entry.journal.period} />

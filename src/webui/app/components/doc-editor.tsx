@@ -25,14 +25,10 @@ export function DocEditor({
   const [dataModified, setDataModified] = useState(false);
   const [isActing, setIsActing] = useState(false);
   const [shouldAct, setShouldAct] = useState(false);
-  const [docId, setDocId] = useState(
-    initialDoc ? initialDoc.ref_id.the_id : null
-  );
-  const [noteId, setNoteId] = useState(
-    initialNote ? initialNote.ref_id.the_id : null
-  );
+  const [docId, setDocId] = useState(initialDoc ? initialDoc.ref_id : null);
+  const [noteId, setNoteId] = useState(initialNote ? initialNote.ref_id : null);
   const [noteName, setNoteName] = useState<string>(
-    initialDoc ? initialDoc.name.the_name : ""
+    initialDoc ? initialDoc.name : ""
   );
   const [noteContent, setNoteContent] = useState<Array<OneOfNoteContentBlock>>(
     initialNote ? initialNote.content : []
@@ -85,8 +81,8 @@ export function DocEditor({
       cardActionFetcher.submission?.action.endsWith("/create-action") &&
       cardActionFetcher.data
     ) {
-      setDocId(cardActionFetcher.data?.data.new_doc.ref_id.the_id);
-      setNoteId(cardActionFetcher.data?.data.new_note.ref_id.the_id);
+      setDocId(cardActionFetcher.data?.data.new_doc.ref_id);
+      setNoteId(cardActionFetcher.data?.data.new_note.ref_id);
     }
 
     if (

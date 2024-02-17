@@ -72,7 +72,7 @@ export default function Vacations({ request }: LoaderArgs) {
       },
       {
         method: "post",
-        action: `/workspace/vacations/${vacation.ref_id.the_id}`,
+        action: `/workspace/vacations/${vacation.ref_id}`,
       }
     );
   }
@@ -88,12 +88,12 @@ export default function Vacations({ request }: LoaderArgs) {
         <EntityStack>
           {sortedVacations.map((vacation) => (
             <EntityCard
-              key={vacation.ref_id.the_id}
+              key={vacation.ref_id}
               allowSwipe
               allowMarkNotDone
               onMarkNotDone={() => archiveVacation(vacation)}
             >
-              <EntityLink to={`/workspace/vacations/${vacation.ref_id.the_id}`}>
+              <EntityLink to={`/workspace/vacations/${vacation.ref_id}`}>
                 <EntityNameComponent name={vacation.name} />
                 <ADateTag label="Start Date" date={vacation.start_date} />
                 <ADateTag
@@ -137,12 +137,12 @@ function VacationCalendar({ sortedVacations }: VacationCalendarProps) {
       const limit = aDateToDate(vacation.end_date).endOf("day").toISODate();
       while (walker.toISODate() <= limit) {
         const entry = vacationDays.get(walker.toISODate()) || new Set<string>();
-        entry.add(vacation.ref_id.the_id);
+        entry.add(vacation.ref_id);
         vacationDays.set(walker.toISODate(), entry);
         walker = walker.plus({ days: 1 });
       }
 
-      vacationsById.set(vacation.ref_id.the_id, vacation);
+      vacationsById.set(vacation.ref_id, vacation);
     }
 
     const data = [];
@@ -218,7 +218,7 @@ function VacationCalendar({ sortedVacations }: VacationCalendarProps) {
           backgroundColor: "white",
         }}
       >
-        {vacation.name.the_name}
+        {vacation.name}
       </TooltipBox>
     );
   }

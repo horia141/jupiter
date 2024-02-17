@@ -1,10 +1,11 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+
 import type { User } from './User';
 import type { UserScoreHistory } from './UserScoreHistory';
 import type { UserScoreOverview } from './UserScoreOverview';
+
 /**
  * User find result.
  */

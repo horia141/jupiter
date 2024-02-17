@@ -1,22 +1,26 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ChangePasswordArgs } from '../models/ChangePasswordArgs';
+import type { ReportArgs } from '../models/ReportArgs';
+import type { ReportResult } from '../models/ReportResult';
+
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
+
 export class ReportService {
+
     constructor(public readonly httpRequest: BaseHttpRequest) {}
+
     /**
      * The command for reporting on progress.
      * The command for reporting on progress.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns ReportResult Successful response
      * @throws ApiError
      */
     public report(
-        requestBody?: ChangePasswordArgs,
-    ): CancelablePromise<any> {
+        requestBody?: ReportArgs,
+    ): CancelablePromise<ReportResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/report',
@@ -29,4 +33,5 @@ export class ReportService {
             },
         });
     }
+
 }

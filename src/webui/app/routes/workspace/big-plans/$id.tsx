@@ -83,7 +83,7 @@ export async function loader({ request, params }: LoaderArgs) {
 
   try {
     const result = await getLoggedInApiClient(session).bigPlans.bigPlanLoad({
-      ref_id: { the_id: id },
+      ref_id: id,
       allow_archived: true,
     });
 
@@ -117,10 +117,10 @@ export async function action({ request, params }: ActionArgs) {
         const result = await getLoggedInApiClient(
           session
         ).bigPlans.bigPlanUpdate({
-          ref_id: { the_id: id },
+          ref_id: id,
           name: {
             should_change: true,
-            value: { the_name: form.name },
+            value: form.name,
           },
           status: {
             should_change: true,
@@ -130,14 +130,14 @@ export async function action({ request, params }: ActionArgs) {
             should_change: true,
             value:
               form.actionableDate !== undefined && form.actionableDate !== ""
-                ? { the_date: form.actionableDate, the_datetime: undefined }
+                ? form.actionableDate
                 : undefined,
           },
           due_date: {
             should_change: true,
             value:
               form.dueDate !== undefined && form.dueDate !== ""
-                ? { the_date: form.dueDate, the_datetime: undefined }
+                ? form.dueDate
                 : undefined,
           },
         });
@@ -155,8 +155,8 @@ export async function action({ request, params }: ActionArgs) {
 
       case "change-project": {
         await getLoggedInApiClient(session).bigPlans.bigPlanChangeProject({
-          ref_id: { the_id: id },
-          project_ref_id: { the_id: form.project },
+          ref_id: id,
+          project_ref_id: form.project,
         });
 
         return redirect(`/workspace/big-plans/${id}`);
@@ -164,7 +164,7 @@ export async function action({ request, params }: ActionArgs) {
 
       case "archive": {
         await getLoggedInApiClient(session).bigPlans.bigPlanArchive({
-          ref_id: { the_id: id },
+          ref_id: id,
         });
 
         return redirect(`/workspace/big-plans/${id}`);
@@ -199,10 +199,10 @@ export default function BigPlan() {
     transition.state === "idle" && !loaderData.bigPlan.archived;
 
   const [selectedProject, setSelectedProject] = useState(
-    loaderData.project.ref_id.the_id
+    loaderData.project.ref_id
   );
   const selectedProjectIsDifferentFromCurrent =
-    loaderData.project.ref_id.the_id !== selectedProject;
+    loaderData.project.ref_id !== selectedProject;
 
   function handleChangeProject(e: SelectChangeEvent) {
     setSelectedProject(e.target.value);
@@ -217,7 +217,7 @@ export default function BigPlan() {
   function handleCardMarkDone(it: InboxTask) {
     cardActionFetcher.submit(
       {
-        id: it.ref_id.the_id,
+        id: it.ref_id,
         status: InboxTaskStatus.DONE,
       },
       {
@@ -230,7 +230,7 @@ export default function BigPlan() {
   function handleCardMarkNotDone(it: InboxTask) {
     cardActionFetcher.submit(
       {
-        id: it.ref_id.the_id,
+        id: it.ref_id,
         status: InboxTaskStatus.NOT_DONE,
       },
       {
@@ -244,12 +244,12 @@ export default function BigPlan() {
     // Update states based on loader data. This is necessary because these
     // two are not otherwise updated when the loader data changes. Which happens
     // on a navigation event.
-    setSelectedProject(loaderData.project.ref_id.the_id);
+    setSelectedProject(loaderData.project.ref_id);
   }, [loaderData]);
 
   return (
     <LeafPanel
-      key={loaderData.bigPlan.ref_id.the_id}
+      key={loaderData.bigPlan.ref_id}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation={"/workspace/big-plans"}
@@ -264,7 +264,7 @@ export default function BigPlan() {
                 label="Name"
                 name="name"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.bigPlan.name.the_name}
+                defaultValue={loaderData.bigPlan.name}
               />
               <FieldError actionResult={actionData} fieldName="/name" />
             </FormControl>
@@ -302,8 +302,8 @@ export default function BigPlan() {
                   label="Project"
                 >
                   {loaderData.allProjects.map((p: Project) => (
-                    <MenuItem key={p.ref_id.the_id} value={p.ref_id.the_id}>
-                      {p.name.the_name}
+                    <MenuItem key={p.ref_id} value={p.ref_id}>
+                      {p.name}
                     </MenuItem>
                   ))}
                 </Select>
@@ -393,7 +393,7 @@ export default function BigPlan() {
         <Button
           variant="contained"
           disabled={loaderData.bigPlan.archived}
-          to={`/workspace/inbox-tasks/new?reason=for-big-plan&bigPlanRefId=${loaderData.bigPlan.ref_id.the_id}`}
+          to={`/workspace/inbox-tasks/new?reason=for-big-plan&bigPlanRefId=${loaderData.bigPlan.ref_id}`}
           component={Link}
         >
           New Task

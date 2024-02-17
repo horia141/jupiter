@@ -1,7 +1,7 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+
 import type { BigPlanSummary } from './BigPlanSummary';
 import type { ChoreSummary } from './ChoreSummary';
 import type { HabitSummary } from './HabitSummary';
@@ -11,6 +11,7 @@ import type { PersonSummary } from './PersonSummary';
 import type { ProjectSummary } from './ProjectSummary';
 import type { SmartListSummary } from './SmartListSummary';
 import type { VacationSummary } from './VacationSummary';
+
 /**
  * Get summaries result.
  */

@@ -1,11 +1,12 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+
 import type { InboxTask } from './InboxTask';
 import type { Metric } from './Metric';
 import type { MetricEntry } from './MetricEntry';
 import type { Note } from './Note';
+
 /**
  * A single entry in the LoadAllMetricsResponse.
  */

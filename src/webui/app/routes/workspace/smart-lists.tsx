@@ -58,7 +58,7 @@ export default function SmartLists() {
       },
       {
         method: "post",
-        action: `/workspace/smart-lists/${smartList.ref_id.the_id}/items/details`,
+        action: `/workspace/smart-lists/${smartList.ref_id}/items/details`,
       }
     );
   }
@@ -75,13 +75,13 @@ export default function SmartLists() {
         <EntityStack>
           {loaderData.entries.map((entry) => (
             <EntityCard
-              key={entry.smart_list.ref_id.the_id}
+              key={entry.smart_list.ref_id}
               allowSwipe
               allowMarkNotDone
               onMarkNotDone={() => archiveSmartList(entry.smart_list)}
             >
               <EntityLink
-                to={`/workspace/smart-lists/${entry.smart_list.ref_id.the_id}/items`}
+                to={`/workspace/smart-lists/${entry.smart_list.ref_id}/items`}
               >
                 {entry.smart_list.icon && (
                   <EntityIconComponent icon={entry.smart_list.icon} />

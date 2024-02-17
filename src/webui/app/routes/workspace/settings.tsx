@@ -82,7 +82,7 @@ export async function action({ request }: ActionArgs) {
         await getLoggedInApiClient(session).workspaces.workspaceUpdate({
           name: {
             should_change: true,
-            value: { the_name: form.name },
+            value: form.name,
           },
         });
 
@@ -93,7 +93,7 @@ export async function action({ request }: ActionArgs) {
         await getLoggedInApiClient(
           session
         ).workspaces.workspaceChangeDefaultProject({
-          default_project_ref_id: { the_id: form.defaultProject },
+          default_project_ref_id: form.defaultProject,
         });
 
         return redirect(`/workspace/settings`);
@@ -153,7 +153,7 @@ export default function Settings() {
                     label="Name"
                     name="name"
                     readOnly={!inputsEnabled}
-                    defaultValue={loaderData.workspace.name.the_name}
+                    defaultValue={loaderData.workspace.name}
                   />
                   <FieldError actionResult={actionData} fieldName="/name" />
                 </FormControl>
@@ -193,12 +193,12 @@ export default function Settings() {
                       labelId="defaultProject"
                       name="defaultProject"
                       readOnly={!inputsEnabled}
-                      defaultValue={loaderData.defaultProject.ref_id.the_id}
+                      defaultValue={loaderData.defaultProject.ref_id}
                       label="Default Project"
                     >
                       {loaderData.allProjects.map((p) => (
-                        <MenuItem key={p.ref_id.the_id} value={p.ref_id.the_id}>
-                          {p.name.the_name}
+                        <MenuItem key={p.ref_id} value={p.ref_id}>
+                          {p.name}
                         </MenuItem>
                       ))}
                     </Select>
@@ -232,7 +232,7 @@ export default function Settings() {
             <input
               type="hidden"
               name="defaultProject"
-              value={loaderData.defaultProject.ref_id.the_id}
+              value={loaderData.defaultProject.ref_id}
             />
           )}
 

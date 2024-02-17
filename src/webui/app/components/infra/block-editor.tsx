@@ -119,7 +119,7 @@ function transformContentBlocksToEditorJs(
         case ParagraphBlock.kind.PARAGRAPH:
           return {
             type: "paragraph",
-            id: block.correlation_id.the_id,
+            id: block.correlation_id,
             data: {
               text: block.text,
             },
@@ -127,7 +127,7 @@ function transformContentBlocksToEditorJs(
         case HeadingBlock.kind.HEADING:
           return {
             type: "header",
-            id: block.correlation_id.the_id,
+            id: block.correlation_id,
             data: {
               text: block.text,
               level: block.level,
@@ -136,7 +136,7 @@ function transformContentBlocksToEditorJs(
         case BulletedListBlock.kind.BULLETED_LIST:
           return {
             type: "list",
-            id: block.correlation_id.the_id,
+            id: block.correlation_id,
             data: {
               style: "unordered",
               items: block.items.map(transformListItemToEditorJs),
@@ -145,7 +145,7 @@ function transformContentBlocksToEditorJs(
         case NumberedListBlock.kind.NUMBERED_LIST:
           return {
             type: "list",
-            id: block.correlation_id.the_id,
+            id: block.correlation_id,
             data: {
               style: "ordered",
               items: block.items.map(transformListItemToEditorJs),
@@ -154,7 +154,7 @@ function transformContentBlocksToEditorJs(
         case ChecklistBlock.kind.CHECKLIST:
           return {
             type: "checklist",
-            id: block.correlation_id.the_id,
+            id: block.correlation_id,
             data: {
               items: block.items,
             },
@@ -162,7 +162,7 @@ function transformContentBlocksToEditorJs(
         case TableBlock.kind.TABLE:
           return {
             type: "table",
-            id: block.correlation_id.the_id,
+            id: block.correlation_id,
             data: {
               withHeadings: block.with_header,
               content: block.contents,
@@ -171,7 +171,7 @@ function transformContentBlocksToEditorJs(
         case CodeBlock.kind.CODE:
           return {
             type: "code",
-            id: block.correlation_id.the_id,
+            id: block.correlation_id,
             data: {
               code: block.code,
               language: block.language,
@@ -181,7 +181,7 @@ function transformContentBlocksToEditorJs(
         case QuoteBlock.kind.QUOTE:
           return {
             type: "quote",
-            id: block.correlation_id.the_id,
+            id: block.correlation_id,
             data: {
               text: block.text,
               caption: "",
@@ -190,7 +190,7 @@ function transformContentBlocksToEditorJs(
         case DividerBlock.kind.DIVIDER:
           return {
             type: "delimiter",
-            id: block.correlation_id.the_id,
+            id: block.correlation_id,
             data: {},
           };
       }
@@ -214,13 +214,13 @@ function transformEditorJsToContentBlocks(
       case "paragraph":
         return {
           kind: ParagraphBlock.kind.PARAGRAPH,
-          correlation_id: { the_id: block.id as string },
+          correlation_id: block.id as string ,
           text: block.data.text as string,
         } as ParagraphBlock;
       case "header":
         return {
           kind: HeadingBlock.kind.HEADING,
-          correlation_id: { the_id: block.id as string },
+          correlation_id: block.id as string ,
           text: block.data.text as string,
           level: block.data.level as number,
         } as HeadingBlock;
@@ -228,13 +228,13 @@ function transformEditorJsToContentBlocks(
         if (block.data.style === "unordered") {
           return {
             kind: BulletedListBlock.kind.BULLETED_LIST,
-            correlation_id: { the_id: block.id as string },
+            correlation_id: block.id as string ,
             items: block.data.items.map(transformEditorJsToListItem),
           } as BulletedListBlock;
         } else if (block.data.style === "ordered") {
           return {
             kind: NumberedListBlock.kind.NUMBERED_LIST,
-            correlation_id: { the_id: block.id as string },
+            correlation_id: block.id as string ,
             items: block.data.items.map(transformEditorJsToListItem),
           } as NumberedListBlock;
         } else {
@@ -243,7 +243,7 @@ function transformEditorJsToContentBlocks(
       case "checklist":
         return {
           kind: ChecklistBlock.kind.CHECKLIST,
-          correlation_id: { the_id: block.id as string },
+          correlation_id: block.id as string ,
           items: block.data.items.map((item) => ({
             text: item.text as string,
             checked: item.checked as boolean,
@@ -252,14 +252,14 @@ function transformEditorJsToContentBlocks(
       case "table":
         return {
           kind: TableBlock.kind.TABLE,
-          correlation_id: { the_id: block.id as string },
+          correlation_id: block.id as string ,
           with_header: block.data.withHeadings as boolean,
           contents: block.data.content as Array<Array<string>>,
         } as TableBlock;
       case "code":
         return {
           kind: CodeBlock.kind.CODE,
-          correlation_id: { the_id: block.id as string },
+          correlation_id: block.id as string ,
           code: block.data.code as string,
           language: block.data.language as string | undefined,
           show_line_numbers: block.data.showlinenumbers as boolean | undefined,
@@ -267,13 +267,13 @@ function transformEditorJsToContentBlocks(
       case "quote":
         return {
           kind: QuoteBlock.kind.QUOTE,
-          correlation_id: { the_id: block.id as string },
+          correlation_id: block.id as string ,
           text: block.data.text as string,
         } as QuoteBlock;
       case "delimiter":
         return {
           kind: DividerBlock.kind.DIVIDER,
-          correlation_id: { the_id: block.id as string },
+          correlation_id: block.id as string ,
         } as DividerBlock;
       default:
         throw new Error(`Unknown block type: ${block.type}`);

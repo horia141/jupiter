@@ -27,11 +27,11 @@ export async function action({ request }: ActionArgs) {
 
   try {
     await getLoggedInApiClient(session).docs.docUpdate({
-      ref_id: { the_id: form.docId },
-      name: { should_change: true, value: { the_name: form.name } },
+      ref_id: form.docId,
+      name: { should_change: true, value: form.name },
     });
     await getLoggedInApiClient(session).core.noteUpdate({
-      ref_id: { the_id: form.noteId },
+      ref_id: form.noteId,
       content: { should_change: true, value: form.content },
     });
 

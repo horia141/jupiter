@@ -83,10 +83,7 @@ export async function loader({ request }: LoaderArgs) {
 
   try {
     const reportResponse = await getLoggedInApiClient(session).report.report({
-      today: {
-        the_date: today,
-        the_datetime: undefined,
-      },
+      today: today,
       period: period,
       breakdown_period:
         breakdownPeriod !== "none" ? breakdownPeriod : undefined,
@@ -158,7 +155,7 @@ export default function Report() {
                 name="today"
                 defaultValue={
                   isNoErrorSomeData(loaderData)
-                    ? loaderData.data.report?.period_result.today.the_date ??
+                    ? loaderData.data.report?.period_result.today ??
                       DateTime.now().toISODate()
                     : DateTime.now().toISODate()
                 }

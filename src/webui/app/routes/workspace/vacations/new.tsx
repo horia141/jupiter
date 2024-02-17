@@ -46,15 +46,13 @@ export async function action({ request }: ActionArgs) {
   try {
     const result = await getLoggedInApiClient(session).vacations.vacationCreate(
       {
-        name: { the_name: form.name },
-        start_date: { the_date: form.startDate, the_datetime: undefined },
-        end_date: { the_date: form.endDate, the_datetime: undefined },
+        name: form.name,
+        start_date: form.startDate,
+        end_date: form.endDate,
       }
     );
 
-    return redirect(
-      `/workspace/vacations/${result.new_vacation.ref_id.the_id}`
-    );
+    return redirect(`/workspace/vacations/${result.new_vacation.ref_id}`);
   } catch (error) {
     if (
       error instanceof ApiError &&

@@ -1,22 +1,26 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ChangePasswordArgs } from '../models/ChangePasswordArgs';
+import type { InitArgs } from '../models/InitArgs';
+import type { InitResult } from '../models/InitResult';
+
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
+
 export class InitService {
+
     constructor(public readonly httpRequest: BaseHttpRequest) {}
+
     /**
      * UseCase for initialising the workspace.
      * UseCase for initialising the workspace.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns InitResult Successful response
      * @throws ApiError
      */
     public init(
-        requestBody?: ChangePasswordArgs,
-    ): CancelablePromise<any> {
+        requestBody?: InitArgs,
+    ): CancelablePromise<InitResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/init',
@@ -29,4 +33,5 @@ export class InitService {
             },
         });
     }
+
 }

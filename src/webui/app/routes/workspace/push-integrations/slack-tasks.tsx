@@ -68,7 +68,7 @@ export default function SlackTasks() {
       },
       {
         method: "post",
-        action: `/workspace/push-integrations/slack-tasks/${slackTask.ref_id.the_id}`,
+        action: `/workspace/push-integrations/slack-tasks/${slackTask.ref_id}`,
       }
     );
   }
@@ -97,13 +97,13 @@ export default function SlackTasks() {
         <EntityStack>
           {sortedEntries.map((entry) => (
             <EntityCard
-              key={entry.slack_task.ref_id.the_id}
+              key={entry.slack_task.ref_id}
               allowSwipe
               allowMarkNotDone
               onMarkNotDone={() => archiveSlackTask(entry.slack_task)}
             >
               <EntityLink
-                to={`/workspace/push-integrations/slack-tasks/${entry.slack_task.ref_id.the_id}`}
+                to={`/workspace/push-integrations/slack-tasks/${entry.slack_task.ref_id}`}
               >
                 <EntityNameComponent
                   name={slackTaskNiceName(entry.slack_task as SlackTask)}

@@ -47,12 +47,12 @@ export async function action({ request }: ActionArgs) {
     const result = await getLoggedInApiClient(
       session
     ).smartLists.smartListCreate({
-      name: { the_name: form.name },
-      icon: form.icon ? { the_icon: form.icon } : undefined,
+      name: form.name,
+      icon: form.icon,
     });
 
     return redirect(
-      `/workspace/smart-lists/${result.new_smart_list.ref_id.the_id}/items`
+      `/workspace/smart-lists/${result.new_smart_list.ref_id}/items`
     );
   } catch (error) {
     if (

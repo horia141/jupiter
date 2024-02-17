@@ -163,9 +163,7 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
           dueDate={props.inboxTask.due_date}
         />
         <CardContent>
-          <EntityLink
-            to={`/workspace/inbox-tasks/${props.inboxTask.ref_id.the_id}`}
-          >
+          <EntityLink to={`/workspace/inbox-tasks/${props.inboxTask.ref_id}`}>
             <EntityNameComponent
               compact={props.compact}
               name={props.inboxTask.name}

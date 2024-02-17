@@ -1,13 +1,14 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+
 import type { Avatar } from './Avatar';
 import type { EmailAddress } from './EmailAddress';
 import type { EntityId } from './EntityId';
 import type { Timestamp } from './Timestamp';
 import type { Timezone } from './Timezone';
 import type { UserName } from './UserName';
+
 /**
  * A user of Jupiter.
  */

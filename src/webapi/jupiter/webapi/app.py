@@ -34,6 +34,7 @@ from jupiter.core.domain.auth.auth_token_ext import (
 from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
 from jupiter.core.domain.storage_engine import DomainStorageEngine, SearchStorageEngine
 from jupiter.core.framework.entity import Entity, ParentLink
+from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.realm import DomainThing, RealmCodecRegistry, WebRealm
 from jupiter.core.framework.record import Record
@@ -597,32 +598,36 @@ class WebServiceApp:
                 root_module=root_module,
             )
         elif issubclass(use_case_type, AppLoggedInMutationUseCase):
-            self._use_case_commands[use_case_type] = LoggedInMutationCommand(
-                realm_codec_registry=self._realm_codec_registry,
-                use_case=use_case_type(  # type: ignore
-                    global_properties=self._global_properties,
-                    time_provider=self._request_time_provider,
-                    invocation_recorder=self._invocation_recorder,
-                    progress_reporter_factory=self._progress_reporter_factory,
-                    auth_token_stamper=self._auth_token_stamper,
-                    domain_storage_engine=self._domain_storage_engine,
-                    search_storage_engine=self._search_storage_engine,
-                    use_case_storage_engine=self._use_case_storage_engine,
-                ),
-                root_module=root_module,
-            )
+            scoped_to_app = use_case_type.get_scoped_to_app()  # type: ignore
+            if scoped_to_app is None or EventSource.WEB in scoped_to_app:
+                self._use_case_commands[use_case_type] = LoggedInMutationCommand(
+                    realm_codec_registry=self._realm_codec_registry,
+                    use_case=use_case_type(  # type: ignore
+                        global_properties=self._global_properties,
+                        time_provider=self._request_time_provider,
+                        invocation_recorder=self._invocation_recorder,
+                        progress_reporter_factory=self._progress_reporter_factory,
+                        auth_token_stamper=self._auth_token_stamper,
+                        domain_storage_engine=self._domain_storage_engine,
+                        search_storage_engine=self._search_storage_engine,
+                        use_case_storage_engine=self._use_case_storage_engine,
+                    ),
+                    root_module=root_module,
+                )
         elif issubclass(use_case_type, AppLoggedInReadonlyUseCase):
-            self._use_case_commands[use_case_type] = LoggedInReadonlyCommand(
-                realm_codec_registry=self._realm_codec_registry,
-                use_case=use_case_type(  # type: ignore
-                    global_properties=self._global_properties,
-                    time_provider=self._request_time_provider,
-                    auth_token_stamper=self._auth_token_stamper,
-                    domain_storage_engine=self._domain_storage_engine,
-                    search_storage_engine=self._search_storage_engine,
-                ),
-                root_module=root_module,
-            )
+            scoped_to_app = use_case_type.get_scoped_to_app()  # type: ignore
+            if scoped_to_app is None or EventSource.WEB in scoped_to_app:
+                self._use_case_commands[use_case_type] = LoggedInReadonlyCommand(
+                    realm_codec_registry=self._realm_codec_registry,
+                    use_case=use_case_type(  # type: ignore
+                        global_properties=self._global_properties,
+                        time_provider=self._request_time_provider,
+                        auth_token_stamper=self._auth_token_stamper,
+                        domain_storage_engine=self._domain_storage_engine,
+                        search_storage_engine=self._search_storage_engine,
+                    ),
+                    root_module=root_module,
+                )
         elif issubclass(use_case_type, AppBackgroundMutationUseCase):
             self._use_case_commands[use_case_type] = CronCommand(
                 realm_codec_registry=self._realm_codec_registry,
@@ -864,14 +869,38 @@ class WebServiceApp:
 
         # Link api with components
 
-        for path in openapi_schema["paths"].keys():
-            openapi_schema["paths"][path]["post"]["requestBody"] = {
-                "content": {
-                    "application/json": {
-                        "schema": {"$ref": "#/components/schemas/ChangePasswordArgs"}
+        for _use_case, command in self._use_case_commands.items():
+            if isinstance(command, UseCaseCommand) and not isinstance(
+                command, CronCommand
+            ):
+                openapi_schema["paths"][f"/{command._build_http_name()}"]["post"][
+                    "requestBody"
+                ] = {
+                    "description": "The input data",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": f"#/components/schemas/{command._args_type.__name__}"
+                            }
+                        }
                     }
                 }
-            }
+
+                if command._result_type is not type(None):
+                    openapi_schema["paths"][f"/{command._build_http_name()}"]["post"]["responses"]["200"] = {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": f"#/components/schemas/{command._result_type.__name__}"
+                                }
+                            }
+                        }
+                    }
+                else:
+                    openapi_schema["paths"][f"/{command._build_http_name()}"]["post"]["responses"]["200"] = {
+                        "description": "Successful response / Empty body",
+                    }
 
         self._fast_app.openapi_schema = openapi_schema
         return self._fast_app.openapi_schema

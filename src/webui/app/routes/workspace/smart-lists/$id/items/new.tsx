@@ -57,7 +57,7 @@ export async function loader({ request, params }: LoaderArgs) {
 
   const result = await getLoggedInApiClient(session).smartLists.smartListLoad({
     allow_archived: true,
-    ref_id: { the_id: id },
+    ref_id: id,
   });
 
   return json({
@@ -75,15 +75,15 @@ export async function action({ request, params }: ActionArgs) {
     const response = await getLoggedInApiClient(
       session
     ).smartLists.smartListItemCreate({
-      smart_list_ref_id: { the_id: id },
-      name: { the_name: form.name },
+      smart_list_ref_id: id,
+      name: form.name,
       is_done: form.isDone,
-      tag_names: form.tags.map((tag) => ({ the_tag: tag })),
-      url: form.url ? { the_url: form.url } : undefined,
+      tag_names: form.tags,
+      url: form.url,
     });
 
     return redirect(
-      `/workspace/smart-lists/${id}/items/${response.new_smart_list_item.ref_id.the_id}`
+      `/workspace/smart-lists/${id}/items/${response.new_smart_list_item.ref_id}`
     );
   } catch (error) {
     if (
@@ -110,7 +110,7 @@ export default function NewSmartListItem() {
 
   return (
     <LeafPanel
-      key={loaderData.smartList.ref_id.the_id}
+      key={loaderData.smartList.ref_id}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation={`/workspace/smart-lists/${id}/items`}

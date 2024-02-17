@@ -1,21 +1,26 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ChangePasswordArgs } from '../models/ChangePasswordArgs';
+import type { GenDoArgs } from '../models/GenDoArgs';
+import type { GenLoadRunsArgs } from '../models/GenLoadRunsArgs';
+import type { GenLoadRunsResult } from '../models/GenLoadRunsResult';
+
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
+
 export class GenService {
+
     constructor(public readonly httpRequest: BaseHttpRequest) {}
+
     /**
      * The command for generating new tasks.
      * The command for generating new tasks.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public genDo(
-        requestBody?: ChangePasswordArgs,
+        requestBody?: GenDoArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
@@ -29,16 +34,17 @@ export class GenService {
             },
         });
     }
+
     /**
      * Load previous runs of task generation.
      * Load previous runs of task generation.
-     * @param requestBody
-     * @returns any Successful Response
+     * @param requestBody The input data
+     * @returns GenLoadRunsResult Successful response
      * @throws ApiError
      */
     public genLoadRuns(
-        requestBody?: ChangePasswordArgs,
-    ): CancelablePromise<any> {
+        requestBody?: GenLoadRunsArgs,
+    ): CancelablePromise<GenLoadRunsResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/gen-load-runs',
@@ -51,4 +57,5 @@ export class GenService {
             },
         });
     }
+
 }

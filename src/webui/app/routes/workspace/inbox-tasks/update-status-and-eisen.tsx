@@ -26,7 +26,7 @@ export async function action({ request }: ActionArgs) {
     const result = await getLoggedInApiClient(
       session
     ).inboxTasks.inboxTaskUpdate({
-      ref_id: { the_id: form.id },
+      ref_id: form.id,
       name: { should_change: false },
       status: { should_change: true, value: form.status },
       eisen:

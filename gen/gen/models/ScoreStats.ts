@@ -1,9 +1,10 @@
-/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+
 import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
 import type { Timestamp } from './Timestamp';
+
 /**
  * Statistics about scores for a particular time interval.
  */
