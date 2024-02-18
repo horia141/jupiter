@@ -22,7 +22,7 @@ from pendulum.tz.timezone import UTC
 
 @value
 @total_ordering
-class Timestamp(AtomicValue[DateTime]):
+class Timestamp(AtomicValue[datetime.datetime]):
     """A timestamp in the application."""
 
     the_ts: DateTime
@@ -68,7 +68,7 @@ class TimestampDatabaseEncoder(RealmEncoder[Timestamp, DatabaseRealm]):
     """An encoder for timestamps in databases."""
 
     def encode(self, value: Timestamp) -> RealmThing:
-        return value.value
+        return value.the_ts
 
 
 class TimestampDatabaseDecoder(RealmDecoder[Timestamp, DatabaseRealm]):
@@ -78,13 +78,6 @@ class TimestampDatabaseDecoder(RealmDecoder[Timestamp, DatabaseRealm]):
         if not isinstance(value, (datetime.datetime, DateTime)):
             raise RealmDecodingError(
                 f"Expected value for {self.__class__} to be datetime or DateTime"
-            )
-
-        if not isinstance(
-            value, (str, datetime.date, datetime.datetime, Date, DateTime)
-        ):
-            raise RealmDecodingError(
-                "Expected timestamp to be string or date or datetime"
             )
 
         if isinstance(value, DateTime):

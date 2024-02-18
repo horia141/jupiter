@@ -57,7 +57,7 @@ from jupiter.core.framework.record import Record
 from jupiter.core.framework.thing import Thing
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case_io import UseCaseArgsBase, UseCaseResultBase
-from jupiter.core.framework.utils import find_all_modules, is_thing_ish_type
+from jupiter.core.framework.utils import find_all_modules, is_thing_ish_type, normalize_optional
 from jupiter.core.framework.value import (
     AtomicValue,
     CompositeValue,
@@ -141,23 +141,26 @@ class _UpdateActionEventStoreEncoder(
     _realm_codec_registry: Final[RealmCodecRegistry]
     _root_type: type[DomainThing] | None
     _the_type: type[DomainThing] | ForwardRef | str
+    _realm: Final[type[Realm]]
 
     def __init__(
         self,
         realm_codec_registry: RealmCodecRegistry,
         root_type: type[DomainThing] | None,
         the_type: type[DomainThing] | ForwardRef | str,
+        realm: type[Realm]
     ) -> None:
         self._realm_codec_registry = realm_codec_registry
         self._root_type = root_type
         self._the_type = the_type
+        self._realm = realm
 
     def encode(self, value: UpdateAction[DomainThing]) -> RealmThing:
         if not value.should_change:
             return {"should_change": False}
 
         encoder = self._realm_codec_registry.get_encoder(
-            self._the_type, EventStoreRealm, self._root_type
+            self._the_type, self._realm, self._root_type
         )
 
         return {
@@ -172,16 +175,19 @@ class _UpdateActionWebDecoder(RealmDecoder[UpdateAction[DomainThing], WebRealm])
     _realm_codec_registry: Final[RealmCodecRegistry]
     _root_type: type[DomainThing] | None
     _the_type: type[DomainThing] | ForwardRef | str
+    _realm: Final[type[Realm]]
 
     def __init__(
         self,
         realm_codec_registry: RealmCodecRegistry,
         root_type: type[DomainThing] | None,
         the_type: type[DomainThing] | ForwardRef | str,
+        realm: type[Realm]
     ) -> None:
         self._realm_codec_registry = realm_codec_registry
         self._root_type = root_type
         self._the_type = the_type
+        self._realm = realm
 
     def decode(self, value: RealmThing) -> UpdateAction[DomainThing]:
         if not isinstance(value, dict):
@@ -199,18 +205,26 @@ class _UpdateActionWebDecoder(RealmDecoder[UpdateAction[DomainThing], WebRealm])
         if value["should_change"] is False:
             final_value = UpdateAction.do_nothing()
         else:
+
+            if isinstance(self._the_type, ForwardRef) or isinstance(self._the_type, str):
+                raise Exception("Off the beaten codepath")
+        
+            field_type, is_optional = normalize_optional(self._the_type)
             if "value" not in value:
-                raise RealmDecodingError(
-                    f"Expected field to have a value field for {self._the_type}"
+                if is_optional:
+                    final_value = UpdateAction.change_to(None)
+                else:
+                    raise RealmDecodingError(
+                        f"Expected field to have a value field for {self._the_type}"
+                    )
+            else:
+                update_action_decoder = self._realm_codec_registry.get_decoder(
+                    field_type, self._realm, self._root_type
                 )
 
-            update_action_decoder = self._realm_codec_registry.get_decoder(
-                self._the_type, CliRealm, self._root_type
-            )
-
-            final_value = UpdateAction.change_to(
-                update_action_decoder.decode(value["value"])
-            )
+                final_value = UpdateAction.change_to(
+                    update_action_decoder.decode(value["value"])
+                )
 
         return final_value
 
@@ -221,23 +235,26 @@ class _UnionDatabaseEncoder(RealmEncoder[DomainThing, DatabaseRealm]):
     _realm_codec_registry: Final[RealmCodecRegistry]
     _root_type: type[DomainThing] | None
     _the_types: list[type[DomainThing] | ForwardRef | str]
+    _realm: type[Realm]
 
     def __init__(
         self,
         realm_codec_registry: RealmCodecRegistry,
         root_type: type[DomainThing] | None,
         the_types: list[type[DomainThing] | ForwardRef | str],
+        realm: type[Realm]
     ) -> None:
         self._realm_codec_registry = realm_codec_registry
         self._root_type = root_type
         self._the_types = the_types
+        self._realm = realm
 
     def encode(self, value: DomainThing) -> RealmThing:
         """Encode a realm to a string."""
         for attempt_type in self._the_types:
             try:
                 encoder = self._realm_codec_registry.get_encoder(
-                    attempt_type, DatabaseRealm, self._root_type
+                    attempt_type, self._realm, self._root_type
                 )
                 return encoder.encode(value)
             except (RealmDecodingError, Exception):
@@ -254,23 +271,26 @@ class _UnionDatabaseDecoder(RealmDecoder[DomainThing, DatabaseRealm]):
     _realm_codec_registry: Final[RealmCodecRegistry]
     _root_type: type[DomainThing] | None
     _the_types: list[type[DomainThing] | ForwardRef | str]
+    _realm: Final[type[Realm]]
 
     def __init__(
         self,
         realm_codec_registry: RealmCodecRegistry,
         root_type: type[DomainThing] | None,
         the_types: list[type[DomainThing] | ForwardRef | str],
+        realm: type[Realm]
     ) -> None:
         self._realm_codec_registry = realm_codec_registry
         self._root_type = root_type
         self._the_types = the_types
+        self._realm = realm
 
     def decode(self, value: RealmThing) -> DomainThing:
         """Decode a realm from a string."""
         for attempt_type in self._the_types:
             try:
                 return self._realm_codec_registry.get_decoder(
-                    attempt_type, DatabaseRealm, self._root_type
+                    attempt_type, self._realm, self._root_type
                 ).decode(value)
             except (InputValidationError, RealmDecodingError):
                 pass
@@ -286,21 +306,24 @@ class _ListDatabaseEncoder(RealmEncoder[list[DomainThing], DatabaseRealm]):
     _realm_codec_registry: Final[RealmCodecRegistry]
     _root_type: type[DomainThing] | None
     _the_type: type[DomainThing] | ForwardRef | str
+    _realm: Final[type[Realm]]
 
     def __init__(
         self,
         realm_codec_registry: RealmCodecRegistry,
         root_type: type[DomainThing] | None,
         the_type: type[DomainThing] | ForwardRef | str,
+        realm: type[Realm]
     ) -> None:
         self._realm_codec_registry = realm_codec_registry
         self._root_type = root_type
         self._the_type = the_type
+        self._realm = realm
 
     def encode(self, value: list[DomainThing]) -> RealmThing:
         """Encode a realm to a string."""
         encoder = self._realm_codec_registry.get_encoder(
-            self._the_type, DatabaseRealm, self._root_type
+            self._the_type, self._realm, self._root_type
         )
         return [encoder.encode(v) for v in value]
 
@@ -311,16 +334,19 @@ class _ListDatabaseDecoder(RealmDecoder[list[DomainThing], DatabaseRealm]):
     _realm_codec_registry: Final[RealmCodecRegistry]
     _root_type: type[DomainThing] | None
     _the_type: type[DomainThing] | ForwardRef | str
+    _realm: Final[type[Realm]]
 
     def __init__(
         self,
         realm_codec_registry: RealmCodecRegistry,
         root_type: type[DomainThing] | None,
         the_type: type[DomainThing] | ForwardRef | str,
+        realm: type[Realm]
     ) -> None:
         self._realm_codec_registry = realm_codec_registry
         self._root_type = root_type
         self._the_type = the_type
+        self._realm = realm
 
     def decode(self, value: RealmThing) -> list[DomainThing]:
         """Decode a realm from a string."""
@@ -329,7 +355,7 @@ class _ListDatabaseDecoder(RealmDecoder[list[DomainThing], DatabaseRealm]):
                 f"Expected value for {value.__class__.__name__} to be a list"
             )
         decoder = self._realm_codec_registry.get_decoder(
-            self._the_type, DatabaseRealm, self._root_type
+            self._the_type, self._realm, self._root_type
         )
         return [decoder.decode(v) for v in value]
 
@@ -340,21 +366,24 @@ class _SetDatabaseEncoder(RealmEncoder[set[DomainThing], DatabaseRealm]):
     _realm_codec_registry: Final[RealmCodecRegistry]
     _root_type: type[DomainThing] | None
     _the_type: type[DomainThing] | ForwardRef | str
+    _realm: Final[type[Realm]]
 
     def __init__(
         self,
         realm_codec_registry: RealmCodecRegistry,
         root_type: type[DomainThing] | None,
         the_type: type[DomainThing] | ForwardRef | str,
+        realm: type[Realm]
     ) -> None:
         self._realm_codec_registry = realm_codec_registry
         self._root_type = root_type
         self._the_type = the_type
+        self._realm = realm
 
     def encode(self, value: set[DomainThing]) -> RealmThing:
         """Encode a realm to a string."""
         encoder = self._realm_codec_registry.get_encoder(
-            self._the_type, DatabaseRealm, self._root_type
+            self._the_type, self._realm, self._root_type
         )
         return [encoder.encode(v) for v in value]
 
@@ -365,16 +394,19 @@ class _SetDatabaseDecoder(RealmDecoder[set[DomainThing], DatabaseRealm]):
     _realm_codec_registry: Final[RealmCodecRegistry]
     _root_type: type[DomainThing] | None
     _the_type: type[DomainThing] | ForwardRef | str
+    _realm: Final[type[Realm]]
 
     def __init__(
         self,
         realm_codec_registry: RealmCodecRegistry,
         root_type: type[DomainThing] | None,
         the_type: type[DomainThing] | ForwardRef | str,
+        realm: type[Realm]
     ) -> None:
         self._realm_codec_registry = realm_codec_registry
         self._root_type = root_type
         self._the_type = the_type
+        self._realm = realm
 
     def decode(self, value: RealmThing) -> set[DomainThing]:
         """Decode a realm from a string."""
@@ -383,7 +415,7 @@ class _SetDatabaseDecoder(RealmDecoder[set[DomainThing], DatabaseRealm]):
                 f"Expected value for {value.__class__.__name__} to be a list"
             )
         decoder = self._realm_codec_registry.get_decoder(
-            self._the_type, DatabaseRealm, self._root_type
+            self._the_type, self._realm, self._root_type
         )
         return {decoder.decode(v) for v in value}
 
@@ -395,6 +427,7 @@ class _DictDatabaseEncoder(RealmEncoder[dict[DomainThing, DomainThing], Database
     _root_type: type[DomainThing] | None
     _the_key_type: type[DomainThing] | ForwardRef | str
     _the_value_type: type[DomainThing] | ForwardRef | str
+    _realm: Final[type[Realm]]
 
     def __init__(
         self,
@@ -402,19 +435,21 @@ class _DictDatabaseEncoder(RealmEncoder[dict[DomainThing, DomainThing], Database
         root_type: type[DomainThing] | None,
         the_key_type: type[DomainThing] | ForwardRef | str,
         the_value_type: type[DomainThing] | ForwardRef | str,
+        realm: type[Realm]
     ) -> None:
         self._realm_codec_registry = realm_codec_registry
         self._root_type = root_type
         self._the_key_type = the_key_type
         self._the_value_type = the_value_type
+        self._realm = realm
 
     def encode(self, value: dict[DomainThing, DomainThing]) -> RealmThing:
         """Encode a realm to a string."""
         key_encoder = self._realm_codec_registry.get_encoder(
-            self._the_key_type, DatabaseRealm, self._root_type
+            self._the_key_type, self._realm, self._root_type
         )
         value_encoder = self._realm_codec_registry.get_encoder(
-            self._the_value_type, DatabaseRealm, self._root_type
+            self._the_value_type, self._realm, self._root_type
         )
         result = {}
         for k, v in value.items():
@@ -434,6 +469,7 @@ class _DictDatabaseDecoder(RealmDecoder[dict[DomainThing, DomainThing], Database
     _root_type: type[DomainThing] | None
     _the_key_type: type[DomainThing] | ForwardRef | str
     _the_value_type: type[DomainThing] | ForwardRef | str
+    _realm: Final[type[Realm]]
 
     def __init__(
         self,
@@ -441,11 +477,13 @@ class _DictDatabaseDecoder(RealmDecoder[dict[DomainThing, DomainThing], Database
         root_type: type[DomainThing] | None,
         the_key_type: type[DomainThing] | ForwardRef | str,
         the_value_type: type[DomainThing] | ForwardRef | str,
+        realm: type[Realm]
     ) -> None:
         self._realm_codec_registry = realm_codec_registry
         self._root_type = root_type
         self._the_key_type = the_key_type
         self._the_value_type = the_value_type
+        self._realm = realm
 
     def decode(self, value: RealmThing) -> dict[DomainThing, DomainThing]:
         """Decode a realm from a string."""
@@ -454,10 +492,10 @@ class _DictDatabaseDecoder(RealmDecoder[dict[DomainThing, DomainThing], Database
                 f"Expected value of {value.__class__.__name__} to be a dict object"
             )
         key_decoder = self._realm_codec_registry.get_decoder(
-            self._the_key_type, DatabaseRealm, self._root_type
+            self._the_key_type, self._realm, self._root_type
         )
         value_decoder = self._realm_codec_registry.get_decoder(
-            self._the_value_type, DatabaseRealm, self._root_type
+            self._the_value_type, self._realm, self._root_type
         )
         return {
             key_decoder.decode(k): value_decoder.decode(v) for k, v in value.items()
@@ -583,12 +621,15 @@ class _StandardCompositeValueDatabaseEncoder(
 
     _realm_codec_registry: Final[RealmCodecRegistry]
     _the_type: type[_CompositeValueT]
+    _realm: Final[type[Realm]]
 
     def __init__(
-        self, realm_codec_registry: RealmCodecRegistry, the_type: type[_CompositeValueT]
+        self, realm_codec_registry: RealmCodecRegistry, the_type: type[_CompositeValueT],
+        realm: type[Realm]
     ) -> None:
         self._realm_codec_registry = realm_codec_registry
         self._the_type = the_type
+        self._realm = realm
 
     def encode(self, value: _CompositeValueT) -> RealmThing:
         """Encode a realm to a string."""
@@ -596,7 +637,7 @@ class _StandardCompositeValueDatabaseEncoder(
         all_fields = dataclasses.fields(self._the_type)
         for field in all_fields:
             encoder = self._realm_codec_registry.get_encoder(
-                field.type, DatabaseRealm, self._the_type
+                field.type, self._realm, self._the_type
             )
             field_value = getattr(value, field.name)
             result[field.name] = encoder.encode(field_value)
@@ -610,12 +651,15 @@ class _StandardCompositeValueDatabaseDecoder(
 
     _realm_codec_registry: Final[RealmCodecRegistry]
     _the_type: type[_CompositeValueT]
+    _realm: Final[type[Realm]]
 
     def __init__(
-        self, realm_codec_registry: RealmCodecRegistry, the_type: type[_CompositeValueT]
+        self, realm_codec_registry: RealmCodecRegistry, the_type: type[_CompositeValueT],
+        realm: type[Realm]
     ) -> None:
         self._realm_codec_registry = realm_codec_registry
         self._the_type = the_type
+        self._realm = realm
 
     def decode(self, value: RealmThing) -> _CompositeValueT:
         if not isinstance(value, dict):
@@ -634,7 +678,7 @@ class _StandardCompositeValueDatabaseDecoder(
                 )
 
             decoder = self._realm_codec_registry.get_decoder(
-                field.type, DatabaseRealm, self._the_type
+                field.type, self._realm, self._the_type
             )
             field_value = value[field.name]
             ctor_args[field.name] = decoder.decode(field_value)
@@ -692,12 +736,15 @@ class _StandardEntityDatabaseEncoder(
 
     _realm_codec_registry: Final[RealmCodecRegistry]
     _the_type: type[_EntityT]
+    _realm: Final[type[Realm]]
 
     def __init__(
-        self, realm_codec_registry: RealmCodecRegistry, the_type: type[_EntityT]
+        self, realm_codec_registry: RealmCodecRegistry, the_type: type[_EntityT],
+        realm: type[Realm]
     ) -> None:
         self._realm_codec_registry = realm_codec_registry
         self._the_type = the_type
+        self._realm = realm
 
     def encode(self, value: _EntityT) -> RealmThing:
         """Encode an entity."""
@@ -713,7 +760,7 @@ class _StandardEntityDatabaseEncoder(
                 result[field.name + "_ref_id"] = field_value.as_int()
             else:
                 encoder = self._realm_codec_registry.get_encoder(
-                    field.type, DatabaseRealm, self._the_type
+                    field.type, self._realm, self._the_type
                 )
                 result[field.name] = encoder.encode(field_value)
 
@@ -727,12 +774,15 @@ class _StandardEntityDatabaseDecoder(
 
     _realm_codec_registry: Final[RealmCodecRegistry]
     _the_type: type[_EntityT]
+    _realm: Final[type[Realm]]
 
     def __init__(
-        self, realm_codec_registry: RealmCodecRegistry, the_type: type[_EntityT]
+        self, realm_codec_registry: RealmCodecRegistry, the_type: type[_EntityT],
+        realm: type[Realm]
     ) -> None:
         self._realm_codec_registry = realm_codec_registry
         self._the_type = the_type
+        self._realm = realm
 
     def decode(self, value: RealmThing) -> _EntityT:
         if not isinstance(value, Mapping):
@@ -743,10 +793,10 @@ class _StandardEntityDatabaseDecoder(
         ctor_args: dict[str, DomainThing | ParentLink] = {}
 
         entity_id_decoder = self._realm_codec_registry.get_decoder(
-            EntityId, DatabaseRealm
+            EntityId, self._realm
         )
         timestamp_decoder = self._realm_codec_registry.get_decoder(
-            Timestamp, DatabaseRealm
+            Timestamp, self._realm
         )
 
         if "ref_id" not in value:
@@ -823,7 +873,7 @@ class _StandardEntityDatabaseDecoder(
                 )
             else:
                 decoder = self._realm_codec_registry.get_decoder(
-                    field.type, DatabaseRealm, self._the_type
+                    field.type, self._realm, self._the_type
                 )
                 ctor_args[field.name] = decoder.decode(field_value)
 
@@ -846,12 +896,15 @@ class _StandardRecordDatabaseEncoder(
 
     _realm_codec_registry: Final[RealmCodecRegistry]
     _the_type: type[_RecordT]
+    _realm: Final[type[Realm]]
 
     def __init__(
-        self, realm_codec_registry: RealmCodecRegistry, the_type: type[_RecordT]
+        self, realm_codec_registry: RealmCodecRegistry, the_type: type[_RecordT],
+        realm: type[Realm]
     ) -> None:
         self._realm_codec_registry = realm_codec_registry
         self._the_type = the_type
+        self._realm = realm
 
     def encode(self, value: _RecordT) -> RealmThing:
         """Encode a record."""
@@ -864,7 +917,7 @@ class _StandardRecordDatabaseEncoder(
                 result[field.name + "_ref_id"] = field_value.as_int()
             else:
                 encoder = self._realm_codec_registry.get_encoder(
-                    field.type, DatabaseRealm, self._the_type
+                    field.type, self._realm, self._the_type
                 )
                 result[field.name] = encoder.encode(field_value)
 
@@ -878,12 +931,15 @@ class _StandardRecordDatabaseDecoder(
 
     _realm_codec_registry: Final[RealmCodecRegistry]
     _the_type: type[_RecordT]
+    _realm: Final[type[Realm]]
 
     def __init__(
-        self, realm_codec_registry: RealmCodecRegistry, the_type: type[_RecordT]
+        self, realm_codec_registry: RealmCodecRegistry, the_type: type[_RecordT],
+        realm: type[Realm]
     ) -> None:
         self._realm_codec_registry = realm_codec_registry
         self._the_type = the_type
+        self._realm = realm
 
     def decode(self, value: RealmThing) -> _RecordT:
         if not isinstance(value, Mapping):
@@ -894,10 +950,10 @@ class _StandardRecordDatabaseDecoder(
         ctor_args: dict[str, DomainThing | ParentLink] = {}
 
         entity_id_decoder = self._realm_codec_registry.get_decoder(
-            EntityId, DatabaseRealm
+            EntityId, self._realm
         )
         timestamp_decoder = self._realm_codec_registry.get_decoder(
-            Timestamp, DatabaseRealm
+            Timestamp, self._realm
         )
 
         if "created_time" not in value:
@@ -933,7 +989,7 @@ class _StandardRecordDatabaseDecoder(
                 )
             else:
                 decoder = self._realm_codec_registry.get_decoder(
-                    field.type, DatabaseRealm, self._the_type
+                    field.type, self._realm, self._the_type
                 )
                 ctor_args[field.name] = decoder.decode(field_value)
 
@@ -1026,7 +1082,7 @@ class _StandardUseCaseArgsCliDecoder(
                 ctor_args[field.name] = final_value
             else:
                 decoder = self._realm_codec_registry.get_decoder(
-                    field.type, DatabaseRealm, self._the_type
+                    field.type, CliRealm, self._the_type
                 )
                 ctor_args[field.name] = decoder.decode(field_value)
 
@@ -1056,16 +1112,20 @@ class _StandardUseCaseArgsWebDecoder(
         ctor_args: dict[str, DomainThing | UpdateAction[DomainThing]] = {}
 
         for field in all_fields:
+            field_type, is_optional = normalize_optional(field.type)
             if field.name not in value:
-                raise RealmDecodingError(
-                    f"Expected value of type {self._the_type.__name__} to have field {field.name}"
+                if is_optional:
+                    ctor_args[field.name] = None
+                else:
+                    raise RealmDecodingError(
+                        f"Expected value of type {self._the_type.__name__} to have field {field.name}"
+                    )
+            else:
+                field_value = value[field.name]
+                decoder = self._realm_codec_registry.get_decoder(
+                    field_type, WebRealm, self._the_type
                 )
-
-            field_value = value[field.name]
-            decoder = self._realm_codec_registry.get_decoder(
-                field.type, DatabaseRealm, self._the_type
-            )
-            ctor_args[field.name] = decoder.decode(field_value)
+                ctor_args[field.name] = decoder.decode(field_value)
 
         return self._the_type(**ctor_args)
 
@@ -1090,7 +1150,7 @@ class _StandardUseCaseResultWebEncoder(
         all_fields = dataclasses.fields(self._the_type)
         for field in all_fields:
             encoder = self._realm_codec_registry.get_encoder(
-                field.type, DatabaseRealm, self._the_type
+                field.type, WebRealm, self._the_type
             )
             field_value = getattr(value, field.name)
             result[field.name] = encoder.encode(field_value)
@@ -1464,7 +1524,7 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                         composite_value_type,
                         DatabaseRealm,
                         _StandardCompositeValueDatabaseEncoder(
-                            registry, composite_value_type
+                            registry, composite_value_type, DatabaseRealm
                         ),
                     )
 
@@ -1473,7 +1533,7 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                         composite_value_type,
                         DatabaseRealm,
                         _StandardCompositeValueDatabaseDecoder(
-                            registry, composite_value_type
+                            registry, composite_value_type, DatabaseRealm
                         ),
                     )
 
@@ -1503,14 +1563,14 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                     registry._add_encoder(
                         entity,
                         DatabaseRealm,
-                        _StandardEntityDatabaseEncoder(registry, entity),
+                        _StandardEntityDatabaseEncoder(registry, entity, DatabaseRealm),
                     )
 
                 if not registry._has_decoder(entity, DatabaseRealm):
                     registry._add_decoder(
                         entity,
                         DatabaseRealm,
-                        _StandardEntityDatabaseDecoder(registry, entity),
+                        _StandardEntityDatabaseDecoder(registry, entity, DatabaseRealm),
                     )
 
             for record in extract_records(m):
@@ -1521,14 +1581,14 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                     registry._add_encoder(
                         record,
                         DatabaseRealm,
-                        _StandardRecordDatabaseEncoder(registry, record),
+                        _StandardRecordDatabaseEncoder(registry, record, DatabaseRealm),
                     )
 
                 if not registry._has_decoder(record, DatabaseRealm):
                     registry._add_decoder(
                         record,
                         DatabaseRealm,
-                        _StandardRecordDatabaseDecoder(registry, record),
+                        _StandardRecordDatabaseDecoder(registry, record, DatabaseRealm),
                     )
 
             for use_case_args in extract_use_case_args(m):
@@ -1559,7 +1619,7 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
             for use_case_result in extract_use_case_result(m):
                 if not allowed_in_realm(use_case_args, WebRealm):
                     continue
-
+                
                 if not registry._has_encoder(use_case_result, WebRealm):
                     registry._add_encoder(
                         use_case_result,
@@ -1656,7 +1716,7 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                 return cast(
                     RealmEncoder[_DomainThingT, _RealmT],
                     _UnionDatabaseEncoder(
-                        self, cast(type[DomainThing] | None, root_type), field_args
+                        self, cast(type[DomainThing] | None, root_type), field_args, realm
                     ),
                 )
             elif thing_type_origin is UpdateAction and realm is EventStoreRealm:
@@ -1666,7 +1726,7 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                 return cast(
                     RealmEncoder[_DomainThingT, _RealmT],
                     _UpdateActionEventStoreEncoder(
-                        self, cast(type[DomainThing], root_type), update_action_type
+                        self, cast(type[DomainThing], root_type), update_action_type, realm
                     ),
                 )
             elif thing_type_origin is list:
@@ -1676,7 +1736,7 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                 return cast(
                     RealmEncoder[_DomainThingT, _RealmT],
                     _ListDatabaseEncoder(
-                        self, cast(type[DomainThing] | None, root_type), list_item_type
+                        self, cast(type[DomainThing] | None, root_type), list_item_type, realm
                     ),
                 )
             elif thing_type_origin is set:
@@ -1686,7 +1746,7 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                 return cast(
                     RealmEncoder[_DomainThingT, _RealmT],
                     _SetDatabaseEncoder(
-                        self, cast(type[DomainThing] | None, root_type), set_item_type
+                        self, cast(type[DomainThing] | None, root_type), set_item_type, realm
                     ),
                 )
             elif thing_type_origin is dict:
@@ -1702,7 +1762,7 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                         self,
                         cast(type[DomainThing] | None, root_type),
                         dict_key_type,
-                        dict_value_type,
+                        dict_value_type, realm
                     ),
                 )
             else:
@@ -1770,7 +1830,7 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                 return cast(
                     RealmDecoder[_DomainThingT, _RealmT],
                     _UnionDatabaseDecoder(
-                        self, cast(type[DomainThing] | None, root_type), field_args
+                        self, cast(type[DomainThing] | None, root_type), field_args, realm
                     ),
                 )
             elif thing_type_origin is UpdateAction and realm is WebRealm:
@@ -1780,7 +1840,7 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                 return cast(
                     RealmDecoder[_DomainThingT, _RealmT],
                     _UpdateActionWebDecoder(
-                        self, cast(type[DomainThing], root_type), update_action_type
+                        self, cast(type[DomainThing], root_type), update_action_type, realm
                     ),
                 )
             elif thing_type_origin is list:
@@ -1790,7 +1850,7 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                 return cast(
                     RealmDecoder[_DomainThingT, _RealmT],
                     _ListDatabaseDecoder(
-                        self, cast(type[DomainThing] | None, root_type), list_item_type
+                        self, cast(type[DomainThing] | None, root_type), list_item_type, realm
                     ),
                 )
             elif thing_type_origin is set:
@@ -1800,7 +1860,7 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                 return cast(
                     RealmDecoder[_DomainThingT, _RealmT],
                     _SetDatabaseDecoder(
-                        self, cast(type[DomainThing] | None, root_type), set_item_type
+                        self, cast(type[DomainThing] | None, root_type), set_item_type, realm
                     ),
                 )
             elif thing_type_origin is dict:
@@ -1816,7 +1876,7 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                         self,
                         cast(type[DomainThing] | None, root_type),
                         dict_key_type,
-                        dict_value_type,
+                        dict_value_type, realm
                     ),
                 )
             else:

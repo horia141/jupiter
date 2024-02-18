@@ -3,7 +3,7 @@ import importlib
 import pkgutil
 from datetime import date, datetime
 from types import ModuleType, UnionType
-from typing import Any, TypeGuard, Union, get_args, get_origin
+from typing import Any, TypeGuard, Union, get_args, get_origin, ForwardRef
 
 from jupiter.core.framework.entity import Entity
 from jupiter.core.framework.primitive import Primitive
