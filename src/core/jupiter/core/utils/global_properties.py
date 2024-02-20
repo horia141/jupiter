@@ -10,7 +10,6 @@ from jupiter.core.domain.env import Env
 from jupiter.core.domain.hosting import Hosting
 from jupiter.core.framework.secure import secure_fn
 
-_TIMEZONE_DECODER = TimezoneDatabaseDecoder()
 
 
 @dataclass
@@ -22,7 +21,6 @@ class GlobalProperties:
     description: str
     port: int
     version: str
-    timezone: Timezone
     docs_init_workspace_url: str
     session_info_path: Path
     sqlite_db_url: str
@@ -65,8 +63,6 @@ def build_global_properties() -> GlobalProperties:
     port = int(cast(str, os.getenv("PORT")))
     version = cast(str, os.getenv("VERSION"))
     docs_init_workspace_url = cast(str, os.getenv("DOCS_INIT_WORKSPACE_URL"))
-    timezone = "Europe/Bucharest"
-    # timezone = datetime.datetime.now().astimezone().tzinfo
     session_info_path = Path(cast(str, os.getenv("SESSION_INFO_PATH")))
     sqlite_db_url = cast(str, os.getenv("SQLITE_DB_URL"))
     alembic_ini_path = Path(cast(str, os.getenv("ALEMBIC_INI_PATH")))
@@ -84,7 +80,6 @@ def build_global_properties() -> GlobalProperties:
         description=description,
         port=port,
         version=version,
-        timezone=_TIMEZONE_DECODER.decode(timezone),
         docs_init_workspace_url=docs_init_workspace_url,
         session_info_path=session_info_path,
         sqlite_db_url=sqlite_db_url,
