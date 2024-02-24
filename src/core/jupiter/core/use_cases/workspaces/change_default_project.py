@@ -1,6 +1,7 @@
 """UseCase for changing the default workspace of a project."""
 
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
+from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     ProgressReporter,
@@ -45,4 +46,4 @@ class WorkspaceChangeDefaultProjectUseCase(
             default_project_ref_id=project.ref_id,
         )
 
-        await uow.workspace_repository.save(workspace)
+        await uow.repository_for(Workspace).save(workspace)

@@ -20,6 +20,7 @@ from jupiter.core.domain.hosting import Hosting
 from jupiter.core.domain.projects.project_name import ProjectName
 from jupiter.core.domain.user.infra.user_repository import UserNotFoundError
 from jupiter.core.domain.user.user import User
+from jupiter.core.domain.user_workspace_link.infra.user_workspace_link_repository import UserWorkspaceLinkRepository
 from jupiter.core.domain.workspaces.infra.workspace_repository import (
     WorkspaceNotFoundError,
 )
@@ -89,11 +90,11 @@ class LoadTopLevelInfoUseCase(
                         context.auth_token.user_ref_id
                     )
                     user_workspace_link = (
-                        await uow.user_workspace_link_repository.load_by_user(
+                        await uow.get(UserWorkspaceLinkRepository).load_by_user(
                             context.auth_token.user_ref_id
                         )
                     )
-                    workspace = await uow.workspace_repository.load_by_id(
+                    workspace = await uow.repository_for(Workspace).load_by_id(
                         user_workspace_link.workspace_ref_id
                     )
                     if user.is_feature_available(UserFeature.GAMIFICATION):

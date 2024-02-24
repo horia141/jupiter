@@ -40,6 +40,7 @@ from jupiter.core.domain.push_integrations.slack.slack_task_collection import (
 from jupiter.core.domain.smart_lists.smart_list_collection import SmartListCollection
 from jupiter.core.domain.user.user import User
 from jupiter.core.domain.user.user_name import UserName
+from jupiter.core.domain.user_workspace_link.infra.user_workspace_link_repository import UserWorkspaceLinkRepository
 from jupiter.core.domain.user_workspace_link.user_workspace_link import (
     UserWorkspaceLink,
 )
@@ -145,7 +146,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 ctx=context.domain_context,
                 user_ref_id=new_user.ref_id,
             )
-            new_score_log = await uow.score_log_repository.create(new_score_log)
+            new_score_log = await uow.repository_for(ScoreLog).create(new_score_log)
 
             new_workspace = Workspace.new_workspace(
                 ctx=context.domain_context,
@@ -153,7 +154,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 feature_flag_controls=workspace_feature_flags_controls,
                 feature_flags=workspace_feature_flags,
             )
-            new_workspace = await uow.workspace_repository.create(new_workspace)
+            new_workspace = await uow.repository_for(Workspace).create(new_workspace)
 
             new_vacation_collection = VacationCollection.new_vacation_collection(
                 ctx=context.domain_context,
@@ -184,7 +185,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 ctx=context.domain_context,
                 default_project_ref_id=new_default_project.ref_id,
             )
-            await uow.workspace_repository.save(new_workspace)
+            await uow.repository_for(Workspace).save(new_workspace)
 
             new_inbox_task_collection = InboxTaskCollection.new_inbox_task_collection(
                 ctx=context.domain_context,
@@ -327,7 +328,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 user_ref_id=new_user.ref_id,
                 workspace_ref_id=new_workspace.ref_id,
             )
-            new_user_workspace_link = await uow.user_workspace_link_repository.create(
+            new_user_workspace_link = await uow.repository_for(UserWorkspaceLink).create(
                 new_user_workspace_link
             )
 

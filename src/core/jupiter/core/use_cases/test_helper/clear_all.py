@@ -9,6 +9,10 @@ from jupiter.core.domain.core.notes.service.note_remove_service import NoteRemov
 from jupiter.core.domain.core.timezone import Timezone
 from jupiter.core.domain.docs.service.doc_remove_service import DocRemoveService
 from jupiter.core.domain.features import UserFeature, WorkspaceFeature
+from jupiter.core.domain.gamification.infra.score_period_best_repository import ScorePeriodBestRepository
+from jupiter.core.domain.gamification.infra.score_stats_repository import ScoreStatsRepository
+from jupiter.core.domain.gamification.score_log import ScoreLog
+from jupiter.core.domain.gamification.score_log_entry import ScoreLogEntry
 from jupiter.core.domain.habits.service.remove_service import HabitRemoveService
 from jupiter.core.domain.inbox_tasks.service.remove_service import (
     InboxTaskRemoveService,
@@ -32,6 +36,7 @@ from jupiter.core.domain.storage_engine import (
 from jupiter.core.domain.user.user import User
 from jupiter.core.domain.user.user_name import UserName
 from jupiter.core.domain.vacations.vacation import Vacation
+from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.update_action import UpdateAction
@@ -76,7 +81,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
         """Execute the command's action."""
         user = context.user
 
-        score_log = await uow.score_log_repository.load_by_parent(user.ref_id)
+        score_log = await uow.repository_for(ScoreLog).load_by_parent(user.ref_id)
 
         workspace = context.workspace
         (
@@ -171,27 +176,27 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
             await uow.repository_for(Auth).save(auth)
 
         async with progress_reporter.section("Resetting score log"):
-            all_score_log_entries = await uow.score_log_entry_repository.find_all(
+            all_score_log_entries = await uow.repository_for(ScoreLogEntry).find_all(
                 parent_ref_id=score_log.ref_id,
                 allow_archived=True,
             )
 
             for score_log_entry in all_score_log_entries:
-                await uow.score_log_entry_repository.remove(score_log_entry.ref_id)
+                await uow.repository_for(ScoreLogEntry).remove(score_log_entry.ref_id)
 
-            all_score_stats = await uow.score_stats_repository.find_all(
+            all_score_stats = await uow.get_r(ScoreStatsRepository).find_all(
                 score_log.ref_id
             )
 
             for score_stats in all_score_stats:
-                await uow.score_stats_repository.remove(score_stats.key)
+                await uow.get_r(ScoreStatsRepository).remove(score_stats.key)
 
-            all_period_bests = await uow.score_period_best_repository.find_all(
+            all_period_bests = await uow.get_r(ScorePeriodBestRepository).find_all(
                 score_log.ref_id
             )
 
             for period_best in all_period_bests:
-                await uow.score_period_best_repository.remove(period_best.key)
+                await uow.get_r(ScorePeriodBestRepository).remove(period_best.key)
 
         async with progress_reporter.section("Resetting workspace"):
             default_project = await uow.project_repository.load_by_id(
@@ -213,7 +218,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
                 feature_flags=workspace_feature_flags,
             )
 
-            await uow.workspace_repository.save(workspace)
+            await uow.repository_for(Workspace).save(workspace)
 
         async with progress_reporter.section("Clearing habits"):
             all_habits = await uow.habit_repository.find_all(

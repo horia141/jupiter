@@ -105,9 +105,11 @@ from jupiter.core.domain.workspaces.infra.workspace_repository import (
     WorkspaceRepository,
 )
 from jupiter.core.framework.entity import CrownEntity, Entity, RootEntity, StubEntity, TrunkEntity
-from jupiter.core.framework.repository import CrownEntityRepository, EntityRepository, RootEntityRepository, StubEntityRepository, TrunkEntityRepository
+from jupiter.core.framework.record import Record
+from jupiter.core.framework.repository import CrownEntityRepository, EntityRepository, RecordRepository, RootEntityRepository, StubEntityRepository, TrunkEntityRepository
 
 _EntityRepositoryT = TypeVar("_EntityRepositoryT", bound=EntityRepository[Any], covariant=True)  # type: ignore
+_RecordRepositoryT = TypeVar("_RecordRepositoryT", bound=RecordRepository[Any, Any, Any], covariant=True) # type: ignore
 _RootEntityT = TypeVar("_RootEntityT", bound=RootEntity)
 _StubEntityT = TypeVar("_StubEntityT", bound=StubEntity)
 _TrunkEntityT = TypeVar("_TrunkEntityT", bound=TrunkEntity)
@@ -116,36 +118,6 @@ _CrownEntityT = TypeVar("_CrownEntityT", bound=CrownEntity)
 
 class DomainUnitOfWork(abc.ABC):
     """A transactional unit of work from an engine."""
-
-    @property
-    @abc.abstractmethod
-    def score_log_repository(self) -> ScoreLogRepository:
-        """The score log repository."""
-
-    @property
-    @abc.abstractmethod
-    def score_log_entry_repository(self) -> ScoreLogEntryRepository:
-        """The score log entry repository."""
-
-    @property
-    @abc.abstractmethod
-    def score_stats_repository(self) -> ScoreStatsRepository:
-        """The score stats repository."""
-
-    @property
-    @abc.abstractmethod
-    def score_period_best_repository(self) -> ScorePeriodBestRepository:
-        """The score period best repository."""
-
-    @property
-    @abc.abstractmethod
-    def workspace_repository(self) -> WorkspaceRepository:
-        """The workspace repository."""
-
-    @property
-    @abc.abstractmethod
-    def user_workspace_link_repository(self) -> UserWorkspaceLinkRepository:
-        """The user workspace link repository."""
 
     @property
     @abc.abstractmethod
@@ -333,9 +305,15 @@ class DomainUnitOfWork(abc.ABC):
         """The GC log entry repository."""
 
     @abc.abstractmethod
-    def get(
+    def get(  # type: ignore
         self, repository_type: Type[_EntityRepositoryT]
     ) -> _EntityRepositoryT:
+        """Retrieve a repository."""
+
+    @abc.abstractmethod
+    def get_r(  # type: ignore
+        self, repository_type: Type[_RecordRepositoryT]
+    ) -> _RecordRepositoryT:
         """Retrieve a repository."""
 
     @overload

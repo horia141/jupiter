@@ -1,6 +1,7 @@
 """UseCase for updating a workspace."""
 
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
+from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
@@ -42,4 +43,4 @@ class WorkspaceUpdateUseCase(
             name=args.name,
         )
 
-        await uow.workspace_repository.save(workspace)
+        await uow.repository_for(Workspace).save(workspace)

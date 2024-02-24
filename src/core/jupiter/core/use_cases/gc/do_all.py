@@ -1,6 +1,7 @@
 """The command for doing garbage collection for all workspaces."""
 
 from jupiter.core.domain.gc.service.gc_service import GCService
+from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
@@ -25,7 +26,7 @@ class GCDoAllUseCase(AppBackgroundMutationUseCase[GCDoAllArgs, None]):
     ) -> None:
         """Execute the command's action."""
         async with self._domain_storage_engine.get_unit_of_work() as uow:
-            workspaces = await uow.workspace_repository.find_all(allow_archived=False)
+            workspaces = await uow.repository_for(Workspace).find_all(allow_archived=False)
 
         ctx = DomainContext(EventSource.GC_CRON, self._time_provider.get_current_time())
 

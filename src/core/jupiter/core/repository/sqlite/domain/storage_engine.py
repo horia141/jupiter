@@ -1,7 +1,7 @@
 """The real implementation of an engine."""
 from contextlib import asynccontextmanager
 from types import TracebackType
-from typing import AsyncIterator, Final, Mapping, Optional, Type, TypeVar, cast, overload
+from typing import Any, AsyncIterator, Final, Mapping, Optional, Type, TypeVar, cast, overload
 from jupiter.core.domain.auth.auth import Auth
 
 from jupiter.core.domain.auth.infra.auth_repository import AuthRepository
@@ -44,6 +44,8 @@ from jupiter.core.domain.gamification.infra.score_stats_repository import (
 )
 from jupiter.core.domain.gamification.score_log import ScoreLog
 from jupiter.core.domain.gamification.score_log_entry import ScoreLogEntry
+from jupiter.core.domain.gamification.score_period_best import ScorePeriodBest
+from jupiter.core.domain.gamification.score_stats import ScoreStats
 from jupiter.core.domain.gc.gc_log import GCLog
 from jupiter.core.domain.gc.gc_log_entry import GCLogEntry
 from jupiter.core.domain.gc.infra.gc_log_entry_repository import GCLogEntryRepository
@@ -155,7 +157,8 @@ from jupiter.core.domain.workspaces.infra.workspace_repository import (
 from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.entity import CrownEntity, Entity, RootEntity, StubEntity, TrunkEntity
 from jupiter.core.framework.realm import RealmCodecRegistry
-from jupiter.core.framework.repository import CrownEntityRepository, EntityRepository, RootEntityRepository, StubEntityRepository, TrunkEntityRepository
+from jupiter.core.framework.record import Record
+from jupiter.core.framework.repository import CrownEntityRepository, EntityRepository, RecordRepository, RootEntityRepository, StubEntityRepository, TrunkEntityRepository
 from jupiter.core.repository.sqlite.connection import SqliteConnection
 from jupiter.core.repository.sqlite.domain.auths import SqliteAuthRepository
 from jupiter.core.repository.sqlite.domain.big_plans import (
@@ -248,6 +251,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 
 
 _EntityRepositoryT = TypeVar("_EntityRepositoryT", bound=EntityRepository[Entity])
+_RecordRepositoryT = TypeVar("_RecordRepositoryT", bound=RecordRepository[Record, Any, Any]) # type: ignore
 _RootEntityT = TypeVar("_RootEntityT", bound=RootEntity)
 _StubEntityT = TypeVar("_StubEntityT", bound=StubEntity)
 _TrunkEntityT = TypeVar("_TrunkEntityT", bound=TrunkEntity)
@@ -257,7 +261,8 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
     """A Sqlite specific unit of work."""
 
     _entity_repositories: Final[dict[type[Entity], EntityRepository[Entity]]]
-    _repositories_by_type: Final[dict[type[EntityRepository[Entity]], EntityRepository[Entity]]]
+    _entity_repositories_by_type: Final[dict[type[EntityRepository[Entity]], EntityRepository[Entity]]]
+    _record_repositories_by_type: Final[dict[type[RecordRepository[Record, Any, Any]], RecordRepository[Record, Any, Any]]] # type: ignore
 
     _auth_repository: Final[SqliteAuthRepository]
     _score_log_repository: Final[SqliteScoreLogRepository]
@@ -397,7 +402,7 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
             GCLog: gc_log_repository,
             GCLogEntry: gc_log_entry_repository,
         }
-        self._repositories_by_type = {
+        self._entity_repositories_by_type = {
             UserRepository: user_repository,
             AuthRepository: auth_repository,
             ScoreLogRepository: score_log_repository,
@@ -441,6 +446,10 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
             GenLogEntryRepository: gen_log_entry_repository,
             GCLogRepository: gc_log_repository,
             GCLogEntryRepository: gc_log_entry_repository,
+        }
+        self._record_repositories_by_type = {
+            ScoreStatsRepository: score_stats_repository,
+            ScorePeriodBestRepository: score_period_best_repository,
         }
         self._auth_repository = auth_repository
         self._score_log_repository = score_log_repository
@@ -498,26 +507,6 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
         _exc_tb: Optional[TracebackType],
     ) -> None:
         """Exit context."""
-
-    @property
-    def score_log_repository(self) -> ScoreLogRepository:
-        """The score log repository."""
-        return self._score_log_repository
-
-    @property
-    def score_log_entry_repository(self) -> ScoreLogEntryRepository:
-        """The score log entry repository."""
-        return self._score_log_entry_repository
-
-    @property
-    def score_stats_repository(self) -> ScoreStatsRepository:
-        """The score stats repository."""
-        return self._score_stats_repository
-
-    @property
-    def score_period_best_repository(self) -> ScorePeriodBestRepository:
-        """The score period best repository."""
-        return self._score_period_best_repository
 
     @property
     def workspace_repository(self) -> WorkspaceRepository:
@@ -714,14 +703,23 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
         """The gc log entry repository."""
         return self._gc_log_entry_repository
     
-    def get(
+    def get( # type: ignore
         self, repository_type: Type[_EntityRepositoryT]
     ) -> _EntityRepositoryT:
         """Retrieve a repository."""
-        if repository_type not in self._repositories_by_type:
+        if repository_type not in self._entity_repositories_by_type:
             raise ValueError(f"No repository for type: {repository_type}")
-        return cast(_EntityRepositoryT, self._repositories_by_type[repository_type])
-    
+        return cast(_EntityRepositoryT, self._entity_repositories_by_type[repository_type])
+        
+
+    def get_r( # type: ignore
+        self, repository_type: Type[_RecordRepositoryT]
+    ) -> _RecordRepositoryT:
+        """Retrieve a repository."""
+        if repository_type not in self._record_repositories_by_type:
+            raise ValueError(f"No repository for type: {repository_type}")
+        return cast(_RecordRepositoryT, self._record_repositories_by_type[repository_type]) # type: ignore
+
     @overload
     def repository_for(
         self, entity_type: Type[_RootEntityT]
@@ -748,7 +746,7 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
 
     def repository_for(
         self, entity_type: Type[_RootEntityT] | Type[_StubEntityT] | Type[_TrunkEntityT] | Type[_CrownEntityT]
-    ) -> RootEntityRepository[_RootEntityT] | StubEntityRepository[_StubEntityT] | TrunkEntityRepository[_TrunkEntityT] | CrownEntityRepository[_CrownEntityT]:
+    ) -> RootEntityRepository[_RootEntityT] | StubEntityRepository[_StubEntityT] | TrunkEntityRepository[_TrunkEntityT] | CrownEntityRepository[_CrownEntityT]: 
         """Return a repository for a particular entity."""
         if entity_type not in self._entity_repositories:
             raise ValueError(f"No repository for entity type: {entity_type}")

@@ -2,6 +2,9 @@
 
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
+from jupiter.core.domain.gamification.infra.score_stats_repository import ScoreStatsRepository
+from jupiter.core.domain.gamification.score_log import ScoreLog
+from jupiter.core.domain.gamification.score_stats import ScoreStats
 from jupiter.core.domain.gamification.user_score_history import UserScoreHistory
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.user.user import User
@@ -15,7 +18,7 @@ class ScoreHistoryService:
         self, uow: DomainUnitOfWork, user: User, right_now: Timestamp
     ) -> UserScoreHistory:
         """Retrieve the history of scores for a user."""
-        score_log = await uow.score_log_repository.load_by_parent(user.ref_id)
+        score_log = await uow.repository_for(ScoreLog).load_by_parent(user.ref_id)
 
         today = ADate.from_date(right_now.as_date())
         daily_lower_limit = today.subtract_days(90)
@@ -23,16 +26,16 @@ class ScoreHistoryService:
         monthly_lower_limit = today.subtract_days(365 * 2)
         quarterly_lower_limit = today.subtract_days(365 * 5)
 
-        daily_score_stats = await uow.score_stats_repository.find_all_in_timerange(
+        daily_score_stats = await uow.get_r(ScoreStatsRepository).find_all_in_timerange(
             score_log.ref_id, RecurringTaskPeriod.DAILY, daily_lower_limit, today
         )
-        weekly_score_stats = await uow.score_stats_repository.find_all_in_timerange(
+        weekly_score_stats = await uow.get_r(ScoreStatsRepository).find_all_in_timerange(
             score_log.ref_id, RecurringTaskPeriod.WEEKLY, weekly_lower_limit, today
         )
-        monthly_score_stats = await uow.score_stats_repository.find_all_in_timerange(
+        monthly_score_stats = await uow.get_r(ScoreStatsRepository).find_all_in_timerange(
             score_log.ref_id, RecurringTaskPeriod.MONTHLY, monthly_lower_limit, today
         )
-        quarterly_score_stats = await uow.score_stats_repository.find_all_in_timerange(
+        quarterly_score_stats = await uow.get_r(ScoreStatsRepository).find_all_in_timerange(
             score_log.ref_id,
             RecurringTaskPeriod.QUARTERLY,
             quarterly_lower_limit,

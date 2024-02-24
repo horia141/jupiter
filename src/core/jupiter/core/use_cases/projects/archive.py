@@ -4,6 +4,7 @@ from typing import Optional
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.projects.service.archive_service import ProjectArchiveService
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
+from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     ProgressReporter,
@@ -45,7 +46,7 @@ class ProjectArchiveUseCase(
                     context.domain_context,
                     args.backup_project_ref_id,
                 )
-                await uow.workspace_repository.save(workspace)
+                await uow.repository_for(Workspace).save(workspace)
 
             metric_collection = await uow.metric_collection_repository.load_by_parent(
                 workspace.ref_id

@@ -4,6 +4,7 @@ from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import (
     DomainUnitOfWork,
 )
+from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.use_case import (
     ProgressReporter,
 )
@@ -48,4 +49,4 @@ class WorkspaceChangeFeatureFlagsUseCase(
             feature_flag_controls=feature_flags_controls,
             feature_flags=workspace_feature_flags,
         )
-        await uow.workspace_repository.save(workspace)
+        await uow.repository_for(Workspace).save(workspace)
