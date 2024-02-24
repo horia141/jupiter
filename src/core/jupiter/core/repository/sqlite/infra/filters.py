@@ -29,10 +29,8 @@ def compile_query_relative_to(
         elif isinstance(value, list):
             if len(value) == 0:
                 raise Exception("Invalid type of filter")
-            if not isinstance(value[0], EntityId):
-                raise Exception("Invalid type of filter")
             query_stmt = query_stmt.where(
-                getattr(table.c, key).in_([ref_id.as_int() for ref_id in value]),
+                getattr(table.c, key).in_([realm_codec_registry.db_encode(v, DatabaseRealm) for v in value]),
             )
         else:
             raise Exception("Invalid type of filter")

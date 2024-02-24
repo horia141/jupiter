@@ -93,11 +93,11 @@ class PersonFindUseCase(
 
         if args.include_catch_up_inbox_tasks:
             catch_up_inbox_tasks = (
-                await uow.repository_for(InboxTask).find_all_with_filters(
+                await uow.repository_for(InboxTask).find_all_generic(
                     parent_ref_id=inbox_task_collection.ref_id,
                     allow_archived=True,
-                    filter_sources=[InboxTaskSource.PERSON_CATCH_UP],
-                    filter_person_ref_ids=(p.ref_id for p in persons),
+                    source=[InboxTaskSource.PERSON_CATCH_UP],
+                    person_ref_id=[p.ref_id for p in persons],
                 )
             )
         else:
@@ -105,11 +105,11 @@ class PersonFindUseCase(
 
         if args.include_birthday_inbox_tasks:
             birthday_inbox_tasks = (
-                await uow.repository_for(InboxTask).find_all_with_filters(
+                await uow.repository_for(InboxTask).find_all_generic(
                     parent_ref_id=inbox_task_collection.ref_id,
                     allow_archived=True,
-                    filter_sources=[InboxTaskSource.PERSON_BIRTHDAY],
-                    filter_person_ref_ids=(p.ref_id for p in persons),
+                    source=[InboxTaskSource.PERSON_BIRTHDAY],
+                    person_ref_id=[p.ref_id for p in persons],
                 )
             )
         else:
@@ -120,11 +120,11 @@ class PersonFindUseCase(
             notes_collection = await uow.repository_for(NoteCollection).load_by_parent(
                 workspace.ref_id
             )
-            all_notes = await uow.repository_for(Note).find_all_with_filters(
+            all_notes = await uow.repository_for(Note).find_all_generic(
                 parent_ref_id=notes_collection.ref_id,
                 domain=NoteDomain.PERSON,
                 allow_archived=True,
-                filter_source_entity_ref_ids=[p.ref_id for p in persons],
+                source_entity_ref_id=[p.ref_id for p in persons],
             )
             for n in all_notes:
                 all_notes_by_person_ref_id[cast(EntityId, n.source_entity_ref_id)] = n

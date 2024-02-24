@@ -56,13 +56,14 @@ class PersonArchiveUseCase(
                 workspace.ref_id,
             )
         )
-        all_inbox_tasks = await uow.repository_for(InboxTask).find_all_with_filters(
+        all_inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
-            filter_sources=[
+            allow_archived=False,
+            source=[
                 InboxTaskSource.PERSON_BIRTHDAY,
                 InboxTaskSource.PERSON_BIRTHDAY,
             ],
-            filter_person_ref_ids=[person.ref_id],
+            person_ref_id=[person.ref_id],
         )
 
         inbox_task_archive_service = InboxTaskArchiveService()

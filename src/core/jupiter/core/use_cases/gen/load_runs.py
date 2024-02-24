@@ -2,6 +2,7 @@
 
 from jupiter.core.domain.gen.gen_log import GenLog
 from jupiter.core.domain.gen.gen_log_entry import GenLogEntry
+from jupiter.core.domain.gen.infra.gen_log_entry_repository import GenLogEntryRepository
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,
@@ -43,6 +44,6 @@ class GenLoadRunsUseCase(
             gen_log = await uow.repository_for(GenLog).load_by_parent(
                 context.workspace.ref_id
             )
-            entries = await uow.repository_for(GenLogEntry).find_last(gen_log.ref_id, 30)
+            entries = await uow.get_x(GenLogEntryRepository).find_last(gen_log.ref_id, 30)
 
         return GenLoadRunsResult(entries=entries)

@@ -34,10 +34,10 @@ class ChoreArchiveService:
                 chore_collection.workspace.ref_id,
             )
         )
-        inbox_tasks_to_archive = await uow.repository_for(InboxTask).find_all_with_filters(
+        inbox_tasks_to_archive = await uow.repository_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=False,
-            filter_chore_ref_ids=[chore.ref_id],
+            chore_ref_id=[chore.ref_id],
         )
 
         inbox_task_archive_service = InboxTaskArchiveService()

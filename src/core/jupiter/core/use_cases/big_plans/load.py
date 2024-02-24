@@ -61,10 +61,10 @@ class BigPlanLoadUseCase(
                 workspace.ref_id,
             )
         )
-        inbox_tasks = await uow.repository_for(InboxTask).find_all_with_filters(
+        inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
-            filter_big_plan_ref_ids=[args.ref_id],
+            big_plan_ref_id=[args.ref_id],
         )
 
         return BigPlanLoadResult(

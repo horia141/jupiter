@@ -107,11 +107,11 @@ class EmailTaskUpdateUseCase(
             )
         )
         generated_inbox_task = (
-            await uow.repository_for(InboxTask).find_all_with_filters(
+            await uow.repository_for(InboxTask).find_all_generic(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=False,
-                filter_sources=[InboxTaskSource.EMAIL_TASK],
-                filter_email_task_ref_ids=[email_task.ref_id],
+                source=[InboxTaskSource.EMAIL_TASK],
+                email_task_ref_id=[email_task.ref_id],
             )
         )[0]
 

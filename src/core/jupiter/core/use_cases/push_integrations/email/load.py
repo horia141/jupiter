@@ -59,11 +59,11 @@ class EmailTaskLoadUseCase(
                 workspace.ref_id,
             )
         )
-        inbox_tasks = await uow.repository_for(InboxTask).find_all_with_filters(
+        inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
-            filter_sources=[InboxTaskSource.EMAIL_TASK],
-            filter_email_task_ref_ids=[email_task.ref_id],
+            source=[InboxTaskSource.EMAIL_TASK],
+            email_task_ref_id=[email_task.ref_id],
         )
         inbox_task = inbox_tasks[0] if len(inbox_tasks) > 0 else None
 

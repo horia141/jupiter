@@ -11,13 +11,3 @@ from jupiter.core.framework.repository import (
 
 class HabitRepository(LeafEntityRepository[Habit], abc.ABC):
     """A repository of habits."""
-
-    @abc.abstractmethod
-    async def find_all_with_filters(
-        self,
-        parent_ref_id: EntityId,
-        allow_archived: bool = False,
-        filter_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_project_ref_ids: Optional[Iterable[EntityId]] = None,
-    ) -> Iterable[Habit]:
-        """Find all habits."""

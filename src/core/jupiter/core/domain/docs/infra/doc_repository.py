@@ -11,13 +11,3 @@ from jupiter.core.framework.repository import (
 
 class DocRepository(LeafEntityRepository[Doc], abc.ABC):
     """A repository of docs."""
-
-    @abc.abstractmethod
-    async def find_all_with_filters(
-        self,
-        parent_ref_id: EntityId,
-        allow_archived: bool = False,
-        filter_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_parent_doc_ref_ids: Optional[Iterable[EntityId | None]] = None,
-    ) -> list[Doc]:
-        """Find all docs."""

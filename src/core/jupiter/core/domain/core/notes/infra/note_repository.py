@@ -30,14 +30,3 @@ class NoteRepository(LeafEntityRepository[Note], abc.ABC):
         allow_archived: bool = False,
     ) -> Note | None:
         """Load a particular note via its source entity."""
-
-    @abc.abstractmethod
-    async def find_all_with_filters(
-        self,
-        parent_ref_id: EntityId,
-        domain: Optional[NoteDomain] = None,
-        allow_archived: bool = False,
-        filter_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_source_entity_ref_ids: Optional[Iterable[EntityId]] = None,
-    ) -> list[Note]:
-        """Find all notes."""

@@ -3,6 +3,7 @@ from typing import Optional
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.chores.chore import Chore
+from jupiter.core.domain.core.notes.infra.note_repository import NoteRepository
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.features import WorkspaceFeature
@@ -113,7 +114,7 @@ class InboxTaskLoadUseCase(
         else:
             email_task = None
 
-        note = await uow.repository_for(Note).load_optional_for_source(
+        note = await uow.get_x(NoteRepository).load_optional_for_source(
             NoteDomain.INBOX_TASK,
             inbox_task.ref_id,
             allow_archived=args.allow_archived,

@@ -1,5 +1,6 @@
 """Load a particulr doc."""
 
+from jupiter.core.domain.core.notes.infra.note_repository import NoteRepository
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.docs.doc import Doc
@@ -53,12 +54,12 @@ class DocLoadUseCase(
         doc = await uow.repository_for(Doc).load_by_id(
             args.ref_id, allow_archived=args.allow_archived
         )
-        note = await uow.repository_for(Note).load_for_source(
+        note = await uow.get_x(NoteRepository).load_for_source(
             NoteDomain.DOC, doc.ref_id, allow_archived=args.allow_archived
         )
-        subdocs = await uow.repository_for(Doc).find_all_with_filters(
+        subdocs = await uow.repository_for(Doc).find_all_generic(
             parent_ref_id=doc.doc_collection.ref_id,
             allow_archived=args.allow_archived,
-            filter_parent_doc_ref_ids=[doc.ref_id],
+            parent_doc_ref_id=[doc.ref_id],
         )
         return DocLoadResult(doc, note, subdocs)

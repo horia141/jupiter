@@ -91,11 +91,11 @@ class EmailTaskFindUseCase(
         )
 
         if args.include_inbox_task:
-            inbox_tasks = await uow.repository_for(InboxTask).find_all_with_filters(
+            inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
-                filter_sources=[InboxTaskSource.EMAIL_TASK],
-                filter_email_task_ref_ids=(st.ref_id for st in email_tasks),
+                source=[InboxTaskSource.EMAIL_TASK],
+                email_task_ref_id=[st.ref_id for st in email_tasks],
             )
             inbox_tasks_by_email_task_ref_id = {
                 cast(EntityId, it.email_task_ref_id): it for it in inbox_tasks

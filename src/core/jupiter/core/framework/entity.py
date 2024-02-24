@@ -8,6 +8,7 @@ from typing import (
     Generic,
     List,
     Optional,
+    Sequence,
     Type,
     TypeVar,
     Union,
@@ -177,7 +178,7 @@ class ParentLink:
 EntityLinkFilterRaw = (
     None | AtomicValue[Primitive] | EnumValue | IsRefId | IsParentLink | IsOneOfRefId
 )
-EntityLinkFilterCompiled = None | AtomicValue[Primitive] | EnumValue | list[EntityId]
+EntityLinkFilterCompiled = Primitive | AtomicValue[Primitive] | EnumValue | Sequence[Primitive | AtomicValue[Primitive] | EnumValue]
 EntityLinkFiltersRaw = dict[str, EntityLinkFilterRaw]
 EntityLinkFiltersCompiled = dict[str, EntityLinkFilterCompiled]
 

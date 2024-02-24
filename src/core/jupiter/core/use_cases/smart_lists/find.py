@@ -85,11 +85,11 @@ class SmartListFindUseCase(
             for smart_list in smart_lists:
                 for (
                     smart_list_tag
-                ) in await uow.repository_for(SmartListTag).find_all_with_filters(
+                ) in await uow.repository_for(SmartListTag).find_all_generic(
                     parent_ref_id=smart_list.ref_id,
                     allow_archived=args.allow_archived,
-                    filter_tag_names=args.filter_tag_names,
-                    filter_ref_ids=args.filter_tag_ref_id,
+                    tag_name=args.filter_tag_names,
+                    ref_id=args.filter_tag_ref_id,
                 ):
                     if (
                         smart_list_tag.smart_list.ref_id
@@ -110,12 +110,12 @@ class SmartListFindUseCase(
             for smart_list in smart_lists:
                 for (
                     smart_list_item
-                ) in await uow.repository_for(SmartListItem).find_all_with_filters(
+                ) in await uow.repository_for(SmartListItem).find_all_generic(
                     parent_ref_id=smart_list.ref_id,
                     allow_archived=args.allow_archived,
-                    filter_ref_ids=args.filter_item_ref_id,
+                    ref_id=args.filter_item_ref_id,
                     filter_is_done=args.filter_is_done,
-                    filter_tag_ref_ids=args.filter_tag_ref_id,
+                    tag_ref_id=args.filter_tag_ref_id,
                 ):
                     if (
                         smart_list_item.smart_list.ref_id

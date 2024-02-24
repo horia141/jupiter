@@ -89,10 +89,10 @@ class ProjectArchiveService:
         inbox_task_collection = (
             await uow.repository_for(InboxTaskCollection).load_by_parent(workspace.ref_id)
         )
-        inbox_tasks = await uow.repository_for(InboxTask).find_all_with_filters(
+        inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=False,
-            filter_project_ref_ids=[project.ref_id],
+            project_ref_id=[project.ref_id],
         )
         inbox_task_archive_service = InboxTaskArchiveService()
         for it in inbox_tasks:
@@ -102,10 +102,10 @@ class ProjectArchiveService:
         chore_collection = await uow.repository_for(ChoreCollection).load_by_parent(
             workspace.ref_id
         )
-        chores = await uow.repository_for(Chore).find_all_with_filters(
+        chores = await uow.repository_for(Chore).find_all_generic(
             parent_ref_id=chore_collection.ref_id,
             allow_archived=False,
-            filter_project_ref_ids=[project.ref_id],
+            project_ref_id=[project.ref_id],
         )
         chore_archive_service = ChoreArchiveService()
         for chore in chores:
@@ -115,10 +115,10 @@ class ProjectArchiveService:
         habit_collection = await uow.repository_for(HabitCollection).load_by_parent(
             workspace.ref_id
         )
-        habits = await uow.repository_for(Habit).find_all_with_filters(
+        habits = await uow.repository_for(Habit).find_all_generic(
             parent_ref_id=habit_collection.ref_id,
             allow_archived=False,
-            filter_project_ref_ids=[project.ref_id],
+            project_ref_id=[project.ref_id],
         )
         habit_archive_service = HabitArchiveService()
         for habit in habits:
@@ -128,10 +128,10 @@ class ProjectArchiveService:
         big_plan_collection = await uow.repository_for(HabitCollection).load_by_parent(
             workspace.ref_id
         )
-        big_plans = await uow.repository_for(BigPlan).find_all_with_filters(
+        big_plans = await uow.repository_for(BigPlan).find_all_generic(
             parent_ref_id=big_plan_collection.ref_id,
             allow_archived=False,
-            filter_project_ref_ids=[project.ref_id],
+            project_ref_id=[project.ref_id],
         )
         big_plan_archive_service = BigPlanArchiveService()
         for big_plan in big_plans:

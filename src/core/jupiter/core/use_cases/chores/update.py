@@ -128,10 +128,10 @@ class ChoreUpdateUseCase(
                     workspace.ref_id,
                 )
             )
-            all_inbox_tasks = await uow.repository_for(InboxTask).find_all_with_filters(
+            all_inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
-                filter_chore_ref_ids=[chore.ref_id],
+                chore_ref_id=[chore.ref_id],
             )
 
             for inbox_task in all_inbox_tasks:

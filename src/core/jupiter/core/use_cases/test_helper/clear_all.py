@@ -288,10 +288,10 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
                 )
 
         async with progress_reporter.section("Clearing docs"):
-            root_docs = await uow.repository_for(Doc).find_all_with_filters(
+            root_docs = await uow.repository_for(Doc).find_all_generic(
                 parent_ref_id=doc_collection.ref_id,
                 allow_archived=True,
-                filter_parent_doc_ref_ids=[None],
+                parent_doc_ref_ids=[None],
             )
             doc_remove_service = DocRemoveService()
             for doc in root_docs:

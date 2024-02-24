@@ -1,5 +1,6 @@
 """Use case for loading a metric entry."""
 from typing import Optional
+from jupiter.core.domain.core.notes.infra.note_repository import NoteRepository
 
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
@@ -54,7 +55,7 @@ class MetricEntryLoadUseCase(
             args.ref_id, allow_archived=args.allow_archived
         )
 
-        note = await uow.repository_for(Note).load_optional_for_source(
+        note = await uow.get_x(NoteRepository).load_optional_for_source(
             NoteDomain.METRIC_ENTRY,
             metric_entry.ref_id,
             allow_archived=args.allow_archived,

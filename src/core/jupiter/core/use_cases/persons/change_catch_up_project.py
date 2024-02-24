@@ -75,19 +75,19 @@ class PersonChangeCatchUpProjectUseCase(
             )
         )
         all_catch_up_inbox_tasks = (
-            await uow.repository_for(InboxTask).find_all_with_filters(
+            await uow.repository_for(InboxTask).find_all_generic(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
-                filter_sources=[InboxTaskSource.PERSON_CATCH_UP],
-                filter_person_ref_ids=[p.ref_id for p in persons],
+                source=[InboxTaskSource.PERSON_CATCH_UP],
+                person_ref_id=[p.ref_id for p in persons],
             )
         )
         all_birthday_inbox_tasks = (
-            await uow.repository_for(InboxTask).find_all_with_filters(
+            await uow.repository_for(InboxTask).find_all_generic(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
-                filter_sources=[InboxTaskSource.PERSON_BIRTHDAY],
-                filter_person_ref_ids=[p.ref_id for p in persons],
+                source=[InboxTaskSource.PERSON_BIRTHDAY],
+                person_ref_id=[p.ref_id for p in persons],
             )
         )
 

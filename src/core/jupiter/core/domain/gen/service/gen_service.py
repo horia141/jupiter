@@ -156,9 +156,10 @@ class GenService:
             all_projects = await uow.repository_for(Project).find_all(
                 parent_ref_id=project_collection.ref_id,
             )
-            all_syncable_projects = await uow.repository_for(Project).find_all_with_filters(
+            all_syncable_projects = await uow.repository_for(Project).find_all_generic(
                 parent_ref_id=project_collection.ref_id,
-                filter_ref_ids=filter_project_ref_ids,
+                allow_archived=False,
+                ref_id=filter_project_ref_ids,
             )
             all_projects_by_ref_id = {p.ref_id: p for p in all_projects}
             filter_project_ref_ids = [p.ref_id for p in all_syncable_projects]
@@ -181,19 +182,20 @@ class GenService:
         ):
             async with progress_reporter.section("Generating habits"):
                 async with self._domain_storage_engine.get_unit_of_work() as uow:
-                    all_habits = await uow.repository_for(Habit).find_all_with_filters(
+                    all_habits = await uow.repository_for(Habit).find_all_generic(
                         parent_ref_id=habit_collection.ref_id,
-                        filter_ref_ids=filter_habit_ref_ids,
-                        filter_project_ref_ids=filter_project_ref_ids,
+                        allow_archived=False,
+                        ref_id=filter_habit_ref_ids,
+                        project_ref_id=filter_project_ref_ids,
                     )
 
                 async with self._domain_storage_engine.get_unit_of_work() as uow:
                     all_collection_inbox_tasks = (
-                        await uow.repository_for(InboxTask).find_all_with_filters(
+                        await uow.repository_for(InboxTask).find_all_generic(
                             parent_ref_id=inbox_task_collection.ref_id,
                             filter_sources=[InboxTaskSource.HABIT],
                             allow_archived=True,
-                            filter_habit_ref_ids=(rt.ref_id for rt in all_habits),
+                            habit_ref_id=[rt.ref_id for rt in all_habits],
                         )
                     )
 
@@ -235,19 +237,20 @@ class GenService:
         ):
             async with progress_reporter.section("Generating chores"):
                 async with self._domain_storage_engine.get_unit_of_work() as uow:
-                    all_chores = await uow.repository_for(Chore).find_all_with_filters(
+                    all_chores = await uow.repository_for(Chore).find_all_generic(
                         parent_ref_id=chore_collection.ref_id,
-                        filter_ref_ids=filter_chore_ref_ids,
-                        filter_project_ref_ids=filter_project_ref_ids,
+                        allow_archived=False,
+                        ref_id=filter_chore_ref_ids,
+                        project_ref_id=filter_project_ref_ids,
                     )
 
                 async with self._domain_storage_engine.get_unit_of_work() as uow:
                     all_collection_inbox_tasks = (
-                        await uow.repository_for(InboxTask).find_all_with_filters(
+                        await uow.repository_for(InboxTask).find_all_generic(
                             parent_ref_id=inbox_task_collection.ref_id,
                             filter_sources=[InboxTaskSource.CHORE],
                             allow_archived=True,
-                            filter_chore_ref_ids=(rt.ref_id for rt in all_chores),
+                            chore_ref_id=[rt.ref_id for rt in all_chores],
                         )
                     )
 
@@ -299,11 +302,11 @@ class GenService:
                     )
 
                     all_collection_inbox_tasks = (
-                        await uow.repository_for(InboxTask).find_all_with_filters(
+                        await uow.repository_for(InboxTask).find_all_generic(
                             parent_ref_id=inbox_task_collection.ref_id,
                             filter_sources=[InboxTaskSource.METRIC],
                             allow_archived=True,
-                            filter_metric_ref_ids=[m.ref_id for m in all_metrics],
+                            metric_ref_id=[m.ref_id for m in all_metrics],
                         )
                     )
 
@@ -361,19 +364,19 @@ class GenService:
                     )
 
                     all_catch_up_inbox_tasks = (
-                        await uow.repository_for(InboxTask).find_all_with_filters(
+                        await uow.repository_for(InboxTask).find_all_generic(
                             parent_ref_id=inbox_task_collection.ref_id,
                             allow_archived=True,
-                            filter_sources=[InboxTaskSource.PERSON_CATCH_UP],
-                            filter_person_ref_ids=[m.ref_id for m in all_persons],
+                            source=[InboxTaskSource.PERSON_CATCH_UP],
+                            perfon_ref_id=[m.ref_id for m in all_persons],
                         )
                     )
                     all_birthday_inbox_tasks = (
-                        await uow.repository_for(InboxTask).find_all_with_filters(
+                        await uow.repository_for(InboxTask).find_all_generic(
                             parent_ref_id=inbox_task_collection.ref_id,
                             allow_archived=True,
-                            filter_sources=[InboxTaskSource.PERSON_BIRTHDAY],
-                            filter_person_ref_ids=[m.ref_id for m in all_persons],
+                            source=[InboxTaskSource.PERSON_BIRTHDAY],
+                            person_ref_id=[m.ref_id for m in all_persons],
                         )
                     )
 
@@ -468,11 +471,11 @@ class GenService:
                         filter_ref_ids=filter_slack_task_ref_ids,
                     )
                     all_slack_inbox_tasks = (
-                        await uow.repository_for(InboxTask).find_all_with_filters(
+                        await uow.repository_for(InboxTask).find_all_generic(
                             parent_ref_id=inbox_task_collection.ref_id,
-                            filter_sources=[InboxTaskSource.SLACK_TASK],
                             allow_archived=True,
-                            filter_slack_task_ref_ids=[
+                            source=[InboxTaskSource.SLACK_TASK],
+                            slack_task_ref_id=[
                                 st.ref_id for st in all_slack_tasks
                             ],
                         )
@@ -523,11 +526,11 @@ class GenService:
                         filter_ref_ids=filter_email_task_ref_ids,
                     )
                     all_email_inbox_tasks = (
-                        await uow.repository_for(InboxTask).find_all_with_filters(
+                        await uow.repository_for(InboxTask).find_all_generic(
                             parent_ref_id=inbox_task_collection.ref_id,
-                            filter_sources=[InboxTaskSource.EMAIL_TASK],
                             allow_archived=True,
-                            filter_email_task_ref_ids=[
+                            source=[InboxTaskSource.EMAIL_TASK],
+                            email_task_ref_id=[
                                 st.ref_id for st in all_email_tasks
                             ],
                         )

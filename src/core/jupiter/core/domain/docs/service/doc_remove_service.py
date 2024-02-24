@@ -18,10 +18,10 @@ class DocRemoveService:
         doc: Doc,
     ) -> None:
         """Execute the command's action."""
-        subdocs = await uow.repository_for(Doc).find_all_with_filters(
+        subdocs = await uow.repository_for(Doc).find_all_generic(
             parent_ref_id=doc.doc_collection.ref_id,
             allow_archived=True,
-            filter_parent_doc_ref_ids=[doc.ref_id],
+            parent_doc_ref_id=[doc.ref_id],
         )
 
         for subdoc in subdocs:

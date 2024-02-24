@@ -92,11 +92,11 @@ class SlackTaskFindUseCase(
         )
 
         if args.include_inbox_tasks:
-            inbox_tasks = await uow.repository_for(InboxTask).find_all_with_filters(
+            inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
-                filter_sources=[InboxTaskSource.SLACK_TASK],
-                filter_slack_task_ref_ids=(st.ref_id for st in slack_tasks),
+                source=[InboxTaskSource.SLACK_TASK],
+                slack_task_ref_id=[st.ref_id for st in slack_tasks],
             )
             inbox_tasks_by_slack_task_ref_id = {
                 cast(EntityId, it.slack_task_ref_id): it for it in inbox_tasks

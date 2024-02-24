@@ -165,17 +165,17 @@ class PersonUpdateUseCase(
                 workspace.ref_id,
             )
         )
-        person_catch_up_tasks = await uow.repository_for(InboxTask).find_all_with_filters(
+        person_catch_up_tasks = await uow.repository_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
-            filter_sources=[InboxTaskSource.PERSON_CATCH_UP],
-            filter_person_ref_ids=[person.ref_id],
+            source=[InboxTaskSource.PERSON_CATCH_UP],
+            person_ref_id=[person.ref_id],
         )
-        person_birthday_tasks = await uow.repository_for(InboxTask).find_all_with_filters(
+        person_birthday_tasks = await uow.repository_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
-            filter_sources=[InboxTaskSource.PERSON_BIRTHDAY],
-            filter_person_ref_ids=[person.ref_id],
+            source=[InboxTaskSource.PERSON_BIRTHDAY],
+            person_ref_id=[person.ref_id],
         )
 
         # TODO(horia141): also create tasks here!

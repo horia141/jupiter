@@ -27,6 +27,7 @@ from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
+from jupiter.core.domain.inbox_tasks.infra.inbox_task_repository import InboxTaskRepository
 from jupiter.core.domain.metrics.metric import Metric
 from jupiter.core.domain.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.persons.person import Person
@@ -81,14 +82,14 @@ class ReportService:
         period: RecurringTaskPeriod,
         sources: Optional[list[InboxTaskSource]] = None,
         breakdowns: list[ReportBreakdown] | None = None,
-        filter_project_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_big_plan_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_habit_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_chore_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_metric_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_person_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_slack_task_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_email_task_ref_ids: Optional[Iterable[EntityId]] = None,
+        filter_project_ref_ids: Optional[List[EntityId]] = None,
+        filter_big_plan_ref_ids: Optional[List[EntityId]] = None,
+        filter_habit_ref_ids: Optional[List[EntityId]] = None,
+        filter_chore_ref_ids: Optional[List[EntityId]] = None,
+        filter_metric_ref_ids: Optional[List[EntityId]] = None,
+        filter_person_ref_ids: Optional[List[EntityId]] = None,
+        filter_slack_task_ref_ids: Optional[List[EntityId]] = None,
+        filter_email_task_ref_ids: Optional[List[EntityId]] = None,
         breakdown_period: Optional[RecurringTaskPeriod] = None,
     ) -> ReportPeriodResult:
         """Compute the report."""
@@ -166,9 +167,10 @@ class ReportService:
             project_collection = await uow.repository_for(ProjectCollection).load_by_parent(
                 workspace.ref_id,
             )
-            projects = await uow.repository_for(Project).find_all_with_filters(
+            projects = await uow.repository_for(Project).find_all_generic(
                 parent_ref_id=project_collection.ref_id,
-                filter_ref_ids=filter_project_ref_ids,
+                allow_archived=True,
+                ref_id=filter_project_ref_ids,
             )
             filter_project_ref_ids = [p.ref_id for p in projects]
             projects_by_ref_id: Dict[EntityId, Project] = {
@@ -224,7 +226,7 @@ class ReportService:
                 None,
             )
 
-            raw_all_inbox_tasks = await uow.repository_for(InboxTask).find_all_with_filters(
+            raw_all_inbox_tasks = await uow.get_x(InboxTaskRepository).find_all_with_filters(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
                 filter_sources=sources,
@@ -306,31 +308,31 @@ class ReportService:
                 )
             ]
 
-            all_habits = await uow.repository_for(Habit).find_all_with_filters(
+            all_habits = await uow.repository_for(Habit).find_all_generic(
                 parent_ref_id=habit_collection.ref_id,
                 allow_archived=True,
-                filter_ref_ids=filter_habit_ref_ids,
-                filter_project_ref_ids=filter_project_ref_ids,
+                ref_id=filter_habit_ref_ids,
+                project_ref_id=filter_project_ref_ids,
             )
             all_habits_by_ref_id: Dict[EntityId, Habit] = {
                 rt.ref_id: rt for rt in all_habits
             }
 
-            all_chores = await uow.repository_for(Chore).find_all_with_filters(
+            all_chores = await uow.repository_for(Chore).find_all_generic(
                 parent_ref_id=chore_collection.ref_id,
                 allow_archived=True,
-                filter_ref_ids=filter_chore_ref_ids,
-                filter_project_ref_ids=filter_project_ref_ids,
+                ref_id=filter_chore_ref_ids,
+                project_ref_id=filter_project_ref_ids,
             )
             all_chores_by_ref_id: Dict[EntityId, Chore] = {
                 rt.ref_id: rt for rt in all_chores
             }
 
-            all_big_plans = await uow.repository_for(BigPlan).find_all_with_filters(
+            all_big_plans = await uow.repository_for(BigPlan).find_all_generic(
                 parent_ref_id=big_plan_collection.ref_id,
                 allow_archived=True,
-                filter_ref_ids=filter_big_plan_ref_ids,
-                filter_project_ref_ids=filter_project_ref_ids,
+                ref_id=filter_big_plan_ref_ids,
+                project_ref_id=filter_project_ref_ids,
             )
             big_plans_by_ref_id: Dict[EntityId, BigPlan] = {
                 bp.ref_id: bp for bp in all_big_plans

@@ -52,10 +52,10 @@ class ProjectFindUseCase(
         project_collection = await uow.repository_for(ProjectCollection).load_by_parent(
             workspace.ref_id,
         )
-        projects = await uow.repository_for(Project).find_all_with_filters(
+        projects = await uow.repository_for(Project).find_all_generic(
             parent_ref_id=project_collection.ref_id,
             allow_archived=args.allow_archived,
-            filter_ref_ids=args.filter_ref_ids,
+            ref_id=args.filter_ref_ids,
         )
 
         return ProjectFindResult(projects=list(projects))

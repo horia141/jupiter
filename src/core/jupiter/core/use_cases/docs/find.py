@@ -69,11 +69,11 @@ class DocFindUseCase(
             workspace.ref_id
         )
 
-        docs = await uow.repository_for(Doc).find_all_with_filters(
+        docs = await uow.repository_for(Doc).find_all_generic(
             parent_ref_id=doc_collection.ref_id,
             allow_archived=args.allow_archived,
-            filter_ref_ids=args.filter_ref_ids,
-            filter_parent_doc_ref_ids=[None],
+            ref_id=args.filter_ref_ids,
+            parent_doc_ref_id=[None],
         )
 
         notes_by_doc_ref_id: defaultdict[EntityId, Note] = defaultdict(None)
@@ -81,21 +81,21 @@ class DocFindUseCase(
             note_collection = await uow.repository_for(NoteCollection).load_by_parent(
                 workspace.ref_id
             )
-            notes = await uow.repository_for(Note).find_all_with_filters(
+            notes = await uow.repository_for(Note).find_all_generic(
                 parent_ref_id=note_collection.ref_id,
                 domain=NoteDomain.DOC,
                 allow_archived=args.allow_archived,
-                filter_source_entity_ref_ids=[d.ref_id for d in docs],
+                source_entity_ref_id=[d.ref_id for d in docs],
             )
             for n in notes:
                 notes_by_doc_ref_id[n.source_entity_ref_id] = n
 
         subdocs_by_parent_ref_id = defaultdict(list)
         if args.include_subdocs:
-            subdocs = await uow.repository_for(Doc).find_all_with_filters(
+            subdocs = await uow.repository_for(Doc).find_all_generic(
                 parent_ref_id=doc_collection.ref_id,
                 allow_archived=args.allow_archived,
-                filter_parent_doc_ref_ids=[d.ref_id for d in docs],
+                parent_doc_ref_id=[d.ref_id for d in docs],
             )
             for sd in subdocs:
                 if sd.parent_doc_ref_id is None:

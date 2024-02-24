@@ -163,18 +163,19 @@ class InboxTaskFindUseCase(
             )
         )
 
-        projects = await uow.repository_for(Project).find_all_with_filters(
+        projects = await uow.repository_for(Project).find_all_generic(
             parent_ref_id=project_collection.ref_id,
-            filter_ref_ids=args.filter_project_ref_ids,
+            allow_archived=args.allow_archived,
+            ref_id=args.filter_project_ref_ids,
         )
         project_by_ref_id = {p.ref_id: p for p in projects}
 
-        inbox_tasks = await uow.repository_for(InboxTask).find_all_with_filters(
+        inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=args.allow_archived,
-            filter_ref_ids=args.filter_ref_ids,
-            filter_sources=filter_sources,
-            filter_project_ref_ids=args.filter_project_ref_ids,
+            ref_id=args.filter_ref_ids,
+            source=filter_sources,
+            project_ref_id=args.filter_project_ref_ids,
         )
 
         habits = await uow.repository_for(Habit).find_all(
@@ -251,11 +252,11 @@ class InboxTaskFindUseCase(
             note_collection = await uow.repository_for(NoteCollection).load_by_parent(
                 workspace.ref_id
             )
-            notes = await uow.repository_for(Note).find_all_with_filters(
+            notes = await uow.repository_for(Note).find_all_generic(
                 parent_ref_id=note_collection.ref_id,
                 domain=NoteDomain.INBOX_TASK,
                 allow_archived=True,
-                filter_source_entity_ref_ids=[it.ref_id for it in inbox_tasks],
+                source_entity_ref_id=[it.ref_id for it in inbox_tasks],
             )
             for note in notes:
                 notes_by_inbox_task_ref_id[

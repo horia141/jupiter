@@ -80,11 +80,11 @@ class SlackTaskChangeGenerationProjectUseCase(
             )
         )
         all_generated_inbox_tasks = (
-            await uow.repository_for(InboxTask).find_all_with_filters(
+            await uow.repository_for(InboxTask).find_all_generic(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
-                filter_sources=[InboxTaskSource.SLACK_TASK],
-                filter_slack_task_ref_ids=[m.ref_id for m in slack_tasks],
+                source=[InboxTaskSource.SLACK_TASK],
+                slack_task_ref_id=[m.ref_id for m in slack_tasks],
             )
         )
 

@@ -12,13 +12,3 @@ from jupiter.core.framework.repository import (
 
 class SmartListTagRepository(LeafEntityRepository[SmartListTag], abc.ABC):
     """A repository of smart list tags."""
-
-    @abc.abstractmethod
-    async def find_all_with_filters(
-        self,
-        parent_ref_id: EntityId,
-        allow_archived: bool = False,
-        filter_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_tag_names: Optional[Iterable[TagName]] = None,
-    ) -> List[SmartListTag]:
-        """Retrieve all smart list tags for a given smart list."""

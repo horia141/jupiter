@@ -79,9 +79,10 @@ class BigPlanFindUseCase(
             workspace.ref_id,
         )
         if args.include_project:
-            projects = await uow.repository_for(Project).find_all_with_filters(
+            projects = await uow.repository_for(Project).find_all_generic(
                 parent_ref_id=project_collection.ref_id,
-                filter_ref_ids=args.filter_project_ref_ids,
+                allow_archived=args.allow_archived,
+                ref_id=args.filter_project_ref_ids,
             )
             project_by_ref_id = {p.ref_id: p for p in projects}
         else:
@@ -95,18 +96,18 @@ class BigPlanFindUseCase(
         big_plan_collection = await uow.repository_for(BigPlanCollection).load_by_parent(
             workspace.ref_id,
         )
-        big_plans = await uow.repository_for(BigPlan).find_all_with_filters(
+        big_plans = await uow.repository_for(BigPlan).find_all_generic(
             parent_ref_id=big_plan_collection.ref_id,
             allow_archived=args.allow_archived,
-            filter_ref_ids=args.filter_ref_ids,
-            filter_project_ref_ids=args.filter_project_ref_ids,
+            ref_id=args.filter_ref_ids,
+            project_ref_id=args.filter_project_ref_ids,
         )
 
         if args.include_inbox_tasks:
-            inbox_tasks = await uow.repository_for(InboxTask).find_all_with_filters(
+            inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
-                filter_big_plan_ref_ids=(bp.ref_id for bp in big_plans),
+                big_plan_ref_id=[bp.ref_id for bp in big_plans],
             )
         else:
             inbox_tasks = None

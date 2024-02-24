@@ -78,22 +78,22 @@ class JournalFindUseCase(
 
         notes_by_journal_ref_id = {}
         if args.include_notes:
-            notes = await uow.repository_for(Note).find_all_with_filters(
+            notes = await uow.repository_for(Note).find_all_generic(
                 parent_ref_id=note_collection.ref_id,
                 domain=NoteDomain.JOURNAL,
                 allow_archived=args.allow_archived,
-                filter_source_entity_ref_ids=[journal.ref_id for journal in journals],
+                source_entity_ref_id=[journal.ref_id for journal in journals],
             )
             for note in notes:
                 notes_by_journal_ref_id[note.source_entity_ref_id] = note
 
         writing_tasks_by_journal_ref_id = {}
         if args.include_writing_tasks:
-            writing_tasks = await uow.repository_for(InboxTask).find_all_with_filters(
+            writing_tasks = await uow.repository_for(InboxTask).find_all_generic(
                 parent_ref_id=note_collection.ref_id,
-                filter_sources=[InboxTaskSource.JOURNAL],
+                source=[InboxTaskSource.JOURNAL],
                 allow_archived=args.allow_archived,
-                filter_journal_ref_ids=[journal.ref_id for journal in journals],
+                journal_ref_id=[journal.ref_id for journal in journals],
             )
             for writing_task in writing_tasks:
                 writing_tasks_by_journal_ref_id[

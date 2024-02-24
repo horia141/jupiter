@@ -167,11 +167,11 @@ class MetricUpdateUseCase(
             )
         )
 
-        metric_collection_tasks = await uow.repository_for(InboxTask).find_all_with_filters(
+        metric_collection_tasks = await uow.repository_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
-            filter_sources=[InboxTaskSource.METRIC],
+            source=[InboxTaskSource.METRIC],
             allow_archived=True,
-            filter_metric_ref_ids=[metric.ref_id],
+            metric_ref_id=[metric.ref_id],
         )
 
         metric = metric.update(

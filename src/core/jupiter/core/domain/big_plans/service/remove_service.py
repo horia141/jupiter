@@ -31,10 +31,10 @@ class BigPlanRemoveService:
                 workspace.ref_id,
             )
         )
-        inbox_tasks_to_remove = await uow.repository_for(InboxTask).find_all_with_filters(
+        inbox_tasks_to_remove = await uow.repository_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
-            filter_big_plan_ref_ids=[ref_id],
+            big_plan_ref_ids=[ref_id],
         )
 
         for inbox_task in inbox_tasks_to_remove:

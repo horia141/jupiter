@@ -42,6 +42,6 @@ class GCLoadRunsUseCase(AppLoggedInReadonlyUseCase[GCLoadRunsArgs, GCLoadRunsRes
             gc_log = await uow.repository_for(GCLog).load_by_parent(
                 context.workspace.ref_id
             )
-            entries = await uow.repository_for(GCLogEntry).find_last(gc_log.ref_id, 30)
+            entries = await uow.get_x(GCLogEntryRepository).find_last(gc_log.ref_id, 30)
 
         return GCLoadRunsResult(entries=entries)

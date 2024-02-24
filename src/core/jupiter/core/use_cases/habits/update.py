@@ -124,10 +124,10 @@ class HabitUpdateUseCase(
                     workspace.ref_id,
                 )
             )
-            all_inbox_tasks = await uow.repository_for(InboxTask).find_all_with_filters(
+            all_inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
-                filter_habit_ref_ids=[habit.ref_id],
+                habit_ref_id=[habit.ref_id],
             )
 
             for inbox_task in all_inbox_tasks:

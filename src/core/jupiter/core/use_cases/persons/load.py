@@ -1,5 +1,6 @@
 """Use case for loading a person."""
 
+from jupiter.core.domain.core.notes.infra.note_repository import NoteRepository
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.features import WorkspaceFeature
@@ -65,20 +66,20 @@ class PersonLoadUseCase(
             )
         )
 
-        catch_up_inbox_tasks = await uow.repository_for(InboxTask).find_all_with_filters(
+        catch_up_inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
-            filter_person_ref_ids=[args.ref_id],
-            filter_sources=[InboxTaskSource.PERSON_CATCH_UP],
+            person_ref_id=[args.ref_id],
+            source=[InboxTaskSource.PERSON_CATCH_UP],
         )
-        birthday_inbox_tasks = await uow.repository_for(InboxTask).find_all_with_filters(
+        birthday_inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
-            filter_person_ref_ids=[args.ref_id],
-            filter_sources=[InboxTaskSource.PERSON_BIRTHDAY],
+            person_ref_id=[args.ref_id],
+            source=[InboxTaskSource.PERSON_BIRTHDAY],
         )
 
-        note = await uow.repository_for(Note).load_optional_for_source(
+        note = await uow.get_x(NoteRepository).load_optional_for_source(
             NoteDomain.PERSON,
             person.ref_id,
             allow_archived=args.allow_archived,

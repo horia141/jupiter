@@ -128,11 +128,11 @@ class MetricFindUseCase(
                     workspace.ref_id,
                 )
             )
-            all_inbox_tasks = await uow.repository_for(InboxTask).find_all_with_filters(
+            all_inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
-                filter_sources=[InboxTaskSource.METRIC],
-                filter_metric_ref_ids=[m.ref_id for m in metrics],
+                source=[InboxTaskSource.METRIC],
+                metric_ref_id=[m.ref_id for m in metrics],
             )
 
             for inbox_task in all_inbox_tasks:
@@ -149,7 +149,7 @@ class MetricFindUseCase(
             note_collection = await uow.repository_for(NoteCollection).load_by_parent(
                 workspace.ref_id
             )
-            all_notes = await uow.repository_for(Note).find_all_with_filters(
+            all_notes = await uow.repository_for(Note).find_all_generic(
                 parent_ref_id=note_collection.ref_id,
                 domain=NoteDomain.METRIC_ENTRY,
                 allow_archived=True,

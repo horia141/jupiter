@@ -80,11 +80,11 @@ class MetricChangeCollectionProjectUseCase(
                 )
             )
             all_collection_inbox_tasks = (
-                await uow.repository_for(InboxTask).find_all_with_filters(
+                await uow.repository_for(InboxTask).find_all_generic(
                     parent_ref_id=inbox_task_collection.ref_id,
                     allow_archived=True,
-                    filter_sources=[InboxTaskSource.METRIC],
-                    filter_metric_ref_ids=[m.ref_id for m in metrics],
+                    source=[InboxTaskSource.METRIC],
+                    metric_ref_id=[m.ref_id for m in metrics],
                 )
             )
 

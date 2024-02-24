@@ -47,10 +47,10 @@ class SlackTaskArchiveService:
             )
         )
 
-        inbox_tasks_to_archive = await uow.repository_for(InboxTask).find_all_with_filters(
+        inbox_tasks_to_archive = await uow.repository_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=False,
-            filter_slack_task_ref_ids=[slack_task.ref_id],
+            slack_task_ref_id=[slack_task.ref_id],
         )
 
         archived_inbox_taskd = []

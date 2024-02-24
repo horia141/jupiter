@@ -1,5 +1,6 @@
 """Archive a note."""
 
+from jupiter.core.domain.core.notes.infra.note_repository import NoteRepository
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -34,7 +35,7 @@ class NoteArchiveService:
         source_entity_ref_id: EntityId,
     ) -> None:
         """Execute the command's action."""
-        note = await uow.repository_for(Note).load_optional_for_source(
+        note = await uow.get_x(NoteRepository).load_optional_for_source(
             domain, source_entity_ref_id, allow_archived=True
         )
 

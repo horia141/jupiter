@@ -40,10 +40,10 @@ class SmartListTagArchiveUseCase(
         """Execute the command's action."""
         smart_list_tag = await uow.repository_for(SmartListTag).load_by_id(args.ref_id)
 
-        smart_list_items = await uow.repository_for(SmartListItem).find_all_with_filters(
+        smart_list_items = await uow.repository_for(SmartListItem).find_all_generic(
             parent_ref_id=smart_list_tag.smart_list.ref_id,
             allow_archived=True,
-            filter_tag_ref_ids=[args.ref_id],
+            tag_ref_id=[args.ref_id],
         )
 
         for smart_list_item in smart_list_items:
