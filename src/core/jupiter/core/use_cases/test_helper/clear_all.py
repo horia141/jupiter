@@ -17,8 +17,12 @@ from jupiter.core.domain.docs.doc import Doc
 from jupiter.core.domain.docs.doc_collection import DocCollection
 from jupiter.core.domain.docs.service.doc_remove_service import DocRemoveService
 from jupiter.core.domain.features import UserFeature, WorkspaceFeature
-from jupiter.core.domain.gamification.infra.score_period_best_repository import ScorePeriodBestRepository
-from jupiter.core.domain.gamification.infra.score_stats_repository import ScoreStatsRepository
+from jupiter.core.domain.gamification.infra.score_period_best_repository import (
+    ScorePeriodBestRepository,
+)
+from jupiter.core.domain.gamification.infra.score_stats_repository import (
+    ScoreStatsRepository,
+)
 from jupiter.core.domain.gamification.score_log import ScoreLog
 from jupiter.core.domain.gamification.score_log_entry import ScoreLogEntry
 from jupiter.core.domain.habits.habit import Habit
@@ -30,13 +34,9 @@ from jupiter.core.domain.inbox_tasks.service.remove_service import (
     InboxTaskRemoveService,
 )
 from jupiter.core.domain.infra.generic_remover import generic_remover
-from jupiter.core.domain.metrics.infra.metric_collection_repository import MetricCollectionRepository
-from jupiter.core.domain.metrics.infra.metric_repository import MetricRepository
 from jupiter.core.domain.metrics.metric import Metric
 from jupiter.core.domain.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.metrics.service.remove_service import MetricRemoveService
-from jupiter.core.domain.persons.infra.person_collection_repository import PersonCollectionRepository
-from jupiter.core.domain.persons.infra.person_repository import PersonRepository
 from jupiter.core.domain.persons.person import Person
 from jupiter.core.domain.persons.person_collection import PersonCollection
 from jupiter.core.domain.persons.service.remove_service import PersonRemoveService
@@ -44,16 +44,22 @@ from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.projects.project_collection import ProjectCollection
 from jupiter.core.domain.projects.service.remove_service import ProjectRemoveService
 from jupiter.core.domain.push_integrations.email.email_task import EmailTask
-from jupiter.core.domain.push_integrations.email.email_task_collection import EmailTaskCollection
+from jupiter.core.domain.push_integrations.email.email_task_collection import (
+    EmailTaskCollection,
+)
 from jupiter.core.domain.push_integrations.email.service.remove_service import (
     EmailTaskRemoveService,
 )
-from jupiter.core.domain.push_integrations.group.push_integration_group import PushIntegrationGroup
+from jupiter.core.domain.push_integrations.group.push_integration_group import (
+    PushIntegrationGroup,
+)
 from jupiter.core.domain.push_integrations.slack.service.remove_service import (
     SlackTaskRemoveService,
 )
 from jupiter.core.domain.push_integrations.slack.slack_task import SlackTask
-from jupiter.core.domain.push_integrations.slack.slack_task_collection import SlackTaskCollection
+from jupiter.core.domain.push_integrations.slack.slack_task_collection import (
+    SlackTaskCollection,
+)
 from jupiter.core.domain.smart_lists.service.remove_service import (
     SmartListRemoveService,
 )
@@ -119,10 +125,10 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
             workspace_feature_flags_controls,
         ) = infer_feature_flag_controls(self._global_properties)
 
-        inbox_task_collection = (
-            await uow.repository_for(InboxTaskCollection).load_by_parent(
-                workspace.ref_id,
-            )
+        inbox_task_collection = await uow.repository_for(
+            InboxTaskCollection
+        ).load_by_parent(
+            workspace.ref_id,
         )
         habit_collection = await uow.repository_for(HabitCollection).load_by_parent(
             workspace.ref_id,
@@ -130,22 +136,26 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
         chore_collection = await uow.repository_for(ChoreCollection).load_by_parent(
             workspace.ref_id,
         )
-        big_plan_collection = await uow.repository_for(BigPlanCollection).load_by_parent(
+        big_plan_collection = await uow.repository_for(
+            BigPlanCollection
+        ).load_by_parent(
             workspace.ref_id,
         )
         doc_collection = await uow.repository_for(DocCollection).load_by_parent(
             workspace.ref_id
         )
-        vacation_collection = await uow.repository_for(VacationCollection).load_by_parent(
+        vacation_collection = await uow.repository_for(
+            VacationCollection
+        ).load_by_parent(
             workspace.ref_id,
         )
         project_collection = await uow.repository_for(ProjectCollection).load_by_parent(
             workspace.ref_id,
         )
-        smart_list_collection = (
-            await uow.repository_for(SmartListCollection).load_by_parent(
-                workspace.ref_id,
-            )
+        smart_list_collection = await uow.repository_for(
+            SmartListCollection
+        ).load_by_parent(
+            workspace.ref_id,
         )
         metric_collection = await uow.repository_for(MetricCollection).load_by_parent(
             workspace.ref_id,
@@ -153,20 +163,20 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
         person_collection = await uow.repository_for(PersonCollection).load_by_parent(
             workspace.ref_id,
         )
-        push_integration_group = (
-            await uow.repository_for(PushIntegrationGroup).load_by_parent(
-                workspace.ref_id,
-            )
+        push_integration_group = await uow.repository_for(
+            PushIntegrationGroup
+        ).load_by_parent(
+            workspace.ref_id,
         )
-        slack_task_collection = (
-            await uow.repository_for(SlackTaskCollection).load_by_parent(
-                push_integration_group.ref_id,
-            )
+        slack_task_collection = await uow.repository_for(
+            SlackTaskCollection
+        ).load_by_parent(
+            push_integration_group.ref_id,
         )
-        email_task_collection = (
-            await uow.repository_for(EmailTaskCollection).load_by_parent(
-                push_integration_group.ref_id,
-            )
+        email_task_collection = await uow.repository_for(
+            EmailTaskCollection
+        ).load_by_parent(
+            push_integration_group.ref_id,
         )
         note_collection = await uow.repository_for(NoteCollection).load_by_parent(
             workspace.ref_id
@@ -196,7 +206,9 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
             )
             await uow.repository_for(User).save(user)
 
-            auth = await uow.repository_for(Auth).load_by_parent(parent_ref_id=user.ref_id)
+            auth = await uow.repository_for(Auth).load_by_parent(
+                parent_ref_id=user.ref_id
+            )
             auth = auth.change_password(
                 ctx=context.domain_context,
                 current_password=args.auth_current_password,

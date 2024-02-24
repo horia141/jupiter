@@ -1,7 +1,7 @@
 """The command for changing the project for a big plan."""
 from typing import Optional
-from jupiter.core.domain.big_plans.big_plan import BigPlan
 
+from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
@@ -51,10 +51,10 @@ class BigPlanChangeProjectUseCase(
         await uow.repository_for(BigPlan).save(big_plan)
         await progress_reporter.mark_updated(big_plan)
 
-        inbox_task_collection = (
-            await uow.repository_for(InboxTaskCollection).load_by_parent(
-                workspace.ref_id,
-            )
+        inbox_task_collection = await uow.repository_for(
+            InboxTaskCollection
+        ).load_by_parent(
+            workspace.ref_id,
         )
         all_inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,

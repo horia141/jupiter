@@ -1,7 +1,7 @@
 """The command for changing the project for a chore."""
 from typing import Optional, cast
-from jupiter.core.domain.chores.chore import Chore
 
+from jupiter.core.domain.chores.chore import Chore
 from jupiter.core.domain.core import schedules
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
@@ -46,10 +46,10 @@ class ChoreChangeProjectUseCase(
 
         chore = await uow.repository_for(Chore).load_by_id(args.ref_id)
 
-        inbox_task_collection = (
-            await uow.repository_for(InboxTaskCollection).load_by_parent(
-                workspace.ref_id,
-            )
+        inbox_task_collection = await uow.repository_for(
+            InboxTaskCollection
+        ).load_by_parent(
+            workspace.ref_id,
         )
         all_inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,

@@ -17,9 +17,15 @@ from jupiter.core.domain.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.persons.person_collection import PersonCollection
 from jupiter.core.domain.projects.errors import ProjectInSignificantUseError
 from jupiter.core.domain.projects.project import Project
-from jupiter.core.domain.push_integrations.email.email_task_collection import EmailTaskCollection
-from jupiter.core.domain.push_integrations.group.push_integration_group import PushIntegrationGroup
-from jupiter.core.domain.push_integrations.slack.slack_task_collection import SlackTaskCollection
+from jupiter.core.domain.push_integrations.email.email_task_collection import (
+    EmailTaskCollection,
+)
+from jupiter.core.domain.push_integrations.group.push_integration_group import (
+    PushIntegrationGroup,
+)
+from jupiter.core.domain.push_integrations.slack.slack_task_collection import (
+    SlackTaskCollection,
+)
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.base.entity_id import EntityId
@@ -39,7 +45,9 @@ class ProjectRemoveService:
         ref_id: EntityId,
     ) -> None:
         """Remove the project."""
-        project = await uow.repository_for(Project).load_by_id(ref_id, allow_archived=True)
+        project = await uow.repository_for(Project).load_by_id(
+            ref_id, allow_archived=True
+        )
 
         # test it's not the workspace default project nor a metric collection project nor a person catchup one
         if workspace.default_project_ref_id == project.ref_id:
@@ -60,24 +68,24 @@ class ProjectRemoveService:
             raise ProjectInSignificantUseError(
                 "The project is being used as the person catch up one"
             )
-        push_integration_group = (
-            await uow.repository_for(PushIntegrationGroup).load_by_parent(
-                workspace.ref_id,
-            )
+        push_integration_group = await uow.repository_for(
+            PushIntegrationGroup
+        ).load_by_parent(
+            workspace.ref_id,
         )
-        slack_task_collection = (
-            await uow.repository_for(SlackTaskCollection).load_by_parent(
-                push_integration_group.ref_id,
-            )
+        slack_task_collection = await uow.repository_for(
+            SlackTaskCollection
+        ).load_by_parent(
+            push_integration_group.ref_id,
         )
         if slack_task_collection.generation_project_ref_id == project.ref_id:
             raise ProjectInSignificantUseError(
                 "The project is being used as the Slack task collection default one"
             )
-        email_task_collection = (
-            await uow.repository_for(EmailTaskCollection).load_by_parent(
-                push_integration_group.ref_id,
-            )
+        email_task_collection = await uow.repository_for(
+            EmailTaskCollection
+        ).load_by_parent(
+            push_integration_group.ref_id,
         )
         if email_task_collection.generation_project_ref_id == project.ref_id:
             raise ProjectInSignificantUseError(
@@ -85,9 +93,9 @@ class ProjectRemoveService:
             )
 
         # remove inbox tasks
-        inbox_task_collection = (
-            await uow.repository_for(InboxTaskCollection).load_by_parent(workspace.ref_id)
-        )
+        inbox_task_collection = await uow.repository_for(
+            InboxTaskCollection
+        ).load_by_parent(workspace.ref_id)
         inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,

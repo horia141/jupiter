@@ -1,7 +1,6 @@
 """The SQLite connection."""
-from dataclasses import dataclass
-from datetime import datetime
 import json
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Final
 
@@ -9,8 +8,8 @@ import sqlalchemy.exc
 from alembic import command
 from alembic.config import Config
 from jupiter.core.framework.storage import Connection, ConnectionPrepareError
-from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 from pydantic.json import pydantic_encoder
+from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
 
 class SqliteConnection(Connection):

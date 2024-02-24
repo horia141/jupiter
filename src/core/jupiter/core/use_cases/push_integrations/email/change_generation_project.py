@@ -7,8 +7,12 @@ from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskColle
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.push_integrations.email.email_task import EmailTask
-from jupiter.core.domain.push_integrations.email.email_task_collection import EmailTaskCollection
-from jupiter.core.domain.push_integrations.group.push_integration_group import PushIntegrationGroup
+from jupiter.core.domain.push_integrations.email.email_task_collection import (
+    EmailTaskCollection,
+)
+from jupiter.core.domain.push_integrations.group.push_integration_group import (
+    PushIntegrationGroup,
+)
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
@@ -45,15 +49,15 @@ class EmailTaskChangeGenerationProjectUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        push_integration_group = (
-            await uow.repository_for(PushIntegrationGroup).load_by_parent(
-                workspace.ref_id,
-            )
+        push_integration_group = await uow.repository_for(
+            PushIntegrationGroup
+        ).load_by_parent(
+            workspace.ref_id,
         )
-        email_task_collection = (
-            await uow.repository_for(EmailTaskCollection).load_by_parent(
-                push_integration_group.ref_id,
-            )
+        email_task_collection = await uow.repository_for(
+            EmailTaskCollection
+        ).load_by_parent(
+            push_integration_group.ref_id,
         )
         old_generation_project_ref_id = email_task_collection.generation_project_ref_id
 
@@ -74,18 +78,18 @@ class EmailTaskChangeGenerationProjectUseCase(
         )
         email_tasks_by_ref_id = {st.ref_id: st for st in email_tasks}
 
-        inbox_task_collection = (
-            await uow.repository_for(InboxTaskCollection).load_by_parent(
-                workspace.ref_id,
-            )
+        inbox_task_collection = await uow.repository_for(
+            InboxTaskCollection
+        ).load_by_parent(
+            workspace.ref_id,
         )
-        all_generated_inbox_tasks = (
-            await uow.repository_for(InboxTask).find_all_generic(
-                parent_ref_id=inbox_task_collection.ref_id,
-                allow_archived=True,
-                source=[InboxTaskSource.EMAIL_TASK],
-                email_task_ref_id=[m.ref_id for m in email_tasks],
-            )
+        all_generated_inbox_tasks = await uow.repository_for(
+            InboxTask
+        ).find_all_generic(
+            parent_ref_id=inbox_task_collection.ref_id,
+            allow_archived=True,
+            source=[InboxTaskSource.EMAIL_TASK],
+            email_task_ref_id=[m.ref_id for m in email_tasks],
         )
 
         if (

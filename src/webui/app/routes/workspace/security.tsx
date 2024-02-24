@@ -59,15 +59,9 @@ export async function action({ request }: ActionArgs) {
     switch (intent) {
       case "change-password": {
         await getLoggedInApiClient(session).auth.changePassword({
-          current_password: {
-            password_raw: form.currentPassword,
-          },
-          new_password: {
-            password_raw: form.newPassword,
-          },
-          new_password_repeat: {
-            password_raw: form.newPasswordRepeat,
-          },
+          current_password: form.currentPassword,
+          new_password: form.newPassword,
+          new_password_repeat: form.newPasswordRepeat,
         });
 
         return redirect(`/workspace/security`);

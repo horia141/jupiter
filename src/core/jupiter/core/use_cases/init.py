@@ -23,7 +23,6 @@ from jupiter.core.domain.gen.gen_log import GenLog
 from jupiter.core.domain.habits.habit_collection import HabitCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.journals.journal_collection import JournalCollection
-from jupiter.core.domain.metrics.infra.metric_collection_repository import MetricCollectionRepository
 from jupiter.core.domain.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.persons.person_collection import PersonCollection
 from jupiter.core.domain.projects.project import Project
@@ -41,7 +40,6 @@ from jupiter.core.domain.push_integrations.slack.slack_task_collection import (
 from jupiter.core.domain.smart_lists.smart_list_collection import SmartListCollection
 from jupiter.core.domain.user.user import User
 from jupiter.core.domain.user.user_name import UserName
-from jupiter.core.domain.user_workspace_link.infra.user_workspace_link_repository import UserWorkspaceLinkRepository
 from jupiter.core.domain.user_workspace_link.user_workspace_link import (
     UserWorkspaceLink,
 )
@@ -161,7 +159,9 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
             )
-            new_vacation_collection = await uow.repository_for(VacationCollection).create(
+            new_vacation_collection = await uow.repository_for(
+                VacationCollection
+            ).create(
                 new_vacation_collection,
             )
 
@@ -192,10 +192,10 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
             )
-            new_inbox_task_collection = (
-                await uow.repository_for(InboxTaskCollection).create(
-                    new_inbox_task_collection,
-                )
+            new_inbox_task_collection = await uow.repository_for(
+                InboxTaskCollection
+            ).create(
+                new_inbox_task_collection,
             )
 
             new_habit_collection = HabitCollection.new_habit_collection(
@@ -218,7 +218,9 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
             )
-            new_big_plan_collection = await uow.repository_for(BigPlanCollection).create(
+            new_big_plan_collection = await uow.repository_for(
+                BigPlanCollection
+            ).create(
                 new_big_plan_collection,
             )
 
@@ -246,10 +248,10 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
             )
-            new_smart_list_collection = (
-                await uow.repository_for(SmartListCollection).create(
-                    new_smart_list_collection,
-                )
+            new_smart_list_collection = await uow.repository_for(
+                SmartListCollection
+            ).create(
+                new_smart_list_collection,
             )
 
             new_metric_collection = MetricCollection.new_metric_collection(
@@ -276,10 +278,10 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                     workspace_ref_id=new_workspace.ref_id,
                 )
             )
-            new_push_integration_group = (
-                await uow.repository_for(PushIntegrationGroup).create(
-                    new_push_integration_group,
-                )
+            new_push_integration_group = await uow.repository_for(
+                PushIntegrationGroup
+            ).create(
+                new_push_integration_group,
             )
 
             new_slack_task_collection = SlackTaskCollection.new_slack_task_collection(
@@ -287,10 +289,10 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 push_integration_group_ref_id=new_push_integration_group.ref_id,
                 generation_project_ref_id=new_default_project.ref_id,
             )
-            new_slack_task_collection = (
-                await uow.repository_for(SlackTaskCollection).create(
-                    new_slack_task_collection,
-                )
+            new_slack_task_collection = await uow.repository_for(
+                SlackTaskCollection
+            ).create(
+                new_slack_task_collection,
             )
 
             new_email_task_collection = EmailTaskCollection.new_email_task_collection(
@@ -298,10 +300,10 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 push_integration_group_ref_id=new_push_integration_group.ref_id,
                 generation_project_ref_id=new_default_project.ref_id,
             )
-            new_email_task_collection = (
-                await uow.repository_for(EmailTaskCollection).create(
-                    new_email_task_collection,
-                )
+            new_email_task_collection = await uow.repository_for(
+                EmailTaskCollection
+            ).create(
+                new_email_task_collection,
             )
 
             new_note_collection = NoteCollection.new_note_collection(
@@ -329,9 +331,9 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 user_ref_id=new_user.ref_id,
                 workspace_ref_id=new_workspace.ref_id,
             )
-            new_user_workspace_link = await uow.repository_for(UserWorkspaceLink).create(
-                new_user_workspace_link
-            )
+            new_user_workspace_link = await uow.repository_for(
+                UserWorkspaceLink
+            ).create(new_user_workspace_link)
 
         async with self._search_storage_engine.get_unit_of_work() as search_uow:
             await search_uow.search_repository.create(

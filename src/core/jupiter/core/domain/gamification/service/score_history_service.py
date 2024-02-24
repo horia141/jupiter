@@ -2,9 +2,10 @@
 
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
-from jupiter.core.domain.gamification.infra.score_stats_repository import ScoreStatsRepository
+from jupiter.core.domain.gamification.infra.score_stats_repository import (
+    ScoreStatsRepository,
+)
 from jupiter.core.domain.gamification.score_log import ScoreLog
-from jupiter.core.domain.gamification.score_stats import ScoreStats
 from jupiter.core.domain.gamification.user_score_history import UserScoreHistory
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.user.user import User
@@ -29,13 +30,19 @@ class ScoreHistoryService:
         daily_score_stats = await uow.get_r(ScoreStatsRepository).find_all_in_timerange(
             score_log.ref_id, RecurringTaskPeriod.DAILY, daily_lower_limit, today
         )
-        weekly_score_stats = await uow.get_r(ScoreStatsRepository).find_all_in_timerange(
+        weekly_score_stats = await uow.get_r(
+            ScoreStatsRepository
+        ).find_all_in_timerange(
             score_log.ref_id, RecurringTaskPeriod.WEEKLY, weekly_lower_limit, today
         )
-        monthly_score_stats = await uow.get_r(ScoreStatsRepository).find_all_in_timerange(
+        monthly_score_stats = await uow.get_r(
+            ScoreStatsRepository
+        ).find_all_in_timerange(
             score_log.ref_id, RecurringTaskPeriod.MONTHLY, monthly_lower_limit, today
         )
-        quarterly_score_stats = await uow.get_r(ScoreStatsRepository).find_all_in_timerange(
+        quarterly_score_stats = await uow.get_r(
+            ScoreStatsRepository
+        ).find_all_in_timerange(
             score_log.ref_id,
             RecurringTaskPeriod.QUARTERLY,
             quarterly_lower_limit,

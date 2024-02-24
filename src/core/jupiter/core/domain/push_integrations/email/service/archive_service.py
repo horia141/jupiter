@@ -6,8 +6,12 @@ from jupiter.core.domain.inbox_tasks.service.archive_service import (
     InboxTaskArchiveService,
 )
 from jupiter.core.domain.push_integrations.email.email_task import EmailTask
-from jupiter.core.domain.push_integrations.email.email_task_collection import EmailTaskCollection
-from jupiter.core.domain.push_integrations.group.push_integration_group import PushIntegrationGroup
+from jupiter.core.domain.push_integrations.email.email_task_collection import (
+    EmailTaskCollection,
+)
+from jupiter.core.domain.push_integrations.group.push_integration_group import (
+    PushIntegrationGroup,
+)
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.use_case import ProgressReporter
@@ -35,16 +39,20 @@ class EmailTaskArchiveService:
         if email_task.archived:
             return EmailTaskArchiveServiceResult(archived_inbox_tasks=[])
 
-        email_task_collection = await uow.repository_for(EmailTaskCollection).load_by_id(
+        email_task_collection = await uow.repository_for(
+            EmailTaskCollection
+        ).load_by_id(
             email_task.email_task_collection.ref_id,
         )
-        push_integration_group = await uow.repository_for(PushIntegrationGroup).load_by_id(
+        push_integration_group = await uow.repository_for(
+            PushIntegrationGroup
+        ).load_by_id(
             email_task_collection.push_integration_group.ref_id,
         )
-        inbox_task_collection = (
-            await uow.repository_for(InboxTaskCollection).load_by_parent(
-                push_integration_group.workspace.ref_id,
-            )
+        inbox_task_collection = await uow.repository_for(
+            InboxTaskCollection
+        ).load_by_parent(
+            push_integration_group.workspace.ref_id,
         )
 
         inbox_tasks_to_archive = await uow.repository_for(InboxTask).find_all_generic(

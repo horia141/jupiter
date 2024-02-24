@@ -3,8 +3,6 @@ from typing import Optional
 
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.metrics.infra.metric_entry_repository import MetricEntryRepository
-from jupiter.core.domain.metrics.infra.metric_repository import MetricRepository
 from jupiter.core.domain.metrics.metric import Metric
 from jupiter.core.domain.metrics.metric_entry import MetricEntry
 from jupiter.core.domain.storage_engine import DomainUnitOfWork

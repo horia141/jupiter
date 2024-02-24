@@ -6,9 +6,13 @@ from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.projects.project import Project
-from jupiter.core.domain.push_integrations.group.push_integration_group import PushIntegrationGroup
+from jupiter.core.domain.push_integrations.group.push_integration_group import (
+    PushIntegrationGroup,
+)
 from jupiter.core.domain.push_integrations.slack.slack_task import SlackTask
-from jupiter.core.domain.push_integrations.slack.slack_task_collection import SlackTaskCollection
+from jupiter.core.domain.push_integrations.slack.slack_task_collection import (
+    SlackTaskCollection,
+)
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
@@ -45,15 +49,15 @@ class SlackTaskChangeGenerationProjectUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        push_integration_group = (
-            await uow.repository_for(PushIntegrationGroup).load_by_parent(
-                workspace.ref_id,
-            )
+        push_integration_group = await uow.repository_for(
+            PushIntegrationGroup
+        ).load_by_parent(
+            workspace.ref_id,
         )
-        slack_task_collection = (
-            await uow.repository_for(SlackTaskCollection).load_by_parent(
-                push_integration_group.ref_id,
-            )
+        slack_task_collection = await uow.repository_for(
+            SlackTaskCollection
+        ).load_by_parent(
+            push_integration_group.ref_id,
         )
         old_generation_project_ref_id = slack_task_collection.generation_project_ref_id
 
@@ -74,18 +78,18 @@ class SlackTaskChangeGenerationProjectUseCase(
         )
         slack_tasks_by_ref_id = {st.ref_id: st for st in slack_tasks}
 
-        inbox_task_collection = (
-            await uow.repository_for(InboxTaskCollection).load_by_parent(
-                workspace.ref_id,
-            )
+        inbox_task_collection = await uow.repository_for(
+            InboxTaskCollection
+        ).load_by_parent(
+            workspace.ref_id,
         )
-        all_generated_inbox_tasks = (
-            await uow.repository_for(InboxTask).find_all_generic(
-                parent_ref_id=inbox_task_collection.ref_id,
-                allow_archived=True,
-                source=[InboxTaskSource.SLACK_TASK],
-                slack_task_ref_id=[m.ref_id for m in slack_tasks],
-            )
+        all_generated_inbox_tasks = await uow.repository_for(
+            InboxTask
+        ).find_all_generic(
+            parent_ref_id=inbox_task_collection.ref_id,
+            allow_archived=True,
+            source=[InboxTaskSource.SLACK_TASK],
+            slack_task_ref_id=[m.ref_id for m in slack_tasks],
         )
 
         if (

@@ -5,7 +5,6 @@ from jupiter.core.domain.core.notes.service.note_archive_service import (
     NoteArchiveService,
 )
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.metrics.infra.metric_entry_repository import MetricEntryRepository
 from jupiter.core.domain.metrics.metric_entry import MetricEntry
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId

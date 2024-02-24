@@ -66,6 +66,8 @@ export async function loader({ request }: LoaderArgs) {
   const client = getLoggedInApiClient(session);
   const response = await client.loadTopLevelInfo.loadTopLevelInfo({});
 
+  console.log(response);
+
   if (!response.user || !response.workspace) {
     return redirect("/init");
   }

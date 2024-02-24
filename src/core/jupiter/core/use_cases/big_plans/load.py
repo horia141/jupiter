@@ -56,10 +56,10 @@ class BigPlanLoadUseCase(
             args.ref_id, allow_archived=args.allow_archived
         )
         project = await uow.repository_for(Project).load_by_id(big_plan.project_ref_id)
-        inbox_task_collection = (
-            await uow.repository_for(InboxTaskCollection).load_by_parent(
-                workspace.ref_id,
-            )
+        inbox_task_collection = await uow.repository_for(
+            InboxTaskCollection
+        ).load_by_parent(
+            workspace.ref_id,
         )
         inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,

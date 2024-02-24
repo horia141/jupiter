@@ -119,10 +119,10 @@ class HabitUpdateUseCase(
         await progress_reporter.mark_updated(habit)
 
         if need_to_change_inbox_tasks:
-            inbox_task_collection = (
-                await uow.repository_for(InboxTaskCollection).load_by_parent(
-                    workspace.ref_id,
-                )
+            inbox_task_collection = await uow.repository_for(
+                InboxTaskCollection
+            ).load_by_parent(
+                workspace.ref_id,
             )
             all_inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
                 parent_ref_id=inbox_task_collection.ref_id,

@@ -1,7 +1,7 @@
 """The command for updating a big plan."""
 from typing import Optional
-from jupiter.core.domain.big_plans.big_plan import BigPlan
 
+from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.core.domain.big_plans.big_plan_status import BigPlanStatus
 from jupiter.core.domain.core.adate import ADate

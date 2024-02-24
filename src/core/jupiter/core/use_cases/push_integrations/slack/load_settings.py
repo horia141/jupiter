@@ -2,8 +2,12 @@
 
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.projects.project import Project
-from jupiter.core.domain.push_integrations.group.push_integration_group import PushIntegrationGroup
-from jupiter.core.domain.push_integrations.slack.slack_task_collection import SlackTaskCollection
+from jupiter.core.domain.push_integrations.group.push_integration_group import (
+    PushIntegrationGroup,
+)
+from jupiter.core.domain.push_integrations.slack.slack_task_collection import (
+    SlackTaskCollection,
+)
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case_io import (
@@ -48,15 +52,15 @@ class SlackTaskLoadSettingsUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        push_integration_group = (
-            await uow.repository_for(PushIntegrationGroup).load_by_parent(
-                workspace.ref_id,
-            )
+        push_integration_group = await uow.repository_for(
+            PushIntegrationGroup
+        ).load_by_parent(
+            workspace.ref_id,
         )
-        slack_task_collection = (
-            await uow.repository_for(SlackTaskCollection).load_by_parent(
-                push_integration_group.ref_id,
-            )
+        slack_task_collection = await uow.repository_for(
+            SlackTaskCollection
+        ).load_by_parent(
+            push_integration_group.ref_id,
         )
         generation_project = await uow.repository_for(Project).load_by_id(
             slack_task_collection.generation_project_ref_id,

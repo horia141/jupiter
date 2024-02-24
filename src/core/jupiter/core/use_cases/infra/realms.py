@@ -57,7 +57,11 @@ from jupiter.core.framework.record import Record
 from jupiter.core.framework.thing import Thing
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case_io import UseCaseArgsBase, UseCaseResultBase
-from jupiter.core.framework.utils import find_all_modules, is_thing_ish_type, normalize_optional
+from jupiter.core.framework.utils import (
+    find_all_modules,
+    is_thing_ish_type,
+    normalize_optional,
+)
 from jupiter.core.framework.value import (
     AtomicValue,
     CompositeValue,
@@ -148,7 +152,7 @@ class _UpdateActionEventStoreEncoder(
         realm_codec_registry: RealmCodecRegistry,
         root_type: type[DomainThing] | None,
         the_type: type[DomainThing] | ForwardRef | str,
-        realm: type[Realm]
+        realm: type[Realm],
     ) -> None:
         self._realm_codec_registry = realm_codec_registry
         self._root_type = root_type
@@ -182,7 +186,7 @@ class _UpdateActionWebDecoder(RealmDecoder[UpdateAction[DomainThing], WebRealm])
         realm_codec_registry: RealmCodecRegistry,
         root_type: type[DomainThing] | None,
         the_type: type[DomainThing] | ForwardRef | str,
-        realm: type[Realm]
+        realm: type[Realm],
     ) -> None:
         self._realm_codec_registry = realm_codec_registry
         self._root_type = root_type
@@ -206,9 +210,11 @@ class _UpdateActionWebDecoder(RealmDecoder[UpdateAction[DomainThing], WebRealm])
             final_value = UpdateAction.do_nothing()
         else:
 
-            if isinstance(self._the_type, ForwardRef) or isinstance(self._the_type, str):
+            if isinstance(self._the_type, ForwardRef) or isinstance(
+                self._the_type, str
+            ):
                 raise Exception("Off the beaten codepath")
-        
+
             field_type, is_optional = normalize_optional(self._the_type)
             if "value" not in value:
                 if is_optional:
@@ -242,7 +248,7 @@ class _UnionDatabaseEncoder(RealmEncoder[DomainThing, DatabaseRealm]):
         realm_codec_registry: RealmCodecRegistry,
         root_type: type[DomainThing] | None,
         the_types: list[type[DomainThing] | ForwardRef | str],
-        realm: type[Realm]
+        realm: type[Realm],
     ) -> None:
         self._realm_codec_registry = realm_codec_registry
         self._root_type = root_type
@@ -278,7 +284,7 @@ class _UnionDatabaseDecoder(RealmDecoder[DomainThing, DatabaseRealm]):
         realm_codec_registry: RealmCodecRegistry,
         root_type: type[DomainThing] | None,
         the_types: list[type[DomainThing] | ForwardRef | str],
-        realm: type[Realm]
+        realm: type[Realm],
     ) -> None:
         self._realm_codec_registry = realm_codec_registry
         self._root_type = root_type
@@ -313,7 +319,7 @@ class _ListDatabaseEncoder(RealmEncoder[list[DomainThing], DatabaseRealm]):
         realm_codec_registry: RealmCodecRegistry,
         root_type: type[DomainThing] | None,
         the_type: type[DomainThing] | ForwardRef | str,
-        realm: type[Realm]
+        realm: type[Realm],
     ) -> None:
         self._realm_codec_registry = realm_codec_registry
         self._root_type = root_type
@@ -341,7 +347,7 @@ class _ListDatabaseDecoder(RealmDecoder[list[DomainThing], DatabaseRealm]):
         realm_codec_registry: RealmCodecRegistry,
         root_type: type[DomainThing] | None,
         the_type: type[DomainThing] | ForwardRef | str,
-        realm: type[Realm]
+        realm: type[Realm],
     ) -> None:
         self._realm_codec_registry = realm_codec_registry
         self._root_type = root_type
@@ -373,7 +379,7 @@ class _SetDatabaseEncoder(RealmEncoder[set[DomainThing], DatabaseRealm]):
         realm_codec_registry: RealmCodecRegistry,
         root_type: type[DomainThing] | None,
         the_type: type[DomainThing] | ForwardRef | str,
-        realm: type[Realm]
+        realm: type[Realm],
     ) -> None:
         self._realm_codec_registry = realm_codec_registry
         self._root_type = root_type
@@ -401,7 +407,7 @@ class _SetDatabaseDecoder(RealmDecoder[set[DomainThing], DatabaseRealm]):
         realm_codec_registry: RealmCodecRegistry,
         root_type: type[DomainThing] | None,
         the_type: type[DomainThing] | ForwardRef | str,
-        realm: type[Realm]
+        realm: type[Realm],
     ) -> None:
         self._realm_codec_registry = realm_codec_registry
         self._root_type = root_type
@@ -435,7 +441,7 @@ class _DictDatabaseEncoder(RealmEncoder[dict[DomainThing, DomainThing], Database
         root_type: type[DomainThing] | None,
         the_key_type: type[DomainThing] | ForwardRef | str,
         the_value_type: type[DomainThing] | ForwardRef | str,
-        realm: type[Realm]
+        realm: type[Realm],
     ) -> None:
         self._realm_codec_registry = realm_codec_registry
         self._root_type = root_type
@@ -477,7 +483,7 @@ class _DictDatabaseDecoder(RealmDecoder[dict[DomainThing, DomainThing], Database
         root_type: type[DomainThing] | None,
         the_key_type: type[DomainThing] | ForwardRef | str,
         the_value_type: type[DomainThing] | ForwardRef | str,
-        realm: type[Realm]
+        realm: type[Realm],
     ) -> None:
         self._realm_codec_registry = realm_codec_registry
         self._root_type = root_type
@@ -624,8 +630,10 @@ class _StandardCompositeValueDatabaseEncoder(
     _realm: Final[type[Realm]]
 
     def __init__(
-        self, realm_codec_registry: RealmCodecRegistry, the_type: type[_CompositeValueT],
-        realm: type[Realm]
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        the_type: type[_CompositeValueT],
+        realm: type[Realm],
     ) -> None:
         self._realm_codec_registry = realm_codec_registry
         self._the_type = the_type
@@ -654,8 +662,10 @@ class _StandardCompositeValueDatabaseDecoder(
     _realm: Final[type[Realm]]
 
     def __init__(
-        self, realm_codec_registry: RealmCodecRegistry, the_type: type[_CompositeValueT],
-        realm: type[Realm]
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        the_type: type[_CompositeValueT],
+        realm: type[Realm],
     ) -> None:
         self._realm_codec_registry = realm_codec_registry
         self._the_type = the_type
@@ -739,8 +749,10 @@ class _StandardEntityDatabaseEncoder(
     _realm: Final[type[Realm]]
 
     def __init__(
-        self, realm_codec_registry: RealmCodecRegistry, the_type: type[_EntityT],
-        realm: type[Realm]
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        the_type: type[_EntityT],
+        realm: type[Realm],
     ) -> None:
         self._realm_codec_registry = realm_codec_registry
         self._the_type = the_type
@@ -777,8 +789,10 @@ class _StandardEntityDatabaseDecoder(
     _realm: Final[type[Realm]]
 
     def __init__(
-        self, realm_codec_registry: RealmCodecRegistry, the_type: type[_EntityT],
-        realm: type[Realm]
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        the_type: type[_EntityT],
+        realm: type[Realm],
     ) -> None:
         self._realm_codec_registry = realm_codec_registry
         self._the_type = the_type
@@ -899,8 +913,10 @@ class _StandardRecordDatabaseEncoder(
     _realm: Final[type[Realm]]
 
     def __init__(
-        self, realm_codec_registry: RealmCodecRegistry, the_type: type[_RecordT],
-        realm: type[Realm]
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        the_type: type[_RecordT],
+        realm: type[Realm],
     ) -> None:
         self._realm_codec_registry = realm_codec_registry
         self._the_type = the_type
@@ -934,8 +950,10 @@ class _StandardRecordDatabaseDecoder(
     _realm: Final[type[Realm]]
 
     def __init__(
-        self, realm_codec_registry: RealmCodecRegistry, the_type: type[_RecordT],
-        realm: type[Realm]
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        the_type: type[_RecordT],
+        realm: type[Realm],
     ) -> None:
         self._realm_codec_registry = realm_codec_registry
         self._the_type = the_type
@@ -1619,7 +1637,7 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
             for use_case_result in extract_use_case_result(m):
                 if not allowed_in_realm(use_case_args, WebRealm):
                     continue
-                
+
                 if not registry._has_encoder(use_case_result, WebRealm):
                     registry._add_encoder(
                         use_case_result,
@@ -1716,7 +1734,10 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                 return cast(
                     RealmEncoder[_DomainThingT, _RealmT],
                     _UnionDatabaseEncoder(
-                        self, cast(type[DomainThing] | None, root_type), field_args, realm
+                        self,
+                        cast(type[DomainThing] | None, root_type),
+                        field_args,
+                        realm,
                     ),
                 )
             elif thing_type_origin is UpdateAction and realm is EventStoreRealm:
@@ -1726,7 +1747,10 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                 return cast(
                     RealmEncoder[_DomainThingT, _RealmT],
                     _UpdateActionEventStoreEncoder(
-                        self, cast(type[DomainThing], root_type), update_action_type, realm
+                        self,
+                        cast(type[DomainThing], root_type),
+                        update_action_type,
+                        realm,
                     ),
                 )
             elif thing_type_origin is list:
@@ -1736,7 +1760,10 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                 return cast(
                     RealmEncoder[_DomainThingT, _RealmT],
                     _ListDatabaseEncoder(
-                        self, cast(type[DomainThing] | None, root_type), list_item_type, realm
+                        self,
+                        cast(type[DomainThing] | None, root_type),
+                        list_item_type,
+                        realm,
                     ),
                 )
             elif thing_type_origin is set:
@@ -1746,7 +1773,10 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                 return cast(
                     RealmEncoder[_DomainThingT, _RealmT],
                     _SetDatabaseEncoder(
-                        self, cast(type[DomainThing] | None, root_type), set_item_type, realm
+                        self,
+                        cast(type[DomainThing] | None, root_type),
+                        set_item_type,
+                        realm,
                     ),
                 )
             elif thing_type_origin is dict:
@@ -1762,7 +1792,8 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                         self,
                         cast(type[DomainThing] | None, root_type),
                         dict_key_type,
-                        dict_value_type, realm
+                        dict_value_type,
+                        realm,
                     ),
                 )
             else:
@@ -1830,7 +1861,10 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                 return cast(
                     RealmDecoder[_DomainThingT, _RealmT],
                     _UnionDatabaseDecoder(
-                        self, cast(type[DomainThing] | None, root_type), field_args, realm
+                        self,
+                        cast(type[DomainThing] | None, root_type),
+                        field_args,
+                        realm,
                     ),
                 )
             elif thing_type_origin is UpdateAction and realm is WebRealm:
@@ -1840,7 +1874,10 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                 return cast(
                     RealmDecoder[_DomainThingT, _RealmT],
                     _UpdateActionWebDecoder(
-                        self, cast(type[DomainThing], root_type), update_action_type, realm
+                        self,
+                        cast(type[DomainThing], root_type),
+                        update_action_type,
+                        realm,
                     ),
                 )
             elif thing_type_origin is list:
@@ -1850,7 +1887,10 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                 return cast(
                     RealmDecoder[_DomainThingT, _RealmT],
                     _ListDatabaseDecoder(
-                        self, cast(type[DomainThing] | None, root_type), list_item_type, realm
+                        self,
+                        cast(type[DomainThing] | None, root_type),
+                        list_item_type,
+                        realm,
                     ),
                 )
             elif thing_type_origin is set:
@@ -1860,7 +1900,10 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                 return cast(
                     RealmDecoder[_DomainThingT, _RealmT],
                     _SetDatabaseDecoder(
-                        self, cast(type[DomainThing] | None, root_type), set_item_type, realm
+                        self,
+                        cast(type[DomainThing] | None, root_type),
+                        set_item_type,
+                        realm,
                     ),
                 )
             elif thing_type_origin is dict:
@@ -1876,7 +1919,8 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                         self,
                         cast(type[DomainThing] | None, root_type),
                         dict_key_type,
-                        dict_value_type, realm
+                        dict_value_type,
+                        realm,
                     ),
                 )
             else:

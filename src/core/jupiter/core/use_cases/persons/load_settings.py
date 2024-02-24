@@ -1,7 +1,6 @@
 """Load settings for persons use case."""
 
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.persons.infra.person_collection_repository import PersonCollectionRepository
 from jupiter.core.domain.persons.person_collection import PersonCollection
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.storage_engine import DomainUnitOfWork

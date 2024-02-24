@@ -89,10 +89,10 @@ class HabitFindUseCase(
         else:
             project_by_ref_id = None
 
-        inbox_task_collection = (
-            await uow.repository_for(InboxTaskCollection).load_by_parent(
-                workspace.ref_id,
-            )
+        inbox_task_collection = await uow.repository_for(
+            InboxTaskCollection
+        ).load_by_parent(
+            workspace.ref_id,
         )
         habit_collection = await uow.repository_for(HabitCollection).load_by_parent(
             workspace.ref_id,

@@ -88,8 +88,8 @@ export async function action({ request }: ActionArgs) {
       user_name: form.userName,
       user_timezone: form.userTimezone,
       user_feature_flags: form.userFeatureFlags,
-      auth_password: { password_raw: form.authPassword },
-      auth_password_repeat: { password_raw: form.authPasswordRepeat },
+      auth_password: form.authPassword,
+      auth_password_repeat: form.authPasswordRepeat,
       workspace_name: form.workspaceName,
       workspace_first_project_name: form.workspaceFirstProjectName,
       workspace_feature_flags: form.workspaceFeatureFlags,
@@ -98,7 +98,7 @@ export async function action({ request }: ActionArgs) {
     session.set("authTokenExt", result.auth_token_ext);
 
     return redirect(
-      `/show-recovery-token?recoveryToken=${result.recovery_token.token}`,
+      `/show-recovery-token?recoveryToken=${result.recovery_token}`,
       {
         headers: {
           "Set-Cookie": await commitSession(session),

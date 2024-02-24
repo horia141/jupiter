@@ -3,11 +3,13 @@ import asyncio
 
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.core.timeline import infer_timeline
-from jupiter.core.domain.gamification.infra.score_period_best_repository import ScorePeriodBestRepository
-from jupiter.core.domain.gamification.infra.score_stats_repository import ScoreStatsRepository
+from jupiter.core.domain.gamification.infra.score_period_best_repository import (
+    ScorePeriodBestRepository,
+)
+from jupiter.core.domain.gamification.infra.score_stats_repository import (
+    ScoreStatsRepository,
+)
 from jupiter.core.domain.gamification.score_log import ScoreLog
-from jupiter.core.domain.gamification.score_period_best import ScorePeriodBest
-from jupiter.core.domain.gamification.score_stats import ScoreStats
 from jupiter.core.domain.gamification.user_score_overview import (
     UserScore,
     UserScoreOverview,
@@ -173,9 +175,9 @@ class ScoreOverviewService:
         sub_period: RecurringTaskPeriod,
     ) -> UserScore:
         timeline = infer_timeline(period, right_now)
-        score_period_best = await uow.get_r(ScorePeriodBestRepository).load_by_key_optional(
-            (score_log.ref_id, period, timeline, sub_period)
-        )
+        score_period_best = await uow.get_r(
+            ScorePeriodBestRepository
+        ).load_by_key_optional((score_log.ref_id, period, timeline, sub_period))
         return (
             score_period_best.to_user_score() if score_period_best else UserScore.new()
         )

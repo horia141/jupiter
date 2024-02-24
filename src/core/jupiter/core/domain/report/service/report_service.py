@@ -27,7 +27,9 @@ from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
-from jupiter.core.domain.inbox_tasks.infra.inbox_task_repository import InboxTaskRepository
+from jupiter.core.domain.inbox_tasks.infra.inbox_task_repository import (
+    InboxTaskRepository,
+)
 from jupiter.core.domain.metrics.metric import Metric
 from jupiter.core.domain.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.persons.person import Person
@@ -164,7 +166,9 @@ class ReportService:
             )
 
         async with self._storage_engine.get_unit_of_work() as uow:
-            project_collection = await uow.repository_for(ProjectCollection).load_by_parent(
+            project_collection = await uow.repository_for(
+                ProjectCollection
+            ).load_by_parent(
                 workspace.ref_id,
             )
             projects = await uow.repository_for(Project).find_all_generic(
@@ -178,10 +182,10 @@ class ReportService:
             }
             projects_by_name: Dict[ProjectName, Project] = {p.name: p for p in projects}
 
-            inbox_task_collection = (
-                await uow.repository_for(InboxTaskCollection).load_by_parent(
-                    workspace.ref_id,
-                )
+            inbox_task_collection = await uow.repository_for(
+                InboxTaskCollection
+            ).load_by_parent(
+                workspace.ref_id,
             )
             habit_collection = await uow.repository_for(HabitCollection).load_by_parent(
                 workspace.ref_id,
@@ -189,13 +193,15 @@ class ReportService:
             chore_collection = await uow.repository_for(ChoreCollection).load_by_parent(
                 workspace.ref_id,
             )
-            big_plan_collection = (
-                await uow.repository_for(BigPlanCollection).load_by_parent(
-                    workspace.ref_id,
-                )
+            big_plan_collection = await uow.repository_for(
+                BigPlanCollection
+            ).load_by_parent(
+                workspace.ref_id,
             )
 
-            metric_collection = await uow.repository_for(MetricCollection).load_by_parent(
+            metric_collection = await uow.repository_for(
+                MetricCollection
+            ).load_by_parent(
                 workspace.ref_id,
             )
             metrics = await uow.repository_for(Metric).find_all(
@@ -205,7 +211,9 @@ class ReportService:
             )
             metrics_by_ref_id: Dict[EntityId, Metric] = {m.ref_id: m for m in metrics}
 
-            person_collection = await uow.repository_for(PersonCollection).load_by_parent(
+            person_collection = await uow.repository_for(
+                PersonCollection
+            ).load_by_parent(
                 workspace.ref_id,
             )
             persons = await uow.repository_for(Person).find_all(
@@ -226,7 +234,9 @@ class ReportService:
                 None,
             )
 
-            raw_all_inbox_tasks = await uow.get_x(InboxTaskRepository).find_all_with_filters(
+            raw_all_inbox_tasks = await uow.get_x(
+                InboxTaskRepository
+            ).find_all_with_filters(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
                 filter_sources=sources,

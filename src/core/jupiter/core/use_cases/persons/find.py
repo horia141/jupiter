@@ -9,8 +9,6 @@ from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
-from jupiter.core.domain.persons.infra.person_collection_repository import PersonCollectionRepository
-from jupiter.core.domain.persons.infra.person_repository import PersonRepository
 from jupiter.core.domain.persons.person import Person
 from jupiter.core.domain.persons.person_collection import PersonCollection
 from jupiter.core.domain.projects.project import Project
@@ -74,10 +72,10 @@ class PersonFindUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        inbox_task_collection = (
-            await uow.repository_for(InboxTaskCollection).load_by_parent(
-                workspace.ref_id,
-            )
+        inbox_task_collection = await uow.repository_for(
+            InboxTaskCollection
+        ).load_by_parent(
+            workspace.ref_id,
         )
         person_collection = await uow.repository_for(PersonCollection).load_by_parent(
             workspace.ref_id,
@@ -92,25 +90,21 @@ class PersonFindUseCase(
         )
 
         if args.include_catch_up_inbox_tasks:
-            catch_up_inbox_tasks = (
-                await uow.repository_for(InboxTask).find_all_generic(
-                    parent_ref_id=inbox_task_collection.ref_id,
-                    allow_archived=True,
-                    source=[InboxTaskSource.PERSON_CATCH_UP],
-                    person_ref_id=[p.ref_id for p in persons],
-                )
+            catch_up_inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
+                parent_ref_id=inbox_task_collection.ref_id,
+                allow_archived=True,
+                source=[InboxTaskSource.PERSON_CATCH_UP],
+                person_ref_id=[p.ref_id for p in persons],
             )
         else:
             catch_up_inbox_tasks = None
 
         if args.include_birthday_inbox_tasks:
-            birthday_inbox_tasks = (
-                await uow.repository_for(InboxTask).find_all_generic(
-                    parent_ref_id=inbox_task_collection.ref_id,
-                    allow_archived=True,
-                    source=[InboxTaskSource.PERSON_BIRTHDAY],
-                    person_ref_id=[p.ref_id for p in persons],
-                )
+            birthday_inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
+                parent_ref_id=inbox_task_collection.ref_id,
+                allow_archived=True,
+                source=[InboxTaskSource.PERSON_BIRTHDAY],
+                person_ref_id=[p.ref_id for p in persons],
             )
         else:
             birthday_inbox_tasks = None

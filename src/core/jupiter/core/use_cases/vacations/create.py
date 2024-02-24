@@ -54,7 +54,9 @@ class VacationCreateUseCase(
         """Execute the command's actions."""
         workspace = context.workspace
 
-        vacation_collection = await uow.repository_for(VacationCollection).load_by_parent(
+        vacation_collection = await uow.repository_for(
+            VacationCollection
+        ).load_by_parent(
             workspace.ref_id,
         )
 

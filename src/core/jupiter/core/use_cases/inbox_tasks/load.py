@@ -9,9 +9,7 @@ from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
-from jupiter.core.domain.metrics.infra.metric_repository import MetricRepository
 from jupiter.core.domain.metrics.metric import Metric
-from jupiter.core.domain.persons.infra.person_repository import PersonRepository
 from jupiter.core.domain.persons.person import Person
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.push_integrations.email.email_task import EmailTask
@@ -71,7 +69,9 @@ class InboxTaskLoadUseCase(
         inbox_task = await uow.repository_for(InboxTask).load_by_id(
             args.ref_id, allow_archived=args.allow_archived
         )
-        project = await uow.repository_for(Project).load_by_id(inbox_task.project_ref_id)
+        project = await uow.repository_for(Project).load_by_id(
+            inbox_task.project_ref_id
+        )
 
         if inbox_task.habit_ref_id is not None:
             habit = await uow.repository_for(Habit).load_by_id(inbox_task.habit_ref_id)
@@ -91,12 +91,16 @@ class InboxTaskLoadUseCase(
             big_plan = None
 
         if inbox_task.metric_ref_id is not None:
-            metric = await uow.repository_for(Metric).load_by_id(inbox_task.metric_ref_id)
+            metric = await uow.repository_for(Metric).load_by_id(
+                inbox_task.metric_ref_id
+            )
         else:
             metric = None
 
         if inbox_task.person_ref_id is not None:
-            person = await uow.repository_for(Person).load_by_id(inbox_task.person_ref_id)
+            person = await uow.repository_for(Person).load_by_id(
+                inbox_task.person_ref_id
+            )
         else:
             person = None
 

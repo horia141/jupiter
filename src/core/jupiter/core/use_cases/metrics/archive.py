@@ -11,8 +11,6 @@ from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.inbox_tasks.service.archive_service import (
     InboxTaskArchiveService,
 )
-from jupiter.core.domain.metrics.infra.metric_entry_repository import MetricEntryRepository
-from jupiter.core.domain.metrics.infra.metric_repository import MetricRepository
 from jupiter.core.domain.metrics.metric import Metric
 from jupiter.core.domain.metrics.metric_entry import MetricEntry
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -51,10 +49,10 @@ class MetricArchiveUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        inbox_task_collection = (
-            await uow.repository_for(InboxTaskCollection).load_by_parent(
-                workspace.ref_id,
-            )
+        inbox_task_collection = await uow.repository_for(
+            InboxTaskCollection
+        ).load_by_parent(
+            workspace.ref_id,
         )
 
         metric = await uow.repository_for(Metric).load_by_id(args.ref_id)

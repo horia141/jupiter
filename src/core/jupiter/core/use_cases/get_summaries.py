@@ -1,8 +1,8 @@
 """A use case for retrieving summaries about entities."""
 from typing import List, Optional
+
 from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.core.domain.chores.chore_collection import ChoreCollection
-
 from jupiter.core.domain.fast_info_repository import (
     BigPlanSummary,
     ChoreSummary,
@@ -18,9 +18,7 @@ from jupiter.core.domain.fast_info_repository import (
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.habits.habit_collection import HabitCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
-from jupiter.core.domain.metrics.infra.metric_collection_repository import MetricCollectionRepository
 from jupiter.core.domain.metrics.metric_collection import MetricCollection
-from jupiter.core.domain.persons.infra.person_collection_repository import PersonCollectionRepository
 from jupiter.core.domain.persons.person_collection import PersonCollection
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.projects.project_collection import ProjectCollection
@@ -89,16 +87,18 @@ class GetSummariesUseCase(
         workspace = context.workspace
         allow_archived = args.allow_archived is True
 
-        vacation_collection = await uow.repository_for(VacationCollection).load_by_parent(
+        vacation_collection = await uow.repository_for(
+            VacationCollection
+        ).load_by_parent(
             workspace.ref_id,
         )
         project_collection = await uow.repository_for(ProjectCollection).load_by_parent(
             workspace.ref_id,
         )
-        inbox_task_collection = (
-            await uow.repository_for(InboxTaskCollection).load_by_parent(
-                workspace.ref_id,
-            )
+        inbox_task_collection = await uow.repository_for(
+            InboxTaskCollection
+        ).load_by_parent(
+            workspace.ref_id,
         )
         habit_collection = await uow.repository_for(HabitCollection).load_by_parent(
             workspace.ref_id,
@@ -106,13 +106,15 @@ class GetSummariesUseCase(
         chore_collection = await uow.repository_for(ChoreCollection).load_by_parent(
             workspace.ref_id,
         )
-        big_plan_collection = await uow.repository_for(BigPlanCollection).load_by_parent(
+        big_plan_collection = await uow.repository_for(
+            BigPlanCollection
+        ).load_by_parent(
             workspace.ref_id,
         )
-        smart_list_collection = (
-            await uow.repository_for(SmartListCollection).load_by_parent(
-                workspace.ref_id,
-            )
+        smart_list_collection = await uow.repository_for(
+            SmartListCollection
+        ).load_by_parent(
+            workspace.ref_id,
         )
         metric_collection = await uow.repository_for(MetricCollection).load_by_parent(
             workspace.ref_id,
@@ -154,7 +156,9 @@ class GetSummariesUseCase(
             workspace.is_feature_available(WorkspaceFeature.INBOX_TASKS)
             and args.include_inbox_tasks
         ):
-            inbox_tasks = await uow.get_x(FastInfoRepository).find_all_inbox_task_summaries(
+            inbox_tasks = await uow.get_x(
+                FastInfoRepository
+            ).find_all_inbox_task_summaries(
                 parent_ref_id=inbox_task_collection.workspace.ref_id,
                 allow_archived=allow_archived,
             )
@@ -190,7 +194,9 @@ class GetSummariesUseCase(
             workspace.is_feature_available(WorkspaceFeature.SMART_LISTS)
             and args.include_smart_lists
         ):
-            smart_lists = await uow.get_x(FastInfoRepository).find_all_smart_list_summaries(
+            smart_lists = await uow.get_x(
+                FastInfoRepository
+            ).find_all_smart_list_summaries(
                 parent_ref_id=smart_list_collection.workspace.ref_id,
                 allow_archived=allow_archived,
             )

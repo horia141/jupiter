@@ -2,7 +2,10 @@
 from typing import Optional
 
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.inbox_tasks.inbox_task import CannotModifyGeneratedTaskError, InboxTask
+from jupiter.core.domain.inbox_tasks.inbox_task import (
+    CannotModifyGeneratedTaskError,
+    InboxTask,
+)
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.errors import InputValidationError

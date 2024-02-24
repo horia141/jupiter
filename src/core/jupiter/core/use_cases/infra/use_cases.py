@@ -22,7 +22,9 @@ from jupiter.core.domain.storage_engine import (
     SearchStorageEngine,
 )
 from jupiter.core.domain.user.user import User
-from jupiter.core.domain.user_workspace_link.infra.user_workspace_link_repository import UserWorkspaceLinkRepository
+from jupiter.core.domain.user_workspace_link.infra.user_workspace_link_repository import (
+    UserWorkspaceLinkRepository,
+)
 from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework import use_case as uc
 from jupiter.core.framework.base.entity_id import EntityId
@@ -275,9 +277,9 @@ class AppLoggedInMutationUseCase(
         )
         async with self._domain_storage_engine.get_unit_of_work() as uow:
             user = await uow.repository_for(User).load_by_id(auth_token.user_ref_id)
-            user_workspace_link = await uow.get(UserWorkspaceLinkRepository).load_by_user(
-                auth_token.user_ref_id
-            )
+            user_workspace_link = await uow.get(
+                UserWorkspaceLinkRepository
+            ).load_by_user(auth_token.user_ref_id)
             workspace = await uow.repository_for(Workspace).load_by_id(
                 user_workspace_link.workspace_ref_id
             )
@@ -432,9 +434,9 @@ class AppLoggedInReadonlyUseCase(
         )
         async with self._domain_storage_engine.get_unit_of_work() as uow:
             user = await uow.repository_for(User).load_by_id(auth_token.user_ref_id)
-            user_workspace_link = await uow.get(UserWorkspaceLinkRepository).load_by_user(
-                auth_token.user_ref_id
-            )
+            user_workspace_link = await uow.get(
+                UserWorkspaceLinkRepository
+            ).load_by_user(auth_token.user_ref_id)
             workspace = await uow.repository_for(Workspace).load_by_id(
                 user_workspace_link.workspace_ref_id
             )

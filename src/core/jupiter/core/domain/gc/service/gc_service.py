@@ -8,7 +8,6 @@ from jupiter.core.domain.big_plans.service.archive_service import BigPlanArchive
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.gc.gc_log import GCLog
 from jupiter.core.domain.gc.gc_log_entry import GCLogEntry
-from jupiter.core.domain.gc.infra.gc_log_entry_repository import GCLogEntryRepository
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
@@ -16,16 +15,22 @@ from jupiter.core.domain.inbox_tasks.service.archive_service import (
     InboxTaskArchiveService,
 )
 from jupiter.core.domain.push_integrations.email.email_task import EmailTask
-from jupiter.core.domain.push_integrations.email.email_task_collection import EmailTaskCollection
+from jupiter.core.domain.push_integrations.email.email_task_collection import (
+    EmailTaskCollection,
+)
 from jupiter.core.domain.push_integrations.email.service.archive_service import (
     EmailTaskArchiveService,
 )
-from jupiter.core.domain.push_integrations.group.push_integration_group import PushIntegrationGroup
+from jupiter.core.domain.push_integrations.group.push_integration_group import (
+    PushIntegrationGroup,
+)
 from jupiter.core.domain.push_integrations.slack.service.archive_service import (
     SlackTaskArchiveService,
 )
 from jupiter.core.domain.push_integrations.slack.slack_task import SlackTask
-from jupiter.core.domain.push_integrations.slack.slack_task_collection import SlackTaskCollection
+from jupiter.core.domain.push_integrations.slack.slack_task_collection import (
+    SlackTaskCollection,
+)
 from jupiter.core.domain.storage_engine import (
     DomainStorageEngine,
     DomainUnitOfWork,
@@ -66,30 +71,30 @@ class GCService:
             )
             gc_log_entry = await uow.repository_for(GCLogEntry).create(gc_log_entry)
 
-            inbox_task_collection = (
-                await uow.repository_for(InboxTaskCollection).load_by_parent(
-                    workspace.ref_id,
-                )
+            inbox_task_collection = await uow.repository_for(
+                InboxTaskCollection
+            ).load_by_parent(
+                workspace.ref_id,
             )
-            big_plan_collection = (
-                await uow.repository_for(BigPlanCollection).load_by_parent(
-                    workspace.ref_id,
-                )
+            big_plan_collection = await uow.repository_for(
+                BigPlanCollection
+            ).load_by_parent(
+                workspace.ref_id,
             )
-            push_integration_group = (
-                await uow.repository_for(PushIntegrationGroup).load_by_parent(
-                    workspace.ref_id,
-                )
+            push_integration_group = await uow.repository_for(
+                PushIntegrationGroup
+            ).load_by_parent(
+                workspace.ref_id,
             )
-            slack_task_collection = (
-                await uow.repository_for(SlackTaskCollection).load_by_parent(
-                    push_integration_group.ref_id,
-                )
+            slack_task_collection = await uow.repository_for(
+                SlackTaskCollection
+            ).load_by_parent(
+                push_integration_group.ref_id,
             )
-            email_task_collection = (
-                await uow.repository_for(EmailTaskCollection).load_by_parent(
-                    push_integration_group.ref_id,
-                )
+            email_task_collection = await uow.repository_for(
+                EmailTaskCollection
+            ).load_by_parent(
+                push_integration_group.ref_id,
             )
 
         if (

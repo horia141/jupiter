@@ -4,8 +4,10 @@ from jupiter.core.domain.auth.auth import Auth, IncorrectRecoveryTokenError
 from jupiter.core.domain.auth.password_new_plain import PasswordNewPlain
 from jupiter.core.domain.auth.recovery_token_plain import RecoveryTokenPlain
 from jupiter.core.domain.core.email_address import EmailAddress
-from jupiter.core.domain.user.infra.user_repository import UserNotFoundError, UserRepository
-from jupiter.core.domain.user.user import User
+from jupiter.core.domain.user.infra.user_repository import (
+    UserNotFoundError,
+    UserRepository,
+)
 from jupiter.core.framework.secure import secure_class
 from jupiter.core.framework.use_case import (
     ProgressReporter,

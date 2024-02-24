@@ -26,7 +26,9 @@ class GCDoAllUseCase(AppBackgroundMutationUseCase[GCDoAllArgs, None]):
     ) -> None:
         """Execute the command's action."""
         async with self._domain_storage_engine.get_unit_of_work() as uow:
-            workspaces = await uow.repository_for(Workspace).find_all(allow_archived=False)
+            workspaces = await uow.repository_for(Workspace).find_all(
+                allow_archived=False
+            )
 
         ctx = DomainContext(EventSource.GC_CRON, self._time_provider.get_current_time())
 

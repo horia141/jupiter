@@ -178,7 +178,12 @@ class ParentLink:
 EntityLinkFilterRaw = (
     None | AtomicValue[Primitive] | EnumValue | IsRefId | IsParentLink | IsOneOfRefId
 )
-EntityLinkFilterCompiled = Primitive | AtomicValue[Primitive] | EnumValue | Sequence[Primitive | AtomicValue[Primitive] | EnumValue]
+EntityLinkFilterCompiled = (
+    Primitive
+    | AtomicValue[Primitive]
+    | EnumValue
+    | Sequence[Primitive | AtomicValue[Primitive] | EnumValue]
+)
 EntityLinkFiltersRaw = dict[str, EntityLinkFilterRaw]
 EntityLinkFiltersCompiled = dict[str, EntityLinkFilterCompiled]
 
@@ -376,6 +381,7 @@ class RootEntity(Entity):
 
     # example: workspace, user
 
+
 @dataclass
 class StubEntity(Entity):
     """An entity with no children, but which is also a singleton."""
@@ -389,7 +395,6 @@ class TrunkEntity(Entity, abc.ABC):
 
     # examples:  vacations collection, projects collection, smart list collection, integrations collection,
     # Zapier+Mail collection, etc
-
 
 
 @dataclass

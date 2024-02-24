@@ -8,8 +8,6 @@ from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDu
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.persons.infra.person_collection_repository import PersonCollectionRepository
-from jupiter.core.domain.persons.infra.person_repository import PersonRepository
 from jupiter.core.domain.persons.person import Person
 from jupiter.core.domain.persons.person_birthday import PersonBirthday
 from jupiter.core.domain.persons.person_collection import PersonCollection

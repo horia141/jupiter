@@ -1,6 +1,5 @@
 """A repository of notes."""
 import abc
-from typing import Iterable, Optional
 
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain

@@ -1,9 +1,9 @@
 """The real implementation of an engine."""
 from contextlib import asynccontextmanager
 from types import TracebackType
-from typing import Any, AsyncIterator, Final, Mapping, Optional, Type, TypeVar, cast, overload
-from jupiter.core.domain.auth.auth import Auth
+from typing import Any, AsyncIterator, Final, Optional, Type, TypeVar, cast, overload
 
+from jupiter.core.domain.auth.auth import Auth
 from jupiter.core.domain.auth.infra.auth_repository import AuthRepository
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
@@ -44,8 +44,6 @@ from jupiter.core.domain.gamification.infra.score_stats_repository import (
 )
 from jupiter.core.domain.gamification.score_log import ScoreLog
 from jupiter.core.domain.gamification.score_log_entry import ScoreLogEntry
-from jupiter.core.domain.gamification.score_period_best import ScorePeriodBest
-from jupiter.core.domain.gamification.score_stats import ScoreStats
 from jupiter.core.domain.gc.gc_log import GCLog
 from jupiter.core.domain.gc.gc_log_entry import GCLogEntry
 from jupiter.core.domain.gc.infra.gc_log_entry_repository import GCLogEntryRepository
@@ -97,7 +95,9 @@ from jupiter.core.domain.projects.infra.project_repository import ProjectReposit
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.projects.project_collection import ProjectCollection
 from jupiter.core.domain.push_integrations.email.email_task import EmailTask
-from jupiter.core.domain.push_integrations.email.email_task_collection import EmailTaskCollection
+from jupiter.core.domain.push_integrations.email.email_task_collection import (
+    EmailTaskCollection,
+)
 from jupiter.core.domain.push_integrations.email.infra.email_task_collection_repository import (
     EmailTaskCollectionRepository,
 )
@@ -107,7 +107,9 @@ from jupiter.core.domain.push_integrations.email.infra.email_task_repository imp
 from jupiter.core.domain.push_integrations.group.infra.push_integration_group_repository import (
     PushIntegrationGroupRepository,
 )
-from jupiter.core.domain.push_integrations.group.push_integration_group import PushIntegrationGroup
+from jupiter.core.domain.push_integrations.group.push_integration_group import (
+    PushIntegrationGroup,
+)
 from jupiter.core.domain.push_integrations.slack.infra.slack_task_collection_repository import (
     SlackTaskCollectionRepository,
 )
@@ -115,7 +117,9 @@ from jupiter.core.domain.push_integrations.slack.infra.slack_task_repository imp
     SlackTaskRepository,
 )
 from jupiter.core.domain.push_integrations.slack.slack_task import SlackTask
-from jupiter.core.domain.push_integrations.slack.slack_task_collection import SlackTaskCollection
+from jupiter.core.domain.push_integrations.slack.slack_task_collection import (
+    SlackTaskCollection,
+)
 from jupiter.core.domain.search.infra.search_repository import SearchRepository
 from jupiter.core.domain.smart_lists.infra.smart_list_collection_repository import (
     SmartListCollectionRepository,
@@ -144,7 +148,9 @@ from jupiter.core.domain.user.user import User
 from jupiter.core.domain.user_workspace_link.infra.user_workspace_link_repository import (
     UserWorkspaceLinkRepository,
 )
-from jupiter.core.domain.user_workspace_link.user_workspace_link import UserWorkspaceLink
+from jupiter.core.domain.user_workspace_link.user_workspace_link import (
+    UserWorkspaceLink,
+)
 from jupiter.core.domain.vacations.infra.vacation_collection_repository import (
     VacationCollectionRepository,
 )
@@ -155,10 +161,24 @@ from jupiter.core.domain.workspaces.infra.workspace_repository import (
     WorkspaceRepository,
 )
 from jupiter.core.domain.workspaces.workspace import Workspace
-from jupiter.core.framework.entity import CrownEntity, Entity, RootEntity, StubEntity, TrunkEntity
+from jupiter.core.framework.entity import (
+    CrownEntity,
+    Entity,
+    RootEntity,
+    StubEntity,
+    TrunkEntity,
+)
 from jupiter.core.framework.realm import RealmCodecRegistry
 from jupiter.core.framework.record import Record
-from jupiter.core.framework.repository import CrownEntityRepository, EntityRepository, RecordRepository, Repository, RootEntityRepository, StubEntityRepository, TrunkEntityRepository
+from jupiter.core.framework.repository import (
+    CrownEntityRepository,
+    EntityRepository,
+    RecordRepository,
+    Repository,
+    RootEntityRepository,
+    StubEntityRepository,
+    TrunkEntityRepository,
+)
 from jupiter.core.repository.sqlite.connection import SqliteConnection
 from jupiter.core.repository.sqlite.domain.auths import SqliteAuthRepository
 from jupiter.core.repository.sqlite.domain.big_plans import (
@@ -249,21 +269,23 @@ from jupiter.core.repository.sqlite.domain.workspace import (
 from sqlalchemy import MetaData
 from sqlalchemy.ext.asyncio import AsyncEngine
 
-
 _RepositoryT = TypeVar("_RepositoryT", bound=Repository)
 _EntityRepositoryT = TypeVar("_EntityRepositoryT", bound=EntityRepository[Entity])
-_RecordRepositoryT = TypeVar("_RecordRepositoryT", bound=RecordRepository[Record, Any, Any]) # type: ignore
+_RecordRepositoryT = TypeVar("_RecordRepositoryT", bound=RecordRepository[Record, Any, Any])  # type: ignore
 _RootEntityT = TypeVar("_RootEntityT", bound=RootEntity)
 _StubEntityT = TypeVar("_StubEntityT", bound=StubEntity)
 _TrunkEntityT = TypeVar("_TrunkEntityT", bound=TrunkEntity)
 _CrownEntityT = TypeVar("_CrownEntityT", bound=CrownEntity)
 
+
 class SqliteDomainUnitOfWork(DomainUnitOfWork):
     """A Sqlite specific unit of work."""
 
     _entity_repositories: Final[dict[type[Entity], EntityRepository[Entity]]]
-    _entity_repositories_by_type: Final[dict[type[EntityRepository[Entity]], EntityRepository[Entity]]]
-    _record_repositories_by_type: Final[dict[type[RecordRepository[Record, Any, Any]], RecordRepository[Record, Any, Any]]] # type: ignore
+    _entity_repositories_by_type: Final[
+        dict[type[EntityRepository[Entity]], EntityRepository[Entity]]
+    ]
+    _record_repositories_by_type: Final[dict[type[RecordRepository[Record, Any, Any]], RecordRepository[Record, Any, Any]]]  # type: ignore
     _repositories: Final[dict[type[Repository], Repository]]
 
     _auth_repository: Final[SqliteAuthRepository]
@@ -512,27 +534,26 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
         _exc_tb: Optional[TracebackType],
     ) -> None:
         """Exit context."""
-    
-    def get( # type: ignore
+
+    def get(  # type: ignore
         self, repository_type: Type[_EntityRepositoryT]
     ) -> _EntityRepositoryT:
         """Retrieve a repository."""
         if repository_type not in self._entity_repositories_by_type:
             raise ValueError(f"No repository for type: {repository_type}")
-        return cast(_EntityRepositoryT, self._entity_repositories_by_type[repository_type])
-        
+        return cast(
+            _EntityRepositoryT, self._entity_repositories_by_type[repository_type]
+        )
 
-    def get_r( # type: ignore
+    def get_r(  # type: ignore
         self, repository_type: Type[_RecordRepositoryT]
     ) -> _RecordRepositoryT:
         """Retrieve a repository."""
         if repository_type not in self._record_repositories_by_type:
             raise ValueError(f"No repository for type: {repository_type}")
-        return cast(_RecordRepositoryT, self._record_repositories_by_type[repository_type]) # type: ignore
-    
-    def get_x(
-            self, repository_type: Type[_RepositoryT]
-    ) -> _RepositoryT:
+        return cast(_RecordRepositoryT, self._record_repositories_by_type[repository_type])  # type: ignore
+
+    def get_x(self, repository_type: Type[_RepositoryT]) -> _RepositoryT:
         """Retrieve a repository."""
         if repository_type not in self._repositories:
             raise ValueError(f"No repository for type: {repository_type}")
@@ -563,19 +584,37 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
         """Retrieve a repository."""
 
     def repository_for(
-        self, entity_type: Type[_RootEntityT] | Type[_StubEntityT] | Type[_TrunkEntityT] | Type[_CrownEntityT]
-    ) -> RootEntityRepository[_RootEntityT] | StubEntityRepository[_StubEntityT] | TrunkEntityRepository[_TrunkEntityT] | CrownEntityRepository[_CrownEntityT]: 
+        self,
+        entity_type: Type[_RootEntityT]
+        | Type[_StubEntityT]
+        | Type[_TrunkEntityT]
+        | Type[_CrownEntityT],
+    ) -> RootEntityRepository[_RootEntityT] | StubEntityRepository[
+        _StubEntityT
+    ] | TrunkEntityRepository[_TrunkEntityT] | CrownEntityRepository[_CrownEntityT]:
         """Return a repository for a particular entity."""
         if entity_type not in self._entity_repositories:
             raise ValueError(f"No repository for entity type: {entity_type}")
         if issubclass(entity_type, RootEntity):
-            return cast(RootEntityRepository[_RootEntityT], self._entity_repositories[entity_type])
+            return cast(
+                RootEntityRepository[_RootEntityT],
+                self._entity_repositories[entity_type],
+            )
         if issubclass(entity_type, StubEntity):
-            return cast(StubEntityRepository[_StubEntityT], self._entity_repositories[entity_type])
+            return cast(
+                StubEntityRepository[_StubEntityT],
+                self._entity_repositories[entity_type],
+            )
         if issubclass(entity_type, TrunkEntity):
-            return cast(TrunkEntityRepository[_TrunkEntityT], self._entity_repositories[entity_type])
+            return cast(
+                TrunkEntityRepository[_TrunkEntityT],
+                self._entity_repositories[entity_type],
+            )
         if issubclass(entity_type, CrownEntity):
-            return cast(CrownEntityRepository[_CrownEntityT], self._entity_repositories[entity_type])
+            return cast(
+                CrownEntityRepository[_CrownEntityT],
+                self._entity_repositories[entity_type],
+            )
 
 
 class SqliteDomainStorageEngine(DomainStorageEngine):

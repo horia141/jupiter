@@ -67,7 +67,9 @@ class BigPlanCreateUseCase(
         ):
             raise FeatureUnavailableError(WorkspaceFeature.PROJECTS)
 
-        big_plan_collection = await uow.repository_for(BigPlanCollection).load_by_parent(
+        big_plan_collection = await uow.repository_for(
+            BigPlanCollection
+        ).load_by_parent(
             workspace.ref_id,
         )
 

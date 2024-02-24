@@ -84,10 +84,10 @@ class InboxTaskCreateUseCase(
                 args.big_plan_ref_id,
             )
 
-        inbox_task_collection = (
-            await uow.repository_for(InboxTaskCollection).load_by_parent(
-                workspace.ref_id,
-            )
+        inbox_task_collection = await uow.repository_for(
+            InboxTaskCollection
+        ).load_by_parent(
+            workspace.ref_id,
         )
 
         new_inbox_task = InboxTask.new_inbox_task(

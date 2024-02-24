@@ -1,7 +1,6 @@
 """The command for hard removing a metric."""
 
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.metrics.infra.metric_repository import MetricRepository
 from jupiter.core.domain.metrics.metric import Metric
 from jupiter.core.domain.metrics.service.remove_service import MetricRemoveService
 from jupiter.core.domain.storage_engine import DomainUnitOfWork

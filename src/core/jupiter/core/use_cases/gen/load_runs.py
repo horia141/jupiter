@@ -44,6 +44,8 @@ class GenLoadRunsUseCase(
             gen_log = await uow.repository_for(GenLog).load_by_parent(
                 context.workspace.ref_id
             )
-            entries = await uow.get_x(GenLogEntryRepository).find_last(gen_log.ref_id, 30)
+            entries = await uow.get_x(GenLogEntryRepository).find_last(
+                gen_log.ref_id, 30
+            )
 
         return GenLoadRunsResult(entries=entries)

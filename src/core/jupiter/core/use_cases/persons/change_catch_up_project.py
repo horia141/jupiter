@@ -6,8 +6,6 @@ from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
-from jupiter.core.domain.persons.infra.person_collection_repository import PersonCollectionRepository
-from jupiter.core.domain.persons.infra.person_repository import PersonRepository
 from jupiter.core.domain.persons.person import Person
 from jupiter.core.domain.persons.person_collection import PersonCollection
 from jupiter.core.domain.projects.project import Project
@@ -69,26 +67,22 @@ class PersonChangeCatchUpProjectUseCase(
         )
         persons_by_ref_id = {p.ref_id: p for p in persons}
 
-        inbox_task_collection = (
-            await uow.repository_for(InboxTaskCollection).load_by_parent(
-                workspace.ref_id,
-            )
+        inbox_task_collection = await uow.repository_for(
+            InboxTaskCollection
+        ).load_by_parent(
+            workspace.ref_id,
         )
-        all_catch_up_inbox_tasks = (
-            await uow.repository_for(InboxTask).find_all_generic(
-                parent_ref_id=inbox_task_collection.ref_id,
-                allow_archived=True,
-                source=[InboxTaskSource.PERSON_CATCH_UP],
-                person_ref_id=[p.ref_id for p in persons],
-            )
+        all_catch_up_inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
+            parent_ref_id=inbox_task_collection.ref_id,
+            allow_archived=True,
+            source=[InboxTaskSource.PERSON_CATCH_UP],
+            person_ref_id=[p.ref_id for p in persons],
         )
-        all_birthday_inbox_tasks = (
-            await uow.repository_for(InboxTask).find_all_generic(
-                parent_ref_id=inbox_task_collection.ref_id,
-                allow_archived=True,
-                source=[InboxTaskSource.PERSON_BIRTHDAY],
-                person_ref_id=[p.ref_id for p in persons],
-            )
+        all_birthday_inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
+            parent_ref_id=inbox_task_collection.ref_id,
+            allow_archived=True,
+            source=[InboxTaskSource.PERSON_BIRTHDAY],
+            person_ref_id=[p.ref_id for p in persons],
         )
 
         if old_catch_up_project_ref_id != catch_up_project_ref_id and len(persons) > 0:

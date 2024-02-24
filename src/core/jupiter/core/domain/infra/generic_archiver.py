@@ -28,7 +28,9 @@ async def generic_archiver(
             if not isinstance(field, OwnsLink):
                 continue
             if not issubclass(field.the_type, CrownEntity):
-                raise Exception(f"Entity {entity.__class__} owns an non-crown entity {field.the_type}")
+                raise Exception(
+                    f"Entity {entity.__class__} owns an non-crown entity {field.the_type}"
+                )
             linked_entities = await uow.repository_for(field.the_type).find_all_generic(
                 allow_archived=False, **field.get_for_entity(entity)
             )

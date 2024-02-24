@@ -46,22 +46,20 @@ export async function action({ request }: LoaderArgs) {
       session
     ).auth.resetPassword({
       email_address: form.emailAddress,
-      recovery_token: { token: form.recoveryToken },
-      new_password: { password_raw: form.newPassword },
-      new_password_repeat: { password_raw: form.newPasswordRepeat },
+      recovery_token: form.recoveryToken,
+      new_password: form.newPassword,
+      new_password_repeat: form.newPasswordRepeat,
     });
 
     const loginResult = await getGuestApiClient(session).login.login({
       email_address: form.emailAddress,
-      password: {
-        password_raw: form.newPassword,
-      },
+      password: form.newPassword,
     });
 
     session.set("authTokenExt", loginResult.auth_token_ext);
 
     return redirect(
-      `/show-recovery-token?recoveryToken=${resetPasswordResult.new_recovery_token.token}`,
+      `/show-recovery-token?recoveryToken=${resetPasswordResult.new_recovery_token}`,
       {
         headers: {
           "Set-Cookie": await commitSession(session),

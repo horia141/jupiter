@@ -1,7 +1,7 @@
 """The command for updating a chore."""
 from typing import Optional, cast
-from jupiter.core.domain.chores.chore import Chore
 
+from jupiter.core.domain.chores.chore import Chore
 from jupiter.core.domain.chores.chore_name import ChoreName
 from jupiter.core.domain.core import schedules
 from jupiter.core.domain.core.adate import ADate
@@ -123,10 +123,10 @@ class ChoreUpdateUseCase(
         await progress_reporter.mark_updated(chore)
 
         if need_to_change_inbox_tasks:
-            inbox_task_collection = (
-                await uow.repository_for(InboxTaskCollection).load_by_parent(
-                    workspace.ref_id,
-                )
+            inbox_task_collection = await uow.repository_for(
+                InboxTaskCollection
+            ).load_by_parent(
+                workspace.ref_id,
             )
             all_inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
                 parent_ref_id=inbox_task_collection.ref_id,

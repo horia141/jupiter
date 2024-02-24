@@ -9,7 +9,10 @@ from jupiter.core.domain.gamification.service.record_score_service import (
     RecordScoreResult,
     RecordScoreService,
 )
-from jupiter.core.domain.inbox_tasks.inbox_task import CannotModifyGeneratedTaskError, InboxTask
+from jupiter.core.domain.inbox_tasks.inbox_task import (
+    CannotModifyGeneratedTaskError,
+    InboxTask,
+)
 from jupiter.core.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.core.domain.storage_engine import DomainUnitOfWork

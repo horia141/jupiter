@@ -18,21 +18,23 @@ from jupiter.core.domain.habits.habit_collection import HabitCollection
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
-from jupiter.core.domain.metrics.infra.metric_collection_repository import MetricCollectionRepository
-from jupiter.core.domain.metrics.infra.metric_repository import MetricRepository
 from jupiter.core.domain.metrics.metric import Metric
 from jupiter.core.domain.metrics.metric_collection import MetricCollection
-from jupiter.core.domain.persons.infra.person_collection_repository import PersonCollectionRepository
-from jupiter.core.domain.persons.infra.person_repository import PersonRepository
 from jupiter.core.domain.persons.person import Person
 from jupiter.core.domain.persons.person_collection import PersonCollection
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.projects.project_collection import ProjectCollection
 from jupiter.core.domain.push_integrations.email.email_task import EmailTask
-from jupiter.core.domain.push_integrations.email.email_task_collection import EmailTaskCollection
-from jupiter.core.domain.push_integrations.group.push_integration_group import PushIntegrationGroup
+from jupiter.core.domain.push_integrations.email.email_task_collection import (
+    EmailTaskCollection,
+)
+from jupiter.core.domain.push_integrations.group.push_integration_group import (
+    PushIntegrationGroup,
+)
 from jupiter.core.domain.push_integrations.slack.slack_task import SlackTask
-from jupiter.core.domain.push_integrations.slack.slack_task_collection import SlackTaskCollection
+from jupiter.core.domain.push_integrations.slack.slack_task_collection import (
+    SlackTaskCollection,
+)
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case_io import (
@@ -127,10 +129,10 @@ class InboxTaskFindUseCase(
         project_collection = await uow.repository_for(ProjectCollection).load_by_parent(
             workspace.ref_id,
         )
-        inbox_task_collection = (
-            await uow.repository_for(InboxTaskCollection).load_by_parent(
-                workspace.ref_id,
-            )
+        inbox_task_collection = await uow.repository_for(
+            InboxTaskCollection
+        ).load_by_parent(
+            workspace.ref_id,
         )
         habit_collection = await uow.repository_for(HabitCollection).load_by_parent(
             workspace.ref_id,
@@ -138,7 +140,9 @@ class InboxTaskFindUseCase(
         chore_collection = await uow.repository_for(ChoreCollection).load_by_parent(
             workspace.ref_id,
         )
-        big_plan_collection = await uow.repository_for(BigPlanCollection).load_by_parent(
+        big_plan_collection = await uow.repository_for(
+            BigPlanCollection
+        ).load_by_parent(
             workspace.ref_id,
         )
         metric_collection = await uow.repository_for(MetricCollection).load_by_parent(
@@ -147,20 +151,20 @@ class InboxTaskFindUseCase(
         person_collection = await uow.repository_for(PersonCollection).load_by_parent(
             workspace.ref_id,
         )
-        push_integrations_group = (
-            await uow.repository_for(PushIntegrationGroup).load_by_parent(
-                workspace.ref_id,
-            )
+        push_integrations_group = await uow.repository_for(
+            PushIntegrationGroup
+        ).load_by_parent(
+            workspace.ref_id,
         )
-        slack_task_collection = (
-            await uow.repository_for(SlackTaskCollection).load_by_parent(
-                push_integrations_group.ref_id,
-            )
+        slack_task_collection = await uow.repository_for(
+            SlackTaskCollection
+        ).load_by_parent(
+            push_integrations_group.ref_id,
         )
-        email_task_collection = (
-            await uow.repository_for(EmailTaskCollection).load_by_parent(
-                push_integrations_group.ref_id,
-            )
+        email_task_collection = await uow.repository_for(
+            EmailTaskCollection
+        ).load_by_parent(
+            push_integrations_group.ref_id,
         )
 
         projects = await uow.repository_for(Project).find_all_generic(

@@ -773,12 +773,7 @@ class WebServiceApp:
 
         def build_composite_schema(
             composite_value_type: type[
-                CompositeValue
-                | SecretValue
-                | Entity
-                | Record
-                | UseCaseArgsBase
-                | UseCaseResultBase
+                CompositeValue | Entity | Record | UseCaseArgsBase | UseCaseResultBase
             ],
         ) -> dict[str, Any]:
             requred = [
@@ -799,6 +794,15 @@ class WebServiceApp:
             if len(requred) > 0:
                 result["required"] = requred
             return result
+
+        def build_secret_value_schema(
+            secret_value_type: type[SecretValue],
+        ) -> dict[str, Any]:
+            return {
+                "title": secret_value_type.__name__,
+                "description": secret_value_type.__doc__,
+                "type": "string",
+            }
 
         if self._fast_app.openapi_schema:
             return self._fast_app.openapi_schema
@@ -837,7 +841,7 @@ class WebServiceApp:
         ):
             openapi_schema["components"]["schemas"][
                 secret_value_type.__name__
-            ] = build_composite_schema(secret_value_type)
+            ] = build_secret_value_schema(secret_value_type)
 
         for entity_type in self._realm_codec_registry.get_all_registered_types(
             Entity, WebRealm
