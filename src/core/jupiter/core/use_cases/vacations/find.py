@@ -4,6 +4,7 @@ from typing import List, Optional
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.vacations.vacation import Vacation
+from jupiter.core.domain.vacations.vacation_collection import VacationCollection
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
@@ -48,10 +49,10 @@ class VacationFindUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        vacation_collection = await uow.vacation_collection_repository.load_by_parent(
+        vacation_collection = await uow.repository_for(VacationCollection).load_by_parent(
             workspace.ref_id,
         )
-        vacations = await uow.vacation_repository.find_all(
+        vacations = await uow.repository_for(Vacation).find_all(
             parent_ref_id=vacation_collection.ref_id,
             allow_archived=args.allow_archived,
             filter_ref_ids=args.filter_ref_ids,

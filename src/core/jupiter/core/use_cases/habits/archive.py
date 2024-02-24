@@ -1,6 +1,7 @@
 """The command for archiving a habit."""
 
 from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.habits.service.archive_service import HabitArchiveService
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -36,7 +37,7 @@ class HabitArchiveUseCase(
         args: HabitArchiveArgs,
     ) -> None:
         """Execute the command's action."""
-        habit = await uow.habit_repository.load_by_id(args.ref_id)
+        habit = await uow.repository_for(Habit).load_by_id(args.ref_id)
         await HabitArchiveService().do_it(
             context.domain_context, uow, progress_reporter, habit
         )

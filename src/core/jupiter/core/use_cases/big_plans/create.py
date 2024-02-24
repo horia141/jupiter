@@ -2,6 +2,7 @@
 from typing import Optional
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
+from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.core.domain.big_plans.big_plan_status import BigPlanStatus
 from jupiter.core.domain.core.adate import ADate
@@ -66,7 +67,7 @@ class BigPlanCreateUseCase(
         ):
             raise FeatureUnavailableError(WorkspaceFeature.PROJECTS)
 
-        big_plan_collection = await uow.big_plan_collection_repository.load_by_parent(
+        big_plan_collection = await uow.repository_for(BigPlanCollection).load_by_parent(
             workspace.ref_id,
         )
 
@@ -79,7 +80,7 @@ class BigPlanCreateUseCase(
             actionable_date=args.actionable_date,
             due_date=args.due_date,
         )
-        new_big_plan = await uow.big_plan_repository.create(new_big_plan)
+        new_big_plan = await uow.repository_for(BigPlan).create(new_big_plan)
         await progress_reporter.mark_created(new_big_plan)
 
         return BigPlanCreateResult(new_big_plan=new_big_plan)

@@ -1,6 +1,7 @@
 """Use case for creating a note."""
 
 from jupiter.core.domain.core.notes.note import Note
+from jupiter.core.domain.core.notes.note_collection import NoteCollection
 from jupiter.core.domain.core.notes.note_content_block import OneOfNoteContentBlock
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -53,7 +54,7 @@ class NoteCreateUseCase(
     ) -> NoteCreateResult:
         """Execute the command's action."""
         workspace = context.workspace
-        note_collection = await uow.note_collection_repository.load_by_parent(
+        note_collection = await uow.repository_for(NoteCollection).load_by_parent(
             workspace.ref_id
         )
         note = Note.new_note(
@@ -63,5 +64,5 @@ class NoteCreateUseCase(
             source_entity_ref_id=args.source_entity_ref_id,
             content=args.content,
         )
-        note = await uow.note_repository.create(note)
+        note = await uow.repository_for(Note).create(note)
         return NoteCreateResult(new_note=note)

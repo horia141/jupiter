@@ -4,6 +4,7 @@ from typing import Optional
 from jupiter.core.domain.core.entity_icon import EntityIcon
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.smart_lists.smart_list import SmartList
+from jupiter.core.domain.smart_lists.smart_list_collection import SmartListCollection
 from jupiter.core.domain.smart_lists.smart_list_name import SmartListName
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.use_case import (
@@ -54,7 +55,7 @@ class SmartListCreateUseCase(
         workspace = context.workspace
 
         smart_list_collection = (
-            await uow.smart_list_collection_repository.load_by_parent(
+            await uow.repository_for(SmartListCollection).load_by_parent(
                 workspace.ref_id,
             )
         )
@@ -66,7 +67,7 @@ class SmartListCreateUseCase(
             icon=args.icon,
         )
 
-        new_smart_list = await uow.smart_list_repository.create(new_smart_list)
+        new_smart_list = await uow.repository_for(SmartList).create(new_smart_list)
         await progress_reporter.mark_created(new_smart_list)
 
         return SmartListCreateResult(new_smart_list=new_smart_list)

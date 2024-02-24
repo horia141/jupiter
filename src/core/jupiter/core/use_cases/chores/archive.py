@@ -1,5 +1,6 @@
 """The command for archiving a chore."""
 
+from jupiter.core.domain.chores.chore import Chore
 from jupiter.core.domain.chores.service.archive_service import ChoreArchiveService
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -36,7 +37,7 @@ class ChoreArchiveUseCase(
         args: ChoreArchiveArgs,
     ) -> None:
         """Execute the command's action."""
-        chore = await uow.chore_repository.load_by_id(args.ref_id)
+        chore = await uow.repository_for(Chore).load_by_id(args.ref_id)
         await ChoreArchiveService().do_it(
             context.domain_context, uow, progress_reporter, chore
         )

@@ -1,7 +1,9 @@
 """Shared logic for archiving a big plan."""
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
+from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.inbox_tasks.service.archive_service import (
     InboxTaskArchiveService,
 )
@@ -32,16 +34,16 @@ class BigPlanArchiveService:
         if big_plan.archived:
             return BigPlanArchiveServiceResult(archived_inbox_tasks=[])
 
-        big_plan_collection = await uow.big_plan_collection_repository.load_by_id(
+        big_plan_collection = await uow.repository_for(BigPlanCollection).load_by_id(
             big_plan.big_plan_collection.ref_id,
         )
 
         inbox_task_collection = (
-            await uow.inbox_task_collection_repository.load_by_parent(
+            await uow.repository_for(InboxTaskCollection).load_by_parent(
                 big_plan_collection.workspace.ref_id,
             )
         )
-        inbox_tasks_to_archive = await uow.inbox_task_repository.find_all_with_filters(
+        inbox_tasks_to_archive = await uow.repository_for(InboxTask).find_all_with_filters(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=False,
             filter_big_plan_ref_ids=[big_plan.ref_id],
@@ -59,7 +61,7 @@ class BigPlanArchiveService:
             archived_inbox_tasks.append(inbox_task)
 
         big_plan = big_plan.mark_archived(ctx)
-        await uow.big_plan_repository.save(big_plan)
+        await uow.repository_for(BigPlan).save(big_plan)
         await progress_reporter.mark_updated(big_plan)
 
         return BigPlanArchiveServiceResult(archived_inbox_tasks=archived_inbox_tasks)

@@ -1,5 +1,5 @@
 """Update a doc use case."""
-
+from jupiter.core.domain.docs.doc import Doc
 from jupiter.core.domain.docs.doc_name import DocName
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -37,10 +37,10 @@ class DocUpdateUseCase(AppTransactionalLoggedInMutationUseCase[DocUpdateArgs, No
         args: DocUpdateArgs,
     ) -> None:
         """Execute the command's action."""
-        doc = await uow.doc_repository.load_by_id(args.ref_id)
+        doc = await uow.repository_for(Doc).load_by_id(args.ref_id)
         doc = doc.update(
             ctx=context.domain_context,
             name=args.name,
         )
-        doc = await uow.doc_repository.save(doc)
+        doc = await uow.repository_for(Doc).save(doc)
         await progress_reporter.mark_updated(doc)

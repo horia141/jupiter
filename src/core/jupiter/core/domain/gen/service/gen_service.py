@@ -5,6 +5,7 @@ from collections import defaultdict
 from typing import Dict, Final, FrozenSet, List, Optional, Tuple
 
 from jupiter.core.domain.chores.chore import Chore
+from jupiter.core.domain.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.core import schedules
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
@@ -12,8 +13,10 @@ from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDu
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import FeatureUnavailableError, WorkspaceFeature
+from jupiter.core.domain.gen.gen_log import GenLog
 from jupiter.core.domain.gen.gen_log_entry import GenLogEntry
 from jupiter.core.domain.habits.habit import Habit
+from jupiter.core.domain.habits.habit_collection import HabitCollection
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
@@ -21,15 +24,22 @@ from jupiter.core.domain.inbox_tasks.service.remove_service import (
     InboxTaskRemoveService,
 )
 from jupiter.core.domain.metrics.metric import Metric
+from jupiter.core.domain.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.persons.person import Person
 from jupiter.core.domain.persons.person_birthday import PersonBirthday
+from jupiter.core.domain.persons.person_collection import PersonCollection
 from jupiter.core.domain.projects.project import Project
+from jupiter.core.domain.projects.project_collection import ProjectCollection
 from jupiter.core.domain.push_integrations.email.email_task import EmailTask
+from jupiter.core.domain.push_integrations.email.email_task_collection import EmailTaskCollection
+from jupiter.core.domain.push_integrations.group.push_integration_group import PushIntegrationGroup
 from jupiter.core.domain.push_integrations.slack.slack_task import SlackTask
+from jupiter.core.domain.push_integrations.slack.slack_task_collection import SlackTaskCollection
 from jupiter.core.domain.storage_engine import DomainStorageEngine
 from jupiter.core.domain.sync_target import SyncTarget
 from jupiter.core.domain.user.user import User
 from jupiter.core.domain.vacations.vacation import Vacation
+from jupiter.core.domain.vacations.vacation_collection import VacationCollection
 from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
@@ -114,7 +124,7 @@ class GenService:
             raise FeatureUnavailableError(WorkspaceFeature.EMAIL_TASKS)
 
         async with self._domain_storage_engine.get_unit_of_work() as uow:
-            gen_log = await uow.gen_log_repository.load_by_parent(workspace.ref_id)
+            gen_log = await uow.repository_for(GenLog).load_by_parent(workspace.ref_id)
             gen_log_entry = GenLogEntry.new_log_entry(
                 ctx,
                 gen_log_ref_id=gen_log.ref_id,
@@ -130,23 +140,23 @@ class GenService:
                 filter_slack_task_ref_ids=filter_slack_task_ref_ids,
                 filter_email_task_ref_ids=filter_email_task_ref_ids,
             )
-            gen_log_entry = await uow.gen_log_entry_repository.create(gen_log_entry)
+            gen_log_entry = await uow.repository_for(GenLogEntry).create(gen_log_entry)
 
             vacation_collection = (
-                await uow.vacation_collection_repository.load_by_parent(
+                await uow.repository_for(VacationCollection).load_by_parent(
                     workspace.ref_id,
                 )
             )
-            all_vacations = await uow.vacation_repository.find_all(
+            all_vacations = await uow.repository_for(Vacation).find_all(
                 parent_ref_id=vacation_collection.ref_id,
             )
-            project_collection = await uow.project_collection_repository.load_by_parent(
+            project_collection = await uow.repository_for(ProjectCollection).load_by_parent(
                 workspace.ref_id,
             )
-            all_projects = await uow.project_repository.find_all(
+            all_projects = await uow.repository_for(Project).find_all(
                 parent_ref_id=project_collection.ref_id,
             )
-            all_syncable_projects = await uow.project_repository.find_all_with_filters(
+            all_syncable_projects = await uow.repository_for(Project).find_all_with_filters(
                 parent_ref_id=project_collection.ref_id,
                 filter_ref_ids=filter_project_ref_ids,
             )
@@ -154,14 +164,14 @@ class GenService:
             filter_project_ref_ids = [p.ref_id for p in all_syncable_projects]
 
             inbox_task_collection = (
-                await uow.inbox_task_collection_repository.load_by_parent(
+                await uow.repository_for(InboxTaskCollection).load_by_parent(
                     workspace.ref_id,
                 )
             )
-            habit_collection = await uow.habit_collection_repository.load_by_parent(
+            habit_collection = await uow.repository_for(HabitCollection).load_by_parent(
                 workspace.ref_id,
             )
-            chore_collection = await uow.chore_collection_repository.load_by_parent(
+            chore_collection = await uow.repository_for(ChoreCollection).load_by_parent(
                 workspace.ref_id,
             )
 
@@ -171,7 +181,7 @@ class GenService:
         ):
             async with progress_reporter.section("Generating habits"):
                 async with self._domain_storage_engine.get_unit_of_work() as uow:
-                    all_habits = await uow.habit_repository.find_all_with_filters(
+                    all_habits = await uow.repository_for(Habit).find_all_with_filters(
                         parent_ref_id=habit_collection.ref_id,
                         filter_ref_ids=filter_habit_ref_ids,
                         filter_project_ref_ids=filter_project_ref_ids,
@@ -179,7 +189,7 @@ class GenService:
 
                 async with self._domain_storage_engine.get_unit_of_work() as uow:
                     all_collection_inbox_tasks = (
-                        await uow.inbox_task_repository.find_all_with_filters(
+                        await uow.repository_for(InboxTask).find_all_with_filters(
                             parent_ref_id=inbox_task_collection.ref_id,
                             filter_sources=[InboxTaskSource.HABIT],
                             allow_archived=True,
@@ -225,7 +235,7 @@ class GenService:
         ):
             async with progress_reporter.section("Generating chores"):
                 async with self._domain_storage_engine.get_unit_of_work() as uow:
-                    all_chores = await uow.chore_repository.find_all_with_filters(
+                    all_chores = await uow.repository_for(Chore).find_all_with_filters(
                         parent_ref_id=chore_collection.ref_id,
                         filter_ref_ids=filter_chore_ref_ids,
                         filter_project_ref_ids=filter_project_ref_ids,
@@ -233,7 +243,7 @@ class GenService:
 
                 async with self._domain_storage_engine.get_unit_of_work() as uow:
                     all_collection_inbox_tasks = (
-                        await uow.inbox_task_repository.find_all_with_filters(
+                        await uow.repository_for(InboxTask).find_all_with_filters(
                             parent_ref_id=inbox_task_collection.ref_id,
                             filter_sources=[InboxTaskSource.CHORE],
                             allow_archived=True,
@@ -279,17 +289,17 @@ class GenService:
             async with progress_reporter.section("Generating for metrics"):
                 async with self._domain_storage_engine.get_unit_of_work() as uow:
                     metric_collection = (
-                        await uow.metric_collection_repository.load_by_parent(
+                        await uow.repository_for(MetricCollection).load_by_parent(
                             workspace.ref_id,
                         )
                     )
-                    all_metrics = await uow.metric_repository.find_all(
+                    all_metrics = await uow.repository_for(Metric).find_all(
                         parent_ref_id=metric_collection.ref_id,
                         filter_ref_ids=filter_metric_ref_ids,
                     )
 
                     all_collection_inbox_tasks = (
-                        await uow.inbox_task_repository.find_all_with_filters(
+                        await uow.repository_for(InboxTask).find_all_with_filters(
                             parent_ref_id=inbox_task_collection.ref_id,
                             filter_sources=[InboxTaskSource.METRIC],
                             allow_archived=True,
@@ -341,17 +351,17 @@ class GenService:
             async with progress_reporter.section("Generating for persons"):
                 async with self._domain_storage_engine.get_unit_of_work() as uow:
                     person_collection = (
-                        await uow.person_collection_repository.load_by_parent(
+                        await uow.repository_for(PersonCollection).load_by_parent(
                             workspace.ref_id,
                         )
                     )
-                    all_persons = await uow.person_repository.find_all(
+                    all_persons = await uow.repository_for(Person).find_all(
                         parent_ref_id=person_collection.ref_id,
                         filter_ref_ids=filter_person_ref_ids,
                     )
 
                     all_catch_up_inbox_tasks = (
-                        await uow.inbox_task_repository.find_all_with_filters(
+                        await uow.repository_for(InboxTask).find_all_with_filters(
                             parent_ref_id=inbox_task_collection.ref_id,
                             allow_archived=True,
                             filter_sources=[InboxTaskSource.PERSON_CATCH_UP],
@@ -359,7 +369,7 @@ class GenService:
                         )
                     )
                     all_birthday_inbox_tasks = (
-                        await uow.inbox_task_repository.find_all_with_filters(
+                        await uow.repository_for(InboxTask).find_all_with_filters(
                             parent_ref_id=inbox_task_collection.ref_id,
                             allow_archived=True,
                             filter_sources=[InboxTaskSource.PERSON_BIRTHDAY],
@@ -443,22 +453,22 @@ class GenService:
             async with progress_reporter.section("Generating for Slack tasks"):
                 async with self._domain_storage_engine.get_unit_of_work() as uow:
                     push_integration_group = (
-                        await uow.push_integration_group_repository.load_by_parent(
+                        await uow.repository_for(PushIntegrationGroup).load_by_parent(
                             workspace.ref_id,
                         )
                     )
                     slack_collection = (
-                        await uow.slack_task_collection_repository.load_by_parent(
+                        await uow.repository_for(SlackTaskCollection).load_by_parent(
                             push_integration_group.ref_id,
                         )
                     )
 
-                    all_slack_tasks = await uow.slack_task_repository.find_all(
+                    all_slack_tasks = await uow.repository_for(SlackTask).find_all(
                         parent_ref_id=slack_collection.ref_id,
                         filter_ref_ids=filter_slack_task_ref_ids,
                     )
                     all_slack_inbox_tasks = (
-                        await uow.inbox_task_repository.find_all_with_filters(
+                        await uow.repository_for(InboxTask).find_all_with_filters(
                             parent_ref_id=inbox_task_collection.ref_id,
                             filter_sources=[InboxTaskSource.SLACK_TASK],
                             allow_archived=True,
@@ -498,22 +508,22 @@ class GenService:
             async with progress_reporter.section("Generating for email tasks"):
                 async with self._domain_storage_engine.get_unit_of_work() as uow:
                     push_integration_group = (
-                        await uow.push_integration_group_repository.load_by_parent(
+                        await uow.repository_for(PushIntegrationGroup).load_by_parent(
                             workspace.ref_id,
                         )
                     )
                     email_collection = (
-                        await uow.email_task_collection_repository.load_by_parent(
+                        await uow.repository_for(EmailTaskCollection).load_by_parent(
                             push_integration_group.ref_id,
                         )
                     )
 
-                    all_email_tasks = await uow.email_task_repository.find_all(
+                    all_email_tasks = await uow.repository_for(EmailTask).find_all(
                         parent_ref_id=email_collection.ref_id,
                         filter_ref_ids=filter_email_task_ref_ids,
                     )
                     all_email_inbox_tasks = (
-                        await uow.inbox_task_repository.find_all_with_filters(
+                        await uow.repository_for(InboxTask).find_all_with_filters(
                             parent_ref_id=inbox_task_collection.ref_id,
                             filter_sources=[InboxTaskSource.EMAIL_TASK],
                             allow_archived=True,
@@ -548,7 +558,7 @@ class GenService:
 
         async with self._domain_storage_engine.get_unit_of_work() as uow:
             gen_log_entry = gen_log_entry.close(ctx)
-            gen_log_entry = await uow.gen_log_entry_repository.save(gen_log_entry)
+            gen_log_entry = await uow.repository_for(GenLogEntry).save(gen_log_entry)
 
     async def _generate_inbox_tasks_for_habit(
         self,
@@ -624,7 +634,7 @@ class GenService:
                 )
 
                 async with self._domain_storage_engine.get_unit_of_work() as uow:
-                    await uow.inbox_task_repository.save(found_task)
+                    await uow.repository_for(InboxTask).save(found_task)
                     await progress_reporter.mark_updated(found_task)
                 gen_log_entry = gen_log_entry.add_entity_updated(
                     ctx,
@@ -647,7 +657,7 @@ class GenService:
                 )
 
                 async with self._domain_storage_engine.get_unit_of_work() as uow:
-                    inbox_task = await uow.inbox_task_repository.create(
+                    inbox_task = await uow.repository_for(InboxTask).create(
                         inbox_task,
                     )
                     await progress_reporter.mark_created(inbox_task)
@@ -743,7 +753,7 @@ class GenService:
             )
 
             async with self._domain_storage_engine.get_unit_of_work() as uow:
-                await uow.inbox_task_repository.save(found_task)
+                await uow.repository_for(InboxTask).save(found_task)
                 await progress_reporter.mark_updated(found_task)
 
             gen_log_entry = gen_log_entry.add_entity_updated(
@@ -766,7 +776,7 @@ class GenService:
             )
 
             async with self._domain_storage_engine.get_unit_of_work() as uow:
-                inbox_task = await uow.inbox_task_repository.create(inbox_task)
+                inbox_task = await uow.repository_for(InboxTask).create(inbox_task)
                 await progress_reporter.mark_created(inbox_task)
 
             gen_log_entry = gen_log_entry.add_entity_created(
@@ -832,7 +842,7 @@ class GenService:
             )
 
             async with self._domain_storage_engine.get_unit_of_work() as uow:
-                await uow.inbox_task_repository.save(found_task)
+                await uow.repository_for(InboxTask).save(found_task)
                 await progress_reporter.mark_updated(found_task)
 
             gen_log_entry = gen_log_entry.add_entity_updated(
@@ -855,7 +865,7 @@ class GenService:
             )
 
             async with self._domain_storage_engine.get_unit_of_work() as uow:
-                inbox_task = await uow.inbox_task_repository.create(inbox_task)
+                inbox_task = await uow.repository_for(InboxTask).create(inbox_task)
                 await progress_reporter.mark_created(inbox_task)
 
             gen_log_entry = gen_log_entry.add_entity_created(
@@ -921,7 +931,7 @@ class GenService:
             )
 
             async with self._domain_storage_engine.get_unit_of_work() as uow:
-                await uow.inbox_task_repository.save(found_task)
+                await uow.repository_for(InboxTask).save(found_task)
                 await progress_reporter.mark_updated(found_task)
 
             gen_log_entry = gen_log_entry.add_entity_updated(
@@ -944,7 +954,7 @@ class GenService:
             )
 
             async with self._domain_storage_engine.get_unit_of_work() as uow:
-                inbox_task = await uow.inbox_task_repository.create(inbox_task)
+                inbox_task = await uow.repository_for(InboxTask).create(inbox_task)
                 await progress_reporter.mark_created(inbox_task)
 
             gen_log_entry = gen_log_entry.add_entity_created(
@@ -1010,7 +1020,7 @@ class GenService:
             )
 
             async with self._domain_storage_engine.get_unit_of_work() as uow:
-                await uow.inbox_task_repository.save(found_task)
+                await uow.repository_for(InboxTask).save(found_task)
                 await progress_reporter.mark_updated(found_task)
 
             gen_log_entry = gen_log_entry.add_entity_updated(
@@ -1031,7 +1041,7 @@ class GenService:
             )
 
             async with self._domain_storage_engine.get_unit_of_work() as uow:
-                inbox_task = await uow.inbox_task_repository.create(inbox_task)
+                inbox_task = await uow.repository_for(InboxTask).create(inbox_task)
                 await progress_reporter.mark_created(inbox_task)
 
             gen_log_entry = gen_log_entry.add_entity_created(
@@ -1074,7 +1084,7 @@ class GenService:
             )
 
             async with self._domain_storage_engine.get_unit_of_work() as uow:
-                await uow.inbox_task_repository.save(found_task)
+                await uow.repository_for(InboxTask).save(found_task)
                 await progress_reporter.mark_updated(found_task)
 
             gen_log_entry = gen_log_entry.add_entity_updated(
@@ -1095,10 +1105,10 @@ class GenService:
 
             async with self._domain_storage_engine.get_unit_of_work() as uow:
                 slack_task = slack_task.mark_as_used_for_generation(ctx)
-                await uow.slack_task_repository.save(slack_task)
+                await uow.repository_for(SlackTask).save(slack_task)
                 await progress_reporter.mark_updated(slack_task)
 
-                inbox_task = await uow.inbox_task_repository.create(inbox_task)
+                inbox_task = await uow.repository_for(InboxTask).create(inbox_task)
                 await progress_reporter.mark_created(inbox_task)
 
             gen_log_entry = gen_log_entry.add_entity_created(
@@ -1143,7 +1153,7 @@ class GenService:
             )
 
             async with self._domain_storage_engine.get_unit_of_work() as uow:
-                await uow.inbox_task_repository.save(found_task)
+                await uow.repository_for(InboxTask).save(found_task)
                 await progress_reporter.mark_updated(found_task)
 
             gen_log_entry = gen_log_entry.add_entity_updated(
@@ -1166,10 +1176,10 @@ class GenService:
 
             async with self._domain_storage_engine.get_unit_of_work() as uow:
                 email_task = email_task.mark_as_used_for_generation(ctx)
-                await uow.email_task_repository.save(email_task)
+                await uow.repository_for(EmailTask).save(email_task)
                 await progress_reporter.mark_updated(email_task)
 
-                inbox_task = await uow.inbox_task_repository.create(inbox_task)
+                inbox_task = await uow.repository_for(InboxTask).create(inbox_task)
                 await progress_reporter.mark_created(inbox_task)
 
             gen_log_entry = gen_log_entry.add_entity_created(

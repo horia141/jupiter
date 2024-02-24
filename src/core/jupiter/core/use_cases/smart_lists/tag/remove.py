@@ -1,6 +1,8 @@
 """The command for removing a smart list tag."""
 
 from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.smart_lists.smart_list_item import SmartListItem
+from jupiter.core.domain.smart_lists.smart_list_tag import SmartListTag
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.update_action import UpdateAction
@@ -36,9 +38,9 @@ class SmartListTagRemoveUseCase(
         args: SmartListTagRemoveArgs,
     ) -> None:
         """Execute the command's action."""
-        smart_list_tag = await uow.smart_list_tag_repository.load_by_id(args.ref_id)
+        smart_list_tag = await uow.repository_for(SmartListTag).load_by_id(args.ref_id)
 
-        smart_list_items = await uow.smart_list_item_repository.find_all_with_filters(
+        smart_list_items = await uow.repository_for(SmartListItem).find_all_with_filters(
             parent_ref_id=smart_list_tag.smart_list.ref_id,
             allow_archived=True,
             filter_tag_ref_ids=[args.ref_id],
@@ -54,8 +56,8 @@ class SmartListTagRemoveUseCase(
                 ),
                 url=UpdateAction.do_nothing(),
             )
-            await uow.smart_list_item_repository.save(smart_list_item)
+            await uow.repository_for(SmartListItem).save(smart_list_item)
             await progress_reporter.mark_updated(smart_list_item)
 
-        await uow.smart_list_tag_repository.remove(args.ref_id)
+        await uow.repository_for(SmartListTag).remove(args.ref_id)
         await progress_reporter.mark_removed(smart_list_tag)

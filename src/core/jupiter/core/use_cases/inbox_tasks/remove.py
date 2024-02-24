@@ -1,6 +1,7 @@
 """The command for removing a inbox task."""
 
 from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.service.remove_service import (
     InboxTaskRemoveService,
 )
@@ -38,7 +39,7 @@ class InboxTaskRemoveUseCase(
         args: InboxTaskRemoveArgs,
     ) -> None:
         """Execute the command's action."""
-        inbox_task = await uow.inbox_task_repository.load_by_id(
+        inbox_task = await uow.repository_for(InboxTask).load_by_id(
             args.ref_id,
             allow_archived=True,
         )

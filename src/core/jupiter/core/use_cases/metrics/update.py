@@ -11,11 +11,18 @@ from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDu
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.inbox_tasks.service.archive_service import (
     InboxTaskArchiveService,
 )
+from jupiter.core.domain.metrics.infra.metric_collection_repository import MetricCollectionRepository
+from jupiter.core.domain.metrics.infra.metric_repository import MetricRepository
+from jupiter.core.domain.metrics.metric import Metric
+from jupiter.core.domain.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.metrics.metric_name import MetricName
+from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
@@ -63,10 +70,10 @@ class MetricUpdateUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        metric_collection = await uow.metric_collection_repository.load_by_parent(
+        metric_collection = await uow.repository_for(MetricCollection).load_by_parent(
             workspace.ref_id,
         )
-        metric = await uow.metric_repository.load_by_id(
+        metric = await uow.repository_for(Metric).load_by_id(
             args.ref_id,
         )
 
@@ -155,12 +162,12 @@ class MetricUpdateUseCase(
             collection_params = UpdateAction.do_nothing()
 
         inbox_task_collection = (
-            await uow.inbox_task_collection_repository.load_by_parent(
+            await uow.repository_for(InboxTaskCollection).load_by_parent(
                 workspace.ref_id,
             )
         )
 
-        metric_collection_tasks = await uow.inbox_task_repository.find_all_with_filters(
+        metric_collection_tasks = await uow.repository_for(InboxTask).find_all_with_filters(
             parent_ref_id=inbox_task_collection.ref_id,
             filter_sources=[InboxTaskSource.METRIC],
             allow_archived=True,
@@ -174,7 +181,7 @@ class MetricUpdateUseCase(
             collection_params=collection_params,
         )
 
-        await uow.metric_repository.save(metric)
+        await uow.repository_for(Metric).save(metric)
         await progress_reporter.mark_updated(metric)
 
         # Change the inbox tasks
@@ -187,7 +194,7 @@ class MetricUpdateUseCase(
                 )
         else:
             # Situation 2: we need to update the existing metrics.
-            project = await uow.project_repository.load_by_id(
+            project = await uow.repository_for(Project).load_by_id(
                 metric_collection.collection_project_ref_id,
             )
 
@@ -214,5 +221,5 @@ class MetricUpdateUseCase(
                     due_time=schedule.due_date,
                 )
 
-                await uow.inbox_task_repository.save(inbox_task)
+                await uow.repository_for(InboxTask).save(inbox_task)
                 await progress_reporter.mark_updated(inbox_task)

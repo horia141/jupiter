@@ -1,6 +1,7 @@
 """The command for archiving a inbox task."""
 
 from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.service.archive_service import (
     InboxTaskArchiveService,
 )
@@ -38,7 +39,7 @@ class InboxTaskArchiveUseCase(
         args: InboxTaskArchiveArgs,
     ) -> None:
         """Execute the command's action."""
-        inbox_task = await uow.inbox_task_repository.load_by_id(args.ref_id)
+        inbox_task = await uow.repository_for(InboxTask).load_by_id(args.ref_id)
         await InboxTaskArchiveService().do_it(
             context.domain_context, uow, progress_reporter, inbox_task
         )

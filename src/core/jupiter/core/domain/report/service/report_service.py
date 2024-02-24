@@ -5,8 +5,10 @@ from operator import itemgetter
 from typing import DefaultDict, Dict, Final, Iterable, List, Optional, cast
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
+from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.core.domain.big_plans.big_plan_status import BigPlanStatus
 from jupiter.core.domain.chores.chore import Chore
+from jupiter.core.domain.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.core import schedules
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
@@ -20,11 +22,17 @@ from jupiter.core.domain.gamification.service.score_overview_service import (
     ScoreOverviewService,
 )
 from jupiter.core.domain.habits.habit import Habit
+from jupiter.core.domain.habits.habit_collection import HabitCollection
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.core.domain.metrics.metric import Metric
+from jupiter.core.domain.metrics.metric_collection import MetricCollection
+from jupiter.core.domain.persons.person import Person
+from jupiter.core.domain.persons.person_collection import PersonCollection
 from jupiter.core.domain.projects.project import Project
+from jupiter.core.domain.projects.project_collection import ProjectCollection
 from jupiter.core.domain.projects.project_name import ProjectName
 from jupiter.core.domain.report.report_breakdown import ReportBreakdown
 from jupiter.core.domain.report.report_period_result import (
@@ -155,10 +163,10 @@ class ReportService:
             )
 
         async with self._storage_engine.get_unit_of_work() as uow:
-            project_collection = await uow.project_collection_repository.load_by_parent(
+            project_collection = await uow.repository_for(ProjectCollection).load_by_parent(
                 workspace.ref_id,
             )
-            projects = await uow.project_repository.find_all_with_filters(
+            projects = await uow.repository_for(Project).find_all_with_filters(
                 parent_ref_id=project_collection.ref_id,
                 filter_ref_ids=filter_project_ref_ids,
             )
@@ -169,36 +177,36 @@ class ReportService:
             projects_by_name: Dict[ProjectName, Project] = {p.name: p for p in projects}
 
             inbox_task_collection = (
-                await uow.inbox_task_collection_repository.load_by_parent(
+                await uow.repository_for(InboxTaskCollection).load_by_parent(
                     workspace.ref_id,
                 )
             )
-            habit_collection = await uow.habit_collection_repository.load_by_parent(
+            habit_collection = await uow.repository_for(HabitCollection).load_by_parent(
                 workspace.ref_id,
             )
-            chore_collection = await uow.chore_collection_repository.load_by_parent(
+            chore_collection = await uow.repository_for(ChoreCollection).load_by_parent(
                 workspace.ref_id,
             )
             big_plan_collection = (
-                await uow.big_plan_collection_repository.load_by_parent(
+                await uow.repository_for(BigPlanCollection).load_by_parent(
                     workspace.ref_id,
                 )
             )
 
-            metric_collection = await uow.metric_collection_repository.load_by_parent(
+            metric_collection = await uow.repository_for(MetricCollection).load_by_parent(
                 workspace.ref_id,
             )
-            metrics = await uow.metric_repository.find_all(
+            metrics = await uow.repository_for(Metric).find_all(
                 parent_ref_id=metric_collection.ref_id,
                 allow_archived=True,
                 filter_ref_ids=filter_metric_ref_ids,
             )
             metrics_by_ref_id: Dict[EntityId, Metric] = {m.ref_id: m for m in metrics}
 
-            person_collection = await uow.person_collection_repository.load_by_parent(
+            person_collection = await uow.repository_for(PersonCollection).load_by_parent(
                 workspace.ref_id,
             )
-            persons = await uow.person_repository.find_all(
+            persons = await uow.repository_for(Person).find_all(
                 parent_ref_id=person_collection.ref_id,
                 allow_archived=True,
                 filter_ref_ids=filter_person_ref_ids,
@@ -216,7 +224,7 @@ class ReportService:
                 None,
             )
 
-            raw_all_inbox_tasks = await uow.inbox_task_repository.find_all_with_filters(
+            raw_all_inbox_tasks = await uow.repository_for(InboxTask).find_all_with_filters(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
                 filter_sources=sources,
@@ -298,7 +306,7 @@ class ReportService:
                 )
             ]
 
-            all_habits = await uow.habit_repository.find_all_with_filters(
+            all_habits = await uow.repository_for(Habit).find_all_with_filters(
                 parent_ref_id=habit_collection.ref_id,
                 allow_archived=True,
                 filter_ref_ids=filter_habit_ref_ids,
@@ -308,7 +316,7 @@ class ReportService:
                 rt.ref_id: rt for rt in all_habits
             }
 
-            all_chores = await uow.chore_repository.find_all_with_filters(
+            all_chores = await uow.repository_for(Chore).find_all_with_filters(
                 parent_ref_id=chore_collection.ref_id,
                 allow_archived=True,
                 filter_ref_ids=filter_chore_ref_ids,
@@ -318,7 +326,7 @@ class ReportService:
                 rt.ref_id: rt for rt in all_chores
             }
 
-            all_big_plans = await uow.big_plan_repository.find_all_with_filters(
+            all_big_plans = await uow.repository_for(BigPlan).find_all_with_filters(
                 parent_ref_id=big_plan_collection.ref_id,
                 allow_archived=True,
                 filter_ref_ids=filter_big_plan_ref_ids,

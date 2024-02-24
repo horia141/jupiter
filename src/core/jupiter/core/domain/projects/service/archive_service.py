@@ -1,12 +1,25 @@
 """Shared logic for archiving a project."""
 
+from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.big_plans.service.archive_service import BigPlanArchiveService
+from jupiter.core.domain.chores.chore import Chore
+from jupiter.core.domain.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.chores.service.archive_service import ChoreArchiveService
+from jupiter.core.domain.habits.habit import Habit
+from jupiter.core.domain.habits.habit_collection import HabitCollection
 from jupiter.core.domain.habits.service.archive_service import HabitArchiveService
+from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.inbox_tasks.service.archive_service import (
     InboxTaskArchiveService,
 )
+from jupiter.core.domain.metrics.metric_collection import MetricCollection
+from jupiter.core.domain.persons.person_collection import PersonCollection
 from jupiter.core.domain.projects.errors import ProjectInSignificantUseError
+from jupiter.core.domain.projects.project import Project
+from jupiter.core.domain.push_integrations.email.email_task_collection import EmailTaskCollection
+from jupiter.core.domain.push_integrations.group.push_integration_group import PushIntegrationGroup
+from jupiter.core.domain.push_integrations.slack.slack_task_collection import SlackTaskCollection
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.base.entity_id import EntityId
@@ -26,21 +39,21 @@ class ProjectArchiveService:
         ref_id: EntityId,
     ) -> None:
         """Archive the project."""
-        project = await uow.project_repository.load_by_id(ref_id, allow_archived=False)
+        project = await uow.repository_for(Project).load_by_id(ref_id, allow_archived=False)
 
         # test it's not the workspace default project nor a metric collection project nor a person catchup one
         if workspace.default_project_ref_id == project.ref_id:
             raise ProjectInSignificantUseError(
                 "The project is being used as the workspace default one"
             )
-        metric_collection = await uow.metric_collection_repository.load_by_parent(
+        metric_collection = await uow.repository_for(MetricCollection).load_by_parent(
             workspace.ref_id
         )
         if metric_collection.collection_project_ref_id == project.ref_id:
             raise ProjectInSignificantUseError(
                 "The project is being used as the metric collection default one"
             )
-        person_collection = await uow.person_collection_repository.load_by_parent(
+        person_collection = await uow.repository_for(PersonCollection).load_by_parent(
             workspace.ref_id
         )
         if person_collection.catch_up_project_ref_id == project.ref_id:
@@ -49,12 +62,12 @@ class ProjectArchiveService:
             )
 
         push_integration_group = (
-            await uow.push_integration_group_repository.load_by_parent(
+            await uow.repository_for(PushIntegrationGroup).load_by_parent(
                 workspace.ref_id,
             )
         )
         slack_task_collection = (
-            await uow.slack_task_collection_repository.load_by_parent(
+            await uow.repository_for(SlackTaskCollection).load_by_parent(
                 push_integration_group.ref_id,
             )
         )
@@ -63,7 +76,7 @@ class ProjectArchiveService:
                 "The project is being used as the Slack task collection default one"
             )
         email_task_collection = (
-            await uow.email_task_collection_repository.load_by_parent(
+            await uow.repository_for(EmailTaskCollection).load_by_parent(
                 push_integration_group.ref_id,
             )
         )
@@ -74,9 +87,9 @@ class ProjectArchiveService:
 
         # archive inbox tasks
         inbox_task_collection = (
-            await uow.inbox_task_collection_repository.load_by_parent(workspace.ref_id)
+            await uow.repository_for(InboxTaskCollection).load_by_parent(workspace.ref_id)
         )
-        inbox_tasks = await uow.inbox_task_repository.find_all_with_filters(
+        inbox_tasks = await uow.repository_for(InboxTask).find_all_with_filters(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=False,
             filter_project_ref_ids=[project.ref_id],
@@ -86,10 +99,10 @@ class ProjectArchiveService:
             await inbox_task_archive_service.do_it(ctx, uow, progress_reporter, it)
 
         # archive chores
-        chore_collection = await uow.chore_collection_repository.load_by_parent(
+        chore_collection = await uow.repository_for(ChoreCollection).load_by_parent(
             workspace.ref_id
         )
-        chores = await uow.chore_repository.find_all_with_filters(
+        chores = await uow.repository_for(Chore).find_all_with_filters(
             parent_ref_id=chore_collection.ref_id,
             allow_archived=False,
             filter_project_ref_ids=[project.ref_id],
@@ -99,10 +112,10 @@ class ProjectArchiveService:
             await chore_archive_service.do_it(ctx, uow, progress_reporter, chore)
 
         # archive habits
-        habit_collection = await uow.habit_collection_repository.load_by_parent(
+        habit_collection = await uow.repository_for(HabitCollection).load_by_parent(
             workspace.ref_id
         )
-        habits = await uow.habit_repository.find_all_with_filters(
+        habits = await uow.repository_for(Habit).find_all_with_filters(
             parent_ref_id=habit_collection.ref_id,
             allow_archived=False,
             filter_project_ref_ids=[project.ref_id],
@@ -112,10 +125,10 @@ class ProjectArchiveService:
             await habit_archive_service.do_it(ctx, uow, progress_reporter, habit)
 
         # archive big plans
-        big_plan_collection = await uow.habit_collection_repository.load_by_parent(
+        big_plan_collection = await uow.repository_for(HabitCollection).load_by_parent(
             workspace.ref_id
         )
-        big_plans = await uow.big_plan_repository.find_all_with_filters(
+        big_plans = await uow.repository_for(BigPlan).find_all_with_filters(
             parent_ref_id=big_plan_collection.ref_id,
             allow_archived=False,
             filter_project_ref_ids=[project.ref_id],
@@ -126,5 +139,5 @@ class ProjectArchiveService:
 
         # archive project
         project = project.mark_archived(ctx)
-        await uow.project_repository.save(project)
+        await uow.repository_for(Project).save(project)
         await progress_reporter.mark_updated(project)

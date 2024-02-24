@@ -1,9 +1,10 @@
 """Use case for creating a doc."""
-
 from jupiter.core.domain.core.notes.note import Note
+from jupiter.core.domain.core.notes.note_collection import NoteCollection
 from jupiter.core.domain.core.notes.note_content_block import OneOfNoteContentBlock
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.docs.doc import Doc
+from jupiter.core.domain.docs.doc_collection import DocCollection
 from jupiter.core.domain.docs.doc_name import DocName
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -57,10 +58,10 @@ class DocCreateUseCase(
     ) -> DocCreateResult:
         """Execute the command's action."""
         workspace = context.workspace
-        doc_collection = await uow.doc_collection_repository.load_by_parent(
+        doc_collection = await uow.repository_for(DocCollection).load_by_parent(
             workspace.ref_id
         )
-        note_collection = await uow.note_collection_repository.load_by_parent(
+        note_collection = await uow.repository_for(NoteCollection).load_by_parent(
             workspace.ref_id
         )
 
@@ -70,7 +71,7 @@ class DocCreateUseCase(
             parent_doc_ref_id=args.parent_doc_ref_id,
             name=args.name,
         )
-        doc = await uow.doc_repository.create(doc)
+        doc = await uow.repository_for(Doc).create(doc)
 
         note = Note.new_note(
             ctx=context.domain_context,
@@ -79,7 +80,7 @@ class DocCreateUseCase(
             source_entity_ref_id=doc.ref_id,
             content=args.content,
         )
-        note = await uow.note_repository.create(note)
+        note = await uow.repository_for(Note).create(note)
 
         await progress_reporter.mark_created(doc)
 

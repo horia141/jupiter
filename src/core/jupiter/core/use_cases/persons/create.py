@@ -8,8 +8,11 @@ from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDu
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.persons.infra.person_collection_repository import PersonCollectionRepository
+from jupiter.core.domain.persons.infra.person_repository import PersonRepository
 from jupiter.core.domain.persons.person import Person
 from jupiter.core.domain.persons.person_birthday import PersonBirthday
+from jupiter.core.domain.persons.person_collection import PersonCollection
 from jupiter.core.domain.persons.person_name import PersonName
 from jupiter.core.domain.persons.person_relationship import PersonRelationship
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -68,7 +71,7 @@ class PersonCreateUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        person_collection = await uow.person_collection_repository.load_by_parent(
+        person_collection = await uow.repository_for(PersonCollection).load_by_parent(
             workspace.ref_id,
         )
 
@@ -92,7 +95,7 @@ class PersonCreateUseCase(
             catch_up_params=catch_up_params,
             birthday=args.birthday,
         )
-        new_person = await uow.person_repository.create(new_person)
+        new_person = await uow.repository_for(Person).create(new_person)
         await progress_reporter.mark_created(new_person)
 
         return PersonCreateResult(new_person=new_person)

@@ -2,7 +2,10 @@
 
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
+from jupiter.core.domain.metrics.infra.metric_entry_repository import MetricEntryRepository
+from jupiter.core.domain.metrics.infra.metric_repository import MetricRepository
 from jupiter.core.domain.metrics.metric import Metric
 from jupiter.core.domain.metrics.metric_entry import MetricEntry
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -50,20 +53,20 @@ class MetricLoadUseCase(
         args: MetricLoadArgs,
     ) -> MetricLoadResult:
         """Execute the command's action."""
-        metric = await uow.metric_repository.load_by_id(
+        metric = await uow.repository_for(Metric).load_by_id(
             args.ref_id, allow_archived=args.allow_archived
         )
-        metric_entries = await uow.metric_entry_repository.find_all(
+        metric_entries = await uow.repository_for(MetricEntry).find_all(
             metric.ref_id, allow_archived=args.allow_archived
         )
 
         inbox_task_collection = (
-            await uow.inbox_task_collection_repository.load_by_parent(
+            await uow.repository_for(InboxTaskCollection).load_by_parent(
                 context.workspace.ref_id
             )
         )
         metric_collection_inbox_tasks = (
-            await uow.inbox_task_repository.find_all_with_filters(
+            await uow.repository_for(InboxTask).find_all_with_filters(
                 inbox_task_collection.ref_id,
                 allow_archived=True,
                 filter_sources=[InboxTaskSource.METRIC],

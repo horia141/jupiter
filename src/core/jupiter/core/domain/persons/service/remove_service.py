@@ -2,6 +2,8 @@
 
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.core.notes.service.note_remove_service import NoteRemoveService
+from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.inbox_tasks.service.remove_service import (
     InboxTaskRemoveService,
 )
@@ -25,11 +27,11 @@ class PersonRemoveService:
     ) -> None:
         """Execute the command's action."""
         inbox_task_collection = (
-            await uow.inbox_task_collection_repository.load_by_parent(
+            await uow.repository_for(InboxTaskCollection).load_by_parent(
                 person_collection.workspace.ref_id,
             )
         )
-        all_inbox_tasks = await uow.inbox_task_repository.find_all_with_filters(
+        all_inbox_tasks = await uow.repository_for(InboxTask).find_all_with_filters(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
             filter_person_ref_ids=[person.ref_id],
@@ -46,5 +48,5 @@ class PersonRemoveService:
             ctx, uow, NoteDomain.PERSON, person.ref_id
         )
 
-        await uow.person_repository.remove(person.ref_id)
+        await uow.repository_for(Person).remove(person.ref_id)
         await progress_reporter.mark_removed(person)

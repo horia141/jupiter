@@ -3,6 +3,7 @@
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -51,16 +52,16 @@ class BigPlanLoadUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        big_plan = await uow.big_plan_repository.load_by_id(
+        big_plan = await uow.repository_for(BigPlan).load_by_id(
             args.ref_id, allow_archived=args.allow_archived
         )
-        project = await uow.project_repository.load_by_id(big_plan.project_ref_id)
+        project = await uow.repository_for(Project).load_by_id(big_plan.project_ref_id)
         inbox_task_collection = (
-            await uow.inbox_task_collection_repository.load_by_parent(
+            await uow.repository_for(InboxTaskCollection).load_by_parent(
                 workspace.ref_id,
             )
         )
-        inbox_tasks = await uow.inbox_task_repository.find_all_with_filters(
+        inbox_tasks = await uow.repository_for(InboxTask).find_all_with_filters(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
             filter_big_plan_ref_ids=[args.ref_id],

@@ -1,6 +1,8 @@
 """Load previous runs of GC."""
 
+from jupiter.core.domain.gc.gc_log import GCLog
 from jupiter.core.domain.gc.gc_log_entry import GCLogEntry
+from jupiter.core.domain.gc.infra.gc_log_entry_repository import GCLogEntryRepository
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,
@@ -37,9 +39,9 @@ class GCLoadRunsUseCase(AppLoggedInReadonlyUseCase[GCLoadRunsArgs, GCLoadRunsRes
     ) -> GCLoadRunsResult:
         """Execute the use case."""
         async with self._domain_storage_engine.get_unit_of_work() as uow:
-            gc_log = await uow.gc_log_repository.load_by_parent(
+            gc_log = await uow.repository_for(GCLog).load_by_parent(
                 context.workspace.ref_id
             )
-            entries = await uow.gc_log_entry_repository.find_last(gc_log.ref_id, 30)
+            entries = await uow.repository_for(GCLogEntry).find_last(gc_log.ref_id, 30)
 
         return GCLoadRunsResult(entries=entries)

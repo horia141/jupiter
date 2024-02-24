@@ -50,14 +50,14 @@ class SmartListLoadUseCase(
         args: SmartListLoadArgs,
     ) -> SmartListLoadResult:
         """Execute the command's action."""
-        smart_list = await uow.smart_list_repository.load_by_id(
+        smart_list = await uow.repository_for(SmartList).load_by_id(
             args.ref_id,
             allow_archived=args.allow_archived,
         )
-        smart_list_tags = await uow.smart_list_tag_repository.find_all_with_filters(
+        smart_list_tags = await uow.repository_for(SmartListTag).find_all_with_filters(
             smart_list.ref_id, allow_archived=args.allow_archived
         )
-        smart_list_items = await uow.smart_list_item_repository.find_all_with_filters(
+        smart_list_items = await uow.repository_for(SmartListItem).find_all_with_filters(
             smart_list.ref_id, allow_archived=args.allow_archived
         )
 

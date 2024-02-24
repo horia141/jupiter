@@ -158,7 +158,7 @@ from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.entity import CrownEntity, Entity, RootEntity, StubEntity, TrunkEntity
 from jupiter.core.framework.realm import RealmCodecRegistry
 from jupiter.core.framework.record import Record
-from jupiter.core.framework.repository import CrownEntityRepository, EntityRepository, RecordRepository, RootEntityRepository, StubEntityRepository, TrunkEntityRepository
+from jupiter.core.framework.repository import CrownEntityRepository, EntityRepository, RecordRepository, Repository, RootEntityRepository, StubEntityRepository, TrunkEntityRepository
 from jupiter.core.repository.sqlite.connection import SqliteConnection
 from jupiter.core.repository.sqlite.domain.auths import SqliteAuthRepository
 from jupiter.core.repository.sqlite.domain.big_plans import (
@@ -250,6 +250,7 @@ from sqlalchemy import MetaData
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 
+_RepositoryT = TypeVar("_RepositoryT", bound=Repository)
 _EntityRepositoryT = TypeVar("_EntityRepositoryT", bound=EntityRepository[Entity])
 _RecordRepositoryT = TypeVar("_RecordRepositoryT", bound=RecordRepository[Record, Any, Any]) # type: ignore
 _RootEntityT = TypeVar("_RootEntityT", bound=RootEntity)
@@ -263,6 +264,7 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
     _entity_repositories: Final[dict[type[Entity], EntityRepository[Entity]]]
     _entity_repositories_by_type: Final[dict[type[EntityRepository[Entity]], EntityRepository[Entity]]]
     _record_repositories_by_type: Final[dict[type[RecordRepository[Record, Any, Any]], RecordRepository[Record, Any, Any]]] # type: ignore
+    _repositories: Final[dict[type[Repository], Repository]]
 
     _auth_repository: Final[SqliteAuthRepository]
     _score_log_repository: Final[SqliteScoreLogRepository]
@@ -451,6 +453,9 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
             ScoreStatsRepository: score_stats_repository,
             ScorePeriodBestRepository: score_period_best_repository,
         }
+        self._repositories = {
+            FastInfoRepository: fast_into_repository,
+        }
         self._auth_repository = auth_repository
         self._score_log_repository = score_log_repository
         self._score_log_entry_repository = score_log_entry_repository
@@ -507,201 +512,6 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
         _exc_tb: Optional[TracebackType],
     ) -> None:
         """Exit context."""
-
-    @property
-    def workspace_repository(self) -> WorkspaceRepository:
-        """The workspace repository."""
-        return self._workspace_repository
-
-    @property
-    def user_workspace_link_repository(self) -> UserWorkspaceLinkRepository:
-        """The user workspace link repository."""
-        return self._user_workspace_link_repository
-
-    @property
-    def inbox_task_collection_repository(self) -> InboxTaskCollectionRepository:
-        """The inbox task collection repository."""
-        return self._inbox_task_collection_repository
-
-    @property
-    def inbox_task_repository(self) -> InboxTaskRepository:
-        """The inbox task repository."""
-        return self._inbox_task_repository
-
-    @property
-    def habit_collection_repository(self) -> HabitCollectionRepository:
-        """The habit collection repository."""
-        return self._habit_collection_repository
-
-    @property
-    def habit_repository(self) -> HabitRepository:
-        """The habit repository."""
-        return self._habit_repository
-
-    @property
-    def chore_collection_repository(self) -> ChoreCollectionRepository:
-        """The chore collection repository."""
-        return self._chore_collection_repository
-
-    @property
-    def chore_repository(self) -> ChoreRepository:
-        """The chore repository."""
-        return self._chore_repository
-
-    @property
-    def big_plan_collection_repository(self) -> BigPlanCollectionRepository:
-        """The big plan collection repository."""
-        return self._big_plan_collection_repository
-
-    @property
-    def big_plan_repository(self) -> BigPlanRepository:
-        """The big plan repository."""
-        return self._big_plan_repository
-
-    @property
-    def journal_collection_repository(self) -> JournalCollectionRepository:
-        """The journal collection repository."""
-        return self._journal_collection_repository
-
-    @property
-    def journal_repository(self) -> JournalRepository:
-        """The journal repository."""
-        return self._journal_repository
-
-    @property
-    def doc_collection_repository(self) -> DocCollectionRepository:
-        """The doc collection repository."""
-        return self._doc_collection_repository
-
-    @property
-    def doc_repository(self) -> DocRepository:
-        """The doc repository."""
-        return self._doc_repository
-
-    @property
-    def vacation_collection_repository(self) -> VacationCollectionRepository:
-        """The vacation collection repository."""
-        return self._vacation_collection_repository
-
-    @property
-    def vacation_repository(self) -> VacationRepository:
-        """The vacation repository."""
-        return self._vacation_repository
-
-    @property
-    def project_collection_repository(self) -> ProjectCollectionRepository:
-        """The projects repository."""
-        return self._project_collection_repository
-
-    @property
-    def project_repository(self) -> ProjectRepository:
-        """The projects repository."""
-        return self._project_repository
-
-    @property
-    def smart_list_collection_repository(self) -> SmartListCollectionRepository:
-        """The smart list collection repository."""
-        return self._smart_list_collection_repository
-
-    @property
-    def smart_list_repository(self) -> SmartListRepository:
-        """The smart list repository."""
-        return self._smart_list_repository
-
-    @property
-    def smart_list_tag_repository(self) -> SmartListTagRepository:
-        """The smart list tag repository."""
-        return self._smart_list_tag_reposiotry
-
-    @property
-    def smart_list_item_repository(self) -> SmartListItemRepository:
-        """The smart list item repository."""
-        return self._smart_list_item_repository
-
-    @property
-    def metric_collection_repository(self) -> MetricCollectionRepository:
-        """The metric collection repository."""
-        return self._metric_collection_repository
-
-    @property
-    def metric_repository(self) -> MetricRepository:
-        """The metric repository."""
-        return self._metric_repository
-
-    @property
-    def metric_entry_repository(self) -> MetricEntryRepository:
-        """The metric entry repository."""
-        return self._metric_entry_repository
-
-    @property
-    def person_collection_repository(self) -> PersonCollectionRepository:
-        """The person collection repository."""
-        return self._person_collection_repository
-
-    @property
-    def person_repository(self) -> PersonRepository:
-        """The person repository."""
-        return self._person_repository
-
-    @property
-    def push_integration_group_repository(self) -> PushIntegrationGroupRepository:
-        """The push integration group repository."""
-        return self._push_integration_group_repository
-
-    @property
-    def slack_task_collection_repository(self) -> SlackTaskCollectionRepository:
-        """The Slack task collection repository."""
-        return self._slack_task_collection_repository
-
-    @property
-    def slack_task_repository(self) -> SlackTaskRepository:
-        """The Slack task repository."""
-        return self._slack_task_repository
-
-    @property
-    def email_task_collection_repository(self) -> EmailTaskCollectionRepository:
-        """The email task collection repository."""
-        return self._email_task_collection_repository
-
-    @property
-    def email_task_repository(self) -> EmailTaskRepository:
-        """The email task repository."""
-        return self._email_task_repository
-
-    @property
-    def note_collection_repository(self) -> NoteCollectionRepository:
-        """The note collection repository."""
-        return self._note_collection_repository
-
-    @property
-    def note_repository(self) -> NoteRepository:
-        """The note repository."""
-        return self._note_repository
-
-    @property
-    def fast_into_repository(self) -> FastInfoRepository:
-        """The fast info repository."""
-        return self._fast_info_repository
-
-    @property
-    def gen_log_repository(self) -> GenLogRepository:
-        """The gen log repository."""
-        return self._gen_log_repository
-
-    @property
-    def gen_log_entry_repository(self) -> GenLogEntryRepository:
-        """The gen log entry repository."""
-        return self._gen_log_entry_repository
-
-    @property
-    def gc_log_repository(self) -> GCLogRepository:
-        """The gc log repository."""
-        return self._gc_log_repository
-
-    @property
-    def gc_log_entry_repository(self) -> GCLogEntryRepository:
-        """The gc log entry repository."""
-        return self._gc_log_entry_repository
     
     def get( # type: ignore
         self, repository_type: Type[_EntityRepositoryT]
@@ -719,6 +529,14 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
         if repository_type not in self._record_repositories_by_type:
             raise ValueError(f"No repository for type: {repository_type}")
         return cast(_RecordRepositoryT, self._record_repositories_by_type[repository_type]) # type: ignore
+    
+    def get_x(
+            self, repository_type: Type[_RepositoryT]
+    ) -> _RepositoryT:
+        """Retrieve a repository."""
+        if repository_type not in self._repositories:
+            raise ValueError(f"No repository for type: {repository_type}")
+        return cast(_RepositoryT, self._repositories[repository_type])
 
     @overload
     def repository_for(

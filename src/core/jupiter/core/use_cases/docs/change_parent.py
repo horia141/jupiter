@@ -1,5 +1,5 @@
 """The command for changing the parent for a doc."""
-
+from jupiter.core.domain.docs.doc import Doc
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -37,10 +37,10 @@ class DocChangeParentUseCase(
         args: DocChangeParentArgs,
     ) -> None:
         """Execute the command's action."""
-        doc = await uow.doc_repository.load_by_id(args.ref_id)
+        doc = await uow.repository_for(Doc).load_by_id(args.ref_id)
         doc = doc.change_parent(
             context.domain_context,
             args.parent_node_ref_id,
         )
-        await uow.doc_repository.save(doc)
+        await uow.repository_for(Doc).save(doc)
         await progress_reporter.mark_updated(doc)

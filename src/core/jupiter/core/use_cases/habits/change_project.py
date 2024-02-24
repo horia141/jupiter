@@ -6,6 +6,9 @@ from jupiter.core.domain.features import (
     FeatureUnavailableError,
     WorkspaceFeature,
 )
+from jupiter.core.domain.habits.habit import Habit
+from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
@@ -50,14 +53,14 @@ class HabitChangeProjectUseCase(
         ):
             raise FeatureUnavailableError(WorkspaceFeature.PROJECTS)
 
-        habit = await uow.habit_repository.load_by_id(args.ref_id)
+        habit = await uow.repository_for(Habit).load_by_id(args.ref_id)
 
         inbox_task_collection = (
-            await uow.inbox_task_collection_repository.load_by_parent(
+            await uow.repository_for(InboxTaskCollection).load_by_parent(
                 workspace.ref_id,
             )
         )
-        all_inbox_tasks = await uow.inbox_task_repository.find_all_with_filters(
+        all_inbox_tasks = await uow.repository_for(InboxTask).find_all_with_filters(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
             filter_habit_ref_ids=[args.ref_id],
@@ -87,12 +90,12 @@ class HabitChangeProjectUseCase(
                 difficulty=habit.gen_params.difficulty,
             )
 
-            await uow.inbox_task_repository.save(inbox_task)
+            await uow.repository_for(InboxTask).save(inbox_task)
             await progress_reporter.mark_updated(inbox_task)
 
         habit = habit.change_project(
             context.domain_context,
             project_ref_id=args.project_ref_id or workspace.default_project_ref_id,
         )
-        await uow.habit_repository.save(habit)
+        await uow.repository_for(Habit).save(habit)
         await progress_reporter.mark_updated(habit)

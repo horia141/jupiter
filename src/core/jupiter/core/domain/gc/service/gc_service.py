@@ -3,22 +3,29 @@
 from typing import Final, Iterable, List, cast
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
+from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.core.domain.big_plans.service.archive_service import BigPlanArchiveService
 from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.gc.gc_log import GCLog
 from jupiter.core.domain.gc.gc_log_entry import GCLogEntry
+from jupiter.core.domain.gc.infra.gc_log_entry_repository import GCLogEntryRepository
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.inbox_tasks.service.archive_service import (
     InboxTaskArchiveService,
 )
 from jupiter.core.domain.push_integrations.email.email_task import EmailTask
+from jupiter.core.domain.push_integrations.email.email_task_collection import EmailTaskCollection
 from jupiter.core.domain.push_integrations.email.service.archive_service import (
     EmailTaskArchiveService,
 )
+from jupiter.core.domain.push_integrations.group.push_integration_group import PushIntegrationGroup
 from jupiter.core.domain.push_integrations.slack.service.archive_service import (
     SlackTaskArchiveService,
 )
 from jupiter.core.domain.push_integrations.slack.slack_task import SlackTask
+from jupiter.core.domain.push_integrations.slack.slack_task_collection import SlackTaskCollection
 from jupiter.core.domain.storage_engine import (
     DomainStorageEngine,
     DomainUnitOfWork,
@@ -51,36 +58,36 @@ class GCService:
     ) -> None:
         """Execute the service's action."""
         async with self._domain_storage_engine.get_unit_of_work() as uow:
-            gc_log = await uow.gc_log_repository.load_by_parent(workspace.ref_id)
+            gc_log = await uow.repository_for(GCLog).load_by_parent(workspace.ref_id)
             gc_log_entry = GCLogEntry.new_log_entry(
                 ctx,
                 gc_log_ref_id=gc_log.ref_id,
                 gc_targets=gc_targets,
             )
-            gc_log_entry = await uow.gc_log_entry_repository.create(gc_log_entry)
+            gc_log_entry = await uow.repository_for(GCLogEntry).create(gc_log_entry)
 
             inbox_task_collection = (
-                await uow.inbox_task_collection_repository.load_by_parent(
+                await uow.repository_for(InboxTaskCollection).load_by_parent(
                     workspace.ref_id,
                 )
             )
             big_plan_collection = (
-                await uow.big_plan_collection_repository.load_by_parent(
+                await uow.repository_for(BigPlanCollection).load_by_parent(
                     workspace.ref_id,
                 )
             )
             push_integration_group = (
-                await uow.push_integration_group_repository.load_by_parent(
+                await uow.repository_for(PushIntegrationGroup).load_by_parent(
                     workspace.ref_id,
                 )
             )
             slack_task_collection = (
-                await uow.slack_task_collection_repository.load_by_parent(
+                await uow.repository_for(SlackTaskCollection).load_by_parent(
                     push_integration_group.ref_id,
                 )
             )
             email_task_collection = (
-                await uow.email_task_collection_repository.load_by_parent(
+                await uow.repository_for(EmailTaskCollection).load_by_parent(
                     push_integration_group.ref_id,
                 )
             )
@@ -94,7 +101,7 @@ class GCService:
                     "Archiving all done inbox tasks",
                 ):
                     async with self._domain_storage_engine.get_unit_of_work() as uow:
-                        inbox_tasks = await uow.inbox_task_repository.find_all(
+                        inbox_tasks = await uow.repository_for(InboxTask).find_all(
                             parent_ref_id=inbox_task_collection.ref_id,
                             allow_archived=False,
                         )
@@ -114,7 +121,7 @@ class GCService:
                     "Archiving all done big plans",
                 ):
                     async with self._domain_storage_engine.get_unit_of_work() as uow:
-                        big_plans = await uow.big_plan_repository.find_all(
+                        big_plans = await uow.repository_for(BigPlan).find_all(
                             parent_ref_id=big_plan_collection.ref_id,
                             allow_archived=False,
                         )
@@ -132,11 +139,11 @@ class GCService:
         ):
             async with progress_reporter.section("Slack Tasks"):
                 async with self._domain_storage_engine.get_unit_of_work() as uow:
-                    slack_tasks = await uow.slack_task_repository.find_all(
+                    slack_tasks = await uow.repository_for(SlackTask).find_all(
                         parent_ref_id=slack_task_collection.ref_id,
                         allow_archived=False,
                     )
-                    inbox_tasks = await uow.inbox_task_repository.find_all_with_filters(
+                    inbox_tasks = await uow.repository_for(InboxTask).find_all_with_filters(
                         parent_ref_id=inbox_task_collection.ref_id,
                         allow_archived=True,
                         filter_sources=[InboxTaskSource.SLACK_TASK],
@@ -156,11 +163,11 @@ class GCService:
         ):
             async with progress_reporter.section("Email Tasks"):
                 async with self._domain_storage_engine.get_unit_of_work() as uow:
-                    email_tasks = await uow.email_task_repository.find_all(
+                    email_tasks = await uow.repository_for(EmailTask).find_all(
                         parent_ref_id=email_task_collection.ref_id,
                         allow_archived=False,
                     )
-                    inbox_tasks = await uow.inbox_task_repository.find_all_with_filters(
+                    inbox_tasks = await uow.repository_for(InboxTask).find_all_with_filters(
                         parent_ref_id=inbox_task_collection.ref_id,
                         allow_archived=True,
                         filter_sources=[InboxTaskSource.EMAIL_TASK],
@@ -176,7 +183,7 @@ class GCService:
 
         async with self._domain_storage_engine.get_unit_of_work() as uow:
             gc_log_entry = gc_log_entry.close(ctx)
-            gc_log_entry = await uow.gc_log_entry_repository.save(gc_log_entry)
+            gc_log_entry = await uow.repository_for(GCLogEntry).save(gc_log_entry)
 
     async def _archive_done_inbox_tasks(
         self,

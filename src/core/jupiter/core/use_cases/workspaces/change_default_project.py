@@ -1,5 +1,6 @@
 """UseCase for changing the default workspace of a project."""
 
+from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.base.entity_id import EntityId
@@ -37,7 +38,7 @@ class WorkspaceChangeDefaultProjectUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        project = await uow.project_repository.load_by_id(
+        project = await uow.repository_for(Project).load_by_id(
             args.default_project_ref_id,
         )
 

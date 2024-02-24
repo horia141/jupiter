@@ -1,6 +1,7 @@
 """The command for suspend a habit."""
 
 from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
@@ -35,7 +36,7 @@ class HabitSuspendUseCase(
         args: HabitSuspendArgs,
     ) -> None:
         """Execute the command's action."""
-        habit = await uow.habit_repository.load_by_id(args.ref_id)
+        habit = await uow.repository_for(Habit).load_by_id(args.ref_id)
         habit = habit.suspend(context.domain_context)
-        await uow.habit_repository.save(habit)
+        await uow.repository_for(Habit).save(habit)
         await progress_reporter.mark_updated(habit)

@@ -1,6 +1,8 @@
 """Load settings for metrics use case."""
 
 from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.metrics.infra.metric_collection_repository import MetricCollectionRepository
+from jupiter.core.domain.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.event import EventSource
@@ -46,10 +48,10 @@ class MetricLoadSettingsUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        metric_collection = await uow.metric_collection_repository.load_by_parent(
+        metric_collection = await uow.repository_for(MetricCollection).load_by_parent(
             workspace.ref_id,
         )
-        collection_project = await uow.project_repository.load_by_id(
+        collection_project = await uow.repository_for(Project).load_by_id(
             metric_collection.collection_project_ref_id,
         )
 

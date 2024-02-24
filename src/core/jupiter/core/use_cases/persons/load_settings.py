@@ -1,6 +1,8 @@
 """Load settings for persons use case."""
 
 from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.persons.infra.person_collection_repository import PersonCollectionRepository
+from jupiter.core.domain.persons.person_collection import PersonCollection
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.event import EventSource
@@ -46,10 +48,10 @@ class PersonLoadSettingsUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        person_collection = await uow.person_collection_repository.load_by_parent(
+        person_collection = await uow.repository_for(PersonCollection).load_by_parent(
             workspace.ref_id,
         )
-        catch_up_project = await uow.project_repository.load_by_id(
+        catch_up_project = await uow.repository_for(Project).load_by_id(
             person_collection.catch_up_project_ref_id,
         )
 

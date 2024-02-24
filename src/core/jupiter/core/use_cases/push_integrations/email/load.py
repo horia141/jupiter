@@ -3,6 +3,7 @@ from typing import Optional
 
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.push_integrations.email.email_task import EmailTask
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -50,15 +51,15 @@ class EmailTaskLoadUseCase(
     ) -> EmailTaskLoadResult:
         """Execute the command's action."""
         workspace = context.workspace
-        email_task = await uow.email_task_repository.load_by_id(
+        email_task = await uow.repository_for(EmailTask).load_by_id(
             args.ref_id, allow_archived=args.allow_archived
         )
         inbox_task_collection = (
-            await uow.inbox_task_collection_repository.load_by_parent(
+            await uow.repository_for(InboxTaskCollection).load_by_parent(
                 workspace.ref_id,
             )
         )
-        inbox_tasks = await uow.inbox_task_repository.find_all_with_filters(
+        inbox_tasks = await uow.repository_for(InboxTask).find_all_with_filters(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
             filter_sources=[InboxTaskSource.EMAIL_TASK],

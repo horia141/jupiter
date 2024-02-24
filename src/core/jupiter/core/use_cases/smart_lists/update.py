@@ -3,6 +3,7 @@ from typing import Optional
 
 from jupiter.core.domain.core.entity_icon import EntityIcon
 from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.smart_lists.smart_list import SmartList
 from jupiter.core.domain.smart_lists.smart_list_name import SmartListName
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -41,7 +42,7 @@ class SmartListUpdateUseCase(
         args: SmartListUpdateArgs,
     ) -> None:
         """Execute the command's action."""
-        smart_list = await uow.smart_list_repository.load_by_id(
+        smart_list = await uow.repository_for(SmartList).load_by_id(
             args.ref_id,
         )
 
@@ -51,5 +52,5 @@ class SmartListUpdateUseCase(
             icon=args.icon,
         )
 
-        await uow.smart_list_repository.save(smart_list)
+        await uow.repository_for(SmartList).save(smart_list)
         await progress_reporter.mark_updated(smart_list)

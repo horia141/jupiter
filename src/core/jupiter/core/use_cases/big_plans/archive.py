@@ -1,5 +1,6 @@
 """The command for archiving a big plan."""
 
+from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.big_plans.service.archive_service import BigPlanArchiveService
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -36,7 +37,7 @@ class BigPlanArchiveUseCase(
         args: BigPlanArchiveArgs,
     ) -> None:
         """Execute the command's action."""
-        big_plan = await uow.big_plan_repository.load_by_id(args.ref_id)
+        big_plan = await uow.repository_for(BigPlan).load_by_id(args.ref_id)
 
         await BigPlanArchiveService().do_it(
             context.domain_context, uow, progress_reporter, big_plan

@@ -4,6 +4,7 @@ from typing import Optional
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.metrics.infra.metric_entry_repository import MetricEntryRepository
 from jupiter.core.domain.metrics.metric_entry import MetricEntry
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -49,11 +50,11 @@ class MetricEntryLoadUseCase(
         args: MetricEntryLoadArgs,
     ) -> MetricEntryLoadResult:
         """Execute the command's action."""
-        metric_entry = await uow.metric_entry_repository.load_by_id(
+        metric_entry = await uow.repository_for(MetricEntry).load_by_id(
             args.ref_id, allow_archived=args.allow_archived
         )
 
-        note = await uow.note_repository.load_optional_for_source(
+        note = await uow.repository_for(Note).load_optional_for_source(
             NoteDomain.METRIC_ENTRY,
             metric_entry.ref_id,
             allow_archived=args.allow_archived,

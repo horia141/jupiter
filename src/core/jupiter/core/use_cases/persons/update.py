@@ -10,13 +10,20 @@ from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDu
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.inbox_tasks.service.archive_service import (
     InboxTaskArchiveService,
 )
+from jupiter.core.domain.persons.infra.person_collection_repository import PersonCollectionRepository
+from jupiter.core.domain.persons.infra.person_repository import PersonRepository
+from jupiter.core.domain.persons.person import Person
 from jupiter.core.domain.persons.person_birthday import PersonBirthday
+from jupiter.core.domain.persons.person_collection import PersonCollection
 from jupiter.core.domain.persons.person_name import PersonName
 from jupiter.core.domain.persons.person_relationship import PersonRelationship
+from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
@@ -65,10 +72,10 @@ class PersonUpdateUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        person_collection = await uow.person_collection_repository.load_by_parent(
+        person_collection = await uow.repository_for(PersonCollection).load_by_parent(
             workspace.ref_id,
         )
-        person = await uow.person_repository.load_by_id(args.ref_id)
+        person = await uow.repository_for(Person).load_by_id(args.ref_id)
 
         # Change the person.
         catch_up_params: UpdateAction[Optional[RecurringTaskGenParams]]
@@ -150,21 +157,21 @@ class PersonUpdateUseCase(
         else:
             catch_up_params = UpdateAction.do_nothing()
 
-        project = await uow.project_repository.load_by_id(
+        project = await uow.repository_for(Project).load_by_id(
             person_collection.catch_up_project_ref_id,
         )
         inbox_task_collection = (
-            await uow.inbox_task_collection_repository.load_by_parent(
+            await uow.repository_for(InboxTaskCollection).load_by_parent(
                 workspace.ref_id,
             )
         )
-        person_catch_up_tasks = await uow.inbox_task_repository.find_all_with_filters(
+        person_catch_up_tasks = await uow.repository_for(InboxTask).find_all_with_filters(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
             filter_sources=[InboxTaskSource.PERSON_CATCH_UP],
             filter_person_ref_ids=[person.ref_id],
         )
-        person_birthday_tasks = await uow.inbox_task_repository.find_all_with_filters(
+        person_birthday_tasks = await uow.repository_for(InboxTask).find_all_with_filters(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
             filter_sources=[InboxTaskSource.PERSON_BIRTHDAY],
@@ -206,7 +213,7 @@ class PersonUpdateUseCase(
                     due_time=schedule.due_date,
                 )
                 # Situation 2a: we're handling the same project.
-                await uow.inbox_task_repository.save(inbox_task)
+                await uow.repository_for(InboxTask).save(inbox_task)
                 await progress_reporter.mark_updated(inbox_task)
 
         # Change the birthday inbox tasks
@@ -246,7 +253,7 @@ class PersonUpdateUseCase(
                     due_time=schedule.due_date,
                 )
 
-                await uow.inbox_task_repository.save(inbox_task)
+                await uow.repository_for(InboxTask).save(inbox_task)
                 await progress_reporter.mark_updated(inbox_task)
 
         person = person.update(
@@ -257,5 +264,5 @@ class PersonUpdateUseCase(
             catch_up_params=catch_up_params,
         )
 
-        await uow.person_repository.save(person)
+        await uow.repository_for(Person).save(person)
         await progress_reporter.mark_updated(person)

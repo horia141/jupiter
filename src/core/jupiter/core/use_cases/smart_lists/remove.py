@@ -4,6 +4,7 @@ from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.smart_lists.service.remove_service import (
     SmartListRemoveService,
 )
+from jupiter.core.domain.smart_lists.smart_list import SmartList
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
@@ -38,7 +39,7 @@ class SmartListRemoveUseCase(
         args: SmartListRemoveArgs,
     ) -> None:
         """Execute the command's action."""
-        smart_list = await uow.smart_list_repository.load_by_id(
+        smart_list = await uow.repository_for(SmartList).load_by_id(
             args.ref_id, allow_archived=True
         )
 

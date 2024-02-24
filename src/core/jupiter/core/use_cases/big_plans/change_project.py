@@ -1,7 +1,10 @@
 """The command for changing the project for a big plan."""
 from typing import Optional
+from jupiter.core.domain.big_plans.big_plan import BigPlan
 
 from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
@@ -39,21 +42,21 @@ class BigPlanChangeProjectUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        big_plan = await uow.big_plan_repository.load_by_id(args.ref_id)
+        big_plan = await uow.repository_for(BigPlan).load_by_id(args.ref_id)
         big_plan = big_plan.change_project(
             context.domain_context,
             project_ref_id=args.project_ref_id or workspace.default_project_ref_id,
         )
 
-        await uow.big_plan_repository.save(big_plan)
+        await uow.repository_for(BigPlan).save(big_plan)
         await progress_reporter.mark_updated(big_plan)
 
         inbox_task_collection = (
-            await uow.inbox_task_collection_repository.load_by_parent(
+            await uow.repository_for(InboxTaskCollection).load_by_parent(
                 workspace.ref_id,
             )
         )
-        all_inbox_tasks = await uow.inbox_task_repository.find_all_with_filters(
+        all_inbox_tasks = await uow.repository_for(InboxTask).find_all_with_filters(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
             filter_big_plan_ref_ids=[big_plan.ref_id],
@@ -65,5 +68,5 @@ class BigPlanChangeProjectUseCase(
                 big_plan.project_ref_id,
                 big_plan.ref_id,
             )
-            await uow.inbox_task_repository.save(inbox_task)
+            await uow.repository_for(InboxTask).save(inbox_task)
             await progress_reporter.mark_updated(inbox_task)

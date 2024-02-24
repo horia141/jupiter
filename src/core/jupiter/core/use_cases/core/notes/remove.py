@@ -1,5 +1,6 @@
 """The command for removing a note."""
 
+from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.service.note_remove_service import (
     NoteRemoveService,
 )
@@ -36,5 +37,5 @@ class NoteRemoveUseCase(AppTransactionalLoggedInMutationUseCase[NoteRemoveArgs, 
         args: NoteRemoveArgs,
     ) -> None:
         """Execute the command's action."""
-        note = await uow.note_repository.load_by_id(args.ref_id)
+        note = await uow.repository_for(Note).load_by_id(args.ref_id)
         await NoteRemoveService().remove(context.domain_context, uow, note)

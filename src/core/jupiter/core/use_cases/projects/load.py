@@ -45,7 +45,7 @@ class ProjectLoadUseCase(
         args: ProjectLoadArgs,
     ) -> ProjectLoadResult:
         """Execute the command's action."""
-        project = await uow.project_repository.load_by_id(
+        project = await uow.repository_for(Project).load_by_id(
             args.ref_id, allow_archived=args.allow_archived
         )
 

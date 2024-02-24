@@ -13,6 +13,7 @@ from jupiter.core.domain.features import (
     WorkspaceFeature,
 )
 from jupiter.core.domain.habits.habit import Habit
+from jupiter.core.domain.habits.habit_collection import HabitCollection
 from jupiter.core.domain.habits.habit_name import HabitName
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -78,7 +79,7 @@ class HabitCreateUseCase(
         ):
             raise FeatureUnavailableError(WorkspaceFeature.PROJECTS)
 
-        habit_collection = await uow.habit_collection_repository.load_by_parent(
+        habit_collection = await uow.repository_for(HabitCollection).load_by_parent(
             workspace.ref_id,
         )
 
@@ -100,7 +101,7 @@ class HabitCreateUseCase(
             suspended=False,
             repeats_in_period_count=args.repeats_in_period_count,
         )
-        new_habit = await uow.habit_repository.create(new_habit)
+        new_habit = await uow.repository_for(Habit).create(new_habit)
         await progress_reporter.mark_created(new_habit)
 
         return HabitCreateResult(new_habit=new_habit)

@@ -1,5 +1,5 @@
 """Use case for archiving a doc."""
-
+from jupiter.core.domain.docs.doc import Doc
 from jupiter.core.domain.docs.service.doc_archive_service import DocArchiveService
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -35,7 +35,7 @@ class DocArchiveUseCase(AppTransactionalLoggedInMutationUseCase[DocArchiveArgs, 
         args: DocArchiveArgs,
     ) -> None:
         """Execute the command's action."""
-        doc = await uow.doc_repository.load_by_id(args.ref_id)
+        doc = await uow.repository_for(Doc).load_by_id(args.ref_id)
         await DocArchiveService().do_it(
             context.domain_context, uow, progress_reporter, doc
         )

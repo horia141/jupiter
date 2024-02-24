@@ -3,11 +3,16 @@ from collections import defaultdict
 from typing import List, Optional, cast
 
 from jupiter.core.domain.core.notes.note import Note
+from jupiter.core.domain.core.notes.note_collection import NoteCollection
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
+from jupiter.core.domain.persons.infra.person_collection_repository import PersonCollectionRepository
+from jupiter.core.domain.persons.infra.person_repository import PersonRepository
 from jupiter.core.domain.persons.person import Person
+from jupiter.core.domain.persons.person_collection import PersonCollection
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -70,17 +75,17 @@ class PersonFindUseCase(
         workspace = context.workspace
 
         inbox_task_collection = (
-            await uow.inbox_task_collection_repository.load_by_parent(
+            await uow.repository_for(InboxTaskCollection).load_by_parent(
                 workspace.ref_id,
             )
         )
-        person_collection = await uow.person_collection_repository.load_by_parent(
+        person_collection = await uow.repository_for(PersonCollection).load_by_parent(
             workspace.ref_id,
         )
-        catch_up_project = await uow.project_repository.load_by_id(
+        catch_up_project = await uow.repository_for(Project).load_by_id(
             person_collection.catch_up_project_ref_id,
         )
-        persons = await uow.person_repository.find_all(
+        persons = await uow.repository_for(Person).find_all(
             parent_ref_id=person_collection.ref_id,
             allow_archived=args.allow_archived,
             filter_ref_ids=args.filter_person_ref_ids,
@@ -88,7 +93,7 @@ class PersonFindUseCase(
 
         if args.include_catch_up_inbox_tasks:
             catch_up_inbox_tasks = (
-                await uow.inbox_task_repository.find_all_with_filters(
+                await uow.repository_for(InboxTask).find_all_with_filters(
                     parent_ref_id=inbox_task_collection.ref_id,
                     allow_archived=True,
                     filter_sources=[InboxTaskSource.PERSON_CATCH_UP],
@@ -100,7 +105,7 @@ class PersonFindUseCase(
 
         if args.include_birthday_inbox_tasks:
             birthday_inbox_tasks = (
-                await uow.inbox_task_repository.find_all_with_filters(
+                await uow.repository_for(InboxTask).find_all_with_filters(
                     parent_ref_id=inbox_task_collection.ref_id,
                     allow_archived=True,
                     filter_sources=[InboxTaskSource.PERSON_BIRTHDAY],
@@ -112,10 +117,10 @@ class PersonFindUseCase(
 
         all_notes_by_person_ref_id: defaultdict[EntityId, Note] = defaultdict(None)
         if args.include_notes:
-            notes_collection = await uow.note_collection_repository.load_by_parent(
+            notes_collection = await uow.repository_for(NoteCollection).load_by_parent(
                 workspace.ref_id
             )
-            all_notes = await uow.note_repository.find_all_with_filters(
+            all_notes = await uow.repository_for(Note).find_all_with_filters(
                 parent_ref_id=notes_collection.ref_id,
                 domain=NoteDomain.PERSON,
                 allow_archived=True,

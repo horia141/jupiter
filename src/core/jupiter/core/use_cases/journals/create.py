@@ -1,11 +1,13 @@
 """Use case for creating a journal."""
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.notes.note import Note
+from jupiter.core.domain.core.notes.note_collection import NoteCollection
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.infra.generic_creator import generic_creator
 from jupiter.core.domain.journals.journal import Journal
+from jupiter.core.domain.journals.journal_collection import JournalCollection
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.use_case import (
     ProgressReporter,
@@ -55,10 +57,10 @@ class JournalCreateUseCase(
         """Execute the command's actions."""
         workspace = context.workspace
 
-        journal_collection = await uow.journal_collection_repository.load_by_parent(
+        journal_collection = await uow.repository_for(JournalCollection).load_by_parent(
             workspace.ref_id,
         )
-        note_collection = await uow.note_collection_repository.load_by_parent(
+        note_collection = await uow.repository_for(NoteCollection).load_by_parent(
             workspace.ref_id
         )
 

@@ -1,6 +1,8 @@
 """The command for hard removing a metric."""
 
 from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.metrics.infra.metric_repository import MetricRepository
+from jupiter.core.domain.metrics.metric import Metric
 from jupiter.core.domain.metrics.service.remove_service import MetricRemoveService
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -37,7 +39,7 @@ class MetricRemoveUseCase(
     ) -> None:
         """Execute the command's action."""
         workspace = context.workspace
-        metric = await uow.metric_repository.load_by_id(
+        metric = await uow.repository_for(Metric).load_by_id(
             args.ref_id, allow_archived=True
         )
 

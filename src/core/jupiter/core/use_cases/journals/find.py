@@ -1,10 +1,12 @@
 """Use case for finding journals."""
 from jupiter.core.domain.core.notes.note import Note
+from jupiter.core.domain.core.notes.note_collection import NoteCollection
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.journals.journal import Journal
+from jupiter.core.domain.journals.journal_collection import JournalCollection
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case_io import (
@@ -62,13 +64,13 @@ class JournalFindUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        journal_collection = await uow.journal_collection_repository.load_by_parent(
+        journal_collection = await uow.repository_for(JournalCollection).load_by_parent(
             workspace.ref_id,
         )
-        note_collection = await uow.note_collection_repository.load_by_parent(
+        note_collection = await uow.repository_for(NoteCollection).load_by_parent(
             workspace.ref_id,
         )
-        journals = await uow.journal_repository.find_all(
+        journals = await uow.repository_for(Journal).find_all(
             parent_ref_id=journal_collection.ref_id,
             allow_archived=args.allow_archived,
             filter_ref_ids=args.filter_ref_ids,
@@ -76,7 +78,7 @@ class JournalFindUseCase(
 
         notes_by_journal_ref_id = {}
         if args.include_notes:
-            notes = await uow.note_repository.find_all_with_filters(
+            notes = await uow.repository_for(Note).find_all_with_filters(
                 parent_ref_id=note_collection.ref_id,
                 domain=NoteDomain.JOURNAL,
                 allow_archived=args.allow_archived,
@@ -87,7 +89,7 @@ class JournalFindUseCase(
 
         writing_tasks_by_journal_ref_id = {}
         if args.include_writing_tasks:
-            writing_tasks = await uow.inbox_task_repository.find_all_with_filters(
+            writing_tasks = await uow.repository_for(InboxTask).find_all_with_filters(
                 parent_ref_id=note_collection.ref_id,
                 filter_sources=[InboxTaskSource.JOURNAL],
                 allow_archived=args.allow_archived,

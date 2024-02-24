@@ -1,5 +1,6 @@
 """Use case for archiving a note."""
 
+from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.service.note_archive_service import (
     NoteArchiveService,
 )
@@ -38,5 +39,5 @@ class NoteArchiveUseCase(
         args: NoteArchiveArgs,
     ) -> None:
         """Execute the command's action."""
-        note = await uow.note_repository.load_by_id(args.ref_id)
+        note = await uow.repository_for(Note).load_by_id(args.ref_id)
         await NoteArchiveService().archive(context.domain_context, uow, note)

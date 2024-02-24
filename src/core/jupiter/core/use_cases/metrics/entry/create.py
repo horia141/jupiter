@@ -3,6 +3,9 @@ from typing import Optional
 
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.metrics.infra.metric_entry_repository import MetricEntryRepository
+from jupiter.core.domain.metrics.infra.metric_repository import MetricRepository
+from jupiter.core.domain.metrics.metric import Metric
 from jupiter.core.domain.metrics.metric_entry import MetricEntry
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -54,7 +57,7 @@ class MetricEntryCreateUseCase(
         args: MetricEntryCreateArgs,
     ) -> MetricEntryCreateResult:
         """Execute the command's action."""
-        metric = await uow.metric_repository.load_by_id(
+        metric = await uow.repository_for(Metric).load_by_id(
             args.metric_ref_id,
         )
         collection_time = (
@@ -68,7 +71,7 @@ class MetricEntryCreateUseCase(
             collection_time=collection_time,
             value=args.value,
         )
-        new_metric_entry = await uow.metric_entry_repository.create(
+        new_metric_entry = await uow.repository_for(MetricEntry).create(
             new_metric_entry,
         )
         await progress_reporter.mark_created(new_metric_entry)

@@ -1,5 +1,6 @@
 """The command for updating a big plan."""
 from typing import Optional
+from jupiter.core.domain.big_plans.big_plan import BigPlan
 
 from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.core.domain.big_plans.big_plan_status import BigPlanStatus
@@ -60,7 +61,7 @@ class BigPlanUpdateUseCase(
         args: BigPlanUpdateArgs,
     ) -> BigPlanUpdateResult:
         """Execute the command's action."""
-        big_plan = await uow.big_plan_repository.load_by_id(args.ref_id)
+        big_plan = await uow.repository_for(BigPlan).load_by_id(args.ref_id)
 
         big_plan = big_plan.update(
             context.domain_context,
@@ -70,7 +71,7 @@ class BigPlanUpdateUseCase(
             due_date=args.due_date,
         )
 
-        await uow.big_plan_repository.save(big_plan)
+        await uow.repository_for(BigPlan).save(big_plan)
         await progress_reporter.mark_updated(big_plan)
 
         record_score_result = None

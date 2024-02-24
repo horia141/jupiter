@@ -10,7 +10,11 @@ from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenP
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.core.recurring_task_skip_rule import RecurringTaskSkipRule
 from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.habits.habit_name import HabitName
+from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
+from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
@@ -59,9 +63,9 @@ class HabitUpdateUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        habit = await uow.habit_repository.load_by_id(args.ref_id)
+        habit = await uow.repository_for(Habit).load_by_id(args.ref_id)
 
-        project = await uow.project_repository.load_by_id(habit.project_ref_id)
+        project = await uow.repository_for(Project).load_by_id(habit.project_ref_id)
 
         need_to_change_inbox_tasks = (
             args.name.should_change
@@ -111,16 +115,16 @@ class HabitUpdateUseCase(
             repeats_in_period_count=args.repeats_in_period_count,
         )
 
-        await uow.habit_repository.save(habit)
+        await uow.repository_for(Habit).save(habit)
         await progress_reporter.mark_updated(habit)
 
         if need_to_change_inbox_tasks:
             inbox_task_collection = (
-                await uow.inbox_task_collection_repository.load_by_parent(
+                await uow.repository_for(InboxTaskCollection).load_by_parent(
                     workspace.ref_id,
                 )
             )
-            all_inbox_tasks = await uow.inbox_task_repository.find_all_with_filters(
+            all_inbox_tasks = await uow.repository_for(InboxTask).find_all_with_filters(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
                 filter_habit_ref_ids=[habit.ref_id],
@@ -150,5 +154,5 @@ class HabitUpdateUseCase(
                     difficulty=habit.gen_params.difficulty,
                 )
 
-                await uow.inbox_task_repository.save(inbox_task)
+                await uow.repository_for(InboxTask).save(inbox_task)
                 await progress_reporter.mark_updated(inbox_task)

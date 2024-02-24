@@ -50,13 +50,13 @@ class DocLoadUseCase(
         args: DocLoadArgs,
     ) -> DocLoadResult:
         """Execute the command's action."""
-        doc = await uow.doc_repository.load_by_id(
+        doc = await uow.repository_for(Doc).load_by_id(
             args.ref_id, allow_archived=args.allow_archived
         )
-        note = await uow.note_repository.load_for_source(
+        note = await uow.repository_for(Note).load_for_source(
             NoteDomain.DOC, doc.ref_id, allow_archived=args.allow_archived
         )
-        subdocs = await uow.doc_repository.find_all_with_filters(
+        subdocs = await uow.repository_for(Doc).find_all_with_filters(
             parent_ref_id=doc.doc_collection.ref_id,
             allow_archived=args.allow_archived,
             filter_parent_doc_ref_ids=[doc.ref_id],

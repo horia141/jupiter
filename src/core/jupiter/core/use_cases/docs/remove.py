@@ -1,5 +1,5 @@
 """The command for removing a doc."""
-
+from jupiter.core.domain.docs.doc import Doc
 from jupiter.core.domain.docs.service.doc_remove_service import (
     DocRemoveService,
 )
@@ -37,7 +37,7 @@ class DocRemoveUseCase(AppTransactionalLoggedInMutationUseCase[DocRemoveArgs, No
         args: DocRemoveArgs,
     ) -> None:
         """Execute the command's action."""
-        doc = await uow.doc_repository.load_by_id(args.ref_id)
+        doc = await uow.repository_for(Doc).load_by_id(args.ref_id)
         await DocRemoveService().do_it(
             context.domain_context, uow, progress_reporter, doc
         )

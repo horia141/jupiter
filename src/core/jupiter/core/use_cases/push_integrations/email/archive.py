@@ -1,6 +1,7 @@
 """The command for archiving a email task."""
 
 from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.push_integrations.email.email_task import EmailTask
 from jupiter.core.domain.push_integrations.email.service.archive_service import (
     EmailTaskArchiveService,
 )
@@ -38,7 +39,7 @@ class EmailTaskArchiveUseCase(
         args: EmailTaskArchiveArgs,
     ) -> None:
         """Execute the command's action."""
-        email_task = await uow.email_task_repository.load_by_id(ref_id=args.ref_id)
+        email_task = await uow.repository_for(EmailTask).load_by_id(ref_id=args.ref_id)
 
         email_task_archive_service = EmailTaskArchiveService()
 

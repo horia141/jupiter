@@ -1,5 +1,6 @@
 """Update a note use case."""
 
+from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_content_block import OneOfNoteContentBlock
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -36,9 +37,9 @@ class NoteUpdateUseCase(AppTransactionalLoggedInMutationUseCase[NoteUpdateArgs, 
         args: NoteUpdateArgs,
     ) -> None:
         """Execute the command's action."""
-        note = await uow.note_repository.load_by_id(args.ref_id)
+        note = await uow.repository_for(Note).load_by_id(args.ref_id)
         note = note.update(
             ctx=context.domain_context,
             content=args.content,
         )
-        note = await uow.note_repository.save(note)
+        note = await uow.repository_for(Note).save(note)

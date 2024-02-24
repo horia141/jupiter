@@ -25,7 +25,7 @@ class InboxTaskArchiveService:
             return
 
         inbox_task = inbox_task.mark_archived(ctx)
-        await uow.inbox_task_repository.save(inbox_task)
+        await uow.repository_for(InboxTask).save(inbox_task)
         await progress_reporter.mark_updated(inbox_task)
 
         note_archive_service = NoteArchiveService()

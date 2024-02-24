@@ -2,6 +2,7 @@
 from typing import Optional
 
 from jupiter.core.domain.chores.chore import Chore
+from jupiter.core.domain.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.chores.chore_name import ChoreName
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.difficulty import Difficulty
@@ -81,7 +82,7 @@ class ChoreCreateUseCase(
         ):
             raise FeatureUnavailableError(WorkspaceFeature.PROJECTS)
 
-        chore_collection = await uow.chore_collection_repository.load_by_parent(
+        chore_collection = await uow.repository_for(ChoreCollection).load_by_parent(
             workspace.ref_id,
         )
 
@@ -105,7 +106,7 @@ class ChoreCreateUseCase(
             suspended=False,
             must_do=args.must_do,
         )
-        new_chore = await uow.chore_repository.create(new_chore)
+        new_chore = await uow.repository_for(Chore).create(new_chore)
         await progress_reporter.mark_created(new_chore)
 
         return ChoreCreateResult(new_chore=new_chore)

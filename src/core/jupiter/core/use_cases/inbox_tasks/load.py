@@ -8,7 +8,9 @@ from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.metrics.infra.metric_repository import MetricRepository
 from jupiter.core.domain.metrics.metric import Metric
+from jupiter.core.domain.persons.infra.person_repository import PersonRepository
 from jupiter.core.domain.persons.person import Person
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.push_integrations.email.email_task import EmailTask
@@ -65,53 +67,53 @@ class InboxTaskLoadUseCase(
         args: InboxTaskLoadArgs,
     ) -> InboxTaskLoadResult:
         """Execute the command's action."""
-        inbox_task = await uow.inbox_task_repository.load_by_id(
+        inbox_task = await uow.repository_for(InboxTask).load_by_id(
             args.ref_id, allow_archived=args.allow_archived
         )
-        project = await uow.project_repository.load_by_id(inbox_task.project_ref_id)
+        project = await uow.repository_for(Project).load_by_id(inbox_task.project_ref_id)
 
         if inbox_task.habit_ref_id is not None:
-            habit = await uow.habit_repository.load_by_id(inbox_task.habit_ref_id)
+            habit = await uow.repository_for(Habit).load_by_id(inbox_task.habit_ref_id)
         else:
             habit = None
 
         if inbox_task.chore_ref_id is not None:
-            chore = await uow.chore_repository.load_by_id(inbox_task.chore_ref_id)
+            chore = await uow.repository_for(Chore).load_by_id(inbox_task.chore_ref_id)
         else:
             chore = None
 
         if inbox_task.big_plan_ref_id is not None:
-            big_plan = await uow.big_plan_repository.load_by_id(
+            big_plan = await uow.repository_for(BigPlan).load_by_id(
                 inbox_task.big_plan_ref_id
             )
         else:
             big_plan = None
 
         if inbox_task.metric_ref_id is not None:
-            metric = await uow.metric_repository.load_by_id(inbox_task.metric_ref_id)
+            metric = await uow.repository_for(Metric).load_by_id(inbox_task.metric_ref_id)
         else:
             metric = None
 
         if inbox_task.person_ref_id is not None:
-            person = await uow.person_repository.load_by_id(inbox_task.person_ref_id)
+            person = await uow.repository_for(Person).load_by_id(inbox_task.person_ref_id)
         else:
             person = None
 
         if inbox_task.slack_task_ref_id is not None:
-            slack_task = await uow.slack_task_repository.load_by_id(
+            slack_task = await uow.repository_for(SlackTask).load_by_id(
                 inbox_task.slack_task_ref_id
             )
         else:
             slack_task = None
 
         if inbox_task.email_task_ref_id is not None:
-            email_task = await uow.email_task_repository.load_by_id(
+            email_task = await uow.repository_for(EmailTask).load_by_id(
                 inbox_task.email_task_ref_id
             )
         else:
             email_task = None
 
-        note = await uow.note_repository.load_optional_for_source(
+        note = await uow.repository_for(Note).load_optional_for_source(
             NoteDomain.INBOX_TASK,
             inbox_task.ref_id,
             allow_archived=args.allow_archived,

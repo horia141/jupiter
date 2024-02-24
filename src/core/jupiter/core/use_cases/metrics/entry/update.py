@@ -2,6 +2,8 @@
 
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.metrics.infra.metric_entry_repository import MetricEntryRepository
+from jupiter.core.domain.metrics.metric_entry import MetricEntry
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.update_action import UpdateAction
@@ -39,7 +41,7 @@ class MetricEntryUpdateUseCase(
         args: MetricEntryUpdateArgs,
     ) -> None:
         """Execute the command's action."""
-        metric_entry = await uow.metric_entry_repository.load_by_id(args.ref_id)
+        metric_entry = await uow.repository_for(MetricEntry).load_by_id(args.ref_id)
 
         metric_entry = metric_entry.update(
             ctx=context.domain_context,
@@ -47,5 +49,5 @@ class MetricEntryUpdateUseCase(
             value=args.value,
         )
 
-        await uow.metric_entry_repository.save(metric_entry)
+        await uow.repository_for(MetricEntry).save(metric_entry)
         await progress_reporter.mark_updated(metric_entry)

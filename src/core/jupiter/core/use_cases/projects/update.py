@@ -1,6 +1,7 @@
 """The command for updating a project."""
 
 from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.projects.project_name import ProjectName
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -38,11 +39,11 @@ class ProjectUpdateUseCase(
         args: ProjectUpdateArgs,
     ) -> None:
         """Execute the command's action."""
-        project = await uow.project_repository.load_by_id(args.ref_id)
+        project = await uow.repository_for(Project).load_by_id(args.ref_id)
         project = project.update(
             ctx=context.domain_context,
             name=args.name,
         )
 
-        await uow.project_repository.save(project)
+        await uow.repository_for(Project).save(project)
         await progress_reporter.mark_updated(project)

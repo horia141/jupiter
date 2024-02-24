@@ -5,10 +5,14 @@ from jupiter.core.domain.core.notes.service.note_archive_service import (
     NoteArchiveService,
 )
 from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.inbox_tasks.service.archive_service import (
     InboxTaskArchiveService,
 )
+from jupiter.core.domain.persons.infra.person_repository import PersonRepository
+from jupiter.core.domain.persons.person import Person
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
@@ -45,14 +49,14 @@ class PersonArchiveUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        person = await uow.person_repository.load_by_id(args.ref_id)
+        person = await uow.repository_for(Person).load_by_id(args.ref_id)
 
         inbox_task_collection = (
-            await uow.inbox_task_collection_repository.load_by_parent(
+            await uow.repository_for(InboxTaskCollection).load_by_parent(
                 workspace.ref_id,
             )
         )
-        all_inbox_tasks = await uow.inbox_task_repository.find_all_with_filters(
+        all_inbox_tasks = await uow.repository_for(InboxTask).find_all_with_filters(
             parent_ref_id=inbox_task_collection.ref_id,
             filter_sources=[
                 InboxTaskSource.PERSON_BIRTHDAY,
@@ -69,7 +73,7 @@ class PersonArchiveUseCase(
             )
 
         person = person.mark_archived(context.domain_context)
-        await uow.person_repository.save(person)
+        await uow.repository_for(Person).save(person)
         await progress_reporter.mark_updated(person)
 
         note_archive_service = NoteArchiveService()

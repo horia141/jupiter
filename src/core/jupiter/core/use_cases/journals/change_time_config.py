@@ -2,6 +2,7 @@
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.journals.journal import Journal
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.update_action import UpdateAction
@@ -39,9 +40,9 @@ class JournalChangeTimeConfigUseCase(
         args: JournalChangeTimeConfigArgs,
     ) -> None:
         """Execute the command's action."""
-        journal = await uow.journal_repository.load_by_id(args.ref_id)
+        journal = await uow.repository_for(Journal).load_by_id(args.ref_id)
         journal = journal.change_time_config(
             context.domain_context, args.right_now, args.period
         )
-        await uow.journal_repository.save(journal)
+        await uow.repository_for(Journal).save(journal)
         await progress_reporter.mark_updated(journal)

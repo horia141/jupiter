@@ -2,10 +2,13 @@
 
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.core.notes.service.note_remove_service import NoteRemoveService
+from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.inbox_tasks.service.remove_service import (
     InboxTaskRemoveService,
 )
 from jupiter.core.domain.metrics.metric import Metric
+from jupiter.core.domain.metrics.metric_entry import MetricEntry
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.context import DomainContext
@@ -24,18 +27,18 @@ class MetricRemoveService:
         metric: Metric,
     ) -> None:
         """Execute the command's action."""
-        all_metric_entries = await uow.metric_entry_repository.find_all(
+        all_metric_entries = await uow.repository_for(MetricEntry).find_all(
             metric.ref_id,
             allow_archived=True,
         )
 
         inbox_task_collection = (
-            await uow.inbox_task_collection_repository.load_by_parent(
+            await uow.repository_for(InboxTaskCollection).load_by_parent(
                 workspace.ref_id,
             )
         )
 
-        all_inbox_tasks = await uow.inbox_task_repository.find_all_with_filters(
+        all_inbox_tasks = await uow.repository_for(InboxTask).find_all_with_filters(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
             filter_metric_ref_ids=[metric.ref_id],
@@ -48,12 +51,12 @@ class MetricRemoveService:
             )
 
         for metric_entry in all_metric_entries:
-            await uow.metric_entry_repository.remove(metric_entry.ref_id)
+            await uow.repository_for(MetricEntry).remove(metric_entry.ref_id)
             await progress_reporter.mark_removed(metric_entry)
             note_remove_service = NoteRemoveService()
             await note_remove_service.remove_for_source(
                 ctx, uow, NoteDomain.METRIC_ENTRY, metric_entry.ref_id
             )
 
-        await uow.metric_repository.remove(metric.ref_id)
+        await uow.repository_for(Metric).remove(metric.ref_id)
         await progress_reporter.mark_removed(metric)

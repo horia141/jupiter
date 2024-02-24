@@ -9,7 +9,10 @@ from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDu
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.metrics.infra.metric_collection_repository import MetricCollectionRepository
+from jupiter.core.domain.metrics.infra.metric_repository import MetricRepository
 from jupiter.core.domain.metrics.metric import Metric
+from jupiter.core.domain.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.metrics.metric_name import MetricName
 from jupiter.core.domain.metrics.metric_unit import MetricUnit
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -69,7 +72,7 @@ class MetricCreateUseCase(
         workspace = context.workspace
 
         collection_params = None
-        metric_collection = await uow.metric_collection_repository.load_by_parent(
+        metric_collection = await uow.repository_for(MetricCollection).load_by_parent(
             workspace.ref_id,
         )
 
@@ -92,7 +95,7 @@ class MetricCreateUseCase(
             collection_params=collection_params,
             metric_unit=args.metric_unit,
         )
-        new_metric = await uow.metric_repository.create(new_metric)
+        new_metric = await uow.repository_for(Metric).create(new_metric)
         await progress_reporter.mark_created(new_metric)
 
         return MetricCreateResult(new_metric=new_metric)

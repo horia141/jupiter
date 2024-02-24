@@ -4,6 +4,7 @@ from typing import List, Optional
 from jupiter.core.domain.core.tags.tag_name import TagName
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.smart_lists.smart_list import SmartList
+from jupiter.core.domain.smart_lists.smart_list_collection import SmartListCollection
 from jupiter.core.domain.smart_lists.smart_list_item import SmartListItem
 from jupiter.core.domain.smart_lists.smart_list_tag import SmartListTag
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -68,12 +69,12 @@ class SmartListFindUseCase(
         workspace = context.workspace
 
         smart_list_collection = (
-            await uow.smart_list_collection_repository.load_by_parent(
+            await uow.repository_for(SmartListCollection).load_by_parent(
                 workspace.ref_id,
             )
         )
 
-        smart_lists = await uow.smart_list_repository.find_all(
+        smart_lists = await uow.repository_for(SmartList).find_all(
             parent_ref_id=smart_list_collection.ref_id,
             allow_archived=args.allow_archived,
             filter_ref_ids=args.filter_ref_ids,
@@ -84,7 +85,7 @@ class SmartListFindUseCase(
             for smart_list in smart_lists:
                 for (
                     smart_list_tag
-                ) in await uow.smart_list_tag_repository.find_all_with_filters(
+                ) in await uow.repository_for(SmartListTag).find_all_with_filters(
                     parent_ref_id=smart_list.ref_id,
                     allow_archived=args.allow_archived,
                     filter_tag_names=args.filter_tag_names,
@@ -109,7 +110,7 @@ class SmartListFindUseCase(
             for smart_list in smart_lists:
                 for (
                     smart_list_item
-                ) in await uow.smart_list_item_repository.find_all_with_filters(
+                ) in await uow.repository_for(SmartListItem).find_all_with_filters(
                     parent_ref_id=smart_list.ref_id,
                     allow_archived=args.allow_archived,
                     filter_ref_ids=args.filter_item_ref_id,
