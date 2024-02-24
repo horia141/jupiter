@@ -20,20 +20,20 @@ async def generic_archiver(
         if entity.archived:
             return
         entity = entity.mark_archived(ctx)
-        await uow.get_repository(entity.__class__).save(entity)
+        await uow.repository_for(entity.__class__).save(entity)
         if not isinstance(entity, LeafSupportEntity):
             await progress_reporter.mark_updated(entity)
 
         for field in entity.__class__.__dict__.values():
             if not isinstance(field, OwnsLink):
                 continue
-            linked_entities = await uow.get_repository(field.the_type).find_all_generic(
+            linked_entities = await uow.repository_for(field.the_type).find_all_generic(
                 allow_archived=False, **field.get_for_entity(entity)
             )
 
             for linked_entity in linked_entities:
                 await _archiver(linked_entity)
 
-    entity = await uow.get_repository(entity_type).load_by_id(ref_id)
+    entity = await uow.repository_for(entity_type).load_by_id(ref_id)
 
     await _archiver(entity)

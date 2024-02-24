@@ -4,6 +4,7 @@ from jupiter.core.domain.features import UserFeature
 from jupiter.core.domain.storage_engine import (
     DomainUnitOfWork,
 )
+from jupiter.core.domain.user.user import User
 from jupiter.core.framework.use_case import (
     ProgressReporter,
 )
@@ -48,4 +49,4 @@ class UserChangeFeatureFlagsUseCase(
             feature_flag_controls=feature_flags_controls,
             feature_flags=user_feature_flags,
         )
-        await uow.user_repository.save(user)
+        await uow.repository_for(User).save(user)

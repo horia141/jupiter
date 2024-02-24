@@ -14,7 +14,7 @@ async def generic_creator(
     entity: _EntityT,
 ) -> _EntityT:
     """Create an entity."""
-    entity = await uow.get_repository(type(entity)).create(entity)
+    entity = await uow.repository_for(type(entity)).create(entity)
     if not isinstance(entity, LeafSupportEntity):
         await progress_reporter.mark_created(entity)
     return entity

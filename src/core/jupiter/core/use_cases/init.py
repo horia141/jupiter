@@ -131,7 +131,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 feature_flag_controls=user_feature_flags_controls,
                 feature_flags=user_feature_flags,
             )
-            new_user = await uow.user_repository.create(new_user)
+            new_user = await uow.repository_for(User).create(new_user)
 
             new_auth, new_recovery_token = Auth.new_auth(
                 context.domain_context,
@@ -139,7 +139,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 password=args.auth_password,
                 password_repeat=args.auth_password_repeat,
             )
-            new_auth = await uow.auth_repository.create(new_auth)
+            new_auth = await uow.repository_for(Auth).create(new_auth)
 
             new_score_log = ScoreLog.new_score_log(
                 ctx=context.domain_context,

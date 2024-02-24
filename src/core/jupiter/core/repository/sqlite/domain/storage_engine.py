@@ -1,15 +1,18 @@
 """The real implementation of an engine."""
 from contextlib import asynccontextmanager
 from types import TracebackType
-from typing import AsyncIterator, Final, Optional, Type, TypeVar, cast
+from typing import AsyncIterator, Final, Mapping, Optional, Type, TypeVar, cast, overload
+from jupiter.core.domain.auth.auth import Auth
 
 from jupiter.core.domain.auth.infra.auth_repository import AuthRepository
 from jupiter.core.domain.big_plans.big_plan import BigPlan
+from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.core.domain.big_plans.infra.big_plan_collection_repository import (
     BigPlanCollectionRepository,
 )
 from jupiter.core.domain.big_plans.infra.big_plan_repository import BigPlanRepository
 from jupiter.core.domain.chores.chore import Chore
+from jupiter.core.domain.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.chores.infra.chore_collection_repository import (
     ChoreCollectionRepository,
 )
@@ -19,7 +22,9 @@ from jupiter.core.domain.core.notes.infra.note_collection_repository import (
 )
 from jupiter.core.domain.core.notes.infra.note_repository import NoteRepository
 from jupiter.core.domain.core.notes.note import Note
+from jupiter.core.domain.core.notes.note_collection import NoteCollection
 from jupiter.core.domain.docs.doc import Doc
+from jupiter.core.domain.docs.doc_collection import DocCollection
 from jupiter.core.domain.docs.infra.doc_collection_repository import (
     DocCollectionRepository,
 )
@@ -37,16 +42,24 @@ from jupiter.core.domain.gamification.infra.score_period_best_repository import 
 from jupiter.core.domain.gamification.infra.score_stats_repository import (
     ScoreStatsRepository,
 )
+from jupiter.core.domain.gamification.score_log import ScoreLog
+from jupiter.core.domain.gamification.score_log_entry import ScoreLogEntry
+from jupiter.core.domain.gc.gc_log import GCLog
+from jupiter.core.domain.gc.gc_log_entry import GCLogEntry
 from jupiter.core.domain.gc.infra.gc_log_entry_repository import GCLogEntryRepository
 from jupiter.core.domain.gc.infra.gc_log_repository import GCLogRepository
+from jupiter.core.domain.gen.gen_log import GenLog
+from jupiter.core.domain.gen.gen_log_entry import GenLogEntry
 from jupiter.core.domain.gen.infra.gen_log_entry_repository import GenLogEntryRepository
 from jupiter.core.domain.gen.infra.gen_log_repository import GenLogRepository
 from jupiter.core.domain.habits.habit import Habit
+from jupiter.core.domain.habits.habit_collection import HabitCollection
 from jupiter.core.domain.habits.infra.habit_collection_repository import (
     HabitCollectionRepository,
 )
 from jupiter.core.domain.habits.infra.habit_repository import HabitRepository
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.inbox_tasks.infra.inbox_task_collection_repository import (
     InboxTaskCollectionRepository,
 )
@@ -58,6 +71,7 @@ from jupiter.core.domain.journals.infra.journal_collection_repository import (
 )
 from jupiter.core.domain.journals.infra.journal_repository import JournalRepository
 from jupiter.core.domain.journals.journal import Journal
+from jupiter.core.domain.journals.journal_collection import JournalCollection
 from jupiter.core.domain.metrics.infra.metric_collection_repository import (
     MetricCollectionRepository,
 )
@@ -66,18 +80,22 @@ from jupiter.core.domain.metrics.infra.metric_entry_repository import (
 )
 from jupiter.core.domain.metrics.infra.metric_repository import MetricRepository
 from jupiter.core.domain.metrics.metric import Metric
+from jupiter.core.domain.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.metrics.metric_entry import MetricEntry
 from jupiter.core.domain.persons.infra.person_collection_repository import (
     PersonCollectionRepository,
 )
 from jupiter.core.domain.persons.infra.person_repository import PersonRepository
 from jupiter.core.domain.persons.person import Person
+from jupiter.core.domain.persons.person_collection import PersonCollection
 from jupiter.core.domain.projects.infra.project_collection_repository import (
     ProjectCollectionRepository,
 )
 from jupiter.core.domain.projects.infra.project_repository import ProjectRepository
 from jupiter.core.domain.projects.project import Project
+from jupiter.core.domain.projects.project_collection import ProjectCollection
 from jupiter.core.domain.push_integrations.email.email_task import EmailTask
+from jupiter.core.domain.push_integrations.email.email_task_collection import EmailTaskCollection
 from jupiter.core.domain.push_integrations.email.infra.email_task_collection_repository import (
     EmailTaskCollectionRepository,
 )
@@ -87,6 +105,7 @@ from jupiter.core.domain.push_integrations.email.infra.email_task_repository imp
 from jupiter.core.domain.push_integrations.group.infra.push_integration_group_repository import (
     PushIntegrationGroupRepository,
 )
+from jupiter.core.domain.push_integrations.group.push_integration_group import PushIntegrationGroup
 from jupiter.core.domain.push_integrations.slack.infra.slack_task_collection_repository import (
     SlackTaskCollectionRepository,
 )
@@ -94,6 +113,7 @@ from jupiter.core.domain.push_integrations.slack.infra.slack_task_repository imp
     SlackTaskRepository,
 )
 from jupiter.core.domain.push_integrations.slack.slack_task import SlackTask
+from jupiter.core.domain.push_integrations.slack.slack_task_collection import SlackTaskCollection
 from jupiter.core.domain.search.infra.search_repository import SearchRepository
 from jupiter.core.domain.smart_lists.infra.smart_list_collection_repository import (
     SmartListCollectionRepository,
@@ -108,6 +128,7 @@ from jupiter.core.domain.smart_lists.infra.smart_list_tag_repository import (
     SmartListTagRepository,
 )
 from jupiter.core.domain.smart_lists.smart_list import SmartList
+from jupiter.core.domain.smart_lists.smart_list_collection import SmartListCollection
 from jupiter.core.domain.smart_lists.smart_list_item import SmartListItem
 from jupiter.core.domain.smart_lists.smart_list_tag import SmartListTag
 from jupiter.core.domain.storage_engine import (
@@ -117,20 +138,24 @@ from jupiter.core.domain.storage_engine import (
     SearchUnitOfWork,
 )
 from jupiter.core.domain.user.infra.user_repository import UserRepository
+from jupiter.core.domain.user.user import User
 from jupiter.core.domain.user_workspace_link.infra.user_workspace_link_repository import (
     UserWorkspaceLinkRepository,
 )
+from jupiter.core.domain.user_workspace_link.user_workspace_link import UserWorkspaceLink
 from jupiter.core.domain.vacations.infra.vacation_collection_repository import (
     VacationCollectionRepository,
 )
 from jupiter.core.domain.vacations.infra.vacation_repository import VacationRepository
 from jupiter.core.domain.vacations.vacation import Vacation
+from jupiter.core.domain.vacations.vacation_collection import VacationCollection
 from jupiter.core.domain.workspaces.infra.workspace_repository import (
     WorkspaceRepository,
 )
-from jupiter.core.framework.entity import CrownEntity
+from jupiter.core.domain.workspaces.workspace import Workspace
+from jupiter.core.framework.entity import CrownEntity, Entity, RootEntity, StubEntity, TrunkEntity
 from jupiter.core.framework.realm import RealmCodecRegistry
-from jupiter.core.framework.repository import CrownEntityRepository
+from jupiter.core.framework.repository import CrownEntityRepository, EntityRepository, RootEntityRepository, StubEntityRepository, TrunkEntityRepository
 from jupiter.core.repository.sqlite.connection import SqliteConnection
 from jupiter.core.repository.sqlite.domain.auths import SqliteAuthRepository
 from jupiter.core.repository.sqlite.domain.big_plans import (
@@ -221,13 +246,19 @@ from jupiter.core.repository.sqlite.domain.workspace import (
 from sqlalchemy import MetaData
 from sqlalchemy.ext.asyncio import AsyncEngine
 
-_CrownEntityT = TypeVar("_CrownEntityT", bound=CrownEntity)
 
+_EntityRepositoryT = TypeVar("_EntityRepositoryT", bound=EntityRepository[Entity])
+_RootEntityT = TypeVar("_RootEntityT", bound=RootEntity)
+_StubEntityT = TypeVar("_StubEntityT", bound=StubEntity)
+_TrunkEntityT = TypeVar("_TrunkEntityT", bound=TrunkEntity)
+_CrownEntityT = TypeVar("_CrownEntityT", bound=CrownEntity)
 
 class SqliteDomainUnitOfWork(DomainUnitOfWork):
     """A Sqlite specific unit of work."""
 
-    _user_repository: Final[SqliteUserRepository]
+    _entity_repositories: Final[dict[type[Entity], EntityRepository[Entity]]]
+    _repositories_by_type: Final[dict[type[EntityRepository[Entity]], EntityRepository[Entity]]]
+
     _auth_repository: Final[SqliteAuthRepository]
     _score_log_repository: Final[SqliteScoreLogRepository]
     _score_log_entry_repository: Final[SqliteScoreLogEntryRepository]
@@ -322,7 +353,95 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
         gc_log_entry_repository: SqliteGCLogEntryRepository,
     ) -> None:
         """Constructor."""
-        self._user_repository = user_repository
+        self._entity_repositories = {
+            User: user_repository,
+            Auth: auth_repository,
+            ScoreLog: score_log_repository,
+            ScoreLogEntry: score_log_entry_repository,
+            Workspace: workspace_repository,
+            UserWorkspaceLink: user_workspace_link_repository,
+            InboxTaskCollection: inbox_task_collection_repository,
+            InboxTask: inbox_task_repository,
+            HabitCollection: habit_collection_repository,
+            Habit: habit_repository,
+            ChoreCollection: chore_collection_repository,
+            Chore: chore_repository,
+            BigPlanCollection: big_plan_collection_repository,
+            BigPlan: big_plan_repository,
+            JournalCollection: journal_collection_repository,
+            Journal: journal_repository,
+            DocCollection: doc_collection_repository,
+            Doc: doc_repository,
+            VacationCollection: vacation_collection_repository,
+            Vacation: vacation_repository,
+            ProjectCollection: project_collection_repository,
+            Project: project_repository,
+            SmartListCollection: smart_list_collection_repository,
+            SmartList: smart_list_repository,
+            SmartListTag: smart_list_tag_repository,
+            SmartListItem: smart_list_item_repository,
+            MetricCollection: metric_collection_repository,
+            Metric: metric_repository,
+            MetricEntry: metric_entry_repository,
+            PersonCollection: person_collection_repository,
+            Person: person_repository,
+            PushIntegrationGroup: push_integration_group_repository,
+            SlackTaskCollection: slack_task_collection_repository,
+            SlackTask: slack_task_repository,
+            EmailTaskCollection: email_task_collection_repository,
+            EmailTask: email_task_repository,
+            NoteCollection: note_collection_repository,
+            Note: note_repository,
+            GenLog: gen_log_repository,
+            GenLogEntry: gen_log_entry_repository,
+            GCLog: gc_log_repository,
+            GCLogEntry: gc_log_entry_repository,
+        }
+        self._repositories_by_type = {
+            UserRepository: user_repository,
+            AuthRepository: auth_repository,
+            ScoreLogRepository: score_log_repository,
+            ScoreLogEntryRepository: score_log_entry_repository,
+            WorkspaceRepository: workspace_repository,
+            UserWorkspaceLinkRepository: user_workspace_link_repository,
+            InboxTaskCollectionRepository: inbox_task_collection_repository,
+            InboxTaskRepository: inbox_task_repository,
+            HabitCollectionRepository: habit_collection_repository,
+            HabitRepository: habit_repository,
+            ChoreCollectionRepository: chore_collection_repository,
+            ChoreRepository: chore_repository,
+            BigPlanCollectionRepository: big_plan_collection_repository,
+            BigPlanRepository: big_plan_repository,
+            JournalCollectionRepository: journal_collection_repository,
+            JournalRepository: journal_repository,
+            DocCollectionRepository: doc_collection_repository,
+            DocRepository: doc_repository,
+            VacationCollectionRepository: vacation_collection_repository,
+            VacationRepository: vacation_repository,
+            ProjectCollectionRepository: project_collection_repository,
+            ProjectRepository: project_repository,
+            SmartListCollectionRepository: smart_list_collection_repository,
+            SmartListRepository: smart_list_repository,
+            SmartListTagRepository: smart_list_tag_repository,
+            SmartListItemRepository: smart_list_item_repository,
+            MetricCollectionRepository: metric_collection_repository,
+            MetricRepository: metric_repository,
+            MetricEntryRepository: metric_entry_repository,
+            PersonCollectionRepository: person_collection_repository,
+            PersonRepository: person_repository,
+            PushIntegrationGroupRepository: push_integration_group_repository,
+            SlackTaskCollectionRepository: slack_task_collection_repository,
+            SlackTaskRepository: slack_task_repository,
+            EmailTaskCollectionRepository: email_task_collection_repository,
+            EmailTaskRepository: email_task_repository,
+            NoteCollectionRepository: note_collection_repository,
+            NoteRepository: note_repository,
+            FastInfoRepository: fast_into_repository,
+            GenLogRepository: gen_log_repository,
+            GenLogEntryRepository: gen_log_entry_repository,
+            GCLogRepository: gc_log_repository,
+            GCLogEntryRepository: gc_log_entry_repository,
+        }
         self._auth_repository = auth_repository
         self._score_log_repository = score_log_repository
         self._score_log_entry_repository = score_log_entry_repository
@@ -379,16 +498,6 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
         _exc_tb: Optional[TracebackType],
     ) -> None:
         """Exit context."""
-
-    @property
-    def user_repository(self) -> UserRepository:
-        """The user repository."""
-        return self._user_repository
-
-    @property
-    def auth_repository(self) -> AuthRepository:
-        """The auth repository."""
-        return self._auth_repository
 
     @property
     def score_log_repository(self) -> ScoreLogRepository:
@@ -604,61 +713,53 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
     def gc_log_entry_repository(self) -> GCLogEntryRepository:
         """The gc log entry repository."""
         return self._gc_log_entry_repository
+    
+    def get(
+        self, repository_type: Type[_EntityRepositoryT]
+    ) -> _EntityRepositoryT:
+        """Retrieve a repository."""
+        if repository_type not in self._repositories_by_type:
+            raise ValueError(f"No repository for type: {repository_type}")
+        return cast(_EntityRepositoryT, self._repositories_by_type[repository_type])
+    
+    @overload
+    def repository_for(
+        self, entity_type: Type[_RootEntityT]
+    ) -> RootEntityRepository[_RootEntityT]:
+        """Retrieve a repository."""
 
-    def get_repository(
+    @overload
+    def repository_for(
+        self, entity_type: Type[_StubEntityT]
+    ) -> StubEntityRepository[_StubEntityT]:
+        """Retrieve a repository."""
+
+    @overload
+    def repository_for(
+        self, entity_type: Type[_TrunkEntityT]
+    ) -> TrunkEntityRepository[_TrunkEntityT]:
+        """Retrieve a repository."""
+
+    @overload
+    def repository_for(
         self, entity_type: Type[_CrownEntityT]
     ) -> CrownEntityRepository[_CrownEntityT]:
+        """Retrieve a repository."""
+
+    def repository_for(
+        self, entity_type: Type[_RootEntityT] | Type[_StubEntityT] | Type[_TrunkEntityT] | Type[_CrownEntityT]
+    ) -> RootEntityRepository[_RootEntityT] | StubEntityRepository[_StubEntityT] | TrunkEntityRepository[_TrunkEntityT] | CrownEntityRepository[_CrownEntityT]:
         """Return a repository for a particular entity."""
-        if entity_type is InboxTask:
-            return cast(
-                CrownEntityRepository[_CrownEntityT], self._inbox_task_repository
-            )
-        elif entity_type is Habit:
-            return cast(CrownEntityRepository[_CrownEntityT], self._habit_repository)
-        elif entity_type is Chore:
-            return cast(CrownEntityRepository[_CrownEntityT], self._chore_repository)
-        elif entity_type is BigPlan:
-            return cast(CrownEntityRepository[_CrownEntityT], self._big_plan_repository)
-        elif entity_type is Journal:
-            return cast(CrownEntityRepository[_CrownEntityT], self._journal_repository)
-        elif entity_type is Doc:
-            return cast(CrownEntityRepository[_CrownEntityT], self._doc_repository)
-        elif entity_type is Vacation:
-            return cast(CrownEntityRepository[_CrownEntityT], self._vacation_repository)
-        elif entity_type is Project:
-            return cast(CrownEntityRepository[_CrownEntityT], self._project_repository)
-        elif entity_type is SmartList:
-            return cast(
-                CrownEntityRepository[_CrownEntityT], self._smart_list_repository
-            )
-        elif entity_type is SmartListTag:
-            return cast(
-                CrownEntityRepository[_CrownEntityT], self._smart_list_tag_reposiotry
-            )
-        elif entity_type is SmartListItem:
-            return cast(
-                CrownEntityRepository[_CrownEntityT], self._smart_list_item_repository
-            )
-        elif entity_type is Metric:
-            return cast(CrownEntityRepository[_CrownEntityT], self._metric_repository)
-        elif entity_type is MetricEntry:
-            return cast(
-                CrownEntityRepository[_CrownEntityT], self._metric_entry_repository
-            )
-        elif entity_type is Person:
-            return cast(CrownEntityRepository[_CrownEntityT], self._person_repository)
-        elif entity_type is SlackTask:
-            return cast(
-                CrownEntityRepository[_CrownEntityT], self._slack_task_repository
-            )
-        elif entity_type is EmailTask:
-            return cast(
-                CrownEntityRepository[_CrownEntityT], self._email_task_repository
-            )
-        elif entity_type is Note:
-            return cast(CrownEntityRepository[_CrownEntityT], self._note_repository)
-        else:
-            raise Exception("Repository not implemented yet")
+        if entity_type not in self._entity_repositories:
+            raise ValueError(f"No repository for entity type: {entity_type}")
+        if issubclass(entity_type, RootEntity):
+            return cast(RootEntityRepository[_RootEntityT], self._entity_repositories[entity_type])
+        if issubclass(entity_type, StubEntity):
+            return cast(StubEntityRepository[_StubEntityT], self._entity_repositories[entity_type])
+        if issubclass(entity_type, TrunkEntity):
+            return cast(TrunkEntityRepository[_TrunkEntityT], self._entity_repositories[entity_type])
+        if issubclass(entity_type, CrownEntity):
+            return cast(CrownEntityRepository[_CrownEntityT], self._entity_repositories[entity_type])
 
 
 class SqliteDomainStorageEngine(DomainStorageEngine):

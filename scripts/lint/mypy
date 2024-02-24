@@ -1,4 +1,5 @@
 [mypy]
+disable_error_code = type-abstract
 namespace_packages = True
 disallow_any_decorated = False
 disallow_any_explicit = True

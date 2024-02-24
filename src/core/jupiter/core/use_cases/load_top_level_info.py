@@ -85,7 +85,7 @@ class LoadTopLevelInfoUseCase(
                 user_score_overview = None
             else:
                 try:
-                    user = await uow.user_repository.load_by_id(
+                    user = await uow.repository_for(User).load_by_id(
                         context.auth_token.user_ref_id
                     )
                     user_workspace_link = (

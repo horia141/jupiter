@@ -273,7 +273,7 @@ class AppLoggedInMutationUseCase(
             session.auth_token_ext
         )
         async with self._domain_storage_engine.get_unit_of_work() as uow:
-            user = await uow.user_repository.load_by_id(auth_token.user_ref_id)
+            user = await uow.repository_for(User).load_by_id(auth_token.user_ref_id)
             user_workspace_link = await uow.user_workspace_link_repository.load_by_user(
                 auth_token.user_ref_id
             )
@@ -430,7 +430,7 @@ class AppLoggedInReadonlyUseCase(
             session.auth_token_ext
         )
         async with self._domain_storage_engine.get_unit_of_work() as uow:
-            user = await uow.user_repository.load_by_id(auth_token.user_ref_id)
+            user = await uow.repository_for(User).load_by_id(auth_token.user_ref_id)
             user_workspace_link = await uow.user_workspace_link_repository.load_by_user(
                 auth_token.user_ref_id
             )

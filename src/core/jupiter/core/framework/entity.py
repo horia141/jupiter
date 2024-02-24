@@ -375,6 +375,12 @@ class RootEntity(Entity):
 
     # example: workspace, user
 
+@dataclass
+class StubEntity(Entity):
+    """An entity with no children, but which is also a singleton."""
+
+    # examples: GitHub connection, GSuite connection, etc
+
 
 @dataclass
 class TrunkEntity(Entity, abc.ABC):
@@ -383,12 +389,6 @@ class TrunkEntity(Entity, abc.ABC):
     # examples:  vacations collection, projects collection, smart list collection, integrations collection,
     # Zapier+Mail collection, etc
 
-
-@dataclass
-class StubEntity(Entity):
-    """An entity with no children, but which is also a singleton."""
-
-    # examples: GitHub connection, GSuite connection, etc
 
 
 @dataclass

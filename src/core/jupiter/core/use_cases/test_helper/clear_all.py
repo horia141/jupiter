@@ -1,5 +1,6 @@
 """The command for clearing all branch and leaf type entities."""
 
+from jupiter.core.domain.auth.auth import Auth
 from jupiter.core.domain.auth.password_new_plain import PasswordNewPlain
 from jupiter.core.domain.auth.password_plain import PasswordPlain
 from jupiter.core.domain.big_plans.service.remove_service import BigPlanRemoveService
@@ -28,6 +29,7 @@ from jupiter.core.domain.smart_lists.service.remove_service import (
 from jupiter.core.domain.storage_engine import (
     DomainUnitOfWork,
 )
+from jupiter.core.domain.user.user import User
 from jupiter.core.domain.user.user_name import UserName
 from jupiter.core.domain.vacations.vacation import Vacation
 from jupiter.core.domain.workspaces.workspace_name import WorkspaceName
@@ -157,16 +159,16 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
                 feature_flag_controls=user_feature_flags_controls,
                 feature_flags=user_feature_flags,
             )
-            await uow.user_repository.save(user)
+            await uow.repository_for(User).save(user)
 
-            auth = await uow.auth_repository.load_by_parent(parent_ref_id=user.ref_id)
+            auth = await uow.repository_for(Auth).load_by_parent(parent_ref_id=user.ref_id)
             auth = auth.change_password(
                 ctx=context.domain_context,
                 current_password=args.auth_current_password,
                 new_password=args.auth_new_password,
                 new_password_repeat=args.auth_new_password_repeat,
             )
-            await uow.auth_repository.save(auth)
+            await uow.repository_for(Auth).save(auth)
 
         async with progress_reporter.section("Resetting score log"):
             all_score_log_entries = await uow.score_log_entry_repository.find_all(

@@ -2,6 +2,7 @@
 
 from jupiter.core.domain.core.timezone import Timezone
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
+from jupiter.core.domain.user.user import User
 from jupiter.core.domain.user.user_name import UserName
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
@@ -40,4 +41,4 @@ class UserUpdateUseCase(AppTransactionalLoggedInMutationUseCase[UserUpdateArgs, 
             name=args.name,
             timezone=args.timezone,
         )
-        await uow.user_repository.save(user)
+        await uow.repository_for(User).save(user)

@@ -58,19 +58,19 @@ async def generic_finder(
     _EntityT, Iterable[_LinkedEntity1T], Iterable[_LinkedEntity2T]
 ]:
     """Load an entity by its ref_id."""
-    entity = await uow.get_repository(entity_type).load_by_id(
+    entity = await uow.repository_for(entity_type).load_by_id(
         ref_id, allow_archived=allow_archived
     )
 
     if entity_link1 is not None:
-        first_linked_entities = await uow.get_repository(
+        first_linked_entities = await uow.repository_for(
             entity_link1.the_type
         ).find_all_generic(
             allow_archived=allow_archived, **entity_link1.get_for_entity(entity)
         )
 
         if entity_link2 is not None:
-            second_linked_entities = await uow.get_repository(
+            second_linked_entities = await uow.repository_for(
                 entity_link2.the_type
             ).find_all_generic(
                 allow_archived=allow_archived, **entity_link2.get_for_entity(entity)

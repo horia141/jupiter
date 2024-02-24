@@ -1,10 +1,11 @@
 """Use case for reseting a password."""
 
-from jupiter.core.domain.auth.auth import IncorrectRecoveryTokenError
+from jupiter.core.domain.auth.auth import Auth, IncorrectRecoveryTokenError
 from jupiter.core.domain.auth.password_new_plain import PasswordNewPlain
 from jupiter.core.domain.auth.recovery_token_plain import RecoveryTokenPlain
 from jupiter.core.domain.core.email_address import EmailAddress
-from jupiter.core.domain.user.infra.user_repository import UserNotFoundError
+from jupiter.core.domain.user.infra.user_repository import UserNotFoundError, UserRepository
+from jupiter.core.domain.user.user import User
 from jupiter.core.framework.secure import secure_class
 from jupiter.core.framework.use_case import (
     ProgressReporter,
@@ -57,17 +58,17 @@ class ResetPasswordUseCase(
         """Execute the command's action."""
         async with self._domain_storage_engine.get_unit_of_work() as uow:
             try:
-                user = await uow.user_repository.load_by_email_address(
+                user = await uow.get(UserRepository).load_by_email_address(
                     args.email_address
                 )
-                auth = await uow.auth_repository.load_by_parent(user.ref_id)
+                auth = await uow.repository_for(Auth).load_by_parent(user.ref_id)
                 auth, new_recovery_token = auth.reset_password(
                     ctx=context.domain_context,
                     recovery_token=args.recovery_token,
                     new_password=args.new_password,
                     new_password_repeat=args.new_password_repeat,
                 )
-                auth = await uow.auth_repository.save(auth)
+                auth = await uow.repository_for(Auth).save(auth)
             except (UserNotFoundError, IncorrectRecoveryTokenError) as err:
                 raise InvalidResetPasswordCredentialsError(
                     "Username or recovery token invalid"

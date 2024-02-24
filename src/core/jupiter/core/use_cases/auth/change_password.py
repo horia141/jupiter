@@ -1,6 +1,6 @@
 """Use case for changing a password."""
 
-from jupiter.core.domain.auth.auth import IncorrectPasswordError
+from jupiter.core.domain.auth.auth import Auth, IncorrectPasswordError
 from jupiter.core.domain.auth.password_new_plain import PasswordNewPlain
 from jupiter.core.domain.auth.password_plain import PasswordPlain
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -45,13 +45,13 @@ class ChangePasswordUseCase(
     ) -> None:
         """Execute the command's action."""
         try:
-            auth = await uow.auth_repository.load_by_parent(context.user.ref_id)
+            auth = await uow.repository_for(Auth).load_by_parent(context.user.ref_id)
             auth = auth.change_password(
                 ctx=context.domain_context,
                 current_password=args.current_password,
                 new_password=args.new_password,
                 new_password_repeat=args.new_password_repeat,
             )
-            auth = await uow.auth_repository.save(auth)
+            auth = await uow.repository_for(Auth).save(auth)
         except IncorrectPasswordError as err:
             raise InvalidChangePasswordCredentialsError("Invalid password") from err

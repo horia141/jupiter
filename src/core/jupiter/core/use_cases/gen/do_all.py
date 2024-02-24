@@ -1,6 +1,7 @@
 """The command for doing task generation for all workspaces."""
 
 from jupiter.core.domain.gen.service.gen_service import GenService
+from jupiter.core.domain.user.user import User
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
@@ -26,7 +27,7 @@ class GenDoAllUseCase(AppBackgroundMutationUseCase[GenDoAllArgs, None]):
         """Execute the command's action."""
         async with self._domain_storage_engine.get_unit_of_work() as uow:
             workspaces = await uow.workspace_repository.find_all(allow_archived=False)
-            users = await uow.user_repository.find_all(allow_archived=False)
+            users = await uow.repository_for(User).find_all(allow_archived=False)
             users_by_id = {u.ref_id: u for u in users}
             user_workspace_links = await uow.user_workspace_link_repository.find_all(
                 allow_archived=False

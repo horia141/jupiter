@@ -1,6 +1,6 @@
 """Domain-level storage interaction."""
 import abc
-from typing import AsyncContextManager, Type, TypeVar
+from typing import Any, AsyncContextManager, Type, TypeVar, overload
 
 from jupiter.core.domain.auth.infra.auth_repository import AuthRepository
 from jupiter.core.domain.big_plans.infra.big_plan_collection_repository import (
@@ -104,24 +104,18 @@ from jupiter.core.domain.vacations.infra.vacation_repository import VacationRepo
 from jupiter.core.domain.workspaces.infra.workspace_repository import (
     WorkspaceRepository,
 )
-from jupiter.core.framework.entity import CrownEntity
-from jupiter.core.framework.repository import CrownEntityRepository
+from jupiter.core.framework.entity import CrownEntity, Entity, RootEntity, StubEntity, TrunkEntity
+from jupiter.core.framework.repository import CrownEntityRepository, EntityRepository, RootEntityRepository, StubEntityRepository, TrunkEntityRepository
 
+_EntityRepositoryT = TypeVar("_EntityRepositoryT", bound=EntityRepository[Any], covariant=True)  # type: ignore
+_RootEntityT = TypeVar("_RootEntityT", bound=RootEntity)
+_StubEntityT = TypeVar("_StubEntityT", bound=StubEntity)
+_TrunkEntityT = TypeVar("_TrunkEntityT", bound=TrunkEntity)
 _CrownEntityT = TypeVar("_CrownEntityT", bound=CrownEntity)
 
 
 class DomainUnitOfWork(abc.ABC):
     """A transactional unit of work from an engine."""
-
-    @property
-    @abc.abstractmethod
-    def user_repository(self) -> UserRepository:
-        """The user repository."""
-
-    @property
-    @abc.abstractmethod
-    def auth_repository(self) -> AuthRepository:
-        """The auth repository."""
 
     @property
     @abc.abstractmethod
@@ -339,9 +333,43 @@ class DomainUnitOfWork(abc.ABC):
         """The GC log entry repository."""
 
     @abc.abstractmethod
-    def get_repository(
+    def get(
+        self, repository_type: Type[_EntityRepositoryT]
+    ) -> _EntityRepositoryT:
+        """Retrieve a repository."""
+
+    @overload
+    @abc.abstractmethod
+    def repository_for(
+        self, entity_type: Type[_RootEntityT]
+    ) -> RootEntityRepository[_RootEntityT]:
+        """Retrieve a repository."""
+
+    @overload
+    @abc.abstractmethod
+    def repository_for(
+        self, entity_type: Type[_StubEntityT]
+    ) -> StubEntityRepository[_StubEntityT]:
+        """Retrieve a repository."""
+
+    @overload
+    @abc.abstractmethod
+    def repository_for(
+        self, entity_type: Type[_TrunkEntityT]
+    ) -> TrunkEntityRepository[_TrunkEntityT]:
+        """Retrieve a repository."""
+
+    @overload
+    @abc.abstractmethod
+    def repository_for(
         self, entity_type: Type[_CrownEntityT]
     ) -> CrownEntityRepository[_CrownEntityT]:
+        """Retrieve a repository."""
+
+    @abc.abstractmethod
+    def repository_for(
+        self, entity_type: Type[_RootEntityT] | Type[_StubEntityT] | Type[_TrunkEntityT] | Type[_CrownEntityT]
+    ) -> RootEntityRepository[_RootEntityT] | StubEntityRepository[_StubEntityT] | TrunkEntityRepository[_TrunkEntityT] | CrownEntityRepository[_CrownEntityT]:
         """Retrieve a repository."""
 
 
