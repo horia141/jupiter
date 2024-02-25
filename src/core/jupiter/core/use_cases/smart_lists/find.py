@@ -69,9 +69,7 @@ class SmartListFindUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        smart_list_collection = await uow.get_for(
-            SmartListCollection
-        ).load_by_parent(
+        smart_list_collection = await uow.get_for(SmartListCollection).load_by_parent(
             workspace.ref_id,
         )
 
@@ -84,9 +82,7 @@ class SmartListFindUseCase(
         if args.include_tags:
             smart_list_tags_by_smart_list_ref_ids = {}
             for smart_list in smart_lists:
-                for smart_list_tag in await uow.get_for(
-                    SmartListTag
-                ).find_all_generic(
+                for smart_list_tag in await uow.get_for(SmartListTag).find_all_generic(
                     parent_ref_id=smart_list.ref_id,
                     allow_archived=args.allow_archived,
                     tag_name=args.filter_tag_names or NoFilter(),
@@ -115,7 +111,9 @@ class SmartListFindUseCase(
                     parent_ref_id=smart_list.ref_id,
                     allow_archived=args.allow_archived,
                     ref_id=args.filter_item_ref_id,
-                    is_done=args.filter_is_done if args.filter_is_done is not None else NoFilter(),
+                    is_done=args.filter_is_done
+                    if args.filter_is_done is not None
+                    else NoFilter(),
                     tag_ref_id=args.filter_tag_ref_id or NoFilter(),
                 ):
                     if (

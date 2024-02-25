@@ -41,11 +41,7 @@ class GenLoadRunsUseCase(
     ) -> GenLoadRunsResult:
         """Execute the use case."""
         async with self._domain_storage_engine.get_unit_of_work() as uow:
-            gen_log = await uow.get_for(GenLog).load_by_parent(
-                context.workspace.ref_id
-            )
-            entries = await uow.get(GenLogEntryRepository).find_last(
-                gen_log.ref_id, 30
-            )
+            gen_log = await uow.get_for(GenLog).load_by_parent(context.workspace.ref_id)
+            entries = await uow.get(GenLogEntryRepository).find_last(gen_log.ref_id, 30)
 
         return GenLoadRunsResult(entries=entries)

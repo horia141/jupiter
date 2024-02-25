@@ -47,7 +47,7 @@ class EntityIdDatabaseEncoder(RealmEncoder[EntityId, DatabaseRealm]):
 
     def encode(self, value: EntityId) -> RealmThing:
         return value.as_int()
-    
+
 
 class EntityIdWebEncoder(RealmEncoder[EntityId, WebRealm]):
     """Entity id encoder for the database realm."""

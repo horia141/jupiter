@@ -125,9 +125,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
             workspace_feature_flags_controls,
         ) = infer_feature_flag_controls(self._global_properties)
 
-        inbox_task_collection = await uow.get_for(
-            InboxTaskCollection
-        ).load_by_parent(
+        inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             workspace.ref_id,
         )
         habit_collection = await uow.get_for(HabitCollection).load_by_parent(
@@ -136,25 +134,19 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
         chore_collection = await uow.get_for(ChoreCollection).load_by_parent(
             workspace.ref_id,
         )
-        big_plan_collection = await uow.get_for(
-            BigPlanCollection
-        ).load_by_parent(
+        big_plan_collection = await uow.get_for(BigPlanCollection).load_by_parent(
             workspace.ref_id,
         )
         doc_collection = await uow.get_for(DocCollection).load_by_parent(
             workspace.ref_id
         )
-        vacation_collection = await uow.get_for(
-            VacationCollection
-        ).load_by_parent(
+        vacation_collection = await uow.get_for(VacationCollection).load_by_parent(
             workspace.ref_id,
         )
         project_collection = await uow.get_for(ProjectCollection).load_by_parent(
             workspace.ref_id,
         )
-        smart_list_collection = await uow.get_for(
-            SmartListCollection
-        ).load_by_parent(
+        smart_list_collection = await uow.get_for(SmartListCollection).load_by_parent(
             workspace.ref_id,
         )
         metric_collection = await uow.get_for(MetricCollection).load_by_parent(
@@ -163,19 +155,13 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
         person_collection = await uow.get_for(PersonCollection).load_by_parent(
             workspace.ref_id,
         )
-        push_integration_group = await uow.get_for(
-            PushIntegrationGroup
-        ).load_by_parent(
+        push_integration_group = await uow.get_for(PushIntegrationGroup).load_by_parent(
             workspace.ref_id,
         )
-        slack_task_collection = await uow.get_for(
-            SlackTaskCollection
-        ).load_by_parent(
+        slack_task_collection = await uow.get_for(SlackTaskCollection).load_by_parent(
             push_integration_group.ref_id,
         )
-        email_task_collection = await uow.get_for(
-            EmailTaskCollection
-        ).load_by_parent(
+        email_task_collection = await uow.get_for(EmailTaskCollection).load_by_parent(
             push_integration_group.ref_id,
         )
         note_collection = await uow.get_for(NoteCollection).load_by_parent(
@@ -206,9 +192,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
             )
             await uow.get_for(User).save(user)
 
-            auth = await uow.get_for(Auth).load_by_parent(
-                parent_ref_id=user.ref_id
-            )
+            auth = await uow.get_for(Auth).load_by_parent(parent_ref_id=user.ref_id)
             auth = auth.change_password(
                 ctx=context.domain_context,
                 current_password=args.auth_current_password,

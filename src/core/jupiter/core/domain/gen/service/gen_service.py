@@ -149,17 +149,13 @@ class GenService:
             )
             gen_log_entry = await uow.get_for(GenLogEntry).create(gen_log_entry)
 
-            vacation_collection = await uow.get_for(
-                VacationCollection
-            ).load_by_parent(
+            vacation_collection = await uow.get_for(VacationCollection).load_by_parent(
                 workspace.ref_id,
             )
             all_vacations = await uow.get_for(Vacation).find_all(
                 parent_ref_id=vacation_collection.ref_id,
             )
-            project_collection = await uow.get_for(
-                ProjectCollection
-            ).load_by_parent(
+            project_collection = await uow.get_for(ProjectCollection).load_by_parent(
                 workspace.ref_id,
             )
             all_projects = await uow.get_for(Project).find_all(

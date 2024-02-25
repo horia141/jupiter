@@ -67,9 +67,7 @@ class PersonChangeCatchUpProjectUseCase(
         )
         persons_by_ref_id = {p.ref_id: p for p in persons}
 
-        inbox_task_collection = await uow.get_for(
-            InboxTaskCollection
-        ).load_by_parent(
+        inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             workspace.ref_id,
         )
         all_catch_up_inbox_tasks = await uow.get_for(InboxTask).find_all_generic(

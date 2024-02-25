@@ -38,9 +38,7 @@ class MetricRemoveUseCase(
     ) -> None:
         """Execute the command's action."""
         workspace = context.workspace
-        metric = await uow.get_for(Metric).load_by_id(
-            args.ref_id, allow_archived=True
-        )
+        metric = await uow.get_for(Metric).load_by_id(args.ref_id, allow_archived=True)
 
         await MetricRemoveService().execute(
             context.domain_context, uow, progress_reporter, workspace, metric

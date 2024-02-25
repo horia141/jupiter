@@ -50,9 +50,7 @@ class PersonArchiveUseCase(
 
         person = await uow.get_for(Person).load_by_id(args.ref_id)
 
-        inbox_task_collection = await uow.get_for(
-            InboxTaskCollection
-        ).load_by_parent(
+        inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             workspace.ref_id,
         )
         all_inbox_tasks = await uow.get_for(InboxTask).find_all_generic(

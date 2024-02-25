@@ -1,6 +1,6 @@
 """Domain-level storage interaction."""
 import abc
-from typing import Any, AsyncContextManager, Type, TypeVar, overload
+from typing import AsyncContextManager, Type, TypeVar, overload
 
 from jupiter.core.domain.search.infra.search_repository import SearchRepository
 from jupiter.core.framework.entity import (
@@ -11,8 +11,6 @@ from jupiter.core.framework.entity import (
 )
 from jupiter.core.framework.repository import (
     CrownEntityRepository,
-    EntityRepository,
-    RecordRepository,
     Repository,
     RootEntityRepository,
     StubEntityRepository,

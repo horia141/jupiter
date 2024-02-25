@@ -3,6 +3,7 @@ from typing import Final
 
 from jupiter.core.framework.realm import EventStoreRealm, RealmCodecRegistry
 from jupiter.core.framework.use_case import MutationUseCaseInvocationRecord, UseCaseArgs
+from jupiter.core.repository.sqlite.infra.repository import SqliteRepository
 from jupiter.core.use_cases.infra.mutation_use_case_invocation_record_repository import (
     MutationUseCaseInvocationRecordRepository,
 )
@@ -22,12 +23,11 @@ from sqlalchemy.ext.asyncio import AsyncConnection
 
 
 class SqliteMutationUseCaseInvocationRecordRepository(
+    SqliteRepository,
     MutationUseCaseInvocationRecordRepository,
 ):
     """A SQlite repository for mutation use cases invocation records."""
 
-    _realm_codec_registry: Final[RealmCodecRegistry]
-    _connection: Final[AsyncConnection]
     _mutation_use_case_invocation_record_table: Final[Table]
 
     def __init__(
@@ -37,8 +37,7 @@ class SqliteMutationUseCaseInvocationRecordRepository(
         metadata: MetaData,
     ) -> None:
         """Constructor."""
-        self._realm_codec_registry = realm_codec_registry
-        self._connection = connection
+        super().__init__(realm_codec_registry, connection, metadata)
         self._mutation_use_case_invocation_record_table = Table(
             "use_case_mutation_use_case_invocation_record",
             metadata,

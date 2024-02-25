@@ -1,4 +1,3 @@
-from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.entity import EntityLinkFiltersCompiled, NoFilter
 from jupiter.core.framework.realm import DatabaseRealm, RealmCodecRegistry
 from jupiter.core.framework.utils import is_primitive_type

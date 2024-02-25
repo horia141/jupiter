@@ -84,9 +84,7 @@ class InboxTaskCreateUseCase(
                 args.big_plan_ref_id,
             )
 
-        inbox_task_collection = await uow.get_for(
-            InboxTaskCollection
-        ).load_by_parent(
+        inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             workspace.ref_id,
         )
 

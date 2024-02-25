@@ -26,9 +26,7 @@ class PersonRemoveService:
         person: Person,
     ) -> None:
         """Execute the command's action."""
-        inbox_task_collection = await uow.get_for(
-            InboxTaskCollection
-        ).load_by_parent(
+        inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             person_collection.workspace.ref_id,
         )
         all_inbox_tasks = await uow.get_for(InboxTask).find_all_generic(

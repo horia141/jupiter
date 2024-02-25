@@ -89,14 +89,10 @@ class BigPlanFindUseCase(
         else:
             project_by_ref_id = None
 
-        inbox_task_collection = await uow.get_for(
-            InboxTaskCollection
-        ).load_by_parent(
+        inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             workspace.ref_id,
         )
-        big_plan_collection = await uow.get_for(
-            BigPlanCollection
-        ).load_by_parent(
+        big_plan_collection = await uow.get_for(BigPlanCollection).load_by_parent(
             workspace.ref_id,
         )
         big_plans = await uow.get_for(BigPlan).find_all_generic(

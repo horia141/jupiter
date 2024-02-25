@@ -159,9 +159,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
             )
-            new_vacation_collection = await uow.get_for(
-                VacationCollection
-            ).create(
+            new_vacation_collection = await uow.get_for(VacationCollection).create(
                 new_vacation_collection,
             )
 
@@ -192,9 +190,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
             )
-            new_inbox_task_collection = await uow.get_for(
-                InboxTaskCollection
-            ).create(
+            new_inbox_task_collection = await uow.get_for(InboxTaskCollection).create(
                 new_inbox_task_collection,
             )
 
@@ -218,9 +214,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
             )
-            new_big_plan_collection = await uow.get_for(
-                BigPlanCollection
-            ).create(
+            new_big_plan_collection = await uow.get_for(BigPlanCollection).create(
                 new_big_plan_collection,
             )
 
@@ -248,9 +242,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
             )
-            new_smart_list_collection = await uow.get_for(
-                SmartListCollection
-            ).create(
+            new_smart_list_collection = await uow.get_for(SmartListCollection).create(
                 new_smart_list_collection,
             )
 
@@ -278,9 +270,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                     workspace_ref_id=new_workspace.ref_id,
                 )
             )
-            new_push_integration_group = await uow.get_for(
-                PushIntegrationGroup
-            ).create(
+            new_push_integration_group = await uow.get_for(PushIntegrationGroup).create(
                 new_push_integration_group,
             )
 
@@ -289,9 +279,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 push_integration_group_ref_id=new_push_integration_group.ref_id,
                 generation_project_ref_id=new_default_project.ref_id,
             )
-            new_slack_task_collection = await uow.get_for(
-                SlackTaskCollection
-            ).create(
+            new_slack_task_collection = await uow.get_for(SlackTaskCollection).create(
                 new_slack_task_collection,
             )
 
@@ -300,9 +288,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 push_integration_group_ref_id=new_push_integration_group.ref_id,
                 generation_project_ref_id=new_default_project.ref_id,
             )
-            new_email_task_collection = await uow.get_for(
-                EmailTaskCollection
-            ).create(
+            new_email_task_collection = await uow.get_for(EmailTaskCollection).create(
                 new_email_task_collection,
             )
 
@@ -331,9 +317,9 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 user_ref_id=new_user.ref_id,
                 workspace_ref_id=new_workspace.ref_id,
             )
-            new_user_workspace_link = await uow.get_for(
-                UserWorkspaceLink
-            ).create(new_user_workspace_link)
+            new_user_workspace_link = await uow.get_for(UserWorkspaceLink).create(
+                new_user_workspace_link
+            )
 
         async with self._search_storage_engine.get_unit_of_work() as search_uow:
             await search_uow.search_repository.create(

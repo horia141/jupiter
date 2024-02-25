@@ -69,9 +69,7 @@ class InboxTaskLoadUseCase(
         inbox_task = await uow.get_for(InboxTask).load_by_id(
             args.ref_id, allow_archived=args.allow_archived
         )
-        project = await uow.get_for(Project).load_by_id(
-            inbox_task.project_ref_id
-        )
+        project = await uow.get_for(Project).load_by_id(inbox_task.project_ref_id)
 
         if inbox_task.habit_ref_id is not None:
             habit = await uow.get_for(Habit).load_by_id(inbox_task.habit_ref_id)
@@ -84,23 +82,17 @@ class InboxTaskLoadUseCase(
             chore = None
 
         if inbox_task.big_plan_ref_id is not None:
-            big_plan = await uow.get_for(BigPlan).load_by_id(
-                inbox_task.big_plan_ref_id
-            )
+            big_plan = await uow.get_for(BigPlan).load_by_id(inbox_task.big_plan_ref_id)
         else:
             big_plan = None
 
         if inbox_task.metric_ref_id is not None:
-            metric = await uow.get_for(Metric).load_by_id(
-                inbox_task.metric_ref_id
-            )
+            metric = await uow.get_for(Metric).load_by_id(inbox_task.metric_ref_id)
         else:
             metric = None
 
         if inbox_task.person_ref_id is not None:
-            person = await uow.get_for(Person).load_by_id(
-                inbox_task.person_ref_id
-            )
+            person = await uow.get_for(Person).load_by_id(inbox_task.person_ref_id)
         else:
             person = None
 

@@ -69,19 +69,13 @@ class EmailTaskFindUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        inbox_task_collection = await uow.get_for(
-            InboxTaskCollection
-        ).load_by_parent(
+        inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             workspace.ref_id,
         )
-        push_integration_group = await uow.get_for(
-            PushIntegrationGroup
-        ).load_by_parent(
+        push_integration_group = await uow.get_for(PushIntegrationGroup).load_by_parent(
             workspace.ref_id,
         )
-        email_task_collection = await uow.get_for(
-            EmailTaskCollection
-        ).load_by_parent(
+        email_task_collection = await uow.get_for(EmailTaskCollection).load_by_parent(
             push_integration_group.ref_id,
         )
         email_tasks = await uow.get_for(EmailTask).find_all(

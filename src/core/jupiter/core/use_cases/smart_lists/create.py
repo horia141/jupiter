@@ -54,9 +54,7 @@ class SmartListCreateUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        smart_list_collection = await uow.get_for(
-            SmartListCollection
-        ).load_by_parent(
+        smart_list_collection = await uow.get_for(SmartListCollection).load_by_parent(
             workspace.ref_id,
         )
 

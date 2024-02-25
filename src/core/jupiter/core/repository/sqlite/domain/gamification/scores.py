@@ -28,6 +28,7 @@ from jupiter.core.framework.repository import (
 )
 from jupiter.core.repository.sqlite.infra.repository import (
     SqliteLeafEntityRepository,
+    SqliteRepository,
     SqliteTrunkEntityRepository,
 )
 from jupiter.core.repository.sqlite.infra.row import RowType
@@ -91,11 +92,9 @@ class SqliteScoreLogEntryRepository(
         )
 
 
-class SqliteScoreStatsRepository(ScoreStatsRepository):
+class SqliteScoreStatsRepository(SqliteRepository, ScoreStatsRepository):
     """Sqlite implementation of the score stats repository."""
 
-    _realm_codec_registry: Final[RealmCodecRegistry]
-    _connection: Final[AsyncConnection]
     _score_stats_table: Final[Table]
 
     def __init__(
@@ -105,8 +104,7 @@ class SqliteScoreStatsRepository(ScoreStatsRepository):
         metadata: MetaData,
     ) -> None:
         """Constructor."""
-        self._realm_codec_registry = realm_codec_registry
-        self._connection = connection
+        super().__init__(realm_codec_registry, connection, metadata)
         self._score_stats_table = Table(
             "gamification_score_stats",
             metadata,
@@ -264,11 +262,9 @@ class SqliteScoreStatsRepository(ScoreStatsRepository):
         return self._realm_codec_registry.db_decode(ScoreStats, row._mapping)  # type: ignore[attr-defined]
 
 
-class SqliteScorePeriodBestRepository(ScorePeriodBestRepository):
+class SqliteScorePeriodBestRepository(SqliteRepository, ScorePeriodBestRepository):
     """Sqlite implementation of the score period best repository."""
 
-    _realm_codec_registry: Final[RealmCodecRegistry]
-    _connection: Final[AsyncConnection]
     _score_period_best_table: Final[Table]
 
     def __init__(
@@ -278,8 +274,7 @@ class SqliteScorePeriodBestRepository(ScorePeriodBestRepository):
         metadata: MetaData,
     ) -> None:
         """Constructor."""
-        self._realm_codec_registry = realm_codec_registry
-        self._connection = connection
+        super().__init__(realm_codec_registry, connection, metadata)
         self._score_period_best_table = Table(
             "gamification_score_period_best",
             metadata,

@@ -90,9 +90,7 @@ class ChoreFindUseCase(
         else:
             project_by_ref_id = None
 
-        inbox_task_collection = await uow.get_for(
-            InboxTaskCollection
-        ).load_by_parent(
+        inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             workspace.ref_id,
         )
         chore_collection = await uow.get_for(ChoreCollection).load_by_parent(

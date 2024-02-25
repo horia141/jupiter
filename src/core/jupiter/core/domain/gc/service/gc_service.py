@@ -76,9 +76,7 @@ class GCService:
             ).load_by_parent(
                 workspace.ref_id,
             )
-            big_plan_collection = await uow.get_for(
-                BigPlanCollection
-            ).load_by_parent(
+            big_plan_collection = await uow.get_for(BigPlanCollection).load_by_parent(
                 workspace.ref_id,
             )
             push_integration_group = await uow.get_for(

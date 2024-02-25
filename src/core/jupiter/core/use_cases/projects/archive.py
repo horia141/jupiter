@@ -59,9 +59,9 @@ class ProjectArchiveUseCase(
                 )
                 await uow.get_for(Workspace).save(workspace)
 
-            metric_collection = await uow.get_for(
-                MetricCollection
-            ).load_by_parent(workspace.ref_id)
+            metric_collection = await uow.get_for(MetricCollection).load_by_parent(
+                workspace.ref_id
+            )
             if metric_collection.collection_project_ref_id == args.ref_id:
                 metric_collection = metric_collection.change_collection_project(
                     context.domain_context,
@@ -69,9 +69,9 @@ class ProjectArchiveUseCase(
                 )
                 await uow.get_for(MetricCollection).save(metric_collection)
 
-            person_collection = await uow.get_for(
-                PersonCollection
-            ).load_by_parent(workspace.ref_id)
+            person_collection = await uow.get_for(PersonCollection).load_by_parent(
+                workspace.ref_id
+            )
             if person_collection.catch_up_project_ref_id == args.ref_id:
                 person_collection = person_collection.change_catch_up_project(
                     context.domain_context,
@@ -94,9 +94,7 @@ class ProjectArchiveUseCase(
                     context.domain_context,
                     args.backup_project_ref_id,
                 )
-                await uow.get_for(SlackTaskCollection).save(
-                    slack_task_collection
-                )
+                await uow.get_for(SlackTaskCollection).save(slack_task_collection)
 
             push_integration_group = await uow.get_for(
                 PushIntegrationGroup
@@ -113,9 +111,7 @@ class ProjectArchiveUseCase(
                     context.domain_context,
                     args.backup_project_ref_id,
                 )
-                await uow.get_for(EmailTaskCollection).save(
-                    email_task_collection
-                )
+                await uow.get_for(EmailTaskCollection).save(email_task_collection)
 
         project_archive_service = ProjectArchiveService()
         await project_archive_service.do_it(

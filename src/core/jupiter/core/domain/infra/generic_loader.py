@@ -248,7 +248,8 @@ async def generic_loader(  # type: ignore[no-untyped-def]
             entity_link1.the_type
         ).find_all_generic(
             parent_ref_id=None,
-            allow_archived=allow_archived, **entity_link1.get_for_entity(entity)
+            allow_archived=allow_archived,
+            **entity_link1.get_for_entity(entity),
         )
 
         final_first_linked_entities: _LinkedEntity1T | (
@@ -282,7 +283,8 @@ async def generic_loader(  # type: ignore[no-untyped-def]
                 entity_link2.the_type
             ).find_all_generic(
                 parent_ref_id=None,
-                allow_archived=allow_archived, **entity_link2.get_for_entity(entity)
+                allow_archived=allow_archived,
+                **entity_link2.get_for_entity(entity),
             )
 
             final_second_linked_entities: _LinkedEntity2T | (

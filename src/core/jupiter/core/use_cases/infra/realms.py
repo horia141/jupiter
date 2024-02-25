@@ -431,7 +431,9 @@ class _SetDecoder(Generic[_RealmT], RealmDecoder[set[DomainThing], _RealmT]):
         return {decoder.decode(v) for v in value}
 
 
-class _DictEncoder(Generic[_RealmT], RealmEncoder[dict[DomainThing, DomainThing], _RealmT]):
+class _DictEncoder(
+    Generic[_RealmT], RealmEncoder[dict[DomainThing, DomainThing], _RealmT]
+):
     """An encoder for dicts."""
 
     _realm_codec_registry: Final[RealmCodecRegistry]
@@ -473,7 +475,9 @@ class _DictEncoder(Generic[_RealmT], RealmEncoder[dict[DomainThing, DomainThing]
         return result
 
 
-class _DictDecoder(Generic[_RealmT], RealmDecoder[dict[DomainThing, DomainThing], _RealmT]):
+class _DictDecoder(
+    Generic[_RealmT], RealmDecoder[dict[DomainThing, DomainThing], _RealmT]
+):
     """An encoder for dicts."""
 
     _realm_codec_registry: Final[RealmCodecRegistry]

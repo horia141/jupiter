@@ -1,5 +1,5 @@
 """The SQLite implementation of the fast info repository."""
-from typing import Final, List
+from typing import List
 
 from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.core.domain.chores.chore_name import ChoreName
@@ -25,8 +25,8 @@ from jupiter.core.domain.smart_lists.smart_list_name import SmartListName
 from jupiter.core.domain.vacations.vacation_name import VacationName
 from jupiter.core.framework.base.entity_id import EntityId, EntityIdDatabaseDecoder
 from jupiter.core.framework.base.entity_name import EntityNameDatabaseDecoder
+from jupiter.core.repository.sqlite.infra.repository import SqliteRepository
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncConnection
 
 _ENTITY_ID_DECODER = EntityIdDatabaseDecoder()
 _VACATION_NAME_DECODER = EntityNameDatabaseDecoder(VacationName)
@@ -41,14 +41,8 @@ _PERSON_NAME_DECODER = EntityNameDatabaseDecoder(PersonName)
 _ENTITY_ICON_DECODER = EntityIconDatabaseDecoder()
 
 
-class SqliteFastInfoRepository(FastInfoRepository):
+class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
     """The Sqlite based implementation for the fast info repository."""
-
-    _connection: Final[AsyncConnection]
-
-    def __init__(self, connection: AsyncConnection) -> None:
-        """Constructor."""
-        self._connection = connection
 
     async def find_all_vacation_summaries(
         self,

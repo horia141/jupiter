@@ -6,6 +6,7 @@ import sys
 import aiohttp
 import jupiter.cli.command
 import jupiter.core.domain
+import jupiter.core.repository.sqlite.domain
 import jupiter.core.use_cases
 from jupiter.cli.command.command import CliApp
 from jupiter.cli.command.rendering import RichConsoleProgressReporterFactory
@@ -73,8 +74,8 @@ async def main() -> None:
         ),
     )
 
-    domain_storage_engine = SqliteDomainStorageEngine(
-        realm_codec_registry, sqlite_connection
+    domain_storage_engine = SqliteDomainStorageEngine.build_from_module_root(
+        realm_codec_registry, sqlite_connection, jupiter.core.repository.sqlite.domain
     )
     search_storage_engine = SqliteSearchStorageEngine(
         realm_codec_registry, sqlite_connection

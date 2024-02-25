@@ -52,14 +52,10 @@ class SlackTaskLoadSettingsUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        push_integration_group = await uow.get_for(
-            PushIntegrationGroup
-        ).load_by_parent(
+        push_integration_group = await uow.get_for(PushIntegrationGroup).load_by_parent(
             workspace.ref_id,
         )
-        slack_task_collection = await uow.get_for(
-            SlackTaskCollection
-        ).load_by_parent(
+        slack_task_collection = await uow.get_for(SlackTaskCollection).load_by_parent(
             push_integration_group.ref_id,
         )
         generation_project = await uow.get_for(Project).load_by_id(

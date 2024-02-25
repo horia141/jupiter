@@ -158,9 +158,7 @@ class PersonUpdateUseCase(
         project = await uow.get_for(Project).load_by_id(
             person_collection.catch_up_project_ref_id,
         )
-        inbox_task_collection = await uow.get_for(
-            InboxTaskCollection
-        ).load_by_parent(
+        inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             workspace.ref_id,
         )
         person_catch_up_tasks = await uow.get_for(InboxTask).find_all_generic(

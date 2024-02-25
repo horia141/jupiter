@@ -58,12 +58,10 @@ class MetricLoadUseCase(
             metric.ref_id, allow_archived=args.allow_archived
         )
 
-        inbox_task_collection = await uow.get_for(
-            InboxTaskCollection
-        ).load_by_parent(context.workspace.ref_id)
-        metric_collection_inbox_tasks = await uow.get_for(
-            InboxTask
-        ).find_all_generic(
+        inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
+            context.workspace.ref_id
+        )
+        metric_collection_inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
             source=[InboxTaskSource.METRIC],

@@ -77,11 +77,25 @@ from sqlalchemy.ext.asyncio import AsyncConnection
 _EntityT = TypeVar("_EntityT", bound=Entity)
 
 
-class SqliteEntityRepository(Generic[_EntityT], abc.ABC):
-    """A repository for entities backed by SQLite, meant to be used as a mixin."""
+class SqliteRepository(abc.ABC):
 
     _realm_codec_registry: Final[RealmCodecRegistry]
     _connection: Final[AsyncConnection]
+
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        connection: AsyncConnection,
+        metadata: MetaData,
+    ) -> None:
+        """Initialize the repository."""
+        self._realm_codec_registry = realm_codec_registry
+        self._connection = connection
+
+
+class SqliteEntityRepository(Generic[_EntityT], SqliteRepository, abc.ABC):
+    """A repository for entities backed by SQLite, meant to be used as a mixin."""
+
     _table: Final[Table]
     _event_table: Final[Table]
     _entity_type: type[_EntityT]
@@ -99,9 +113,8 @@ class SqliteEntityRepository(Generic[_EntityT], abc.ABC):
         not_found_err_cls: type[Exception] = EntityNotFoundError,
     ):
         """Initialize the repository."""
+        super().__init__(realm_codec_registry, connection, metadata)
         entity_type = self._infer_entity_class()
-        self._realm_codec_registry = realm_codec_registry
-        self._connection = connection
         self._table = (
             table
             if table is not None
@@ -590,7 +603,7 @@ class SqliteCrownEntityRepository(
     ) -> list[_CrownEntityT]:
         """Find all crowns with generic filters."""
         query_stmt = select(self._table)
-        
+
         if parent_ref_id is not None:
             query_stmt = query_stmt.where(
                 self._table.c[self._get_parent_field_name()] == parent_ref_id.as_int()

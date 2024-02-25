@@ -87,17 +87,13 @@ class GetSummariesUseCase(
         workspace = context.workspace
         allow_archived = args.allow_archived is True
 
-        vacation_collection = await uow.get_for(
-            VacationCollection
-        ).load_by_parent(
+        vacation_collection = await uow.get_for(VacationCollection).load_by_parent(
             workspace.ref_id,
         )
         project_collection = await uow.get_for(ProjectCollection).load_by_parent(
             workspace.ref_id,
         )
-        inbox_task_collection = await uow.get_for(
-            InboxTaskCollection
-        ).load_by_parent(
+        inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             workspace.ref_id,
         )
         habit_collection = await uow.get_for(HabitCollection).load_by_parent(
@@ -106,14 +102,10 @@ class GetSummariesUseCase(
         chore_collection = await uow.get_for(ChoreCollection).load_by_parent(
             workspace.ref_id,
         )
-        big_plan_collection = await uow.get_for(
-            BigPlanCollection
-        ).load_by_parent(
+        big_plan_collection = await uow.get_for(BigPlanCollection).load_by_parent(
             workspace.ref_id,
         )
-        smart_list_collection = await uow.get_for(
-            SmartListCollection
-        ).load_by_parent(
+        smart_list_collection = await uow.get_for(SmartListCollection).load_by_parent(
             workspace.ref_id,
         )
         metric_collection = await uow.get_for(MetricCollection).load_by_parent(

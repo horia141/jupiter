@@ -16,6 +16,7 @@ from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.entity import CrownEntity
 from jupiter.core.framework.realm import DatabaseRealm, RealmCodecRegistry
 from jupiter.core.framework.repository import EntityNotFoundError
+from jupiter.core.repository.sqlite.infra.repository import SqliteRepository
 from jupiter.core.repository.sqlite.infra.row import RowType
 from sqlalchemy import (
     Boolean,
@@ -35,11 +36,9 @@ from sqlalchemy import (
 from sqlalchemy.ext.asyncio import AsyncConnection
 
 
-class SqliteSearchRepository(SearchRepository):
+class SqliteSearchRepository(SqliteRepository, SearchRepository):
     """The SQLite based search repository."""
 
-    _realm_codec_registry: Final[RealmCodecRegistry]
-    _connection: Final[AsyncConnection]
     _search_index_table: Final[Table]
 
     def __init__(
@@ -49,8 +48,7 @@ class SqliteSearchRepository(SearchRepository):
         metadata: MetaData,
     ) -> None:
         """Constructor."""
-        self._realm_codec_registry = realm_codec_registry
-        self._connection = connection
+        super().__init__(realm_codec_registry, connection, metadata)
         self._search_index_table = Table(
             "search_index",
             metadata,

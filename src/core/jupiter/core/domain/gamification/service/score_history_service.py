@@ -30,14 +30,10 @@ class ScoreHistoryService:
         daily_score_stats = await uow.get(ScoreStatsRepository).find_all_in_timerange(
             score_log.ref_id, RecurringTaskPeriod.DAILY, daily_lower_limit, today
         )
-        weekly_score_stats = await uow.get(
-            ScoreStatsRepository
-        ).find_all_in_timerange(
+        weekly_score_stats = await uow.get(ScoreStatsRepository).find_all_in_timerange(
             score_log.ref_id, RecurringTaskPeriod.WEEKLY, weekly_lower_limit, today
         )
-        monthly_score_stats = await uow.get(
-            ScoreStatsRepository
-        ).find_all_in_timerange(
+        monthly_score_stats = await uow.get(ScoreStatsRepository).find_all_in_timerange(
             score_log.ref_id, RecurringTaskPeriod.MONTHLY, monthly_lower_limit, today
         )
         quarterly_score_stats = await uow.get(

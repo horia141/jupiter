@@ -130,9 +130,7 @@ class InboxTaskFindUseCase(
         project_collection = await uow.get_for(ProjectCollection).load_by_parent(
             workspace.ref_id,
         )
-        inbox_task_collection = await uow.get_for(
-            InboxTaskCollection
-        ).load_by_parent(
+        inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             workspace.ref_id,
         )
         habit_collection = await uow.get_for(HabitCollection).load_by_parent(
@@ -141,9 +139,7 @@ class InboxTaskFindUseCase(
         chore_collection = await uow.get_for(ChoreCollection).load_by_parent(
             workspace.ref_id,
         )
-        big_plan_collection = await uow.get_for(
-            BigPlanCollection
-        ).load_by_parent(
+        big_plan_collection = await uow.get_for(BigPlanCollection).load_by_parent(
             workspace.ref_id,
         )
         metric_collection = await uow.get_for(MetricCollection).load_by_parent(
@@ -157,14 +153,10 @@ class InboxTaskFindUseCase(
         ).load_by_parent(
             workspace.ref_id,
         )
-        slack_task_collection = await uow.get_for(
-            SlackTaskCollection
-        ).load_by_parent(
+        slack_task_collection = await uow.get_for(SlackTaskCollection).load_by_parent(
             push_integrations_group.ref_id,
         )
-        email_task_collection = await uow.get_for(
-            EmailTaskCollection
-        ).load_by_parent(
+        email_task_collection = await uow.get_for(EmailTaskCollection).load_by_parent(
             push_integrations_group.ref_id,
         )
 

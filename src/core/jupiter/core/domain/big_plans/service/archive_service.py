@@ -38,9 +38,7 @@ class BigPlanArchiveService:
             big_plan.big_plan_collection.ref_id,
         )
 
-        inbox_task_collection = await uow.get_for(
-            InboxTaskCollection
-        ).load_by_parent(
+        inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             big_plan_collection.workspace.ref_id,
         )
         inbox_tasks_to_archive = await uow.get_for(InboxTask).find_all_generic(

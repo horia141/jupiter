@@ -49,14 +49,10 @@ class EmailTaskChangeGenerationProjectUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        push_integration_group = await uow.get_for(
-            PushIntegrationGroup
-        ).load_by_parent(
+        push_integration_group = await uow.get_for(PushIntegrationGroup).load_by_parent(
             workspace.ref_id,
         )
-        email_task_collection = await uow.get_for(
-            EmailTaskCollection
-        ).load_by_parent(
+        email_task_collection = await uow.get_for(EmailTaskCollection).load_by_parent(
             push_integration_group.ref_id,
         )
         old_generation_project_ref_id = email_task_collection.generation_project_ref_id
@@ -78,14 +74,10 @@ class EmailTaskChangeGenerationProjectUseCase(
         )
         email_tasks_by_ref_id = {st.ref_id: st for st in email_tasks}
 
-        inbox_task_collection = await uow.get_for(
-            InboxTaskCollection
-        ).load_by_parent(
+        inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             workspace.ref_id,
         )
-        all_generated_inbox_tasks = await uow.get_for(
-            InboxTask
-        ).find_all_generic(
+        all_generated_inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
             source=[InboxTaskSource.EMAIL_TASK],

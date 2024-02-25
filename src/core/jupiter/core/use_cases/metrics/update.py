@@ -159,9 +159,7 @@ class MetricUpdateUseCase(
         else:
             collection_params = UpdateAction.do_nothing()
 
-        inbox_task_collection = await uow.get_for(
-            InboxTaskCollection
-        ).load_by_parent(
+        inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             workspace.ref_id,
         )
 

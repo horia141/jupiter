@@ -72,9 +72,7 @@ class PersonFindUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        inbox_task_collection = await uow.get_for(
-            InboxTaskCollection
-        ).load_by_parent(
+        inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             workspace.ref_id,
         )
         person_collection = await uow.get_for(PersonCollection).load_by_parent(

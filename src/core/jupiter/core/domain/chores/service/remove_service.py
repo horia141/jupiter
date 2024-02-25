@@ -25,9 +25,7 @@ class ChoreRemoveService:
         chore_collection = await uow.get_for(ChoreCollection).load_by_id(
             chore.chore_collection.ref_id,
         )
-        inbox_task_collection = await uow.get_for(
-            InboxTaskCollection
-        ).load_by_parent(
+        inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             chore_collection.workspace.ref_id,
         )
         inbox_tasks_to_archive = await uow.get_for(InboxTask).find_all_generic(

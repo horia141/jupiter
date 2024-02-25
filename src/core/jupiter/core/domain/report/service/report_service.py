@@ -167,9 +167,7 @@ class ReportService:
             )
 
         async with self._storage_engine.get_unit_of_work() as uow:
-            project_collection = await uow.get_for(
-                ProjectCollection
-            ).load_by_parent(
+            project_collection = await uow.get_for(ProjectCollection).load_by_parent(
                 workspace.ref_id,
             )
             projects = await uow.get_for(Project).find_all_generic(
@@ -194,15 +192,11 @@ class ReportService:
             chore_collection = await uow.get_for(ChoreCollection).load_by_parent(
                 workspace.ref_id,
             )
-            big_plan_collection = await uow.get_for(
-                BigPlanCollection
-            ).load_by_parent(
+            big_plan_collection = await uow.get_for(BigPlanCollection).load_by_parent(
                 workspace.ref_id,
             )
 
-            metric_collection = await uow.get_for(
-                MetricCollection
-            ).load_by_parent(
+            metric_collection = await uow.get_for(MetricCollection).load_by_parent(
                 workspace.ref_id,
             )
             metrics = await uow.get_for(Metric).find_all(
@@ -212,9 +206,7 @@ class ReportService:
             )
             metrics_by_ref_id: Dict[EntityId, Metric] = {m.ref_id: m for m in metrics}
 
-            person_collection = await uow.get_for(
-                PersonCollection
-            ).load_by_parent(
+            person_collection = await uow.get_for(PersonCollection).load_by_parent(
                 workspace.ref_id,
             )
             persons = await uow.get_for(Person).find_all(

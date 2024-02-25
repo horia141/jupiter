@@ -101,9 +101,7 @@ class SlackTaskUpdateUseCase(
         else:
             generation_extra_info = UpdateAction.do_nothing()
 
-        inbox_task_collection = await uow.get_for(
-            InboxTaskCollection
-        ).load_by_parent(
+        inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             workspace.ref_id,
         )
         generated_inbox_task = (

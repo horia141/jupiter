@@ -3,9 +3,6 @@ import asyncio
 
 import jupiter.core.domain
 from jupiter.core.repository.sqlite.connection import SqliteConnection
-from jupiter.core.repository.sqlite.domain.storage_engine import (
-    SqliteDomainStorageEngine,
-)
 from jupiter.core.use_cases.infra.realms import ModuleExplorerRealmCodecRegistry
 from jupiter.core.utils.global_properties import build_global_properties
 
@@ -23,13 +20,13 @@ async def main() -> None:
     #     ],
     # )
 
-    realm_codec_registry = ModuleExplorerRealmCodecRegistry.build_from_module_root(
+    ModuleExplorerRealmCodecRegistry.build_from_module_root(
         jupiter.core.domain
     )
 
     global_properties = build_global_properties()
 
-    sqlite_connection = SqliteConnection(
+    SqliteConnection(
         SqliteConnection.Config(
             global_properties.sqlite_db_url,
             global_properties.alembic_ini_path,
@@ -37,7 +34,7 @@ async def main() -> None:
         ),
     )
 
-    SqliteDomainStorageEngine(realm_codec_registry, sqlite_connection)
+    # SqliteDomainStorageEngine(realm_codec_registry, sqlite_connection)
 
 
 if __name__ == "__main__":

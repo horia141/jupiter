@@ -3,6 +3,7 @@ import asyncio
 
 import aiohttp
 import jupiter.core.domain
+import jupiter.core.repository.sqlite.domain
 import jupiter.core.use_cases
 from jupiter.core.domain.auth.auth_token import (
     ExpiredAuthTokenError,
@@ -68,8 +69,8 @@ async def main() -> None:
 
     global_properties = build_global_properties()
 
-    domain_storage_engine = SqliteDomainStorageEngine(
-        realm_codec_registry, sqlite_connection
+    domain_storage_engine = SqliteDomainStorageEngine.build_from_module_root(
+        realm_codec_registry, sqlite_connection, jupiter.core.repository.sqlite.domain
     )
     search_storage_engine = SqliteSearchStorageEngine(
         realm_codec_registry, sqlite_connection
