@@ -9,7 +9,7 @@ const _API_CLIENTS_BY_SESSION = new Map<undefined | string, ApiClient>();
 export function getGuestApiClient(session?: Session): ApiClient {
   let token = undefined;
   if (session !== undefined && session.has("authTokenExt")) {
-    token = session.get("authTokenExt").auth_token_str;
+    token = session.get("authTokenExt");
   }
 
   if (_API_CLIENTS_BY_SESSION.has(token)) {
@@ -41,7 +41,7 @@ export function getLoggedInApiClient(session: Session): ApiClient {
     throw redirect("/login");
   }
 
-  const authTokenExtStr = session.get("authTokenExt").auth_token_str;
+  const authTokenExtStr = session.get("authTokenExt");
 
   if (_API_CLIENTS_BY_SESSION.has(authTokenExtStr)) {
     return _API_CLIENTS_BY_SESSION.get(authTokenExtStr) as ApiClient;

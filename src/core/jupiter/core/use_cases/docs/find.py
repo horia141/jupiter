@@ -10,6 +10,7 @@ from jupiter.core.domain.docs.doc_collection import DocCollection
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.entity import NoFilter
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
@@ -72,7 +73,7 @@ class DocFindUseCase(
         docs = await uow.repository_for(Doc).find_all_generic(
             parent_ref_id=doc_collection.ref_id,
             allow_archived=args.allow_archived,
-            ref_id=args.filter_ref_ids,
+            ref_id=args.filter_ref_ids or NoFilter(),
             parent_doc_ref_id=[None],
         )
 

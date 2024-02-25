@@ -6,6 +6,7 @@ from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.projects.project_collection import ProjectCollection
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.entity import NoFilter
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,
@@ -55,7 +56,7 @@ class ProjectFindUseCase(
         projects = await uow.repository_for(Project).find_all_generic(
             parent_ref_id=project_collection.ref_id,
             allow_archived=args.allow_archived,
-            ref_id=args.filter_ref_ids,
+            ref_id=args.filter_ref_ids or NoFilter(),
         )
 
         return ProjectFindResult(projects=list(projects))

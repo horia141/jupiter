@@ -49,6 +49,7 @@ from jupiter.core.domain.vacations.vacation_collection import VacationCollection
 from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
+from jupiter.core.framework.entity import NoFilter
 from jupiter.core.framework.use_case import ProgressReporter
 
 
@@ -167,7 +168,7 @@ class GenService:
             all_syncable_projects = await uow.repository_for(Project).find_all_generic(
                 parent_ref_id=project_collection.ref_id,
                 allow_archived=False,
-                ref_id=filter_project_ref_ids,
+                ref_id=filter_project_ref_ids or NoFilter(),
             )
             all_projects_by_ref_id = {p.ref_id: p for p in all_projects}
             filter_project_ref_ids = [p.ref_id for p in all_syncable_projects]
@@ -193,8 +194,8 @@ class GenService:
                     all_habits = await uow.repository_for(Habit).find_all_generic(
                         parent_ref_id=habit_collection.ref_id,
                         allow_archived=False,
-                        ref_id=filter_habit_ref_ids,
-                        project_ref_id=filter_project_ref_ids,
+                        ref_id=filter_habit_ref_ids or NoFilter(),
+                        project_ref_id=filter_project_ref_ids or NoFilter(),
                     )
 
                 async with self._domain_storage_engine.get_unit_of_work() as uow:
@@ -248,8 +249,8 @@ class GenService:
                     all_chores = await uow.repository_for(Chore).find_all_generic(
                         parent_ref_id=chore_collection.ref_id,
                         allow_archived=False,
-                        ref_id=filter_chore_ref_ids,
-                        project_ref_id=filter_project_ref_ids,
+                        ref_id=filter_chore_ref_ids or NoFilter(),
+                        project_ref_id=filter_project_ref_ids or NoFilter(),
                     )
 
                 async with self._domain_storage_engine.get_unit_of_work() as uow:

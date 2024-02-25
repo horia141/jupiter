@@ -9,6 +9,7 @@ from jupiter.core.domain.smart_lists.smart_list_item import SmartListItem
 from jupiter.core.domain.smart_lists.smart_list_tag import SmartListTag
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.entity import NoFilter
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,
@@ -88,8 +89,8 @@ class SmartListFindUseCase(
                 ).find_all_generic(
                     parent_ref_id=smart_list.ref_id,
                     allow_archived=args.allow_archived,
-                    tag_name=args.filter_tag_names,
-                    ref_id=args.filter_tag_ref_id,
+                    tag_name=args.filter_tag_names or NoFilter(),
+                    ref_id=args.filter_tag_ref_id or NoFilter(),
                 ):
                     if (
                         smart_list_tag.smart_list.ref_id
@@ -114,8 +115,8 @@ class SmartListFindUseCase(
                     parent_ref_id=smart_list.ref_id,
                     allow_archived=args.allow_archived,
                     ref_id=args.filter_item_ref_id,
-                    filter_is_done=args.filter_is_done,
-                    tag_ref_id=args.filter_tag_ref_id,
+                    is_done=args.filter_is_done if args.filter_is_done is not None else NoFilter(),
+                    tag_ref_id=args.filter_tag_ref_id or NoFilter(),
                 ):
                     if (
                         smart_list_item.smart_list.ref_id

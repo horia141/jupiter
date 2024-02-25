@@ -64,7 +64,7 @@ class MetricLoadUseCase(
         metric_collection_inbox_tasks = await uow.repository_for(
             InboxTask
         ).find_all_generic(
-            inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+            parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
             source=[InboxTaskSource.METRIC],
             metric_ref_id=[metric.ref_id],

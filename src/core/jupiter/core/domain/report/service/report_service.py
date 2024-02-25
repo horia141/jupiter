@@ -59,6 +59,7 @@ from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.base.timestamp import Timestamp
+from jupiter.core.framework.entity import NoFilter
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.utils.time_provider import TimeProvider
 
@@ -174,7 +175,7 @@ class ReportService:
             projects = await uow.repository_for(Project).find_all_generic(
                 parent_ref_id=project_collection.ref_id,
                 allow_archived=True,
-                ref_id=filter_project_ref_ids,
+                ref_id=filter_project_ref_ids or NoFilter(),
             )
             filter_project_ref_ids = [p.ref_id for p in projects]
             projects_by_ref_id: Dict[EntityId, Project] = {
@@ -321,8 +322,8 @@ class ReportService:
             all_habits = await uow.repository_for(Habit).find_all_generic(
                 parent_ref_id=habit_collection.ref_id,
                 allow_archived=True,
-                ref_id=filter_habit_ref_ids,
-                project_ref_id=filter_project_ref_ids,
+                ref_id=filter_habit_ref_ids or NoFilter(),
+                project_ref_id=filter_project_ref_ids or NoFilter(),
             )
             all_habits_by_ref_id: Dict[EntityId, Habit] = {
                 rt.ref_id: rt for rt in all_habits
@@ -331,8 +332,8 @@ class ReportService:
             all_chores = await uow.repository_for(Chore).find_all_generic(
                 parent_ref_id=chore_collection.ref_id,
                 allow_archived=True,
-                ref_id=filter_chore_ref_ids,
-                project_ref_id=filter_project_ref_ids,
+                ref_id=filter_chore_ref_ids or NoFilter(),
+                project_ref_id=filter_project_ref_ids or NoFilter(),
             )
             all_chores_by_ref_id: Dict[EntityId, Chore] = {
                 rt.ref_id: rt for rt in all_chores
@@ -341,8 +342,8 @@ class ReportService:
             all_big_plans = await uow.repository_for(BigPlan).find_all_generic(
                 parent_ref_id=big_plan_collection.ref_id,
                 allow_archived=True,
-                ref_id=filter_big_plan_ref_ids,
-                project_ref_id=filter_project_ref_ids,
+                ref_id=filter_big_plan_ref_ids or NoFilter(),
+                project_ref_id=filter_project_ref_ids or NoFilter(),
             )
             big_plans_by_ref_id: Dict[EntityId, BigPlan] = {
                 bp.ref_id: bp for bp in all_big_plans

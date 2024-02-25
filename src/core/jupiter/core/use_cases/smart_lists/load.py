@@ -55,10 +55,10 @@ class SmartListLoadUseCase(
             allow_archived=args.allow_archived,
         )
         smart_list_tags = await uow.repository_for(SmartListTag).find_all_generic(
-            smart_list_ref_id=smart_list.ref_id, allow_archived=args.allow_archived
+            parent_ref_id=smart_list.ref_id, allow_archived=args.allow_archived
         )
         smart_list_items = await uow.repository_for(SmartListItem).find_all_generic(
-            smart_list_ref_id=smart_list.ref_id, allow_archived=args.allow_archived
+            parent_ref_id=smart_list.ref_id, allow_archived=args.allow_archived
         )
 
         return SmartListLoadResult(

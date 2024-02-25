@@ -177,7 +177,9 @@ class CrownEntityRepository(EntityRepository[CrownEntityT], abc.ABC):
     @abc.abstractmethod
     async def find_all_generic(
         self,
-        allow_archived: bool,
+        *,
+        parent_ref_id: EntityId | None = None,
+        allow_archived: bool = False,
         **kwargs: EntityLinkFilterCompiled,
     ) -> list[CrownEntityT]:
         """Find all crowns with generic filters."""

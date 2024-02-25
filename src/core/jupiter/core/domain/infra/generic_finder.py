@@ -66,6 +66,7 @@ async def generic_finder(
         first_linked_entities = await uow.repository_for(
             entity_link1.the_type
         ).find_all_generic(
+            parent_ref_id=None,
             allow_archived=allow_archived, **entity_link1.get_for_entity(entity)
         )
 
@@ -73,6 +74,7 @@ async def generic_finder(
             second_linked_entities = await uow.repository_for(
                 entity_link2.the_type
             ).find_all_generic(
+                parent_ref_id=None,
                 allow_archived=allow_archived, **entity_link2.get_for_entity(entity)
             )
             return (entity, first_linked_entities, second_linked_entities)

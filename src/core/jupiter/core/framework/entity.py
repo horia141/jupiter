@@ -143,6 +143,10 @@ def entity(cls: type[_EntityT]) -> type[_EntityT]:
     return new_cls
 
 
+class NoFilter:
+    """A filter that matches everything."""
+
+
 @dataclass
 class IsRefId:
     """Transforms a generic filter based on the current entity's ref id."""
@@ -179,7 +183,8 @@ EntityLinkFilterRaw = (
     None | AtomicValue[Primitive] | EnumValue | IsRefId | IsParentLink | IsOneOfRefId
 )
 EntityLinkFilterCompiled = (
-    Primitive
+    NoFilter
+    | Primitive
     | AtomicValue[Primitive]
     | EnumValue
     | Sequence[Primitive | AtomicValue[Primitive] | EnumValue]

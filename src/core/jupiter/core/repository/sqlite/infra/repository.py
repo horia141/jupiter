@@ -583,11 +583,18 @@ class SqliteCrownEntityRepository(
 
     async def find_all_generic(
         self,
-        allow_archived: bool,
+        *,
+        parent_ref_id: EntityId | None = None,
+        allow_archived: bool = False,
         **kwargs: EntityLinkFilterCompiled,
     ) -> list[_CrownEntityT]:
         """Find all crowns with generic filters."""
         query_stmt = select(self._table)
+        
+        if parent_ref_id is not None:
+            query_stmt = query_stmt.where(
+                self._table.c[self._get_parent_field_name()] == parent_ref_id.as_int()
+            )
         if not allow_archived:
             query_stmt = query_stmt.where(self._table.c.archived.is_(False))
 

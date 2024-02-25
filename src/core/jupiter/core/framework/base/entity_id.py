@@ -9,6 +9,7 @@ from jupiter.core.framework.realm import (
     RealmDecodingError,
     RealmEncoder,
     RealmThing,
+    WebRealm,
 )
 from jupiter.core.framework.value import AtomicValue, hashable_value
 
@@ -46,6 +47,13 @@ class EntityIdDatabaseEncoder(RealmEncoder[EntityId, DatabaseRealm]):
 
     def encode(self, value: EntityId) -> RealmThing:
         return value.as_int()
+    
+
+class EntityIdWebEncoder(RealmEncoder[EntityId, WebRealm]):
+    """Entity id encoder for the database realm."""
+
+    def encode(self, value: EntityId) -> RealmThing:
+        return value.the_id
 
 
 class EntityIdDatabaseDecoder(RealmDecoder[EntityId, DatabaseRealm]):
