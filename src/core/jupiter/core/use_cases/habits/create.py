@@ -79,7 +79,7 @@ class HabitCreateUseCase(
         ):
             raise FeatureUnavailableError(WorkspaceFeature.PROJECTS)
 
-        habit_collection = await uow.repository_for(HabitCollection).load_by_parent(
+        habit_collection = await uow.get_for(HabitCollection).load_by_parent(
             workspace.ref_id,
         )
 
@@ -101,7 +101,7 @@ class HabitCreateUseCase(
             suspended=False,
             repeats_in_period_count=args.repeats_in_period_count,
         )
-        new_habit = await uow.repository_for(Habit).create(new_habit)
+        new_habit = await uow.get_for(Habit).create(new_habit)
         await progress_reporter.mark_created(new_habit)
 
         return HabitCreateResult(new_habit=new_habit)

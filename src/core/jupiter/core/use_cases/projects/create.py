@@ -51,7 +51,7 @@ class ProjectCreateUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        project_collection = await uow.repository_for(ProjectCollection).load_by_parent(
+        project_collection = await uow.get_for(ProjectCollection).load_by_parent(
             workspace.ref_id,
         )
 
@@ -61,7 +61,7 @@ class ProjectCreateUseCase(
             name=args.name,
         )
 
-        new_project = await uow.repository_for(Project).create(new_project)
+        new_project = await uow.get_for(Project).create(new_project)
         await progress_reporter.mark_created(new_project)
 
         return ProjectCreateResult(new_project=new_project)

@@ -37,7 +37,7 @@ class ChoreArchiveUseCase(
         args: ChoreArchiveArgs,
     ) -> None:
         """Execute the command's action."""
-        chore = await uow.repository_for(Chore).load_by_id(args.ref_id)
+        chore = await uow.get_for(Chore).load_by_id(args.ref_id)
         await ChoreArchiveService().do_it(
             context.domain_context, uow, progress_reporter, chore
         )

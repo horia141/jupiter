@@ -167,12 +167,12 @@ class ReportService:
             )
 
         async with self._storage_engine.get_unit_of_work() as uow:
-            project_collection = await uow.repository_for(
+            project_collection = await uow.get_for(
                 ProjectCollection
             ).load_by_parent(
                 workspace.ref_id,
             )
-            projects = await uow.repository_for(Project).find_all_generic(
+            projects = await uow.get_for(Project).find_all_generic(
                 parent_ref_id=project_collection.ref_id,
                 allow_archived=True,
                 ref_id=filter_project_ref_ids or NoFilter(),
@@ -183,41 +183,41 @@ class ReportService:
             }
             projects_by_name: Dict[ProjectName, Project] = {p.name: p for p in projects}
 
-            inbox_task_collection = await uow.repository_for(
+            inbox_task_collection = await uow.get_for(
                 InboxTaskCollection
             ).load_by_parent(
                 workspace.ref_id,
             )
-            habit_collection = await uow.repository_for(HabitCollection).load_by_parent(
+            habit_collection = await uow.get_for(HabitCollection).load_by_parent(
                 workspace.ref_id,
             )
-            chore_collection = await uow.repository_for(ChoreCollection).load_by_parent(
+            chore_collection = await uow.get_for(ChoreCollection).load_by_parent(
                 workspace.ref_id,
             )
-            big_plan_collection = await uow.repository_for(
+            big_plan_collection = await uow.get_for(
                 BigPlanCollection
             ).load_by_parent(
                 workspace.ref_id,
             )
 
-            metric_collection = await uow.repository_for(
+            metric_collection = await uow.get_for(
                 MetricCollection
             ).load_by_parent(
                 workspace.ref_id,
             )
-            metrics = await uow.repository_for(Metric).find_all(
+            metrics = await uow.get_for(Metric).find_all(
                 parent_ref_id=metric_collection.ref_id,
                 allow_archived=True,
                 filter_ref_ids=filter_metric_ref_ids,
             )
             metrics_by_ref_id: Dict[EntityId, Metric] = {m.ref_id: m for m in metrics}
 
-            person_collection = await uow.repository_for(
+            person_collection = await uow.get_for(
                 PersonCollection
             ).load_by_parent(
                 workspace.ref_id,
             )
-            persons = await uow.repository_for(Person).find_all(
+            persons = await uow.get_for(Person).find_all(
                 parent_ref_id=person_collection.ref_id,
                 allow_archived=True,
                 filter_ref_ids=filter_person_ref_ids,
@@ -235,7 +235,7 @@ class ReportService:
                 None,
             )
 
-            raw_all_inbox_tasks = await uow.get_x(
+            raw_all_inbox_tasks = await uow.get(
                 InboxTaskRepository
             ).find_all_with_filters(
                 parent_ref_id=inbox_task_collection.ref_id,
@@ -319,7 +319,7 @@ class ReportService:
                 )
             ]
 
-            all_habits = await uow.repository_for(Habit).find_all_generic(
+            all_habits = await uow.get_for(Habit).find_all_generic(
                 parent_ref_id=habit_collection.ref_id,
                 allow_archived=True,
                 ref_id=filter_habit_ref_ids or NoFilter(),
@@ -329,7 +329,7 @@ class ReportService:
                 rt.ref_id: rt for rt in all_habits
             }
 
-            all_chores = await uow.repository_for(Chore).find_all_generic(
+            all_chores = await uow.get_for(Chore).find_all_generic(
                 parent_ref_id=chore_collection.ref_id,
                 allow_archived=True,
                 ref_id=filter_chore_ref_ids or NoFilter(),
@@ -339,7 +339,7 @@ class ReportService:
                 rt.ref_id: rt for rt in all_chores
             }
 
-            all_big_plans = await uow.repository_for(BigPlan).find_all_generic(
+            all_big_plans = await uow.get_for(BigPlan).find_all_generic(
                 parent_ref_id=big_plan_collection.ref_id,
                 allow_archived=True,
                 ref_id=filter_big_plan_ref_ids or NoFilter(),

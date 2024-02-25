@@ -117,7 +117,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
         """Execute the command's action."""
         user = context.user
 
-        score_log = await uow.repository_for(ScoreLog).load_by_parent(user.ref_id)
+        score_log = await uow.get_for(ScoreLog).load_by_parent(user.ref_id)
 
         workspace = context.workspace
         (
@@ -125,60 +125,60 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
             workspace_feature_flags_controls,
         ) = infer_feature_flag_controls(self._global_properties)
 
-        inbox_task_collection = await uow.repository_for(
+        inbox_task_collection = await uow.get_for(
             InboxTaskCollection
         ).load_by_parent(
             workspace.ref_id,
         )
-        habit_collection = await uow.repository_for(HabitCollection).load_by_parent(
+        habit_collection = await uow.get_for(HabitCollection).load_by_parent(
             workspace.ref_id,
         )
-        chore_collection = await uow.repository_for(ChoreCollection).load_by_parent(
+        chore_collection = await uow.get_for(ChoreCollection).load_by_parent(
             workspace.ref_id,
         )
-        big_plan_collection = await uow.repository_for(
+        big_plan_collection = await uow.get_for(
             BigPlanCollection
         ).load_by_parent(
             workspace.ref_id,
         )
-        doc_collection = await uow.repository_for(DocCollection).load_by_parent(
+        doc_collection = await uow.get_for(DocCollection).load_by_parent(
             workspace.ref_id
         )
-        vacation_collection = await uow.repository_for(
+        vacation_collection = await uow.get_for(
             VacationCollection
         ).load_by_parent(
             workspace.ref_id,
         )
-        project_collection = await uow.repository_for(ProjectCollection).load_by_parent(
+        project_collection = await uow.get_for(ProjectCollection).load_by_parent(
             workspace.ref_id,
         )
-        smart_list_collection = await uow.repository_for(
+        smart_list_collection = await uow.get_for(
             SmartListCollection
         ).load_by_parent(
             workspace.ref_id,
         )
-        metric_collection = await uow.repository_for(MetricCollection).load_by_parent(
+        metric_collection = await uow.get_for(MetricCollection).load_by_parent(
             workspace.ref_id,
         )
-        person_collection = await uow.repository_for(PersonCollection).load_by_parent(
+        person_collection = await uow.get_for(PersonCollection).load_by_parent(
             workspace.ref_id,
         )
-        push_integration_group = await uow.repository_for(
+        push_integration_group = await uow.get_for(
             PushIntegrationGroup
         ).load_by_parent(
             workspace.ref_id,
         )
-        slack_task_collection = await uow.repository_for(
+        slack_task_collection = await uow.get_for(
             SlackTaskCollection
         ).load_by_parent(
             push_integration_group.ref_id,
         )
-        email_task_collection = await uow.repository_for(
+        email_task_collection = await uow.get_for(
             EmailTaskCollection
         ).load_by_parent(
             push_integration_group.ref_id,
         )
-        note_collection = await uow.repository_for(NoteCollection).load_by_parent(
+        note_collection = await uow.get_for(NoteCollection).load_by_parent(
             workspace.ref_id
         )
 
@@ -204,9 +204,9 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
                 feature_flag_controls=user_feature_flags_controls,
                 feature_flags=user_feature_flags,
             )
-            await uow.repository_for(User).save(user)
+            await uow.get_for(User).save(user)
 
-            auth = await uow.repository_for(Auth).load_by_parent(
+            auth = await uow.get_for(Auth).load_by_parent(
                 parent_ref_id=user.ref_id
             )
             auth = auth.change_password(
@@ -215,33 +215,33 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
                 new_password=args.auth_new_password,
                 new_password_repeat=args.auth_new_password_repeat,
             )
-            await uow.repository_for(Auth).save(auth)
+            await uow.get_for(Auth).save(auth)
 
         async with progress_reporter.section("Resetting score log"):
-            all_score_log_entries = await uow.repository_for(ScoreLogEntry).find_all(
+            all_score_log_entries = await uow.get_for(ScoreLogEntry).find_all(
                 parent_ref_id=score_log.ref_id,
                 allow_archived=True,
             )
 
             for score_log_entry in all_score_log_entries:
-                await uow.repository_for(ScoreLogEntry).remove(score_log_entry.ref_id)
+                await uow.get_for(ScoreLogEntry).remove(score_log_entry.ref_id)
 
-            all_score_stats = await uow.get_r(ScoreStatsRepository).find_all(
+            all_score_stats = await uow.get(ScoreStatsRepository).find_all(
                 score_log.ref_id
             )
 
             for score_stats in all_score_stats:
-                await uow.get_r(ScoreStatsRepository).remove(score_stats.key)
+                await uow.get(ScoreStatsRepository).remove(score_stats.key)
 
-            all_period_bests = await uow.get_r(ScorePeriodBestRepository).find_all(
+            all_period_bests = await uow.get(ScorePeriodBestRepository).find_all(
                 score_log.ref_id
             )
 
             for period_best in all_period_bests:
-                await uow.get_r(ScorePeriodBestRepository).remove(period_best.key)
+                await uow.get(ScorePeriodBestRepository).remove(period_best.key)
 
         async with progress_reporter.section("Resetting workspace"):
-            default_project = await uow.repository_for(Project).load_by_id(
+            default_project = await uow.get_for(Project).load_by_id(
                 args.workspace_default_project_ref_id,
             )
 
@@ -260,10 +260,10 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
                 feature_flags=workspace_feature_flags,
             )
 
-            await uow.repository_for(Workspace).save(workspace)
+            await uow.get_for(Workspace).save(workspace)
 
         async with progress_reporter.section("Clearing habits"):
-            all_habits = await uow.repository_for(Habit).find_all(
+            all_habits = await uow.get_for(Habit).find_all(
                 parent_ref_id=habit_collection.ref_id,
                 allow_archived=True,
             )
@@ -274,7 +274,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
                 )
 
         async with progress_reporter.section("Clearing chores"):
-            all_chores = await uow.repository_for(Chore).find_all(
+            all_chores = await uow.get_for(Chore).find_all(
                 parent_ref_id=chore_collection.ref_id,
                 allow_archived=True,
             )
@@ -285,7 +285,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
                 )
 
         async with progress_reporter.section("Clearing big plans"):
-            all_big_plans = await uow.repository_for(BigPlan).find_all(
+            all_big_plans = await uow.get_for(BigPlan).find_all(
                 parent_ref_id=big_plan_collection.ref_id,
                 allow_archived=True,
             )
@@ -300,7 +300,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
                 )
 
         async with progress_reporter.section("Clearing docs"):
-            root_docs = await uow.repository_for(Doc).find_all_generic(
+            root_docs = await uow.get_for(Doc).find_all_generic(
                 parent_ref_id=doc_collection.ref_id,
                 allow_archived=True,
                 parent_doc_ref_ids=[None],
@@ -312,7 +312,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
                 )
 
         async with progress_reporter.section("Clearing vacations"):
-            all_vacations = await uow.repository_for(Vacation).find_all(
+            all_vacations = await uow.get_for(Vacation).find_all(
                 parent_ref_id=vacation_collection.ref_id,
                 allow_archived=True,
             )
@@ -327,7 +327,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
                 )
 
         async with progress_reporter.section("Clearing projects"):
-            all_projects = await uow.repository_for(Project).find_all(
+            all_projects = await uow.get_for(Project).find_all(
                 parent_ref_id=project_collection.ref_id,
                 allow_archived=True,
             )
@@ -345,7 +345,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
                 )
 
         async with progress_reporter.section("Clearing smart lists"):
-            all_smart_lists = await uow.repository_for(SmartList).find_all(
+            all_smart_lists = await uow.get_for(SmartList).find_all(
                 parent_ref_id=smart_list_collection.ref_id,
                 allow_archived=True,
             )
@@ -359,7 +359,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
                 )
 
         async with progress_reporter.section("Clearing metrics"):
-            all_metrics = await uow.repository_for(Metric).find_all(
+            all_metrics = await uow.get_for(Metric).find_all(
                 parent_ref_id=metric_collection.ref_id,
                 allow_archived=True,
             )
@@ -369,7 +369,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
                 collection_project_ref_id=default_project.ref_id,
             )
 
-            await uow.repository_for(MetricCollection).save(metric_collection)
+            await uow.get_for(MetricCollection).save(metric_collection)
 
             metric_remove_service = MetricRemoveService()
             for metric in all_metrics:
@@ -382,7 +382,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
                 )
 
         async with progress_reporter.section("Clearing person"):
-            all_persons = await uow.repository_for(Person).find_all(
+            all_persons = await uow.get_for(Person).find_all(
                 parent_ref_id=person_collection.ref_id,
                 allow_archived=True,
             )
@@ -392,7 +392,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
                 catch_up_project_ref_id=default_project.ref_id,
             )
 
-            await uow.repository_for(PersonCollection).save(person_collection)
+            await uow.get_for(PersonCollection).save(person_collection)
 
             person_remove_service = PersonRemoveService()
             for person in all_persons:
@@ -405,7 +405,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
                 )
 
         async with progress_reporter.section("Clearing Slack tasks"):
-            all_slack_tasks = await uow.repository_for(SlackTask).find_all(
+            all_slack_tasks = await uow.get_for(SlackTask).find_all(
                 parent_ref_id=slack_task_collection.ref_id,
                 allow_archived=True,
             )
@@ -414,7 +414,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
                 generation_project_ref_id=default_project.ref_id,
             )
 
-            await uow.repository_for(SlackTaskCollection).save(slack_task_collection)
+            await uow.get_for(SlackTaskCollection).save(slack_task_collection)
 
             slack_task_remove_service = SlackTaskRemoveService()
             for slack_task in all_slack_tasks:
@@ -423,7 +423,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
                 )
 
         async with progress_reporter.section("Clearing email tasks"):
-            all_email_tasks = await uow.repository_for(EmailTask).find_all(
+            all_email_tasks = await uow.get_for(EmailTask).find_all(
                 parent_ref_id=email_task_collection.ref_id,
                 allow_archived=True,
             )
@@ -432,7 +432,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
                 generation_project_ref_id=default_project.ref_id,
             )
 
-            await uow.repository_for(EmailTaskCollection).save(email_task_collection)
+            await uow.get_for(EmailTaskCollection).save(email_task_collection)
 
             email_task_remove_service = EmailTaskRemoveService()
             for email_task in all_email_tasks:
@@ -441,7 +441,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
                 )
 
         async with progress_reporter.section("Clearing inbox tasks"):
-            all_inbox_tasks = await uow.repository_for(InboxTask).find_all(
+            all_inbox_tasks = await uow.get_for(InboxTask).find_all(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
             )
@@ -452,7 +452,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
                 )
 
         async with progress_reporter.section("Clearing notes"):
-            root_notes = await uow.repository_for(Note).find_all(
+            root_notes = await uow.get_for(Note).find_all(
                 parent_ref_id=note_collection.ref_id,
                 allow_archived=True,
             )

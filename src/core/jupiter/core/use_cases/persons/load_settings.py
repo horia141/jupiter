@@ -47,10 +47,10 @@ class PersonLoadSettingsUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        person_collection = await uow.repository_for(PersonCollection).load_by_parent(
+        person_collection = await uow.get_for(PersonCollection).load_by_parent(
             workspace.ref_id,
         )
-        catch_up_project = await uow.repository_for(Project).load_by_id(
+        catch_up_project = await uow.get_for(Project).load_by_id(
             person_collection.catch_up_project_ref_id,
         )
 

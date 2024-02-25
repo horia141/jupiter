@@ -38,7 +38,7 @@ class WorkspaceChangeDefaultProjectUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        project = await uow.repository_for(Project).load_by_id(
+        project = await uow.get_for(Project).load_by_id(
             args.default_project_ref_id,
         )
 
@@ -47,4 +47,4 @@ class WorkspaceChangeDefaultProjectUseCase(
             default_project_ref_id=project.ref_id,
         )
 
-        await uow.repository_for(Workspace).save(workspace)
+        await uow.get_for(Workspace).save(workspace)

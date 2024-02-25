@@ -38,7 +38,7 @@ class MetricRemoveUseCase(
     ) -> None:
         """Execute the command's action."""
         workspace = context.workspace
-        metric = await uow.repository_for(Metric).load_by_id(
+        metric = await uow.get_for(Metric).load_by_id(
             args.ref_id, allow_archived=True
         )
 

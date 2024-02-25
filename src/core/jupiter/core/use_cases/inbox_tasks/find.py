@@ -127,55 +127,55 @@ class InboxTaskFindUseCase(
             args.filter_sources
         )
 
-        project_collection = await uow.repository_for(ProjectCollection).load_by_parent(
+        project_collection = await uow.get_for(ProjectCollection).load_by_parent(
             workspace.ref_id,
         )
-        inbox_task_collection = await uow.repository_for(
+        inbox_task_collection = await uow.get_for(
             InboxTaskCollection
         ).load_by_parent(
             workspace.ref_id,
         )
-        habit_collection = await uow.repository_for(HabitCollection).load_by_parent(
+        habit_collection = await uow.get_for(HabitCollection).load_by_parent(
             workspace.ref_id,
         )
-        chore_collection = await uow.repository_for(ChoreCollection).load_by_parent(
+        chore_collection = await uow.get_for(ChoreCollection).load_by_parent(
             workspace.ref_id,
         )
-        big_plan_collection = await uow.repository_for(
+        big_plan_collection = await uow.get_for(
             BigPlanCollection
         ).load_by_parent(
             workspace.ref_id,
         )
-        metric_collection = await uow.repository_for(MetricCollection).load_by_parent(
+        metric_collection = await uow.get_for(MetricCollection).load_by_parent(
             workspace.ref_id,
         )
-        person_collection = await uow.repository_for(PersonCollection).load_by_parent(
+        person_collection = await uow.get_for(PersonCollection).load_by_parent(
             workspace.ref_id,
         )
-        push_integrations_group = await uow.repository_for(
+        push_integrations_group = await uow.get_for(
             PushIntegrationGroup
         ).load_by_parent(
             workspace.ref_id,
         )
-        slack_task_collection = await uow.repository_for(
+        slack_task_collection = await uow.get_for(
             SlackTaskCollection
         ).load_by_parent(
             push_integrations_group.ref_id,
         )
-        email_task_collection = await uow.repository_for(
+        email_task_collection = await uow.get_for(
             EmailTaskCollection
         ).load_by_parent(
             push_integrations_group.ref_id,
         )
 
-        projects = await uow.repository_for(Project).find_all_generic(
+        projects = await uow.get_for(Project).find_all_generic(
             parent_ref_id=project_collection.ref_id,
             allow_archived=args.allow_archived,
             ref_id=args.filter_project_ref_ids or NoFilter(),
         )
         project_by_ref_id = {p.ref_id: p for p in projects}
 
-        inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
+        inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=args.allow_archived,
             ref_id=args.filter_ref_ids or NoFilter(),
@@ -183,7 +183,7 @@ class InboxTaskFindUseCase(
             project_ref_id=args.filter_project_ref_ids or NoFilter(),
         )
 
-        habits = await uow.repository_for(Habit).find_all(
+        habits = await uow.get_for(Habit).find_all(
             parent_ref_id=habit_collection.ref_id,
             allow_archived=True,
             filter_ref_ids=(
@@ -192,7 +192,7 @@ class InboxTaskFindUseCase(
         )
         habits_by_ref_id = {rt.ref_id: rt for rt in habits}
 
-        chores = await uow.repository_for(Chore).find_all(
+        chores = await uow.get_for(Chore).find_all(
             parent_ref_id=chore_collection.ref_id,
             allow_archived=True,
             filter_ref_ids=(
@@ -201,7 +201,7 @@ class InboxTaskFindUseCase(
         )
         chores_by_ref_id = {rt.ref_id: rt for rt in chores}
 
-        big_plans = await uow.repository_for(BigPlan).find_all(
+        big_plans = await uow.get_for(BigPlan).find_all(
             parent_ref_id=big_plan_collection.ref_id,
             allow_archived=True,
             filter_ref_ids=(
@@ -212,7 +212,7 @@ class InboxTaskFindUseCase(
         )
         big_plans_by_ref_id = {bp.ref_id: bp for bp in big_plans}
 
-        metrics = await uow.repository_for(Metric).find_all(
+        metrics = await uow.get_for(Metric).find_all(
             parent_ref_id=metric_collection.ref_id,
             allow_archived=True,
             filter_ref_ids=(
@@ -221,7 +221,7 @@ class InboxTaskFindUseCase(
         )
         metrics_by_ref_id = {m.ref_id: m for m in metrics}
 
-        persons = await uow.repository_for(Person).find_all(
+        persons = await uow.get_for(Person).find_all(
             parent_ref_id=person_collection.ref_id,
             allow_archived=True,
             filter_ref_ids=(
@@ -230,7 +230,7 @@ class InboxTaskFindUseCase(
         )
         persons_by_ref_id = {p.ref_id: p for p in persons}
 
-        slack_tasks = await uow.repository_for(SlackTask).find_all(
+        slack_tasks = await uow.get_for(SlackTask).find_all(
             parent_ref_id=slack_task_collection.ref_id,
             allow_archived=True,
             filter_ref_ids=(
@@ -241,7 +241,7 @@ class InboxTaskFindUseCase(
         )
         slack_tasks_by_ref_id = {p.ref_id: p for p in slack_tasks}
 
-        email_tasks = await uow.repository_for(EmailTask).find_all(
+        email_tasks = await uow.get_for(EmailTask).find_all(
             parent_ref_id=email_task_collection.ref_id,
             allow_archived=True,
             filter_ref_ids=(
@@ -254,10 +254,10 @@ class InboxTaskFindUseCase(
 
         notes_by_inbox_task_ref_id: defaultdict[EntityId, Note] = defaultdict(None)
         if args.include_notes:
-            note_collection = await uow.repository_for(NoteCollection).load_by_parent(
+            note_collection = await uow.get_for(NoteCollection).load_by_parent(
                 workspace.ref_id
             )
-            notes = await uow.repository_for(Note).find_all_generic(
+            notes = await uow.get_for(Note).find_all_generic(
                 parent_ref_id=note_collection.ref_id,
                 domain=NoteDomain.INBOX_TASK,
                 allow_archived=True,

@@ -65,7 +65,7 @@ class SlackTaskUpdateUseCase(
         user = context.user
         workspace = context.workspace
 
-        slack_task = await uow.repository_for(SlackTask).load_by_id(args.ref_id)
+        slack_task = await uow.get_for(SlackTask).load_by_id(args.ref_id)
 
         if (
             args.generation_name.should_change
@@ -101,13 +101,13 @@ class SlackTaskUpdateUseCase(
         else:
             generation_extra_info = UpdateAction.do_nothing()
 
-        inbox_task_collection = await uow.repository_for(
+        inbox_task_collection = await uow.get_for(
             InboxTaskCollection
         ).load_by_parent(
             workspace.ref_id,
         )
         generated_inbox_task = (
-            await uow.repository_for(InboxTask).find_all_generic(
+            await uow.get_for(InboxTask).find_all_generic(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=False,
                 source=[InboxTaskSource.SLACK_TASK],
@@ -124,7 +124,7 @@ class SlackTaskUpdateUseCase(
             generation_extra_info=slack_task.generation_extra_info,
         )
 
-        await uow.repository_for(InboxTask).save(generated_inbox_task)
+        await uow.get_for(InboxTask).save(generated_inbox_task)
         await progress_reporter.mark_updated(generated_inbox_task)
 
         slack_task = slack_task.update(
@@ -135,5 +135,5 @@ class SlackTaskUpdateUseCase(
             generation_extra_info=generation_extra_info,
         )
 
-        await uow.repository_for(SlackTask).save(slack_task)
+        await uow.get_for(SlackTask).save(slack_task)
         await progress_reporter.mark_updated(slack_task)

@@ -50,10 +50,10 @@ class ProjectFindUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        project_collection = await uow.repository_for(ProjectCollection).load_by_parent(
+        project_collection = await uow.get_for(ProjectCollection).load_by_parent(
             workspace.ref_id,
         )
-        projects = await uow.repository_for(Project).find_all_generic(
+        projects = await uow.get_for(Project).find_all_generic(
             parent_ref_id=project_collection.ref_id,
             allow_archived=args.allow_archived,
             ref_id=args.filter_ref_ids or NoFilter(),

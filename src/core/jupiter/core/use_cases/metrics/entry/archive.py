@@ -40,9 +40,9 @@ class MetricEntryArchiveUseCase(
         args: MetricEntryArchiveArgs,
     ) -> None:
         """Execute the command's action."""
-        metric_entry = await uow.repository_for(MetricEntry).load_by_id(args.ref_id)
+        metric_entry = await uow.get_for(MetricEntry).load_by_id(args.ref_id)
         metric_entry = metric_entry.mark_archived(context.domain_context)
-        await uow.repository_for(MetricEntry).save(metric_entry)
+        await uow.get_for(MetricEntry).save(metric_entry)
         await progress_reporter.mark_updated(metric_entry)
 
         note_archive_service = NoteArchiveService()

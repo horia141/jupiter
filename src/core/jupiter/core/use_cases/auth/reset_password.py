@@ -63,14 +63,14 @@ class ResetPasswordUseCase(
                 user = await uow.get(UserRepository).load_by_email_address(
                     args.email_address
                 )
-                auth = await uow.repository_for(Auth).load_by_parent(user.ref_id)
+                auth = await uow.get_for(Auth).load_by_parent(user.ref_id)
                 auth, new_recovery_token = auth.reset_password(
                     ctx=context.domain_context,
                     recovery_token=args.recovery_token,
                     new_password=args.new_password,
                     new_password_repeat=args.new_password_repeat,
                 )
-                auth = await uow.repository_for(Auth).save(auth)
+                auth = await uow.get_for(Auth).save(auth)
             except (UserNotFoundError, IncorrectRecoveryTokenError) as err:
                 raise InvalidResetPasswordCredentialsError(
                     "Username or recovery token invalid"

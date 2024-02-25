@@ -75,7 +75,7 @@ class SmartListItemCreateUseCase(
                 smart_list_ref_id=smart_list.ref_id,
                 tag_name=tag_name,
             )
-            smart_list_tag = await uow.repository_for(SmartListTag).create(
+            smart_list_tag = await uow.get_for(SmartListTag).create(
                 smart_list_tag,
             )
             await progress_reporter.mark_created(smart_list_tag)
@@ -89,7 +89,7 @@ class SmartListItemCreateUseCase(
             tags_ref_id=[t.ref_id for t in smart_list_tags.values()],
             url=args.url,
         )
-        new_smart_list_item = await uow.repository_for(SmartListItem).create(
+        new_smart_list_item = await uow.get_for(SmartListItem).create(
             new_smart_list_item,
         )
         await progress_reporter.mark_created(new_smart_list_item)

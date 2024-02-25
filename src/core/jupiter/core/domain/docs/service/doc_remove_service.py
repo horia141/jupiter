@@ -18,7 +18,7 @@ class DocRemoveService:
         doc: Doc,
     ) -> None:
         """Execute the command's action."""
-        subdocs = await uow.repository_for(Doc).find_all_generic(
+        subdocs = await uow.get_for(Doc).find_all_generic(
             parent_ref_id=doc.doc_collection.ref_id,
             allow_archived=True,
             parent_doc_ref_id=[doc.ref_id],
@@ -32,5 +32,5 @@ class DocRemoveService:
             ctx, uow, NoteDomain.DOC, doc.ref_id
         )
 
-        await uow.repository_for(Doc).remove(doc.ref_id)
+        await uow.get_for(Doc).remove(doc.ref_id)
         await progress_reporter.mark_removed(doc)

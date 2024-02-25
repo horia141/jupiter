@@ -20,7 +20,7 @@ class NoteRemoveService:
         if note.can_be_removed_independently:
             raise Exception(f"Note {note.ref_id} cannot be removed independently")
 
-        await uow.repository_for(Note).remove(note.ref_id)
+        await uow.get_for(Note).remove(note.ref_id)
 
     async def remove_for_source(
         self,
@@ -30,11 +30,11 @@ class NoteRemoveService:
         source_entity_ref_id: EntityId,
     ) -> None:
         """Execute the command's action."""
-        note = await uow.get_x(NoteRepository).load_optional_for_source(
+        note = await uow.get(NoteRepository).load_optional_for_source(
             domain, source_entity_ref_id
         )
         if note is None:
             return
         if not note.can_be_removed_independently:
             raise Exception(f"Note {note.ref_id} cannot be removed dependently")
-        await uow.repository_for(Note).remove(note.ref_id)
+        await uow.get_for(Note).remove(note.ref_id)

@@ -239,12 +239,12 @@ async def generic_loader(  # type: ignore[no-untyped-def]
     allow_archived: bool = False,
 ):
     """Load an entity by its ref_id."""
-    entity = await uow.repository_for(entity_type).load_by_id(
+    entity = await uow.get_for(entity_type).load_by_id(
         ref_id, allow_archived=allow_archived
     )
 
     if entity_link1 is not None:
-        first_linked_entities = await uow.repository_for(
+        first_linked_entities = await uow.get_for(
             entity_link1.the_type
         ).find_all_generic(
             parent_ref_id=None,
@@ -278,7 +278,7 @@ async def generic_loader(  # type: ignore[no-untyped-def]
             final_first_linked_entities = first_linked_entities
 
         if entity_link2 is not None:
-            second_linked_entities = await uow.repository_for(
+            second_linked_entities = await uow.get_for(
                 entity_link2.the_type
             ).find_all_generic(
                 parent_ref_id=None,

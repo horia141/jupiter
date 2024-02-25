@@ -51,17 +51,17 @@ class MetricLoadUseCase(
         args: MetricLoadArgs,
     ) -> MetricLoadResult:
         """Execute the command's action."""
-        metric = await uow.repository_for(Metric).load_by_id(
+        metric = await uow.get_for(Metric).load_by_id(
             args.ref_id, allow_archived=args.allow_archived
         )
-        metric_entries = await uow.repository_for(MetricEntry).find_all(
+        metric_entries = await uow.get_for(MetricEntry).find_all(
             metric.ref_id, allow_archived=args.allow_archived
         )
 
-        inbox_task_collection = await uow.repository_for(
+        inbox_task_collection = await uow.get_for(
             InboxTaskCollection
         ).load_by_parent(context.workspace.ref_id)
-        metric_collection_inbox_tasks = await uow.repository_for(
+        metric_collection_inbox_tasks = await uow.get_for(
             InboxTask
         ).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,

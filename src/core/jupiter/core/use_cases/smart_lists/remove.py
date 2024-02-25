@@ -39,7 +39,7 @@ class SmartListRemoveUseCase(
         args: SmartListRemoveArgs,
     ) -> None:
         """Execute the command's action."""
-        smart_list = await uow.repository_for(SmartList).load_by_id(
+        smart_list = await uow.get_for(SmartList).load_by_id(
             args.ref_id, allow_archived=True
         )
 

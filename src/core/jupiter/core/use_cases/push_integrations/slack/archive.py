@@ -39,7 +39,7 @@ class SlackTaskArchiveUseCase(
         args: SlackTaskArchiveArgs,
     ) -> None:
         """Execute the command's action."""
-        slack_task = await uow.repository_for(SlackTask).load_by_id(ref_id=args.ref_id)
+        slack_task = await uow.get_for(SlackTask).load_by_id(ref_id=args.ref_id)
 
         slack_task_archive_service = SlackTaskArchiveService()
 

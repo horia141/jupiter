@@ -52,5 +52,5 @@ class VacationUpdateUseCase(
             end_date=args.end_date,
         )
 
-        await uow.repository_for(Vacation).save(vacation)
+        await uow.get_for(Vacation).save(vacation)
         await progress_reporter.mark_updated(vacation)

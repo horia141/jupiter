@@ -40,7 +40,7 @@ class MetricEntryUpdateUseCase(
         args: MetricEntryUpdateArgs,
     ) -> None:
         """Execute the command's action."""
-        metric_entry = await uow.repository_for(MetricEntry).load_by_id(args.ref_id)
+        metric_entry = await uow.get_for(MetricEntry).load_by_id(args.ref_id)
 
         metric_entry = metric_entry.update(
             ctx=context.domain_context,
@@ -48,5 +48,5 @@ class MetricEntryUpdateUseCase(
             value=args.value,
         )
 
-        await uow.repository_for(MetricEntry).save(metric_entry)
+        await uow.get_for(MetricEntry).save(metric_entry)
         await progress_reporter.mark_updated(metric_entry)

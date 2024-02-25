@@ -39,7 +39,7 @@ class InboxTaskRemoveUseCase(
         args: InboxTaskRemoveArgs,
     ) -> None:
         """Execute the command's action."""
-        inbox_task = await uow.repository_for(InboxTask).load_by_id(
+        inbox_task = await uow.get_for(InboxTask).load_by_id(
             args.ref_id,
             allow_archived=True,
         )

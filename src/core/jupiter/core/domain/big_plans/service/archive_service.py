@@ -34,16 +34,16 @@ class BigPlanArchiveService:
         if big_plan.archived:
             return BigPlanArchiveServiceResult(archived_inbox_tasks=[])
 
-        big_plan_collection = await uow.repository_for(BigPlanCollection).load_by_id(
+        big_plan_collection = await uow.get_for(BigPlanCollection).load_by_id(
             big_plan.big_plan_collection.ref_id,
         )
 
-        inbox_task_collection = await uow.repository_for(
+        inbox_task_collection = await uow.get_for(
             InboxTaskCollection
         ).load_by_parent(
             big_plan_collection.workspace.ref_id,
         )
-        inbox_tasks_to_archive = await uow.repository_for(InboxTask).find_all_generic(
+        inbox_tasks_to_archive = await uow.get_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=False,
             big_plan_ref_ids=[big_plan.ref_id],
@@ -61,7 +61,7 @@ class BigPlanArchiveService:
             archived_inbox_tasks.append(inbox_task)
 
         big_plan = big_plan.mark_archived(ctx)
-        await uow.repository_for(BigPlan).save(big_plan)
+        await uow.get_for(BigPlan).save(big_plan)
         await progress_reporter.mark_updated(big_plan)
 
         return BigPlanArchiveServiceResult(archived_inbox_tasks=archived_inbox_tasks)

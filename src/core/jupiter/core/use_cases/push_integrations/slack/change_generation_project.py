@@ -49,12 +49,12 @@ class SlackTaskChangeGenerationProjectUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        push_integration_group = await uow.repository_for(
+        push_integration_group = await uow.get_for(
             PushIntegrationGroup
         ).load_by_parent(
             workspace.ref_id,
         )
-        slack_task_collection = await uow.repository_for(
+        slack_task_collection = await uow.get_for(
             SlackTaskCollection
         ).load_by_parent(
             push_integration_group.ref_id,
@@ -62,28 +62,28 @@ class SlackTaskChangeGenerationProjectUseCase(
         old_generation_project_ref_id = slack_task_collection.generation_project_ref_id
 
         if args.generation_project_ref_id is not None:
-            generation_project = await uow.repository_for(Project).load_by_id(
+            generation_project = await uow.get_for(Project).load_by_id(
                 args.generation_project_ref_id,
             )
             generation_project_ref_id = generation_project.ref_id
         else:
-            generation_project = await uow.repository_for(Project).load_by_id(
+            generation_project = await uow.get_for(Project).load_by_id(
                 workspace.default_project_ref_id,
             )
             generation_project_ref_id = workspace.default_project_ref_id
 
-        slack_tasks = await uow.repository_for(SlackTask).find_all(
+        slack_tasks = await uow.get_for(SlackTask).find_all(
             parent_ref_id=slack_task_collection.ref_id,
             allow_archived=False,
         )
         slack_tasks_by_ref_id = {st.ref_id: st for st in slack_tasks}
 
-        inbox_task_collection = await uow.repository_for(
+        inbox_task_collection = await uow.get_for(
             InboxTaskCollection
         ).load_by_parent(
             workspace.ref_id,
         )
-        all_generated_inbox_tasks = await uow.repository_for(
+        all_generated_inbox_tasks = await uow.get_for(
             InboxTask
         ).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
@@ -111,7 +111,7 @@ class SlackTaskChangeGenerationProjectUseCase(
                     generation_extra_info=slack_task.generation_extra_info,
                 )
 
-                await uow.repository_for(InboxTask).save(
+                await uow.get_for(InboxTask).save(
                     update_inbox_task,
                 )
                 await progress_reporter.mark_updated(update_inbox_task)
@@ -123,4 +123,4 @@ class SlackTaskChangeGenerationProjectUseCase(
             generation_project_ref_id=generation_project_ref_id,
         )
 
-        await uow.repository_for(SlackTaskCollection).save(slack_task_collection)
+        await uow.get_for(SlackTaskCollection).save(slack_task_collection)

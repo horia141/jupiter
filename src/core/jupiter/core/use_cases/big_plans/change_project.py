@@ -42,21 +42,21 @@ class BigPlanChangeProjectUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        big_plan = await uow.repository_for(BigPlan).load_by_id(args.ref_id)
+        big_plan = await uow.get_for(BigPlan).load_by_id(args.ref_id)
         big_plan = big_plan.change_project(
             context.domain_context,
             project_ref_id=args.project_ref_id or workspace.default_project_ref_id,
         )
 
-        await uow.repository_for(BigPlan).save(big_plan)
+        await uow.get_for(BigPlan).save(big_plan)
         await progress_reporter.mark_updated(big_plan)
 
-        inbox_task_collection = await uow.repository_for(
+        inbox_task_collection = await uow.get_for(
             InboxTaskCollection
         ).load_by_parent(
             workspace.ref_id,
         )
-        all_inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
+        all_inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
             big_plan_ref_id=[big_plan.ref_id],
@@ -68,5 +68,5 @@ class BigPlanChangeProjectUseCase(
                 big_plan.project_ref_id,
                 big_plan.ref_id,
             )
-            await uow.repository_for(InboxTask).save(inbox_task)
+            await uow.get_for(InboxTask).save(inbox_task)
             await progress_reporter.mark_updated(inbox_task)

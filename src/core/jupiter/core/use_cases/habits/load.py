@@ -51,16 +51,16 @@ class HabitLoadUseCase(
     ) -> HabitLoadResult:
         """Execute the command's action."""
         workspace = context.workspace
-        habit = await uow.repository_for(Habit).load_by_id(
+        habit = await uow.get_for(Habit).load_by_id(
             args.ref_id, allow_archived=args.allow_archived
         )
-        project = await uow.repository_for(Project).load_by_id(habit.project_ref_id)
-        inbox_task_collection = await uow.repository_for(
+        project = await uow.get_for(Project).load_by_id(habit.project_ref_id)
+        inbox_task_collection = await uow.get_for(
             InboxTaskCollection
         ).load_by_parent(
             workspace.ref_id,
         )
-        inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
+        inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
             habit_ref_id=[args.ref_id],

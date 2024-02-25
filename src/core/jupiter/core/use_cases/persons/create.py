@@ -69,7 +69,7 @@ class PersonCreateUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        person_collection = await uow.repository_for(PersonCollection).load_by_parent(
+        person_collection = await uow.get_for(PersonCollection).load_by_parent(
             workspace.ref_id,
         )
 
@@ -93,7 +93,7 @@ class PersonCreateUseCase(
             catch_up_params=catch_up_params,
             birthday=args.birthday,
         )
-        new_person = await uow.repository_for(Person).create(new_person)
+        new_person = await uow.get_for(Person).create(new_person)
         await progress_reporter.mark_created(new_person)
 
         return PersonCreateResult(new_person=new_person)

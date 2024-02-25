@@ -41,4 +41,4 @@ class UserUpdateUseCase(AppTransactionalLoggedInMutationUseCase[UserUpdateArgs, 
             name=args.name,
             timezone=args.timezone,
         )
-        await uow.repository_for(User).save(user)
+        await uow.get_for(User).save(user)

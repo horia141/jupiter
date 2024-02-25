@@ -19,7 +19,7 @@ class ScoreHistoryService:
         self, uow: DomainUnitOfWork, user: User, right_now: Timestamp
     ) -> UserScoreHistory:
         """Retrieve the history of scores for a user."""
-        score_log = await uow.repository_for(ScoreLog).load_by_parent(user.ref_id)
+        score_log = await uow.get_for(ScoreLog).load_by_parent(user.ref_id)
 
         today = ADate.from_date(right_now.as_date())
         daily_lower_limit = today.subtract_days(90)
@@ -27,20 +27,20 @@ class ScoreHistoryService:
         monthly_lower_limit = today.subtract_days(365 * 2)
         quarterly_lower_limit = today.subtract_days(365 * 5)
 
-        daily_score_stats = await uow.get_r(ScoreStatsRepository).find_all_in_timerange(
+        daily_score_stats = await uow.get(ScoreStatsRepository).find_all_in_timerange(
             score_log.ref_id, RecurringTaskPeriod.DAILY, daily_lower_limit, today
         )
-        weekly_score_stats = await uow.get_r(
+        weekly_score_stats = await uow.get(
             ScoreStatsRepository
         ).find_all_in_timerange(
             score_log.ref_id, RecurringTaskPeriod.WEEKLY, weekly_lower_limit, today
         )
-        monthly_score_stats = await uow.get_r(
+        monthly_score_stats = await uow.get(
             ScoreStatsRepository
         ).find_all_in_timerange(
             score_log.ref_id, RecurringTaskPeriod.MONTHLY, monthly_lower_limit, today
         )
-        quarterly_score_stats = await uow.get_r(
+        quarterly_score_stats = await uow.get(
             ScoreStatsRepository
         ).find_all_in_timerange(
             score_log.ref_id,

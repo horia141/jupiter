@@ -69,34 +69,34 @@ class SlackTaskFindUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        inbox_task_collection = await uow.repository_for(
+        inbox_task_collection = await uow.get_for(
             InboxTaskCollection
         ).load_by_parent(
             workspace.ref_id,
         )
-        push_integration_group = await uow.repository_for(
+        push_integration_group = await uow.get_for(
             PushIntegrationGroup
         ).load_by_parent(
             workspace.ref_id,
         )
-        slack_task_collection = await uow.repository_for(
+        slack_task_collection = await uow.get_for(
             SlackTaskCollection
         ).load_by_parent(
             push_integration_group.ref_id,
         )
 
-        slack_tasks = await uow.repository_for(SlackTask).find_all(
+        slack_tasks = await uow.get_for(SlackTask).find_all(
             parent_ref_id=slack_task_collection.ref_id,
             allow_archived=args.allow_archived,
             filter_ref_ids=args.filter_ref_ids,
         )
 
-        generation_project = await uow.repository_for(Project).load_by_id(
+        generation_project = await uow.get_for(Project).load_by_id(
             slack_task_collection.generation_project_ref_id,
         )
 
         if args.include_inbox_tasks:
-            inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
+            inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
                 source=[InboxTaskSource.SLACK_TASK],

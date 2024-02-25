@@ -49,4 +49,4 @@ class UserChangeFeatureFlagsUseCase(
             feature_flag_controls=feature_flags_controls,
             feature_flags=user_feature_flags,
         )
-        await uow.repository_for(User).save(user)
+        await uow.get_for(User).save(user)

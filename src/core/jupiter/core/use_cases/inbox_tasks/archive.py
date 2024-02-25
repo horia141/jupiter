@@ -39,7 +39,7 @@ class InboxTaskArchiveUseCase(
         args: InboxTaskArchiveArgs,
     ) -> None:
         """Execute the command's action."""
-        inbox_task = await uow.repository_for(InboxTask).load_by_id(args.ref_id)
+        inbox_task = await uow.get_for(InboxTask).load_by_id(args.ref_id)
         await InboxTaskArchiveService().do_it(
             context.domain_context, uow, progress_reporter, inbox_task
         )

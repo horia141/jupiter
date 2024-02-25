@@ -43,7 +43,7 @@ class WorkspaceLoadUseCase(
     ) -> WorkspaceLoadResult:
         """Execute the command's action."""
         workspace = context.workspace
-        default_project = await uow.repository_for(Project).load_by_id(
+        default_project = await uow.get_for(Project).load_by_id(
             workspace.default_project_ref_id,
         )
         return WorkspaceLoadResult(workspace=workspace, default_project=default_project)

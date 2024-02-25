@@ -50,10 +50,10 @@ class JournalLoadSettingsUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        journal_collection = await uow.repository_for(JournalCollection).load_by_parent(
+        journal_collection = await uow.get_for(JournalCollection).load_by_parent(
             workspace.ref_id,
         )
-        writing_task_project = await uow.repository_for(Project).load_by_id(
+        writing_task_project = await uow.get_for(Project).load_by_id(
             journal_collection.writing_task_project_ref_id,
         )
 

@@ -44,14 +44,14 @@ class ChoreChangeProjectUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        chore = await uow.repository_for(Chore).load_by_id(args.ref_id)
+        chore = await uow.get_for(Chore).load_by_id(args.ref_id)
 
-        inbox_task_collection = await uow.repository_for(
+        inbox_task_collection = await uow.get_for(
             InboxTaskCollection
         ).load_by_parent(
             workspace.ref_id,
         )
-        all_inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
+        all_inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
             chore_ref_id=[args.ref_id],
@@ -79,12 +79,12 @@ class ChoreChangeProjectUseCase(
                 eisen=chore.gen_params.eisen,
                 difficulty=chore.gen_params.difficulty,
             )
-            await uow.repository_for(InboxTask).save(inbox_task)
+            await uow.get_for(InboxTask).save(inbox_task)
             await progress_reporter.mark_updated(inbox_task)
 
         chore = chore.change_project(
             ctx=context.domain_context,
             project_ref_id=args.project_ref_id or workspace.default_project_ref_id,
         )
-        await uow.repository_for(Chore).save(chore)
+        await uow.get_for(Chore).save(chore)
         await progress_reporter.mark_updated(chore)

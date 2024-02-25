@@ -26,7 +26,7 @@ class ScoreOverviewService:
         self, uow: DomainUnitOfWork, user: User, right_now: Timestamp
     ) -> UserScoreOverview:
         """Get the scores overview for a user."""
-        score_log = await uow.repository_for(ScoreLog).load_by_parent(user.ref_id)
+        score_log = await uow.get_for(ScoreLog).load_by_parent(user.ref_id)
 
         (
             daily_score,
@@ -161,7 +161,7 @@ class ScoreOverviewService:
         right_now: Timestamp,
     ) -> UserScore:
         timeline = infer_timeline(period, right_now)
-        score_stats = await uow.get_r(ScoreStatsRepository).load_by_key_optional(
+        score_stats = await uow.get(ScoreStatsRepository).load_by_key_optional(
             (score_log.ref_id, period, timeline)
         )
         return score_stats.to_user_score() if score_stats else UserScore.new()
@@ -175,7 +175,7 @@ class ScoreOverviewService:
         sub_period: RecurringTaskPeriod,
     ) -> UserScore:
         timeline = infer_timeline(period, right_now)
-        score_period_best = await uow.get_r(
+        score_period_best = await uow.get(
             ScorePeriodBestRepository
         ).load_by_key_optional((score_log.ref_id, period, timeline, sub_period))
         return (

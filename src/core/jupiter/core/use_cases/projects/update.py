@@ -39,11 +39,11 @@ class ProjectUpdateUseCase(
         args: ProjectUpdateArgs,
     ) -> None:
         """Execute the command's action."""
-        project = await uow.repository_for(Project).load_by_id(args.ref_id)
+        project = await uow.get_for(Project).load_by_id(args.ref_id)
         project = project.update(
             ctx=context.domain_context,
             name=args.name,
         )
 
-        await uow.repository_for(Project).save(project)
+        await uow.get_for(Project).save(project)
         await progress_reporter.mark_updated(project)

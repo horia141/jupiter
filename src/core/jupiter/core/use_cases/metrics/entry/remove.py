@@ -38,7 +38,7 @@ class MetricEntryRemoveUseCase(
         args: MetricEntryRemoveArgs,
     ) -> None:
         """Execute the command's action."""
-        metric_entry = await uow.repository_for(MetricEntry).remove(args.ref_id)
+        metric_entry = await uow.get_for(MetricEntry).remove(args.ref_id)
         await progress_reporter.mark_removed(metric_entry)
         note_remove_service = NoteRemoveService()
         await note_remove_service.remove_for_source(

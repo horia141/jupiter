@@ -28,22 +28,22 @@ class SlackTaskRemoveService:
         slack_task: SlackTask,
     ) -> None:
         """Execute the service's action."""
-        slack_task_collection = await uow.repository_for(
+        slack_task_collection = await uow.get_for(
             SlackTaskCollection
         ).load_by_id(
             slack_task.slack_task_collection.ref_id,
         )
-        push_integration_group = await uow.repository_for(
+        push_integration_group = await uow.get_for(
             PushIntegrationGroup
         ).load_by_id(
             slack_task_collection.push_integration_group.ref_id,
         )
-        inbox_task_collection = await uow.repository_for(
+        inbox_task_collection = await uow.get_for(
             InboxTaskCollection
         ).load_by_parent(
             push_integration_group.workspace.ref_id,
         )
-        inbox_tasks_to_remove = await uow.repository_for(InboxTask).find_all_generic(
+        inbox_tasks_to_remove = await uow.get_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
             slack_task_ref_id=[slack_task.ref_id],
@@ -55,5 +55,5 @@ class SlackTaskRemoveService:
                 ctx, uow, progress_reporter, inbox_task
             )
 
-        await uow.repository_for(SlackTask).remove(slack_task.ref_id)
+        await uow.get_for(SlackTask).remove(slack_task.ref_id)
         await progress_reporter.mark_removed(slack_task)

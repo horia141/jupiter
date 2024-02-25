@@ -55,7 +55,7 @@ class MetricEntryCreateUseCase(
         args: MetricEntryCreateArgs,
     ) -> MetricEntryCreateResult:
         """Execute the command's action."""
-        metric = await uow.repository_for(Metric).load_by_id(
+        metric = await uow.get_for(Metric).load_by_id(
             args.metric_ref_id,
         )
         collection_time = (
@@ -69,7 +69,7 @@ class MetricEntryCreateUseCase(
             collection_time=collection_time,
             value=args.value,
         )
-        new_metric_entry = await uow.repository_for(MetricEntry).create(
+        new_metric_entry = await uow.get_for(MetricEntry).create(
             new_metric_entry,
         )
         await progress_reporter.mark_created(new_metric_entry)

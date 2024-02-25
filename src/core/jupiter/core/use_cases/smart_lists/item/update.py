@@ -88,5 +88,5 @@ class SmartListItemUpdateUseCase(
             url=args.url,
         )
 
-        await uow.repository_for(SmartListItem).save(smart_list_item)
+        await uow.get_for(SmartListItem).save(smart_list_item)
         await progress_reporter.mark_updated(smart_list_item)

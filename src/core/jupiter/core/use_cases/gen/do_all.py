@@ -30,12 +30,12 @@ class GenDoAllUseCase(AppBackgroundMutationUseCase[GenDoAllArgs, None]):
     ) -> None:
         """Execute the command's action."""
         async with self._domain_storage_engine.get_unit_of_work() as uow:
-            workspaces = await uow.repository_for(Workspace).find_all(
+            workspaces = await uow.get_for(Workspace).find_all(
                 allow_archived=False
             )
-            users = await uow.repository_for(User).find_all(allow_archived=False)
+            users = await uow.get_for(User).find_all(allow_archived=False)
             users_by_id = {u.ref_id: u for u in users}
-            user_workspace_links = await uow.repository_for(UserWorkspaceLink).find_all(
+            user_workspace_links = await uow.get_for(UserWorkspaceLink).find_all(
                 allow_archived=False
             )
             users_id_by_workspace_id = {

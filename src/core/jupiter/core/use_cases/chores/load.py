@@ -51,16 +51,16 @@ class ChoreLoadUseCase(
     ) -> ChoreLoadResult:
         """Execute the command's action."""
         workspace = context.workspace
-        chore = await uow.repository_for(Chore).load_by_id(
+        chore = await uow.get_for(Chore).load_by_id(
             args.ref_id, allow_archived=args.allow_archived
         )
-        project = await uow.repository_for(Project).load_by_id(chore.project_ref_id)
-        inbox_task_collection = await uow.repository_for(
+        project = await uow.get_for(Project).load_by_id(chore.project_ref_id)
+        inbox_task_collection = await uow.get_for(
             InboxTaskCollection
         ).load_by_parent(
             workspace.ref_id,
         )
-        inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
+        inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
             chore_ref_id=[args.ref_id],

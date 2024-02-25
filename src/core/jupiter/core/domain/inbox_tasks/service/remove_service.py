@@ -23,5 +23,5 @@ class InboxTaskRemoveService:
         await note_remove_service.remove_for_source(
             ctx, uow, NoteDomain.INBOX_TASK, inbox_task.ref_id
         )
-        await uow.repository_for(InboxTask).remove(inbox_task.ref_id)
+        await uow.get_for(InboxTask).remove(inbox_task.ref_id)
         await progress_reporter.mark_removed(inbox_task)

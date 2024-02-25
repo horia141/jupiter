@@ -38,25 +38,25 @@ class SmartListArchiveUseCase(
         args: SmartListArchiveArgs,
     ) -> None:
         """Execute the command's action."""
-        smart_list = await uow.repository_for(SmartList).load_by_id(args.ref_id)
+        smart_list = await uow.get_for(SmartList).load_by_id(args.ref_id)
 
-        smart_list_tags = await uow.repository_for(SmartListTag).find_all(
+        smart_list_tags = await uow.get_for(SmartListTag).find_all(
             smart_list.ref_id,
         )
-        smart_list_items = await uow.repository_for(SmartListItem).find_all(
+        smart_list_items = await uow.get_for(SmartListItem).find_all(
             smart_list.ref_id,
         )
 
         for smart_list_tag in smart_list_tags:
             smart_list_tag = smart_list_tag.mark_archived(context.domain_context)
-            await uow.repository_for(SmartListTag).save(smart_list_tag)
+            await uow.get_for(SmartListTag).save(smart_list_tag)
             await progress_reporter.mark_updated(smart_list_tag)
 
         for smart_list_item in smart_list_items:
             smart_list_item = smart_list_item.mark_archived(context.domain_context)
-            await uow.repository_for(SmartListItem).save(smart_list_item)
+            await uow.get_for(SmartListItem).save(smart_list_item)
             await progress_reporter.mark_updated(smart_list_item)
 
         smart_list = smart_list.mark_archived(context.domain_context)
-        await uow.repository_for(SmartList).save(smart_list)
+        await uow.get_for(SmartList).save(smart_list)
         await progress_reporter.mark_updated(smart_list)

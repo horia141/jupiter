@@ -57,10 +57,10 @@ class JournalCreateUseCase(
         """Execute the command's actions."""
         workspace = context.workspace
 
-        journal_collection = await uow.repository_for(JournalCollection).load_by_parent(
+        journal_collection = await uow.get_for(JournalCollection).load_by_parent(
             workspace.ref_id,
         )
-        note_collection = await uow.repository_for(NoteCollection).load_by_parent(
+        note_collection = await uow.get_for(NoteCollection).load_by_parent(
             workspace.ref_id
         )
 

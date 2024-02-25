@@ -51,15 +51,15 @@ class SlackTaskLoadUseCase(
     ) -> SlackTaskLoadResult:
         """Execute the command's action."""
         workspace = context.workspace
-        slack_task = await uow.repository_for(SlackTask).load_by_id(
+        slack_task = await uow.get_for(SlackTask).load_by_id(
             args.ref_id, allow_archived=args.allow_archived
         )
-        inbox_task_collection = await uow.repository_for(
+        inbox_task_collection = await uow.get_for(
             InboxTaskCollection
         ).load_by_parent(
             workspace.ref_id,
         )
-        inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
+        inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
             source=[InboxTaskSource.SLACK_TASK],

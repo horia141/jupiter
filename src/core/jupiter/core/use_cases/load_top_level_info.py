@@ -88,13 +88,13 @@ class LoadTopLevelInfoUseCase(
                 user_score_overview = None
             else:
                 try:
-                    user = await uow.repository_for(User).load_by_id(
+                    user = await uow.get_for(User).load_by_id(
                         context.auth_token.user_ref_id
                     )
                     user_workspace_link = await uow.get(
                         UserWorkspaceLinkRepository
                     ).load_by_user(context.auth_token.user_ref_id)
-                    workspace = await uow.repository_for(Workspace).load_by_id(
+                    workspace = await uow.get_for(Workspace).load_by_id(
                         user_workspace_link.workspace_ref_id
                     )
                     if user.is_feature_available(UserFeature.GAMIFICATION):

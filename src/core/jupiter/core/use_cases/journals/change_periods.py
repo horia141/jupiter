@@ -37,10 +37,10 @@ class JournalChangePeriodsUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        journal_collection = await uow.repository_for(JournalCollection).load_by_parent(
+        journal_collection = await uow.get_for(JournalCollection).load_by_parent(
             workspace.ref_id
         )
         journal_collection = journal_collection.change_periods(
             context.domain_context, set(args.periods)
         )
-        await uow.repository_for(JournalCollection).save(journal_collection)
+        await uow.get_for(JournalCollection).save(journal_collection)

@@ -55,30 +55,30 @@ class PersonLoadUseCase(
     ) -> PersonLoadResult:
         """Execute the command's action."""
         workspace = context.workspace
-        person = await uow.repository_for(Person).load_by_id(
+        person = await uow.get_for(Person).load_by_id(
             args.ref_id, allow_archived=args.allow_archived
         )
 
-        inbox_task_collection = await uow.repository_for(
+        inbox_task_collection = await uow.get_for(
             InboxTaskCollection
         ).load_by_parent(
             workspace.ref_id,
         )
 
-        catch_up_inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
+        catch_up_inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
             person_ref_id=[args.ref_id],
             source=[InboxTaskSource.PERSON_CATCH_UP],
         )
-        birthday_inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
+        birthday_inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
             person_ref_id=[args.ref_id],
             source=[InboxTaskSource.PERSON_BIRTHDAY],
         )
 
-        note = await uow.get_x(NoteRepository).load_optional_for_source(
+        note = await uow.get(NoteRepository).load_optional_for_source(
             NoteDomain.PERSON,
             person.ref_id,
             allow_archived=args.allow_archived,

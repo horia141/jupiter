@@ -45,7 +45,7 @@ class ProjectRemoveService:
         ref_id: EntityId,
     ) -> None:
         """Remove the project."""
-        project = await uow.repository_for(Project).load_by_id(
+        project = await uow.get_for(Project).load_by_id(
             ref_id, allow_archived=True
         )
 
@@ -54,26 +54,26 @@ class ProjectRemoveService:
             raise ProjectInSignificantUseError(
                 "The project is being used as the workspace default one"
             )
-        metric_collection = await uow.repository_for(MetricCollection).load_by_parent(
+        metric_collection = await uow.get_for(MetricCollection).load_by_parent(
             workspace.ref_id
         )
         if metric_collection.collection_project_ref_id == project.ref_id:
             raise ProjectInSignificantUseError(
                 "The project is being used as the metric collection default one"
             )
-        person_collection = await uow.repository_for(PersonCollection).load_by_parent(
+        person_collection = await uow.get_for(PersonCollection).load_by_parent(
             workspace.ref_id
         )
         if person_collection.catch_up_project_ref_id == project.ref_id:
             raise ProjectInSignificantUseError(
                 "The project is being used as the person catch up one"
             )
-        push_integration_group = await uow.repository_for(
+        push_integration_group = await uow.get_for(
             PushIntegrationGroup
         ).load_by_parent(
             workspace.ref_id,
         )
-        slack_task_collection = await uow.repository_for(
+        slack_task_collection = await uow.get_for(
             SlackTaskCollection
         ).load_by_parent(
             push_integration_group.ref_id,
@@ -82,7 +82,7 @@ class ProjectRemoveService:
             raise ProjectInSignificantUseError(
                 "The project is being used as the Slack task collection default one"
             )
-        email_task_collection = await uow.repository_for(
+        email_task_collection = await uow.get_for(
             EmailTaskCollection
         ).load_by_parent(
             push_integration_group.ref_id,
@@ -93,10 +93,10 @@ class ProjectRemoveService:
             )
 
         # remove inbox tasks
-        inbox_task_collection = await uow.repository_for(
+        inbox_task_collection = await uow.get_for(
             InboxTaskCollection
         ).load_by_parent(workspace.ref_id)
-        inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
+        inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
             project_ref_id=[project.ref_id],
@@ -106,10 +106,10 @@ class ProjectRemoveService:
             await inbox_task_remove_service.do_it(ctx, uow, progress_reporter, it)
 
         # remove chores
-        chore_collection = await uow.repository_for(ChoreCollection).load_by_parent(
+        chore_collection = await uow.get_for(ChoreCollection).load_by_parent(
             workspace.ref_id
         )
-        chores = await uow.repository_for(Chore).find_all_generic(
+        chores = await uow.get_for(Chore).find_all_generic(
             parent_ref_id=chore_collection.ref_id,
             allow_archived=True,
             projedct_ref_id=[project.ref_id],
@@ -119,10 +119,10 @@ class ProjectRemoveService:
             await chore_remove_service.remove(ctx, uow, progress_reporter, chore.ref_id)
 
         # remove habits
-        habit_collection = await uow.repository_for(HabitCollection).load_by_parent(
+        habit_collection = await uow.get_for(HabitCollection).load_by_parent(
             workspace.ref_id
         )
-        habits = await uow.repository_for(Habit).find_all_generic(
+        habits = await uow.get_for(Habit).find_all_generic(
             parent_ref_id=habit_collection.ref_id,
             allow_archived=True,
             project_ref_id=[project.ref_id],
@@ -132,10 +132,10 @@ class ProjectRemoveService:
             await habit_remove_service.remove(ctx, uow, progress_reporter, habit.ref_id)
 
         # remove big plans
-        big_plan_collection = await uow.repository_for(HabitCollection).load_by_parent(
+        big_plan_collection = await uow.get_for(HabitCollection).load_by_parent(
             workspace.ref_id
         )
-        big_plans = await uow.repository_for(BigPlan).find_all_generic(
+        big_plans = await uow.get_for(BigPlan).find_all_generic(
             parent_ref_id=big_plan_collection.ref_id,
             allow_archived=True,
             project_ref_id=[project.ref_id],
@@ -147,5 +147,5 @@ class ProjectRemoveService:
             )
 
         # remove project
-        await uow.repository_for(Project).remove(project.ref_id)
+        await uow.get_for(Project).remove(project.ref_id)
         await progress_reporter.mark_removed(project)

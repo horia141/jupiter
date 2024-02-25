@@ -50,11 +50,11 @@ class MetricEntryLoadUseCase(
         args: MetricEntryLoadArgs,
     ) -> MetricEntryLoadResult:
         """Execute the command's action."""
-        metric_entry = await uow.repository_for(MetricEntry).load_by_id(
+        metric_entry = await uow.get_for(MetricEntry).load_by_id(
             args.ref_id, allow_archived=args.allow_archived
         )
 
-        note = await uow.get_x(NoteRepository).load_optional_for_source(
+        note = await uow.get(NoteRepository).load_optional_for_source(
             NoteDomain.METRIC_ENTRY,
             metric_entry.ref_id,
             allow_archived=args.allow_archived,

@@ -35,7 +35,7 @@ class DocArchiveUseCase(AppTransactionalLoggedInMutationUseCase[DocArchiveArgs, 
         args: DocArchiveArgs,
     ) -> None:
         """Execute the command's action."""
-        doc = await uow.repository_for(Doc).load_by_id(args.ref_id)
+        doc = await uow.get_for(Doc).load_by_id(args.ref_id)
         await DocArchiveService().do_it(
             context.domain_context, uow, progress_reporter, doc
         )

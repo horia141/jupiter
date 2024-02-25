@@ -80,11 +80,11 @@ class InboxTaskCreateUseCase(
 
         big_plan: Optional[BigPlan] = None
         if args.big_plan_ref_id:
-            big_plan = await uow.repository_for(BigPlan).load_by_id(
+            big_plan = await uow.get_for(BigPlan).load_by_id(
                 args.big_plan_ref_id,
             )
 
-        inbox_task_collection = await uow.repository_for(
+        inbox_task_collection = await uow.get_for(
             InboxTaskCollection
         ).load_by_parent(
             workspace.ref_id,
@@ -106,7 +106,7 @@ class InboxTaskCreateUseCase(
             big_plan_due_date=big_plan.due_date if big_plan else None,
         )
 
-        new_inbox_task = await uow.repository_for(InboxTask).create(new_inbox_task)
+        new_inbox_task = await uow.get_for(InboxTask).create(new_inbox_task)
         await progress_reporter.mark_created(new_inbox_task)
 
         return InboxTaskCreateResult(new_inbox_task=new_inbox_task)

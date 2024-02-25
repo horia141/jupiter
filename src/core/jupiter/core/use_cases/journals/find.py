@@ -64,13 +64,13 @@ class JournalFindUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        journal_collection = await uow.repository_for(JournalCollection).load_by_parent(
+        journal_collection = await uow.get_for(JournalCollection).load_by_parent(
             workspace.ref_id,
         )
-        note_collection = await uow.repository_for(NoteCollection).load_by_parent(
+        note_collection = await uow.get_for(NoteCollection).load_by_parent(
             workspace.ref_id,
         )
-        journals = await uow.repository_for(Journal).find_all(
+        journals = await uow.get_for(Journal).find_all(
             parent_ref_id=journal_collection.ref_id,
             allow_archived=args.allow_archived,
             filter_ref_ids=args.filter_ref_ids,
@@ -78,7 +78,7 @@ class JournalFindUseCase(
 
         notes_by_journal_ref_id = {}
         if args.include_notes:
-            notes = await uow.repository_for(Note).find_all_generic(
+            notes = await uow.get_for(Note).find_all_generic(
                 parent_ref_id=note_collection.ref_id,
                 domain=NoteDomain.JOURNAL,
                 allow_archived=args.allow_archived,
@@ -89,7 +89,7 @@ class JournalFindUseCase(
 
         writing_tasks_by_journal_ref_id = {}
         if args.include_writing_tasks:
-            writing_tasks = await uow.repository_for(InboxTask).find_all_generic(
+            writing_tasks = await uow.get_for(InboxTask).find_all_generic(
                 parent_ref_id=note_collection.ref_id,
                 source=[InboxTaskSource.JOURNAL],
                 allow_archived=args.allow_archived,

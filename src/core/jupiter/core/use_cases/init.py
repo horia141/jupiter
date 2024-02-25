@@ -131,7 +131,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 feature_flag_controls=user_feature_flags_controls,
                 feature_flags=user_feature_flags,
             )
-            new_user = await uow.repository_for(User).create(new_user)
+            new_user = await uow.get_for(User).create(new_user)
 
             new_auth, new_recovery_token = Auth.new_auth(
                 context.domain_context,
@@ -139,13 +139,13 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 password=args.auth_password,
                 password_repeat=args.auth_password_repeat,
             )
-            new_auth = await uow.repository_for(Auth).create(new_auth)
+            new_auth = await uow.get_for(Auth).create(new_auth)
 
             new_score_log = ScoreLog.new_score_log(
                 ctx=context.domain_context,
                 user_ref_id=new_user.ref_id,
             )
-            new_score_log = await uow.repository_for(ScoreLog).create(new_score_log)
+            new_score_log = await uow.get_for(ScoreLog).create(new_score_log)
 
             new_workspace = Workspace.new_workspace(
                 ctx=context.domain_context,
@@ -153,13 +153,13 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 feature_flag_controls=workspace_feature_flags_controls,
                 feature_flags=workspace_feature_flags,
             )
-            new_workspace = await uow.repository_for(Workspace).create(new_workspace)
+            new_workspace = await uow.get_for(Workspace).create(new_workspace)
 
             new_vacation_collection = VacationCollection.new_vacation_collection(
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
             )
-            new_vacation_collection = await uow.repository_for(
+            new_vacation_collection = await uow.get_for(
                 VacationCollection
             ).create(
                 new_vacation_collection,
@@ -169,7 +169,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
             )
-            new_project_collection = await uow.repository_for(ProjectCollection).create(
+            new_project_collection = await uow.get_for(ProjectCollection).create(
                 new_project_collection,
             )
 
@@ -178,7 +178,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 project_collection_ref_id=new_project_collection.ref_id,
                 name=args.workspace_first_project_name,
             )
-            new_default_project = await uow.repository_for(Project).create(
+            new_default_project = await uow.get_for(Project).create(
                 new_default_project,
             )
 
@@ -186,13 +186,13 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 ctx=context.domain_context,
                 default_project_ref_id=new_default_project.ref_id,
             )
-            await uow.repository_for(Workspace).save(new_workspace)
+            await uow.get_for(Workspace).save(new_workspace)
 
             new_inbox_task_collection = InboxTaskCollection.new_inbox_task_collection(
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
             )
-            new_inbox_task_collection = await uow.repository_for(
+            new_inbox_task_collection = await uow.get_for(
                 InboxTaskCollection
             ).create(
                 new_inbox_task_collection,
@@ -202,7 +202,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
             )
-            new_habit_collection = await uow.repository_for(HabitCollection).create(
+            new_habit_collection = await uow.get_for(HabitCollection).create(
                 new_habit_collection,
             )
 
@@ -210,7 +210,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
             )
-            new_chore_collection = await uow.repository_for(ChoreCollection).create(
+            new_chore_collection = await uow.get_for(ChoreCollection).create(
                 new_chore_collection,
             )
 
@@ -218,7 +218,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
             )
-            new_big_plan_collection = await uow.repository_for(
+            new_big_plan_collection = await uow.get_for(
                 BigPlanCollection
             ).create(
                 new_big_plan_collection,
@@ -232,7 +232,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 writing_task_difficulty=Difficulty.MEDIUM,
                 writing_project_ref_id=new_default_project.ref_id,
             )
-            journal_collection = await uow.repository_for(JournalCollection).create(
+            journal_collection = await uow.get_for(JournalCollection).create(
                 journal_collection,
             )
 
@@ -240,7 +240,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
             )
-            new_doc_collection = await uow.repository_for(DocCollection).create(
+            new_doc_collection = await uow.get_for(DocCollection).create(
                 new_doc_collection
             )
 
@@ -248,7 +248,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
             )
-            new_smart_list_collection = await uow.repository_for(
+            new_smart_list_collection = await uow.get_for(
                 SmartListCollection
             ).create(
                 new_smart_list_collection,
@@ -259,7 +259,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 workspace_ref_id=new_workspace.ref_id,
                 collection_project_ref_id=new_default_project.ref_id,
             )
-            new_metric_collection = await uow.repository_for(MetricCollection).create(
+            new_metric_collection = await uow.get_for(MetricCollection).create(
                 new_metric_collection,
             )
 
@@ -268,7 +268,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 workspace_ref_id=new_workspace.ref_id,
                 catch_up_project_ref_id=new_default_project.ref_id,
             )
-            new_person_collection = await uow.repository_for(PersonCollection).create(
+            new_person_collection = await uow.get_for(PersonCollection).create(
                 new_person_collection,
             )
 
@@ -278,7 +278,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                     workspace_ref_id=new_workspace.ref_id,
                 )
             )
-            new_push_integration_group = await uow.repository_for(
+            new_push_integration_group = await uow.get_for(
                 PushIntegrationGroup
             ).create(
                 new_push_integration_group,
@@ -289,7 +289,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 push_integration_group_ref_id=new_push_integration_group.ref_id,
                 generation_project_ref_id=new_default_project.ref_id,
             )
-            new_slack_task_collection = await uow.repository_for(
+            new_slack_task_collection = await uow.get_for(
                 SlackTaskCollection
             ).create(
                 new_slack_task_collection,
@@ -300,7 +300,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 push_integration_group_ref_id=new_push_integration_group.ref_id,
                 generation_project_ref_id=new_default_project.ref_id,
             )
-            new_email_task_collection = await uow.repository_for(
+            new_email_task_collection = await uow.get_for(
                 EmailTaskCollection
             ).create(
                 new_email_task_collection,
@@ -310,7 +310,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
             )
-            new_note_collection = await uow.repository_for(NoteCollection).create(
+            new_note_collection = await uow.get_for(NoteCollection).create(
                 new_note_collection
             )
 
@@ -318,20 +318,20 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
             )
-            new_gc_log = await uow.repository_for(GCLog).create(new_gc_log)
+            new_gc_log = await uow.get_for(GCLog).create(new_gc_log)
 
             new_gen_log = GenLog.new_gen_log(
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
             )
-            new_gen_log = await uow.repository_for(GenLog).create(new_gen_log)
+            new_gen_log = await uow.get_for(GenLog).create(new_gen_log)
 
             new_user_workspace_link = UserWorkspaceLink.new_user_workspace_link(
                 ctx=context.domain_context,
                 user_ref_id=new_user.ref_id,
                 workspace_ref_id=new_workspace.ref_id,
             )
-            new_user_workspace_link = await uow.repository_for(
+            new_user_workspace_link = await uow.get_for(
                 UserWorkspaceLink
             ).create(new_user_workspace_link)
 

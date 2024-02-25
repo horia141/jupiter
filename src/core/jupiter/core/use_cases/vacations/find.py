@@ -49,12 +49,12 @@ class VacationFindUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        vacation_collection = await uow.repository_for(
+        vacation_collection = await uow.get_for(
             VacationCollection
         ).load_by_parent(
             workspace.ref_id,
         )
-        vacations = await uow.repository_for(Vacation).find_all(
+        vacations = await uow.get_for(Vacation).find_all(
             parent_ref_id=vacation_collection.ref_id,
             allow_archived=args.allow_archived,
             filter_ref_ids=args.filter_ref_ids,

@@ -25,7 +25,7 @@ class NoteArchiveService:
             raise Exception(f"Note {note.ref_id} cannot be removed independently")
 
         note = note.mark_archived(ctx)
-        await uow.repository_for(Note).save(note)
+        await uow.get_for(Note).save(note)
 
     async def archive_for_source(
         self,
@@ -35,7 +35,7 @@ class NoteArchiveService:
         source_entity_ref_id: EntityId,
     ) -> None:
         """Execute the command's action."""
-        note = await uow.get_x(NoteRepository).load_optional_for_source(
+        note = await uow.get(NoteRepository).load_optional_for_source(
             domain, source_entity_ref_id, allow_archived=True
         )
 
@@ -49,4 +49,4 @@ class NoteArchiveService:
             raise Exception(f"Note {note.ref_id} cannot be removed dependently")
 
         note = note.mark_archived(ctx)
-        await uow.repository_for(Note).save(note)
+        await uow.get_for(Note).save(note)

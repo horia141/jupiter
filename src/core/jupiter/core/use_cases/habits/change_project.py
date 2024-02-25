@@ -53,14 +53,14 @@ class HabitChangeProjectUseCase(
         ):
             raise FeatureUnavailableError(WorkspaceFeature.PROJECTS)
 
-        habit = await uow.repository_for(Habit).load_by_id(args.ref_id)
+        habit = await uow.get_for(Habit).load_by_id(args.ref_id)
 
-        inbox_task_collection = await uow.repository_for(
+        inbox_task_collection = await uow.get_for(
             InboxTaskCollection
         ).load_by_parent(
             workspace.ref_id,
         )
-        all_inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
+        all_inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
             habit_ref_id=[args.ref_id],
@@ -90,12 +90,12 @@ class HabitChangeProjectUseCase(
                 difficulty=habit.gen_params.difficulty,
             )
 
-            await uow.repository_for(InboxTask).save(inbox_task)
+            await uow.get_for(InboxTask).save(inbox_task)
             await progress_reporter.mark_updated(inbox_task)
 
         habit = habit.change_project(
             context.domain_context,
             project_ref_id=args.project_ref_id or workspace.default_project_ref_id,
         )
-        await uow.repository_for(Habit).save(habit)
+        await uow.get_for(Habit).save(habit)
         await progress_reporter.mark_updated(habit)

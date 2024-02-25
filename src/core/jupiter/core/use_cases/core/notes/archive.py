@@ -39,5 +39,5 @@ class NoteArchiveUseCase(
         args: NoteArchiveArgs,
     ) -> None:
         """Execute the command's action."""
-        note = await uow.repository_for(Note).load_by_id(args.ref_id)
+        note = await uow.get_for(Note).load_by_id(args.ref_id)
         await NoteArchiveService().archive(context.domain_context, uow, note)

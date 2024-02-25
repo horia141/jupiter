@@ -55,7 +55,7 @@ class LoginUseCase(AppGuestReadonlyUseCase[LoginArgs, LoginResult]):
                 user = await uow.get(UserRepository).load_by_email_address(
                     args.email_address
                 )
-                auth = await uow.repository_for(Auth).load_by_parent(user.ref_id)
+                auth = await uow.get_for(Auth).load_by_parent(user.ref_id)
 
                 if not auth.check_password_against(args.password):
                     raise InvalidLoginCredentialsError("User email or password invalid")

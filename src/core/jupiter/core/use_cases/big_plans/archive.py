@@ -37,7 +37,7 @@ class BigPlanArchiveUseCase(
         args: BigPlanArchiveArgs,
     ) -> None:
         """Execute the command's action."""
-        big_plan = await uow.repository_for(BigPlan).load_by_id(args.ref_id)
+        big_plan = await uow.get_for(BigPlan).load_by_id(args.ref_id)
 
         await BigPlanArchiveService().do_it(
             context.domain_context, uow, progress_reporter, big_plan

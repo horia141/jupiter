@@ -61,7 +61,7 @@ class BigPlanUpdateUseCase(
         args: BigPlanUpdateArgs,
     ) -> BigPlanUpdateResult:
         """Execute the command's action."""
-        big_plan = await uow.repository_for(BigPlan).load_by_id(args.ref_id)
+        big_plan = await uow.get_for(BigPlan).load_by_id(args.ref_id)
 
         big_plan = big_plan.update(
             context.domain_context,
@@ -71,7 +71,7 @@ class BigPlanUpdateUseCase(
             due_date=args.due_date,
         )
 
-        await uow.repository_for(BigPlan).save(big_plan)
+        await uow.get_for(BigPlan).save(big_plan)
         await progress_reporter.mark_updated(big_plan)
 
         record_score_result = None

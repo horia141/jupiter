@@ -42,7 +42,7 @@ class SmartListUpdateUseCase(
         args: SmartListUpdateArgs,
     ) -> None:
         """Execute the command's action."""
-        smart_list = await uow.repository_for(SmartList).load_by_id(
+        smart_list = await uow.get_for(SmartList).load_by_id(
             args.ref_id,
         )
 
@@ -52,5 +52,5 @@ class SmartListUpdateUseCase(
             icon=args.icon,
         )
 
-        await uow.repository_for(SmartList).save(smart_list)
+        await uow.get_for(SmartList).save(smart_list)
         await progress_reporter.mark_updated(smart_list)

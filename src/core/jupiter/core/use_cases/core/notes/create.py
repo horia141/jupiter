@@ -54,7 +54,7 @@ class NoteCreateUseCase(
     ) -> NoteCreateResult:
         """Execute the command's action."""
         workspace = context.workspace
-        note_collection = await uow.repository_for(NoteCollection).load_by_parent(
+        note_collection = await uow.get_for(NoteCollection).load_by_parent(
             workspace.ref_id
         )
         note = Note.new_note(
@@ -64,5 +64,5 @@ class NoteCreateUseCase(
             source_entity_ref_id=args.source_entity_ref_id,
             content=args.content,
         )
-        note = await uow.repository_for(Note).create(note)
+        note = await uow.get_for(Note).create(note)
         return NoteCreateResult(new_note=note)

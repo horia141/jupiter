@@ -38,9 +38,9 @@ class SmartListTagArchiveUseCase(
         args: SmartListTagArchiveArgs,
     ) -> None:
         """Execute the command's action."""
-        smart_list_tag = await uow.repository_for(SmartListTag).load_by_id(args.ref_id)
+        smart_list_tag = await uow.get_for(SmartListTag).load_by_id(args.ref_id)
 
-        smart_list_items = await uow.repository_for(SmartListItem).find_all_generic(
+        smart_list_items = await uow.get_for(SmartListItem).find_all_generic(
             parent_ref_id=smart_list_tag.smart_list.ref_id,
             allow_archived=True,
             tag_ref_id=[args.ref_id],
@@ -56,9 +56,9 @@ class SmartListTagArchiveUseCase(
                 ),
                 url=UpdateAction.do_nothing(),
             )
-            await uow.repository_for(SmartListItem).save(smart_list_item)
+            await uow.get_for(SmartListItem).save(smart_list_item)
             await progress_reporter.mark_updated(smart_list_item)
 
         smart_list_tag = smart_list_tag.mark_archived(context.domain_context)
-        await uow.repository_for(SmartListTag).save(smart_list_tag)
+        await uow.get_for(SmartListTag).save(smart_list_tag)
         await progress_reporter.mark_updated(smart_list_tag)

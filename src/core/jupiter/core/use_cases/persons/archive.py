@@ -48,14 +48,14 @@ class PersonArchiveUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        person = await uow.repository_for(Person).load_by_id(args.ref_id)
+        person = await uow.get_for(Person).load_by_id(args.ref_id)
 
-        inbox_task_collection = await uow.repository_for(
+        inbox_task_collection = await uow.get_for(
             InboxTaskCollection
         ).load_by_parent(
             workspace.ref_id,
         )
-        all_inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
+        all_inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=False,
             source=[
@@ -73,7 +73,7 @@ class PersonArchiveUseCase(
             )
 
         person = person.mark_archived(context.domain_context)
-        await uow.repository_for(Person).save(person)
+        await uow.get_for(Person).save(person)
         await progress_reporter.mark_updated(person)
 
         note_archive_service = NoteArchiveService()

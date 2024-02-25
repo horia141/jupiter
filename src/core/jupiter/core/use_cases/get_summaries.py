@@ -87,45 +87,45 @@ class GetSummariesUseCase(
         workspace = context.workspace
         allow_archived = args.allow_archived is True
 
-        vacation_collection = await uow.repository_for(
+        vacation_collection = await uow.get_for(
             VacationCollection
         ).load_by_parent(
             workspace.ref_id,
         )
-        project_collection = await uow.repository_for(ProjectCollection).load_by_parent(
+        project_collection = await uow.get_for(ProjectCollection).load_by_parent(
             workspace.ref_id,
         )
-        inbox_task_collection = await uow.repository_for(
+        inbox_task_collection = await uow.get_for(
             InboxTaskCollection
         ).load_by_parent(
             workspace.ref_id,
         )
-        habit_collection = await uow.repository_for(HabitCollection).load_by_parent(
+        habit_collection = await uow.get_for(HabitCollection).load_by_parent(
             workspace.ref_id,
         )
-        chore_collection = await uow.repository_for(ChoreCollection).load_by_parent(
+        chore_collection = await uow.get_for(ChoreCollection).load_by_parent(
             workspace.ref_id,
         )
-        big_plan_collection = await uow.repository_for(
+        big_plan_collection = await uow.get_for(
             BigPlanCollection
         ).load_by_parent(
             workspace.ref_id,
         )
-        smart_list_collection = await uow.repository_for(
+        smart_list_collection = await uow.get_for(
             SmartListCollection
         ).load_by_parent(
             workspace.ref_id,
         )
-        metric_collection = await uow.repository_for(MetricCollection).load_by_parent(
+        metric_collection = await uow.get_for(MetricCollection).load_by_parent(
             workspace.ref_id,
         )
-        person_collection = await uow.repository_for(PersonCollection).load_by_parent(
+        person_collection = await uow.get_for(PersonCollection).load_by_parent(
             workspace.ref_id,
         )
 
         default_project = None
         if args.include_default_project:
-            default_project_full = await uow.repository_for(Project).load_by_id(
+            default_project_full = await uow.get_for(Project).load_by_id(
                 workspace.default_project_ref_id,
             )
             default_project = ProjectSummary(
@@ -138,7 +138,7 @@ class GetSummariesUseCase(
             workspace.is_feature_available(WorkspaceFeature.VACATIONS)
             and args.include_vacations
         ):
-            vacations = await uow.get_x(FastInfoRepository).find_all_vacation_summaries(
+            vacations = await uow.get(FastInfoRepository).find_all_vacation_summaries(
                 parent_ref_id=vacation_collection.workspace.ref_id,
                 allow_archived=allow_archived,
             )
@@ -147,7 +147,7 @@ class GetSummariesUseCase(
             workspace.is_feature_available(WorkspaceFeature.PROJECTS)
             and args.include_projects
         ):
-            projects = await uow.get_x(FastInfoRepository).find_all_project_summaries(
+            projects = await uow.get(FastInfoRepository).find_all_project_summaries(
                 parent_ref_id=project_collection.workspace.ref_id,
                 allow_archived=allow_archived,
             )
@@ -156,7 +156,7 @@ class GetSummariesUseCase(
             workspace.is_feature_available(WorkspaceFeature.INBOX_TASKS)
             and args.include_inbox_tasks
         ):
-            inbox_tasks = await uow.get_x(
+            inbox_tasks = await uow.get(
                 FastInfoRepository
             ).find_all_inbox_task_summaries(
                 parent_ref_id=inbox_task_collection.workspace.ref_id,
@@ -167,7 +167,7 @@ class GetSummariesUseCase(
             workspace.is_feature_available(WorkspaceFeature.HABITS)
             and args.include_habits
         ):
-            habits = await uow.get_x(FastInfoRepository).find_all_habit_summaries(
+            habits = await uow.get(FastInfoRepository).find_all_habit_summaries(
                 parent_ref_id=habit_collection.workspace.ref_id,
                 allow_archived=allow_archived,
             )
@@ -176,7 +176,7 @@ class GetSummariesUseCase(
             workspace.is_feature_available(WorkspaceFeature.CHORES)
             and args.include_chores
         ):
-            chores = await uow.get_x(FastInfoRepository).find_all_chore_summaries(
+            chores = await uow.get(FastInfoRepository).find_all_chore_summaries(
                 parent_ref_id=chore_collection.workspace.ref_id,
                 allow_archived=allow_archived,
             )
@@ -185,7 +185,7 @@ class GetSummariesUseCase(
             workspace.is_feature_available(WorkspaceFeature.BIG_PLANS)
             and args.include_big_plans
         ):
-            big_plans = await uow.get_x(FastInfoRepository).find_all_big_plan_summaries(
+            big_plans = await uow.get(FastInfoRepository).find_all_big_plan_summaries(
                 parent_ref_id=big_plan_collection.workspace.ref_id,
                 allow_archived=allow_archived,
             )
@@ -194,7 +194,7 @@ class GetSummariesUseCase(
             workspace.is_feature_available(WorkspaceFeature.SMART_LISTS)
             and args.include_smart_lists
         ):
-            smart_lists = await uow.get_x(
+            smart_lists = await uow.get(
                 FastInfoRepository
             ).find_all_smart_list_summaries(
                 parent_ref_id=smart_list_collection.workspace.ref_id,
@@ -205,7 +205,7 @@ class GetSummariesUseCase(
             workspace.is_feature_available(WorkspaceFeature.METRICS)
             and args.include_metrics
         ):
-            metrics = await uow.get_x(FastInfoRepository).find_all_metric_summaries(
+            metrics = await uow.get(FastInfoRepository).find_all_metric_summaries(
                 parent_ref_id=metric_collection.workspace.ref_id,
                 allow_archived=allow_archived,
             )
@@ -214,7 +214,7 @@ class GetSummariesUseCase(
             workspace.is_feature_available(WorkspaceFeature.PERSONS)
             and args.include_persons
         ):
-            persons = await uow.get_x(FastInfoRepository).find_all_person_summaries(
+            persons = await uow.get(FastInfoRepository).find_all_person_summaries(
                 parent_ref_id=person_collection.workspace.ref_id,
                 allow_archived=allow_archived,
             )

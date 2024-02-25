@@ -27,18 +27,18 @@ class MetricRemoveService:
         metric: Metric,
     ) -> None:
         """Execute the command's action."""
-        all_metric_entries = await uow.repository_for(MetricEntry).find_all(
+        all_metric_entries = await uow.get_for(MetricEntry).find_all(
             metric.ref_id,
             allow_archived=True,
         )
 
-        inbox_task_collection = await uow.repository_for(
+        inbox_task_collection = await uow.get_for(
             InboxTaskCollection
         ).load_by_parent(
             workspace.ref_id,
         )
 
-        all_inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
+        all_inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
             metric_ref_id=[metric.ref_id],
@@ -51,12 +51,12 @@ class MetricRemoveService:
             )
 
         for metric_entry in all_metric_entries:
-            await uow.repository_for(MetricEntry).remove(metric_entry.ref_id)
+            await uow.get_for(MetricEntry).remove(metric_entry.ref_id)
             await progress_reporter.mark_removed(metric_entry)
             note_remove_service = NoteRemoveService()
             await note_remove_service.remove_for_source(
                 ctx, uow, NoteDomain.METRIC_ENTRY, metric_entry.ref_id
             )
 
-        await uow.repository_for(Metric).remove(metric.ref_id)
+        await uow.get_for(Metric).remove(metric.ref_id)
         await progress_reporter.mark_removed(metric)

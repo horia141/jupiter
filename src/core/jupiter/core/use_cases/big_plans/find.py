@@ -76,11 +76,11 @@ class BigPlanFindUseCase(
         ):
             raise FeatureUnavailableError(WorkspaceFeature.PROJECTS)
 
-        project_collection = await uow.repository_for(ProjectCollection).load_by_parent(
+        project_collection = await uow.get_for(ProjectCollection).load_by_parent(
             workspace.ref_id,
         )
         if args.include_project:
-            projects = await uow.repository_for(Project).find_all_generic(
+            projects = await uow.get_for(Project).find_all_generic(
                 parent_ref_id=project_collection.ref_id,
                 allow_archived=args.allow_archived,
                 ref_id=args.filter_project_ref_ids or NoFilter(),
@@ -89,17 +89,17 @@ class BigPlanFindUseCase(
         else:
             project_by_ref_id = None
 
-        inbox_task_collection = await uow.repository_for(
+        inbox_task_collection = await uow.get_for(
             InboxTaskCollection
         ).load_by_parent(
             workspace.ref_id,
         )
-        big_plan_collection = await uow.repository_for(
+        big_plan_collection = await uow.get_for(
             BigPlanCollection
         ).load_by_parent(
             workspace.ref_id,
         )
-        big_plans = await uow.repository_for(BigPlan).find_all_generic(
+        big_plans = await uow.get_for(BigPlan).find_all_generic(
             parent_ref_id=big_plan_collection.ref_id,
             allow_archived=args.allow_archived,
             ref_id=args.filter_ref_ids or NoFilter(),
@@ -107,7 +107,7 @@ class BigPlanFindUseCase(
         )
 
         if args.include_inbox_tasks:
-            inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
+            inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
                 big_plan_ref_id=[bp.ref_id for bp in big_plans],

@@ -20,8 +20,6 @@ from jupiter.core.framework.repository import (
 )
 
 _RepositoryT = TypeVar("_RepositoryT", bound=Repository)
-_EntityRepositoryT = TypeVar("_EntityRepositoryT", bound=EntityRepository[Any], covariant=True)  # type: ignore
-_RecordRepositoryT = TypeVar("_RecordRepositoryT", bound=RecordRepository[Any, Any, Any], covariant=True)  # type: ignore
 _RootEntityT = TypeVar("_RootEntityT", bound=RootEntity)
 _StubEntityT = TypeVar("_StubEntityT", bound=StubEntity)
 _TrunkEntityT = TypeVar("_TrunkEntityT", bound=TrunkEntity)
@@ -32,51 +30,39 @@ class DomainUnitOfWork(abc.ABC):
     """A transactional unit of work from an engine."""
 
     @abc.abstractmethod
-    def get(  # type: ignore
-        self, repository_type: Type[_EntityRepositoryT]
-    ) -> _EntityRepositoryT:
-        """Retrieve a repository."""
-
-    @abc.abstractmethod
-    def get_r(  # type: ignore
-        self, repository_type: Type[_RecordRepositoryT]
-    ) -> _RecordRepositoryT:
-        """Retrieve a repository."""
-
-    @abc.abstractmethod
-    def get_x(self, repository: type[_RepositoryT]) -> _RepositoryT:
+    def get(self, repository: type[_RepositoryT]) -> _RepositoryT:
         """Retrieve a repository"""
 
     @overload
     @abc.abstractmethod
-    def repository_for(
+    def get_for(
         self, entity_type: Type[_RootEntityT]
     ) -> RootEntityRepository[_RootEntityT]:
         """Retrieve a repository."""
 
     @overload
     @abc.abstractmethod
-    def repository_for(
+    def get_for(
         self, entity_type: Type[_StubEntityT]
     ) -> StubEntityRepository[_StubEntityT]:
         """Retrieve a repository."""
 
     @overload
     @abc.abstractmethod
-    def repository_for(
+    def get_for(
         self, entity_type: Type[_TrunkEntityT]
     ) -> TrunkEntityRepository[_TrunkEntityT]:
         """Retrieve a repository."""
 
     @overload
     @abc.abstractmethod
-    def repository_for(
+    def get_for(
         self, entity_type: Type[_CrownEntityT]
     ) -> CrownEntityRepository[_CrownEntityT]:
         """Retrieve a repository."""
 
     @abc.abstractmethod
-    def repository_for(
+    def get_for(
         self,
         entity_type: Type[_RootEntityT]
         | Type[_StubEntityT]

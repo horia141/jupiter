@@ -40,10 +40,10 @@ class PersonRemoveUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        person_collection = await uow.repository_for(PersonCollection).load_by_parent(
+        person_collection = await uow.get_for(PersonCollection).load_by_parent(
             workspace.ref_id,
         )
-        person = await uow.repository_for(Person).load_by_id(
+        person = await uow.get_for(Person).load_by_id(
             args.ref_id,
             allow_archived=True,
         )

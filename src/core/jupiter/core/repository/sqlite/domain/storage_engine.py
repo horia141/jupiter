@@ -270,8 +270,6 @@ from sqlalchemy import MetaData
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 _RepositoryT = TypeVar("_RepositoryT", bound=Repository)
-_EntityRepositoryT = TypeVar("_EntityRepositoryT", bound=EntityRepository[Entity])
-_RecordRepositoryT = TypeVar("_RecordRepositoryT", bound=RecordRepository[Record, Any, Any])  # type: ignore
 _RootEntityT = TypeVar("_RootEntityT", bound=RootEntity)
 _StubEntityT = TypeVar("_StubEntityT", bound=StubEntity)
 _TrunkEntityT = TypeVar("_TrunkEntityT", bound=TrunkEntity)
@@ -282,56 +280,7 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
     """A Sqlite specific unit of work."""
 
     _entity_repositories: Final[dict[type[Entity], EntityRepository[Entity]]]
-    _entity_repositories_by_type: Final[
-        dict[type[EntityRepository[Entity]], EntityRepository[Entity]]
-    ]
-    _record_repositories_by_type: Final[dict[type[RecordRepository[Record, Any, Any]], RecordRepository[Record, Any, Any]]]  # type: ignore
     _repositories: Final[dict[type[Repository], Repository]]
-
-    _auth_repository: Final[SqliteAuthRepository]
-    _score_log_repository: Final[SqliteScoreLogRepository]
-    _score_log_entry_repository: Final[SqliteScoreLogEntryRepository]
-    _score_stats_repository: Final[SqliteScoreStatsRepository]
-    _score_period_best_repository: Final[SqliteScorePeriodBestRepository]
-    _workspace_repository: Final[SqliteWorkspaceRepository]
-    _user_workspace_link_repository: Final[SqliteUserWorkspaceLinkRepository]
-    _inbox_task_collection_repository: Final[SqliteInboxTaskCollectionRepository]
-    _inbox_task_repository: Final[SqliteInboxTaskRepository]
-    _habit_collection_repository: Final[SqliteHabitCollectionRepository]
-    _habit_repository: Final[SqliteHabitRepository]
-    _chore_collection_repository: Final[SqliteChoreCollectionRepository]
-    _chore_repository: Final[SqliteChoreRepository]
-    _big_plan_collection_repository: Final[SqliteBigPlanCollectionRepository]
-    _big_plan_repository: Final[SqliteBigPlanRepository]
-    _journal_collection_repository: Final[SqliteJournalCollectionRepository]
-    _journal_repository: Final[SqliteJournalRepository]
-    _doc_collection_repository: Final[SqliteDocCollectionRepository]
-    _doc_repository: Final[SqliteDocRepository]
-    _vacation_collection_repository: Final[SqliteVacationCollectionRepository]
-    _vacation_repository: Final[SqliteVacationRepository]
-    _project_collection_repository: Final[SqliteProjectCollectionRepository]
-    _project_repository: Final[SqliteProjectRepository]
-    _smart_list_collection_repository: Final[SmartListCollectionRepository]
-    _smart_list_repository: Final[SqliteSmartListRepository]
-    _smart_list_tag_reposiotry: Final[SqliteSmartListTagRepository]
-    _smart_list_item_repository: Final[SqliteSmartListItemRepository]
-    _metric_collection_repository: Final[SqliteMetricCollectionRepository]
-    _metric_repository: Final[SqliteMetricRepository]
-    _metric_entry_repository: Final[SqliteMetricEntryRepository]
-    _person_collection_repository: Final[SqlitePersonCollectionRepository]
-    _person_repository: Final[SqlitePersonRepository]
-    _push_integration_group_repository: Final[SqlitePushIntegrationGroupRepository]
-    _slack_task_collection_repository: Final[SqliteSlackTaskCollectionRepository]
-    _slack_task_repository: Final[SqliteSlackTaskRepository]
-    _email_task_collection_repository: Final[SqliteEmailTaskCollectionRepository]
-    _email_task_repository: Final[SqliteEmailTaskRepository]
-    _note_collection_repository: Final[SqliteNoteCollectionRepository]
-    _note_repository: Final[SqliteNoteRepository]
-    _fast_info_repository: Final[SqliteFastInfoRepository]
-    _gen_log_repository: Final[SqliteGenLogRepository]
-    _gen_log_entry_repository: Final[SqliteGenLogEntryRepository]
-    _gc_log_repository: Final[SqliteGCLogRepository]
-    _gc_log_entry_repository: Final[SqliteGCLogEntryRepository]
 
     def __init__(
         self,
@@ -426,7 +375,7 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
             GCLog: gc_log_repository,
             GCLogEntry: gc_log_entry_repository,
         }
-        self._entity_repositories_by_type = {
+        self._repositories = {
             UserRepository: user_repository,
             AuthRepository: auth_repository,
             ScoreLogRepository: score_log_repository,
@@ -470,58 +419,9 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
             GenLogEntryRepository: gen_log_entry_repository,
             GCLogRepository: gc_log_repository,
             GCLogEntryRepository: gc_log_entry_repository,
-        }
-        self._record_repositories_by_type = {
             ScoreStatsRepository: score_stats_repository,
             ScorePeriodBestRepository: score_period_best_repository,
         }
-        self._repositories = {
-            FastInfoRepository: fast_into_repository,
-        }
-        self._auth_repository = auth_repository
-        self._score_log_repository = score_log_repository
-        self._score_log_entry_repository = score_log_entry_repository
-        self._score_stats_repository = score_stats_repository
-        self._score_period_best_repository = score_period_best_repository
-        self._workspace_repository = workspace_repository
-        self._user_workspace_link_repository = user_workspace_link_repository
-        self._inbox_task_collection_repository = inbox_task_collection_repository
-        self._inbox_task_repository = inbox_task_repository
-        self._habit_collection_repository = habit_collection_repository
-        self._habit_repository = habit_repository
-        self._chore_collection_repository = chore_collection_repository
-        self._chore_repository = chore_repository
-        self._big_plan_collection_repository = big_plan_collection_repository
-        self._big_plan_repository = big_plan_repository
-        self._journal_collection_repository = journal_collection_repository
-        self._journal_repository = journal_repository
-        self._doc_collection_repository = doc_collection_repository
-        self._doc_repository = doc_repository
-        self._vacation_collection_repository = vacation_collection_repository
-        self._vacation_repository = vacation_repository
-        self._project_collection_repository = project_collection_repository
-        self._project_repository = project_repository
-        self._smart_list_collection_repository = smart_list_collection_repository
-        self._smart_list_repository = smart_list_repository
-        self._smart_list_tag_reposiotry = smart_list_tag_repository
-        self._smart_list_item_repository = smart_list_item_repository
-        self._metric_collection_repository = metric_collection_repository
-        self._metric_repository = metric_repository
-        self._metric_entry_repository = metric_entry_repository
-        self._person_collection_repository = person_collection_repository
-        self._person_repository = person_repository
-        self._push_integration_group_repository = push_integration_group_repository
-        self._slack_task_collection_repository = slack_task_collection_repository
-        self._slack_task_repository = slack_task_repository
-        self._email_task_collection_repository = email_task_collection_repository
-        self._email_task_repository = email_task_repository
-        self._note_collection_repository = note_collection_repository
-        self._note_repository = note_repository
-        self._fast_info_repository = fast_into_repository
-        self._gen_log_repository = gen_log_repository
-        self._gen_log_entry_repository = gen_log_entry_repository
-        self._gc_log_repository = gc_log_repository
-        self._gc_log_entry_repository = gc_log_entry_repository
 
     def __enter__(self) -> "SqliteDomainUnitOfWork":
         """Enter the context."""
@@ -535,55 +435,37 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
     ) -> None:
         """Exit context."""
 
-    def get(  # type: ignore
-        self, repository_type: Type[_EntityRepositoryT]
-    ) -> _EntityRepositoryT:
-        """Retrieve a repository."""
-        if repository_type not in self._entity_repositories_by_type:
-            raise ValueError(f"No repository for type: {repository_type}")
-        return cast(
-            _EntityRepositoryT, self._entity_repositories_by_type[repository_type]
-        )
-
-    def get_r(  # type: ignore
-        self, repository_type: Type[_RecordRepositoryT]
-    ) -> _RecordRepositoryT:
-        """Retrieve a repository."""
-        if repository_type not in self._record_repositories_by_type:
-            raise ValueError(f"No repository for type: {repository_type}")
-        return cast(_RecordRepositoryT, self._record_repositories_by_type[repository_type])  # type: ignore
-
-    def get_x(self, repository_type: Type[_RepositoryT]) -> _RepositoryT:
+    def get(self, repository_type: Type[_RepositoryT]) -> _RepositoryT:
         """Retrieve a repository."""
         if repository_type not in self._repositories:
             raise ValueError(f"No repository for type: {repository_type}")
         return cast(_RepositoryT, self._repositories[repository_type])
 
     @overload
-    def repository_for(
+    def get_for(
         self, entity_type: Type[_RootEntityT]
     ) -> RootEntityRepository[_RootEntityT]:
         """Retrieve a repository."""
 
     @overload
-    def repository_for(
+    def get_for(
         self, entity_type: Type[_StubEntityT]
     ) -> StubEntityRepository[_StubEntityT]:
         """Retrieve a repository."""
 
     @overload
-    def repository_for(
+    def get_for(
         self, entity_type: Type[_TrunkEntityT]
     ) -> TrunkEntityRepository[_TrunkEntityT]:
         """Retrieve a repository."""
 
     @overload
-    def repository_for(
+    def get_for(
         self, entity_type: Type[_CrownEntityT]
     ) -> CrownEntityRepository[_CrownEntityT]:
         """Retrieve a repository."""
 
-    def repository_for(
+    def get_for(
         self,
         entity_type: Type[_RootEntityT]
         | Type[_StubEntityT]

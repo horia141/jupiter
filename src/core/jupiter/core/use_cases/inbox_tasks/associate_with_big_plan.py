@@ -43,11 +43,11 @@ class InboxTaskAssociateWithBigPlanUseCase(
         args: InboxTaskAssociateWithBigPlanArgs,
     ) -> None:
         """Execute the command's action."""
-        inbox_task = await uow.repository_for(InboxTask).load_by_id(args.ref_id)
+        inbox_task = await uow.get_for(InboxTask).load_by_id(args.ref_id)
 
         try:
             if args.big_plan_ref_id:
-                big_plan = await uow.repository_for(BigPlan).load_by_id(
+                big_plan = await uow.get_for(BigPlan).load_by_id(
                     args.big_plan_ref_id,
                 )
                 inbox_task = inbox_task.associate_with_big_plan(
@@ -64,5 +64,5 @@ class InboxTaskAssociateWithBigPlanUseCase(
                 f"Modifying a generated task's field {err.field} is not possible",
             ) from err
 
-        await uow.repository_for(InboxTask).save(inbox_task)
+        await uow.get_for(InboxTask).save(inbox_task)
         await progress_reporter.mark_updated(inbox_task)

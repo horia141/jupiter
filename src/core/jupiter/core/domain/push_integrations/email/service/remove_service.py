@@ -28,22 +28,22 @@ class EmailTaskRemoveService:
         email_task: EmailTask,
     ) -> None:
         """Execute the service's action."""
-        email_task_collection = await uow.repository_for(
+        email_task_collection = await uow.get_for(
             EmailTaskCollection
         ).load_by_id(
             email_task.email_task_collection.ref_id,
         )
-        push_integration_group = await uow.repository_for(
+        push_integration_group = await uow.get_for(
             PushIntegrationGroup
         ).load_by_id(
             email_task_collection.push_integration_group.ref_id,
         )
-        inbox_task_collection = await uow.repository_for(
+        inbox_task_collection = await uow.get_for(
             InboxTaskCollection
         ).load_by_parent(
             push_integration_group.workspace.ref_id,
         )
-        inbox_tasks_to_remove = await uow.repository_for(InboxTask).find_all_generic(
+        inbox_tasks_to_remove = await uow.get_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
             email_task_ref_id=[email_task.ref_id],
@@ -55,5 +55,5 @@ class EmailTaskRemoveService:
                 ctx, uow, progress_reporter, inbox_task
             )
 
-        await uow.repository_for(EmailTask).remove(email_task.ref_id)
+        await uow.get_for(EmailTask).remove(email_task.ref_id)
         await progress_reporter.mark_removed(email_task)

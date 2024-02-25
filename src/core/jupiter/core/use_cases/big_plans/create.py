@@ -67,7 +67,7 @@ class BigPlanCreateUseCase(
         ):
             raise FeatureUnavailableError(WorkspaceFeature.PROJECTS)
 
-        big_plan_collection = await uow.repository_for(
+        big_plan_collection = await uow.get_for(
             BigPlanCollection
         ).load_by_parent(
             workspace.ref_id,
@@ -82,7 +82,7 @@ class BigPlanCreateUseCase(
             actionable_date=args.actionable_date,
             due_date=args.due_date,
         )
-        new_big_plan = await uow.repository_for(BigPlan).create(new_big_plan)
+        new_big_plan = await uow.get_for(BigPlan).create(new_big_plan)
         await progress_reporter.mark_created(new_big_plan)
 
         return BigPlanCreateResult(new_big_plan=new_big_plan)

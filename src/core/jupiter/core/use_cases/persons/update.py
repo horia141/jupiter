@@ -70,10 +70,10 @@ class PersonUpdateUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        person_collection = await uow.repository_for(PersonCollection).load_by_parent(
+        person_collection = await uow.get_for(PersonCollection).load_by_parent(
             workspace.ref_id,
         )
-        person = await uow.repository_for(Person).load_by_id(args.ref_id)
+        person = await uow.get_for(Person).load_by_id(args.ref_id)
 
         # Change the person.
         catch_up_params: UpdateAction[Optional[RecurringTaskGenParams]]
@@ -155,21 +155,21 @@ class PersonUpdateUseCase(
         else:
             catch_up_params = UpdateAction.do_nothing()
 
-        project = await uow.repository_for(Project).load_by_id(
+        project = await uow.get_for(Project).load_by_id(
             person_collection.catch_up_project_ref_id,
         )
-        inbox_task_collection = await uow.repository_for(
+        inbox_task_collection = await uow.get_for(
             InboxTaskCollection
         ).load_by_parent(
             workspace.ref_id,
         )
-        person_catch_up_tasks = await uow.repository_for(InboxTask).find_all_generic(
+        person_catch_up_tasks = await uow.get_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
             source=[InboxTaskSource.PERSON_CATCH_UP],
             person_ref_id=[person.ref_id],
         )
-        person_birthday_tasks = await uow.repository_for(InboxTask).find_all_generic(
+        person_birthday_tasks = await uow.get_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
             source=[InboxTaskSource.PERSON_BIRTHDAY],
@@ -211,7 +211,7 @@ class PersonUpdateUseCase(
                     due_time=schedule.due_date,
                 )
                 # Situation 2a: we're handling the same project.
-                await uow.repository_for(InboxTask).save(inbox_task)
+                await uow.get_for(InboxTask).save(inbox_task)
                 await progress_reporter.mark_updated(inbox_task)
 
         # Change the birthday inbox tasks
@@ -251,7 +251,7 @@ class PersonUpdateUseCase(
                     due_time=schedule.due_date,
                 )
 
-                await uow.repository_for(InboxTask).save(inbox_task)
+                await uow.get_for(InboxTask).save(inbox_task)
                 await progress_reporter.mark_updated(inbox_task)
 
         person = person.update(
@@ -262,5 +262,5 @@ class PersonUpdateUseCase(
             catch_up_params=catch_up_params,
         )
 
-        await uow.repository_for(Person).save(person)
+        await uow.get_for(Person).save(person)
         await progress_reporter.mark_updated(person)

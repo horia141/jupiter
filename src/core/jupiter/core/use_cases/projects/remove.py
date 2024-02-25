@@ -56,9 +56,9 @@ class ProjectRemoveUseCase(
                     context.domain_context,
                     args.backup_project_ref_id,
                 )
-                await uow.repository_for(Workspace).save(workspace)
+                await uow.get_for(Workspace).save(workspace)
 
-            metric_collection = await uow.repository_for(
+            metric_collection = await uow.get_for(
                 MetricCollection
             ).load_by_parent(workspace.ref_id)
             if metric_collection.collection_project_ref_id == args.ref_id:
@@ -66,9 +66,9 @@ class ProjectRemoveUseCase(
                     context.domain_context,
                     args.backup_project_ref_id,
                 )
-                await uow.repository_for(MetricCollection).save(metric_collection)
+                await uow.get_for(MetricCollection).save(metric_collection)
 
-            person_collection = await uow.repository_for(
+            person_collection = await uow.get_for(
                 PersonCollection
             ).load_by_parent(workspace.ref_id)
             if person_collection.catch_up_project_ref_id == args.ref_id:
@@ -76,14 +76,14 @@ class ProjectRemoveUseCase(
                     context.domain_context,
                     args.backup_project_ref_id,
                 )
-                await uow.repository_for(PersonCollection).save(person_collection)
+                await uow.get_for(PersonCollection).save(person_collection)
 
-            push_integration_group = await uow.repository_for(
+            push_integration_group = await uow.get_for(
                 PushIntegrationGroup
             ).load_by_parent(
                 workspace.ref_id,
             )
-            slack_task_collection = await uow.repository_for(
+            slack_task_collection = await uow.get_for(
                 SlackTaskCollection
             ).load_by_parent(
                 push_integration_group.ref_id,
@@ -93,16 +93,16 @@ class ProjectRemoveUseCase(
                     context.domain_context,
                     args.backup_project_ref_id,
                 )
-                await uow.repository_for(SlackTaskCollection).save(
+                await uow.get_for(SlackTaskCollection).save(
                     slack_task_collection
                 )
 
-            push_integration_group = await uow.repository_for(
+            push_integration_group = await uow.get_for(
                 PushIntegrationGroup
             ).load_by_parent(
                 workspace.ref_id,
             )
-            email_task_collection = await uow.repository_for(
+            email_task_collection = await uow.get_for(
                 EmailTaskCollection
             ).load_by_parent(
                 push_integration_group.ref_id,
@@ -112,7 +112,7 @@ class ProjectRemoveUseCase(
                     context.domain_context,
                     args.backup_project_ref_id,
                 )
-                await uow.repository_for(EmailTaskCollection).save(
+                await uow.get_for(EmailTaskCollection).save(
                     email_task_collection
                 )
 

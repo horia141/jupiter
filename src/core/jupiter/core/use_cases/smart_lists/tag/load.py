@@ -47,7 +47,7 @@ class SmartListTagLoadUseCase(
         args: SmartListTagLoadArgs,
     ) -> SmartListTagLoadResult:
         """Execute the command's action."""
-        smart_list_tag = await uow.repository_for(SmartListTag).load_by_id(
+        smart_list_tag = await uow.get_for(SmartListTag).load_by_id(
             args.ref_id, allow_archived=args.allow_archived
         )
 

@@ -45,13 +45,13 @@ class ChangePasswordUseCase(
     ) -> None:
         """Execute the command's action."""
         try:
-            auth = await uow.repository_for(Auth).load_by_parent(context.user.ref_id)
+            auth = await uow.get_for(Auth).load_by_parent(context.user.ref_id)
             auth = auth.change_password(
                 ctx=context.domain_context,
                 current_password=args.current_password,
                 new_password=args.new_password,
                 new_password_repeat=args.new_password_repeat,
             )
-            auth = await uow.repository_for(Auth).save(auth)
+            auth = await uow.get_for(Auth).save(auth)
         except IncorrectPasswordError as err:
             raise InvalidChangePasswordCredentialsError("Invalid password") from err

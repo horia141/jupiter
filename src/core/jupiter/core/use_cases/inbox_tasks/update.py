@@ -69,7 +69,7 @@ class InboxTaskUpdateUseCase(
         args: InboxTaskUpdateArgs,
     ) -> InboxTaskUpdateResult:
         """Execute the command's action."""
-        inbox_task = await uow.repository_for(InboxTask).load_by_id(args.ref_id)
+        inbox_task = await uow.get_for(InboxTask).load_by_id(args.ref_id)
 
         try:
             inbox_task = inbox_task.update(
@@ -86,7 +86,7 @@ class InboxTaskUpdateUseCase(
                 f"Modifing a generated task's field {err.field} is not possible",
             ) from err
 
-        await uow.repository_for(InboxTask).save(inbox_task)
+        await uow.get_for(InboxTask).save(inbox_task)
         await progress_reporter.mark_updated(inbox_task)
 
         record_score_result = None

@@ -76,12 +76,12 @@ class ChoreFindUseCase(
         ):
             raise FeatureUnavailableError(WorkspaceFeature.PROJECTS)
 
-        project_collection = await uow.repository_for(ProjectCollection).load_by_parent(
+        project_collection = await uow.get_for(ProjectCollection).load_by_parent(
             workspace.ref_id,
         )
 
         if args.include_project:
-            projects = await uow.repository_for(Project).find_all_generic(
+            projects = await uow.get_for(Project).find_all_generic(
                 parent_ref_id=project_collection.ref_id,
                 allow_archived=args.allow_archived,
                 ref_id=args.filter_project_ref_ids or NoFilter(),
@@ -90,16 +90,16 @@ class ChoreFindUseCase(
         else:
             project_by_ref_id = None
 
-        inbox_task_collection = await uow.repository_for(
+        inbox_task_collection = await uow.get_for(
             InboxTaskCollection
         ).load_by_parent(
             workspace.ref_id,
         )
-        chore_collection = await uow.repository_for(ChoreCollection).load_by_parent(
+        chore_collection = await uow.get_for(ChoreCollection).load_by_parent(
             workspace.ref_id,
         )
 
-        chores = await uow.repository_for(Chore).find_all_generic(
+        chores = await uow.get_for(Chore).find_all_generic(
             parent_ref_id=chore_collection.ref_id,
             allow_archived=args.allow_archived,
             ref_id=args.filter_ref_ids or NoFilter(),
@@ -107,7 +107,7 @@ class ChoreFindUseCase(
         )
 
         if args.include_inbox_tasks:
-            inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
+            inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
                 chore_ref_id=[bp.ref_id for bp in chores],

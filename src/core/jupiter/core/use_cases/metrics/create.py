@@ -70,7 +70,7 @@ class MetricCreateUseCase(
         workspace = context.workspace
 
         collection_params = None
-        metric_collection = await uow.repository_for(MetricCollection).load_by_parent(
+        metric_collection = await uow.get_for(MetricCollection).load_by_parent(
             workspace.ref_id,
         )
 
@@ -93,7 +93,7 @@ class MetricCreateUseCase(
             collection_params=collection_params,
             metric_unit=args.metric_unit,
         )
-        new_metric = await uow.repository_for(Metric).create(new_metric)
+        new_metric = await uow.get_for(Metric).create(new_metric)
         await progress_reporter.mark_created(new_metric)
 
         return MetricCreateResult(new_metric=new_metric)

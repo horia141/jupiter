@@ -37,7 +37,7 @@ class HabitArchiveUseCase(
         args: HabitArchiveArgs,
     ) -> None:
         """Execute the command's action."""
-        habit = await uow.repository_for(Habit).load_by_id(args.ref_id)
+        habit = await uow.get_for(Habit).load_by_id(args.ref_id)
         await HabitArchiveService().do_it(
             context.domain_context, uow, progress_reporter, habit
         )

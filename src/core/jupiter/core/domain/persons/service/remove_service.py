@@ -26,12 +26,12 @@ class PersonRemoveService:
         person: Person,
     ) -> None:
         """Execute the command's action."""
-        inbox_task_collection = await uow.repository_for(
+        inbox_task_collection = await uow.get_for(
             InboxTaskCollection
         ).load_by_parent(
             person_collection.workspace.ref_id,
         )
-        all_inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
+        all_inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
             person_ref_id=[person.ref_id],
@@ -48,5 +48,5 @@ class PersonRemoveService:
             ctx, uow, NoteDomain.PERSON, person.ref_id
         )
 
-        await uow.repository_for(Person).remove(person.ref_id)
+        await uow.get_for(Person).remove(person.ref_id)
         await progress_reporter.mark_removed(person)

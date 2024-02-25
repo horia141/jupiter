@@ -37,9 +37,9 @@ class NoteUpdateUseCase(AppTransactionalLoggedInMutationUseCase[NoteUpdateArgs, 
         args: NoteUpdateArgs,
     ) -> None:
         """Execute the command's action."""
-        note = await uow.repository_for(Note).load_by_id(args.ref_id)
+        note = await uow.get_for(Note).load_by_id(args.ref_id)
         note = note.update(
             ctx=context.domain_context,
             content=args.content,
         )
-        note = await uow.repository_for(Note).save(note)
+        note = await uow.get_for(Note).save(note)

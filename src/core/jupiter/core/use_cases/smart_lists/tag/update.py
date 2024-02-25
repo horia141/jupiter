@@ -39,11 +39,11 @@ class SmartListTagUpdateUseCase(
         args: SmartListTagUpdateArgs,
     ) -> None:
         """Execute the command's action."""
-        smart_list_tag = await uow.repository_for(SmartListTag).load_by_id(args.ref_id)
+        smart_list_tag = await uow.get_for(SmartListTag).load_by_id(args.ref_id)
         smart_list_tag = smart_list_tag.update(
             ctx=context.domain_context,
             tag_name=args.tag_name,
         )
 
-        await uow.repository_for(SmartListTag).save(smart_list_tag)
+        await uow.get_for(SmartListTag).save(smart_list_tag)
         await progress_reporter.mark_updated(smart_list_tag)

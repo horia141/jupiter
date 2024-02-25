@@ -37,5 +37,5 @@ class NoteRemoveUseCase(AppTransactionalLoggedInMutationUseCase[NoteRemoveArgs, 
         args: NoteRemoveArgs,
     ) -> None:
         """Execute the command's action."""
-        note = await uow.repository_for(Note).load_by_id(args.ref_id)
+        note = await uow.get_for(Note).load_by_id(args.ref_id)
         await NoteRemoveService().remove(context.domain_context, uow, note)

@@ -36,7 +36,7 @@ class ChoreUnsuspendUseCase(
         args: ChoreUnsuspendArgs,
     ) -> None:
         """Execute the command's action."""
-        chore = await uow.repository_for(Chore).load_by_id(args.ref_id)
+        chore = await uow.get_for(Chore).load_by_id(args.ref_id)
         chore = chore.unsuspend(context.domain_context)
-        await uow.repository_for(Chore).save(chore)
+        await uow.get_for(Chore).save(chore)
         await progress_reporter.mark_updated(chore)

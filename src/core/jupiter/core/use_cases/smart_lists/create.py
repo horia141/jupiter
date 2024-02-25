@@ -54,7 +54,7 @@ class SmartListCreateUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        smart_list_collection = await uow.repository_for(
+        smart_list_collection = await uow.get_for(
             SmartListCollection
         ).load_by_parent(
             workspace.ref_id,
@@ -67,7 +67,7 @@ class SmartListCreateUseCase(
             icon=args.icon,
         )
 
-        new_smart_list = await uow.repository_for(SmartList).create(new_smart_list)
+        new_smart_list = await uow.get_for(SmartList).create(new_smart_list)
         await progress_reporter.mark_created(new_smart_list)
 
         return SmartListCreateResult(new_smart_list=new_smart_list)

@@ -49,4 +49,4 @@ class WorkspaceChangeFeatureFlagsUseCase(
             feature_flag_controls=feature_flags_controls,
             feature_flags=workspace_feature_flags,
         )
-        await uow.repository_for(Workspace).save(workspace)
+        await uow.get_for(Workspace).save(workspace)

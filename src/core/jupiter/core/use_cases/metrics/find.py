@@ -76,16 +76,16 @@ class MetricFindUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        metric_collection = await uow.repository_for(MetricCollection).load_by_parent(
+        metric_collection = await uow.get_for(MetricCollection).load_by_parent(
             workspace.ref_id,
         )
-        metrics = await uow.repository_for(Metric).find_all(
+        metrics = await uow.get_for(Metric).find_all(
             parent_ref_id=metric_collection.ref_id,
             allow_archived=args.allow_archived,
             filter_ref_ids=args.filter_ref_ids,
         )
 
-        collection_project = await uow.repository_for(Project).load_by_id(
+        collection_project = await uow.get_for(Project).load_by_id(
             metric_collection.collection_project_ref_id,
         )
 
@@ -93,7 +93,7 @@ class MetricFindUseCase(
             metric_entries_raw = []
             for metric in metrics:
                 metric_entries_raw.append(
-                    await uow.repository_for(MetricEntry).find_all(
+                    await uow.get_for(MetricEntry).find_all(
                         parent_ref_id=metric.ref_id,
                         allow_archived=args.allow_archived,
                         filter_ref_ids=args.filter_entry_ref_ids,
@@ -120,12 +120,12 @@ class MetricFindUseCase(
                 EntityId,
                 List[InboxTask],
             ] = defaultdict(list)
-            inbox_task_collection = await uow.repository_for(
+            inbox_task_collection = await uow.get_for(
                 InboxTaskCollection
             ).load_by_parent(
                 workspace.ref_id,
             )
-            all_inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
+            all_inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
                 source=[InboxTaskSource.METRIC],
@@ -143,10 +143,10 @@ class MetricFindUseCase(
             None
         )
         if args.include_metric_entry_notes:
-            note_collection = await uow.repository_for(NoteCollection).load_by_parent(
+            note_collection = await uow.get_for(NoteCollection).load_by_parent(
                 workspace.ref_id
             )
-            all_notes = await uow.repository_for(Note).find_all_generic(
+            all_notes = await uow.get_for(Note).find_all_generic(
                 parent_ref_id=note_collection.ref_id,
                 domain=NoteDomain.METRIC_ENTRY,
                 allow_archived=True,

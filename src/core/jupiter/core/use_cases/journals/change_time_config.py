@@ -40,9 +40,9 @@ class JournalChangeTimeConfigUseCase(
         args: JournalChangeTimeConfigArgs,
     ) -> None:
         """Execute the command's action."""
-        journal = await uow.repository_for(Journal).load_by_id(args.ref_id)
+        journal = await uow.get_for(Journal).load_by_id(args.ref_id)
         journal = journal.change_time_config(
             context.domain_context, args.right_now, args.period
         )
-        await uow.repository_for(Journal).save(journal)
+        await uow.get_for(Journal).save(journal)
         await progress_reporter.mark_updated(journal)

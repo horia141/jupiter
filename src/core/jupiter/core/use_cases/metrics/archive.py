@@ -49,17 +49,17 @@ class MetricArchiveUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        inbox_task_collection = await uow.repository_for(
+        inbox_task_collection = await uow.get_for(
             InboxTaskCollection
         ).load_by_parent(
             workspace.ref_id,
         )
 
-        metric = await uow.repository_for(Metric).load_by_id(args.ref_id)
-        metric_entries_to_archive = await uow.repository_for(MetricEntry).find_all(
+        metric = await uow.get_for(Metric).load_by_id(args.ref_id)
+        metric_entries_to_archive = await uow.get_for(MetricEntry).find_all(
             parent_ref_id=metric.ref_id,
         )
-        inbox_tasks_to_archive = await uow.repository_for(InboxTask).find_all_generic(
+        inbox_tasks_to_archive = await uow.get_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=False,
             source=[InboxTaskSource.METRIC],
@@ -74,7 +74,7 @@ class MetricArchiveUseCase(
 
         for metric_entry in metric_entries_to_archive:
             metric_entry = metric_entry.mark_archived(context.domain_context)
-            await uow.repository_for(MetricEntry).save(metric_entry)
+            await uow.get_for(MetricEntry).save(metric_entry)
             await progress_reporter.mark_updated(metric_entry)
 
             note_archive_service = NoteArchiveService()
@@ -86,5 +86,5 @@ class MetricArchiveUseCase(
             )
 
         metric = metric.mark_archived(context.domain_context)
-        await uow.repository_for(Metric).save(metric)
+        await uow.get_for(Metric).save(metric)
         await progress_reporter.mark_updated(metric)

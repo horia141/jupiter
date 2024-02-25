@@ -72,25 +72,25 @@ class PersonFindUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        inbox_task_collection = await uow.repository_for(
+        inbox_task_collection = await uow.get_for(
             InboxTaskCollection
         ).load_by_parent(
             workspace.ref_id,
         )
-        person_collection = await uow.repository_for(PersonCollection).load_by_parent(
+        person_collection = await uow.get_for(PersonCollection).load_by_parent(
             workspace.ref_id,
         )
-        catch_up_project = await uow.repository_for(Project).load_by_id(
+        catch_up_project = await uow.get_for(Project).load_by_id(
             person_collection.catch_up_project_ref_id,
         )
-        persons = await uow.repository_for(Person).find_all(
+        persons = await uow.get_for(Person).find_all(
             parent_ref_id=person_collection.ref_id,
             allow_archived=args.allow_archived,
             filter_ref_ids=args.filter_person_ref_ids,
         )
 
         if args.include_catch_up_inbox_tasks:
-            catch_up_inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
+            catch_up_inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
                 source=[InboxTaskSource.PERSON_CATCH_UP],
@@ -100,7 +100,7 @@ class PersonFindUseCase(
             catch_up_inbox_tasks = None
 
         if args.include_birthday_inbox_tasks:
-            birthday_inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
+            birthday_inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
                 source=[InboxTaskSource.PERSON_BIRTHDAY],
@@ -111,10 +111,10 @@ class PersonFindUseCase(
 
         all_notes_by_person_ref_id: defaultdict[EntityId, Note] = defaultdict(None)
         if args.include_notes:
-            notes_collection = await uow.repository_for(NoteCollection).load_by_parent(
+            notes_collection = await uow.get_for(NoteCollection).load_by_parent(
                 workspace.ref_id
             )
-            all_notes = await uow.repository_for(Note).find_all_generic(
+            all_notes = await uow.get_for(Note).find_all_generic(
                 parent_ref_id=notes_collection.ref_id,
                 domain=NoteDomain.PERSON,
                 allow_archived=True,

@@ -58,10 +58,10 @@ class DocCreateUseCase(
     ) -> DocCreateResult:
         """Execute the command's action."""
         workspace = context.workspace
-        doc_collection = await uow.repository_for(DocCollection).load_by_parent(
+        doc_collection = await uow.get_for(DocCollection).load_by_parent(
             workspace.ref_id
         )
-        note_collection = await uow.repository_for(NoteCollection).load_by_parent(
+        note_collection = await uow.get_for(NoteCollection).load_by_parent(
             workspace.ref_id
         )
 
@@ -71,7 +71,7 @@ class DocCreateUseCase(
             parent_doc_ref_id=args.parent_doc_ref_id,
             name=args.name,
         )
-        doc = await uow.repository_for(Doc).create(doc)
+        doc = await uow.get_for(Doc).create(doc)
 
         note = Note.new_note(
             ctx=context.domain_context,
@@ -80,7 +80,7 @@ class DocCreateUseCase(
             source_entity_ref_id=doc.ref_id,
             content=args.content,
         )
-        note = await uow.repository_for(Note).create(note)
+        note = await uow.get_for(Note).create(note)
 
         await progress_reporter.mark_created(doc)
 

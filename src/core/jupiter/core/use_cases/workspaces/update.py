@@ -43,4 +43,4 @@ class WorkspaceUpdateUseCase(
             name=args.name,
         )
 
-        await uow.repository_for(Workspace).save(workspace)
+        await uow.get_for(Workspace).save(workspace)

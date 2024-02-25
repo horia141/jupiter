@@ -66,9 +66,9 @@ class ChoreUpdateUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        chore = await uow.repository_for(Chore).load_by_id(args.ref_id)
+        chore = await uow.get_for(Chore).load_by_id(args.ref_id)
 
-        project = await uow.repository_for(Project).load_by_id(chore.project_ref_id)
+        project = await uow.get_for(Project).load_by_id(chore.project_ref_id)
 
         need_to_change_inbox_tasks = (
             args.name.should_change
@@ -119,16 +119,16 @@ class ChoreUpdateUseCase(
             skip_rule=args.skip_rule,
         )
 
-        await uow.repository_for(Chore).save(chore)
+        await uow.get_for(Chore).save(chore)
         await progress_reporter.mark_updated(chore)
 
         if need_to_change_inbox_tasks:
-            inbox_task_collection = await uow.repository_for(
+            inbox_task_collection = await uow.get_for(
                 InboxTaskCollection
             ).load_by_parent(
                 workspace.ref_id,
             )
-            all_inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
+            all_inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
                 chore_ref_id=[chore.ref_id],
@@ -157,5 +157,5 @@ class ChoreUpdateUseCase(
                     difficulty=chore.gen_params.difficulty,
                 )
 
-                await uow.repository_for(InboxTask).save(inbox_task)
+                await uow.get_for(InboxTask).save(inbox_task)
                 await progress_reporter.mark_updated(inbox_task)

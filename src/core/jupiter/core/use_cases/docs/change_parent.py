@@ -37,10 +37,10 @@ class DocChangeParentUseCase(
         args: DocChangeParentArgs,
     ) -> None:
         """Execute the command's action."""
-        doc = await uow.repository_for(Doc).load_by_id(args.ref_id)
+        doc = await uow.get_for(Doc).load_by_id(args.ref_id)
         doc = doc.change_parent(
             context.domain_context,
             args.parent_node_ref_id,
         )
-        await uow.repository_for(Doc).save(doc)
+        await uow.get_for(Doc).save(doc)
         await progress_reporter.mark_updated(doc)

@@ -47,10 +47,10 @@ class MetricLoadSettingsUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        metric_collection = await uow.repository_for(MetricCollection).load_by_parent(
+        metric_collection = await uow.get_for(MetricCollection).load_by_parent(
             workspace.ref_id,
         )
-        collection_project = await uow.repository_for(Project).load_by_id(
+        collection_project = await uow.get_for(Project).load_by_id(
             metric_collection.collection_project_ref_id,
         )
 

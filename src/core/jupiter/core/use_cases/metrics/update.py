@@ -68,10 +68,10 @@ class MetricUpdateUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        metric_collection = await uow.repository_for(MetricCollection).load_by_parent(
+        metric_collection = await uow.get_for(MetricCollection).load_by_parent(
             workspace.ref_id,
         )
-        metric = await uow.repository_for(Metric).load_by_id(
+        metric = await uow.get_for(Metric).load_by_id(
             args.ref_id,
         )
 
@@ -159,13 +159,13 @@ class MetricUpdateUseCase(
         else:
             collection_params = UpdateAction.do_nothing()
 
-        inbox_task_collection = await uow.repository_for(
+        inbox_task_collection = await uow.get_for(
             InboxTaskCollection
         ).load_by_parent(
             workspace.ref_id,
         )
 
-        metric_collection_tasks = await uow.repository_for(InboxTask).find_all_generic(
+        metric_collection_tasks = await uow.get_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             source=[InboxTaskSource.METRIC],
             allow_archived=True,
@@ -179,7 +179,7 @@ class MetricUpdateUseCase(
             collection_params=collection_params,
         )
 
-        await uow.repository_for(Metric).save(metric)
+        await uow.get_for(Metric).save(metric)
         await progress_reporter.mark_updated(metric)
 
         # Change the inbox tasks
@@ -192,7 +192,7 @@ class MetricUpdateUseCase(
                 )
         else:
             # Situation 2: we need to update the existing metrics.
-            project = await uow.repository_for(Project).load_by_id(
+            project = await uow.get_for(Project).load_by_id(
                 metric_collection.collection_project_ref_id,
             )
 
@@ -219,5 +219,5 @@ class MetricUpdateUseCase(
                     due_time=schedule.due_date,
                 )
 
-                await uow.repository_for(InboxTask).save(inbox_task)
+                await uow.get_for(InboxTask).save(inbox_task)
                 await progress_reporter.mark_updated(inbox_task)

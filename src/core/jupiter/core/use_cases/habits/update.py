@@ -63,9 +63,9 @@ class HabitUpdateUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        habit = await uow.repository_for(Habit).load_by_id(args.ref_id)
+        habit = await uow.get_for(Habit).load_by_id(args.ref_id)
 
-        project = await uow.repository_for(Project).load_by_id(habit.project_ref_id)
+        project = await uow.get_for(Project).load_by_id(habit.project_ref_id)
 
         need_to_change_inbox_tasks = (
             args.name.should_change
@@ -115,16 +115,16 @@ class HabitUpdateUseCase(
             repeats_in_period_count=args.repeats_in_period_count,
         )
 
-        await uow.repository_for(Habit).save(habit)
+        await uow.get_for(Habit).save(habit)
         await progress_reporter.mark_updated(habit)
 
         if need_to_change_inbox_tasks:
-            inbox_task_collection = await uow.repository_for(
+            inbox_task_collection = await uow.get_for(
                 InboxTaskCollection
             ).load_by_parent(
                 workspace.ref_id,
             )
-            all_inbox_tasks = await uow.repository_for(InboxTask).find_all_generic(
+            all_inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
                 habit_ref_id=[habit.ref_id],
@@ -154,5 +154,5 @@ class HabitUpdateUseCase(
                     difficulty=habit.gen_params.difficulty,
                 )
 
-                await uow.repository_for(InboxTask).save(inbox_task)
+                await uow.get_for(InboxTask).save(inbox_task)
                 await progress_reporter.mark_updated(inbox_task)

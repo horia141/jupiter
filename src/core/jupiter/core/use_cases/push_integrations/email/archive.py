@@ -39,7 +39,7 @@ class EmailTaskArchiveUseCase(
         args: EmailTaskArchiveArgs,
     ) -> None:
         """Execute the command's action."""
-        email_task = await uow.repository_for(EmailTask).load_by_id(ref_id=args.ref_id)
+        email_task = await uow.get_for(EmailTask).load_by_id(ref_id=args.ref_id)
 
         email_task_archive_service = EmailTaskArchiveService()
 

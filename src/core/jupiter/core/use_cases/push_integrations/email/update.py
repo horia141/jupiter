@@ -65,7 +65,7 @@ class EmailTaskUpdateUseCase(
         user = context.user
         workspace = context.workspace
 
-        email_task = await uow.repository_for(EmailTask).load_by_id(args.ref_id)
+        email_task = await uow.get_for(EmailTask).load_by_id(args.ref_id)
 
         if (
             args.generation_name.should_change
@@ -101,13 +101,13 @@ class EmailTaskUpdateUseCase(
         else:
             generation_extra_info = UpdateAction.do_nothing()
 
-        inbox_task_collection = await uow.repository_for(
+        inbox_task_collection = await uow.get_for(
             InboxTaskCollection
         ).load_by_parent(
             workspace.ref_id,
         )
         generated_inbox_task = (
-            await uow.repository_for(InboxTask).find_all_generic(
+            await uow.get_for(InboxTask).find_all_generic(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=False,
                 source=[InboxTaskSource.EMAIL_TASK],
@@ -126,7 +126,7 @@ class EmailTaskUpdateUseCase(
             generation_extra_info=email_task.generation_extra_info,
         )
 
-        await uow.repository_for(InboxTask).save(generated_inbox_task)
+        await uow.get_for(InboxTask).save(generated_inbox_task)
         await progress_reporter.mark_updated(generated_inbox_task)
 
         email_task = email_task.update(
@@ -139,5 +139,5 @@ class EmailTaskUpdateUseCase(
             generation_extra_info=generation_extra_info,
         )
 
-        await uow.repository_for(EmailTask).save(email_task)
+        await uow.get_for(EmailTask).save(email_task)
         await progress_reporter.mark_updated(email_task)

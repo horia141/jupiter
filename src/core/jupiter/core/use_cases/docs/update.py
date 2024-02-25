@@ -37,10 +37,10 @@ class DocUpdateUseCase(AppTransactionalLoggedInMutationUseCase[DocUpdateArgs, No
         args: DocUpdateArgs,
     ) -> None:
         """Execute the command's action."""
-        doc = await uow.repository_for(Doc).load_by_id(args.ref_id)
+        doc = await uow.get_for(Doc).load_by_id(args.ref_id)
         doc = doc.update(
             ctx=context.domain_context,
             name=args.name,
         )
-        doc = await uow.repository_for(Doc).save(doc)
+        doc = await uow.get_for(Doc).save(doc)
         await progress_reporter.mark_updated(doc)

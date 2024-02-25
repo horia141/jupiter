@@ -36,7 +36,7 @@ class HabitUnsuspendUseCase(
         args: HabitUnsuspendArgs,
     ) -> None:
         """Execute the command's action."""
-        habit = await uow.repository_for(Habit).load_by_id(args.ref_id)
+        habit = await uow.get_for(Habit).load_by_id(args.ref_id)
         habit = habit.unsuspend(context.domain_context)
-        await uow.repository_for(Habit).save(habit)
+        await uow.get_for(Habit).save(habit)
         await progress_reporter.mark_updated(habit)
