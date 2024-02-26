@@ -20,9 +20,7 @@ async def main() -> None:
     #     ],
     # )
 
-    ModuleExplorerRealmCodecRegistry.build_from_module_root(
-        jupiter.core.domain
-    )
+    ModuleExplorerRealmCodecRegistry.build_from_module_root(jupiter.core.domain)
 
     global_properties = build_global_properties()
 

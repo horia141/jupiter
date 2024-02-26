@@ -4,6 +4,7 @@ from types import GenericAlias, ModuleType, TracebackType
 from typing import (
     AsyncIterator,
     Final,
+    Generic,
     Iterator,
     Optional,
     Type,
@@ -171,6 +172,27 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
             )
 
 
+class _StandardSqliteRootEntityRepository(
+    Generic[_RootEntityT],
+    SqliteEntityRepository[_RootEntityT],
+    RootEntityRepository[_RootEntityT],
+):
+    """A standard repository for root entities."""
+
+    _the_type: type[_RootEntityT]
+
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        connection: AsyncConnection,
+        metadata: MetaData,
+        the_type: type[_RootEntityT],
+    ) -> None:
+        """Constructor."""
+        super().__init__(realm_codec_registry, connection, metadata)
+        self._the_type = the_type
+
+
 class SqliteDomainStorageEngine(DomainStorageEngine):
     """An Sqlite specific engine."""
 
@@ -332,6 +354,19 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
                     )
                 yield abstract_repository_type, obj
 
+        def extract_entities(
+            the_module: ModuleType,
+        ) -> Iterator[type[Entity]]:
+            for _name, obj in the_module.__dict__.items():
+                if not (isinstance(obj, type) and issubclass(obj, Entity)):
+                    continue
+
+                if obj.__module__ != the_module.__name__:
+                    # This is an import, and not a definition!
+                    continue
+
+                yield obj
+
         entity_repository_factories = {}
         repository_factories: dict[type[Repository], type[SqliteRepository]] = {}
 
@@ -369,8 +404,21 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
                 ] = concrete_repository_type
 
             # look at all entities and build repositories for them
-
-            # look at all records and build repositories for them
+            for entity_type in extract_entities(m):
+                if entity_type in entity_repository_factories:
+                    continue
+                if issubclass(entity_type, RootEntity):
+                    entity_repository_factories[entity_type] = type(
+                        f"_StandardSqliteRootEntityRepository_{entity_type.__name__}",
+                        (_StandardSqliteRootEntityRepository,),
+                        {
+                            "__init__": lambda self, realm_codec_registry, connection, metadata: super(
+                                _StandardSqliteRootEntityRepository, self
+                            ).__init__(
+                                realm_codec_registry, connection, metadata, entity_type
+                            )
+                        },
+                    )
 
         return SqliteDomainStorageEngine(
             realm_codec_registry,
