@@ -939,6 +939,17 @@ class TestHelperCommand(Generic[UseCaseT], UseCaseCommand[UseCaseT], abc.ABC):
         return False
 
 
+_ExceptionT = TypeVar("_ExceptionT", bound=Exception)
+
+
+class CliExceptionHandler(Generic[_ExceptionT], abc.ABC):
+    """Base class for exception handlers."""
+
+    @abc.abstractmethod
+    def handle(self, app: "CliApp", console: Console, exception: _ExceptionT) -> None:
+        """Handle an exception."""
+
+
 class CliApp:
     """A CLI application."""
 
@@ -966,6 +977,7 @@ class CliApp:
         Command,
     ]
     _commands: dict[str, Command]
+    _exception_handlers: dict[type[Exception], CliExceptionHandler[Exception]]
 
     def __init__(
         self,
@@ -997,6 +1009,7 @@ class CliApp:
         self._use_case_storage_engine = use_case_storage_engine
         self._use_case_commands = {}
         self._commands = {}
+        self._exception_handlers = {}
 
     @staticmethod
     def build_from_module_root(
@@ -1110,6 +1123,34 @@ class CliApp:
 
                 yield obj
 
+        def extract_exception_handler(
+            the_module: types.ModuleType,
+        ) -> Iterator[tuple[type[Exception], type[CliExceptionHandler[Exception]]]]:
+            for _name, obj in the_module.__dict__.items():
+                if not (
+                    isinstance(obj, type)
+                    and issubclass(obj, CliExceptionHandler)
+                    and obj is not CliExceptionHandler
+                ):
+                    continue
+
+                if obj.__module__ != the_module.__name__:
+                    # This is an import, and not a definition!
+                    continue
+
+                if not hasattr(obj, "__parameters__") or not hasattr(
+                    obj.__parameters__, "__len__"
+                ):
+                    continue
+
+                if len(obj.__parameters__) > 0:  # type: ignore
+                    # This is not a concret type and we can move on
+                    continue
+
+                exception_type = get_args(obj.__orig_bases__[0])[0]  # type: ignore
+
+                yield exception_type, obj
+
         cli_app = CliApp(
             global_properties=global_properties,
             top_level_context=top_level_context,
@@ -1138,6 +1179,10 @@ class CliApp:
                 if use_case_type in cli_app._use_case_commands:
                     continue
                 cli_app._add_use_case_type(use_case_type)
+
+        for m in find_all_modules(*module_root):
+            for exception_type, exception_handler in extract_exception_handler(m):
+                cli_app._add_exception_handler(exception_type, exception_handler)
 
         return cli_app
 
@@ -1286,6 +1331,18 @@ class CliApp:
 
         return self
 
+    def _add_exception_handler(
+        self,
+        exception_type: type[Exception],
+        exception_handler: type[CliExceptionHandler[Exception]],
+    ) -> "CliApp":
+        if exception_type in self._exception_handlers:
+            raise Exception(
+                f"Exception type {exception_type} already has an exception handler"
+            )
+        self._exception_handlers[exception_type] = exception_handler()
+        return self
+
     async def run(self, argv: list[str]) -> None:
         """Run the app."""
         parser = argparse.ArgumentParser(
@@ -1354,7 +1411,13 @@ class CliApp:
             with self._progress_reporter_factory.envelope(
                 command.should_have_streaming_progress_report, command.name(), args
             ):
-                await command.run(self._console, args)
+                try:
+                    await command.run(self._console, args)
+                except Exception as e:
+                    if type(e) not in self._exception_handlers:
+                        raise
+
+                    self._exception_handlers[type(e)].handle(self, self._console, e)
 
             command_postscript = command.get_postscript()
             if command_postscript is not None:
@@ -1364,3 +1427,8 @@ class CliApp:
                 self._console.print(postscript_panel)
 
             break
+
+    @property
+    def global_properties(self) -> GlobalProperties:
+        """The global properties."""
+        return self._global_properties

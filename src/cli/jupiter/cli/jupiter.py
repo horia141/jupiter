@@ -3,32 +3,15 @@ import asyncio
 import logging
 import sys
 
-import aiohttp
 import jupiter.cli.command
 import jupiter.core.domain
 import jupiter.core.repository.sqlite.domain
 import jupiter.core.use_cases
 from jupiter.cli.command.command import CliApp
 from jupiter.cli.command.rendering import RichConsoleProgressReporterFactory
-from jupiter.cli.session_storage import SessionInfoNotFoundError, SessionStorage
+from jupiter.cli.session_storage import SessionStorage
 from jupiter.cli.top_level_context import TopLevelContext
-from jupiter.core.domain.auth.auth_token import (
-    ExpiredAuthTokenError,
-    InvalidAuthTokenError,
-)
 from jupiter.core.domain.auth.auth_token_stamper import AuthTokenStamper
-from jupiter.core.domain.features import FeatureUnavailableError
-from jupiter.core.domain.projects.errors import ProjectInSignificantUseError
-from jupiter.core.domain.user.user import (
-    UserAlreadyExistsError,
-    UserNotFoundError,
-)
-from jupiter.core.domain.workspaces.workspace import (
-    WorkspaceNotFoundError,
-)
-from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.repository import EntityNotFoundError
-from jupiter.core.framework.storage import ConnectionPrepareError
 from jupiter.core.repository.sqlite.connection import SqliteConnection
 from jupiter.core.repository.sqlite.domain.storage_engine import (
     SqliteDomainStorageEngine,
@@ -46,7 +29,6 @@ from jupiter.core.use_cases.load_top_level_info import (
     LoadTopLevelInfoArgs,
     LoadTopLevelInfoUseCase,
 )
-from jupiter.core.use_cases.login import InvalidLoginCredentialsError
 from jupiter.core.utils.global_properties import build_global_properties
 from jupiter.core.utils.time_provider import TimeProvider
 from rich.console import Console
@@ -93,8 +75,6 @@ async def main() -> None:
         auth_token_secret=global_properties.auth_token_secret,
         time_provider=time_provider,
     )
-
-    aio_session = aiohttp.ClientSession()
 
     invocation_recorder = PersistentMutationUseCaseInvocationRecorder(
         usecase_storage_engine,
@@ -148,83 +128,8 @@ async def main() -> None:
 
     try:
         await cli_app.run(sys.argv)
-    except SessionInfoNotFoundError:
-        print(
-            "There doesn't seem to be a workspace. Please run 'init' or 'login' to create a workspace!",
-        )
-        print(
-            f"For more information checkout: {global_properties.docs_init_workspace_url}",
-        )
-        sys.exit(1)
-    except InputValidationError as err:
-        print("Looks like there's something wrong with the command's arguments:")
-        print(f"  {err}")
-        sys.exit(1)
-    except FeatureUnavailableError as err:
-        print(f"{err}")
-        sys.exit(1)
-    except UserAlreadyExistsError:
-        print("A user with the same identity already seems to exist here!")
-        print("Please try creating another user.")
-        sys.exit(1)
-    except ExpiredAuthTokenError:
-        print("Your session seems to be expired! Please run 'login' to login.")
-        sys.exit(1)
-    except InvalidLoginCredentialsError:
-        print("The user and/or password are invalid!")
-        print("You can:")
-        print(" * Run `login` to login.")
-        print(" * Run 'init' to create a user and workspace!")
-        print(" * Run 'reset-password' to reset your password!")
-        print(
-            f"For more information checkout: {global_properties.docs_init_workspace_url}",
-        )
-        sys.exit(1)
-    except ProjectInSignificantUseError as err:
-        print(f"The selected project is still being used. Reason: {err}")
-        print("Please select a backup project via --backup-project-id")
-        sys.exit(1)
-    except InvalidAuthTokenError:
-        print(
-            "Your session seems to be invalid! Please run 'init' or 'login' to fix this!"
-        )
-        print(
-            f"For more information checkout: {global_properties.docs_init_workspace_url}",
-        )
-        sys.exit(2)
-    except ConnectionPrepareError as err:
-        print("A connection to the database couldn't be established!")
-        print("Check if the database path exists")
-        print(err.__traceback__)
-        sys.exit(2)
-    except UserNotFoundError:
-        print(
-            "The user you're trying to operate as does't seem to exist! Please run `init` to create a user and workspace."
-        )
-        print(
-            f"For more information checkout: {global_properties.docs_init_workspace_url}",
-        )
-        sys.exit(2)
-    except WorkspaceNotFoundError:
-        print(
-            "The workspace you're trying to operate in does't seem to exist! Please run `init` to create a user and workspace."
-        )
-        print(
-            f"For more information checkout: {global_properties.docs_init_workspace_url}",
-        )
-        sys.exit(2)
-    except EntityNotFoundError as err:
-        print(str(err))
-        sys.exit(1)
     finally:
-        try:
-            await sqlite_connection.dispose()
-        finally:
-            pass
-        try:
-            await aio_session.close()
-        finally:
-            pass
+        await sqlite_connection.dispose()
 
 
 # coverage.process_startup()  # type: ignore
