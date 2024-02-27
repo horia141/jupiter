@@ -1,10 +1,8 @@
 """The SQLIte based user workspace links repository."""
 
-from jupiter.core.domain.user_workspace_link.infra.user_workspace_link_repository import (
-    UserWorkspaceLinkRepository,
-)
 from jupiter.core.domain.user_workspace_link.user_workspace_link import (
     UserWorkspaceLink,
+    UserWorkspaceLinkRepository,
 )
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.repository import EntityNotFoundError

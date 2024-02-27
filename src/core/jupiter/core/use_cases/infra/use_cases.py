@@ -9,7 +9,7 @@ from jupiter.core.domain.auth.auth_token import (
     InvalidAuthTokenError,
 )
 from jupiter.core.domain.auth.auth_token_ext import AuthTokenExt
-from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
+from jupiter.core.domain.auth.auth_token_stamper import AuthTokenStamper
 from jupiter.core.domain.features import (
     FeatureScope,
     FeatureUnavailableError,
@@ -22,7 +22,7 @@ from jupiter.core.domain.storage_engine import (
     SearchStorageEngine,
 )
 from jupiter.core.domain.user.user import User
-from jupiter.core.domain.user_workspace_link.infra.user_workspace_link_repository import (
+from jupiter.core.domain.user_workspace_link.user_workspace_link import (
     UserWorkspaceLinkRepository,
 )
 from jupiter.core.domain.workspaces.workspace import Workspace

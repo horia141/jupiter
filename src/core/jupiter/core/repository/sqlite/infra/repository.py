@@ -107,6 +107,8 @@ class SqliteEntityRepository(Generic[_EntityT], SqliteRepository, abc.ABC):
         realm_codec_registry: RealmCodecRegistry,
         connection: AsyncConnection,
         metadata: MetaData,
+        *,
+        entity_type: type[_EntityT] | None = None,
         table_name: str | None = None,
         table: Table | None = None,
         already_exists_err_cls: type[Exception] = EntityAlreadyExistsError,
@@ -114,7 +116,7 @@ class SqliteEntityRepository(Generic[_EntityT], SqliteRepository, abc.ABC):
     ):
         """Initialize the repository."""
         super().__init__(realm_codec_registry, connection, metadata)
-        entity_type = self._infer_entity_class()
+        entity_type = self._infer_entity_class() if entity_type is None else entity_type
         self._table = (
             table
             if table is not None
@@ -220,7 +222,7 @@ class SqliteEntityRepository(Generic[_EntityT], SqliteRepository, abc.ABC):
                 return field.name + "_ref_id"
 
         raise Exception(
-            f"Critical exception, missiong parent field for class {self._entity_type.__name__}"
+            f"Critical exception, missing parent field for class {self._entity_type.__name__}"
         )
 
     @staticmethod

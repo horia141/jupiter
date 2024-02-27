@@ -1,4 +1,6 @@
 """A container for all the scores a user has."""
+import abc
+
 from jupiter.core.domain.gamification.score_log_entry import ScoreLogEntry
 from jupiter.core.domain.gamification.score_period_best import ScorePeriodBest
 from jupiter.core.framework.base.entity_id import EntityId
@@ -12,6 +14,7 @@ from jupiter.core.framework.entity import (
     entity,
 )
 from jupiter.core.framework.record import ContainsRecords
+from jupiter.core.framework.repository import TrunkEntityRepository
 
 
 @entity
@@ -34,3 +37,7 @@ class ScoreLog(TrunkEntity):
             ctx,
             user=ParentLink(user_ref_id),
         )
+
+
+class ScoreLogRepository(TrunkEntityRepository[ScoreLog], abc.ABC):
+    """A repository of score logs."""

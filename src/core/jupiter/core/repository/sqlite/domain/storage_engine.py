@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from types import GenericAlias, ModuleType, TracebackType
 from typing import (
     AsyncIterator,
+    Callable,
     Final,
     Generic,
     Iterator,
@@ -42,8 +43,12 @@ from jupiter.core.framework.utils import find_all_modules
 from jupiter.core.repository.sqlite.connection import SqliteConnection
 from jupiter.core.repository.sqlite.domain.search import SqliteSearchRepository
 from jupiter.core.repository.sqlite.infra.repository import (
+    SqliteCrownEntityRepository,
     SqliteEntityRepository,
     SqliteRepository,
+    SqliteRootEntityRepository,
+    SqliteStubEntityRepository,
+    SqliteTrunkEntityRepository,
 )
 from sqlalchemy import MetaData
 from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine
@@ -174,12 +179,10 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
 
 class _StandardSqliteRootEntityRepository(
     Generic[_RootEntityT],
-    SqliteEntityRepository[_RootEntityT],
+    SqliteRootEntityRepository[_RootEntityT],
     RootEntityRepository[_RootEntityT],
 ):
     """A standard repository for root entities."""
-
-    _the_type: type[_RootEntityT]
 
     def __init__(
         self,
@@ -189,8 +192,69 @@ class _StandardSqliteRootEntityRepository(
         the_type: type[_RootEntityT],
     ) -> None:
         """Constructor."""
-        super().__init__(realm_codec_registry, connection, metadata)
-        self._the_type = the_type
+        super().__init__(
+            realm_codec_registry, connection, metadata, entity_type=the_type
+        )
+
+
+class _StandardSqliteStubEntityRepository(
+    Generic[_StubEntityT],
+    SqliteStubEntityRepository[_StubEntityT],
+    StubEntityRepository[_StubEntityT],
+):
+    """A standard repository for stub entities."""
+
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        connection: AsyncConnection,
+        metadata: MetaData,
+        the_type: type[_StubEntityT],
+    ) -> None:
+        """Constructor."""
+        super().__init__(
+            realm_codec_registry, connection, metadata, entity_type=the_type
+        )
+
+
+class _StandardSqliteTrunkEntityRepository(
+    Generic[_TrunkEntityT],
+    SqliteTrunkEntityRepository[_TrunkEntityT],
+    TrunkEntityRepository[_TrunkEntityT],
+):
+    """A standard repository for trunk entities."""
+
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        connection: AsyncConnection,
+        metadata: MetaData,
+        the_type: type[_TrunkEntityT],
+    ) -> None:
+        """Constructor."""
+        super().__init__(
+            realm_codec_registry, connection, metadata, entity_type=the_type
+        )
+
+
+class _StandardSqliteCrownEntityRepository(
+    Generic[_CrownEntityT],
+    SqliteCrownEntityRepository[_CrownEntityT],
+    CrownEntityRepository[_CrownEntityT],
+):
+    """A standard repository for crown entities."""
+
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        connection: AsyncConnection,
+        metadata: MetaData,
+        the_type: type[_CrownEntityT],
+    ) -> None:
+        """Constructor."""
+        super().__init__(
+            realm_codec_registry, connection, metadata, entity_type=the_type
+        )
 
 
 class SqliteDomainStorageEngine(DomainStorageEngine):
@@ -411,14 +475,28 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
                     entity_repository_factories[entity_type] = type(
                         f"_StandardSqliteRootEntityRepository_{entity_type.__name__}",
                         (_StandardSqliteRootEntityRepository,),
-                        {
-                            "__init__": lambda self, realm_codec_registry, connection, metadata: super(
-                                _StandardSqliteRootEntityRepository, self
-                            ).__init__(
-                                realm_codec_registry, connection, metadata, entity_type
-                            )
-                        },
+                        {"__init__": _generic_root_init(entity_type)},
                     )
+                elif issubclass(entity_type, StubEntity):
+                    entity_repository_factories[entity_type] = type(
+                        f"_StandardSqliteStubEntityRepository_{entity_type.__name__}",
+                        (_StandardSqliteStubEntityRepository,),
+                        {"__init__": _generic_stub_init(entity_type)},
+                    )
+                elif issubclass(entity_type, TrunkEntity):
+                    entity_repository_factories[entity_type] = type(
+                        f"_StandardSqliteTrunkEntityRepository_{entity_type.__name__}",
+                        (_StandardSqliteTrunkEntityRepository,),
+                        {"__init__": _generic_trunk_init(entity_type)},
+                    )
+                elif issubclass(entity_type, CrownEntity):
+                    entity_repository_factories[entity_type] = type(
+                        f"_StandardSqliteCrownEntityRepository_{entity_type.__name__}",
+                        (_StandardSqliteCrownEntityRepository,),
+                        {"__init__": _generic_crown_init(entity_type)},
+                    )
+                else:
+                    raise Exception(f"Unknown entity type: {entity_type}")
 
         return SqliteDomainStorageEngine(
             realm_codec_registry,
@@ -438,6 +516,74 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
                 entity_repository_factories=self._entity_repository_factories,
                 repository_factories=self._repository_factories,
             )
+
+
+def _generic_root_init(
+    entity_type: type[_RootEntityT],
+) -> Callable[
+    [
+        _StandardSqliteRootEntityRepository[_RootEntityT],
+        RealmCodecRegistry,
+        AsyncConnection,
+        MetaData,
+    ],
+    None,
+]:
+    """Generic constructor for root entities."""
+    return lambda self, realm_codec_registry, connection, metadata: super(
+        _StandardSqliteRootEntityRepository, self
+    ).__init__(realm_codec_registry, connection, metadata, entity_type=entity_type)
+
+
+def _generic_stub_init(
+    entity_type: type[_StubEntityT],
+) -> Callable[
+    [
+        _StandardSqliteStubEntityRepository[_StubEntityT],
+        RealmCodecRegistry,
+        AsyncConnection,
+        MetaData,
+    ],
+    None,
+]:
+    """Generic constructor for stub entities."""
+    return lambda self, realm_codec_registry, connection, metadata: super(
+        _StandardSqliteStubEntityRepository, self
+    ).__init__(realm_codec_registry, connection, metadata, entity_type=entity_type)
+
+
+def _generic_trunk_init(
+    entity_type: type[_TrunkEntityT],
+) -> Callable[
+    [
+        _StandardSqliteTrunkEntityRepository[_TrunkEntityT],
+        RealmCodecRegistry,
+        AsyncConnection,
+        MetaData,
+    ],
+    None,
+]:
+    """Generic constructor for trunk entities."""
+    return lambda self, realm_codec_registry, connection, metadata: super(
+        _StandardSqliteTrunkEntityRepository, self
+    ).__init__(realm_codec_registry, connection, metadata, entity_type=entity_type)
+
+
+def _generic_crown_init(
+    entity_type: type[_CrownEntityT],
+) -> Callable[
+    [
+        _StandardSqliteCrownEntityRepository[_CrownEntityT],
+        RealmCodecRegistry,
+        AsyncConnection,
+        MetaData,
+    ],
+    None,
+]:
+    """Generic constructor for crown entities."""
+    return lambda self, realm_codec_registry, connection, metadata: super(
+        _StandardSqliteCrownEntityRepository, self
+    ).__init__(realm_codec_registry, connection, metadata, entity_type=entity_type)
 
 
 class SqliteSearchUnitOfWork(SearchUnitOfWork):

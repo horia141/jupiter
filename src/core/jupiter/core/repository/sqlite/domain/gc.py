@@ -1,26 +1,17 @@
 """SQLite implementation of garbage collection infra classes."""
 
-from jupiter.core.domain.gc.gc_log import GCLog
-from jupiter.core.domain.gc.gc_log_entry import GCLogEntry
-from jupiter.core.domain.gc.infra.gc_log_entry_repository import (
+from jupiter.core.domain.gc.gc_log_entry import (
+    GCLogEntry,
     GCLogEntryRepository,
-)
-from jupiter.core.domain.gc.infra.gc_log_repository import (
-    GCLogRepository,
 )
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.repository.sqlite.infra.repository import (
     SqliteLeafEntityRepository,
-    SqliteTrunkEntityRepository,
 )
 from sqlalchemy import (
     select,
 )
-
-
-class SqliteGCLogRepository(SqliteTrunkEntityRepository[GCLog], GCLogRepository):
-    """The GC log repository."""
 
 
 class SqliteGCLogEntryRepository(

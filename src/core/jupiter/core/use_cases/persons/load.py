@@ -1,7 +1,6 @@
 """Use case for loading a person."""
 
-from jupiter.core.domain.core.notes.infra.note_repository import NoteRepository
-from jupiter.core.domain.core.notes.note import Note
+from jupiter.core.domain.core.notes.note import Note, NoteRepository
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask

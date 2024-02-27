@@ -2,10 +2,10 @@
 
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
-from jupiter.core.domain.gamification.infra.score_stats_repository import (
+from jupiter.core.domain.gamification.score_log import ScoreLog
+from jupiter.core.domain.gamification.score_stats import (
     ScoreStatsRepository,
 )
-from jupiter.core.domain.gamification.score_log import ScoreLog
 from jupiter.core.domain.gamification.user_score_history import UserScoreHistory
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.user.user import User

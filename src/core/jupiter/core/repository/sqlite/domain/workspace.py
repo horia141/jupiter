@@ -1,10 +1,10 @@
 """The SQLite based Workspace repository."""
 
-from jupiter.core.domain.workspaces.infra.workspace_repository import (
+from jupiter.core.domain.workspaces.workspace import (
+    Workspace,
     WorkspaceNotFoundError,
     WorkspaceRepository,
 )
-from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.realm import RealmCodecRegistry
 from jupiter.core.repository.sqlite.infra.repository import SqliteRootEntityRepository
 from sqlalchemy import (

@@ -4,16 +4,16 @@ import asyncio
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.core.timeline import infer_timeline
-from jupiter.core.domain.gamification.infra.score_period_best_repository import (
-    ScorePeriodBestRepository,
-)
-from jupiter.core.domain.gamification.infra.score_stats_repository import (
-    ScoreStatsRepository,
-)
 from jupiter.core.domain.gamification.score_log import ScoreLog
 from jupiter.core.domain.gamification.score_log_entry import ScoreLogEntry
-from jupiter.core.domain.gamification.score_period_best import ScorePeriodBest
-from jupiter.core.domain.gamification.score_stats import ScoreStats
+from jupiter.core.domain.gamification.score_period_best import (
+    ScorePeriodBest,
+    ScorePeriodBestRepository,
+)
+from jupiter.core.domain.gamification.score_stats import (
+    ScoreStats,
+    ScoreStatsRepository,
+)
 from jupiter.core.domain.gamification.user_score_overview import UserScoreOverview
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.storage_engine import DomainUnitOfWork

@@ -1,4 +1,5 @@
 """A particular entry in the score log related to an task being completed."""
+import abc
 import random
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
@@ -16,6 +17,7 @@ from jupiter.core.framework.entity import (
     create_entity_action,
     entity,
 )
+from jupiter.core.framework.repository import LeafEntityRepository
 
 
 @entity
@@ -116,3 +118,7 @@ class ScoreLogEntry(LeafEntity):
             return 10
         else:  # big_plan.status == BigPlanStatus.NOT_DONE:
             return -10
+
+
+class ScoreLogEntryRepository(LeafEntityRepository[ScoreLogEntry], abc.ABC):
+    """A repository of score log entries."""

@@ -1,4 +1,5 @@
 """Statistics about scores for a particular time interval."""
+import abc
 from typing import Tuple
 
 from jupiter.core.domain.core.adate import ADate
@@ -11,6 +12,7 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import ParentLink
 from jupiter.core.framework.record import Record, create_record_action, record
+from jupiter.core.framework.repository import RecordRepository
 
 
 @record
@@ -78,3 +80,22 @@ class ScoreStats(Record):
             inbox_task_cnt=self.inbox_task_cnt,
             big_plan_cnt=self.big_plan_cnt,
         )
+
+
+class ScoreStatsRepository(
+    RecordRepository[
+        ScoreStats, Tuple[EntityId, RecurringTaskPeriod | None, str], EntityId
+    ],
+    abc.ABC,
+):
+    """A repository of score stats."""
+
+    @abc.abstractmethod
+    async def find_all_in_timerange(
+        self,
+        score_log_ref_id: EntityId,
+        period: RecurringTaskPeriod,
+        start_date: ADate,
+        end_date: ADate,
+    ) -> list[ScoreStats]:
+        """Find all score stats in a given time range."""

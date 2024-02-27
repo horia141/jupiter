@@ -17,14 +17,14 @@ from jupiter.core.domain.docs.doc import Doc
 from jupiter.core.domain.docs.doc_collection import DocCollection
 from jupiter.core.domain.docs.service.doc_remove_service import DocRemoveService
 from jupiter.core.domain.features import UserFeature, WorkspaceFeature
-from jupiter.core.domain.gamification.infra.score_period_best_repository import (
-    ScorePeriodBestRepository,
-)
-from jupiter.core.domain.gamification.infra.score_stats_repository import (
-    ScoreStatsRepository,
-)
 from jupiter.core.domain.gamification.score_log import ScoreLog
 from jupiter.core.domain.gamification.score_log_entry import ScoreLogEntry
+from jupiter.core.domain.gamification.score_period_best import (
+    ScorePeriodBestRepository,
+)
+from jupiter.core.domain.gamification.score_stats import (
+    ScoreStatsRepository,
+)
 from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.habits.habit_collection import HabitCollection
 from jupiter.core.domain.habits.service.remove_service import HabitRemoveService

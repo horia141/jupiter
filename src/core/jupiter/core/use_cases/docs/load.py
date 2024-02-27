@@ -1,7 +1,6 @@
 """Load a particulr doc."""
 
-from jupiter.core.domain.core.notes.infra.note_repository import NoteRepository
-from jupiter.core.domain.core.notes.note import Note
+from jupiter.core.domain.core.notes.note import Note, NoteRepository
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.docs.doc import Doc
 from jupiter.core.domain.features import WorkspaceFeature

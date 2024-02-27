@@ -1,6 +1,5 @@
 """Remove a note."""
-from jupiter.core.domain.core.notes.infra.note_repository import NoteRepository
-from jupiter.core.domain.core.notes.note import Note
+from jupiter.core.domain.core.notes.note import Note, NoteRepository
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId

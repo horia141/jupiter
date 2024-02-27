@@ -2,29 +2,18 @@
 from typing import Iterable, List, Optional
 
 from jupiter.core.domain.core.adate import ADate
-from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
-from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
-from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
-from jupiter.core.domain.inbox_tasks.infra.inbox_task_collection_repository import (
-    InboxTaskCollectionRepository,
-)
-from jupiter.core.domain.inbox_tasks.infra.inbox_task_repository import (
+from jupiter.core.domain.inbox_tasks.inbox_task import (
+    InboxTask,
     InboxTaskRepository,
 )
+from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.repository.sqlite.infra.repository import (
     SqliteLeafEntityRepository,
-    SqliteTrunkEntityRepository,
 )
 from sqlalchemy import (
     select,
 )
-
-
-class SqliteInboxTaskCollectionRepository(
-    SqliteTrunkEntityRepository[InboxTaskCollection], InboxTaskCollectionRepository
-):
-    """The inbox task collection repository."""
 
 
 class SqliteInboxTaskRepository(

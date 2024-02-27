@@ -1,26 +1,17 @@
 """SQLite implementation of task generation infra classes."""
 
-from jupiter.core.domain.gen.gen_log import GenLog
-from jupiter.core.domain.gen.gen_log_entry import GenLogEntry
-from jupiter.core.domain.gen.infra.gen_log_entry_repository import (
+from jupiter.core.domain.gc.gc_log_entry import (
     GenLogEntryRepository,
 )
-from jupiter.core.domain.gen.infra.gen_log_repository import (
-    GenLogRepository,
-)
+from jupiter.core.domain.gen.gen_log_entry import GenLogEntry
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.repository.sqlite.infra.repository import (
     SqliteLeafEntityRepository,
-    SqliteTrunkEntityRepository,
 )
 from sqlalchemy import (
     select,
 )
-
-
-class SqliteGenLogRepository(SqliteTrunkEntityRepository[GenLog], GenLogRepository):
-    """The task generation log repository."""
 
 
 class SqliteGenLogEntryRepository(

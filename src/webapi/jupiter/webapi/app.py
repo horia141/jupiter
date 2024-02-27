@@ -31,7 +31,7 @@ from jupiter.core.domain.auth.auth_token_ext import (
     AuthTokenExt,
     AuthTokenExtDatabaseDecoder,
 )
-from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
+from jupiter.core.domain.auth.auth_token_stamper import AuthTokenStamper
 from jupiter.core.domain.storage_engine import DomainStorageEngine, SearchStorageEngine
 from jupiter.core.framework.entity import Entity, ParentLink
 from jupiter.core.framework.event import EventSource

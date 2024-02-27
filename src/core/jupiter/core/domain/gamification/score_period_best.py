@@ -1,4 +1,5 @@
 """The best score for a period of time and a particular subdivision of it."""
+import abc
 from typing import Tuple
 
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
@@ -14,6 +15,7 @@ from jupiter.core.framework.record import (
     record,
     update_record_action,
 )
+from jupiter.core.framework.repository import RecordRepository
 
 
 @record
@@ -84,3 +86,14 @@ class ScorePeriodBest(Record):
             inbox_task_cnt=self.inbox_task_cnt,
             big_plan_cnt=self.big_plan_cnt,
         )
+
+
+class ScorePeriodBestRepository(
+    RecordRepository[
+        ScorePeriodBest,
+        Tuple[EntityId, RecurringTaskPeriod | None, str, RecurringTaskPeriod],
+        EntityId,
+    ],
+    abc.ABC,
+):
+    """A repository of score period bests."""

@@ -16,14 +16,14 @@ from jupiter.core.domain.auth.auth_token import (
     ExpiredAuthTokenError,
     InvalidAuthTokenError,
 )
-from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
+from jupiter.core.domain.auth.auth_token_stamper import AuthTokenStamper
 from jupiter.core.domain.features import FeatureUnavailableError
 from jupiter.core.domain.projects.errors import ProjectInSignificantUseError
-from jupiter.core.domain.user.infra.user_repository import (
+from jupiter.core.domain.user.user import (
     UserAlreadyExistsError,
     UserNotFoundError,
 )
-from jupiter.core.domain.workspaces.infra.workspace_repository import (
+from jupiter.core.domain.workspaces.workspace import (
     WorkspaceNotFoundError,
 )
 from jupiter.core.framework.errors import InputValidationError
@@ -75,7 +75,10 @@ async def main() -> None:
     )
 
     domain_storage_engine = SqliteDomainStorageEngine.build_from_module_root(
-        realm_codec_registry, sqlite_connection, jupiter.core.repository.sqlite.domain
+        realm_codec_registry,
+        sqlite_connection,
+        jupiter.core.repository.sqlite.domain,
+        jupiter.core.domain,
     )
     search_storage_engine = SqliteSearchStorageEngine(
         realm_codec_registry, sqlite_connection

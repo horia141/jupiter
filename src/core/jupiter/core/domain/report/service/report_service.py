@@ -23,13 +23,13 @@ from jupiter.core.domain.gamification.service.score_overview_service import (
 )
 from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.habits.habit_collection import HabitCollection
-from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.inbox_tasks.inbox_task import (
+    InboxTask,
+    InboxTaskRepository,
+)
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
-from jupiter.core.domain.inbox_tasks.infra.inbox_task_repository import (
-    InboxTaskRepository,
-)
 from jupiter.core.domain.metrics.metric import Metric
 from jupiter.core.domain.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.persons.person import Person

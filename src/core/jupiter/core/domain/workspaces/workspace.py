@@ -1,4 +1,5 @@
 """The workspace where everything happens."""
+import abc
 from typing import Iterable, List
 
 from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
@@ -37,6 +38,7 @@ from jupiter.core.framework.entity import (
     entity,
     update_entity_action,
 )
+from jupiter.core.framework.repository import EntityNotFoundError, RootEntityRepository
 from jupiter.core.framework.update_action import UpdateAction
 
 
@@ -316,3 +318,11 @@ class Workspace(RootEntity):
             ):
                 inferred_sync_targets.append(sync_target)
         return inferred_sync_targets
+
+
+class WorkspaceNotFoundError(EntityNotFoundError):
+    """Error raised when a workspace is not found."""
+
+
+class WorkspaceRepository(RootEntityRepository[Workspace], abc.ABC):
+    """A repository for workspaces."""

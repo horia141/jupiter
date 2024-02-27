@@ -9,17 +9,17 @@ from jupiter.core.domain.auth.auth_token import (
     ExpiredAuthTokenError,
     InvalidAuthTokenError,
 )
-from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
+from jupiter.core.domain.auth.auth_token_stamper import AuthTokenStamper
 from jupiter.core.domain.features import FeatureUnavailableError
 from jupiter.core.domain.journals.infra.journal_repository import (
     JournalExistsForDatePeriodCombinationError,
 )
 from jupiter.core.domain.projects.errors import ProjectInSignificantUseError
-from jupiter.core.domain.user.infra.user_repository import (
+from jupiter.core.domain.user.user import (
     UserAlreadyExistsError,
     UserNotFoundError,
 )
-from jupiter.core.domain.workspaces.infra.workspace_repository import (
+from jupiter.core.domain.workspaces.workspace import (
     WorkspaceNotFoundError,
 )
 from jupiter.core.framework.errors import InputValidationError

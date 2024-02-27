@@ -1,1 +1,0 @@
-"""Smart lists infra classes."""
