@@ -1,7 +1,5 @@
 """A recovery token for auth systems."""
-
 import uuid
-from typing import Optional
 
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.realm import (
@@ -25,24 +23,6 @@ class RecoveryTokenPlain(SecretValue):
         token = str(uuid.uuid4())
         return RecoveryTokenPlain(token)
 
-    @staticmethod
-    def from_raw(recovery_token_raw: Optional[str]) -> "RecoveryTokenPlain":
-        """Validate and clean a raw recovery token."""
-        if recovery_token_raw is None:
-            raise InputValidationError("Expected recovery token to non-null")
-
-        token = RecoveryTokenPlain._clean_token(recovery_token_raw)
-
-        return RecoveryTokenPlain(token)
-
-    @staticmethod
-    def _clean_token(token_str: str) -> str:
-        try:
-            uuid.UUID(token_str, version=4)
-        except (ValueError, TypeError) as err:
-            raise InputValidationError("Recovery token has a bad format") from err
-        return token_str
-
 
 class RecoveryTokenPlainDatabaseEncoder(
     RealmEncoder[RecoveryTokenPlain, DatabaseRealm]
@@ -65,4 +45,9 @@ class RecoveryTokenPlainDatabaseDecoder(
             raise InputValidationError(
                 f"Expected password hash to be a string, got {value}"
             )
-        return RecoveryTokenPlain.from_raw(value)
+
+        try:
+            uuid.UUID(value, version=4)
+        except (ValueError, TypeError) as err:
+            raise InputValidationError("Recovery token has a bad format") from err
+        return RecoveryTokenPlain(value)

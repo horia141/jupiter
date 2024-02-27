@@ -1,5 +1,4 @@
 """A hashed recovery token, suitable for storage."""
-from typing import Optional
 
 import argon2.profiles
 from argon2 import PasswordHasher
@@ -24,28 +23,6 @@ class RecoveryTokenHash(SecretValue):
     """A hashed recovery token, suitable for storage."""
 
     token_hash_raw: str
-
-    @staticmethod
-    def from_raw(recovery_token_hash_str: Optional[str]) -> "RecoveryTokenHash":
-        """Validate and clean a raw hashed recovery token."""
-        if not recovery_token_hash_str:
-            raise InputValidationError("Expected hashed recovery token to be non-null")
-
-        try:
-            recovery_token_hash_params = argon2.extract_parameters(
-                recovery_token_hash_str
-            )
-        except argon2.exceptions.InvalidHash as err:
-            raise InputValidationError(
-                "Hashed recovery token does not match expected format"
-            ) from err
-
-        if recovery_token_hash_params != _PROFILE:
-            raise InputValidationError(
-                "Hashed recovery token parameters do not match standard profile"
-            )
-
-        return RecoveryTokenHash(recovery_token_hash_str)
 
     @staticmethod
     def from_plain(plain: RecoveryTokenPlain) -> "RecoveryTokenHash":
@@ -78,4 +55,17 @@ class RecoveryTokenHashDatabaseDecoder(RealmDecoder[RecoveryTokenHash, DatabaseR
             raise InputValidationError(
                 f"Expected password hash to be a string, got {value}"
             )
-        return RecoveryTokenHash.from_raw(value)
+
+        try:
+            recovery_token_hash_params = argon2.extract_parameters(value)
+        except argon2.exceptions.InvalidHash as err:
+            raise InputValidationError(
+                "Hashed recovery token does not match expected format"
+            ) from err
+
+        if recovery_token_hash_params != _PROFILE:
+            raise InputValidationError(
+                "Hashed recovery token parameters do not match standard profile"
+            )
+
+        return RecoveryTokenHash(value)
