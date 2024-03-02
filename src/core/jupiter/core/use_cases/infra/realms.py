@@ -36,7 +36,10 @@ from jupiter.core.framework.base.timestamp import (
 )
 from jupiter.core.framework.concept import Concept
 from jupiter.core.framework.entity import Entity, ParentLink
-from jupiter.core.framework.errors import InputValidationError
+from jupiter.core.framework.errors import (
+    InputValidationError,
+    MultiInputValidationError,
+)
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.realm import (
@@ -1077,42 +1080,52 @@ class _StandardUseCaseArgsCliDecoder(
 
         ctor_args: dict[str, DomainThing | UpdateAction[DomainThing]] = {}
 
+        errors = {}
+
         for field in all_fields:
-            if field.name not in value:
-                raise RealmDecodingError(
-                    f"Expected value of type {self._the_type.__name__} to have field {field.name}"
-                )
+            try:
+                if field.name not in value:
+                    raise RealmDecodingError(
+                        f"Expected value of type {self._the_type.__name__} to have field {field.name}"
+                    )
 
-            field_value = value[field.name]
+                field_value = value[field.name]
 
-            if (
-                field_type_origin := get_origin(field.type)
-            ) is not None and field_type_origin is UpdateAction:
-                update_action_type = cast(type[DomainThing], get_args(field.type)[0])
-
-                final_value: UpdateAction[DomainThing]
                 if (
-                    f"clear_{field.name}" in value
-                    and value[f"clear_{field.name}"] is True
-                ):
-                    final_value = UpdateAction.change_to(None)
-                elif field_value is None:
-                    final_value = UpdateAction.do_nothing()
+                    field_type_origin := get_origin(field.type)
+                ) is not None and field_type_origin is UpdateAction:
+                    update_action_type = cast(
+                        type[DomainThing], get_args(field.type)[0]
+                    )
+
+                    final_value: UpdateAction[DomainThing]
+                    if (
+                        f"clear_{field.name}" in value
+                        and value[f"clear_{field.name}"] is True
+                    ):
+                        final_value = UpdateAction.change_to(None)
+                    elif field_value is None:
+                        final_value = UpdateAction.do_nothing()
+                    else:
+                        update_action_decoder = self._realm_codec_registry.get_decoder(
+                            update_action_type, CliRealm
+                        )
+
+                        final_value = UpdateAction.change_to(
+                            update_action_decoder.decode(field_value)
+                        )
+
+                    ctor_args[field.name] = final_value
                 else:
-                    update_action_decoder = self._realm_codec_registry.get_decoder(
-                        update_action_type, CliRealm
+                    decoder = self._realm_codec_registry.get_decoder(
+                        field.type, CliRealm, self._the_type
                     )
+                    ctor_args[field.name] = decoder.decode(field_value)
+            except InputValidationError as err:
+                errors[field.name] = err
 
-                    final_value = UpdateAction.change_to(
-                        update_action_decoder.decode(field_value)
-                    )
-
-                ctor_args[field.name] = final_value
-            else:
-                decoder = self._realm_codec_registry.get_decoder(
-                    field.type, CliRealm, self._the_type
-                )
-                ctor_args[field.name] = decoder.decode(field_value)
+        if len(errors) > 0:
+            raise MultiInputValidationError(errors)
 
         return self._the_type(**ctor_args)
 
@@ -1139,21 +1152,29 @@ class _StandardUseCaseArgsWebDecoder(
 
         ctor_args: dict[str, DomainThing | UpdateAction[DomainThing]] = {}
 
+        errors = {}
+
         for field in all_fields:
-            field_type, is_optional = normalize_optional(field.type)
-            if field.name not in value:
-                if is_optional:
-                    ctor_args[field.name] = None
+            try:
+                field_type, is_optional = normalize_optional(field.type)
+                if field.name not in value:
+                    if is_optional:
+                        ctor_args[field.name] = None
+                    else:
+                        raise RealmDecodingError(
+                            f"Expected value of type {self._the_type.__name__} to have field {field.name}"
+                        )
                 else:
-                    raise RealmDecodingError(
-                        f"Expected value of type {self._the_type.__name__} to have field {field.name}"
+                    field_value = value[field.name]
+                    decoder = self._realm_codec_registry.get_decoder(
+                        field_type, WebRealm, self._the_type
                     )
-            else:
-                field_value = value[field.name]
-                decoder = self._realm_codec_registry.get_decoder(
-                    field_type, WebRealm, self._the_type
-                )
-                ctor_args[field.name] = decoder.decode(field_value)
+                    ctor_args[field.name] = decoder.decode(field_value)
+            except InputValidationError as err:
+                errors[field.name] = err
+
+        if len(errors) > 0:
+            raise MultiInputValidationError(errors)
 
         return self._the_type(**ctor_args)
 

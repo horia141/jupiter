@@ -1413,7 +1413,7 @@ class CliApp:
             ):
                 try:
                     await command.run(self._console, args)
-                except Exception as e:
+                except Exception as e:  # noqa: BLE001
                     if type(e) not in self._exception_handlers:
                         raise
 

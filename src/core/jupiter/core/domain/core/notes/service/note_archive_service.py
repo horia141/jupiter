@@ -44,8 +44,5 @@ class NoteArchiveService:
         if note.archived:
             return
 
-        if not note.can_be_removed_independently:
-            raise Exception(f"Note {note.ref_id} cannot be removed dependently")
-
         note = note.mark_archived(ctx)
         await uow.get_for(Note).save(note)

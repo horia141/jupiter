@@ -322,7 +322,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             )
 
         async with self._search_storage_engine.get_unit_of_work() as search_uow:
-            await search_uow.search_repository.create(
+            await search_uow.search_repository.upsert(
                 new_workspace.ref_id, new_default_project
             )
 

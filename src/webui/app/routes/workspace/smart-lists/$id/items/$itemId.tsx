@@ -47,7 +47,10 @@ const UpdateFormSchema = {
   tags: z
     .string()
     .transform((s) => (s.trim() !== "" ? s.trim().split(",") : [])),
-  url: z.string().optional(),
+  url: z
+    .string()
+    .transform((s) => (s === "" ? undefined : s))
+    .optional(),
 };
 
 export const handle = {

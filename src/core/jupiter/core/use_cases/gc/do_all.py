@@ -41,12 +41,12 @@ class GCDoAllUseCase(AppBackgroundMutationUseCase[GCDoAllArgs, None]):
 
             async with self._search_storage_engine.get_unit_of_work() as search_uow:
                 for created_entity in progress_reporter.created_entities:
-                    await search_uow.search_repository.create(
+                    await search_uow.search_repository.upsert(
                         workspace.ref_id, created_entity
                     )
 
                 for updated_entity in progress_reporter.updated_entities:
-                    await search_uow.search_repository.update(
+                    await search_uow.search_repository.upsert(
                         workspace.ref_id, updated_entity
                     )
 

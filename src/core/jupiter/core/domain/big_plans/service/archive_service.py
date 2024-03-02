@@ -44,7 +44,7 @@ class BigPlanArchiveService:
         inbox_tasks_to_archive = await uow.get_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=False,
-            big_plan_ref_ids=[big_plan.ref_id],
+            big_plan_ref_id=[big_plan.ref_id],
         )
 
         archived_inbox_tasks = []

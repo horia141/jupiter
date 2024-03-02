@@ -74,7 +74,7 @@ class DocFindUseCase(
             parent_ref_id=doc_collection.ref_id,
             allow_archived=args.allow_archived,
             ref_id=args.filter_ref_ids or NoFilter(),
-            parent_doc_ref_id=[None],
+            parent_doc_ref_id=NoFilter(),
         )
 
         notes_by_doc_ref_id: defaultdict[EntityId, Note] = defaultdict(None)

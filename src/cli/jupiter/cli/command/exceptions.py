@@ -11,7 +11,10 @@ from jupiter.core.domain.features import FeatureUnavailableError
 from jupiter.core.domain.projects.errors import ProjectInSignificantUseError
 from jupiter.core.domain.user.user import UserAlreadyExistsError, UserNotFoundError
 from jupiter.core.domain.workspaces.workspace import WorkspaceNotFoundError
-from jupiter.core.framework.errors import InputValidationError
+from jupiter.core.framework.errors import (
+    InputValidationError,
+    MultiInputValidationError,
+)
 from jupiter.core.framework.repository import EntityNotFoundError
 from jupiter.core.framework.storage import ConnectionPrepareError
 from jupiter.core.use_cases.login import InvalidLoginCredentialsError
@@ -39,6 +42,19 @@ class InputValidationHandler(CliExceptionHandler[InputValidationError]):
         """Handle input validation errors."""
         print("Looks like there's something wrong with the command's arguments:")
         print(f"  {exception}")
+        sys.exit(1)
+
+
+class MultiInputValidationHandler(CliExceptionHandler[MultiInputValidationError]):
+    """Handle input validation errors."""
+
+    def handle(
+        self, app: CliApp, console: Console, exception: MultiInputValidationError
+    ) -> None:
+        """Handle input validation errors."""
+        print("Looks like there's something wrong with the command's arguments:")
+        for k, v in exception.errors.items():
+            print(f"  {k}: {v}")
         sys.exit(1)
 
 

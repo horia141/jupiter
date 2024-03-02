@@ -24,6 +24,7 @@ import uvicorn
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import Depends, FastAPI, Request
 from fastapi.openapi.utils import get_openapi
+from fastapi.responses import JSONResponse, PlainTextResponse
 from fastapi.routing import APIRoute
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.types import DecoratedCallable
@@ -383,6 +384,36 @@ class CronCommand(
         raise Exception("Cron commands should not be attached to the app.")
 
 
+_ExceptionT = TypeVar("_ExceptionT", bound=Exception)
+
+
+class WebExceptionHandler(Generic[_ExceptionT], abc.ABC):
+    """An exception handler for the web."""
+
+    _exception_type: type[_ExceptionT]
+
+    def __init__(self, exception_type: type[_ExceptionT]) -> None:
+        """Constructor."""
+        self._exception_type = exception_type
+
+    @abc.abstractmethod
+    def handle(
+        self, app: "WebServiceApp", exception: _ExceptionT
+    ) -> JSONResponse | PlainTextResponse:
+        """Handle the exception."""
+
+    def attach_handler(
+        self, web_service_app: "WebServiceApp", fast_api: FastAPI
+    ) -> None:
+        """Attach the route to the app."""
+
+        @fast_api.exception_handler(self._exception_type)
+        async def handle_exception(
+            request: Request, exc: _ExceptionT
+        ) -> JSONResponse | PlainTextResponse:
+            return self.handle(web_service_app, exc)
+
+
 class WebServiceApp:
     """The app."""
 
@@ -410,6 +441,7 @@ class WebServiceApp:
         ]
     ]
     _commands: Final[dict[str, Command]]
+    _exception_handlers: Final[dict[type[Exception], WebExceptionHandler[Exception]]]
     _fast_app: Final[FastAPI]
     _scheduler: Final[AsyncIOScheduler]
 
@@ -439,6 +471,7 @@ class WebServiceApp:
         self._use_case_storage_engine = use_case_storage_engine
         self._use_case_commands = {}
         self._commands = {}
+        self._exception_handlers = {}
         self._fast_app = FastAPI(
             generate_unique_id_function=self._custom_generate_unique_id,
             openapi_url="/openapi.json"
@@ -497,6 +530,34 @@ class WebServiceApp:
 
                 yield obj
 
+        def extract_exception_handler(
+            the_module: types.ModuleType,
+        ) -> Iterator[tuple[type[Exception], type[WebExceptionHandler[Exception]]]]:
+            for _name, obj in the_module.__dict__.items():
+                if not (
+                    isinstance(obj, type)
+                    and issubclass(obj, WebExceptionHandler)
+                    and obj is not WebExceptionHandler
+                ):
+                    continue
+
+                if obj.__module__ != the_module.__name__:
+                    # This is an import, and not a definition!
+                    continue
+
+                if not hasattr(obj, "__parameters__") or not hasattr(
+                    obj.__parameters__, "__len__"
+                ):
+                    continue
+
+                if len(obj.__parameters__) > 0:  # type: ignore
+                    # This is not a concret type and we can move on
+                    continue
+
+                exception_type = get_args(obj.__orig_bases__[0])[0]  # type: ignore
+
+                yield exception_type, obj
+
         app = WebServiceApp(
             global_properties,
             request_time_provider,
@@ -531,6 +592,16 @@ class WebServiceApp:
                 command.attach_route(app.fast_app)
             else:
                 raise Exception(f"Unknown command type {command}")
+
+        for mr in module_root:
+            for m in find_all_modules(mr):
+                for exception_type, exception_handler in extract_exception_handler(m):
+                    if exception_type in app._exception_handlers:
+                        continue
+                    handler = app._add_exception_handler(
+                        exception_type, exception_handler
+                    )
+                    handler.attach_handler(app, app.fast_app)
 
         return app
 
@@ -644,6 +715,17 @@ class WebServiceApp:
             # raise Exception(f"Unsupported use case type {use_case_type}")
 
         return self
+
+    def _add_exception_handler(
+        self,
+        exception_type: type[Exception],
+        exception_handler: type[WebExceptionHandler[Exception]],
+    ) -> WebExceptionHandler[Exception]:
+        if exception_type in self._exception_handlers:
+            raise Exception(f"Exception type {exception_type} already added")
+        handler = exception_handler(exception_type)
+        self._exception_handlers[exception_type] = handler
+        return handler
 
     def _custom_openapi(self) -> dict[str, Any]:  # type: ignore
         def build_primitive_type(primitive_type: type[Primitive]) -> str:

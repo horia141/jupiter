@@ -321,12 +321,12 @@ class AppLoggedInMutationUseCase(
         # Register all entities that were created/changed/removed with the search index.
         async with self._search_storage_engine.get_unit_of_work() as uow:
             for created_entity in progress_reporter.created_entities:
-                await uow.search_repository.create(
+                await uow.search_repository.upsert(
                     context.workspace_ref_id, created_entity
                 )
 
             for updated_entity in progress_reporter.updated_entities:
-                await uow.search_repository.update(
+                await uow.search_repository.upsert(
                     context.workspace_ref_id, updated_entity
                 )
 

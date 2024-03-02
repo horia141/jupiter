@@ -25,12 +25,8 @@ class SearchRepository(Repository, abc.ABC):
     """A search index repository for free form searching across all entities."""
 
     @abc.abstractmethod
-    async def create(self, workspace_ref_id: EntityId, entity: CrownEntity) -> None:
+    async def upsert(self, workspace_ref_id: EntityId, entity: CrownEntity) -> None:
         """Add an entity and make it available for searching."""
-
-    @abc.abstractmethod
-    async def update(self, workspace_ref_id: EntityId, entity: CrownEntity) -> None:
-        """Update an entity for searching."""
 
     @abc.abstractmethod
     async def remove(self, workspace_ref_id: EntityId, entity: CrownEntity) -> None:

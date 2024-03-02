@@ -69,39 +69,42 @@ class SqliteSearchRepository(SqliteRepository, SearchRepository):
             keep_existing=True,
         )
 
-    async def create(self, workspace_ref_id: EntityId, entity: CrownEntity) -> None:
+    async def upsert(self, workspace_ref_id: EntityId, entity: CrownEntity) -> None:
         """Create an entity in the index."""
-        await self._connection.execute(
-            insert(self._search_index_table).values(
-                workspace_ref_id=workspace_ref_id.as_int(),
-                entity_tag=str(NamedEntityTag.from_entity(entity).value),
-                parent_ref_id=self._realm_codec_registry.get_encoder(
-                    EntityId, DatabaseRealm
-                ).encode(entity.parent_ref_id),
-                ref_id=self._realm_codec_registry.get_encoder(
-                    EntityId, DatabaseRealm
-                ).encode(entity.ref_id),
-                name=self._realm_codec_registry.get_encoder(
-                    EntityName, DatabaseRealm
-                ).encode(entity.name),
-                archived=self._realm_codec_registry.get_encoder(
-                    bool, DatabaseRealm
-                ).encode(entity.archived),
-                created_time=self._realm_codec_registry.get_encoder(
-                    Timestamp, DatabaseRealm
-                ).encode(entity.created_time),
-                last_modified_time=self._realm_codec_registry.get_encoder(
-                    Timestamp, DatabaseRealm
-                ).encode(entity.last_modified_time),
-                archived_time=self._realm_codec_registry.get_encoder(
-                    Timestamp, DatabaseRealm
-                ).encode(entity.archived_time)
-                if entity.archived_time
-                else None,
+        try:
+            await self._update(workspace_ref_id, entity)
+        except EntityNotFoundError:
+            await self._connection.execute(
+                insert(self._search_index_table).values(
+                    workspace_ref_id=workspace_ref_id.as_int(),
+                    entity_tag=str(NamedEntityTag.from_entity(entity).value),
+                    parent_ref_id=self._realm_codec_registry.get_encoder(
+                        EntityId, DatabaseRealm
+                    ).encode(entity.parent_ref_id),
+                    ref_id=self._realm_codec_registry.get_encoder(
+                        EntityId, DatabaseRealm
+                    ).encode(entity.ref_id),
+                    name=self._realm_codec_registry.get_encoder(
+                        EntityName, DatabaseRealm
+                    ).encode(entity.name),
+                    archived=self._realm_codec_registry.get_encoder(
+                        bool, DatabaseRealm
+                    ).encode(entity.archived),
+                    created_time=self._realm_codec_registry.get_encoder(
+                        Timestamp, DatabaseRealm
+                    ).encode(entity.created_time),
+                    last_modified_time=self._realm_codec_registry.get_encoder(
+                        Timestamp, DatabaseRealm
+                    ).encode(entity.last_modified_time),
+                    archived_time=self._realm_codec_registry.get_encoder(
+                        Timestamp, DatabaseRealm
+                    ).encode(entity.archived_time)
+                    if entity.archived_time
+                    else None,
+                )
             )
-        )
 
-    async def update(self, workspace_ref_id: EntityId, entity: CrownEntity) -> None:
+    async def _update(self, workspace_ref_id: EntityId, entity: CrownEntity) -> None:
         """Update an entity in the index."""
         query = (
             update(self._search_index_table)
