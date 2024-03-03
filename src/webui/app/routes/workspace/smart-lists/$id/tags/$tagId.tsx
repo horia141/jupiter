@@ -11,12 +11,8 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import {
-  ShouldRevalidateFunction,
-  useActionData,
-  useParams,
-  useTransition,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { useActionData, useParams, useTransition } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { ApiError } from "jupiter-gen";
 import { z } from "zod";
@@ -53,8 +49,8 @@ export async function loader({ request, params }: LoaderArgs) {
   try {
     const result = await getLoggedInApiClient(
       session
-    ).smartList.loadSmartListTag({
-      ref_id: { the_id: tagId },
+    ).smartLists.smartListTagLoad({
+      ref_id: tagId,
       allow_archived: true,
     });
 
@@ -81,11 +77,11 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (form.intent) {
       case "update": {
-        await getLoggedInApiClient(session).smartList.updateSmartListTag({
-          ref_id: { the_id: tagId },
+        await getLoggedInApiClient(session).smartLists.smartListTagUpdate({
+          ref_id: tagId,
           tag_name: {
             should_change: true,
-            value: { the_tag: form.name },
+            value: form.name,
           },
         });
 
@@ -93,8 +89,8 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).smartList.archiveSmartListTag({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).smartLists.smartListTagArchive({
+          ref_id: id,
         });
 
         return redirect(`/workspace/smart-lists/${id}/tags/${tagId}`);
@@ -129,7 +125,7 @@ export default function SmartListTag() {
 
   return (
     <LeafPanel
-      key={loaderData.smartListTag.ref_id.the_id}
+      key={loaderData.smartListTag.ref_id}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation={`/workspace/smart-lists/${key}/tags`}
@@ -142,7 +138,7 @@ export default function SmartListTag() {
               <InputLabel id="name">Name</InputLabel>
               <OutlinedInput
                 label="Name"
-                defaultValue={loaderData.smartListTag.tag_name.the_tag}
+                defaultValue={loaderData.smartListTag.tag_name}
                 name="name"
                 readOnly={!inputsEnabled}
               />

@@ -1,4 +1,5 @@
 [mypy]
+disable_error_code = type-abstract
 namespace_packages = True
 disallow_any_decorated = False
 disallow_any_explicit = True
@@ -16,7 +17,7 @@ warn_unreachable = True
 implicit_reexport = False
 strict_equality = True
 pretty = True
-plugins = pydantic.mypy
+# plugins = pydantic.mypy
 
 [pydantic-mypy]
 init_forbid_extra = True
@@ -37,6 +38,9 @@ disallow_untyped_calls = False
 disallow_untyped_calls = False
 
 [mypy-jupiter.cli.command.*]
+disallow_any_explicit = False
+
+[mypy-jupiter.webapi.app.*]
 disallow_any_explicit = False
 
 [mypy-tests.integration.infra.*]

@@ -82,43 +82,23 @@ export async function action({ request }: ActionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const form = await parseForm(request, WorkspaceInitFormSchema);
 
-  const userFeatureFlags: Record<string, boolean> = {};
-  for (const feature of Object.values(UserFeature)) {
-    if (form.userFeatureFlags.find((v) => v == feature)) {
-      userFeatureFlags[feature] = true;
-    } else {
-      userFeatureFlags[feature] = false;
-    }
-  }
-
-  const workspaceFeatureFlags: Record<string, boolean> = {};
-  for (const feature of Object.values(WorkspaceFeature)) {
-    if (form.workspaceFeatureFlags.find((v) => v == feature)) {
-      workspaceFeatureFlags[feature] = true;
-    } else {
-      workspaceFeatureFlags[feature] = false;
-    }
-  }
-
   try {
     const result = await getGuestApiClient(session).init.init({
-      user_email_address: { the_address: form.userEmailAddress },
-      user_name: { the_name: form.userName },
-      user_timezone: { the_timezone: form.userTimezone },
-      user_feature_flags: userFeatureFlags,
-      auth_password: { password_raw: form.authPassword },
-      auth_password_repeat: { password_raw: form.authPasswordRepeat },
-      workspace_name: { the_name: form.workspaceName },
-      workspace_first_project_name: {
-        the_name: form.workspaceFirstProjectName,
-      },
-      workspace_feature_flags: workspaceFeatureFlags,
+      user_email_address: form.userEmailAddress,
+      user_name: form.userName,
+      user_timezone: form.userTimezone,
+      user_feature_flags: form.userFeatureFlags,
+      auth_password: form.authPassword,
+      auth_password_repeat: form.authPasswordRepeat,
+      workspace_name: form.workspaceName,
+      workspace_first_project_name: form.workspaceFirstProjectName,
+      workspace_feature_flags: form.workspaceFeatureFlags,
     });
 
     session.set("authTokenExt", result.auth_token_ext);
 
     return redirect(
-      `/show-recovery-token?recoveryToken=${result.recovery_token.token}`,
+      `/show-recovery-token?recoveryToken=${result.recovery_token}`,
       {
         headers: {
           "Set-Cookie": await commitSession(session),
@@ -253,7 +233,7 @@ export default function WorkspaceInit() {
                         label="Workspace Name"
                         name="workspaceName"
                         readOnly={!inputsEnabled}
-                        defaultValue={loaderData.defaultWorkspaceName.the_name}
+                        defaultValue={loaderData.defaultWorkspaceName}
                       />
                       <FieldError
                         actionResult={actionData}
@@ -267,9 +247,7 @@ export default function WorkspaceInit() {
                         label="First Project Name"
                         name="workspaceFirstProjectName"
                         readOnly={!inputsEnabled}
-                        defaultValue={
-                          loaderData.defaultFirstProjectName.the_name
-                        }
+                        defaultValue={loaderData.defaultFirstProjectName}
                       />
                       <FieldError
                         actionResult={actionData}

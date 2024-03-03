@@ -11,11 +11,8 @@ import {
 import { Stack } from "@mui/system";
 import type { ActionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import {
-  ShouldRevalidateFunction,
-  useActionData,
-  useTransition,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { ApiError } from "jupiter-gen";
 import { z } from "zod";
@@ -44,15 +41,15 @@ export async function action({ request }: ActionArgs) {
   const form = await parseForm(request, CreateFormSchema);
 
   try {
-    const result = await getLoggedInApiClient(session).vacation.createVacation({
-      name: { the_name: form.name },
-      start_date: { the_date: form.startDate, the_datetime: undefined },
-      end_date: { the_date: form.endDate, the_datetime: undefined },
-    });
-
-    return redirect(
-      `/workspace/vacations/${result.new_vacation.ref_id.the_id}`
+    const result = await getLoggedInApiClient(session).vacations.vacationCreate(
+      {
+        name: form.name,
+        start_date: form.startDate,
+        end_date: form.endDate,
+      }
     );
+
+    return redirect(`/workspace/vacations/${result.new_vacation.ref_id}`);
   } catch (error) {
     if (
       error instanceof ApiError &&

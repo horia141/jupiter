@@ -1,7 +1,9 @@
 """Load previous runs of Gen."""
 
+from jupiter.core.domain.gc.gc_log_entry import GenLogEntryRepository
+from jupiter.core.domain.gen.gen_log import GenLog
 from jupiter.core.domain.gen.gen_log_entry import GenLogEntry
-from jupiter.core.framework.use_case import (
+from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,
     use_case_args,
@@ -38,10 +40,8 @@ class GenLoadRunsUseCase(
         args: GenLoadRunsArgs,
     ) -> GenLoadRunsResult:
         """Execute the use case."""
-        async with self._storage_engine.get_unit_of_work() as uow:
-            gen_log = await uow.gen_log_repository.load_by_parent(
-                context.workspace.ref_id
-            )
-            entries = await uow.gen_log_entry_repository.find_last(gen_log.ref_id, 30)
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
+            gen_log = await uow.get_for(GenLog).load_by_parent(context.workspace.ref_id)
+            entries = await uow.get(GenLogEntryRepository).find_last(gen_log.ref_id, 30)
 
         return GenLoadRunsResult(entries=entries)

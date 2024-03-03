@@ -5,6 +5,9 @@
 import type { BigPlanName } from './BigPlanName';
 import type { EntityId } from './EntityId';
 
+/**
+ * Summary information about a big plan.
+ */
 export type BigPlanSummary = {
     ref_id: EntityId;
     name: BigPlanName;

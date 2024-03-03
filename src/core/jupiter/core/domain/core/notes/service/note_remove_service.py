@@ -1,5 +1,5 @@
 """Remove a note."""
-from jupiter.core.domain.core.notes.note import Note
+from jupiter.core.domain.core.notes.note import Note, NoteRepository
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -19,7 +19,7 @@ class NoteRemoveService:
         if note.can_be_removed_independently:
             raise Exception(f"Note {note.ref_id} cannot be removed independently")
 
-        await uow.note_repository.remove(note.ref_id)
+        await uow.get_for(Note).remove(note.ref_id)
 
     async def remove_for_source(
         self,
@@ -29,11 +29,11 @@ class NoteRemoveService:
         source_entity_ref_id: EntityId,
     ) -> None:
         """Execute the command's action."""
-        note = await uow.note_repository.load_optional_for_source(
+        note = await uow.get(NoteRepository).load_optional_for_source(
             domain, source_entity_ref_id
         )
         if note is None:
             return
         if not note.can_be_removed_independently:
             raise Exception(f"Note {note.ref_id} cannot be removed dependently")
-        await uow.note_repository.remove(note.ref_id)
+        await uow.get_for(Note).remove(note.ref_id)

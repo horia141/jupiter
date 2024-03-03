@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type Timestamp = {
-    the_ts: string;
-};
-
+/**
+ * A timestamp in the application.
+ */
+export type Timestamp = string;

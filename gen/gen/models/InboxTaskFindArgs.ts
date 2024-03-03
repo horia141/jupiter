@@ -5,6 +5,9 @@
 import type { EntityId } from './EntityId';
 import type { InboxTaskSource } from './InboxTaskSource';
 
+/**
+ * PersonFindArgs.
+ */
 export type InboxTaskFindArgs = {
     allow_archived: boolean;
     include_notes: boolean;

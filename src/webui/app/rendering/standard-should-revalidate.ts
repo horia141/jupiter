@@ -1,4 +1,4 @@
-import { ShouldRevalidateFunction } from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
 
 export const standardShouldRevalidate: ShouldRevalidateFunction = ({
   actionResult,

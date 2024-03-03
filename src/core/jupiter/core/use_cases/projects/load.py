@@ -4,7 +4,7 @@ from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.use_case import (
+from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,
     use_case_args,
@@ -45,7 +45,7 @@ class ProjectLoadUseCase(
         args: ProjectLoadArgs,
     ) -> ProjectLoadResult:
         """Execute the command's action."""
-        project = await uow.project_repository.load_by_id(
+        project = await uow.get_for(Project).load_by_id(
             args.ref_id, allow_archived=args.allow_archived
         )
 

@@ -6,19 +6,25 @@ from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.core.timeline import infer_timeline
 from jupiter.core.domain.gamification.score_log import ScoreLog
 from jupiter.core.domain.gamification.score_log_entry import ScoreLogEntry
-from jupiter.core.domain.gamification.score_period_best import ScorePeriodBest
-from jupiter.core.domain.gamification.score_stats import ScoreStats
+from jupiter.core.domain.gamification.score_period_best import (
+    ScorePeriodBest,
+    ScorePeriodBestRepository,
+)
+from jupiter.core.domain.gamification.score_stats import (
+    ScoreStats,
+    ScoreStatsRepository,
+)
 from jupiter.core.domain.gamification.user_score_overview import UserScoreOverview
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.user.user import User
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.repository import EntityAlreadyExistsError
-from jupiter.core.framework.value import Value, value
+from jupiter.core.framework.value import CompositeValue, value
 
 
 @value
-class RecordScoreResult(Value):
+class RecordScoreResult(CompositeValue):
     """The result of the score recording."""
 
     latest_task_score: int
@@ -42,7 +48,7 @@ class RecordScoreService:
 
         # Record the accomplishment of the task in the score log.
 
-        score_log = await uow.score_log_repository.load_by_parent(user.ref_id)
+        score_log = await uow.get_for(ScoreLog).load_by_parent(user.ref_id)
 
         if isinstance(task, InboxTask):
             new_score_log_entry = ScoreLogEntry.new_from_inbox_task(
@@ -58,7 +64,7 @@ class RecordScoreService:
             )
 
         try:
-            await uow.score_log_entry_repository.create(new_score_log_entry)
+            await uow.get_for(ScoreLogEntry).create(new_score_log_entry)
         except EntityAlreadyExistsError:
             # The score log entry already exists. This entity has already been marked as done
             # or not done, and we won't do it again!
@@ -248,7 +254,7 @@ class RecordScoreService:
         score_log_entry: ScoreLogEntry,
     ) -> ScoreStats:
         timeline = infer_timeline(period, ctx.action_timestamp)
-        score_stats = await uow.score_stats_repository.load_by_key_optional(
+        score_stats = await uow.get(ScoreStatsRepository).load_by_key_optional(
             (score_log.ref_id, period, timeline)
         )
 
@@ -262,13 +268,13 @@ class RecordScoreService:
                 ctx,
                 score_log_entry,
             )
-            score_stats = await uow.score_stats_repository.create(score_stats)
+            score_stats = await uow.get(ScoreStatsRepository).create(score_stats)
         else:
             score_stats = score_stats.merge_score(
                 ctx,
                 score_log_entry,
             )
-            score_stats = await uow.score_stats_repository.save(score_stats)
+            score_stats = await uow.get(ScoreStatsRepository).save(score_stats)
 
         return score_stats
 
@@ -282,9 +288,9 @@ class RecordScoreService:
         score_log: ScoreLog,
     ) -> ScorePeriodBest:
         timeline = infer_timeline(period, ctx.action_timestamp)
-        score_period_best = await uow.score_period_best_repository.load_by_key_optional(
-            (score_log.ref_id, period, timeline, sub_period)
-        )
+        score_period_best = await uow.get(
+            ScorePeriodBestRepository
+        ).load_by_key_optional((score_log.ref_id, period, timeline, sub_period))
 
         if score_period_best is None:
             score_period_best = ScorePeriodBest.new_score_period_best(
@@ -294,7 +300,7 @@ class RecordScoreService:
                 timeline,
                 sub_period,
             ).update_to_max(ctx, score_stats)
-            score_period_best = await uow.score_period_best_repository.create(
+            score_period_best = await uow.get(ScorePeriodBestRepository).create(
                 score_period_best
             )
         else:
@@ -302,7 +308,7 @@ class RecordScoreService:
                 ctx,
                 score_stats,
             )
-            score_period_best = await uow.score_period_best_repository.save(
+            score_period_best = await uow.get(ScorePeriodBestRepository).save(
                 score_period_best
             )
 

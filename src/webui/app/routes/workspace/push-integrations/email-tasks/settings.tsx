@@ -13,11 +13,8 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import {
-  ShouldRevalidateFunction,
-  useActionData,
-  useTransition,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import type { Project } from "jupiter-gen";
 import { ApiError, WorkspaceFeature } from "jupiter-gen";
@@ -55,7 +52,7 @@ export async function loader({ request }: LoaderArgs) {
 
   const emailTaskSettingsResponse = await getLoggedInApiClient(
     session
-  ).emailTask.loadEmailTaskSettings({});
+  ).pushIntegrations.emailTaskLoadSettings({});
 
   return json({
     generationProject: emailTaskSettingsResponse.generation_project,
@@ -75,8 +72,8 @@ export async function action({ request }: ActionArgs) {
 
     await getLoggedInApiClient(
       session
-    ).emailTask.changeEmailTaskGenerationProject({
-      generation_project_ref_id: { the_id: form.project },
+    ).pushIntegrations.emailTaskChangeGenerationProject({
+      generation_project_ref_id: form.project,
     });
 
     return redirect(`/workspace/push-integrations/email-tasks/settings`);
@@ -121,12 +118,12 @@ export default function EmailTasksSettings() {
                   labelId="project"
                   name="project"
                   readOnly={!inputsEnabled}
-                  defaultValue={loaderData.generationProject.ref_id.the_id}
+                  defaultValue={loaderData.generationProject.ref_id}
                   label="Project"
                 >
                   {loaderData.allProjects.map((p) => (
-                    <MenuItem key={p.ref_id.the_id} value={p.ref_id.the_id}>
-                      {p.name.the_name}
+                    <MenuItem key={p.ref_id} value={p.ref_id}>
+                      {p.name}
                     </MenuItem>
                   ))}
                 </Select>

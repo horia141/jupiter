@@ -1,14 +1,12 @@
 """UseCase for showing the workspace."""
-from argparse import ArgumentParser, Namespace
 
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     project_to_rich_text,
 )
-from jupiter.cli.session_storage import SessionInfo
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
+from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
 from jupiter.core.use_cases.workspaces.load import (
-    WorkspaceLoadArgs,
+    WorkspaceLoadResult,
     WorkspaceLoadUseCase,
 )
 from rich.console import Console
@@ -16,33 +14,15 @@ from rich.text import Text
 from rich.tree import Tree
 
 
-class WorkspaceShow(LoggedInReadonlyCommand[WorkspaceLoadUseCase]):
+class WorkspaceShow(LoggedInReadonlyCommand[WorkspaceLoadUseCase, WorkspaceLoadResult]):
     """UseCase class for showing the workspace."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "workspace-show"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Show the current information about the workspace"
-
-    def build_parser(self, parser: ArgumentParser) -> None:
-        """Construct a argparse parser for the command."""
-
-    async def _run(
+    def _render_result(
         self,
-        session_info: SessionInfo,
-        args: Namespace,
+        console: Console,
+        context: AppLoggedInReadonlyUseCaseContext,
+        result: WorkspaceLoadResult,
     ) -> None:
-        """Callback to execute when the command is invoked."""
-        result = await self._use_case.execute(
-            AppLoggedInUseCaseSession(session_info.auth_token_ext),
-            WorkspaceLoadArgs(),
-        )
-
         rich_tree = Tree(f"⭐ {result.workspace.name}", guide_style="bold bright_blue")
 
         workspace_text = Text("Default ")
@@ -59,5 +39,4 @@ class WorkspaceShow(LoggedInReadonlyCommand[WorkspaceLoadUseCase]):
         rich_tree.add(workspace_text)
         rich_tree.add(feature_flags_tree)
 
-        console = Console()
         console.print(rich_tree)

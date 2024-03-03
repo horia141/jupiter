@@ -3,15 +3,15 @@ from typing import Optional
 
 from jupiter.core.domain.core.entity_icon import EntityIcon
 from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.smart_lists.smart_list import SmartList
 from jupiter.core.domain.smart_lists.smart_list_name import SmartListName
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
     ProgressReporter,
-    UseCaseArgsBase,
-    use_case_args,
 )
+from jupiter.core.framework.use_case_io import UseCaseArgsBase, use_case_args
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
@@ -42,7 +42,7 @@ class SmartListUpdateUseCase(
         args: SmartListUpdateArgs,
     ) -> None:
         """Execute the command's action."""
-        smart_list = await uow.smart_list_repository.load_by_id(
+        smart_list = await uow.get_for(SmartList).load_by_id(
             args.ref_id,
         )
 
@@ -52,5 +52,5 @@ class SmartListUpdateUseCase(
             icon=args.icon,
         )
 
-        await uow.smart_list_repository.save(smart_list)
+        await uow.get_for(SmartList).save(smart_list)
         await progress_reporter.mark_updated(smart_list)

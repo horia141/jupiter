@@ -4,6 +4,9 @@
 
 import type { EntityId } from './EntityId';
 
+/**
+ * PersonFindArgs.
+ */
 export type PersonArchiveArgs = {
     ref_id: EntityId;
 };

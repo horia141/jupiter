@@ -2,10 +2,8 @@ import type { EntityName, SlackTask } from "jupiter-gen";
 
 export function slackTaskNiceName(slackTask: SlackTask): EntityName {
   if (slackTask.channel) {
-    return {
-      the_name: `Respond to @${slackTask.user.the_name} on channel #${slackTask.channel.the_name}`,
-    };
+    return `Respond to @${slackTask.user} on channel #${slackTask.channel}`;
   } else {
-    return { the_name: `Respond to @${slackTask.user.the_name} in DM` };
+    return `Respond to @${slackTask.user} in DM`;
   }
 }

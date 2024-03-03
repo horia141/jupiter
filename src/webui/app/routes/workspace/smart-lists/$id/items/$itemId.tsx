@@ -13,12 +13,8 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import {
-  ShouldRevalidateFunction,
-  useActionData,
-  useParams,
-  useTransition,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { useActionData, useParams, useTransition } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { ApiError } from "jupiter-gen";
 import { z } from "zod";
@@ -47,7 +43,10 @@ const UpdateFormSchema = {
   tags: z
     .string()
     .transform((s) => (s.trim() !== "" ? s.trim().split(",") : [])),
-  url: z.string().optional(),
+  url: z
+    .string()
+    .transform((s) => (s === "" ? undefined : s))
+    .optional(),
 };
 
 export const handle = {
@@ -61,8 +60,8 @@ export async function loader({ request, params }: LoaderArgs) {
   try {
     const result = await getLoggedInApiClient(
       session
-    ).smartList.loadSmartListItem({
-      ref_id: { the_id: itemId },
+    ).smartLists.smartListItemLoad({
+      ref_id: itemId,
       allow_archived: true,
     });
 
@@ -93,11 +92,11 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (form.intent) {
       case "update": {
-        await getLoggedInApiClient(session).smartList.updateSmartListItem({
-          ref_id: { the_id: itemId },
+        await getLoggedInApiClient(session).smartLists.smartListItemUpdate({
+          ref_id: itemId,
           name: {
             should_change: true,
-            value: { the_name: form.name },
+            value: form.name,
           },
           is_done: {
             should_change: true,
@@ -105,11 +104,11 @@ export async function action({ request, params }: ActionArgs) {
           },
           tags: {
             should_change: true,
-            value: form.tags.map((tag) => ({ the_tag: tag })),
+            value: form.tags,
           },
           url: {
             should_change: true,
-            value: form.url ? { the_url: form.url } : undefined,
+            value: form.url,
           },
         });
 
@@ -117,8 +116,8 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).smartList.archiveSmartListItem({
-          ref_id: { the_id: itemId },
+        await getLoggedInApiClient(session).smartLists.smartListItemArchive({
+          ref_id: itemId,
         });
 
         return redirect(`/workspace/smart-lists/${id}/items/${itemId}`);
@@ -149,7 +148,7 @@ export default function SmartListItem() {
 
   return (
     <LeafPanel
-      key={loaderData.smartListItem.ref_id.the_id}
+      key={loaderData.smartListItem.ref_id}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation={`/workspace/smart-lists/${id}/items`}
@@ -162,7 +161,7 @@ export default function SmartListItem() {
               <InputLabel id="name">Name</InputLabel>
               <OutlinedInput
                 label="Name"
-                defaultValue={loaderData.smartListItem.name.the_name}
+                defaultValue={loaderData.smartListItem.name}
                 name="name"
                 readOnly={!inputsEnabled}
               />
@@ -200,7 +199,7 @@ export default function SmartListItem() {
                 label="Url"
                 name="url"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.smartListItem.url?.the_url}
+                defaultValue={loaderData.smartListItem.url}
               />
               <FieldError actionResult={actionData} fieldName="/url" />
             </FormControl>

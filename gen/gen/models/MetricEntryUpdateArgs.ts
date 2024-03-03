@@ -5,6 +5,9 @@
 import type { ADate } from './ADate';
 import type { EntityId } from './EntityId';
 
+/**
+ * PersonFindArgs.
+ */
 export type MetricEntryUpdateArgs = {
     ref_id: EntityId;
     collection_time: {

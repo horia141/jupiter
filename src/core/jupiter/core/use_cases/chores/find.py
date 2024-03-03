@@ -2,15 +2,19 @@
 from typing import List, Optional
 
 from jupiter.core.domain.chores.chore import Chore
+from jupiter.core.domain.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.features import (
     FeatureUnavailableError,
     WorkspaceFeature,
 )
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.projects.project import Project
+from jupiter.core.domain.projects.project_collection import ProjectCollection
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.use_case import (
+from jupiter.core.framework.entity import NoFilter
+from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,
     use_case_args,
@@ -36,7 +40,7 @@ class ChoreFindArgs(UseCaseArgsBase):
 
 
 @use_case_result_part
-class ChoreFindResultEntry:
+class ChoreFindResultEntry(UseCaseResultBase):
     """A single entry in the load all chores response."""
 
     chore: Chore
@@ -72,40 +76,39 @@ class ChoreFindUseCase(
         ):
             raise FeatureUnavailableError(WorkspaceFeature.PROJECTS)
 
-        project_collection = await uow.project_collection_repository.load_by_parent(
+        project_collection = await uow.get_for(ProjectCollection).load_by_parent(
             workspace.ref_id,
         )
 
         if args.include_project:
-            projects = await uow.project_repository.find_all_with_filters(
+            projects = await uow.get_for(Project).find_all_generic(
                 parent_ref_id=project_collection.ref_id,
-                filter_ref_ids=args.filter_project_ref_ids,
+                allow_archived=args.allow_archived,
+                ref_id=args.filter_project_ref_ids or NoFilter(),
             )
             project_by_ref_id = {p.ref_id: p for p in projects}
         else:
             project_by_ref_id = None
 
-        inbox_task_collection = (
-            await uow.inbox_task_collection_repository.load_by_parent(
-                workspace.ref_id,
-            )
+        inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
+            workspace.ref_id,
         )
-        chore_collection = await uow.chore_collection_repository.load_by_parent(
+        chore_collection = await uow.get_for(ChoreCollection).load_by_parent(
             workspace.ref_id,
         )
 
-        chores = await uow.chore_repository.find_all_with_filters(
+        chores = await uow.get_for(Chore).find_all_generic(
             parent_ref_id=chore_collection.ref_id,
             allow_archived=args.allow_archived,
-            filter_ref_ids=args.filter_ref_ids,
-            filter_project_ref_ids=args.filter_project_ref_ids,
+            ref_id=args.filter_ref_ids or NoFilter(),
+            project_ref_id=args.filter_project_ref_ids or NoFilter(),
         )
 
         if args.include_inbox_tasks:
-            inbox_tasks = await uow.inbox_task_repository.find_all_with_filters(
+            inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
-                filter_chore_ref_ids=(bp.ref_id for bp in chores),
+                chore_ref_id=[bp.ref_id for bp in chores],
             )
         else:
             inbox_tasks = None

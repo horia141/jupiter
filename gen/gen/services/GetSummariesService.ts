@@ -12,14 +12,14 @@ export class GetSummariesService {
     constructor(public readonly httpRequest: BaseHttpRequest) {}
 
     /**
-     * Get Summaries
-     * Get summaries about entities.
-     * @param requestBody
-     * @returns GetSummariesResult Successful Response
+     * The use case for retrieving summaries about entities.
+     * The use case for retrieving summaries about entities.
+     * @param requestBody The input data
+     * @returns GetSummariesResult Successful response
      * @throws ApiError
      */
     public getSummaries(
-        requestBody: GetSummariesArgs,
+        requestBody?: GetSummariesArgs,
     ): CancelablePromise<GetSummariesResult> {
         return this.httpRequest.request({
             method: 'POST',

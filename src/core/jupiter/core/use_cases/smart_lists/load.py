@@ -7,7 +7,7 @@ from jupiter.core.domain.smart_lists.smart_list_item import SmartListItem
 from jupiter.core.domain.smart_lists.smart_list_tag import SmartListTag
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.use_case import (
+from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,
     use_case_args,
@@ -50,15 +50,15 @@ class SmartListLoadUseCase(
         args: SmartListLoadArgs,
     ) -> SmartListLoadResult:
         """Execute the command's action."""
-        smart_list = await uow.smart_list_repository.load_by_id(
+        smart_list = await uow.get_for(SmartList).load_by_id(
             args.ref_id,
             allow_archived=args.allow_archived,
         )
-        smart_list_tags = await uow.smart_list_tag_repository.find_all_with_filters(
-            smart_list.ref_id, allow_archived=args.allow_archived
+        smart_list_tags = await uow.get_for(SmartListTag).find_all_generic(
+            parent_ref_id=smart_list.ref_id, allow_archived=args.allow_archived
         )
-        smart_list_items = await uow.smart_list_item_repository.find_all_with_filters(
-            smart_list.ref_id, allow_archived=args.allow_archived
+        smart_list_items = await uow.get_for(SmartListItem).find_all_generic(
+            parent_ref_id=smart_list.ref_id, allow_archived=args.allow_archived
         )
 
         return SmartListLoadResult(

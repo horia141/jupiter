@@ -2,11 +2,15 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { CorrelationId } from './CorrelationId';
 import type { EntityId } from './EntityId';
 import type { NamedEntityTag } from './NamedEntityTag';
 
+/**
+ * A link.
+ */
 export type EntityReferenceBlock = {
-    correlation_id: EntityId;
+    correlation_id: CorrelationId;
     kind: EntityReferenceBlock.kind;
     entity_tag: NamedEntityTag;
     ref_id: EntityId;

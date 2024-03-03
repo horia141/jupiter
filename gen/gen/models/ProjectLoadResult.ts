@@ -4,6 +4,9 @@
 
 import type { Project } from './Project';
 
+/**
+ * ProjectLoadResult.
+ */
 export type ProjectLoadResult = {
     project: Project;
 };

@@ -2,7 +2,7 @@ import { Box, Chip, MenuItem, Select } from "@mui/material";
 import { NamedEntityTag } from "jupiter-gen";
 import { entityTagName } from "~/logic/domain/entity-tag";
 import { inferEntityTagsForEnabledFeatures } from "~/logic/domain/workspace";
-import { TopLevelInfo } from "~/top-level-context";
+import type { TopLevelInfo } from "~/top-level-context";
 
 interface EntityTagSelectProps {
   topLevelInfo: TopLevelInfo;

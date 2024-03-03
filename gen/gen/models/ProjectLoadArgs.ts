@@ -4,6 +4,9 @@
 
 import type { EntityId } from './EntityId';
 
+/**
+ * ProjectLoadArgs.
+ */
 export type ProjectLoadArgs = {
     ref_id: EntityId;
     allow_archived: boolean;

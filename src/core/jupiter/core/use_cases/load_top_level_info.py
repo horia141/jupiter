@@ -1,7 +1,7 @@
 """The command for loading workspaces if they exist."""
-from typing import Final, Optional
+from typing import Optional
 
-from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
+from jupiter.core.domain.env import Env
 from jupiter.core.domain.features import (
     BASIC_USER_FEATURE_FLAGS,
     BASIC_WORKSPACE_FEATURE_FLAGS,
@@ -18,16 +18,16 @@ from jupiter.core.domain.gamification.service.score_overview_service import (
 from jupiter.core.domain.gamification.user_score_overview import UserScoreOverview
 from jupiter.core.domain.hosting import Hosting
 from jupiter.core.domain.projects.project_name import ProjectName
-from jupiter.core.domain.storage_engine import DomainStorageEngine
-from jupiter.core.domain.user.infra.user_repository import UserNotFoundError
-from jupiter.core.domain.user.user import User
-from jupiter.core.domain.workspaces.infra.workspace_repository import (
+from jupiter.core.domain.user.user import User, UserNotFoundError
+from jupiter.core.domain.user_workspace_link.user_workspace_link import (
+    UserWorkspaceLinkRepository,
+)
+from jupiter.core.domain.workspaces.workspace import (
+    Workspace,
     WorkspaceNotFoundError,
 )
-from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.domain.workspaces.workspace_name import WorkspaceName
-from jupiter.core.framework.env import Env
-from jupiter.core.framework.use_case import (
+from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,
     use_case_args,
@@ -38,8 +38,6 @@ from jupiter.core.use_cases.infra.use_cases import (
     AppGuestReadonlyUseCaseContext,
 )
 from jupiter.core.utils.feature_flag_controls import infer_feature_flag_controls
-from jupiter.core.utils.global_properties import GlobalProperties
-from jupiter.core.utils.time_provider import TimeProvider
 
 
 @use_case_args
@@ -71,21 +69,6 @@ class LoadTopLevelInfoUseCase(
 ):
     """The command for loading a user and workspace if they exist and other data too."""
 
-    _global_properties: Final[GlobalProperties]
-    _time_provider: Final[TimeProvider]
-
-    def __init__(
-        self,
-        auth_token_stamper: AuthTokenStamper,
-        storage_engine: DomainStorageEngine,
-        global_properties: GlobalProperties,
-        time_provider: TimeProvider,
-    ) -> None:
-        """Constructor."""
-        super().__init__(auth_token_stamper, storage_engine)
-        self._global_properties = global_properties
-        self._time_provider = time_provider
-
     async def _execute(
         self,
         context: AppGuestReadonlyUseCaseContext,
@@ -97,22 +80,20 @@ class LoadTopLevelInfoUseCase(
             workspace_feature_flags_controls,
         ) = infer_feature_flag_controls(self._global_properties)
 
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             if context.auth_token is None:
                 user = None
                 workspace = None
                 user_score_overview = None
             else:
                 try:
-                    user = await uow.user_repository.load_by_id(
+                    user = await uow.get_for(User).load_by_id(
                         context.auth_token.user_ref_id
                     )
-                    user_workspace_link = (
-                        await uow.user_workspace_link_repository.load_by_user(
-                            context.auth_token.user_ref_id
-                        )
-                    )
-                    workspace = await uow.workspace_repository.load_by_id(
+                    user_workspace_link = await uow.get(
+                        UserWorkspaceLinkRepository
+                    ).load_by_user(context.auth_token.user_ref_id)
+                    workspace = await uow.get_for(Workspace).load_by_id(
                         user_workspace_link.workspace_ref_id
                     )
                     if user.is_feature_available(UserFeature.GAMIFICATION):
@@ -132,8 +113,8 @@ class LoadTopLevelInfoUseCase(
             user_feature_flag_controls=user_feature_flags_controls,
             default_user_feature_flags=BASIC_USER_FEATURE_FLAGS,
             user_feature_hack=UserFeature.GAMIFICATION,
-            deafult_workspace_name=WorkspaceName.from_raw("Work"),
-            default_first_project_name=ProjectName.from_raw("Work"),
+            deafult_workspace_name=WorkspaceName("Work"),
+            default_first_project_name=ProjectName("Work"),
             workspace_feature_flag_controls=workspace_feature_flags_controls,
             default_workspace_feature_flags=BASIC_WORKSPACE_FEATURE_FLAGS,
             workspace_feature_hack=WorkspaceFeature.INBOX_TASKS,

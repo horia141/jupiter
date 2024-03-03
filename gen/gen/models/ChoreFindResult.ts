@@ -4,6 +4,9 @@
 
 import type { ChoreFindResultEntry } from './ChoreFindResultEntry';
 
+/**
+ * The result.
+ */
 export type ChoreFindResult = {
     entries: Array<ChoreFindResultEntry>;
 };

@@ -3,7 +3,7 @@
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.workspaces.workspace import Workspace
-from jupiter.core.framework.use_case import (
+from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,
     use_case_args,
@@ -43,7 +43,7 @@ class WorkspaceLoadUseCase(
     ) -> WorkspaceLoadResult:
         """Execute the command's action."""
         workspace = context.workspace
-        default_project = await uow.project_repository.load_by_id(
+        default_project = await uow.get_for(Project).load_by_id(
             workspace.default_project_ref_id,
         )
         return WorkspaceLoadResult(workspace=workspace, default_project=default_project)

@@ -7,6 +7,9 @@ import type { EntityName } from './EntityName';
 import type { NamedEntityTag } from './NamedEntityTag';
 import type { Timestamp } from './Timestamp';
 
+/**
+ * Information about a particular entity very broadly.
+ */
 export type EntitySummary = {
     entity_tag: NamedEntityTag;
     parent_ref_id: EntityId;
@@ -15,7 +18,7 @@ export type EntitySummary = {
     archived: boolean;
     created_time: Timestamp;
     last_modified_time: Timestamp;
-    archived_time: Timestamp;
+    archived_time?: Timestamp;
     snippet: string;
 };
 

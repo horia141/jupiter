@@ -16,6 +16,7 @@ from jupiter.core.framework.entity import (
     update_entity_action,
 )
 from jupiter.core.framework.errors import InputValidationError
+from jupiter.core.framework.realm import DatabaseRealm, only_in_realm
 from jupiter.core.framework.secure import secure_class
 
 
@@ -29,6 +30,7 @@ class IncorrectRecoveryTokenError(Exception):
 
 @entity
 @secure_class
+@only_in_realm(DatabaseRealm)
 class Auth(StubEntity):
     """Authentication information associated with a user."""
 

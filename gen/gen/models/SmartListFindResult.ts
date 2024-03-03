@@ -4,6 +4,9 @@
 
 import type { SmartListFindResponseEntry } from './SmartListFindResponseEntry';
 
+/**
+ * PersonFindResult object.
+ */
 export type SmartListFindResult = {
     entries: Array<SmartListFindResponseEntry>;
 };

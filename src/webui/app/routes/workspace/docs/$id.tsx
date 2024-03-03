@@ -1,12 +1,8 @@
 import { Card, CardContent, FormControl } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect, Response } from "@remix-run/node";
-import {
-  ShouldRevalidateFunction,
-  useActionData,
-  useParams,
-  useTransition,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { useActionData, useParams, useTransition } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { ApiError } from "jupiter-gen";
 import { z } from "zod";
@@ -42,8 +38,8 @@ export async function loader({ request, params }: LoaderArgs) {
   const { id } = parseParams(params, ParamsSchema);
 
   try {
-    const result = await getLoggedInApiClient(session).doc.loadDoc({
-      ref_id: { the_id: id },
+    const result = await getLoggedInApiClient(session).docs.docLoad({
+      ref_id: id,
       allow_archived: true,
     });
 
@@ -71,8 +67,8 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (form.intent) {
       case "archive": {
-        await getLoggedInApiClient(session).doc.archiveDoc({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).docs.docArchive({
+          ref_id: id,
         });
         return redirect(`/workspace/docs/${id}`);
       }
@@ -104,7 +100,7 @@ export default function Doc() {
 
   return (
     <LeafPanel
-      key={loaderData.doc.ref_id.the_id}
+      key={loaderData.doc.ref_id}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/docs"

@@ -1,5 +1,4 @@
 """UseCase for showing the email tasks."""
-from argparse import ArgumentParser, Namespace
 
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
@@ -14,12 +13,10 @@ from jupiter.cli.command.rendering import (
     entity_name_to_rich_text,
     inbox_task_summary_to_rich_text,
 )
-from jupiter.cli.session_storage import SessionInfo
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
+from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
 from jupiter.core.use_cases.push_integrations.email.find import (
-    EmailTaskFindArgs,
+    EmailTaskFindResult,
     EmailTaskFindUseCase,
 )
 from rich.console import Console
@@ -27,68 +24,15 @@ from rich.text import Text
 from rich.tree import Tree
 
 
-class EmailTaskShow(LoggedInReadonlyCommand[EmailTaskFindUseCase]):
+class EmailTaskShow(LoggedInReadonlyCommand[EmailTaskFindUseCase, EmailTaskFindResult]):
     """UseCase class for showing the email tasks."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "email-task-show"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Show the list of email tasks"
-
-    def build_parser(self, parser: ArgumentParser) -> None:
-        """Construct a argparse parser for the command."""
-        parser.add_argument(
-            "--show-archived",
-            dest="show_archived",
-            default=False,
-            action="store_true",
-            help="Whether to show archived email tasks or not",
-        )
-        parser.add_argument(
-            "--id",
-            type=str,
-            dest="ref_ids",
-            default=[],
-            action="append",
-            help="The id of the email tasks to modify",
-        )
-        parser.add_argument(
-            "--show-inbox-task",
-            dest="show_inbox_task",
-            default=False,
-            action="store_const",
-            const=True,
-            help="Show inbox tasks",
-        )
-
-    async def _run(
+    def _render_result(
         self,
-        session_info: SessionInfo,
-        args: Namespace,
+        console: Console,
+        context: AppLoggedInReadonlyUseCaseContext,
+        result: EmailTaskFindResult,
     ) -> None:
-        """Callback to execute when the command is invoked."""
-        show_archived = args.show_archived
-        ref_ids = (
-            [EntityId.from_raw(rid) for rid in args.ref_ids]
-            if len(args.ref_ids) > 0
-            else None
-        )
-        show_inbox_task = args.show_inbox_task
-
-        result = await self._use_case.execute(
-            AppLoggedInUseCaseSession(session_info.auth_token_ext),
-            EmailTaskFindArgs(
-                allow_archived=show_archived,
-                include_inbox_task=show_inbox_task,
-                filter_ref_ids=ref_ids,
-            ),
-        )
-
         sorted_email_tasks = sorted(
             result.entries,
             key=lambda ste: (ste.email_task.archived, ste.email_task.created_time),
@@ -96,9 +40,7 @@ class EmailTaskShow(LoggedInReadonlyCommand[EmailTaskFindUseCase]):
 
         rich_tree = Tree("💬 Email Tasks", guide_style="bold bright_blue")
 
-        if self._top_level_context.workspace.is_feature_available(
-            WorkspaceFeature.PROJECTS
-        ):
+        if context.workspace.is_feature_available(WorkspaceFeature.PROJECTS):
             generation_project_text = Text(
                 f"The generation project is {result.generation_project.name}",
             )
@@ -165,13 +107,10 @@ class EmailTaskShow(LoggedInReadonlyCommand[EmailTaskFindUseCase]):
                 email_task_text.stylize("gray62")
                 email_task_info_text.stylize("gray62")
 
-            if not show_inbox_task:
-                continue
             if inbox_task is None:
                 continue
 
             inbox_task_text = inbox_task_summary_to_rich_text(inbox_task)
             email_task_tree.add(inbox_task_text)
 
-        console = Console()
         console.print(rich_tree)

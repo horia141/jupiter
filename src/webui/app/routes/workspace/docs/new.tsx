@@ -1,11 +1,8 @@
 import { Card, CardContent, FormControl } from "@mui/material";
 import type { ActionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import {
-  ShouldRevalidateFunction,
-  useActionData,
-  useTransition,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { ApiError } from "jupiter-gen";
 import { z } from "zod";
@@ -34,12 +31,12 @@ export async function action({ request }: ActionArgs) {
   const form = await parseForm(request, CreateFormSchema);
 
   try {
-    const result = await getLoggedInApiClient(session).doc.createDoc({
-      name: { the_name: form.name },
+    const result = await getLoggedInApiClient(session).docs.docCreate({
+      name: form.name,
       content: [],
     });
 
-    return redirect(`/workspace/docs/${result.new_note.ref_id.the_id}`);
+    return redirect(`/workspace/docs/${result.new_note.ref_id}`);
   } catch (error) {
     if (
       error instanceof ApiError &&

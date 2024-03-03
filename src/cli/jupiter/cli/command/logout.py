@@ -1,29 +1,20 @@
 """Command for logging out."""
 from argparse import ArgumentParser, Namespace
-from typing import Final
 
 from jupiter.cli.command.command import Command
-from jupiter.cli.session_storage import SessionStorage
 from jupiter.core.framework.secure import secure_class
+from rich.console import Console
 
 
 @secure_class
 class Logout(Command):
     """Command for logging out."""
 
-    _session_storage: Final[SessionStorage]
-
-    def __init__(self, session_storage: SessionStorage) -> None:
-        """Constructor."""
-        self._session_storage = session_storage
-
-    @staticmethod
-    def name() -> str:
+    def name(self) -> str:
         """The name of the command."""
         return "logout"
 
-    @staticmethod
-    def description() -> str:
+    def description(self) -> str:
         """The description of the command."""
         return "Logout of the application"
 
@@ -32,6 +23,7 @@ class Logout(Command):
 
     async def run(
         self,
+        console: Console,
         args: Namespace,
     ) -> None:
         """Callback to execute when the command is invoked."""

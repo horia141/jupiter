@@ -3,14 +3,19 @@ from typing import Optional, cast
 
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
+from jupiter.core.domain.metrics.metric import Metric
+from jupiter.core.domain.metrics.metric_collection import MetricCollection
+from jupiter.core.domain.projects.project import Project
+from jupiter.core.domain.projects.project_collection import ProjectCollection
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     ProgressReporter,
-    UseCaseArgsBase,
-    use_case_args,
 )
+from jupiter.core.framework.use_case_io import UseCaseArgsBase, use_case_args
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
@@ -41,24 +46,24 @@ class MetricChangeCollectionProjectUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        await uow.project_collection_repository.load_by_parent(
+        await uow.get_for(ProjectCollection).load_by_parent(
             workspace.ref_id,
         )
 
-        metric_collection = await uow.metric_collection_repository.load_by_parent(
+        metric_collection = await uow.get_for(MetricCollection).load_by_parent(
             workspace.ref_id,
         )
         old_catch_up_project_ref_id = metric_collection.collection_project_ref_id
 
         if args.collection_project_ref_id is not None:
-            project = await uow.project_repository.load_by_id(
+            project = await uow.get_for(Project).load_by_id(
                 args.collection_project_ref_id,
             )
             collection_project_ref_id = project.ref_id
         else:
             collection_project_ref_id = workspace.default_project_ref_id
 
-        metrics = await uow.metric_repository.find_all(
+        metrics = await uow.get_for(Metric).find_all(
             parent_ref_id=metric_collection.ref_id,
             allow_archived=False,
         )
@@ -67,18 +72,16 @@ class MetricChangeCollectionProjectUseCase(
             old_catch_up_project_ref_id != collection_project_ref_id
             and len(metrics) > 0
         ):
-            inbox_task_collection = (
-                await uow.inbox_task_collection_repository.load_by_parent(
-                    workspace.ref_id,
-                )
+            inbox_task_collection = await uow.get_for(
+                InboxTaskCollection
+            ).load_by_parent(
+                workspace.ref_id,
             )
-            all_collection_inbox_tasks = (
-                await uow.inbox_task_repository.find_all_with_filters(
-                    parent_ref_id=inbox_task_collection.ref_id,
-                    allow_archived=True,
-                    filter_sources=[InboxTaskSource.METRIC],
-                    filter_metric_ref_ids=[m.ref_id for m in metrics],
-                )
+            all_collection_inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
+                parent_ref_id=inbox_task_collection.ref_id,
+                allow_archived=True,
+                source=[InboxTaskSource.METRIC],
+                metric_ref_id=[m.ref_id for m in metrics],
             )
 
             for inbox_task in all_collection_inbox_tasks:
@@ -93,7 +96,7 @@ class MetricChangeCollectionProjectUseCase(
                     due_time=cast(ADate, inbox_task.due_date),
                 )
 
-                inbox_task = await uow.inbox_task_repository.save(
+                inbox_task = await uow.get_for(InboxTask).save(
                     inbox_task,
                 )
                 await progress_reporter.mark_updated(inbox_task)
@@ -103,4 +106,4 @@ class MetricChangeCollectionProjectUseCase(
                 collection_project_ref_id=collection_project_ref_id,
             )
 
-            await uow.metric_collection_repository.save(metric_collection)
+            await uow.get_for(MetricCollection).save(metric_collection)

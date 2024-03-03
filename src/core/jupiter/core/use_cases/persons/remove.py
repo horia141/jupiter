@@ -1,14 +1,15 @@
 """Remove a person."""
 
 from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.persons.person import Person
+from jupiter.core.domain.persons.person_collection import PersonCollection
 from jupiter.core.domain.persons.service.remove_service import PersonRemoveService
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     ProgressReporter,
-    UseCaseArgsBase,
-    use_case_args,
 )
+from jupiter.core.framework.use_case_io import UseCaseArgsBase, use_case_args
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
@@ -39,10 +40,10 @@ class PersonRemoveUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        person_collection = await uow.person_collection_repository.load_by_parent(
+        person_collection = await uow.get_for(PersonCollection).load_by_parent(
             workspace.ref_id,
         )
-        person = await uow.person_repository.load_by_id(
+        person = await uow.get_for(Person).load_by_id(
             args.ref_id,
             allow_archived=True,
         )

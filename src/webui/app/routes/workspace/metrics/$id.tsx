@@ -1,13 +1,8 @@
 import { ResponsiveLine } from "@nivo/line";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import {
-  Link,
-  Outlet,
-  ShouldRevalidateFunction,
-  useFetcher,
-  useParams,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { Link, Outlet, useFetcher, useParams } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import type { MetricEntry } from "jupiter-gen";
 import { ApiError } from "jupiter-gen";
@@ -49,8 +44,8 @@ export async function loader({ request, params }: LoaderArgs) {
   const { id } = parseParams(params, ParamsSchema);
 
   try {
-    const response = await getLoggedInApiClient(session).metric.loadMetric({
-      ref_id: { the_id: id },
+    const response = await getLoggedInApiClient(session).metrics.metricLoad({
+      ref_id: id,
       allow_archived: false,
     });
 
@@ -92,19 +87,20 @@ export default function Metric() {
       },
       {
         method: "post",
-        action: `/workspace/metrics/${loaderData.metric.ref_id.the_id}/entries/${item.ref_id.the_id}`,
+        action: `/workspace/metrics/${loaderData.metric.ref_id}/entries/${item.ref_id}`,
       }
     );
   }
 
   return (
     <BranchPanel
-      key={loaderData.metric.ref_id.the_id}
-      createLocation={`/workspace/metrics/${loaderData.metric.ref_id.the_id}/entries/new`}
+      key={loaderData.metric.ref_id}
+      createLocation={`/workspace/metrics/${loaderData.metric.ref_id}/entries/new`}
       extraControls={[
         <Button
+          key={loaderData.metric.ref_id}
           variant="outlined"
-          to={`/workspace/metrics/${loaderData.metric.ref_id.the_id}/details`}
+          to={`/workspace/metrics/${loaderData.metric.ref_id}/details`}
           component={Link}
           startIcon={<TuneIcon />}
         >
@@ -119,13 +115,13 @@ export default function Metric() {
         <EntityStack>
           {sortedEntries.map((entry) => (
             <EntityCard
-              key={entry.ref_id.the_id}
+              key={entry.ref_id}
               allowSwipe
               allowMarkNotDone
               onMarkNotDone={() => archiveEntry(entry)}
             >
               <EntityLink
-                to={`/workspace/metrics/${loaderData.metric.ref_id.the_id}/entries/${entry.ref_id.the_id}`}
+                to={`/workspace/metrics/${loaderData.metric.ref_id}/entries/${entry.ref_id}`}
               >
                 <EntityNameComponent name={metricEntryName(entry)} />
                 <TimeDiffTag

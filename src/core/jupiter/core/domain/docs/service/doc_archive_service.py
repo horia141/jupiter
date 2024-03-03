@@ -24,10 +24,10 @@ class DocArchiveService:
         if doc.archived:
             return
 
-        subdocs = await uow.doc_repository.find_all_with_filters(
+        subdocs = await uow.get_for(Doc).find_all_generic(
             parent_ref_id=doc.doc_collection.ref_id,
             allow_archived=True,
-            filter_parent_doc_ref_ids=[doc.ref_id],
+            parent_doc_ref_id=[doc.ref_id],
         )
 
         for subdoc in subdocs:
@@ -39,5 +39,5 @@ class DocArchiveService:
         )
 
         doc = doc.mark_archived(ctx)
-        await uow.doc_repository.save(doc)
+        await uow.get_for(Doc).save(doc)
         await progress_reporter.mark_updated(doc)

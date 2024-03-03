@@ -2,8 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type PersonBirthday = {
-    day: number;
-    month: number;
-};
-
+/**
+ * The birthday of a person.
+ */
+export type PersonBirthday = string;

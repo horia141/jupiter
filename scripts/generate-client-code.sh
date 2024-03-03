@@ -2,21 +2,21 @@
 
 set -ex
 
-HOST=0.0.0.0
-PORT=8004
+export HOST=0.0.0.0
+export PORT=8004
 export SQLITE_DB_URL=sqlite+aiosqlite:///../../.build-cache/apigen/jupiter-gen.sqlite
 
 mkdir -p .build-cache/apigen
 
 cd src/webapi
-uvicorn jupiter.webapi.jupiter:app --host $HOST --port $PORT &
+python -m jupiter.webapi.jupiter &
 WEBAPI_PID=$!
 cd ../..
 
 sleep 5
 
 rm -f .build-cache/apigen/openapi.json
-http --timeout 2 get localhost:${PORT}/openapi.json > .build-cache/apigen/openapi.json
+http --timeout 2 get 127.0.0.1:${PORT}/openapi.json > .build-cache/apigen/openapi.json
 
 kill $WEBAPI_PID
 

@@ -12,14 +12,14 @@ export class LoginService {
     constructor(public readonly httpRequest: BaseHttpRequest) {}
 
     /**
-     * Login
-     * Login to a workspace.
-     * @param requestBody
-     * @returns LoginResult Successful Response
+     * Use case for logging in as a particular user.
+     * Use case for logging in as a particular user.
+     * @param requestBody The input data
+     * @returns LoginResult Successful response
      * @throws ApiError
      */
     public login(
-        requestBody: LoginArgs,
+        requestBody?: LoginArgs,
     ): CancelablePromise<LoginResult> {
         return this.httpRequest.request({
             method: 'POST',

@@ -7,6 +7,7 @@ import { Box, Button, ButtonGroup, IconButton, styled } from "@mui/material";
 import { Link, useLocation } from "@remix-run/react";
 import { AnimatePresence, motion, useIsPresent } from "framer-motion";
 import React, {
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -56,42 +57,38 @@ export function BranchPanel(props: PropsWithChildren<BranchPanelProps>) {
     return `translateX(${x})`;
   }
 
-  function handleScroll(ref: HTMLDivElement, pathname: string) {
-    if (!isPresent) {
-      return;
-    }
-    saveScrollPosition(ref, pathname);
-  }
+  const handleScroll = useCallback(
+    (ref: HTMLDivElement, pathname: string) => {
+      if (!isPresent) {
+        return;
+      }
+      saveScrollPosition(ref, pathname);
+    },
+    [isPresent]
+  );
 
   useEffect(() => {
     if (containerRef.current === null) {
       return;
     }
 
+    const theRef = containerRef.current;
+
     if (!isPresent) {
       return;
     }
 
     function handleScrollSpecial() {
-      handleScroll(
-        containerRef.current!,
-        extractBranchFromPath(location.pathname)
-      );
+      handleScroll(theRef, extractBranchFromPath(location.pathname));
     }
 
-    restoreScrollPosition(
-      containerRef.current,
-      extractBranchFromPath(location.pathname)
-    );
-    containerRef.current.addEventListener("scrollend", handleScrollSpecial);
+    restoreScrollPosition(theRef, extractBranchFromPath(location.pathname));
+    theRef.addEventListener("scrollend", handleScrollSpecial);
 
     return () => {
-      containerRef.current?.removeEventListener(
-        "scrollend",
-        handleScrollSpecial
-      );
+      theRef.removeEventListener("scrollend", handleScrollSpecial);
     };
-  }, [containerRef, location, isBigScreen]);
+  }, [containerRef, location, isBigScreen, isPresent, handleScroll]);
 
   function handleScrollTop() {
     containerRef.current?.scrollTo({

@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type AuthTokenExt = {
-    auth_token_str: string;
-};
-
+/**
+ * An externally facing authentication token.
+ */
+export type AuthTokenExt = string;

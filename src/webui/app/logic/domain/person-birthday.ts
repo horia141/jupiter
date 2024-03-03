@@ -15,10 +15,20 @@ const MONTH_NAME_INDEX = [
   "Dec",
 ];
 
-export function personBirthdayToStr(personBirthday: PersonBirthday): string {
-  return `${personBirthday.day} ${MONTH_NAME_INDEX[personBirthday.month - 1]}`;
+export function extractBirthday(birthday: PersonBirthday): {
+  day: number;
+  month: number;
+} {
+  const parts = birthday.split(" ");
+  const day = parseInt(parts[0]);
+  const month = MONTH_NAME_INDEX.findIndex((t) => t === parts[1]) + 1;
+  return { day, month };
+}
+
+export function birthdayFromParts(day: number, month: number): PersonBirthday {
+  return `${day} ${MONTH_NAME_INDEX[month]}` as PersonBirthday;
 }
 
 export function dueMonthToStr(dueMonth: RecurringTaskDueAtMonth): string {
-  return MONTH_NAME_INDEX[dueMonth.the_month - 1];
+  return MONTH_NAME_INDEX[dueMonth - 1];
 }

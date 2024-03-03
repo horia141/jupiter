@@ -2,10 +2,13 @@
 
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.projects.project import Project
+from jupiter.core.domain.projects.project_collection import ProjectCollection
 from jupiter.core.domain.projects.project_name import ProjectName
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.use_case import (
     ProgressReporter,
+)
+from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,
     use_case_args,
@@ -48,7 +51,7 @@ class ProjectCreateUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        project_collection = await uow.project_collection_repository.load_by_parent(
+        project_collection = await uow.get_for(ProjectCollection).load_by_parent(
             workspace.ref_id,
         )
 
@@ -58,7 +61,7 @@ class ProjectCreateUseCase(
             name=args.name,
         )
 
-        new_project = await uow.project_repository.create(new_project)
+        new_project = await uow.get_for(Project).create(new_project)
         await progress_reporter.mark_created(new_project)
 
         return ProjectCreateResult(new_project=new_project)

@@ -1,4 +1,5 @@
-import { ActionArgs, json } from "@remix-run/node";
+import type { ActionArgs } from "@remix-run/node";
+import { json } from "@remix-run/node";
 import { StatusCodes } from "http-status-codes";
 import { ApiError } from "jupiter-gen";
 import { z } from "zod";
@@ -26,12 +27,12 @@ export async function action({ request }: ActionArgs) {
   const form = await parseForm(request, UpdateFormSchema);
 
   try {
-    await getLoggedInApiClient(session).doc.updateDoc({
-      ref_id: { the_id: form.docId },
-      name: { should_change: true, value: { the_name: form.name } },
+    await getLoggedInApiClient(session).docs.docUpdate({
+      ref_id: form.docId,
+      name: { should_change: true, value: form.name },
     });
-    await getLoggedInApiClient(session).note.updateNote({
-      ref_id: { the_id: form.noteId },
+    await getLoggedInApiClient(session).core.noteUpdate({
+      ref_id: form.noteId,
       content: { should_change: true, value: form.content },
     });
 

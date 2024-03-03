@@ -4,6 +4,9 @@
 
 import type { EntityId } from './EntityId';
 
+/**
+ * SlackTaskLoadArgs.
+ */
 export type SlackTaskLoadArgs = {
     ref_id: EntityId;
     allow_archived: boolean;

@@ -1,5 +1,8 @@
 """Shared module for removing a big plan."""
 
+from jupiter.core.domain.big_plans.big_plan import BigPlan
+from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.base.entity_id import EntityId
@@ -19,24 +22,22 @@ class BigPlanRemoveService:
         ref_id: EntityId,
     ) -> None:
         """Hard remove a big plan."""
-        big_plan = await uow.big_plan_repository.load_by_id(
+        big_plan = await uow.get_for(BigPlan).load_by_id(
             ref_id,
             allow_archived=True,
         )
-        inbox_task_collection = (
-            await uow.inbox_task_collection_repository.load_by_parent(
-                workspace.ref_id,
-            )
+        inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
+            workspace.ref_id,
         )
-        inbox_tasks_to_remove = await uow.inbox_task_repository.find_all_with_filters(
+        inbox_tasks_to_remove = await uow.get_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
-            filter_big_plan_ref_ids=[ref_id],
+            big_plan_ref_ids=[ref_id],
         )
 
         for inbox_task in inbox_tasks_to_remove:
-            await uow.inbox_task_repository.remove(inbox_task.ref_id)
+            await uow.get_for(InboxTask).remove(inbox_task.ref_id)
             await reporter.mark_removed(inbox_task)
 
-        big_plan = await uow.big_plan_repository.remove(ref_id)
+        big_plan = await uow.get_for(BigPlan).remove(ref_id)
         await reporter.mark_removed(big_plan)

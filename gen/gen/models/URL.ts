@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type URL = {
-    the_url: string;
-};
-
+/**
+ * A URL in this domain.
+ */
+export type URL = string;

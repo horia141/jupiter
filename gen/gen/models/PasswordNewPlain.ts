@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type PasswordNewPlain = {
-    password_raw: string;
-};
-
+/**
+ * A new password in plain text, as received from a user.
+ */
+export type PasswordNewPlain = string;

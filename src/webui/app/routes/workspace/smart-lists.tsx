@@ -1,6 +1,7 @@
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Outlet, ShouldRevalidateFunction, useFetcher } from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { Outlet, useFetcher } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import type { SmartList } from "jupiter-gen";
 import { getLoggedInApiClient } from "~/api-clients";
@@ -28,7 +29,7 @@ export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const smartListResponse = await getLoggedInApiClient(
     session
-  ).smartList.findSmartList({
+  ).smartLists.smartListFind({
     allow_archived: false,
     include_tags: false,
     include_items: false,
@@ -58,7 +59,7 @@ export default function SmartLists() {
       },
       {
         method: "post",
-        action: `/workspace/smart-lists/${smartList.ref_id.the_id}/items/details`,
+        action: `/workspace/smart-lists/${smartList.ref_id}/items/details`,
       }
     );
   }
@@ -75,13 +76,13 @@ export default function SmartLists() {
         <EntityStack>
           {loaderData.entries.map((entry) => (
             <EntityCard
-              key={entry.smart_list.ref_id.the_id}
+              key={entry.smart_list.ref_id}
               allowSwipe
               allowMarkNotDone
               onMarkNotDone={() => archiveSmartList(entry.smart_list)}
             >
               <EntityLink
-                to={`/workspace/smart-lists/${entry.smart_list.ref_id.the_id}/items`}
+                to={`/workspace/smart-lists/${entry.smart_list.ref_id}/items`}
               >
                 {entry.smart_list.icon && (
                   <EntityIconComponent icon={entry.smart_list.icon} />

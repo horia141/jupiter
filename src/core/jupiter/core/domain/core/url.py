@@ -1,30 +1,22 @@
 """An URL in this domain."""
 from functools import total_ordering
-from typing import Optional
 
 import validators
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import Value, value
+from jupiter.core.framework.primitive import Primitive
+from jupiter.core.framework.value import AtomicValue, value
+from jupiter.core.use_cases.infra.realms import (
+    PrimitiveAtomicValueDatabaseDecoder,
+    PrimitiveAtomicValueDatabaseEncoder,
+)
 
 
 @value
 @total_ordering
-class URL(Value):
+class URL(AtomicValue[str]):
     """A URL in this domain."""
 
     the_url: str
-
-    def __post_init__(self) -> None:
-        """Validate after pydantic construction."""
-        self.the_url = self._clean_the_url(self.the_url)
-
-    @staticmethod
-    def from_raw(url_raw: Optional[str]) -> "URL":
-        """Validate and clean a url."""
-        if not url_raw:
-            raise InputValidationError("Expected url to be non-null")
-
-        return URL(URL._clean_the_url(url_raw))
 
     def __lt__(self, other: object) -> bool:
         """Compare this with another."""
@@ -36,11 +28,23 @@ class URL(Value):
         """Transform this to a string version."""
         return self.the_url
 
-    @staticmethod
-    def _clean_the_url(url_raw: str) -> str:
-        url_str: str = url_raw.strip()
+
+class URLDatabaseEncoder(PrimitiveAtomicValueDatabaseEncoder[URL]):
+    """Encode to a database primitive."""
+
+    def to_primitive(self, value: URL) -> Primitive:
+        """Encode to a database primitive."""
+        return value.the_url
+
+
+class URLDatabaseDecoder(PrimitiveAtomicValueDatabaseDecoder[URL]):
+    """Decode from a database primitive."""
+
+    def from_raw_str(self, value: str) -> URL:
+        """Decode from a raw string."""
+        url_str: str = value.strip()
 
         validation_result = validators.url(url_str)
         if validation_result is not True:
-            raise InputValidationError(f"Invalid URL '{url_raw}'")
-        return url_str
+            raise InputValidationError(f"Invalid URL '{value}'")
+        return URL(url_str)

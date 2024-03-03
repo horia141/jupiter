@@ -2,10 +2,13 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { EntityId } from './EntityId';
+import type { CorrelationId } from './CorrelationId';
 
+/**
+ * A table.
+ */
 export type TableBlock = {
-    correlation_id: EntityId;
+    correlation_id: CorrelationId;
     kind: TableBlock.kind;
     with_header: boolean;
     contents: Array<Array<string>>;

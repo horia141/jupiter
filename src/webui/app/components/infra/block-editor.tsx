@@ -1,28 +1,31 @@
 import editorjsCodeflask from "@calumk/editorjs-codeflask";
 import Checklist from "@editorjs/checklist";
 import Delimiter from "@editorjs/delimiter";
-import EditorJS, { OutputData } from "@editorjs/editorjs";
+import type { OutputData } from "@editorjs/editorjs";
+import EditorJS from "@editorjs/editorjs";
 import Header from "@editorjs/header";
 import NestedList from "@editorjs/nested-list";
 import Quote from "@editorjs/quote";
 import Table from "@editorjs/table";
 import DragDrop from "editorjs-drag-drop";
+import type { ListItem } from "jupiter-gen";
 import {
   BulletedListBlock,
   ChecklistBlock,
   CodeBlock,
   DividerBlock,
+  EntityReferenceBlock,
   HeadingBlock,
-  ListItem,
+  LinkBlock,
   NumberedListBlock,
   ParagraphBlock,
   QuoteBlock,
   TableBlock,
 } from "jupiter-gen";
-import { useEffect, useRef } from "react";
-import { OneOfNoteContentBlock } from "~/logic/domain/notes";
+import { useCallback, useEffect, useRef } from "react";
+import type { OneOfNoteContentBlock } from "~/logic/domain/notes";
 
-interface BlockEditorProps {
+export interface BlockEditorProps {
   initialContent: Array<OneOfNoteContentBlock>;
   inputsEnabled: boolean;
   onChange?: (content: Array<OneOfNoteContentBlock>) => void;
@@ -31,7 +34,7 @@ interface BlockEditorProps {
 export default function BlockEditor(props: BlockEditorProps) {
   const ejInstance = useRef<EditorJS>();
 
-  const initEditor = () => {
+  const initEditor = useCallback(() => {
     const editor = new EditorJS({
       holder: "editorjs",
       placeholder: "Start writing...",
@@ -83,7 +86,7 @@ export default function BlockEditor(props: BlockEditorProps) {
         delimiter: Delimiter,
       },
     });
-  };
+  }, [props]);
 
   // This will run only once
   useEffect(() => {
@@ -97,15 +100,20 @@ export default function BlockEditor(props: BlockEditorProps) {
       }
       ejInstance.current = undefined;
     };
-  }, []);
+  }, [initEditor]);
 
   return <div id="editorjs"></div>;
 }
 
+type EditorJsListItem = {
+  content: string;
+  items: Array<EditorJsListItem>;
+};
+
 function transformContentBlocksToEditorJs(
   content: Array<OneOfNoteContentBlock>
 ): OutputData {
-  function transformListItemToEditorJs(listItem: ListItem) {
+  function transformListItemToEditorJs(listItem: ListItem): EditorJsListItem {
     return {
       content: listItem.text,
       items: listItem.items.map(transformListItemToEditorJs),
@@ -119,7 +127,7 @@ function transformContentBlocksToEditorJs(
         case ParagraphBlock.kind.PARAGRAPH:
           return {
             type: "paragraph",
-            id: block.correlation_id.the_id,
+            id: block.correlation_id,
             data: {
               text: block.text,
             },
@@ -127,7 +135,7 @@ function transformContentBlocksToEditorJs(
         case HeadingBlock.kind.HEADING:
           return {
             type: "header",
-            id: block.correlation_id.the_id,
+            id: block.correlation_id,
             data: {
               text: block.text,
               level: block.level,
@@ -136,7 +144,7 @@ function transformContentBlocksToEditorJs(
         case BulletedListBlock.kind.BULLETED_LIST:
           return {
             type: "list",
-            id: block.correlation_id.the_id,
+            id: block.correlation_id,
             data: {
               style: "unordered",
               items: block.items.map(transformListItemToEditorJs),
@@ -145,7 +153,7 @@ function transformContentBlocksToEditorJs(
         case NumberedListBlock.kind.NUMBERED_LIST:
           return {
             type: "list",
-            id: block.correlation_id.the_id,
+            id: block.correlation_id,
             data: {
               style: "ordered",
               items: block.items.map(transformListItemToEditorJs),
@@ -154,7 +162,7 @@ function transformContentBlocksToEditorJs(
         case ChecklistBlock.kind.CHECKLIST:
           return {
             type: "checklist",
-            id: block.correlation_id.the_id,
+            id: block.correlation_id,
             data: {
               items: block.items,
             },
@@ -162,7 +170,7 @@ function transformContentBlocksToEditorJs(
         case TableBlock.kind.TABLE:
           return {
             type: "table",
-            id: block.correlation_id.the_id,
+            id: block.correlation_id,
             data: {
               withHeadings: block.with_header,
               content: block.contents,
@@ -171,7 +179,7 @@ function transformContentBlocksToEditorJs(
         case CodeBlock.kind.CODE:
           return {
             type: "code",
-            id: block.correlation_id.the_id,
+            id: block.correlation_id,
             data: {
               code: block.code,
               language: block.language,
@@ -181,7 +189,7 @@ function transformContentBlocksToEditorJs(
         case QuoteBlock.kind.QUOTE:
           return {
             type: "quote",
-            id: block.correlation_id.the_id,
+            id: block.correlation_id,
             data: {
               text: block.text,
               caption: "",
@@ -190,9 +198,17 @@ function transformContentBlocksToEditorJs(
         case DividerBlock.kind.DIVIDER:
           return {
             type: "delimiter",
-            id: block.correlation_id.the_id,
+            id: block.correlation_id,
             data: {},
           };
+        case LinkBlock.kind.LINK:
+          throw new Error("Link blocks are not supported right now");
+        case EntityReferenceBlock.kind.ENTITY_REFERENCE:
+          throw new Error(
+            "Entity reference blocks are not supported right now"
+          );
+        default:
+          throw new Error(`Unknown block kind: ${block}`);
       }
     }),
     version: "2.22.2",
@@ -202,7 +218,7 @@ function transformContentBlocksToEditorJs(
 function transformEditorJsToContentBlocks(
   content: OutputData
 ): Array<OneOfNoteContentBlock> {
-  function transformEditorJsToListItem(listItem: any): ListItem {
+  function transformEditorJsToListItem(listItem: EditorJsListItem): ListItem {
     return {
       text: listItem.content,
       items: listItem.items.map(transformEditorJsToListItem),
@@ -214,13 +230,13 @@ function transformEditorJsToContentBlocks(
       case "paragraph":
         return {
           kind: ParagraphBlock.kind.PARAGRAPH,
-          correlation_id: { the_id: block.id as string },
+          correlation_id: block.id as string,
           text: block.data.text as string,
         } as ParagraphBlock;
       case "header":
         return {
           kind: HeadingBlock.kind.HEADING,
-          correlation_id: { the_id: block.id as string },
+          correlation_id: block.id as string,
           text: block.data.text as string,
           level: block.data.level as number,
         } as HeadingBlock;
@@ -228,13 +244,13 @@ function transformEditorJsToContentBlocks(
         if (block.data.style === "unordered") {
           return {
             kind: BulletedListBlock.kind.BULLETED_LIST,
-            correlation_id: { the_id: block.id as string },
+            correlation_id: block.id as string,
             items: block.data.items.map(transformEditorJsToListItem),
           } as BulletedListBlock;
         } else if (block.data.style === "ordered") {
           return {
             kind: NumberedListBlock.kind.NUMBERED_LIST,
-            correlation_id: { the_id: block.id as string },
+            correlation_id: block.id as string,
             items: block.data.items.map(transformEditorJsToListItem),
           } as NumberedListBlock;
         } else {
@@ -243,23 +259,25 @@ function transformEditorJsToContentBlocks(
       case "checklist":
         return {
           kind: ChecklistBlock.kind.CHECKLIST,
-          correlation_id: { the_id: block.id as string },
-          items: block.data.items.map((item) => ({
-            text: item.text as string,
-            checked: item.checked as boolean,
-          })) as Array<{ text: string; checked: boolean }>,
+          correlation_id: block.id as string,
+          items: block.data.items.map(
+            (item: { text: string; checked: boolean }) => ({
+              text: item.text,
+              checked: item.checked,
+            })
+          ),
         } as ChecklistBlock;
       case "table":
         return {
           kind: TableBlock.kind.TABLE,
-          correlation_id: { the_id: block.id as string },
+          correlation_id: block.id as string,
           with_header: block.data.withHeadings as boolean,
           contents: block.data.content as Array<Array<string>>,
         } as TableBlock;
       case "code":
         return {
           kind: CodeBlock.kind.CODE,
-          correlation_id: { the_id: block.id as string },
+          correlation_id: block.id as string,
           code: block.data.code as string,
           language: block.data.language as string | undefined,
           show_line_numbers: block.data.showlinenumbers as boolean | undefined,
@@ -267,13 +285,13 @@ function transformEditorJsToContentBlocks(
       case "quote":
         return {
           kind: QuoteBlock.kind.QUOTE,
-          correlation_id: { the_id: block.id as string },
+          correlation_id: block.id as string,
           text: block.data.text as string,
         } as QuoteBlock;
       case "delimiter":
         return {
           kind: DividerBlock.kind.DIVIDER,
-          correlation_id: { the_id: block.id as string },
+          correlation_id: block.id as string,
         } as DividerBlock;
       default:
         throw new Error(`Unknown block type: ${block.type}`);

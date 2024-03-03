@@ -15,11 +15,8 @@ import {
 } from "@mui/material";
 import type { ActionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import {
-  ShouldRevalidateFunction,
-  useActionData,
-  useTransition,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import {
   ApiError,
@@ -39,6 +36,7 @@ import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { difficultyName } from "~/logic/domain/difficulty";
 import { eisenName } from "~/logic/domain/eisen";
 import { periodName } from "~/logic/domain/period";
+import { birthdayFromParts } from "~/logic/domain/person-birthday";
 import { personRelationshipName } from "~/logic/domain/person-relationship";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -54,7 +52,6 @@ const CreateFormSchema = {
   catchUpDifficulty: z.string().optional(),
   catchUpActionableFromDay: z.string().optional(),
   catchUpActionableFromMonth: z.string().optional(),
-  catchUpTime: z.string().optional(),
   catchUpDueAtDay: z.string().optional(),
   catchUpDueAtMonth: z.string().optional(),
 };
@@ -68,8 +65,8 @@ export async function action({ request }: ActionArgs) {
   const form = await parseForm(request, CreateFormSchema);
 
   try {
-    const result = await getLoggedInApiClient(session).person.createPerson({
-      name: { the_name: form.name },
+    const result = await getLoggedInApiClient(session).persons.personCreate({
+      name: form.name,
       relationship: form.relationship as PersonRelationship,
       catch_up_period:
         form.catchUpPeriod === "none"
@@ -93,43 +90,37 @@ export async function action({ request }: ActionArgs) {
           : form.catchUpActionableFromDay === undefined ||
             form.catchUpActionableFromDay === ""
           ? undefined
-          : { the_day: parseInt(form.catchUpActionableFromDay) },
+          : parseInt(form.catchUpActionableFromDay),
       catch_up_actionable_from_month:
         form.catchUpPeriod === "none"
           ? undefined
           : form.catchUpActionableFromMonth === undefined ||
             form.catchUpActionableFromMonth === ""
           ? undefined
-          : { the_month: parseInt(form.catchUpActionableFromMonth) },
-      catch_up_due_at_time:
-        form.catchUpPeriod === "none"
-          ? undefined
-          : form.catchUpTime === undefined || form.catchUpTime === ""
-          ? undefined
-          : { the_time: form.catchUpTime },
+          : parseInt(form.catchUpActionableFromMonth),
       catch_up_due_at_day:
         form.catchUpPeriod === "none"
           ? undefined
           : form.catchUpDueAtDay === undefined || form.catchUpDueAtDay === ""
           ? undefined
-          : { the_day: parseInt(form.catchUpDueAtDay) },
+          : parseInt(form.catchUpDueAtDay),
       catch_up_due_at_month:
         form.catchUpPeriod === "none"
           ? undefined
           : form.catchUpDueAtMonth === undefined ||
             form.catchUpDueAtMonth === ""
           ? undefined
-          : { the_month: parseInt(form.catchUpDueAtMonth) },
+          : parseInt(form.catchUpDueAtMonth),
       birthday:
         form.birthdayDay === "N/A" || form.birthdayMonth === "N/A"
           ? undefined
-          : {
-              day: parseInt(form.birthdayDay),
-              month: parseInt(form.birthdayMonth),
-            },
+          : birthdayFromParts(
+              parseInt(form.birthdayDay),
+              parseInt(form.birthdayMonth)
+            ),
     });
 
-    return redirect(`/workspace/persons/${result.new_person.ref_id.the_id}`);
+    return redirect(`/workspace/persons/${result.new_person.ref_id}`);
   } catch (error) {
     if (
       error instanceof ApiError &&
@@ -371,21 +362,6 @@ export default function NewPerson() {
                   <FieldError
                     actionResult={actionData}
                     fieldName="/catch_up_actionable_from_month"
-                  />
-                </FormControl>
-
-                <FormControl fullWidth>
-                  <InputLabel id="catchUpDueAtTime">Due At Time</InputLabel>
-                  <OutlinedInput
-                    type="time"
-                    label="Due At Time"
-                    name="catchUpDueAtTime"
-                    readOnly={!inputsEnabled}
-                    defaultValue={""}
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/catch_up_due_at_time"
                   />
                 </FormControl>
 

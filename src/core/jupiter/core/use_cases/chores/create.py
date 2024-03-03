@@ -2,13 +2,13 @@
 from typing import Optional
 
 from jupiter.core.domain.chores.chore import Chore
+from jupiter.core.domain.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.chores.chore_name import ChoreName
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDueAtMonth
-from jupiter.core.domain.core.recurring_task_due_at_time import RecurringTaskDueAtTime
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.core.recurring_task_skip_rule import RecurringTaskSkipRule
@@ -20,6 +20,8 @@ from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     ProgressReporter,
+)
+from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,
     use_case_args,
@@ -43,7 +45,6 @@ class ChoreCreateArgs(UseCaseArgsBase):
     difficulty: Optional[Difficulty] = None
     actionable_from_day: Optional[RecurringTaskDueAtDay] = None
     actionable_from_month: Optional[RecurringTaskDueAtMonth] = None
-    due_at_time: Optional[RecurringTaskDueAtTime] = None
     due_at_day: Optional[RecurringTaskDueAtDay] = None
     due_at_month: Optional[RecurringTaskDueAtMonth] = None
     must_do: bool = False
@@ -81,7 +82,7 @@ class ChoreCreateUseCase(
         ):
             raise FeatureUnavailableError(WorkspaceFeature.PROJECTS)
 
-        chore_collection = await uow.chore_collection_repository.load_by_parent(
+        chore_collection = await uow.get_for(ChoreCollection).load_by_parent(
             workspace.ref_id,
         )
 
@@ -96,7 +97,6 @@ class ChoreCreateUseCase(
                 difficulty=args.difficulty,
                 actionable_from_day=args.actionable_from_day,
                 actionable_from_month=args.actionable_from_month,
-                due_at_time=args.due_at_time,
                 due_at_day=args.due_at_day,
                 due_at_month=args.due_at_month,
             ),
@@ -106,7 +106,7 @@ class ChoreCreateUseCase(
             suspended=False,
             must_do=args.must_do,
         )
-        new_chore = await uow.chore_repository.create(new_chore)
+        new_chore = await uow.get_for(Chore).create(new_chore)
         await progress_reporter.mark_created(new_chore)
 
         return ChoreCreateResult(new_chore=new_chore)

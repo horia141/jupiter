@@ -1,6 +1,9 @@
 """Shared service for archiving a habit."""
 
 from jupiter.core.domain.habits.habit import Habit
+from jupiter.core.domain.habits.habit_collection import HabitCollection
+from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.inbox_tasks.service.archive_service import (
     InboxTaskArchiveService,
 )
@@ -23,18 +26,16 @@ class HabitArchiveService:
         if habit.archived:
             return
 
-        habit_collection = await uow.habit_collection_repository.load_by_id(
+        habit_collection = await uow.get_for(HabitCollection).load_by_id(
             habit.habit_collection.ref_id,
         )
-        inbox_task_collection = (
-            await uow.inbox_task_collection_repository.load_by_parent(
-                habit_collection.workspace.ref_id,
-            )
+        inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
+            habit_collection.workspace.ref_id,
         )
-        inbox_tasks_to_archive = await uow.inbox_task_repository.find_all_with_filters(
+        inbox_tasks_to_archive = await uow.get_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=False,
-            filter_habit_ref_ids=[habit.ref_id],
+            habit_ref_id=[habit.ref_id],
         )
 
         inbox_task_archive_service = InboxTaskArchiveService()
@@ -45,5 +46,5 @@ class HabitArchiveService:
             )
 
         habit = habit.mark_archived(ctx)
-        await uow.habit_repository.save(habit)
+        await uow.get_for(Habit).save(habit)
         await progress_reporter.mark_updated(habit)

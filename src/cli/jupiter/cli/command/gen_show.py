@@ -1,6 +1,5 @@
 """ommand for loading previous runs of Gen."""
 
-from argparse import ArgumentParser, Namespace
 
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
@@ -13,41 +12,22 @@ from jupiter.cli.command.rendering import (
     period_to_rich_text,
     sync_target_to_rich_text,
 )
-from jupiter.cli.session_storage import SessionInfo
-from jupiter.core.use_cases.gen.load_runs import GenLoadRunsArgs, GenLoadRunsUseCase
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
+from jupiter.core.use_cases.gen.load_runs import GenLoadRunsResult, GenLoadRunsUseCase
+from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
 from rich.console import Console
 from rich.text import Text
 from rich.tree import Tree
 
 
-class GenShow(LoggedInReadonlyCommand[GenLoadRunsUseCase]):
+class GenShow(LoggedInReadonlyCommand[GenLoadRunsUseCase, GenLoadRunsResult]):
     """Command for loading previous runs of task generation."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "gen-show"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Show the log of task generation runs."
-
-    def build_parser(self, parser: ArgumentParser) -> None:
-        """Construct a argparse parser for the command."""
-
-    async def _run(
+    def _render_result(
         self,
-        session_info: SessionInfo,
-        args: Namespace,
+        console: Console,
+        context: AppLoggedInReadonlyUseCaseContext,
+        result: GenLoadRunsResult,
     ) -> None:
-        """Callback to execute when the command is invoked."""
-        result = await self._use_case.execute(
-            AppLoggedInUseCaseSession(session_info.auth_token_ext),
-            GenLoadRunsArgs(),
-        )
-
         rich_tree = Tree("🗑  Task Generation", guide_style="bold bright_blue")
 
         for entry in result.entries:
@@ -189,5 +169,4 @@ class GenShow(LoggedInReadonlyCommand[GenLoadRunsUseCase]):
                     )
                     removed_entity_tree.add(record_text)
 
-        console = Console()
         console.print(rich_tree)

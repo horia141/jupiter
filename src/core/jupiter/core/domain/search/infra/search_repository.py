@@ -10,11 +10,11 @@ from jupiter.core.domain.search.search_query import SearchQuery
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.entity import CrownEntity
 from jupiter.core.framework.repository import Repository
-from jupiter.core.framework.use_case import use_case_result_part
+from jupiter.core.framework.value import CompositeValue, value
 
 
-@use_case_result_part
-class SearchMatch:
+@value
+class SearchMatch(CompositeValue):
     """Information about a particular entity that was found."""
 
     summary: EntitySummary
@@ -25,12 +25,8 @@ class SearchRepository(Repository, abc.ABC):
     """A search index repository for free form searching across all entities."""
 
     @abc.abstractmethod
-    async def create(self, workspace_ref_id: EntityId, entity: CrownEntity) -> None:
+    async def upsert(self, workspace_ref_id: EntityId, entity: CrownEntity) -> None:
         """Add an entity and make it available for searching."""
-
-    @abc.abstractmethod
-    async def update(self, workspace_ref_id: EntityId, entity: CrownEntity) -> None:
-        """Update an entity for searching."""
 
     @abc.abstractmethod
     async def remove(self, workspace_ref_id: EntityId, entity: CrownEntity) -> None:

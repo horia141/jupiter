@@ -5,7 +5,11 @@ from typing import Final
 
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.secure import secure_class
-from jupiter.core.framework.value import Value, value
+from jupiter.core.framework.value import AtomicValue, value
+from jupiter.core.use_cases.infra.realms import (
+    PrimitiveAtomicValueDatabaseDecoder,
+    PrimitiveAtomicValueDatabaseEncoder,
+)
 
 _JWT_RE: Final[Pattern[str]] = re.compile(
     r"([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_\-\+\/=]*)"
@@ -14,24 +18,25 @@ _JWT_RE: Final[Pattern[str]] = re.compile(
 
 @value
 @secure_class
-class AuthTokenExt(Value):
+class AuthTokenExt(AtomicValue[str]):
     """An externally facing authentication token."""
 
     auth_token_str: str
 
-    def __post_init__(self) -> None:
-        """Validate after pydantic construction."""
-        auth_token_str = AuthTokenExt._clean_auth_token(self.auth_token_str)
-        self.auth_token_str = auth_token_str
 
-    @staticmethod
-    def from_raw(auth_token_raw: str) -> "AuthTokenExt":
-        """Build an auth token from the raw representation."""
-        auth_token_str = AuthTokenExt._clean_auth_token(auth_token_raw)
-        return AuthTokenExt(auth_token_str)
+class AutoTokenExtDatabaseEncoder(PrimitiveAtomicValueDatabaseEncoder[AuthTokenExt]):
+    """Encode to a database primitive."""
 
-    @staticmethod
-    def _clean_auth_token(auth_token_str_raw: str) -> str:
-        if not _JWT_RE.match(auth_token_str_raw):
+    def to_primitive(self, value: AuthTokenExt) -> str:
+        """Encode to a database primitive."""
+        return value.auth_token_str
+
+
+class AuthTokenExtDatabaseDecoder(PrimitiveAtomicValueDatabaseDecoder[AuthTokenExt]):
+    """Decode from a database primitive."""
+
+    def from_raw_str(self, primitive: str) -> AuthTokenExt:
+        """Decode from a raw string."""
+        if not _JWT_RE.match(primitive):
             raise InputValidationError("Expected auth token to be a valid JWT")
-        return auth_token_str_raw
+        return AuthTokenExt(primitive)

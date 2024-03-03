@@ -3,15 +3,18 @@
 /* eslint-disable */
 
 import type { EntityId } from './EntityId';
-import type { EntityName } from './EntityName';
+import type { SmartListItemName } from './SmartListItemName';
 import type { TagName } from './TagName';
 import type { URL } from './URL';
 
+/**
+ * PersonFindArgs.
+ */
 export type SmartListItemUpdateArgs = {
     ref_id: EntityId;
     name: {
         should_change: boolean;
-        value?: EntityName;
+        value?: SmartListItemName;
     };
     is_done: {
         should_change: boolean;

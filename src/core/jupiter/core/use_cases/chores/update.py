@@ -1,6 +1,7 @@
 """The command for updating a chore."""
 from typing import Optional, cast
 
+from jupiter.core.domain.chores.chore import Chore
 from jupiter.core.domain.chores.chore_name import ChoreName
 from jupiter.core.domain.core import schedules
 from jupiter.core.domain.core.adate import ADate
@@ -8,20 +9,21 @@ from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDueAtMonth
-from jupiter.core.domain.core.recurring_task_due_at_time import RecurringTaskDueAtTime
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.core.recurring_task_skip_rule import RecurringTaskSkipRule
 from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
+from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
     ProgressReporter,
-    UseCaseArgsBase,
-    use_case_args,
 )
+from jupiter.core.framework.use_case_io import UseCaseArgsBase, use_case_args
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
@@ -40,7 +42,6 @@ class ChoreUpdateArgs(UseCaseArgsBase):
     difficulty: UpdateAction[Optional[Difficulty]]
     actionable_from_day: UpdateAction[Optional[RecurringTaskDueAtDay]]
     actionable_from_month: UpdateAction[Optional[RecurringTaskDueAtMonth]]
-    due_at_time: UpdateAction[Optional[RecurringTaskDueAtTime]]
     due_at_day: UpdateAction[Optional[RecurringTaskDueAtDay]]
     due_at_month: UpdateAction[Optional[RecurringTaskDueAtMonth]]
     must_do: UpdateAction[bool]
@@ -63,12 +64,11 @@ class ChoreUpdateUseCase(
         args: ChoreUpdateArgs,
     ) -> None:
         """Execute the command's action."""
-        user = context.user
         workspace = context.workspace
 
-        chore = await uow.chore_repository.load_by_id(args.ref_id)
+        chore = await uow.get_for(Chore).load_by_id(args.ref_id)
 
-        project = await uow.project_repository.load_by_id(chore.project_ref_id)
+        project = await uow.get_for(Project).load_by_id(chore.project_ref_id)
 
         need_to_change_inbox_tasks = (
             args.name.should_change
@@ -77,7 +77,6 @@ class ChoreUpdateUseCase(
             or args.difficulty.should_change
             or args.actionable_from_day.should_change
             or args.actionable_from_month.should_change
-            or args.due_at_time.should_change
             or args.due_at_day.should_change
             or args.due_at_month.should_change
         )
@@ -88,7 +87,6 @@ class ChoreUpdateUseCase(
             or args.difficulty.should_change
             or args.actionable_from_day.should_change
             or args.actionable_from_month.should_change
-            or args.due_at_time.should_change
             or args.due_at_day.should_change
             or args.due_at_month.should_change
         ):
@@ -104,7 +102,6 @@ class ChoreUpdateUseCase(
                     args.actionable_from_month.or_else(
                         chore.gen_params.actionable_from_month,
                     ),
-                    args.due_at_time.or_else(chore.gen_params.due_at_time),
                     args.due_at_day.or_else(chore.gen_params.due_at_day),
                     args.due_at_month.or_else(chore.gen_params.due_at_month),
                 ),
@@ -122,19 +119,19 @@ class ChoreUpdateUseCase(
             skip_rule=args.skip_rule,
         )
 
-        await uow.chore_repository.save(chore)
+        await uow.get_for(Chore).save(chore)
         await progress_reporter.mark_updated(chore)
 
         if need_to_change_inbox_tasks:
-            inbox_task_collection = (
-                await uow.inbox_task_collection_repository.load_by_parent(
-                    workspace.ref_id,
-                )
+            inbox_task_collection = await uow.get_for(
+                InboxTaskCollection
+            ).load_by_parent(
+                workspace.ref_id,
             )
-            all_inbox_tasks = await uow.inbox_task_repository.find_all_with_filters(
+            all_inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
-                filter_chore_ref_ids=[chore.ref_id],
+                chore_ref_id=[chore.ref_id],
             )
 
             for inbox_task in all_inbox_tasks:
@@ -142,11 +139,9 @@ class ChoreUpdateUseCase(
                     chore.gen_params.period,
                     chore.name,
                     cast(Timestamp, inbox_task.recurring_gen_right_now),
-                    user.timezone,
                     chore.skip_rule,
                     chore.gen_params.actionable_from_day,
                     chore.gen_params.actionable_from_month,
-                    chore.gen_params.due_at_time,
                     chore.gen_params.due_at_day,
                     chore.gen_params.due_at_month,
                 )
@@ -157,10 +152,10 @@ class ChoreUpdateUseCase(
                     name=schedule.full_name,
                     timeline=schedule.timeline,
                     actionable_date=schedule.actionable_date,
-                    due_date=schedule.due_time,
+                    due_date=schedule.due_date,
                     eisen=chore.gen_params.eisen,
                     difficulty=chore.gen_params.difficulty,
                 )
 
-                await uow.inbox_task_repository.save(inbox_task)
+                await uow.get_for(InboxTask).save(inbox_task)
                 await progress_reporter.mark_updated(inbox_task)

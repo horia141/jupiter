@@ -12,14 +12,14 @@ export class InitService {
     constructor(public readonly httpRequest: BaseHttpRequest) {}
 
     /**
-     * Init
-     * Initialise a new workspace.
-     * @param requestBody
-     * @returns InitResult Successful Response
+     * UseCase for initialising the workspace.
+     * UseCase for initialising the workspace.
+     * @param requestBody The input data
+     * @returns InitResult Successful response
      * @throws ApiError
      */
     public init(
-        requestBody: InitArgs,
+        requestBody?: InitArgs,
     ): CancelablePromise<InitResult> {
         return this.httpRequest.request({
             method: 'POST',

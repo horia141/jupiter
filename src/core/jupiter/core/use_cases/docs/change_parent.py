@@ -1,13 +1,13 @@
 """The command for changing the parent for a doc."""
-
+from jupiter.core.domain.docs.doc import Doc
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
     ProgressReporter,
-    UseCaseArgsBase,
-    use_case_args,
 )
+from jupiter.core.framework.use_case_io import UseCaseArgsBase, use_case_args
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
@@ -23,7 +23,7 @@ class DocChangeParentArgs(UseCaseArgsBase):
     parent_node_ref_id: EntityId | None
 
 
-@mutation_use_case(WorkspaceFeature.DOCS)
+@mutation_use_case(WorkspaceFeature.DOCS, exclude_app=[EventSource.CLI])
 class DocChangeParentUseCase(
     AppTransactionalLoggedInMutationUseCase[DocChangeParentArgs, None]
 ):
@@ -37,10 +37,10 @@ class DocChangeParentUseCase(
         args: DocChangeParentArgs,
     ) -> None:
         """Execute the command's action."""
-        doc = await uow.doc_repository.load_by_id(args.ref_id)
+        doc = await uow.get_for(Doc).load_by_id(args.ref_id)
         doc = doc.change_parent(
             context.domain_context,
             args.parent_node_ref_id,
         )
-        await uow.doc_repository.save(doc)
+        await uow.get_for(Doc).save(doc)
         await progress_reporter.mark_updated(doc)

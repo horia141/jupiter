@@ -1,34 +1,23 @@
 """Command for running a pomodoro timer."""
 import asyncio
-from argparse import ArgumentParser, Namespace
+from argparse import Namespace
 
 import beepy
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.session_storage import SessionInfo
 from jupiter.core.utils.noop_use_case import NoOpUseCase
+from rich.console import Console
 from rich.progress import Progress
 
 _TIMER_SECONDS = 60 * 25
 
 
-class Pomodoro(LoggedInReadonlyCommand[NoOpUseCase]):
+class Pomodoro(LoggedInReadonlyCommand[NoOpUseCase, None]):
     """Command for running a pomodoro timer."""
-
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "pomodoro"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Run a pomodoro timer"
-
-    def build_parser(self, parser: ArgumentParser) -> None:
-        """Construct a argparse parser for the command."""
 
     async def _run(
         self,
+        console: Console,
         session_info: SessionInfo,
         args: Namespace,
     ) -> None:

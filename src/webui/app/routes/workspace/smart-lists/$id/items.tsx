@@ -4,13 +4,8 @@ import TuneIcon from "@mui/icons-material/Tune";
 import { Button, ButtonGroup } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import {
-  Link,
-  Outlet,
-  ShouldRevalidateFunction,
-  useFetcher,
-  useParams,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { Link, Outlet, useFetcher, useParams } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import type { SmartListItem, SmartListTag } from "jupiter-gen";
@@ -28,7 +23,6 @@ import { BranchPanel } from "~/components/infra/layout/branch-panel";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { SmartListTagTag } from "~/components/smart-list-tag-tag";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
-import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
@@ -51,8 +45,8 @@ export async function loader({ request, params }: LoaderArgs) {
   try {
     const response = await getLoggedInApiClient(
       session
-    ).smartList.loadSmartList({
-      ref_id: { the_id: id },
+    ).smartLists.smartListLoad({
+      ref_id: id,
       allow_archived: false,
     });
 
@@ -77,14 +71,13 @@ export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export default function SmartListViewItems() {
-  const isBigScreen = useBigScreen();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
 
   const shouldShowALeaf = useBranchNeedsToShowLeaf();
 
   const tagsByRefId: { [tag: string]: SmartListTag } = {};
   for (const tag of loaderData.smartListTags) {
-    tagsByRefId[tag.ref_id.the_id] = tag;
+    tagsByRefId[tag.ref_id] = tag;
   }
 
   const archiveTagFetch = useFetcher();
@@ -100,32 +93,33 @@ export default function SmartListViewItems() {
       },
       {
         method: "post",
-        action: `/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/items/${item.ref_id.the_id}`,
+        action: `/workspace/smart-lists/${loaderData.smartList.ref_id}/items/${item.ref_id}`,
       }
     );
   }
 
   return (
     <BranchPanel
-      key={`${loaderData.smartList.ref_id.the_id}/items`}
-      createLocation={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/items/new`}
+      key={`${loaderData.smartList.ref_id}/items`}
+      createLocation={`/workspace/smart-lists/${loaderData.smartList.ref_id}/items/new`}
       extraControls={[
         <Button
+          key={loaderData.smartList.ref_id}
           variant="outlined"
-          to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/items/details`}
+          to={`/workspace/smart-lists/${loaderData.smartList.ref_id}/items/details`}
           component={Link}
           startIcon={<TuneIcon />}
         >
           "Details"
         </Button>,
-        <ButtonGroup>
+        <ButtonGroup key={loaderData.smartList.ref_id}>
           <Button variant="contained" startIcon={<ReorderIcon />}>
             "Items"
           </Button>
 
           <Button
             variant="outlined"
-            to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/tags`}
+            to={`/workspace/smart-lists/${loaderData.smartList.ref_id}/tags`}
             startIcon={<TagIcon />}
             component={Link}
           >
@@ -139,21 +133,18 @@ export default function SmartListViewItems() {
         <EntityStack>
           {loaderData.smartListItems.map((item) => (
             <EntityCard
-              key={item.ref_id.the_id}
+              key={item.ref_id}
               allowSwipe
               allowMarkNotDone
               onMarkNotDone={() => archiveItem(item)}
             >
               <EntityLink
-                to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/items/${item.ref_id.the_id}`}
+                to={`/workspace/smart-lists/${loaderData.smartList.ref_id}/items/${item.ref_id}`}
               >
                 <EntityNameComponent name={item.name} />
                 <Check isDone={item.is_done} />
                 {item.tags_ref_id.map((tid) => (
-                  <SmartListTagTag
-                    key={tid.the_id}
-                    tag={tagsByRefId[tid.the_id]}
-                  />
+                  <SmartListTagTag key={tid} tag={tagsByRefId[tid]} />
                 ))}
               </EntityLink>
             </EntityCard>

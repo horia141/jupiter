@@ -2,10 +2,13 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { EntityId } from './EntityId';
+import type { CorrelationId } from './CorrelationId';
 
+/**
+ * A heading.
+ */
 export type HeadingBlock = {
-    correlation_id: EntityId;
+    correlation_id: CorrelationId;
     kind: HeadingBlock.kind;
     text: string;
     level: number;

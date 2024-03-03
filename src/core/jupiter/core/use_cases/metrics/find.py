@@ -5,16 +5,19 @@ from collections import defaultdict
 from typing import DefaultDict, Dict, List, Optional, cast
 
 from jupiter.core.domain.core.notes.note import Note
+from jupiter.core.domain.core.notes.note_collection import NoteCollection
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.metrics.metric import Metric
+from jupiter.core.domain.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.metrics.metric_entry import MetricEntry
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.use_case import (
+from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,
     use_case_args,
@@ -41,7 +44,7 @@ class MetricFindArgs(UseCaseArgsBase):
 
 
 @use_case_result_part
-class MetricFindResponseEntry:
+class MetricFindResponseEntry(UseCaseResultBase):
     """A single entry in the LoadAllMetricsResponse."""
 
     metric: Metric
@@ -73,16 +76,16 @@ class MetricFindUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        metric_collection = await uow.metric_collection_repository.load_by_parent(
+        metric_collection = await uow.get_for(MetricCollection).load_by_parent(
             workspace.ref_id,
         )
-        metrics = await uow.metric_repository.find_all(
+        metrics = await uow.get_for(Metric).find_all(
             parent_ref_id=metric_collection.ref_id,
             allow_archived=args.allow_archived,
             filter_ref_ids=args.filter_ref_ids,
         )
 
-        collection_project = await uow.project_repository.load_by_id(
+        collection_project = await uow.get_for(Project).load_by_id(
             metric_collection.collection_project_ref_id,
         )
 
@@ -90,7 +93,7 @@ class MetricFindUseCase(
             metric_entries_raw = []
             for metric in metrics:
                 metric_entries_raw.append(
-                    await uow.metric_entry_repository.find_all(
+                    await uow.get_for(MetricEntry).find_all(
                         parent_ref_id=metric.ref_id,
                         allow_archived=args.allow_archived,
                         filter_ref_ids=args.filter_entry_ref_ids,
@@ -117,16 +120,16 @@ class MetricFindUseCase(
                 EntityId,
                 List[InboxTask],
             ] = defaultdict(list)
-            inbox_task_collection = (
-                await uow.inbox_task_collection_repository.load_by_parent(
-                    workspace.ref_id,
-                )
+            inbox_task_collection = await uow.get_for(
+                InboxTaskCollection
+            ).load_by_parent(
+                workspace.ref_id,
             )
-            all_inbox_tasks = await uow.inbox_task_repository.find_all_with_filters(
+            all_inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
-                filter_sources=[InboxTaskSource.METRIC],
-                filter_metric_ref_ids=[m.ref_id for m in metrics],
+                source=[InboxTaskSource.METRIC],
+                metric_ref_id=[m.ref_id for m in metrics],
             )
 
             for inbox_task in all_inbox_tasks:
@@ -140,10 +143,10 @@ class MetricFindUseCase(
             None
         )
         if args.include_metric_entry_notes:
-            note_collection = await uow.note_collection_repository.load_by_parent(
+            note_collection = await uow.get_for(NoteCollection).load_by_parent(
                 workspace.ref_id
             )
-            all_notes = await uow.note_repository.find_all_with_filters(
+            all_notes = await uow.get_for(Note).find_all_generic(
                 parent_ref_id=note_collection.ref_id,
                 domain=NoteDomain.METRIC_ENTRY,
                 allow_archived=True,

@@ -2,12 +2,8 @@ import TuneIcon from "@mui/icons-material/Tune";
 import { Button } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import {
-  Link,
-  Outlet,
-  ShouldRevalidateFunction,
-  useFetcher,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { Link, Outlet, useFetcher } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import type { Person } from "jupiter-gen";
 import { PersonRelationship, WorkspaceFeature } from "jupiter-gen";
@@ -40,7 +36,7 @@ export const handle = {
 
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
-  const body = await getLoggedInApiClient(session).person.findPerson({
+  const body = await getLoggedInApiClient(session).persons.personFind({
     allow_archived: false,
     include_catch_up_inbox_tasks: false,
     include_birthday_inbox_tasks: false,
@@ -72,7 +68,7 @@ export default function Persons() {
       },
       {
         method: "post",
-        action: `/workspace/persons/${person.ref_id.the_id}`,
+        action: `/workspace/persons/${person.ref_id}`,
       }
     );
   }
@@ -105,14 +101,12 @@ export default function Persons() {
         <EntityStack>
           {loaderData.entries.map((entry) => (
             <EntityCard
-              key={entry.person.ref_id.the_id}
+              key={entry.person.ref_id}
               allowSwipe
               allowMarkNotDone
               onMarkNotDone={() => archivePerson(entry.person)}
             >
-              <EntityLink
-                to={`/workspace/persons/${entry.person.ref_id.the_id}`}
-              >
+              <EntityLink to={`/workspace/persons/${entry.person.ref_id}`}>
                 <EntityNameComponent name={entry.person.name} />
                 <PersonRelationshipTag
                   relationship={entry.person.relationship}

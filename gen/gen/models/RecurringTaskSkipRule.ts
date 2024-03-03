@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type RecurringTaskSkipRule = {
-    skip_rule: string;
-};
-
+/**
+ * The rules for skipping a recurring task.
+ */
+export type RecurringTaskSkipRule = string;

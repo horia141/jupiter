@@ -6,7 +6,8 @@ import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import { Box, Button, ButtonGroup, IconButton, styled } from "@mui/material";
 import { Link, useLocation } from "@remix-run/react";
 import { AnimatePresence, motion, useIsPresent } from "framer-motion";
-import React, { PropsWithChildren, useEffect, useRef, useState } from "react";
+import type { PropsWithChildren } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useHydrated } from "remix-utils";
 import { extractTrunkFromPath } from "~/rendering/routes";
 import {
@@ -55,42 +56,38 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
     return `translateX(${x})`;
   }
 
-  function handleScroll(ref: HTMLDivElement, pathname: string) {
-    if (!isPresent) {
-      return;
-    }
-    saveScrollPosition(ref, pathname);
-  }
+  const handleScroll = useCallback(
+    (ref: HTMLDivElement, pathname: string) => {
+      if (!isPresent) {
+        return;
+      }
+      saveScrollPosition(ref, pathname);
+    },
+    [isPresent]
+  );
 
   useEffect(() => {
     if (containerRef.current === null) {
       return;
     }
 
+    const theRef = containerRef.current;
+
     if (!isPresent) {
       return;
     }
 
     function handleScrollSpecial() {
-      handleScroll(
-        containerRef.current!,
-        extractTrunkFromPath(location.pathname)
-      );
+      handleScroll(theRef, extractTrunkFromPath(location.pathname));
     }
 
-    restoreScrollPosition(
-      containerRef.current,
-      extractTrunkFromPath(location.pathname)
-    );
-    containerRef.current.addEventListener("scrollend", handleScrollSpecial);
+    restoreScrollPosition(theRef, extractTrunkFromPath(location.pathname));
+    theRef.addEventListener("scrollend", handleScrollSpecial);
 
     return () => {
-      containerRef.current?.removeEventListener(
-        "scrollend",
-        handleScrollSpecial
-      );
+      theRef.removeEventListener("scrollend", handleScrollSpecial);
     };
-  }, [containerRef, location, isBigScreen]);
+  }, [containerRef, location, isBigScreen, isPresent, handleScroll]);
 
   function handleScrollTop() {
     containerRef.current?.scrollTo({

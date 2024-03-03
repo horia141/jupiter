@@ -8,6 +8,7 @@ from typing import (
     Generic,
     List,
     Optional,
+    Sequence,
     Type,
     TypeVar,
     Union,
@@ -15,13 +16,14 @@ from typing import (
     get_origin,
 )
 
-from jupiter.core.domain.core.entity_name import EntityName
-from jupiter.core.domain.core.tags.tag_name import TagName
 from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
+from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.base.timestamp import Timestamp
+from jupiter.core.framework.concept import Concept
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.event import Event, EventKind
-from jupiter.core.framework.value import EnumValue, Value
+from jupiter.core.framework.primitive import Primitive
+from jupiter.core.framework.value import AtomicValue, EnumValue, Value
 from typing_extensions import dataclass_transform, get_args
 
 FIRST_VERSION = 1
@@ -31,7 +33,7 @@ _EntityT = TypeVar("_EntityT", bound="Entity")
 
 
 @dataclass
-class Entity:
+class Entity(Concept):
     """The base class for all entities."""
 
     ref_id: EntityId
@@ -136,9 +138,14 @@ class Entity:
 
 @dataclass_transform()
 def entity(cls: type[_EntityT]) -> type[_EntityT]:
+    """A decorator that marks a class as an entity."""
     new_cls = dataclass(cls)
     _check_entity_has_parent_field(new_cls)
     return new_cls
+
+
+class NoFilter:
+    """A filter that matches everything."""
 
 
 @dataclass
@@ -173,8 +180,16 @@ class ParentLink:
         return self.ref_id.as_int()
 
 
-EntityLinkFilterRaw = None | Value | EnumValue | IsRefId | IsParentLink | IsOneOfRefId
-EntityLinkFilterCompiled = None | Value | EnumValue | EntityId | list[EntityId]
+EntityLinkFilterRaw = (
+    None | AtomicValue[Primitive] | EnumValue | IsRefId | IsParentLink | IsOneOfRefId
+)
+EntityLinkFilterCompiled = (
+    NoFilter
+    | Primitive
+    | AtomicValue[Primitive]
+    | EnumValue
+    | Sequence[Primitive | AtomicValue[Primitive] | EnumValue]
+)
 EntityLinkFiltersRaw = dict[str, EntityLinkFilterRaw]
 EntityLinkFiltersCompiled = dict[str, EntityLinkFilterCompiled]
 
@@ -301,7 +316,7 @@ def _make_event_from_frame_args(  # type: ignore
             # Local variable, free to ignore
             continue
 
-        frame_args[arg_name] = arg_value
+        frame_args[arg_name] = (arg_value, f.__annotations__[arg_name])
 
     new_event = Event(
         source=ctx.event_source,
@@ -374,18 +389,18 @@ class RootEntity(Entity):
 
 
 @dataclass
+class StubEntity(Entity):
+    """An entity with no children, but which is also a singleton."""
+
+    # examples: GitHub connection, GSuite connection, etc
+
+
+@dataclass
 class TrunkEntity(Entity, abc.ABC):
     """An entity with children, which is also a singleton."""
 
     # examples:  vacations collection, projects collection, smart list collection, integrations collection,
     # Zapier+Mail collection, etc
-
-
-@dataclass
-class StubEntity(Entity):
-    """An entity with no children, but which is also a singleton."""
-
-    # examples: GitHub connection, GSuite connection, etc
 
 
 @dataclass
@@ -414,13 +429,6 @@ class LeafSupportEntity(LeafEntity, abc.ABC):
     """A leaf entity that supports other entities."""
 
     # examples: note, comment, attachment, etc.
-
-
-@dataclass
-class BranchTagEntity(LeafEntity, abc.ABC):
-    """A leaf entity serving as a tag for other entities on a branch.."""
-
-    tag_name: TagName
 
 
 def _check_entity_has_parent_field(cls: type[_EntityT]) -> None:

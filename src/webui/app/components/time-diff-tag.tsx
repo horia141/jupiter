@@ -1,6 +1,5 @@
 import type { ADate, Timestamp } from "jupiter-gen";
 import { DateTime } from "luxon";
-import { aDateToDate, isADate } from "~/logic/domain/adate";
 import { timestampToDate } from "~/logic/domain/timestamp";
 import { FatChip } from "./infra/chips";
 
@@ -11,9 +10,7 @@ interface TimeDiffTagProps {
 
 export function TimeDiffTag(props: TimeDiffTagProps) {
   const today = DateTime.now().startOf("day");
-  const collectionTime = isADate(props.collectionTime)
-    ? aDateToDate(props.collectionTime)
-    : timestampToDate(props.collectionTime);
+  const collectionTime = timestampToDate(props.collectionTime);
   const diff = today.diff(collectionTime, ["years", "months", "days"]);
 
   let diffStr = "";

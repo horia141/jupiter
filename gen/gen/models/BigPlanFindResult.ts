@@ -4,6 +4,9 @@
 
 import type { BigPlanFindResultEntry } from './BigPlanFindResultEntry';
 
+/**
+ * PersonFindResult.
+ */
 export type BigPlanFindResult = {
     entries: Array<BigPlanFindResultEntry>;
 };

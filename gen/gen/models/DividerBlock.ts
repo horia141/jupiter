@@ -2,10 +2,13 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { EntityId } from './EntityId';
+import type { CorrelationId } from './CorrelationId';
 
+/**
+ * A divider.
+ */
 export type DividerBlock = {
-    correlation_id: EntityId;
+    correlation_id: CorrelationId;
     kind: DividerBlock.kind;
 };
 

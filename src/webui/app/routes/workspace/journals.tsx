@@ -1,14 +1,15 @@
-import { json, LoaderArgs } from "@remix-run/node";
-import { Outlet, ShouldRevalidateFunction, useFetcher } from "@remix-run/react";
+import type { LoaderArgs } from "@remix-run/node";
+import { json } from "@remix-run/node";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { Outlet, useFetcher } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
+import type { Journal, ReportPeriodResult } from "jupiter-gen";
 import {
-  Journal,
   RecurringTaskPeriod,
-  ReportPeriodResult,
   UserFeature,
   WorkspaceFeature,
 } from "jupiter-gen";
-import { JournalFindResultEntry } from "jupiter-gen/dist/models/JournalFindResultEntry";
+import type { JournalFindResultEntry } from "jupiter-gen/dist/models/JournalFindResultEntry";
 import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
 import { EntityNameComponent } from "~/components/entity-name";
@@ -37,7 +38,7 @@ export const handle = {
 
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
-  const response = await getLoggedInApiClient(session).journal.findJournal({
+  const response = await getLoggedInApiClient(session).journals.journalFind({
     allow_archived: false,
     include_notes: false,
     include_writing_tasks: false,
@@ -58,7 +59,7 @@ export default function Journals() {
   const sortedJournals = sortJournalsNaturally(entries.map((e) => e.journal));
   const entriesByRefId = new Map<string, JournalFindResultEntry>();
   for (const entry of entries) {
-    entriesByRefId.set(entry.journal.ref_id.the_id, entry);
+    entriesByRefId.set(entry.journal.ref_id, entry);
   }
 
   const archiveJournalFetch = useFetcher();
@@ -70,7 +71,7 @@ export default function Journals() {
       },
       {
         method: "post",
-        action: `/workspace/journals/${journal.ref_id.the_id}`,
+        action: `/workspace/journals/${journal.ref_id}`,
       }
     );
   }
@@ -84,18 +85,16 @@ export default function Journals() {
         <EntityStack>
           {sortedJournals.map((journal) => {
             const entry = entriesByRefId.get(
-              journal.ref_id.the_id
+              journal.ref_id
             ) as JournalFindResultEntry;
             return (
               <EntityCard
-                key={entry.journal.ref_id.the_id}
+                key={entry.journal.ref_id}
                 allowSwipe
                 allowMarkNotDone
                 onMarkNotDone={() => archiveJournal(entry.journal)}
               >
-                <EntityLink
-                  to={`/workspace/journals/${entry.journal.ref_id.the_id}`}
-                >
+                <EntityLink to={`/workspace/journals/${entry.journal.ref_id}`}>
                   <EntityNameComponent name={entry.journal.name} />
                   <JournalSourceTag source={entry.journal.source} />
                   <PeriodTag period={entry.journal.period} />

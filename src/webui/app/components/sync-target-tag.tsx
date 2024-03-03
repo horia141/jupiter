@@ -1,4 +1,4 @@
-import { SyncTarget } from "jupiter-gen";
+import type { SyncTarget } from "jupiter-gen";
 import { syncTargetName } from "~/logic/domain/sync-target";
 import { SlimChip } from "./infra/chips";
 

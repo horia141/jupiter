@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from types import TracebackType
 from typing import AsyncIterator, Final, Optional, Type
 
+from jupiter.core.framework.realm import RealmCodecRegistry
 from jupiter.core.repository.sqlite.connection import SqliteConnection
 from jupiter.core.repository.sqlite.use_case.mutation_use_case_invocation_records import (
     SqliteMutationUseCaseInvocationRecordRepository,
@@ -57,11 +58,15 @@ class SqliteUseCaseUnitOfWork(UseCaseUnitOfWork):
 class SqliteUseCaseStorageEngine(UseCaseStorageEngine):
     """Sqlite based use case storage engine."""
 
+    _realm_codec_registry: Final[RealmCodecRegistry]
     _sql_engine: Final[AsyncEngine]
     _metadata: Final[MetaData]
 
-    def __init__(self, connection: SqliteConnection) -> None:
+    def __init__(
+        self, realm_codec_registry: RealmCodecRegistry, connection: SqliteConnection
+    ) -> None:
         """Constructor."""
+        self._realm_codec_registry = realm_codec_registry
         self._sql_engine = connection.sql_engine
         self._metadata = MetaData(bind=self._sql_engine)
 
@@ -71,6 +76,7 @@ class SqliteUseCaseStorageEngine(UseCaseStorageEngine):
         async with self._sql_engine.begin() as connection:
             mutation_use_case_invocation_record_repository = (
                 SqliteMutationUseCaseInvocationRecordRepository(
+                    self._realm_codec_registry,
                     connection,
                     self._metadata,
                 )

@@ -10,12 +10,15 @@ from jupiter.core.domain.features import (
     WorkspaceFeature,
 )
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     ProgressReporter,
+)
+from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,
     use_case_args,
@@ -77,14 +80,12 @@ class InboxTaskCreateUseCase(
 
         big_plan: Optional[BigPlan] = None
         if args.big_plan_ref_id:
-            big_plan = await uow.big_plan_repository.load_by_id(
+            big_plan = await uow.get_for(BigPlan).load_by_id(
                 args.big_plan_ref_id,
             )
 
-        inbox_task_collection = (
-            await uow.inbox_task_collection_repository.load_by_parent(
-                workspace.ref_id,
-            )
+        inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
+            workspace.ref_id,
         )
 
         new_inbox_task = InboxTask.new_inbox_task(
@@ -103,7 +104,7 @@ class InboxTaskCreateUseCase(
             big_plan_due_date=big_plan.due_date if big_plan else None,
         )
 
-        new_inbox_task = await uow.inbox_task_repository.create(new_inbox_task)
+        new_inbox_task = await uow.get_for(InboxTask).create(new_inbox_task)
         await progress_reporter.mark_created(new_inbox_task)
 
         return InboxTaskCreateResult(new_inbox_task=new_inbox_task)

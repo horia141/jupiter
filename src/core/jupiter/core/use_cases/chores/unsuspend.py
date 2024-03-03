@@ -1,13 +1,13 @@
 """The command for unsuspending a chore."""
 
+from jupiter.core.domain.chores.chore import Chore
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     ProgressReporter,
-    UseCaseArgsBase,
-    use_case_args,
 )
+from jupiter.core.framework.use_case_io import UseCaseArgsBase, use_case_args
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
@@ -36,7 +36,7 @@ class ChoreUnsuspendUseCase(
         args: ChoreUnsuspendArgs,
     ) -> None:
         """Execute the command's action."""
-        chore = await uow.chore_repository.load_by_id(args.ref_id)
+        chore = await uow.get_for(Chore).load_by_id(args.ref_id)
         chore = chore.unsuspend(context.domain_context)
-        await uow.chore_repository.save(chore)
+        await uow.get_for(Chore).save(chore)
         await progress_reporter.mark_updated(chore)

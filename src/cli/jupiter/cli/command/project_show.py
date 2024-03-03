@@ -1,55 +1,26 @@
 """UseCase for showing the projects."""
-from argparse import ArgumentParser, Namespace
 
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     entity_id_to_rich_text,
     entity_name_to_rich_text,
 )
-from jupiter.cli.session_storage import SessionInfo
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
-from jupiter.core.use_cases.projects.find import ProjectFindArgs, ProjectFindUseCase
+from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
+from jupiter.core.use_cases.projects.find import ProjectFindResult, ProjectFindUseCase
 from rich.console import Console
 from rich.text import Text
 from rich.tree import Tree
 
 
-class ProjectShow(LoggedInReadonlyCommand[ProjectFindUseCase]):
+class ProjectShow(LoggedInReadonlyCommand[ProjectFindUseCase, ProjectFindResult]):
     """UseCase class for showing the projects."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "project-show"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Show the projects"
-
-    def build_parser(self, parser: ArgumentParser) -> None:
-        """Construct a argparse parser for the command."""
-        parser.add_argument(
-            "--show-archived",
-            dest="show_archived",
-            default=False,
-            action="store_true",
-            help="Whether to show archived vacations or not",
-        )
-
-    async def _run(
+    def _render_result(
         self,
-        session_info: SessionInfo,
-        args: Namespace,
+        console: Console,
+        context: AppLoggedInReadonlyUseCaseContext,
+        result: ProjectFindResult,
     ) -> None:
-        """Callback to execute when the command is invoked."""
-        show_archived = args.show_archived
-
-        result = await self._use_case.execute(
-            AppLoggedInUseCaseSession(session_info.auth_token_ext),
-            ProjectFindArgs(allow_archived=show_archived, filter_ref_ids=None),
-        )
-
         sorted_projects = sorted(
             result.projects,
             key=lambda pe: (pe.archived, pe.created_time),
@@ -68,5 +39,4 @@ class ProjectShow(LoggedInReadonlyCommand[ProjectFindUseCase]):
 
             rich_tree.add(project_text)
 
-        console = Console()
         console.print(rich_tree)

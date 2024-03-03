@@ -2,7 +2,7 @@
 import abc
 import enum
 import logging
-from dataclasses import dataclass, fields
+from dataclasses import dataclass
 from typing import (
     AsyncContextManager,
     Final,
@@ -17,10 +17,8 @@ from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.entity import CrownEntity
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.json import JSONDictType, process_primitive_to_json
-from jupiter.core.framework.update_action import UpdateAction
+from jupiter.core.framework.use_case_io import UseCaseArgsBase, UseCaseResultBase
 from jupiter.core.utils.time_provider import TimeProvider
-from typing_extensions import dataclass_transform
 
 LOGGER = logging.getLogger(__name__)
 
@@ -43,60 +41,6 @@ class UseCaseContextBase(abc.ABC):
         """The owner workspace id."""
 
 
-@dataclass
-class UseCaseIOBase:
-    """The base class for use case inputs and output types."""
-
-    def to_serializable_dict(self) -> JSONDictType:
-        """Transform this argument set to a JSON compatible representation."""
-        serialized_form = {}
-        for field in fields(self):
-            field_value = getattr(self, field.name)
-            if isinstance(field_value, UpdateAction):
-                if field_value.should_change:
-                    serialized_form[field.name] = process_primitive_to_json(
-                        field_value.just_the_value,
-                        field.name,
-                    )
-            else:
-                serialized_form[field.name] = process_primitive_to_json(
-                    field_value,
-                    field.name,
-                )
-        return serialized_form
-
-
-@dataclass
-class UseCaseArgsBase(UseCaseIOBase):
-    """The base class for use case args types."""
-
-
-_UseCaseArgsT = TypeVar("_UseCaseArgsT", bound=UseCaseArgsBase)
-
-
-@dataclass_transform()
-def use_case_args(cls: type[_UseCaseArgsT]) -> type[_UseCaseArgsT]:
-    return dataclass(cls)
-
-
-@dataclass
-class UseCaseResultBase(UseCaseIOBase):
-    """The base class for use case args results."""
-
-
-_UseCaseResultT = TypeVar("_UseCaseResultT", bound=UseCaseResultBase)
-
-
-@dataclass_transform()
-def use_case_result(cls: type[_UseCaseResultT]) -> type[_UseCaseResultT]:
-    return dataclass(cls)
-
-
-@dataclass_transform()
-def use_case_result_part(cls: type[object]) -> type[object]:
-    return dataclass(cls)
-
-
 UseCaseSession = TypeVar("UseCaseSession", bound=UseCaseSessionBase)
 UseCaseContext = TypeVar("UseCaseContext", bound=UseCaseContextBase)
 UseCaseArgs = TypeVar("UseCaseArgs", bound=UseCaseArgsBase)
@@ -109,10 +53,6 @@ class MutationUseCaseInvocationResult(enum.Enum):
 
     SUCCESS = "success"
     FAILURE = "failure"
-
-    def to_db(self) -> str:
-        """A database appropriate form of this enum."""
-        return str(self.value)
 
 
 @dataclass
@@ -231,7 +171,7 @@ class UseCase(
         self,
         session: UseCaseSession,
         args: UseCaseArgs,
-    ) -> UseCaseResult:
+    ) -> tuple[UseCaseContext, UseCaseResult]:
         """Execute the command's action."""
 
     @abc.abstractmethod
@@ -285,7 +225,7 @@ class MutationUseCase(
         self,
         session: UseCaseSession,
         args: UseCaseArgs,
-    ) -> UseCaseResult:
+    ) -> tuple[UseCaseContext, UseCaseResult]:
         """Execute the command's action."""
         LOGGER.info(
             f"Invoking mutation command {self.__class__.__name__} with args {args}",
@@ -329,7 +269,7 @@ class MutationUseCase(
             args=args,
         )
         await self._invocation_recorder.record(invocation_record)
-        return result
+        return context, result
 
     @abc.abstractmethod
     async def _execute(
@@ -352,13 +292,14 @@ class ReadonlyUseCase(
         self,
         session: UseCaseSession,
         args: UseCaseArgs,
-    ) -> UseCaseResult:
+    ) -> tuple[UseCaseContext, UseCaseResult]:
         """Execute the command's action."""
         LOGGER.info(
             f"Invoking readonly command {self.__class__.__name__} with args {args}",
         )
         context = await self._build_context(session)
-        return await self._execute(context, args)
+        result = await self._execute(context, args)
+        return context, result
 
     @abc.abstractmethod
     async def _execute(

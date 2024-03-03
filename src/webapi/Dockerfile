@@ -37,4 +37,4 @@ ENV HOST=0.0.0.0
 ENV PORT=$PORT
 EXPOSE $PORT
 
-ENTRYPOINT [ "dumb-init", "gunicorn", "-k", "uvicorn.workers.UvicornWorker", "jupiter.webapi.jupiter:app" ]
+ENTRYPOINT [ "dumb-init", "python", "-m", "jupiter.webapi.jupiter" ]

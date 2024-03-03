@@ -4,6 +4,9 @@
 
 import type { EntityId } from './EntityId';
 
+/**
+ * PersonFindArgs.
+ */
 export type PersonFindArgs = {
     allow_archived: boolean;
     include_catch_up_inbox_tasks: boolean;

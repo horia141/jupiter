@@ -3,18 +3,20 @@
 /* eslint-disable */
 
 import type { EntityId } from './EntityId';
-import type { EntityName } from './EntityName';
-import type { ParentLink } from './ParentLink';
+import type { ProjectName } from './ProjectName';
 import type { Timestamp } from './Timestamp';
 
+/**
+ * The project.
+ */
 export type Project = {
     ref_id: EntityId;
     version: number;
     archived: boolean;
     created_time: Timestamp;
     last_modified_time: Timestamp;
-    archived_time: Timestamp;
-    name: EntityName;
-    project_collection: ParentLink;
+    archived_time?: Timestamp;
+    name: ProjectName;
+    project_collection: string;
 };
 

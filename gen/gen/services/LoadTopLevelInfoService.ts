@@ -12,14 +12,14 @@ export class LoadTopLevelInfoService {
     constructor(public readonly httpRequest: BaseHttpRequest) {}
 
     /**
-     * Load Top Level Info
-     * Load a user and workspace if they exist and other assorted data.
-     * @param requestBody
-     * @returns LoadTopLevelInfoResult Successful Response
+     * The command for loading a user and workspace if they exist and other data too.
+     * The command for loading a user and workspace if they exist and other data too.
+     * @param requestBody The input data
+     * @returns LoadTopLevelInfoResult Successful response
      * @throws ApiError
      */
     public loadTopLevelInfo(
-        requestBody: LoadTopLevelInfoArgs,
+        requestBody?: LoadTopLevelInfoArgs,
     ): CancelablePromise<LoadTopLevelInfoResult> {
         return this.httpRequest.request({
             method: 'POST',

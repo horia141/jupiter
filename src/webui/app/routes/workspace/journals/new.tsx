@@ -13,11 +13,8 @@ import {
 import { Stack } from "@mui/system";
 import type { ActionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import {
-  ShouldRevalidateFunction,
-  useActionData,
-  useTransition,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { ApiError, RecurringTaskPeriod } from "jupiter-gen";
 import { DateTime } from "luxon";
@@ -50,12 +47,12 @@ export async function action({ request }: ActionArgs) {
   const form = await parseForm(request, CreateFormSchema);
 
   try {
-    const result = await getLoggedInApiClient(session).journal.createJournal({
-      right_now: { the_date: form.rightNow, the_datetime: undefined },
+    const result = await getLoggedInApiClient(session).journals.journalCreate({
+      right_now: form.rightNow,
       period: form.period,
     });
 
-    return redirect(`/workspace/journals/${result.new_journal.ref_id.the_id}`);
+    return redirect(`/workspace/journals/${result.new_journal.ref_id}`);
   } catch (error) {
     if (
       error instanceof ApiError &&

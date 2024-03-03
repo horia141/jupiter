@@ -3,10 +3,11 @@
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.use_case import (
+from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,
     use_case_args,
@@ -50,19 +51,17 @@ class HabitLoadUseCase(
     ) -> HabitLoadResult:
         """Execute the command's action."""
         workspace = context.workspace
-        habit = await uow.habit_repository.load_by_id(
+        habit = await uow.get_for(Habit).load_by_id(
             args.ref_id, allow_archived=args.allow_archived
         )
-        project = await uow.project_repository.load_by_id(habit.project_ref_id)
-        inbox_task_collection = (
-            await uow.inbox_task_collection_repository.load_by_parent(
-                workspace.ref_id,
-            )
+        project = await uow.get_for(Project).load_by_id(habit.project_ref_id)
+        inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
+            workspace.ref_id,
         )
-        inbox_tasks = await uow.inbox_task_repository.find_all_with_filters(
+        inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
-            filter_habit_ref_ids=[args.ref_id],
+            habit_ref_id=[args.ref_id],
         )
 
         return HabitLoadResult(habit=habit, project=project, inbox_tasks=inbox_tasks)

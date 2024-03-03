@@ -29,7 +29,7 @@ class PersonCollection(TrunkEntity):
         return PersonCollection._create(
             ctx,
             workspace=ParentLink(workspace_ref_id),
-            catch_up_project=ParentLink(catch_up_project_ref_id),
+            catch_up_project_ref_id=catch_up_project_ref_id,
         )
 
     @update_entity_action

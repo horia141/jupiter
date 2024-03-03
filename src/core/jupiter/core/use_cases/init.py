@@ -1,9 +1,7 @@
 """UseCase for initialising the workspace."""
-from typing import Final
 
 from jupiter.core.domain.auth.auth import Auth
 from jupiter.core.domain.auth.auth_token_ext import AuthTokenExt
-from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
 from jupiter.core.domain.auth.password_new_plain import PasswordNewPlain
 from jupiter.core.domain.auth.recovery_token_plain import RecoveryTokenPlain
 from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
@@ -16,8 +14,8 @@ from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.core.timezone import Timezone
 from jupiter.core.domain.docs.doc_collection import DocCollection
 from jupiter.core.domain.features import (
-    UserFeatureFlags,
-    WorkspaceFeatureFlags,
+    UserFeature,
+    WorkspaceFeature,
 )
 from jupiter.core.domain.gamification.score_log import ScoreLog
 from jupiter.core.domain.gc.gc_log import GCLog
@@ -40,7 +38,6 @@ from jupiter.core.domain.push_integrations.slack.slack_task_collection import (
     SlackTaskCollection,
 )
 from jupiter.core.domain.smart_lists.smart_list_collection import SmartListCollection
-from jupiter.core.domain.storage_engine import DomainStorageEngine, SearchStorageEngine
 from jupiter.core.domain.user.user import User
 from jupiter.core.domain.user.user_name import UserName
 from jupiter.core.domain.user_workspace_link.user_workspace_link import (
@@ -51,9 +48,9 @@ from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.core.framework.secure import secure_class
 from jupiter.core.framework.use_case import (
-    MutationUseCaseInvocationRecorder,
     ProgressReporter,
-    ProgressReporterFactory,
+)
+from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,
     use_case_args,
@@ -64,8 +61,6 @@ from jupiter.core.use_cases.infra.use_cases import (
     AppGuestMutationUseCaseContext,
 )
 from jupiter.core.utils.feature_flag_controls import infer_feature_flag_controls
-from jupiter.core.utils.global_properties import GlobalProperties
-from jupiter.core.utils.time_provider import TimeProvider
 
 
 @use_case_args
@@ -75,12 +70,12 @@ class InitArgs(UseCaseArgsBase):
     user_email_address: EmailAddress
     user_name: UserName
     user_timezone: Timezone
-    user_feature_flags: UserFeatureFlags
+    user_feature_flags: set[UserFeature]
     auth_password: PasswordNewPlain
     auth_password_repeat: PasswordNewPlain
     workspace_name: WorkspaceName
     workspace_first_project_name: ProjectName
-    workspace_feature_flags: WorkspaceFeatureFlags
+    workspace_feature_flags: set[WorkspaceFeature]
 
 
 @use_case_result
@@ -97,32 +92,6 @@ class InitResult(UseCaseResultBase):
 class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
     """UseCase for initialising the workspace."""
 
-    _global_properties: Final[GlobalProperties]
-    _search_storage_engine: Final[SearchStorageEngine]
-
-    def __init__(
-        self,
-        time_provider: TimeProvider,
-        invocation_recorder: MutationUseCaseInvocationRecorder,
-        progress_reporter_factory: ProgressReporterFactory[
-            AppGuestMutationUseCaseContext
-        ],
-        auth_token_stamper: AuthTokenStamper,
-        domain_storage_engine: DomainStorageEngine,
-        search_storage_engine: SearchStorageEngine,
-        global_properties: GlobalProperties,
-    ) -> None:
-        """Constructor."""
-        super().__init__(
-            time_provider,
-            invocation_recorder,
-            progress_reporter_factory,
-            auth_token_stamper,
-            domain_storage_engine,
-        )
-        self._global_properties = global_properties
-        self._search_storage_engine = search_storage_engine
-
     async def _execute(
         self,
         progress_reporter: ProgressReporter,
@@ -135,16 +104,34 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             workspace_feature_flags_controls,
         ) = infer_feature_flag_controls(self._global_properties)
 
-        async with self._storage_engine.get_unit_of_work() as uow:
+        user_feature_flags = {}
+        for user_feature in UserFeature:
+            user_feature_flags[user_feature] = (
+                True
+                if user_feature in args.user_feature_flags
+                else user_feature_flags_controls.standard_flag_for(user_feature)
+            )
+
+        workspace_feature_flags = {}
+        for workspace_feature in WorkspaceFeature:
+            workspace_feature_flags[workspace_feature] = (
+                True
+                if workspace_feature in args.workspace_feature_flags
+                else workspace_feature_flags_controls.standard_flag_for(
+                    workspace_feature
+                )
+            )
+
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             new_user = User.new_user(
                 ctx=context.domain_context,
                 email_address=args.user_email_address,
                 name=args.user_name,
                 timezone=args.user_timezone,
                 feature_flag_controls=user_feature_flags_controls,
-                feature_flags=args.user_feature_flags,
+                feature_flags=user_feature_flags,
             )
-            new_user = await uow.user_repository.create(new_user)
+            new_user = await uow.get_for(User).create(new_user)
 
             new_auth, new_recovery_token = Auth.new_auth(
                 context.domain_context,
@@ -152,27 +139,27 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 password=args.auth_password,
                 password_repeat=args.auth_password_repeat,
             )
-            new_auth = await uow.auth_repository.create(new_auth)
+            new_auth = await uow.get_for(Auth).create(new_auth)
 
             new_score_log = ScoreLog.new_score_log(
                 ctx=context.domain_context,
                 user_ref_id=new_user.ref_id,
             )
-            new_score_log = await uow.score_log_repository.create(new_score_log)
+            new_score_log = await uow.get_for(ScoreLog).create(new_score_log)
 
             new_workspace = Workspace.new_workspace(
                 ctx=context.domain_context,
                 name=args.workspace_name,
                 feature_flag_controls=workspace_feature_flags_controls,
-                feature_flags=args.workspace_feature_flags,
+                feature_flags=workspace_feature_flags,
             )
-            new_workspace = await uow.workspace_repository.create(new_workspace)
+            new_workspace = await uow.get_for(Workspace).create(new_workspace)
 
             new_vacation_collection = VacationCollection.new_vacation_collection(
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
             )
-            new_vacation_collection = await uow.vacation_collection_repository.create(
+            new_vacation_collection = await uow.get_for(VacationCollection).create(
                 new_vacation_collection,
             )
 
@@ -180,7 +167,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
             )
-            new_project_collection = await uow.project_collection_repository.create(
+            new_project_collection = await uow.get_for(ProjectCollection).create(
                 new_project_collection,
             )
 
@@ -189,7 +176,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 project_collection_ref_id=new_project_collection.ref_id,
                 name=args.workspace_first_project_name,
             )
-            new_default_project = await uow.project_repository.create(
+            new_default_project = await uow.get_for(Project).create(
                 new_default_project,
             )
 
@@ -197,23 +184,21 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 ctx=context.domain_context,
                 default_project_ref_id=new_default_project.ref_id,
             )
-            await uow.workspace_repository.save(new_workspace)
+            await uow.get_for(Workspace).save(new_workspace)
 
             new_inbox_task_collection = InboxTaskCollection.new_inbox_task_collection(
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
             )
-            new_inbox_task_collection = (
-                await uow.inbox_task_collection_repository.create(
-                    new_inbox_task_collection,
-                )
+            new_inbox_task_collection = await uow.get_for(InboxTaskCollection).create(
+                new_inbox_task_collection,
             )
 
             new_habit_collection = HabitCollection.new_habit_collection(
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
             )
-            new_habit_collection = await uow.habit_collection_repository.create(
+            new_habit_collection = await uow.get_for(HabitCollection).create(
                 new_habit_collection,
             )
 
@@ -221,7 +206,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
             )
-            new_chore_collection = await uow.chore_collection_repository.create(
+            new_chore_collection = await uow.get_for(ChoreCollection).create(
                 new_chore_collection,
             )
 
@@ -229,7 +214,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
             )
-            new_big_plan_collection = await uow.big_plan_collection_repository.create(
+            new_big_plan_collection = await uow.get_for(BigPlanCollection).create(
                 new_big_plan_collection,
             )
 
@@ -241,7 +226,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 writing_task_difficulty=Difficulty.MEDIUM,
                 writing_project_ref_id=new_default_project.ref_id,
             )
-            journal_collection = await uow.journal_collection_repository.create(
+            journal_collection = await uow.get_for(JournalCollection).create(
                 journal_collection,
             )
 
@@ -249,7 +234,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
             )
-            new_doc_collection = await uow.doc_collection_repository.create(
+            new_doc_collection = await uow.get_for(DocCollection).create(
                 new_doc_collection
             )
 
@@ -257,10 +242,8 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
             )
-            new_smart_list_collection = (
-                await uow.smart_list_collection_repository.create(
-                    new_smart_list_collection,
-                )
+            new_smart_list_collection = await uow.get_for(SmartListCollection).create(
+                new_smart_list_collection,
             )
 
             new_metric_collection = MetricCollection.new_metric_collection(
@@ -268,7 +251,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 workspace_ref_id=new_workspace.ref_id,
                 collection_project_ref_id=new_default_project.ref_id,
             )
-            new_metric_collection = await uow.metric_collection_repository.create(
+            new_metric_collection = await uow.get_for(MetricCollection).create(
                 new_metric_collection,
             )
 
@@ -277,7 +260,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 workspace_ref_id=new_workspace.ref_id,
                 catch_up_project_ref_id=new_default_project.ref_id,
             )
-            new_person_collection = await uow.person_collection_repository.create(
+            new_person_collection = await uow.get_for(PersonCollection).create(
                 new_person_collection,
             )
 
@@ -287,10 +270,8 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                     workspace_ref_id=new_workspace.ref_id,
                 )
             )
-            new_push_integration_group = (
-                await uow.push_integration_group_repository.create(
-                    new_push_integration_group,
-                )
+            new_push_integration_group = await uow.get_for(PushIntegrationGroup).create(
+                new_push_integration_group,
             )
 
             new_slack_task_collection = SlackTaskCollection.new_slack_task_collection(
@@ -298,10 +279,8 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 push_integration_group_ref_id=new_push_integration_group.ref_id,
                 generation_project_ref_id=new_default_project.ref_id,
             )
-            new_slack_task_collection = (
-                await uow.slack_task_collection_repository.create(
-                    new_slack_task_collection,
-                )
+            new_slack_task_collection = await uow.get_for(SlackTaskCollection).create(
+                new_slack_task_collection,
             )
 
             new_email_task_collection = EmailTaskCollection.new_email_task_collection(
@@ -309,17 +288,15 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 push_integration_group_ref_id=new_push_integration_group.ref_id,
                 generation_project_ref_id=new_default_project.ref_id,
             )
-            new_email_task_collection = (
-                await uow.email_task_collection_repository.create(
-                    new_email_task_collection,
-                )
+            new_email_task_collection = await uow.get_for(EmailTaskCollection).create(
+                new_email_task_collection,
             )
 
             new_note_collection = NoteCollection.new_note_collection(
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
             )
-            new_note_collection = await uow.note_collection_repository.create(
+            new_note_collection = await uow.get_for(NoteCollection).create(
                 new_note_collection
             )
 
@@ -327,25 +304,25 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
             )
-            new_gc_log = await uow.gc_log_repository.create(new_gc_log)
+            new_gc_log = await uow.get_for(GCLog).create(new_gc_log)
 
             new_gen_log = GenLog.new_gen_log(
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
             )
-            new_gen_log = await uow.gen_log_repository.create(new_gen_log)
+            new_gen_log = await uow.get_for(GenLog).create(new_gen_log)
 
             new_user_workspace_link = UserWorkspaceLink.new_user_workspace_link(
                 ctx=context.domain_context,
                 user_ref_id=new_user.ref_id,
                 workspace_ref_id=new_workspace.ref_id,
             )
-            new_user_workspace_link = await uow.user_workspace_link_repository.create(
+            new_user_workspace_link = await uow.get_for(UserWorkspaceLink).create(
                 new_user_workspace_link
             )
 
         async with self._search_storage_engine.get_unit_of_work() as search_uow:
-            await search_uow.search_repository.create(
+            await search_uow.search_repository.upsert(
                 new_workspace.ref_id, new_default_project
             )
 

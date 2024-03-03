@@ -8,8 +8,8 @@ interface Props {
 export function MetricTag(props: Props) {
   return (
     <LinkTag
-      to={`/workspace/metrics/${props.metric.ref_id.the_id}/details`}
-      label={props.metric.name.the_name}
+      to={`/workspace/metrics/${props.metric.ref_id}/details`}
+      label={props.metric.name}
       color="primary"
     />
   );

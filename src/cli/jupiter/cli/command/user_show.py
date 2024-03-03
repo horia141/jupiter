@@ -1,5 +1,4 @@
 """Command for showing the user."""
-from argparse import ArgumentParser, Namespace
 
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
@@ -8,41 +7,22 @@ from jupiter.cli.command.rendering import (
     timezone_to_rich_text,
     user_score_overview_to_rich,
 )
-from jupiter.cli.session_storage import SessionInfo
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
-from jupiter.core.use_cases.user.load import UserLoadArgs, UserLoadUseCase
+from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
+from jupiter.core.use_cases.users.load import UserLoadResult, UserLoadUseCase
 from rich.console import Console
 from rich.text import Text
 from rich.tree import Tree
 
 
-class UserShow(LoggedInReadonlyCommand[UserLoadUseCase]):
+class UserShow(LoggedInReadonlyCommand[UserLoadUseCase, UserLoadResult]):
     """Command class for showing the user."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "user-show"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Show the current information about the user"
-
-    def build_parser(self, parser: ArgumentParser) -> None:
-        """Construct a argparse parser for the command."""
-
-    async def _run(
+    def _render_result(
         self,
-        session_info: SessionInfo,
-        args: Namespace,
+        console: Console,
+        context: AppLoggedInReadonlyUseCaseContext,
+        result: UserLoadResult,
     ) -> None:
-        """Callback to execute when the command is invoked."""
-        result = await self._use_case.execute(
-            AppLoggedInUseCaseSession(session_info.auth_token_ext),
-            UserLoadArgs(),
-        )
-
         rich_tree = Tree(f"⭐ {result.user.name}", guide_style="bold bright_blue")
 
         user_text = Text("")
@@ -66,5 +46,4 @@ class UserShow(LoggedInReadonlyCommand[UserLoadUseCase]):
         if result.user_score_overview is not None:
             rich_tree.add(user_score_overview_to_rich(result.user_score_overview))
 
-        console = Console()
         console.print(rich_tree)

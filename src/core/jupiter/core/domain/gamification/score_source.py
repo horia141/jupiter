@@ -10,7 +10,3 @@ class ScoreSource(EnumValue):
 
     INBOX_TASK = "inbox-task"
     BIG_PLAN = "big-plan"
-
-    def __str__(self) -> str:
-        """String form."""
-        return str(self.value)

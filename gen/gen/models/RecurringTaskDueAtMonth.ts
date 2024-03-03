@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type RecurringTaskDueAtMonth = {
-    the_month: number;
-};
-
+/**
+ * The due month for a recurring task.
+ */
+export type RecurringTaskDueAtMonth = number;

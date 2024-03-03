@@ -1,9 +1,9 @@
 """A metric entry."""
 from jupiter.core.domain.core.adate import ADate
-from jupiter.core.domain.core.entity_name import EntityName
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     IsRefId,
@@ -56,6 +56,9 @@ class MetricEntry(LeafEntity):
         """Change the metric entry."""
         return self._new_version(
             ctx,
+            name=MetricEntry.build_name(
+                collection_time.or_else(self.collection_time), value.or_else(self.value)
+            ),
             collection_time=collection_time.or_else(self.collection_time),
             value=value.or_else(self.value),
         )
@@ -64,5 +67,5 @@ class MetricEntry(LeafEntity):
     def build_name(collection_time: ADate, value: float) -> EntityName:
         """Construct a name."""
         return EntityName(
-            f"Entry for {ADate.to_user_date_str(collection_time)} value={value}",
+            f"Entry for {collection_time} value={value}",
         )

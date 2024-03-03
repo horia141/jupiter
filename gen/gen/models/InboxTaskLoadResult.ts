@@ -13,6 +13,9 @@ import type { Person } from './Person';
 import type { Project } from './Project';
 import type { SlackTask } from './SlackTask';
 
+/**
+ * InboxTaskLoadResult.
+ */
 export type InboxTaskLoadResult = {
     inbox_task: InboxTask;
     project: Project;

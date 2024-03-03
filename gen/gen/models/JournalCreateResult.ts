@@ -5,6 +5,9 @@
 import type { Journal } from './Journal';
 import type { Note } from './Note';
 
+/**
+ * Result.
+ */
 export type JournalCreateResult = {
     new_journal: Journal;
     new_note: Note;

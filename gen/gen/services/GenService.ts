@@ -13,18 +13,18 @@ export class GenService {
     constructor(public readonly httpRequest: BaseHttpRequest) {}
 
     /**
-     * Gen Do
-     * Generate inbox tasks.
-     * @param requestBody
-     * @returns any Successful Response
+     * The command for generating new tasks.
+     * The command for generating new tasks.
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public genDo(
-        requestBody: GenDoArgs,
+        requestBody?: GenDoArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/gen/do',
+            url: '/gen-do',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -36,18 +36,18 @@ export class GenService {
     }
 
     /**
-     * Gen Load Runs
-     * Load history of task generation runs.
-     * @param requestBody
-     * @returns GenLoadRunsResult Successful Response
+     * Load previous runs of task generation.
+     * Load previous runs of task generation.
+     * @param requestBody The input data
+     * @returns GenLoadRunsResult Successful response
      * @throws ApiError
      */
     public genLoadRuns(
-        requestBody: GenLoadRunsArgs,
+        requestBody?: GenLoadRunsArgs,
     ): CancelablePromise<GenLoadRunsResult> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/gen/load-runs',
+            url: '/gen-load-runs',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

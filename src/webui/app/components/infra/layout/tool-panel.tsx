@@ -1,5 +1,5 @@
 import { styled } from "@mui/material";
-import { Form, useLocation, useNavigate } from "@remix-run/react";
+import { Form, useLocation } from "@remix-run/react";
 import { motion } from "framer-motion";
 import type { PropsWithChildren } from "react";
 import { useBigScreen } from "~/rendering/use-big-screen";
@@ -14,7 +14,6 @@ interface ToolPanelProps {
 export function ToolPanel(props: PropsWithChildren<ToolPanelProps>) {
   const isBigScreen = useBigScreen();
   const location = useLocation();
-  const navigation = useNavigate();
 
   return (
     <ToolPanelFrame

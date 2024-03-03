@@ -1,45 +1,41 @@
 """The icon for an entity."""
-from typing import Optional, cast
+from typing import cast
 
 import emoji
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import Value, hashable_value
+from jupiter.core.framework.primitive import Primitive
+from jupiter.core.framework.value import AtomicValue, hashable_value
+from jupiter.core.use_cases.infra.realms import (
+    PrimitiveAtomicValueDatabaseDecoder,
+    PrimitiveAtomicValueDatabaseEncoder,
+)
 
 
 @hashable_value
-class EntityIcon(Value):
+class EntityIcon(AtomicValue[str]):
     """The icon for an entity."""
 
     the_icon: str
-
-    def __post_init__(self) -> None:
-        """Validate after pydantic construction."""
-        self.the_icon = self._clean_the_icon(self.the_icon)
-
-    @staticmethod
-    def from_raw(entity_icon_raw: Optional[str]) -> "EntityIcon":
-        """Validate and clean an entity icon."""
-        if not entity_icon_raw:
-            raise InputValidationError("Expected entity icon to be non-null")
-
-        return EntityIcon(EntityIcon._clean_the_icon(entity_icon_raw))
-
-    @staticmethod
-    def from_safe(entity_icon_raw: str) -> "EntityIcon":
-        """Transform to an entity icon from a safe string."""
-        return EntityIcon(entity_icon_raw)
-
-    def to_safe(self) -> str:
-        """Transform to an safe string."""
-        return self.the_icon
 
     def __str__(self) -> str:
         """Transform this to a string version."""
         return self.the_icon
 
-    @staticmethod
-    def _clean_the_icon(entity_icon_raw: str) -> str:
-        entity_icon = entity_icon_raw.strip()
+
+class EntityIconDatabaseEncoder(PrimitiveAtomicValueDatabaseEncoder[EntityIcon]):
+    """Encode to a database primitive."""
+
+    def to_primitive(self, value: EntityIcon) -> Primitive:
+        """Encode to a database primitive."""
+        return value.the_icon
+
+
+class EntityIconDatabaseDecoder(PrimitiveAtomicValueDatabaseDecoder[EntityIcon]):
+    """Decode from a database primitive."""
+
+    def from_raw_str(self, value: str) -> EntityIcon:
+        """Decode from a raw string."""
+        entity_icon = value.strip()
 
         if entity_icon not in emoji.UNICODE_EMOJI_ENGLISH:
             entity_icon_try2 = cast(str, emoji.emojize(entity_icon)).strip()
@@ -47,6 +43,6 @@ class EntityIcon(Value):
             if entity_icon_try2 not in emoji.UNICODE_EMOJI_ENGLISH:
                 raise InputValidationError("Expected an icon")
 
-            return entity_icon_try2
+            return EntityIcon(entity_icon_try2)
 
-        return entity_icon
+        return EntityIcon(entity_icon)

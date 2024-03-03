@@ -2,12 +2,8 @@ import TuneIcon from "@mui/icons-material/Tune";
 import { Button } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import {
-  Link,
-  Outlet,
-  ShouldRevalidateFunction,
-  useFetcher,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { Link, Outlet, useFetcher } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { WorkspaceFeature, type Metric } from "jupiter-gen";
 import { useContext } from "react";
@@ -36,12 +32,14 @@ export const handle = {
 
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
-  const metricResponse = await getLoggedInApiClient(session).metric.findMetric({
-    allow_archived: false,
-    include_entries: false,
-    include_collection_inbox_tasks: false,
-    include_metric_entry_notes: false,
-  });
+  const metricResponse = await getLoggedInApiClient(session).metrics.metricFind(
+    {
+      allow_archived: false,
+      include_entries: false,
+      include_collection_inbox_tasks: false,
+      include_metric_entry_notes: false,
+    }
+  );
 
   return json({
     entries: metricResponse.entries,
@@ -68,7 +66,7 @@ export default function Metrics() {
       },
       {
         method: "post",
-        action: `/workspace/metric/${smartList.ref_id.the_id}/details`,
+        action: `/workspace/metric/${smartList.ref_id}/details`,
       }
     );
   }
@@ -104,14 +102,12 @@ export default function Metrics() {
         <EntityStack>
           {loaderData.entries.map((entry) => (
             <EntityCard
-              key={entry.metric.ref_id.the_id}
+              key={entry.metric.ref_id}
               allowSwipe
               allowMarkNotDone
               onMarkNotDone={() => archiveMetric(entry.metric)}
             >
-              <EntityLink
-                to={`/workspace/metrics/${entry.metric.ref_id.the_id}`}
-              >
+              <EntityLink to={`/workspace/metrics/${entry.metric.ref_id}`}>
                 {entry.metric.icon && (
                   <EntityIconComponent icon={entry.metric.icon} />
                 )}

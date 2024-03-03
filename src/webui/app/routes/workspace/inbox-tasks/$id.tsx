@@ -20,12 +20,8 @@ import {
   type ActionArgs,
   type LoaderArgs,
 } from "@remix-run/node";
-import {
-  ShouldRevalidateFunction,
-  useActionData,
-  useParams,
-  useTransition,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { useActionData, useParams, useTransition } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import type {
   BigPlan,
@@ -116,10 +112,12 @@ export async function loader({ request, params }: LoaderArgs) {
   });
 
   try {
-    const result = await getLoggedInApiClient(session).inboxTask.loadInboxTask({
-      ref_id: { the_id: id },
-      allow_archived: true,
-    });
+    const result = await getLoggedInApiClient(session).inboxTasks.inboxTaskLoad(
+      {
+        ref_id: id,
+        allow_archived: true,
+      }
+    );
 
     return json({
       info: result,
@@ -153,12 +151,12 @@ export async function action({ request, params }: ActionArgs) {
       case "update": {
         const result = await getLoggedInApiClient(
           session
-        ).inboxTask.updateInboxTask({
-          ref_id: { the_id: id },
+        ).inboxTasks.inboxTaskUpdate({
+          ref_id: id,
           name: corePropertyEditable
             ? {
                 should_change: true,
-                value: { the_name: form.name },
+                value: form.name,
               }
             : { should_change: false },
           status: {
@@ -182,14 +180,14 @@ export async function action({ request, params }: ActionArgs) {
             should_change: true,
             value:
               form.actionableDate !== undefined && form.actionableDate !== ""
-                ? { the_date: form.actionableDate, the_datetime: undefined }
+                ? form.actionableDate
                 : undefined,
           },
           due_date: {
             should_change: true,
             value:
               form.dueDate !== undefined && form.dueDate !== ""
-                ? { the_date: form.dueDate, the_datetime: undefined }
+                ? form.dueDate
                 : undefined,
           },
         });
@@ -206,9 +204,9 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "change-project": {
-        await getLoggedInApiClient(session).inboxTask.changeInboxTaskProject({
-          ref_id: { the_id: id },
-          project_ref_id: form.project ? { the_id: form.project } : undefined,
+        await getLoggedInApiClient(session).inboxTasks.inboxTaskChangeProject({
+          ref_id: id,
+          project_ref_id: form.project ? form.project : undefined,
         });
 
         return redirect(`/workspace/inbox-tasks/${id}`);
@@ -217,11 +215,11 @@ export async function action({ request, params }: ActionArgs) {
       case "associate-with-big-plan": {
         await getLoggedInApiClient(
           session
-        ).inboxTask.associateInboxTaskWithBigPlan({
-          ref_id: { the_id: id },
+        ).inboxTasks.inboxTaskAssociateWithBigPlan({
+          ref_id: id,
           big_plan_ref_id:
             form.bigPlan !== undefined && form.bigPlan !== "none"
-              ? { the_id: form.bigPlan }
+              ? form.bigPlan
               : undefined,
         });
 
@@ -229,9 +227,9 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "create-note": {
-        await getLoggedInApiClient(session).note.createNote({
+        await getLoggedInApiClient(session).core.noteCreate({
           domain: NoteDomain.INBOX_TASK,
-          source_entity_ref_id: { the_id: id },
+          source_entity_ref_id: id,
           content: [],
         });
 
@@ -239,8 +237,8 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).inboxTask.archiveInboxTask({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).inboxTasks.inboxTaskArchive({
+          ref_id: id,
         });
 
         return redirect(`/workspace/inbox-tasks/${id}`);
@@ -279,8 +277,8 @@ export default function InboxTask() {
   const [selectedBigPlan, setSelectedBigPlan] = useState(
     loaderData.info.big_plan
       ? {
-          label: loaderData.info.big_plan.name.the_name,
-          big_plan_id: loaderData.info.big_plan.ref_id.the_id,
+          label: loaderData.info.big_plan.name,
+          big_plan_id: loaderData.info.big_plan.ref_id,
         }
       : {
           label: "None",
@@ -288,15 +286,15 @@ export default function InboxTask() {
         }
   );
   const selectedBigPlanIsDifferentFromCurrent = loaderData.info.big_plan
-    ? loaderData.info.big_plan.ref_id.the_id !== selectedBigPlan.big_plan_id
+    ? loaderData.info.big_plan.ref_id !== selectedBigPlan.big_plan_id
     : selectedBigPlan.big_plan_id !== "none";
 
   const [selectedProject, setSelectedProject] = useState(
-    loaderData.info.project.ref_id.the_id
+    loaderData.info.project.ref_id
   );
   const [blockedToSelectProject, setBlockedToSelectProject] = useState(false);
   const selectedProjectIsDifferentFromCurrent =
-    loaderData.info.project.ref_id.the_id !== selectedProject;
+    loaderData.info.project.ref_id !== selectedProject;
 
   const info = loaderData.info;
   const inboxTask = loaderData.info.inbox_task;
@@ -314,7 +312,7 @@ export default function InboxTask() {
     )
   ) {
     for (const project of loaderData.allProjects) {
-      allProjectsById[project.ref_id.the_id] = project;
+      allProjectsById[project.ref_id] = project;
     }
   }
 
@@ -328,7 +326,7 @@ export default function InboxTask() {
     )
   ) {
     for (const bigPlan of loaderData.allBigPlans) {
-      allBigPlansById[bigPlan.ref_id.the_id] = bigPlan;
+      allBigPlansById[bigPlan.ref_id] = bigPlan;
     }
 
     allBigPlansAsOptions = [
@@ -338,8 +336,8 @@ export default function InboxTask() {
       },
     ].concat(
       loaderData.allBigPlans.map((bp: BigPlan) => ({
-        label: bp.name.the_name,
-        big_plan_id: bp.ref_id.the_id,
+        label: bp.name,
+        big_plan_id: bp.ref_id,
       }))
     );
   }
@@ -350,11 +348,11 @@ export default function InboxTask() {
   ) {
     setSelectedBigPlan({ label, big_plan_id });
     if (big_plan_id === "none") {
-      setSelectedProject(loaderData.defaultProject.ref_id.the_id);
+      setSelectedProject(loaderData.defaultProject.ref_id);
       setBlockedToSelectProject(false);
     } else {
-      const projectId = allBigPlansById[big_plan_id].project_ref_id.the_id;
-      const projectKey = allProjectsById[projectId].ref_id.the_id;
+      const projectId = allBigPlansById[big_plan_id].project_ref_id;
+      const projectKey = allProjectsById[projectId].ref_id;
       setSelectedProject(projectKey);
       setBlockedToSelectProject(true);
     }
@@ -371,8 +369,8 @@ export default function InboxTask() {
     setSelectedBigPlan(
       loaderData.info.big_plan
         ? {
-            label: loaderData.info.big_plan.name.the_name,
-            big_plan_id: loaderData.info.big_plan.ref_id.the_id,
+            label: loaderData.info.big_plan.name,
+            big_plan_id: loaderData.info.big_plan.ref_id,
           }
         : {
             label: "None",
@@ -380,12 +378,12 @@ export default function InboxTask() {
           }
     );
 
-    setSelectedProject(loaderData.info.project.ref_id.the_id);
+    setSelectedProject(loaderData.info.project.ref_id);
   }, [loaderData]);
 
   return (
     <LeafPanel
-      key={inboxTask.ref_id.the_id}
+      key={inboxTask.ref_id}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/inbox-tasks"
@@ -400,7 +398,7 @@ export default function InboxTask() {
                 label="Name"
                 name="name"
                 readOnly={!inputsEnabled || !corePropertyEditable}
-                defaultValue={inboxTask.name.the_name}
+                defaultValue={inboxTask.name}
               />
               <FieldError actionResult={actionData} fieldName="/name" />
             </FormControl>
@@ -546,8 +544,8 @@ export default function InboxTask() {
                   label="Project"
                 >
                   {loaderData.allProjects.map((p: Project) => (
-                    <MenuItem key={p.ref_id.the_id} value={p.ref_id.the_id}>
-                      {p.name.the_name}
+                    <MenuItem key={p.ref_id} value={p.ref_id}>
+                      {p.name}
                     </MenuItem>
                   ))}
                 </Select>

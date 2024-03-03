@@ -4,6 +4,9 @@
 
 import type { EntityId } from './EntityId';
 
+/**
+ * EmailTaskLoadArgs.
+ */
 export type EmailTaskLoadArgs = {
     ref_id: EntityId;
     allow_archived: boolean;

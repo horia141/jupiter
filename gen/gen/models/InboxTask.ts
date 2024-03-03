@@ -6,21 +6,23 @@ import type { ADate } from './ADate';
 import type { Difficulty } from './Difficulty';
 import type { Eisen } from './Eisen';
 import type { EntityId } from './EntityId';
-import type { EntityName } from './EntityName';
+import type { InboxTaskName } from './InboxTaskName';
 import type { InboxTaskSource } from './InboxTaskSource';
 import type { InboxTaskStatus } from './InboxTaskStatus';
-import type { ParentLink } from './ParentLink';
 import type { Timestamp } from './Timestamp';
 
+/**
+ * An inbox task.
+ */
 export type InboxTask = {
     ref_id: EntityId;
     version: number;
     archived: boolean;
     created_time: Timestamp;
     last_modified_time: Timestamp;
-    archived_time: Timestamp;
-    name: EntityName;
-    inbox_task_collection: ParentLink;
+    archived_time?: Timestamp;
+    name: InboxTaskName;
+    inbox_task_collection: string;
     source: InboxTaskSource;
     project_ref_id: EntityId;
     status: InboxTaskStatus;

@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type SearchLimit = {
-    the_limit: number;
-};
-
+/**
+ * A search limit parameter for searches.
+ */
+export type SearchLimit = number;

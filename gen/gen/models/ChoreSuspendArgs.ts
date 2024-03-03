@@ -4,6 +4,9 @@
 
 import type { EntityId } from './EntityId';
 
+/**
+ * PersonFindArgs.
+ */
 export type ChoreSuspendArgs = {
     ref_id: EntityId;
 };

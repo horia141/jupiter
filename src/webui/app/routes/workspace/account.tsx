@@ -14,11 +14,8 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import {
-  ShouldRevalidateFunction,
-  useActionData,
-  useTransition,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { ApiError, UserFeature } from "jupiter-gen";
 import { useContext } from "react";
@@ -56,7 +53,7 @@ export const handle = {
 
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
-  const result = await getLoggedInApiClient(session).user.loadUser({});
+  const result = await getLoggedInApiClient(session).users.userLoad({});
 
   return json({
     user: result.user,
@@ -72,14 +69,14 @@ export async function action({ request }: ActionArgs) {
   try {
     switch (intent) {
       case "update": {
-        await getLoggedInApiClient(session).user.updateUser({
+        await getLoggedInApiClient(session).users.userUpdate({
           name: {
             should_change: true,
-            value: { the_name: form.name },
+            value: form.name,
           },
           timezone: {
             should_change: true,
-            value: { the_timezone: form.timezone },
+            value: form.timezone,
           },
         });
 
@@ -87,17 +84,8 @@ export async function action({ request }: ActionArgs) {
       }
 
       case "change-feature-flags": {
-        const featureFlags: Record<string, boolean> = {};
-        for (const feature of Object.values(UserFeature)) {
-          if (form.featureFlags.find((v) => v == feature)) {
-            featureFlags[feature] = true;
-          } else {
-            featureFlags[feature] = false;
-          }
-        }
-
-        await getLoggedInApiClient(session).user.changeUserFeatureFlags({
-          feature_flags: featureFlags,
+        await getLoggedInApiClient(session).users.userChangeFeatureFlags({
+          feature_flags: form.featureFlags,
         });
 
         return redirect(`/workspace/account`);
@@ -152,7 +140,7 @@ export default function Account() {
                     label="Your Email Address"
                     name="emailAddress"
                     disabled={true}
-                    defaultValue={loaderData.user.email_address.the_address}
+                    defaultValue={loaderData.user.email_address}
                   />
                 </FormControl>
 
@@ -160,7 +148,7 @@ export default function Account() {
                   <TextField
                     name="name"
                     label="Your Name"
-                    defaultValue={loaderData.user.name.the_name}
+                    defaultValue={loaderData.user.name}
                     disabled={!inputsEnabled}
                   />
                   <FieldError actionResult={actionData} fieldName="/name" />
@@ -170,7 +158,7 @@ export default function Account() {
                     id="timezone"
                     options={allTimezonesAsOptions}
                     readOnly={!inputsEnabled}
-                    defaultValue={loaderData.user.timezone.the_timezone}
+                    defaultValue={loaderData.user.timezone}
                     disableClearable={true}
                     renderInput={(params) => (
                       <TextField

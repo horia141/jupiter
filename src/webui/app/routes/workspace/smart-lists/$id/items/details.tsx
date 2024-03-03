@@ -11,12 +11,8 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import {
-  ShouldRevalidateFunction,
-  useActionData,
-  useParams,
-  useTransition,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { useActionData, useParams, useTransition } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { ApiError } from "jupiter-gen";
 import { z } from "zod";
@@ -55,8 +51,8 @@ export async function loader({ request, params }: LoaderArgs) {
   try {
     const response = await getLoggedInApiClient(
       session
-    ).smartList.loadSmartList({
-      ref_id: { the_id: id },
+    ).smartLists.smartListLoad({
+      ref_id: id,
       allow_archived: true,
     });
 
@@ -85,15 +81,15 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (intent) {
       case "update": {
-        await getLoggedInApiClient(session).smartList.updateSmartList({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).smartLists.smartListUpdate({
+          ref_id: id,
           name: {
             should_change: true,
-            value: { the_name: form.name },
+            value: form.name,
           },
           icon: {
             should_change: true,
-            value: form.icon ? { the_icon: form.icon } : undefined,
+            value: form.icon,
           },
         });
 
@@ -101,8 +97,8 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).smartList.archiveSmartList({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).smartLists.smartListArchive({
+          ref_id: id,
         });
 
         return redirect(`/workspace/smart-lists/${id}/items/details`);
@@ -137,7 +133,7 @@ export default function SmartListDetails() {
 
   return (
     <LeafPanel
-      key={loaderData.smartList.ref_id.the_id}
+      key={loaderData.smartList.ref_id}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation={`/workspace/smart-lists/${id}/items`}
@@ -152,7 +148,7 @@ export default function SmartListDetails() {
                 label="Name"
                 name="name"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.smartList.name.the_name}
+                defaultValue={loaderData.smartList.name}
               />
               <FieldError actionResult={actionData} fieldName="/name" />
             </FormControl>
@@ -161,7 +157,7 @@ export default function SmartListDetails() {
               <InputLabel id="icon">Icon</InputLabel>
               <IconSelector
                 readOnly={!inputsEnabled}
-                defaultIcon={loaderData.smartList.icon?.the_icon}
+                defaultIcon={loaderData.smartList.icon}
               />
               <FieldError actionResult={actionData} fieldName="/icon" />
             </FormControl>

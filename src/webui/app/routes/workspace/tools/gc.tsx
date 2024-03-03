@@ -17,11 +17,8 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import {
-  ShouldRevalidateFunction,
-  useActionData,
-  useTransition,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { ApiError, EventSource, SyncTarget } from "jupiter-gen";
 import { useContext } from "react";
@@ -136,7 +133,7 @@ export default function GC() {
 
       {entries.map((entry) => {
         return (
-          <Accordion key={entry.ref_id.the_id}>
+          <Accordion key={entry.ref_id}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <AccordionHeader>
                 Run from <EventSourceTag source={entry.source} />
@@ -157,7 +154,7 @@ export default function GC() {
               </GCTargetsSection>
 
               {entry.entity_records.map((record) => (
-                <EntityCard key={record.ref_id.the_id}>
+                <EntityCard key={record.ref_id}>
                   <EntitySummaryLink summary={record} />
                 </EntityCard>
               ))}

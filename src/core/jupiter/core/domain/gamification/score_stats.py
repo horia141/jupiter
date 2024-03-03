@@ -1,4 +1,5 @@
 """Statistics about scores for a particular time interval."""
+import abc
 from typing import Tuple
 
 from jupiter.core.domain.core.adate import ADate
@@ -11,6 +12,7 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import ParentLink
 from jupiter.core.framework.record import Record, create_record_action, record
+from jupiter.core.framework.repository import RecordRepository
 
 
 @record
@@ -48,6 +50,7 @@ class ScoreStats(Record):
         ctx: DomainContext,
         score_log_entry: ScoreLogEntry,
     ) -> "ScoreStats":
+        """Merge a score log entry into the score stats."""
         return self._new_version(
             ctx,
             total_score=max(0, self.total_score + score_log_entry.score),
@@ -73,8 +76,27 @@ class ScoreStats(Record):
     def to_user_score_at_date(self) -> UserScoreAtDate:
         """Build a user score at time."""
         return UserScoreAtDate(
-            date=ADate.from_timestamp(self.created_time).just_the_date(),
+            date=ADate.from_date(self.created_time.as_date()),
             total_score=self.total_score,
             inbox_task_cnt=self.inbox_task_cnt,
             big_plan_cnt=self.big_plan_cnt,
         )
+
+
+class ScoreStatsRepository(
+    RecordRepository[
+        ScoreStats, Tuple[EntityId, RecurringTaskPeriod | None, str], EntityId
+    ],
+    abc.ABC,
+):
+    """A repository of score stats."""
+
+    @abc.abstractmethod
+    async def find_all_in_timerange(
+        self,
+        score_log_ref_id: EntityId,
+        period: RecurringTaskPeriod,
+        start_date: ADate,
+        end_date: ADate,
+    ) -> list[ScoreStats]:
+        """Find all score stats in a given time range."""

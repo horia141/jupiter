@@ -6,71 +6,69 @@ import type { OpenAPIConfig } from './core/OpenAPI';
 import { FetchHttpRequest } from './core/FetchHttpRequest';
 
 import { AuthService } from './services/AuthService';
-import { BigPlanService } from './services/BigPlanService';
-import { ChoreService } from './services/ChoreService';
-import { DefaultService } from './services/DefaultService';
-import { DocService } from './services/DocService';
-import { EmailTaskService } from './services/EmailTaskService';
+import { BigPlansService } from './services/BigPlansService';
+import { ChoresService } from './services/ChoresService';
+import { CoreService } from './services/CoreService';
+import { DocsService } from './services/DocsService';
 import { GcService } from './services/GcService';
 import { GenService } from './services/GenService';
 import { GetSummariesService } from './services/GetSummariesService';
-import { HabitService } from './services/HabitService';
-import { InboxTaskService } from './services/InboxTaskService';
+import { HabitsService } from './services/HabitsService';
+import { InboxTasksService } from './services/InboxTasksService';
 import { InitService } from './services/InitService';
-import { JournalService } from './services/JournalService';
+import { JournalsService } from './services/JournalsService';
 import { LoadProgressReporterTokenService } from './services/LoadProgressReporterTokenService';
 import { LoadTopLevelInfoService } from './services/LoadTopLevelInfoService';
 import { LoginService } from './services/LoginService';
-import { MetricService } from './services/MetricService';
-import { NoteService } from './services/NoteService';
-import { PersonService } from './services/PersonService';
-import { ProjectService } from './services/ProjectService';
+import { MetricsService } from './services/MetricsService';
+import { PersonsService } from './services/PersonsService';
+import { ProjectsService } from './services/ProjectsService';
+import { PushIntegrationsService } from './services/PushIntegrationsService';
 import { ReportService } from './services/ReportService';
 import { SearchService } from './services/SearchService';
-import { SlackTaskService } from './services/SlackTaskService';
-import { SmartListService } from './services/SmartListService';
-import { UserService } from './services/UserService';
-import { VacationService } from './services/VacationService';
-import { WorkspaceService } from './services/WorkspaceService';
+import { SmartListsService } from './services/SmartListsService';
+import { TestHelperService } from './services/TestHelperService';
+import { UsersService } from './services/UsersService';
+import { VacationsService } from './services/VacationsService';
+import { WorkspacesService } from './services/WorkspacesService';
 
 type HttpRequestConstructor = new (config: OpenAPIConfig) => BaseHttpRequest;
 
 export class ApiClient {
 
     public readonly auth: AuthService;
-    public readonly bigPlan: BigPlanService;
-    public readonly chore: ChoreService;
-    public readonly default: DefaultService;
-    public readonly doc: DocService;
-    public readonly emailTask: EmailTaskService;
+    public readonly bigPlans: BigPlansService;
+    public readonly chores: ChoresService;
+    public readonly core: CoreService;
+    public readonly docs: DocsService;
     public readonly gc: GcService;
     public readonly gen: GenService;
     public readonly getSummaries: GetSummariesService;
-    public readonly habit: HabitService;
-    public readonly inboxTask: InboxTaskService;
+    public readonly habits: HabitsService;
+    public readonly inboxTasks: InboxTasksService;
     public readonly init: InitService;
-    public readonly journal: JournalService;
+    public readonly journals: JournalsService;
     public readonly loadProgressReporterToken: LoadProgressReporterTokenService;
     public readonly loadTopLevelInfo: LoadTopLevelInfoService;
     public readonly login: LoginService;
-    public readonly metric: MetricService;
-    public readonly note: NoteService;
-    public readonly person: PersonService;
-    public readonly project: ProjectService;
+    public readonly metrics: MetricsService;
+    public readonly persons: PersonsService;
+    public readonly projects: ProjectsService;
+    public readonly pushIntegrations: PushIntegrationsService;
     public readonly report: ReportService;
     public readonly search: SearchService;
-    public readonly slackTask: SlackTaskService;
-    public readonly smartList: SmartListService;
-    public readonly user: UserService;
-    public readonly vacation: VacationService;
-    public readonly workspace: WorkspaceService;
+    public readonly smartLists: SmartListsService;
+    public readonly testHelper: TestHelperService;
+    public readonly users: UsersService;
+    public readonly vacations: VacationsService;
+    public readonly workspaces: WorkspacesService;
 
     public readonly request: BaseHttpRequest;
 
     constructor(config?: Partial<OpenAPIConfig>, HttpRequest: HttpRequestConstructor = FetchHttpRequest) {
         this.request = new HttpRequest({
             BASE: config?.BASE ?? '',
-            VERSION: config?.VERSION ?? '0.1.0',
+            VERSION: config?.VERSION ?? '1.0.6',
             WITH_CREDENTIALS: config?.WITH_CREDENTIALS ?? false,
             CREDENTIALS: config?.CREDENTIALS ?? 'include',
             TOKEN: config?.TOKEN,
@@ -81,32 +79,31 @@ export class ApiClient {
         });
 
         this.auth = new AuthService(this.request);
-        this.bigPlan = new BigPlanService(this.request);
-        this.chore = new ChoreService(this.request);
-        this.default = new DefaultService(this.request);
-        this.doc = new DocService(this.request);
-        this.emailTask = new EmailTaskService(this.request);
+        this.bigPlans = new BigPlansService(this.request);
+        this.chores = new ChoresService(this.request);
+        this.core = new CoreService(this.request);
+        this.docs = new DocsService(this.request);
         this.gc = new GcService(this.request);
         this.gen = new GenService(this.request);
         this.getSummaries = new GetSummariesService(this.request);
-        this.habit = new HabitService(this.request);
-        this.inboxTask = new InboxTaskService(this.request);
+        this.habits = new HabitsService(this.request);
+        this.inboxTasks = new InboxTasksService(this.request);
         this.init = new InitService(this.request);
-        this.journal = new JournalService(this.request);
+        this.journals = new JournalsService(this.request);
         this.loadProgressReporterToken = new LoadProgressReporterTokenService(this.request);
         this.loadTopLevelInfo = new LoadTopLevelInfoService(this.request);
         this.login = new LoginService(this.request);
-        this.metric = new MetricService(this.request);
-        this.note = new NoteService(this.request);
-        this.person = new PersonService(this.request);
-        this.project = new ProjectService(this.request);
+        this.metrics = new MetricsService(this.request);
+        this.persons = new PersonsService(this.request);
+        this.projects = new ProjectsService(this.request);
+        this.pushIntegrations = new PushIntegrationsService(this.request);
         this.report = new ReportService(this.request);
         this.search = new SearchService(this.request);
-        this.slackTask = new SlackTaskService(this.request);
-        this.smartList = new SmartListService(this.request);
-        this.user = new UserService(this.request);
-        this.vacation = new VacationService(this.request);
-        this.workspace = new WorkspaceService(this.request);
+        this.smartLists = new SmartListsService(this.request);
+        this.testHelper = new TestHelperService(this.request);
+        this.users = new UsersService(this.request);
+        this.vacations = new VacationsService(this.request);
+        this.workspaces = new WorkspacesService(this.request);
     }
 }
 

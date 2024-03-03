@@ -4,11 +4,14 @@
 
 import type { EntityIcon } from './EntityIcon';
 import type { EntityId } from './EntityId';
-import type { EntityName } from './EntityName';
+import type { MetricName } from './MetricName';
 
+/**
+ * Summary information about a metric.
+ */
 export type MetricSummary = {
     ref_id: EntityId;
-    name: EntityName;
+    name: MetricName;
     icon?: EntityIcon;
 };
 

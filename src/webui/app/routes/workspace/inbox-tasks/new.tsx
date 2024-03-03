@@ -16,11 +16,8 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import {
-  ShouldRevalidateFunction,
-  useActionData,
-  useTransition,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import type { BigPlanSummary, Project } from "jupiter-gen";
 import { ApiError, Difficulty, Eisen, WorkspaceFeature } from "jupiter-gen";
@@ -93,9 +90,9 @@ export async function loader({ request }: LoaderArgs) {
 
     const bigPlanResult = await getLoggedInApiClient(
       session
-    ).bigPlan.loadBigPlan({
+    ).bigPlans.bigPlanLoad({
       allow_archived: false,
-      ref_id: { the_id: query.bigPlanRefId },
+      ref_id: query.bigPlanRefId,
     });
 
     ownerBigPlan = bigPlanResult.big_plan;
@@ -110,7 +107,7 @@ export async function loader({ request }: LoaderArgs) {
   const defaultBigPlan: BigPlanACOption =
     reason === "for-big-plan"
       ? {
-          label: ownerBigPlan?.name.the_name as string,
+          label: ownerBigPlan?.name as string,
           big_plan_id: query.bigPlanRefId as string,
         }
       : {
@@ -141,32 +138,31 @@ export async function action({ request }: ActionArgs) {
 
     const result = await getLoggedInApiClient(
       session
-    ).inboxTask.createInboxTask({
-      name: { the_name: form.name },
-      project_ref_id:
-        form.project !== undefined ? { the_id: form.project } : undefined,
+    ).inboxTasks.inboxTaskCreate({
+      name: form.name,
+      project_ref_id: form.project !== undefined ? form.project : undefined,
       big_plan_ref_id:
         reason === "standard"
           ? form.bigPlan !== undefined && form.bigPlan !== "none"
-            ? { the_id: form.bigPlan }
+            ? form.bigPlan
             : undefined
-          : { the_id: query.bigPlanRefId as string },
+          : (query.bigPlanRefId as string),
       eisen: form.eisen,
       difficulty: form.difficulty !== "default" ? form.difficulty : undefined,
       actionable_date:
         form.actionableDate !== undefined && form.actionableDate !== ""
-          ? { the_date: form.actionableDate, the_datetime: undefined }
+          ? form.actionableDate
           : undefined,
       due_date:
         form.dueDate !== undefined && form.dueDate !== ""
-          ? { the_date: form.dueDate, the_datetime: undefined }
+          ? form.dueDate
           : undefined,
     });
 
     switch (reason) {
       case "standard":
         return redirect(
-          `/workspace/inbox-tasks/${result.new_inbox_task.ref_id.the_id}`
+          `/workspace/inbox-tasks/${result.new_inbox_task.ref_id}`
         );
       case "for-big-plan":
         return redirect(`/workspace/big-plans/${query.bigPlanRefId as string}`);
@@ -196,7 +192,7 @@ export default function NewInboxTask() {
     loaderData.defaultBigPlan
   );
   const [selectedProject, setSelectedProject] = useState(
-    loaderData.defaultProject.ref_id.the_id
+    loaderData.defaultProject.ref_id
   );
   const [blockedToSelectProject, setBlockedToSelectProject] = useState(
     loaderData.reason === "for-big-plan"
@@ -212,7 +208,7 @@ export default function NewInboxTask() {
     )
   ) {
     for (const project of loaderData.allProjects) {
-      allProjectsById[project.ref_id.the_id] = project;
+      allProjectsById[project.ref_id] = project;
     }
   }
 
@@ -226,7 +222,7 @@ export default function NewInboxTask() {
     )
   ) {
     for (const bigPlan of loaderData.allBigPlans) {
-      allBigPlansById[bigPlan.ref_id.the_id] = bigPlan;
+      allBigPlansById[bigPlan.ref_id] = bigPlan;
     }
 
     allBigPlansAsOptions = [
@@ -236,8 +232,8 @@ export default function NewInboxTask() {
       },
     ].concat(
       loaderData.allBigPlans.map((bp: BigPlanSummary) => ({
-        label: bp.name.the_name,
-        big_plan_id: bp.ref_id.the_id,
+        label: bp.name,
+        big_plan_id: bp.ref_id,
       }))
     );
   }
@@ -248,11 +244,11 @@ export default function NewInboxTask() {
   ) {
     setSelectedBigPlan({ label, big_plan_id });
     if (big_plan_id === "none") {
-      setSelectedProject(loaderData.defaultProject.ref_id.the_id);
+      setSelectedProject(loaderData.defaultProject.ref_id);
       setBlockedToSelectProject(false);
     } else {
-      const projectId = allBigPlansById[big_plan_id].project_ref_id.the_id;
-      const projectKey = allProjectsById[projectId].ref_id.the_id;
+      const projectId = allBigPlansById[big_plan_id].project_ref_id;
+      const projectKey = allProjectsById[projectId].ref_id;
       setSelectedProject(projectKey);
       setBlockedToSelectProject(true);
     }
@@ -331,8 +327,8 @@ export default function NewInboxTask() {
                   label="Project"
                 >
                   {loaderData.allProjects.map((p: Project) => (
-                    <MenuItem key={p.ref_id.the_id} value={p.ref_id.the_id}>
-                      {p.name.the_name}
+                    <MenuItem key={p.ref_id} value={p.ref_id}>
+                      {p.name}
                     </MenuItem>
                   ))}
                 </Select>

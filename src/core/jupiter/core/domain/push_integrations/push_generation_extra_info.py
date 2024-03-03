@@ -9,12 +9,20 @@ from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.core.timezone import UTC, Timezone
 from jupiter.core.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
-from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import Value, value
+from jupiter.core.framework.realm import (
+    PROVIDE_VIA_REGISTRY,
+    DatabaseRealm,
+    RealmCodecRegistry,
+    RealmDecoder,
+    RealmDecodingError,
+    RealmEncoder,
+    RealmThing,
+)
+from jupiter.core.framework.value import CompositeValue, value
 
 
 @value
-class PushGenerationExtraInfo(Value):
+class PushGenerationExtraInfo(CompositeValue):
     """Extra information for how to generate an inbox task."""
 
     timezone: Timezone
@@ -25,20 +33,51 @@ class PushGenerationExtraInfo(Value):
     actionable_date: Optional[ADate] = None
     due_date: Optional[ADate] = None
 
-    @staticmethod
-    def from_db(db_data: str) -> "PushGenerationExtraInfo":
-        """Parses a storage optimised form of the extra info."""
-        return PushGenerationExtraInfo.from_raw_message_data(UTC, db_data)
 
-    @staticmethod
-    def from_raw_message_data(
-        timezone: Timezone,
-        raw_message_data: Optional[str],
-    ) -> "PushGenerationExtraInfo":
-        """Parses a user-supplied message and extracts the data to construct an inbox task."""
-        if raw_message_data is None or not raw_message_data.strip():
+class PushGenerationExtraInfoDatabaseEncoder(
+    RealmEncoder[PushGenerationExtraInfo, DatabaseRealm]
+):
+    """A database encoder for the extra info."""
+
+    def encode(self, value: PushGenerationExtraInfo) -> RealmThing:
+        """Encode a value."""
+        string_pieces = []
+        if value.name:
+            string_pieces.append(f'--name="{value.name}"')
+        if value.status:
+            string_pieces.append(f"--status={value.status}")
+        if value.eisen:
+            string_pieces.append(f"--eisen={value.eisen}")
+        if value.difficulty:
+            string_pieces.append(f"--difficulty={value.difficulty}")
+        if value.actionable_date:
+            string_pieces.append(
+                f"--actionable-date={value.actionable_date}",
+            )
+        if value.due_date:
+            string_pieces.append(
+                f"--due-date={value.due_date}",
+            )
+        return " ".join(string_pieces)
+
+
+class PushGenerationExtraInfoDatabaseDecoder(
+    RealmDecoder[PushGenerationExtraInfo, DatabaseRealm]
+):
+    """A database decoder for the extra info."""
+
+    _realm_codec_registry: RealmCodecRegistry = PROVIDE_VIA_REGISTRY
+
+    def decode(self, value: RealmThing) -> PushGenerationExtraInfo:
+        """Decode a raw value."""
+        if not (value is None or isinstance(value, str)):
+            raise RealmDecodingError(
+                f"Expected extra info to be a string or null, not {value.__class__.__name__}",
+            )
+
+        if value is None or not value.strip():
             return PushGenerationExtraInfo(
-                timezone=timezone,
+                timezone=UTC,
                 name=None,
                 status=None,
                 eisen=None,
@@ -52,19 +91,19 @@ class PushGenerationExtraInfo(Value):
         parser.add_argument(
             "--status",
             dest="status",
-            choices=InboxTaskStatus.all_values(),
+            choices=InboxTaskStatus.get_all_values(),
             help="The initial status of the inbox task",
         )
         parser.add_argument(
             "--eisen",
             dest="eisen",
-            choices=Eisen.all_values(),
+            choices=Eisen.get_all_values(),
             help="The Eisenhower matrix values to use for task",
         )
         parser.add_argument(
             "--difficulty",
             dest="difficulty",
-            choices=Difficulty.all_values(),
+            choices=Difficulty.get_all_values(),
             help="The difficulty to use for tasks",
         )
         parser.add_argument(
@@ -81,7 +120,7 @@ class PushGenerationExtraInfo(Value):
         try:
             # Browsers are sometimes happy to replace a "--" with a "—" (unicode "long-dash"
             # like https://www.compart.com/en/unicode/U+2015) or others which we must undo.
-            rare_message_data = raw_message_data.replace("—", "--").replace(
+            rare_message_data = value.replace("—", "--").replace(
                 "’", "'"  # noqa: RUF001
             )
             message_as_options = shlex.split(rare_message_data)
@@ -89,49 +128,43 @@ class PushGenerationExtraInfo(Value):
             args = parser.parse_args(args=message_as_options)
 
             return PushGenerationExtraInfo(
-                timezone=timezone,
-                name=InboxTaskName.from_raw(args.name) if args.name else None,
-                status=InboxTaskStatus.from_raw(args.status) if args.status else None,
-                eisen=Eisen.from_raw(args.eisen) if args.eisen else None,
-                difficulty=Difficulty.from_raw(args.difficulty)
+                timezone=UTC,
+                name=self._realm_codec_registry.get_decoder(
+                    InboxTaskName, DatabaseRealm
+                ).decode(args.name)
+                if args.name
+                else None,
+                status=self._realm_codec_registry.get_decoder(
+                    InboxTaskStatus, DatabaseRealm
+                ).decode(args.status)
+                if args.status
+                else None,
+                eisen=self._realm_codec_registry.get_decoder(
+                    Eisen, DatabaseRealm
+                ).decode(args.eisen)
+                if args.eisen
+                else None,
+                difficulty=self._realm_codec_registry.get_decoder(
+                    Difficulty, DatabaseRealm
+                ).decode(args.difficulty)
                 if args.difficulty
                 else None,
-                actionable_date=ADate.from_raw(timezone, args.actionable_date)
+                actionable_date=self._realm_codec_registry.get_decoder(
+                    ADate, DatabaseRealm
+                ).decode(args.actionable_date)
                 if args.actionable_date
                 else None,
-                due_date=ADate.from_raw(timezone, args.due_date)
+                due_date=self._realm_codec_registry.get_decoder(
+                    ADate, DatabaseRealm
+                ).decode(args.due_date)
                 if args.due_date
                 else None,
             )
         except ValueError as err:
-            raise InputValidationError(
-                f"Contents of extra info message `{raw_message_data}` is invalid",
+            raise RealmDecodingError(
+                f"Contents of extra info message `{value}` is invalid",
             ) from err
         except SystemExit as err:
-            raise InputValidationError(
-                f"Contents of extra info message `{raw_message_data}`is invalid",
+            raise RealmDecodingError(
+                f"Contents of extra info message `{value}`is invalid",
             ) from err
-
-    def to_db(self) -> str:
-        """Produce a string form of this."""
-        return self._back_to_str(UTC)
-
-    def _back_to_str(self, timezone: Timezone) -> str:
-        string_pieces = []
-        if self.name:
-            string_pieces.append(f'--name="{self.name}"')
-        if self.status:
-            string_pieces.append(f"--status={self.status}")
-        if self.eisen:
-            string_pieces.append(f"--eisen={self.eisen}")
-        if self.difficulty:
-            string_pieces.append(f"--difficulty={self.difficulty}")
-        if self.actionable_date:
-            string_pieces.append(
-                f"--actionable-date={ADate.to_user_str(self.timezone, self.actionable_date)}",
-            )
-        if self.due_date:
-            string_pieces.append(
-                f"--due-date={ADate.to_user_str(timezone, self.due_date)}",
-            )
-        return " ".join(string_pieces)

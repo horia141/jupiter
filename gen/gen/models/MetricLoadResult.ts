@@ -6,6 +6,9 @@ import type { InboxTask } from './InboxTask';
 import type { Metric } from './Metric';
 import type { MetricEntry } from './MetricEntry';
 
+/**
+ * MetricLoadResult.
+ */
 export type MetricLoadResult = {
     metric: Metric;
     metric_entries: Array<MetricEntry>;

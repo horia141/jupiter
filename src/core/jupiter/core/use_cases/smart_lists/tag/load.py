@@ -4,7 +4,7 @@ from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.smart_lists.smart_list_tag import SmartListTag
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.use_case import (
+from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,
     use_case_args,
@@ -47,7 +47,7 @@ class SmartListTagLoadUseCase(
         args: SmartListTagLoadArgs,
     ) -> SmartListTagLoadResult:
         """Execute the command's action."""
-        smart_list_tag = await uow.smart_list_tag_repository.load_by_id(
+        smart_list_tag = await uow.get_for(SmartListTag).load_by_id(
             args.ref_id, allow_archived=args.allow_archived
         )
 

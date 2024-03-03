@@ -2,6 +2,9 @@
 /* tslint:disable */
 /* eslint-disable */
 
+/**
+ * The report for a big plan.
+ */
 export type BigPlanWorkSummary = {
     created_cnt: number;
     accepted_cnt: number;

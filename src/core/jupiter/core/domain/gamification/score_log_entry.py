@@ -1,14 +1,15 @@
 """A particular entry in the score log related to an task being completed."""
+import abc
 import random
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.big_plans.big_plan_status import BigPlanStatus
 from jupiter.core.domain.core.difficulty import Difficulty
-from jupiter.core.domain.core.entity_name import EntityName
 from jupiter.core.domain.gamification.score_source import ScoreSource
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     LeafEntity,
@@ -16,6 +17,7 @@ from jupiter.core.framework.entity import (
     create_entity_action,
     entity,
 )
+from jupiter.core.framework.repository import LeafEntityRepository
 
 
 @entity
@@ -45,7 +47,7 @@ class ScoreLogEntry(LeafEntity):
 
         has_lucky_puppy_bonus = None
         if inbox_task.status == InboxTaskStatus.DONE:
-            has_lucky_puppy_bonus = random.randint(0, 99) < 10
+            has_lucky_puppy_bonus = random.randint(0, 99) < 10  # nosec
 
         return ScoreLogEntry._create(
             ctx,
@@ -116,3 +118,7 @@ class ScoreLogEntry(LeafEntity):
             return 10
         else:  # big_plan.status == BigPlanStatus.NOT_DONE:
             return -10
+
+
+class ScoreLogEntryRepository(LeafEntityRepository[ScoreLogEntry], abc.ABC):
+    """A repository of score log entries."""

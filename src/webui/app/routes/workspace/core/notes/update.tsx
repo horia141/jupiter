@@ -1,4 +1,5 @@
-import { ActionArgs, json } from "@remix-run/node";
+import type { ActionArgs } from "@remix-run/node";
+import { json } from "@remix-run/node";
 import { StatusCodes } from "http-status-codes";
 import { ApiError } from "jupiter-gen";
 import { z } from "zod";
@@ -24,8 +25,8 @@ export async function action({ request }: ActionArgs) {
   const form = await parseForm(request, UpdateForEntityFormSchema);
 
   try {
-    const result = await getLoggedInApiClient(session).note.updateNote({
-      ref_id: { the_id: form.id },
+    await getLoggedInApiClient(session).core.noteUpdate({
+      ref_id: form.id,
       content: { should_change: true, value: form.content },
     });
 

@@ -1,9 +1,6 @@
 """A tag for all the known entities."""
-from functools import lru_cache
-from typing import Iterable, Optional
 
 from jupiter.core.framework.entity import CrownEntity
-from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.value import EnumValue, enum_value
 
 
@@ -29,31 +26,10 @@ class NamedEntityTag(EnumValue):
     EMAIL_TASK = "EmailTask"  # EmailTask.__name__
 
     @staticmethod
-    def from_raw(named_entity_tag_raw: Optional[str]) -> "NamedEntityTag":
-        """Validate and clean the entity tag."""
-        if not named_entity_tag_raw:
-            raise InputValidationError("Expected entity tag to be non-null")
-
-        named_entity_tag_str: str = named_entity_tag_raw.strip()
-
-        if named_entity_tag_str not in NamedEntityTag.all_values():
-            raise InputValidationError(
-                f"Expected entity tag '{named_entity_tag_raw}' to be one of '{','.join(NamedEntityTag.all_values())}'",
-            )
-
-        return NamedEntityTag(named_entity_tag_str)
-
-    @staticmethod
     def from_entity(entity: CrownEntity) -> "NamedEntityTag":
         """Construct a tag from an entity."""
         return NamedEntityTag(entity.__class__.__name__)
 
-    @staticmethod
-    @lru_cache(maxsize=1)
-    def all_values() -> Iterable[str]:
-        """The possible values for difficulties."""
-        return frozenset(st.value for st in NamedEntityTag)
-
     def __str__(self) -> str:
-        """The string value."""
-        return str(self.value)
+        """Get the string representation of the tag."""
+        return self.value

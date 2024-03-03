@@ -1,5 +1,4 @@
 """UseCase for showing the persons."""
-from argparse import ArgumentParser, Namespace
 
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
@@ -9,72 +8,24 @@ from jupiter.cli.command.rendering import (
     person_birthday_to_rich_text,
     person_relationship_to_rich_text,
 )
-from jupiter.cli.session_storage import SessionInfo
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
-from jupiter.core.use_cases.persons.find import PersonFindArgs, PersonFindUseCase
+from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
+from jupiter.core.use_cases.persons.find import PersonFindResult, PersonFindUseCase
 from rich.console import Console
 from rich.text import Text
 from rich.tree import Tree
 
 
-class PersonShow(LoggedInReadonlyCommand[PersonFindUseCase]):
+class PersonShow(LoggedInReadonlyCommand[PersonFindUseCase, PersonFindResult]):
     """UseCase for showing the persons."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "person-show"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Show the persons"
-
-    def build_parser(self, parser: ArgumentParser) -> None:
-        """Construct a argparse parser for the command."""
-        parser.add_argument(
-            "--show-archived",
-            dest="show_archived",
-            default=False,
-            action="store_true",
-            help="Whether to show archived vacations or not",
-        )
-        parser.add_argument(
-            "--id",
-            type=str,
-            dest="ref_ids",
-            default=[],
-            action="append",
-            help="The id of the persons to show",
-        )
-
-    async def _run(
+    def _render_result(
         self,
-        session_info: SessionInfo,
-        args: Namespace,
+        console: Console,
+        context: AppLoggedInReadonlyUseCaseContext,
+        result: PersonFindResult,
     ) -> None:
-        """Callback to execute when the command is invoked."""
-        show_archived = args.show_archived
-        ref_ids = (
-            [EntityId.from_raw(rid) for rid in args.ref_ids]
-            if len(args.ref_ids) > 0
-            else None
-        )
-
-        result = await self._use_case.execute(
-            AppLoggedInUseCaseSession(session_info.auth_token_ext),
-            PersonFindArgs(
-                allow_archived=show_archived,
-                include_catch_up_inbox_tasks=False,
-                include_birthday_inbox_tasks=False,
-                include_notes=False,
-                filter_person_ref_ids=ref_ids,
-            ),
-        )
-
         sorted_entries = sorted(
             result.entries,
             key=lambda p: (
@@ -88,9 +39,7 @@ class PersonShow(LoggedInReadonlyCommand[PersonFindUseCase]):
 
         rich_tree = Tree("👨 Persons", guide_style="bold bright_blue")
 
-        if self._top_level_context.workspace.is_feature_available(
-            WorkspaceFeature.PROJECTS
-        ):
+        if context.workspace.is_feature_available(WorkspaceFeature.PROJECTS):
             catch_up_project_text = Text(
                 f"The catch up project is {result.catch_up_project.name}",
             )
@@ -119,5 +68,4 @@ class PersonShow(LoggedInReadonlyCommand[PersonFindUseCase]):
 
             rich_tree.add(person_text)
 
-        console = Console()
         console.print(rich_tree)

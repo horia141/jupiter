@@ -13,20 +13,16 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect, Response } from "@remix-run/node";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
-  ShouldRevalidateFunction,
   useActionData,
   useFetcher,
   useParams,
   useTransition,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import {
-  ApiError,
-  InboxTask,
-  InboxTaskStatus,
-  RecurringTaskPeriod,
-} from "jupiter-gen";
+import type { InboxTask } from "jupiter-gen";
+import { ApiError, InboxTaskStatus, RecurringTaskPeriod } from "jupiter-gen";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
@@ -70,8 +66,8 @@ export async function loader({ request, params }: LoaderArgs) {
   const { id } = parseParams(params, ParamsSchema);
 
   try {
-    const result = await getLoggedInApiClient(session).journal.loadJournal({
-      ref_id: { the_id: id },
+    const result = await getLoggedInApiClient(session).journals.journalLoad({
+      ref_id: id,
       allow_archived: true,
     });
 
@@ -100,14 +96,11 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (form.intent) {
       case "change-time-config": {
-        await getLoggedInApiClient(session).journal.changeTimeConfigForJournal({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).journals.journalChangeTimeConfig({
+          ref_id: id,
           right_now: {
             should_change: true,
-            value: {
-              the_date: form.rightNow,
-              the_datetime: undefined,
-            },
+            value: form.rightNow,
           },
           period: {
             should_change: true,
@@ -118,15 +111,15 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "update-report": {
-        await getLoggedInApiClient(session).journal.updateReportForJorunal({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).journals.journalUpdateReport({
+          ref_id: id,
         });
         return redirect(`/workspace/journals/${id}`);
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).journal.archiveJournal({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).journals.journalArchive({
+          ref_id: id,
         });
         return redirect(`/workspace/journals/${id}`);
       }
@@ -170,7 +163,7 @@ export default function Journal() {
   function handleCardMarkDone(it: InboxTask) {
     cardActionFetcher.submit(
       {
-        id: it.ref_id.the_id,
+        id: it.ref_id,
         status: InboxTaskStatus.DONE,
       },
       {
@@ -183,7 +176,7 @@ export default function Journal() {
   function handleCardMarkNotDone(it: InboxTask) {
     cardActionFetcher.submit(
       {
-        id: it.ref_id.the_id,
+        id: it.ref_id,
         status: InboxTaskStatus.NOT_DONE,
       },
       {
@@ -195,7 +188,7 @@ export default function Journal() {
 
   return (
     <LeafPanel
-      key={loaderData.journal.ref_id.the_id}
+      key={loaderData.journal.ref_id}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/journals"
@@ -220,7 +213,7 @@ export default function Journal() {
                 label="rightNow"
                 name="rightNow"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.journal.right_now.the_date}
+                defaultValue={loaderData.journal.right_now}
               />
 
               <FieldError actionResult={actionData} fieldName="/right_now" />

@@ -4,6 +4,9 @@
 
 import type { UserScore } from './UserScore';
 
+/**
+ * An overview of the scores for a user.
+ */
 export type UserScoreOverview = {
     daily_score: UserScore;
     weekly_score: UserScore;

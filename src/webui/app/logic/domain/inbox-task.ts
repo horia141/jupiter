@@ -1,4 +1,4 @@
-import {
+import type {
   BigPlan,
   Chore,
   Difficulty,
@@ -7,14 +7,13 @@ import {
   EntityId,
   Habit,
   InboxTask,
-  InboxTaskSource,
-  InboxTaskStatus,
   Metric,
   Person,
   Project,
   RecurringTaskPeriod,
   SlackTask,
 } from "jupiter-gen";
+import { InboxTaskSource, InboxTaskStatus } from "jupiter-gen";
 import type { DateTime } from "luxon";
 import { aDateToDate, compareADate } from "./adate";
 import { compareDifficulty } from "./difficulty";
@@ -77,10 +76,10 @@ export function filterInboxTasksForDisplay(
     }
 
     if (options.allowStatuses !== undefined) {
-      if (inboxTask.ref_id.the_id in optimisticUpdates) {
+      if (inboxTask.ref_id in optimisticUpdates) {
         if (
           !options.allowStatuses.includes(
-            optimisticUpdates[inboxTask.ref_id.the_id].status
+            optimisticUpdates[inboxTask.ref_id].status
           )
         ) {
           return false;
@@ -92,12 +91,12 @@ export function filterInboxTasksForDisplay(
 
     if (options.allowEisens !== undefined) {
       if (
-        inboxTask.ref_id.the_id in optimisticUpdates &&
-        optimisticUpdates[inboxTask.ref_id.the_id].eisen !== undefined
+        inboxTask.ref_id in optimisticUpdates &&
+        optimisticUpdates[inboxTask.ref_id].eisen !== undefined
       ) {
         if (
           !options.allowEisens.includes(
-            optimisticUpdates[inboxTask.ref_id.the_id].eisen as Eisen
+            optimisticUpdates[inboxTask.ref_id].eisen as Eisen
           )
         ) {
           return false;
@@ -160,7 +159,7 @@ export function filterInboxTasksForDisplay(
     }
 
     if (options.allowPeriodsIfHabit) {
-      const entry = entriesByRefId[inboxTask.ref_id.the_id];
+      const entry = entriesByRefId[inboxTask.ref_id];
       const habit = entry.habit as Habit;
       if (!options.allowPeriodsIfHabit.includes(habit.gen_params.period)) {
         return false;
@@ -168,7 +167,7 @@ export function filterInboxTasksForDisplay(
     }
 
     if (options.allowPeriodsIfChore) {
-      const entry = entriesByRefId[inboxTask.ref_id.the_id];
+      const entry = entriesByRefId[inboxTask.ref_id];
       const chore = entry.chore as Chore;
       if (!options.allowPeriodsIfChore.includes(chore.gen_params.period)) {
         return false;

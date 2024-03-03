@@ -4,6 +4,9 @@
 
 import type { Project } from './Project';
 
+/**
+ * Project create results.
+ */
 export type ProjectCreateResult = {
     new_project: Project;
 };

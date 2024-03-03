@@ -1,25 +1,19 @@
 """Module for working with schedules."""
 import abc
-import typing
 from typing import Optional, cast
 
-import pendulum
-import pendulum.parser
-import pendulum.tz
 from jupiter.core.domain.core.adate import ADate
-from jupiter.core.domain.core.entity_name import EntityName
 from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDueAtMonth
-from jupiter.core.domain.core.recurring_task_due_at_time import RecurringTaskDueAtTime
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.core.recurring_task_skip_rule import RecurringTaskSkipRule
 from jupiter.core.domain.core.timeline import infer_timeline
-from jupiter.core.domain.core.timezone import Timezone as DomainTimezone
 from jupiter.core.domain.inbox_tasks.inbox_task_name import InboxTaskName
+from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.base.timestamp import Timestamp
 from pendulum.date import Date
 from pendulum.datetime import DateTime
-from pendulum.tz.timezone import UTC, Timezone
+from pendulum.tz.timezone import UTC
 
 
 class Schedule(abc.ABC):
@@ -29,7 +23,6 @@ class Schedule(abc.ABC):
     _actionable_date: Optional[Date]
     _date: Date
     _due_date: Date
-    _due_time: Optional[DateTime]
     _full_name: InboxTaskName
     _timeline: str
 
@@ -71,7 +64,7 @@ class Schedule(abc.ABC):
         return month_to_quarter_num[date.month]
 
     @staticmethod
-    def month_to_quarter(date: typing.Union[Date, Timestamp]) -> str:
+    def month_to_quarter(date: Timestamp) -> str:
         """Map a date to the name of four quarters from the year."""
         month_to_quarter = {
             1: "Q1",
@@ -91,7 +84,7 @@ class Schedule(abc.ABC):
         return month_to_quarter[date.month]
 
     @staticmethod
-    def month_to_quarter_start(date: typing.Union[Date, Timestamp]) -> int:
+    def month_to_quarter_start(date: Timestamp | Date) -> int:
         """Map a month in a date to the first month of a quarter of which the date belongs."""
         month_to_quarter = {
             1: 1,
@@ -111,7 +104,7 @@ class Schedule(abc.ABC):
         return month_to_quarter[date.month]
 
     @staticmethod
-    def month_to_quarter_end(date: typing.Union[Date, Timestamp]) -> int:
+    def month_to_quarter_end(date: Timestamp | Date) -> int:
         """Map a month in a date to the last month of a quarter of which the date belongs."""
         month_to_quarter = {
             1: 3,
@@ -131,7 +124,7 @@ class Schedule(abc.ABC):
         return month_to_quarter[date.month]
 
     @staticmethod
-    def month_to_month(date: typing.Union[Date, Timestamp]) -> str:
+    def month_to_month(date: Timestamp) -> str:
         """Map a month to the name it has."""
         month_to_month = {
             1: "Jan",
@@ -161,12 +154,9 @@ class Schedule(abc.ABC):
         return ADate.from_date(self._actionable_date) if self._actionable_date else None
 
     @property
-    def due_time(self) -> ADate:
-        """The due time of an event according to the schedule."""
-        if self._due_time:
-            return ADate.from_date_and_time(self._due_time)
-        else:
-            return ADate.from_date(self._due_date)
+    def due_date(self) -> ADate:
+        """The due date of the schedule."""
+        return ADate.from_date(self._due_date)
 
     @property
     def full_name(self) -> InboxTaskName:
@@ -232,24 +222,12 @@ class DailySchedule(Schedule):
         self,
         name: EntityName,
         right_now: Timestamp,
-        timezone: Timezone,
         skip_rule: Optional[RecurringTaskSkipRule] = None,
-        due_at_time: Optional[RecurringTaskDueAtTime] = None,
     ) -> None:
         """Construct a schedule."""
         self._date = cast(Date, right_now.value.date())
         self._due_date = cast(Date, right_now.value.date())
         self._actionable_date = None
-        if due_at_time:
-            self._due_time = cast(
-                DateTime,
-                pendulum.parser.parse(
-                    f"{self._due_date.to_date_string()} {due_at_time}",
-                    tz=timezone,
-                ),
-            )
-        else:
-            self._due_time = None
         self._full_name = InboxTaskName(
             f"{name} {self.year_two_digits(right_now)}:{self.month_to_month(right_now)}{right_now.value.day}",
         )
@@ -283,10 +261,8 @@ class WeeklySchedule(Schedule):
         self,
         name: EntityName,
         right_now: Timestamp,
-        timezone: Timezone,
         skip_rule: Optional[RecurringTaskSkipRule],
         actionable_from_day: Optional[RecurringTaskDueAtDay],
-        due_at_time: Optional[RecurringTaskDueAtTime],
         due_at_day: Optional[RecurringTaskDueAtDay],
     ) -> None:
         """Construct a schedule."""
@@ -306,16 +282,6 @@ class WeeklySchedule(Schedule):
             )
         else:
             self._due_date = start_of_week.end_of("week").end_of("day")
-        if due_at_time:
-            self._due_time = cast(
-                DateTime,
-                pendulum.parser.parse(
-                    f"{self._due_date.to_date_string()} {due_at_time}",
-                    tz=timezone,
-                ),
-            )
-        else:
-            self._due_time = None
         self._full_name = InboxTaskName(
             f"{name} {self.year_two_digits(right_now)}:W{start_of_week.week_of_year}",
         )
@@ -349,10 +315,8 @@ class MonthlySchedule(Schedule):
         self,
         name: EntityName,
         right_now: Timestamp,
-        timezone: Timezone,
         skip_rule: Optional[RecurringTaskSkipRule],
         actionable_from_day: Optional[RecurringTaskDueAtDay],
-        due_at_time: Optional[RecurringTaskDueAtTime],
         due_at_day: Optional[RecurringTaskDueAtDay],
     ) -> None:
         """Construct a schedule."""
@@ -372,16 +336,6 @@ class MonthlySchedule(Schedule):
             )
         else:
             self._due_date = start_of_month.end_of("month").end_of("day")
-        if due_at_time:
-            self._due_time = cast(
-                DateTime,
-                pendulum.parser.parse(
-                    f"{self._due_date.to_date_string()} {due_at_time}",
-                    tz=timezone,
-                ),
-            )
-        else:
-            self._due_time = None
         self._full_name = InboxTaskName(
             f"{name} {self.year_two_digits(right_now)}:{self.month_to_month(right_now)}",
         )
@@ -413,11 +367,9 @@ class QuarterlySchedule(Schedule):
         self,
         name: EntityName,
         right_now: Timestamp,
-        timezone: Timezone,
         skip_rule: Optional[RecurringTaskSkipRule],
         actionable_from_day: Optional[RecurringTaskDueAtDay],
         actionable_from_month: Optional[RecurringTaskDueAtMonth],
-        due_at_time: Optional[RecurringTaskDueAtTime],
         due_at_day: Optional[RecurringTaskDueAtDay],
         due_at_month: Optional[RecurringTaskDueAtMonth],
     ) -> None:
@@ -510,16 +462,6 @@ class QuarterlySchedule(Schedule):
                 .end_of("month")
                 .end_of("day")
             )
-        if due_at_time:
-            self._due_time = cast(
-                DateTime,
-                pendulum.parser.parse(
-                    f"{self._due_date.to_date_string()} {due_at_time}",
-                    tz=timezone,
-                ),
-            )
-        else:
-            self._due_time = None
         self._full_name = InboxTaskName(
             f"{name} {self.year_two_digits(right_now)}:{self.month_to_quarter(right_now)}",
         )
@@ -538,24 +480,22 @@ class QuarterlySchedule(Schedule):
     @property
     def first_day(self) -> ADate:
         """The first day of the interval represented by the schedule block."""
-        return ADate.from_date_and_time(
-            DateTime(
+        return ADate.from_date(
+            Date(
                 self._date.year,
                 self.month_to_quarter_start(self._date),
                 self._date.day,
-                tzinfo=UTC,
             ).start_of("month"),
         )
 
     @property
     def end_day(self) -> ADate:
         """The end day of the interval represented by the scedule block."""
-        return ADate.from_date_and_time(
-            DateTime(
+        return ADate.from_date(
+            Date(
                 self._date.year,
                 self.month_to_quarter_end(self._date),
                 self._date.day,
-                tzinfo=UTC,
             ).end_of("month"),
         )
 
@@ -567,10 +507,8 @@ class YearlySchedule(Schedule):
         self,
         name: EntityName,
         right_now: Timestamp,
-        timezone: Timezone,
         actionable_from_day: Optional[RecurringTaskDueAtDay],
         actionable_from_month: Optional[RecurringTaskDueAtMonth],
-        due_at_time: Optional[RecurringTaskDueAtTime],
         due_at_day: Optional[RecurringTaskDueAtDay],
         due_at_month: Optional[RecurringTaskDueAtMonth],
     ) -> None:
@@ -625,16 +563,6 @@ class YearlySchedule(Schedule):
             )
         else:
             self._due_date = right_now.value.end_of("year").end_of("day")
-        if due_at_time:
-            self._due_time = cast(
-                DateTime,
-                pendulum.parser.parse(
-                    f"{self._due_date.to_date_string()} {due_at_time}",
-                    tz=timezone,
-                ),
-            )
-        else:
-            self._due_time = None
         self._full_name = InboxTaskName(f"{name} {self.year_two_digits(right_now)}")
         self._timeline = infer_timeline(RecurringTaskPeriod.YEARLY, right_now)
         self._should_skip = False
@@ -659,47 +587,38 @@ def get_schedule(
     period: RecurringTaskPeriod,
     name: EntityName,
     right_now: Timestamp,
-    timezone: DomainTimezone,
-    skip_rule: Optional[RecurringTaskSkipRule],
-    actionable_from_day: Optional[RecurringTaskDueAtDay],
-    actionable_from_month: Optional[RecurringTaskDueAtMonth],
-    due_at_time: Optional[RecurringTaskDueAtTime],
-    due_at_day: Optional[RecurringTaskDueAtDay],
-    due_at_month: Optional[RecurringTaskDueAtMonth],
+    skip_rule: Optional[RecurringTaskSkipRule] = None,
+    actionable_from_day: Optional[RecurringTaskDueAtDay] = None,
+    actionable_from_month: Optional[RecurringTaskDueAtMonth] = None,
+    due_at_day: Optional[RecurringTaskDueAtDay] = None,
+    due_at_month: Optional[RecurringTaskDueAtMonth] = None,
 ) -> Schedule:
     """Build an appropriate schedule from the given parameters."""
-    pendulum_timezone = pendulum.tz.timezone(str(timezone))
     if period == RecurringTaskPeriod.DAILY:
-        return DailySchedule(name, right_now, pendulum_timezone, skip_rule, due_at_time)
+        return DailySchedule(name, right_now, skip_rule)
     elif period == RecurringTaskPeriod.WEEKLY:
         return WeeklySchedule(
             name,
             right_now,
-            pendulum_timezone,
             skip_rule,
             actionable_from_day,
-            due_at_time,
             due_at_day,
         )
     elif period == RecurringTaskPeriod.MONTHLY:
         return MonthlySchedule(
             name,
             right_now,
-            pendulum_timezone,
             skip_rule,
             actionable_from_day,
-            due_at_time,
             due_at_day,
         )
     elif period == RecurringTaskPeriod.QUARTERLY:
         return QuarterlySchedule(
             name,
             right_now,
-            pendulum_timezone,
             skip_rule,
             actionable_from_day,
             actionable_from_month,
-            due_at_time,
             due_at_day,
             due_at_month,
         )
@@ -707,10 +626,8 @@ def get_schedule(
         return YearlySchedule(
             name,
             right_now,
-            pendulum_timezone,
             actionable_from_day,
             actionable_from_month,
-            due_at_time,
             due_at_day,
             due_at_month,
         )

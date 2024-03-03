@@ -31,7 +31,7 @@ async def generic_loader(
     *,
     allow_archived: bool = False,
 ) -> _EntityT:
-    ...
+    """A generic entity loader."""
 
 
 @overload
@@ -45,7 +45,7 @@ async def generic_loader(
     *,
     allow_archived: bool = False,
 ) -> Tuple[_EntityT, _LinkedEntity1T]:
-    ...
+    """A generic entity loader."""
 
 
 @overload
@@ -59,7 +59,7 @@ async def generic_loader(
     *,
     allow_archived: bool = False,
 ) -> Tuple[_EntityT, _LinkedEntity1T | None]:
-    ...
+    """A generic entity loader."""
 
 
 @overload
@@ -73,7 +73,7 @@ async def generic_loader(
     *,
     allow_archived: bool = False,
 ) -> Tuple[_EntityT, Iterable[_LinkedEntity1T]]:
-    ...
+    """A generic entity loader."""
 
 
 @overload
@@ -90,7 +90,7 @@ async def generic_loader(
     *,
     allow_archived: bool = False,
 ) -> Tuple[_EntityT, _LinkedEntity1T, _LinkedEntity2T]:
-    ...
+    """A generic entity loader."""
 
 
 @overload
@@ -107,7 +107,7 @@ async def generic_loader(
     *,
     allow_archived: bool = False,
 ) -> Tuple[_EntityT, _LinkedEntity1T, _LinkedEntity2T | None]:
-    ...
+    """A generic entity loader."""
 
 
 @overload
@@ -124,7 +124,7 @@ async def generic_loader(
     *,
     allow_archived: bool = False,
 ) -> Tuple[_EntityT, _LinkedEntity1T, Iterable[_LinkedEntity2T]]:
-    ...
+    """A generic entity loader."""
 
 
 @overload
@@ -141,7 +141,7 @@ async def generic_loader(
     *,
     allow_archived: bool = False,
 ) -> Tuple[_EntityT, _LinkedEntity1T | None, _LinkedEntity2T]:
-    ...
+    """A generic entity loader."""
 
 
 @overload
@@ -158,7 +158,7 @@ async def generic_loader(
     *,
     allow_archived: bool = False,
 ) -> Tuple[_EntityT, _LinkedEntity1T | None, _LinkedEntity2T | None]:
-    ...
+    """A generic entity loader."""
 
 
 @overload
@@ -175,7 +175,7 @@ async def generic_loader(
     *,
     allow_archived: bool = False,
 ) -> Tuple[_EntityT, _LinkedEntity1T | None, Iterable[_LinkedEntity2T]]:
-    ...
+    """A generic entity loader."""
 
 
 @overload
@@ -192,7 +192,7 @@ async def generic_loader(
     *,
     allow_archived: bool = False,
 ) -> Tuple[_EntityT, Iterable[_LinkedEntity1T], _LinkedEntity2T]:
-    ...
+    """A generic entity loader."""
 
 
 @overload
@@ -209,7 +209,7 @@ async def generic_loader(
     *,
     allow_archived: bool = False,
 ) -> Tuple[_EntityT, Iterable[_LinkedEntity1T], _LinkedEntity2T | None]:
-    ...
+    """A generic entity loader."""
 
 
 @overload
@@ -226,7 +226,7 @@ async def generic_loader(
     *,
     allow_archived: bool = False,
 ) -> Tuple[_EntityT, Iterable[_LinkedEntity1T], Iterable[_LinkedEntity2T]]:
-    ...
+    """A generic entity loader."""
 
 
 async def generic_loader(  # type: ignore[no-untyped-def]
@@ -239,15 +239,17 @@ async def generic_loader(  # type: ignore[no-untyped-def]
     allow_archived: bool = False,
 ):
     """Load an entity by its ref_id."""
-    entity = await uow.get_repository(entity_type).load_by_id(
+    entity = await uow.get_for(entity_type).load_by_id(
         ref_id, allow_archived=allow_archived
     )
 
     if entity_link1 is not None:
-        first_linked_entities = await uow.get_repository(
+        first_linked_entities = await uow.get_for(
             entity_link1.the_type
         ).find_all_generic(
-            allow_archived=allow_archived, **entity_link1.get_for_entity(entity)
+            parent_ref_id=None,
+            allow_archived=allow_archived,
+            **entity_link1.get_for_entity(entity),
         )
 
         final_first_linked_entities: _LinkedEntity1T | (
@@ -277,10 +279,12 @@ async def generic_loader(  # type: ignore[no-untyped-def]
             final_first_linked_entities = first_linked_entities
 
         if entity_link2 is not None:
-            second_linked_entities = await uow.get_repository(
+            second_linked_entities = await uow.get_for(
                 entity_link2.the_type
             ).find_all_generic(
-                allow_archived=allow_archived, **entity_link2.get_for_entity(entity)
+                parent_ref_id=None,
+                allow_archived=allow_archived,
+                **entity_link2.get_for_entity(entity),
             )
 
             final_second_linked_entities: _LinkedEntity2T | (

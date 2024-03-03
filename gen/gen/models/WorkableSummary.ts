@@ -4,6 +4,9 @@
 
 import type { WorkableBigPlan } from './WorkableBigPlan';
 
+/**
+ * The reporting summary.
+ */
 export type WorkableSummary = {
     created_cnt: number;
     accepted_cnt: number;

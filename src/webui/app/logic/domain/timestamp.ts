@@ -1,8 +1,8 @@
-import { Timestamp } from "jupiter-gen";
+import type { Timestamp } from "jupiter-gen";
 import { DateTime } from "luxon";
 
 export function timestampToDate(timestamp: Timestamp): DateTime {
-  const datetime = DateTime.fromISO(timestamp.the_ts);
+  const datetime = DateTime.fromISO(timestamp);
   return DateTime.fromObject({
     year: datetime.year,
     month: datetime.month,

@@ -38,7 +38,7 @@ import type {
 import { isCompleted } from "~/logic/domain/inbox-task-status";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { useBigScreen } from "~/rendering/use-big-screen";
-import { TopLevelInfo } from "~/top-level-context";
+import type { TopLevelInfo } from "~/top-level-context";
 import { ADateTag } from "./adate-tag";
 import { BigPlanTag } from "./big-plan-tag";
 import { ChoreTag } from "./chore-tag";
@@ -163,9 +163,7 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
           dueDate={props.inboxTask.due_date}
         />
         <CardContent>
-          <EntityLink
-            to={`/workspace/inbox-tasks/${props.inboxTask.ref_id.the_id}`}
-          >
+          <EntityLink to={`/workspace/inbox-tasks/${props.inboxTask.ref_id}`}>
             <EntityNameComponent
               compact={props.compact}
               name={props.inboxTask.name}

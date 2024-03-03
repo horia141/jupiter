@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type RecoveryTokenPlain = {
-    token: string;
-};
-
+/**
+ * A recovery token for auth systems.
+ */
+export type RecoveryTokenPlain = string;

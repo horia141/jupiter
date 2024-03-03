@@ -1,12 +1,13 @@
 import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
-import { json, SerializeFrom } from "@remix-run/node";
+import type { SerializeFrom } from "@remix-run/node";
+import { json } from "@remix-run/node";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   Links,
   LiveReload,
   Meta,
   Outlet,
   Scripts,
-  ShouldRevalidateFunction,
   useLoaderData,
 } from "@remix-run/react";
 import { SnackbarProvider } from "notistack";

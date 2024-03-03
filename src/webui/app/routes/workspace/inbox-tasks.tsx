@@ -86,7 +86,8 @@ import {
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
-import { TopLevelInfo, TopLevelInfoContext } from "~/top-level-context";
+import type { TopLevelInfo } from "~/top-level-context";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 enum DragTargetStatus {
   SOURCE_DRAG,
@@ -125,10 +126,12 @@ export const handle = {
 
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
-  const response = await getLoggedInApiClient(session).inboxTask.findInboxTask({
-    allow_archived: false,
-    include_notes: false,
-  });
+  const response = await getLoggedInApiClient(session).inboxTasks.inboxTaskFind(
+    {
+      allow_archived: false,
+      include_notes: false,
+    }
+  );
   return json({
     entries: response.entries,
   });
@@ -151,11 +154,11 @@ export default function InboxTasks() {
   );
   const inboxTasksByRefId: { [key: string]: InboxTask } = {};
   for (const entry of entries) {
-    inboxTasksByRefId[entry.inbox_task.ref_id.the_id] = entry.inbox_task;
+    inboxTasksByRefId[entry.inbox_task.ref_id] = entry.inbox_task;
   }
   const entriesByRefId: { [key: string]: InboxTaskParent } = {};
   for (const entry of entries) {
-    entriesByRefId[entry.inbox_task.ref_id.the_id] = {
+    entriesByRefId[entry.inbox_task.ref_id] = {
       bigPlan: entry.big_plan,
       slackTask: entry.slack_task,
       emailTask: entry.email_task,
@@ -239,9 +242,9 @@ export default function InboxTasks() {
     setOptimisticUpdates((oldOptimisticUpdates) => {
       return {
         ...oldOptimisticUpdates,
-        [it.ref_id.the_id]: {
+        [it.ref_id]: {
           status: InboxTaskStatus.DONE,
-          eisen: oldOptimisticUpdates[it.ref_id.the_id]?.eisen ?? it.eisen,
+          eisen: oldOptimisticUpdates[it.ref_id]?.eisen ?? it.eisen,
         },
       };
     });
@@ -249,7 +252,7 @@ export default function InboxTasks() {
     setTimeout(() => {
       kanbanBoardMoveFetcher.submit(
         {
-          id: it.ref_id.the_id,
+          id: it.ref_id,
           status: InboxTaskStatus.DONE,
         },
         {
@@ -264,9 +267,9 @@ export default function InboxTasks() {
     setOptimisticUpdates((oldOptimisticUpdates) => {
       return {
         ...oldOptimisticUpdates,
-        [it.ref_id.the_id]: {
+        [it.ref_id]: {
           status: InboxTaskStatus.NOT_DONE,
-          eisen: oldOptimisticUpdates[it.ref_id.the_id]?.eisen ?? it.eisen,
+          eisen: oldOptimisticUpdates[it.ref_id]?.eisen ?? it.eisen,
         },
       };
     });
@@ -274,7 +277,7 @@ export default function InboxTasks() {
     setTimeout(() => {
       kanbanBoardMoveFetcher.submit(
         {
-          id: it.ref_id.the_id,
+          id: it.ref_id,
           status: InboxTaskStatus.NOT_DONE,
         },
         {
@@ -316,7 +319,7 @@ export default function InboxTasks() {
   let extraControls = [];
   if (isBigScreen) {
     extraControls = [
-      <ButtonGroup>
+      <ButtonGroup key="first">
         <Button
           variant={selectedView === View.SWIFTVIEW ? "contained" : "outlined"}
           startIcon={<FlareIcon />}
@@ -349,6 +352,7 @@ export default function InboxTasks() {
         </Button>
       </ButtonGroup>,
       <Button
+        key="first"
         variant="outlined"
         startIcon={<FilterAltIcon />}
         onClick={() => setShowFilterDialog(true)}
@@ -359,6 +363,7 @@ export default function InboxTasks() {
   } else {
     extraControls = [
       <Button
+        key="first"
         variant="outlined"
         startIcon={<ViewKanbanIcon />}
         onClick={() => setShowViewsDialog(true)}
@@ -366,6 +371,7 @@ export default function InboxTasks() {
         Views
       </Button>,
       <Button
+        key="first"
         variant="outlined"
         startIcon={<FilterAltIcon />}
         onClick={() => setShowFilterDialog(true)}
@@ -2421,12 +2427,12 @@ const InboxTaskColumnTasks = memo(function InboxTaskColumnTasks(
   return (
     <Stack spacing={1} useFlexGap>
       {props.inboxTasks.map((inboxTask, index) => {
-        const entry = props.moreInfoByRefId[inboxTask.ref_id.the_id];
+        const entry = props.moreInfoByRefId[inboxTask.ref_id];
 
         return (
           <Draggable
-            key={inboxTask.ref_id.the_id}
-            draggableId={inboxTask.ref_id.the_id}
+            key={inboxTask.ref_id}
+            draggableId={inboxTask.ref_id}
             index={index}
           >
             {(provided, snapshpt) => (
@@ -2469,14 +2475,14 @@ function figureOutIfGcIsRecommended(
   let finishedTasksCnt = 0;
 
   for (const entry of entries) {
-    if (entry.inbox_task.ref_id.the_id in optimisticUpdates) {
+    if (entry.inbox_task.ref_id in optimisticUpdates) {
       if (
-        optimisticUpdates[entry.inbox_task.ref_id.the_id].status ===
+        optimisticUpdates[entry.inbox_task.ref_id].status ===
         InboxTaskStatus.DONE
       ) {
         finishedTasksCnt++;
       } else if (
-        optimisticUpdates[entry.inbox_task.ref_id.the_id].status ===
+        optimisticUpdates[entry.inbox_task.ref_id].status ===
         InboxTaskStatus.NOT_DONE
       ) {
         finishedTasksCnt++;

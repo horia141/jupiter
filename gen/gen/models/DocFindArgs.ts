@@ -4,6 +4,9 @@
 
 import type { EntityId } from './EntityId';
 
+/**
+ * DocFind args.
+ */
 export type DocFindArgs = {
     include_notes: boolean;
     allow_archived: boolean;

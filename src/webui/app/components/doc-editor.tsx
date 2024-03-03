@@ -1,11 +1,20 @@
 import { TextField } from "@mui/material";
 import { useFetcher } from "@remix-run/react";
-import { Doc, Note } from "jupiter-gen";
-import { lazy, Suspense, useEffect, useState } from "react";
+import type { Doc, DocCreateResult, Note } from "jupiter-gen";
+import type { ComponentType } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import { ClientOnly } from "remix-utils";
-import { OneOfNoteContentBlock } from "~/logic/domain/notes";
+import type { NoErrorSomeData, SomeErrorNoData } from "~/logic/action-result";
+import { isNoErrorSomeData } from "~/logic/action-result";
+import type { OneOfNoteContentBlock } from "~/logic/domain/notes";
+import type { BlockEditorProps } from "./infra/block-editor";
+import { FieldError, GlobalError } from "./infra/errors";
 
-const BlockEditor = lazy(() => import("~/components/infra/block-editor"));
+const BlockEditor = lazy(() =>
+  import("~/components/infra/block-editor.js").then((module) => ({
+    default: module.default as unknown as ComponentType<BlockEditorProps>,
+  }))
+);
 
 interface DocEditorProps {
   initialDoc?: Doc;
@@ -18,27 +27,25 @@ export function DocEditor({
   initialNote,
   inputsEnabled,
 }: DocEditorProps) {
-  const cardActionFetcher = useFetcher();
+  const cardActionFetcher = useFetcher<
+    SomeErrorNoData | NoErrorSomeData<DocCreateResult>
+  >();
 
   const [dataModified, setDataModified] = useState(false);
   const [isActing, setIsActing] = useState(false);
   const [shouldAct, setShouldAct] = useState(false);
-  const [docId, setDocId] = useState(
-    initialDoc ? initialDoc.ref_id.the_id : null
-  );
-  const [noteId, setNoteId] = useState(
-    initialNote ? initialNote.ref_id.the_id : null
-  );
+  const [docId, setDocId] = useState(initialDoc ? initialDoc.ref_id : null);
+  const [noteId, setNoteId] = useState(initialNote ? initialNote.ref_id : null);
   const [noteName, setNoteName] = useState<string>(
-    initialDoc ? initialDoc.name.the_name : ""
+    initialDoc ? initialDoc.name : ""
   );
   const [noteContent, setNoteContent] = useState<Array<OneOfNoteContentBlock>>(
     initialNote ? initialNote.content : []
   );
 
-  function act() {
+  const act = useCallback(() => {
     setIsActing(true);
-    if (docId) {
+    if (docId && noteId) {
       // We already created this thing, we just need to update!
       cardActionFetcher.submit(
         {
@@ -66,7 +73,7 @@ export function DocEditor({
       );
     }
     setDataModified(false);
-  }
+  }, [cardActionFetcher, docId, noteContent, noteId, noteName]);
 
   useEffect(() => {
     if (dataModified) {
@@ -76,15 +83,16 @@ export function DocEditor({
         setShouldAct(true);
       }
     }
-  }, [dataModified, docId, noteId, noteName, noteContent]);
+  }, [dataModified, docId, noteId, noteName, noteContent, isActing, act]);
 
   useEffect(() => {
     if (
       cardActionFetcher.submission?.action.endsWith("/create-action") &&
-      cardActionFetcher.data
+      cardActionFetcher.data &&
+      isNoErrorSomeData(cardActionFetcher.data)
     ) {
-      setDocId(cardActionFetcher.data?.data.new_doc.ref_id.the_id);
-      setNoteId(cardActionFetcher.data?.data.new_note.ref_id.the_id);
+      setDocId(cardActionFetcher.data?.data.new_doc.ref_id);
+      setNoteId(cardActionFetcher.data?.data.new_note.ref_id);
     }
 
     if (
@@ -97,10 +105,12 @@ export function DocEditor({
         setShouldAct(false);
       }
     }
-  }, [cardActionFetcher]);
+  }, [cardActionFetcher, act, shouldAct]);
 
   return (
     <>
+      <GlobalError actionResult={cardActionFetcher.data} />
+
       <TextField
         label="Name"
         name="name"
@@ -114,6 +124,9 @@ export function DocEditor({
           setNoteName(e.target.value);
         }}
       />
+      <FieldError actionResult={cardActionFetcher.data} fieldName="/name" />
+
+      <FieldError actionResult={cardActionFetcher.data} fieldName="/content" />
 
       <ClientOnly fallback={<div>Loading... </div>}>
         {() => (

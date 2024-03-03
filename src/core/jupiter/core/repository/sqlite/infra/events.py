@@ -1,6 +1,9 @@
 """Common toolin for SQLite repositories."""
+
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.entity import Entity
+from jupiter.core.framework.event import Event
+from jupiter.core.framework.realm import EventStoreRealm, RealmCodecRegistry, RealmThing
 from sqlalchemy import (
     JSON,
     Column,
@@ -39,6 +42,7 @@ def build_event_table(entity_table: Table, metadata: MetaData) -> Table:
 
 
 async def upsert_events(
+    realm_codec_registry: RealmCodecRegistry,
     connection: AsyncConnection,
     event_table: Table,
     aggreggate_root: Entity,
@@ -50,18 +54,29 @@ async def upsert_events(
             .prefix_with("OR IGNORE")
             .values(
                 owner_ref_id=aggreggate_root.ref_id.as_int(),
-                timestamp=event.timestamp.to_db(),
+                timestamp=realm_codec_registry.db_encode(event.timestamp),
                 session_index=event_idx,
                 name=str(event.name),
-                source=event.source.to_db(),
+                source=str(event.source.value),
                 owner_version=event.entity_version,
-                kind=event.kind.to_db(),
-                data=event.to_serializable_dict(),
+                kind=str(event.kind.value),
+                data=_serialize_event(realm_codec_registry, event),
             ),
             # .on_conflict_do_nothing(
             #    index_elements=["owner_ref_id", "timestamp", "session_index", "name"]
             # )
         )
+
+
+def _serialize_event(
+    realm_codec_registry: RealmCodecRegistry, event: Event
+) -> RealmThing:
+    """Transform an event into a serialisation-ready dictionary."""
+    serialized_frame_args: dict[str, RealmThing] = {}
+    for the_key, (the_value, the_value_type) in event.frame_args.items():
+        encoder = realm_codec_registry.get_encoder(the_value_type, EventStoreRealm)
+        serialized_frame_args[the_key] = encoder.encode(the_value)
+    return serialized_frame_args
 
 
 async def remove_events(

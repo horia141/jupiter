@@ -15,8 +15,8 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
-  ShouldRevalidateFunction,
   useActionData,
   useFetcher,
   useParams,
@@ -72,7 +72,6 @@ const UpdateFormSchema = {
     .optional(),
   collectionActionableFromDay: z.string().optional(),
   collectionActionableFromMonth: z.string().optional(),
-  collectionDueAtTime: z.string().optional(),
   collectionDueAtDay: z.string().optional(),
   collectionDueAtMonth: z.string().optional(),
 };
@@ -86,8 +85,8 @@ export async function loader({ request, params }: LoaderArgs) {
   const { id } = parseParams(params, ParamsSchema);
 
   try {
-    const response = await getLoggedInApiClient(session).metric.loadMetric({
-      ref_id: { the_id: id },
+    const response = await getLoggedInApiClient(session).metrics.metricLoad({
+      ref_id: id,
       allow_archived: true,
     });
 
@@ -117,15 +116,15 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (intent) {
       case "update": {
-        await getLoggedInApiClient(session).metric.updateMetric({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).metrics.metricUpdate({
+          ref_id: id,
           name: {
             should_change: true,
-            value: { the_name: form.name },
+            value: form.name,
           },
           icon: {
             should_change: true,
-            value: form.icon ? { the_icon: form.icon } : undefined,
+            value: form.icon,
           },
           collection_period: {
             should_change: true,
@@ -160,7 +159,7 @@ export async function action({ request, params }: ActionArgs) {
                 : form.collectionActionableFromDay === undefined ||
                   form.collectionActionableFromDay === ""
                 ? undefined
-                : { the_day: parseInt(form.collectionActionableFromDay) },
+                : parseInt(form.collectionActionableFromDay),
           },
           collection_actionable_from_month: {
             should_change: true,
@@ -170,17 +169,7 @@ export async function action({ request, params }: ActionArgs) {
                 : form.collectionActionableFromMonth === undefined ||
                   form.collectionActionableFromMonth === ""
                 ? undefined
-                : { the_month: parseInt(form.collectionActionableFromMonth) },
-          },
-          collection_due_at_time: {
-            should_change: true,
-            value:
-              form.collectionPeriod === "none"
-                ? undefined
-                : form.collectionDueAtTime === undefined ||
-                  form.collectionDueAtTime === ""
-                ? undefined
-                : { the_time: form.collectionDueAtTime },
+                : parseInt(form.collectionActionableFromMonth),
           },
           collection_due_at_day: {
             should_change: true,
@@ -190,7 +179,7 @@ export async function action({ request, params }: ActionArgs) {
                 : form.collectionDueAtDay === undefined ||
                   form.collectionDueAtDay === ""
                 ? undefined
-                : { the_day: parseInt(form.collectionDueAtDay) },
+                : parseInt(form.collectionDueAtDay),
           },
           collection_due_at_month: {
             should_change: true,
@@ -200,7 +189,7 @@ export async function action({ request, params }: ActionArgs) {
                 : form.collectionDueAtMonth === undefined ||
                   form.collectionDueAtMonth === ""
                 ? undefined
-                : { the_month: parseInt(form.collectionDueAtMonth) },
+                : parseInt(form.collectionDueAtMonth),
           },
         });
 
@@ -208,8 +197,8 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).metric.archiveMetric({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).metrics.metricArchive({
+          ref_id: id,
         });
 
         return redirect(`/workspace/metrics/${id}/details`);
@@ -270,7 +259,7 @@ export default function MetricDetails() {
   function handleCardMarkDone(it: InboxTask) {
     cardActionFetcher.submit(
       {
-        id: it.ref_id.the_id,
+        id: it.ref_id,
         status: InboxTaskStatus.DONE,
       },
       {
@@ -283,7 +272,7 @@ export default function MetricDetails() {
   function handleCardMarkNotDone(it: InboxTask) {
     cardActionFetcher.submit(
       {
-        id: it.ref_id.the_id,
+        id: it.ref_id,
         status: InboxTaskStatus.NOT_DONE,
       },
       {
@@ -295,7 +284,7 @@ export default function MetricDetails() {
 
   return (
     <LeafPanel
-      key={loaderData.metric.ref_id.the_id}
+      key={loaderData.metric.ref_id}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation={`/workspace/metrics/${id}`}
@@ -310,7 +299,7 @@ export default function MetricDetails() {
                 label="Name"
                 name="name"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.metric.name.the_name}
+                defaultValue={loaderData.metric.name}
               />
               <FieldError actionResult={actionData} fieldName="/name" />
             </FormControl>
@@ -319,7 +308,7 @@ export default function MetricDetails() {
               <InputLabel id="icon">Icon</InputLabel>
               <IconSelector
                 readOnly={!inputsEnabled}
-                defaultIcon={loaderData.metric.icon?.the_icon}
+                defaultIcon={loaderData.metric.icon}
               />
               <FieldError actionResult={actionData} fieldName="/icon" />
             </FormControl>
@@ -412,8 +401,8 @@ export default function MetricDetails() {
                     name="collectionActionableFromDay"
                     readOnly={!inputsEnabled}
                     defaultValue={
-                      loaderData.metric.collection_params?.actionable_from_day
-                        ?.the_day || ""
+                      loaderData.metric.collection_params
+                        ?.actionable_from_day || ""
                     }
                   />
                   <FieldError
@@ -432,31 +421,13 @@ export default function MetricDetails() {
                     name="collectionActionableFromMonth"
                     readOnly={!inputsEnabled}
                     defaultValue={
-                      loaderData.metric.collection_params?.actionable_from_month
-                        ?.the_month || ""
+                      loaderData.metric.collection_params
+                        ?.actionable_from_month || ""
                     }
                   />
                   <FieldError
                     actionResult={actionData}
                     fieldName="/collection_actionable_from_month"
-                  />
-                </FormControl>
-
-                <FormControl fullWidth>
-                  <InputLabel id="collectionDueAtTime">Due At Time</InputLabel>
-                  <OutlinedInput
-                    type="time"
-                    label="Due At Time"
-                    name="collectionDueAtTime"
-                    readOnly={!inputsEnabled}
-                    defaultValue={
-                      loaderData.metric.collection_params?.due_at_time
-                        ?.the_time || ""
-                    }
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/collection_due_at_time"
                   />
                 </FormControl>
 
@@ -468,8 +439,7 @@ export default function MetricDetails() {
                     name="collectionDueAtDay"
                     readOnly={!inputsEnabled}
                     defaultValue={
-                      loaderData.metric.collection_params?.due_at_day
-                        ?.the_day || ""
+                      loaderData.metric.collection_params?.due_at_day || ""
                     }
                   />
                   <FieldError
@@ -488,8 +458,7 @@ export default function MetricDetails() {
                     name="collectionDueAtMonth"
                     readOnly={!inputsEnabled}
                     defaultValue={
-                      loaderData.metric.collection_params?.due_at_month
-                        ?.the_month || ""
+                      loaderData.metric.collection_params?.due_at_month || ""
                     }
                   />
                   <FieldError

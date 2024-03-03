@@ -4,6 +4,9 @@
 
 import type { ADate } from './ADate';
 
+/**
+ * A full view of the score for a user.
+ */
 export type UserScoreAtDate = {
     date: ADate;
     total_score: number;

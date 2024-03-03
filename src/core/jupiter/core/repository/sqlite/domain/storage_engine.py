@@ -1,371 +1,92 @@
 """The real implementation of an engine."""
 from contextlib import asynccontextmanager
-from types import TracebackType
-from typing import AsyncIterator, Final, Optional, Type, TypeVar, cast
+from types import GenericAlias, ModuleType, TracebackType
+from typing import (
+    AsyncIterator,
+    Callable,
+    Final,
+    Generic,
+    Iterator,
+    Optional,
+    Type,
+    TypeVar,
+    cast,
+    get_args,
+    get_origin,
+    overload,
+)
 
-from jupiter.core.domain.auth.infra.auth_repository import AuthRepository
-from jupiter.core.domain.big_plans.big_plan import BigPlan
-from jupiter.core.domain.big_plans.infra.big_plan_collection_repository import (
-    BigPlanCollectionRepository,
-)
-from jupiter.core.domain.big_plans.infra.big_plan_repository import BigPlanRepository
-from jupiter.core.domain.chores.chore import Chore
-from jupiter.core.domain.chores.infra.chore_collection_repository import (
-    ChoreCollectionRepository,
-)
-from jupiter.core.domain.chores.infra.chore_repository import ChoreRepository
-from jupiter.core.domain.core.notes.infra.note_collection_repository import (
-    NoteCollectionRepository,
-)
-from jupiter.core.domain.core.notes.infra.note_repository import NoteRepository
-from jupiter.core.domain.core.notes.note import Note
-from jupiter.core.domain.docs.doc import Doc
-from jupiter.core.domain.docs.infra.doc_collection_repository import (
-    DocCollectionRepository,
-)
-from jupiter.core.domain.docs.infra.doc_repository import DocRepository
-from jupiter.core.domain.fast_info_repository import FastInfoRepository
-from jupiter.core.domain.gamification.infra.score_log_entry_repository import (
-    ScoreLogEntryRepository,
-)
-from jupiter.core.domain.gamification.infra.score_log_repository import (
-    ScoreLogRepository,
-)
-from jupiter.core.domain.gamification.infra.score_period_best_repository import (
-    ScorePeriodBestRepository,
-)
-from jupiter.core.domain.gamification.infra.score_stats_repository import (
-    ScoreStatsRepository,
-)
-from jupiter.core.domain.gc.infra.gc_log_entry_repository import GCLogEntryRepository
-from jupiter.core.domain.gc.infra.gc_log_repository import GCLogRepository
-from jupiter.core.domain.gen.infra.gen_log_entry_repository import GenLogEntryRepository
-from jupiter.core.domain.gen.infra.gen_log_repository import GenLogRepository
-from jupiter.core.domain.habits.habit import Habit
-from jupiter.core.domain.habits.infra.habit_collection_repository import (
-    HabitCollectionRepository,
-)
-from jupiter.core.domain.habits.infra.habit_repository import HabitRepository
-from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
-from jupiter.core.domain.inbox_tasks.infra.inbox_task_collection_repository import (
-    InboxTaskCollectionRepository,
-)
-from jupiter.core.domain.inbox_tasks.infra.inbox_task_repository import (
-    InboxTaskRepository,
-)
-from jupiter.core.domain.journals.infra.journal_collection_repository import (
-    JournalCollectionRepository,
-)
-from jupiter.core.domain.journals.infra.journal_repository import JournalRepository
-from jupiter.core.domain.journals.journal import Journal
-from jupiter.core.domain.metrics.infra.metric_collection_repository import (
-    MetricCollectionRepository,
-)
-from jupiter.core.domain.metrics.infra.metric_entry_repository import (
-    MetricEntryRepository,
-)
-from jupiter.core.domain.metrics.infra.metric_repository import MetricRepository
-from jupiter.core.domain.metrics.metric import Metric
-from jupiter.core.domain.metrics.metric_entry import MetricEntry
-from jupiter.core.domain.persons.infra.person_collection_repository import (
-    PersonCollectionRepository,
-)
-from jupiter.core.domain.persons.infra.person_repository import PersonRepository
-from jupiter.core.domain.persons.person import Person
-from jupiter.core.domain.projects.infra.project_collection_repository import (
-    ProjectCollectionRepository,
-)
-from jupiter.core.domain.projects.infra.project_repository import ProjectRepository
-from jupiter.core.domain.projects.project import Project
-from jupiter.core.domain.push_integrations.email.email_task import EmailTask
-from jupiter.core.domain.push_integrations.email.infra.email_task_collection_repository import (
-    EmailTaskCollectionRepository,
-)
-from jupiter.core.domain.push_integrations.email.infra.email_task_repository import (
-    EmailTaskRepository,
-)
-from jupiter.core.domain.push_integrations.group.infra.push_integration_group_repository import (
-    PushIntegrationGroupRepository,
-)
-from jupiter.core.domain.push_integrations.slack.infra.slack_task_collection_repository import (
-    SlackTaskCollectionRepository,
-)
-from jupiter.core.domain.push_integrations.slack.infra.slack_task_repository import (
-    SlackTaskRepository,
-)
-from jupiter.core.domain.push_integrations.slack.slack_task import SlackTask
 from jupiter.core.domain.search.infra.search_repository import SearchRepository
-from jupiter.core.domain.smart_lists.infra.smart_list_collection_repository import (
-    SmartListCollectionRepository,
-)
-from jupiter.core.domain.smart_lists.infra.smart_list_item_repository import (
-    SmartListItemRepository,
-)
-from jupiter.core.domain.smart_lists.infra.smart_list_repository import (
-    SmartListRepository,
-)
-from jupiter.core.domain.smart_lists.infra.smart_list_tag_repository import (
-    SmartListTagRepository,
-)
-from jupiter.core.domain.smart_lists.smart_list import SmartList
-from jupiter.core.domain.smart_lists.smart_list_item import SmartListItem
-from jupiter.core.domain.smart_lists.smart_list_tag import SmartListTag
 from jupiter.core.domain.storage_engine import (
     DomainStorageEngine,
     DomainUnitOfWork,
     SearchStorageEngine,
     SearchUnitOfWork,
 )
-from jupiter.core.domain.user.infra.user_repository import UserRepository
-from jupiter.core.domain.user_workspace_link.infra.user_workspace_link_repository import (
-    UserWorkspaceLinkRepository,
+from jupiter.core.framework.entity import (
+    CrownEntity,
+    Entity,
+    RootEntity,
+    StubEntity,
+    TrunkEntity,
 )
-from jupiter.core.domain.vacations.infra.vacation_collection_repository import (
-    VacationCollectionRepository,
+from jupiter.core.framework.realm import RealmCodecRegistry
+from jupiter.core.framework.repository import (
+    CrownEntityRepository,
+    EntityRepository,
+    Repository,
+    RootEntityRepository,
+    StubEntityRepository,
+    TrunkEntityRepository,
 )
-from jupiter.core.domain.vacations.infra.vacation_repository import VacationRepository
-from jupiter.core.domain.vacations.vacation import Vacation
-from jupiter.core.domain.workspaces.infra.workspace_repository import (
-    WorkspaceRepository,
-)
-from jupiter.core.framework.entity import CrownEntity
-from jupiter.core.framework.repository import CrownEntityRepository
+from jupiter.core.framework.utils import find_all_modules
 from jupiter.core.repository.sqlite.connection import SqliteConnection
-from jupiter.core.repository.sqlite.domain.auths import SqliteAuthRepository
-from jupiter.core.repository.sqlite.domain.big_plans import (
-    SqliteBigPlanCollectionRepository,
-    SqliteBigPlanRepository,
-)
-from jupiter.core.repository.sqlite.domain.chores import (
-    SqliteChoreCollectionRepository,
-    SqliteChoreRepository,
-)
-from jupiter.core.repository.sqlite.domain.core.notes import (
-    SqliteNoteCollectionRepository,
-    SqliteNoteRepository,
-)
-from jupiter.core.repository.sqlite.domain.docs import (
-    SqliteDocCollectionRepository,
-    SqliteDocRepository,
-)
-from jupiter.core.repository.sqlite.domain.fast_info import SqliteFastInfoRepository
-from jupiter.core.repository.sqlite.domain.gamification.scores import (
-    SqliteScoreLogEntryRepository,
-    SqliteScoreLogRepository,
-    SqliteScorePeriodBestRepository,
-    SqliteScoreStatsRepository,
-)
-from jupiter.core.repository.sqlite.domain.gc import (
-    SqliteGCLogEntryRepository,
-    SqliteGCLogRepository,
-)
-from jupiter.core.repository.sqlite.domain.gen import (
-    SqliteGenLogEntryRepository,
-    SqliteGenLogRepository,
-)
-from jupiter.core.repository.sqlite.domain.habits import (
-    SqliteHabitCollectionRepository,
-    SqliteHabitRepository,
-)
-from jupiter.core.repository.sqlite.domain.inbox_tasks import (
-    SqliteInboxTaskCollectionRepository,
-    SqliteInboxTaskRepository,
-)
-from jupiter.core.repository.sqlite.domain.journals import (
-    SqliteJournalCollectionRepository,
-    SqliteJournalRepository,
-)
-from jupiter.core.repository.sqlite.domain.metrics import (
-    SqliteMetricCollectionRepository,
-    SqliteMetricEntryRepository,
-    SqliteMetricRepository,
-)
-from jupiter.core.repository.sqlite.domain.persons import (
-    SqlitePersonCollectionRepository,
-    SqlitePersonRepository,
-)
-from jupiter.core.repository.sqlite.domain.projects import (
-    SqliteProjectCollectionRepository,
-    SqliteProjectRepository,
-)
-from jupiter.core.repository.sqlite.domain.push_integration.email_tasks import (
-    SqliteEmailTaskCollectionRepository,
-    SqliteEmailTaskRepository,
-)
-from jupiter.core.repository.sqlite.domain.push_integration.push_integration_groups import (
-    SqlitePushIntegrationGroupRepository,
-)
-from jupiter.core.repository.sqlite.domain.push_integration.slack_tasks import (
-    SqliteSlackTaskCollectionRepository,
-    SqliteSlackTaskRepository,
-)
 from jupiter.core.repository.sqlite.domain.search import SqliteSearchRepository
-from jupiter.core.repository.sqlite.domain.smart_lists import (
-    SqliteSmartListCollectionRepository,
-    SqliteSmartListItemRepository,
-    SqliteSmartListRepository,
-    SqliteSmartListTagRepository,
-)
-from jupiter.core.repository.sqlite.domain.user_workspace_links import (
-    SqliteUserWorkspaceLinkRepository,
-)
-from jupiter.core.repository.sqlite.domain.users import SqliteUserRepository
-from jupiter.core.repository.sqlite.domain.vacations import (
-    SqliteVacationCollectionRepository,
-    SqliteVacationRepository,
-)
-from jupiter.core.repository.sqlite.domain.workspace import (
-    SqliteWorkspaceRepository,
+from jupiter.core.repository.sqlite.infra.repository import (
+    SqliteCrownEntityRepository,
+    SqliteEntityRepository,
+    SqliteRepository,
+    SqliteRootEntityRepository,
+    SqliteStubEntityRepository,
+    SqliteTrunkEntityRepository,
 )
 from sqlalchemy import MetaData
-from sqlalchemy.ext.asyncio import AsyncEngine
+from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine
 
+_RepositoryT = TypeVar("_RepositoryT", bound=Repository)
+_RootEntityT = TypeVar("_RootEntityT", bound=RootEntity)
+_StubEntityT = TypeVar("_StubEntityT", bound=StubEntity)
+_TrunkEntityT = TypeVar("_TrunkEntityT", bound=TrunkEntity)
 _CrownEntityT = TypeVar("_CrownEntityT", bound=CrownEntity)
 
 
 class SqliteDomainUnitOfWork(DomainUnitOfWork):
     """A Sqlite specific unit of work."""
 
-    _user_repository: Final[SqliteUserRepository]
-    _auth_repository: Final[SqliteAuthRepository]
-    _score_log_repository: Final[SqliteScoreLogRepository]
-    _score_log_entry_repository: Final[SqliteScoreLogEntryRepository]
-    _score_stats_repository: Final[SqliteScoreStatsRepository]
-    _score_period_best_repository: Final[SqliteScorePeriodBestRepository]
-    _workspace_repository: Final[SqliteWorkspaceRepository]
-    _user_workspace_link_repository: Final[SqliteUserWorkspaceLinkRepository]
-    _inbox_task_collection_repository: Final[SqliteInboxTaskCollectionRepository]
-    _inbox_task_repository: Final[SqliteInboxTaskRepository]
-    _habit_collection_repository: Final[SqliteHabitCollectionRepository]
-    _habit_repository: Final[SqliteHabitRepository]
-    _chore_collection_repository: Final[SqliteChoreCollectionRepository]
-    _chore_repository: Final[SqliteChoreRepository]
-    _big_plan_collection_repository: Final[SqliteBigPlanCollectionRepository]
-    _big_plan_repository: Final[SqliteBigPlanRepository]
-    _journal_collection_repository: Final[SqliteJournalCollectionRepository]
-    _journal_repository: Final[SqliteJournalRepository]
-    _doc_collection_repository: Final[SqliteDocCollectionRepository]
-    _doc_repository: Final[SqliteDocRepository]
-    _vacation_collection_repository: Final[SqliteVacationCollectionRepository]
-    _vacation_repository: Final[SqliteVacationRepository]
-    _project_collection_repository: Final[SqliteProjectCollectionRepository]
-    _project_repository: Final[SqliteProjectRepository]
-    _smart_list_collection_repository: Final[SmartListCollectionRepository]
-    _smart_list_repository: Final[SqliteSmartListRepository]
-    _smart_list_tag_reposiotry: Final[SqliteSmartListTagRepository]
-    _smart_list_item_repository: Final[SqliteSmartListItemRepository]
-    _metric_collection_repository: Final[SqliteMetricCollectionRepository]
-    _metric_repository: Final[SqliteMetricRepository]
-    _metric_entry_repository: Final[SqliteMetricEntryRepository]
-    _person_collection_repository: Final[SqlitePersonCollectionRepository]
-    _person_repository: Final[SqlitePersonRepository]
-    _push_integration_group_repository: Final[SqlitePushIntegrationGroupRepository]
-    _slack_task_collection_repository: Final[SqliteSlackTaskCollectionRepository]
-    _slack_task_repository: Final[SqliteSlackTaskRepository]
-    _email_task_collection_repository: Final[SqliteEmailTaskCollectionRepository]
-    _email_task_repository: Final[SqliteEmailTaskRepository]
-    _note_collection_repository: Final[SqliteNoteCollectionRepository]
-    _note_repository: Final[SqliteNoteRepository]
-    _fast_info_repository: Final[SqliteFastInfoRepository]
-    _gen_log_repository: Final[SqliteGenLogRepository]
-    _gen_log_entry_repository: Final[SqliteGenLogEntryRepository]
-    _gc_log_repository: Final[SqliteGCLogRepository]
-    _gc_log_entry_repository: Final[SqliteGCLogEntryRepository]
+    _realm_codec_registry: Final[RealmCodecRegistry]
+    _connection: Final[AsyncConnection]
+    _metadata: Final[MetaData]
+    _entity_repository_factories: Final[
+        dict[type[Entity], type[SqliteEntityRepository[Entity]]]
+    ]
+    _repository_factories: Final[dict[type[Repository], type[SqliteRepository]]]
 
     def __init__(
         self,
-        user_repository: SqliteUserRepository,
-        auth_repository: SqliteAuthRepository,
-        score_log_repository: SqliteScoreLogRepository,
-        score_log_entry_repository: SqliteScoreLogEntryRepository,
-        score_stats_repository: SqliteScoreStatsRepository,
-        score_period_best_repository: SqliteScorePeriodBestRepository,
-        workspace_repository: SqliteWorkspaceRepository,
-        user_workspace_link_repository: SqliteUserWorkspaceLinkRepository,
-        inbox_task_collection_repository: SqliteInboxTaskCollectionRepository,
-        inbox_task_repository: SqliteInboxTaskRepository,
-        habit_collection_repository: SqliteHabitCollectionRepository,
-        habit_repository: SqliteHabitRepository,
-        chore_collection_repository: SqliteChoreCollectionRepository,
-        chore_repository: SqliteChoreRepository,
-        big_plan_collection_repository: SqliteBigPlanCollectionRepository,
-        big_plan_repository: SqliteBigPlanRepository,
-        journal_collection_repository: SqliteJournalCollectionRepository,
-        journal_repository: SqliteJournalRepository,
-        doc_collection_repository: SqliteDocCollectionRepository,
-        doc_repository: SqliteDocRepository,
-        vacation_repository: SqliteVacationRepository,
-        vacation_collection_repository: SqliteVacationCollectionRepository,
-        project_collection_repository: SqliteProjectCollectionRepository,
-        project_repository: SqliteProjectRepository,
-        smart_list_collection_repository: SqliteSmartListCollectionRepository,
-        smart_list_repository: SqliteSmartListRepository,
-        smart_list_tag_repository: SqliteSmartListTagRepository,
-        smart_list_item_repository: SqliteSmartListItemRepository,
-        metric_collection_repository: SqliteMetricCollectionRepository,
-        metric_repository: SqliteMetricRepository,
-        metric_entry_repository: SqliteMetricEntryRepository,
-        person_collection_repository: SqlitePersonCollectionRepository,
-        person_repository: SqlitePersonRepository,
-        push_integration_group_repository: SqlitePushIntegrationGroupRepository,
-        slack_task_collection_repository: SqliteSlackTaskCollectionRepository,
-        slack_task_repository: SqliteSlackTaskRepository,
-        email_task_collection_repository: SqliteEmailTaskCollectionRepository,
-        email_task_repository: SqliteEmailTaskRepository,
-        note_collection_repository: SqliteNoteCollectionRepository,
-        note_repository: SqliteNoteRepository,
-        fast_into_repository: SqliteFastInfoRepository,
-        gen_log_repository: SqliteGenLogRepository,
-        gen_log_entry_repository: SqliteGenLogEntryRepository,
-        gc_log_repository: SqliteGCLogRepository,
-        gc_log_entry_repository: SqliteGCLogEntryRepository,
+        realm_codec_registry: RealmCodecRegistry,
+        connection: AsyncConnection,
+        metadata: MetaData,
+        entity_repository_factories: dict[
+            type[Entity], type[SqliteEntityRepository[Entity]]
+        ],
+        repository_factories: dict[type[Repository], type[SqliteRepository]],
     ) -> None:
         """Constructor."""
-        self._user_repository = user_repository
-        self._auth_repository = auth_repository
-        self._score_log_repository = score_log_repository
-        self._score_log_entry_repository = score_log_entry_repository
-        self._score_stats_repository = score_stats_repository
-        self._score_period_best_repository = score_period_best_repository
-        self._workspace_repository = workspace_repository
-        self._user_workspace_link_repository = user_workspace_link_repository
-        self._inbox_task_collection_repository = inbox_task_collection_repository
-        self._inbox_task_repository = inbox_task_repository
-        self._habit_collection_repository = habit_collection_repository
-        self._habit_repository = habit_repository
-        self._chore_collection_repository = chore_collection_repository
-        self._chore_repository = chore_repository
-        self._big_plan_collection_repository = big_plan_collection_repository
-        self._big_plan_repository = big_plan_repository
-        self._journal_collection_repository = journal_collection_repository
-        self._journal_repository = journal_repository
-        self._doc_collection_repository = doc_collection_repository
-        self._doc_repository = doc_repository
-        self._vacation_collection_repository = vacation_collection_repository
-        self._vacation_repository = vacation_repository
-        self._project_collection_repository = project_collection_repository
-        self._project_repository = project_repository
-        self._smart_list_collection_repository = smart_list_collection_repository
-        self._smart_list_repository = smart_list_repository
-        self._smart_list_tag_reposiotry = smart_list_tag_repository
-        self._smart_list_item_repository = smart_list_item_repository
-        self._metric_collection_repository = metric_collection_repository
-        self._metric_repository = metric_repository
-        self._metric_entry_repository = metric_entry_repository
-        self._person_collection_repository = person_collection_repository
-        self._person_repository = person_repository
-        self._push_integration_group_repository = push_integration_group_repository
-        self._slack_task_collection_repository = slack_task_collection_repository
-        self._slack_task_repository = slack_task_repository
-        self._email_task_collection_repository = email_task_collection_repository
-        self._email_task_repository = email_task_repository
-        self._note_collection_repository = note_collection_repository
-        self._note_repository = note_repository
-        self._fast_info_repository = fast_into_repository
-        self._gen_log_repository = gen_log_repository
-        self._gen_log_entry_repository = gen_log_entry_repository
-        self._gc_log_repository = gc_log_repository
-        self._gc_log_entry_repository = gc_log_entry_repository
+        self._realm_codec_registry = realm_codec_registry
+        self._connection = connection
+        self._metadata = metadata
+        self._entity_repository_factories = entity_repository_factories
+        self._repository_factories = repository_factories
 
     def __enter__(self) -> "SqliteDomainUnitOfWork":
         """Enter the context."""
@@ -379,473 +100,490 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
     ) -> None:
         """Exit context."""
 
-    @property
-    def user_repository(self) -> UserRepository:
-        """The user repository."""
-        return self._user_repository
+    def get(self, repository_type: Type[_RepositoryT]) -> _RepositoryT:
+        """Retrieve a repository."""
+        if repository_type not in self._repository_factories:
+            raise ValueError(f"No repository for type: {repository_type}")
 
-    @property
-    def auth_repository(self) -> AuthRepository:
-        """The auth repository."""
-        return self._auth_repository
+        factory = self._repository_factories[repository_type]
 
-    @property
-    def score_log_repository(self) -> ScoreLogRepository:
-        """The score log repository."""
-        return self._score_log_repository
+        repository = factory(
+            self._realm_codec_registry, self._connection, self._metadata
+        )
 
-    @property
-    def score_log_entry_repository(self) -> ScoreLogEntryRepository:
-        """The score log entry repository."""
-        return self._score_log_entry_repository
+        return cast(_RepositoryT, repository)
 
-    @property
-    def score_stats_repository(self) -> ScoreStatsRepository:
-        """The score stats repository."""
-        return self._score_stats_repository
+    @overload
+    def get_for(
+        self, entity_type: Type[_RootEntityT]
+    ) -> RootEntityRepository[_RootEntityT]:
+        ...
 
-    @property
-    def score_period_best_repository(self) -> ScorePeriodBestRepository:
-        """The score period best repository."""
-        return self._score_period_best_repository
+    @overload
+    def get_for(
+        self, entity_type: Type[_StubEntityT]
+    ) -> StubEntityRepository[_StubEntityT]:
+        ...
 
-    @property
-    def workspace_repository(self) -> WorkspaceRepository:
-        """The workspace repository."""
-        return self._workspace_repository
+    @overload
+    def get_for(
+        self, entity_type: Type[_TrunkEntityT]
+    ) -> TrunkEntityRepository[_TrunkEntityT]:
+        ...
 
-    @property
-    def user_workspace_link_repository(self) -> UserWorkspaceLinkRepository:
-        """The user workspace link repository."""
-        return self._user_workspace_link_repository
-
-    @property
-    def inbox_task_collection_repository(self) -> InboxTaskCollectionRepository:
-        """The inbox task collection repository."""
-        return self._inbox_task_collection_repository
-
-    @property
-    def inbox_task_repository(self) -> InboxTaskRepository:
-        """The inbox task repository."""
-        return self._inbox_task_repository
-
-    @property
-    def habit_collection_repository(self) -> HabitCollectionRepository:
-        """The habit collection repository."""
-        return self._habit_collection_repository
-
-    @property
-    def habit_repository(self) -> HabitRepository:
-        """The habit repository."""
-        return self._habit_repository
-
-    @property
-    def chore_collection_repository(self) -> ChoreCollectionRepository:
-        """The chore collection repository."""
-        return self._chore_collection_repository
-
-    @property
-    def chore_repository(self) -> ChoreRepository:
-        """The chore repository."""
-        return self._chore_repository
-
-    @property
-    def big_plan_collection_repository(self) -> BigPlanCollectionRepository:
-        """The big plan collection repository."""
-        return self._big_plan_collection_repository
-
-    @property
-    def big_plan_repository(self) -> BigPlanRepository:
-        """The big plan repository."""
-        return self._big_plan_repository
-
-    @property
-    def journal_collection_repository(self) -> JournalCollectionRepository:
-        """The journal collection repository."""
-        return self._journal_collection_repository
-
-    @property
-    def journal_repository(self) -> JournalRepository:
-        """The journal repository."""
-        return self._journal_repository
-
-    @property
-    def doc_collection_repository(self) -> DocCollectionRepository:
-        """The doc collection repository."""
-        return self._doc_collection_repository
-
-    @property
-    def doc_repository(self) -> DocRepository:
-        """The doc repository."""
-        return self._doc_repository
-
-    @property
-    def vacation_collection_repository(self) -> VacationCollectionRepository:
-        """The vacation collection repository."""
-        return self._vacation_collection_repository
-
-    @property
-    def vacation_repository(self) -> VacationRepository:
-        """The vacation repository."""
-        return self._vacation_repository
-
-    @property
-    def project_collection_repository(self) -> ProjectCollectionRepository:
-        """The projects repository."""
-        return self._project_collection_repository
-
-    @property
-    def project_repository(self) -> ProjectRepository:
-        """The projects repository."""
-        return self._project_repository
-
-    @property
-    def smart_list_collection_repository(self) -> SmartListCollectionRepository:
-        """The smart list collection repository."""
-        return self._smart_list_collection_repository
-
-    @property
-    def smart_list_repository(self) -> SmartListRepository:
-        """The smart list repository."""
-        return self._smart_list_repository
-
-    @property
-    def smart_list_tag_repository(self) -> SmartListTagRepository:
-        """The smart list tag repository."""
-        return self._smart_list_tag_reposiotry
-
-    @property
-    def smart_list_item_repository(self) -> SmartListItemRepository:
-        """The smart list item repository."""
-        return self._smart_list_item_repository
-
-    @property
-    def metric_collection_repository(self) -> MetricCollectionRepository:
-        """The metric collection repository."""
-        return self._metric_collection_repository
-
-    @property
-    def metric_repository(self) -> MetricRepository:
-        """The metric repository."""
-        return self._metric_repository
-
-    @property
-    def metric_entry_repository(self) -> MetricEntryRepository:
-        """The metric entry repository."""
-        return self._metric_entry_repository
-
-    @property
-    def person_collection_repository(self) -> PersonCollectionRepository:
-        """The person collection repository."""
-        return self._person_collection_repository
-
-    @property
-    def person_repository(self) -> PersonRepository:
-        """The person repository."""
-        return self._person_repository
-
-    @property
-    def push_integration_group_repository(self) -> PushIntegrationGroupRepository:
-        """The push integration group repository."""
-        return self._push_integration_group_repository
-
-    @property
-    def slack_task_collection_repository(self) -> SlackTaskCollectionRepository:
-        """The Slack task collection repository."""
-        return self._slack_task_collection_repository
-
-    @property
-    def slack_task_repository(self) -> SlackTaskRepository:
-        """The Slack task repository."""
-        return self._slack_task_repository
-
-    @property
-    def email_task_collection_repository(self) -> EmailTaskCollectionRepository:
-        """The email task collection repository."""
-        return self._email_task_collection_repository
-
-    @property
-    def email_task_repository(self) -> EmailTaskRepository:
-        """The email task repository."""
-        return self._email_task_repository
-
-    @property
-    def note_collection_repository(self) -> NoteCollectionRepository:
-        """The note collection repository."""
-        return self._note_collection_repository
-
-    @property
-    def note_repository(self) -> NoteRepository:
-        """The note repository."""
-        return self._note_repository
-
-    @property
-    def fast_into_repository(self) -> FastInfoRepository:
-        """The fast info repository."""
-        return self._fast_info_repository
-
-    @property
-    def gen_log_repository(self) -> GenLogRepository:
-        """The gen log repository."""
-        return self._gen_log_repository
-
-    @property
-    def gen_log_entry_repository(self) -> GenLogEntryRepository:
-        """The gen log entry repository."""
-        return self._gen_log_entry_repository
-
-    @property
-    def gc_log_repository(self) -> GCLogRepository:
-        """The gc log repository."""
-        return self._gc_log_repository
-
-    @property
-    def gc_log_entry_repository(self) -> GCLogEntryRepository:
-        """The gc log entry repository."""
-        return self._gc_log_entry_repository
-
-    def get_repository(
+    @overload
+    def get_for(
         self, entity_type: Type[_CrownEntityT]
     ) -> CrownEntityRepository[_CrownEntityT]:
+        ...
+
+    def get_for(
+        self,
+        entity_type: Type[_RootEntityT]
+        | Type[_StubEntityT]
+        | Type[_TrunkEntityT]
+        | Type[_CrownEntityT],
+    ) -> RootEntityRepository[_RootEntityT] | StubEntityRepository[
+        _StubEntityT
+    ] | TrunkEntityRepository[_TrunkEntityT] | CrownEntityRepository[_CrownEntityT]:
         """Return a repository for a particular entity."""
-        if entity_type is InboxTask:
+        if entity_type not in self._entity_repository_factories:
+            raise ValueError(f"No repository for entity type: {entity_type}")
+        factory = self._entity_repository_factories[entity_type]
+
+        repository = factory(
+            self._realm_codec_registry, self._connection, self._metadata
+        )
+
+        if issubclass(entity_type, RootEntity):
             return cast(
-                CrownEntityRepository[_CrownEntityT], self._inbox_task_repository
+                RootEntityRepository[_RootEntityT],
+                repository,
             )
-        elif entity_type is Habit:
-            return cast(CrownEntityRepository[_CrownEntityT], self._habit_repository)
-        elif entity_type is Chore:
-            return cast(CrownEntityRepository[_CrownEntityT], self._chore_repository)
-        elif entity_type is BigPlan:
-            return cast(CrownEntityRepository[_CrownEntityT], self._big_plan_repository)
-        elif entity_type is Journal:
-            return cast(CrownEntityRepository[_CrownEntityT], self._journal_repository)
-        elif entity_type is Doc:
-            return cast(CrownEntityRepository[_CrownEntityT], self._doc_repository)
-        elif entity_type is Vacation:
-            return cast(CrownEntityRepository[_CrownEntityT], self._vacation_repository)
-        elif entity_type is Project:
-            return cast(CrownEntityRepository[_CrownEntityT], self._project_repository)
-        elif entity_type is SmartList:
+        if issubclass(entity_type, StubEntity):
             return cast(
-                CrownEntityRepository[_CrownEntityT], self._smart_list_repository
+                StubEntityRepository[_StubEntityT],
+                repository,
             )
-        elif entity_type is SmartListTag:
+        if issubclass(entity_type, TrunkEntity):
             return cast(
-                CrownEntityRepository[_CrownEntityT], self._smart_list_tag_reposiotry
+                TrunkEntityRepository[_TrunkEntityT],
+                repository,
             )
-        elif entity_type is SmartListItem:
+        if issubclass(entity_type, CrownEntity):
             return cast(
-                CrownEntityRepository[_CrownEntityT], self._smart_list_item_repository
+                CrownEntityRepository[_CrownEntityT],
+                repository,
             )
-        elif entity_type is Metric:
-            return cast(CrownEntityRepository[_CrownEntityT], self._metric_repository)
-        elif entity_type is MetricEntry:
-            return cast(
-                CrownEntityRepository[_CrownEntityT], self._metric_entry_repository
-            )
-        elif entity_type is Person:
-            return cast(CrownEntityRepository[_CrownEntityT], self._person_repository)
-        elif entity_type is SlackTask:
-            return cast(
-                CrownEntityRepository[_CrownEntityT], self._slack_task_repository
-            )
-        elif entity_type is EmailTask:
-            return cast(
-                CrownEntityRepository[_CrownEntityT], self._email_task_repository
-            )
-        elif entity_type is Note:
-            return cast(CrownEntityRepository[_CrownEntityT], self._note_repository)
-        else:
-            raise Exception("Repository not implemented yet")
+
+
+class _StandardSqliteRootEntityRepository(
+    Generic[_RootEntityT],
+    SqliteRootEntityRepository[_RootEntityT],
+    RootEntityRepository[_RootEntityT],
+):
+    """A standard repository for root entities."""
+
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        connection: AsyncConnection,
+        metadata: MetaData,
+        the_type: type[_RootEntityT],
+    ) -> None:
+        """Constructor."""
+        super().__init__(
+            realm_codec_registry, connection, metadata, entity_type=the_type
+        )
+
+
+class _StandardSqliteStubEntityRepository(
+    Generic[_StubEntityT],
+    SqliteStubEntityRepository[_StubEntityT],
+    StubEntityRepository[_StubEntityT],
+):
+    """A standard repository for stub entities."""
+
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        connection: AsyncConnection,
+        metadata: MetaData,
+        the_type: type[_StubEntityT],
+    ) -> None:
+        """Constructor."""
+        super().__init__(
+            realm_codec_registry, connection, metadata, entity_type=the_type
+        )
+
+
+class _StandardSqliteTrunkEntityRepository(
+    Generic[_TrunkEntityT],
+    SqliteTrunkEntityRepository[_TrunkEntityT],
+    TrunkEntityRepository[_TrunkEntityT],
+):
+    """A standard repository for trunk entities."""
+
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        connection: AsyncConnection,
+        metadata: MetaData,
+        the_type: type[_TrunkEntityT],
+    ) -> None:
+        """Constructor."""
+        super().__init__(
+            realm_codec_registry, connection, metadata, entity_type=the_type
+        )
+
+
+class _StandardSqliteCrownEntityRepository(
+    Generic[_CrownEntityT],
+    SqliteCrownEntityRepository[_CrownEntityT],
+    CrownEntityRepository[_CrownEntityT],
+):
+    """A standard repository for crown entities."""
+
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        connection: AsyncConnection,
+        metadata: MetaData,
+        the_type: type[_CrownEntityT],
+    ) -> None:
+        """Constructor."""
+        super().__init__(
+            realm_codec_registry, connection, metadata, entity_type=the_type
+        )
 
 
 class SqliteDomainStorageEngine(DomainStorageEngine):
     """An Sqlite specific engine."""
 
+    _realm_codec_registry: Final[RealmCodecRegistry]
     _sql_engine: Final[AsyncEngine]
     _metadata: Final[MetaData]
+    _entity_repository_factories: Final[
+        dict[type[Entity], type[SqliteEntityRepository[Entity]]]
+    ]
+    _repository_factories: Final[dict[type[Repository], type[SqliteRepository]]]
 
-    def __init__(self, connection: SqliteConnection) -> None:
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        connection: SqliteConnection,
+        entity_repository_factories: dict[
+            type[Entity], type[SqliteEntityRepository[Entity]]
+        ],
+        repository_factories: dict[type[Repository], type[SqliteRepository]],
+    ) -> None:
         """Constructor."""
+        self._realm_codec_registry = realm_codec_registry
         self._sql_engine = connection.sql_engine
         self._metadata = MetaData(bind=self._sql_engine)
+        self._entity_repository_factories = entity_repository_factories
+        self._repository_factories = repository_factories
+
+    @staticmethod
+    def build_from_module_root(
+        realm_codec_registry: RealmCodecRegistry,
+        connection: SqliteConnection,
+        *module_roots: ModuleType,
+    ) -> "SqliteDomainStorageEngine":
+        """Build a unit of work from module roots."""
+
+        def figure_out_entity(the_type: type[Repository]) -> Optional[type[Entity]]:
+            """Figure out the entity type from the repository type."""
+            if not hasattr(the_type, "__orig_bases__"):
+                return None
+
+            for base in the_type.__orig_bases__:
+                base_args = get_args(base)
+                if len(base_args) == 0:
+                    continue
+                for base_arg in base_args:
+                    if isinstance(base_arg, type) and issubclass(base_arg, Entity):
+                        return base_arg
+
+                origin_base = cast(type | GenericAlias, get_origin(base))
+                if origin_base != base:
+                    possible_concept_type = figure_out_entity(
+                        cast(type, origin_base)
+                    )  # We know better!
+                    if possible_concept_type is not None:
+                        return possible_concept_type
+
+            return None
+
+        def figure_out_abstract_entity_repository(
+            the_type: type[Repository],
+        ) -> Optional[type[EntityRepository[Entity]]]:
+            """Figure out the abstract repository type from the repository type."""
+            if not hasattr(the_type, "__orig_bases__"):
+                return None
+
+            for base in the_type.__orig_bases__:
+                if not isinstance(base, type):
+                    continue
+                if not issubclass(base, Repository):
+                    continue
+                if not issubclass(base, EntityRepository):
+                    continue
+                return base  # A hack, we might be finding it too fast!
+
+            return None
+
+        def figure_out_abstract_repository(
+            the_type: type[Repository],
+        ) -> Optional[type[Repository]]:
+            """Figure out the abstract repository type from the repository type."""
+            for base in the_type.mro()[1:]:
+                if not issubclass(base, Repository):
+                    continue
+                return base  # A hack, we might be finding it too fast!
+
+            return None
+
+        def extract_entity_repositories(
+            the_module: ModuleType,
+        ) -> Iterator[
+            tuple[
+                type[Entity],
+                type[EntityRepository[Entity]],
+                type[SqliteEntityRepository[Entity]],
+            ]
+        ]:
+            """Extract all entity repositories from a module."""
+            for _name, obj in the_module.__dict__.items():
+                if not isinstance(obj, type):
+                    continue
+                if not issubclass(obj, Repository):
+                    continue
+                if not issubclass(obj, EntityRepository):
+                    continue
+                if not issubclass(obj, SqliteEntityRepository):
+                    continue
+
+                if obj.__module__ != the_module.__name__:
+                    # This is an import, and not a definition!
+                    continue
+
+                if not hasattr(obj, "__parameters__") or not hasattr(
+                    obj.__parameters__, "__len__"
+                ):
+                    continue
+
+                if len(obj.__parameters__) > 0:  # type: ignore
+                    # This is not a concret type and we can move on
+                    continue
+
+                entity_type = figure_out_entity(cast(type, obj))
+                if entity_type is None:
+                    raise Exception(
+                        f"Could not figure out entity type for repository: {obj}"
+                    )
+
+                abstract_repository_type = figure_out_abstract_entity_repository(
+                    cast(type, obj)
+                )
+                if abstract_repository_type is None:
+                    raise Exception(
+                        f"Could not figure out abstract repository type for repository: {obj}"
+                    )
+
+                yield entity_type, abstract_repository_type, obj
+
+        def extract_repositories(
+            the_module: ModuleType,
+        ) -> Iterator[tuple[type[Repository], type[SqliteRepository]]]:
+            """Extract all repositories from a module."""
+            for _name, obj in the_module.__dict__.items():
+                if not isinstance(obj, type):
+                    continue
+                if not issubclass(obj, Repository):
+                    continue
+                if not issubclass(obj, SqliteRepository):
+                    continue
+
+                if obj.__module__ != the_module.__name__:
+                    # This is an import, and not a definition!
+                    continue
+
+                abstract_repository_type = figure_out_abstract_repository(
+                    cast(type, obj)
+                )
+                if abstract_repository_type is None:
+                    raise Exception(
+                        f"Could not figure out abstract repository type for repository: {obj}"
+                    )
+                yield abstract_repository_type, obj
+
+        def extract_entities(
+            the_module: ModuleType,
+        ) -> Iterator[type[Entity]]:
+            for _name, obj in the_module.__dict__.items():
+                if not (isinstance(obj, type) and issubclass(obj, Entity)):
+                    continue
+
+                if obj.__module__ != the_module.__name__:
+                    # This is an import, and not a definition!
+                    continue
+
+                yield obj
+
+        entity_repository_factories = {}
+        repository_factories: dict[type[Repository], type[SqliteRepository]] = {}
+
+        for m in find_all_modules(*module_roots):
+            # extract all entity repositories
+            for (
+                entity_type,
+                abstract_entity_repository_type,
+                concrete_entity_repository_type,
+            ) in extract_entity_repositories(m):
+                if entity_type in entity_repository_factories:
+                    raise Exception(
+                        f"Entity type {entity_type} already has a repository"
+                    )
+                entity_repository_factories[
+                    entity_type
+                ] = concrete_entity_repository_type
+                if abstract_entity_repository_type in repository_factories:
+                    raise Exception(
+                        f"Abstract repository type {abstract_entity_repository_type} already has a repository"
+                    )
+                repository_factories[
+                    abstract_entity_repository_type
+                ] = concrete_entity_repository_type
+
+            # extract all random repositories
+            for (
+                abstract_repository_type,
+                concrete_repository_type,
+            ) in extract_repositories(m):
+                if abstract_repository_type in repository_factories:
+                    continue
+                repository_factories[
+                    abstract_repository_type
+                ] = concrete_repository_type
+
+            # look at all entities and build repositories for them
+            for entity_type in extract_entities(m):
+                if entity_type in entity_repository_factories:
+                    continue
+                if issubclass(entity_type, RootEntity):
+                    entity_repository_factories[entity_type] = type(
+                        f"_StandardSqliteRootEntityRepository_{entity_type.__name__}",
+                        (_StandardSqliteRootEntityRepository,),
+                        {"__init__": _generic_root_init(entity_type)},
+                    )
+                elif issubclass(entity_type, StubEntity):
+                    entity_repository_factories[entity_type] = type(
+                        f"_StandardSqliteStubEntityRepository_{entity_type.__name__}",
+                        (_StandardSqliteStubEntityRepository,),
+                        {"__init__": _generic_stub_init(entity_type)},
+                    )
+                elif issubclass(entity_type, TrunkEntity):
+                    entity_repository_factories[entity_type] = type(
+                        f"_StandardSqliteTrunkEntityRepository_{entity_type.__name__}",
+                        (_StandardSqliteTrunkEntityRepository,),
+                        {"__init__": _generic_trunk_init(entity_type)},
+                    )
+                elif issubclass(entity_type, CrownEntity):
+                    entity_repository_factories[entity_type] = type(
+                        f"_StandardSqliteCrownEntityRepository_{entity_type.__name__}",
+                        (_StandardSqliteCrownEntityRepository,),
+                        {"__init__": _generic_crown_init(entity_type)},
+                    )
+                else:
+                    raise Exception(f"Unknown entity type: {entity_type}")
+
+        return SqliteDomainStorageEngine(
+            realm_codec_registry,
+            connection,
+            entity_repository_factories,
+            repository_factories,
+        )
 
     @asynccontextmanager
     async def get_unit_of_work(self) -> AsyncIterator[DomainUnitOfWork]:
         """Get the unit of work."""
         async with self._sql_engine.begin() as connection:
-            user_repository = SqliteUserRepository(connection, self._metadata)
-            auth_repository = SqliteAuthRepository(connection, self._metadata)
-            score_log_repository = SqliteScoreLogRepository(connection, self._metadata)
-            score_log_entry_repository = SqliteScoreLogEntryRepository(
-                connection, self._metadata
-            )
-            score_stats_repository = SqliteScoreStatsRepository(
-                connection, self._metadata
-            )
-            score_period_best_repository = SqliteScorePeriodBestRepository(
-                connection, self._metadata
-            )
-            workspace_repository = SqliteWorkspaceRepository(connection, self._metadata)
-            user_workspace_link_repository = SqliteUserWorkspaceLinkRepository(
-                connection, self._metadata
-            )
-            inbox_task_collection_repository = SqliteInboxTaskCollectionRepository(
-                connection,
-                self._metadata,
-            )
-            inbox_task_repository = SqliteInboxTaskRepository(
-                connection,
-                self._metadata,
-            )
-            habit_collection_repository = SqliteHabitCollectionRepository(
-                connection,
-                self._metadata,
-            )
-            habit_repository = SqliteHabitRepository(connection, self._metadata)
-            chore_collection_repository = SqliteChoreCollectionRepository(
-                connection,
-                self._metadata,
-            )
-            chore_repository = SqliteChoreRepository(connection, self._metadata)
-            big_plan_collection_repository = SqliteBigPlanCollectionRepository(
-                connection,
-                self._metadata,
-            )
-            big_plan_repository = SqliteBigPlanRepository(connection, self._metadata)
-            journal_collection_repository = SqliteJournalCollectionRepository(
-                connection,
-                self._metadata,
-            )
-            journal_repository = SqliteJournalRepository(connection, self._metadata)
-            doc_collection_repository = SqliteDocCollectionRepository(
-                connection,
-                self._metadata,
-            )
-            doc_repository = SqliteDocRepository(connection, self._metadata)
-            vacation_collection_repository = SqliteVacationCollectionRepository(
-                connection,
-                self._metadata,
-            )
-            vacation_repository = SqliteVacationRepository(connection, self._metadata)
-            project_collection_repository = SqliteProjectCollectionRepository(
-                connection,
-                self._metadata,
-            )
-            project_repository = SqliteProjectRepository(connection, self._metadata)
-            smart_list_collection_repository = SqliteSmartListCollectionRepository(
-                connection,
-                self._metadata,
-            )
-            smart_list_repository = SqliteSmartListRepository(
-                connection,
-                self._metadata,
-            )
-            smart_list_tag_repository = SqliteSmartListTagRepository(
-                connection,
-                self._metadata,
-            )
-            smart_list_item_repository = SqliteSmartListItemRepository(
-                connection,
-                self._metadata,
-            )
-            metric_collection_repository = SqliteMetricCollectionRepository(
-                connection,
-                self._metadata,
-            )
-            metric_repository = SqliteMetricRepository(connection, self._metadata)
-            metric_entry_repository = SqliteMetricEntryRepository(
-                connection,
-                self._metadata,
-            )
-            person_collection_repository = SqlitePersonCollectionRepository(
-                connection,
-                self._metadata,
-            )
-            person_repository = SqlitePersonRepository(connection, self._metadata)
-            push_integration_group_repository = SqlitePushIntegrationGroupRepository(
-                connection,
-                self._metadata,
-            )
-            slack_task_collection_repository = SqliteSlackTaskCollectionRepository(
-                connection,
-                self._metadata,
-            )
-            slack_task_repository = SqliteSlackTaskRepository(
-                connection,
-                self._metadata,
-            )
-            email_task_collection_repository = SqliteEmailTaskCollectionRepository(
-                connection,
-                self._metadata,
-            )
-            email_task_repository = SqliteEmailTaskRepository(
-                connection,
-                self._metadata,
-            )
-            note_collection_repository = SqliteNoteCollectionRepository(
-                connection,
-                self._metadata,
-            )
-            note_repository = SqliteNoteRepository(connection, self._metadata)
-            fast_info_repository = SqliteFastInfoRepository(connection)
-            gen_log_repository = SqliteGenLogRepository(connection, self._metadata)
-            gen_log_entry_repository = SqliteGenLogEntryRepository(
-                connection, self._metadata
-            )
-            gc_log_repository = SqliteGCLogRepository(connection, self._metadata)
-            gc_log_entry_repository = SqliteGCLogEntryRepository(
-                connection, self._metadata
+            yield SqliteDomainUnitOfWork(
+                realm_codec_registry=self._realm_codec_registry,
+                connection=connection,
+                metadata=self._metadata,
+                entity_repository_factories=self._entity_repository_factories,
+                repository_factories=self._repository_factories,
             )
 
-            yield SqliteDomainUnitOfWork(
-                user_repository=user_repository,
-                auth_repository=auth_repository,
-                score_log_repository=score_log_repository,
-                score_log_entry_repository=score_log_entry_repository,
-                score_stats_repository=score_stats_repository,
-                score_period_best_repository=score_period_best_repository,
-                workspace_repository=workspace_repository,
-                user_workspace_link_repository=user_workspace_link_repository,
-                inbox_task_collection_repository=inbox_task_collection_repository,
-                inbox_task_repository=inbox_task_repository,
-                habit_collection_repository=habit_collection_repository,
-                habit_repository=habit_repository,
-                chore_collection_repository=chore_collection_repository,
-                chore_repository=chore_repository,
-                big_plan_collection_repository=big_plan_collection_repository,
-                big_plan_repository=big_plan_repository,
-                journal_collection_repository=journal_collection_repository,
-                journal_repository=journal_repository,
-                doc_collection_repository=doc_collection_repository,
-                doc_repository=doc_repository,
-                vacation_collection_repository=vacation_collection_repository,
-                vacation_repository=vacation_repository,
-                project_collection_repository=project_collection_repository,
-                project_repository=project_repository,
-                smart_list_collection_repository=smart_list_collection_repository,
-                smart_list_repository=smart_list_repository,
-                smart_list_tag_repository=smart_list_tag_repository,
-                smart_list_item_repository=smart_list_item_repository,
-                metric_collection_repository=metric_collection_repository,
-                metric_repository=metric_repository,
-                metric_entry_repository=metric_entry_repository,
-                person_collection_repository=person_collection_repository,
-                person_repository=person_repository,
-                push_integration_group_repository=push_integration_group_repository,
-                slack_task_collection_repository=slack_task_collection_repository,
-                slack_task_repository=slack_task_repository,
-                email_task_collection_repository=email_task_collection_repository,
-                email_task_repository=email_task_repository,
-                note_collection_repository=note_collection_repository,
-                note_repository=note_repository,
-                fast_into_repository=fast_info_repository,
-                gen_log_repository=gen_log_repository,
-                gen_log_entry_repository=gen_log_entry_repository,
-                gc_log_repository=gc_log_repository,
-                gc_log_entry_repository=gc_log_entry_repository,
-            )
+
+def _generic_root_init(
+    entity_type: type[_RootEntityT],
+) -> Callable[
+    [
+        _StandardSqliteRootEntityRepository[_RootEntityT],
+        RealmCodecRegistry,
+        AsyncConnection,
+        MetaData,
+    ],
+    None,
+]:
+    """Generic constructor for root entities."""
+    return lambda self, realm_codec_registry, connection, metadata: super(
+        _StandardSqliteRootEntityRepository, self
+    ).__init__(realm_codec_registry, connection, metadata, entity_type=entity_type)
+
+
+def _generic_stub_init(
+    entity_type: type[_StubEntityT],
+) -> Callable[
+    [
+        _StandardSqliteStubEntityRepository[_StubEntityT],
+        RealmCodecRegistry,
+        AsyncConnection,
+        MetaData,
+    ],
+    None,
+]:
+    """Generic constructor for stub entities."""
+    return lambda self, realm_codec_registry, connection, metadata: super(
+        _StandardSqliteStubEntityRepository, self
+    ).__init__(realm_codec_registry, connection, metadata, entity_type=entity_type)
+
+
+def _generic_trunk_init(
+    entity_type: type[_TrunkEntityT],
+) -> Callable[
+    [
+        _StandardSqliteTrunkEntityRepository[_TrunkEntityT],
+        RealmCodecRegistry,
+        AsyncConnection,
+        MetaData,
+    ],
+    None,
+]:
+    """Generic constructor for trunk entities."""
+    return lambda self, realm_codec_registry, connection, metadata: super(
+        _StandardSqliteTrunkEntityRepository, self
+    ).__init__(realm_codec_registry, connection, metadata, entity_type=entity_type)
+
+
+def _generic_crown_init(
+    entity_type: type[_CrownEntityT],
+) -> Callable[
+    [
+        _StandardSqliteCrownEntityRepository[_CrownEntityT],
+        RealmCodecRegistry,
+        AsyncConnection,
+        MetaData,
+    ],
+    None,
+]:
+    """Generic constructor for crown entities."""
+    return lambda self, realm_codec_registry, connection, metadata: super(
+        _StandardSqliteCrownEntityRepository, self
+    ).__init__(realm_codec_registry, connection, metadata, entity_type=entity_type)
 
 
 class SqliteSearchUnitOfWork(SearchUnitOfWork):
@@ -878,11 +616,15 @@ class SqliteSearchUnitOfWork(SearchUnitOfWork):
 class SqliteSearchStorageEngine(SearchStorageEngine):
     """An Sqlite specific engine."""
 
+    _realm_codec_registry: Final[RealmCodecRegistry]
     _sql_engine: Final[AsyncEngine]
     _metadata: Final[MetaData]
 
-    def __init__(self, connection: SqliteConnection) -> None:
+    def __init__(
+        self, realm_codec_registry: RealmCodecRegistry, connection: SqliteConnection
+    ) -> None:
         """Constructor."""
+        self._realm_codec_registry = realm_codec_registry
         self._sql_engine = connection.sql_engine
         self._metadata = MetaData(bind=self._sql_engine)
 
@@ -890,5 +632,7 @@ class SqliteSearchStorageEngine(SearchStorageEngine):
     async def get_unit_of_work(self) -> AsyncIterator[SearchUnitOfWork]:
         """Get the unit of work."""
         async with self._sql_engine.begin() as connection:
-            search_repository = SqliteSearchRepository(connection, self._metadata)
+            search_repository = SqliteSearchRepository(
+                self._realm_codec_registry, connection, self._metadata
+            )
             yield SqliteSearchUnitOfWork(search_repository=search_repository)

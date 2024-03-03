@@ -2,12 +2,8 @@ import ViewListIcon from "@mui/icons-material/ViewList";
 import ViewTimelineIcon from "@mui/icons-material/ViewTimeline";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import {
-  Link,
-  Outlet,
-  ShouldRevalidateFunction,
-  useFetcher,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { Link, Outlet, useFetcher } from "@remix-run/react";
 import type { BigPlan, BigPlanFindResultEntry, Project } from "jupiter-gen";
 import { BigPlanStatus, WorkspaceFeature } from "jupiter-gen";
 import { ADateTag } from "~/components/adate-tag";
@@ -56,7 +52,8 @@ import {
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
-import { TopLevelInfo, TopLevelInfoContext } from "~/top-level-context";
+import type { TopLevelInfo } from "~/top-level-context";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 export const handle = {
   displayType: DisplayType.TRUNK,
@@ -69,7 +66,7 @@ export async function loader({ request }: LoaderArgs) {
   ).getSummaries.getSummaries({
     include_projects: true,
   });
-  const response = await getLoggedInApiClient(session).bigPlan.findBigPlan({
+  const response = await getLoggedInApiClient(session).bigPlans.bigPlanFind({
     allow_archived: false,
     include_project: true,
     include_inbox_tasks: false,
@@ -100,7 +97,7 @@ export default function BigPlans() {
   );
   const entriesByRefId = new Map<string, BigPlanFindResultEntry>();
   for (const entry of loaderData.bigPlans) {
-    entriesByRefId.set(entry.big_plan.ref_id.the_id, entry);
+    entriesByRefId.set(entry.big_plan.ref_id, entry);
   }
 
   const topLevelInfo = useContext(TopLevelInfoContext);
@@ -125,7 +122,7 @@ export default function BigPlans() {
       },
       {
         method: "post",
-        action: `/workspace/big-plans/${bigPlan.ref_id.the_id}`,
+        action: `/workspace/big-plans/${bigPlan.ref_id}`,
       }
     );
   }
@@ -135,7 +132,7 @@ export default function BigPlans() {
   let extraControls = [];
   if (isBigScreen) {
     extraControls = [
-      <ButtonGroup>
+      <ButtonGroup key="1">
         {isWorkspaceFeatureAvailable(
           topLevelInfo.workspace,
           WorkspaceFeature.PROJECTS
@@ -171,6 +168,7 @@ export default function BigPlans() {
   } else {
     extraControls = [
       <Button
+        key="1"
         variant="outlined"
         startIcon={<ViewTimelineIcon />}
         onClick={() => setShowFilterDialog(true)}
@@ -242,8 +240,8 @@ export default function BigPlans() {
               {loaderData.allProjects.map((p) => {
                 const theProjects = sortedBigPlans.filter(
                   (se) =>
-                    entriesByRefId.get(se.ref_id.the_id)?.big_plan
-                      .project_ref_id.the_id === p.ref_id.the_id
+                    entriesByRefId.get(se.ref_id)?.big_plan.project_ref_id ===
+                    p.ref_id
                 );
 
                 if (theProjects.length === 0) {
@@ -251,9 +249,9 @@ export default function BigPlans() {
                 }
 
                 return (
-                  <Box key={p.ref_id.the_id}>
+                  <Box key={p.ref_id}>
                     <Divider>
-                      <Typography variant="h6">{p.name.the_name}</Typography>
+                      <Typography variant="h6">{p.name}</Typography>
                     </Divider>
                     <>
                       {isBigScreen && (
@@ -335,11 +333,9 @@ function BigScreenTimeline({ bigPlans }: BigScreenTimelineProps) {
             const { leftMargin, width } = computeBigPlanGnattPosition(entry);
 
             return (
-              <TableRow key={entry.ref_id.the_id}>
+              <TableRow key={entry.ref_id}>
                 <TableCell>
-                  <EntityLink
-                    to={`/workspace/big-plans/${entry.ref_id.the_id}`}
-                  >
+                  <EntityLink to={`/workspace/big-plans/${entry.ref_id}`}>
                     <EntityNameOneLineComponent name={entry.name} />
                   </EntityLink>
                 </TableCell>
@@ -395,7 +391,7 @@ function SmallScreenTimeline({ bigPlans }: SmallScreenTimelineProps) {
             computeBigPlanGnattPosition(bigPlan);
 
           return (
-            <SmallScreenTimelineLine key={bigPlan.ref_id.the_id}>
+            <SmallScreenTimelineLine key={bigPlan.ref_id}>
               <TimelineGnattBlob
                 isunderlay="true"
                 leftmargin={leftMargin}
@@ -406,7 +402,7 @@ function SmallScreenTimeline({ bigPlans }: SmallScreenTimelineProps) {
               <TimelineLink
                 leftmargin={betterLeftMargin}
                 width={betterWidth}
-                to={`/workspace/big-plans/${bigPlan.ref_id.the_id}`}
+                to={`/workspace/big-plans/${bigPlan.ref_id}`}
               >
                 <BigPlanStatusTag status={bigPlan.status} format="icon" />
                 <EntityNameOneLineComponent name={bigPlan.name} />
@@ -493,12 +489,12 @@ function List({
     <EntityStack>
       {bigPlans.map((entry) => (
         <EntityCard
-          key={entry.ref_id.the_id}
+          key={entry.ref_id}
           allowSwipe
           allowMarkNotDone
           onMarkNotDone={() => onArchiveBigPlan(entry)}
         >
-          <EntityLink to={`/workspace/big-plans/${entry.ref_id.the_id}`}>
+          <EntityLink to={`/workspace/big-plans/${entry.ref_id}`}>
             <EntityNameComponent name={entry.name} />
           </EntityLink>
           <Divider />
@@ -508,9 +504,7 @@ function List({
             WorkspaceFeature.PROJECTS
           ) && (
             <ProjectTag
-              project={
-                entriesByRefId.get(entry.ref_id.the_id)?.project as Project
-              }
+              project={entriesByRefId.get(entry.ref_id)?.project as Project}
             />
           )}
 

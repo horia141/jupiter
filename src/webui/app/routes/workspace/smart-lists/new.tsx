@@ -11,11 +11,8 @@ import {
 } from "@mui/material";
 import type { ActionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import {
-  ShouldRevalidateFunction,
-  useActionData,
-  useTransition,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { ApiError } from "jupiter-gen";
 import { z } from "zod";
@@ -46,13 +43,13 @@ export async function action({ request }: ActionArgs) {
   try {
     const result = await getLoggedInApiClient(
       session
-    ).smartList.createSmartList({
-      name: { the_name: form.name },
-      icon: form.icon ? { the_icon: form.icon } : undefined,
+    ).smartLists.smartListCreate({
+      name: form.name,
+      icon: form.icon,
     });
 
     return redirect(
-      `/workspace/smart-lists/${result.new_smart_list.ref_id.the_id}/items`
+      `/workspace/smart-lists/${result.new_smart_list.ref_id}/items`
     );
   } catch (error) {
     if (

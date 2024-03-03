@@ -12,14 +12,14 @@ export class SearchService {
     constructor(public readonly httpRequest: BaseHttpRequest) {}
 
     /**
-     * Search
-     * Search entities.
-     * @param requestBody
-     * @returns SearchResult Successful Response
+     * Use case for free form searching through Jupiter.
+     * Use case for free form searching through Jupiter.
+     * @param requestBody The input data
+     * @returns SearchResult Successful response
      * @throws ApiError
      */
     public search(
-        requestBody: SearchArgs,
+        requestBody?: SearchArgs,
     ): CancelablePromise<SearchResult> {
         return this.httpRequest.request({
             method: 'POST',

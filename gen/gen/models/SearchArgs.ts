@@ -7,10 +7,13 @@ import type { NamedEntityTag } from './NamedEntityTag';
 import type { SearchLimit } from './SearchLimit';
 import type { SearchQuery } from './SearchQuery';
 
+/**
+ * Search args.
+ */
 export type SearchArgs = {
     query: SearchQuery;
     limit: SearchLimit;
-    include_archived?: boolean;
+    include_archived: boolean;
     filter_entity_tags?: Array<NamedEntityTag>;
     filter_created_time_after?: ADate;
     filter_created_time_before?: ADate;

@@ -5,5 +5,5 @@ interface EntityIconProps {
 }
 
 export default function EntityIconComponent({ icon }: EntityIconProps) {
-  return <span>{icon.the_icon}</span>;
+  return <span>{icon}</span>;
 }

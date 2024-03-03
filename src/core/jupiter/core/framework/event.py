@@ -4,8 +4,8 @@ from dataclasses import dataclass
 from typing import Dict
 
 from jupiter.core.framework.base.timestamp import Timestamp
-from jupiter.core.framework.json import JSONDictType, process_primitive_to_json
-from jupiter.core.framework.update_action import UpdateAction
+from jupiter.core.framework.realm import DomainThing
+from jupiter.core.framework.value import EnumValue, enum_value
 
 
 @enum.unique
@@ -16,13 +16,9 @@ class EventKind(enum.Enum):
     UPDATE = "Updated"
     ARCHIVE = "Archived"
 
-    def to_db(self) -> str:
-        """A database appropriate form of this enum."""
-        return str(self.value)
 
-
-@enum.unique
-class EventSource(enum.Enum):
+@enum_value
+class EventSource(EnumValue):
     """The source of the modification which this event records."""
 
     CLI = "cli"
@@ -32,10 +28,6 @@ class EventSource(enum.Enum):
     GC_CRON = "gc-cron"
     GEN_CRON = "gen-cron"
 
-    def to_db(self) -> str:
-        """A database appropriate form of this enum."""
-        return str(self.value)
-
 
 @dataclass
 class Event:
@@ -44,23 +36,6 @@ class Event:
     source: EventSource
     entity_version: int
     timestamp: Timestamp
-    frame_args: Dict[str, object]
+    frame_args: Dict[str, tuple[DomainThing, type[DomainThing]]]
     kind: EventKind
     name: str
-
-    def to_serializable_dict(self) -> JSONDictType:
-        """Transform an event into a serialisation-ready dictionary."""
-        serialized_frame_args = {}
-        for the_key, the_value in self.frame_args.items():
-            if isinstance(the_value, UpdateAction):
-                if the_value.should_change:
-                    serialized_frame_args[the_key] = process_primitive_to_json(
-                        the_value.just_the_value,
-                        the_key,
-                    )
-            else:
-                serialized_frame_args[the_key] = process_primitive_to_json(
-                    the_value,
-                    the_key,
-                )
-        return serialized_frame_args

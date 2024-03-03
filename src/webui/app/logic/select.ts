@@ -58,8 +58,8 @@ export function fixSelectOutputEntityId(
   }
 
   if (!Array.isArray(selectOutput)) {
-    return [{ the_id: selectOutput }];
+    return [selectOutput];
   }
 
-  return selectOutput.map((so) => ({ the_id: so }));
+  return selectOutput;
 }

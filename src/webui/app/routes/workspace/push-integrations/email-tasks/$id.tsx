@@ -13,8 +13,8 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
-  ShouldRevalidateFunction,
   useActionData,
   useFetcher,
   useParams,
@@ -78,8 +78,8 @@ export async function loader({ request, params }: LoaderArgs) {
   try {
     const response = await getLoggedInApiClient(
       session
-    ).emailTask.loadEmailTask({
-      ref_id: { the_id: id },
+    ).pushIntegrations.emailTaskLoad({
+      ref_id: id,
       allow_archived: true,
     });
 
@@ -109,19 +109,19 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (intent) {
       case "update": {
-        await getLoggedInApiClient(session).emailTask.updateEmailTask({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).pushIntegrations.emailTaskUpdate({
+          ref_id: id,
           from_address: {
             should_change: true,
-            value: { the_address: form.fromAddress },
+            value: form.fromAddress,
           },
           from_name: {
             should_change: true,
-            value: { the_name: form.fromName },
+            value: form.fromName,
           },
           to_address: {
             should_change: true,
-            value: { the_address: form.toAddress },
+            value: form.toAddress,
           },
           subject: {
             should_change: true,
@@ -133,9 +133,7 @@ export async function action({ request, params }: ActionArgs) {
           },
           generation_name: {
             should_change: true,
-            value: form.generationName
-              ? { the_name: form.generationName }
-              : undefined,
+            value: form.generationName ? form.generationName : undefined,
           },
           generation_status: {
             should_change: true,
@@ -161,10 +159,7 @@ export async function action({ request, params }: ActionArgs) {
             value:
               form.generationActionableDate !== undefined &&
               form.generationActionableDate !== ""
-                ? {
-                    the_date: form.generationActionableDate,
-                    the_datetime: undefined,
-                  }
+                ? form.generationActionableDate
                 : undefined,
           },
           generation_due_date: {
@@ -172,7 +167,7 @@ export async function action({ request, params }: ActionArgs) {
             value:
               form.generationDueDate !== undefined &&
               form.generationDueDate !== ""
-                ? { the_date: form.generationDueDate, the_datetime: undefined }
+                ? form.generationDueDate
                 : undefined,
           },
         });
@@ -181,8 +176,8 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).emailTask.archiveEmailTask({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).pushIntegrations.emailTaskArchive({
+          ref_id: id,
         });
 
         return redirect(`/workspace/push-integrations/email-tasks/${id}`);
@@ -220,7 +215,7 @@ export default function EmailTask() {
   function handleCardMarkDone(it: InboxTask) {
     cardActionFetcher.submit(
       {
-        id: it.ref_id.the_id,
+        id: it.ref_id,
         status: InboxTaskStatus.DONE,
       },
       {
@@ -233,7 +228,7 @@ export default function EmailTask() {
   function handleCardMarkNotDone(it: InboxTask) {
     cardActionFetcher.submit(
       {
-        id: it.ref_id.the_id,
+        id: it.ref_id,
         status: InboxTaskStatus.NOT_DONE,
       },
       {
@@ -245,7 +240,7 @@ export default function EmailTask() {
 
   return (
     <LeafPanel
-      key={loaderData.emailTask.ref_id.the_id}
+      key={loaderData.emailTask.ref_id}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/push-integrations/email-tasks"
@@ -260,7 +255,7 @@ export default function EmailTask() {
                 label="From Address"
                 name="fromAddress"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.emailTask.from_address.the_address}
+                defaultValue={loaderData.emailTask.from_address}
               />
               <FieldError actionResult={actionData} fieldName="/from_address" />
             </FormControl>
@@ -271,7 +266,7 @@ export default function EmailTask() {
                 label="From Name"
                 name="fromName"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.emailTask.from_name.the_name}
+                defaultValue={loaderData.emailTask.from_name}
               />
               <FieldError actionResult={actionData} fieldName="/from_name" />
             </FormControl>
@@ -282,7 +277,7 @@ export default function EmailTask() {
                 label="To Address"
                 name="toAddress"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.emailTask.to_address.the_address}
+                defaultValue={loaderData.emailTask.to_address}
               />
               <FieldError actionResult={actionData} fieldName="/to_address" />
             </FormControl>
@@ -318,9 +313,7 @@ export default function EmailTask() {
                 label="Generation Name"
                 name="generationName"
                 readOnly={!inputsEnabled}
-                defaultValue={
-                  loaderData.emailTask.generation_extra_info?.name?.the_name
-                }
+                defaultValue={loaderData.emailTask.generation_extra_info?.name}
               />
               <FieldError
                 actionResult={actionData}

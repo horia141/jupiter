@@ -51,10 +51,6 @@ class RecordRepository(
         """Hard remove a record - an irreversible operation."""
 
     @abc.abstractmethod
-    async def load_by_key(self, key: RecordKeyT) -> RecordT:
-        """Load a record by it's unique key."""
-
-    @abc.abstractmethod
     async def load_by_key_optional(self, key: RecordKeyT) -> RecordT | None:
         """Load a record by it's unique key."""
 
@@ -177,7 +173,9 @@ class CrownEntityRepository(EntityRepository[CrownEntityT], abc.ABC):
     @abc.abstractmethod
     async def find_all_generic(
         self,
-        allow_archived: bool,
+        *,
+        parent_ref_id: EntityId | None = None,
+        allow_archived: bool = False,
         **kwargs: EntityLinkFilterCompiled,
     ) -> list[CrownEntityT]:
         """Find all crowns with generic filters."""
@@ -185,10 +183,6 @@ class CrownEntityRepository(EntityRepository[CrownEntityT], abc.ABC):
     @abc.abstractmethod
     async def remove(self, ref_id: EntityId) -> CrownEntityT:
         """Hard remove a crown - an irreversible operation."""
-
-
-class BranchEntityNotFoundError(EntityNotFoundError):
-    """Error raised when a branch entity is not found."""
 
 
 BranchEntityT = TypeVar("BranchEntityT", bound=BranchEntity)
@@ -200,10 +194,6 @@ class BranchEntityRepository(
     abc.ABC,
 ):
     """A repository for branch entities."""
-
-
-class LeafEntityNotFoundError(EntityNotFoundError):
-    """Error raised when a leaf entity is not found."""
 
 
 LeafEntityT = TypeVar("LeafEntityT", bound=LeafEntity)

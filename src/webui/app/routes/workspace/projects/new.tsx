@@ -11,11 +11,8 @@ import {
 } from "@mui/material";
 import type { ActionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import {
-  ShouldRevalidateFunction,
-  useActionData,
-  useTransition,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { ApiError } from "jupiter-gen";
 import { z } from "zod";
@@ -42,13 +39,13 @@ export async function action({ request }: ActionArgs) {
   const form = await parseForm(request, CreateFormSchema);
 
   try {
-    const response = await getLoggedInApiClient(session).project.createProject({
-      name: { the_name: form.name },
-    });
-
-    return redirect(
-      `/workspace/projects/${response.new_project.ref_id.the_id}`
+    const response = await getLoggedInApiClient(session).projects.projectCreate(
+      {
+        name: form.name,
+      }
     );
+
+    return redirect(`/workspace/projects/${response.new_project.ref_id}`);
   } catch (error) {
     if (
       error instanceof ApiError &&

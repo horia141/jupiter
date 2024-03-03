@@ -11,12 +11,8 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import {
-  ShouldRevalidateFunction,
-  useActionData,
-  useParams,
-  useTransition,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { useActionData, useParams, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { ApiError } from "jupiter-gen";
 import { z } from "zod";
@@ -47,9 +43,9 @@ export async function loader({ request, params }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const { id } = parseParams(params, ParamsSchema);
 
-  const result = await getLoggedInApiClient(session).smartList.loadSmartList({
+  const result = await getLoggedInApiClient(session).smartLists.smartListLoad({
     allow_archived: true,
-    ref_id: { the_id: id },
+    ref_id: id,
   });
 
   return json({
@@ -65,13 +61,13 @@ export async function action({ request, params }: ActionArgs) {
   try {
     const response = await getLoggedInApiClient(
       session
-    ).smartList.createSmartListTag({
-      smart_list_ref_id: { the_id: id },
-      tag_name: { the_tag: form.name },
+    ).smartLists.smartListTagCreate({
+      smart_list_ref_id: id,
+      tag_name: form.name,
     });
 
     return redirect(
-      `/workspace/smart-lists/${id}/tags/${response.new_smart_list_tag.ref_id.the_id}`
+      `/workspace/smart-lists/${id}/tags/${response.new_smart_list_tag.ref_id}`
     );
   } catch (error) {
     if (
@@ -98,7 +94,7 @@ export default function NewSmartListTag() {
 
   return (
     <LeafPanel
-      key={loaderData.smartList.ref_id.the_id}
+      key={loaderData.smartList.ref_id}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation={`/workspace/smart-lists/${key}/tags`}

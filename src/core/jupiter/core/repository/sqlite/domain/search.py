@@ -2,7 +2,6 @@
 from typing import Final, Iterable, List, Optional
 
 from jupiter.core.domain.core.adate import ADate
-from jupiter.core.domain.core.entity_name import EntityName
 from jupiter.core.domain.entity_summary import EntitySummary
 from jupiter.core.domain.named_entity_tag import NamedEntityTag
 from jupiter.core.domain.search.infra.search_repository import (
@@ -12,9 +11,12 @@ from jupiter.core.domain.search.infra.search_repository import (
 from jupiter.core.domain.search.search_limit import SearchLimit
 from jupiter.core.domain.search.search_query import SearchQuery
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.entity import CrownEntity
+from jupiter.core.framework.realm import DatabaseRealm, RealmCodecRegistry
 from jupiter.core.framework.repository import EntityNotFoundError
+from jupiter.core.repository.sqlite.infra.repository import SqliteRepository
 from jupiter.core.repository.sqlite.infra.row import RowType
 from sqlalchemy import (
     Boolean,
@@ -34,15 +36,19 @@ from sqlalchemy import (
 from sqlalchemy.ext.asyncio import AsyncConnection
 
 
-class SqliteSearchRepository(SearchRepository):
+class SqliteSearchRepository(SqliteRepository, SearchRepository):
     """The SQLite based search repository."""
 
-    _connection: Final[AsyncConnection]
     _search_index_table: Final[Table]
 
-    def __init__(self, connection: AsyncConnection, metadata: MetaData) -> None:
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        connection: AsyncConnection,
+        metadata: MetaData,
+    ) -> None:
         """Constructor."""
-        self._connection = connection
+        super().__init__(realm_codec_registry, connection, metadata)
         self._search_index_table = Table(
             "search_index",
             metadata,
@@ -63,45 +69,71 @@ class SqliteSearchRepository(SearchRepository):
             keep_existing=True,
         )
 
-    async def create(self, workspace_ref_id: EntityId, entity: CrownEntity) -> None:
+    async def upsert(self, workspace_ref_id: EntityId, entity: CrownEntity) -> None:
         """Create an entity in the index."""
-        await self._connection.execute(
-            insert(self._search_index_table).values(
-                workspace_ref_id=workspace_ref_id.as_int(),
-                entity_tag=str(NamedEntityTag.from_entity(entity)),
-                parent_ref_id=entity.parent_ref_id.as_int(),
-                ref_id=entity.ref_id.as_int(),
-                name=str(entity.name),
-                archived=entity.archived,
-                created_time=entity.created_time.to_db(),
-                last_modified_time=entity.last_modified_time.to_db(),
-                archived_time=entity.archived_time.to_db()
-                if entity.archived_time
-                else None,
+        try:
+            await self._update(workspace_ref_id, entity)
+        except EntityNotFoundError:
+            await self._connection.execute(
+                insert(self._search_index_table).values(
+                    workspace_ref_id=workspace_ref_id.as_int(),
+                    entity_tag=str(NamedEntityTag.from_entity(entity).value),
+                    parent_ref_id=self._realm_codec_registry.get_encoder(
+                        EntityId, DatabaseRealm
+                    ).encode(entity.parent_ref_id),
+                    ref_id=self._realm_codec_registry.get_encoder(
+                        EntityId, DatabaseRealm
+                    ).encode(entity.ref_id),
+                    name=self._realm_codec_registry.get_encoder(
+                        EntityName, DatabaseRealm
+                    ).encode(entity.name),
+                    archived=self._realm_codec_registry.get_encoder(
+                        bool, DatabaseRealm
+                    ).encode(entity.archived),
+                    created_time=self._realm_codec_registry.get_encoder(
+                        Timestamp, DatabaseRealm
+                    ).encode(entity.created_time),
+                    last_modified_time=self._realm_codec_registry.get_encoder(
+                        Timestamp, DatabaseRealm
+                    ).encode(entity.last_modified_time),
+                    archived_time=self._realm_codec_registry.get_encoder(
+                        Timestamp, DatabaseRealm
+                    ).encode(entity.archived_time)
+                    if entity.archived_time
+                    else None,
+                )
             )
-        )
 
-    async def update(self, workspace_ref_id: EntityId, entity: CrownEntity) -> None:
+    async def _update(self, workspace_ref_id: EntityId, entity: CrownEntity) -> None:
         """Update an entity in the index."""
-        result = await self._connection.execute(
+        query = (
             update(self._search_index_table)
             .where(
                 self._search_index_table.c.workspace_ref_id == workspace_ref_id.as_int()
             )
             .where(
                 self._search_index_table.c.entity_tag
-                == str(NamedEntityTag.from_entity(entity))
+                == str(NamedEntityTag.from_entity(entity).value)
             )
             .where(self._search_index_table.c.ref_id == entity.ref_id.as_int())
             .values(
-                name=str(entity.name),
-                archived=entity.archived,
-                last_modified_time=entity.last_modified_time.to_db(),
-                archived_time=entity.archived_time.to_db()
+                name=self._realm_codec_registry.get_encoder(
+                    EntityName, DatabaseRealm
+                ).encode(entity.name),
+                archived=self._realm_codec_registry.get_encoder(
+                    bool, DatabaseRealm
+                ).encode(entity.archived),
+                last_modified_time=self._realm_codec_registry.get_encoder(
+                    Timestamp, DatabaseRealm
+                ).encode(entity.last_modified_time),
+                archived_time=self._realm_codec_registry.get_encoder(
+                    Timestamp, DatabaseRealm
+                ).encode(entity.archived_time)
                 if entity.archived_time
                 else None,
             )
         )
+        result = await self._connection.execute(query)
         if result.rowcount == 0:
             raise EntityNotFoundError(
                 "The entity does not exist",
@@ -171,40 +203,42 @@ class SqliteSearchRepository(SearchRepository):
         if filter_entity_tags is not None:
             query_stmt = query_stmt.where(
                 self._search_index_table.c.entity_tag.in_(
-                    str(f) for f in filter_entity_tags
+                    str(f.value) for f in filter_entity_tags
                 )
             )
+
+        adate_encoder = self._realm_codec_registry.get_encoder(ADate, DatabaseRealm)
         if filter_created_time_after is not None:
             query_stmt = query_stmt.where(
                 self._search_index_table.c.created_time
-                >= filter_created_time_after.to_db()
+                >= adate_encoder.encode(filter_created_time_after)
             )
         if filter_created_time_before is not None:
             query_stmt = query_stmt.where(
                 self._search_index_table.c.created_time
-                <= filter_created_time_before.to_db()
+                <= adate_encoder.encode(filter_created_time_before)
             )
         if filter_last_modified_time_after is not None:
             query_stmt = query_stmt.where(
                 self._search_index_table.c.last_modified_time
-                >= filter_last_modified_time_after.to_db()
+                >= adate_encoder.encode(filter_last_modified_time_after)
             )
         if filter_last_modified_time_before is not None:
             query_stmt = query_stmt.where(
                 self._search_index_table.c.last_modified_time
-                <= filter_last_modified_time_before.to_db()
+                <= adate_encoder.encode(filter_last_modified_time_before)
             )
         if filter_archived_time_after is not None:
             query_stmt = query_stmt.where(
                 self._search_index_table.c.archived_time
-                >= filter_archived_time_after.to_db()
+                >= adate_encoder.encode(filter_archived_time_after)
             )
         if filter_archived_time_before is not None:
             query_stmt = query_stmt.where(
                 self._search_index_table.c.archived_time
-                <= filter_archived_time_before.to_db()
+                <= adate_encoder.encode(filter_archived_time_before)
             )
-        query_stmt = query_stmt.limit(limit.as_int)
+        query_stmt = query_stmt.limit(limit.the_limit)
         query_stmt = query_stmt.order_by(text("rank"))
         query_stmt = query_stmt.order_by(self._search_index_table.c.archived)
         query_stmt = query_stmt.order_by(
@@ -213,23 +247,42 @@ class SqliteSearchRepository(SearchRepository):
         results = await self._connection.execute(query_stmt)
         return [self._row_to_match(row) for row in results]
 
-    @staticmethod
-    def _row_to_match(row: RowType) -> SearchMatch:
+    def _row_to_match(self, row: RowType) -> SearchMatch:
         return SearchMatch(
             summary=EntitySummary(
-                entity_tag=NamedEntityTag.from_raw(row["entity_tag"]),
-                ref_id=EntityId.from_raw(str(row["ref_id"])),
-                parent_ref_id=EntityId.from_raw(str(row["parent_ref_id"])),
-                name=EntityName.from_raw(row["name"]),
-                archived=row["archived"],
-                created_time=Timestamp.from_db(row["created_time"]),
-                archived_time=Timestamp.from_db(row["archived_time"])
+                entity_tag=self._realm_codec_registry.get_decoder(
+                    NamedEntityTag, DatabaseRealm
+                ).decode(row["entity_tag"]),
+                ref_id=self._realm_codec_registry.get_decoder(
+                    EntityId, DatabaseRealm
+                ).decode(row["ref_id"]),
+                parent_ref_id=self._realm_codec_registry.get_decoder(
+                    EntityId, DatabaseRealm
+                ).decode(row["parent_ref_id"]),
+                name=self._realm_codec_registry.get_decoder(
+                    EntityName, DatabaseRealm
+                ).decode(row["name"]),
+                archived=self._realm_codec_registry.get_decoder(
+                    bool, DatabaseRealm
+                ).decode(row["archived"]),
+                created_time=self._realm_codec_registry.get_decoder(
+                    Timestamp, DatabaseRealm
+                ).decode(row["created_time"]),
+                archived_time=self._realm_codec_registry.get_decoder(
+                    Timestamp, DatabaseRealm
+                ).decode(row["archived_time"])
                 if row["archived_time"]
                 else None,
-                last_modified_time=Timestamp.from_db(row["last_modified_time"]),
-                snippet=row["snippet"],
+                last_modified_time=self._realm_codec_registry.get_decoder(
+                    Timestamp, DatabaseRealm
+                ).decode(row["last_modified_time"]),
+                snippet=self._realm_codec_registry.get_decoder(
+                    str, DatabaseRealm
+                ).decode(row["snippet"]),
             ),
-            search_rank=row["rank"],
+            search_rank=self._realm_codec_registry.get_decoder(
+                float, DatabaseRealm
+            ).decode(row["rank"]),
         )
 
     @staticmethod

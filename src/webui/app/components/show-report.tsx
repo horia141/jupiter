@@ -41,7 +41,7 @@ import {
   isWorkspaceFeatureAvailable,
 } from "~/logic/domain/workspace";
 import { useBigScreen } from "~/rendering/use-big-screen";
-import { TopLevelInfo } from "~/top-level-context";
+import type { TopLevelInfo } from "~/top-level-context";
 import { TabPanel } from "./tab-panel";
 
 const _SOURCES_TO_REPORT = [
@@ -167,9 +167,9 @@ export function ShowReport({ topLevelInfo, report }: ShowReportProps) {
       <TabPanel value={showTab} index={tabIndicesMap["by-periods"]}>
         <Stack spacing={2} useFlexGap>
           {report.per_period_breakdown.map((pp) => (
-            <Box key={pp.name.the_name}>
+            <Box key={pp.name}>
               <Divider>
-                <Typography variant="h5">{pp.name.the_name}</Typography>
+                <Typography variant="h5">{pp.name}</Typography>
               </Divider>
               <OverviewReport
                 topLevelInfo={topLevelInfo}
@@ -188,9 +188,9 @@ export function ShowReport({ topLevelInfo, report }: ShowReportProps) {
         <TabPanel value={showTab} index={tabIndicesMap["by-projects"]}>
           <Stack spacing={2} useFlexGap>
             {report.per_project_breakdown.map((pb) => (
-              <Box key={pb.ref_id.the_id}>
+              <Box key={pb.ref_id}>
                 <Divider>
-                  <Typography variant="h5">{pb.name.the_name}</Typography>
+                  <Typography variant="h5">{pb.name}</Typography>
                 </Divider>
                 <OverviewReport
                   topLevelInfo={topLevelInfo}
@@ -255,10 +255,10 @@ export function ShowReport({ topLevelInfo, report }: ShowReportProps) {
 
                       <TableBody>
                         {periodHabits.map((phb) => (
-                          <TableRow key={`${period}-${phb.ref_id.the_id}`}>
+                          <TableRow key={`${period}-${phb.ref_id}`}>
                             <SmallTableCell>
                               <EntityLink
-                                to={`/workspace/habits/${phb.ref_id.the_id}`}
+                                to={`/workspace/habits/${phb.ref_id}`}
                               >
                                 <EntityNameOneLineComponent name={phb.name} />
                               </EntityLink>
@@ -343,10 +343,10 @@ export function ShowReport({ topLevelInfo, report }: ShowReportProps) {
 
                       <TableBody>
                         {periodChores.map((pcb) => (
-                          <TableRow key={`${period}-${pcb.ref_id.the_id}`}>
+                          <TableRow key={`${period}-${pcb.ref_id}`}>
                             <SmallTableCell className="name-value">
                               <EntityLink
-                                to={`/workspace/chores/${pcb.ref_id.the_id}`}
+                                to={`/workspace/chores/${pcb.ref_id}`}
                               >
                                 <EntityNameOneLineComponent name={pcb.name} />
                               </EntityLink>
@@ -408,11 +408,9 @@ export function ShowReport({ topLevelInfo, report }: ShowReportProps) {
 
               <TableBody>
                 {report.per_big_plan_breakdown.map((pbb) => (
-                  <TableRow key={pbb.ref_id.the_id}>
+                  <TableRow key={pbb.ref_id}>
                     <SmallTableCell className="name-value">
-                      <EntityLink
-                        to={`/workspace/big-plans/${pbb.ref_id.the_id}`}
-                      >
+                      <EntityLink to={`/workspace/big-plans/${pbb.ref_id}`}>
                         <EntityNameOneLineComponent name={pbb.name} />
                       </EntityLink>
                     </SmallTableCell>
@@ -571,8 +569,8 @@ function OverviewReport(props: OverviewReportProps) {
 
               <List>
                 {props.bigPlansSummary.not_done_big_plans.map((bp) => (
-                  <ListItem key={bp.ref_id.the_id}>
-                    <EntityLink to={`/workspace/big-plans/${bp.ref_id.the_id}`}>
+                  <ListItem key={bp.ref_id}>
+                    <EntityLink to={`/workspace/big-plans/${bp.ref_id}`}>
                       <EntityNameOneLineComponent name={bp.name} />
                     </EntityLink>
                   </ListItem>
@@ -587,8 +585,8 @@ function OverviewReport(props: OverviewReportProps) {
 
               <List>
                 {props.bigPlansSummary.done_big_plans.map((bp) => (
-                  <ListItem key={bp.ref_id.the_id}>
-                    <EntityLink to={`/workspace/big-plans/${bp.ref_id.the_id}`}>
+                  <ListItem key={bp.ref_id}>
+                    <EntityLink to={`/workspace/big-plans/${bp.ref_id}`}>
                       <EntityNameOneLineComponent name={bp.name} />
                     </EntityLink>
                   </ListItem>

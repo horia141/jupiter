@@ -3,11 +3,13 @@ from typing import ClassVar, Dict
 
 import jwt
 from jupiter.core.domain.auth.auth_token_ext import AuthTokenExt
-from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.base.entity_id import EntityId, EntityIdDatabaseDecoder
 from jupiter.core.framework.base.timestamp import Timestamp
+from jupiter.core.framework.realm import CliRealm, WebRealm, only_in_realm
 from jupiter.core.framework.value import SecretValue, secret_value
 
 _ALGORITHM = "HS256"
+_ENTITY_ID_DECODER = EntityIdDatabaseDecoder()
 
 
 class ExpiredAuthTokenError(Exception):
@@ -19,6 +21,7 @@ class InvalidAuthTokenError(Exception):
 
 
 @secret_value
+@only_in_realm(CliRealm, WebRealm)
 class AuthToken(SecretValue):
     """An authentication token allows for secure and fast authentication across a session."""
 
@@ -69,14 +72,12 @@ class AuthToken(SecretValue):
     ) -> "AuthToken":
         """Constract a new auth token."""
         issue_time = right_now
-        expiration_time = Timestamp.from_date_and_time(
-            right_now.as_datetime().add(**duration)
-        )
+        expiration_time = Timestamp.from_date_and_time(right_now.value.add(**duration))
         auth_token_str = jwt.encode(
             {
                 "user_ref_id": str(user_ref_id),
-                "iat": issue_time.as_datetime(),
-                "exp": expiration_time.as_datetime(),
+                "iat": issue_time.value,
+                "exp": expiration_time.value,
                 "aud": [audience],
             },
             secret,
@@ -124,7 +125,7 @@ class AuthToken(SecretValue):
                 audience=audience,
             )
 
-            user_ref_id = EntityId.from_raw(auth_token_json["user_ref_id"])
+            user_ref_id = _ENTITY_ID_DECODER.decode(auth_token_json["user_ref_id"])
             issue_time = Timestamp.from_unix_timestamp(auth_token_json["iat"])
             expiration_time = Timestamp.from_unix_timestamp(auth_token_json["exp"])
 

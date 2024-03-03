@@ -4,16 +4,17 @@ from typing import Optional
 
 from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.core.domain.core.adate import ADate
-from jupiter.core.domain.core.entity_name import EntityName
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.gamification.user_score_overview import UserScoreOverview
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
+from jupiter.core.domain.report.report_breakdown import ReportBreakdown
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.value import Value, value
+from jupiter.core.framework.base.entity_name import EntityName
+from jupiter.core.framework.value import CompositeValue, value
 
 
 @value
-class NestedResultPerSource(Value):
+class NestedResultPerSource(CompositeValue):
     """A particular result broken down by the various sources of inbox tasks."""
 
     source: InboxTaskSource
@@ -21,7 +22,7 @@ class NestedResultPerSource(Value):
 
 
 @value
-class NestedResult(Value):
+class NestedResult(CompositeValue):
     """A result broken down by the various sources of inbox tasks."""
 
     total_cnt: int
@@ -29,7 +30,7 @@ class NestedResult(Value):
 
 
 @value
-class InboxTasksSummary(Value):
+class InboxTasksSummary(CompositeValue):
     """A bigger summary for inbox tasks."""
 
     created: NestedResult
@@ -40,7 +41,7 @@ class InboxTasksSummary(Value):
 
 
 @value
-class WorkableBigPlan(Value):
+class WorkableBigPlan(CompositeValue):
     """The view of a big plan via a workable."""
 
     ref_id: EntityId
@@ -49,7 +50,7 @@ class WorkableBigPlan(Value):
 
 
 @value
-class WorkableSummary(Value):
+class WorkableSummary(CompositeValue):
     """The reporting summary."""
 
     created_cnt: int
@@ -62,7 +63,7 @@ class WorkableSummary(Value):
 
 
 @value
-class BigPlanWorkSummary(Value):
+class BigPlanWorkSummary(CompositeValue):
     """The report for a big plan."""
 
     created_cnt: int
@@ -75,7 +76,7 @@ class BigPlanWorkSummary(Value):
 
 
 @value
-class RecurringTaskWorkSummary(Value):
+class RecurringTaskWorkSummary(CompositeValue):
     """The reporting summary."""
 
     created_cnt: int
@@ -89,7 +90,7 @@ class RecurringTaskWorkSummary(Value):
 
 
 @value
-class PerChoreBreakdownItem(Value):
+class PerChoreBreakdownItem(CompositeValue):
     """The report for a particular chore."""
 
     ref_id: EntityId
@@ -101,7 +102,7 @@ class PerChoreBreakdownItem(Value):
 
 
 @value
-class PerHabitBreakdownItem(Value):
+class PerHabitBreakdownItem(CompositeValue):
     """The report for a particular habit."""
 
     ref_id: EntityId
@@ -113,7 +114,7 @@ class PerHabitBreakdownItem(Value):
 
 
 @value
-class PerBigPlanBreakdownItem(Value):
+class PerBigPlanBreakdownItem(CompositeValue):
     """The report for a particular big plan."""
 
     ref_id: EntityId
@@ -123,7 +124,7 @@ class PerBigPlanBreakdownItem(Value):
 
 
 @value
-class PerPeriodBreakdownItem(Value):
+class PerPeriodBreakdownItem(CompositeValue):
     """The report for a particular time period."""
 
     name: EntityName
@@ -132,7 +133,7 @@ class PerPeriodBreakdownItem(Value):
 
 
 @value
-class PerProjectBreakdownItem(Value):
+class PerProjectBreakdownItem(CompositeValue):
     """The report for a particular project."""
 
     ref_id: EntityId
@@ -142,11 +143,14 @@ class PerProjectBreakdownItem(Value):
 
 
 @value
-class ReportPeriodResult(Value):
+class ReportPeriodResult(CompositeValue):
     """Report result."""
 
     today: ADate
     period: RecurringTaskPeriod
+    sources: list[InboxTaskSource]
+    breakdowns: list[ReportBreakdown]
+    breakdown_period: RecurringTaskPeriod | None
     global_inbox_tasks_summary: InboxTasksSummary
     global_big_plans_summary: WorkableSummary
     per_project_breakdown: list[PerProjectBreakdownItem]
@@ -157,11 +161,16 @@ class ReportPeriodResult(Value):
     user_score_overview: UserScoreOverview | None
 
     @staticmethod
-    def empty(today: ADate, period: RecurringTaskPeriod) -> "ReportPeriodResult":
+    def empty(
+        today: ADate, period: RecurringTaskPeriod, sources: list[InboxTaskSource]
+    ) -> "ReportPeriodResult":
         """Construct an empty report."""
         return ReportPeriodResult(
             today=today,
             period=period,
+            sources=sources,
+            breakdowns=[ReportBreakdown.GLOBAL, ReportBreakdown.BIG_PLANS],
+            breakdown_period=None,
             global_inbox_tasks_summary=InboxTasksSummary(
                 created=NestedResult(
                     total_cnt=0,

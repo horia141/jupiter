@@ -1,9 +1,8 @@
 """Even features are expressed here."""
-from functools import lru_cache
 from typing import Dict, Final, Iterable
 
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import EnumValue, Value, enum_value, value
+from jupiter.core.framework.value import CompositeValue, EnumValue, enum_value, value
 
 
 class FeatureUnavailableError(Exception):
@@ -68,21 +67,19 @@ class UserFeature(EnumValue):
 
     GAMIFICATION = "gamification"
 
-    @staticmethod
-    @lru_cache(maxsize=1)
-    def all_values() -> Iterable[str]:
-        """The possible values for user features."""
-        return list(p.value for p in UserFeature)
-
 
 UserFeatureFlags = Dict[UserFeature, bool]
 
 
 @value
-class UserFeatureFlagsControls(Value):
+class UserFeatureFlagsControls(CompositeValue):
     """Feature settings controls for the user."""
 
     controls: Dict[UserFeature, FeatureControl]
+
+    def standard_flag_for(self, feature: UserFeature) -> bool:
+        """Get the standard flag for a feature."""
+        return self.controls[feature].standard_flag
 
     def validate_and_complete(
         self,
@@ -123,21 +120,19 @@ class WorkspaceFeature(EnumValue):
     SLACK_TASKS = "slack-tasks"
     EMAIL_TASKS = "email-tasks"
 
-    @staticmethod
-    @lru_cache(maxsize=1)
-    def all_values() -> Iterable[str]:
-        """The possible values for workspace features."""
-        return list(p.value for p in WorkspaceFeature)
-
 
 WorkspaceFeatureFlags = Dict[WorkspaceFeature, bool]
 
 
 @value
-class WorkspaceFeatureFlagsControls(Value):
+class WorkspaceFeatureFlagsControls(CompositeValue):
     """Feature settings controls for the workspace."""
 
     controls: Dict[WorkspaceFeature, FeatureControl]
+
+    def standard_flag_for(self, feature: WorkspaceFeature) -> bool:
+        """Get the standard flag for a feature."""
+        return self.controls[feature].standard_flag
 
     def validate_and_complete(
         self,

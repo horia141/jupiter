@@ -1,9 +1,11 @@
 """Load settings for persons use case."""
 
 from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.persons.person_collection import PersonCollection
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.framework.use_case import (
+from jupiter.core.framework.event import EventSource
+from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,
     use_case_args,
@@ -28,7 +30,7 @@ class PersonLoadSettingsResult(UseCaseResultBase):
     catch_up_project: Project
 
 
-@readonly_use_case(WorkspaceFeature.PERSONS)
+@readonly_use_case(WorkspaceFeature.PERSONS, exclude_app=[EventSource.CLI])
 class PersonLoadSettingsUseCase(
     AppTransactionalLoggedInReadOnlyUseCase[
         PersonLoadSettingsArgs, PersonLoadSettingsResult
@@ -45,10 +47,10 @@ class PersonLoadSettingsUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        person_collection = await uow.person_collection_repository.load_by_parent(
+        person_collection = await uow.get_for(PersonCollection).load_by_parent(
             workspace.ref_id,
         )
-        catch_up_project = await uow.project_repository.load_by_id(
+        catch_up_project = await uow.get_for(Project).load_by_id(
             person_collection.catch_up_project_ref_id,
         )
 

@@ -13,18 +13,18 @@ export class GcService {
     constructor(public readonly httpRequest: BaseHttpRequest) {}
 
     /**
-     * Gc Do
-     * Perform a garbage collect.
-     * @param requestBody
-     * @returns any Successful Response
+     * The command for doing a garbage collection run.
+     * The command for doing a garbage collection run.
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
      * @throws ApiError
      */
     public gcDo(
-        requestBody: GCDoArgs,
+        requestBody?: GCDoArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/gc/do',
+            url: '/gc-do',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -36,18 +36,18 @@ export class GcService {
     }
 
     /**
-     * Gc Load Runs
-     * Load history of GC runs.
-     * @param requestBody
-     * @returns GCLoadRunsResult Successful Response
+     * Load previous runs of GC.
+     * Load previous runs of GC.
+     * @param requestBody The input data
+     * @returns GCLoadRunsResult Successful response
      * @throws ApiError
      */
     public gcLoadRuns(
-        requestBody: GCLoadRunsArgs,
+        requestBody?: GCLoadRunsArgs,
     ): CancelablePromise<GCLoadRunsResult> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/gc/load-runs',
+            url: '/gc-load-runs',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

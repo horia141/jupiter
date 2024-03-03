@@ -4,9 +4,12 @@ from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.vacations.vacation import Vacation
+from jupiter.core.domain.vacations.vacation_collection import VacationCollection
 from jupiter.core.domain.vacations.vacation_name import VacationName
 from jupiter.core.framework.use_case import (
     ProgressReporter,
+)
+from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,
     use_case_args,
@@ -51,7 +54,7 @@ class VacationCreateUseCase(
         """Execute the command's actions."""
         workspace = context.workspace
 
-        vacation_collection = await uow.vacation_collection_repository.load_by_parent(
+        vacation_collection = await uow.get_for(VacationCollection).load_by_parent(
             workspace.ref_id,
         )
 
@@ -63,7 +66,7 @@ class VacationCreateUseCase(
             end_date=args.end_date,
         )
 
-        new_vacation = await uow.vacation_repository.create(new_vacation)
+        new_vacation = await uow.get_for(Vacation).create(new_vacation)
         await progress_reporter.mark_created(new_vacation)
 
         return VacationCreateResult(new_vacation=new_vacation)

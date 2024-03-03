@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, Stack } from "@mui/material";
-import { json, LoaderArgs } from "@remix-run/node";
-import { ShouldRevalidateFunction } from "@remix-run/react";
+import type { LoaderArgs } from "@remix-run/node";
+import { json } from "@remix-run/node";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { getLoggedInApiClient } from "~/api-clients";
 import { ScoreHistory } from "~/components/gamification/score-history";
 import { ScoreOverview } from "~/components/gamification/score-overview";
@@ -18,7 +19,7 @@ export const handle = {
 
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
-  const result = await getLoggedInApiClient(session).user.loadUser({});
+  const result = await getLoggedInApiClient(session).users.userLoad({});
 
   return json({
     userScoreOverview: result.user_score_overview,
@@ -37,20 +38,20 @@ export default function Gamification() {
       <ToolPanel>
         <Stack useFlexGap gap={2}>
           {loaderData.userScoreOverview && (
-            <>
-              <Card>
-                <CardHeader title="💪 Scores Overview" />
-                <CardContent>
-                  <ScoreOverview scoreOverview={loaderData.userScoreOverview} />
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader title="💪 Scores History" />
-                <CardContent>
-                  <ScoreHistory scoreHistory={loaderData.userScoreHistory} />
-                </CardContent>
-              </Card>
-            </>
+            <Card>
+              <CardHeader title="💪 Scores Overview" />
+              <CardContent>
+                <ScoreOverview scoreOverview={loaderData.userScoreOverview} />
+              </CardContent>
+            </Card>
+          )}
+          {loaderData.userScoreHistory && (
+            <Card>
+              <CardHeader title="💪 Scores History" />
+              <CardContent>
+                <ScoreHistory scoreHistory={loaderData.userScoreHistory} />
+              </CardContent>
+            </Card>
           )}
         </Stack>
       </ToolPanel>

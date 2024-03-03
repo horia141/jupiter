@@ -1,6 +1,7 @@
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Outlet, ShouldRevalidateFunction, useFetcher } from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { Outlet, useFetcher } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import type { Chore, ChoreFindResultEntry, Project } from "jupiter-gen";
 import { Eisen, RecurringTaskPeriod, WorkspaceFeature } from "jupiter-gen";
@@ -34,7 +35,7 @@ export const handle = {
 
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
-  const response = await getLoggedInApiClient(session).chore.findChore({
+  const response = await getLoggedInApiClient(session).chores.choreFind({
     allow_archived: false,
     include_project: true,
     include_inbox_tasks: false,
@@ -55,7 +56,7 @@ export default function Chores() {
   const sortedChores = sortChoresNaturally(entries.map((e) => e.chore));
   const entriesByRefId = new Map<string, ChoreFindResultEntry>();
   for (const entry of entries) {
-    entriesByRefId.set(entry.chore.ref_id.the_id, entry);
+    entriesByRefId.set(entry.chore.ref_id, entry);
   }
 
   const archiveChoreFetch = useFetcher();
@@ -71,7 +72,7 @@ export default function Chores() {
       },
       {
         method: "post",
-        action: `/workspace/chores/${chore.ref_id.the_id}`,
+        action: `/workspace/chores/${chore.ref_id}`,
       }
     );
   }
@@ -85,16 +86,16 @@ export default function Chores() {
         <EntityStack>
           {sortedChores.map((chore) => {
             const entry = entriesByRefId.get(
-              chore.ref_id.the_id
+              chore.ref_id
             ) as ChoreFindResultEntry;
             return (
               <EntityCard
-                key={chore.ref_id.the_id}
+                key={chore.ref_id}
                 allowSwipe
                 allowMarkNotDone
                 onMarkNotDone={() => archiveChore(chore)}
               >
-                <EntityLink to={`/workspace/chores/${chore.ref_id.the_id}`}>
+                <EntityLink to={`/workspace/chores/${chore.ref_id}`}>
                   <EntityNameComponent name={chore.name} />
                   {isWorkspaceFeatureAvailable(
                     topLevelInfo.workspace,

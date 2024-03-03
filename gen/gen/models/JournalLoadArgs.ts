@@ -4,6 +4,9 @@
 
 import type { EntityId } from './EntityId';
 
+/**
+ * Args.
+ */
 export type JournalLoadArgs = {
     ref_id: EntityId;
     allow_archived: boolean;

@@ -2,8 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type ADate = {
-    the_date?: string;
-    the_datetime?: string;
-};
-
+/**
+ * A date or possibly a datetime for the application.
+ */
+export type ADate = string;

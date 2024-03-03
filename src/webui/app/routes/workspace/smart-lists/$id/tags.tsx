@@ -4,13 +4,8 @@ import TuneIcon from "@mui/icons-material/Tune";
 import { Button, ButtonGroup } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import {
-  Link,
-  Outlet,
-  ShouldRevalidateFunction,
-  useFetcher,
-  useParams,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { Link, Outlet, useFetcher, useParams } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import type { SmartListTag } from "jupiter-gen";
@@ -26,7 +21,6 @@ import { BranchPanel } from "~/components/infra/layout/branch-panel";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { SmartListTagTag } from "~/components/smart-list-tag-tag";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
-import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
@@ -49,8 +43,8 @@ export async function loader({ request, params }: LoaderArgs) {
   try {
     const response = await getLoggedInApiClient(
       session
-    ).smartList.loadSmartList({
-      ref_id: { the_id: id },
+    ).smartLists.smartListLoad({
+      ref_id: id,
       allow_archived: false,
     });
 
@@ -74,14 +68,13 @@ export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export default function SmartListViewTags() {
-  const isBigScreen = useBigScreen();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
 
   const shouldShowALeaf = useBranchNeedsToShowLeaf();
 
   const tagsByRefId: { [tag: string]: SmartListTag } = {};
   for (const tag of loaderData.smartListTags) {
-    tagsByRefId[tag.ref_id.the_id] = tag;
+    tagsByRefId[tag.ref_id] = tag;
   }
 
   const archiveTagFetch = useFetcher();
@@ -94,29 +87,30 @@ export default function SmartListViewTags() {
       },
       {
         method: "post",
-        action: `/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/tags/${tag.ref_id.the_id}`,
+        action: `/workspace/smart-lists/${loaderData.smartList.ref_id}/tags/${tag.ref_id}`,
       }
     );
   }
 
   return (
     <BranchPanel
-      key={`${loaderData.smartList.ref_id.the_id}/tags`}
-      createLocation={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/tags/new`}
+      key={`${loaderData.smartList.ref_id}/tags`}
+      createLocation={`/workspace/smart-lists/${loaderData.smartList.ref_id}/tags/new`}
       extraControls={[
         <Button
+          key={loaderData.smartList.ref_id}
           variant="outlined"
-          to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/items/details`}
+          to={`/workspace/smart-lists/${loaderData.smartList.ref_id}/items/details`}
           component={Link}
           startIcon={<TuneIcon />}
         >
           "Details"
         </Button>,
 
-        <ButtonGroup>
+        <ButtonGroup key={loaderData.smartList.ref_id}>
           <Button
             variant="outlined"
-            to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/items`}
+            to={`/workspace/smart-lists/${loaderData.smartList.ref_id}/items`}
             component={Link}
             startIcon={<ReorderIcon />}
           >
@@ -134,13 +128,13 @@ export default function SmartListViewTags() {
         <EntityStack>
           {loaderData.smartListTags.map((tag) => (
             <EntityCard
-              key={tag.ref_id.the_id}
+              key={tag.ref_id}
               allowSwipe
               allowMarkNotDone
               onMarkNotDone={() => archiveTag(tag)}
             >
               <Link
-                to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/tags/${tag.ref_id.the_id}`}
+                to={`/workspace/smart-lists/${loaderData.smartList.ref_id}/tags/${tag.ref_id}`}
                 prefetch="none"
               >
                 <SmartListTagTag tag={tag} />

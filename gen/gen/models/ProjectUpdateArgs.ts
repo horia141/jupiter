@@ -3,13 +3,16 @@
 /* eslint-disable */
 
 import type { EntityId } from './EntityId';
-import type { EntityName } from './EntityName';
+import type { ProjectName } from './ProjectName';
 
+/**
+ * PersonFindArgs.
+ */
 export type ProjectUpdateArgs = {
     ref_id: EntityId;
     name: {
         should_change: boolean;
-        value?: EntityName;
+        value?: ProjectName;
     };
 };
 

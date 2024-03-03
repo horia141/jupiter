@@ -2,11 +2,14 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { ChoreName } from './ChoreName';
 import type { EntityId } from './EntityId';
-import type { EntityName } from './EntityName';
 
+/**
+ * Summary information about a chore.
+ */
 export type ChoreSummary = {
     ref_id: EntityId;
-    name: EntityName;
+    name: ChoreName;
 };
 

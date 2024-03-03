@@ -1,15 +1,13 @@
 """Use case for free form searching through Jupiter."""
-from typing import Final, List, Optional
+from typing import List, Optional
 
-from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.features import FeatureUnavailableError
 from jupiter.core.domain.named_entity_tag import NamedEntityTag
 from jupiter.core.domain.search.infra.search_repository import SearchMatch
 from jupiter.core.domain.search.search_limit import SearchLimit
 from jupiter.core.domain.search.search_query import SearchQuery
-from jupiter.core.domain.storage_engine import DomainStorageEngine, SearchStorageEngine
-from jupiter.core.framework.use_case import (
+from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,
     use_case_args,
@@ -42,26 +40,13 @@ class SearchArgs(UseCaseArgsBase):
 class SearchResult(UseCaseResultBase):
     """Search result."""
 
+    search_time: ADate
     matches: List[SearchMatch]
 
 
 @readonly_use_case()
 class SearchUseCase(AppLoggedInReadonlyUseCase[SearchArgs, SearchResult]):
     """Use case for free form searching through Jupiter."""
-
-    _search_storage_engine: Final[SearchStorageEngine]
-
-    def __init__(
-        self,
-        auth_token_stamper: AuthTokenStamper,
-        domain_storage_engine: DomainStorageEngine,
-        search_storage_engine: SearchStorageEngine,
-    ) -> None:
-        """Constructor."""
-        super().__init__(
-            auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
-        )
-        self._search_storage_engine = search_storage_engine
 
     async def _execute(
         self, context: AppLoggedInReadonlyUseCaseContext, args: SearchArgs
@@ -99,4 +84,7 @@ class SearchUseCase(AppLoggedInReadonlyUseCase[SearchArgs, SearchResult]):
                 filter_archived_time_before=args.filter_archived_time_before,
             )
 
-        return SearchResult(matches=matches)
+        return SearchResult(
+            search_time=self._time_provider.get_current_date(),
+            matches=matches,
+        )

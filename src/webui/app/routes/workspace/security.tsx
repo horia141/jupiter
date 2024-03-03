@@ -12,11 +12,8 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import {
-  ShouldRevalidateFunction,
-  useActionData,
-  useTransition,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { ApiError } from "jupiter-gen";
 import { z } from "zod";
@@ -59,15 +56,9 @@ export async function action({ request }: ActionArgs) {
     switch (intent) {
       case "change-password": {
         await getLoggedInApiClient(session).auth.changePassword({
-          current_password: {
-            password_raw: form.currentPassword,
-          },
-          new_password: {
-            password_raw: form.newPassword,
-          },
-          new_password_repeat: {
-            password_raw: form.newPasswordRepeat,
-          },
+          current_password: form.currentPassword,
+          new_password: form.newPassword,
+          new_password_repeat: form.newPasswordRepeat,
         });
 
         return redirect(`/workspace/security`);

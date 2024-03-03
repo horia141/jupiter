@@ -4,6 +4,9 @@
 
 import type { GCLogEntry } from './GCLogEntry';
 
+/**
+ * GCLoadRunsResult.
+ */
 export type GCLoadRunsResult = {
     entries: Array<GCLogEntry>;
 };

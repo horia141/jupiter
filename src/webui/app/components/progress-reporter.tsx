@@ -34,11 +34,6 @@ interface ProgressUpdateSection {
   "section-name": string;
 }
 
-interface ProgressUpdateStatusCreate {
-  type: "status-create";
-  message: string;
-}
-
 interface ProgressUpdateEntityLine {
   type: "enttiy-line";
   message: string;
@@ -95,10 +90,7 @@ function ProgressReporterClientOnly(props: ProgressReporterProps) {
   const webApiProgressReporterUrl = new URL(
     globalProperties.webApiProgressReporterUrl
   );
-  webApiProgressReporterUrl.searchParams.append(
-    "token",
-    props.token.auth_token_str
-  );
+  webApiProgressReporterUrl.searchParams.append("token", props.token);
 
   const { lastJsonMessage, readyState } = useWebSocket(
     webApiProgressReporterUrl.toString()

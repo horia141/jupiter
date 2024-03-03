@@ -16,8 +16,8 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
-  ShouldRevalidateFunction,
   useActionData,
   useFetcher,
   useParams,
@@ -71,7 +71,6 @@ const UpdateFormSchema = {
     .optional(),
   actionableFromDay: z.string().optional(),
   actionableFromMonth: z.string().optional(),
-  dueAtTime: z.string().optional(),
   dueAtDay: z.string().optional(),
   dueAtMonth: z.string().optional(),
   mustDo: CheckboxAsString,
@@ -95,8 +94,8 @@ export async function loader({ request, params }: LoaderArgs) {
   });
 
   try {
-    const result = await getLoggedInApiClient(session).chore.loadChore({
-      ref_id: { the_id: id },
+    const result = await getLoggedInApiClient(session).chores.choreLoad({
+      ref_id: id,
       allow_archived: true,
     });
 
@@ -127,11 +126,11 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (intent) {
       case "update": {
-        await getLoggedInApiClient(session).chore.updateChore({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).chores.choreUpdate({
+          ref_id: id,
           name: {
             should_change: true,
-            value: { the_name: form.name },
+            value: form.name,
           },
           period: {
             should_change: true,
@@ -154,7 +153,7 @@ export async function action({ request, params }: ActionArgs) {
               form.actionableFromDay === undefined ||
               form.actionableFromDay === ""
                 ? undefined
-                : { the_day: parseInt(form.actionableFromDay) },
+                : parseInt(form.actionableFromDay),
           },
           actionable_from_month: {
             should_change: true,
@@ -162,28 +161,21 @@ export async function action({ request, params }: ActionArgs) {
               form.actionableFromMonth === undefined ||
               form.actionableFromMonth === ""
                 ? undefined
-                : { the_month: parseInt(form.actionableFromMonth) },
-          },
-          due_at_time: {
-            should_change: true,
-            value:
-              form.dueAtTime === undefined || form.dueAtTime === ""
-                ? undefined
-                : { the_time: form.dueAtTime },
+                : parseInt(form.actionableFromMonth),
           },
           due_at_day: {
             should_change: true,
             value:
               form.dueAtDay === undefined || form.dueAtDay === ""
                 ? undefined
-                : { the_day: parseInt(form.dueAtDay) },
+                : parseInt(form.dueAtDay),
           },
           due_at_month: {
             should_change: true,
             value:
               form.dueAtMonth === undefined || form.dueAtMonth === ""
                 ? undefined
-                : { the_month: parseInt(form.dueAtMonth) },
+                : parseInt(form.dueAtMonth),
           },
           must_do: {
             should_change: true,
@@ -194,21 +186,21 @@ export async function action({ request, params }: ActionArgs) {
             value:
               form.skipRule === undefined || form.skipRule === ""
                 ? undefined
-                : { skip_rule: form.skipRule },
+                : form.skipRule,
           },
           start_at_date: {
             should_change: true,
             value:
               form.startAtDate === undefined || form.startAtDate === ""
                 ? undefined
-                : { the_date: form.startAtDate, the_datetime: undefined },
+                : form.startAtDate,
           },
           end_at_date: {
             should_change: true,
             value:
               form.endAtDate === undefined || form.endAtDate === ""
                 ? undefined
-                : { the_date: form.endAtDate, the_datetime: undefined },
+                : form.endAtDate,
           },
         });
 
@@ -216,17 +208,17 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "change-project": {
-        await getLoggedInApiClient(session).chore.changeChoreProject({
-          ref_id: { the_id: id },
-          project_ref_id: { the_id: form.project },
+        await getLoggedInApiClient(session).chores.choreChangeProject({
+          ref_id: id,
+          project_ref_id: form.project,
         });
 
         return redirect(`/workspace/chores/${id}`);
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).chore.archiveChore({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).chores.choreArchive({
+          ref_id: id,
         });
 
         return redirect(`/workspace/chores/${id}`);
@@ -261,10 +253,10 @@ export default function Chore() {
     transition.state === "idle" && !loaderData.chore.archived;
 
   const [selectedProject, setSelectedProject] = useState(
-    loaderData.project.ref_id.the_id
+    loaderData.project.ref_id
   );
   const selectedProjectIsDifferentFromCurrent =
-    loaderData.project.ref_id.the_id !== selectedProject;
+    loaderData.project.ref_id !== selectedProject;
 
   function handleChangeProject(e: SelectChangeEvent) {
     setSelectedProject(e.target.value);
@@ -279,7 +271,7 @@ export default function Chore() {
   function handleCardMarkDone(it: InboxTask) {
     cardActionFetcher.submit(
       {
-        id: it.ref_id.the_id,
+        id: it.ref_id,
         status: InboxTaskStatus.DONE,
       },
       {
@@ -292,7 +284,7 @@ export default function Chore() {
   function handleCardMarkNotDone(it: InboxTask) {
     cardActionFetcher.submit(
       {
-        id: it.ref_id.the_id,
+        id: it.ref_id,
         status: InboxTaskStatus.NOT_DONE,
       },
       {
@@ -306,12 +298,12 @@ export default function Chore() {
     // Update states based on loader data. This is necessary because these
     // two are not otherwise updated when the loader data changes. Which happens
     // on a navigation event.
-    setSelectedProject(loaderData.project.ref_id.the_id);
+    setSelectedProject(loaderData.project.ref_id);
   }, [loaderData]);
 
   return (
     <LeafPanel
-      key={loaderData.chore.ref_id.the_id}
+      key={loaderData.chore.ref_id}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/chores"
@@ -326,7 +318,7 @@ export default function Chore() {
                 label="Name"
                 name="name"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.chore.name.the_name}
+                defaultValue={loaderData.chore.name}
               />
               <FieldError actionResult={actionData} fieldName="/name" />
             </FormControl>
@@ -364,8 +356,8 @@ export default function Chore() {
                   label="Project"
                 >
                   {loaderData.allProjects.map((p: Project) => (
-                    <MenuItem key={p.ref_id.the_id} value={p.ref_id.the_id}>
-                      {p.name.the_name}
+                    <MenuItem key={p.ref_id} value={p.ref_id}>
+                      {p.name}
                     </MenuItem>
                   ))}
                 </Select>
@@ -424,9 +416,7 @@ export default function Chore() {
                 label="Actionable From Day"
                 name="actionableFromDay"
                 readOnly={!inputsEnabled}
-                defaultValue={
-                  loaderData.chore.gen_params.actionable_from_day?.the_day
-                }
+                defaultValue={loaderData.chore.gen_params.actionable_from_day}
               />
               <FieldError
                 actionResult={actionData}
@@ -442,9 +432,7 @@ export default function Chore() {
                 label="Actionable From Month"
                 name="actionableFromMonth"
                 readOnly={!inputsEnabled}
-                defaultValue={
-                  loaderData.chore.gen_params.actionable_from_month?.the_month
-                }
+                defaultValue={loaderData.chore.gen_params.actionable_from_month}
               />
               <FieldError
                 actionResult={actionData}
@@ -453,23 +441,12 @@ export default function Chore() {
             </FormControl>
 
             <FormControl fullWidth>
-              <InputLabel id="dueAtTime">Due At Time</InputLabel>
-              <OutlinedInput
-                label="Due At Time"
-                name="dueAtTime"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.chore.gen_params.due_at_time?.the_time}
-              />
-              <FieldError actionResult={actionData} fieldName="/due_at_time" />
-            </FormControl>
-
-            <FormControl fullWidth>
               <InputLabel id="dueAtDay">Due At Day</InputLabel>
               <OutlinedInput
                 label="Due At Day"
                 name="dueAtDay"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.chore.gen_params.due_at_day?.the_day}
+                defaultValue={loaderData.chore.gen_params.due_at_day}
               />
               <FieldError actionResult={actionData} fieldName="/due_at_day" />
             </FormControl>
@@ -480,9 +457,7 @@ export default function Chore() {
                 label="Due At Month"
                 name="dueAtMonth"
                 readOnly={!inputsEnabled}
-                defaultValue={
-                  loaderData.chore.gen_params.due_at_month?.the_month
-                }
+                defaultValue={loaderData.chore.gen_params.due_at_month}
               />
               <FieldError actionResult={actionData} fieldName="/due_at_month" />
             </FormControl>
@@ -507,7 +482,7 @@ export default function Chore() {
                 label="Skip Rule"
                 name="skipRule"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.chore.skip_rule?.skip_rule}
+                defaultValue={loaderData.chore.skip_rule}
               />
               <FieldError actionResult={actionData} fieldName="/skip_rule" />
             </FormControl>

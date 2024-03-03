@@ -10,10 +10,8 @@ from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.core.email_address import EmailAddress
-from jupiter.core.domain.core.entity_name import EntityName
 from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDueAtMonth
-from jupiter.core.domain.core.recurring_task_due_at_time import RecurringTaskDueAtTime
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.core.recurring_task_skip_rule import RecurringTaskSkipRule
 from jupiter.core.domain.core.timezone import Timezone
@@ -36,6 +34,7 @@ from jupiter.core.domain.push_integrations.slack.slack_channel_name import (
 from jupiter.core.domain.push_integrations.slack.slack_user_name import SlackUserName
 from jupiter.core.domain.sync_target import SyncTarget
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.entity import CrownEntity
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
@@ -349,7 +348,7 @@ def big_plan_status_to_rich_text(status: BigPlanStatus, archived: bool) -> Text:
 def actionable_date_to_rich_text(actionable_date: ADate) -> Text:
     """Transform an actionable date into text."""
     return Text("From ").append(
-        ADate.to_user_date_str(actionable_date),
+        str(actionable_date),
         style="underline",
     )
 
@@ -357,24 +356,24 @@ def actionable_date_to_rich_text(actionable_date: ADate) -> Text:
 def start_date_to_rich_text(start_date: ADate) -> Text:
     """Transform a due date into text."""
     return Text("Start at ").append(
-        ADate.to_user_date_str(start_date),
+        str(start_date),
         style="underline",
     )
 
 
 def end_date_to_rich_text(end_date: ADate) -> Text:
     """Transform a due date into text."""
-    return Text("End at ").append(ADate.to_user_date_str(end_date), style="underline")
+    return Text("End at ").append(str(end_date), style="underline")
 
 
 def due_date_to_rich_text(due_date: ADate) -> Text:
     """Transform a due date into text."""
-    return Text("Due at ").append(ADate.to_user_date_str(due_date), style="underline")
+    return Text("Due at ").append(str(due_date), style="underline")
 
 
 def date_with_label_to_rich_text(due_date: ADate, label: str) -> Text:
     """Transform a due date into text."""
-    return Text(f"{label} ").append(ADate.to_user_date_str(due_date), style="underline")
+    return Text(f"{label} ").append(str(due_date), style="underline")
 
 
 def project_to_rich_text(project_name: ProjectName) -> Text:
@@ -409,17 +408,17 @@ def parent_entity_name_to_rich_text(parent_name: EntityName) -> Text:
 
 def period_to_rich_text(period: RecurringTaskPeriod) -> Text:
     """Transform a period into text."""
-    return Text(period.to_nice(), style="underline")
+    return Text(str(period).capitalize(), style="underline")
 
 
 def eisen_to_rich_text(eisen: Eisen) -> Text:
     """Transform an eisenhower value into text."""
-    return Text(eisen.to_nice(), style="underline green")
+    return Text(str(eisen).capitalize(), style="underline green")
 
 
 def person_relationship_to_rich_text(person_relationship: PersonRelationship) -> Text:
     """Transform person relationship into text."""
-    return Text(person_relationship.to_nice(), style="underline yellow")
+    return Text(str(person_relationship).capitalize(), style="underline yellow")
 
 
 def person_birthday_to_rich_text(birthday: PersonBirthday) -> Text:
@@ -429,17 +428,17 @@ def person_birthday_to_rich_text(birthday: PersonBirthday) -> Text:
 
 def metric_unit_to_rich_text(metric_unit: MetricUnit) -> Text:
     """Transform a metric unit into text."""
-    return Text(metric_unit.to_nice(), style="italic")
+    return Text(str(metric_unit).capitalize(), style="italic")
 
 
 def source_to_rich_text(source: InboxTaskSource) -> Text:
     """Transform a source value into text."""
-    return Text(source.to_nice(), style="underline italic blue")
+    return Text(str(source).capitalize(), style="underline italic blue")
 
 
 def difficulty_to_rich_text(difficulty: Difficulty) -> Text:
     """Transform a difficulty value into text."""
-    return Text(difficulty.to_nice(), style="underline")
+    return Text(str(difficulty).capitalize(), style="underline")
 
 
 def skip_rule_to_rich_text(skip_rule: RecurringTaskSkipRule) -> Text:
@@ -459,11 +458,6 @@ def actionable_from_month_to_rich_text(
 ) -> Text:
     """Transform a actionable month to rich text."""
     return Text("From month ").append(str(actionable_from_month), style="underline")
-
-
-def due_at_time_to_rich_text(due_at_time: RecurringTaskDueAtTime) -> Text:
-    """Transform a due time to rich text."""
-    return Text("Due at ").append(str(due_at_time), style="underline")
 
 
 def due_at_day_to_rich_text(due_at_day: RecurringTaskDueAtDay) -> Text:

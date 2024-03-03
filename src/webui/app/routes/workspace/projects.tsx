@@ -1,6 +1,7 @@
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Outlet, ShouldRevalidateFunction } from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { Outlet } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { getLoggedInApiClient } from "~/api-clients";
 import { EntityNameComponent } from "~/components/entity-name";
@@ -23,7 +24,7 @@ export const handle = {
 
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
-  const response = await getLoggedInApiClient(session).project.findProject({
+  const response = await getLoggedInApiClient(session).projects.projectFind({
     allow_archived: false,
   });
   return json(response.projects);
@@ -44,8 +45,8 @@ export default function Projects() {
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
         <EntityStack>
           {projects.map((project) => (
-            <EntityCard key={project.ref_id.the_id}>
-              <EntityLink to={`/workspace/projects/${project.ref_id.the_id}`}>
+            <EntityCard key={project.ref_id}>
+              <EntityLink to={`/workspace/projects/${project.ref_id}`}>
                 <EntityNameComponent name={project.name} />
               </EntityLink>
             </EntityCard>

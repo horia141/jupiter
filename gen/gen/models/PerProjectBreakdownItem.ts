@@ -7,6 +7,9 @@ import type { EntityName } from './EntityName';
 import type { InboxTasksSummary } from './InboxTasksSummary';
 import type { WorkableSummary } from './WorkableSummary';
 
+/**
+ * The report for a particular project.
+ */
 export type PerProjectBreakdownItem = {
     ref_id: EntityId;
     name: EntityName;

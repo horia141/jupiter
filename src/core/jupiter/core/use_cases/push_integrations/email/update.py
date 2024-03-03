@@ -6,9 +6,12 @@ from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.core.email_address import EmailAddress
 from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
+from jupiter.core.domain.push_integrations.email.email_task import EmailTask
 from jupiter.core.domain.push_integrations.email.email_user_name import EmailUserName
 from jupiter.core.domain.push_integrations.push_generation_extra_info import (
     PushGenerationExtraInfo,
@@ -18,9 +21,8 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
     ProgressReporter,
-    UseCaseArgsBase,
-    use_case_args,
 )
+from jupiter.core.framework.use_case_io import UseCaseArgsBase, use_case_args
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
@@ -63,7 +65,7 @@ class EmailTaskUpdateUseCase(
         user = context.user
         workspace = context.workspace
 
-        email_task = await uow.email_task_repository.load_by_id(args.ref_id)
+        email_task = await uow.get_for(EmailTask).load_by_id(args.ref_id)
 
         if (
             args.generation_name.should_change
@@ -99,17 +101,15 @@ class EmailTaskUpdateUseCase(
         else:
             generation_extra_info = UpdateAction.do_nothing()
 
-        inbox_task_collection = (
-            await uow.inbox_task_collection_repository.load_by_parent(
-                workspace.ref_id,
-            )
+        inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
+            workspace.ref_id,
         )
         generated_inbox_task = (
-            await uow.inbox_task_repository.find_all_with_filters(
+            await uow.get_for(InboxTask).find_all_generic(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=False,
-                filter_sources=[InboxTaskSource.EMAIL_TASK],
-                filter_email_task_ref_ids=[email_task.ref_id],
+                source=[InboxTaskSource.EMAIL_TASK],
+                email_task_ref_id=[email_task.ref_id],
             )
         )[0]
 
@@ -124,7 +124,7 @@ class EmailTaskUpdateUseCase(
             generation_extra_info=email_task.generation_extra_info,
         )
 
-        await uow.inbox_task_repository.save(generated_inbox_task)
+        await uow.get_for(InboxTask).save(generated_inbox_task)
         await progress_reporter.mark_updated(generated_inbox_task)
 
         email_task = email_task.update(
@@ -137,5 +137,5 @@ class EmailTaskUpdateUseCase(
             generation_extra_info=generation_extra_info,
         )
 
-        await uow.email_task_repository.save(email_task)
+        await uow.get_for(EmailTask).save(email_task)
         await progress_reporter.mark_updated(email_task)

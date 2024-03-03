@@ -8,24 +8,27 @@ from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.core.entity_icon import EntityIcon
 from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDueAtMonth
-from jupiter.core.domain.core.recurring_task_due_at_time import RecurringTaskDueAtTime
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.inbox_tasks.service.archive_service import (
     InboxTaskArchiveService,
 )
+from jupiter.core.domain.metrics.metric import Metric
+from jupiter.core.domain.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.metrics.metric_name import MetricName
+from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
     ProgressReporter,
-    UseCaseArgsBase,
-    use_case_args,
 )
+from jupiter.core.framework.use_case_io import UseCaseArgsBase, use_case_args
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
@@ -45,7 +48,6 @@ class MetricUpdateArgs(UseCaseArgsBase):
     collection_difficulty: UpdateAction[Optional[Difficulty]]
     collection_actionable_from_day: UpdateAction[Optional[RecurringTaskDueAtDay]]
     collection_actionable_from_month: UpdateAction[Optional[RecurringTaskDueAtMonth]]
-    collection_due_at_time: UpdateAction[Optional[RecurringTaskDueAtTime]]
     collection_due_at_day: UpdateAction[Optional[RecurringTaskDueAtDay]]
     collection_due_at_month: UpdateAction[Optional[RecurringTaskDueAtMonth]]
 
@@ -64,13 +66,12 @@ class MetricUpdateUseCase(
         args: MetricUpdateArgs,
     ) -> None:
         """Execute the command's action."""
-        user = context.user
         workspace = context.workspace
 
-        metric_collection = await uow.metric_collection_repository.load_by_parent(
+        metric_collection = await uow.get_for(MetricCollection).load_by_parent(
             workspace.ref_id,
         )
-        metric = await uow.metric_repository.load_by_id(
+        metric = await uow.get_for(Metric).load_by_id(
             args.ref_id,
         )
 
@@ -82,7 +83,6 @@ class MetricUpdateUseCase(
             or args.collection_difficulty.should_change
             or args.collection_actionable_from_day.should_change
             or args.collection_actionable_from_month.should_change
-            or args.collection_due_at_time.should_change
             or args.collection_due_at_day.should_change
             or args.collection_due_at_month
         ):
@@ -127,14 +127,6 @@ class MetricUpdateUseCase(
                         metric.collection_params.actionable_from_month
                     )
 
-                new_collection_due_at_time = None
-                if args.collection_due_at_time.should_change:
-                    new_collection_due_at_time = (
-                        args.collection_due_at_time.just_the_value
-                    )
-                elif metric.collection_params is not None:
-                    new_collection_due_at_time = metric.collection_params.due_at_time
-
                 new_collection_due_at_day = None
                 if args.collection_due_at_day.should_change:
                     new_collection_due_at_day = (
@@ -158,7 +150,6 @@ class MetricUpdateUseCase(
                         difficulty=new_collection_difficulty,
                         actionable_from_day=new_collection_actionable_from_day,
                         actionable_from_month=new_collection_actionable_from_month,
-                        due_at_time=new_collection_due_at_time,
                         due_at_day=new_collection_due_at_day,
                         due_at_month=new_collection_due_at_month,
                     ),
@@ -168,17 +159,15 @@ class MetricUpdateUseCase(
         else:
             collection_params = UpdateAction.do_nothing()
 
-        inbox_task_collection = (
-            await uow.inbox_task_collection_repository.load_by_parent(
-                workspace.ref_id,
-            )
+        inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
+            workspace.ref_id,
         )
 
-        metric_collection_tasks = await uow.inbox_task_repository.find_all_with_filters(
+        metric_collection_tasks = await uow.get_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
-            filter_sources=[InboxTaskSource.METRIC],
+            source=[InboxTaskSource.METRIC],
             allow_archived=True,
-            filter_metric_ref_ids=[metric.ref_id],
+            metric_ref_id=[metric.ref_id],
         )
 
         metric = metric.update(
@@ -188,7 +177,7 @@ class MetricUpdateUseCase(
             collection_params=collection_params,
         )
 
-        await uow.metric_repository.save(metric)
+        await uow.get_for(Metric).save(metric)
         await progress_reporter.mark_updated(metric)
 
         # Change the inbox tasks
@@ -201,7 +190,7 @@ class MetricUpdateUseCase(
                 )
         else:
             # Situation 2: we need to update the existing metrics.
-            project = await uow.project_repository.load_by_id(
+            project = await uow.get_for(Project).load_by_id(
                 metric_collection.collection_project_ref_id,
             )
 
@@ -210,11 +199,9 @@ class MetricUpdateUseCase(
                     metric.collection_params.period,
                     metric.name,
                     typing.cast(Timestamp, inbox_task.recurring_gen_right_now),
-                    user.timezone,
                     None,
                     metric.collection_params.actionable_from_day,
                     metric.collection_params.actionable_from_month,
-                    metric.collection_params.due_at_time,
                     metric.collection_params.due_at_day,
                     metric.collection_params.due_at_month,
                 )
@@ -227,8 +214,8 @@ class MetricUpdateUseCase(
                     eisen=metric.collection_params.eisen,
                     difficulty=metric.collection_params.difficulty,
                     actionable_date=schedule.actionable_date,
-                    due_time=schedule.due_time,
+                    due_time=schedule.due_date,
                 )
 
-                await uow.inbox_task_repository.save(inbox_task)
+                await uow.get_for(InboxTask).save(inbox_task)
                 await progress_reporter.mark_updated(inbox_task)

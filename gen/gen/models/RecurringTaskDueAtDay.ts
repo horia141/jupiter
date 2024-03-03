@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type RecurringTaskDueAtDay = {
-    the_day: number;
-};
-
+/**
+ * The due day for a recurring task.
+ */
+export type RecurringTaskDueAtDay = number;

@@ -1,12 +1,8 @@
 import { Button } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import {
-  Link,
-  Outlet,
-  ShouldRevalidateFunction,
-  useFetcher,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { Link, Outlet, useFetcher } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { WorkspaceFeature, type SlackTask } from "jupiter-gen";
 import { useContext } from "react";
@@ -37,7 +33,9 @@ export const handle = {
 
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
-  const response = await getLoggedInApiClient(session).slackTask.findSlackTask({
+  const response = await getLoggedInApiClient(
+    session
+  ).pushIntegrations.slackTaskFind({
     allow_archived: false,
     include_inbox_tasks: false,
   });
@@ -66,7 +64,7 @@ export default function SlackTasks() {
       },
       {
         method: "post",
-        action: `/workspace/push-integrations/slack-tasks/${slackTask.ref_id.the_id}`,
+        action: `/workspace/push-integrations/slack-tasks/${slackTask.ref_id}`,
       }
     );
   }
@@ -95,13 +93,13 @@ export default function SlackTasks() {
         <EntityStack>
           {sortedEntries.map((entry) => (
             <EntityCard
-              key={entry.slack_task.ref_id.the_id}
+              key={entry.slack_task.ref_id}
               allowSwipe
               allowMarkNotDone
               onMarkNotDone={() => archiveSlackTask(entry.slack_task)}
             >
               <EntityLink
-                to={`/workspace/push-integrations/slack-tasks/${entry.slack_task.ref_id.the_id}`}
+                to={`/workspace/push-integrations/slack-tasks/${entry.slack_task.ref_id}`}
               >
                 <EntityNameComponent
                   name={slackTaskNiceName(entry.slack_task as SlackTask)}

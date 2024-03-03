@@ -3,32 +3,25 @@ import re
 import typing
 from functools import total_ordering
 
-from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.value import Value, hashable_value
+from jupiter.core.framework.realm import (
+    DatabaseRealm,
+    RealmDecoder,
+    RealmDecodingError,
+    RealmEncoder,
+    RealmThing,
+    WebRealm,
+)
+from jupiter.core.framework.value import AtomicValue, hashable_value
 
 _ENTITY_ID_RE: typing.Pattern[str] = re.compile(r"^\d+|[a-zA-Z0-9_]+|bad-entity-id$")
 
 
 @hashable_value
 @total_ordering
-class EntityId(Value):
+class EntityId(AtomicValue[str]):
     """A generic entity id."""
 
     the_id: str
-
-    def __post_init__(self) -> None:
-        """Validate after pydantic construction."""
-        self.the_id = self._clean_the_id(self.the_id)
-
-    @staticmethod
-    def from_raw(entity_id_raw: object) -> "EntityId":
-        """Validate and clean an entity id."""
-        if not isinstance(entity_id_raw, str):
-            raise InputValidationError("Expected entity id to be string")
-        if not entity_id_raw:
-            raise InputValidationError("Expected entity id to be non-null")
-
-        return EntityId(EntityId._clean_the_id(entity_id_raw))
 
     def as_int(self) -> int:
         """Return an integer form of this, if possible."""
@@ -48,19 +41,34 @@ class EntityId(Value):
         """Transform this to a string version."""
         return self.the_id
 
-    @staticmethod
-    def _clean_the_id(entity_id_raw: str) -> str:
-        entity_id: str = entity_id_raw.strip()
 
-        if len(entity_id) == 0:
-            raise InputValidationError("Expected entity id to be non-empty")
+class EntityIdDatabaseEncoder(RealmEncoder[EntityId, DatabaseRealm]):
+    """Entity id encoder for the database realm."""
 
-        if not _ENTITY_ID_RE.match(entity_id):
-            raise InputValidationError(
-                f"Expected entity id '{entity_id_raw}' to match '{_ENTITY_ID_RE.pattern}",
+    def encode(self, value: EntityId) -> RealmThing:
+        """Encode to a database realm."""
+        return value.as_int()
+
+
+class EntityIdWebEncoder(RealmEncoder[EntityId, WebRealm]):
+    """Entity id encoder for the database realm."""
+
+    def encode(self, value: EntityId) -> RealmThing:
+        """Encode to a database realm."""
+        return value.the_id
+
+
+class EntityIdDatabaseDecoder(RealmDecoder[EntityId, DatabaseRealm]):
+    """Entity id decoder for the database realm."""
+
+    def decode(self, value: RealmThing) -> EntityId:
+        """Decode from a database realm."""
+        if not isinstance(value, (int, str)):
+            raise RealmDecodingError(
+                f"Expected value for {self.__class__} to be an int or string"
             )
 
-        return entity_id
+        return EntityId(str(value))
 
 
 BAD_REF_ID = EntityId("bad-entity-id")

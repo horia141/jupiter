@@ -6,15 +6,19 @@ import type { ADate } from './ADate';
 import type { Difficulty } from './Difficulty';
 import type { Eisen } from './Eisen';
 import type { EntityId } from './EntityId';
-import type { EntityName } from './EntityName';
+import type { InboxTaskName } from './InboxTaskName';
 import type { InboxTaskStatus } from './InboxTaskStatus';
 import type { SlackChannelName } from './SlackChannelName';
+import type { SlackUserName } from './SlackUserName';
 
+/**
+ * PersonFindArgs.
+ */
 export type SlackTaskUpdateArgs = {
     ref_id: EntityId;
     user: {
         should_change: boolean;
-        value?: EntityName;
+        value?: SlackUserName;
     };
     channel: {
         should_change: boolean;
@@ -26,7 +30,7 @@ export type SlackTaskUpdateArgs = {
     };
     generation_name: {
         should_change: boolean;
-        value?: EntityName;
+        value?: InboxTaskName;
     };
     generation_status: {
         should_change: boolean;

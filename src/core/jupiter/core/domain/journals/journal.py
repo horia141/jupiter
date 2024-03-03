@@ -1,6 +1,5 @@
 """A journal for a particular time range."""
 from jupiter.core.domain.core.adate import ADate
-from jupiter.core.domain.core.entity_name import EntityName
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
@@ -10,6 +9,7 @@ from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.journals.journal_source import JournalSource
 from jupiter.core.domain.report.report_period_result import ReportPeriodResult
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     IsRefId,
@@ -48,6 +48,7 @@ class Journal(LeafEntity):
         journal_collection_ref_id: EntityId,
         right_now: ADate,
         period: RecurringTaskPeriod,
+        sources: list[InboxTaskSource],
     ) -> "Journal":
         """Create a journal."""
         return Journal._create(
@@ -58,7 +59,7 @@ class Journal(LeafEntity):
             right_now=right_now,
             period=period,
             timeline=infer_timeline(period, right_now.to_timestamp_at_end_of_day()),
-            report=ReportPeriodResult.empty(right_now, period),
+            report=ReportPeriodResult.empty(right_now, period, sources),
         )
 
     @staticmethod
@@ -116,6 +117,4 @@ class Journal(LeafEntity):
     @staticmethod
     def build_name(right_now: ADate, period: RecurringTaskPeriod) -> EntityName:
         """Build the name of the journal."""
-        return EntityName(
-            f"{period.value.capitalize()} journal for {ADate.to_user_date_str(right_now)}"
-        )
+        return EntityName(f"{period.value.capitalize()} journal for {right_now}")

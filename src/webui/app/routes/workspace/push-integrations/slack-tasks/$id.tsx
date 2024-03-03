@@ -13,8 +13,8 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
-  ShouldRevalidateFunction,
   useActionData,
   useFetcher,
   useParams,
@@ -76,8 +76,8 @@ export async function loader({ request, params }: LoaderArgs) {
   try {
     const response = await getLoggedInApiClient(
       session
-    ).slackTask.loadSlackTask({
-      ref_id: { the_id: id },
+    ).pushIntegrations.slackTaskLoad({
+      ref_id: id,
       allow_archived: true,
     });
 
@@ -107,15 +107,15 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (intent) {
       case "update": {
-        await getLoggedInApiClient(session).slackTask.updateSlackTask({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).pushIntegrations.slackTaskUpdate({
+          ref_id: id,
           user: {
             should_change: true,
-            value: { the_name: form.user },
+            value: form.user,
           },
           channel: {
             should_change: true,
-            value: form.channel ? { the_name: form.channel } : undefined,
+            value: form.channel,
           },
           message: {
             should_change: true,
@@ -123,9 +123,7 @@ export async function action({ request, params }: ActionArgs) {
           },
           generation_name: {
             should_change: true,
-            value: form.generationName
-              ? { the_name: form.generationName }
-              : undefined,
+            value: form.generationName,
           },
           generation_status: {
             should_change: true,
@@ -151,10 +149,7 @@ export async function action({ request, params }: ActionArgs) {
             value:
               form.generationActionableDate !== undefined &&
               form.generationActionableDate !== ""
-                ? {
-                    the_date: form.generationActionableDate,
-                    the_datetime: undefined,
-                  }
+                ? form.generationActionableDate
                 : undefined,
           },
           generation_due_date: {
@@ -162,7 +157,7 @@ export async function action({ request, params }: ActionArgs) {
             value:
               form.generationDueDate !== undefined &&
               form.generationDueDate !== ""
-                ? { the_date: form.generationDueDate, the_datetime: undefined }
+                ? form.generationDueDate
                 : undefined,
           },
         });
@@ -171,8 +166,8 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).slackTask.archiveSlackTask({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).pushIntegrations.slackTaskArchive({
+          ref_id: id,
         });
 
         return redirect(`/workspace/push-integrations/slack-tasks/${id}`);
@@ -210,7 +205,7 @@ export default function SlackTask() {
   function handleCardMarkDone(it: InboxTask) {
     cardActionFetcher.submit(
       {
-        id: it.ref_id.the_id,
+        id: it.ref_id,
         status: InboxTaskStatus.DONE,
       },
       {
@@ -223,7 +218,7 @@ export default function SlackTask() {
   function handleCardMarkNotDone(it: InboxTask) {
     cardActionFetcher.submit(
       {
-        id: it.ref_id.the_id,
+        id: it.ref_id,
         status: InboxTaskStatus.NOT_DONE,
       },
       {
@@ -235,7 +230,7 @@ export default function SlackTask() {
 
   return (
     <LeafPanel
-      key={loaderData.slackTask.ref_id.the_id}
+      key={loaderData.slackTask.ref_id}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/push-integrations/slack-tasks"
@@ -250,7 +245,7 @@ export default function SlackTask() {
                 label="User"
                 name="user"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.slackTask.user.the_name}
+                defaultValue={loaderData.slackTask.user}
               />
               <FieldError actionResult={actionData} fieldName="/user" />
             </FormControl>
@@ -261,7 +256,7 @@ export default function SlackTask() {
                 label="Channel"
                 name="channel"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.slackTask.channel?.the_name}
+                defaultValue={loaderData.slackTask.channel}
               />
               <FieldError actionResult={actionData} fieldName="/channel" />
             </FormControl>
@@ -283,9 +278,7 @@ export default function SlackTask() {
                 label="Generation Name"
                 name="generationName"
                 readOnly={!inputsEnabled}
-                defaultValue={
-                  loaderData.slackTask.generation_extra_info?.name?.the_name
-                }
+                defaultValue={loaderData.slackTask.generation_extra_info?.name}
               />
               <FieldError
                 actionResult={actionData}

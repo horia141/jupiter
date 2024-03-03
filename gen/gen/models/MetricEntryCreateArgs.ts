@@ -5,6 +5,9 @@
 import type { ADate } from './ADate';
 import type { EntityId } from './EntityId';
 
+/**
+ * MetricEntryCreate args.
+ */
 export type MetricEntryCreateArgs = {
     metric_ref_id: EntityId;
     value: number;

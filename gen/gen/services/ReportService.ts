@@ -12,14 +12,14 @@ export class ReportService {
     constructor(public readonly httpRequest: BaseHttpRequest) {}
 
     /**
-     * Report
-     * Report.
-     * @param requestBody
-     * @returns ReportResult Successful Response
+     * The command for reporting on progress.
+     * The command for reporting on progress.
+     * @param requestBody The input data
+     * @returns ReportResult Successful response
      * @throws ApiError
      */
     public report(
-        requestBody: ReportArgs,
+        requestBody?: ReportArgs,
     ): CancelablePromise<ReportResult> {
         return this.httpRequest.request({
             method: 'POST',

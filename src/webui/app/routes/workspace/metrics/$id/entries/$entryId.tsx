@@ -11,15 +11,10 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import {
-  ShouldRevalidateFunction,
-  useActionData,
-  useParams,
-  useTransition,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { useActionData, useParams, useTransition } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { ApiError, NoteDomain } from "jupiter-gen";
-import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
@@ -35,7 +30,6 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
-import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = {
   id: z.string(),
@@ -57,8 +51,8 @@ export async function loader({ request, params }: LoaderArgs) {
   const { entryId } = parseParams(params, ParamsSchema);
 
   try {
-    const result = await getLoggedInApiClient(session).metric.loadMetricEntry({
-      ref_id: { the_id: entryId },
+    const result = await getLoggedInApiClient(session).metrics.metricEntryLoad({
+      ref_id: entryId,
       allow_archived: true,
     });
 
@@ -86,11 +80,11 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (form.intent) {
       case "update": {
-        await getLoggedInApiClient(session).metric.updateMetricEntry({
-          ref_id: { the_id: entryId },
+        await getLoggedInApiClient(session).metrics.metricEntryUpdate({
+          ref_id: entryId,
           collection_time: {
             should_change: true,
-            value: { the_date: form.collectionTime, the_datetime: undefined },
+            value: form.collectionTime,
           },
           value: {
             should_change: true,
@@ -102,9 +96,9 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "create-note": {
-        await getLoggedInApiClient(session).note.createNote({
+        await getLoggedInApiClient(session).core.noteCreate({
           domain: NoteDomain.METRIC_ENTRY,
-          source_entity_ref_id: { the_id: entryId },
+          source_entity_ref_id: entryId,
           content: [],
         });
 
@@ -112,8 +106,8 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).metric.archiveMetricEntry({
-          ref_id: { the_id: entryId },
+        await getLoggedInApiClient(session).metrics.metricEntryArchive({
+          ref_id: entryId,
         });
 
         return redirect(`/workspace/metrics/${id}/entries/${entryId}`);
@@ -141,14 +135,13 @@ export default function MetricEntry() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
-  const topLevelInfo = useContext(TopLevelInfoContext);
 
   const inputsEnabled =
     transition.state === "idle" && !loaderData.metricEntry.archived;
 
   return (
     <LeafPanel
-      key={loaderData.metricEntry.ref_id.the_id}
+      key={loaderData.metricEntry.ref_id}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation={`/workspace/metrics/${id}`}

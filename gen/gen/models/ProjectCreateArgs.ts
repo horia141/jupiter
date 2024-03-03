@@ -2,9 +2,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { EntityName } from './EntityName';
+import type { ProjectName } from './ProjectName';
 
+/**
+ * Project create args.
+ */
 export type ProjectCreateArgs = {
-    name: EntityName;
+    name: ProjectName;
 };
 

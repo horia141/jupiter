@@ -6,6 +6,9 @@ import type { ADate } from './ADate';
 import type { BigPlanName } from './BigPlanName';
 import type { EntityId } from './EntityId';
 
+/**
+ * Big plan create args.
+ */
 export type BigPlanCreateArgs = {
     name: BigPlanName;
     project_ref_id?: EntityId;

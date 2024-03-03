@@ -1,6 +1,7 @@
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Outlet, ShouldRevalidateFunction, useFetcher } from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { Outlet, useFetcher } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import type { Habit, HabitFindResultEntry, Project } from "jupiter-gen";
 import { Eisen, RecurringTaskPeriod, WorkspaceFeature } from "jupiter-gen";
@@ -33,7 +34,7 @@ export const handle = {
 
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
-  const response = await getLoggedInApiClient(session).habit.findHabit({
+  const response = await getLoggedInApiClient(session).habits.habitFind({
     allow_archived: false,
     include_project: true,
     include_inbox_tasks: false,
@@ -54,7 +55,7 @@ export default function Habits() {
   const sortedHabits = sortHabitsNaturally(entries.map((e) => e.habit));
   const entriesByRefId = new Map<string, HabitFindResultEntry>();
   for (const entry of entries) {
-    entriesByRefId.set(entry.habit.ref_id.the_id, entry);
+    entriesByRefId.set(entry.habit.ref_id, entry);
   }
 
   const archiveHabitFetch = useFetcher();
@@ -70,7 +71,7 @@ export default function Habits() {
       },
       {
         method: "post",
-        action: `/workspace/habits/${habit.ref_id.the_id}`,
+        action: `/workspace/habits/${habit.ref_id}`,
       }
     );
   }
@@ -84,16 +85,16 @@ export default function Habits() {
         <EntityStack>
           {sortedHabits.map((habit) => {
             const entry = entriesByRefId.get(
-              habit.ref_id.the_id
+              habit.ref_id
             ) as HabitFindResultEntry;
             return (
               <EntityCard
-                key={habit.ref_id.the_id}
+                key={habit.ref_id}
                 allowSwipe
                 allowMarkNotDone
                 onMarkNotDone={() => archiveHabit(habit)}
               >
-                <EntityLink to={`/workspace/habits/${habit.ref_id.the_id}`}>
+                <EntityLink to={`/workspace/habits/${habit.ref_id}`}>
                   <EntityNameComponent name={habit.name} />
                   {isWorkspaceFeatureAvailable(
                     topLevelInfo.workspace,

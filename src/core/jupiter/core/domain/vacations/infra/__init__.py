@@ -1,1 +1,0 @@
-"""Vacations infra classes."""

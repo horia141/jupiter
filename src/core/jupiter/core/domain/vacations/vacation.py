@@ -70,8 +70,8 @@ class Vacation(LeafEntity):
 
     def is_in_vacation(self, start_date: ADate, end_date: ADate) -> bool:
         """Checks whether a particular date range is in this vacation."""
-        vacation_start_date = self.start_date.start_of_day()
-        vacation_end_date = self.end_date.end_of_day()
+        vacation_start_date = self.start_date
+        vacation_end_date = self.end_date
         return typing.cast(bool, vacation_start_date <= start_date) and typing.cast(
             bool,
             end_date <= vacation_end_date,

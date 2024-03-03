@@ -1,15 +1,16 @@
 """Use case for archiving a note."""
 
+from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.service.note_archive_service import (
     NoteArchiveService,
 )
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
     ProgressReporter,
-    UseCaseArgsBase,
-    use_case_args,
 )
+from jupiter.core.framework.use_case_io import UseCaseArgsBase, use_case_args
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
@@ -24,7 +25,7 @@ class NoteArchiveArgs(UseCaseArgsBase):
     ref_id: EntityId
 
 
-@mutation_use_case()
+@mutation_use_case(exclude_app=[EventSource.CLI])
 class NoteArchiveUseCase(
     AppTransactionalLoggedInMutationUseCase[NoteArchiveArgs, None]
 ):
@@ -38,5 +39,5 @@ class NoteArchiveUseCase(
         args: NoteArchiveArgs,
     ) -> None:
         """Execute the command's action."""
-        note = await uow.note_repository.load_by_id(args.ref_id)
+        note = await uow.get_for(Note).load_by_id(args.ref_id)
         await NoteArchiveService().archive(context.domain_context, uow, note)

@@ -14,13 +14,11 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import {
-  ShouldRevalidateFunction,
-  useActionData,
-  useTransition,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { ApiError, Project, WorkspaceFeature } from "jupiter-gen";
+import type { Project } from "jupiter-gen";
+import { ApiError, WorkspaceFeature } from "jupiter-gen";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
@@ -59,7 +57,7 @@ export async function loader({ request }: LoaderArgs) {
     include_default_project: true,
     include_projects: true,
   });
-  const result = await getLoggedInApiClient(session).workspace.loadWorkspace(
+  const result = await getLoggedInApiClient(session).workspaces.workspaceLoad(
     {}
   );
 
@@ -79,10 +77,10 @@ export async function action({ request }: ActionArgs) {
   try {
     switch (intent) {
       case "update": {
-        await getLoggedInApiClient(session).workspace.updateWorkspace({
+        await getLoggedInApiClient(session).workspaces.workspaceUpdate({
           name: {
             should_change: true,
-            value: { the_name: form.name },
+            value: form.name,
           },
         });
 
@@ -92,27 +90,18 @@ export async function action({ request }: ActionArgs) {
       case "change-default-project": {
         await getLoggedInApiClient(
           session
-        ).workspace.changeWorkspaceDefaultProject({
-          default_project_ref_id: { the_id: form.defaultProject },
+        ).workspaces.workspaceChangeDefaultProject({
+          default_project_ref_id: form.defaultProject,
         });
 
         return redirect(`/workspace/settings`);
       }
 
       case "change-feature-flags": {
-        const featureFlags: Record<string, boolean> = {};
-        for (const feature of Object.values(WorkspaceFeature)) {
-          if (form.featureFlags.find((v) => v == feature)) {
-            featureFlags[feature] = true;
-          } else {
-            featureFlags[feature] = false;
-          }
-        }
-
         await getLoggedInApiClient(
           session
-        ).workspace.changeWorkspaceFeatureFlags({
-          feature_flags: featureFlags,
+        ).workspaces.workspaceChangeFeatureFlags({
+          feature_flags: form.featureFlags,
         });
 
         return redirect(`/workspace/settings`);
@@ -162,7 +151,7 @@ export default function Settings() {
                     label="Name"
                     name="name"
                     readOnly={!inputsEnabled}
-                    defaultValue={loaderData.workspace.name.the_name}
+                    defaultValue={loaderData.workspace.name}
                   />
                   <FieldError actionResult={actionData} fieldName="/name" />
                 </FormControl>
@@ -202,12 +191,12 @@ export default function Settings() {
                       labelId="defaultProject"
                       name="defaultProject"
                       readOnly={!inputsEnabled}
-                      defaultValue={loaderData.defaultProject.ref_id.the_id}
+                      defaultValue={loaderData.defaultProject.ref_id}
                       label="Default Project"
                     >
                       {loaderData.allProjects.map((p) => (
-                        <MenuItem key={p.ref_id.the_id} value={p.ref_id.the_id}>
-                          {p.name.the_name}
+                        <MenuItem key={p.ref_id} value={p.ref_id}>
+                          {p.name}
                         </MenuItem>
                       ))}
                     </Select>
@@ -241,7 +230,7 @@ export default function Settings() {
             <input
               type="hidden"
               name="defaultProject"
-              value={loaderData.defaultProject.ref_id.the_id}
+              value={loaderData.defaultProject.ref_id}
             />
           )}
 

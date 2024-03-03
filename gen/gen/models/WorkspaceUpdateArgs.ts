@@ -2,12 +2,15 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { EntityName } from './EntityName';
+import type { WorkspaceName } from './WorkspaceName';
 
+/**
+ * PersonFindArgs.
+ */
 export type WorkspaceUpdateArgs = {
     name: {
         should_change: boolean;
-        value?: EntityName;
+        value?: WorkspaceName;
     };
 };
 

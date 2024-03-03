@@ -20,17 +20,21 @@ async def generic_remover(
         for field in entity.__class__.__dict__.values():
             if not isinstance(field, OwnsLink):
                 continue
-            linked_entities = await uow.get_repository(field.the_type).find_all_generic(
-                allow_archived=False, **field.get_for_entity(entity)
+            if not issubclass(field.the_type, CrownEntity):
+                raise Exception(
+                    f"Entity {entity.__class__} owns an non-crown entity {field.the_type}"
+                )
+            linked_entities = await uow.get_for(field.the_type).find_all_generic(
+                parent_ref_id=None, allow_archived=False, **field.get_for_entity(entity)
             )
 
             for linked_entity in linked_entities:
                 await _remover(linked_entity)
 
-        await uow.get_repository(entity_type).remove(entity.ref_id)
+        await uow.get_for(entity_type).remove(entity.ref_id)
         if not isinstance(entity, LeafSupportEntity):
             await progress_reporter.mark_removed(entity)
 
-    entity = await uow.get_repository(entity_type).load_by_id(ref_id)
+    entity = await uow.get_for(entity_type).load_by_id(ref_id)
 
     await _remover(entity)

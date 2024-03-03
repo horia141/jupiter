@@ -1,4 +1,6 @@
 """A user of Jupiter."""
+import abc
+
 from jupiter.core.domain.auth.auth import Auth
 from jupiter.core.domain.core.email_address import EmailAddress
 from jupiter.core.domain.core.timezone import Timezone
@@ -18,6 +20,11 @@ from jupiter.core.framework.entity import (
     create_entity_action,
     entity,
     update_entity_action,
+)
+from jupiter.core.framework.repository import (
+    EntityAlreadyExistsError,
+    EntityNotFoundError,
+    RootEntityRepository,
 )
 from jupiter.core.framework.update_action import UpdateAction
 
@@ -93,3 +100,19 @@ class User(RootEntity):
     def is_feature_available(self, feature: UserFeature) -> bool:
         """Check if a feature is available for this user."""
         return self.feature_flags[feature]
+
+
+class UserAlreadyExistsError(EntityAlreadyExistsError):
+    """Error raised when a user already exists."""
+
+
+class UserNotFoundError(EntityNotFoundError):
+    """Error raised when a user does not exist."""
+
+
+class UserRepository(RootEntityRepository[User], abc.ABC):
+    """A repository for users."""
+
+    @abc.abstractmethod
+    async def load_by_email_address(self, email_address: EmailAddress) -> User:
+        """Load a user given their email address."""

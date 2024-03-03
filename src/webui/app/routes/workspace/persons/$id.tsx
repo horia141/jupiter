@@ -15,8 +15,8 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect, Response } from "@remix-run/node";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
-  ShouldRevalidateFunction,
   useActionData,
   useFetcher,
   useParams,
@@ -48,6 +48,10 @@ import { difficultyName } from "~/logic/domain/difficulty";
 import { eisenName } from "~/logic/domain/eisen";
 import { sortInboxTasksNaturally } from "~/logic/domain/inbox-task";
 import { periodName } from "~/logic/domain/period";
+import {
+  birthdayFromParts,
+  extractBirthday,
+} from "~/logic/domain/person-birthday";
 import { personRelationshipName } from "~/logic/domain/person-relationship";
 import { getIntent } from "~/logic/intent";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -75,7 +79,6 @@ const UpdateFormSchema = {
     .optional(),
   catchUpActionableFromDay: z.string().optional(),
   catchUpActionableFromMonth: z.string().optional(),
-  catchUpDueAtTime: z.string().optional(),
   catchUpDueAtDay: z.string().optional(),
   catchUpDueAtMonth: z.string().optional(),
 };
@@ -89,8 +92,8 @@ export async function loader({ request, params }: LoaderArgs) {
   const { id } = parseParams(params, ParamsSchema);
 
   try {
-    const result = await getLoggedInApiClient(session).person.loadPerson({
-      ref_id: { the_id: id },
+    const result = await getLoggedInApiClient(session).persons.personLoad({
+      ref_id: id,
       allow_archived: true,
     });
 
@@ -121,11 +124,11 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (intent) {
       case "update": {
-        await getLoggedInApiClient(session).person.updatePerson({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).persons.personUpdate({
+          ref_id: id,
           name: {
             should_change: true,
-            value: { the_name: form.name },
+            value: form.name,
           },
           relationship: {
             should_change: true,
@@ -164,7 +167,7 @@ export async function action({ request, params }: ActionArgs) {
                 : form.catchUpActionableFromDay === undefined ||
                   form.catchUpActionableFromDay === ""
                 ? undefined
-                : { the_day: parseInt(form.catchUpActionableFromDay) },
+                : parseInt(form.catchUpActionableFromDay),
           },
           catch_up_actionable_from_month: {
             should_change: true,
@@ -174,17 +177,7 @@ export async function action({ request, params }: ActionArgs) {
                 : form.catchUpActionableFromMonth === undefined ||
                   form.catchUpActionableFromMonth === ""
                 ? undefined
-                : { the_month: parseInt(form.catchUpActionableFromMonth) },
-          },
-          catch_up_due_at_time: {
-            should_change: true,
-            value:
-              form.catchUpPeriod === undefined || form.catchUpPeriod === "none"
-                ? undefined
-                : form.catchUpDueAtTime === undefined ||
-                  form.catchUpDueAtTime === ""
-                ? undefined
-                : { the_time: form.catchUpDueAtTime },
+                : parseInt(form.catchUpActionableFromMonth),
           },
           catch_up_due_at_day: {
             should_change: true,
@@ -194,7 +187,7 @@ export async function action({ request, params }: ActionArgs) {
                 : form.catchUpDueAtDay === undefined ||
                   form.catchUpDueAtDay === ""
                 ? undefined
-                : { the_day: parseInt(form.catchUpDueAtDay) },
+                : parseInt(form.catchUpDueAtDay),
           },
           catch_up_due_at_month: {
             should_change: true,
@@ -204,7 +197,7 @@ export async function action({ request, params }: ActionArgs) {
                 : form.catchUpDueAtMonth === undefined ||
                   form.catchUpDueAtMonth === ""
                 ? undefined
-                : { the_month: parseInt(form.catchUpDueAtMonth) },
+                : parseInt(form.catchUpDueAtMonth),
           },
           birthday: {
             should_change: true,
@@ -214,10 +207,10 @@ export async function action({ request, params }: ActionArgs) {
               form.birthdayMonth === undefined ||
               form.birthdayMonth === "N/A"
                 ? undefined
-                : {
-                    day: parseInt(form.birthdayDay),
-                    month: parseInt(form.birthdayMonth),
-                  },
+                : birthdayFromParts(
+                    parseInt(form.birthdayDay),
+                    parseInt(form.birthdayMonth)
+                  ),
           },
         });
 
@@ -225,9 +218,9 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "create-note": {
-        await getLoggedInApiClient(session).note.createNote({
+        await getLoggedInApiClient(session).core.noteCreate({
           domain: NoteDomain.PERSON,
-          source_entity_ref_id: { the_id: id },
+          source_entity_ref_id: id,
           content: [],
         });
 
@@ -235,8 +228,8 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).person.archivePerson({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).persons.personArchive({
+          ref_id: id,
         });
 
         return redirect(`/workspace/persons/${id}`);
@@ -267,6 +260,9 @@ export default function Person() {
   const topLevelInfo = useContext(TopLevelInfoContext);
 
   const person = loaderData.person;
+  const personBirthday = person.birthday
+    ? extractBirthday(person.birthday)
+    : undefined;
 
   const [showCatchUpParams, setShowCatchUpParams] = useState(
     person?.catch_up_params !== undefined
@@ -304,7 +300,7 @@ export default function Person() {
   function handleCardMarkDone(it: InboxTask) {
     cardActionFetcher.submit(
       {
-        id: it.ref_id.the_id,
+        id: it.ref_id,
         status: InboxTaskStatus.DONE,
       },
       {
@@ -317,7 +313,7 @@ export default function Person() {
   function handleCardMarkNotDone(it: InboxTask) {
     cardActionFetcher.submit(
       {
-        id: it.ref_id.the_id,
+        id: it.ref_id,
         status: InboxTaskStatus.NOT_DONE,
       },
       {
@@ -329,7 +325,7 @@ export default function Person() {
 
   return (
     <LeafPanel
-      key={person.ref_id.the_id}
+      key={person.ref_id}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/persons"
@@ -344,7 +340,7 @@ export default function Person() {
                 label="Name"
                 name="name"
                 readOnly={!inputsEnabled}
-                defaultValue={person.name.the_name}
+                defaultValue={person.name}
               />
               <FieldError actionResult={actionData} fieldName="/name" />
             </FormControl>
@@ -374,7 +370,7 @@ export default function Person() {
                   labelId="birthdayDay"
                   name="birthdayDay"
                   readOnly={!inputsEnabled}
-                  defaultValue={person.birthday?.day ?? "N/A"}
+                  defaultValue={personBirthday?.day ?? "N/A"}
                   label="Birthday Day"
                 >
                   <MenuItem value={"N/A"}>N/A</MenuItem>
@@ -409,6 +405,7 @@ export default function Person() {
                   <MenuItem value={29}>29th</MenuItem>
                   <MenuItem value={30}>30th</MenuItem>
                   <MenuItem value={31}>31st</MenuItem>
+                  <MenuItem value={32}>32st</MenuItem>
                 </Select>
 
                 <FieldError actionResult={actionData} fieldName="/birthday" />
@@ -420,7 +417,7 @@ export default function Person() {
                   labelId="birthdayMonth"
                   name="birthdayMonth"
                   readOnly={!inputsEnabled}
-                  defaultValue={person.birthday?.month ?? "N/A"}
+                  defaultValue={personBirthday?.month ?? "N/A"}
                   label="Birthday Month"
                 >
                   <MenuItem value={"N/A"}>N/A</MenuItem>
@@ -549,21 +546,6 @@ export default function Person() {
                   <FieldError
                     actionResult={actionData}
                     fieldName="/catch_up_actionable_from_month"
-                  />
-                </FormControl>
-
-                <FormControl fullWidth>
-                  <InputLabel id="catchUpDueAtTime">Due At Time</InputLabel>
-                  <OutlinedInput
-                    type="time"
-                    label="Due At Time"
-                    name="catchUpDueAtTime"
-                    readOnly={!inputsEnabled}
-                    defaultValue={person.catch_up_params?.due_at_time ?? ""}
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/catch_up_due_at_time"
                   />
                 </FormControl>
 

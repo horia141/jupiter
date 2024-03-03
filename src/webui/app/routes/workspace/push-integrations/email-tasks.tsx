@@ -1,12 +1,8 @@
 import { Button } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import {
-  Link,
-  Outlet,
-  ShouldRevalidateFunction,
-  useFetcher,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { Link, Outlet, useFetcher } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { WorkspaceFeature, type EmailTask } from "jupiter-gen";
 import { useContext } from "react";
@@ -37,7 +33,9 @@ export const handle = {
 
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
-  const response = await getLoggedInApiClient(session).emailTask.findEmailTask({
+  const response = await getLoggedInApiClient(
+    session
+  ).pushIntegrations.emailTaskFind({
     allow_archived: false,
     include_inbox_task: false,
   });
@@ -70,7 +68,7 @@ export default function EmailTasks() {
       },
       {
         method: "post",
-        action: `/workspace/push-integrations/email-tasks/${emailTask.ref_id.the_id}`,
+        action: `/workspace/push-integrations/email-tasks/${emailTask.ref_id}`,
       }
     );
   }
@@ -99,13 +97,13 @@ export default function EmailTasks() {
         <EntityStack>
           {sortedEntries.map((entry) => (
             <EntityCard
-              key={entry.email_task.ref_id.the_id}
+              key={entry.email_task.ref_id}
               allowSwipe
               allowMarkNotDone
               onMarkNotDone={() => archiveEmailTask(entry.email_task)}
             >
               <EntityLink
-                to={`/workspace/push-integrations/email-tasks/${entry.email_task.ref_id.the_id}`}
+                to={`/workspace/push-integrations/email-tasks/${entry.email_task.ref_id}`}
               >
                 <EntityNameComponent
                   name={emailTaskNiceName(entry.email_task as EmailTask)}

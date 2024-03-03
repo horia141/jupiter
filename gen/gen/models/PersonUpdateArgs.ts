@@ -5,19 +5,21 @@
 import type { Difficulty } from './Difficulty';
 import type { Eisen } from './Eisen';
 import type { EntityId } from './EntityId';
-import type { EntityName } from './EntityName';
 import type { PersonBirthday } from './PersonBirthday';
+import type { PersonName } from './PersonName';
 import type { PersonRelationship } from './PersonRelationship';
 import type { RecurringTaskDueAtDay } from './RecurringTaskDueAtDay';
 import type { RecurringTaskDueAtMonth } from './RecurringTaskDueAtMonth';
-import type { RecurringTaskDueAtTime } from './RecurringTaskDueAtTime';
 import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
 
+/**
+ * PersonFindArgs.
+ */
 export type PersonUpdateArgs = {
     ref_id: EntityId;
     name: {
         should_change: boolean;
-        value?: EntityName;
+        value?: PersonName;
     };
     relationship: {
         should_change: boolean;
@@ -42,10 +44,6 @@ export type PersonUpdateArgs = {
     catch_up_actionable_from_month: {
         should_change: boolean;
         value?: RecurringTaskDueAtMonth;
-    };
-    catch_up_due_at_time: {
-        should_change: boolean;
-        value?: RecurringTaskDueAtTime;
     };
     catch_up_due_at_day: {
         should_change: boolean;

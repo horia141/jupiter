@@ -12,14 +12,14 @@ export class LoadProgressReporterTokenService {
     constructor(public readonly httpRequest: BaseHttpRequest) {}
 
     /**
-     * Load Progress Reporter Token
-     * Load a temporary access token useful for reading progress reporter updates.
-     * @param requestBody
-     * @returns LoadProgressReporterTokenResult Successful Response
+     * The use case for retrieving summaries about entities.
+     * The use case for retrieving summaries about entities.
+     * @param requestBody The input data
+     * @returns LoadProgressReporterTokenResult Successful response
      * @throws ApiError
      */
     public loadProgressReporterToken(
-        requestBody: LoadProgressReporterTokenArgs,
+        requestBody?: LoadProgressReporterTokenArgs,
     ): CancelablePromise<LoadProgressReporterTokenResult> {
         return this.httpRequest.request({
             method: 'POST',

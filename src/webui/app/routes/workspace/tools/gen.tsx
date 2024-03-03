@@ -22,11 +22,8 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import {
-  ShouldRevalidateFunction,
-  useActionData,
-  useTransition,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import {
   ApiError,
@@ -141,11 +138,9 @@ export async function action({ request }: ActionArgs) {
       gen_even_if_not_modified: form.gen_even_if_not_modified,
       today:
         form.today !== undefined && form.today !== ""
-          ? {
-              the_date: DateTime.fromISO(form.today, {
-                zone: "utc",
-              }).toISODate(),
-            }
+          ? DateTime.fromISO(form.today, {
+              zone: "utc",
+            }).toISODate()
           : undefined,
       gen_targets: fixSelectOutputToEnum<SyncTarget>(form.gen_targets),
       period: fixSelectOutputToEnum<RecurringTaskPeriod>(form.period),
@@ -189,36 +184,36 @@ export default function Gen() {
   const [selectedProjects, setSelectedProjects] = useState<ProjectOption[]>([]);
   const projectOptions =
     loaderData.summaries.projects?.map((p) => ({
-      refId: p.ref_id.the_id,
-      label: p.name.the_name,
+      refId: p.ref_id,
+      label: p.name,
     })) ?? [];
 
   const [selectedHabits, setSelectedHabits] = useState<HabitOptions[]>([]);
   const habitOptions =
     loaderData.summaries.habits?.map((p) => ({
-      refId: p.ref_id.the_id,
-      label: p.name.the_name,
+      refId: p.ref_id,
+      label: p.name,
     })) ?? [];
 
   const [selectedChores, setSelectedChores] = useState<ChoreOptions[]>([]);
   const choreOptions =
     loaderData.summaries.chores?.map((p) => ({
-      refId: p.ref_id.the_id,
-      label: p.name.the_name,
+      refId: p.ref_id,
+      label: p.name,
     })) ?? [];
 
   const [selectedMetrics, setSelectedMetrics] = useState<MetricOptions[]>([]);
   const metricOptions =
     loaderData.summaries.metrics?.map((p) => ({
-      refId: p.ref_id.the_id,
-      label: p.icon ? `${p.icon.the_icon} ${p.name.the_name}` : p.name.the_name,
+      refId: p.ref_id,
+      label: p.icon ? `${p.icon} ${p.name}` : p.name,
     })) ?? [];
 
   const [selectedPersons, setSelectedPersons] = useState<PersonOptions[]>([]);
   const personOptions =
     loaderData.summaries.persons?.map((p) => ({
-      refId: p.ref_id.the_id,
-      label: p.name.the_name,
+      refId: p.ref_id,
+      label: p.name,
     })) ?? [];
 
   return (
@@ -473,7 +468,7 @@ export default function Gen() {
 
       {loaderData.loadRuns.entries.map((entry) => {
         return (
-          <Accordion key={entry.ref_id.the_id}>
+          <Accordion key={entry.ref_id}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <AccordionHeader>
                 Run from <EventSourceTag source={entry.source} />
@@ -511,9 +506,7 @@ export default function Gen() {
                 Filter projects ref ids:{" "}
                 {entry.filter_project_ref_ids &&
                   entry.filter_project_ref_ids.map((refId) => (
-                    <React.Fragment key={refId.the_id}>
-                      {refId.the_id}
-                    </React.Fragment>
+                    <React.Fragment key={refId}>{refId}</React.Fragment>
                   ))}
                 {!entry.filter_project_ref_ids && <SlimChip label={"All"} />}
               </GenTargetsSection>
@@ -521,9 +514,7 @@ export default function Gen() {
                 Filter habits ref ids:{" "}
                 {entry.filter_habit_ref_ids &&
                   entry.filter_habit_ref_ids.map((refId) => (
-                    <React.Fragment key={refId.the_id}>
-                      {refId.the_id}
-                    </React.Fragment>
+                    <React.Fragment key={refId}>{refId}</React.Fragment>
                   ))}
                 {!entry.filter_habit_ref_ids && <SlimChip label={"All"} />}
               </GenTargetsSection>
@@ -531,9 +522,7 @@ export default function Gen() {
                 Filter chores ref ids:{" "}
                 {entry.filter_chore_ref_ids &&
                   entry.filter_chore_ref_ids.map((refId) => (
-                    <React.Fragment key={refId.the_id}>
-                      {refId.the_id}
-                    </React.Fragment>
+                    <React.Fragment key={refId}>{refId}</React.Fragment>
                   ))}
                 {!entry.filter_chore_ref_ids && <SlimChip label={"All"} />}
               </GenTargetsSection>
@@ -541,9 +530,7 @@ export default function Gen() {
                 Filter metrics ref ids:{" "}
                 {entry.filter_metric_ref_ids &&
                   entry.filter_metric_ref_ids.map((refId) => (
-                    <React.Fragment key={refId.the_id}>
-                      {refId.the_id}
-                    </React.Fragment>
+                    <React.Fragment key={refId}>{refId}</React.Fragment>
                   ))}
                 {!entry.filter_metric_ref_ids && <SlimChip label={"All"} />}
               </GenTargetsSection>
@@ -551,9 +538,7 @@ export default function Gen() {
                 Filter persons ref ids:{" "}
                 {entry.filter_person_ref_ids &&
                   entry.filter_person_ref_ids.map((refId) => (
-                    <React.Fragment key={refId.the_id}>
-                      {refId.the_id}
-                    </React.Fragment>
+                    <React.Fragment key={refId}>{refId}</React.Fragment>
                   ))}
                 {!entry.filter_person_ref_ids && <SlimChip label={"All"} />}
               </GenTargetsSection>
@@ -561,9 +546,7 @@ export default function Gen() {
                 Filter Slack task ref ids:{" "}
                 {entry.filter_slack_task_ref_ids &&
                   entry.filter_slack_task_ref_ids.map((refId) => (
-                    <React.Fragment key={refId.the_id}>
-                      {refId.the_id}
-                    </React.Fragment>
+                    <React.Fragment key={refId}>{refId}</React.Fragment>
                   ))}
                 {!entry.filter_slack_task_ref_ids && <SlimChip label={"All"} />}
               </GenTargetsSection>
@@ -571,9 +554,7 @@ export default function Gen() {
                 Filter email task ref ids:{" "}
                 {entry.filter_email_task_ref_ids &&
                   entry.filter_email_task_ref_ids.map((refId) => (
-                    <React.Fragment key={refId.the_id}>
-                      {refId.the_id}
-                    </React.Fragment>
+                    <React.Fragment key={refId}>{refId}</React.Fragment>
                   ))}
                 {!entry.filter_email_task_ref_ids && <SlimChip label={"All"} />}
               </GenTargetsSection>
@@ -587,7 +568,7 @@ export default function Gen() {
                   </Divider>
 
                   {entry.entity_created_records.map((record) => (
-                    <EntityCard key={record.ref_id.the_id}>
+                    <EntityCard key={record.ref_id}>
                       <EntitySummaryLink summary={record} />
                     </EntityCard>
                   ))}
@@ -603,7 +584,7 @@ export default function Gen() {
                   </Divider>
 
                   {entry.entity_updated_records.map((record) => (
-                    <EntityCard key={record.ref_id.the_id}>
+                    <EntityCard key={record.ref_id}>
                       <EntitySummaryLink summary={record} />
                     </EntityCard>
                   ))}
@@ -619,7 +600,7 @@ export default function Gen() {
                   </Divider>
 
                   {entry.entity_removed_records.map((record) => (
-                    <EntityCard key={record.ref_id.the_id}>
+                    <EntityCard key={record.ref_id}>
                       <EntitySummaryLink summary={record} removed />
                     </EntityCard>
                   ))}

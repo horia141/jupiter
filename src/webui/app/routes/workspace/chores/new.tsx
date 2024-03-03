@@ -15,11 +15,8 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import {
-  ShouldRevalidateFunction,
-  useActionData,
-  useTransition,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import type { Project } from "jupiter-gen";
 import {
@@ -55,7 +52,6 @@ const CreateFormSchema = {
   difficulty: z.union([z.nativeEnum(Difficulty), z.literal("default")]),
   actionableFromDay: z.string().optional(),
   actionableFromMonth: z.string().optional(),
-  dueAtTime: z.string().optional(),
   dueAtDay: z.string().optional(),
   dueAtMonth: z.string().optional(),
   mustDo: CheckboxAsString,
@@ -88,36 +84,26 @@ export async function action({ request }: ActionArgs) {
   const form = await parseForm(request, CreateFormSchema);
 
   try {
-    const result = await getLoggedInApiClient(session).chore.createChore({
-      name: { the_name: form.name },
-      project_ref_id:
-        form.project !== undefined ? { the_id: form.project } : undefined,
+    const result = await getLoggedInApiClient(session).chores.choreCreate({
+      name: form.name,
+      project_ref_id: form.project !== undefined ? form.project : undefined,
       period: form.period,
       eisen: form.eisen,
       difficulty: form.difficulty === "default" ? undefined : form.difficulty,
       actionable_from_day: form.actionableFromDay
-        ? { the_day: parseInt(form.actionableFromDay) }
+        ? parseInt(form.actionableFromDay)
         : undefined,
       actionable_from_month: form.actionableFromMonth
-        ? { the_month: parseInt(form.actionableFromMonth) }
+        ? parseInt(form.actionableFromMonth)
         : undefined,
-      due_at_time: form.dueAtTime ? { the_time: form.dueAtTime } : undefined,
-      due_at_day: form.dueAtDay
-        ? { the_day: parseInt(form.dueAtDay) }
-        : undefined,
-      due_at_month: form.dueAtMonth
-        ? { the_month: parseInt(form.dueAtMonth) }
-        : undefined,
+      due_at_day: form.dueAtDay ? parseInt(form.dueAtDay) : undefined,
+      due_at_month: form.dueAtMonth ? parseInt(form.dueAtMonth) : undefined,
       must_do: form.mustDo,
-      start_at_date: form.startAtDate
-        ? { the_date: form.startAtDate, the_datetime: undefined }
-        : undefined,
-      end_at_date: form.endAtDate
-        ? { the_date: form.endAtDate, the_datetime: undefined }
-        : undefined,
+      start_at_date: form.startAtDate ? form.startAtDate : undefined,
+      end_at_date: form.endAtDate ? form.endAtDate : undefined,
     });
 
-    return redirect(`/workspace/chores/${result.new_chore.ref_id.the_id}`);
+    return redirect(`/workspace/chores/${result.new_chore.ref_id}`);
   } catch (error) {
     if (
       error instanceof ApiError &&
@@ -187,12 +173,12 @@ export default function NewChore() {
                   labelId="project"
                   name="project"
                   readOnly={!inputsEnabled}
-                  defaultValue={loaderData.defaultProject.ref_id.the_id}
+                  defaultValue={loaderData.defaultProject.ref_id}
                   label="Project"
                 >
                   {loaderData.allProjects.map((p: Project) => (
-                    <MenuItem key={p.ref_id.the_id} value={p.ref_id.the_id}>
-                      {p.name.the_name}
+                    <MenuItem key={p.ref_id} value={p.ref_id}>
+                      {p.name}
                     </MenuItem>
                   ))}
                 </Select>
@@ -265,16 +251,6 @@ export default function NewChore() {
                 actionResult={actionData}
                 fieldName="/actionable_from_month"
               />
-            </FormControl>
-
-            <FormControl fullWidth>
-              <InputLabel id="dueAtTime">Due At Time</InputLabel>
-              <OutlinedInput
-                label="Due At Time"
-                name="dueAtTime"
-                readOnly={!inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/due_at_time" />
             </FormControl>
 
             <FormControl fullWidth>

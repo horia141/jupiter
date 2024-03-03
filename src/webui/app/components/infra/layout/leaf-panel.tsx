@@ -7,7 +7,8 @@ import SwitchLeftIcon from "@mui/icons-material/SwitchLeft";
 import { ButtonGroup, IconButton, styled } from "@mui/material";
 import { Form, Link, useLocation, useNavigate } from "@remix-run/react";
 import { motion, useIsPresent } from "framer-motion";
-import { PropsWithChildren, useEffect, useRef, useState } from "react";
+import type { PropsWithChildren } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   LeafPanelExpansionState,
   loadLeafPanelExpansion,
@@ -52,36 +53,38 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
     BIG_SCREEN_WIDTH_FULL_INT
   );
 
-  function handleScroll(ref: HTMLDivElement, pathname: string) {
-    if (!isPresent) {
-      return;
-    }
-    saveScrollPosition(ref, pathname);
-  }
+  const handleScroll = useCallback(
+    (ref: HTMLDivElement, pathname: string) => {
+      if (!isPresent) {
+        return;
+      }
+      saveScrollPosition(ref, pathname);
+    },
+    [isPresent]
+  );
 
   useEffect(() => {
     if (containerRef.current === null) {
       return;
     }
 
+    const theRef = containerRef.current;
+
     if (!isPresent) {
       return;
     }
 
     function handleScrollSpecial() {
-      handleScroll(containerRef.current!, location.pathname);
+      handleScroll(theRef, location.pathname);
     }
 
-    restoreScrollPosition(containerRef.current, location.pathname);
-    containerRef.current.addEventListener("scrollend", handleScrollSpecial);
+    restoreScrollPosition(theRef, location.pathname);
+    theRef.addEventListener("scrollend", handleScrollSpecial);
 
     return () => {
-      containerRef.current?.removeEventListener(
-        "scrollend",
-        handleScrollSpecial
-      );
+      theRef.removeEventListener("scrollend", handleScrollSpecial);
     };
-  }, [containerRef, location]);
+  }, [containerRef, handleScroll, isPresent, location]);
 
   // setting right to calc((100vw - BIG_SCREEN_WIDTH_FULL_INT / 2)) doesn't work with framer
   // motion. It seems to be a bug with framer motion. So we have to calculate the right
@@ -118,7 +121,7 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
       return;
     }
     setExpansionState(savedExpansionState);
-  }, []);
+  }, [props.returnLocation]);
 
   function handleScrollTop() {
     containerRef.current?.scrollTo({

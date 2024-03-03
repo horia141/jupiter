@@ -26,7 +26,7 @@ class SmartListItem(LeafEntity):
     smart_list: ParentLink
     name: SmartListItemName
     is_done: bool
-    tags_ref_id: List[EntityId]
+    tags_ref_id: list[EntityId]
     url: Optional[URL]
 
     tags = RefsMany(SmartListTag, ref_id=IsOneOfRefId("tags_ref_id"))

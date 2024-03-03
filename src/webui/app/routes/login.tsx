@@ -63,12 +63,8 @@ export async function action({ request }: ActionArgs) {
 
   try {
     const result = await getGuestApiClient(session).login.login({
-      email_address: {
-        the_address: form.emailAddress,
-      },
-      password: {
-        password_raw: form.password,
-      },
+      email_address: form.emailAddress,
+      password: form.password,
     });
 
     session.set("authTokenExt", result.auth_token_ext);

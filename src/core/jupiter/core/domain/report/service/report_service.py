@@ -5,11 +5,12 @@ from operator import itemgetter
 from typing import DefaultDict, Dict, Final, Iterable, List, Optional, cast
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
+from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.core.domain.big_plans.big_plan_status import BigPlanStatus
 from jupiter.core.domain.chores.chore import Chore
+from jupiter.core.domain.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.core import schedules
 from jupiter.core.domain.core.adate import ADate
-from jupiter.core.domain.core.entity_name import EntityName
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.core.schedules import Schedule
 from jupiter.core.domain.features import (
@@ -21,12 +22,22 @@ from jupiter.core.domain.gamification.service.score_overview_service import (
     ScoreOverviewService,
 )
 from jupiter.core.domain.habits.habit import Habit
-from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.habits.habit_collection import HabitCollection
+from jupiter.core.domain.inbox_tasks.inbox_task import (
+    InboxTask,
+    InboxTaskRepository,
+)
+from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.core.domain.metrics.metric import Metric
+from jupiter.core.domain.metrics.metric_collection import MetricCollection
+from jupiter.core.domain.persons.person import Person
+from jupiter.core.domain.persons.person_collection import PersonCollection
 from jupiter.core.domain.projects.project import Project
+from jupiter.core.domain.projects.project_collection import ProjectCollection
 from jupiter.core.domain.projects.project_name import ProjectName
+from jupiter.core.domain.report.report_breakdown import ReportBreakdown
 from jupiter.core.domain.report.report_period_result import (
     BigPlanWorkSummary,
     InboxTasksSummary,
@@ -46,34 +57,42 @@ from jupiter.core.domain.storage_engine import DomainStorageEngine
 from jupiter.core.domain.user.user import User
 from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.base.timestamp import Timestamp
+from jupiter.core.framework.entity import NoFilter
 from jupiter.core.framework.errors import InputValidationError
+from jupiter.core.utils.time_provider import TimeProvider
 
 
 class ReportService:
     """The domain service which constructs a report."""
 
     _storage_engine: Final[DomainStorageEngine]
+    _time_provider: Final[TimeProvider]
 
-    def __init__(self, domain_storage_engine: DomainStorageEngine) -> None:
+    def __init__(
+        self, domain_storage_engine: DomainStorageEngine, time_provider: TimeProvider
+    ) -> None:
         """Constructor."""
         self._storage_engine = domain_storage_engine
+        self._time_provider = time_provider
 
     async def do_it(
         self,
         user: User,
         workspace: Workspace,
-        today: ADate,
+        today: Optional[ADate],
         period: RecurringTaskPeriod,
-        filter_sources: Optional[Iterable[InboxTaskSource]] = None,
-        filter_project_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_big_plan_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_habit_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_chore_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_metric_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_person_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_slack_task_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_email_task_ref_ids: Optional[Iterable[EntityId]] = None,
+        sources: Optional[list[InboxTaskSource]] = None,
+        breakdowns: list[ReportBreakdown] | None = None,
+        filter_project_ref_ids: Optional[List[EntityId]] = None,
+        filter_big_plan_ref_ids: Optional[List[EntityId]] = None,
+        filter_habit_ref_ids: Optional[List[EntityId]] = None,
+        filter_chore_ref_ids: Optional[List[EntityId]] = None,
+        filter_metric_ref_ids: Optional[List[EntityId]] = None,
+        filter_person_ref_ids: Optional[List[EntityId]] = None,
+        filter_slack_task_ref_ids: Optional[List[EntityId]] = None,
+        filter_email_task_ref_ids: Optional[List[EntityId]] = None,
         breakdown_period: Optional[RecurringTaskPeriod] = None,
     ) -> ReportPeriodResult:
         """Compute the report."""
@@ -113,21 +132,33 @@ class ReportService:
         ):
             raise FeatureUnavailableError(WorkspaceFeature.EMAIL_TASKS)
 
-        filter_sources = (
-            filter_sources
-            if filter_sources is not None
+        today = today or self._time_provider.get_current_date()
+
+        sources = (
+            sources
+            if sources is not None
             else workspace.infer_sources_for_enabled_features(None)
         )
 
         big_diff = list(
-            set(filter_sources).difference(
-                workspace.infer_sources_for_enabled_features(filter_sources)
+            set(sources).difference(
+                workspace.infer_sources_for_enabled_features(sources)
             )
         )
         if len(big_diff) > 0:
             raise FeatureUnavailableError(
                 f"Sources {','.join(s.value for s in big_diff)} are not supported in this workspace"
             )
+
+        breakdowns = (
+            breakdowns
+            if breakdowns is not None and len(breakdowns) > 0
+            else [ReportBreakdown.GLOBAL]
+        )
+
+        if ReportBreakdown.PERIODS in breakdowns:
+            if breakdown_period is None:
+                breakdown_period = self._one_smaller_than_period(period)
 
         if breakdown_period:
             self._check_period_against_breakdown_period(
@@ -136,12 +167,13 @@ class ReportService:
             )
 
         async with self._storage_engine.get_unit_of_work() as uow:
-            project_collection = await uow.project_collection_repository.load_by_parent(
+            project_collection = await uow.get_for(ProjectCollection).load_by_parent(
                 workspace.ref_id,
             )
-            projects = await uow.project_repository.find_all_with_filters(
+            projects = await uow.get_for(Project).find_all_generic(
                 parent_ref_id=project_collection.ref_id,
-                filter_ref_ids=filter_project_ref_ids,
+                allow_archived=True,
+                ref_id=filter_project_ref_ids or NoFilter(),
             )
             filter_project_ref_ids = [p.ref_id for p in projects]
             projects_by_ref_id: Dict[EntityId, Project] = {
@@ -149,37 +181,35 @@ class ReportService:
             }
             projects_by_name: Dict[ProjectName, Project] = {p.name: p for p in projects}
 
-            inbox_task_collection = (
-                await uow.inbox_task_collection_repository.load_by_parent(
-                    workspace.ref_id,
-                )
-            )
-            habit_collection = await uow.habit_collection_repository.load_by_parent(
+            inbox_task_collection = await uow.get_for(
+                InboxTaskCollection
+            ).load_by_parent(
                 workspace.ref_id,
             )
-            chore_collection = await uow.chore_collection_repository.load_by_parent(
+            habit_collection = await uow.get_for(HabitCollection).load_by_parent(
                 workspace.ref_id,
             )
-            big_plan_collection = (
-                await uow.big_plan_collection_repository.load_by_parent(
-                    workspace.ref_id,
-                )
+            chore_collection = await uow.get_for(ChoreCollection).load_by_parent(
+                workspace.ref_id,
+            )
+            big_plan_collection = await uow.get_for(BigPlanCollection).load_by_parent(
+                workspace.ref_id,
             )
 
-            metric_collection = await uow.metric_collection_repository.load_by_parent(
+            metric_collection = await uow.get_for(MetricCollection).load_by_parent(
                 workspace.ref_id,
             )
-            metrics = await uow.metric_repository.find_all(
+            metrics = await uow.get_for(Metric).find_all(
                 parent_ref_id=metric_collection.ref_id,
                 allow_archived=True,
                 filter_ref_ids=filter_metric_ref_ids,
             )
             metrics_by_ref_id: Dict[EntityId, Metric] = {m.ref_id: m for m in metrics}
 
-            person_collection = await uow.person_collection_repository.load_by_parent(
+            person_collection = await uow.get_for(PersonCollection).load_by_parent(
                 workspace.ref_id,
             )
-            persons = await uow.person_repository.find_all(
+            persons = await uow.get_for(Person).find_all(
                 parent_ref_id=person_collection.ref_id,
                 allow_archived=True,
                 filter_ref_ids=filter_person_ref_ids,
@@ -190,8 +220,6 @@ class ReportService:
                 period,
                 EntityName("Helper"),
                 today.to_timestamp_at_end_of_day(),
-                user.timezone,
-                None,
                 None,
                 None,
                 None,
@@ -199,12 +227,14 @@ class ReportService:
                 None,
             )
 
-            raw_all_inbox_tasks = await uow.inbox_task_repository.find_all_with_filters(
+            raw_all_inbox_tasks = await uow.get(
+                InboxTaskRepository
+            ).find_all_with_filters(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
-                filter_sources=filter_sources,
+                filter_sources=sources,
                 filter_project_ref_ids=filter_project_ref_ids,
-                filter_last_modified_time_start=schedule.first_day.start_of_day(),
+                filter_last_modified_time_start=schedule.first_day,
                 filter_last_modified_time_end=schedule.end_day.next_day(),
             )
             all_inbox_tasks = [
@@ -281,31 +311,31 @@ class ReportService:
                 )
             ]
 
-            all_habits = await uow.habit_repository.find_all_with_filters(
+            all_habits = await uow.get_for(Habit).find_all_generic(
                 parent_ref_id=habit_collection.ref_id,
                 allow_archived=True,
-                filter_ref_ids=filter_habit_ref_ids,
-                filter_project_ref_ids=filter_project_ref_ids,
+                ref_id=filter_habit_ref_ids or NoFilter(),
+                project_ref_id=filter_project_ref_ids or NoFilter(),
             )
             all_habits_by_ref_id: Dict[EntityId, Habit] = {
                 rt.ref_id: rt for rt in all_habits
             }
 
-            all_chores = await uow.chore_repository.find_all_with_filters(
+            all_chores = await uow.get_for(Chore).find_all_generic(
                 parent_ref_id=chore_collection.ref_id,
                 allow_archived=True,
-                filter_ref_ids=filter_chore_ref_ids,
-                filter_project_ref_ids=filter_project_ref_ids,
+                ref_id=filter_chore_ref_ids or NoFilter(),
+                project_ref_id=filter_project_ref_ids or NoFilter(),
             )
             all_chores_by_ref_id: Dict[EntityId, Chore] = {
                 rt.ref_id: rt for rt in all_chores
             }
 
-            all_big_plans = await uow.big_plan_repository.find_all_with_filters(
+            all_big_plans = await uow.get_for(BigPlan).find_all_generic(
                 parent_ref_id=big_plan_collection.ref_id,
                 allow_archived=True,
-                filter_ref_ids=filter_big_plan_ref_ids,
-                filter_project_ref_ids=filter_project_ref_ids,
+                ref_id=filter_big_plan_ref_ids or NoFilter(),
+                project_ref_id=filter_project_ref_ids or NoFilter(),
             )
             big_plans_by_ref_id: Dict[EntityId, BigPlan] = {
                 bp.ref_id: bp for bp in all_big_plans
@@ -387,15 +417,13 @@ class ReportService:
         per_period_breakdown = []
         if breakdown_period:
             all_schedules = {}
-            curr_date = schedule.first_day.start_of_day()
-            end_date = schedule.end_day.end_of_day()
-            while curr_date < end_date and curr_date <= today:
+            curr_date = schedule.first_day
+            end_date = schedule.end_day
+            while curr_date <= end_date and curr_date <= today:
                 phase_schedule = schedules.get_schedule(
                     breakdown_period,
                     EntityName("Sub-period"),
                     curr_date.to_timestamp_at_end_of_day(),
-                    user.timezone,
-                    None,
                     None,
                     None,
                     None,
@@ -539,6 +567,9 @@ class ReportService:
         return ReportPeriodResult(
             today=today,
             period=period,
+            sources=sources,
+            breakdowns=breakdowns,
+            breakdown_period=breakdown_period,
             global_inbox_tasks_summary=global_inbox_tasks_summary,
             global_big_plans_summary=global_big_plans_summary,
             per_project_breakdown=per_project_breakdown,
@@ -824,6 +855,19 @@ class ReportService:
         )
 
     @staticmethod
+    def _one_smaller_than_period(period: RecurringTaskPeriod) -> RecurringTaskPeriod:
+        if period == RecurringTaskPeriod.YEARLY:
+            return RecurringTaskPeriod.QUARTERLY
+        elif period == RecurringTaskPeriod.QUARTERLY:
+            return RecurringTaskPeriod.MONTHLY
+        elif period == RecurringTaskPeriod.MONTHLY:
+            return RecurringTaskPeriod.WEEKLY
+        elif period == RecurringTaskPeriod.WEEKLY:
+            return RecurringTaskPeriod.DAILY
+        else:
+            raise InputValidationError("Cannot breakdown daily by period")
+
+    @staticmethod
     def _check_period_against_breakdown_period(
         breakdown_period: RecurringTaskPeriod,
         period: RecurringTaskPeriod,
@@ -834,5 +878,5 @@ class ReportService:
         period_idx = [v.value for v in RecurringTaskPeriod].index(period.value)
         if breakdown_period_idx >= period_idx:
             raise InputValidationError(
-                f"Cannot breakdown {period.to_nice()} with {breakdown_period.to_nice()}",
+                f"Cannot breakdown {period} with {breakdown_period}",
             )
