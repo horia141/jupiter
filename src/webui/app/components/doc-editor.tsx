@@ -1,13 +1,21 @@
 import { TextField } from "@mui/material";
 import { useFetcher } from "@remix-run/react";
-import { Doc, Note } from "jupiter-gen";
-import { lazy, Suspense, useEffect, useState } from "react";
+import { Doc, DocCreateResult, Note } from "jupiter-gen";
+import { ComponentType, lazy, Suspense, useEffect, useState } from "react";
 import { ClientOnly } from "remix-utils";
-import { SomeErrorNoData } from "~/logic/action-result";
+import {
+  isNoErrorSomeData,
+  NoErrorSomeData,
+  SomeErrorNoData,
+} from "~/logic/action-result";
 import { OneOfNoteContentBlock } from "~/logic/domain/notes";
 import { FieldError, GlobalError } from "./infra/errors";
 
-const BlockEditor = lazy(() => import("~/components/infra/block-editor"));
+const BlockEditor = lazy(() =>
+  import("~/components/infra/block-editor.js").then((module) => ({
+    default: module.default as unknown as ComponentType<any>,
+  }))
+);
 
 interface DocEditorProps {
   initialDoc?: Doc;
@@ -20,7 +28,9 @@ export function DocEditor({
   initialNote,
   inputsEnabled,
 }: DocEditorProps) {
-  const cardActionFetcher = useFetcher<SomeErrorNoData>();
+  const cardActionFetcher = useFetcher<
+    SomeErrorNoData | NoErrorSomeData<DocCreateResult>
+  >();
 
   const [dataModified, setDataModified] = useState(false);
   const [isActing, setIsActing] = useState(false);
@@ -36,7 +46,7 @@ export function DocEditor({
 
   function act() {
     setIsActing(true);
-    if (docId) {
+    if (docId && noteId) {
       // We already created this thing, we just need to update!
       cardActionFetcher.submit(
         {
@@ -79,7 +89,8 @@ export function DocEditor({
   useEffect(() => {
     if (
       cardActionFetcher.submission?.action.endsWith("/create-action") &&
-      cardActionFetcher.data
+      cardActionFetcher.data &&
+      isNoErrorSomeData(cardActionFetcher.data)
     ) {
       setDocId(cardActionFetcher.data?.data.new_doc.ref_id);
       setNoteId(cardActionFetcher.data?.data.new_note.ref_id);
@@ -124,7 +135,7 @@ export function DocEditor({
             <BlockEditor
               initialContent={noteContent}
               inputsEnabled={inputsEnabled}
-              onChange={(c) => {
+              onChange={(c: Array<OneOfNoteContentBlock>) => {
                 setDataModified(true);
                 setNoteContent(c);
               }}

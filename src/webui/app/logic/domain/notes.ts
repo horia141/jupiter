@@ -3,7 +3,10 @@ import {
   ChecklistBlock,
   CodeBlock,
   DividerBlock,
+  EntityReferenceBlock,
   HeadingBlock,
+  LinkBlock,
+  NamedEntityTag,
   NumberedListBlock,
   ParagraphBlock,
   QuoteBlock,
@@ -20,7 +23,9 @@ export type OneOfNoteContentBlock =
   | TableBlock
   | CodeBlock
   | QuoteBlock
-  | DividerBlock;
+  | DividerBlock
+  | LinkBlock
+  | EntityReferenceBlock;
 
 const BASE_LIST_ITEM_SCHEMA = z.object({
   text: z.string(),
@@ -91,6 +96,19 @@ const NOTE_CONTENT_BLOCK_PARSER = z.discriminatedUnion("kind", [
   z.object({
     kind: z.literal("divider").transform(() => DividerBlock.kind.DIVIDER),
     correlation_id: z.string(),
+  }),
+  z.object({
+    kind: z.literal("link").transform(() => LinkBlock.kind.LINK),
+    correlation_id: z.string(),
+    url: z.string(),
+  }),
+  z.object({
+    kind: z
+      .literal("entity-reference")
+      .transform(() => EntityReferenceBlock.kind.ENTITY_REFERENCE),
+    correlation_id: z.string(),
+    entity_tag: z.nativeEnum(NamedEntityTag),
+    ref_id: z.string(),
   }),
 ]);
 

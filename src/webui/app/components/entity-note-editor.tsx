@@ -1,13 +1,17 @@
 import { Box } from "@mui/material";
 import { useFetcher } from "@remix-run/react";
 import { Note } from "jupiter-gen";
-import { lazy, Suspense, useEffect, useState } from "react";
+import { ComponentType, lazy, Suspense, useEffect, useState } from "react";
 import { ClientOnly } from "remix-utils";
 import { SomeErrorNoData } from "~/logic/action-result";
 import { OneOfNoteContentBlock } from "~/logic/domain/notes";
 import { FieldError, GlobalError } from "./infra/errors";
 
-const BlockEditor = lazy(() => import("~/components/infra/block-editor"));
+const BlockEditor = lazy(() =>
+  import("~/components/infra/block-editor.js").then((module) => ({
+    default: module.default as unknown as ComponentType<any>,
+  }))
+);
 
 interface EntityNoteEditorProps {
   initialNote: Note;
@@ -78,7 +82,7 @@ export function EntityNoteEditor({
               <BlockEditor
                 initialContent={noteContent}
                 inputsEnabled={inputsEnabled && !initialNote.archived}
-                onChange={(c) => {
+                onChange={(c: Array<OneOfNoteContentBlock>) => {
                   setDataModified(true);
                   setNoteContent(c);
                 }}

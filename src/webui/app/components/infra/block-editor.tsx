@@ -12,7 +12,9 @@ import {
   ChecklistBlock,
   CodeBlock,
   DividerBlock,
+  EntityReferenceBlock,
   HeadingBlock,
+  LinkBlock,
   ListItem,
   NumberedListBlock,
   ParagraphBlock,
@@ -105,7 +107,11 @@ export default function BlockEditor(props: BlockEditorProps) {
 function transformContentBlocksToEditorJs(
   content: Array<OneOfNoteContentBlock>
 ): OutputData {
-  function transformListItemToEditorJs(listItem: ListItem) {
+  type EditorJsListItem = {
+    content: string;
+    items: Array<EditorJsListItem>;
+  };
+  function transformListItemToEditorJs(listItem: ListItem): EditorJsListItem {
     return {
       content: listItem.text,
       items: listItem.items.map(transformListItemToEditorJs),
@@ -193,6 +199,12 @@ function transformContentBlocksToEditorJs(
             id: block.correlation_id,
             data: {},
           };
+        case LinkBlock.kind.LINK:
+          throw new Error("Link blocks are not supported right now");
+        case EntityReferenceBlock.kind.ENTITY_REFERENCE:
+          throw new Error(
+            "Entity reference blocks are not supported right now"
+          );
       }
     }),
     version: "2.22.2",
@@ -244,10 +256,12 @@ function transformEditorJsToContentBlocks(
         return {
           kind: ChecklistBlock.kind.CHECKLIST,
           correlation_id: block.id as string,
-          items: block.data.items.map((item) => ({
-            text: item.text as string,
-            checked: item.checked as boolean,
-          })) as Array<{ text: string; checked: boolean }>,
+          items: block.data.items.map(
+            (item: { text: string; checked: boolean }) => ({
+              text: item.text,
+              checked: item.checked,
+            })
+          ),
         } as ChecklistBlock;
       case "table":
         return {
