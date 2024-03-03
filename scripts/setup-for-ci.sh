@@ -4,6 +4,8 @@ set -ex
 
 # Prepare environment
 
+sudo apt-get install -y libasound2-dev
+
 poetry config virtualenvs.create false
 poetry config virtualenvs.in-project false
 
