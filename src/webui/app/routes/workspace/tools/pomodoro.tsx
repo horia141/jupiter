@@ -8,9 +8,9 @@ import {
   styled,
   Typography,
 } from "@mui/material";
-import { ShouldRevalidateFunction } from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Duration } from "luxon";
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { ClientOnly } from "remix-utils";
 import { ToolPanel } from "~/components/infra/layout/tool-panel";
 import { GlobalPropertiesContext } from "~/global-properties-client";
@@ -65,18 +65,18 @@ export default function Pomodoro() {
     setIntervalHandle(undefined);
   }
 
-  function notifyToast() {
+  const notifyToast = useCallback(() => {
     if (!("Notification" in window)) {
       return;
     }
 
-    const notificationAlert = new Notification("Jupiter Pomodoro Timer", {
+    new Notification("Jupiter Pomodoro Timer", {
       icon: "/favicon.ico",
       body: `Your ${actualDuration.toFormat(
         "m"
       )} minutes Pomodor interval is finished!`,
     });
-  }
+  }, [actualDuration]);
 
   function notifyAudio() {
     const notificationAudio = new Audio("/pomodoro-notification.mp3");
@@ -91,7 +91,7 @@ export default function Pomodoro() {
       setTimeout(notifyToast, 0);
       setTimeout(notifyAudio, 0);
     }
-  }, [timerValue, intervalHandle]);
+  }, [timerValue, intervalHandle, notifyToast]);
 
   return (
     <ToolPanel>

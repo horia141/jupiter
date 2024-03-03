@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, Stack } from "@mui/material";
-import { json, LoaderArgs } from "@remix-run/node";
-import { ShouldRevalidateFunction } from "@remix-run/react";
+import type { LoaderArgs } from "@remix-run/node";
+import { json } from "@remix-run/node";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { getLoggedInApiClient } from "~/api-clients";
 import { ScoreHistory } from "~/components/gamification/score-history";
 import { ScoreOverview } from "~/components/gamification/score-overview";

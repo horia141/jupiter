@@ -14,9 +14,9 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   Link,
-  ShouldRevalidateFunction,
   useActionData,
   useFetcher,
   useParams,

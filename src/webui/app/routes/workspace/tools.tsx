@@ -1,4 +1,5 @@
-import { Outlet, ShouldRevalidateFunction } from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { Outlet } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";

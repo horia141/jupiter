@@ -1,4 +1,4 @@
-import { Timestamp } from "jupiter-gen";
+import type { Timestamp } from "jupiter-gen";
 import { DateTime } from "luxon";
 
 export function timestampToDate(timestamp: Timestamp): DateTime {

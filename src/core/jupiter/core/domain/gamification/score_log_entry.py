@@ -47,7 +47,7 @@ class ScoreLogEntry(LeafEntity):
 
         has_lucky_puppy_bonus = None
         if inbox_task.status == InboxTaskStatus.DONE:
-            has_lucky_puppy_bonus = random.randint(0, 99) < 10
+            has_lucky_puppy_bonus = random.randint(0, 99) < 10  # nosec
 
         return ScoreLogEntry._create(
             ctx,

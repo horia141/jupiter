@@ -50,6 +50,7 @@ class ScoreStats(Record):
         ctx: DomainContext,
         score_log_entry: ScoreLogEntry,
     ) -> "ScoreStats":
+        """Merge a score log entry into the score stats."""
         return self._new_version(
             ctx,
             total_score=max(0, self.total_score + score_log_entry.score),

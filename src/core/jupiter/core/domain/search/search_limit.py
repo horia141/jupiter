@@ -24,12 +24,18 @@ class SearchLimit(AtomicValue[int]):
 
 
 class SearchLimitDatabaseEncoder(PrimitiveAtomicValueDatabaseEncoder[SearchLimit]):
+    """Encode to a database primitive."""
+
     def to_primitive(self, value: SearchLimit) -> Primitive:
+        """Encode to a primitive."""
         return value.the_limit
 
 
 class SearchLimitDatabaseDecoder(PrimitiveAtomicValueDatabaseDecoder[SearchLimit]):
+    """Decode from a database primitive."""
+
     def from_raw_int(self, value: int) -> SearchLimit:
+        """Decode from a raw int."""
         if value < 1:
             raise InputValidationError("Expected limit to be a positive number")
 

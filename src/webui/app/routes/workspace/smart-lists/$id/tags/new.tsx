@@ -11,12 +11,8 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import {
-  ShouldRevalidateFunction,
-  useActionData,
-  useParams,
-  useTransition,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { useActionData, useParams, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { ApiError } from "jupiter-gen";
 import { z } from "zod";

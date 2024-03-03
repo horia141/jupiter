@@ -14,7 +14,8 @@ import {
 } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { ShouldRevalidateFunction, useTransition } from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import type { ReportResult } from "jupiter-gen";
 import { ApiError, RecurringTaskPeriod } from "jupiter-gen";
@@ -28,8 +29,8 @@ import { getLoggedInApiClient } from "~/api-clients";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { ToolPanel } from "~/components/infra/layout/tool-panel";
 import { ShowReport } from "~/components/show-report";
+import type { ActionResult } from "~/logic/action-result";
 import {
-  ActionResult,
   isNoErrorSomeData,
   noErrorSomeData,
   validationErrorToUIErrorInfo,
@@ -54,15 +55,6 @@ const QuerySchema = {
   breakdownPeriod: z
     .union([z.nativeEnum(RecurringTaskPeriod), z.literal("none")])
     .optional(),
-};
-
-const ReportFormSchema = {
-  today: z.string().optional(),
-  period: z.nativeEnum(RecurringTaskPeriod),
-  breakdownPeriod: z.union([
-    z.nativeEnum(RecurringTaskPeriod),
-    z.literal("none"),
-  ]),
 };
 
 export const handle = {

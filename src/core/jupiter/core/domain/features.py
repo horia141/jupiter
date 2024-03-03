@@ -78,6 +78,7 @@ class UserFeatureFlagsControls(CompositeValue):
     controls: Dict[UserFeature, FeatureControl]
 
     def standard_flag_for(self, feature: UserFeature) -> bool:
+        """Get the standard flag for a feature."""
         return self.controls[feature].standard_flag
 
     def validate_and_complete(
@@ -130,6 +131,7 @@ class WorkspaceFeatureFlagsControls(CompositeValue):
     controls: Dict[WorkspaceFeature, FeatureControl]
 
     def standard_flag_for(self, feature: WorkspaceFeature) -> bool:
+        """Get the standard flag for a feature."""
         return self.controls[feature].standard_flag
 
     def validate_and_complete(

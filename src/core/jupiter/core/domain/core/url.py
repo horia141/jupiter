@@ -30,12 +30,18 @@ class URL(AtomicValue[str]):
 
 
 class URLDatabaseEncoder(PrimitiveAtomicValueDatabaseEncoder[URL]):
+    """Encode to a database primitive."""
+
     def to_primitive(self, value: URL) -> Primitive:
+        """Encode to a database primitive."""
         return value.the_url
 
 
 class URLDatabaseDecoder(PrimitiveAtomicValueDatabaseDecoder[URL]):
+    """Decode from a database primitive."""
+
     def from_raw_str(self, value: str) -> URL:
+        """Decode from a raw string."""
         url_str: str = value.strip()
 
         validation_result = validators.url(url_str)

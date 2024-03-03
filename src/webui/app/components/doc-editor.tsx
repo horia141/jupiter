@@ -1,19 +1,18 @@
 import { TextField } from "@mui/material";
 import { useFetcher } from "@remix-run/react";
-import { Doc, DocCreateResult, Note } from "jupiter-gen";
-import { ComponentType, lazy, Suspense, useEffect, useState } from "react";
+import type { Doc, DocCreateResult, Note } from "jupiter-gen";
+import type { ComponentType } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import { ClientOnly } from "remix-utils";
-import {
-  isNoErrorSomeData,
-  NoErrorSomeData,
-  SomeErrorNoData,
-} from "~/logic/action-result";
-import { OneOfNoteContentBlock } from "~/logic/domain/notes";
+import type { NoErrorSomeData, SomeErrorNoData } from "~/logic/action-result";
+import { isNoErrorSomeData } from "~/logic/action-result";
+import type { OneOfNoteContentBlock } from "~/logic/domain/notes";
+import type { BlockEditorProps } from "./infra/block-editor";
 import { FieldError, GlobalError } from "./infra/errors";
 
 const BlockEditor = lazy(() =>
   import("~/components/infra/block-editor.js").then((module) => ({
-    default: module.default as unknown as ComponentType<any>,
+    default: module.default as unknown as ComponentType<BlockEditorProps>,
   }))
 );
 
@@ -44,7 +43,7 @@ export function DocEditor({
     initialNote ? initialNote.content : []
   );
 
-  function act() {
+  const act = useCallback(() => {
     setIsActing(true);
     if (docId && noteId) {
       // We already created this thing, we just need to update!
@@ -74,7 +73,7 @@ export function DocEditor({
       );
     }
     setDataModified(false);
-  }
+  }, [cardActionFetcher, docId, noteContent, noteId, noteName]);
 
   useEffect(() => {
     if (dataModified) {
@@ -84,7 +83,7 @@ export function DocEditor({
         setShouldAct(true);
       }
     }
-  }, [dataModified, docId, noteId, noteName, noteContent]);
+  }, [dataModified, docId, noteId, noteName, noteContent, isActing, act]);
 
   useEffect(() => {
     if (
@@ -106,7 +105,7 @@ export function DocEditor({
         setShouldAct(false);
       }
     }
-  }, [cardActionFetcher]);
+  }, [cardActionFetcher, act, shouldAct]);
 
   return (
     <>
@@ -135,7 +134,7 @@ export function DocEditor({
             <BlockEditor
               initialContent={noteContent}
               inputsEnabled={inputsEnabled}
-              onChange={(c: Array<OneOfNoteContentBlock>) => {
+              onChange={(c) => {
                 setDataModified(true);
                 setNoteContent(c);
               }}

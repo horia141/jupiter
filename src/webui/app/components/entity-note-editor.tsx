@@ -1,15 +1,17 @@
 import { Box } from "@mui/material";
 import { useFetcher } from "@remix-run/react";
-import { Note } from "jupiter-gen";
-import { ComponentType, lazy, Suspense, useEffect, useState } from "react";
+import type { Note } from "jupiter-gen";
+import type { ComponentType } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import { ClientOnly } from "remix-utils";
-import { SomeErrorNoData } from "~/logic/action-result";
-import { OneOfNoteContentBlock } from "~/logic/domain/notes";
+import type { SomeErrorNoData } from "~/logic/action-result";
+import type { OneOfNoteContentBlock } from "~/logic/domain/notes";
+import type { BlockEditorProps } from "./infra/block-editor";
 import { FieldError, GlobalError } from "./infra/errors";
 
 const BlockEditor = lazy(() =>
   import("~/components/infra/block-editor.js").then((module) => ({
-    default: module.default as unknown as ComponentType<any>,
+    default: module.default as unknown as ComponentType<BlockEditorProps>,
   }))
 );
 
@@ -31,7 +33,7 @@ export function EntityNoteEditor({
     initialNote.content
   );
 
-  function act() {
+  const act = useCallback(() => {
     setIsActing(true);
     // We already created this thing, we just need to update!
     cardActionFetcher.submit(
@@ -45,7 +47,7 @@ export function EntityNoteEditor({
       }
     );
     setDataModified(false);
-  }
+  }, [cardActionFetcher, initialNote.ref_id, noteContent]);
 
   useEffect(() => {
     if (dataModified) {
@@ -55,7 +57,7 @@ export function EntityNoteEditor({
         setShouldAct(true);
       }
     }
-  }, [dataModified, noteContent]);
+  }, [act, dataModified, isActing, noteContent]);
 
   useEffect(() => {
     if (
@@ -68,7 +70,7 @@ export function EntityNoteEditor({
         setShouldAct(false);
       }
     }
-  }, [cardActionFetcher]);
+  }, [act, cardActionFetcher, shouldAct]);
 
   return (
     <>
@@ -82,7 +84,7 @@ export function EntityNoteEditor({
               <BlockEditor
                 initialContent={noteContent}
                 inputsEnabled={inputsEnabled && !initialNote.archived}
-                onChange={(c: Array<OneOfNoteContentBlock>) => {
+                onChange={(c) => {
                   setDataModified(true);
                   setNoteContent(c);
                 }}

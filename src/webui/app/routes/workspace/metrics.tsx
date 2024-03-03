@@ -2,12 +2,8 @@ import TuneIcon from "@mui/icons-material/Tune";
 import { Button } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import {
-  Link,
-  Outlet,
-  ShouldRevalidateFunction,
-  useFetcher,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { Link, Outlet, useFetcher } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { WorkspaceFeature, type Metric } from "jupiter-gen";
 import { useContext } from "react";

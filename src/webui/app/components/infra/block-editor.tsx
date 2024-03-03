@@ -1,12 +1,14 @@
 import editorjsCodeflask from "@calumk/editorjs-codeflask";
 import Checklist from "@editorjs/checklist";
 import Delimiter from "@editorjs/delimiter";
-import EditorJS, { OutputData } from "@editorjs/editorjs";
+import type { OutputData } from "@editorjs/editorjs";
+import EditorJS from "@editorjs/editorjs";
 import Header from "@editorjs/header";
 import NestedList from "@editorjs/nested-list";
 import Quote from "@editorjs/quote";
 import Table from "@editorjs/table";
 import DragDrop from "editorjs-drag-drop";
+import type { ListItem } from "jupiter-gen";
 import {
   BulletedListBlock,
   ChecklistBlock,
@@ -15,16 +17,15 @@ import {
   EntityReferenceBlock,
   HeadingBlock,
   LinkBlock,
-  ListItem,
   NumberedListBlock,
   ParagraphBlock,
   QuoteBlock,
   TableBlock,
 } from "jupiter-gen";
-import { useEffect, useRef } from "react";
-import { OneOfNoteContentBlock } from "~/logic/domain/notes";
+import { useCallback, useEffect, useRef } from "react";
+import type { OneOfNoteContentBlock } from "~/logic/domain/notes";
 
-interface BlockEditorProps {
+export interface BlockEditorProps {
   initialContent: Array<OneOfNoteContentBlock>;
   inputsEnabled: boolean;
   onChange?: (content: Array<OneOfNoteContentBlock>) => void;
@@ -33,7 +34,7 @@ interface BlockEditorProps {
 export default function BlockEditor(props: BlockEditorProps) {
   const ejInstance = useRef<EditorJS>();
 
-  const initEditor = () => {
+  const initEditor = useCallback(() => {
     const editor = new EditorJS({
       holder: "editorjs",
       placeholder: "Start writing...",
@@ -85,7 +86,7 @@ export default function BlockEditor(props: BlockEditorProps) {
         delimiter: Delimiter,
       },
     });
-  };
+  }, [props]);
 
   // This will run only once
   useEffect(() => {
@@ -99,18 +100,19 @@ export default function BlockEditor(props: BlockEditorProps) {
       }
       ejInstance.current = undefined;
     };
-  }, []);
+  }, [initEditor]);
 
   return <div id="editorjs"></div>;
 }
 
+type EditorJsListItem = {
+  content: string;
+  items: Array<EditorJsListItem>;
+};
+
 function transformContentBlocksToEditorJs(
   content: Array<OneOfNoteContentBlock>
 ): OutputData {
-  type EditorJsListItem = {
-    content: string;
-    items: Array<EditorJsListItem>;
-  };
   function transformListItemToEditorJs(listItem: ListItem): EditorJsListItem {
     return {
       content: listItem.text,
@@ -205,6 +207,8 @@ function transformContentBlocksToEditorJs(
           throw new Error(
             "Entity reference blocks are not supported right now"
           );
+        default:
+          throw new Error(`Unknown block kind: ${block}`);
       }
     }),
     version: "2.22.2",
@@ -214,7 +218,7 @@ function transformContentBlocksToEditorJs(
 function transformEditorJsToContentBlocks(
   content: OutputData
 ): Array<OneOfNoteContentBlock> {
-  function transformEditorJsToListItem(listItem: any): ListItem {
+  function transformEditorJsToListItem(listItem: EditorJsListItem): ListItem {
     return {
       text: listItem.content,
       items: listItem.items.map(transformEditorJsToListItem),

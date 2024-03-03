@@ -27,14 +27,20 @@ class SlackChannelName(AtomicValue[str]):
 class SlackChannelNameDatabaseEncoder(
     PrimitiveAtomicValueDatabaseEncoder[SlackChannelName]
 ):
+    """Encode to a database primitive."""
+
     def to_primitive(self, value: SlackChannelName) -> Primitive:
+        """Encode to a primitive."""
         return value.the_name
 
 
 class SlackChannelNameDatabaseDecoder(
     PrimitiveAtomicValueDatabaseDecoder[SlackChannelName]
 ):
+    """Decode from a database primitive."""
+
     def from_raw_str(self, value: str) -> SlackChannelName:
+        """Decode from a raw string."""
         slack_channel_name: str = " ".join(
             word for word in value.strip().split(" ") if len(word) > 0
         )

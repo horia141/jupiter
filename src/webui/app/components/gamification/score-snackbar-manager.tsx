@@ -2,10 +2,8 @@ import Cookies from "js-cookie";
 import { useSnackbar } from "notistack";
 import { useContext, useEffect, useState } from "react";
 import { GlobalPropertiesContext } from "~/global-properties-client";
-import {
-  ScoreAction,
-  SCORE_ACTION_COOKIE_SCHEMA,
-} from "~/logic/domain/gamification/scores";
+import type { ScoreAction } from "~/logic/domain/gamification/scores";
+import { SCORE_ACTION_COOKIE_SCHEMA } from "~/logic/domain/gamification/scores";
 import { useBigScreen } from "~/rendering/use-big-screen";
 
 function formatScoreUpdate(result: ScoreAction, isBigScreen: boolean): string {
@@ -56,7 +54,7 @@ export function useScoreActionSingleton() {
     }, 100);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [globalProperties.scoreActionCookieName]);
 
   return scoreAction;
 }
@@ -79,7 +77,7 @@ export function ScoreSnackbarManager({
         variant: scoreAction.latest_task_score > 0 ? "success" : "warning",
       });
     }
-  }, [scoreAction]);
+  }, [enqueueSnackbar, isBigScreen, scoreAction]);
 
   return null;
 }

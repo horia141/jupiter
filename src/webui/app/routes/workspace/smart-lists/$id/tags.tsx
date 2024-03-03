@@ -4,13 +4,8 @@ import TuneIcon from "@mui/icons-material/Tune";
 import { Button, ButtonGroup } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import {
-  Link,
-  Outlet,
-  ShouldRevalidateFunction,
-  useFetcher,
-  useParams,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { Link, Outlet, useFetcher, useParams } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import type { SmartListTag } from "jupiter-gen";
@@ -26,7 +21,6 @@ import { BranchPanel } from "~/components/infra/layout/branch-panel";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { SmartListTagTag } from "~/components/smart-list-tag-tag";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
-import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
@@ -74,7 +68,6 @@ export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export default function SmartListViewTags() {
-  const isBigScreen = useBigScreen();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
 
   const shouldShowALeaf = useBranchNeedsToShowLeaf();
@@ -105,6 +98,7 @@ export default function SmartListViewTags() {
       createLocation={`/workspace/smart-lists/${loaderData.smartList.ref_id}/tags/new`}
       extraControls={[
         <Button
+          key={loaderData.smartList.ref_id}
           variant="outlined"
           to={`/workspace/smart-lists/${loaderData.smartList.ref_id}/items/details`}
           component={Link}
@@ -113,7 +107,7 @@ export default function SmartListViewTags() {
           "Details"
         </Button>,
 
-        <ButtonGroup>
+        <ButtonGroup key={loaderData.smartList.ref_id}>
           <Button
             variant="outlined"
             to={`/workspace/smart-lists/${loaderData.smartList.ref_id}/items`}

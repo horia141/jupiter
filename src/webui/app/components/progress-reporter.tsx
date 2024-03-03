@@ -34,11 +34,6 @@ interface ProgressUpdateSection {
   "section-name": string;
 }
 
-interface ProgressUpdateStatusCreate {
-  type: "status-create";
-  message: string;
-}
-
 interface ProgressUpdateEntityLine {
   type: "enttiy-line";
   message: string;

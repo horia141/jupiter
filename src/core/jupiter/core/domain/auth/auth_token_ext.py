@@ -25,12 +25,18 @@ class AuthTokenExt(AtomicValue[str]):
 
 
 class AutoTokenExtDatabaseEncoder(PrimitiveAtomicValueDatabaseEncoder[AuthTokenExt]):
+    """Encode to a database primitive."""
+
     def to_primitive(self, value: AuthTokenExt) -> str:
+        """Encode to a database primitive."""
         return value.auth_token_str
 
 
 class AuthTokenExtDatabaseDecoder(PrimitiveAtomicValueDatabaseDecoder[AuthTokenExt]):
+    """Decode from a database primitive."""
+
     def from_raw_str(self, primitive: str) -> AuthTokenExt:
+        """Decode from a raw string."""
         if not _JWT_RE.match(primitive):
             raise InputValidationError("Expected auth token to be a valid JWT")
         return AuthTokenExt(primitive)

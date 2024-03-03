@@ -5,7 +5,7 @@ import type {
   InboxTaskOptimisticState,
   InboxTaskParent,
 } from "~/logic/domain/inbox-task";
-import { TopLevelInfo } from "~/top-level-context";
+import type { TopLevelInfo } from "~/top-level-context";
 import type { InboxTaskShowOptions } from "./inbox-task-card";
 import { InboxTaskCard } from "./inbox-task-card";
 

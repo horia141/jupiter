@@ -22,12 +22,18 @@ class SearchQuery(AtomicValue[str]):
 
 
 class SearchQueryDatabaseEncoder(PrimitiveAtomicValueDatabaseEncoder[SearchQuery]):
+    """Encode to a database primitive."""
+
     def to_primitive(self, value: SearchQuery) -> Primitive:
+        """Encode to a primitive."""
         return value.the_query
 
 
 class SearchQueryDatabaseDecoder(PrimitiveAtomicValueDatabaseDecoder[SearchQuery]):
+    """Decode from a database primitive."""
+
     def from_raw_str(self, primitive: str) -> SearchQuery:
+        """Decode from a raw string."""
         query_nows = primitive.strip()
 
         if len(query_nows) == 0:

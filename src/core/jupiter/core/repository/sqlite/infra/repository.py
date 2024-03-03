@@ -78,6 +78,7 @@ _EntityT = TypeVar("_EntityT", bound=Entity)
 
 
 class SqliteRepository(abc.ABC):
+    """A repository for entities backed by SQLite, meant to be used as a mixin."""
 
     _realm_codec_registry: Final[RealmCodecRegistry]
     _connection: Final[AsyncConnection]

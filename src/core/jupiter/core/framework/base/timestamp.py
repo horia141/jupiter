@@ -68,6 +68,7 @@ class TimestampDatabaseEncoder(RealmEncoder[Timestamp, DatabaseRealm]):
     """An encoder for timestamps in databases."""
 
     def encode(self, value: Timestamp) -> RealmThing:
+        """Encode to a database realm."""
         return value.the_ts
 
 
@@ -75,6 +76,7 @@ class TimestampDatabaseDecoder(RealmDecoder[Timestamp, DatabaseRealm]):
     """A decoder for timestamps in databases."""
 
     def decode(self, value: RealmThing) -> Timestamp:
+        """Decode from a database realm."""
         if not isinstance(value, (datetime.datetime, DateTime)):
             raise RealmDecodingError(
                 f"Expected value for {self.__class__} to be datetime or DateTime"

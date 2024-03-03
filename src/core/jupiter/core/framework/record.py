@@ -69,6 +69,7 @@ class Record(Concept):
 
 @dataclass_transform()
 def record(cls: type[_RecordT]) -> type[_RecordT]:
+    """A decorator that marks a class as a record."""
     return dataclass(cls)
 
 

@@ -21,4 +21,3 @@ export function EntityStack2(props: PropsWithChildren) {
     </Stack>
   );
 }
-``;

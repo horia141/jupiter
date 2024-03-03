@@ -18,11 +18,13 @@ _ValueT = TypeVar("_ValueT", bound="AtomicValue[Primitive] | CompositeValue")
 
 @dataclass_transform()
 def value(cls: type[_ValueT]) -> type[_ValueT]:
+    """A value object in the domain."""
     return dataclass(cls)
 
 
 @dataclass_transform()
 def hashable_value(cls: type[_ValueT]) -> type[_ValueT]:
+    """A value object in the domain that is hashable."""
     return dataclass(eq=True, unsafe_hash=True)(cls)
 
 
@@ -63,6 +65,7 @@ _EnumValueT = TypeVar("_EnumValueT", bound=EnumValue)
 
 
 def enum_value(cls: type[_EnumValueT]) -> type[_EnumValueT]:
+    """A value object in the domain that is also an enum."""
     return cls
 
 
@@ -89,4 +92,5 @@ _SecretValueT = TypeVar("_SecretValueT", bound=SecretValue)
 
 @dataclass_transform()
 def secret_value(cls: type[_SecretValueT]) -> type[_SecretValueT]:
+    """A value object in the domain that is also a secret."""
     return dataclass(repr=False)(secure_class(cls))

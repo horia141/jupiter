@@ -1,8 +1,8 @@
+import type { Workspace } from "jupiter-gen";
 import {
   InboxTaskSource,
   NamedEntityTag,
   SyncTarget,
-  Workspace,
   WorkspaceFeature,
 } from "jupiter-gen";
 

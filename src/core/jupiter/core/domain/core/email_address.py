@@ -32,12 +32,18 @@ class EmailAddress(AtomicValue[str]):
 
 
 class EmailAddressDatabaseEncoder(PrimitiveAtomicValueDatabaseEncoder[EmailAddress]):
+    """Encode to a database primitive."""
+
     def to_primitive(self, value: EmailAddress) -> str:
+        """Encode to a database primitive."""
         return value.the_address
 
 
 class EmailAddressDatabaseDecoder(PrimitiveAtomicValueDatabaseDecoder[EmailAddress]):
+    """Decode from a database primitive."""
+
     def from_raw_str(self, primitive: str) -> EmailAddress:
+        """Decode from a raw string."""
         email_address_str: str = primitive.strip()
 
         try:

@@ -175,28 +175,6 @@ class SqliteScoreStatsRepository(SqliteRepository, ScoreStatsRepository):
             )
         return self._row_to_entity(result)
 
-    async def load_by_key(
-        self, key: Tuple[EntityId, RecurringTaskPeriod | None, str]
-    ) -> ScoreStats:
-        """Load a score stats by it's unique key."""
-        result = (
-            await self._connection.execute(
-                select(self._score_stats_table)
-                .where(self._score_stats_table.c.score_log_ref_id == key[0].as_int())
-                .where(
-                    self._score_stats_table.c.period == key[1].value
-                    if key[1] is not None
-                    else self._score_stats_table.c.period.is_(None)
-                )
-                .where(self._score_stats_table.c.timeline == key[2])
-            )
-        ).first()
-        if result is None:
-            raise RecordNotFoundError(
-                f"Score stats {key[0]}:{key[1]}:{key[2]} does not exist"
-            )
-        return self._row_to_entity(result)
-
     async def load_by_key_optional(
         self, key: Tuple[EntityId, RecurringTaskPeriod | None, str]
     ) -> ScoreStats | None:
@@ -348,31 +326,6 @@ class SqliteScorePeriodBestRepository(SqliteRepository, ScorePeriodBestRepositor
         if result.rowcount == 0:
             raise RecordNotFoundError(
                 f"The score period best {key[0]}:{key[1]}:{key[2]}:{key[3]} does not exist"
-            )
-        return self._row_to_entity(result)
-
-    async def load_by_key(
-        self, key: Tuple[EntityId, RecurringTaskPeriod | None, str, RecurringTaskPeriod]
-    ) -> ScorePeriodBest:
-        """Load a score period best by its unique key."""
-        result = (
-            await self._connection.execute(
-                select(self._score_period_best_table)
-                .where(
-                    self._score_period_best_table.c.score_log_ref_id == key[0].as_int()
-                )
-                .where(
-                    self._score_period_best_table.c.period == key[1].value
-                    if key[1] is not None
-                    else self._score_period_best_table.c.period.is_(None)
-                )
-                .where(self._score_period_best_table.c.timeline == key[2])
-                .where(self._score_period_best_table.c.sub_period == key[3].value)
-            )
-        ).first()
-        if result is None:
-            raise RecordNotFoundError(
-                f"Score period best {key[0]}:{key[1]}:{key[2]}:{key[3]} does not exist"
             )
         return self._row_to_entity(result)
 

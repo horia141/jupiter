@@ -29,17 +29,20 @@ class RecurringTaskDueAtMonth(AtomicValue[int]):
 
     @staticmethod
     def first_of(period: RecurringTaskPeriod) -> "RecurringTaskDueAtMonth":
+        """Return the first of the month for a period."""
         return RecurringTaskDueAtMonth(
             period, _RECURRING_TASK_DUE_AT_MONTH_BOUNDS[period][0]
         )
 
     @staticmethod
     def end_of(period: RecurringTaskPeriod) -> "RecurringTaskDueAtMonth":
+        """Return the end of the month for a period."""
         return RecurringTaskDueAtMonth(
             period, _RECURRING_TASK_DUE_AT_MONTH_BOUNDS[period][1]
         )
 
     def __init__(self, period: RecurringTaskPeriod, value: int) -> None:
+        """Constructor."""
         bounds = _RECURRING_TASK_DUE_AT_MONTH_BOUNDS[period]
 
         if value < bounds[0] or value > bounds[1]:
@@ -61,12 +64,18 @@ class RecurringTaskDueAtMonth(AtomicValue[int]):
 class RecurringTaskDueAtMonthDatabaseEncoder(
     PrimitiveAtomicValueDatabaseEncoder[RecurringTaskDueAtMonth]
 ):
+    """Encode to a database primitive."""
+
     def to_primitive(self, value: RecurringTaskDueAtMonth) -> Primitive:
+        """Encode to a database primitive."""
         return value.value
 
 
 class RecurringTaskDueAtMonthDatabaseDecoder(
     PrimitiveAtomicValueDatabaseDecoder[RecurringTaskDueAtMonth]
 ):
+    """Decode from a database primitive."""
+
     def from_raw_int(self, value: int) -> RecurringTaskDueAtMonth:
+        """Decode from a raw int."""
         return RecurringTaskDueAtMonth(RecurringTaskPeriod.YEARLY, value)

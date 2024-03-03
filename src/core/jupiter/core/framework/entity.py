@@ -138,6 +138,7 @@ class Entity(Concept):
 
 @dataclass_transform()
 def entity(cls: type[_EntityT]) -> type[_EntityT]:
+    """A decorator that marks a class as an entity."""
     new_cls = dataclass(cls)
     _check_entity_has_parent_field(new_cls)
     return new_cls

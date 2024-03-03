@@ -53,14 +53,20 @@ class PersonBirthday(AtomicValue[str]):
 class PersonBirthdayDatabaseEncoder(
     PrimitiveAtomicValueDatabaseEncoder[PersonBirthday]
 ):
+    """Encode to a database primitive."""
+
     def to_primitive(self, value: PersonBirthday) -> Primitive:
+        """Encode to a primitive."""
         return f"{value.day} {PersonBirthday._MONTH_INDEX_NAME[value.month]}"
 
 
 class PersonBirthdayDatabaseDecoder(
     PrimitiveAtomicValueDatabaseDecoder[PersonBirthday]
 ):
+    """Decode from a database primitive."""
+
     def from_raw_str(self, primitive: str) -> PersonBirthday:
+        """Decode from a raw string."""
         parts = primitive.strip().split(" ")
         if len(parts) != 2:
             raise InputValidationError(f"Invalid format for birthday '{primitive}'")

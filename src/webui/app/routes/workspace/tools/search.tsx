@@ -16,8 +16,10 @@ import {
   Switch,
   Typography,
 } from "@mui/material";
-import { json, LoaderArgs } from "@remix-run/node";
-import { ShouldRevalidateFunction, useTransition } from "@remix-run/react";
+import type { LoaderArgs } from "@remix-run/node";
+import { json } from "@remix-run/node";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { ApiError, NamedEntityTag } from "jupiter-gen";
 import { useContext, useEffect, useState } from "react";

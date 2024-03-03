@@ -1,6 +1,7 @@
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Outlet, ShouldRevalidateFunction, useFetcher } from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { Outlet, useFetcher } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import type { SmartList } from "jupiter-gen";
 import { getLoggedInApiClient } from "~/api-clients";

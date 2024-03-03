@@ -46,6 +46,7 @@ class EntityIdDatabaseEncoder(RealmEncoder[EntityId, DatabaseRealm]):
     """Entity id encoder for the database realm."""
 
     def encode(self, value: EntityId) -> RealmThing:
+        """Encode to a database realm."""
         return value.as_int()
 
 
@@ -53,6 +54,7 @@ class EntityIdWebEncoder(RealmEncoder[EntityId, WebRealm]):
     """Entity id encoder for the database realm."""
 
     def encode(self, value: EntityId) -> RealmThing:
+        """Encode to a database realm."""
         return value.the_id
 
 
@@ -60,6 +62,7 @@ class EntityIdDatabaseDecoder(RealmDecoder[EntityId, DatabaseRealm]):
     """Entity id decoder for the database realm."""
 
     def decode(self, value: RealmThing) -> EntityId:
+        """Decode from a database realm."""
         if not isinstance(value, (int, str)):
             raise RealmDecodingError(
                 f"Expected value for {self.__class__} to be an int or string"

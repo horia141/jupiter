@@ -24,12 +24,18 @@ class Avatar(AtomicValue[str]):
 
 
 class AvatarDatabaseEncoder(PrimitiveAtomicValueDatabaseEncoder[Avatar]):
+    """Encode to a database primitive."""
+
     def to_primitive(self, value: Avatar) -> Primitive:
+        """Encode to a database primitive."""
         return value.avatar_as_data_url
 
 
 class AvatarDatabaseDecoder(PrimitiveAtomicValueDatabaseDecoder[Avatar]):
+    """Decode from a database primitive."""
+
     def from_raw_str(self, primitive: str) -> Avatar:
+        """Decode from a raw string."""
         if not primitive.startswith("data:image/svg+xml;base64,"):
             raise InputValidationError("Seems like the avatar doesn't look right")
 

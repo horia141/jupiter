@@ -27,17 +27,20 @@ class RecurringTaskDueAtDay(AtomicValue[int]):
 
     @staticmethod
     def first_of(period: RecurringTaskPeriod) -> "RecurringTaskDueAtDay":
+        """Return the first day of the period."""
         return RecurringTaskDueAtDay(
             period, _RECURRING_TASK_DUE_AT_DAY_BOUNDS[period][0]
         )
 
     @staticmethod
     def end_of(period: RecurringTaskPeriod) -> "RecurringTaskDueAtDay":
+        """Return the last day of the period."""
         return RecurringTaskDueAtDay(
             period, _RECURRING_TASK_DUE_AT_DAY_BOUNDS[period][1]
         )
 
     def __init__(self, period: RecurringTaskPeriod, value: int) -> None:
+        """Constructor."""
         bounds = _RECURRING_TASK_DUE_AT_DAY_BOUNDS[period]
 
         if value < bounds[0] or value > bounds[1]:
@@ -59,12 +62,18 @@ class RecurringTaskDueAtDay(AtomicValue[int]):
 class RecurringTaskDueAtDayDatabaseEncoder(
     PrimitiveAtomicValueDatabaseEncoder[RecurringTaskDueAtDay]
 ):
+    """Encode to a database primitive."""
+
     def to_primitive(self, value: RecurringTaskDueAtDay) -> Primitive:
+        """Encode to a database primitive."""
         return value.value
 
 
 class RecurringTaskDueAtDayDatabaseDecoder(
     PrimitiveAtomicValueDatabaseDecoder[RecurringTaskDueAtDay]
 ):
+    """Decode from a database primitive."""
+
     def from_raw_int(self, value: int) -> RecurringTaskDueAtDay:
+        """Decode from a raw int."""
         return RecurringTaskDueAtDay(RecurringTaskPeriod.YEARLY, value)

@@ -1,12 +1,7 @@
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import {
-  Outlet,
-  ShouldRevalidateFunction,
-  useFetcher,
-  useNavigate,
-  useOutlet,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { Outlet, useFetcher, useNavigate } from "@remix-run/react";
 
 import type { Vacation } from "jupiter-gen";
 
@@ -54,7 +49,6 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 
 export default function Vacations({ request }: LoaderArgs) {
   const vacations = useLoaderDataSafeForAnimation<typeof loader>();
-  const outlet = useOutlet();
 
   const sortedVacations = sortVacationsNaturally(vacations);
 

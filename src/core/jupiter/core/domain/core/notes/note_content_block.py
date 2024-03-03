@@ -26,12 +26,18 @@ class CorrelationId(AtomicValue[str]):
 
 
 class CorrelationIdDatabaseEncoder(PrimitiveAtomicValueDatabaseEncoder[CorrelationId]):
+    """Encode to a database primitive."""
+
     def to_primitive(self, value: CorrelationId) -> str:
+        """Encode to a database primitive."""
         return value.the_id
 
 
 class CorrelationIdDatabaseDecoder(PrimitiveAtomicValueDatabaseDecoder[CorrelationId]):
+    """Decode from a database primitive."""
+
     def from_raw_str(self, primitive: str) -> CorrelationId:
+        """Decode from a raw string."""
         correlation_id: str = primitive.strip()
 
         if len(correlation_id) == 0:

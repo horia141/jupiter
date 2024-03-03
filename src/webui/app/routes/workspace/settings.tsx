@@ -14,13 +14,11 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import {
-  ShouldRevalidateFunction,
-  useActionData,
-  useTransition,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { ApiError, Project, WorkspaceFeature } from "jupiter-gen";
+import type { Project } from "jupiter-gen";
+import { ApiError, WorkspaceFeature } from "jupiter-gen";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";

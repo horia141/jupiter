@@ -5,6 +5,7 @@ from jupiter.core.framework.base.timestamp import Timestamp
 
 
 def infer_timeline(period: RecurringTaskPeriod | None, right_now: Timestamp) -> str:
+    """Infer the timeline for a recurring task."""
     if period is None:
         return "Lifetime"
 

@@ -581,6 +581,7 @@ class PrimitiveAtomicValueDatabaseDecoder(
     _atomic_value_type: type[_AtomicValueT]
 
     def __init__(self) -> None:
+        """Initialize the decoder."""
         self._atomic_value_type = cast(type[_AtomicValueT], get_args(self.__class__.__orig_bases__[0])[0])  # type: ignore[attr-defined]
 
     def decode(self, value: RealmThing) -> _AtomicValueT:

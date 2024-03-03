@@ -31,4 +31,5 @@ class NamedEntityTag(EnumValue):
         return NamedEntityTag(entity.__class__.__name__)
 
     def __str__(self) -> str:
+        """Get the string representation of the tag."""
         return self.value

@@ -108,6 +108,7 @@ class ADateDatabaseEncoder(RealmEncoder[ADate, DatabaseRealm]):
     """An encoder for adates in databases."""
 
     def encode(self, value: ADate) -> RealmThing:
+        """Encode to a database realm."""
         return date(
             value.the_date.year,
             value.the_date.month,
@@ -119,6 +120,7 @@ class ADateDatabaseDecoder(RealmDecoder[ADate, DatabaseRealm]):
     """A decoder for adates in databases."""
 
     def decode(self, value: RealmThing) -> ADate:
+        """Decode from a database realm."""
         if not isinstance(value, (date, Date)):
             raise RealmDecodingError(
                 f"Expected value for {self.__class__} to be date or Date but was {value.__class__}"
@@ -131,6 +133,7 @@ class ADateCliDecoder(RealmDecoder[ADate, CliRealm]):
     """A decoder for adates in databases."""
 
     def decode(self, value: RealmThing) -> ADate:
+        """Decode from a cli realm."""
         if not isinstance(value, str):
             raise RealmDecodingError(
                 f"Expected value for str to be date or Date but was {value.__class__}"
@@ -143,6 +146,7 @@ class ADateWebDecoder(RealmDecoder[ADate, WebRealm]):
     """A decoder for adates in databases."""
 
     def decode(self, value: RealmThing) -> ADate:
+        """Decode from a web realm."""
         if not isinstance(value, str):
             raise RealmDecodingError(
                 f"Expected value for str to be date or Date but was {value.__class__}"

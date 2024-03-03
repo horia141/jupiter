@@ -1,4 +1,4 @@
-import { User, UserFeature } from "jupiter-gen";
+import type { User, UserFeature } from "jupiter-gen";
 
 export function isUserFeatureAvailable(
   user: User,

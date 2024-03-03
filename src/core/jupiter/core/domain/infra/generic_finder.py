@@ -18,7 +18,7 @@ async def generic_finder(
     *,
     allow_archived: bool = False
 ) -> _EntityT:
-    ...
+    """Load an entity and linked entities."""
 
 
 @overload
@@ -30,7 +30,7 @@ async def generic_finder(
     *,
     allow_archived: bool = False
 ) -> Tuple[_EntityT, Iterable[_LinkedEntity1T]]:
-    ...
+    """Load an entity and linked entities."""
 
 
 @overload
@@ -43,7 +43,7 @@ async def generic_finder(
     *,
     allow_archived: bool = False
 ) -> Tuple[_EntityT, Iterable[_LinkedEntity1T], Iterable[_LinkedEntity2T]]:
-    ...
+    """Load an entity and linked entities."""
 
 
 async def generic_finder(
@@ -57,7 +57,7 @@ async def generic_finder(
 ) -> _EntityT | Tuple[_EntityT, Iterable[_LinkedEntity1T]] | Tuple[
     _EntityT, Iterable[_LinkedEntity1T], Iterable[_LinkedEntity2T]
 ]:
-    """Load an entity by its ref_id."""
+    """Load an entity and linked entities."""
     entity = await uow.get_for(entity_type).load_by_id(
         ref_id, allow_archived=allow_archived
     )

@@ -60,6 +60,7 @@ class Note(LeafSupportEntity):
 
     @property
     def can_be_removed_independently(self) -> bool:
+        """Whether the note can be removed independently."""
         if self.domain == NoteDomain.DOC:
             return False
         return True

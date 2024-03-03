@@ -152,6 +152,8 @@ _ThingT = TypeVar("_ThingT", bound=Thing)
 
 
 def only_in_realm(*realms: type[Realm]) -> Callable[[type[_ThingT]], type[_ThingT]]:
+    """Decorator to specify the realms in which a concept can be represented."""
+
     def decorator(cls: type[_ThingT]) -> type[_ThingT]:
         setattr(cls, "__allowed_realms", list(realms))
         return cls

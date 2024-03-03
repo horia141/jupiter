@@ -1,5 +1,5 @@
 import { Stack } from "@mui/system";
-import { PropsWithChildren } from "react";
+import type { PropsWithChildren } from "react";
 import { useBigScreen } from "~/rendering/use-big-screen";
 
 interface NestingAwarePanelProps {

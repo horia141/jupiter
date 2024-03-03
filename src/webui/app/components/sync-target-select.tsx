@@ -2,7 +2,7 @@ import { Box, Chip, MenuItem, Select } from "@mui/material";
 import { SyncTarget } from "jupiter-gen";
 import { syncTargetName } from "~/logic/domain/sync-target";
 import { inferSyncTargetsForEnabledFeatures } from "~/logic/domain/workspace";
-import { TopLevelInfo } from "~/top-level-context";
+import type { TopLevelInfo } from "~/top-level-context";
 
 interface SyncTargetSelectProps {
   topLevelInfo: TopLevelInfo;

@@ -1,4 +1,5 @@
-import { ActionArgs, json } from "@remix-run/node";
+import type { ActionArgs } from "@remix-run/node";
+import { json } from "@remix-run/node";
 import { StatusCodes } from "http-status-codes";
 import { ApiError } from "jupiter-gen";
 import { z } from "zod";

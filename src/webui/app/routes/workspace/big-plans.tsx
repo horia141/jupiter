@@ -2,12 +2,8 @@ import ViewListIcon from "@mui/icons-material/ViewList";
 import ViewTimelineIcon from "@mui/icons-material/ViewTimeline";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import {
-  Link,
-  Outlet,
-  ShouldRevalidateFunction,
-  useFetcher,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { Link, Outlet, useFetcher } from "@remix-run/react";
 import type { BigPlan, BigPlanFindResultEntry, Project } from "jupiter-gen";
 import { BigPlanStatus, WorkspaceFeature } from "jupiter-gen";
 import { ADateTag } from "~/components/adate-tag";
@@ -56,7 +52,8 @@ import {
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
-import { TopLevelInfo, TopLevelInfoContext } from "~/top-level-context";
+import type { TopLevelInfo } from "~/top-level-context";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 export const handle = {
   displayType: DisplayType.TRUNK,
@@ -135,7 +132,7 @@ export default function BigPlans() {
   let extraControls = [];
   if (isBigScreen) {
     extraControls = [
-      <ButtonGroup>
+      <ButtonGroup key="1">
         {isWorkspaceFeatureAvailable(
           topLevelInfo.workspace,
           WorkspaceFeature.PROJECTS
@@ -171,6 +168,7 @@ export default function BigPlans() {
   } else {
     extraControls = [
       <Button
+        key="1"
         variant="outlined"
         startIcon={<ViewTimelineIcon />}
         onClick={() => setShowFilterDialog(true)}

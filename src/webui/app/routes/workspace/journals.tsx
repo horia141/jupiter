@@ -1,14 +1,15 @@
-import { json, LoaderArgs } from "@remix-run/node";
-import { Outlet, ShouldRevalidateFunction, useFetcher } from "@remix-run/react";
+import type { LoaderArgs } from "@remix-run/node";
+import { json } from "@remix-run/node";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { Outlet, useFetcher } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
+import type { Journal, ReportPeriodResult } from "jupiter-gen";
 import {
-  Journal,
   RecurringTaskPeriod,
-  ReportPeriodResult,
   UserFeature,
   WorkspaceFeature,
 } from "jupiter-gen";
-import { JournalFindResultEntry } from "jupiter-gen/dist/models/JournalFindResultEntry";
+import type { JournalFindResultEntry } from "jupiter-gen/dist/models/JournalFindResultEntry";
 import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
 import { EntityNameComponent } from "~/components/entity-name";

@@ -1,6 +1,6 @@
 import { styled, Typography } from "@mui/material";
 import { ResponsiveLine } from "@nivo/line";
-import { UserScoreAtDate, UserScoreHistory } from "jupiter-gen";
+import type { UserScoreAtDate, UserScoreHistory } from "jupiter-gen";
 import { aDateToDate } from "~/logic/domain/adate";
 interface ScoreHistoryProps {
   scoreHistory: UserScoreHistory;

@@ -20,13 +20,8 @@ import {
 } from "@mui/material";
 import type { LinksFunction, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import {
-  Form,
-  Link,
-  ShouldRevalidateFunction,
-  useCatch,
-  useOutlet,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { Form, Link, useCatch, useOutlet } from "@remix-run/react";
 import Sidebar from "~/components/sidebar";
 
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
@@ -117,13 +112,13 @@ export default function Workspace() {
         animateBadge(badgeRef.current, { scale: 1 }, { duration: 0.15 });
       }
     );
-  }, [scoreAction]);
+  }, [animateBadge, badgeRef, scoreAction]);
 
   // Checkout https://css-tricks.com/the-trick-to-viewport-units-on-mobile/
   // for reasoning.
   function updateOurOwnVh() {
     // First we get the viewport height and we multiple it by 1% to get a value for a vh unit
-    let vh = window.innerHeight * 0.01;
+    const vh = window.innerHeight * 0.01;
     // Then we set the value in the --vh custom property to the root of the document
     document.documentElement.style.setProperty("--vh", `${vh}px`);
   }

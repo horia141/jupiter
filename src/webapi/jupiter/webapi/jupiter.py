@@ -107,6 +107,7 @@ async def main() -> None:
 
 
 def sync_main() -> None:
+    """Run the main function synchronously."""
     asyncio.run(main())
 
 

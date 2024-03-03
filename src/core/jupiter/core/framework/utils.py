@@ -23,6 +23,7 @@ from pendulum.datetime import DateTime
 def find_all_modules(
     *module_roots: ModuleType,
 ) -> list[ModuleType]:
+    """Find all modules in the given module roots."""
     all_modules = []
 
     def explore_module_tree(the_module: ModuleType) -> None:
@@ -44,6 +45,7 @@ def find_all_modules(
 def is_thing_ish_type(  # type: ignore
     the_type: type[Any],
 ) -> TypeGuard[type[Thing]]:
+    """Check if the type is a thing."""
     return the_type in (
         type(None),
         bool,
@@ -76,6 +78,7 @@ def is_thing_ish_type(  # type: ignore
 def is_primitive_type(  # type: ignore
     the_type: type[Any],
 ) -> TypeGuard[type[Primitive]]:
+    """Check if the type is a primitive."""
     return the_type in (
         type(None),
         bool,
@@ -90,6 +93,7 @@ def is_primitive_type(  # type: ignore
 
 
 def normalize_optional(the_type: type[Any]) -> tuple[type[Any], bool]:  # type: ignore
+    """Normalize the optional type.""" ""
     if (orgin_type := get_origin(the_type)) is not None:
         if orgin_type is Union or (
             isinstance(orgin_type, type) and issubclass(orgin_type, UnionType)

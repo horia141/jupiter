@@ -34,12 +34,18 @@ class Timezone(AtomicValue[str]):
 
 
 class TimezoneDatabaseEncoder(PrimitiveAtomicValueDatabaseEncoder[Timezone]):
+    """Encode to a database primitive."""
+
     def to_primitive(self, value: Timezone) -> Primitive:
+        """Encode to a database primitive."""
         return value.the_timezone
 
 
 class TimezoneDatabaseDecoder(PrimitiveAtomicValueDatabaseDecoder[Timezone]):
+    """Decode from a database primitive."""
+
     def from_raw_str(self, value: str) -> Timezone:
+        """Decode from a raw string."""
         timezone_str: str = value.strip()
 
         try:

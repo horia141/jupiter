@@ -22,12 +22,18 @@ class RecurringTaskSkipRule(AtomicValue[str]):
 class RecurringTaskSkipRuleDatabaseEncoder(
     PrimitiveAtomicValueDatabaseEncoder[RecurringTaskSkipRule]
 ):
+    """Encode to a database primitive."""
+
     def to_primitive(self, value: RecurringTaskSkipRule) -> Primitive:
+        """Encode to a database primitive."""
         return value.skip_rule
 
 
 class RecurringTaskSkipRuleDatabaseDecoder(
     PrimitiveAtomicValueDatabaseDecoder[RecurringTaskSkipRule]
 ):
+    """Decode from a database primitive."""
+
     def from_raw_str(self, value: str) -> RecurringTaskSkipRule:
+        """Decode from a raw string."""
         return RecurringTaskSkipRule(value.strip().lower())

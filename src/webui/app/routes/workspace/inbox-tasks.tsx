@@ -86,7 +86,8 @@ import {
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
-import { TopLevelInfo, TopLevelInfoContext } from "~/top-level-context";
+import type { TopLevelInfo } from "~/top-level-context";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 enum DragTargetStatus {
   SOURCE_DRAG,
@@ -318,7 +319,7 @@ export default function InboxTasks() {
   let extraControls = [];
   if (isBigScreen) {
     extraControls = [
-      <ButtonGroup>
+      <ButtonGroup key="first">
         <Button
           variant={selectedView === View.SWIFTVIEW ? "contained" : "outlined"}
           startIcon={<FlareIcon />}
@@ -351,6 +352,7 @@ export default function InboxTasks() {
         </Button>
       </ButtonGroup>,
       <Button
+        key="first"
         variant="outlined"
         startIcon={<FilterAltIcon />}
         onClick={() => setShowFilterDialog(true)}
@@ -361,6 +363,7 @@ export default function InboxTasks() {
   } else {
     extraControls = [
       <Button
+        key="first"
         variant="outlined"
         startIcon={<ViewKanbanIcon />}
         onClick={() => setShowViewsDialog(true)}
@@ -368,6 +371,7 @@ export default function InboxTasks() {
         Views
       </Button>,
       <Button
+        key="first"
         variant="outlined"
         startIcon={<FilterAltIcon />}
         onClick={() => setShowFilterDialog(true)}

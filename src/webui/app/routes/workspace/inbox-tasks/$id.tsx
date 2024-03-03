@@ -20,12 +20,8 @@ import {
   type ActionArgs,
   type LoaderArgs,
 } from "@remix-run/node";
-import {
-  ShouldRevalidateFunction,
-  useActionData,
-  useParams,
-  useTransition,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { useActionData, useParams, useTransition } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import type {
   BigPlan,

@@ -23,12 +23,18 @@ class EntityIcon(AtomicValue[str]):
 
 
 class EntityIconDatabaseEncoder(PrimitiveAtomicValueDatabaseEncoder[EntityIcon]):
+    """Encode to a database primitive."""
+
     def to_primitive(self, value: EntityIcon) -> Primitive:
+        """Encode to a database primitive."""
         return value.the_icon
 
 
 class EntityIconDatabaseDecoder(PrimitiveAtomicValueDatabaseDecoder[EntityIcon]):
+    """Decode from a database primitive."""
+
     def from_raw_str(self, value: str) -> EntityIcon:
+        """Decode from a raw string."""
         entity_icon = value.strip()
 
         if entity_icon not in emoji.UNICODE_EMOJI_ENGLISH:

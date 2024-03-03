@@ -51,10 +51,6 @@ class RecordRepository(
         """Hard remove a record - an irreversible operation."""
 
     @abc.abstractmethod
-    async def load_by_key(self, key: RecordKeyT) -> RecordT:
-        """Load a record by it's unique key."""
-
-    @abc.abstractmethod
     async def load_by_key_optional(self, key: RecordKeyT) -> RecordT | None:
         """Load a record by it's unique key."""
 

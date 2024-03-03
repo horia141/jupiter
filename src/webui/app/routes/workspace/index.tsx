@@ -1,5 +1,5 @@
 import { redirect } from "@remix-run/node";
-import { ShouldRevalidateFunction } from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
 

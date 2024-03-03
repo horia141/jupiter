@@ -13,7 +13,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { WorkspaceFeature } from "jupiter-gen";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { useBigScreen } from "~/rendering/use-big-screen";
-import { TopLevelInfo } from "~/top-level-context";
+import type { TopLevelInfo } from "~/top-level-context";
 
 const BIG_SCREEN_WIDTH = "240px";
 const BIG_SCREEN_ANIMATION_START = "-240px";

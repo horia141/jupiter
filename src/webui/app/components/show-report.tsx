@@ -41,7 +41,7 @@ import {
   isWorkspaceFeatureAvailable,
 } from "~/logic/domain/workspace";
 import { useBigScreen } from "~/rendering/use-big-screen";
-import { TopLevelInfo } from "~/top-level-context";
+import type { TopLevelInfo } from "~/top-level-context";
 import { TabPanel } from "./tab-panel";
 
 const _SOURCES_TO_REPORT = [

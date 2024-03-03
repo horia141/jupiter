@@ -38,12 +38,18 @@ class TagName(AtomicValue[str]):
 
 
 class TagNameDatabaseEncoder(PrimitiveAtomicValueDatabaseEncoder[TagName]):
+    """Encode to a database primitive."""
+
     def to_primitive(self, value: TagName) -> Primitive:
+        """Encode to a database primitive."""
         return value.the_tag
 
 
 class TagNameDatabaseDecoder(PrimitiveAtomicValueDatabaseDecoder[TagName]):
+    """Decode from a database primitive."""
+
     def from_raw_str(self, value: str) -> TagName:
+        """Decode from a raw string."""
         tag: str = " ".join(word for word in value.strip().split(" ") if len(word) > 0)
 
         if len(tag) == 0:

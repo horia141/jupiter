@@ -84,5 +84,5 @@ export function workspaceFeatureToDocsHelpSubject(
 export function featureControlImpliesReadonly(
   featureControl: FeatureControl
 ): boolean {
-  return featureControl != FeatureControl.USER;
+  return featureControl !== FeatureControl.USER;
 }

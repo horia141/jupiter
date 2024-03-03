@@ -61,6 +61,7 @@ class ScorePeriodBest(Record):
     def update_to_max(
         self, ctx: DomainContext, score_stats: ScoreStats
     ) -> "ScorePeriodBest":
+        """Update the score period best to the maximum of the two."""
         return self._new_version(
             ctx,
             total_score=max(self.total_score, score_stats.total_score),

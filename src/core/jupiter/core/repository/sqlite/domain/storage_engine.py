@@ -117,25 +117,25 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
     def get_for(
         self, entity_type: Type[_RootEntityT]
     ) -> RootEntityRepository[_RootEntityT]:
-        """Retrieve a repository."""
+        ...
 
     @overload
     def get_for(
         self, entity_type: Type[_StubEntityT]
     ) -> StubEntityRepository[_StubEntityT]:
-        """Retrieve a repository."""
+        ...
 
     @overload
     def get_for(
         self, entity_type: Type[_TrunkEntityT]
     ) -> TrunkEntityRepository[_TrunkEntityT]:
-        """Retrieve a repository."""
+        ...
 
     @overload
     def get_for(
         self, entity_type: Type[_CrownEntityT]
     ) -> CrownEntityRepository[_CrownEntityT]:
-        """Retrieve a repository."""
+        ...
 
     def get_for(
         self,

@@ -1,4 +1,4 @@
-import {
+import type {
   BigPlan,
   Chore,
   Difficulty,
@@ -7,14 +7,13 @@ import {
   EntityId,
   Habit,
   InboxTask,
-  InboxTaskSource,
-  InboxTaskStatus,
   Metric,
   Person,
   Project,
   RecurringTaskPeriod,
   SlackTask,
 } from "jupiter-gen";
+import { InboxTaskSource, InboxTaskStatus } from "jupiter-gen";
 import type { DateTime } from "luxon";
 import { aDateToDate, compareADate } from "./adate";
 import { compareDifficulty } from "./difficulty";

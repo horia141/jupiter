@@ -29,35 +29,35 @@ class DomainUnitOfWork(abc.ABC):
 
     @abc.abstractmethod
     def get(self, repository: type[_RepositoryT]) -> _RepositoryT:
-        """Retrieve a repository"""
+        """Retrieve a repository."""
 
     @overload
     @abc.abstractmethod
     def get_for(
         self, entity_type: Type[_RootEntityT]
     ) -> RootEntityRepository[_RootEntityT]:
-        """Retrieve a repository."""
+        ...
 
     @overload
     @abc.abstractmethod
     def get_for(
         self, entity_type: Type[_StubEntityT]
     ) -> StubEntityRepository[_StubEntityT]:
-        """Retrieve a repository."""
+        ...
 
     @overload
     @abc.abstractmethod
     def get_for(
         self, entity_type: Type[_TrunkEntityT]
     ) -> TrunkEntityRepository[_TrunkEntityT]:
-        """Retrieve a repository."""
+        ...
 
     @overload
     @abc.abstractmethod
     def get_for(
         self, entity_type: Type[_CrownEntityT]
     ) -> CrownEntityRepository[_CrownEntityT]:
-        """Retrieve a repository."""
+        ...
 
     @abc.abstractmethod
     def get_for(
@@ -69,7 +69,7 @@ class DomainUnitOfWork(abc.ABC):
     ) -> RootEntityRepository[_RootEntityT] | StubEntityRepository[
         _StubEntityT
     ] | TrunkEntityRepository[_TrunkEntityT] | CrownEntityRepository[_CrownEntityT]:
-        """Retrieve a repository."""
+        """Retrieve a repository for a specific entity type.""" ""
 
 
 class DomainStorageEngine(abc.ABC):

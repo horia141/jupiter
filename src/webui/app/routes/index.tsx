@@ -1,5 +1,6 @@
 import { Button, ButtonGroup } from "@mui/material";
-import { Link, ShouldRevalidateFunction } from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { Link } from "@remix-run/react";
 import { useContext } from "react";
 import { StandaloneContainer } from "~/components/infra/layout/standalone-container";
 import { GlobalPropertiesContext } from "~/global-properties-client";
