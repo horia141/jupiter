@@ -614,7 +614,9 @@ class WebServiceApp:
         )
 
         config = uvicorn.Config(
-            self._fast_app, port=self._global_properties.port, log_level="info"
+            self._fast_app, 
+            host=self._global_properties.host,
+            port=self._global_properties.port, log_level="info"
         )
         server = uvicorn.Server(config)
         await server.serve()

@@ -17,6 +17,7 @@ class GlobalProperties:
     env: Env
     hosting: Hosting
     description: str
+    host: str
     port: int
     version: str
     docs_init_workspace_url: str
@@ -58,6 +59,7 @@ def build_global_properties() -> GlobalProperties:
     env = Env(cast(str, os.getenv("ENV")))
     hosting = Hosting(cast(str, os.getenv("HOSTING")))
     description = cast(str, os.getenv("DESCRIPTION"))
+    host = cast(str, os.getenv("HOST"))
     port = int(cast(str, os.getenv("PORT")))
     version = cast(str, os.getenv("VERSION"))
     docs_init_workspace_url = cast(str, os.getenv("DOCS_INIT_WORKSPACE_URL"))
@@ -76,6 +78,7 @@ def build_global_properties() -> GlobalProperties:
         env=env,
         hosting=hosting,
         description=description,
+        host=host,
         port=port,
         version=version,
         docs_init_workspace_url=docs_init_workspace_url,
