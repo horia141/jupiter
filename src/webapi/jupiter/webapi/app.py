@@ -19,14 +19,18 @@ from typing import (
     get_origin,
 )
 
+from starlette import status
 import inflection
+from jupiter.core.domain.auth.password_plain import PasswordPlain
+from jupiter.core.domain.core.email_address import EmailAddress
+from jupiter.core.use_cases.login import LoginArgs, LoginUseCase
 import uvicorn
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import Depends, FastAPI, Request
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse, PlainTextResponse
 from fastapi.routing import APIRoute
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.types import DecoratedCallable
 from jupiter.core.domain.auth.auth_token_ext import (
     AuthTokenExt,
@@ -570,6 +574,38 @@ class WebServiceApp:
             search_storage_engine,
             use_case_storage_engine,
         )
+
+        login_use_case = LoginUseCase(
+            global_properties=global_properties,
+            time_provider=request_time_provider,
+            auth_token_stamper=auth_token_stamper,
+            domain_storage_engine=domain_storage_engine,
+            search_storage_engine=search_storage_engine,
+        )
+
+        @app.fast_app.get("/healthz", status_code=status.HTTP_200_OK)
+        async def healthz() -> None:
+            """Health check endpoint."""
+            return None
+
+
+        @app.fast_app.post("/old-skool-login")
+        async def old_skool_login(
+            form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
+        ) -> dict[str, str]:
+            """Login via OAuth2 password flow and return an auth token."""
+            email_address = realm_codec_registry.db_decode(EmailAddress, form_data.username, WebRealm)
+            password = realm_codec_registry.db_decode(PasswordPlain, form_data.password, WebRealm)
+
+            result = await login_use_case.execute(
+                AppGuestUseCaseSession(),
+                LoginArgs(email_address=email_address, password=password),
+            )
+
+            return {
+                "access_token": result[1].auth_token_ext.auth_token_str,
+                "token_type": "bearer",
+            }
 
         for mr in module_root:
             for m in find_all_modules(mr):
