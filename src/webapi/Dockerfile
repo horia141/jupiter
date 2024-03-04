@@ -32,7 +32,7 @@ WORKDIR /jupiter/src/webapi
 
 RUN poetry install --only main --no-interaction --no-ansi
 
-ARG PORT=8010
+ARG PORT=10000
 ENV HOST=0.0.0.0
 ENV PORT=$PORT
 EXPOSE $PORT
