@@ -74,7 +74,10 @@ def _serialize_event(
     """Transform an event into a serialisation-ready dictionary."""
     serialized_frame_args: dict[str, RealmThing] = {}
     for the_key, (the_value, the_value_type) in event.frame_args.items():
-        encoder = realm_codec_registry.get_encoder(the_value_type, EventStoreRealm)
+        try:
+            encoder = realm_codec_registry.get_encoder(the_value_type, EventStoreRealm)
+        except Exception:
+            encoder = realm_codec_registry.get_encoder(the_value.__class__, EventStoreRealm)
         serialized_frame_args[the_key] = encoder.encode(the_value)
     return serialized_frame_args
 
