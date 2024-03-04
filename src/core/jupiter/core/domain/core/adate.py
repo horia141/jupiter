@@ -121,11 +121,13 @@ class ADateDatabaseDecoder(RealmDecoder[ADate, DatabaseRealm]):
 
     def decode(self, value: RealmThing) -> ADate:
         """Decode from a database realm."""
-        if not isinstance(value, (date, Date)):
+        if not isinstance(value, (str, date, Date)):
             raise RealmDecodingError(
                 f"Expected value for {self.__class__} to be date or Date but was {value.__class__}"
             )
 
+        if isinstance(value, str):
+            return ADate.from_str(value)
         return ADate.from_date(value)
 
 
