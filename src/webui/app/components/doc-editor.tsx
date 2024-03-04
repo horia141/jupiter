@@ -1,6 +1,6 @@
 import { TextField } from "@mui/material";
 import { useFetcher } from "@remix-run/react";
-import { Buffer } from "buffer";
+import { Buffer } from "buffer-polyfill";
 import type { Doc, DocCreateResult, Note } from "jupiter-gen";
 import type { ComponentType } from "react";
 import { lazy, Suspense, useCallback, useEffect, useState } from "react";

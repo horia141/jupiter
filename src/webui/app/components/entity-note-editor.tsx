@@ -1,6 +1,6 @@
 import { Box } from "@mui/material";
 import { useFetcher } from "@remix-run/react";
-import { Buffer } from "buffer";
+import { Buffer } from "buffer-polyfill";
 import type { Note } from "jupiter-gen";
 import type { ComponentType } from "react";
 import { lazy, Suspense, useCallback, useEffect, useState } from "react";
