@@ -11,11 +11,15 @@ import {
 } from "~/logic/action-result";
 import { NoteContentParser } from "~/logic/domain/notes";
 import { getSession } from "~/sessions";
+import { Buffer } from "buffer";
 
 const UpdateForEntityFormSchema = {
   id: z.string(),
   content: z.preprocess(
-    (value) => JSON.parse(atob(String(value))),
+    (value) => {
+      const utf8Buffer = Buffer.from(String(value), 'base64');
+      return JSON.parse(utf8Buffer.toString("utf-8"));
+    }
     NoteContentParser
   ),
 };

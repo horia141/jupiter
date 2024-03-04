@@ -9,6 +9,7 @@ import { isNoErrorSomeData } from "~/logic/action-result";
 import type { OneOfNoteContentBlock } from "~/logic/domain/notes";
 import type { BlockEditorProps } from "./infra/block-editor";
 import { FieldError, GlobalError } from "./infra/errors";
+import { Buffer } from 'buffer';
 
 const BlockEditor = lazy(() =>
   import("~/components/infra/block-editor.js").then((module) => ({
@@ -45,6 +46,7 @@ export function DocEditor({
 
   const act = useCallback(() => {
     setIsActing(true);
+    const base64Content = Buffer.from(JSON.stringify(noteContent), 'utf-8').toString('base64');
     if (docId && noteId) {
       // We already created this thing, we just need to update!
       cardActionFetcher.submit(
@@ -52,7 +54,7 @@ export function DocEditor({
           docId: docId,
           noteId: noteId,
           name: noteName || "Untitled",
-          content: btoa(JSON.stringify(noteContent)),
+          content: base64Content,
         },
         {
           method: "post",
@@ -64,7 +66,7 @@ export function DocEditor({
       cardActionFetcher.submit(
         {
           name: noteName || "Untitled",
-          content: btoa(JSON.stringify(noteContent)),
+          content: base64Content,
         },
         {
           method: "post",

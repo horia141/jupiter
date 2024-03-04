@@ -8,6 +8,7 @@ import type { SomeErrorNoData } from "~/logic/action-result";
 import type { OneOfNoteContentBlock } from "~/logic/domain/notes";
 import type { BlockEditorProps } from "./infra/block-editor";
 import { FieldError, GlobalError } from "./infra/errors";
+import { Buffer } from 'buffer';
 
 const BlockEditor = lazy(() =>
   import("~/components/infra/block-editor.js").then((module) => ({
@@ -35,11 +36,12 @@ export function EntityNoteEditor({
 
   const act = useCallback(() => {
     setIsActing(true);
+    const base64Content = Buffer.from(JSON.stringify(noteContent), 'utf-8').toString('base64');
     // We already created this thing, we just need to update!
     cardActionFetcher.submit(
       {
         id: initialNote.ref_id,
-        content: btoa(JSON.stringify(noteContent)),
+        content: base64Content,
       },
       {
         method: "post",
