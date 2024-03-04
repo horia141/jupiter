@@ -374,7 +374,7 @@ class GenService:
                         parent_ref_id=inbox_task_collection.ref_id,
                         allow_archived=True,
                         source=[InboxTaskSource.PERSON_CATCH_UP],
-                        perfon_ref_id=[m.ref_id for m in all_persons],
+                        person_ref_id=[m.ref_id for m in all_persons],
                     )
                     all_birthday_inbox_tasks = await uow.get_for(
                         InboxTask
