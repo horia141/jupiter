@@ -22,7 +22,7 @@ import {
   QuoteBlock,
   TableBlock,
 } from "jupiter-gen";
-import { useCallback, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import type { OneOfNoteContentBlock } from "~/logic/domain/notes";
 
 export interface BlockEditorProps {
@@ -34,7 +34,7 @@ export interface BlockEditorProps {
 export default function BlockEditor(props: BlockEditorProps) {
   const ejInstance = useRef<EditorJS>();
 
-  const initEditor = useCallback(() => {
+  const initEditor = () => {
     const editor = new EditorJS({
       holder: "editorjs",
       placeholder: "Start writing...",
@@ -86,7 +86,7 @@ export default function BlockEditor(props: BlockEditorProps) {
         delimiter: Delimiter,
       },
     });
-  }, [props]);
+  };
 
   // This will run only once
   useEffect(() => {
@@ -100,7 +100,8 @@ export default function BlockEditor(props: BlockEditorProps) {
       }
       ejInstance.current = undefined;
     };
-  }, [initEditor]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return <div id="editorjs"></div>;
 }

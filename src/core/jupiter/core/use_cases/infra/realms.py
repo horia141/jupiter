@@ -46,7 +46,9 @@ from jupiter.core.framework.realm import (
     PROVIDE_VIA_REGISTRY,
     CliRealm,
     DatabaseRealm,
+    DecoderNotFoundError,
     DomainThing,
+    EncoderNotFoundError,
     EventStoreRealm,
     Realm,
     RealmCodecRegistry,
@@ -1552,7 +1554,9 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                     elif registry._has_encoder(atomic_value_type, DatabaseRealm):
                         continue
                     else:
-                        raise Exception(f"No encoder for {atomic_value_type}")
+                        raise EncoderNotFoundError(
+                            f"No encoder for {atomic_value_type}"
+                        )
 
                 if not registry._has_decoder(atomic_value_type, DatabaseRealm):
                     if issubclass(atomic_value_type, EntityName):
@@ -1564,7 +1568,9 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                     elif registry._has_decoder(atomic_value_type, DatabaseRealm):
                         continue
                     else:
-                        raise Exception(f"No decoder for {atomic_value_type}")
+                        raise DecoderNotFoundError(
+                            f"No decoder for {atomic_value_type}"
+                        )
 
             for composite_value_type in extract_composite_values(m):
                 if not allowed_in_realm(composite_value_type, DatabaseRealm):
@@ -1831,7 +1837,7 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
         elif is_thing_ish_type(thing_type):
             if (thing_type, realm) not in self._encoders_registry:
                 if (thing_type, DatabaseRealm) not in self._encoders_registry:
-                    raise Exception(
+                    raise EncoderNotFoundError(
                         f"Could not find encoder for realm {realm} and thing {thing_type.__name__}"
                     )
                 return cast(
@@ -1922,11 +1928,11 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                     ),
                 )
             else:
-                raise Exception(
+                raise EncoderNotFoundError(
                     f"Could not find encoder for realm {realm} and thing {thing_type.__name__}"
                 )
         else:
-            raise Exception(
+            raise EncoderNotFoundError(
                 f"Could not find encoder for realm {realm} and thing {thing_type.__name__}"
             )
 
@@ -1958,7 +1964,7 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
         elif is_thing_ish_type(thing_type):
             if (thing_type, realm) not in self._decoders_registry:
                 if (thing_type, DatabaseRealm) not in self._decoders_registry:
-                    raise Exception(
+                    raise DecoderNotFoundError(
                         f"Could not find decoder for realm {realm} and thing {thing_type.__name__}"
                     )
                 return cast(
@@ -2049,11 +2055,11 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                     ),
                 )
             else:
-                raise Exception(
+                raise DecoderNotFoundError(
                     f"Could not find decoder for realm {realm} and thing {thing_type.__name__}"
                 )
         else:
-            raise Exception(
+            raise DecoderNotFoundError(
                 f"Could not find decoder for realm {realm} and thing {thing_type.__name__}"
             )
 

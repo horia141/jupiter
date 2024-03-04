@@ -1,5 +1,6 @@
 import { TextField } from "@mui/material";
 import { useFetcher } from "@remix-run/react";
+import { Buffer } from "buffer";
 import type { Doc, DocCreateResult, Note } from "jupiter-gen";
 import type { ComponentType } from "react";
 import { lazy, Suspense, useCallback, useEffect, useState } from "react";
@@ -9,7 +10,6 @@ import { isNoErrorSomeData } from "~/logic/action-result";
 import type { OneOfNoteContentBlock } from "~/logic/domain/notes";
 import type { BlockEditorProps } from "./infra/block-editor";
 import { FieldError, GlobalError } from "./infra/errors";
-import { Buffer } from 'buffer';
 
 const BlockEditor = lazy(() =>
   import("~/components/infra/block-editor.js").then((module) => ({
@@ -46,7 +46,10 @@ export function DocEditor({
 
   const act = useCallback(() => {
     setIsActing(true);
-    const base64Content = Buffer.from(JSON.stringify(noteContent), 'utf-8').toString('base64');
+    const base64Content = Buffer.from(
+      JSON.stringify(noteContent),
+      "utf-8"
+    ).toString("base64");
     if (docId && noteId) {
       // We already created this thing, we just need to update!
       cardActionFetcher.submit(

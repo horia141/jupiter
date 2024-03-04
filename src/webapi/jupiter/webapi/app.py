@@ -19,11 +19,7 @@ from typing import (
     get_origin,
 )
 
-from starlette import status
 import inflection
-from jupiter.core.domain.auth.password_plain import PasswordPlain
-from jupiter.core.domain.core.email_address import EmailAddress
-from jupiter.core.use_cases.login import LoginArgs, LoginUseCase
 import uvicorn
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import Depends, FastAPI, Request
@@ -37,6 +33,8 @@ from jupiter.core.domain.auth.auth_token_ext import (
     AuthTokenExtDatabaseDecoder,
 )
 from jupiter.core.domain.auth.auth_token_stamper import AuthTokenStamper
+from jupiter.core.domain.auth.password_plain import PasswordPlain
+from jupiter.core.domain.core.email_address import EmailAddress
 from jupiter.core.domain.storage_engine import DomainStorageEngine, SearchStorageEngine
 from jupiter.core.framework.entity import Entity, ParentLink
 from jupiter.core.framework.event import EventSource
@@ -74,6 +72,7 @@ from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCase,
     AppLoggedInUseCaseSession,
 )
+from jupiter.core.use_cases.login import LoginArgs, LoginUseCase
 from jupiter.core.utils.global_properties import GlobalProperties
 from jupiter.core.utils.progress_reporter import (
     EmptyProgressReporterFactory,
@@ -83,6 +82,7 @@ from jupiter.webapi.time_provider import CronRunTimeProvider, PerRequestTimeProv
 from jupiter.webapi.websocket_progress_reporter import WebsocketProgressReporterFactory
 from pendulum.date import Date
 from pendulum.datetime import DateTime
+from starlette import status
 from starlette.middleware.base import BaseHTTPMiddleware
 
 STANDARD_RESPONSES: dict[int | str, dict[str, Any]] = {
@@ -588,14 +588,17 @@ class WebServiceApp:
             """Health check endpoint."""
             return None
 
-
         @app.fast_app.post("/old-skool-login")
         async def old_skool_login(
             form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
         ) -> dict[str, str]:
             """Login via OAuth2 password flow and return an auth token."""
-            email_address = realm_codec_registry.db_decode(EmailAddress, form_data.username, WebRealm)
-            password = realm_codec_registry.db_decode(PasswordPlain, form_data.password, WebRealm)
+            email_address = realm_codec_registry.db_decode(
+                EmailAddress, form_data.username, WebRealm
+            )
+            password = realm_codec_registry.db_decode(
+                PasswordPlain, form_data.password, WebRealm
+            )
 
             result = await login_use_case.execute(
                 AppGuestUseCaseSession(),
@@ -650,9 +653,10 @@ class WebServiceApp:
         )
 
         config = uvicorn.Config(
-            self._fast_app, 
+            self._fast_app,
             host=self._global_properties.host,
-            port=self._global_properties.port, log_level="info"
+            port=self._global_properties.port,
+            log_level="info",
         )
         server = uvicorn.Server(config)
         await server.serve()

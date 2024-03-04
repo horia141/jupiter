@@ -7,6 +7,14 @@ from jupiter.core.framework.thing import Thing
 from jupiter.core.framework.update_action import UpdateAction
 
 
+class DecoderNotFoundError(Exception):
+    """A decoder was not found."""
+
+
+class EncoderNotFoundError(Exception):
+    """An encoder was not found."""
+
+
 class Realm:
     """A realm denotes the storage existance and validation correctness of a particular Jupiter concept (value, record, entity)."""
 

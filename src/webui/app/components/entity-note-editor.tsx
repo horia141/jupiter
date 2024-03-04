@@ -1,5 +1,6 @@
 import { Box } from "@mui/material";
 import { useFetcher } from "@remix-run/react";
+import { Buffer } from "buffer";
 import type { Note } from "jupiter-gen";
 import type { ComponentType } from "react";
 import { lazy, Suspense, useCallback, useEffect, useState } from "react";
@@ -8,7 +9,6 @@ import type { SomeErrorNoData } from "~/logic/action-result";
 import type { OneOfNoteContentBlock } from "~/logic/domain/notes";
 import type { BlockEditorProps } from "./infra/block-editor";
 import { FieldError, GlobalError } from "./infra/errors";
-import { Buffer } from 'buffer';
 
 const BlockEditor = lazy(() =>
   import("~/components/infra/block-editor.js").then((module) => ({
@@ -36,7 +36,10 @@ export function EntityNoteEditor({
 
   const act = useCallback(() => {
     setIsActing(true);
-    const base64Content = Buffer.from(JSON.stringify(noteContent), 'utf-8').toString('base64');
+    const base64Content = Buffer.from(
+      JSON.stringify(noteContent),
+      "utf-8"
+    ).toString("base64");
     // We already created this thing, we just need to update!
     cardActionFetcher.submit(
       {

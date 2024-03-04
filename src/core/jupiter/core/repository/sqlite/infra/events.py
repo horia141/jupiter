@@ -3,7 +3,12 @@
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.entity import Entity
 from jupiter.core.framework.event import Event
-from jupiter.core.framework.realm import EventStoreRealm, RealmCodecRegistry, RealmThing
+from jupiter.core.framework.realm import (
+    EncoderNotFoundError,
+    EventStoreRealm,
+    RealmCodecRegistry,
+    RealmThing,
+)
 from sqlalchemy import (
     JSON,
     Column,
@@ -76,8 +81,10 @@ def _serialize_event(
     for the_key, (the_value, the_value_type) in event.frame_args.items():
         try:
             encoder = realm_codec_registry.get_encoder(the_value_type, EventStoreRealm)
-        except Exception:
-            encoder = realm_codec_registry.get_encoder(the_value.__class__, EventStoreRealm)
+        except EncoderNotFoundError:
+            encoder = realm_codec_registry.get_encoder(
+                the_value.__class__, EventStoreRealm
+            )
         serialized_frame_args[the_key] = encoder.encode(the_value)
     return serialized_frame_args
 

@@ -11,19 +11,15 @@ import {
 } from "~/logic/action-result";
 import { NoteContentParser } from "~/logic/domain/notes";
 import { getSession } from "~/sessions";
-import { Buffer } from "buffer";
 
 const UpdateFormSchema = {
   docId: z.string(),
   noteId: z.string(),
   name: z.string(),
-  content: z.preprocess(
-    (value) => {
-      const utf8Buffer = Buffer.from(String(value), 'base64');
-      return JSON.parse(utf8Buffer.toString("utf-8"));
-    },
-    NoteContentParser
-  ),
+  content: z.preprocess((value) => {
+    const utf8Buffer = Buffer.from(String(value), "base64");
+    return JSON.parse(utf8Buffer.toString("utf-8"));
+  }, NoteContentParser),
 };
 
 export async function action({ request }: ActionArgs) {

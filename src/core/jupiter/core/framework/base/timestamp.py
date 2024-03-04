@@ -85,7 +85,9 @@ class TimestampDatabaseDecoder(RealmDecoder[Timestamp, DatabaseRealm]):
         if isinstance(value, str):
             raw_dt = pendulum.parser.parse(value, tz=UTC, exact=True)
             if not isinstance(raw_dt, DateTime):
-                raise RealmDecodingError(f"Expected value for {self.__class__} to be datetime or DateTime but was parsed as {raw_dt.__class__}")
+                raise RealmDecodingError(
+                    f"Expected value for {self.__class__} to be datetime or DateTime but was parsed as {raw_dt.__class__}"
+                )
             return Timestamp.from_date_and_time(raw_dt)
         elif isinstance(value, DateTime):
             return Timestamp.from_date_and_time(value)

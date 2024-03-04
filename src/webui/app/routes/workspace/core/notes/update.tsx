@@ -1,5 +1,6 @@
 import type { ActionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
+import { Buffer } from "buffer";
 import { StatusCodes } from "http-status-codes";
 import { ApiError } from "jupiter-gen";
 import { z } from "zod";
@@ -11,17 +12,13 @@ import {
 } from "~/logic/action-result";
 import { NoteContentParser } from "~/logic/domain/notes";
 import { getSession } from "~/sessions";
-import { Buffer } from "buffer";
 
 const UpdateForEntityFormSchema = {
   id: z.string(),
-  content: z.preprocess(
-    (value) => {
-      const utf8Buffer = Buffer.from(String(value), 'base64');
-      return JSON.parse(utf8Buffer.toString("utf-8"));
-    }
-    NoteContentParser
-  ),
+  content: z.preprocess((value) => {
+    const utf8Buffer = Buffer.from(String(value), "base64");
+    return JSON.parse(utf8Buffer.toString("utf-8"));
+  }, NoteContentParser),
 };
 
 export async function action({ request }: ActionArgs) {
