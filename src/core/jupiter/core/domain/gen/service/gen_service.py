@@ -199,9 +199,9 @@ class GenService:
                         InboxTask
                     ).find_all_generic(
                         parent_ref_id=inbox_task_collection.ref_id,
-                        filter_sources=[InboxTaskSource.HABIT],
+                        source=[InboxTaskSource.HABIT],
                         allow_archived=True,
-                        habit_ref_id=[rt.ref_id for rt in all_habits],
+                        habitref_id=[rt.ref_id for rt in all_habits],
                     )
 
                 all_inbox_tasks_by_habit_ref_id_and_timeline: Dict[
@@ -254,7 +254,7 @@ class GenService:
                         InboxTask
                     ).find_all_generic(
                         parent_ref_id=inbox_task_collection.ref_id,
-                        filter_sources=[InboxTaskSource.CHORE],
+                        source=[InboxTaskSource.CHORE],
                         allow_archived=True,
                         chore_ref_id=[rt.ref_id for rt in all_chores],
                     )
@@ -310,7 +310,7 @@ class GenService:
                         InboxTask
                     ).find_all_generic(
                         parent_ref_id=inbox_task_collection.ref_id,
-                        filter_sources=[InboxTaskSource.METRIC],
+                        source=[InboxTaskSource.METRIC],
                         allow_archived=True,
                         metric_ref_id=[m.ref_id for m in all_metrics],
                     )
