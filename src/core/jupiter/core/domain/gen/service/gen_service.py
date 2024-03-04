@@ -201,7 +201,7 @@ class GenService:
                         parent_ref_id=inbox_task_collection.ref_id,
                         source=[InboxTaskSource.HABIT],
                         allow_archived=True,
-                        habitref_id=[rt.ref_id for rt in all_habits],
+                        habit_ref_id=[rt.ref_id for rt in all_habits],
                     )
 
                 all_inbox_tasks_by_habit_ref_id_and_timeline: Dict[
