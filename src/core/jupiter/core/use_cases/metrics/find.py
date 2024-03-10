@@ -36,6 +36,7 @@ class MetricFindArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
     allow_archived: bool
+    include_notes: bool
     include_entries: bool
     include_collection_inbox_tasks: bool
     include_metric_entry_notes: bool
@@ -48,6 +49,7 @@ class MetricFindResponseEntry(UseCaseResultBase):
     """A single entry in the LoadAllMetricsResponse."""
 
     metric: Metric
+    note: Note | None
     metric_entries: Optional[List[MetricEntry]] = None
     metric_collection_inbox_tasks: Optional[List[InboxTask]] = None
     metric_entry_notes: list[Note] | None = None
@@ -88,6 +90,20 @@ class MetricFindUseCase(
         collection_project = await uow.get_for(Project).load_by_id(
             metric_collection.collection_project_ref_id,
         )
+
+        all_notes_by_metric_ref_id: defaultdict[EntityId, Note] = defaultdict(None)
+        if args.include_notes:
+            note_collection = await uow.get_for(NoteCollection).load_by_parent(
+                workspace.ref_id
+            )
+            all_notes = await uow.get_for(Note).find_all_generic(
+                parent_ref_id=note_collection.ref_id,
+                domain=NoteDomain.METRIC,
+                allow_archived=True,
+                source_entity_ref_id=[m.ref_id for m in metrics],
+            )
+            for n in all_notes:
+                all_notes_by_metric_ref_id[n.source_entity_ref_id] = n
 
         if args.include_entries:
             metric_entries_raw = []
@@ -150,6 +166,7 @@ class MetricFindUseCase(
                 parent_ref_id=note_collection.ref_id,
                 domain=NoteDomain.METRIC_ENTRY,
                 allow_archived=True,
+                source_entity_ref_id=[me.ref_id for me in metric_entries],
             )
             for n in all_notes:
                 all_notes_by_metric_entry_ref_id[
@@ -161,6 +178,7 @@ class MetricFindUseCase(
             entries=[
                 MetricFindResponseEntry(
                     metric=m,
+                    note=all_notes_by_metric_ref_id.get(m.ref_id, None),
                     metric_entries=metric_entries_by_ref_ids.get(m.ref_id, [])
                     if len(metric_entries_by_ref_ids) > 0
                     else None,

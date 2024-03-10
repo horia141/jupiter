@@ -1,6 +1,9 @@
 """Use case for loading a smart list."""
 from typing import List
 
+from jupiter.core.domain.core.notes.note import Note, NoteRepository
+from jupiter.core.domain.core.notes.note_collection import NoteCollection
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.smart_lists.smart_list import SmartList
 from jupiter.core.domain.smart_lists.smart_list_item import SmartListItem
@@ -33,8 +36,10 @@ class SmartListLoadResult(UseCaseResultBase):
     """SmartListLoadResult."""
 
     smart_list: SmartList
+    note: Note | None
     smart_list_tags: List[SmartListTag]
     smart_list_items: List[SmartListItem]
+    smart_list_item_notes: List[Note]
 
 
 @readonly_use_case(WorkspaceFeature.SMART_LISTS)
@@ -61,8 +66,26 @@ class SmartListLoadUseCase(
             parent_ref_id=smart_list.ref_id, allow_archived=args.allow_archived
         )
 
+        note = await uow.get(NoteRepository).load_optional_for_source(
+            NoteDomain.SMART_LIST,
+            smart_list.ref_id,
+            allow_archived=args.allow_archived,
+        )
+
+        note_collection = await uow.get_for(NoteCollection).load_by_parent(
+            context.workspace.ref_id,
+        )
+        smart_list_item_notes = await uow.get_for(Note).find_all_generic(
+            parent_ref_id=note_collection.ref_id,
+            domain=NoteDomain.SMART_LIST_ITEM,
+            allow_archived=args.allow_archived,
+            source_entity_ref_id=[item.ref_id for item in smart_list_items],
+        )
+
         return SmartListLoadResult(
             smart_list=smart_list,
+            note=note,
             smart_list_tags=smart_list_tags,
             smart_list_items=smart_list_items,
+            smart_list_item_notes=smart_list_item_notes,
         )

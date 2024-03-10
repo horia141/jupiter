@@ -48,13 +48,18 @@ class MetricRemoveService:
                 ctx, uow, progress_reporter, inbox_task
             )
 
+        note_remove_service = NoteRemoveService()
+
         for metric_entry in all_metric_entries:
             await uow.get_for(MetricEntry).remove(metric_entry.ref_id)
             await progress_reporter.mark_removed(metric_entry)
-            note_remove_service = NoteRemoveService()
             await note_remove_service.remove_for_source(
                 ctx, uow, NoteDomain.METRIC_ENTRY, metric_entry.ref_id
             )
+
+        await note_remove_service.remove_for_source(
+            ctx, uow, NoteDomain.METRIC, metric.ref_id
+        )
 
         await uow.get_for(Metric).remove(metric.ref_id)
         await progress_reporter.mark_removed(metric)

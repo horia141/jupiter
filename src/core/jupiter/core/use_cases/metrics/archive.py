@@ -83,6 +83,11 @@ class MetricArchiveUseCase(
                 metric_entry.ref_id,
             )
 
+        note_archive_service = NoteArchiveService()
+        await note_archive_service.archive_for_source(
+            context.domain_context, uow, NoteDomain.METRIC, metric.ref_id
+        )
+
         metric = metric.mark_archived(context.domain_context)
         await uow.get_for(Metric).save(metric)
         await progress_reporter.mark_updated(metric)

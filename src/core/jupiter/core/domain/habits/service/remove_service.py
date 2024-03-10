@@ -1,5 +1,7 @@
 """Shared service for removing a habit."""
 
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
+from jupiter.core.domain.core.notes.service.note_remove_service import NoteRemoveService
 from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.habits.habit_collection import HabitCollection
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
@@ -43,6 +45,11 @@ class HabitRemoveService:
             await inbox_task_remove_service.do_it(
                 ctx, uow, progress_reporter, inbox_task
             )
+
+        note_remove_service = NoteRemoveService()
+        await note_remove_service.remove_for_source(
+            ctx, uow, NoteDomain.HABIT, habit.ref_id
+        )
 
         await uow.get_for(Habit).remove(ref_id)
         await progress_reporter.mark_removed(habit)

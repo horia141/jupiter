@@ -26,8 +26,9 @@ export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const response = await getLoggedInApiClient(session).projects.projectFind({
     allow_archived: false,
+    include_notes: false,
   });
-  return json(response.projects);
+  return json(response.entries);
 }
 
 export const shouldRevalidate: ShouldRevalidateFunction =
@@ -44,10 +45,10 @@ export default function Projects() {
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
         <EntityStack>
-          {projects.map((project) => (
-            <EntityCard key={project.ref_id}>
-              <EntityLink to={`/workspace/projects/${project.ref_id}`}>
-                <EntityNameComponent name={project.name} />
+          {projects.map((entry) => (
+            <EntityCard key={entry.project.ref_id}>
+              <EntityLink to={`/workspace/projects/${entry.project.ref_id}`}>
+                <EntityNameComponent name={entry.project.name} />
               </EntityLink>
             </EntityCard>
           ))}

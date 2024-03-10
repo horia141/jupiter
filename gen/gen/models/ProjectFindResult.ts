@@ -2,12 +2,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Project } from './Project';
+import type { ProjectFindResultEntry } from './ProjectFindResultEntry';
 
 /**
  * PersonFindResult object.
  */
 export type ProjectFindResult = {
-    projects: Array<Project>;
+    entries: Array<ProjectFindResultEntry>;
 };
 

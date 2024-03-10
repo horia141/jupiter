@@ -5,6 +5,8 @@ from jupiter.core.domain.big_plans.service.remove_service import BigPlanRemoveSe
 from jupiter.core.domain.chores.chore import Chore
 from jupiter.core.domain.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.chores.service.remove_service import ChoreRemoveService
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
+from jupiter.core.domain.core.notes.service.note_remove_service import NoteRemoveService
 from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.habits.habit_collection import HabitCollection
 from jupiter.core.domain.habits.service.remove_service import HabitRemoveService
@@ -137,6 +139,12 @@ class ProjectRemoveService:
             await big_plan_remove_service.remove(
                 ctx, uow, progress_reporter, workspace, big_plan.ref_id
             )
+
+        # remove note
+        note_remove_service = NoteRemoveService()
+        await note_remove_service.remove_for_source(
+            ctx, uow, NoteDomain.PROJECT, project.ref_id
+        )
 
         # remove project
         await uow.get_for(Project).remove(project.ref_id)

@@ -6,9 +6,9 @@ import type { Note } from './Note';
 import type { Vacation } from './Vacation';
 
 /**
- * VacationLoadResult.
+ * PersonFindResult object.
  */
-export type VacationLoadResult = {
+export type VacationFindResultEntry = {
     vacation: Vacation;
     note?: Note;
 };

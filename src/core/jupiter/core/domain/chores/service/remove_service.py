@@ -2,6 +2,8 @@
 
 from jupiter.core.domain.chores.chore import Chore
 from jupiter.core.domain.chores.chore_collection import ChoreCollection
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
+from jupiter.core.domain.core.notes.service.note_remove_service import NoteRemoveService
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -37,6 +39,11 @@ class ChoreRemoveService:
         for inbox_task in inbox_tasks_to_archive:
             await uow.get_for(InboxTask).remove(inbox_task.ref_id)
             await progress_reporter.mark_removed(inbox_task)
+
+        note_remove_service = NoteRemoveService()
+        await note_remove_service.remove_for_source(
+            ctx, uow, NoteDomain.CHORE, chore.ref_id
+        )
 
         chore = await uow.get_for(Chore).remove(ref_id)
         await progress_reporter.mark_removed(chore)

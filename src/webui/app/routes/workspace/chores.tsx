@@ -39,6 +39,7 @@ export async function loader({ request }: LoaderArgs) {
     allow_archived: false,
     include_project: true,
     include_inbox_tasks: false,
+    include_notes: false,
   });
   return json(response.entries);
 }

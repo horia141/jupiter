@@ -1,6 +1,8 @@
 """Use case for loading a particular chore."""
 
 from jupiter.core.domain.chores.chore import Chore
+from jupiter.core.domain.core.notes.note import Note, NoteRepository
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
@@ -35,6 +37,7 @@ class ChoreLoadResult(UseCaseResultBase):
     chore: Chore
     project: Project
     inbox_tasks: list[InboxTask]
+    note: Note | None
 
 
 @readonly_use_case(WorkspaceFeature.CHORES)
@@ -64,4 +67,12 @@ class ChoreLoadUseCase(
             chore_ref_id=[args.ref_id],
         )
 
-        return ChoreLoadResult(chore=chore, project=project, inbox_tasks=inbox_tasks)
+        note = await uow.get(NoteRepository).load_optional_for_source(
+            NoteDomain.CHORE,
+            chore.ref_id,
+            allow_archived=args.allow_archived,
+        )
+
+        return ChoreLoadResult(
+            chore=chore, project=project, inbox_tasks=inbox_tasks, note=note
+        )

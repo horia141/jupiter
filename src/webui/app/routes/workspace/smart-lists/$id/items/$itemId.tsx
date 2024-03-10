@@ -16,10 +16,11 @@ import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useParams, useTransition } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { ApiError } from "jupiter-gen";
+import { ApiError, NoteDomain } from "jupiter-gen";
 import { z } from "zod";
 import { CheckboxAsString, parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
+import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
@@ -66,8 +67,9 @@ export async function loader({ request, params }: LoaderArgs) {
     });
 
     return json({
-      smartListItem: result.smart_list_item,
-      smartListTags: result.smart_list_tags,
+      item: result.item,
+      tags: result.tags,
+      note: result.note,
     });
   } catch (error) {
     if (error instanceof ApiError && error.status === StatusCodes.NOT_FOUND) {
@@ -115,6 +117,16 @@ export async function action({ request, params }: ActionArgs) {
         return redirect(`/workspace/smart-lists/${id}/items/${itemId}`);
       }
 
+      case "create-note": {
+        await getLoggedInApiClient(session).core.noteCreate({
+          domain: NoteDomain.SMART_LIST_ITEM,
+          source_entity_ref_id: itemId,
+          content: [],
+        });
+
+        return redirect(`/workspace/smart-lists/${id}/items/${itemId}`);
+      }
+
       case "archive": {
         await getLoggedInApiClient(session).smartLists.smartListItemArchive({
           ref_id: itemId,
@@ -144,16 +156,16 @@ export default function SmartListItem() {
   const transition = useTransition();
 
   const inputsEnabled =
-    transition.state === "idle" && !loaderData.smartListItem.archived;
+    transition.state === "idle" && !loaderData.item.archived;
 
   return (
     <LeafPanel
-      key={loaderData.smartListItem.ref_id}
+      key={loaderData.item.ref_id}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation={`/workspace/smart-lists/${id}/items`}
     >
-      <Card>
+      <Card sx={{ marginBottom: "1rem" }}>
         <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
@@ -161,7 +173,7 @@ export default function SmartListItem() {
               <InputLabel id="name">Name</InputLabel>
               <OutlinedInput
                 label="Name"
-                defaultValue={loaderData.smartListItem.name}
+                defaultValue={loaderData.item.name}
                 name="name"
                 readOnly={!inputsEnabled}
               />
@@ -176,7 +188,7 @@ export default function SmartListItem() {
                     name="isDone"
                     readOnly={!inputsEnabled}
                     disabled={!inputsEnabled}
-                    defaultChecked={loaderData.smartListItem.is_done}
+                    defaultChecked={loaderData.item.is_done}
                   />
                 }
                 label="Is Done"
@@ -186,8 +198,8 @@ export default function SmartListItem() {
 
             <FormControl fullWidth>
               <TagsEditor
-                allTags={loaderData.smartListTags}
-                defaultTags={loaderData.smartListItem.tags_ref_id}
+                allTags={loaderData.tags}
+                defaultTags={loaderData.item.tags_ref_id}
                 readOnly={!inputsEnabled}
               />
               <FieldError actionResult={actionData} fieldName="/tags" />
@@ -199,7 +211,7 @@ export default function SmartListItem() {
                 label="Url"
                 name="url"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.smartListItem.url}
+                defaultValue={loaderData.item.url}
               />
               <FieldError actionResult={actionData} fieldName="/url" />
             </FormControl>
@@ -219,6 +231,34 @@ export default function SmartListItem() {
             </Button>
           </ButtonGroup>
         </CardActions>
+      </Card>
+
+      <Card>
+        {!loaderData.note && (
+          <CardActions>
+            <ButtonGroup>
+              <Button
+                variant="contained"
+                disabled={!inputsEnabled}
+                type="submit"
+                name="intent"
+                value="create-note"
+              >
+                Create Note
+              </Button>
+            </ButtonGroup>
+          </CardActions>
+        )}
+
+        {loaderData.note && (
+          <>
+            <EntityNoteEditor
+              initialNote={loaderData.note}
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/content" />
+          </>
+        )}
       </Card>
     </LeafPanel>
   );

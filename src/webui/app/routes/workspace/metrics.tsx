@@ -35,6 +35,7 @@ export async function loader({ request }: LoaderArgs) {
   const metricResponse = await getLoggedInApiClient(session).metrics.metricFind(
     {
       allow_archived: false,
+      include_notes: false,
       include_entries: false,
       include_collection_inbox_tasks: false,
       include_metric_entry_notes: false,

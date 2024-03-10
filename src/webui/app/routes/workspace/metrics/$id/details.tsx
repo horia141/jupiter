@@ -29,12 +29,14 @@ import {
   Difficulty,
   Eisen,
   InboxTaskStatus,
+  NoteDomain,
   RecurringTaskPeriod,
 } from "jupiter-gen";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
+import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { IconSelector } from "~/components/icon-selector";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
@@ -92,6 +94,7 @@ export async function loader({ request, params }: LoaderArgs) {
 
     return json({
       metric: response.metric,
+      note: response.note,
       collectionInboxTasks: response.metric_collection_inbox_tasks,
     });
   } catch (error) {
@@ -204,6 +207,16 @@ export async function action({ request, params }: ActionArgs) {
         return redirect(`/workspace/metrics/${id}/details`);
       }
 
+      case "create-note": {
+        await getLoggedInApiClient(session).core.noteCreate({
+          domain: NoteDomain.METRIC,
+          source_entity_ref_id: id,
+          content: [],
+        });
+
+        return redirect(`/workspace/metrics/${id}/details`);
+      }
+
       default:
         throw new Response("Bad Intent", { status: 500 });
     }
@@ -289,7 +302,7 @@ export default function MetricDetails() {
       enableArchiveButton={inputsEnabled}
       returnLocation={`/workspace/metrics/${id}`}
     >
-      <Card>
+      <Card sx={{ marginBottom: "1rem" }}>
         <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
@@ -484,6 +497,34 @@ export default function MetricDetails() {
             </Button>
           </ButtonGroup>
         </CardActions>
+      </Card>
+
+      <Card>
+        {!loaderData.note && (
+          <CardActions>
+            <ButtonGroup>
+              <Button
+                variant="contained"
+                disabled={!inputsEnabled}
+                type="submit"
+                name="intent"
+                value="create-note"
+              >
+                Create Note
+              </Button>
+            </ButtonGroup>
+          </CardActions>
+        )}
+
+        {loaderData.note && (
+          <>
+            <EntityNoteEditor
+              initialNote={loaderData.note}
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/content" />
+          </>
+        )}
       </Card>
 
       {sortedCollectionTasks && (

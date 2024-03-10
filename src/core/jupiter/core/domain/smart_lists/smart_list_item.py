@@ -1,6 +1,8 @@
 """A smart list item."""
 from typing import List, Optional
 
+from jupiter.core.domain.core.notes.note import Note
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.core.url import URL
 from jupiter.core.domain.smart_lists.smart_list_item_name import SmartListItemName
 from jupiter.core.domain.smart_lists.smart_list_tag import SmartListTag
@@ -9,7 +11,9 @@ from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     IsOneOfRefId,
     IsParentLink,
+    IsRefId,
     LeafEntity,
+    OwnsAtMostOne,
     ParentLink,
     RefsMany,
     create_entity_action,
@@ -31,6 +35,9 @@ class SmartListItem(LeafEntity):
 
     tags = RefsMany(SmartListTag, ref_id=IsOneOfRefId("tags_ref_id"))
     all_tags = RefsMany(SmartListTag, smart_list_ref_id=IsParentLink())
+    note = OwnsAtMostOne(
+        Note, domain=NoteDomain.SMART_LIST_ITEM, source_entity_ref_id=IsRefId()
+    )
 
     @staticmethod
     @create_entity_action

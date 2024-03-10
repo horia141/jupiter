@@ -6,10 +6,17 @@
  * The source of a note.
  */
 export enum NoteDomain {
-    DOC = 'doc',
     INBOX_TASK = 'inbox-task',
+    HABIT = 'habit',
+    CHORE = 'chore',
+    BIG_PLAN = 'big-plan',
+    DOC = 'doc',
     JOURNAL = 'journal',
+    VACATION = 'vacation',
+    PROJECT = 'project',
+    SMART_LIST = 'smart-list',
+    SMART_LIST_ITEM = 'smart-list-item',
+    METRIC = 'metric',
     METRIC_ENTRY = 'metric-entry',
     PERSON = 'person',
-    LOG = 'log',
 }

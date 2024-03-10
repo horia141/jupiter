@@ -1,6 +1,8 @@
 """Shared module for removing a big plan."""
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
+from jupiter.core.domain.core.notes.service.note_remove_service import NoteRemoveService
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -38,6 +40,11 @@ class BigPlanRemoveService:
         for inbox_task in inbox_tasks_to_remove:
             await uow.get_for(InboxTask).remove(inbox_task.ref_id)
             await reporter.mark_removed(inbox_task)
+
+        note_remove_service = NoteRemoveService()
+        await note_remove_service.remove_for_source(
+            ctx, uow, NoteDomain.BIG_PLAN, big_plan.ref_id
+        )
 
         big_plan = await uow.get_for(BigPlan).remove(ref_id)
         await reporter.mark_removed(big_plan)

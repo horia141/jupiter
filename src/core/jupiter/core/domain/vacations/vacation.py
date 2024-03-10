@@ -2,11 +2,15 @@
 import typing
 
 from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.core.notes.note import Note
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.vacations.vacation_name import VacationName
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
+    IsRefId,
     LeafEntity,
+    OwnsAtMostOne,
     ParentLink,
     create_entity_action,
     entity,
@@ -24,6 +28,10 @@ class Vacation(LeafEntity):
     name: VacationName
     start_date: ADate
     end_date: ADate
+
+    note = OwnsAtMostOne(
+        Note, domain=NoteDomain.VACATION, source_entity_ref_id=IsRefId()
+    )
 
     @staticmethod
     @create_entity_action

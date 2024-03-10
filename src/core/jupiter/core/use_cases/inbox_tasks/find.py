@@ -1,6 +1,6 @@
 """The command for finding a inbox task."""
 from collections import defaultdict
-from typing import List, Optional, cast
+from typing import List, Optional
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
@@ -68,6 +68,7 @@ class InboxTaskFindResultEntry(UseCaseResultBase):
     """A single entry in the load all inbox tasks response."""
 
     inbox_task: InboxTask
+    note: Note | None
     project: Project
     habit: Optional[Habit] = None
     chore: Optional[Chore] = None
@@ -76,7 +77,6 @@ class InboxTaskFindResultEntry(UseCaseResultBase):
     person: Optional[Person] = None
     slack_task: Optional[SlackTask] = None
     email_task: Optional[EmailTask] = None
-    note: Note | None = None
 
 
 @use_case_result
@@ -256,9 +256,7 @@ class InboxTaskFindUseCase(
                 source_entity_ref_id=[it.ref_id for it in inbox_tasks],
             )
             for note in notes:
-                notes_by_inbox_task_ref_id[
-                    cast(EntityId, note.source_entity_ref_id)
-                ] = note
+                notes_by_inbox_task_ref_id[note.source_entity_ref_id] = note
 
         return InboxTaskFindResult(
             entries=[

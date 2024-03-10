@@ -1,6 +1,10 @@
 """The command for finding a habit."""
+from collections import defaultdict
 from typing import List, Optional
 
+from jupiter.core.domain.core.notes.note import Note
+from jupiter.core.domain.core.notes.note_collection import NoteCollection
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.features import (
     FeatureUnavailableError,
     WorkspaceFeature,
@@ -33,6 +37,7 @@ class HabitFindArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
     allow_archived: bool
+    include_notes: bool
     include_project: bool
     include_inbox_tasks: bool
     filter_ref_ids: Optional[List[EntityId]] = None
@@ -46,6 +51,7 @@ class HabitFindResultEntry(UseCaseResultBase):
     habit: Habit
     project: Optional[Project] = None
     inbox_tasks: Optional[List[InboxTask]] = None
+    note: Optional[Note] = None
 
 
 @use_case_result
@@ -113,6 +119,21 @@ class HabitFindUseCase(
         else:
             inbox_tasks = None
 
+        notes_by_habit_ref_id: defaultdict[EntityId, Note] = defaultdict(None)
+
+        if args.include_notes:
+            note_collection = await uow.get_for(NoteCollection).load_by_parent(
+                workspace.ref_id
+            )
+            notes = await uow.get_for(Note).find_all_generic(
+                parent_ref_id=note_collection.ref_id,
+                domain=NoteDomain.HABIT,
+                allow_archived=True,
+                source_entity_ref_id=[h.ref_id for h in habits],
+            )
+            for n in notes:
+                notes_by_habit_ref_id[n.source_entity_ref_id] = n
+
         return HabitFindResult(
             entries=[
                 HabitFindResultEntry(
@@ -125,6 +146,7 @@ class HabitFindUseCase(
                     ]
                     if inbox_tasks is not None
                     else None,
+                    note=notes_by_habit_ref_id.get(rt.ref_id, None),
                 )
                 for rt in habits
             ],

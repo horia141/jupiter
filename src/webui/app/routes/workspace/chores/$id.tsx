@@ -30,6 +30,7 @@ import {
   Difficulty,
   Eisen,
   InboxTaskStatus,
+  NoteDomain,
   RecurringTaskPeriod,
   WorkspaceFeature,
 } from "jupiter-gen";
@@ -37,6 +38,7 @@ import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { CheckboxAsString, parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
+import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
@@ -101,6 +103,7 @@ export async function loader({ request, params }: LoaderArgs) {
 
     return json({
       chore: result.chore,
+      note: result.note,
       project: result.project,
       inboxTasks: result.inbox_tasks,
       allProjects: summaryResponse.projects as Array<Project>,
@@ -216,6 +219,16 @@ export async function action({ request, params }: ActionArgs) {
         return redirect(`/workspace/chores/${id}`);
       }
 
+      case "create-note": {
+        await getLoggedInApiClient(session).core.noteCreate({
+          domain: NoteDomain.CHORE,
+          source_entity_ref_id: id,
+          content: [],
+        });
+
+        return redirect(`/workspace/chore/${id}`);
+      }
+
       case "archive": {
         await getLoggedInApiClient(session).chores.choreArchive({
           ref_id: id,
@@ -308,7 +321,7 @@ export default function Chore() {
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/chores"
     >
-      <Card>
+      <Card sx={{ marginBottom: "1rem" }}>
         <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
@@ -559,6 +572,34 @@ export default function Chore() {
             )}
           </ButtonGroup>
         </CardActions>
+      </Card>
+
+      <Card>
+        {!loaderData.note && (
+          <CardActions>
+            <ButtonGroup>
+              <Button
+                variant="contained"
+                disabled={!inputsEnabled}
+                type="submit"
+                name="intent"
+                value="create-note"
+              >
+                Create Note
+              </Button>
+            </ButtonGroup>
+          </CardActions>
+        )}
+
+        {loaderData.note && (
+          <>
+            <EntityNoteEditor
+              initialNote={loaderData.note}
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/content" />
+          </>
+        )}
       </Card>
 
       {sortedInboxTasks.length > 0 && (

@@ -1,6 +1,10 @@
 """The command for finding smart lists."""
+from collections import defaultdict
 from typing import List, Optional
 
+from jupiter.core.domain.core.notes.note import Note
+from jupiter.core.domain.core.notes.note_collection import NoteCollection
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.core.tags.tag_name import TagName
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.smart_lists.smart_list import SmartList
@@ -29,8 +33,10 @@ class SmartListFindArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
     allow_archived: bool
+    include_notes: bool
     include_tags: bool
     include_items: bool
+    include_item_notes: bool
     filter_ref_ids: Optional[List[EntityId]] = None
     filter_is_done: Optional[bool] = None
     filter_tag_names: Optional[List[TagName]] = None
@@ -43,8 +49,10 @@ class SmartListFindResponseEntry(UseCaseResultBase):
     """A single entry in the LoadAllSmartListsResponse."""
 
     smart_list: SmartList
+    note: Note | None
     smart_list_tags: Optional[List[SmartListTag]] = None
     smart_list_items: Optional[List[SmartListItem]] = None
+    smart_list_item_notes: Optional[List[Note]] = None
 
 
 @use_case_result
@@ -78,6 +86,20 @@ class SmartListFindUseCase(
             allow_archived=args.allow_archived,
             filter_ref_ids=args.filter_ref_ids,
         )
+
+        all_notes_by_smart_list_ref_id: defaultdict[EntityId, Note] = defaultdict(None)
+        if args.include_notes:
+            note_collection = await uow.get_for(NoteCollection).load_by_parent(
+                workspace.ref_id,
+            )
+            all_smart_list_notes = await uow.get_for(Note).find_all_generic(
+                parent_ref_id=note_collection.ref_id,
+                domain=NoteDomain.SMART_LIST,
+                allow_archived=True,
+                source_entity_ref_id=[sl.ref_id for sl in smart_lists],
+            )
+            for note in all_smart_list_notes:
+                all_notes_by_smart_list_ref_id[note.source_entity_ref_id] = note
 
         if args.include_tags:
             smart_list_tags_by_smart_list_ref_ids = {}
@@ -130,10 +152,26 @@ class SmartListFindUseCase(
         else:
             smart_list_items_by_smart_list_ref_ids = None
 
+        all_notes_by_smart_list_item_ref_id: defaultdict[EntityId, Note] = defaultdict(
+            None
+        )
+        if args.include_item_notes:
+            note_collection = await uow.get_for(NoteCollection).load_by_parent(
+                workspace.ref_id,
+            )
+            all_smart_list_item_notes = await uow.get_for(Note).find_all_generic(
+                parent_ref_id=note_collection.ref_id,
+                domain=NoteDomain.SMART_LIST_ITEM,
+                allow_archived=True,
+            )
+            for note in all_smart_list_item_notes:
+                all_notes_by_smart_list_item_ref_id[note.source_entity_ref_id] = note
+
         return SmartListFindResult(
             entries=[
                 SmartListFindResponseEntry(
                     smart_list=sl,
+                    note=all_notes_by_smart_list_ref_id.get(sl.ref_id, None),
                     smart_list_tags=smart_list_tags_by_smart_list_ref_ids.get(
                         sl.ref_id,
                         [],
@@ -145,6 +183,11 @@ class SmartListFindUseCase(
                         [],
                     )
                     if smart_list_items_by_smart_list_ref_ids is not None
+                    else None,
+                    smart_list_item_notes=list(
+                        all_notes_by_smart_list_item_ref_id.values()
+                    )
+                    if args.include_item_notes
                     else None,
                 )
                 for sl in smart_lists

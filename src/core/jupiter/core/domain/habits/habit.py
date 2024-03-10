@@ -1,6 +1,8 @@
 """A habit."""
 from typing import Optional
 
+from jupiter.core.domain.core.notes.note import Note
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
@@ -14,6 +16,7 @@ from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     IsRefId,
     LeafEntity,
+    OwnsAtMostOne,
     OwnsMany,
     ParentLink,
     create_entity_action,
@@ -39,6 +42,7 @@ class Habit(LeafEntity):
     inbox_tasks = OwnsMany(
         InboxTask, source=InboxTaskSource.HABIT, habit_ref_id=IsRefId()
     )
+    note = OwnsAtMostOne(Note, domain=NoteDomain.HABIT, source_entity_ref_id=IsRefId())
 
     @staticmethod
     @create_entity_action

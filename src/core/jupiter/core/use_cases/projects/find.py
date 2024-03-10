@@ -1,6 +1,10 @@
 """The command for finding projects."""
+from collections import defaultdict
 from typing import List, Optional
 
+from jupiter.core.domain.core.notes.note import Note
+from jupiter.core.domain.core.notes.note_collection import NoteCollection
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.projects.project_collection import ProjectCollection
@@ -25,14 +29,23 @@ class ProjectFindArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
     allow_archived: bool
+    include_notes: bool
     filter_ref_ids: Optional[List[EntityId]] = None
+
+
+@use_case_result
+class ProjectFindResultEntry(UseCaseResultBase):
+    """A single project result."""
+
+    project: Project
+    note: Note | None
 
 
 @use_case_result
 class ProjectFindResult(UseCaseResultBase):
     """PersonFindResult object."""
 
-    projects: List[Project]
+    entries: list[ProjectFindResultEntry]
 
 
 @readonly_use_case(WorkspaceFeature.PROJECTS)
@@ -59,4 +72,26 @@ class ProjectFindUseCase(
             ref_id=args.filter_ref_ids or NoFilter(),
         )
 
-        return ProjectFindResult(projects=list(projects))
+        notes_by_project_ref_id: defaultdict[EntityId, Note] = defaultdict(None)
+        if args.include_notes:
+            note_collection = await uow.get_for(NoteCollection).load_by_parent(
+                workspace.ref_id,
+            )
+            notes = await uow.get_for(Note).find_all_generic(
+                parent_ref_id=note_collection.ref_id,
+                domain=NoteDomain.PROJECT,
+                allow_archived=True,
+                ref_id=[p.ref_id for p in projects],
+            )
+            for note in notes:
+                notes_by_project_ref_id[note.parent_ref_id] = note
+
+        return ProjectFindResult(
+            entries=[
+                ProjectFindResultEntry(
+                    project=project,
+                    note=notes_by_project_ref_id.get(project.ref_id, None),
+                )
+                for project in projects
+            ]
+        )

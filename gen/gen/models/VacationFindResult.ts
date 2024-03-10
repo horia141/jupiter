@@ -2,12 +2,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Vacation } from './Vacation';
+import type { VacationFindResultEntry } from './VacationFindResultEntry';
 
 /**
  * PersonFindResult object.
  */
 export type VacationFindResult = {
-    vacations: Array<Vacation>;
+    entries: Array<VacationFindResultEntry>;
 };
 

@@ -14,10 +14,11 @@ import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useParams, useTransition } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { ApiError } from "jupiter-gen";
+import { ApiError, NoteDomain } from "jupiter-gen";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
+import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { IconSelector } from "~/components/icon-selector";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
@@ -58,6 +59,7 @@ export async function loader({ request, params }: LoaderArgs) {
 
     return json({
       smartList: response.smart_list,
+      note: response.note,
     });
   } catch (error) {
     if (error instanceof ApiError && error.status === StatusCodes.NOT_FOUND) {
@@ -91,6 +93,16 @@ export async function action({ request, params }: ActionArgs) {
             should_change: true,
             value: form.icon,
           },
+        });
+
+        return redirect(`/workspace/smart-lists/${id}/items/details`);
+      }
+
+      case "create-note": {
+        await getLoggedInApiClient(session).core.noteCreate({
+          domain: NoteDomain.SMART_LIST,
+          source_entity_ref_id: id,
+          content: [],
         });
 
         return redirect(`/workspace/smart-lists/${id}/items/details`);
@@ -138,7 +150,7 @@ export default function SmartListDetails() {
       enableArchiveButton={inputsEnabled}
       returnLocation={`/workspace/smart-lists/${id}/items`}
     >
-      <Card>
+      <Card sx={{ marginBottom: "1rem" }}>
         <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
@@ -176,6 +188,34 @@ export default function SmartListDetails() {
             </Button>
           </ButtonGroup>
         </CardActions>
+      </Card>
+
+      <Card>
+        {!loaderData.note && (
+          <CardActions>
+            <ButtonGroup>
+              <Button
+                variant="contained"
+                disabled={!inputsEnabled}
+                type="submit"
+                name="intent"
+                value="create-note"
+              >
+                Create Note
+              </Button>
+            </ButtonGroup>
+          </CardActions>
+        )}
+
+        {loaderData.note && (
+          <>
+            <EntityNoteEditor
+              initialNote={loaderData.note}
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/content" />
+          </>
+        )}
       </Card>
     </LeafPanel>
   );

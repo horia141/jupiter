@@ -2,6 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { Note } from './Note';
 import type { Project } from './Project';
 
 /**
@@ -9,5 +10,6 @@ import type { Project } from './Project';
  */
 export type ProjectLoadResult = {
     project: Project;
+    note?: Note;
 };
 

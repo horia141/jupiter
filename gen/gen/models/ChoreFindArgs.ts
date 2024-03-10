@@ -11,6 +11,7 @@ export type ChoreFindArgs = {
     allow_archived: boolean;
     include_project: boolean;
     include_inbox_tasks: boolean;
+    include_notes: boolean;
     filter_ref_ids?: Array<EntityId>;
     filter_project_ref_ids?: Array<EntityId>;
 };

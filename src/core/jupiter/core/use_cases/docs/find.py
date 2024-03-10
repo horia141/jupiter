@@ -41,7 +41,7 @@ class DocFindResultEntry(UseCaseResultBase):
     """A single entry in the load all docs response."""
 
     doc: Doc
-    note: Note | None = None
+    note: Note | None
     subdocs: list[Doc] | None = None
 
 
@@ -85,7 +85,7 @@ class DocFindUseCase(
             notes = await uow.get_for(Note).find_all_generic(
                 parent_ref_id=note_collection.ref_id,
                 domain=NoteDomain.DOC,
-                allow_archived=args.allow_archived,
+                allow_archived=True,
                 source_entity_ref_id=[d.ref_id for d in docs],
             )
             for n in notes:

@@ -1,8 +1,12 @@
 """The command for finding a big plan."""
+from collections import defaultdict
 from typing import List, Optional
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
+from jupiter.core.domain.core.notes.note import Note
+from jupiter.core.domain.core.notes.note_collection import NoteCollection
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.features import (
     FeatureUnavailableError,
     WorkspaceFeature,
@@ -35,6 +39,7 @@ class BigPlanFindArgs(UseCaseArgsBase):
     allow_archived: bool
     include_project: bool
     include_inbox_tasks: bool
+    include_notes: bool
     filter_ref_ids: Optional[List[EntityId]] = None
     filter_project_ref_ids: Optional[List[EntityId]] = None
 
@@ -44,6 +49,7 @@ class BigPlanFindResultEntry(UseCaseResultBase):
     """A single big plan result."""
 
     big_plan: BigPlan
+    note: Note | None
     project: Optional[Project] = None
     inbox_tasks: Optional[List[InboxTask]] = None
 
@@ -111,6 +117,20 @@ class BigPlanFindUseCase(
         else:
             inbox_tasks = None
 
+        notes_by_inbox_task_ref_id: defaultdict[EntityId, Note] = defaultdict(None)
+        if args.include_notes:
+            note_collection = await uow.get_for(NoteCollection).load_by_parent(
+                workspace.ref_id
+            )
+            notes = await uow.get_for(Note).find_all_generic(
+                parent_ref_id=note_collection.ref_id,
+                domain=NoteDomain.BIG_PLAN,
+                allow_archived=True,
+                source_entity_ref_id=[bp.ref_id for bp in big_plans],
+            )
+            for note in notes:
+                notes_by_inbox_task_ref_id[note.source_entity_ref_id] = note
+
         return BigPlanFindResult(
             entries=[
                 BigPlanFindResultEntry(
@@ -123,6 +143,7 @@ class BigPlanFindUseCase(
                     ]
                     if inbox_tasks is not None
                     else None,
+                    note=notes_by_inbox_task_ref_id.get(bp.ref_id, None),
                 )
                 for bp in big_plans
             ],

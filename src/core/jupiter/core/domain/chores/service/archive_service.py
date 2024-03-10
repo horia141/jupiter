@@ -2,6 +2,10 @@
 
 from jupiter.core.domain.chores.chore import Chore
 from jupiter.core.domain.chores.chore_collection import ChoreCollection
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
+from jupiter.core.domain.core.notes.service.note_archive_service import (
+    NoteArchiveService,
+)
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.inbox_tasks.service.archive_service import (
@@ -44,6 +48,11 @@ class ChoreArchiveService:
             await inbox_task_archive_service.do_it(
                 ctx, uow, progress_reporter, inbox_task
             )
+
+        note_archive_service = NoteArchiveService()
+        await note_archive_service.archive_for_source(
+            ctx, uow, NoteDomain.CHORE, chore.ref_id
+        )
 
         chore = chore.mark_archived(ctx)
         await uow.get_for(Chore).save(chore)

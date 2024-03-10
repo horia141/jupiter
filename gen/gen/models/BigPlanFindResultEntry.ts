@@ -4,6 +4,7 @@
 
 import type { BigPlan } from './BigPlan';
 import type { InboxTask } from './InboxTask';
+import type { Note } from './Note';
 import type { Project } from './Project';
 
 /**
@@ -11,6 +12,7 @@ import type { Project } from './Project';
  */
 export type BigPlanFindResultEntry = {
     big_plan: BigPlan;
+    note?: Note;
     project?: Project;
     inbox_tasks?: Array<InboxTask>;
 };

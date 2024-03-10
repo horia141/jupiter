@@ -2,6 +2,8 @@
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.chores.chore import Chore
+from jupiter.core.domain.core.notes.note import Note
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.projects.project_name import ProjectName
@@ -10,6 +12,7 @@ from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     IsRefId,
     LeafEntity,
+    OwnsAtMostOne,
     ParentLink,
     RefsMany,
     create_entity_action,
@@ -30,6 +33,10 @@ class Project(LeafEntity):
     habits = RefsMany(Habit, project_ref_id=IsRefId())
     chores = RefsMany(Chore, project_ref_id=IsRefId())
     big_plans = RefsMany(BigPlan, project_ref_id=IsRefId())
+
+    note = OwnsAtMostOne(
+        Note, domain=NoteDomain.PROJECT, source_entity_ref_id=IsRefId()
+    )
 
     @staticmethod
     @create_entity_action

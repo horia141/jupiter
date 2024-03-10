@@ -28,12 +28,14 @@ import {
   ApiError,
   BigPlanStatus,
   InboxTaskStatus,
+  NoteDomain,
   WorkspaceFeature,
 } from "jupiter-gen";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
+import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { EntityActionHeader } from "~/components/infra/entity-actions-header";
@@ -92,6 +94,7 @@ export async function loader({ request, params }: LoaderArgs) {
       project: result.project,
       inboxTasks: result.inbox_tasks,
       allProjects: summaryResponse.projects as Array<Project>,
+      note: result.note,
     });
   } catch (error) {
     if (error instanceof ApiError && error.status === StatusCodes.NOT_FOUND) {
@@ -157,6 +160,16 @@ export async function action({ request, params }: ActionArgs) {
         await getLoggedInApiClient(session).bigPlans.bigPlanChangeProject({
           ref_id: id,
           project_ref_id: form.project,
+        });
+
+        return redirect(`/workspace/big-plans/${id}`);
+      }
+
+      case "create-note": {
+        await getLoggedInApiClient(session).core.noteCreate({
+          domain: NoteDomain.BIG_PLAN,
+          source_entity_ref_id: id,
+          content: [],
         });
 
         return redirect(`/workspace/big-plans/${id}`);
@@ -254,7 +267,7 @@ export default function BigPlan() {
       enableArchiveButton={inputsEnabled}
       returnLocation={"/workspace/big-plans"}
     >
-      <Card>
+      <Card sx={{ marginBottom: "1rem" }}>
         <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
@@ -387,6 +400,34 @@ export default function BigPlan() {
             )}
           </ButtonGroup>
         </CardActions>
+      </Card>
+
+      <Card>
+        {!loaderData.note && (
+          <CardActions>
+            <ButtonGroup>
+              <Button
+                variant="contained"
+                disabled={!inputsEnabled}
+                type="submit"
+                name="intent"
+                value="create-note"
+              >
+                Create Note
+              </Button>
+            </ButtonGroup>
+          </CardActions>
+        )}
+
+        {loaderData.note && (
+          <>
+            <EntityNoteEditor
+              initialNote={loaderData.note}
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/content" />
+          </>
+        )}
       </Card>
 
       <EntityActionHeader>

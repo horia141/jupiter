@@ -18,6 +18,7 @@ import type { SlackTask } from './SlackTask';
  */
 export type InboxTaskFindResultEntry = {
     inbox_task: InboxTask;
+    note?: Note;
     project: Project;
     habit?: Habit;
     chore?: Chore;
@@ -26,6 +27,5 @@ export type InboxTaskFindResultEntry = {
     person?: Person;
     slack_task?: SlackTask;
     email_task?: EmailTask;
-    note?: Note;
 };
 

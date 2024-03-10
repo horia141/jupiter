@@ -4,6 +4,8 @@ from typing import Optional
 from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.core.domain.big_plans.big_plan_status import BigPlanStatus
 from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.core.notes.note import Note
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.framework.base.entity_id import EntityId
@@ -12,6 +14,7 @@ from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     IsRefId,
     LeafEntity,
+    OwnsAtMostOne,
     OwnsMany,
     ParentLink,
     create_entity_action,
@@ -37,6 +40,9 @@ class BigPlan(LeafEntity):
 
     inbox_tasks = OwnsMany(
         InboxTask, source=InboxTaskSource.BIG_PLAN, big_plan_ref_id=IsRefId()
+    )
+    note = OwnsAtMostOne(
+        Note, domain=NoteDomain.BIG_PLAN, source_entity_ref_id=IsRefId()
     )
 
     @staticmethod

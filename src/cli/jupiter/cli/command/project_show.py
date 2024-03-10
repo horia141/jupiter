@@ -22,19 +22,19 @@ class ProjectShow(LoggedInReadonlyCommand[ProjectFindUseCase, ProjectFindResult]
         result: ProjectFindResult,
     ) -> None:
         sorted_projects = sorted(
-            result.projects,
-            key=lambda pe: (pe.archived, pe.created_time),
+            result.entries,
+            key=lambda pe: (pe.project.archived, pe.project.created_time),
         )
 
         rich_tree = Tree("💡 Projects", guide_style="bold bright_blue")
 
-        for project in sorted_projects:
+        for entry in sorted_projects:
             project_text = Text("")
-            project_text.append(entity_id_to_rich_text(project.ref_id))
+            project_text.append(entity_id_to_rich_text(entry.project.ref_id))
             project_text.append(" ")
-            project_text.append(entity_name_to_rich_text(project.name))
+            project_text.append(entity_name_to_rich_text(entry.project.name))
 
-            if project.archived:
+            if entry.project.archived:
                 project_text.stylize("gray62")
 
             rich_tree.add(project_text)

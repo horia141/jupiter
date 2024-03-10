@@ -5,6 +5,10 @@ from jupiter.core.domain.big_plans.service.archive_service import BigPlanArchive
 from jupiter.core.domain.chores.chore import Chore
 from jupiter.core.domain.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.chores.service.archive_service import ChoreArchiveService
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
+from jupiter.core.domain.core.notes.service.note_archive_service import (
+    NoteArchiveService,
+)
 from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.habits.habit_collection import HabitCollection
 from jupiter.core.domain.habits.service.archive_service import HabitArchiveService
@@ -136,6 +140,12 @@ class ProjectArchiveService:
         big_plan_archive_service = BigPlanArchiveService()
         for big_plan in big_plans:
             await big_plan_archive_service.do_it(ctx, uow, progress_reporter, big_plan)
+
+        # archive note
+        note_archive_service = NoteArchiveService()
+        await note_archive_service.archive_for_source(
+            ctx, uow, NoteDomain.PROJECT, project.ref_id
+        )
 
         # archive project
         project = project.mark_archived(ctx)

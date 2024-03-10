@@ -2,6 +2,8 @@
 from typing import Optional
 
 from jupiter.core.domain.core.entity_icon import EntityIcon
+from jupiter.core.domain.core.notes.note import Note
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.smart_lists.smart_list_item import SmartListItem
 from jupiter.core.domain.smart_lists.smart_list_name import SmartListName
 from jupiter.core.domain.smart_lists.smart_list_tag import SmartListTag
@@ -11,6 +13,7 @@ from jupiter.core.framework.entity import (
     BranchEntity,
     ContainsMany,
     IsRefId,
+    OwnsAtMostOne,
     ParentLink,
     create_entity_action,
     entity,
@@ -29,6 +32,10 @@ class SmartList(BranchEntity):
 
     items = ContainsMany(SmartListItem, smart_list_ref_id=IsRefId())
     tags = ContainsMany(SmartListTag, smart_list_ref_id=IsRefId())
+
+    note = OwnsAtMostOne(
+        Note, domain=NoteDomain.SMART_LIST, source_entity_ref_id=IsRefId()
+    )
 
     @staticmethod
     @create_entity_action

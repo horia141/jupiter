@@ -1,6 +1,10 @@
 """The command for finding vacations."""
+from collections import defaultdict
 from typing import List, Optional
 
+from jupiter.core.domain.core.notes.note import Note
+from jupiter.core.domain.core.notes.note_collection import NoteCollection
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.vacations.vacation import Vacation
@@ -24,14 +28,23 @@ class VacationFindArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
     allow_archived: bool
+    include_notes: bool
     filter_ref_ids: Optional[List[EntityId]] = None
+
+
+@use_case_result
+class VacationFindResultEntry(UseCaseResultBase):
+    """PersonFindResult object."""
+
+    vacation: Vacation
+    note: Note | None
 
 
 @use_case_result
 class VacationFindResult(UseCaseResultBase):
     """PersonFindResult object."""
 
-    vacations: List[Vacation]
+    entries: List[VacationFindResultEntry]
 
 
 @readonly_use_case(WorkspaceFeature.VACATIONS)
@@ -57,4 +70,27 @@ class VacationFindUseCase(
             allow_archived=args.allow_archived,
             filter_ref_ids=args.filter_ref_ids,
         )
-        return VacationFindResult(vacations=vacations)
+
+        notes_by_vacation_ref_id: defaultdict[EntityId, Note] = defaultdict(None)
+        if args.include_notes:
+            note_collection = await uow.get_for(NoteCollection).load_by_parent(
+                workspace.ref_id,
+            )
+            notes = await uow.get_for(Note).find_all_generic(
+                parent_ref_id=note_collection.ref_id,
+                domain=NoteDomain.VACATION,
+                allow_archived=True,
+                source_entity_ref_id=[vacation.ref_id for vacation in vacations],
+            )
+            for note in notes:
+                notes_by_vacation_ref_id[note.parent_ref_id] = note
+
+        return VacationFindResult(
+            entries=[
+                VacationFindResultEntry(
+                    vacation=vacation,
+                    note=notes_by_vacation_ref_id.get(vacation.ref_id, None),
+                )
+                for vacation in vacations
+            ]
+        )

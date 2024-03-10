@@ -1,5 +1,9 @@
 """The command for archiving a smart list."""
 
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
+from jupiter.core.domain.core.notes.service.note_archive_service import (
+    NoteArchiveService,
+)
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.smart_lists.smart_list import SmartList
 from jupiter.core.domain.smart_lists.smart_list_item import SmartListItem
@@ -56,6 +60,19 @@ class SmartListArchiveUseCase(
             smart_list_item = smart_list_item.mark_archived(context.domain_context)
             await uow.get_for(SmartListItem).save(smart_list_item)
             await progress_reporter.mark_updated(smart_list_item)
+
+            note_archive_service = NoteArchiveService()
+            await note_archive_service.archive_for_source(
+                context.domain_context,
+                uow,
+                NoteDomain.SMART_LIST_ITEM,
+                smart_list_item.ref_id,
+            )
+
+        note_archive_service = NoteArchiveService()
+        await note_archive_service.archive_for_source(
+            context.domain_context, uow, NoteDomain.SMART_LIST, smart_list.ref_id
+        )
 
         smart_list = smart_list.mark_archived(context.domain_context)
         await uow.get_for(SmartList).save(smart_list)

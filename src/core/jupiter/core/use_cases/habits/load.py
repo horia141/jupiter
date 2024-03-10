@@ -1,5 +1,7 @@
 """Use case for loading a particular habit."""
 
+from jupiter.core.domain.core.notes.note import Note, NoteRepository
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
@@ -35,6 +37,7 @@ class HabitLoadResult(UseCaseResultBase):
     habit: Habit
     project: Project
     inbox_tasks: list[InboxTask]
+    note: Note | None
 
 
 @readonly_use_case(WorkspaceFeature.HABITS)
@@ -64,4 +67,12 @@ class HabitLoadUseCase(
             habit_ref_id=[args.ref_id],
         )
 
-        return HabitLoadResult(habit=habit, project=project, inbox_tasks=inbox_tasks)
+        note = await uow.get(NoteRepository).load_optional_for_source(
+            NoteDomain.HABIT,
+            habit.ref_id,
+            allow_archived=args.allow_archived,
+        )
+
+        return HabitLoadResult(
+            habit=habit, project=project, inbox_tasks=inbox_tasks, note=note
+        )

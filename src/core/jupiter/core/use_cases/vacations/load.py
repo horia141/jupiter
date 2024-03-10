@@ -1,5 +1,6 @@
 """Use case for loading a particular vacation."""
 
+from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.infra.generic_loader import generic_loader
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -31,6 +32,7 @@ class VacationLoadResult(UseCaseResultBase):
     """VacationLoadResult."""
 
     vacation: Vacation
+    note: Note | None
 
 
 @readonly_use_case(WorkspaceFeature.VACATIONS)
@@ -46,8 +48,12 @@ class VacationLoadUseCase(
         args: VacationLoadArgs,
     ) -> VacationLoadResult:
         """Execute the command's action."""
-        vacation = await generic_loader(
-            uow, Vacation, args.ref_id, allow_archived=args.allow_archived
+        vacation, note = await generic_loader(
+            uow,
+            Vacation,
+            args.ref_id,
+            Vacation.note,
+            allow_archived=args.allow_archived,
         )
 
-        return VacationLoadResult(vacation=vacation)
+        return VacationLoadResult(vacation=vacation, note=note)

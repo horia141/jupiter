@@ -3,13 +3,13 @@
 /* eslint-disable */
 
 import type { Note } from './Note';
-import type { Vacation } from './Vacation';
+import type { Project } from './Project';
 
 /**
- * VacationLoadResult.
+ * A single project result.
  */
-export type VacationLoadResult = {
-    vacation: Vacation;
+export type ProjectFindResultEntry = {
+    project: Project;
     note?: Note;
 };
 

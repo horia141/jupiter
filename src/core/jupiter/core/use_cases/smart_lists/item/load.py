@@ -1,5 +1,6 @@
 """Use case for loading a smart list item."""
 
+from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.infra.generic_loader import generic_loader
 from jupiter.core.domain.smart_lists.smart_list_item import SmartListItem
@@ -31,8 +32,9 @@ class SmartListItemLoadArgs(UseCaseArgsBase):
 class SmartListItemLoadResult(UseCaseResultBase):
     """SmartListItemLoadResult."""
 
-    smart_list_item: SmartListItem
-    smart_list_tags: list[SmartListTag]
+    item: SmartListItem
+    tags: list[SmartListTag]
+    note: Note | None
 
 
 @readonly_use_case(WorkspaceFeature.SMART_LISTS)
@@ -50,12 +52,13 @@ class SmartListItemLoadUseCase(
         args: SmartListItemLoadArgs,
     ) -> SmartListItemLoadResult:
         """Execute the command's action."""
-        item, tags = await generic_loader(
+        item, tags, note = await generic_loader(
             uow,
             SmartListItem,
             args.ref_id,
             SmartListItem.all_tags,
+            SmartListItem.note,
             allow_archived=args.allow_archived,
         )
 
-        return SmartListItemLoadResult(smart_list_item=item, smart_list_tags=list(tags))
+        return SmartListItemLoadResult(item=item, tags=list(tags), note=note)

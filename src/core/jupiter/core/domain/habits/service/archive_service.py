@@ -1,5 +1,9 @@
 """Shared service for archiving a habit."""
 
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
+from jupiter.core.domain.core.notes.service.note_archive_service import (
+    NoteArchiveService,
+)
 from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.habits.habit_collection import HabitCollection
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
@@ -44,6 +48,11 @@ class HabitArchiveService:
             await inbox_task_archive_service.do_it(
                 ctx, uow, progress_reporter, inbox_task
             )
+
+        note_archive_service = NoteArchiveService()
+        await note_archive_service.archive_for_source(
+            ctx, uow, NoteDomain.HABIT, habit.ref_id
+        )
 
         habit = habit.mark_archived(ctx)
         await uow.get_for(Habit).save(habit)

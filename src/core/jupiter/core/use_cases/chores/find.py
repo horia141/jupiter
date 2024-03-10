@@ -1,8 +1,12 @@
 """The command for finding a chore."""
+from collections import defaultdict
 from typing import List, Optional
 
 from jupiter.core.domain.chores.chore import Chore
 from jupiter.core.domain.chores.chore_collection import ChoreCollection
+from jupiter.core.domain.core.notes.note import Note
+from jupiter.core.domain.core.notes.note_collection import NoteCollection
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.features import (
     FeatureUnavailableError,
     WorkspaceFeature,
@@ -35,6 +39,7 @@ class ChoreFindArgs(UseCaseArgsBase):
     allow_archived: bool
     include_project: bool
     include_inbox_tasks: bool
+    include_notes: bool
     filter_ref_ids: Optional[List[EntityId]] = None
     filter_project_ref_ids: Optional[List[EntityId]] = None
 
@@ -44,6 +49,7 @@ class ChoreFindResultEntry(UseCaseResultBase):
     """A single entry in the load all chores response."""
 
     chore: Chore
+    note: Note | None
     project: Optional[Project] = None
     inbox_tasks: Optional[List[InboxTask]] = None
 
@@ -113,6 +119,20 @@ class ChoreFindUseCase(
         else:
             inbox_tasks = None
 
+        notes_by_chore_ref_id: defaultdict[EntityId, Note] = defaultdict(None)
+        if args.include_notes:
+            note_collection = await uow.get_for(NoteCollection).load_by_parent(
+                workspace.ref_id
+            )
+            notes = await uow.get_for(Note).find_all_generic(
+                parent_ref_id=note_collection.ref_id,
+                source=NoteDomain.CHORE,
+                allow_archived=True,
+                source_entity_ref_id=[chore.ref_id for chore in chores],
+            )
+            for note in notes:
+                notes_by_chore_ref_id[note.source_entity_ref_id] = note
+
         return ChoreFindResult(
             entries=[
                 ChoreFindResultEntry(
@@ -125,6 +145,7 @@ class ChoreFindUseCase(
                     ]
                     if inbox_tasks is not None
                     else None,
+                    note=notes_by_chore_ref_id.get(rt.ref_id, None),
                 )
                 for rt in chores
             ],

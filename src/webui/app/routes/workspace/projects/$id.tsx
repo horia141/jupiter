@@ -14,10 +14,11 @@ import { json, redirect, Response } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useParams, useTransition } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { ApiError } from "jupiter-gen";
+import { ApiError, NoteDomain } from "jupiter-gen";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
+import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
@@ -52,7 +53,10 @@ export async function loader({ request, params }: LoaderArgs) {
       allow_archived: true,
     });
 
-    return json(response.project);
+    return json({
+      project: response.project,
+      note: response.note,
+    });
   } catch (error) {
     if (error instanceof ApiError && error.status === StatusCodes.NOT_FOUND) {
       throw new Response(ReasonPhrases.NOT_FOUND, {
@@ -86,6 +90,16 @@ export async function action({ request, params }: ActionArgs) {
         return redirect(`/workspace/projects/${id}`);
       }
 
+      case "create-note": {
+        await getLoggedInApiClient(session).core.noteCreate({
+          domain: NoteDomain.PROJECT,
+          source_entity_ref_id: id,
+          content: [],
+        });
+
+        return redirect(`/workspace/projects/${id}`);
+      }
+
       case "archive": {
         await getLoggedInApiClient(session).projects.projectArchive({
           ref_id: id,
@@ -113,7 +127,7 @@ export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export default function Project() {
-  const project = useLoaderDataForAnimation<typeof loader>();
+  const { project, note } = useLoaderDataForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
 
@@ -126,7 +140,7 @@ export default function Project() {
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/projects"
     >
-      <Card>
+      <Card sx={{ marginBottom: "1rem" }}>
         <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
@@ -156,6 +170,34 @@ export default function Project() {
             </Button>
           </ButtonGroup>
         </CardActions>
+      </Card>
+
+      <Card>
+        {!note && (
+          <CardActions>
+            <ButtonGroup>
+              <Button
+                variant="contained"
+                disabled={!inputsEnabled}
+                type="submit"
+                name="intent"
+                value="create-note"
+              >
+                Create Note
+              </Button>
+            </ButtonGroup>
+          </CardActions>
+        )}
+
+        {note && (
+          <>
+            <EntityNoteEditor
+              initialNote={note}
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/content" />
+          </>
+        )}
       </Card>
     </LeafPanel>
   );

@@ -81,7 +81,7 @@ class JournalFindUseCase(
             notes = await uow.get_for(Note).find_all_generic(
                 parent_ref_id=note_collection.ref_id,
                 domain=NoteDomain.JOURNAL,
-                allow_archived=args.allow_archived,
+                allow_archived=True,
                 source_entity_ref_id=[journal.ref_id for journal in journals],
             )
             for note in notes:

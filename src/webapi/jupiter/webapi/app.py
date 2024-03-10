@@ -588,9 +588,9 @@ class WebServiceApp:
             """Health check endpoint."""
             return None
 
-        @app.fast_app.post("/old-skool-login")
+        @app.fast_app.post("/old-skool-login", **STANDARD_CONFIG)
         async def old_skool_login(
-            form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
+            form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
         ) -> dict[str, str]:
             """Login via OAuth2 password flow and return an auth token."""
             email_address = realm_codec_registry.db_decode(
@@ -1033,6 +1033,9 @@ class WebServiceApp:
                     ]["200"] = {
                         "description": "Successful response / Empty body",
                     }
+
+        del openapi_schema["paths"]["/healthz"]
+        del openapi_schema["paths"]["/old-skool-login"]
 
         self._fast_app.openapi_schema = openapi_schema
         return self._fast_app.openapi_schema

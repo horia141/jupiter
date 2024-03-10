@@ -28,23 +28,27 @@ class VacationsShow(LoggedInReadonlyCommand[VacationFindUseCase, VacationFindRes
         result: VacationFindResult,
     ) -> None:
         sorted_vacations = sorted(
-            result.vacations,
-            key=lambda v: (v.archived, v.start_date, v.end_date),
+            result.entries,
+            key=lambda v: (
+                v.vacation.archived,
+                v.vacation.start_date,
+                v.vacation.end_date,
+            ),
         )
 
         rich_tree = Tree("🌴 Vacations", guide_style="bold bright_blue")
 
-        for vacation in sorted_vacations:
+        for entry in sorted_vacations:
             vacation_text = Text("")
-            vacation_text.append(entity_id_to_rich_text(vacation.ref_id))
+            vacation_text.append(entity_id_to_rich_text(entry.vacation.ref_id))
             vacation_text.append(" ")
-            vacation_text.append(entity_name_to_rich_text(vacation.name))
+            vacation_text.append(entity_name_to_rich_text(entry.vacation.name))
             vacation_text.append(" ")
-            vacation_text.append(start_date_to_rich_text(vacation.start_date))
+            vacation_text.append(start_date_to_rich_text(entry.vacation.start_date))
             vacation_text.append(" ")
-            vacation_text.append(end_date_to_rich_text(vacation.end_date))
+            vacation_text.append(end_date_to_rich_text(entry.vacation.end_date))
 
-            if vacation.archived:
+            if entry.vacation.archived:
                 vacation_text.stylize("gray62")
 
             rich_tree.add(vacation_text)

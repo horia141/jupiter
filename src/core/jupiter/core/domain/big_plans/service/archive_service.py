@@ -2,6 +2,10 @@
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
+from jupiter.core.domain.core.notes.service.note_archive_service import (
+    NoteArchiveService,
+)
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.inbox_tasks.service.archive_service import (
@@ -57,6 +61,11 @@ class BigPlanArchiveService:
                 ctx, uow, progress_reporter, inbox_task
             )
             archived_inbox_tasks.append(inbox_task)
+
+        note_archive_service = NoteArchiveService()
+        await note_archive_service.archive_for_source(
+            ctx, uow, NoteDomain.BIG_PLAN, big_plan.ref_id
+        )
 
         big_plan = big_plan.mark_archived(ctx)
         await uow.get_for(BigPlan).save(big_plan)

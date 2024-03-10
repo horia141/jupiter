@@ -31,8 +31,10 @@ export async function loader({ request }: LoaderArgs) {
     session
   ).smartLists.smartListFind({
     allow_archived: false,
+    include_notes: false,
     include_tags: false,
     include_items: false,
+    include_item_notes: false,
   });
 
   return json({

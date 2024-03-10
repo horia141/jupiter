@@ -1,5 +1,7 @@
 """Use case for loading a particular project."""
 
+from jupiter.core.domain.core.notes.note import Note, NoteRepository
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -30,6 +32,7 @@ class ProjectLoadResult(UseCaseResultBase):
     """ProjectLoadResult."""
 
     project: Project
+    note: Note | None
 
 
 @readonly_use_case(WorkspaceFeature.PROJECTS)
@@ -49,4 +52,8 @@ class ProjectLoadUseCase(
             args.ref_id, allow_archived=args.allow_archived
         )
 
-        return ProjectLoadResult(project=project)
+        note = await uow.get(NoteRepository).load_optional_for_source(
+            NoteDomain.PROJECT, project.ref_id, allow_archived=args.allow_archived
+        )
+
+        return ProjectLoadResult(project=project, note=note)

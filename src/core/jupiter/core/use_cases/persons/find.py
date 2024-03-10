@@ -44,9 +44,9 @@ class PersonFindResultEntry(UseCaseResultBase):
     """A single person result."""
 
     person: Person
+    note: Note | None
     catch_up_inbox_tasks: Optional[List[InboxTask]] = None
     birthday_inbox_tasks: Optional[List[InboxTask]] = None
-    note: Note | None = None
 
 
 @use_case_result
@@ -126,6 +126,7 @@ class PersonFindUseCase(
             entries=[
                 PersonFindResultEntry(
                     person=p,
+                    note=all_notes_by_person_ref_id.get(p.ref_id, None),
                     catch_up_inbox_tasks=[
                         it
                         for it in catch_up_inbox_tasks
@@ -140,7 +141,6 @@ class PersonFindUseCase(
                     ]
                     if birthday_inbox_tasks is not None
                     else None,
-                    note=all_notes_by_person_ref_id.get(p.ref_id, None),
                 )
                 for p in persons
             ],

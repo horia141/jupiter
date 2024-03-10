@@ -3,7 +3,7 @@ import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Outlet, useFetcher, useNavigate } from "@remix-run/react";
 
-import type { Vacation } from "jupiter-gen";
+import type { Vacation, VacationFindResultEntry } from "jupiter-gen";
 
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
@@ -40,17 +40,24 @@ export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const response = await getLoggedInApiClient(session).vacations.vacationFind({
     allow_archived: false,
+    include_notes: false,
   });
-  return json(response.vacations);
+  return json(response.entries);
 }
 
 export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export default function Vacations({ request }: LoaderArgs) {
-  const vacations = useLoaderDataSafeForAnimation<typeof loader>();
+  const entries = useLoaderDataSafeForAnimation<typeof loader>();
 
-  const sortedVacations = sortVacationsNaturally(vacations);
+  const sortedVacations = sortVacationsNaturally(
+    entries.map((e) => e.vacation)
+  );
+  const vacationsByRefId = new Map<string, VacationFindResultEntry>();
+  for (const entry of entries) {
+    vacationsByRefId.set(entry.vacation.ref_id, entry);
+  }
 
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
 
@@ -80,24 +87,26 @@ export default function Vacations({ request }: LoaderArgs) {
         <VacationCalendar sortedVacations={sortedVacations} />
 
         <EntityStack>
-          {sortedVacations.map((vacation) => (
-            <EntityCard
-              key={vacation.ref_id}
-              allowSwipe
-              allowMarkNotDone
-              onMarkNotDone={() => archiveVacation(vacation)}
-            >
-              <EntityLink to={`/workspace/vacations/${vacation.ref_id}`}>
-                <EntityNameComponent name={vacation.name} />
-                <ADateTag label="Start Date" date={vacation.start_date} />
-                <ADateTag
-                  label="End Date"
-                  date={vacation.end_date}
-                  color="success"
-                />
-              </EntityLink>
-            </EntityCard>
-          ))}
+          {sortedVacations.map((vacation) => {
+            return (
+              <EntityCard
+                key={vacation.ref_id}
+                allowSwipe
+                allowMarkNotDone
+                onMarkNotDone={() => archiveVacation(vacation)}
+              >
+                <EntityLink to={`/workspace/vacations/${vacation.ref_id}`}>
+                  <EntityNameComponent name={vacation.name} />
+                  <ADateTag label="Start Date" date={vacation.start_date} />
+                  <ADateTag
+                    label="End Date"
+                    date={vacation.end_date}
+                    color="success"
+                  />
+                </EntityLink>
+              </EntityCard>
+            );
+          })}
         </EntityStack>
       </NestingAwareBlock>
 

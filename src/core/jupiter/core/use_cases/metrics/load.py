@@ -1,5 +1,7 @@
 """Use case for loading a metric."""
 
+from jupiter.core.domain.core.notes.note import Note, NoteRepository
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
@@ -34,6 +36,7 @@ class MetricLoadResult(UseCaseResultBase):
     """MetricLoadResult."""
 
     metric: Metric
+    note: Note | None
     metric_entries: list[MetricEntry]
     metric_collection_inbox_tasks: list[InboxTask]
 
@@ -68,8 +71,15 @@ class MetricLoadUseCase(
             metric_ref_id=[metric.ref_id],
         )
 
+        note = await uow.get(NoteRepository).load_optional_for_source(
+            NoteDomain.METRIC,
+            metric.ref_id,
+            allow_archived=args.allow_archived,
+        )
+
         return MetricLoadResult(
             metric=metric,
+            note=note,
             metric_entries=metric_entries,
             metric_collection_inbox_tasks=metric_collection_inbox_tasks,
         )

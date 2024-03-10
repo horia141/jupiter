@@ -2,6 +2,8 @@
 from typing import Optional
 
 from jupiter.core.domain.core.entity_icon import EntityIcon
+from jupiter.core.domain.core.notes.note import Note
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
@@ -13,6 +15,7 @@ from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     BranchEntity,
     IsRefId,
+    OwnsAtMostOne,
     OwnsMany,
     ParentLink,
     create_entity_action,
@@ -36,6 +39,7 @@ class Metric(BranchEntity):
     collection_tasks = OwnsMany(
         InboxTask, source=InboxTaskSource.METRIC, metric_ref_id=IsRefId()
     )
+    note = OwnsAtMostOne(Note, domain=NoteDomain.METRIC, source_entity_ref_id=IsRefId())
 
     @staticmethod
     @create_entity_action
