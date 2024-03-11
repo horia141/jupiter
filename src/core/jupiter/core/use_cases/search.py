@@ -1,5 +1,4 @@
 """Use case for free form searching through Jupiter."""
-from typing import List, Optional
 
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.features import FeatureUnavailableError
@@ -27,13 +26,13 @@ class SearchArgs(UseCaseArgsBase):
     query: SearchQuery
     limit: SearchLimit
     include_archived: bool = False
-    filter_entity_tags: Optional[List[NamedEntityTag]] = None
-    filter_created_time_after: Optional[ADate] = None
-    filter_created_time_before: Optional[ADate] = None
-    filter_last_modified_time_after: Optional[ADate] = None
-    filter_last_modified_time_before: Optional[ADate] = None
-    filter_archived_time_after: Optional[ADate] = None
-    filter_archived_time_before: Optional[ADate] = None
+    filter_entity_tags: list[NamedEntityTag] | None = None
+    filter_created_time_after: ADate | None = None
+    filter_created_time_before: ADate | None = None
+    filter_last_modified_time_after: ADate | None = None
+    filter_last_modified_time_before: ADate | None = None
+    filter_archived_time_after: ADate | None = None
+    filter_archived_time_before: ADate | None = None
 
 
 @use_case_result
@@ -41,7 +40,7 @@ class SearchResult(UseCaseResultBase):
     """Search result."""
 
     search_time: ADate
-    matches: List[SearchMatch]
+    matches: list[SearchMatch]
 
 
 @readonly_use_case()

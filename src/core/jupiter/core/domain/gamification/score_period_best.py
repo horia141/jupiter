@@ -1,6 +1,5 @@
 """The best score for a period of time and a particular subdivision of it."""
 import abc
-from typing import Tuple
 
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.gamification.score_stats import ScoreStats
@@ -76,7 +75,7 @@ class ScorePeriodBest(Record):
     @property
     def key(
         self,
-    ) -> Tuple[EntityId, RecurringTaskPeriod | None, str, RecurringTaskPeriod]:
+    ) -> tuple[EntityId, RecurringTaskPeriod | None, str, RecurringTaskPeriod]:
         """The key of the score best."""
         return self.score_log.ref_id, self.period, self.timeline, self.sub_period
 
@@ -92,7 +91,7 @@ class ScorePeriodBest(Record):
 class ScorePeriodBestRepository(
     RecordRepository[
         ScorePeriodBest,
-        Tuple[EntityId, RecurringTaskPeriod | None, str, RecurringTaskPeriod],
+        tuple[EntityId, RecurringTaskPeriod | None, str, RecurringTaskPeriod],
         EntityId,
     ],
     abc.ABC,

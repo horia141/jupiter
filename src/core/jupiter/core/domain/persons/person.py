@@ -1,5 +1,4 @@
 """A person."""
-from typing import Optional
 
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
@@ -31,8 +30,8 @@ class Person(LeafEntity):
     person_collection: ParentLink
     name: PersonName
     relationship: PersonRelationship
-    catch_up_params: Optional[RecurringTaskGenParams] = None
-    birthday: Optional[PersonBirthday] = None
+    catch_up_params: RecurringTaskGenParams | None = None
+    birthday: PersonBirthday | None = None
 
     note = OwnsAtMostOne(Note, domain=NoteDomain.PERSON, source_entity_ref_id=IsRefId())
     catch_up_tasks = OwnsMany(
@@ -49,8 +48,8 @@ class Person(LeafEntity):
         person_collection_ref_id: EntityId,
         name: PersonName,
         relationship: PersonRelationship,
-        catch_up_params: Optional[RecurringTaskGenParams],
-        birthday: Optional[PersonBirthday],
+        catch_up_params: RecurringTaskGenParams | None,
+        birthday: PersonBirthday | None,
     ) -> "Person":
         """Create a person."""
         return Person._create(
@@ -68,8 +67,8 @@ class Person(LeafEntity):
         ctx: DomainContext,
         name: UpdateAction[PersonName],
         relationship: UpdateAction[PersonRelationship],
-        catch_up_params: UpdateAction[Optional[RecurringTaskGenParams]],
-        birthday: UpdateAction[Optional[PersonBirthday]],
+        catch_up_params: UpdateAction[RecurringTaskGenParams | None],
+        birthday: UpdateAction[PersonBirthday | None],
     ) -> "Person":
         """Update info about the of the person."""
         return self._new_version(

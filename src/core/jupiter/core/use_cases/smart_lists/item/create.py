@@ -1,5 +1,4 @@
 """The command for creating a smart list item."""
-from typing import List, Optional
 
 from jupiter.core.domain.core.tags.tag_name import TagName
 from jupiter.core.domain.core.url import URL
@@ -34,8 +33,8 @@ class SmartListItemCreateArgs(UseCaseArgsBase):
     smart_list_ref_id: EntityId
     name: SmartListItemName
     is_done: bool
-    tag_names: List[TagName]
-    url: Optional[URL] = None
+    tag_names: list[TagName]
+    url: URL | None = None
 
 
 @use_case_result

@@ -2,13 +2,12 @@
 import abc
 import enum
 import logging
+from collections.abc import Iterable
+from contextlib import AbstractAsyncContextManager
 from dataclasses import dataclass
 from typing import (
-    AsyncContextManager,
     Final,
     Generic,
-    Iterable,
-    Optional,
     TypeVar,
     Union,
 )
@@ -65,7 +64,7 @@ class MutationUseCaseInvocationRecord(Generic[UseCaseArgs]):
     name: str
     args: UseCaseArgs
     result: MutationUseCaseInvocationResult
-    error_str: Optional[str]
+    error_str: str | None
 
     @staticmethod
     def build_success(
@@ -122,7 +121,7 @@ class ProgressReporter(abc.ABC):
     """A reporter to the user in real-time on modifications to entities."""
 
     @abc.abstractmethod
-    def section(self, title: str) -> AsyncContextManager[None]:
+    def section(self, title: str) -> AbstractAsyncContextManager[None]:
         """Start a section or subsection."""
 
     @abc.abstractmethod

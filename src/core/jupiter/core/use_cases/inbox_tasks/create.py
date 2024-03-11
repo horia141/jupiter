@@ -1,5 +1,4 @@
 """The command for creating a inbox task."""
-from typing import Optional
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.core.adate import ADate
@@ -36,12 +35,12 @@ class InboxTaskCreateArgs(UseCaseArgsBase):
     """InboxTaskCreate args."""
 
     name: InboxTaskName
-    project_ref_id: Optional[EntityId] = None
-    big_plan_ref_id: Optional[EntityId] = None
-    eisen: Optional[Eisen] = None
-    difficulty: Optional[Difficulty] = None
-    actionable_date: Optional[ADate] = None
-    due_date: Optional[ADate] = None
+    project_ref_id: EntityId | None = None
+    big_plan_ref_id: EntityId | None = None
+    eisen: Eisen | None = None
+    difficulty: Difficulty | None = None
+    actionable_date: ADate | None = None
+    due_date: ADate | None = None
 
 
 @use_case_result
@@ -78,7 +77,7 @@ class InboxTaskCreateUseCase(
         ):
             raise FeatureUnavailableError(WorkspaceFeature.BIG_PLANS)
 
-        big_plan: Optional[BigPlan] = None
+        big_plan: BigPlan | None = None
         if args.big_plan_ref_id:
             big_plan = await uow.get_for(BigPlan).load_by_id(
                 args.big_plan_ref_id,

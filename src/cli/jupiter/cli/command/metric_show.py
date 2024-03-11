@@ -1,5 +1,5 @@
 """UseCase for showing metrics."""
-from typing import Optional, cast
+from typing import cast
 
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
@@ -137,7 +137,7 @@ class MetricShow(LoggedInReadonlyCommand[MetricFindUseCase, MetricFindResult]):
                     key=lambda me: (me.archived, me.collection_time),
                 )
 
-                previous_value: Optional[float] = None
+                previous_value: float | None = None
 
                 for metric_entry in sorted_metric_entries:
                     metric_entry_text = Text("")

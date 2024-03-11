@@ -1,5 +1,4 @@
 """The command for creating a smart list."""
-from typing import Optional
 
 from jupiter.core.domain.core.entity_icon import EntityIcon
 from jupiter.core.domain.features import WorkspaceFeature
@@ -28,7 +27,7 @@ class SmartListCreateArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
     name: SmartListName
-    icon: Optional[EntityIcon] = None
+    icon: EntityIcon | None = None
 
 
 @use_case_result

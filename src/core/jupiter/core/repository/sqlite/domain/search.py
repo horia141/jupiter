@@ -1,5 +1,6 @@
 """The SQLite based search repository."""
-from typing import Final, Iterable, List, Optional
+from collections.abc import Iterable
+from typing import Final
 
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.entity_summary import EntitySummary
@@ -164,13 +165,13 @@ class SqliteSearchRepository(SqliteRepository, SearchRepository):
         limit: SearchLimit,
         include_archived: bool,
         filter_entity_tags: Iterable[NamedEntityTag] | None,
-        filter_created_time_after: Optional[ADate],
-        filter_created_time_before: Optional[ADate],
-        filter_last_modified_time_after: Optional[ADate],
-        filter_last_modified_time_before: Optional[ADate],
-        filter_archived_time_after: Optional[ADate],
-        filter_archived_time_before: Optional[ADate],
-    ) -> List[SearchMatch]:
+        filter_created_time_after: ADate | None,
+        filter_created_time_before: ADate | None,
+        filter_last_modified_time_after: ADate | None,
+        filter_last_modified_time_before: ADate | None,
+        filter_archived_time_after: ADate | None,
+        filter_archived_time_before: ADate | None,
+    ) -> list[SearchMatch]:
         """Search for entities in the index."""
         query_clean = SqliteSearchRepository._clean_query(query)
 

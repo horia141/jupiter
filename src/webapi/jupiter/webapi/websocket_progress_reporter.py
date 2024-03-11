@@ -2,16 +2,10 @@
 import asyncio
 import logging
 from collections import defaultdict
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from typing import (
-    AsyncIterator,
-    DefaultDict,
-    Dict,
     Final,
-    List,
-    Optional,
-    Set,
-    Tuple,
 )
 
 from jupiter.core.domain.named_entity_tag import NamedEntityTag
@@ -36,10 +30,10 @@ LOGGER = logging.getLogger(__name__)
 class _WebsocketHandle:
     """A temporary handle for a websocket."""
 
-    _websocket: Optional[WebSocket]
-    _send_tasks_ref: Final[Set[asyncio.Task[None]]]
+    _websocket: WebSocket | None
+    _send_tasks_ref: Final[set[asyncio.Task[None]]]
 
-    def __init__(self, websocket: Optional[WebSocket]) -> None:
+    def __init__(self, websocket: WebSocket | None) -> None:
         """Constructor."""
         self._websocket = websocket
         self._send_tasks_ref = set()
@@ -97,29 +91,29 @@ class WebsocketProgressReporter(ProgressReporter):
     """A progress reporter based on a Rich console that outputs progress to the console."""
 
     _websocket: Final[_WebsocketHandle]
-    _sections: Final[List[str]]
-    _created_entities: Final[List[CrownEntity]]
+    _sections: Final[list[str]]
+    _created_entities: Final[list[CrownEntity]]
     _created_entities_stats: Final[
-        DefaultDict[NamedEntityTag, List[Tuple[EntityName, EntityId]]]
+        defaultdict[NamedEntityTag, list[tuple[EntityName, EntityId]]]
     ]
-    _updated_entities: Final[List[CrownEntity]]
-    _updated_entities_stats: Final[DefaultDict[NamedEntityTag, int]]
-    _removed_entities: Final[List[CrownEntity]]
-    _removed_entities_stats: Final[DefaultDict[NamedEntityTag, int]]
+    _updated_entities: Final[list[CrownEntity]]
+    _updated_entities_stats: Final[defaultdict[NamedEntityTag, int]]
+    _removed_entities: Final[list[CrownEntity]]
+    _removed_entities_stats: Final[defaultdict[NamedEntityTag, int]]
     _print_indent: Final[int]
 
     def __init__(
         self,
         websocket: _WebsocketHandle,
-        sections: List[str],
-        created_entities: List[CrownEntity],
-        created_entities_stats: DefaultDict[
-            NamedEntityTag, List[Tuple[EntityName, EntityId]]
+        sections: list[str],
+        created_entities: list[CrownEntity],
+        created_entities_stats: defaultdict[
+            NamedEntityTag, list[tuple[EntityName, EntityId]]
         ],
-        updated_entities: List[CrownEntity],
-        updated_entities_stats: DefaultDict[NamedEntityTag, int],
-        removed_entities: List[CrownEntity],
-        removed_entities_stats: DefaultDict[NamedEntityTag, int],
+        updated_entities: list[CrownEntity],
+        updated_entities_stats: defaultdict[NamedEntityTag, int],
+        removed_entities: list[CrownEntity],
+        removed_entities_stats: defaultdict[NamedEntityTag, int],
         print_indent: int,
     ) -> None:
         """Constructor."""
@@ -174,7 +168,7 @@ class WebsocketProgressReporter(ProgressReporter):
             text, NamedEntityTag.from_entity(entity), entity.ref_id, entity.name
         )
 
-    def print_prologue(self, command_name: str, argv: List[str]) -> None:
+    def print_prologue(self, command_name: str, argv: list[str]) -> None:
         """Print a prologue section."""
         # command_text = Text(f"{command_name}")
         # if len(argv) > 1:
@@ -230,17 +224,17 @@ class WebsocketProgressReporter(ProgressReporter):
         # self._console.print(results_panel)
 
     @property
-    def created_entities(self) -> List[CrownEntity]:
+    def created_entities(self) -> list[CrownEntity]:
         """Created entities."""
         return self._created_entities
 
     @property
-    def updated_entities(self) -> List[CrownEntity]:
+    def updated_entities(self) -> list[CrownEntity]:
         """Created entities."""
         return self._updated_entities
 
     @property
-    def removed_entities(self) -> List[CrownEntity]:
+    def removed_entities(self) -> list[CrownEntity]:
         """Created entities."""
         return self._removed_entities
 
@@ -286,7 +280,7 @@ class WebsocketProgressReporterFactory(
 ):
     """A progress reporter factory that builds websocket progress reporters."""
 
-    _web_sockets: Final[Dict[EntityId, _WebsocketHandle]]
+    _web_sockets: Final[dict[EntityId, _WebsocketHandle]]
 
     def __init__(self) -> None:
         """Constructor."""

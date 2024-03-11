@@ -1,6 +1,6 @@
 """The helpers are helping."""
+from collections.abc import AsyncIterator, Iterable
 from contextlib import asynccontextmanager
-from typing import AsyncIterator, Iterable, List
 
 from jupiter.core.framework.entity import CrownEntity
 from jupiter.core.framework.use_case import (
@@ -14,9 +14,9 @@ from jupiter.core.use_cases.infra.use_cases import AppGuestMutationUseCaseContex
 class NoOpProgressReporter(ProgressReporter):
     """A progress reporter that does nothing."""
 
-    _created_entities: List[CrownEntity]
-    _updated_entities: List[CrownEntity]
-    _removed_entities: List[CrownEntity]
+    _created_entities: list[CrownEntity]
+    _updated_entities: list[CrownEntity]
+    _removed_entities: list[CrownEntity]
 
     def __init__(self) -> None:
         """Constructor."""

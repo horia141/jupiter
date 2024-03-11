@@ -1,7 +1,6 @@
 """Extra information for how to generate an inbox task."""
 import argparse
 import shlex
-from typing import Optional
 
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.difficulty import Difficulty
@@ -26,12 +25,12 @@ class PushGenerationExtraInfo(CompositeValue):
     """Extra information for how to generate an inbox task."""
 
     timezone: Timezone
-    name: Optional[InboxTaskName] = None
-    status: Optional[InboxTaskStatus] = None
-    eisen: Optional[Eisen] = None
-    difficulty: Optional[Difficulty] = None
-    actionable_date: Optional[ADate] = None
-    due_date: Optional[ADate] = None
+    name: InboxTaskName | None = None
+    status: InboxTaskStatus | None = None
+    eisen: Eisen | None = None
+    difficulty: Difficulty | None = None
+    actionable_date: ADate | None = None
+    due_date: ADate | None = None
 
 
 class PushGenerationExtraInfoDatabaseEncoder(

@@ -3,16 +3,14 @@ import abc
 import dataclasses
 import types
 import typing
+from collections.abc import Callable, Iterator, Mapping
 from datetime import date, datetime
 from typing import (
     Annotated,
     Any,
-    Callable,
     Final,
     ForwardRef,
     Generic,
-    Iterator,
-    Mapping,
     TypeVar,
     cast,
     get_args,
@@ -38,6 +36,7 @@ from jupiter.core.domain.core.email_address import EmailAddress
 from jupiter.core.domain.storage_engine import DomainStorageEngine, SearchStorageEngine
 from jupiter.core.framework.entity import Entity, ParentLink
 from jupiter.core.framework.event import EventSource
+from jupiter.core.framework.optional import normalize_optional
 from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.realm import DomainThing, RealmCodecRegistry, WebRealm
 from jupiter.core.framework.record import Record
@@ -54,7 +53,6 @@ from jupiter.core.framework.utils import (
     find_all_modules,
     is_primitive_type,
     is_thing_ish_type,
-    normalize_optional,
 )
 from jupiter.core.framework.value import (
     AtomicValue,
@@ -516,7 +514,10 @@ class WebServiceApp:
             ]
         ]:
             for _name, obj in the_module.__dict__.items():
-                if not (isinstance(obj, type) and issubclass(obj, UseCase)):
+                origin_obj = get_origin(obj)
+                if not (
+                    isinstance(obj, type) and issubclass(origin_obj or obj, UseCase)
+                ):
                     continue
 
                 if obj.__module__ != the_module.__name__:
@@ -538,9 +539,10 @@ class WebServiceApp:
             the_module: types.ModuleType,
         ) -> Iterator[tuple[type[Exception], type[WebExceptionHandler[Exception]]]]:
             for _name, obj in the_module.__dict__.items():
+                origin_obj = get_origin(obj)
                 if not (
                     isinstance(obj, type)
-                    and issubclass(obj, WebExceptionHandler)
+                    and issubclass(origin_obj or obj, WebExceptionHandler)
                     and obj is not WebExceptionHandler
                 ):
                     continue

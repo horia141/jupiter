@@ -7,8 +7,9 @@ import itertools
 import types
 import typing
 from argparse import ArgumentParser, Namespace
+from collections.abc import Iterator
 from datetime import date, datetime
-from typing import Any, Final, Generic, Iterator, TypeVar, cast, get_args, get_origin
+from typing import Any, Final, Generic, TypeVar, cast, get_args, get_origin
 
 import inflection
 from jupiter.cli.command.rendering import RichConsoleProgressReporterFactory

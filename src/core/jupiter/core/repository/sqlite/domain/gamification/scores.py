@@ -1,5 +1,5 @@
 """SQLite implementation of gamification task scores classes."""
-from typing import Final, List, Tuple
+from typing import Final
 
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
@@ -156,7 +156,7 @@ class SqliteScoreStatsRepository(SqliteRepository, ScoreStatsRepository):
         return record
 
     async def remove(
-        self, key: Tuple[EntityId, RecurringTaskPeriod | None, str]
+        self, key: tuple[EntityId, RecurringTaskPeriod | None, str]
     ) -> ScoreStats:
         """Remove a score stats."""
         result = await self._connection.execute(
@@ -176,7 +176,7 @@ class SqliteScoreStatsRepository(SqliteRepository, ScoreStatsRepository):
         return self._row_to_entity(result)
 
     async def load_by_key_optional(
-        self, key: Tuple[EntityId, RecurringTaskPeriod | None, str]
+        self, key: tuple[EntityId, RecurringTaskPeriod | None, str]
     ) -> ScoreStats | None:
         """Load a score stats by it's unique key."""
         result = (
@@ -195,7 +195,7 @@ class SqliteScoreStatsRepository(SqliteRepository, ScoreStatsRepository):
             return None
         return self._row_to_entity(result)
 
-    async def find_all(self, prefix: EntityId) -> List[ScoreStats]:
+    async def find_all(self, prefix: EntityId) -> list[ScoreStats]:
         """Find all score stats for a score log."""
         result = await self._connection.execute(
             select(self._score_stats_table).where(
@@ -309,7 +309,7 @@ class SqliteScorePeriodBestRepository(SqliteRepository, ScorePeriodBestRepositor
         return record
 
     async def remove(
-        self, key: Tuple[EntityId, RecurringTaskPeriod | None, str, RecurringTaskPeriod]
+        self, key: tuple[EntityId, RecurringTaskPeriod | None, str, RecurringTaskPeriod]
     ) -> ScorePeriodBest:
         """Remove a score period best."""
         result = await self._connection.execute(
@@ -330,7 +330,7 @@ class SqliteScorePeriodBestRepository(SqliteRepository, ScorePeriodBestRepositor
         return self._row_to_entity(result)
 
     async def load_by_key_optional(
-        self, key: Tuple[EntityId, RecurringTaskPeriod | None, str, RecurringTaskPeriod]
+        self, key: tuple[EntityId, RecurringTaskPeriod | None, str, RecurringTaskPeriod]
     ) -> ScorePeriodBest | None:
         """Load a score period best by it's unique key."""
         result = (
@@ -352,7 +352,7 @@ class SqliteScorePeriodBestRepository(SqliteRepository, ScorePeriodBestRepositor
             return None
         return self._row_to_entity(result)
 
-    async def find_all(self, prefix: EntityId) -> List[ScorePeriodBest]:
+    async def find_all(self, prefix: EntityId) -> list[ScorePeriodBest]:
         """Find all score period best for a score log."""
         result = await self._connection.execute(
             select(self._score_period_best_table).where(

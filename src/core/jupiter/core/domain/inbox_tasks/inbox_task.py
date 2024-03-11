@@ -1,7 +1,7 @@
 """An inbox task."""
 import abc
 import textwrap
-from typing import Iterable, List, Optional
+from collections.abc import Iterable
 
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.difficulty import Difficulty
@@ -59,26 +59,26 @@ class InboxTask(LeafEntity):
     name: InboxTaskName
     status: InboxTaskStatus
     eisen: Eisen
-    difficulty: Optional[Difficulty] = None
-    actionable_date: Optional[ADate] = None
-    due_date: Optional[ADate] = None
-    notes: Optional[str] = None
-    habit_ref_id: Optional[EntityId] = None
-    chore_ref_id: Optional[EntityId] = None
-    big_plan_ref_id: Optional[EntityId] = None
-    journal_ref_id: Optional[EntityId] = None
-    metric_ref_id: Optional[EntityId] = None
-    person_ref_id: Optional[EntityId] = None
-    slack_task_ref_id: Optional[EntityId] = None
-    email_task_ref_id: Optional[EntityId] = None
-    recurring_timeline: Optional[str] = None
-    recurring_repeat_index: Optional[int] = None
-    recurring_gen_right_now: Optional[
-        Timestamp
-    ] = None  # Time for which this inbox task was generated
-    accepted_time: Optional[Timestamp] = None
-    working_time: Optional[Timestamp] = None
-    completed_time: Optional[Timestamp] = None
+    difficulty: Difficulty | None = None
+    actionable_date: ADate | None = None
+    due_date: ADate | None = None
+    notes: str | None = None
+    habit_ref_id: EntityId | None = None
+    chore_ref_id: EntityId | None = None
+    big_plan_ref_id: EntityId | None = None
+    journal_ref_id: EntityId | None = None
+    metric_ref_id: EntityId | None = None
+    person_ref_id: EntityId | None = None
+    slack_task_ref_id: EntityId | None = None
+    email_task_ref_id: EntityId | None = None
+    recurring_timeline: str | None = None
+    recurring_repeat_index: int | None = None
+    recurring_gen_right_now: Timestamp | None = (
+        None  # Time for which this inbox task was generated
+    )
+    accepted_time: Timestamp | None = None
+    working_time: Timestamp | None = None
+    completed_time: Timestamp | None = None
 
     note = OwnsAtMostOne(
         Note, domain=NoteDomain.INBOX_TASK, source_entity_ref_id=IsRefId()
@@ -91,15 +91,15 @@ class InboxTask(LeafEntity):
         inbox_task_collection_ref_id: EntityId,
         name: InboxTaskName,
         status: InboxTaskStatus,
-        difficulty: Optional[Difficulty],
-        actionable_date: Optional[ADate],
-        due_date: Optional[ADate],
+        difficulty: Difficulty | None,
+        actionable_date: ADate | None,
+        due_date: ADate | None,
         project_ref_id: EntityId,
-        big_plan_ref_id: Optional[EntityId],
-        big_plan_project_ref_id: Optional[EntityId],
-        big_plan_actionable_date: Optional[ADate],
-        big_plan_due_date: Optional[ADate],
-        eisen: Optional[Eisen],
+        big_plan_ref_id: EntityId | None,
+        big_plan_project_ref_id: EntityId | None,
+        big_plan_actionable_date: ADate | None,
+        big_plan_due_date: ADate | None,
+        eisen: Eisen | None,
     ) -> "InboxTask":
         """Created an inbox task."""
         InboxTask._check_actionable_and_due_dates(actionable_date, due_date)
@@ -143,14 +143,14 @@ class InboxTask(LeafEntity):
         ctx: DomainContext,
         inbox_task_collection_ref_id: EntityId,
         name: InboxTaskName,
-        eisen: Optional[Eisen],
-        difficulty: Optional[Difficulty],
-        actionable_date: Optional[ADate],
-        due_date: Optional[ADate],
+        eisen: Eisen | None,
+        difficulty: Difficulty | None,
+        actionable_date: ADate | None,
+        due_date: ADate | None,
         project_ref_id: EntityId,
         habit_ref_id: EntityId,
         recurring_task_timeline: str,
-        recurring_task_repeat_index: Optional[int],
+        recurring_task_repeat_index: int | None,
         recurring_task_gen_right_now: Timestamp,
     ) -> "InboxTask":
         """Create an inbox task."""
@@ -188,10 +188,10 @@ class InboxTask(LeafEntity):
         ctx: DomainContext,
         inbox_task_collection_ref_id: EntityId,
         name: InboxTaskName,
-        eisen: Optional[Eisen],
-        difficulty: Optional[Difficulty],
-        actionable_date: Optional[ADate],
-        due_date: Optional[ADate],
+        eisen: Eisen | None,
+        difficulty: Difficulty | None,
+        actionable_date: ADate | None,
+        due_date: ADate | None,
         project_ref_id: EntityId,
         chore_ref_id: EntityId,
         recurring_task_timeline: str,
@@ -235,10 +235,10 @@ class InboxTask(LeafEntity):
         right_now: ADate,
         project_ref_id: EntityId,
         journal_ref_id: EntityId,
-        eisen: Optional[Eisen],
-        difficulty: Optional[Difficulty],
-        actionable_date: Optional[ADate],
-        due_date: Optional[ADate],
+        eisen: Eisen | None,
+        difficulty: Difficulty | None,
+        actionable_date: ADate | None,
+        due_date: ADate | None,
     ) -> "InboxTask":
         """Create an inbox task."""
         return InboxTask._create(
@@ -275,10 +275,10 @@ class InboxTask(LeafEntity):
         ctx: DomainContext,
         inbox_task_collection_ref_id: EntityId,
         name: InboxTaskName,
-        eisen: Optional[Eisen],
-        difficulty: Optional[Difficulty],
-        actionable_date: Optional[ADate],
-        due_date: Optional[ADate],
+        eisen: Eisen | None,
+        difficulty: Difficulty | None,
+        actionable_date: ADate | None,
+        due_date: ADate | None,
         project_ref_id: EntityId,
         metric_ref_id: EntityId,
         recurring_task_timeline: str,
@@ -319,11 +319,11 @@ class InboxTask(LeafEntity):
         ctx: DomainContext,
         inbox_task_collection_ref_id: EntityId,
         name: InboxTaskName,
-        eisen: Optional[Eisen],
-        difficulty: Optional[Difficulty],
+        eisen: Eisen | None,
+        difficulty: Difficulty | None,
         recurring_task_gen_right_now: Timestamp,
-        actionable_date: Optional[ADate],
-        due_date: Optional[ADate],
+        actionable_date: ADate | None,
+        due_date: ADate | None,
         project_ref_id: EntityId,
         person_ref_id: EntityId,
         recurring_task_timeline: str,
@@ -407,7 +407,7 @@ class InboxTask(LeafEntity):
         project_ref_id: EntityId,
         slack_task_ref_id: EntityId,
         user: SlackUserName,
-        channel: Optional[SlackChannelName],
+        channel: SlackChannelName | None,
         message: str,
         generation_extra_info: PushGenerationExtraInfo,
     ) -> "InboxTask":
@@ -574,11 +574,11 @@ class InboxTask(LeafEntity):
         project_ref_id: EntityId,
         name: InboxTaskName,
         timeline: str,
-        repeat_index: Optional[int],
-        actionable_date: Optional[ADate],
+        repeat_index: int | None,
+        actionable_date: ADate | None,
         due_date: ADate,
-        eisen: Optional[Eisen],
-        difficulty: Optional[Difficulty],
+        eisen: Eisen | None,
+        difficulty: Difficulty | None,
     ) -> "InboxTask":
         """Update all the info associated with a habit."""
         if self.source is not InboxTaskSource.HABIT:
@@ -604,10 +604,10 @@ class InboxTask(LeafEntity):
         project_ref_id: EntityId,
         name: InboxTaskName,
         timeline: str,
-        actionable_date: Optional[ADate],
+        actionable_date: ADate | None,
         due_date: ADate,
-        eisen: Optional[Eisen],
-        difficulty: Optional[Difficulty],
+        eisen: Eisen | None,
+        difficulty: Difficulty | None,
     ) -> "InboxTask":
         """Update all the info associated with a chore."""
         if self.source is not InboxTaskSource.CHORE:
@@ -632,9 +632,9 @@ class InboxTask(LeafEntity):
         project_ref_id: EntityId,
         name: InboxTaskName,
         recurring_timeline: str,
-        eisen: Optional[Eisen],
-        difficulty: Optional[Difficulty],
-        actionable_date: Optional[ADate],
+        eisen: Eisen | None,
+        difficulty: Difficulty | None,
+        actionable_date: ADate | None,
         due_time: ADate,
     ) -> "InboxTask":
         """Update all the info associated with a metric."""
@@ -660,9 +660,9 @@ class InboxTask(LeafEntity):
         project_ref_id: EntityId,
         name: InboxTaskName,
         recurring_timeline: str,
-        eisen: Optional[Eisen],
-        difficulty: Optional[Difficulty],
-        actionable_date: Optional[ADate],
+        eisen: Eisen | None,
+        difficulty: Difficulty | None,
+        actionable_date: ADate | None,
         due_time: ADate,
     ) -> "InboxTask":
         """Update all the info associated with a person."""
@@ -711,7 +711,7 @@ class InboxTask(LeafEntity):
         ctx: DomainContext,
         project_ref_id: EntityId,
         user: SlackUserName,
-        channel: Optional[SlackChannelName],
+        channel: SlackChannelName | None,
         message: str,
         generation_extra_info: PushGenerationExtraInfo,
     ) -> "InboxTask":
@@ -776,10 +776,10 @@ class InboxTask(LeafEntity):
         ctx: DomainContext,
         name: UpdateAction[InboxTaskName],
         status: UpdateAction[InboxTaskStatus],
-        actionable_date: UpdateAction[Optional[ADate]],
-        due_date: UpdateAction[Optional[ADate]],
+        actionable_date: UpdateAction[ADate | None],
+        due_date: UpdateAction[ADate | None],
         eisen: UpdateAction[Eisen],
-        difficulty: UpdateAction[Optional[Difficulty]],
+        difficulty: UpdateAction[Difficulty | None],
     ) -> "InboxTask":
         """Update the inbox task."""
         if name.should_change:
@@ -881,7 +881,7 @@ class InboxTask(LeafEntity):
     @staticmethod
     def _build_name_for_habit(
         name: InboxTaskName,
-        repeat_index: Optional[int],
+        repeat_index: int | None,
     ) -> InboxTaskName:
         if repeat_index is not None:
             return InboxTaskName(f"{name} [{repeat_index + 1}]")
@@ -909,7 +909,7 @@ class InboxTask(LeafEntity):
     @staticmethod
     def _build_name_for_slack_task(
         user: SlackUserName,
-        channel: Optional[SlackChannelName],
+        channel: SlackChannelName | None,
         generation_extra_info: PushGenerationExtraInfo,
     ) -> InboxTaskName:
         if generation_extra_info.name is not None:
@@ -934,7 +934,7 @@ class InboxTask(LeafEntity):
     @staticmethod
     def _build_notes_for_slack_task(
         user: SlackUserName,
-        channel: Optional[SlackChannelName],
+        channel: SlackChannelName | None,
         message: str,
     ) -> str:
         message = textwrap.dedent(
@@ -965,8 +965,8 @@ class InboxTask(LeafEntity):
 
     @staticmethod
     def _check_actionable_and_due_dates(
-        actionable_date: Optional[ADate],
-        due_date: Optional[ADate],
+        actionable_date: ADate | None,
+        due_date: ADate | None,
     ) -> None:
         if actionable_date is None or due_date is None:
             return
@@ -985,18 +985,18 @@ class InboxTaskRepository(LeafEntityRepository[InboxTask], abc.ABC):
         self,
         parent_ref_id: EntityId,
         allow_archived: bool = False,
-        filter_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_sources: Optional[Iterable[InboxTaskSource]] = None,
-        filter_project_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_habit_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_chore_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_big_plan_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_journal_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_metric_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_person_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_slack_task_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_email_task_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_last_modified_time_start: Optional[ADate] = None,
-        filter_last_modified_time_end: Optional[ADate] = None,
-    ) -> List[InboxTask]:
+        filter_ref_ids: Iterable[EntityId] | None = None,
+        filter_sources: Iterable[InboxTaskSource] | None = None,
+        filter_project_ref_ids: Iterable[EntityId] | None = None,
+        filter_habit_ref_ids: Iterable[EntityId] | None = None,
+        filter_chore_ref_ids: Iterable[EntityId] | None = None,
+        filter_big_plan_ref_ids: Iterable[EntityId] | None = None,
+        filter_journal_ref_ids: Iterable[EntityId] | None = None,
+        filter_metric_ref_ids: Iterable[EntityId] | None = None,
+        filter_person_ref_ids: Iterable[EntityId] | None = None,
+        filter_slack_task_ref_ids: Iterable[EntityId] | None = None,
+        filter_email_task_ref_ids: Iterable[EntityId] | None = None,
+        filter_last_modified_time_start: ADate | None = None,
+        filter_last_modified_time_end: ADate | None = None,
+    ) -> list[InboxTask]:
         """Find all inbox tasks."""

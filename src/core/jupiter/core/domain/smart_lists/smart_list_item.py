@@ -1,5 +1,4 @@
 """A smart list item."""
-from typing import List, Optional
 
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
@@ -31,7 +30,7 @@ class SmartListItem(LeafEntity):
     name: SmartListItemName
     is_done: bool
     tags_ref_id: list[EntityId]
-    url: Optional[URL]
+    url: URL | None
 
     tags = RefsMany(SmartListTag, ref_id=IsOneOfRefId("tags_ref_id"))
     all_tags = RefsMany(SmartListTag, smart_list_ref_id=IsParentLink())
@@ -46,8 +45,8 @@ class SmartListItem(LeafEntity):
         smart_list_ref_id: EntityId,
         name: SmartListItemName,
         is_done: bool,
-        tags_ref_id: List[EntityId],
-        url: Optional[URL],
+        tags_ref_id: list[EntityId],
+        url: URL | None,
     ) -> "SmartListItem":
         """Create a smart list item."""
         return SmartListItem._create(
@@ -65,8 +64,8 @@ class SmartListItem(LeafEntity):
         ctx: DomainContext,
         name: UpdateAction[SmartListItemName],
         is_done: UpdateAction[bool],
-        tags_ref_id: UpdateAction[List[EntityId]],
-        url: UpdateAction[Optional[URL]],
+        tags_ref_id: UpdateAction[list[EntityId]],
+        url: UpdateAction[URL | None],
     ) -> "SmartListItem":
         """Update the smart list item."""
         return self._new_version(

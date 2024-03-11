@@ -1,7 +1,6 @@
 """Framework level elements for entity events."""
 import enum
 from dataclasses import dataclass
-from typing import Dict
 
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.realm import DomainThing
@@ -36,6 +35,6 @@ class Event:
     source: EventSource
     entity_version: int
     timestamp: Timestamp
-    frame_args: Dict[str, tuple[DomainThing, type[DomainThing]]]
+    frame_args: dict[str, tuple[DomainThing, type[DomainThing]]]
     kind: EventKind
     name: str

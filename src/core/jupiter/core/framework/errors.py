@@ -1,5 +1,7 @@
 """Common errors."""
-from typing import Mapping
+
+
+from collections.abc import Mapping
 
 
 class InputValidationError(ValueError):

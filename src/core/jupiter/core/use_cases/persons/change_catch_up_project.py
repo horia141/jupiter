@@ -1,5 +1,5 @@
 """Update the persons catch up project."""
-from typing import Optional, cast
+from typing import cast
 
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.features import WorkspaceFeature
@@ -26,7 +26,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 class PersonChangeCatchUpProjectArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
-    catch_up_project_ref_id: Optional[EntityId] = None
+    catch_up_project_ref_id: EntityId | None = None
 
 
 @mutation_use_case([WorkspaceFeature.PERSONS, WorkspaceFeature.PROJECTS])

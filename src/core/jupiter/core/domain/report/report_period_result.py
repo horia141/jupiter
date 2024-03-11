@@ -1,6 +1,5 @@
 """The result of a report."""
 from dataclasses import field
-from typing import Optional
 
 from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.core.domain.core.adate import ADate
@@ -46,7 +45,7 @@ class WorkableBigPlan(CompositeValue):
 
     ref_id: EntityId
     name: BigPlanName
-    actionable_date: Optional[ADate] = None
+    actionable_date: ADate | None = None
 
 
 @value
@@ -119,7 +118,7 @@ class PerBigPlanBreakdownItem(CompositeValue):
 
     ref_id: EntityId
     name: EntityName
-    actionable_date: Optional[ADate]
+    actionable_date: ADate | None
     summary: BigPlanWorkSummary
 
 

@@ -1,6 +1,5 @@
 """The command for updating a metric's properties."""
 import typing
-from typing import Optional
 
 from jupiter.core.domain.core import schedules
 from jupiter.core.domain.core.difficulty import Difficulty
@@ -42,14 +41,14 @@ class MetricUpdateArgs(UseCaseArgsBase):
 
     ref_id: EntityId
     name: UpdateAction[MetricName]
-    icon: UpdateAction[Optional[EntityIcon]]
-    collection_period: UpdateAction[Optional[RecurringTaskPeriod]]
-    collection_eisen: UpdateAction[Optional[Eisen]]
-    collection_difficulty: UpdateAction[Optional[Difficulty]]
-    collection_actionable_from_day: UpdateAction[Optional[RecurringTaskDueAtDay]]
-    collection_actionable_from_month: UpdateAction[Optional[RecurringTaskDueAtMonth]]
-    collection_due_at_day: UpdateAction[Optional[RecurringTaskDueAtDay]]
-    collection_due_at_month: UpdateAction[Optional[RecurringTaskDueAtMonth]]
+    icon: UpdateAction[EntityIcon | None]
+    collection_period: UpdateAction[RecurringTaskPeriod | None]
+    collection_eisen: UpdateAction[Eisen | None]
+    collection_difficulty: UpdateAction[Difficulty | None]
+    collection_actionable_from_day: UpdateAction[RecurringTaskDueAtDay | None]
+    collection_actionable_from_month: UpdateAction[RecurringTaskDueAtMonth | None]
+    collection_due_at_day: UpdateAction[RecurringTaskDueAtDay | None]
+    collection_due_at_month: UpdateAction[RecurringTaskDueAtMonth | None]
 
 
 @mutation_use_case(WorkspaceFeature.METRICS)
@@ -76,7 +75,7 @@ class MetricUpdateUseCase(
         )
 
         # Change the metrics
-        collection_params: UpdateAction[Optional[RecurringTaskGenParams]]
+        collection_params: UpdateAction[RecurringTaskGenParams | None]
         if (
             args.collection_period.should_change
             or args.collection_eisen.should_change

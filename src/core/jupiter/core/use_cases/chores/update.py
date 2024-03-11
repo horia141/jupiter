@@ -1,5 +1,5 @@
 """The command for updating a chore."""
-from typing import Optional, cast
+from typing import cast
 
 from jupiter.core.domain.chores.chore import Chore
 from jupiter.core.domain.chores.chore_name import ChoreName
@@ -38,16 +38,16 @@ class ChoreUpdateArgs(UseCaseArgsBase):
     ref_id: EntityId
     name: UpdateAction[ChoreName]
     period: UpdateAction[RecurringTaskPeriod]
-    eisen: UpdateAction[Optional[Eisen]]
-    difficulty: UpdateAction[Optional[Difficulty]]
-    actionable_from_day: UpdateAction[Optional[RecurringTaskDueAtDay]]
-    actionable_from_month: UpdateAction[Optional[RecurringTaskDueAtMonth]]
-    due_at_day: UpdateAction[Optional[RecurringTaskDueAtDay]]
-    due_at_month: UpdateAction[Optional[RecurringTaskDueAtMonth]]
+    eisen: UpdateAction[Eisen | None]
+    difficulty: UpdateAction[Difficulty | None]
+    actionable_from_day: UpdateAction[RecurringTaskDueAtDay | None]
+    actionable_from_month: UpdateAction[RecurringTaskDueAtMonth | None]
+    due_at_day: UpdateAction[RecurringTaskDueAtDay | None]
+    due_at_month: UpdateAction[RecurringTaskDueAtMonth | None]
     must_do: UpdateAction[bool]
-    skip_rule: UpdateAction[Optional[RecurringTaskSkipRule]]
+    skip_rule: UpdateAction[RecurringTaskSkipRule | None]
     start_at_date: UpdateAction[ADate]
-    end_at_date: UpdateAction[Optional[ADate]]
+    end_at_date: UpdateAction[ADate | None]
 
 
 @mutation_use_case(WorkspaceFeature.CHORES)

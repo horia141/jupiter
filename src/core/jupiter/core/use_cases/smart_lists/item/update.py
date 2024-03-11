@@ -1,5 +1,4 @@
 """The command for updating a smart list item."""
-from typing import List, Optional
 
 from jupiter.core.domain.core.tags.tag_name import TagName
 from jupiter.core.domain.core.url import URL
@@ -30,8 +29,8 @@ class SmartListItemUpdateArgs(UseCaseArgsBase):
     ref_id: EntityId
     name: UpdateAction[SmartListItemName]
     is_done: UpdateAction[bool]
-    tags: UpdateAction[List[TagName]]
-    url: UpdateAction[Optional[URL]]
+    tags: UpdateAction[list[TagName]]
+    url: UpdateAction[URL | None]
 
 
 @mutation_use_case(WorkspaceFeature.SMART_LISTS)

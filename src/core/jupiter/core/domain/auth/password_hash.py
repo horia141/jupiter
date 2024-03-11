@@ -1,5 +1,4 @@
 """A hashed password, suitable for storage."""
-from typing import Optional
 
 import argon2.profiles
 from argon2 import PasswordHasher
@@ -27,7 +26,7 @@ class PasswordHash(SecretValue):
     password_hash_raw: str
 
     @staticmethod
-    def from_raw(password_hash_str: Optional[str]) -> "PasswordHash":
+    def from_raw(password_hash_str: str | None) -> "PasswordHash":
         """Validate and clean a raw hashed password."""
         if not password_hash_str:
             raise InputValidationError("Expected hashed password to be non-null")

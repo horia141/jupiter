@@ -1,7 +1,8 @@
 """The SQLite storage engine for use cases."""
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from types import TracebackType
-from typing import AsyncIterator, Final, Optional, Type
+from typing import Final
 
 from jupiter.core.framework.realm import RealmCodecRegistry
 from jupiter.core.repository.sqlite.connection import SqliteConnection
@@ -41,9 +42,9 @@ class SqliteUseCaseUnitOfWork(UseCaseUnitOfWork):
 
     def __exit__(
         self,
-        _exc_type: Optional[Type[BaseException]],
-        _exc_val: Optional[BaseException],
-        _exc_tb: Optional[TracebackType],
+        _exc_type: type[BaseException] | None,
+        _exc_val: BaseException | None,
+        _exc_tb: TracebackType | None,
     ) -> None:
         """Exit context."""
 

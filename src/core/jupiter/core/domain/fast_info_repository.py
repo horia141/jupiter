@@ -1,6 +1,5 @@
 """A query-like repository for scanning information quickly about entities."""
 import abc
-from typing import List, Optional
 
 from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.core.domain.chores.chore_name import ChoreName
@@ -72,7 +71,7 @@ class SmartListSummary(CompositeValue):
 
     ref_id: EntityId
     name: SmartListName
-    icon: Optional[EntityIcon] = None
+    icon: EntityIcon | None = None
 
 
 @value
@@ -81,7 +80,7 @@ class MetricSummary(CompositeValue):
 
     ref_id: EntityId
     name: MetricName
-    icon: Optional[EntityIcon] = None
+    icon: EntityIcon | None = None
 
 
 @value
@@ -100,7 +99,7 @@ class FastInfoRepository(Repository, abc.ABC):
         self,
         parent_ref_id: EntityId,
         allow_archived: bool,
-    ) -> List[VacationSummary]:
+    ) -> list[VacationSummary]:
         """Find all summaries about vacations."""
 
     @abc.abstractmethod
@@ -108,7 +107,7 @@ class FastInfoRepository(Repository, abc.ABC):
         self,
         parent_ref_id: EntityId,
         allow_archived: bool,
-    ) -> List[ProjectSummary]:
+    ) -> list[ProjectSummary]:
         """Find all summaries about projects."""
 
     @abc.abstractmethod
@@ -116,7 +115,7 @@ class FastInfoRepository(Repository, abc.ABC):
         self,
         parent_ref_id: EntityId,
         allow_archived: bool,
-    ) -> List[InboxTaskSummary]:
+    ) -> list[InboxTaskSummary]:
         """Find all summaries about inbox tasks."""
 
     @abc.abstractmethod
@@ -124,7 +123,7 @@ class FastInfoRepository(Repository, abc.ABC):
         self,
         parent_ref_id: EntityId,
         allow_archived: bool,
-    ) -> List[HabitSummary]:
+    ) -> list[HabitSummary]:
         """Find all summaries about habits."""
 
     @abc.abstractmethod
@@ -132,7 +131,7 @@ class FastInfoRepository(Repository, abc.ABC):
         self,
         parent_ref_id: EntityId,
         allow_archived: bool,
-    ) -> List[ChoreSummary]:
+    ) -> list[ChoreSummary]:
         """Find all summaries about chores."""
 
     @abc.abstractmethod
@@ -140,7 +139,7 @@ class FastInfoRepository(Repository, abc.ABC):
         self,
         parent_ref_id: EntityId,
         allow_archived: bool,
-    ) -> List[BigPlanSummary]:
+    ) -> list[BigPlanSummary]:
         """Find all summaries about big plans."""
 
     @abc.abstractmethod
@@ -148,7 +147,7 @@ class FastInfoRepository(Repository, abc.ABC):
         self,
         parent_ref_id: EntityId,
         allow_archived: bool,
-    ) -> List[SmartListSummary]:
+    ) -> list[SmartListSummary]:
         """Find all summaries about smart lists."""
 
     @abc.abstractmethod
@@ -156,7 +155,7 @@ class FastInfoRepository(Repository, abc.ABC):
         self,
         parent_ref_id: EntityId,
         allow_archived: bool,
-    ) -> List[MetricSummary]:
+    ) -> list[MetricSummary]:
         """Find all summaries about metrics."""
 
     @abc.abstractmethod
@@ -164,5 +163,5 @@ class FastInfoRepository(Repository, abc.ABC):
         self,
         parent_ref_id: EntityId,
         allow_archived: bool,
-    ) -> List[PersonSummary]:
+    ) -> list[PersonSummary]:
         """Find all summaries about persons."""

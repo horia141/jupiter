@@ -1,5 +1,4 @@
 """A use case for retrieving summaries about entities."""
-from typing import List, Optional
 
 from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.core.domain.chores.chore_collection import ChoreCollection
@@ -42,33 +41,33 @@ from jupiter.core.use_cases.infra.use_cases import (
 class GetSummariesArgs(UseCaseArgsBase):
     """Get summaries args."""
 
-    allow_archived: Optional[bool] = None
-    include_default_project: Optional[bool] = None
-    include_vacations: Optional[bool] = None
-    include_projects: Optional[bool] = None
-    include_inbox_tasks: Optional[bool] = None
-    include_habits: Optional[bool] = None
-    include_chores: Optional[bool] = None
-    include_big_plans: Optional[bool] = None
-    include_smart_lists: Optional[bool] = None
-    include_metrics: Optional[bool] = None
-    include_persons: Optional[bool] = None
+    allow_archived: bool | None = None
+    include_default_project: bool | None = None
+    include_vacations: bool | None = None
+    include_projects: bool | None = None
+    include_inbox_tasks: bool | None = None
+    include_habits: bool | None = None
+    include_chores: bool | None = None
+    include_big_plans: bool | None = None
+    include_smart_lists: bool | None = None
+    include_metrics: bool | None = None
+    include_persons: bool | None = None
 
 
 @use_case_result
 class GetSummariesResult(UseCaseResultBase):
     """Get summaries result."""
 
-    default_project: Optional[ProjectSummary] = None
-    vacations: Optional[List[VacationSummary]] = None
-    projects: Optional[List[ProjectSummary]] = None
-    inbox_tasks: Optional[List[InboxTaskSummary]] = None
-    habits: Optional[List[HabitSummary]] = None
-    chores: Optional[List[ChoreSummary]] = None
-    big_plans: Optional[List[BigPlanSummary]] = None
-    smart_lists: Optional[List[SmartListSummary]] = None
-    metrics: Optional[List[MetricSummary]] = None
-    persons: Optional[List[PersonSummary]] = None
+    default_project: ProjectSummary | None = None
+    vacations: list[VacationSummary] | None = None
+    projects: list[ProjectSummary] | None = None
+    inbox_tasks: list[InboxTaskSummary] | None = None
+    habits: list[HabitSummary] | None = None
+    chores: list[ChoreSummary] | None = None
+    big_plans: list[BigPlanSummary] | None = None
+    smart_lists: list[SmartListSummary] | None = None
+    metrics: list[MetricSummary] | None = None
+    persons: list[PersonSummary] | None = None
 
 
 @readonly_use_case()

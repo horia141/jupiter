@@ -1,6 +1,6 @@
 """The workspace where everything happens."""
 import abc
-from typing import Iterable, List
+from collections.abc import Iterable
 
 from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.core.domain.chores.chore_collection import ChoreCollection
@@ -134,11 +134,11 @@ class Workspace(RootEntity):
 
     def infer_entity_tags_for_enabled_features(
         self, filter_entity_tags: Iterable[NamedEntityTag] | None = None
-    ) -> List[NamedEntityTag]:
+    ) -> list[NamedEntityTag]:
         """Filter and complete a set of entity tags according to the enabled features."""
         # Keep in sync with ts:webui:interEntityTagsForEnabledFeatures
         all_entity_tags = filter_entity_tags or [s for s in NamedEntityTag]
-        inferred_entity_tags: List[NamedEntityTag] = []
+        inferred_entity_tags: list[NamedEntityTag] = []
         for entity_tag in all_entity_tags:
             if entity_tag is NamedEntityTag.INBOX_TASK:
                 inferred_entity_tags.append(entity_tag)
@@ -209,11 +209,11 @@ class Workspace(RootEntity):
 
     def infer_sources_for_enabled_features(
         self, filter_sources: Iterable[InboxTaskSource] | None = None
-    ) -> List[InboxTaskSource]:
+    ) -> list[InboxTaskSource]:
         """Filter and complete a set of sources according to the enabled features."""
         # Keep in sync with ts:webui:inferSourcesForEnabledFeatures
         all_sources = filter_sources or [s for s in InboxTaskSource]
-        inferred_sources: List[InboxTaskSource] = []
+        inferred_sources: list[InboxTaskSource] = []
         for source in all_sources:
             if source is InboxTaskSource.USER:
                 inferred_sources.append(source)
@@ -259,11 +259,11 @@ class Workspace(RootEntity):
 
     def infer_sync_targets_for_enabled_features(
         self, sync_targets: Iterable[SyncTarget] | None = None
-    ) -> List[SyncTarget]:
+    ) -> list[SyncTarget]:
         """Filter and complete a set of sources according to the enabled features."""
         # Keep in sync with ts:webui:inferSyncTargetsForEnabledFeatures
         all_sync_targets = sync_targets or [s for s in SyncTarget]
-        inferred_sync_targets: List[SyncTarget] = []
+        inferred_sync_targets: list[SyncTarget] = []
         for sync_target in all_sync_targets:
             if sync_target is SyncTarget.INBOX_TASKS and self.is_feature_available(
                 WorkspaceFeature.INBOX_TASKS

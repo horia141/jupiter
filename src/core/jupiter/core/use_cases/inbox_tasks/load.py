@@ -1,5 +1,4 @@
 """The use case for loading a partcular inbox task."""
-from typing import Optional
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.chores.chore import Chore
@@ -42,14 +41,14 @@ class InboxTaskLoadResult(UseCaseResultBase):
 
     inbox_task: InboxTask
     project: Project
-    habit: Optional[Habit] = None
-    chore: Optional[Chore] = None
-    big_plan: Optional[BigPlan] = None
-    metric: Optional[Metric] = None
-    person: Optional[Person] = None
-    slack_task: Optional[SlackTask] = None
-    email_task: Optional[EmailTask] = None
-    note: Optional[Note] = None
+    habit: Habit | None = None
+    chore: Chore | None = None
+    big_plan: BigPlan | None = None
+    metric: Metric | None = None
+    person: Person | None = None
+    slack_task: SlackTask | None = None
+    email_task: EmailTask | None = None
+    note: Note | None = None
 
 
 @readonly_use_case(WorkspaceFeature.INBOX_TASKS)

@@ -1,5 +1,4 @@
 """The command for changing the project for a big plan."""
-from typing import Optional
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.features import WorkspaceFeature
@@ -23,7 +22,7 @@ class BigPlanChangeProjectArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
     ref_id: EntityId
-    project_ref_id: Optional[EntityId] = None
+    project_ref_id: EntityId | None = None
 
 
 @mutation_use_case([WorkspaceFeature.BIG_PLANS, WorkspaceFeature.PROJECTS])

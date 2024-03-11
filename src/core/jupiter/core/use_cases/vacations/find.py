@@ -1,6 +1,5 @@
 """The command for finding vacations."""
 from collections import defaultdict
-from typing import List, Optional
 
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_collection import NoteCollection
@@ -29,7 +28,7 @@ class VacationFindArgs(UseCaseArgsBase):
 
     allow_archived: bool
     include_notes: bool
-    filter_ref_ids: Optional[List[EntityId]] = None
+    filter_ref_ids: list[EntityId] | None = None
 
 
 @use_case_result
@@ -44,7 +43,7 @@ class VacationFindResultEntry(UseCaseResultBase):
 class VacationFindResult(UseCaseResultBase):
     """PersonFindResult object."""
 
-    entries: List[VacationFindResultEntry]
+    entries: list[VacationFindResultEntry]
 
 
 @readonly_use_case(WorkspaceFeature.VACATIONS)

@@ -1,5 +1,4 @@
 """The command for updating a big plan."""
-from typing import Optional
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
@@ -36,8 +35,8 @@ class BigPlanUpdateArgs(UseCaseArgsBase):
     ref_id: EntityId
     name: UpdateAction[BigPlanName]
     status: UpdateAction[BigPlanStatus]
-    actionable_date: UpdateAction[Optional[ADate]]
-    due_date: UpdateAction[Optional[ADate]]
+    actionable_date: UpdateAction[ADate | None]
+    due_date: UpdateAction[ADate | None]
 
 
 @use_case_result

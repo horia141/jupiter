@@ -1,5 +1,6 @@
 """A generic finder for entities."""
-from typing import Iterable, Tuple, Type, TypeVar, overload
+from collections.abc import Iterable
+from typing import TypeVar, overload
 
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -13,7 +14,7 @@ _LinkedEntity2T = TypeVar("_LinkedEntity2T", bound=CrownEntity)
 @overload
 async def generic_finder(
     uow: DomainUnitOfWork,
-    entity_type: Type[_EntityT],
+    entity_type: type[_EntityT],
     ref_id: EntityId,
     *,
     allow_archived: bool = False
@@ -24,37 +25,37 @@ async def generic_finder(
 @overload
 async def generic_finder(
     uow: DomainUnitOfWork,
-    entity_type: Type[_EntityT],
+    entity_type: type[_EntityT],
     ref_id: EntityId,
     entity_link1: EntityLink[_LinkedEntity1T],
     *,
     allow_archived: bool = False
-) -> Tuple[_EntityT, Iterable[_LinkedEntity1T]]:
+) -> tuple[_EntityT, Iterable[_LinkedEntity1T]]:
     """Load an entity and linked entities."""
 
 
 @overload
 async def generic_finder(
     uow: DomainUnitOfWork,
-    entity_type: Type[_EntityT],
+    entity_type: type[_EntityT],
     ref_id: EntityId,
     entity_link1: EntityLink[_LinkedEntity1T],
     entity_link2: EntityLink[_LinkedEntity2T],
     *,
     allow_archived: bool = False
-) -> Tuple[_EntityT, Iterable[_LinkedEntity1T], Iterable[_LinkedEntity2T]]:
+) -> tuple[_EntityT, Iterable[_LinkedEntity1T], Iterable[_LinkedEntity2T]]:
     """Load an entity and linked entities."""
 
 
 async def generic_finder(
     uow: DomainUnitOfWork,
-    entity_type: Type[_EntityT],
+    entity_type: type[_EntityT],
     ref_id: EntityId,
     entity_link1: EntityLink[_LinkedEntity1T] | None = None,
     entity_link2: EntityLink[_LinkedEntity2T] | None = None,
     *,
     allow_archived: bool = False
-) -> _EntityT | Tuple[_EntityT, Iterable[_LinkedEntity1T]] | Tuple[
+) -> _EntityT | tuple[_EntityT, Iterable[_LinkedEntity1T]] | tuple[
     _EntityT, Iterable[_LinkedEntity1T], Iterable[_LinkedEntity2T]
 ]:
     """Load an entity and linked entities."""

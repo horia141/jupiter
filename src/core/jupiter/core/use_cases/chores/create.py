@@ -1,5 +1,4 @@
 """The command for creating a chore."""
-from typing import Optional
 
 from jupiter.core.domain.chores.chore import Chore
 from jupiter.core.domain.chores.chore_collection import ChoreCollection
@@ -40,17 +39,17 @@ class ChoreCreateArgs(UseCaseArgsBase):
 
     name: ChoreName
     period: RecurringTaskPeriod
-    project_ref_id: Optional[EntityId] = None
-    eisen: Optional[Eisen] = None
-    difficulty: Optional[Difficulty] = None
-    actionable_from_day: Optional[RecurringTaskDueAtDay] = None
-    actionable_from_month: Optional[RecurringTaskDueAtMonth] = None
-    due_at_day: Optional[RecurringTaskDueAtDay] = None
-    due_at_month: Optional[RecurringTaskDueAtMonth] = None
+    project_ref_id: EntityId | None = None
+    eisen: Eisen | None = None
+    difficulty: Difficulty | None = None
+    actionable_from_day: RecurringTaskDueAtDay | None = None
+    actionable_from_month: RecurringTaskDueAtMonth | None = None
+    due_at_day: RecurringTaskDueAtDay | None = None
+    due_at_month: RecurringTaskDueAtMonth | None = None
     must_do: bool = False
-    skip_rule: Optional[RecurringTaskSkipRule] = None
-    start_at_date: Optional[ADate] = None
-    end_at_date: Optional[ADate] = None
+    skip_rule: RecurringTaskSkipRule | None = None
+    start_at_date: ADate | None = None
+    end_at_date: ADate | None = None
 
 
 @use_case_result

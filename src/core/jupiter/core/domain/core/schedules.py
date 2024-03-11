@@ -1,6 +1,6 @@
 """Module for working with schedules."""
 import abc
-from typing import Optional, cast
+from typing import cast
 
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
@@ -20,7 +20,7 @@ class Schedule(abc.ABC):
     """The base class for the schedule descriptors class."""
 
     _should_skip: bool
-    _actionable_date: Optional[Date]
+    _actionable_date: Date | None
     _date: Date
     _due_date: Date
     _full_name: InboxTaskName
@@ -149,7 +149,7 @@ class Schedule(abc.ABC):
         return self._should_skip
 
     @property
-    def actionable_date(self) -> Optional[ADate]:
+    def actionable_date(self) -> ADate | None:
         """The actionable date for the schedule, if any."""
         return ADate.from_date(self._actionable_date) if self._actionable_date else None
 
@@ -222,7 +222,7 @@ class DailySchedule(Schedule):
         self,
         name: EntityName,
         right_now: Timestamp,
-        skip_rule: Optional[RecurringTaskSkipRule] = None,
+        skip_rule: RecurringTaskSkipRule | None = None,
     ) -> None:
         """Construct a schedule."""
         self._date = cast(Date, right_now.value.date())
@@ -261,9 +261,9 @@ class WeeklySchedule(Schedule):
         self,
         name: EntityName,
         right_now: Timestamp,
-        skip_rule: Optional[RecurringTaskSkipRule],
-        actionable_from_day: Optional[RecurringTaskDueAtDay],
-        due_at_day: Optional[RecurringTaskDueAtDay],
+        skip_rule: RecurringTaskSkipRule | None,
+        actionable_from_day: RecurringTaskDueAtDay | None,
+        due_at_day: RecurringTaskDueAtDay | None,
     ) -> None:
         """Construct a schedule."""
         super().__init__()
@@ -315,9 +315,9 @@ class MonthlySchedule(Schedule):
         self,
         name: EntityName,
         right_now: Timestamp,
-        skip_rule: Optional[RecurringTaskSkipRule],
-        actionable_from_day: Optional[RecurringTaskDueAtDay],
-        due_at_day: Optional[RecurringTaskDueAtDay],
+        skip_rule: RecurringTaskSkipRule | None,
+        actionable_from_day: RecurringTaskDueAtDay | None,
+        due_at_day: RecurringTaskDueAtDay | None,
     ) -> None:
         """Construct a schedule."""
         super().__init__()
@@ -367,11 +367,11 @@ class QuarterlySchedule(Schedule):
         self,
         name: EntityName,
         right_now: Timestamp,
-        skip_rule: Optional[RecurringTaskSkipRule],
-        actionable_from_day: Optional[RecurringTaskDueAtDay],
-        actionable_from_month: Optional[RecurringTaskDueAtMonth],
-        due_at_day: Optional[RecurringTaskDueAtDay],
-        due_at_month: Optional[RecurringTaskDueAtMonth],
+        skip_rule: RecurringTaskSkipRule | None,
+        actionable_from_day: RecurringTaskDueAtDay | None,
+        actionable_from_month: RecurringTaskDueAtMonth | None,
+        due_at_day: RecurringTaskDueAtDay | None,
+        due_at_month: RecurringTaskDueAtMonth | None,
     ) -> None:
         """Construct a schedule."""
         super().__init__()
@@ -507,10 +507,10 @@ class YearlySchedule(Schedule):
         self,
         name: EntityName,
         right_now: Timestamp,
-        actionable_from_day: Optional[RecurringTaskDueAtDay],
-        actionable_from_month: Optional[RecurringTaskDueAtMonth],
-        due_at_day: Optional[RecurringTaskDueAtDay],
-        due_at_month: Optional[RecurringTaskDueAtMonth],
+        actionable_from_day: RecurringTaskDueAtDay | None,
+        actionable_from_month: RecurringTaskDueAtMonth | None,
+        due_at_day: RecurringTaskDueAtDay | None,
+        due_at_month: RecurringTaskDueAtMonth | None,
     ) -> None:
         """Construct a schedule."""
         super().__init__()
@@ -587,11 +587,11 @@ def get_schedule(
     period: RecurringTaskPeriod,
     name: EntityName,
     right_now: Timestamp,
-    skip_rule: Optional[RecurringTaskSkipRule] = None,
-    actionable_from_day: Optional[RecurringTaskDueAtDay] = None,
-    actionable_from_month: Optional[RecurringTaskDueAtMonth] = None,
-    due_at_day: Optional[RecurringTaskDueAtDay] = None,
-    due_at_month: Optional[RecurringTaskDueAtMonth] = None,
+    skip_rule: RecurringTaskSkipRule | None = None,
+    actionable_from_day: RecurringTaskDueAtDay | None = None,
+    actionable_from_month: RecurringTaskDueAtMonth | None = None,
+    due_at_day: RecurringTaskDueAtDay | None = None,
+    due_at_month: RecurringTaskDueAtMonth | None = None,
 ) -> Schedule:
     """Build an appropriate schedule from the given parameters."""
     if period == RecurringTaskPeriod.DAILY:

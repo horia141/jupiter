@@ -1,8 +1,9 @@
 """The domain service which constructs a report."""
 from collections import defaultdict
+from collections.abc import Iterable
 from itertools import groupby
 from operator import itemgetter
-from typing import DefaultDict, Dict, Final, Iterable, List, Optional, cast
+from typing import Final, cast
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
@@ -81,19 +82,19 @@ class ReportService:
         self,
         user: User,
         workspace: Workspace,
-        today: Optional[ADate],
+        today: ADate | None,
         period: RecurringTaskPeriod,
-        sources: Optional[list[InboxTaskSource]] = None,
+        sources: list[InboxTaskSource] | None = None,
         breakdowns: list[ReportBreakdown] | None = None,
-        filter_project_ref_ids: Optional[List[EntityId]] = None,
-        filter_big_plan_ref_ids: Optional[List[EntityId]] = None,
-        filter_habit_ref_ids: Optional[List[EntityId]] = None,
-        filter_chore_ref_ids: Optional[List[EntityId]] = None,
-        filter_metric_ref_ids: Optional[List[EntityId]] = None,
-        filter_person_ref_ids: Optional[List[EntityId]] = None,
-        filter_slack_task_ref_ids: Optional[List[EntityId]] = None,
-        filter_email_task_ref_ids: Optional[List[EntityId]] = None,
-        breakdown_period: Optional[RecurringTaskPeriod] = None,
+        filter_project_ref_ids: list[EntityId] | None = None,
+        filter_big_plan_ref_ids: list[EntityId] | None = None,
+        filter_habit_ref_ids: list[EntityId] | None = None,
+        filter_chore_ref_ids: list[EntityId] | None = None,
+        filter_metric_ref_ids: list[EntityId] | None = None,
+        filter_person_ref_ids: list[EntityId] | None = None,
+        filter_slack_task_ref_ids: list[EntityId] | None = None,
+        filter_email_task_ref_ids: list[EntityId] | None = None,
+        breakdown_period: RecurringTaskPeriod | None = None,
     ) -> ReportPeriodResult:
         """Compute the report."""
         if (
@@ -176,10 +177,10 @@ class ReportService:
                 ref_id=filter_project_ref_ids or NoFilter(),
             )
             filter_project_ref_ids = [p.ref_id for p in projects]
-            projects_by_ref_id: Dict[EntityId, Project] = {
+            projects_by_ref_id: dict[EntityId, Project] = {
                 p.ref_id: p for p in projects
             }
-            projects_by_name: Dict[ProjectName, Project] = {p.name: p for p in projects}
+            projects_by_name: dict[ProjectName, Project] = {p.name: p for p in projects}
 
             inbox_task_collection = await uow.get_for(
                 InboxTaskCollection
@@ -204,7 +205,7 @@ class ReportService:
                 allow_archived=True,
                 filter_ref_ids=filter_metric_ref_ids,
             )
-            metrics_by_ref_id: Dict[EntityId, Metric] = {m.ref_id: m for m in metrics}
+            metrics_by_ref_id: dict[EntityId, Metric] = {m.ref_id: m for m in metrics}
 
             person_collection = await uow.get_for(PersonCollection).load_by_parent(
                 workspace.ref_id,
@@ -317,7 +318,7 @@ class ReportService:
                 ref_id=filter_habit_ref_ids or NoFilter(),
                 project_ref_id=filter_project_ref_ids or NoFilter(),
             )
-            all_habits_by_ref_id: Dict[EntityId, Habit] = {
+            all_habits_by_ref_id: dict[EntityId, Habit] = {
                 rt.ref_id: rt for rt in all_habits
             }
 
@@ -327,7 +328,7 @@ class ReportService:
                 ref_id=filter_chore_ref_ids or NoFilter(),
                 project_ref_id=filter_project_ref_ids or NoFilter(),
             )
-            all_chores_by_ref_id: Dict[EntityId, Chore] = {
+            all_chores_by_ref_id: dict[EntityId, Chore] = {
                 rt.ref_id: rt for rt in all_chores
             }
 
@@ -337,7 +338,7 @@ class ReportService:
                 ref_id=filter_big_plan_ref_ids or NoFilter(),
                 project_ref_id=filter_project_ref_ids or NoFilter(),
             )
-            big_plans_by_ref_id: Dict[EntityId, BigPlan] = {
+            big_plans_by_ref_id: dict[EntityId, BigPlan] = {
                 bp.ref_id: bp for bp in all_big_plans
             }
 
@@ -586,15 +587,15 @@ class ReportService:
         inbox_tasks: Iterable[InboxTask],
     ) -> InboxTasksSummary:
         created_cnt_total = 0
-        created_per_source_cnt: DefaultDict[InboxTaskSource, int] = defaultdict(int)
+        created_per_source_cnt: defaultdict[InboxTaskSource, int] = defaultdict(int)
         accepted_cnt_total = 0
-        accepted_per_source_cnt: DefaultDict[InboxTaskSource, int] = defaultdict(int)
+        accepted_per_source_cnt: defaultdict[InboxTaskSource, int] = defaultdict(int)
         working_cnt_total = 0
-        working_per_source_cnt: DefaultDict[InboxTaskSource, int] = defaultdict(int)
+        working_per_source_cnt: defaultdict[InboxTaskSource, int] = defaultdict(int)
         done_cnt_total = 0
-        done_per_source_cnt: DefaultDict[InboxTaskSource, int] = defaultdict(int)
+        done_per_source_cnt: defaultdict[InboxTaskSource, int] = defaultdict(int)
         not_done_cnt_total = 0
-        not_done_per_source_cnt: DefaultDict[InboxTaskSource, int] = defaultdict(int)
+        not_done_per_source_cnt: defaultdict[InboxTaskSource, int] = defaultdict(int)
 
         for inbox_task in inbox_tasks:
             if schedule.contains_timestamp(inbox_task.created_time):
@@ -707,7 +708,7 @@ class ReportService:
     @staticmethod
     def _run_report_for_inbox_for_recurring_tasks(
         schedule: Schedule,
-        inbox_tasks: List[InboxTask],
+        inbox_tasks: list[InboxTask],
     ) -> RecurringTaskWorkSummary:
         # The simple summary computations here.
         created_cnt = 0

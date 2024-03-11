@@ -1,6 +1,6 @@
 """A Slack channel name."""
 import re
-from typing import Final, Pattern
+from typing import Final
 
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.primitive import Primitive
@@ -10,7 +10,7 @@ from jupiter.core.use_cases.infra.realms import (
     PrimitiveAtomicValueDatabaseEncoder,
 )
 
-_SLACK_CHANNEL_NAME_RE: Final[Pattern[str]] = re.compile(r"^[a-z0-9._-]+$")
+_SLACK_CHANNEL_NAME_RE: Final[re.Pattern[str]] = re.compile(r"^[a-z0-9._-]+$")
 
 
 @hashable_value

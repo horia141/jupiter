@@ -1,5 +1,4 @@
 """The command for generating new tasks."""
-from typing import List, Optional
 
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
@@ -24,16 +23,16 @@ class GenDoArgs(UseCaseArgsBase):
 
     source: EventSource
     gen_even_if_not_modified: bool
-    today: Optional[ADate] = None
-    gen_targets: Optional[List[SyncTarget]] = None
-    period: Optional[List[RecurringTaskPeriod]] = None
-    filter_project_ref_ids: Optional[List[EntityId]] = None
-    filter_habit_ref_ids: Optional[List[EntityId]] = None
-    filter_chore_ref_ids: Optional[List[EntityId]] = None
-    filter_metric_ref_ids: Optional[List[EntityId]] = None
-    filter_person_ref_ids: Optional[List[EntityId]] = None
-    filter_slack_task_ref_ids: Optional[List[EntityId]] = None
-    filter_email_task_ref_ids: Optional[List[EntityId]] = None
+    today: ADate | None = None
+    gen_targets: list[SyncTarget] | None = None
+    period: list[RecurringTaskPeriod] | None = None
+    filter_project_ref_ids: list[EntityId] | None = None
+    filter_habit_ref_ids: list[EntityId] | None = None
+    filter_chore_ref_ids: list[EntityId] | None = None
+    filter_metric_ref_ids: list[EntityId] | None = None
+    filter_person_ref_ids: list[EntityId] | None = None
+    filter_slack_task_ref_ids: list[EntityId] | None = None
+    filter_email_task_ref_ids: list[EntityId] | None = None
 
 
 @mutation_use_case()

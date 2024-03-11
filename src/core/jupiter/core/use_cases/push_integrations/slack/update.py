@@ -1,5 +1,4 @@
 """The command for updating a slack task."""
-from typing import Optional
 
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.difficulty import Difficulty
@@ -38,14 +37,14 @@ class SlackTaskUpdateArgs(UseCaseArgsBase):
 
     ref_id: EntityId
     user: UpdateAction[SlackUserName]
-    channel: UpdateAction[Optional[SlackChannelName]]
+    channel: UpdateAction[SlackChannelName | None]
     message: UpdateAction[str]
-    generation_name: UpdateAction[Optional[InboxTaskName]]
-    generation_status: UpdateAction[Optional[InboxTaskStatus]]
-    generation_eisen: UpdateAction[Optional[Eisen]]
-    generation_difficulty: UpdateAction[Optional[Difficulty]]
-    generation_actionable_date: UpdateAction[Optional[ADate]]
-    generation_due_date: UpdateAction[Optional[ADate]]
+    generation_name: UpdateAction[InboxTaskName | None]
+    generation_status: UpdateAction[InboxTaskStatus | None]
+    generation_eisen: UpdateAction[Eisen | None]
+    generation_difficulty: UpdateAction[Difficulty | None]
+    generation_actionable_date: UpdateAction[ADate | None]
+    generation_due_date: UpdateAction[ADate | None]
 
 
 @mutation_use_case(WorkspaceFeature.SLACK_TASKS)

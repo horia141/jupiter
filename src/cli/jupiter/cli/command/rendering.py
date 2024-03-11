@@ -2,8 +2,9 @@
 import argparse
 import asyncio
 from collections import defaultdict
+from collections.abc import AsyncIterator, Iterator
 from contextlib import asynccontextmanager, contextmanager
-from typing import AsyncIterator, DefaultDict, Final, Iterator, List, Tuple
+from typing import Final
 
 from jupiter.core.domain.big_plans.big_plan_status import BigPlanStatus
 from jupiter.core.domain.core.adate import ADate
@@ -59,30 +60,30 @@ class RichConsoleProgressReporter(ProgressReporter):
 
     _console: Final[Console]
     _status: Final[Status]
-    _sections: Final[List[str]]
-    _created_entities: Final[List[CrownEntity]]
+    _sections: Final[list[str]]
+    _created_entities: Final[list[CrownEntity]]
     _created_entities_stats: Final[
-        DefaultDict[NamedEntityTag, List[Tuple[EntityName, EntityId]]]
+        defaultdict[NamedEntityTag, list[tuple[EntityName, EntityId]]]
     ]
-    _updated_entities: Final[List[CrownEntity]]
-    _updated_entities_stats: Final[DefaultDict[NamedEntityTag, int]]
-    _removed_entities: Final[List[CrownEntity]]
-    _removed_entities_stats: Final[DefaultDict[NamedEntityTag, int]]
+    _updated_entities: Final[list[CrownEntity]]
+    _updated_entities_stats: Final[defaultdict[NamedEntityTag, int]]
+    _removed_entities: Final[list[CrownEntity]]
+    _removed_entities_stats: Final[defaultdict[NamedEntityTag, int]]
     _print_indent: Final[int]
 
     def __init__(
         self,
         console: Console,
         status: Status,
-        sections: List[str],
-        created_entities: List[CrownEntity],
-        created_entities_stats: DefaultDict[
-            NamedEntityTag, List[Tuple[EntityName, EntityId]]
+        sections: list[str],
+        created_entities: list[CrownEntity],
+        created_entities_stats: defaultdict[
+            NamedEntityTag, list[tuple[EntityName, EntityId]]
         ],
-        updated_entities: List[CrownEntity],
-        updated_entities_stats: DefaultDict[NamedEntityTag, int],
-        removed_entities: List[CrownEntity],
-        removed_entities_stats: DefaultDict[NamedEntityTag, int],
+        updated_entities: list[CrownEntity],
+        updated_entities_stats: defaultdict[NamedEntityTag, int],
+        removed_entities: list[CrownEntity],
+        removed_entities_stats: defaultdict[NamedEntityTag, int],
         print_indent: int,
     ) -> None:
         """Constructor."""
@@ -202,17 +203,17 @@ class RichConsoleProgressReporter(ProgressReporter):
         self._console.print(results_panel)
 
     @property
-    def created_entities(self) -> List[CrownEntity]:
+    def created_entities(self) -> list[CrownEntity]:
         """Created entities."""
         return self._created_entities
 
     @property
-    def updated_entities(self) -> List[CrownEntity]:
+    def updated_entities(self) -> list[CrownEntity]:
         """Created entities."""
         return self._updated_entities
 
     @property
-    def removed_entities(self) -> List[CrownEntity]:
+    def removed_entities(self) -> list[CrownEntity]:
         """Created entities."""
         return self._removed_entities
 

@@ -1,5 +1,4 @@
 """Authentication information associated with a user."""
-from typing import Tuple
 
 from jupiter.core.domain.auth.password_hash import PasswordHash
 from jupiter.core.domain.auth.password_new_plain import PasswordNewPlain
@@ -44,7 +43,7 @@ class Auth(StubEntity):
         user_ref_id: EntityId,
         password: PasswordNewPlain,
         password_repeat: PasswordNewPlain,
-    ) -> Tuple["Auth", RecoveryTokenPlain]:
+    ) -> tuple["Auth", RecoveryTokenPlain]:
         """Create a new auth for a user."""
         if password != password_repeat:
             raise InputValidationError("Expected the password and repeat to match")
@@ -105,7 +104,7 @@ class Auth(StubEntity):
         recovery_token: RecoveryTokenPlain,
         new_password: PasswordNewPlain,
         new_password_repeat: PasswordNewPlain,
-    ) -> Tuple["Auth", RecoveryTokenPlain]:
+    ) -> tuple["Auth", RecoveryTokenPlain]:
         """Reset the password for a user by using a recovery token."""
         if not self.recovery_token_hash.check_against(recovery_token):
             raise IncorrectRecoveryTokenError("Invalid recovery token")

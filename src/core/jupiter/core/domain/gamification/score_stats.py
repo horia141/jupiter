@@ -1,6 +1,5 @@
 """Statistics about scores for a particular time interval."""
 import abc
-from typing import Tuple
 
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
@@ -61,7 +60,7 @@ class ScoreStats(Record):
         )
 
     @property
-    def key(self) -> Tuple[EntityId, RecurringTaskPeriod | None, str]:
+    def key(self) -> tuple[EntityId, RecurringTaskPeriod | None, str]:
         """The key of the score stats."""
         return self.score_log.ref_id, self.period, self.timeline
 
@@ -85,7 +84,7 @@ class ScoreStats(Record):
 
 class ScoreStatsRepository(
     RecordRepository[
-        ScoreStats, Tuple[EntityId, RecurringTaskPeriod | None, str], EntityId
+        ScoreStats, tuple[EntityId, RecurringTaskPeriod | None, str], EntityId
     ],
     abc.ABC,
 ):

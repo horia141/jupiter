@@ -1,5 +1,5 @@
 """The birthday of a person."""
-from typing import ClassVar, Dict
+from typing import ClassVar
 
 from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
@@ -16,7 +16,7 @@ from jupiter.core.use_cases.infra.realms import (
 class PersonBirthday(AtomicValue[str]):
     """The birthday of a person."""
 
-    _MONTH_NAME_INDEX: ClassVar[Dict[str, int]] = {
+    _MONTH_NAME_INDEX: ClassVar[dict[str, int]] = {
         "Jan": 1,
         "Feb": 2,
         "Mar": 3,
@@ -30,7 +30,7 @@ class PersonBirthday(AtomicValue[str]):
         "Nov": 11,
         "Dec": 12,
     }
-    _MONTH_INDEX_NAME: ClassVar[Dict[int, str]] = {
+    _MONTH_INDEX_NAME: ClassVar[dict[int, str]] = {
         i: n for (n, i) in _MONTH_NAME_INDEX.items()
     }
 

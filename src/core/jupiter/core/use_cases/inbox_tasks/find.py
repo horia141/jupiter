@@ -1,6 +1,5 @@
 """The command for finding a inbox task."""
 from collections import defaultdict
-from typing import List, Optional
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
@@ -58,9 +57,9 @@ class InboxTaskFindArgs(UseCaseArgsBase):
 
     allow_archived: bool
     include_notes: bool
-    filter_ref_ids: Optional[List[EntityId]] = None
-    filter_project_ref_ids: Optional[List[EntityId]] = None
-    filter_sources: Optional[List[InboxTaskSource]] = None
+    filter_ref_ids: list[EntityId] | None = None
+    filter_project_ref_ids: list[EntityId] | None = None
+    filter_sources: list[InboxTaskSource] | None = None
 
 
 @use_case_result_part
@@ -70,20 +69,20 @@ class InboxTaskFindResultEntry(UseCaseResultBase):
     inbox_task: InboxTask
     note: Note | None
     project: Project
-    habit: Optional[Habit] = None
-    chore: Optional[Chore] = None
-    big_plan: Optional[BigPlan] = None
-    metric: Optional[Metric] = None
-    person: Optional[Person] = None
-    slack_task: Optional[SlackTask] = None
-    email_task: Optional[EmailTask] = None
+    habit: Habit | None = None
+    chore: Chore | None = None
+    big_plan: BigPlan | None = None
+    metric: Metric | None = None
+    person: Person | None = None
+    slack_task: SlackTask | None = None
+    email_task: EmailTask | None = None
 
 
 @use_case_result
 class InboxTaskFindResult(UseCaseResultBase):
     """PersonFindResult."""
 
-    entries: List[InboxTaskFindResultEntry]
+    entries: list[InboxTaskFindResultEntry]
 
 
 @readonly_use_case(WorkspaceFeature.INBOX_TASKS)

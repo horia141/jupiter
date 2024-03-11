@@ -1,6 +1,5 @@
 """The command for finding a habit."""
 from collections import defaultdict
-from typing import List, Optional
 
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_collection import NoteCollection
@@ -40,8 +39,8 @@ class HabitFindArgs(UseCaseArgsBase):
     include_notes: bool
     include_project: bool
     include_inbox_tasks: bool
-    filter_ref_ids: Optional[List[EntityId]] = None
-    filter_project_ref_ids: Optional[List[EntityId]] = None
+    filter_ref_ids: list[EntityId] | None = None
+    filter_project_ref_ids: list[EntityId] | None = None
 
 
 @use_case_result_part
@@ -49,16 +48,16 @@ class HabitFindResultEntry(UseCaseResultBase):
     """A single entry in the load all habits response."""
 
     habit: Habit
-    project: Optional[Project] = None
-    inbox_tasks: Optional[List[InboxTask]] = None
-    note: Optional[Note] = None
+    project: Project | None = None
+    inbox_tasks: list[InboxTask] | None = None
+    note: Note | None = None
 
 
 @use_case_result
 class HabitFindResult(UseCaseResultBase):
     """The result."""
 
-    entries: List[HabitFindResultEntry]
+    entries: list[HabitFindResultEntry]
 
 
 @readonly_use_case(WorkspaceFeature.HABITS)

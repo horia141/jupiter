@@ -1,5 +1,4 @@
 """The command for associating a inbox task with a big plan."""
-from typing import Optional
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.features import WorkspaceFeature
@@ -26,7 +25,7 @@ class InboxTaskAssociateWithBigPlanArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
     ref_id: EntityId
-    big_plan_ref_id: Optional[EntityId] = None
+    big_plan_ref_id: EntityId | None = None
 
 
 @mutation_use_case([WorkspaceFeature.INBOX_TASKS, WorkspaceFeature.BIG_PLANS])

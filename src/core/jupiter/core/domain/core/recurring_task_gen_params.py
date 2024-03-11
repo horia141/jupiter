@@ -1,5 +1,4 @@
 """Shared domain objects."""
-from typing import Optional
 
 from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
@@ -14,9 +13,9 @@ class RecurringTaskGenParams(CompositeValue):
     """Parameters for metric collection."""
 
     period: RecurringTaskPeriod
-    eisen: Optional[Eisen] = None
-    difficulty: Optional[Difficulty] = None
-    actionable_from_day: Optional[RecurringTaskDueAtDay] = None
-    actionable_from_month: Optional[RecurringTaskDueAtMonth] = None
-    due_at_day: Optional[RecurringTaskDueAtDay] = None
-    due_at_month: Optional[RecurringTaskDueAtMonth] = None
+    eisen: Eisen | None = None
+    difficulty: Difficulty | None = None
+    actionable_from_day: RecurringTaskDueAtDay | None = None
+    actionable_from_month: RecurringTaskDueAtMonth | None = None
+    due_at_day: RecurringTaskDueAtDay | None = None
+    due_at_month: RecurringTaskDueAtMonth | None = None

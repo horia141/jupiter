@@ -1,5 +1,4 @@
 """The command for loading workspaces if they exist."""
-from typing import Optional
 
 from jupiter.core.domain.env import Env
 from jupiter.core.domain.features import (
@@ -59,9 +58,9 @@ class LoadTopLevelInfoResult(UseCaseResultBase):
     workspace_feature_flag_controls: WorkspaceFeatureFlagsControls
     default_workspace_feature_flags: WorkspaceFeatureFlags
     workspace_feature_hack: WorkspaceFeature
-    user: Optional[User] = None
+    user: User | None = None
     user_score_overview: UserScoreOverview | None = None
-    workspace: Optional[Workspace] = None
+    workspace: Workspace | None = None
 
 
 class LoadTopLevelInfoUseCase(

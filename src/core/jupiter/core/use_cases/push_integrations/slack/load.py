@@ -1,5 +1,4 @@
 """Use case for loading a particular slack task."""
-from typing import Optional
 
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
@@ -34,7 +33,7 @@ class SlackTaskLoadResult(UseCaseResultBase):
     """SlackTaskLoadResult."""
 
     slack_task: SlackTask
-    inbox_task: Optional[InboxTask] = None
+    inbox_task: InboxTask | None = None
 
 
 @readonly_use_case(WorkspaceFeature.SLACK_TASKS)

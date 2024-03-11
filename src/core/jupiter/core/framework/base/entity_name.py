@@ -4,7 +4,6 @@ from functools import total_ordering
 from typing import (
     Final,
     Generic,
-    Pattern,
     TypeVar,
 )
 
@@ -18,7 +17,7 @@ from jupiter.core.framework.realm import (
 )
 from jupiter.core.framework.value import AtomicValue, hashable_value
 
-_ENTITY_NAME_RE: Final[Pattern[str]] = re.compile(r"^.+$")
+_ENTITY_NAME_RE: Final[re.Pattern[str]] = re.compile(r"^.+$")
 
 
 _EntityNameT = TypeVar("_EntityNameT", bound="EntityName")

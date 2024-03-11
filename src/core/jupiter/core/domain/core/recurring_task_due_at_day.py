@@ -1,5 +1,5 @@
 """The due day for a recurring task."""
-from typing import Dict, Final, Tuple
+from typing import Final
 
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.framework.errors import InputValidationError
@@ -10,7 +10,7 @@ from jupiter.core.use_cases.infra.realms import (
     PrimitiveAtomicValueDatabaseEncoder,
 )
 
-_RECURRING_TASK_DUE_AT_DAY_BOUNDS: Final[Dict[RecurringTaskPeriod, Tuple[int, int]]] = {
+_RECURRING_TASK_DUE_AT_DAY_BOUNDS: Final[dict[RecurringTaskPeriod, tuple[int, int]]] = {
     RecurringTaskPeriod.DAILY: (0, 0),
     RecurringTaskPeriod.WEEKLY: (1, 6),
     RecurringTaskPeriod.MONTHLY: (1, 31),

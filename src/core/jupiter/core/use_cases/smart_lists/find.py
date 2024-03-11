@@ -1,6 +1,5 @@
 """The command for finding smart lists."""
 from collections import defaultdict
-from typing import List, Optional
 
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_collection import NoteCollection
@@ -37,11 +36,11 @@ class SmartListFindArgs(UseCaseArgsBase):
     include_tags: bool
     include_items: bool
     include_item_notes: bool
-    filter_ref_ids: Optional[List[EntityId]] = None
-    filter_is_done: Optional[bool] = None
-    filter_tag_names: Optional[List[TagName]] = None
-    filter_tag_ref_id: Optional[List[EntityId]] = None
-    filter_item_ref_id: Optional[List[EntityId]] = None
+    filter_ref_ids: list[EntityId] | None = None
+    filter_is_done: bool | None = None
+    filter_tag_names: list[TagName] | None = None
+    filter_tag_ref_id: list[EntityId] | None = None
+    filter_item_ref_id: list[EntityId] | None = None
 
 
 @use_case_result_part
@@ -50,16 +49,16 @@ class SmartListFindResponseEntry(UseCaseResultBase):
 
     smart_list: SmartList
     note: Note | None
-    smart_list_tags: Optional[List[SmartListTag]] = None
-    smart_list_items: Optional[List[SmartListItem]] = None
-    smart_list_item_notes: Optional[List[Note]] = None
+    smart_list_tags: list[SmartListTag] | None = None
+    smart_list_items: list[SmartListItem] | None = None
+    smart_list_item_notes: list[Note] | None = None
 
 
 @use_case_result
 class SmartListFindResult(UseCaseResultBase):
     """PersonFindResult object."""
 
-    entries: List[SmartListFindResponseEntry]
+    entries: list[SmartListFindResponseEntry]
 
 
 @readonly_use_case(WorkspaceFeature.SMART_LISTS)

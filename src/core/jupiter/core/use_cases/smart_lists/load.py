@@ -1,5 +1,4 @@
 """Use case for loading a smart list."""
-from typing import List
 
 from jupiter.core.domain.core.notes.note import Note, NoteRepository
 from jupiter.core.domain.core.notes.note_collection import NoteCollection
@@ -37,9 +36,9 @@ class SmartListLoadResult(UseCaseResultBase):
 
     smart_list: SmartList
     note: Note | None
-    smart_list_tags: List[SmartListTag]
-    smart_list_items: List[SmartListItem]
-    smart_list_item_notes: List[Note]
+    smart_list_tags: list[SmartListTag]
+    smart_list_items: list[SmartListItem]
+    smart_list_item_notes: list[Note]
 
 
 @readonly_use_case(WorkspaceFeature.SMART_LISTS)

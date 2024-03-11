@@ -1,5 +1,5 @@
 """The command for finding a slack task."""
-from typing import List, Optional, cast
+from typing import cast
 
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
@@ -35,7 +35,7 @@ class SlackTaskFindArgs(UseCaseArgsBase):
 
     allow_archived: bool
     include_inbox_tasks: bool
-    filter_ref_ids: Optional[List[EntityId]] = None
+    filter_ref_ids: list[EntityId] | None = None
 
 
 @use_case_result_part
@@ -43,7 +43,7 @@ class SlackTaskFindResultEntry(UseCaseResultBase):
     """A single slack task result."""
 
     slack_task: SlackTask
-    inbox_task: Optional[InboxTask] = None
+    inbox_task: InboxTask | None = None
 
 
 @use_case_result
@@ -51,7 +51,7 @@ class SlackTaskFindResult(UseCaseResultBase):
     """PersonFindResult."""
 
     generation_project: Project
-    entries: List[SlackTaskFindResultEntry]
+    entries: list[SlackTaskFindResultEntry]
 
 
 @readonly_use_case(WorkspaceFeature.SLACK_TASKS)

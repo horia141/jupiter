@@ -4,12 +4,11 @@ import abc
 import dataclasses
 import types
 import typing
+from collections.abc import Iterable
 from datetime import date, datetime
 from typing import (
     Final,
     Generic,
-    Iterable,
-    Optional,
     Protocol,
     TypeGuard,
     TypeVar,
@@ -466,7 +465,7 @@ class SqliteRootEntityRepository(
             )
         return self._row_to_entity(result)
 
-    async def load_optional(self, entity_id: EntityId) -> Optional[_RootEntityT]:
+    async def load_optional(self, entity_id: EntityId) -> _RootEntityT | None:
         """Loads the root entity but returns null if there isn't one."""
         query_stmt = select(self._table).where(
             self._table.c.ref_id == entity_id.as_int(),
@@ -582,7 +581,7 @@ class SqliteCrownEntityRepository(
         self,
         parent_ref_id: EntityId,
         allow_archived: bool = False,
-        filter_ref_ids: Optional[Iterable[EntityId]] = None,
+        filter_ref_ids: Iterable[EntityId] | None = None,
     ) -> list[_CrownEntityT]:
         """Find all crowns matching some criteria."""
         query_stmt = select(self._table).where(

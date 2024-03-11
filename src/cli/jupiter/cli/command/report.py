@@ -1,5 +1,4 @@
 """UseCase for generating reports of progress."""
-from typing import List
 
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
@@ -407,7 +406,7 @@ class Report(LoggedInReadonlyCommand[ReportUseCase, ReportResult]):
     @staticmethod
     def _build_inbox_tasks_summary_table(
         summary: InboxTasksSummary,
-        sources_to_present: List[InboxTaskSource],
+        sources_to_present: list[InboxTaskSource],
     ) -> Table:
         inbox_tasks_table = Table(
             title="📥 Inbox Tasks:",

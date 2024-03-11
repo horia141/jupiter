@@ -1,7 +1,8 @@
 """Jupiter specific use cases classes."""
 import abc
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, Final, Generic, Type, TypeVar, Union
+from typing import Any, Final, Generic, TypeVar, Union
 
 from jupiter.core.domain.auth.auth_token import (
     AuthToken,
@@ -542,10 +543,10 @@ class AppBackgroundMutationUseCase(
 _MutationUseCaseT = TypeVar("_MutationUseCaseT", bound=AppLoggedInMutationUseCase[Any, Any])  # type: ignore
 
 
-def mutation_use_case(feature_scope: FeatureScope = None, exclude_app: list[EventSource] | None = None) -> Callable[[Type[_MutationUseCaseT]], Type[_MutationUseCaseT]]:  # type: ignore
+def mutation_use_case(feature_scope: FeatureScope = None, exclude_app: list[EventSource] | None = None) -> Callable[[type[_MutationUseCaseT]], type[_MutationUseCaseT]]:  # type: ignore
     """A decorator for use cases that scopes them to a feature."""
 
-    def decorator(cls: Type[_MutationUseCaseT]) -> Type[_MutationUseCaseT]:  # type: ignore
+    def decorator(cls: type[_MutationUseCaseT]) -> type[_MutationUseCaseT]:  # type: ignore
         app_scope = [
             s
             for s in EventSource
@@ -561,10 +562,10 @@ def mutation_use_case(feature_scope: FeatureScope = None, exclude_app: list[Even
 _ReadonlyUseCaseT = TypeVar("_ReadonlyUseCaseT", bound=AppLoggedInReadonlyUseCase[Any, Any])  # type: ignore
 
 
-def readonly_use_case(feature_scope: FeatureScope = None, exclude_app: list[EventSource] | None = None) -> Callable[[Type[_ReadonlyUseCaseT]], Type[_ReadonlyUseCaseT]]:  # type: ignore
+def readonly_use_case(feature_scope: FeatureScope = None, exclude_app: list[EventSource] | None = None) -> Callable[[type[_ReadonlyUseCaseT]], type[_ReadonlyUseCaseT]]:  # type: ignore
     """A decorator for use cases that scopes them to a feature."""
 
-    def decorator(cls: Type[_ReadonlyUseCaseT]) -> Type[_ReadonlyUseCaseT]:  # type: ignore
+    def decorator(cls: type[_ReadonlyUseCaseT]) -> type[_ReadonlyUseCaseT]:  # type: ignore
         app_scope = [
             s
             for s in EventSource

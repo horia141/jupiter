@@ -1,5 +1,4 @@
 """The command for updating a smart list."""
-from typing import Optional
 
 from jupiter.core.domain.core.entity_icon import EntityIcon
 from jupiter.core.domain.features import WorkspaceFeature
@@ -25,7 +24,7 @@ class SmartListUpdateArgs(UseCaseArgsBase):
 
     ref_id: EntityId
     name: UpdateAction[SmartListName]
-    icon: UpdateAction[Optional[EntityIcon]]
+    icon: UpdateAction[EntityIcon | None]
 
 
 @mutation_use_case(WorkspaceFeature.SMART_LISTS)

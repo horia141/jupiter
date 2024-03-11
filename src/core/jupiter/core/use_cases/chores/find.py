@@ -1,6 +1,5 @@
 """The command for finding a chore."""
 from collections import defaultdict
-from typing import List, Optional
 
 from jupiter.core.domain.chores.chore import Chore
 from jupiter.core.domain.chores.chore_collection import ChoreCollection
@@ -40,8 +39,8 @@ class ChoreFindArgs(UseCaseArgsBase):
     include_project: bool
     include_inbox_tasks: bool
     include_notes: bool
-    filter_ref_ids: Optional[List[EntityId]] = None
-    filter_project_ref_ids: Optional[List[EntityId]] = None
+    filter_ref_ids: list[EntityId] | None = None
+    filter_project_ref_ids: list[EntityId] | None = None
 
 
 @use_case_result_part
@@ -50,15 +49,15 @@ class ChoreFindResultEntry(UseCaseResultBase):
 
     chore: Chore
     note: Note | None
-    project: Optional[Project] = None
-    inbox_tasks: Optional[List[InboxTask]] = None
+    project: Project | None = None
+    inbox_tasks: list[InboxTask] | None = None
 
 
 @use_case_result
 class ChoreFindResult(UseCaseResultBase):
     """The result."""
 
-    entries: List[ChoreFindResultEntry]
+    entries: list[ChoreFindResultEntry]
 
 
 @readonly_use_case(WorkspaceFeature.CHORES)

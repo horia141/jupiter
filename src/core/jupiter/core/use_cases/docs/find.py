@@ -1,6 +1,5 @@
 """The use case for finding docs."""
 from collections import defaultdict
-from typing import List, Optional
 
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_collection import NoteCollection
@@ -33,7 +32,7 @@ class DocFindArgs(UseCaseArgsBase):
     include_notes: bool
     allow_archived: bool
     include_subdocs: bool
-    filter_ref_ids: Optional[List[EntityId]] = None
+    filter_ref_ids: list[EntityId] | None = None
 
 
 @use_case_result_part
@@ -49,7 +48,7 @@ class DocFindResultEntry(UseCaseResultBase):
 class DocFindResult(UseCaseResultBase):
     """The result."""
 
-    entries: List[DocFindResultEntry]
+    entries: list[DocFindResultEntry]
 
 
 @readonly_use_case(WorkspaceFeature.DOCS, exclude_app=[EventSource.CLI])

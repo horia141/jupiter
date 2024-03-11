@@ -1,6 +1,7 @@
 """Domain-level storage interaction."""
 import abc
-from typing import AsyncContextManager, Type, TypeVar, overload
+from contextlib import AbstractAsyncContextManager
+from typing import TypeVar, overload
 
 from jupiter.core.domain.search.infra.search_repository import SearchRepository
 from jupiter.core.framework.entity import (
@@ -34,38 +35,38 @@ class DomainUnitOfWork(abc.ABC):
     @overload
     @abc.abstractmethod
     def get_for(
-        self, entity_type: Type[_RootEntityT]
+        self, entity_type: type[_RootEntityT]
     ) -> RootEntityRepository[_RootEntityT]:
         ...
 
     @overload
     @abc.abstractmethod
     def get_for(
-        self, entity_type: Type[_StubEntityT]
+        self, entity_type: type[_StubEntityT]
     ) -> StubEntityRepository[_StubEntityT]:
         ...
 
     @overload
     @abc.abstractmethod
     def get_for(
-        self, entity_type: Type[_TrunkEntityT]
+        self, entity_type: type[_TrunkEntityT]
     ) -> TrunkEntityRepository[_TrunkEntityT]:
         ...
 
     @overload
     @abc.abstractmethod
     def get_for(
-        self, entity_type: Type[_CrownEntityT]
+        self, entity_type: type[_CrownEntityT]
     ) -> CrownEntityRepository[_CrownEntityT]:
         ...
 
     @abc.abstractmethod
     def get_for(
         self,
-        entity_type: Type[_RootEntityT]
-        | Type[_StubEntityT]
-        | Type[_TrunkEntityT]
-        | Type[_CrownEntityT],
+        entity_type: type[_RootEntityT]
+        | type[_StubEntityT]
+        | type[_TrunkEntityT]
+        | type[_CrownEntityT],
     ) -> RootEntityRepository[_RootEntityT] | StubEntityRepository[
         _StubEntityT
     ] | TrunkEntityRepository[_TrunkEntityT] | CrownEntityRepository[_CrownEntityT]:
@@ -76,7 +77,7 @@ class DomainStorageEngine(abc.ABC):
     """A storage engine of some form."""
 
     @abc.abstractmethod
-    def get_unit_of_work(self) -> AsyncContextManager[DomainUnitOfWork]:
+    def get_unit_of_work(self) -> AbstractAsyncContextManager[DomainUnitOfWork]:
         """Build a unit of work."""
 
 
@@ -93,5 +94,5 @@ class SearchStorageEngine(abc.ABC):
     """A storage engine of some form for the search engine."""
 
     @abc.abstractmethod
-    def get_unit_of_work(self) -> AsyncContextManager[SearchUnitOfWork]:
+    def get_unit_of_work(self) -> AbstractAsyncContextManager[SearchUnitOfWork]:
         """Build a unit of work."""

@@ -1,19 +1,15 @@
 """Framework level elements for entities (aggregate roots in DDD)."""
 import abc
 import dataclasses
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import (
     Any,
-    Callable,
     Generic,
-    List,
-    Optional,
     Sequence,
-    Type,
     TypeVar,
     Union,
     cast,
-    get_origin,
 )
 
 from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
@@ -22,9 +18,10 @@ from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.concept import Concept
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.event import Event, EventKind
+from jupiter.core.framework.optional import normalize_optional
 from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.value import AtomicValue, EnumValue, Value
-from typing_extensions import dataclass_transform, get_args
+from typing_extensions import dataclass_transform
 
 FIRST_VERSION = 1
 
@@ -41,12 +38,12 @@ class Entity(Concept):
     archived: bool
     created_time: Timestamp
     last_modified_time: Timestamp = dataclasses.field(compare=False, hash=False)
-    archived_time: Optional[Timestamp]
-    events: List[Event] = dataclasses.field(compare=False, hash=False)
+    archived_time: Timestamp | None
+    events: list[Event] = dataclasses.field(compare=False, hash=False)
 
     @classmethod
     def _create(
-        cls: Type[_EntityT],
+        cls: type[_EntityT],
         ctx: DomainContext,
         **kwargs: Union[None, bool, str, int, float, object],
     ) -> _EntityT:
@@ -198,10 +195,10 @@ EntityLinkFiltersCompiled = dict[str, EntityLinkFilterCompiled]
 class EntityLink(Generic[_EntityT]):
     """An entity link descriptor."""
 
-    the_type: Type[_EntityT]
+    the_type: type[_EntityT]
     filters: EntityLinkFiltersRaw
 
-    def __init__(self, the_type: Type[_EntityT], **kwargs: EntityLinkFilterRaw):
+    def __init__(self, the_type: type[_EntityT], **kwargs: EntityLinkFilterRaw):
         """Constructor."""
         _check_entity_can_be_filterd_by(the_type, kwargs)
         self.the_type = the_type
@@ -452,19 +449,6 @@ def _check_entity_has_parent_field(cls: type[_EntityT]) -> None:
 def _check_entity_can_be_filterd_by(
     cls: type[_EntityT], filters: EntityLinkFiltersRaw
 ) -> None:
-    def _get_real_type(cls: type[_EntityT]) -> tuple[type[_EntityT], bool]:
-        base_type = get_origin(cls)
-        if base_type is Union:
-            base_args = get_args(cls)
-            if len(base_args) > 2:
-                raise Exception(f"Type {cls} is not compatible with entity types")
-            if type(None) in base_args:
-                return base_args[0], True
-            else:
-                raise Exception(f"Type {cls} is not compatible with entity types")
-        else:
-            return cls, False
-
     all_fields = dataclasses.fields(cls)
 
     for filter_name, filter_rule in filters.items():
@@ -479,19 +463,19 @@ def _check_entity_can_be_filterd_by(
         else:
             raise Exception(f"Entity {cls} does not have a field {filter_name}")
 
-        found_field_type, found_field_optional = _get_real_type(found_field.type)
+        found_field_type, found_field_optional = normalize_optional(found_field.type)
 
         if found_field_optional:
             if filter_rule is None:
                 continue
 
-        if issubclass(found_field_type, Value):
-            if isinstance(filter_rule, Value):  # type: ignore[unreachable]
+        if issubclass(found_field_type, AtomicValue):
+            if isinstance(filter_rule, AtomicValue):
                 if found_field_type != filter_rule.__class__:
                     raise Exception(
                         f"Filter rule for '{filter_name}' is {filter_rule.__class__} which is not correct"
                     )
-            elif isinstance(filter_rule, EnumValue):  # type: ignore[unreachable]
+            elif isinstance(filter_rule, EnumValue):
                 raise Exception(
                     f"Filter rule for {filter_name} is {filter_rule.__class__} which is not correct"
                 )
@@ -500,7 +484,7 @@ def _check_entity_can_be_filterd_by(
                 or isinstance(filter_rule, IsOneOfRefId)
                 or isinstance(filter_rule, IsParentLink)
             ):
-                if found_field_type != EntityId and found_field_type != ParentLink:
+                if found_field_type != EntityId:
                     raise Exception(
                         f"Filter rule for '{filter_name}' is {filter_rule.__class__} which is not correct"
                     )
@@ -509,21 +493,8 @@ def _check_entity_can_be_filterd_by(
                     f"Filter rule for '{filter_name}' is {filter_rule.__class__} which is not correct"
                 )
         elif issubclass(found_field_type, EnumValue):
-            if isinstance(filter_rule, Value):  # type: ignore[unreachable]
-                raise Exception(
-                    f"Filter rule for '{filter_name}' is {filter_rule.__class__} which is not correct"
-                )
-            elif isinstance(filter_rule, EnumValue):  # type: ignore[unreachable]
+            if isinstance(filter_rule, EnumValue):
                 if found_field_type != filter_rule.__class__:
-                    raise Exception(
-                        f"Filter rule for '{filter_name}' is {filter_rule.__class__} which is not correct"
-                    )
-            elif (
-                isinstance(filter_rule, IsRefId)
-                or isinstance(filter_rule, IsOneOfRefId)
-                or isinstance(filter_rule, IsParentLink)
-            ):
-                if found_field_type != EntityId and found_field_type != ParentLink:
                     raise Exception(
                         f"Filter rule for '{filter_name}' is {filter_rule.__class__} which is not correct"
                     )
@@ -532,7 +503,10 @@ def _check_entity_can_be_filterd_by(
                     f"Filter rule for '{filter_name}' is {filter_rule.__class__} which is not correct"
                 )
         elif issubclass(found_field_type, ParentLink):
-            if not (isinstance(filter_rule, IsRefId) or isinstance(filter_rule, IsParentLink)):  # type: ignore[unreachable]
+            if not (
+                isinstance(filter_rule, IsRefId)
+                or isinstance(filter_rule, IsParentLink)
+            ):
                 raise Exception(
                     f"Filter rule for '{filter_name}' is {filter_rule.__class__} which is not correct"
                 )

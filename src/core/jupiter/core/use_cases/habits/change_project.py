@@ -1,5 +1,5 @@
 """The command for changing the project for a habit."""
-from typing import Optional, cast
+from typing import cast
 
 from jupiter.core.domain.core import schedules
 from jupiter.core.domain.features import (
@@ -28,7 +28,7 @@ class HabitChangeProjectArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
     ref_id: EntityId
-    project_ref_id: Optional[EntityId] = None
+    project_ref_id: EntityId | None = None
 
 
 @mutation_use_case([WorkspaceFeature.HABITS, WorkspaceFeature.PROJECTS])

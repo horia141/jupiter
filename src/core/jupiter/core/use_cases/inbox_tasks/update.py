@@ -1,5 +1,4 @@
 """The command for updating a inbox task."""
-from typing import Optional
 
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.difficulty import Difficulty
@@ -43,9 +42,9 @@ class InboxTaskUpdateArgs(UseCaseArgsBase):
     name: UpdateAction[InboxTaskName]
     status: UpdateAction[InboxTaskStatus]
     eisen: UpdateAction[Eisen]
-    difficulty: UpdateAction[Optional[Difficulty]]
-    actionable_date: UpdateAction[Optional[ADate]]
-    due_date: UpdateAction[Optional[ADate]]
+    difficulty: UpdateAction[Difficulty | None]
+    actionable_date: UpdateAction[ADate | None]
+    due_date: UpdateAction[ADate | None]
 
 
 @use_case_result

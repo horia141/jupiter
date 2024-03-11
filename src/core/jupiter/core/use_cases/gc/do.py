@@ -1,5 +1,4 @@
 """The command for doing a garbage collection run."""
-from typing import List, Optional
 
 from jupiter.core.domain.features import FeatureUnavailableError
 from jupiter.core.domain.gc.service.gc_service import GCService
@@ -21,7 +20,7 @@ class GCDoArgs(UseCaseArgsBase):
     """GCArgs."""
 
     source: EventSource
-    gc_targets: Optional[List[SyncTarget]] = None
+    gc_targets: list[SyncTarget] | None = None
 
 
 @mutation_use_case()

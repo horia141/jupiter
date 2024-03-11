@@ -1,6 +1,7 @@
 """A realm denotes the storage existance and validation correctness of a particular Jupiter concept (value, record, entity)."""
 import abc
-from typing import Callable, ForwardRef, Generic, Iterator, Mapping, TypeVar, Union
+from collections.abc import Callable, Iterator, Mapping
+from typing import ForwardRef, Generic, TypeVar, Union
 
 from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.thing import Thing

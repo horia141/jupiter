@@ -1,5 +1,6 @@
 """Even features are expressed here."""
-from typing import Dict, Final, Iterable
+from collections.abc import Iterable
+from typing import Final
 
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.value import CompositeValue, EnumValue, enum_value, value
@@ -68,14 +69,14 @@ class UserFeature(EnumValue):
     GAMIFICATION = "gamification"
 
 
-UserFeatureFlags = Dict[UserFeature, bool]
+UserFeatureFlags = dict[UserFeature, bool]
 
 
 @value
 class UserFeatureFlagsControls(CompositeValue):
     """Feature settings controls for the user."""
 
-    controls: Dict[UserFeature, FeatureControl]
+    controls: dict[UserFeature, FeatureControl]
 
     def standard_flag_for(self, feature: UserFeature) -> bool:
         """Get the standard flag for a feature."""
@@ -121,14 +122,14 @@ class WorkspaceFeature(EnumValue):
     EMAIL_TASKS = "email-tasks"
 
 
-WorkspaceFeatureFlags = Dict[WorkspaceFeature, bool]
+WorkspaceFeatureFlags = dict[WorkspaceFeature, bool]
 
 
 @value
 class WorkspaceFeatureFlagsControls(CompositeValue):
     """Feature settings controls for the workspace."""
 
-    controls: Dict[WorkspaceFeature, FeatureControl]
+    controls: dict[WorkspaceFeature, FeatureControl]
 
     def standard_flag_for(self, feature: WorkspaceFeature) -> bool:
         """Get the standard flag for a feature."""

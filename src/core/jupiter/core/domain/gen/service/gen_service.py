@@ -2,7 +2,7 @@
 
 import typing
 from collections import defaultdict
-from typing import Dict, Final, FrozenSet, List, Optional, Tuple
+from typing import Final
 
 from jupiter.core.domain.chores.chore import Chore
 from jupiter.core.domain.chores.chore_collection import ChoreCollection
@@ -74,14 +74,14 @@ class GenService:
         gen_even_if_not_modified: bool,
         today: ADate,
         gen_targets: list[SyncTarget],
-        period: Optional[List[RecurringTaskPeriod]],
-        filter_project_ref_ids: Optional[List[EntityId]],
-        filter_habit_ref_ids: Optional[List[EntityId]],
-        filter_chore_ref_ids: Optional[List[EntityId]],
-        filter_metric_ref_ids: Optional[List[EntityId]],
-        filter_person_ref_ids: Optional[List[EntityId]],
-        filter_slack_task_ref_ids: Optional[List[EntityId]],
-        filter_email_task_ref_ids: Optional[List[EntityId]],
+        period: list[RecurringTaskPeriod] | None,
+        filter_project_ref_ids: list[EntityId] | None,
+        filter_habit_ref_ids: list[EntityId] | None,
+        filter_chore_ref_ids: list[EntityId] | None,
+        filter_metric_ref_ids: list[EntityId] | None,
+        filter_person_ref_ids: list[EntityId] | None,
+        filter_slack_task_ref_ids: list[EntityId] | None,
+        filter_email_task_ref_ids: list[EntityId] | None,
     ) -> None:
         """Execute the service's action."""
         big_diff = list(
@@ -204,9 +204,9 @@ class GenService:
                         habit_ref_id=[rt.ref_id for rt in all_habits],
                     )
 
-                all_inbox_tasks_by_habit_ref_id_and_timeline: Dict[
-                    Tuple[EntityId, str],
-                    List[InboxTask],
+                all_inbox_tasks_by_habit_ref_id_and_timeline: dict[
+                    tuple[EntityId, str],
+                    list[InboxTask],
                 ] = defaultdict(list)
                 for inbox_task in all_collection_inbox_tasks:
                     if (
@@ -499,7 +499,7 @@ class GenService:
                             inbox_task_collection=inbox_task_collection,
                             project=project,
                             all_inbox_tasks_by_slack_task_ref_id=typing.cast(
-                                Dict[EntityId, InboxTask],
+                                dict[EntityId, InboxTask],
                                 all_inbox_tasks_by_slack_task_ref_id,
                             ),
                             gen_even_if_not_modified=gen_even_if_not_modified,
@@ -552,7 +552,7 @@ class GenService:
                             inbox_task_collection=inbox_task_collection,
                             project=project,
                             all_inbox_tasks_by_email_task_ref_id=typing.cast(
-                                Dict[EntityId, InboxTask],
+                                dict[EntityId, InboxTask],
                                 all_inbox_tasks_by_email_task_ref_id,
                             ),
                             gen_even_if_not_modified=gen_even_if_not_modified,
@@ -572,11 +572,11 @@ class GenService:
         inbox_task_collection: InboxTaskCollection,
         project: Project,
         today: ADate,
-        period_filter: Optional[FrozenSet[RecurringTaskPeriod]],
+        period_filter: frozenset[RecurringTaskPeriod] | None,
         habit: Habit,
-        all_inbox_tasks_by_habit_ref_id_and_timeline: Dict[
-            Tuple[EntityId, str],
-            List[InboxTask],
+        all_inbox_tasks_by_habit_ref_id_and_timeline: dict[
+            tuple[EntityId, str],
+            list[InboxTask],
         ],
         gen_even_if_not_modified: bool,
         gen_log_entry: GenLogEntry,
@@ -601,14 +601,14 @@ class GenService:
         if schedule.should_skip:
             return gen_log_entry
 
-        all_found_tasks_by_repeat_index: Dict[Optional[int], InboxTask] = {
+        all_found_tasks_by_repeat_index: dict[int | None, InboxTask] = {
             ft.recurring_repeat_index: ft
             for ft in all_inbox_tasks_by_habit_ref_id_and_timeline.get(
                 (habit.ref_id, schedule.timeline),
                 [],
             )
         }
-        repeat_idx_to_keep: typing.Set[Optional[int]] = set()
+        repeat_idx_to_keep: set[int | None] = set()
 
         for task_idx in range(habit.repeats_in_period_count or 1):
             real_task_idx = (
@@ -694,11 +694,11 @@ class GenService:
         inbox_task_collection: InboxTaskCollection,
         project: Project,
         today: ADate,
-        period_filter: Optional[FrozenSet[RecurringTaskPeriod]],
-        all_vacations: List[Vacation],
+        period_filter: frozenset[RecurringTaskPeriod] | None,
+        all_vacations: list[Vacation],
         chore: Chore,
-        all_inbox_tasks_by_chore_ref_id_and_timeline: Dict[
-            Tuple[EntityId, str],
+        all_inbox_tasks_by_chore_ref_id_and_timeline: dict[
+            tuple[EntityId, str],
             InboxTask,
         ],
         gen_even_if_not_modified: bool,
@@ -798,11 +798,11 @@ class GenService:
         inbox_task_collection: InboxTaskCollection,
         project: Project,
         today: ADate,
-        period_filter: Optional[FrozenSet[RecurringTaskPeriod]],
+        period_filter: frozenset[RecurringTaskPeriod] | None,
         metric: Metric,
         collection_params: RecurringTaskGenParams,
-        all_inbox_tasks_by_metric_ref_id_and_timeline: Dict[
-            Tuple[EntityId, str],
+        all_inbox_tasks_by_metric_ref_id_and_timeline: dict[
+            tuple[EntityId, str],
             InboxTask,
         ],
         gen_even_if_not_modified: bool,
@@ -887,11 +887,11 @@ class GenService:
         inbox_task_collection: InboxTaskCollection,
         project: Project,
         today: ADate,
-        period_filter: Optional[FrozenSet[RecurringTaskPeriod]],
+        period_filter: frozenset[RecurringTaskPeriod] | None,
         person: Person,
         catch_up_params: RecurringTaskGenParams,
-        all_inbox_tasks_by_person_ref_id_and_timeline: Dict[
-            Tuple[EntityId, str],
+        all_inbox_tasks_by_person_ref_id_and_timeline: dict[
+            tuple[EntityId, str],
             InboxTask,
         ],
         gen_even_if_not_modified: bool,
@@ -978,8 +978,8 @@ class GenService:
         today: ADate,
         person: Person,
         birthday: PersonBirthday,
-        all_inbox_tasks_by_person_ref_id_and_timeline: Dict[
-            Tuple[EntityId, str],
+        all_inbox_tasks_by_person_ref_id_and_timeline: dict[
+            tuple[EntityId, str],
             InboxTask,
         ],
         gen_even_if_not_modified: bool,
@@ -1062,7 +1062,7 @@ class GenService:
         slack_task: SlackTask,
         inbox_task_collection: InboxTaskCollection,
         project: Project,
-        all_inbox_tasks_by_slack_task_ref_id: Dict[EntityId, InboxTask],
+        all_inbox_tasks_by_slack_task_ref_id: dict[EntityId, InboxTask],
         gen_even_if_not_modified: bool,
         gen_log_entry: GenLogEntry,
     ) -> GenLogEntry:
@@ -1129,7 +1129,7 @@ class GenService:
         email_task: EmailTask,
         inbox_task_collection: InboxTaskCollection,
         project: Project,
-        all_inbox_tasks_by_email_task_ref_id: Dict[EntityId, InboxTask],
+        all_inbox_tasks_by_email_task_ref_id: dict[EntityId, InboxTask],
         gen_even_if_not_modified: bool,
         gen_log_entry: GenLogEntry,
     ) -> GenLogEntry:

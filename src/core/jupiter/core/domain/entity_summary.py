@@ -1,5 +1,4 @@
 """The summary about an entity."""
-from typing import Optional
 
 from jupiter.core.domain.named_entity_tag import NamedEntityTag
 from jupiter.core.framework.base.entity_id import EntityId
@@ -20,7 +19,7 @@ class EntitySummary(CompositeValue):
     archived: bool
     created_time: Timestamp
     last_modified_time: Timestamp
-    archived_time: Optional[Timestamp]
+    archived_time: Timestamp | None
     snippet: str
 
     @staticmethod

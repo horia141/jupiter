@@ -1,5 +1,4 @@
 """The command for reporting on progress."""
-from typing import Optional
 
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
@@ -27,19 +26,19 @@ from jupiter.core.use_cases.infra.use_cases import (
 class ReportArgs(UseCaseArgsBase):
     """Report args."""
 
-    today: Optional[ADate]
+    today: ADate | None
     period: RecurringTaskPeriod
-    sources: Optional[list[InboxTaskSource]] = None
+    sources: list[InboxTaskSource] | None = None
     breakdowns: list[ReportBreakdown] | None = None
-    filter_project_ref_ids: Optional[list[EntityId]] = None
-    filter_big_plan_ref_ids: Optional[list[EntityId]] = None
-    filter_habit_ref_ids: Optional[list[EntityId]] = None
-    filter_chore_ref_ids: Optional[list[EntityId]] = None
-    filter_metric_ref_ids: Optional[list[EntityId]] = None
-    filter_person_ref_ids: Optional[list[EntityId]] = None
-    filter_slack_task_ref_ids: Optional[list[EntityId]] = None
-    filter_email_task_ref_ids: Optional[list[EntityId]] = None
-    breakdown_period: Optional[RecurringTaskPeriod] = None
+    filter_project_ref_ids: list[EntityId] | None = None
+    filter_big_plan_ref_ids: list[EntityId] | None = None
+    filter_habit_ref_ids: list[EntityId] | None = None
+    filter_chore_ref_ids: list[EntityId] | None = None
+    filter_metric_ref_ids: list[EntityId] | None = None
+    filter_person_ref_ids: list[EntityId] | None = None
+    filter_slack_task_ref_ids: list[EntityId] | None = None
+    filter_email_task_ref_ids: list[EntityId] | None = None
+    breakdown_period: RecurringTaskPeriod | None = None
 
 
 @use_case_result

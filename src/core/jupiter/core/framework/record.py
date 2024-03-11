@@ -1,9 +1,9 @@
 """A simpler type of entity."""
 import dataclasses
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import (
     Any,
-    Callable,
     Generic,
     TypeAlias,
     TypeVar,

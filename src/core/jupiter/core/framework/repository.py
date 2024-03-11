@@ -1,6 +1,7 @@
 """Framework level elements for storage."""
 import abc
-from typing import Generic, Iterable, List, Optional, TypeVar
+from collections.abc import Iterable
+from typing import Generic, TypeVar
 
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.entity import (
@@ -55,7 +56,7 @@ class RecordRepository(
         """Load a record by it's unique key."""
 
     @abc.abstractmethod
-    async def find_all(self, prefix: RecordKeyPrefixT) -> List[RecordT]:
+    async def find_all(self, prefix: RecordKeyPrefixT) -> list[RecordT]:
         """Find all records matching some criteria."""
 
 
@@ -93,7 +94,7 @@ class RootEntityRepository(EntityRepository[RootEntityT], abc.ABC):
         """Loads the root entity."""
 
     @abc.abstractmethod
-    async def load_optional(self, entity_id: EntityId) -> Optional[RootEntityT]:
+    async def load_optional(self, entity_id: EntityId) -> RootEntityT | None:
         """Loads the root entity but returns null if there isn't one."""
 
     @abc.abstractmethod
@@ -166,8 +167,8 @@ class CrownEntityRepository(EntityRepository[CrownEntityT], abc.ABC):
         self,
         parent_ref_id: EntityId,
         allow_archived: bool = False,
-        filter_ref_ids: Optional[Iterable[EntityId]] = None,
-    ) -> List[CrownEntityT]:
+        filter_ref_ids: Iterable[EntityId] | None = None,
+    ) -> list[CrownEntityT]:
         """Find all crowns matching some criteria."""
 
     @abc.abstractmethod

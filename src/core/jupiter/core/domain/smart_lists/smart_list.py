@@ -1,5 +1,4 @@
 """A smart list."""
-from typing import Optional
 
 from jupiter.core.domain.core.entity_icon import EntityIcon
 from jupiter.core.domain.core.notes.note import Note
@@ -28,7 +27,7 @@ class SmartList(BranchEntity):
 
     smart_list_collection: ParentLink
     name: SmartListName
-    icon: Optional[EntityIcon]
+    icon: EntityIcon | None
 
     items = ContainsMany(SmartListItem, smart_list_ref_id=IsRefId())
     tags = ContainsMany(SmartListTag, smart_list_ref_id=IsRefId())
@@ -43,7 +42,7 @@ class SmartList(BranchEntity):
         ctx: DomainContext,
         smart_list_collection_ref_id: EntityId,
         name: SmartListName,
-        icon: Optional[EntityIcon],
+        icon: EntityIcon | None,
     ) -> "SmartList":
         """Create a smart list."""
         return SmartList._create(
@@ -58,7 +57,7 @@ class SmartList(BranchEntity):
         self,
         ctx: DomainContext,
         name: UpdateAction[SmartListName],
-        icon: UpdateAction[Optional[EntityIcon]],
+        icon: UpdateAction[EntityIcon | None],
     ) -> "SmartList":
         """Change the name of the smart list."""
         return self._new_version(

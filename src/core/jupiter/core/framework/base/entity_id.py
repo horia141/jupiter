@@ -1,6 +1,5 @@
 """A generic entity id."""
 import re
-import typing
 from functools import total_ordering
 
 from jupiter.core.framework.realm import (
@@ -13,7 +12,7 @@ from jupiter.core.framework.realm import (
 )
 from jupiter.core.framework.value import AtomicValue, hashable_value
 
-_ENTITY_ID_RE: typing.Pattern[str] = re.compile(r"^\d+|[a-zA-Z0-9_]+|bad-entity-id$")
+_ENTITY_ID_RE: re.Pattern[str] = re.compile(r"^\d+|[a-zA-Z0-9_]+|bad-entity-id$")
 
 
 @hashable_value

@@ -1,5 +1,4 @@
 """A metric."""
-from typing import Optional
 
 from jupiter.core.domain.core.entity_icon import EntityIcon
 from jupiter.core.domain.core.notes.note import Note
@@ -31,9 +30,9 @@ class Metric(BranchEntity):
 
     metric_collection: ParentLink
     name: MetricName
-    icon: Optional[EntityIcon] = None
-    collection_params: Optional[RecurringTaskGenParams] = None
-    metric_unit: Optional[MetricUnit] = None
+    icon: EntityIcon | None = None
+    collection_params: RecurringTaskGenParams | None = None
+    metric_unit: MetricUnit | None = None
 
     entries = OwnsMany(MetricEntry, metric_ref_id=IsRefId())
     collection_tasks = OwnsMany(
@@ -47,9 +46,9 @@ class Metric(BranchEntity):
         ctx: DomainContext,
         metric_collection_ref_id: EntityId,
         name: MetricName,
-        icon: Optional[EntityIcon],
-        collection_params: Optional[RecurringTaskGenParams],
-        metric_unit: Optional[MetricUnit],
+        icon: EntityIcon | None,
+        collection_params: RecurringTaskGenParams | None,
+        metric_unit: MetricUnit | None,
     ) -> "Metric":
         """Create a metric."""
         return Metric._create(
@@ -66,8 +65,8 @@ class Metric(BranchEntity):
         self,
         ctx: DomainContext,
         name: UpdateAction[MetricName],
-        icon: UpdateAction[Optional[EntityIcon]],
-        collection_params: UpdateAction[Optional[RecurringTaskGenParams]],
+        icon: UpdateAction[EntityIcon | None],
+        collection_params: UpdateAction[RecurringTaskGenParams | None],
     ) -> "Metric":
         """Change the metric."""
         return self._new_version(

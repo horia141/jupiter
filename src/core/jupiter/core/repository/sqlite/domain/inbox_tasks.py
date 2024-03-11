@@ -1,5 +1,5 @@
 """The SQLite repository for inbox tasks."""
-from typing import Iterable, List, Optional
+from collections.abc import Iterable
 
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.inbox_tasks.inbox_task import (
@@ -25,20 +25,20 @@ class SqliteInboxTaskRepository(
         self,
         parent_ref_id: EntityId,
         allow_archived: bool = False,
-        filter_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_sources: Optional[Iterable[InboxTaskSource]] = None,
-        filter_project_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_habit_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_chore_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_big_plan_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_journal_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_metric_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_person_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_slack_task_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_email_task_ref_ids: Optional[Iterable[EntityId]] = None,
-        filter_last_modified_time_start: Optional[ADate] = None,
-        filter_last_modified_time_end: Optional[ADate] = None,
-    ) -> List[InboxTask]:
+        filter_ref_ids: Iterable[EntityId] | None = None,
+        filter_sources: Iterable[InboxTaskSource] | None = None,
+        filter_project_ref_ids: Iterable[EntityId] | None = None,
+        filter_habit_ref_ids: Iterable[EntityId] | None = None,
+        filter_chore_ref_ids: Iterable[EntityId] | None = None,
+        filter_big_plan_ref_ids: Iterable[EntityId] | None = None,
+        filter_journal_ref_ids: Iterable[EntityId] | None = None,
+        filter_metric_ref_ids: Iterable[EntityId] | None = None,
+        filter_person_ref_ids: Iterable[EntityId] | None = None,
+        filter_slack_task_ref_ids: Iterable[EntityId] | None = None,
+        filter_email_task_ref_ids: Iterable[EntityId] | None = None,
+        filter_last_modified_time_start: ADate | None = None,
+        filter_last_modified_time_end: ADate | None = None,
+    ) -> list[InboxTask]:
         """Find all the inbox task."""
         query_stmt = select(self._table).where(
             self._table.c.inbox_task_collection_ref_id == parent_ref_id.as_int(),

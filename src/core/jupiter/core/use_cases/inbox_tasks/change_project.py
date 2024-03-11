@@ -1,5 +1,4 @@
 """The command for changing the project for an inbox task ."""
-from typing import Optional
 
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task import (
@@ -25,7 +24,7 @@ class InboxTaskChangeProjectArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
     ref_id: EntityId
-    project_ref_id: Optional[EntityId] = None
+    project_ref_id: EntityId | None = None
 
 
 @mutation_use_case([WorkspaceFeature.INBOX_TASKS, WorkspaceFeature.PROJECTS])

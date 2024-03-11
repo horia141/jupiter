@@ -3,14 +3,13 @@ import abc
 import dataclasses
 import types
 import typing
-from collections.abc import Mapping
+from collections.abc import Iterator, Mapping
 from datetime import date, datetime
 from types import GenericAlias, ModuleType
 from typing import (
     Final,
     ForwardRef,
     Generic,
-    Iterator,
     TypeVar,
     cast,
     get_args,
@@ -41,6 +40,7 @@ from jupiter.core.framework.errors import (
     MultiInputValidationError,
 )
 from jupiter.core.framework.event import EventSource
+from jupiter.core.framework.optional import normalize_optional
 from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.realm import (
     PROVIDE_VIA_REGISTRY,
@@ -66,7 +66,6 @@ from jupiter.core.framework.use_case_io import UseCaseArgsBase, UseCaseResultBas
 from jupiter.core.framework.utils import (
     find_all_modules,
     is_thing_ish_type,
-    normalize_optional,
 )
 from jupiter.core.framework.value import (
     AtomicValue,
@@ -1382,7 +1381,11 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                     # This is not a concret type and we can move on
                     continue
 
-                if not (isinstance(obj, type) and issubclass(obj, RealmEncoder)):
+                origin_obj = get_origin(obj)
+                if not (
+                    isinstance(obj, type)
+                    and issubclass(origin_obj or obj, RealmEncoder)
+                ):
                     continue
 
                 if obj.__module__ == ModuleExplorerRealmCodecRegistry.__module__:
@@ -1420,7 +1423,11 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                     # This is not a concret type and we can move on
                     continue
 
-                if not (isinstance(obj, type) and issubclass(obj, RealmDecoder)):
+                origin_obj = get_origin(obj)
+                if not (
+                    isinstance(obj, type)
+                    and issubclass(origin_obj or obj, RealmDecoder)
+                ):
                     continue
 
                 if obj.__module__ == ModuleExplorerRealmCodecRegistry.__module__:

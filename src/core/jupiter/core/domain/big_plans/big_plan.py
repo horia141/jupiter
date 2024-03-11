@@ -1,5 +1,4 @@
 """A big plan."""
-from typing import Optional
 
 from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.core.domain.big_plans.big_plan_status import BigPlanStatus
@@ -32,11 +31,11 @@ class BigPlan(LeafEntity):
     project_ref_id: EntityId
     name: BigPlanName
     status: BigPlanStatus
-    actionable_date: Optional[ADate] = None
-    due_date: Optional[ADate] = None
-    accepted_time: Optional[Timestamp] = None
-    working_time: Optional[Timestamp] = None
-    completed_time: Optional[Timestamp] = None
+    actionable_date: ADate | None = None
+    due_date: ADate | None = None
+    accepted_time: Timestamp | None = None
+    working_time: Timestamp | None = None
+    completed_time: Timestamp | None = None
 
     inbox_tasks = OwnsMany(
         InboxTask, source=InboxTaskSource.BIG_PLAN, big_plan_ref_id=IsRefId()
@@ -53,8 +52,8 @@ class BigPlan(LeafEntity):
         project_ref_id: EntityId,
         name: BigPlanName,
         status: BigPlanStatus,
-        actionable_date: Optional[ADate],
-        due_date: Optional[ADate],
+        actionable_date: ADate | None,
+        due_date: ADate | None,
     ) -> "BigPlan":
         """Create a big plan."""
         accepted_time = ctx.action_timestamp if status.is_accepted_or_more else None
@@ -94,8 +93,8 @@ class BigPlan(LeafEntity):
         ctx: DomainContext,
         name: UpdateAction[BigPlanName],
         status: UpdateAction[BigPlanStatus],
-        actionable_date: UpdateAction[Optional[ADate]],
-        due_date: UpdateAction[Optional[ADate]],
+        actionable_date: UpdateAction[ADate | None],
+        due_date: UpdateAction[ADate | None],
     ) -> "BigPlan":
         """Update the big plan."""
         new_name = name.or_else(self.name)

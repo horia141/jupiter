@@ -1,5 +1,4 @@
 """A habit."""
-from typing import Optional
 
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
@@ -35,9 +34,9 @@ class Habit(LeafEntity):
     project_ref_id: EntityId
     name: HabitName
     gen_params: RecurringTaskGenParams
-    skip_rule: Optional[RecurringTaskSkipRule] = None
+    skip_rule: RecurringTaskSkipRule | None = None
     suspended: bool = False
-    repeats_in_period_count: Optional[int] = None
+    repeats_in_period_count: int | None = None
 
     inbox_tasks = OwnsMany(
         InboxTask, source=InboxTaskSource.HABIT, habit_ref_id=IsRefId()
@@ -52,8 +51,8 @@ class Habit(LeafEntity):
         project_ref_id: EntityId,
         name: HabitName,
         gen_params: RecurringTaskGenParams,
-        skip_rule: Optional[RecurringTaskSkipRule],
-        repeats_in_period_count: Optional[int],
+        skip_rule: RecurringTaskSkipRule | None,
+        repeats_in_period_count: int | None,
         suspended: bool,
     ) -> "Habit":
         """Create a habit."""
@@ -103,8 +102,8 @@ class Habit(LeafEntity):
         ctx: DomainContext,
         name: UpdateAction[HabitName],
         gen_params: UpdateAction[RecurringTaskGenParams],
-        skip_rule: UpdateAction[Optional[RecurringTaskSkipRule]],
-        repeats_in_period_count: UpdateAction[Optional[int]],
+        skip_rule: UpdateAction[RecurringTaskSkipRule | None],
+        repeats_in_period_count: UpdateAction[int | None],
     ) -> "Habit":
         """Update the habit."""
         if gen_params.should_change:
@@ -163,10 +162,10 @@ class Habit(LeafEntity):
     @staticmethod
     def _check_actionable_and_due_date_configs(
         period: RecurringTaskPeriod,
-        actionable_from_day: Optional[RecurringTaskDueAtDay],
-        actionable_from_month: Optional[RecurringTaskDueAtMonth],
-        due_at_day: Optional[RecurringTaskDueAtDay],
-        due_at_month: Optional[RecurringTaskDueAtMonth],
+        actionable_from_day: RecurringTaskDueAtDay | None,
+        actionable_from_month: RecurringTaskDueAtMonth | None,
+        due_at_day: RecurringTaskDueAtDay | None,
+        due_at_month: RecurringTaskDueAtMonth | None,
     ) -> None:
         actionable_from_day = actionable_from_day or RecurringTaskDueAtDay.first_of(
             period

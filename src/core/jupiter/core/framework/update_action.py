@@ -1,6 +1,7 @@
 """The update action for a field."""
 import typing
-from typing import Callable, Final, Generic, Optional, TypeVar
+from collections.abc import Callable
+from typing import Final, Generic, TypeVar
 
 UpdateActionT = TypeVar("UpdateActionT")
 NewT = TypeVar("NewT")
@@ -10,12 +11,12 @@ class UpdateAction(Generic[UpdateActionT]):
     """The update action for a field."""
 
     _should_change: Final[bool]
-    _value: Optional[UpdateActionT] = None
+    _value: UpdateActionT | None = None
 
     def __init__(
         self,
         should_change: bool,
-        value: Optional[UpdateActionT] = None,
+        value: UpdateActionT | None = None,
     ) -> None:
         """Constructor."""
         self._should_change = should_change

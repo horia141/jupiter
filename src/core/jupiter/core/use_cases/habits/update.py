@@ -1,5 +1,5 @@
 """The command for updating a habit."""
-from typing import Optional, cast
+from typing import cast
 
 from jupiter.core.domain.core import schedules
 from jupiter.core.domain.core.difficulty import Difficulty
@@ -37,14 +37,14 @@ class HabitUpdateArgs(UseCaseArgsBase):
     ref_id: EntityId
     name: UpdateAction[HabitName]
     period: UpdateAction[RecurringTaskPeriod]
-    eisen: UpdateAction[Optional[Eisen]]
-    difficulty: UpdateAction[Optional[Difficulty]]
-    actionable_from_day: UpdateAction[Optional[RecurringTaskDueAtDay]]
-    actionable_from_month: UpdateAction[Optional[RecurringTaskDueAtMonth]]
-    due_at_day: UpdateAction[Optional[RecurringTaskDueAtDay]]
-    due_at_month: UpdateAction[Optional[RecurringTaskDueAtMonth]]
-    skip_rule: UpdateAction[Optional[RecurringTaskSkipRule]]
-    repeats_in_period_count: UpdateAction[Optional[int]]
+    eisen: UpdateAction[Eisen | None]
+    difficulty: UpdateAction[Difficulty | None]
+    actionable_from_day: UpdateAction[RecurringTaskDueAtDay | None]
+    actionable_from_month: UpdateAction[RecurringTaskDueAtMonth | None]
+    due_at_day: UpdateAction[RecurringTaskDueAtDay | None]
+    due_at_month: UpdateAction[RecurringTaskDueAtMonth | None]
+    skip_rule: UpdateAction[RecurringTaskSkipRule | None]
+    repeats_in_period_count: UpdateAction[int | None]
 
 
 @mutation_use_case(WorkspaceFeature.HABITS)

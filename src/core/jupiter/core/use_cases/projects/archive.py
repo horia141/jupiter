@@ -1,5 +1,4 @@
 """Use case for archiving a project."""
-from typing import Optional
 
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.metrics.metric_collection import MetricCollection
@@ -33,7 +32,7 @@ class ProjectArchiveArgs(UseCaseArgsBase):
     """Project archive args."""
 
     ref_id: EntityId
-    backup_project_ref_id: Optional[EntityId] = None
+    backup_project_ref_id: EntityId | None = None
 
 
 @mutation_use_case(WorkspaceFeature.PROJECTS)

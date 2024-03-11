@@ -1,6 +1,6 @@
 """A search index repository for free form searching across all entities in Jupiter."""
 import abc
-from typing import Iterable, List, Optional
+from collections.abc import Iterable
 
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.entity_summary import EntitySummary
@@ -43,12 +43,12 @@ class SearchRepository(Repository, abc.ABC):
         query: SearchQuery,
         limit: SearchLimit,
         include_archived: bool,
-        filter_entity_tags: Optional[Iterable[NamedEntityTag]],
-        filter_created_time_after: Optional[ADate],
-        filter_created_time_before: Optional[ADate],
-        filter_last_modified_time_after: Optional[ADate],
-        filter_last_modified_time_before: Optional[ADate],
-        filter_archived_time_after: Optional[ADate],
-        filter_archived_time_before: Optional[ADate],
-    ) -> List[SearchMatch]:
+        filter_entity_tags: Iterable[NamedEntityTag] | None,
+        filter_created_time_after: ADate | None,
+        filter_created_time_before: ADate | None,
+        filter_last_modified_time_after: ADate | None,
+        filter_last_modified_time_before: ADate | None,
+        filter_archived_time_after: ADate | None,
+        filter_archived_time_before: ADate | None,
+    ) -> list[SearchMatch]:
         """Search for entities."""

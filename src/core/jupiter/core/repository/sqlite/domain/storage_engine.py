@@ -1,14 +1,10 @@
 """The real implementation of an engine."""
+from collections.abc import AsyncIterator, Callable, Iterator
 from contextlib import asynccontextmanager
 from types import GenericAlias, ModuleType, TracebackType
 from typing import (
-    AsyncIterator,
-    Callable,
     Final,
     Generic,
-    Iterator,
-    Optional,
-    Type,
     TypeVar,
     cast,
     get_args,
@@ -94,13 +90,13 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
 
     def __exit__(
         self,
-        _exc_type: Optional[Type[BaseException]],
-        _exc_val: Optional[BaseException],
-        _exc_tb: Optional[TracebackType],
+        _exc_type: type[BaseException] | None,
+        _exc_val: BaseException | None,
+        _exc_tb: TracebackType | None,
     ) -> None:
         """Exit context."""
 
-    def get(self, repository_type: Type[_RepositoryT]) -> _RepositoryT:
+    def get(self, repository_type: type[_RepositoryT]) -> _RepositoryT:
         """Retrieve a repository."""
         if repository_type not in self._repository_factories:
             raise ValueError(f"No repository for type: {repository_type}")
@@ -115,34 +111,34 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
 
     @overload
     def get_for(
-        self, entity_type: Type[_RootEntityT]
+        self, entity_type: type[_RootEntityT]
     ) -> RootEntityRepository[_RootEntityT]:
         ...
 
     @overload
     def get_for(
-        self, entity_type: Type[_StubEntityT]
+        self, entity_type: type[_StubEntityT]
     ) -> StubEntityRepository[_StubEntityT]:
         ...
 
     @overload
     def get_for(
-        self, entity_type: Type[_TrunkEntityT]
+        self, entity_type: type[_TrunkEntityT]
     ) -> TrunkEntityRepository[_TrunkEntityT]:
         ...
 
     @overload
     def get_for(
-        self, entity_type: Type[_CrownEntityT]
+        self, entity_type: type[_CrownEntityT]
     ) -> CrownEntityRepository[_CrownEntityT]:
         ...
 
     def get_for(
         self,
-        entity_type: Type[_RootEntityT]
-        | Type[_StubEntityT]
-        | Type[_TrunkEntityT]
-        | Type[_CrownEntityT],
+        entity_type: type[_RootEntityT]
+        | type[_StubEntityT]
+        | type[_TrunkEntityT]
+        | type[_CrownEntityT],
     ) -> RootEntityRepository[_RootEntityT] | StubEntityRepository[
         _StubEntityT
     ] | TrunkEntityRepository[_TrunkEntityT] | CrownEntityRepository[_CrownEntityT]:
@@ -292,7 +288,7 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
     ) -> "SqliteDomainStorageEngine":
         """Build a unit of work from module roots."""
 
-        def figure_out_entity(the_type: type[Repository]) -> Optional[type[Entity]]:
+        def figure_out_entity(the_type: type[Repository]) -> type[Entity] | None:
             """Figure out the entity type from the repository type."""
             if not hasattr(the_type, "__orig_bases__"):
                 return None
@@ -317,7 +313,7 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
 
         def figure_out_abstract_entity_repository(
             the_type: type[Repository],
-        ) -> Optional[type[EntityRepository[Entity]]]:
+        ) -> type[EntityRepository[Entity]] | None:
             """Figure out the abstract repository type from the repository type."""
             if not hasattr(the_type, "__orig_bases__"):
                 return None
@@ -335,7 +331,7 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
 
         def figure_out_abstract_repository(
             the_type: type[Repository],
-        ) -> Optional[type[Repository]]:
+        ) -> type[Repository] | None:
             """Figure out the abstract repository type from the repository type."""
             for base in the_type.mro()[1:]:
                 if not issubclass(base, Repository):
@@ -601,9 +597,9 @@ class SqliteSearchUnitOfWork(SearchUnitOfWork):
 
     def __exit__(
         self,
-        _exc_type: Optional[Type[BaseException]],
-        _exc_val: Optional[BaseException],
-        _exc_tb: Optional[TracebackType],
+        _exc_type: type[BaseException] | None,
+        _exc_val: BaseException | None,
+        _exc_tb: TracebackType | None,
     ) -> None:
         """Exit context."""
 

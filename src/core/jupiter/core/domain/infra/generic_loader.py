@@ -1,5 +1,6 @@
 """A generic entity loader."""
-from typing import Iterable, Tuple, Type, TypeVar, overload
+from collections.abc import Iterable
+from typing import TypeVar, overload
 
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -26,7 +27,7 @@ _LinkedEntity2T = TypeVar("_LinkedEntity2T", bound=CrownEntity)
 @overload
 async def generic_loader(
     uow: DomainUnitOfWork,
-    entity_type: Type[_EntityT],
+    entity_type: type[_EntityT],
     ref_id: EntityId,
     *,
     allow_archived: bool = False,
@@ -37,49 +38,49 @@ async def generic_loader(
 @overload
 async def generic_loader(
     uow: DomainUnitOfWork,
-    entity_type: Type[_EntityT],
+    entity_type: type[_EntityT],
     ref_id: EntityId,
     entity_link1: ContainsOne[_LinkedEntity1T]
     | OwnsOne[_LinkedEntity1T]
     | RefsOne[_LinkedEntity1T],
     *,
     allow_archived: bool = False,
-) -> Tuple[_EntityT, _LinkedEntity1T]:
+) -> tuple[_EntityT, _LinkedEntity1T]:
     """A generic entity loader."""
 
 
 @overload
 async def generic_loader(
     uow: DomainUnitOfWork,
-    entity_type: Type[_EntityT],
+    entity_type: type[_EntityT],
     ref_id: EntityId,
     entity_link1: ContainsAtMostOne[_LinkedEntity1T]
     | OwnsAtMostOne[_LinkedEntity1T]
     | RefsAtMostOne[_LinkedEntity1T],
     *,
     allow_archived: bool = False,
-) -> Tuple[_EntityT, _LinkedEntity1T | None]:
+) -> tuple[_EntityT, _LinkedEntity1T | None]:
     """A generic entity loader."""
 
 
 @overload
 async def generic_loader(
     uow: DomainUnitOfWork,
-    entity_type: Type[_EntityT],
+    entity_type: type[_EntityT],
     ref_id: EntityId,
     entity_link1: ContainsMany[_LinkedEntity1T]
     | OwnsMany[_LinkedEntity1T]
     | RefsMany[_LinkedEntity1T],
     *,
     allow_archived: bool = False,
-) -> Tuple[_EntityT, Iterable[_LinkedEntity1T]]:
+) -> tuple[_EntityT, Iterable[_LinkedEntity1T]]:
     """A generic entity loader."""
 
 
 @overload
 async def generic_loader(
     uow: DomainUnitOfWork,
-    entity_type: Type[_EntityT],
+    entity_type: type[_EntityT],
     ref_id: EntityId,
     entity_link1: ContainsOne[_LinkedEntity1T]
     | OwnsOne[_LinkedEntity1T]
@@ -89,14 +90,14 @@ async def generic_loader(
     | RefsOne[_LinkedEntity2T],
     *,
     allow_archived: bool = False,
-) -> Tuple[_EntityT, _LinkedEntity1T, _LinkedEntity2T]:
+) -> tuple[_EntityT, _LinkedEntity1T, _LinkedEntity2T]:
     """A generic entity loader."""
 
 
 @overload
 async def generic_loader(
     uow: DomainUnitOfWork,
-    entity_type: Type[_EntityT],
+    entity_type: type[_EntityT],
     ref_id: EntityId,
     entity_link1: ContainsOne[_LinkedEntity1T]
     | OwnsOne[_LinkedEntity1T]
@@ -106,14 +107,14 @@ async def generic_loader(
     | RefsAtMostOne[_LinkedEntity2T],
     *,
     allow_archived: bool = False,
-) -> Tuple[_EntityT, _LinkedEntity1T, _LinkedEntity2T | None]:
+) -> tuple[_EntityT, _LinkedEntity1T, _LinkedEntity2T | None]:
     """A generic entity loader."""
 
 
 @overload
 async def generic_loader(
     uow: DomainUnitOfWork,
-    entity_type: Type[_EntityT],
+    entity_type: type[_EntityT],
     ref_id: EntityId,
     entity_link1: ContainsOne[_LinkedEntity1T]
     | OwnsOne[_LinkedEntity1T]
@@ -123,14 +124,14 @@ async def generic_loader(
     | RefsMany[_LinkedEntity2T],
     *,
     allow_archived: bool = False,
-) -> Tuple[_EntityT, _LinkedEntity1T, Iterable[_LinkedEntity2T]]:
+) -> tuple[_EntityT, _LinkedEntity1T, Iterable[_LinkedEntity2T]]:
     """A generic entity loader."""
 
 
 @overload
 async def generic_loader(
     uow: DomainUnitOfWork,
-    entity_type: Type[_EntityT],
+    entity_type: type[_EntityT],
     ref_id: EntityId,
     entity_link1: ContainsAtMostOne[_LinkedEntity1T]
     | OwnsAtMostOne[_LinkedEntity1T]
@@ -140,14 +141,14 @@ async def generic_loader(
     | RefsOne[_LinkedEntity2T],
     *,
     allow_archived: bool = False,
-) -> Tuple[_EntityT, _LinkedEntity1T | None, _LinkedEntity2T]:
+) -> tuple[_EntityT, _LinkedEntity1T | None, _LinkedEntity2T]:
     """A generic entity loader."""
 
 
 @overload
 async def generic_loader(
     uow: DomainUnitOfWork,
-    entity_type: Type[_EntityT],
+    entity_type: type[_EntityT],
     ref_id: EntityId,
     entity_link1: ContainsAtMostOne[_LinkedEntity1T]
     | OwnsAtMostOne[_LinkedEntity1T]
@@ -157,14 +158,14 @@ async def generic_loader(
     | RefsAtMostOne[_LinkedEntity2T],
     *,
     allow_archived: bool = False,
-) -> Tuple[_EntityT, _LinkedEntity1T | None, _LinkedEntity2T | None]:
+) -> tuple[_EntityT, _LinkedEntity1T | None, _LinkedEntity2T | None]:
     """A generic entity loader."""
 
 
 @overload
 async def generic_loader(
     uow: DomainUnitOfWork,
-    entity_type: Type[_EntityT],
+    entity_type: type[_EntityT],
     ref_id: EntityId,
     entity_link1: ContainsAtMostOne[_LinkedEntity1T]
     | OwnsAtMostOne[_LinkedEntity1T]
@@ -174,14 +175,14 @@ async def generic_loader(
     | RefsMany[_LinkedEntity2T],
     *,
     allow_archived: bool = False,
-) -> Tuple[_EntityT, _LinkedEntity1T | None, Iterable[_LinkedEntity2T]]:
+) -> tuple[_EntityT, _LinkedEntity1T | None, Iterable[_LinkedEntity2T]]:
     """A generic entity loader."""
 
 
 @overload
 async def generic_loader(
     uow: DomainUnitOfWork,
-    entity_type: Type[_EntityT],
+    entity_type: type[_EntityT],
     ref_id: EntityId,
     entity_link1: ContainsMany[_LinkedEntity1T]
     | OwnsMany[_LinkedEntity1T]
@@ -191,14 +192,14 @@ async def generic_loader(
     | RefsOne[_LinkedEntity2T],
     *,
     allow_archived: bool = False,
-) -> Tuple[_EntityT, Iterable[_LinkedEntity1T], _LinkedEntity2T]:
+) -> tuple[_EntityT, Iterable[_LinkedEntity1T], _LinkedEntity2T]:
     """A generic entity loader."""
 
 
 @overload
 async def generic_loader(
     uow: DomainUnitOfWork,
-    entity_type: Type[_EntityT],
+    entity_type: type[_EntityT],
     ref_id: EntityId,
     entity_link1: ContainsMany[_LinkedEntity1T]
     | OwnsMany[_LinkedEntity1T]
@@ -208,14 +209,14 @@ async def generic_loader(
     | RefsAtMostOne[_LinkedEntity2T],
     *,
     allow_archived: bool = False,
-) -> Tuple[_EntityT, Iterable[_LinkedEntity1T], _LinkedEntity2T | None]:
+) -> tuple[_EntityT, Iterable[_LinkedEntity1T], _LinkedEntity2T | None]:
     """A generic entity loader."""
 
 
 @overload
 async def generic_loader(
     uow: DomainUnitOfWork,
-    entity_type: Type[_EntityT],
+    entity_type: type[_EntityT],
     ref_id: EntityId,
     entity_link1: ContainsMany[_LinkedEntity1T]
     | OwnsMany[_LinkedEntity1T]
@@ -225,13 +226,13 @@ async def generic_loader(
     | RefsMany[_LinkedEntity2T],
     *,
     allow_archived: bool = False,
-) -> Tuple[_EntityT, Iterable[_LinkedEntity1T], Iterable[_LinkedEntity2T]]:
+) -> tuple[_EntityT, Iterable[_LinkedEntity1T], Iterable[_LinkedEntity2T]]:
     """A generic entity loader."""
 
 
 async def generic_loader(  # type: ignore[no-untyped-def]
     uow: DomainUnitOfWork,
-    entity_type: Type[_EntityT],
+    entity_type: type[_EntityT],
     ref_id: EntityId,
     entity_link1: EntityLink[_LinkedEntity1T] | None = None,
     entity_link2: EntityLink[_LinkedEntity2T] | None = None,

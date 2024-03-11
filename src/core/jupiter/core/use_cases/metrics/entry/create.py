@@ -1,5 +1,4 @@
 """The command for creating a metric entry."""
-from typing import Optional
 
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.features import WorkspaceFeature
@@ -29,7 +28,7 @@ class MetricEntryCreateArgs(UseCaseArgsBase):
 
     metric_ref_id: EntityId
     value: float
-    collection_time: Optional[ADate] = None
+    collection_time: ADate | None = None
 
 
 @use_case_result

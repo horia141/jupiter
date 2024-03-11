@@ -1,6 +1,6 @@
 """The command for finding the persons."""
 from collections import defaultdict
-from typing import List, Optional, cast
+from typing import cast
 
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_collection import NoteCollection
@@ -36,7 +36,7 @@ class PersonFindArgs(UseCaseArgsBase):
     include_catch_up_inbox_tasks: bool
     include_birthday_inbox_tasks: bool
     include_notes: bool
-    filter_person_ref_ids: Optional[List[EntityId]] = None
+    filter_person_ref_ids: list[EntityId] | None = None
 
 
 @use_case_result_part
@@ -45,8 +45,8 @@ class PersonFindResultEntry(UseCaseResultBase):
 
     person: Person
     note: Note | None
-    catch_up_inbox_tasks: Optional[List[InboxTask]] = None
-    birthday_inbox_tasks: Optional[List[InboxTask]] = None
+    catch_up_inbox_tasks: list[InboxTask] | None = None
+    birthday_inbox_tasks: list[InboxTask] | None = None
 
 
 @use_case_result
@@ -54,7 +54,7 @@ class PersonFindResult(UseCaseResultBase):
     """PersonFindResult."""
 
     catch_up_project: Project
-    entries: List[PersonFindResultEntry]
+    entries: list[PersonFindResultEntry]
 
 
 @readonly_use_case(WorkspaceFeature.PERSONS)

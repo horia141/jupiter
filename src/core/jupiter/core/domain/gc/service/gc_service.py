@@ -1,6 +1,7 @@
 """Garbage collect a workspace."""
 
-from typing import Final, Iterable, List, cast
+from collections.abc import Iterable
+from typing import Final, cast
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
@@ -246,8 +247,8 @@ class GCService:
         self,
         ctx: DomainContext,
         progress_reporter: ProgressReporter,
-        slack_tasks: List[SlackTask],
-        inbox_tasks: List[InboxTask],
+        slack_tasks: list[SlackTask],
+        inbox_tasks: list[InboxTask],
         gc_log_entry: GCLogEntry,
     ) -> GCLogEntry:
         slack_tasks_by_ref_id = {st.ref_id: st for st in slack_tasks}
@@ -283,8 +284,8 @@ class GCService:
         self,
         ctx: DomainContext,
         progress_reporter: ProgressReporter,
-        email_tasks: List[EmailTask],
-        inbox_tasks: List[InboxTask],
+        email_tasks: list[EmailTask],
+        inbox_tasks: list[InboxTask],
         gc_log_entry: GCLogEntry,
     ) -> GCLogEntry:
         email_tasks_by_ref_id = {st.ref_id: st for st in email_tasks}

@@ -1,5 +1,4 @@
 """A Slack task which needs to be converted into an inbox task."""
-from typing import Optional
 
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
@@ -35,7 +34,7 @@ class SlackTask(LeafEntity):
     message: str
     generation_extra_info: PushGenerationExtraInfo
     has_generated_task: bool
-    channel: Optional[SlackChannelName] = None
+    channel: SlackChannelName | None = None
 
     generated_task = OwnsAtMostOne(
         InboxTask, source=InboxTaskSource.SLACK_TASK, slack_task_ref_id=IsRefId()
@@ -47,7 +46,7 @@ class SlackTask(LeafEntity):
         ctx: DomainContext,
         slack_task_collection_ref_id: EntityId,
         user: SlackUserName,
-        channel: Optional[SlackChannelName],
+        channel: SlackChannelName | None,
         message: str,
         generation_extra_info: PushGenerationExtraInfo,
     ) -> "SlackTask":
@@ -68,7 +67,7 @@ class SlackTask(LeafEntity):
         self,
         ctx: DomainContext,
         user: UpdateAction[SlackUserName],
-        channel: UpdateAction[Optional[SlackChannelName]],
+        channel: UpdateAction[SlackChannelName | None],
         message: UpdateAction[str],
         generation_extra_info: UpdateAction[PushGenerationExtraInfo],
     ) -> "SlackTask":

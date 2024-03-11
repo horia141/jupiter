@@ -2,7 +2,7 @@
 import itertools
 import typing
 from collections import defaultdict
-from typing import DefaultDict, Dict, List, Optional, cast
+from typing import cast
 
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_collection import NoteCollection
@@ -40,8 +40,8 @@ class MetricFindArgs(UseCaseArgsBase):
     include_entries: bool
     include_collection_inbox_tasks: bool
     include_metric_entry_notes: bool
-    filter_ref_ids: Optional[List[EntityId]] = None
-    filter_entry_ref_ids: Optional[List[EntityId]] = None
+    filter_ref_ids: list[EntityId] | None = None
+    filter_entry_ref_ids: list[EntityId] | None = None
 
 
 @use_case_result_part
@@ -50,8 +50,8 @@ class MetricFindResponseEntry(UseCaseResultBase):
 
     metric: Metric
     note: Note | None
-    metric_entries: Optional[List[MetricEntry]] = None
-    metric_collection_inbox_tasks: Optional[List[InboxTask]] = None
+    metric_entries: list[MetricEntry] | None = None
+    metric_collection_inbox_tasks: list[InboxTask] | None = None
     metric_entry_notes: list[Note] | None = None
 
 
@@ -60,7 +60,7 @@ class MetricFindResult(UseCaseResultBase):
     """PersonFindResult object."""
 
     collection_project: Project
-    entries: List[MetricFindResponseEntry]
+    entries: list[MetricFindResponseEntry]
 
 
 @readonly_use_case(WorkspaceFeature.METRICS)
@@ -117,7 +117,7 @@ class MetricFindUseCase(
                 )
             metric_entries = itertools.chain(*metric_entries_raw)
 
-            metric_entries_by_ref_ids: Dict[EntityId, List[MetricEntry]] = {}
+            metric_entries_by_ref_ids: dict[EntityId, list[MetricEntry]] = {}
 
             for metric_entry in metric_entries:
                 if metric_entry.metric.ref_id not in metric_entries_by_ref_ids:
@@ -132,9 +132,9 @@ class MetricFindUseCase(
             metric_entries_by_ref_ids = {}
 
         if args.include_collection_inbox_tasks:
-            metric_collection_inbox_tasks_by_ref_id: DefaultDict[
+            metric_collection_inbox_tasks_by_ref_id: defaultdict[
                 EntityId,
-                List[InboxTask],
+                list[InboxTask],
             ] = defaultdict(list)
             inbox_task_collection = await uow.get_for(
                 InboxTaskCollection

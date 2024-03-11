@@ -1,5 +1,4 @@
 """Use case for loading a metric entry."""
-from typing import Optional
 
 from jupiter.core.domain.core.notes.note import Note, NoteRepository
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
@@ -33,7 +32,7 @@ class MetricEntryLoadResult(UseCaseResultBase):
     """MetricEntryLoadResult."""
 
     metric_entry: MetricEntry
-    note: Optional[Note] = None
+    note: Note | None = None
 
 
 @readonly_use_case(WorkspaceFeature.METRICS)

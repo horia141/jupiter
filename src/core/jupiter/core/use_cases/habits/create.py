@@ -1,5 +1,4 @@
 """The command for creating a habit."""
-from typing import Optional
 
 from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
@@ -39,15 +38,15 @@ class HabitCreateArgs(UseCaseArgsBase):
 
     name: HabitName
     period: RecurringTaskPeriod
-    project_ref_id: Optional[EntityId] = None
-    eisen: Optional[Eisen] = None
-    difficulty: Optional[Difficulty] = None
-    actionable_from_day: Optional[RecurringTaskDueAtDay] = None
-    actionable_from_month: Optional[RecurringTaskDueAtMonth] = None
-    due_at_day: Optional[RecurringTaskDueAtDay] = None
-    due_at_month: Optional[RecurringTaskDueAtMonth] = None
-    skip_rule: Optional[RecurringTaskSkipRule] = None
-    repeats_in_period_count: Optional[int] = None
+    project_ref_id: EntityId | None = None
+    eisen: Eisen | None = None
+    difficulty: Difficulty | None = None
+    actionable_from_day: RecurringTaskDueAtDay | None = None
+    actionable_from_month: RecurringTaskDueAtMonth | None = None
+    due_at_day: RecurringTaskDueAtDay | None = None
+    due_at_month: RecurringTaskDueAtMonth | None = None
+    skip_rule: RecurringTaskSkipRule | None = None
+    repeats_in_period_count: int | None = None
 
 
 @use_case_result

@@ -1,5 +1,4 @@
 """The command for creating a metric."""
-from typing import Optional
 
 from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
@@ -35,15 +34,15 @@ class MetricCreateArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
     name: MetricName
-    icon: Optional[EntityIcon] = None
-    collection_period: Optional[RecurringTaskPeriod] = None
-    collection_eisen: Optional[Eisen] = None
-    collection_difficulty: Optional[Difficulty] = None
-    collection_actionable_from_day: Optional[RecurringTaskDueAtDay] = None
-    collection_actionable_from_month: Optional[RecurringTaskDueAtMonth] = None
-    collection_due_at_day: Optional[RecurringTaskDueAtDay] = None
-    collection_due_at_month: Optional[RecurringTaskDueAtMonth] = None
-    metric_unit: Optional[MetricUnit] = None
+    icon: EntityIcon | None = None
+    collection_period: RecurringTaskPeriod | None = None
+    collection_eisen: Eisen | None = None
+    collection_difficulty: Difficulty | None = None
+    collection_actionable_from_day: RecurringTaskDueAtDay | None = None
+    collection_actionable_from_month: RecurringTaskDueAtMonth | None = None
+    collection_due_at_day: RecurringTaskDueAtDay | None = None
+    collection_due_at_month: RecurringTaskDueAtMonth | None = None
+    metric_unit: MetricUnit | None = None
 
 
 @use_case_result

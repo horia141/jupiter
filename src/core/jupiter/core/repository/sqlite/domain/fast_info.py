@@ -1,5 +1,4 @@
 """The SQLite implementation of the fast info repository."""
-from typing import List
 
 from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.core.domain.chores.chore_name import ChoreName
@@ -48,7 +47,7 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
         self,
         parent_ref_id: EntityId,
         allow_archived: bool,
-    ) -> List[VacationSummary]:
+    ) -> list[VacationSummary]:
         """Find all summaries about vacations."""
         query = """select ref_id, name from vacation where vacation_collection_ref_id = :parent_ref_id"""
         if not allow_archived:
@@ -70,7 +69,7 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
         self,
         parent_ref_id: EntityId,
         allow_archived: bool,
-    ) -> List[ProjectSummary]:
+    ) -> list[ProjectSummary]:
         """Find all summaries about projects."""
         query = """select ref_id, name from project where project_collection_ref_id = :parent_ref_id"""
         if not allow_archived:
@@ -92,7 +91,7 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
         self,
         parent_ref_id: EntityId,
         allow_archived: bool,
-    ) -> List[InboxTaskSummary]:
+    ) -> list[InboxTaskSummary]:
         """Find all summaries about inbox tasks."""
         query = """select ref_id, name from inbox_task where inbox_task_collection_ref_id = :parent_ref_id"""
         if not allow_archived:
@@ -114,7 +113,7 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
         self,
         parent_ref_id: EntityId,
         allow_archived: bool,
-    ) -> List[HabitSummary]:
+    ) -> list[HabitSummary]:
         """Find all summaries about habits."""
         query = """select ref_id, name from habit where habit_collection_ref_id = :parent_ref_id"""
         if not allow_archived:
@@ -136,7 +135,7 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
         self,
         parent_ref_id: EntityId,
         allow_archived: bool,
-    ) -> List[ChoreSummary]:
+    ) -> list[ChoreSummary]:
         """Find all summaries about chores."""
         query = """select ref_id, name from chore where chore_collection_ref_id = :parent_ref_id"""
         if not allow_archived:
@@ -158,7 +157,7 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
         self,
         parent_ref_id: EntityId,
         allow_archived: bool,
-    ) -> List[BigPlanSummary]:
+    ) -> list[BigPlanSummary]:
         """Find all summaries about big plans."""
         query = """select ref_id, name, project_ref_id from big_plan where big_plan_collection_ref_id = :parent_ref_id"""
         if not allow_archived:
@@ -181,7 +180,7 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
         self,
         parent_ref_id: EntityId,
         allow_archived: bool,
-    ) -> List[SmartListSummary]:
+    ) -> list[SmartListSummary]:
         """Find all summaries about smart lists."""
         query = """select ref_id, name, icon from smart_list where smart_list_collection_ref_id = :parent_ref_id"""
         if not allow_archived:
@@ -204,7 +203,7 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
         self,
         parent_ref_id: EntityId,
         allow_archived: bool,
-    ) -> List[MetricSummary]:
+    ) -> list[MetricSummary]:
         """Find all summaries about metrics."""
         query = """select ref_id, name, icon from metric where metric_collection_ref_id = :parent_ref_id"""
         if not allow_archived:
@@ -227,7 +226,7 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
         self,
         parent_ref_id: EntityId,
         allow_archived: bool,
-    ) -> List[PersonSummary]:
+    ) -> list[PersonSummary]:
         """Find all summaries about persons."""
         query = """select ref_id, name from person where person_collection_ref_id = :parent_ref_id"""
         if not allow_archived:

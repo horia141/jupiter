@@ -1,5 +1,4 @@
 """The command for creating a big plan."""
-from typing import Optional
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
@@ -33,9 +32,9 @@ class BigPlanCreateArgs(UseCaseArgsBase):
     """Big plan create args."""
 
     name: BigPlanName
-    project_ref_id: Optional[EntityId] = None
-    actionable_date: Optional[ADate] = None
-    due_date: Optional[ADate] = None
+    project_ref_id: EntityId | None = None
+    actionable_date: ADate | None = None
+    due_date: ADate | None = None
 
 
 @use_case_result

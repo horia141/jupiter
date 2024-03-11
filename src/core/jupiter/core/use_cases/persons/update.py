@@ -1,6 +1,5 @@
 """Update a person."""
 import typing
-from typing import Optional
 
 from jupiter.core.domain.core import schedules
 from jupiter.core.domain.core.difficulty import Difficulty
@@ -44,14 +43,14 @@ class PersonUpdateArgs(UseCaseArgsBase):
     ref_id: EntityId
     name: UpdateAction[PersonName]
     relationship: UpdateAction[PersonRelationship]
-    catch_up_period: UpdateAction[Optional[RecurringTaskPeriod]]
-    catch_up_eisen: UpdateAction[Optional[Eisen]]
-    catch_up_difficulty: UpdateAction[Optional[Difficulty]]
-    catch_up_actionable_from_day: UpdateAction[Optional[RecurringTaskDueAtDay]]
-    catch_up_actionable_from_month: UpdateAction[Optional[RecurringTaskDueAtMonth]]
-    catch_up_due_at_day: UpdateAction[Optional[RecurringTaskDueAtDay]]
-    catch_up_due_at_month: UpdateAction[Optional[RecurringTaskDueAtMonth]]
-    birthday: UpdateAction[Optional[PersonBirthday]]
+    catch_up_period: UpdateAction[RecurringTaskPeriod | None]
+    catch_up_eisen: UpdateAction[Eisen | None]
+    catch_up_difficulty: UpdateAction[Difficulty | None]
+    catch_up_actionable_from_day: UpdateAction[RecurringTaskDueAtDay | None]
+    catch_up_actionable_from_month: UpdateAction[RecurringTaskDueAtMonth | None]
+    catch_up_due_at_day: UpdateAction[RecurringTaskDueAtDay | None]
+    catch_up_due_at_month: UpdateAction[RecurringTaskDueAtMonth | None]
+    birthday: UpdateAction[PersonBirthday | None]
 
 
 @mutation_use_case(WorkspaceFeature.PERSONS)
@@ -76,7 +75,7 @@ class PersonUpdateUseCase(
         person = await uow.get_for(Person).load_by_id(args.ref_id)
 
         # Change the person.
-        catch_up_params: UpdateAction[Optional[RecurringTaskGenParams]]
+        catch_up_params: UpdateAction[RecurringTaskGenParams | None]
         if (
             args.catch_up_period.should_change
             or args.catch_up_eisen.should_change

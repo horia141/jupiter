@@ -1,6 +1,5 @@
 """The command for finding a big plan."""
 from collections import defaultdict
-from typing import List, Optional
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
@@ -40,8 +39,8 @@ class BigPlanFindArgs(UseCaseArgsBase):
     include_project: bool
     include_inbox_tasks: bool
     include_notes: bool
-    filter_ref_ids: Optional[List[EntityId]] = None
-    filter_project_ref_ids: Optional[List[EntityId]] = None
+    filter_ref_ids: list[EntityId] | None = None
+    filter_project_ref_ids: list[EntityId] | None = None
 
 
 @use_case_result_part
@@ -50,15 +49,15 @@ class BigPlanFindResultEntry(UseCaseResultBase):
 
     big_plan: BigPlan
     note: Note | None
-    project: Optional[Project] = None
-    inbox_tasks: Optional[List[InboxTask]] = None
+    project: Project | None = None
+    inbox_tasks: list[InboxTask] | None = None
 
 
 @use_case_result
 class BigPlanFindResult(UseCaseResultBase):
     """PersonFindResult."""
 
-    entries: List[BigPlanFindResultEntry]
+    entries: list[BigPlanFindResultEntry]
 
 
 @readonly_use_case(WorkspaceFeature.BIG_PLANS)
