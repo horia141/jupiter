@@ -37,13 +37,13 @@ class PersonBirthday(AtomicValue[str]):
     day: int
     month: int
 
-    def __init__(self, day: int, month: int) -> None:
+    @staticmethod
+    def build(day: int, month: int) -> "PersonBirthday":
         """Construct a new birthday."""
-        _ = RecurringTaskDueAtDay(RecurringTaskPeriod.MONTHLY, day)
+        _ = RecurringTaskDueAtDay.build(RecurringTaskPeriod.MONTHLY, day)
         if month < 1 or month > 12:
             raise InputValidationError(f"Month is out of bounds with value {month}")
-        self.day = day
-        self.month = month
+        return PersonBirthday(day, month)
 
     def __str__(self) -> str:
         """String representation."""
@@ -72,7 +72,7 @@ class PersonBirthdayDatabaseDecoder(
             raise InputValidationError(f"Invalid format for birthday '{primitive}'")
 
         try:
-            day = RecurringTaskDueAtDay(
+            day = RecurringTaskDueAtDay.build(
                 RecurringTaskPeriod.MONTHLY,
                 int(parts[0], base=10),
             )
@@ -86,4 +86,4 @@ class PersonBirthdayDatabaseDecoder(
                 f"Invalid format for month part of birthday '{primitive}'",
             ) from err
 
-        return PersonBirthday(day.as_int(), month)
+        return PersonBirthday.build(day.as_int(), month)

@@ -54,21 +54,21 @@ UseCaseArgs = TypeVar("UseCaseArgs", bound=UseCaseArgsBase)
 UseCaseResult = TypeVar("UseCaseResult", bound=Union[None, UseCaseResultBase])
 
 
-@dataclass
+@dataclass(frozen=True)
 class AppGuestUseCaseSession(EmptySession):
     """The application use case session."""
 
     auth_token_ext: AuthTokenExt | None
 
 
-@dataclass
+@dataclass(frozen=True)
 class AppGuestUseCaseContext(EmptyContext):
     """The applicatin context to use for guest-OK interactions."""
 
     auth_token: AuthToken | None
 
 
-@dataclass
+@dataclass(frozen=True)
 class AppGuestMutationUseCaseContext(AppGuestUseCaseContext):
     """The applicatin context to use for guest-OK interactions."""
 
@@ -133,7 +133,7 @@ class AppGuestMutationUseCase(
         )
 
 
-@dataclass
+@dataclass(frozen=True)
 class AppGuestReadonlyUseCaseContext(AppGuestUseCaseContext):
     """The applicatin context to use for guest-OK interactions."""
 
@@ -189,14 +189,14 @@ class AppGuestReadonlyUseCase(
         return AppGuestReadonlyUseCaseContext(auth_token=auth_token)
 
 
-@dataclass
+@dataclass(frozen=True)
 class AppLoggedInUseCaseSession(UseCaseSessionBase):
     """The application use case session for logged-in-OK interactions."""
 
     auth_token_ext: AuthTokenExt
 
 
-@dataclass
+@dataclass(frozen=True)
 class AppLoggedInUseCaseContext(UseCaseContextBase):
     """The application use case context for logged-in-OK interactions."""
 
@@ -214,7 +214,7 @@ class AppLoggedInUseCaseContext(UseCaseContextBase):
         return self.workspace.ref_id
 
 
-@dataclass
+@dataclass(frozen=True)
 class AppLoggedInMutationUseCaseContext(AppLoggedInUseCaseContext):
     """The application use case context for logged-in-OK interactions."""
 
@@ -378,7 +378,7 @@ class AppTransactionalLoggedInMutationUseCase(
         """Execute the command's action."""
 
 
-@dataclass
+@dataclass(frozen=True)
 class AppLoggedInReadonlyUseCaseContext(AppLoggedInUseCaseContext):
     """The application use case context for logged-in-OK interactions."""
 

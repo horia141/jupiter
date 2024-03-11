@@ -29,7 +29,7 @@ FIRST_VERSION = 1
 _EntityT = TypeVar("_EntityT", bound="Entity")
 
 
-@dataclass
+@dataclass(frozen=True)
 class Entity(Concept):
     """The base class for all entities."""
 
@@ -133,10 +133,10 @@ class Entity(Concept):
         return found
 
 
-@dataclass_transform()
+@dataclass_transform(frozen_default=True)
 def entity(cls: type[_EntityT]) -> type[_EntityT]:
     """A decorator that marks a class as an entity."""
-    new_cls = dataclass(cls)
+    new_cls = dataclass(frozen=True)(cls)
     _check_entity_has_parent_field(new_cls)
     return new_cls
 
@@ -145,28 +145,24 @@ class NoFilter:
     """A filter that matches everything."""
 
 
-@dataclass
+@dataclass(frozen=True)
 class IsRefId:
     """Transforms a generic filter based on the current entity's ref id."""
 
 
-@dataclass
+@dataclass(frozen=True)
 class IsParentLink:
     """Transforms a generic filter based on the current entity's parent link."""
 
 
-@dataclass
+@dataclass(frozen=True)
 class IsOneOfRefId:
     """Transforms a generic filter based on a current entity's field with a list of ref ids."""
 
     field_name: str
 
-    def __init__(self, field_name: str):
-        """Constructor."""
-        self.field_name = field_name
 
-
-@dataclass
+@dataclass(frozen=True)
 class ParentLink:
     """A link to a parent entity."""
 
@@ -198,7 +194,7 @@ class EntityLink(Generic[_EntityT]):
     the_type: type[_EntityT]
     filters: EntityLinkFiltersRaw
 
-    def __init__(self, the_type: type[_EntityT], **kwargs: EntityLinkFilterRaw):
+    def __init__(self, the_type: type[_EntityT], **kwargs: EntityLinkFilterRaw) -> None:
         """Constructor."""
         _check_entity_can_be_filterd_by(the_type, kwargs)
         self.the_type = the_type
@@ -378,21 +374,21 @@ def update_entity_action(f: _UpdateEventT) -> _UpdateEventT:  # type: ignore
     return cast(_UpdateEventT, wrapper)  # type: ignore
 
 
-@dataclass
+@dataclass(frozen=True)
 class RootEntity(Entity):
     """An entity without any parent."""
 
     # example: workspace, user
 
 
-@dataclass
+@dataclass(frozen=True)
 class StubEntity(Entity):
     """An entity with no children, but which is also a singleton."""
 
     # examples: GitHub connection, GSuite connection, etc
 
 
-@dataclass
+@dataclass(frozen=True)
 class TrunkEntity(Entity, abc.ABC):
     """An entity with children, which is also a singleton."""
 
@@ -400,28 +396,28 @@ class TrunkEntity(Entity, abc.ABC):
     # Zapier+Mail collection, etc
 
 
-@dataclass
+@dataclass(frozen=True)
 class CrownEntity(Entity):
     """A common name for branch and leaf entities."""
 
     name: EntityName
 
 
-@dataclass
+@dataclass(frozen=True)
 class BranchEntity(CrownEntity):
     """An entity with leaf children, which is also a group child of another sort of branch."""
 
     # examples: smart list, metric, feeds (future)
 
 
-@dataclass
+@dataclass(frozen=True)
 class LeafEntity(CrownEntity):
     """An entity  with no children, sitting as a child of some other branch entity, at the top of the entity tree."""
 
     # examples: inbox task, vacation, project, smart list item etc.
 
 
-@dataclass
+@dataclass(frozen=True)
 class LeafSupportEntity(LeafEntity, abc.ABC):
     """A leaf entity that supports other entities."""
 

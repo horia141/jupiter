@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 class SqliteConnection(Connection):
     """A connection to the file backed Sqlite storage engine."""
 
-    @dataclass
+    @dataclass(frozen=True)
     class Config:
         """Config for a Sqlite metric engine."""
 

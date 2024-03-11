@@ -7,7 +7,7 @@ from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.domain.workspaces.workspace_name import WorkspaceName
 
 
-@dataclass
+@dataclass(frozen=True)
 class TopLevelContext:
     """Top level context for the application."""
 
@@ -17,7 +17,7 @@ class TopLevelContext:
     workspace: Workspace | None
 
 
-@dataclass
+@dataclass(frozen=True)
 class LoggedInTopLevelContext:
     """Top level context when the user is logged in."""
 

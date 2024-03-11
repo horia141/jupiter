@@ -992,11 +992,11 @@ class GenService:
             None,
             None,
             None,
-            RecurringTaskDueAtDay(
+            RecurringTaskDueAtDay.build(
                 RecurringTaskPeriod.YEARLY,
                 birthday.day,
             ),
-            RecurringTaskDueAtMonth(
+            RecurringTaskDueAtMonth.build(
                 RecurringTaskPeriod.YEARLY,
                 birthday.month,
             ),

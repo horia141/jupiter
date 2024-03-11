@@ -54,7 +54,7 @@ class MutationUseCaseInvocationResult(enum.Enum):
     FAILURE = "failure"
 
 
-@dataclass
+@dataclass(frozen=True)
 class MutationUseCaseInvocationRecord(Generic[UseCaseArgs]):
     """The record of a mutation use case invocation."""
 
@@ -178,12 +178,12 @@ class UseCase(
         """Construct the context for the use case."""
 
 
-@dataclass
+@dataclass(frozen=True)
 class EmptySession(UseCaseSessionBase):
     """An empty session."""
 
 
-@dataclass
+@dataclass(frozen=True)
 class EmptyContext(UseCaseContextBase):
     """An empty context."""
 

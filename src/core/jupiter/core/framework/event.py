@@ -28,7 +28,7 @@ class EventSource(EnumValue):
     GEN_CRON = "gen-cron"
 
 
-@dataclass
+@dataclass(frozen=True)
 class Event:
     """An event for an entity."""
 

@@ -16,16 +16,16 @@ class Value(Concept):
 _ValueT = TypeVar("_ValueT", bound="AtomicValue[Primitive] | CompositeValue")
 
 
-@dataclass_transform()
+@dataclass_transform(frozen_default=True)
 def value(cls: type[_ValueT]) -> type[_ValueT]:
     """A value object in the domain."""
-    return dataclass(cls)
+    return dataclass(frozen=True)(cls)
 
 
-@dataclass_transform()
+@dataclass_transform(frozen_default=True)
 def hashable_value(cls: type[_ValueT]) -> type[_ValueT]:
     """A value object in the domain that is hashable."""
-    return dataclass(eq=True, unsafe_hash=True)(cls)
+    return dataclass(eq=True, unsafe_hash=True, frozen=True)(cls)
 
 
 _PrimitiveT = TypeVar("_PrimitiveT", bound=Primitive, covariant=True)
@@ -33,7 +33,7 @@ _PrimitiveT = TypeVar("_PrimitiveT", bound=Primitive, covariant=True)
 _AtomicValueT = TypeVar("_AtomicValueT", bound="AtomicValue[Primitive]")
 
 
-@dataclass
+@dataclass(frozen=True)
 class AtomicValue(
     Generic[_PrimitiveT],
     Value,
@@ -46,7 +46,7 @@ class AtomicValue(
         return cast(type[_PrimitiveT], get_args(cls.__orig_bases__[0])[0])  # type: ignore[attr-defined]
 
 
-@dataclass
+@dataclass(frozen=True)
 class CompositeValue(Value):
     """An composite value object in the domain."""
 
@@ -69,7 +69,7 @@ def enum_value(cls: type[_EnumValueT]) -> type[_EnumValueT]:
     return cls
 
 
-@dataclass(repr=False)
+@dataclass(repr=False, frozen=True)
 @secure_class
 class SecretValue(Value):
     """A secret value object in the domain."""
@@ -90,7 +90,7 @@ class SecretValue(Value):
 _SecretValueT = TypeVar("_SecretValueT", bound=SecretValue)
 
 
-@dataclass_transform()
+@dataclass_transform(frozen_default=True)
 def secret_value(cls: type[_SecretValueT]) -> type[_SecretValueT]:
     """A value object in the domain that is also a secret."""
-    return dataclass(repr=False)(secure_class(cls))
+    return dataclass(repr=False, frozen=True)(secure_class(cls))

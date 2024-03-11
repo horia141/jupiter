@@ -229,11 +229,11 @@ class PersonUpdateUseCase(
                     None,
                     None,
                     None,
-                    RecurringTaskDueAtDay(
+                    RecurringTaskDueAtDay.build(
                         RecurringTaskPeriod.YEARLY,
                         person.birthday.day,
                     ),
-                    RecurringTaskDueAtMonth(
+                    RecurringTaskDueAtMonth.build(
                         RecurringTaskPeriod.YEARLY,
                         person.birthday.month,
                     ),

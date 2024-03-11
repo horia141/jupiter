@@ -28,18 +28,19 @@ class RecurringTaskDueAtDay(AtomicValue[int]):
     @staticmethod
     def first_of(period: RecurringTaskPeriod) -> "RecurringTaskDueAtDay":
         """Return the first day of the period."""
-        return RecurringTaskDueAtDay(
+        return RecurringTaskDueAtDay.build(
             period, _RECURRING_TASK_DUE_AT_DAY_BOUNDS[period][0]
         )
 
     @staticmethod
     def end_of(period: RecurringTaskPeriod) -> "RecurringTaskDueAtDay":
         """Return the last day of the period."""
-        return RecurringTaskDueAtDay(
+        return RecurringTaskDueAtDay.build(
             period, _RECURRING_TASK_DUE_AT_DAY_BOUNDS[period][1]
         )
 
-    def __init__(self, period: RecurringTaskPeriod, value: int) -> None:
+    @staticmethod
+    def build(period: RecurringTaskPeriod, value: int) -> "RecurringTaskDueAtDay":
         """Constructor."""
         bounds = _RECURRING_TASK_DUE_AT_DAY_BOUNDS[period]
 
@@ -48,7 +49,7 @@ class RecurringTaskDueAtDay(AtomicValue[int]):
                 f"Expected the due day info for {str(period)} period to be a value between {bounds[0]} and {bounds[1]} but was {value}",
             )
 
-        self.value = value
+        return RecurringTaskDueAtDay(value)
 
     def as_int(self) -> int:
         """Return an int version of this."""
@@ -76,4 +77,4 @@ class RecurringTaskDueAtDayDatabaseDecoder(
 
     def from_raw_int(self, value: int) -> RecurringTaskDueAtDay:
         """Decode from a raw int."""
-        return RecurringTaskDueAtDay(RecurringTaskPeriod.YEARLY, value)
+        return RecurringTaskDueAtDay.build(RecurringTaskPeriod.YEARLY, value)

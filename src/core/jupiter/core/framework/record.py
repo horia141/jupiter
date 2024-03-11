@@ -25,7 +25,7 @@ from typing_extensions import dataclass_transform
 _RecordT = TypeVar("_RecordT", bound="Record")
 
 
-@dataclass
+@dataclass(frozen=True)
 class Record(Concept):
     """A base class for a simplified object to store."""
 
@@ -67,10 +67,10 @@ class Record(Concept):
         return self
 
 
-@dataclass_transform()
+@dataclass_transform(frozen_default=True)
 def record(cls: type[_RecordT]) -> type[_RecordT]:
     """A decorator that marks a class as a record."""
-    return dataclass(cls)
+    return dataclass(frozen=True)(cls)
 
 
 RecordLinkFilterRaw: TypeAlias = None | AtomicValue[Primitive] | EnumValue | IsRefId

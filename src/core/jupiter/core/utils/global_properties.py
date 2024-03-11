@@ -10,7 +10,7 @@ from jupiter.core.domain.hosting import Hosting
 from jupiter.core.framework.secure import secure_fn
 
 
-@dataclass
+@dataclass(frozen=True)
 class GlobalProperties:
     """UseCase-level properties."""
 

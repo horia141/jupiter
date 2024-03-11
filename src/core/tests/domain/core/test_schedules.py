@@ -109,7 +109,7 @@ def test_get_schedule_weekly_set_actionable_from_day(right_now: Timestamp) -> No
         period=RecurringTaskPeriod.WEEKLY,
         name=EntityName("A task"),
         right_now=right_now,
-        actionable_from_day=RecurringTaskDueAtDay(RecurringTaskPeriod.WEEKLY, 3),
+        actionable_from_day=RecurringTaskDueAtDay.build(RecurringTaskPeriod.WEEKLY, 3),
     )
 
     # Then it should return a schedule
@@ -130,7 +130,7 @@ def test_get_schedule_weekly_set_due_at_day(right_now: Timestamp) -> None:
         period=RecurringTaskPeriod.WEEKLY,
         name=EntityName("A task"),
         right_now=right_now,
-        due_at_day=RecurringTaskDueAtDay(RecurringTaskPeriod.WEEKLY, 3),
+        due_at_day=RecurringTaskDueAtDay.build(RecurringTaskPeriod.WEEKLY, 3),
     )
 
     # Then it should return a schedule
@@ -153,8 +153,8 @@ def test_get_schedule_weekly_set_actionable_from_day_and_due_at_day(
         period=RecurringTaskPeriod.WEEKLY,
         name=EntityName("A task"),
         right_now=right_now,
-        actionable_from_day=RecurringTaskDueAtDay(RecurringTaskPeriod.WEEKLY, 3),
-        due_at_day=RecurringTaskDueAtDay(RecurringTaskPeriod.WEEKLY, 5),
+        actionable_from_day=RecurringTaskDueAtDay.build(RecurringTaskPeriod.WEEKLY, 3),
+        due_at_day=RecurringTaskDueAtDay.build(RecurringTaskPeriod.WEEKLY, 5),
     )
 
     # Then it should return a schedule
@@ -217,7 +217,9 @@ def test_get_schedule_monthly_set_actionable_from_day(right_now: Timestamp) -> N
         period=RecurringTaskPeriod.MONTHLY,
         name=EntityName("A task"),
         right_now=right_now,
-        actionable_from_day=RecurringTaskDueAtDay(RecurringTaskPeriod.MONTHLY, 15),
+        actionable_from_day=RecurringTaskDueAtDay.build(
+            RecurringTaskPeriod.MONTHLY, 15
+        ),
     )
 
     # Then it should return a schedule
@@ -238,7 +240,7 @@ def test_get_schedule_monthly_set_due_at_day(right_now: Timestamp) -> None:
         period=RecurringTaskPeriod.MONTHLY,
         name=EntityName("A task"),
         right_now=right_now,
-        due_at_day=RecurringTaskDueAtDay(RecurringTaskPeriod.MONTHLY, 15),
+        due_at_day=RecurringTaskDueAtDay.build(RecurringTaskPeriod.MONTHLY, 15),
     )
 
     # Then it should return a schedule
@@ -261,8 +263,10 @@ def test_get_schedule_monthly_set_actionable_from_day_and_due_at_day(
         period=RecurringTaskPeriod.MONTHLY,
         name=EntityName("A task"),
         right_now=right_now,
-        actionable_from_day=RecurringTaskDueAtDay(RecurringTaskPeriod.MONTHLY, 15),
-        due_at_day=RecurringTaskDueAtDay(RecurringTaskPeriod.MONTHLY, 20),
+        actionable_from_day=RecurringTaskDueAtDay.build(
+            RecurringTaskPeriod.MONTHLY, 15
+        ),
+        due_at_day=RecurringTaskDueAtDay.build(RecurringTaskPeriod.MONTHLY, 20),
     )
 
     # Then it should return a schedule
@@ -325,7 +329,9 @@ def test_get_schedule_quarterly_set_actionable_from_day(right_now: Timestamp) ->
         period=RecurringTaskPeriod.QUARTERLY,
         name=EntityName("A task"),
         right_now=right_now,
-        actionable_from_day=RecurringTaskDueAtDay(RecurringTaskPeriod.QUARTERLY, 15),
+        actionable_from_day=RecurringTaskDueAtDay.build(
+            RecurringTaskPeriod.QUARTERLY, 15
+        ),
     )
 
     # Then it should return a schedule
@@ -346,7 +352,9 @@ def test_get_schedule_quarterly_set_actionable_from_month(right_now: Timestamp) 
         period=RecurringTaskPeriod.QUARTERLY,
         name=EntityName("A task"),
         right_now=right_now,
-        actionable_from_month=RecurringTaskDueAtMonth(RecurringTaskPeriod.QUARTERLY, 2),
+        actionable_from_month=RecurringTaskDueAtMonth.build(
+            RecurringTaskPeriod.QUARTERLY, 2
+        ),
     )
 
     # Then it should return a schedule
@@ -369,8 +377,12 @@ def test_get_schedule_quarterly_set_actionable_from_day_and_month(
         period=RecurringTaskPeriod.QUARTERLY,
         name=EntityName("A task"),
         right_now=right_now,
-        actionable_from_day=RecurringTaskDueAtDay(RecurringTaskPeriod.QUARTERLY, 15),
-        actionable_from_month=RecurringTaskDueAtMonth(RecurringTaskPeriod.QUARTERLY, 2),
+        actionable_from_day=RecurringTaskDueAtDay.build(
+            RecurringTaskPeriod.QUARTERLY, 15
+        ),
+        actionable_from_month=RecurringTaskDueAtMonth.build(
+            RecurringTaskPeriod.QUARTERLY, 2
+        ),
     )
 
     # Then it should return a schedule
@@ -391,7 +403,7 @@ def test_get_schedule_quarterly_set_due_at_day(right_now: Timestamp) -> None:
         period=RecurringTaskPeriod.QUARTERLY,
         name=EntityName("A task"),
         right_now=right_now,
-        due_at_day=RecurringTaskDueAtDay(RecurringTaskPeriod.QUARTERLY, 15),
+        due_at_day=RecurringTaskDueAtDay.build(RecurringTaskPeriod.QUARTERLY, 15),
     )
 
     # Then it should return a schedule
@@ -412,7 +424,7 @@ def test_get_schedule_quarterly_set_due_at_month(right_now: Timestamp) -> None:
         period=RecurringTaskPeriod.QUARTERLY,
         name=EntityName("A task"),
         right_now=right_now,
-        due_at_month=RecurringTaskDueAtMonth(RecurringTaskPeriod.QUARTERLY, 2),
+        due_at_month=RecurringTaskDueAtMonth.build(RecurringTaskPeriod.QUARTERLY, 2),
     )
 
     # Then it should return a schedule
@@ -433,8 +445,8 @@ def test_get_schedule_quarterly_set_due_at_day_and_month(right_now: Timestamp) -
         period=RecurringTaskPeriod.QUARTERLY,
         name=EntityName("A task"),
         right_now=right_now,
-        due_at_day=RecurringTaskDueAtDay(RecurringTaskPeriod.QUARTERLY, 15),
-        due_at_month=RecurringTaskDueAtMonth(RecurringTaskPeriod.QUARTERLY, 2),
+        due_at_day=RecurringTaskDueAtDay.build(RecurringTaskPeriod.QUARTERLY, 15),
+        due_at_month=RecurringTaskDueAtMonth.build(RecurringTaskPeriod.QUARTERLY, 2),
     )
 
     # Then it should return a schedule
@@ -457,10 +469,14 @@ def test_get_schedule_quarterly_set_all_actionable_and_due(
         period=RecurringTaskPeriod.QUARTERLY,
         name=EntityName("A task"),
         right_now=right_now,
-        actionable_from_day=RecurringTaskDueAtDay(RecurringTaskPeriod.QUARTERLY, 15),
-        actionable_from_month=RecurringTaskDueAtMonth(RecurringTaskPeriod.QUARTERLY, 2),
-        due_at_day=RecurringTaskDueAtDay(RecurringTaskPeriod.QUARTERLY, 20),
-        due_at_month=RecurringTaskDueAtMonth(RecurringTaskPeriod.QUARTERLY, 3),
+        actionable_from_day=RecurringTaskDueAtDay.build(
+            RecurringTaskPeriod.QUARTERLY, 15
+        ),
+        actionable_from_month=RecurringTaskDueAtMonth.build(
+            RecurringTaskPeriod.QUARTERLY, 2
+        ),
+        due_at_day=RecurringTaskDueAtDay.build(RecurringTaskPeriod.QUARTERLY, 20),
+        due_at_month=RecurringTaskDueAtMonth.build(RecurringTaskPeriod.QUARTERLY, 3),
     )
 
     # Then it should return a schedule
@@ -525,7 +541,7 @@ def test_get_schedule_yearly_set_actionable_from_day(right_now: Timestamp) -> No
         period=RecurringTaskPeriod.YEARLY,
         name=EntityName("A task"),
         right_now=right_now,
-        actionable_from_day=RecurringTaskDueAtDay(RecurringTaskPeriod.YEARLY, 15),
+        actionable_from_day=RecurringTaskDueAtDay.build(RecurringTaskPeriod.YEARLY, 15),
     )
 
     # Then it should return a schedule
@@ -546,7 +562,9 @@ def test_get_schedule_yearly_set_actionable_from_month(right_now: Timestamp) -> 
         period=RecurringTaskPeriod.YEARLY,
         name=EntityName("A task"),
         right_now=right_now,
-        actionable_from_month=RecurringTaskDueAtMonth(RecurringTaskPeriod.YEARLY, 4),
+        actionable_from_month=RecurringTaskDueAtMonth.build(
+            RecurringTaskPeriod.YEARLY, 4
+        ),
     )
 
     # Then it should return a schedule
@@ -569,8 +587,10 @@ def test_get_schedule_yearly_set_actionable_from_day_and_month(
         period=RecurringTaskPeriod.YEARLY,
         name=EntityName("A task"),
         right_now=right_now,
-        actionable_from_day=RecurringTaskDueAtDay(RecurringTaskPeriod.YEARLY, 15),
-        actionable_from_month=RecurringTaskDueAtMonth(RecurringTaskPeriod.YEARLY, 4),
+        actionable_from_day=RecurringTaskDueAtDay.build(RecurringTaskPeriod.YEARLY, 15),
+        actionable_from_month=RecurringTaskDueAtMonth.build(
+            RecurringTaskPeriod.YEARLY, 4
+        ),
     )
 
     # Then it should return a schedule
@@ -591,7 +611,7 @@ def test_get_schedule_yearly_set_due_at_day(right_now: Timestamp) -> None:
         period=RecurringTaskPeriod.YEARLY,
         name=EntityName("A task"),
         right_now=right_now,
-        due_at_day=RecurringTaskDueAtDay(RecurringTaskPeriod.YEARLY, 15),
+        due_at_day=RecurringTaskDueAtDay.build(RecurringTaskPeriod.YEARLY, 15),
     )
 
     # Then it should return a schedule
@@ -612,7 +632,7 @@ def test_get_schedule_yearly_set_due_at_month(right_now: Timestamp) -> None:
         period=RecurringTaskPeriod.YEARLY,
         name=EntityName("A task"),
         right_now=right_now,
-        due_at_month=RecurringTaskDueAtMonth(RecurringTaskPeriod.YEARLY, 4),
+        due_at_month=RecurringTaskDueAtMonth.build(RecurringTaskPeriod.YEARLY, 4),
     )
 
     # Then it should return a schedule
@@ -633,8 +653,8 @@ def test_get_schedule_yearly_set_due_at_day_and_month(right_now: Timestamp) -> N
         period=RecurringTaskPeriod.YEARLY,
         name=EntityName("A task"),
         right_now=right_now,
-        due_at_day=RecurringTaskDueAtDay(RecurringTaskPeriod.YEARLY, 15),
-        due_at_month=RecurringTaskDueAtMonth(RecurringTaskPeriod.YEARLY, 4),
+        due_at_day=RecurringTaskDueAtDay.build(RecurringTaskPeriod.YEARLY, 15),
+        due_at_month=RecurringTaskDueAtMonth.build(RecurringTaskPeriod.YEARLY, 4),
     )
 
     # Then it should return a schedule
@@ -655,10 +675,12 @@ def test_get_schedule_yearly_set_all_actionable_and_due(right_now: Timestamp) ->
         period=RecurringTaskPeriod.YEARLY,
         name=EntityName("A task"),
         right_now=right_now,
-        actionable_from_day=RecurringTaskDueAtDay(RecurringTaskPeriod.YEARLY, 15),
-        actionable_from_month=RecurringTaskDueAtMonth(RecurringTaskPeriod.YEARLY, 4),
-        due_at_day=RecurringTaskDueAtDay(RecurringTaskPeriod.YEARLY, 20),
-        due_at_month=RecurringTaskDueAtMonth(RecurringTaskPeriod.YEARLY, 5),
+        actionable_from_day=RecurringTaskDueAtDay.build(RecurringTaskPeriod.YEARLY, 15),
+        actionable_from_month=RecurringTaskDueAtMonth.build(
+            RecurringTaskPeriod.YEARLY, 4
+        ),
+        due_at_day=RecurringTaskDueAtDay.build(RecurringTaskPeriod.YEARLY, 20),
+        due_at_month=RecurringTaskDueAtMonth.build(RecurringTaskPeriod.YEARLY, 5),
     )
 
     # Then it should return a schedule

@@ -73,7 +73,7 @@ class InboxTask(LeafEntity):
     email_task_ref_id: EntityId | None
     recurring_timeline: str | None
     recurring_repeat_index: int | None
-    recurring_gen_right_now: Timestamp | None # Time for which this inbox task was generated
+    recurring_gen_right_now: Timestamp | None  # Time for which this inbox task was generated
     accepted_time: Timestamp | None
     working_time: Timestamp | None
     completed_time: Timestamp | None

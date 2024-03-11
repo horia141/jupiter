@@ -13,7 +13,7 @@ class SessionInfoNotFoundError(Exception):
     """Error raised when a session is not found."""
 
 
-@dataclass
+@dataclass(frozen=True)
 class SessionInfo:
     """Information about the session."""
 
