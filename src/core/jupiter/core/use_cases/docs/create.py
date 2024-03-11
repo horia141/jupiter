@@ -32,7 +32,7 @@ class DocCreateArgs(UseCaseArgsBase):
 
     name: DocName
     content: list[OneOfNoteContentBlock]
-    parent_doc_ref_id: EntityId | None = None
+    parent_doc_ref_id: EntityId | None
 
 
 @use_case_result

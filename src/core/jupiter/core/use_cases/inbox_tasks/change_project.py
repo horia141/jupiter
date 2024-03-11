@@ -24,7 +24,7 @@ class InboxTaskChangeProjectArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
     ref_id: EntityId
-    project_ref_id: EntityId | None = None
+    project_ref_id: EntityId | None
 
 
 @mutation_use_case([WorkspaceFeature.INBOX_TASKS, WorkspaceFeature.PROJECTS])

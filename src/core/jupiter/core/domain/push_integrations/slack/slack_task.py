@@ -34,7 +34,7 @@ class SlackTask(LeafEntity):
     message: str
     generation_extra_info: PushGenerationExtraInfo
     has_generated_task: bool
-    channel: SlackChannelName | None = None
+    channel: SlackChannelName | None
 
     generated_task = OwnsAtMostOne(
         InboxTask, source=InboxTaskSource.SLACK_TASK, slack_task_ref_id=IsRefId()

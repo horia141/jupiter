@@ -11,7 +11,7 @@ class UpdateAction(Generic[UpdateActionT]):
     """The update action for a field."""
 
     _should_change: Final[bool]
-    _value: UpdateActionT | None = None
+    _value: UpdateActionT | None
 
     def __init__(
         self,

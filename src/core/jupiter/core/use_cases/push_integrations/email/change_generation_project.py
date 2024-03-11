@@ -30,7 +30,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 class EmailTaskChangeGenerationProjectArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
-    generation_project_ref_id: EntityId | None = None
+    generation_project_ref_id: EntityId | None
 
 
 @mutation_use_case([WorkspaceFeature.EMAIL_TASKS, WorkspaceFeature.PROJECTS])

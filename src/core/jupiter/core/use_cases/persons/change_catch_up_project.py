@@ -26,7 +26,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 class PersonChangeCatchUpProjectArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
-    catch_up_project_ref_id: EntityId | None = None
+    catch_up_project_ref_id: EntityId | None
 
 
 @mutation_use_case([WorkspaceFeature.PERSONS, WorkspaceFeature.PROJECTS])

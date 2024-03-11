@@ -71,7 +71,7 @@ class SmartListSummary(CompositeValue):
 
     ref_id: EntityId
     name: SmartListName
-    icon: EntityIcon | None = None
+    icon: EntityIcon | None
 
 
 @value
@@ -80,7 +80,7 @@ class MetricSummary(CompositeValue):
 
     ref_id: EntityId
     name: MetricName
-    icon: EntityIcon | None = None
+    icon: EntityIcon | None
 
 
 @value

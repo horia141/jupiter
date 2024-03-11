@@ -28,7 +28,7 @@ class VacationFindArgs(UseCaseArgsBase):
 
     allow_archived: bool
     include_notes: bool
-    filter_ref_ids: list[EntityId] | None = None
+    filter_ref_ids: list[EntityId] | None
 
 
 @use_case_result

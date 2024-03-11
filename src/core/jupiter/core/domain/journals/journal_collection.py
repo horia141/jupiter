@@ -52,6 +52,10 @@ class JournalCollection(TrunkEntity):
                 period=RecurringTaskPeriod.DAILY,
                 eisen=writing_task_eisen,
                 difficulty=writing_task_difficulty,
+                actionable_from_day=None,
+                actionable_from_month=None,
+                due_at_day=None,
+                due_at_month=None,
             ),
         )
 
@@ -87,6 +91,10 @@ class JournalCollection(TrunkEntity):
                 difficulty=writing_task_difficulty.or_else(
                     self.writing_task_gen_params.difficulty or Difficulty.EASY
                 ),
+                actionable_from_day=None,
+                actionable_from_month=None,
+                due_at_day=None,
+                due_at_month=None,
             )
             if writing_task_eisen.should_change or writing_task_difficulty.should_change
             else self.writing_task_gen_params,

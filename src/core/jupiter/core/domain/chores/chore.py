@@ -38,8 +38,8 @@ class Chore(LeafEntity):
     suspended: bool
     must_do: bool
     start_at_date: ADate
-    end_at_date: ADate | None = None
-    skip_rule: RecurringTaskSkipRule | None = None
+    end_at_date: ADate | None
+    skip_rule: RecurringTaskSkipRule | None
 
     inbox_tasks = OwnsMany(
         InboxTask, source=InboxTaskSource.CHORE, chore_ref_id=IsRefId()

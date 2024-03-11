@@ -25,7 +25,7 @@ class ChoreChangeProjectArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
     ref_id: EntityId
-    project_ref_id: EntityId | None = None
+    project_ref_id: EntityId | None
 
 
 @mutation_use_case([WorkspaceFeature.CHORES, WorkspaceFeature.PROJECTS])

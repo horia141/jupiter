@@ -51,7 +51,7 @@ class InboxTaskUpdateArgs(UseCaseArgsBase):
 class InboxTaskUpdateResult(UseCaseResultBase):
     """InboxTaskUpdate result."""
 
-    record_score_result: RecordScoreResult | None = None
+    record_score_result: RecordScoreResult | None
 
 
 @mutation_use_case(WorkspaceFeature.INBOX_TASKS)

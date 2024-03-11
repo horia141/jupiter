@@ -38,15 +38,15 @@ class HabitCreateArgs(UseCaseArgsBase):
 
     name: HabitName
     period: RecurringTaskPeriod
-    project_ref_id: EntityId | None = None
-    eisen: Eisen | None = None
-    difficulty: Difficulty | None = None
-    actionable_from_day: RecurringTaskDueAtDay | None = None
-    actionable_from_month: RecurringTaskDueAtMonth | None = None
-    due_at_day: RecurringTaskDueAtDay | None = None
-    due_at_month: RecurringTaskDueAtMonth | None = None
-    skip_rule: RecurringTaskSkipRule | None = None
-    repeats_in_period_count: int | None = None
+    project_ref_id: EntityId | None
+    eisen: Eisen | None
+    difficulty: Difficulty | None
+    actionable_from_day: RecurringTaskDueAtDay | None
+    actionable_from_month: RecurringTaskDueAtMonth | None
+    due_at_day: RecurringTaskDueAtDay | None
+    due_at_month: RecurringTaskDueAtMonth | None
+    skip_rule: RecurringTaskSkipRule | None
+    repeats_in_period_count: int | None
 
 
 @use_case_result

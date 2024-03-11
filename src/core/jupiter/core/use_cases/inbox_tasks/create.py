@@ -35,12 +35,12 @@ class InboxTaskCreateArgs(UseCaseArgsBase):
     """InboxTaskCreate args."""
 
     name: InboxTaskName
-    project_ref_id: EntityId | None = None
-    big_plan_ref_id: EntityId | None = None
-    eisen: Eisen | None = None
-    difficulty: Difficulty | None = None
-    actionable_date: ADate | None = None
-    due_date: ADate | None = None
+    project_ref_id: EntityId | None
+    big_plan_ref_id: EntityId | None
+    eisen: Eisen | None
+    difficulty: Difficulty | None
+    actionable_date: ADate | None
+    due_date: ADate | None
 
 
 @use_case_result

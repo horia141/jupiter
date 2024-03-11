@@ -43,7 +43,7 @@ class BigPlanUpdateArgs(UseCaseArgsBase):
 class BigPlanUpdateResult(UseCaseResultBase):
     """InboxTaskUpdate result."""
 
-    record_score_result: RecordScoreResult | None = None
+    record_score_result: RecordScoreResult | None
 
 
 @mutation_use_case(WorkspaceFeature.BIG_PLANS)

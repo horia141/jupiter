@@ -33,7 +33,7 @@ class EmailTaskLoadResult(UseCaseResultBase):
     """EmailTaskLoadResult."""
 
     email_task: EmailTask
-    inbox_task: InboxTask | None = None
+    inbox_task: InboxTask | None
 
 
 @readonly_use_case(WorkspaceFeature.EMAIL_TASKS)

@@ -41,14 +41,14 @@ class InboxTaskLoadResult(UseCaseResultBase):
 
     inbox_task: InboxTask
     project: Project
-    habit: Habit | None = None
-    chore: Chore | None = None
-    big_plan: BigPlan | None = None
-    metric: Metric | None = None
-    person: Person | None = None
-    slack_task: SlackTask | None = None
-    email_task: EmailTask | None = None
-    note: Note | None = None
+    habit: Habit | None
+    chore: Chore | None
+    big_plan: BigPlan | None
+    metric: Metric | None
+    person: Person | None
+    slack_task: SlackTask | None
+    email_task: EmailTask | None
+    note: Note | None
 
 
 @readonly_use_case(WorkspaceFeature.INBOX_TASKS)

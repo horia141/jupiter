@@ -32,9 +32,9 @@ class BigPlanCreateArgs(UseCaseArgsBase):
     """Big plan create args."""
 
     name: BigPlanName
-    project_ref_id: EntityId | None = None
-    actionable_date: ADate | None = None
-    due_date: ADate | None = None
+    project_ref_id: EntityId | None
+    actionable_date: ADate | None
+    due_date: ADate | None
 
 
 @use_case_result

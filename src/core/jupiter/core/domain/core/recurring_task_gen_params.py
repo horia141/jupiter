@@ -13,9 +13,9 @@ class RecurringTaskGenParams(CompositeValue):
     """Parameters for metric collection."""
 
     period: RecurringTaskPeriod
-    eisen: Eisen | None = None
-    difficulty: Difficulty | None = None
-    actionable_from_day: RecurringTaskDueAtDay | None = None
-    actionable_from_month: RecurringTaskDueAtMonth | None = None
-    due_at_day: RecurringTaskDueAtDay | None = None
-    due_at_month: RecurringTaskDueAtMonth | None = None
+    eisen: Eisen | None
+    difficulty: Difficulty | None
+    actionable_from_day: RecurringTaskDueAtDay | None
+    actionable_from_month: RecurringTaskDueAtMonth | None
+    due_at_day: RecurringTaskDueAtDay | None
+    due_at_month: RecurringTaskDueAtMonth | None

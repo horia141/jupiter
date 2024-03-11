@@ -23,16 +23,16 @@ class GenDoArgs(UseCaseArgsBase):
 
     source: EventSource
     gen_even_if_not_modified: bool
-    today: ADate | None = None
-    gen_targets: list[SyncTarget] | None = None
-    period: list[RecurringTaskPeriod] | None = None
-    filter_project_ref_ids: list[EntityId] | None = None
-    filter_habit_ref_ids: list[EntityId] | None = None
-    filter_chore_ref_ids: list[EntityId] | None = None
-    filter_metric_ref_ids: list[EntityId] | None = None
-    filter_person_ref_ids: list[EntityId] | None = None
-    filter_slack_task_ref_ids: list[EntityId] | None = None
-    filter_email_task_ref_ids: list[EntityId] | None = None
+    today: ADate | None
+    gen_targets: list[SyncTarget] | None
+    period: list[RecurringTaskPeriod] | None
+    filter_project_ref_ids: list[EntityId] | None
+    filter_habit_ref_ids: list[EntityId] | None
+    filter_chore_ref_ids: list[EntityId] | None
+    filter_metric_ref_ids: list[EntityId] | None
+    filter_person_ref_ids: list[EntityId] | None
+    filter_slack_task_ref_ids: list[EntityId] | None
+    filter_email_task_ref_ids: list[EntityId] | None
 
 
 @mutation_use_case()

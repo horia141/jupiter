@@ -40,8 +40,8 @@ class MetricFindArgs(UseCaseArgsBase):
     include_entries: bool
     include_collection_inbox_tasks: bool
     include_metric_entry_notes: bool
-    filter_ref_ids: list[EntityId] | None = None
-    filter_entry_ref_ids: list[EntityId] | None = None
+    filter_ref_ids: list[EntityId] | None
+    filter_entry_ref_ids: list[EntityId] | None
 
 
 @use_case_result_part
@@ -50,9 +50,9 @@ class MetricFindResponseEntry(UseCaseResultBase):
 
     metric: Metric
     note: Note | None
-    metric_entries: list[MetricEntry] | None = None
-    metric_collection_inbox_tasks: list[InboxTask] | None = None
-    metric_entry_notes: list[Note] | None = None
+    metric_entries: list[MetricEntry] | None
+    metric_collection_inbox_tasks: list[InboxTask] | None
+    metric_entry_notes: list[Note] | None
 
 
 @use_case_result

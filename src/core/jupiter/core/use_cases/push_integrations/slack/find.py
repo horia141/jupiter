@@ -35,7 +35,7 @@ class SlackTaskFindArgs(UseCaseArgsBase):
 
     allow_archived: bool
     include_inbox_tasks: bool
-    filter_ref_ids: list[EntityId] | None = None
+    filter_ref_ids: list[EntityId] | None
 
 
 @use_case_result_part
@@ -43,7 +43,7 @@ class SlackTaskFindResultEntry(UseCaseResultBase):
     """A single slack task result."""
 
     slack_task: SlackTask
-    inbox_task: InboxTask | None = None
+    inbox_task: InboxTask | None
 
 
 @use_case_result

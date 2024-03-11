@@ -27,7 +27,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 class MetricChangeCollectionProjectArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
-    collection_project_ref_id: EntityId | None = None
+    collection_project_ref_id: EntityId | None
 
 
 @mutation_use_case([WorkspaceFeature.METRICS, WorkspaceFeature.PROJECTS])

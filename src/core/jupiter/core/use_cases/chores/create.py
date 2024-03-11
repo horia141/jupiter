@@ -39,17 +39,17 @@ class ChoreCreateArgs(UseCaseArgsBase):
 
     name: ChoreName
     period: RecurringTaskPeriod
-    project_ref_id: EntityId | None = None
-    eisen: Eisen | None = None
-    difficulty: Difficulty | None = None
-    actionable_from_day: RecurringTaskDueAtDay | None = None
-    actionable_from_month: RecurringTaskDueAtMonth | None = None
-    due_at_day: RecurringTaskDueAtDay | None = None
-    due_at_month: RecurringTaskDueAtMonth | None = None
-    must_do: bool = False
-    skip_rule: RecurringTaskSkipRule | None = None
-    start_at_date: ADate | None = None
-    end_at_date: ADate | None = None
+    project_ref_id: EntityId | None
+    eisen: Eisen | None
+    difficulty: Difficulty | None
+    actionable_from_day: RecurringTaskDueAtDay | None
+    actionable_from_month: RecurringTaskDueAtMonth | None
+    due_at_day: RecurringTaskDueAtDay | None
+    due_at_month: RecurringTaskDueAtMonth | None
+    must_do: bool
+    skip_rule: RecurringTaskSkipRule | None
+    start_at_date: ADate | None
+    end_at_date: ADate | None
 
 
 @use_case_result

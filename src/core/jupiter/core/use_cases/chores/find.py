@@ -39,8 +39,8 @@ class ChoreFindArgs(UseCaseArgsBase):
     include_project: bool
     include_inbox_tasks: bool
     include_notes: bool
-    filter_ref_ids: list[EntityId] | None = None
-    filter_project_ref_ids: list[EntityId] | None = None
+    filter_ref_ids: list[EntityId] | None
+    filter_project_ref_ids: list[EntityId] | None
 
 
 @use_case_result_part
@@ -49,8 +49,8 @@ class ChoreFindResultEntry(UseCaseResultBase):
 
     chore: Chore
     note: Note | None
-    project: Project | None = None
-    inbox_tasks: list[InboxTask] | None = None
+    project: Project | None
+    inbox_tasks: list[InboxTask] | None
 
 
 @use_case_result

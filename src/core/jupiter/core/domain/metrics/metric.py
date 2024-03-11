@@ -30,9 +30,9 @@ class Metric(BranchEntity):
 
     metric_collection: ParentLink
     name: MetricName
-    icon: EntityIcon | None = None
-    collection_params: RecurringTaskGenParams | None = None
-    metric_unit: MetricUnit | None = None
+    icon: EntityIcon | None
+    collection_params: RecurringTaskGenParams | None
+    metric_unit: MetricUnit | None
 
     entries = OwnsMany(MetricEntry, metric_ref_id=IsRefId())
     collection_tasks = OwnsMany(

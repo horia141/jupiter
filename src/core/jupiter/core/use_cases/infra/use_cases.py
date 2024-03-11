@@ -58,7 +58,7 @@ UseCaseResult = TypeVar("UseCaseResult", bound=Union[None, UseCaseResultBase])
 class AppGuestUseCaseSession(EmptySession):
     """The application use case session."""
 
-    auth_token_ext: AuthTokenExt | None = None
+    auth_token_ext: AuthTokenExt | None
 
 
 @dataclass

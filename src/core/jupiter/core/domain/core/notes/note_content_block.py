@@ -131,8 +131,8 @@ class CodeBlock(NoteContentBlock):
     kind: Literal["code"]
     correlation_id: CorrelationId
     code: str
-    language: str | None = None
-    show_line_numbers: bool | None = None
+    language: str | None
+    show_line_numbers: bool | None
 
 
 @value

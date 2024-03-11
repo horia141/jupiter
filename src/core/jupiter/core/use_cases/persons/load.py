@@ -37,7 +37,7 @@ class PersonLoadResult(UseCaseResultBase):
     person: Person
     catch_up_inbox_tasks: list[InboxTask]
     birthday_inbox_tasks: list[InboxTask]
-    note: Note | None = None
+    note: Note | None
 
 
 @readonly_use_case(WorkspaceFeature.PERSONS)

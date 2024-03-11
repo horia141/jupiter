@@ -58,9 +58,9 @@ class LoadTopLevelInfoResult(UseCaseResultBase):
     workspace_feature_flag_controls: WorkspaceFeatureFlagsControls
     default_workspace_feature_flags: WorkspaceFeatureFlags
     workspace_feature_hack: WorkspaceFeature
-    user: User | None = None
-    user_score_overview: UserScoreOverview | None = None
-    workspace: Workspace | None = None
+    user: User | None
+    user_score_overview: UserScoreOverview | None
+    workspace: Workspace | None
 
 
 class LoadTopLevelInfoUseCase(

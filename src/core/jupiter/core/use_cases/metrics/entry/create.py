@@ -28,7 +28,7 @@ class MetricEntryCreateArgs(UseCaseArgsBase):
 
     metric_ref_id: EntityId
     value: float
-    collection_time: ADate | None = None
+    collection_time: ADate | None
 
 
 @use_case_result

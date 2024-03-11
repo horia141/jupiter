@@ -25,7 +25,7 @@ class InboxTaskAssociateWithBigPlanArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
     ref_id: EntityId
-    big_plan_ref_id: EntityId | None = None
+    big_plan_ref_id: EntityId | None
 
 
 @mutation_use_case([WorkspaceFeature.INBOX_TASKS, WorkspaceFeature.BIG_PLANS])

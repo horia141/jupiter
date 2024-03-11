@@ -34,9 +34,9 @@ class Habit(LeafEntity):
     project_ref_id: EntityId
     name: HabitName
     gen_params: RecurringTaskGenParams
-    skip_rule: RecurringTaskSkipRule | None = None
-    suspended: bool = False
-    repeats_in_period_count: int | None = None
+    skip_rule: RecurringTaskSkipRule | None
+    suspended: bool
+    repeats_in_period_count: int | None
 
     inbox_tasks = OwnsMany(
         InboxTask, source=InboxTaskSource.HABIT, habit_ref_id=IsRefId()

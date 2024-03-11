@@ -45,7 +45,7 @@ class WorkableBigPlan(CompositeValue):
 
     ref_id: EntityId
     name: BigPlanName
-    actionable_date: ADate | None = None
+    actionable_date: ADate | None
 
 
 @value

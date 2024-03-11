@@ -28,17 +28,17 @@ class ReportArgs(UseCaseArgsBase):
 
     today: ADate | None
     period: RecurringTaskPeriod
-    sources: list[InboxTaskSource] | None = None
-    breakdowns: list[ReportBreakdown] | None = None
-    filter_project_ref_ids: list[EntityId] | None = None
-    filter_big_plan_ref_ids: list[EntityId] | None = None
-    filter_habit_ref_ids: list[EntityId] | None = None
-    filter_chore_ref_ids: list[EntityId] | None = None
-    filter_metric_ref_ids: list[EntityId] | None = None
-    filter_person_ref_ids: list[EntityId] | None = None
-    filter_slack_task_ref_ids: list[EntityId] | None = None
-    filter_email_task_ref_ids: list[EntityId] | None = None
-    breakdown_period: RecurringTaskPeriod | None = None
+    sources: list[InboxTaskSource] | None
+    breakdowns: list[ReportBreakdown] | None
+    filter_project_ref_ids: list[EntityId] | None
+    filter_big_plan_ref_ids: list[EntityId] | None
+    filter_habit_ref_ids: list[EntityId] | None
+    filter_chore_ref_ids: list[EntityId] | None
+    filter_metric_ref_ids: list[EntityId] | None
+    filter_person_ref_ids: list[EntityId] | None
+    filter_slack_task_ref_ids: list[EntityId] | None
+    filter_email_task_ref_ids: list[EntityId] | None
+    breakdown_period: RecurringTaskPeriod | None
 
 
 @use_case_result

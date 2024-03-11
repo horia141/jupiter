@@ -32,7 +32,7 @@ class MetricEntryLoadResult(UseCaseResultBase):
     """MetricEntryLoadResult."""
 
     metric_entry: MetricEntry
-    note: Note | None = None
+    note: Note | None
 
 
 @readonly_use_case(WorkspaceFeature.METRICS)

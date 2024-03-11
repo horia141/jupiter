@@ -34,15 +34,15 @@ class MetricCreateArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
     name: MetricName
-    icon: EntityIcon | None = None
-    collection_period: RecurringTaskPeriod | None = None
-    collection_eisen: Eisen | None = None
-    collection_difficulty: Difficulty | None = None
-    collection_actionable_from_day: RecurringTaskDueAtDay | None = None
-    collection_actionable_from_month: RecurringTaskDueAtMonth | None = None
-    collection_due_at_day: RecurringTaskDueAtDay | None = None
-    collection_due_at_month: RecurringTaskDueAtMonth | None = None
-    metric_unit: MetricUnit | None = None
+    icon: EntityIcon | None
+    collection_period: RecurringTaskPeriod | None
+    collection_eisen: Eisen | None
+    collection_difficulty: Difficulty | None
+    collection_actionable_from_day: RecurringTaskDueAtDay | None
+    collection_actionable_from_month: RecurringTaskDueAtMonth | None
+    collection_due_at_day: RecurringTaskDueAtDay | None
+    collection_due_at_month: RecurringTaskDueAtMonth | None
+    metric_unit: MetricUnit | None
 
 
 @use_case_result

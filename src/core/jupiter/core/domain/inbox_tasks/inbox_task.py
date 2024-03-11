@@ -59,26 +59,24 @@ class InboxTask(LeafEntity):
     name: InboxTaskName
     status: InboxTaskStatus
     eisen: Eisen
-    difficulty: Difficulty | None = None
-    actionable_date: ADate | None = None
-    due_date: ADate | None = None
-    notes: str | None = None
-    habit_ref_id: EntityId | None = None
-    chore_ref_id: EntityId | None = None
-    big_plan_ref_id: EntityId | None = None
-    journal_ref_id: EntityId | None = None
-    metric_ref_id: EntityId | None = None
-    person_ref_id: EntityId | None = None
-    slack_task_ref_id: EntityId | None = None
-    email_task_ref_id: EntityId | None = None
-    recurring_timeline: str | None = None
-    recurring_repeat_index: int | None = None
-    recurring_gen_right_now: Timestamp | None = (
-        None  # Time for which this inbox task was generated
-    )
-    accepted_time: Timestamp | None = None
-    working_time: Timestamp | None = None
-    completed_time: Timestamp | None = None
+    difficulty: Difficulty | None
+    actionable_date: ADate | None
+    due_date: ADate | None
+    notes: str | None
+    habit_ref_id: EntityId | None
+    chore_ref_id: EntityId | None
+    big_plan_ref_id: EntityId | None
+    journal_ref_id: EntityId | None
+    metric_ref_id: EntityId | None
+    person_ref_id: EntityId | None
+    slack_task_ref_id: EntityId | None
+    email_task_ref_id: EntityId | None
+    recurring_timeline: str | None
+    recurring_repeat_index: int | None
+    recurring_gen_right_now: Timestamp | None # Time for which this inbox task was generated
+    accepted_time: Timestamp | None
+    working_time: Timestamp | None
+    completed_time: Timestamp | None
 
     note = OwnsAtMostOne(
         Note, domain=NoteDomain.INBOX_TASK, source_entity_ref_id=IsRefId()

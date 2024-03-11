@@ -57,9 +57,9 @@ class InboxTaskFindArgs(UseCaseArgsBase):
 
     allow_archived: bool
     include_notes: bool
-    filter_ref_ids: list[EntityId] | None = None
-    filter_project_ref_ids: list[EntityId] | None = None
-    filter_sources: list[InboxTaskSource] | None = None
+    filter_ref_ids: list[EntityId] | None
+    filter_project_ref_ids: list[EntityId] | None
+    filter_sources: list[InboxTaskSource] | None
 
 
 @use_case_result_part
@@ -69,13 +69,13 @@ class InboxTaskFindResultEntry(UseCaseResultBase):
     inbox_task: InboxTask
     note: Note | None
     project: Project
-    habit: Habit | None = None
-    chore: Chore | None = None
-    big_plan: BigPlan | None = None
-    metric: Metric | None = None
-    person: Person | None = None
-    slack_task: SlackTask | None = None
-    email_task: EmailTask | None = None
+    habit: Habit | None
+    chore: Chore | None
+    big_plan: BigPlan | None
+    metric: Metric | None
+    person: Person | None
+    slack_task: SlackTask | None
+    email_task: EmailTask | None
 
 
 @use_case_result

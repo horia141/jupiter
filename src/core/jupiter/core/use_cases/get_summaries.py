@@ -41,33 +41,33 @@ from jupiter.core.use_cases.infra.use_cases import (
 class GetSummariesArgs(UseCaseArgsBase):
     """Get summaries args."""
 
-    allow_archived: bool | None = None
-    include_default_project: bool | None = None
-    include_vacations: bool | None = None
-    include_projects: bool | None = None
-    include_inbox_tasks: bool | None = None
-    include_habits: bool | None = None
-    include_chores: bool | None = None
-    include_big_plans: bool | None = None
-    include_smart_lists: bool | None = None
-    include_metrics: bool | None = None
-    include_persons: bool | None = None
+    allow_archived: bool | None
+    include_default_project: bool | None
+    include_vacations: bool | None
+    include_projects: bool | None
+    include_inbox_tasks: bool | None
+    include_habits: bool | None
+    include_chores: bool | None
+    include_big_plans: bool | None
+    include_smart_lists: bool | None
+    include_metrics: bool | None
+    include_persons: bool | None
 
 
 @use_case_result
 class GetSummariesResult(UseCaseResultBase):
     """Get summaries result."""
 
-    default_project: ProjectSummary | None = None
-    vacations: list[VacationSummary] | None = None
-    projects: list[ProjectSummary] | None = None
-    inbox_tasks: list[InboxTaskSummary] | None = None
-    habits: list[HabitSummary] | None = None
-    chores: list[ChoreSummary] | None = None
-    big_plans: list[BigPlanSummary] | None = None
-    smart_lists: list[SmartListSummary] | None = None
-    metrics: list[MetricSummary] | None = None
-    persons: list[PersonSummary] | None = None
+    default_project: ProjectSummary | None
+    vacations: list[VacationSummary] | None
+    projects: list[ProjectSummary] | None
+    inbox_tasks: list[InboxTaskSummary] | None
+    habits: list[HabitSummary] | None
+    chores: list[ChoreSummary] | None
+    big_plans: list[BigPlanSummary] | None
+    smart_lists: list[SmartListSummary] | None
+    metrics: list[MetricSummary] | None
+    persons: list[PersonSummary] | None
 
 
 @readonly_use_case()

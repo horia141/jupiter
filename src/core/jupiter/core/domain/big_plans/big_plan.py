@@ -31,11 +31,11 @@ class BigPlan(LeafEntity):
     project_ref_id: EntityId
     name: BigPlanName
     status: BigPlanStatus
-    actionable_date: ADate | None = None
-    due_date: ADate | None = None
-    accepted_time: Timestamp | None = None
-    working_time: Timestamp | None = None
-    completed_time: Timestamp | None = None
+    actionable_date: ADate | None
+    due_date: ADate | None
+    accepted_time: Timestamp | None
+    working_time: Timestamp | None
+    completed_time: Timestamp | None
 
     inbox_tasks = OwnsMany(
         InboxTask, source=InboxTaskSource.BIG_PLAN, big_plan_ref_id=IsRefId()

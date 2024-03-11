@@ -33,7 +33,7 @@ class SlackTaskLoadResult(UseCaseResultBase):
     """SlackTaskLoadResult."""
 
     slack_task: SlackTask
-    inbox_task: InboxTask | None = None
+    inbox_task: InboxTask | None
 
 
 @readonly_use_case(WorkspaceFeature.SLACK_TASKS)

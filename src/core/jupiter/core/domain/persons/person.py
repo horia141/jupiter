@@ -30,8 +30,8 @@ class Person(LeafEntity):
     person_collection: ParentLink
     name: PersonName
     relationship: PersonRelationship
-    catch_up_params: RecurringTaskGenParams | None = None
-    birthday: PersonBirthday | None = None
+    catch_up_params: RecurringTaskGenParams | None
+    birthday: PersonBirthday | None
 
     note = OwnsAtMostOne(Note, domain=NoteDomain.PERSON, source_entity_ref_id=IsRefId())
     catch_up_tasks = OwnsMany(

@@ -32,7 +32,7 @@ class ProjectArchiveArgs(UseCaseArgsBase):
     """Project archive args."""
 
     ref_id: EntityId
-    backup_project_ref_id: EntityId | None = None
+    backup_project_ref_id: EntityId | None
 
 
 @mutation_use_case(WorkspaceFeature.PROJECTS)

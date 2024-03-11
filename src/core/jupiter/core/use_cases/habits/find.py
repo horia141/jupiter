@@ -39,8 +39,8 @@ class HabitFindArgs(UseCaseArgsBase):
     include_notes: bool
     include_project: bool
     include_inbox_tasks: bool
-    filter_ref_ids: list[EntityId] | None = None
-    filter_project_ref_ids: list[EntityId] | None = None
+    filter_ref_ids: list[EntityId] | None
+    filter_project_ref_ids: list[EntityId] | None
 
 
 @use_case_result_part
@@ -48,9 +48,9 @@ class HabitFindResultEntry(UseCaseResultBase):
     """A single entry in the load all habits response."""
 
     habit: Habit
-    project: Project | None = None
-    inbox_tasks: list[InboxTask] | None = None
-    note: Note | None = None
+    project: Project | None
+    inbox_tasks: list[InboxTask] | None
+    note: Note | None
 
 
 @use_case_result

@@ -20,7 +20,7 @@ class GCDoArgs(UseCaseArgsBase):
     """GCArgs."""
 
     source: EventSource
-    gc_targets: list[SyncTarget] | None = None
+    gc_targets: list[SyncTarget] | None
 
 
 @mutation_use_case()

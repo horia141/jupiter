@@ -32,7 +32,7 @@ class DocFindArgs(UseCaseArgsBase):
     include_notes: bool
     allow_archived: bool
     include_subdocs: bool
-    filter_ref_ids: list[EntityId] | None = None
+    filter_ref_ids: list[EntityId] | None
 
 
 @use_case_result_part
@@ -41,7 +41,7 @@ class DocFindResultEntry(UseCaseResultBase):
 
     doc: Doc
     note: Note | None
-    subdocs: list[Doc] | None = None
+    subdocs: list[Doc] | None
 
 
 @use_case_result

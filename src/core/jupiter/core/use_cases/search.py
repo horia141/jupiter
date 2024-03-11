@@ -25,14 +25,14 @@ class SearchArgs(UseCaseArgsBase):
 
     query: SearchQuery
     limit: SearchLimit
-    include_archived: bool = False
-    filter_entity_tags: list[NamedEntityTag] | None = None
-    filter_created_time_after: ADate | None = None
-    filter_created_time_before: ADate | None = None
-    filter_last_modified_time_after: ADate | None = None
-    filter_last_modified_time_before: ADate | None = None
-    filter_archived_time_after: ADate | None = None
-    filter_archived_time_before: ADate | None = None
+    include_archived: bool
+    filter_entity_tags: list[NamedEntityTag] | None
+    filter_created_time_after: ADate | None
+    filter_created_time_before: ADate | None
+    filter_last_modified_time_after: ADate | None
+    filter_last_modified_time_before: ADate | None
+    filter_archived_time_after: ADate | None
+    filter_archived_time_before: ADate | None
 
 
 @use_case_result

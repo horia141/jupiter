@@ -36,7 +36,7 @@ class PersonFindArgs(UseCaseArgsBase):
     include_catch_up_inbox_tasks: bool
     include_birthday_inbox_tasks: bool
     include_notes: bool
-    filter_person_ref_ids: list[EntityId] | None = None
+    filter_person_ref_ids: list[EntityId] | None
 
 
 @use_case_result_part
@@ -45,8 +45,8 @@ class PersonFindResultEntry(UseCaseResultBase):
 
     person: Person
     note: Note | None
-    catch_up_inbox_tasks: list[InboxTask] | None = None
-    birthday_inbox_tasks: list[InboxTask] | None = None
+    catch_up_inbox_tasks: list[InboxTask] | None
+    birthday_inbox_tasks: list[InboxTask] | None
 
 
 @use_case_result

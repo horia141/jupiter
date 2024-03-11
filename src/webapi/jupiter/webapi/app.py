@@ -603,7 +603,7 @@ class WebServiceApp:
             )
 
             result = await login_use_case.execute(
-                AppGuestUseCaseSession(),
+                AppGuestUseCaseSession(auth_token_ext=None),
                 LoginArgs(email_address=email_address, password=password),
             )
 

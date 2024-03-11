@@ -27,7 +27,7 @@ class SmartListCreateArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
     name: SmartListName
-    icon: EntityIcon | None = None
+    icon: EntityIcon | None
 
 
 @use_case_result

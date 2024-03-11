@@ -30,7 +30,7 @@ class JournalFindArgs(UseCaseArgsBase):
     allow_archived: bool
     include_notes: bool
     include_writing_tasks: bool
-    filter_ref_ids: list[EntityId] | None = None
+    filter_ref_ids: list[EntityId] | None
 
 
 @use_case_result_part

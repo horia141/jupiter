@@ -33,7 +33,7 @@ class JournalLoadResult(UseCaseResultBase):
 
     journal: Journal
     note: Note
-    writing_task: InboxTask | None = None
+    writing_task: InboxTask | None
 
 
 @readonly_use_case(WorkspaceFeature.JOURNALS)

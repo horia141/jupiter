@@ -34,7 +34,7 @@ class SmartListItemCreateArgs(UseCaseArgsBase):
     name: SmartListItemName
     is_done: bool
     tag_names: list[TagName]
-    url: URL | None = None
+    url: URL | None
 
 
 @use_case_result

@@ -35,14 +35,14 @@ class PersonCreateArgs(UseCaseArgsBase):
 
     name: PersonName
     relationship: PersonRelationship
-    catch_up_period: RecurringTaskPeriod | None = None
-    catch_up_eisen: Eisen | None = None
-    catch_up_difficulty: Difficulty | None = None
-    catch_up_actionable_from_day: RecurringTaskDueAtDay | None = None
-    catch_up_actionable_from_month: RecurringTaskDueAtMonth | None = None
-    catch_up_due_at_day: RecurringTaskDueAtDay | None = None
-    catch_up_due_at_month: RecurringTaskDueAtMonth | None = None
-    birthday: PersonBirthday | None = None
+    catch_up_period: RecurringTaskPeriod | None
+    catch_up_eisen: Eisen | None
+    catch_up_difficulty: Difficulty | None
+    catch_up_actionable_from_day: RecurringTaskDueAtDay | None
+    catch_up_actionable_from_month: RecurringTaskDueAtMonth | None
+    catch_up_due_at_day: RecurringTaskDueAtDay | None
+    catch_up_due_at_month: RecurringTaskDueAtMonth | None
+    birthday: PersonBirthday | None
 
 
 @use_case_result
