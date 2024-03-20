@@ -114,7 +114,7 @@ export default function NewJournal() {
                   </MenuItem>
                 ))}
               </Select>
-              <FieldError actionResult={actionData} fieldName="/status" />
+              <FieldError actionResult={actionData} fieldName="/period" />
             </FormControl>
           </Stack>
         </CardContent>

@@ -25,6 +25,7 @@ nav:
           - 'Workspace': 'concepts/workspaces.md'
           - 'Feature Flags': 'concepts/feature-flags.md'
           - 'Inbox Tasks': 'concepts/inbox-tasks.md'
+          - 'Working Mem': 'concepts/working-mem.md'
           - 'Habits': 'concepts/habits.md'
           - 'Chores': 'concepts/chores.md'
           - 'Big Plans': 'concepts/big-plans.md'

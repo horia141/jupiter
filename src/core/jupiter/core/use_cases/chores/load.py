@@ -1,5 +1,4 @@
 """Use case for loading a particular chore."""
-
 from jupiter.core.domain.chores.chore import Chore
 from jupiter.core.domain.core.notes.note import Note, NoteRepository
 from jupiter.core.domain.core.notes.note_domain import NoteDomain

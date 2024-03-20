@@ -425,7 +425,6 @@ export default function BigPlan() {
               initialNote={loaderData.note}
               inputsEnabled={inputsEnabled}
             />
-            <FieldError actionResult={actionData} fieldName="/content" />
           </>
         )}
       </Card>

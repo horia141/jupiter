@@ -10,7 +10,6 @@ site
 .build-cache/
 buildinfo/current
 secrets.info
-archive
 .cache/
 build/
 public/build/

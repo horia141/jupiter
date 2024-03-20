@@ -32,6 +32,11 @@ class ADate(AtomicValue[Date]):
     the_date: Date
 
     @staticmethod
+    def from_timestamp(timestamp: Timestamp) -> "ADate":
+        """Construct an ADate from a timestamp."""
+        return ADate(timestamp.as_date())
+
+    @staticmethod
     def from_date(date: Date | date) -> "ADate":
         """Construct an ADate from a date."""
         try:

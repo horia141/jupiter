@@ -48,6 +48,13 @@ export function EntitySummaryLink({
           {commonSequence}
         </EntityLink>
       );
+    case NamedEntityTag.WORKING_MEM:
+      return (
+        <EntityLink to={`/workspace/working-mem/archive/${summary.ref_id}`}>
+          <SlimChip label={"Working Mem"} color={"primary"} />
+          {commonSequence}
+        </EntityLink>
+      );
     case NamedEntityTag.HABIT:
       return (
         <EntityLink to={`/workspace/habits/${summary.ref_id}`}>

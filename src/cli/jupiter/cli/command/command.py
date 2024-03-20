@@ -1055,7 +1055,11 @@ class CliApp:
             ]
         ]:
             for _name, obj in the_module.__dict__.items():
-                if not (isinstance(obj, type) and issubclass(obj, UseCaseCommand)):
+                origin_obj = get_origin(obj)
+                if not (
+                    isinstance(obj, type)
+                    and issubclass(origin_obj or obj, UseCaseCommand)
+                ):
                     continue
 
                 if obj.__module__ != the_module.__name__:
@@ -1077,10 +1081,11 @@ class CliApp:
 
         def extract_command(the_module: types.ModuleType) -> Iterator[type[Command]]:
             for _name, obj in the_module.__dict__.items():
+                origin_obj = get_origin(obj)
                 if not (
                     isinstance(obj, type)
-                    and issubclass(obj, Command)
-                    and not issubclass(obj, UseCaseCommand)
+                    and issubclass(origin_obj or obj, Command)
+                    and not issubclass(origin_obj or obj, UseCaseCommand)
                 ):
                     continue
 
@@ -1106,7 +1111,10 @@ class CliApp:
             ]
         ]:
             for _name, obj in the_module.__dict__.items():
-                if not (isinstance(obj, type) and issubclass(obj, UseCase)):
+                origin_obj = get_origin(obj)
+                if not (
+                    isinstance(obj, type) and issubclass(origin_obj or obj, UseCase)
+                ):
                     continue
 
                 if obj.__module__ != the_module.__name__:
@@ -1128,9 +1136,10 @@ class CliApp:
             the_module: types.ModuleType,
         ) -> Iterator[tuple[type[Exception], type[CliExceptionHandler[Exception]]]]:
             for _name, obj in the_module.__dict__.items():
+                origin_obj = get_origin(obj)
                 if not (
                     isinstance(obj, type)
-                    and issubclass(obj, CliExceptionHandler)
+                    and issubclass(origin_obj or obj, CliExceptionHandler)
                     and obj is not CliExceptionHandler
                 ):
                     continue

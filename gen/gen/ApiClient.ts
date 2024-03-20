@@ -30,6 +30,7 @@ import { SmartListsService } from './services/SmartListsService';
 import { TestHelperService } from './services/TestHelperService';
 import { UsersService } from './services/UsersService';
 import { VacationsService } from './services/VacationsService';
+import { WorkingMemService } from './services/WorkingMemService';
 import { WorkspacesService } from './services/WorkspacesService';
 
 type HttpRequestConstructor = new (config: OpenAPIConfig) => BaseHttpRequest;
@@ -61,6 +62,7 @@ export class ApiClient {
     public readonly testHelper: TestHelperService;
     public readonly users: UsersService;
     public readonly vacations: VacationsService;
+    public readonly workingMem: WorkingMemService;
     public readonly workspaces: WorkspacesService;
 
     public readonly request: BaseHttpRequest;
@@ -103,6 +105,7 @@ export class ApiClient {
         this.testHelper = new TestHelperService(this.request);
         this.users = new UsersService(this.request);
         this.vacations = new VacationsService(this.request);
+        this.workingMem = new WorkingMemService(this.request);
         this.workspaces = new WorkspacesService(this.request);
     }
 }

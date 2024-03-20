@@ -9,6 +9,7 @@ class NoteDomain(EnumValue):
     """The source of a note."""
 
     INBOX_TASK = "inbox-task"
+    WORKING_MEM = "working-mem"
     HABIT = "habit"
     CHORE = "chore"
     BIG_PLAN = "big-plan"

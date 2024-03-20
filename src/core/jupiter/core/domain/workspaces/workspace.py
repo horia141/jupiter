@@ -142,6 +142,10 @@ class Workspace(RootEntity):
         for entity_tag in all_entity_tags:
             if entity_tag is NamedEntityTag.INBOX_TASK:
                 inferred_entity_tags.append(entity_tag)
+            elif entity_tag is NamedEntityTag.WORKING_MEM and self.is_feature_available(
+                WorkspaceFeature.WORKING_MEM
+            ):
+                inferred_entity_tags.append(entity_tag)
             elif entity_tag is NamedEntityTag.HABIT and self.is_feature_available(
                 WorkspaceFeature.HABITS
             ):
@@ -217,6 +221,11 @@ class Workspace(RootEntity):
         for source in all_sources:
             if source is InboxTaskSource.USER:
                 inferred_sources.append(source)
+            elif (
+                source is InboxTaskSource.WORKING_MEM_CLEANUP
+                and self.is_feature_available(WorkspaceFeature.WORKING_MEM)
+            ):
+                inferred_sources.append(source)
             elif source is InboxTaskSource.HABIT and self.is_feature_available(
                 WorkspaceFeature.HABITS
             ):
@@ -267,6 +276,10 @@ class Workspace(RootEntity):
         for sync_target in all_sync_targets:
             if sync_target is SyncTarget.INBOX_TASKS and self.is_feature_available(
                 WorkspaceFeature.INBOX_TASKS
+            ):
+                inferred_sync_targets.append(sync_target)
+            elif sync_target is SyncTarget.WORKING_MEM and self.is_feature_available(
+                WorkspaceFeature.WORKING_MEM
             ):
                 inferred_sync_targets.append(sync_target)
             elif sync_target is SyncTarget.HABITS and self.is_feature_available(

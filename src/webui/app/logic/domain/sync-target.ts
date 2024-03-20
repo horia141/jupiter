@@ -4,6 +4,8 @@ export function syncTargetName(syncTarget: SyncTarget): string {
   switch (syncTarget) {
     case SyncTarget.INBOX_TASKS:
       return "Inbox Tasks";
+    case SyncTarget.WORKING_MEM:
+      return "Working Mem";
     case SyncTarget.HABITS:
       return "Habits";
     case SyncTarget.CHORES:

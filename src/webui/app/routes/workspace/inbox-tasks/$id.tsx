@@ -32,6 +32,7 @@ import type {
   Person,
   Project,
   SlackTask,
+  WorkingMem,
 } from "jupiter-gen";
 import {
   ApiError,
@@ -58,6 +59,7 @@ import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { MetricTag } from "~/components/metric-tag";
 import { PersonTag } from "~/components/person-tag";
 import { SlackTaskTag } from "~/components/slack-task-tag";
+import { WorkingMemTag } from "~/components/working-mem-tag";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
 import { difficultyName } from "~/logic/domain/difficulty";
@@ -438,6 +440,14 @@ export default function InboxTask() {
 
             {isWorkspaceFeatureAvailable(
               topLevelInfo.workspace,
+              WorkspaceFeature.WORKING_MEM
+            ) &&
+              inboxTask.source === InboxTaskSource.WORKING_MEM_CLEANUP && (
+                <WorkingMemTag workingMem={info.working_mem as WorkingMem} />
+              )}
+
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
               WorkspaceFeature.BIG_PLANS
             ) &&
               (inboxTask.source === InboxTaskSource.USER ||
@@ -708,7 +718,6 @@ export default function InboxTask() {
               initialNote={loaderData.info.note}
               inputsEnabled={inputsEnabled}
             />
-            <FieldError actionResult={actionData} fieldName="/content" />
           </>
         )}
       </Card>

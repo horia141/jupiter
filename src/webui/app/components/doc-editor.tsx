@@ -130,7 +130,6 @@ export function DocEditor({
         }}
       />
       <FieldError actionResult={cardActionFetcher.data} fieldName="/name" />
-
       <FieldError actionResult={cardActionFetcher.data} fieldName="/content" />
 
       <ClientOnly fallback={<div>Loading... </div>}>

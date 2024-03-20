@@ -4,6 +4,8 @@ export function entityTagName(entityTag: NamedEntityTag): string {
   switch (entityTag) {
     case NamedEntityTag.INBOX_TASK:
       return "Inbox Task";
+    case NamedEntityTag.WORKING_MEM:
+      return "Working Mem";
     case NamedEntityTag.HABIT:
       return "Habit";
     case NamedEntityTag.CHORE:

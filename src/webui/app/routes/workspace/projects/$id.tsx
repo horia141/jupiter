@@ -195,7 +195,6 @@ export default function Project() {
               initialNote={note}
               inputsEnabled={inputsEnabled}
             />
-            <FieldError actionResult={actionData} fieldName="/content" />
           </>
         )}
       </Card>

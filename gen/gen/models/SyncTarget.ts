@@ -7,6 +7,7 @@
  */
 export enum SyncTarget {
     INBOX_TASKS = 'inbox-tasks',
+    WORKING_MEM = 'working-mem',
     HABITS = 'habits',
     CHORES = 'chores',
     BIG_PLANS = 'big-plans',

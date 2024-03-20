@@ -28,6 +28,7 @@ class SqliteInboxTaskRepository(
         filter_ref_ids: Iterable[EntityId] | None = None,
         filter_sources: Iterable[InboxTaskSource] | None = None,
         filter_project_ref_ids: Iterable[EntityId] | None = None,
+        filter_working_mem_ref_ids: Iterable[EntityId] | None = None,
         filter_habit_ref_ids: Iterable[EntityId] | None = None,
         filter_chore_ref_ids: Iterable[EntityId] | None = None,
         filter_big_plan_ref_ids: Iterable[EntityId] | None = None,
@@ -57,6 +58,12 @@ class SqliteInboxTaskRepository(
             query_stmt = query_stmt.where(
                 self._table.c.project_ref_id.in_(
                     fi.as_int() for fi in filter_project_ref_ids
+                ),
+            )
+        if filter_working_mem_ref_ids is not None:
+            query_stmt = query_stmt.where(
+                self._table.c.working_mem_ref_id.in_(
+                    fi.as_int() for fi in filter_working_mem_ref_ids
                 ),
             )
         if filter_habit_ref_ids is not None:

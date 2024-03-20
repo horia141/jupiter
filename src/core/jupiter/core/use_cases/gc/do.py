@@ -52,6 +52,7 @@ class GCDoUseCase(AppLoggedInMutationUseCase[GCDoArgs, None]):
             )
 
         gc_service = GCService(
+            time_provider=self._time_provider,
             domain_storage_engine=self._domain_storage_engine,
         )
 

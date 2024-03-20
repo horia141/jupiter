@@ -31,6 +31,7 @@ class GCDoAllUseCase(AppBackgroundMutationUseCase[GCDoAllArgs, None]):
         ctx = DomainContext(EventSource.GC_CRON, self._time_provider.get_current_time())
 
         gc_service = GCService(
+            time_provider=self._time_provider,
             domain_storage_engine=self._domain_storage_engine,
         )
 

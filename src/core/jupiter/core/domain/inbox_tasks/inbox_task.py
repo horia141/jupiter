@@ -63,6 +63,7 @@ class InboxTask(LeafEntity):
     actionable_date: ADate | None
     due_date: ADate | None
     notes: str | None
+    working_mem_ref_id: EntityId | None
     habit_ref_id: EntityId | None
     chore_ref_id: EntityId | None
     big_plan_ref_id: EntityId | None
@@ -118,6 +119,7 @@ class InboxTask(LeafEntity):
             project_ref_id=big_plan_project_ref_id
             if big_plan_ref_id
             else project_ref_id,
+            working_mem_ref_id=None,
             habit_ref_id=None,
             chore_ref_id=None,
             big_plan_ref_id=big_plan_ref_id,
@@ -133,6 +135,48 @@ class InboxTask(LeafEntity):
             accepted_time=ctx.action_timestamp if status.is_accepted_or_more else None,
             working_time=ctx.action_timestamp if status.is_working_or_more else None,
             completed_time=ctx.action_timestamp if status.is_completed else None,
+        )
+
+    @staticmethod
+    @create_entity_action
+    def new_inbox_task_for_working_mem_cleanup(
+        ctx: DomainContext,
+        inbox_task_collection_ref_id: EntityId,
+        name: InboxTaskName,
+        due_date: ADate | None,
+        project_ref_id: EntityId,
+        working_mem_ref_id: EntityId,
+        recurring_task_timeline: str,
+        recurring_task_gen_right_now: Timestamp,
+    ) -> "InboxTask":
+        """Create an inbox task."""
+        return InboxTask._create(
+            ctx,
+            inbox_task_collection=ParentLink(inbox_task_collection_ref_id),
+            source=InboxTaskSource.WORKING_MEM_CLEANUP,
+            name=name,
+            status=InboxTaskStatus.RECURRING,
+            eisen=Eisen.IMPORTANT,
+            difficulty=Difficulty.EASY,
+            actionable_date=None,
+            due_date=due_date,
+            project_ref_id=project_ref_id,
+            working_mem_ref_id=working_mem_ref_id,
+            habit_ref_id=None,
+            chore_ref_id=None,
+            big_plan_ref_id=None,
+            journal_ref_id=None,
+            metric_ref_id=None,
+            person_ref_id=None,
+            slack_task_ref_id=None,
+            email_task_ref_id=None,
+            notes=None,
+            recurring_timeline=recurring_task_timeline,
+            recurring_repeat_index=None,
+            recurring_gen_right_now=recurring_task_gen_right_now,
+            accepted_time=ctx.action_timestamp,
+            working_time=None,
+            completed_time=None,
         )
 
     @staticmethod
@@ -163,6 +207,7 @@ class InboxTask(LeafEntity):
             actionable_date=actionable_date,
             due_date=due_date,
             project_ref_id=project_ref_id,
+            working_mem_ref_id=None,
             habit_ref_id=habit_ref_id,
             chore_ref_id=None,
             big_plan_ref_id=None,
@@ -207,6 +252,7 @@ class InboxTask(LeafEntity):
             actionable_date=actionable_date,
             due_date=due_date,
             project_ref_id=project_ref_id,
+            working_mem_ref_id=None,
             habit_ref_id=None,
             chore_ref_id=chore_ref_id,
             big_plan_ref_id=None,
@@ -250,6 +296,7 @@ class InboxTask(LeafEntity):
             actionable_date=actionable_date,
             due_date=due_date,
             project_ref_id=project_ref_id,
+            working_mem_ref_id=None,
             habit_ref_id=None,
             chore_ref_id=None,
             big_plan_ref_id=None,
@@ -294,6 +341,7 @@ class InboxTask(LeafEntity):
             actionable_date=actionable_date,
             due_date=due_date,
             project_ref_id=project_ref_id,
+            working_mem_ref_id=None,
             habit_ref_id=None,
             chore_ref_id=None,
             big_plan_ref_id=None,
@@ -338,6 +386,7 @@ class InboxTask(LeafEntity):
             actionable_date=actionable_date,
             due_date=due_date,
             project_ref_id=project_ref_id,
+            working_memmm_ref_id=None,
             habit_ref_id=None,
             chore_ref_id=None,
             big_plan_ref_id=None,
@@ -380,6 +429,7 @@ class InboxTask(LeafEntity):
             actionable_date=due_date.subtract_days(preparation_days_cnt),
             due_date=due_date,
             project_ref_id=project_ref_id,
+            working_mem_ref_id=None,
             habit_ref_id=None,
             chore_ref_id=None,
             big_plan_ref_id=None,
@@ -425,6 +475,7 @@ class InboxTask(LeafEntity):
             actionable_date=generation_extra_info.actionable_date,
             due_date=generation_extra_info.due_date,
             project_ref_id=project_ref_id,
+            working_mem_ref_id=None,
             habit_ref_id=None,
             chore_ref_id=None,
             big_plan_ref_id=None,
@@ -473,6 +524,7 @@ class InboxTask(LeafEntity):
             actionable_date=generation_extra_info.actionable_date,
             due_date=generation_extra_info.due_date,
             project_ref_id=project_ref_id,
+            working_mem_ref_id=None,
             habit_ref_id=None,
             chore_ref_id=None,
             big_plan_ref_id=None,
@@ -508,6 +560,28 @@ class InboxTask(LeafEntity):
         return self._new_version(
             ctx,
             project_ref_id=project_ref_id,
+        )
+
+    @update_entity_action
+    def update_link_to_working_mem_cleanup(
+        self,
+        ctx: DomainContext,
+        project_ref_id: EntityId,
+        name: InboxTaskName,
+        due_date: ADate | None,
+        recurring_timeline: str,
+    ) -> "InboxTask":
+        """Update all the info associated with a working memory cleanup."""
+        if self.source is not InboxTaskSource.WORKING_MEM_CLEANUP:
+            raise Exception(
+                f"Cannot associate a task which is not for a working memory cleanup '{self.name}'",
+            )
+        return self._new_version(
+            ctx,
+            project_ref_id=project_ref_id,
+            name=name,
+            due_date=due_date,
+            recurring_timeline=recurring_timeline,
         )
 
     @update_entity_action
@@ -986,6 +1060,7 @@ class InboxTaskRepository(LeafEntityRepository[InboxTask], abc.ABC):
         filter_ref_ids: Iterable[EntityId] | None = None,
         filter_sources: Iterable[InboxTaskSource] | None = None,
         filter_project_ref_ids: Iterable[EntityId] | None = None,
+        filter_working_mem_ref_ids: Iterable[EntityId] | None = None,
         filter_habit_ref_ids: Iterable[EntityId] | None = None,
         filter_chore_ref_ids: Iterable[EntityId] | None = None,
         filter_big_plan_ref_ids: Iterable[EntityId] | None = None,

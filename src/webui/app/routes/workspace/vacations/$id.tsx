@@ -232,7 +232,6 @@ export default function Vacation() {
               initialNote={note}
               inputsEnabled={inputsEnabled}
             />
-            <FieldError actionResult={actionData} fieldName="/content" />
           </>
         )}
       </Card>

@@ -9,7 +9,6 @@ from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.metrics.metric import Metric
 from jupiter.core.domain.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.projects.project import Project
-from jupiter.core.domain.projects.project_collection import ProjectCollection
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
@@ -45,10 +44,6 @@ class MetricChangeCollectionProjectUseCase(
     ) -> None:
         """Execute the command's action."""
         workspace = context.workspace
-
-        await uow.get_for(ProjectCollection).load_by_parent(
-            workspace.ref_id,
-        )
 
         metric_collection = await uow.get_for(MetricCollection).load_by_parent(
             workspace.ref_id,

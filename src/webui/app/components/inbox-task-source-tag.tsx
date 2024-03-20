@@ -16,6 +16,8 @@ function sourceToClass(source: InboxTaskSource): "info" | "warning" | "error" {
   switch (source) {
     case InboxTaskSource.USER:
       return "info";
+    case InboxTaskSource.WORKING_MEM_CLEANUP:
+      return "warning";
     case InboxTaskSource.HABIT:
       return "warning";
     case InboxTaskSource.CHORE:

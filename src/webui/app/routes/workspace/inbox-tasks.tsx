@@ -898,6 +898,7 @@ function SwiftView(props: SwiftViewProps) {
     {
       allowSources: [
         InboxTaskSource.USER,
+        InboxTaskSource.WORKING_MEM_CLEANUP,
         InboxTaskSource.BIG_PLAN,
         InboxTaskSource.METRIC,
         InboxTaskSource.PERSON_BIRTHDAY,
@@ -924,6 +925,7 @@ function SwiftView(props: SwiftViewProps) {
     {
       allowSources: [
         InboxTaskSource.USER,
+        InboxTaskSource.WORKING_MEM_CLEANUP,
         InboxTaskSource.BIG_PLAN,
         InboxTaskSource.METRIC,
         InboxTaskSource.PERSON_BIRTHDAY,
@@ -951,6 +953,7 @@ function SwiftView(props: SwiftViewProps) {
     {
       allowSources: [
         InboxTaskSource.USER,
+        InboxTaskSource.WORKING_MEM_CLEANUP,
         InboxTaskSource.BIG_PLAN,
         InboxTaskSource.METRIC,
         InboxTaskSource.PERSON_BIRTHDAY,
@@ -978,6 +981,7 @@ function SwiftView(props: SwiftViewProps) {
     {
       allowSources: [
         InboxTaskSource.USER,
+        InboxTaskSource.WORKING_MEM_CLEANUP,
         InboxTaskSource.BIG_PLAN,
         InboxTaskSource.METRIC,
         InboxTaskSource.PERSON_BIRTHDAY,
@@ -1005,6 +1009,7 @@ function SwiftView(props: SwiftViewProps) {
     {
       allowSources: [
         InboxTaskSource.USER,
+        InboxTaskSource.WORKING_MEM_CLEANUP,
         InboxTaskSource.BIG_PLAN,
         InboxTaskSource.METRIC,
         InboxTaskSource.PERSON_BIRTHDAY,

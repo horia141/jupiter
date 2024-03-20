@@ -213,7 +213,6 @@ export default function SmartListDetails() {
               initialNote={loaderData.note}
               inputsEnabled={inputsEnabled}
             />
-            <FieldError actionResult={actionData} fieldName="/content" />
           </>
         )}
       </Card>

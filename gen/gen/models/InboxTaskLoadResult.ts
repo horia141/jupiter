@@ -12,6 +12,7 @@ import type { Note } from './Note';
 import type { Person } from './Person';
 import type { Project } from './Project';
 import type { SlackTask } from './SlackTask';
+import type { WorkingMem } from './WorkingMem';
 
 /**
  * InboxTaskLoadResult.
@@ -19,6 +20,7 @@ import type { SlackTask } from './SlackTask';
 export type InboxTaskLoadResult = {
     inbox_task: InboxTask;
     project: Project;
+    working_mem?: WorkingMem;
     habit?: Habit;
     chore?: Chore;
     big_plan?: BigPlan;

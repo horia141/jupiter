@@ -8,6 +8,7 @@ class InboxTaskSource(EnumValue):
     """The origin of an inbox task."""
 
     USER = "user"
+    WORKING_MEM_CLEANUP = "working-mem-cleanup"
     HABIT = "habit"
     CHORE = "chore"
     BIG_PLAN = "big-plan"

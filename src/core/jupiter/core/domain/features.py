@@ -108,6 +108,7 @@ class WorkspaceFeature(EnumValue):
     """A particular feature of a Jupiter workspace."""
 
     INBOX_TASKS = "inbox-tasks"
+    WORKING_MEM = "working-mem"
     HABITS = "habits"
     CHORES = "chores"
     BIG_PLANS = "big-plans"
@@ -175,6 +176,7 @@ USER_FEATURE_FLAGS_CONTROLS = UserFeatureFlagsControls(
 
 BASIC_WORKSPACE_FEATURE_FLAGS = {
     WorkspaceFeature.INBOX_TASKS: True,
+    WorkspaceFeature.WORKING_MEM: False,
     WorkspaceFeature.HABITS: True,
     WorkspaceFeature.CHORES: False,
     WorkspaceFeature.BIG_PLANS: False,
@@ -193,6 +195,7 @@ BASIC_WORKSPACE_FEATURE_FLAGS = {
 HOSTED_GLOBAL_WORKSPACE_FEATURE_FLAGS_CONTROLS = WorkspaceFeatureFlagsControls(
     {
         WorkspaceFeature.INBOX_TASKS: FeatureControl.ALWAYS_ON,
+        WorkspaceFeature.WORKING_MEM: FeatureControl.USER,
         WorkspaceFeature.HABITS: FeatureControl.USER,
         WorkspaceFeature.CHORES: FeatureControl.USER,
         WorkspaceFeature.BIG_PLANS: FeatureControl.USER,
@@ -212,6 +215,7 @@ HOSTED_GLOBAL_WORKSPACE_FEATURE_FLAGS_CONTROLS = WorkspaceFeatureFlagsControls(
 LOCAL_WORKSPACE_FEATURE_FLAGS_CONTROLS = WorkspaceFeatureFlagsControls(
     {
         WorkspaceFeature.INBOX_TASKS: FeatureControl.ALWAYS_ON,
+        WorkspaceFeature.WORKING_MEM: FeatureControl.USER,
         WorkspaceFeature.HABITS: FeatureControl.USER,
         WorkspaceFeature.CHORES: FeatureControl.USER,
         WorkspaceFeature.BIG_PLANS: FeatureControl.USER,

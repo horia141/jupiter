@@ -621,7 +621,6 @@ export default function Person() {
               initialNote={loaderData.note}
               inputsEnabled={inputsEnabled}
             />
-            <FieldError actionResult={actionData} fieldName="/content" />
           </>
         )}
       </Card>

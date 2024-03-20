@@ -44,6 +44,7 @@ from jupiter.core.domain.user_workspace_link.user_workspace_link import (
     UserWorkspaceLink,
 )
 from jupiter.core.domain.vacations.vacation_collection import VacationCollection
+from jupiter.core.domain.working_mem.working_mem_collection import WorkingMemCollection
 from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.core.framework.secure import secure_class
@@ -192,6 +193,18 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             )
             new_inbox_task_collection = await uow.get_for(InboxTaskCollection).create(
                 new_inbox_task_collection,
+            )
+
+            new_working_mem_collection = (
+                WorkingMemCollection.new_working_mem_collection(
+                    ctx=context.domain_context,
+                    workspace_ref_id=new_workspace.ref_id,
+                    generation_period=RecurringTaskPeriod.DAILY,
+                    cleanup_project_ref_id=new_default_project.ref_id,
+                )
+            )
+            new_working_mem_collection = await uow.get_for(WorkingMemCollection).create(
+                new_working_mem_collection,
             )
 
             new_habit_collection = HabitCollection.new_habit_collection(

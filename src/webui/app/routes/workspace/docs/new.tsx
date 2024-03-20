@@ -10,7 +10,7 @@ import { parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
 import { DocEditor } from "~/components/doc-editor";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
-import { FieldError, GlobalError } from "~/components/infra/errors";
+import { GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { LeafPanelExpansionState } from "~/rendering/leaf-panel-expansion";
@@ -68,8 +68,6 @@ export default function NewDoc() {
         <CardContent>
           <FormControl fullWidth>
             <DocEditor inputsEnabled={inputsEnabled} />
-            <FieldError actionResult={actionData} fieldName="/name" />
-            <FieldError actionResult={actionData} fieldName="/content" />
           </FormControl>
         </CardContent>
       </Card>

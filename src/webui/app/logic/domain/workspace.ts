@@ -24,6 +24,11 @@ export function inferEntityTagsForEnabledFeatures(
     if (entityTag === NamedEntityTag.INBOX_TASK) {
       inferredEntityTags.push(entityTag);
     } else if (
+      entityTag === NamedEntityTag.WORKING_MEM &&
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.WORKING_MEM)
+    ) {
+      inferredEntityTags.push(entityTag);
+    } else if (
       entityTag === NamedEntityTag.HABIT &&
       isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.HABITS)
     ) {
@@ -115,6 +120,11 @@ export function inferSourcesForEnabledFeatures(
     if (source === InboxTaskSource.USER) {
       inferredSources.push(source);
     } else if (
+      source === InboxTaskSource.WORKING_MEM_CLEANUP &&
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.WORKING_MEM)
+    ) {
+      inferredSources.push(source);
+    } else if (
       source === InboxTaskSource.HABIT &&
       isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.HABITS)
     ) {
@@ -176,6 +186,11 @@ export function inferSyncTargetsForEnabledFeatures(
     if (
       syncTarget === SyncTarget.INBOX_TASKS &&
       isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.INBOX_TASKS)
+    ) {
+      inferredSyncTargets.push(syncTarget);
+    } else if (
+      syncTarget === SyncTarget.WORKING_MEM &&
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.WORKING_MEM)
     ) {
       inferredSyncTargets.push(syncTarget);
     } else if (

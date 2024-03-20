@@ -268,7 +268,6 @@ export default function Journal() {
             initialNote={loaderData.note}
             inputsEnabled={inputsEnabled}
           />
-          <FieldError actionResult={actionData} fieldName="/content" />
         </CardContent>
       </Card>
 

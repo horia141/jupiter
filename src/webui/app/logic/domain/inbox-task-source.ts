@@ -4,6 +4,8 @@ export function inboxTaskSourceName(source: InboxTaskSource): string {
   switch (source) {
     case InboxTaskSource.USER:
       return "User";
+    case InboxTaskSource.WORKING_MEM_CLEANUP:
+      return "Working Mem Cleanup";
     case InboxTaskSource.HABIT:
       return "Habit";
     case InboxTaskSource.CHORE:

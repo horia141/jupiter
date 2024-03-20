@@ -8,6 +8,9 @@ from jupiter.core.domain.chores.chore import Chore
 from jupiter.core.domain.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.core import schedules
 from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.core.notes.note import Note
+from jupiter.core.domain.core.notes.note_collection import NoteCollection
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
@@ -46,8 +49,11 @@ from jupiter.core.domain.sync_target import SyncTarget
 from jupiter.core.domain.user.user import User
 from jupiter.core.domain.vacations.vacation import Vacation
 from jupiter.core.domain.vacations.vacation_collection import VacationCollection
+from jupiter.core.domain.working_mem.working_mem import WorkingMem
+from jupiter.core.domain.working_mem.working_mem_collection import WorkingMemCollection
 from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import NoFilter
 from jupiter.core.framework.use_case import ProgressReporter
@@ -174,12 +180,90 @@ class GenService:
             ).load_by_parent(
                 workspace.ref_id,
             )
+            working_mem_collection = await uow.get_for(
+                WorkingMemCollection
+            ).load_by_parent(
+                workspace.ref_id,
+            )
             habit_collection = await uow.get_for(HabitCollection).load_by_parent(
                 workspace.ref_id,
             )
             chore_collection = await uow.get_for(ChoreCollection).load_by_parent(
                 workspace.ref_id,
             )
+            note_collection = await uow.get_for(NoteCollection).load_by_parent(
+                workspace.ref_id,
+            )
+
+        if (
+            workspace.is_feature_available(WorkspaceFeature.WORKING_MEM)
+            and SyncTarget.WORKING_MEM in gen_targets
+        ):
+            async with progress_reporter.section("Generating working mem"):
+                all_working_mem_by_timeline = {}
+                async with self._domain_storage_engine.get_unit_of_work() as uow:
+                    all_working_mem = await uow.get_for(WorkingMem).find_all_generic(
+                        parent_ref_id=working_mem_collection.ref_id,
+                        allow_archived=False,
+                    )
+                    for working_mem in all_working_mem:
+                        all_working_mem_by_timeline[working_mem.timeline] = working_mem
+
+                all_notes_by_working_mem_ref_id = {}
+                async with self._domain_storage_engine.get_unit_of_work() as uow:
+                    all_notes = await uow.get_for(Note).find_all_generic(
+                        parent_ref_id=note_collection.ref_id,
+                        allow_archived=False,
+                        domain=NoteDomain.WORKING_MEM,
+                        source_entity_ref_id=[wm.ref_id for wm in all_working_mem]
+                        if all_working_mem
+                        else NoFilter(),
+                    )
+                    for note in all_notes:
+                        all_notes_by_working_mem_ref_id[
+                            note.source_entity_ref_id
+                        ] = note
+
+                async with self._domain_storage_engine.get_unit_of_work() as uow:
+                    all_cleanup_inbox_tasks = await uow.get_for(
+                        InboxTask
+                    ).find_all_generic(
+                        parent_ref_id=inbox_task_collection.ref_id,
+                        source=[InboxTaskSource.WORKING_MEM_CLEANUP],
+                        allow_archived=True,
+                        working_mem_ref_id=[rt.ref_id for rt in all_working_mem]
+                        if all_working_mem
+                        else NoFilter(),
+                    )
+
+                all_inbox_tasks_by_working_mem_ref_id_and_timeline = {}
+                for inbox_task in all_cleanup_inbox_tasks:
+                    if (
+                        inbox_task.working_mem_ref_id is None
+                        or inbox_task.recurring_timeline is None
+                    ):
+                        raise Exception(
+                            f"Expected that inbox task with id='{inbox_task.ref_id}'",
+                        )
+                    all_inbox_tasks_by_working_mem_ref_id_and_timeline[
+                        (inbox_task.working_mem_ref_id, inbox_task.recurring_timeline)
+                    ] = inbox_task
+
+                gen_log_entry = await self._generate_working_mem_and_inbox_task(
+                    ctx,
+                    progress_reporter=progress_reporter,
+                    user=user,
+                    workspace=workspace,
+                    working_mem_collection=working_mem_collection,
+                    note_collection=note_collection,
+                    inbox_task_collection=inbox_task_collection,
+                    all_working_mem_by_timeline=all_working_mem_by_timeline,
+                    all_notes_by_working_mem_ref_id=all_notes_by_working_mem_ref_id,
+                    all_inbox_tasks_by_working_mem_ref_id_and_timeline=all_inbox_tasks_by_working_mem_ref_id_and_timeline,
+                    today=today,
+                    gen_even_if_not_modified=gen_even_if_not_modified,
+                    gen_log_entry=gen_log_entry,
+                )
 
         if (
             workspace.is_feature_available(WorkspaceFeature.HABITS)
@@ -201,7 +285,9 @@ class GenService:
                         parent_ref_id=inbox_task_collection.ref_id,
                         source=[InboxTaskSource.HABIT],
                         allow_archived=True,
-                        habit_ref_id=[rt.ref_id for rt in all_habits],
+                        habit_ref_id=[rt.ref_id for rt in all_habits]
+                        if all_habits
+                        else NoFilter(),
                     )
 
                 all_inbox_tasks_by_habit_ref_id_and_timeline: dict[
@@ -256,7 +342,9 @@ class GenService:
                         parent_ref_id=inbox_task_collection.ref_id,
                         source=[InboxTaskSource.CHORE],
                         allow_archived=True,
-                        chore_ref_id=[rt.ref_id for rt in all_chores],
+                        chore_ref_id=[rt.ref_id for rt in all_chores]
+                        if all_chores
+                        else NoFilter(),
                     )
 
                 all_inbox_tasks_by_chore_ref_id_and_timeline = {}
@@ -312,7 +400,9 @@ class GenService:
                         parent_ref_id=inbox_task_collection.ref_id,
                         source=[InboxTaskSource.METRIC],
                         allow_archived=True,
-                        metric_ref_id=[m.ref_id for m in all_metrics],
+                        metric_ref_id=[m.ref_id for m in all_metrics]
+                        if all_metrics
+                        else NoFilter(),
                     )
 
                 all_collection_inbox_tasks_by_metric_ref_id_and_timeline = {}
@@ -374,7 +464,9 @@ class GenService:
                         parent_ref_id=inbox_task_collection.ref_id,
                         allow_archived=True,
                         source=[InboxTaskSource.PERSON_CATCH_UP],
-                        person_ref_id=[m.ref_id for m in all_persons],
+                        person_ref_id=[m.ref_id for m in all_persons]
+                        if all_persons
+                        else NoFilter(),
                     )
                     all_birthday_inbox_tasks = await uow.get_for(
                         InboxTask
@@ -382,7 +474,9 @@ class GenService:
                         parent_ref_id=inbox_task_collection.ref_id,
                         allow_archived=True,
                         source=[InboxTaskSource.PERSON_BIRTHDAY],
-                        person_ref_id=[m.ref_id for m in all_persons],
+                        person_ref_id=[m.ref_id for m in all_persons]
+                        if all_persons
+                        else NoFilter(),
                     )
 
                 all_catch_up_inbox_tasks_by_person_ref_id_and_timeline = {}
@@ -481,7 +575,9 @@ class GenService:
                         parent_ref_id=inbox_task_collection.ref_id,
                         allow_archived=True,
                         source=[InboxTaskSource.SLACK_TASK],
-                        slack_task_ref_id=[st.ref_id for st in all_slack_tasks],
+                        slack_task_ref_id=[st.ref_id for st in all_slack_tasks]
+                        if all_slack_tasks
+                        else NoFilter(),
                     )
 
                 all_inbox_tasks_by_slack_task_ref_id = {
@@ -534,7 +630,9 @@ class GenService:
                         parent_ref_id=inbox_task_collection.ref_id,
                         allow_archived=True,
                         source=[InboxTaskSource.EMAIL_TASK],
-                        email_task_ref_id=[st.ref_id for st in all_email_tasks],
+                        email_task_ref_id=[st.ref_id for st in all_email_tasks]
+                        if all_email_tasks
+                        else NoFilter(),
                     )
 
                 all_inbox_tasks_by_email_task_ref_id = {
@@ -563,6 +661,132 @@ class GenService:
         async with self._domain_storage_engine.get_unit_of_work() as uow:
             gen_log_entry = gen_log_entry.close(ctx)
             gen_log_entry = await uow.get_for(GenLogEntry).save(gen_log_entry)
+
+    async def _generate_working_mem_and_inbox_task(
+        self,
+        ctx: DomainContext,
+        progress_reporter: ProgressReporter,
+        user: User,
+        workspace: Workspace,
+        working_mem_collection: WorkingMemCollection,
+        note_collection: NoteCollection,
+        inbox_task_collection: InboxTaskCollection,
+        all_working_mem_by_timeline: dict[str, WorkingMem],
+        all_notes_by_working_mem_ref_id: dict[EntityId, Note],
+        all_inbox_tasks_by_working_mem_ref_id_and_timeline: dict[
+            tuple[EntityId, str],
+            InboxTask,
+        ],
+        today: ADate,
+        gen_even_if_not_modified: bool,
+        gen_log_entry: GenLogEntry,
+    ) -> GenLogEntry:
+        schedule = schedules.get_schedule(
+            working_mem_collection.generation_period,
+            EntityName("Cleanup WorkingMem.txt"),
+            today.to_timestamp_at_end_of_day(),
+            None,
+            None,
+            None,
+            None,
+            None,
+        )
+
+        found_working_mem = all_working_mem_by_timeline.get(schedule.timeline, None)
+
+        if found_working_mem:
+            if (
+                not gen_even_if_not_modified
+                and found_working_mem.last_modified_time
+                >= working_mem_collection.last_modified_time
+            ):
+                pass
+
+            # TODO(horia141): should something be done here?
+
+            working_mem = found_working_mem
+        else:
+            working_mem = WorkingMem.new_working_mem(
+                ctx,
+                working_mem_collection_ref_id=working_mem_collection.ref_id,
+                right_now=today,
+                period=working_mem_collection.generation_period,
+            )
+
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
+                working_mem = await uow.get_for(WorkingMem).create(working_mem)
+                await progress_reporter.mark_created(working_mem)
+
+            gen_log_entry = gen_log_entry.add_entity_created(
+                ctx,
+                working_mem,
+            )
+
+        found_note = all_notes_by_working_mem_ref_id.get(working_mem.ref_id, None)
+
+        if found_note:
+            note = found_note
+        else:
+            note = Note.new_note(
+                ctx,
+                note_collection_ref_id=note_collection.ref_id,
+                domain=NoteDomain.WORKING_MEM,
+                source_entity_ref_id=working_mem.ref_id,
+                content=[],
+            )
+
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
+                note = await uow.get_for(Note).create(note)
+
+        found_inbox_task = all_inbox_tasks_by_working_mem_ref_id_and_timeline.get(
+            (working_mem.ref_id, schedule.timeline),
+            None,
+        )
+
+        if found_inbox_task:
+            if (
+                not gen_even_if_not_modified
+                and found_inbox_task.last_modified_time
+                >= working_mem.last_modified_time
+            ):
+                return gen_log_entry
+
+            found_inbox_task = found_inbox_task.update_link_to_working_mem_cleanup(
+                ctx,
+                project_ref_id=working_mem_collection.cleanup_project_ref_id,
+                name=schedule.full_name,
+                recurring_timeline=schedule.timeline,
+                due_date=schedule.due_date,
+            )
+
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
+                await uow.get_for(InboxTask).save(found_inbox_task)
+                await progress_reporter.mark_updated(found_inbox_task)
+            gen_log_entry = gen_log_entry.add_entity_updated(
+                ctx,
+                found_inbox_task,
+            )
+        else:
+            inbox_task = InboxTask.new_inbox_task_for_working_mem_cleanup(
+                ctx,
+                inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                name=schedule.full_name,
+                due_date=schedule.due_date,
+                project_ref_id=working_mem_collection.cleanup_project_ref_id,
+                working_mem_ref_id=working_mem.ref_id,
+                recurring_task_timeline=schedule.timeline,
+                recurring_task_gen_right_now=today.to_timestamp_at_end_of_day(),
+            )
+
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
+                inbox_task = await uow.get_for(InboxTask).create(inbox_task)
+                await progress_reporter.mark_created(inbox_task)
+            gen_log_entry = gen_log_entry.add_entity_created(
+                ctx,
+                inbox_task,
+            )
+
+        return gen_log_entry
 
     async def _generate_inbox_tasks_for_habit(
         self,

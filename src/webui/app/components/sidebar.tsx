@@ -87,6 +87,22 @@ export default function Sidebar(props: SidebarProps) {
 
             {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
+              WorkspaceFeature.WORKING_MEM
+            ) && (
+              <ListItem disablePadding>
+                <ListItemButton
+                  to="/workspace/working-mem"
+                  component={Link}
+                  onClick={onClickNavigation}
+                >
+                  <ListItemIcon>🧠</ListItemIcon>
+                  <ListItemText primary="Working Mem" />
+                </ListItemButton>
+              </ListItem>
+            )}
+
+            {isWorkspaceFeatureAvailable(
+              props.topLevelInfo.workspace,
               WorkspaceFeature.HABITS
             ) && (
               <ListItem disablePadding>

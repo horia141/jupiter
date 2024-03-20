@@ -1,5 +1,4 @@
 """Garbage collect a workspace."""
-
 from collections.abc import Iterable
 from typing import Final, cast
 
@@ -15,6 +14,7 @@ from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.inbox_tasks.service.archive_service import (
     InboxTaskArchiveService,
 )
+from jupiter.core.domain.infra.generic_archiver import generic_archiver
 from jupiter.core.domain.push_integrations.email.email_task import EmailTask
 from jupiter.core.domain.push_integrations.email.email_task_collection import (
     EmailTaskCollection,
@@ -37,22 +37,27 @@ from jupiter.core.domain.storage_engine import (
     DomainUnitOfWork,
 )
 from jupiter.core.domain.sync_target import SyncTarget
+from jupiter.core.domain.working_mem.working_mem import WorkingMem
 from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.use_case import ProgressReporter
+from jupiter.core.utils.time_provider import TimeProvider
 
 
 class GCService:
     """Shared service for performing garbage collection."""
 
+    _time_provider: Final[TimeProvider]
     _domain_storage_engine: Final[DomainStorageEngine]
 
     def __init__(
         self,
+        time_provider: TimeProvider,
         domain_storage_engine: DomainStorageEngine,
     ) -> None:
         """Constructor."""
+        self._time_provider = time_provider
         self._domain_storage_engine = domain_storage_engine
 
     async def do_it(
@@ -115,6 +120,19 @@ class GCService:
                         inbox_tasks,
                         gc_log_entry,
                     )
+
+        if (
+            workspace.is_feature_available(WorkspaceFeature.WORKING_MEM)
+            and SyncTarget.WORKING_MEM in gc_targets
+        ):
+            async with progress_reporter.section("Working Mem"):
+                async with self._domain_storage_engine.get_unit_of_work() as uow:
+                    working_mems = await uow.get_for(WorkingMem).find_all(
+                        parent_ref_id=inbox_task_collection.ref_id, allow_archived=False
+                    )
+                gc_log_entry = await self._archive_working_mems_old_enough(
+                    ctx, progress_reporter, working_mems, gc_log_entry
+                )
 
         if (
             workspace.is_feature_available(WorkspaceFeature.BIG_PLANS)
@@ -210,6 +228,25 @@ class GCService:
                 inbox_task,
             )
 
+        return gc_log_entry
+
+    async def _archive_working_mems_old_enough(
+        self,
+        ctx: DomainContext,
+        progress_reporter: ProgressReporter,
+        working_mems: Iterable[WorkingMem],
+        gc_log_entry: GCLogEntry,
+    ) -> GCLogEntry:
+        for working_mem in working_mems:
+            if not working_mem.can_be_archived_at(
+                self._time_provider.get_current_time()
+            ):
+                continue
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
+                await generic_archiver(
+                    ctx, uow, progress_reporter, WorkingMem, working_mem.ref_id
+                )
+            gc_log_entry = gc_log_entry.add_entity(ctx, working_mem)
         return gc_log_entry
 
     async def _archive_done_big_plans(

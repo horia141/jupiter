@@ -31,6 +31,7 @@ export type InboxTask = {
     actionable_date?: ADate;
     due_date?: ADate;
     notes?: string;
+    working_mem_ref_id?: EntityId;
     habit_ref_id?: EntityId;
     chore_ref_id?: EntityId;
     big_plan_ref_id?: EntityId;

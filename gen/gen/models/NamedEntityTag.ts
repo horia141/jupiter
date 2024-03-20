@@ -7,6 +7,7 @@
  */
 export enum NamedEntityTag {
     INBOX_TASK = 'InboxTask',
+    WORKING_MEM = 'WorkingMem',
     HABIT = 'Habit',
     CHORE = 'Chore',
     BIG_PLAN = 'BigPlan',
