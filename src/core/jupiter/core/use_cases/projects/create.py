@@ -5,6 +5,7 @@ from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.projects.project_collection import ProjectCollection
 from jupiter.core.domain.projects.project_name import ProjectName
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
+from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     ProgressReporter,
 )
@@ -25,6 +26,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 class ProjectCreateArgs(UseCaseArgsBase):
     """Project create args."""
 
+    parent_project_ref_id: EntityId | None
     name: ProjectName
 
 
@@ -58,6 +60,7 @@ class ProjectCreateUseCase(
         new_project = Project.new_project(
             ctx=context.domain_context,
             project_collection_ref_id=project_collection.ref_id,
+            parent_project_ref_id=args.parent_project_ref_id,
             name=args.name,
         )
 

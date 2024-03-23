@@ -2,6 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { ProjectArchiveArgs } from '../models/ProjectArchiveArgs';
+import type { ProjectChangeParentArgs } from '../models/ProjectChangeParentArgs';
 import type { ProjectCreateArgs } from '../models/ProjectCreateArgs';
 import type { ProjectCreateResult } from '../models/ProjectCreateResult';
 import type { ProjectFindArgs } from '../models/ProjectFindArgs';
@@ -31,6 +32,29 @@ export class ProjectsService {
         return this.httpRequest.request({
             method: 'POST',
             url: '/project-archive',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * The command for changing the parent project of a project.
+     * The command for changing the parent project of a project.
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
+     * @throws ApiError
+     */
+    public projectChangeParent(
+        requestBody?: ProjectChangeParentArgs,
+    ): CancelablePromise<any> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/project-change-parent',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

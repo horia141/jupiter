@@ -244,6 +244,7 @@ export type { PersonSummary } from './models/PersonSummary';
 export type { PersonUpdateArgs } from './models/PersonUpdateArgs';
 export type { Project } from './models/Project';
 export type { ProjectArchiveArgs } from './models/ProjectArchiveArgs';
+export type { ProjectChangeParentArgs } from './models/ProjectChangeParentArgs';
 export type { ProjectCollection } from './models/ProjectCollection';
 export type { ProjectCreateArgs } from './models/ProjectCreateArgs';
 export type { ProjectCreateResult } from './models/ProjectCreateResult';

@@ -29,6 +29,7 @@ class ProjectSummary(CompositeValue):
     """Summary information about a project."""
 
     ref_id: EntityId
+    parent_project_ref_id: EntityId | None
     name: ProjectName
 
 

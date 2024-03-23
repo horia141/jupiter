@@ -3,7 +3,13 @@
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.persons.person_collection import PersonCollection
+from jupiter.core.domain.projects.project import Project
+from jupiter.core.domain.projects.project_collection import ProjectCollection
 from jupiter.core.domain.projects.service.archive_service import ProjectArchiveService
+from jupiter.core.domain.projects.service.check_cycles_service import (
+    ProjectCheckCyclesService,
+    ProjectTreeHasCyclesError,
+)
 from jupiter.core.domain.push_integrations.email.email_task_collection import (
     EmailTaskCollection,
 )
@@ -14,8 +20,10 @@ from jupiter.core.domain.push_integrations.slack.slack_task_collection import (
     SlackTaskCollection,
 )
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
+from jupiter.core.domain.working_mem.working_mem_collection import WorkingMemCollection
 from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.use_case import (
     ProgressReporter,
 )
@@ -112,7 +120,41 @@ class ProjectArchiveUseCase(
                 )
                 await uow.get_for(EmailTaskCollection).save(email_task_collection)
 
+            working_mem_collection = await uow.get_for(
+                WorkingMemCollection
+            ).load_by_parent(workspace.ref_id)
+            if working_mem_collection.cleanup_project_ref_id == args.ref_id:
+                working_mem_collection = working_mem_collection.change_cleanup_project(
+                    context.domain_context,
+                    args.backup_project_ref_id,
+                )
+                await uow.get_for(WorkingMemCollection).save(working_mem_collection)
+
+            project_collection = await uow.get_for(ProjectCollection).load_by_parent(
+                workspace.ref_id
+            )
+            child_projects = await uow.get_for(Project).find_all_generic(
+                parent_ref_id=project_collection.ref_id,
+                allow_archived=True,
+                parent_project_ref_id=args.ref_id,
+            )
+            for child_project in child_projects:
+                child_project = child_project.change_parent(
+                    context.domain_context, args.backup_project_ref_id
+                )
+
+                await uow.get_for(Project).save(child_project)
+                await progress_reporter.mark_updated(child_project)
+
+                try:
+                    await ProjectCheckCyclesService().check_for_cycles(
+                        uow, child_project
+                    )
+                except ProjectTreeHasCyclesError as err:
+                    raise InputValidationError("The project tree has cycles.") from err
+
+        project = await uow.get_for(Project).load_by_id(args.ref_id)
         project_archive_service = ProjectArchiveService()
         await project_archive_service.do_it(
-            context.domain_context, uow, progress_reporter, workspace, args.ref_id
+            context.domain_context, uow, progress_reporter, workspace, project
         )

@@ -1,5 +1,4 @@
 """The project."""
-
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.chores.chore import Chore
 from jupiter.core.domain.core.notes.note import Note
@@ -27,6 +26,7 @@ class Project(LeafEntity):
     """The project."""
 
     project_collection: ParentLink
+    parent_project_ref_id: EntityId | None
     name: ProjectName
 
     inbox_tasks = RefsMany(InboxTask, project_ref_id=IsRefId())
@@ -43,13 +43,27 @@ class Project(LeafEntity):
     def new_project(
         ctx: DomainContext,
         project_collection_ref_id: EntityId,
+        parent_project_ref_id: EntityId | None,
         name: ProjectName,
     ) -> "Project":
         """Create a project."""
         return Project._create(
             ctx,
             project_collection=ParentLink(project_collection_ref_id),
+            parent_project_ref_id=parent_project_ref_id,
             name=name,
+        )
+
+    @update_entity_action
+    def change_parent(
+        self,
+        ctx: DomainContext,
+        parent_project_ref_id: EntityId | None,
+    ) -> "Project":
+        """Change the parent project of the project."""
+        return self._new_version(
+            ctx,
+            parent_project_ref_id=parent_project_ref_id,
         )
 
     @update_entity_action

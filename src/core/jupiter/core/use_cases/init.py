@@ -175,6 +175,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             new_default_project = Project.new_project(
                 ctx=context.domain_context,
                 project_collection_ref_id=new_project_collection.ref_id,
+                parent_project_ref_id=None,
                 name=args.workspace_first_project_name,
             )
             new_default_project = await uow.get_for(Project).create(

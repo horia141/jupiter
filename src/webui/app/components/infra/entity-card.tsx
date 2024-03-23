@@ -22,6 +22,7 @@ interface EntityCardProps {
   allowSwipe?: boolean;
   allowMarkDone?: boolean;
   allowMarkNotDone?: boolean;
+  indent?: number;
   onMarkDone?: () => void;
   onMarkNotDone?: () => void;
 }
@@ -90,6 +91,7 @@ export function EntityCard(props: PropsWithChildren<EntityCardProps>) {
       <Card
         sx={{
           display: "flex",
+          marginLeft: props.indent ? `${props.indent}rem` : "0",
           justifyContent: "space-between",
           alignItems: "center",
           touchAction: "pan-y",

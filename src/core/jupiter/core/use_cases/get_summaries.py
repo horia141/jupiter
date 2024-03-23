@@ -121,6 +121,7 @@ class GetSummariesUseCase(
             )
             default_project = ProjectSummary(
                 ref_id=default_project_full.ref_id,
+                parent_project_ref_id=default_project_full.parent_project_ref_id,
                 name=default_project_full.name,
             )
 

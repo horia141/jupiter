@@ -19,6 +19,7 @@ from jupiter.core.domain.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.persons.person_collection import PersonCollection
 from jupiter.core.domain.projects.errors import ProjectInSignificantUseError
 from jupiter.core.domain.projects.project import Project
+from jupiter.core.domain.projects.project_collection import ProjectCollection
 from jupiter.core.domain.push_integrations.email.email_task_collection import (
     EmailTaskCollection,
 )
@@ -29,8 +30,8 @@ from jupiter.core.domain.push_integrations.slack.slack_task_collection import (
     SlackTaskCollection,
 )
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
+from jupiter.core.domain.working_mem.working_mem_collection import WorkingMemCollection
 from jupiter.core.domain.workspaces.workspace import Workspace
-from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.use_case import ProgressReporter
 
@@ -44,11 +45,9 @@ class ProjectRemoveService:
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
         workspace: Workspace,
-        ref_id: EntityId,
+        project: Project,
     ) -> None:
         """Remove the project."""
-        project = await uow.get_for(Project).load_by_id(ref_id, allow_archived=True)
-
         # test it's not the workspace default project nor a metric collection project nor a person catchup one
         if workspace.default_project_ref_id == project.ref_id:
             raise ProjectInSignificantUseError(
@@ -84,6 +83,13 @@ class ProjectRemoveService:
         if email_task_collection.generation_project_ref_id == project.ref_id:
             raise ProjectInSignificantUseError(
                 "The project is being used as the email task collection default one"
+            )
+        working_mem_collection = await uow.get_for(WorkingMemCollection).load_by_parent(
+            workspace.ref_id
+        )
+        if working_mem_collection.cleanup_project_ref_id == project.ref_id:
+            raise ProjectInSignificantUseError(
+                "The project is being used as the working memory cleanup tasks default one"
             )
 
         # remove inbox tasks
@@ -145,6 +151,18 @@ class ProjectRemoveService:
         await note_remove_service.remove_for_source(
             ctx, uow, NoteDomain.PROJECT, project.ref_id
         )
+
+        # remove child projects
+        project_collection = await uow.get_for(ProjectCollection).load_by_parent(
+            workspace.ref_id
+        )
+        child_projects = await uow.get_for(Project).find_all_generic(
+            parent_ref_id=project_collection.ref_id,
+            allow_archived=True,
+            parent_project_ref_id=project.ref_id,
+        )
+        for child_project in child_projects:
+            await self.do_it(ctx, uow, progress_reporter, workspace, child_project)
 
         # remove project
         await uow.get_for(Project).remove(project.ref_id)

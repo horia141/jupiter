@@ -23,7 +23,7 @@ import {
   useTransition,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import type { InboxTask, Project } from "jupiter-gen";
+import type { InboxTask, ProjectSummary } from "jupiter-gen";
 import {
   ApiError,
   BigPlanStatus,
@@ -93,7 +93,7 @@ export async function loader({ request, params }: LoaderArgs) {
       bigPlan: result.big_plan,
       project: result.project,
       inboxTasks: result.inbox_tasks,
-      allProjects: summaryResponse.projects as Array<Project>,
+      allProjects: summaryResponse.projects as Array<ProjectSummary>,
       note: result.note,
     });
   } catch (error) {
@@ -314,7 +314,7 @@ export default function BigPlan() {
                   onChange={handleChangeProject}
                   label="Project"
                 >
-                  {loaderData.allProjects.map((p: Project) => (
+                  {loaderData.allProjects.map((p: ProjectSummary) => (
                     <MenuItem key={p.ref_id} value={p.ref_id}>
                       {p.name}
                     </MenuItem>

@@ -18,6 +18,7 @@ import {
 } from "@mui/material";
 import type {
   InboxTasksSummary,
+  ProjectSummary,
   ReportPeriodResult,
   WorkableSummary,
 } from "jupiter-gen";
@@ -35,6 +36,10 @@ import { EntityLink } from "~/components/infra/entity-card";
 import { aDateToDate } from "~/logic/domain/adate";
 import { inboxTaskSourceName } from "~/logic/domain/inbox-task-source";
 import { periodName } from "~/logic/domain/period";
+import {
+  computeProjectHierarchicalNameFromRoot,
+  sortProjectsByTreeOrder,
+} from "~/logic/domain/project";
 import { isUserFeatureAvailable } from "~/logic/domain/user";
 import {
   inferSourcesForEnabledFeatures,
@@ -59,10 +64,15 @@ const _SOURCES_TO_REPORT = [
 
 interface ShowReportProps {
   topLevelInfo: TopLevelInfo;
+  allProjects: ProjectSummary[];
   report: ReportPeriodResult;
 }
 
-export function ShowReport({ topLevelInfo, report }: ShowReportProps) {
+export function ShowReport({
+  topLevelInfo,
+  allProjects,
+  report,
+}: ShowReportProps) {
   const isBigScreen = useBigScreen();
   const [showTab, changeShowTab] = useState(0);
 
@@ -102,6 +112,11 @@ export function ShowReport({ topLevelInfo, report }: ShowReportProps) {
   ) {
     tabIndicesMap["by-big-plans"] -= 1;
   }
+
+  const allProjectsSorted = sortProjectsByTreeOrder(allProjects);
+  const allProjectsByRefId = new Map<string, ProjectSummary>(
+    allProjects.map((p) => [p.ref_id, p])
+  );
 
   return (
     <Stack spacing={2} useFlexGap sx={{ paddingTop: "1rem" }}>
@@ -187,18 +202,33 @@ export function ShowReport({ topLevelInfo, report }: ShowReportProps) {
       ) && (
         <TabPanel value={showTab} index={tabIndicesMap["by-projects"]}>
           <Stack spacing={2} useFlexGap>
-            {report.per_project_breakdown.map((pb) => (
-              <Box key={pb.ref_id}>
-                <Divider>
-                  <Typography variant="h5">{pb.name}</Typography>
-                </Divider>
-                <OverviewReport
-                  topLevelInfo={topLevelInfo}
-                  inboxTasksSummary={pb.inbox_tasks_summary}
-                  bigPlansSummary={pb.big_plans_summary}
-                />
-              </Box>
-            ))}
+            {allProjectsSorted.map((project) => {
+              const pb = report.per_project_breakdown.find(
+                (pb) => pb.ref_id === project.ref_id
+              );
+
+              if (pb === undefined) {
+                return null;
+              }
+
+              const fullProjectName = computeProjectHierarchicalNameFromRoot(
+                project,
+                allProjectsByRefId
+              );
+
+              return (
+                <Box key={pb.ref_id}>
+                  <Divider>
+                    <Typography variant="h5">{fullProjectName}</Typography>
+                  </Divider>
+                  <OverviewReport
+                    topLevelInfo={topLevelInfo}
+                    inboxTasksSummary={pb.inbox_tasks_summary}
+                    bigPlansSummary={pb.big_plans_summary}
+                  />
+                </Box>
+              );
+            })}
           </Stack>
         </TabPanel>
       )}

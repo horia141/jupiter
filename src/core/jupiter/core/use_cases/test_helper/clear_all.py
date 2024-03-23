@@ -325,7 +325,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
                     uow,
                     progress_reporter,
                     workspace,
-                    project.ref_id,
+                    project,
                 )
 
         async with progress_reporter.section("Clearing smart lists"):

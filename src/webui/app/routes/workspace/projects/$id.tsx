@@ -1,4 +1,5 @@
 import {
+  Autocomplete,
   Button,
   ButtonGroup,
   Card,
@@ -8,13 +9,16 @@ import {
   InputLabel,
   OutlinedInput,
   Stack,
+  TextField,
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect, Response } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useParams, useTransition } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
+import type { ProjectSummary } from "jupiter-gen";
 import { ApiError, NoteDomain } from "jupiter-gen";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
@@ -36,7 +40,8 @@ const ParamsSchema = {
 
 const UpdateFormSchema = {
   intent: z.string(),
-  name: z.string(),
+  parentProjectRefId: z.string().optional(),
+  name: z.string().optional(),
 };
 
 export const handle = {
@@ -47,6 +52,12 @@ export async function loader({ request, params }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const { id } = parseParams(params, ParamsSchema);
 
+  const summaryResponse = await getLoggedInApiClient(
+    session
+  ).getSummaries.getSummaries({
+    include_projects: true,
+  });
+
   try {
     const response = await getLoggedInApiClient(session).projects.projectLoad({
       ref_id: id,
@@ -54,6 +65,7 @@ export async function loader({ request, params }: LoaderArgs) {
     });
 
     return json({
+      allProjects: summaryResponse.projects as Array<ProjectSummary>,
       project: response.project,
       note: response.note,
     });
@@ -85,6 +97,19 @@ export async function action({ request, params }: ActionArgs) {
             should_change: true,
             value: form.name,
           },
+        });
+
+        return redirect(`/workspace/projects/${id}`);
+      }
+
+      case "change-parent": {
+        await getLoggedInApiClient(session).projects.projectChangeParent({
+          ref_id: id,
+          parent_project_ref_id:
+            form.parentProjectRefId !== undefined &&
+            form.parentProjectRefId !== "none"
+              ? form.parentProjectRefId
+              : undefined,
         });
 
         return redirect(`/workspace/projects/${id}`);
@@ -127,15 +152,48 @@ export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export default function Project() {
-  const { project, note } = useLoaderDataForAnimation<typeof loader>();
+  const loaderData = useLoaderDataForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
 
-  const inputsEnabled = transition.state === "idle" && !project.archived;
+  const inputsEnabled =
+    transition.state === "idle" && !loaderData.project.archived;
+
+  const parentProject = loaderData.allProjects.find(
+    (project) => project.ref_id === loaderData.project.parent_project_ref_id
+  );
+  const [selectedProject, setSelectedProject] = useState(
+    parentProject === undefined
+      ? { project_ref_id: "none", label: "none" }
+      : { project_ref_id: parentProject.ref_id, label: parentProject.name }
+  );
+
+  const allProjectsAsOptions = [
+    {
+      project_ref_id: "none",
+      label: "None",
+    },
+  ].concat(
+    loaderData.allProjects.map((project) => ({
+      project_ref_id: project.ref_id,
+      label: project.name,
+    }))
+  );
+
+  useEffect(() => {
+    const parentProject = loaderData.allProjects.find(
+      (project) => project.ref_id === loaderData.project.parent_project_ref_id
+    );
+    setSelectedProject(
+      parentProject === undefined
+        ? { project_ref_id: "none", label: "none" }
+        : { project_ref_id: parentProject.ref_id, label: parentProject.name }
+    );
+  }, [loaderData]);
 
   return (
     <LeafPanel
-      key={project.ref_id}
+      key={loaderData.project.ref_id}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/projects"
@@ -145,12 +203,40 @@ export default function Project() {
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>
+              <Autocomplete
+                id="parentProject"
+                options={allProjectsAsOptions}
+                readOnly={!inputsEnabled}
+                value={selectedProject}
+                disableClearable={true}
+                onChange={(e, v) => setSelectedProject(v)}
+                isOptionEqualToValue={(o, v) =>
+                  o.project_ref_id === v.project_ref_id
+                }
+                renderInput={(params) => (
+                  <TextField {...params} label="Parent Project" />
+                )}
+              />
+
+              <FieldError
+                actionResult={actionData}
+                fieldName="/parent_project_ref_id"
+              />
+
+              <input
+                type="hidden"
+                name="parentProjectRefId"
+                value={selectedProject.project_ref_id}
+              />
+            </FormControl>
+
+            <FormControl fullWidth>
               <InputLabel id="name">Name</InputLabel>
               <OutlinedInput
                 label="name"
                 name="name"
                 readOnly={!inputsEnabled}
-                defaultValue={project.name}
+                defaultValue={loaderData.project.name}
               />
               <FieldError actionResult={actionData} fieldName="/name" />
             </FormControl>
@@ -168,12 +254,22 @@ export default function Project() {
             >
               Save
             </Button>
+
+            <Button
+              variant="outlined"
+              disabled={!inputsEnabled}
+              type="submit"
+              name="intent"
+              value="change-parent"
+            >
+              Change Parent
+            </Button>
           </ButtonGroup>
         </CardActions>
       </Card>
 
       <Card>
-        {!note && (
+        {!loaderData.note && (
           <CardActions>
             <ButtonGroup>
               <Button
@@ -189,10 +285,10 @@ export default function Project() {
           </CardActions>
         )}
 
-        {note && (
+        {loaderData.note && (
           <>
             <EntityNoteEditor
-              initialNote={note}
+              initialNote={loaderData.note}
               inputsEnabled={inputsEnabled}
             />
           </>

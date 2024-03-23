@@ -3,14 +3,12 @@
 /* eslint-disable */
 
 import type { EntityId } from './EntityId';
-import type { ProjectName } from './ProjectName';
 
 /**
- * Summary information about a project.
+ * Project change parent args.
  */
-export type ProjectSummary = {
+export type ProjectChangeParentArgs = {
     ref_id: EntityId;
     parent_project_ref_id?: EntityId;
-    name: ProjectName;
 };
 

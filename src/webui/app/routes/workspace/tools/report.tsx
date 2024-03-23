@@ -17,7 +17,7 @@ import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import type { ReportResult } from "jupiter-gen";
+import type { ProjectSummary, ReportResult } from "jupiter-gen";
 import { ApiError, RecurringTaskPeriod } from "jupiter-gen";
 import { DateTime } from "luxon";
 import { useContext, useState } from "react";
@@ -73,6 +73,12 @@ export async function loader({ request }: LoaderArgs) {
     return json(noErrorSomeData({ report: undefined }));
   }
 
+  const summaryResponse = await getLoggedInApiClient(
+    session
+  ).getSummaries.getSummaries({
+    include_projects: true,
+  });
+
   try {
     const reportResponse = await getLoggedInApiClient(session).report.report({
       today: today,
@@ -83,6 +89,7 @@ export async function loader({ request }: LoaderArgs) {
 
     return json(
       noErrorSomeData({
+        allProjects: summaryResponse.projects as Array<ProjectSummary>,
         report: reportResponse,
       })
     );
@@ -105,6 +112,7 @@ export default function Report() {
   const loaderData = useLoaderDataSafeForAnimation<
     typeof loader
   >() as ActionResult<{
+    allProjects: Array<ProjectSummary> | undefined;
     report: ReportResult | undefined;
   }>;
   const transition = useTransition();
@@ -215,9 +223,11 @@ export default function Report() {
       </Card>
 
       {isNoErrorSomeData(loaderData) &&
+        loaderData.data.allProjects !== undefined &&
         loaderData.data.report !== undefined && (
           <ShowReport
             topLevelInfo={topLevelInfo}
+            allProjects={loaderData.data.allProjects}
             report={loaderData.data.report.period_result}
           />
         )}

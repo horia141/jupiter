@@ -21,7 +21,7 @@ import {
   useTransition,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import type { InboxTask } from "jupiter-gen";
+import type { InboxTask, ProjectSummary } from "jupiter-gen";
 import { ApiError, InboxTaskStatus, RecurringTaskPeriod } from "jupiter-gen";
 import { useContext } from "react";
 import { z } from "zod";
@@ -65,6 +65,12 @@ export async function loader({ request, params }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const { id } = parseParams(params, ParamsSchema);
 
+  const summaryResponse = await getLoggedInApiClient(
+    session
+  ).getSummaries.getSummaries({
+    include_projects: true,
+  });
+
   try {
     const result = await getLoggedInApiClient(session).journals.journalLoad({
       ref_id: id,
@@ -72,6 +78,7 @@ export async function loader({ request, params }: LoaderArgs) {
     });
 
     return json({
+      allProjects: summaryResponse.projects as Array<ProjectSummary>,
       journal: result.journal,
       note: result.note,
       writingTask: result.writing_task,
@@ -273,6 +280,7 @@ export default function Journal() {
 
       <ShowReport
         topLevelInfo={topLevelInfo}
+        allProjects={loaderData.allProjects}
         report={loaderData.journal.report}
       />
 

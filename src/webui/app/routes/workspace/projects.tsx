@@ -10,6 +10,10 @@ import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
+import {
+  computeProjectDistanceFromRoot,
+  sortProjectsByTreeOrder,
+} from "~/logic/domain/project";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
@@ -38,6 +42,13 @@ export default function Projects() {
   const projects = useLoaderDataSafeForAnimation<typeof loader>();
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
 
+  const sortedProjects = sortProjectsByTreeOrder(
+    projects.map((entry) => entry.project)
+  );
+  const allProjectsByRefId = new Map(
+    projects.map((entry) => [entry.project.ref_id, entry.project])
+  );
+
   return (
     <TrunkPanel
       createLocation="/workspace/projects/new"
@@ -45,13 +56,19 @@ export default function Projects() {
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
         <EntityStack>
-          {projects.map((entry) => (
-            <EntityCard key={entry.project.ref_id}>
-              <EntityLink to={`/workspace/projects/${entry.project.ref_id}`}>
-                <EntityNameComponent name={entry.project.name} />
-              </EntityLink>
-            </EntityCard>
-          ))}
+          {sortedProjects.map((project) => {
+            const indent = computeProjectDistanceFromRoot(
+              project,
+              allProjectsByRefId
+            );
+            return (
+              <EntityCard key={project.ref_id} indent={indent}>
+                <EntityLink to={`/workspace/projects/${project.ref_id}`}>
+                  <EntityNameComponent name={project.name} />
+                </EntityLink>
+              </EntityCard>
+            );
+          })}
         </EntityStack>
       </NestingAwareBlock>
 

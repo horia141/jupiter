@@ -18,6 +18,8 @@ Alternatively you can see projects via `project-show` in the CLI.
 
 On their own, projects have a single property - their name.
 
+Projects can be nested within other projects, creating a tree-like structure.
+
 ## Projects Interactions Summary
 
 In the web app you can change the properties of a project by clicking on it in the view.
@@ -27,5 +29,6 @@ In the web app you can change the properties of a project by clicking on it in t
 In the CLI app you can:
 
 * Create a project via `projects-create`.
+* Change the parent via `projects-change-parent`.
 * Change the name via `projects-update`.
 * See a summary of the projects via `projects-show`.

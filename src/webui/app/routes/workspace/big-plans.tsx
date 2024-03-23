@@ -4,7 +4,12 @@ import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Link, Outlet, useFetcher } from "@remix-run/react";
-import type { BigPlan, BigPlanFindResultEntry, Project } from "jupiter-gen";
+import type {
+  BigPlan,
+  BigPlanFindResultEntry,
+  Project,
+  ProjectSummary,
+} from "jupiter-gen";
 import { BigPlanStatus, WorkspaceFeature } from "jupiter-gen";
 import { ADateTag } from "~/components/adate-tag";
 import { BigPlanStatusTag } from "~/components/big-plan-status-tag";
@@ -43,6 +48,10 @@ import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import { aDateToDate } from "~/logic/domain/adate";
 import { sortBigPlansNaturally } from "~/logic/domain/big-plan";
+import {
+  computeProjectHierarchicalNameFromRoot,
+  sortProjectsByTreeOrder,
+} from "~/logic/domain/project";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useBigScreen } from "~/rendering/use-big-screen";
@@ -74,7 +83,7 @@ export async function loader({ request }: LoaderArgs) {
   });
   return json({
     bigPlans: response.entries,
-    allProjects: summaryResponse.projects as Array<Project>,
+    allProjects: summaryResponse.projects as Array<ProjectSummary>,
   });
 }
 
@@ -179,6 +188,11 @@ export default function BigPlans() {
     ];
   }
 
+  const sortedProjects = sortProjectsByTreeOrder(loaderData.allProjects);
+  const allProjectsByRefId = new Map(
+    loaderData.allProjects.map((p) => [p.ref_id, p])
+  );
+
   return (
     <TrunkPanel
       createLocation="/workspace/big-plans/new"
@@ -238,28 +252,33 @@ export default function BigPlans() {
         ) &&
           selectedView === View.TIMELINE_BY_PROJECT && (
             <>
-              {loaderData.allProjects.map((p) => {
-                const theProjects = sortedBigPlans.filter(
+              {sortedProjects.map((p) => {
+                const theBigPlans = sortedBigPlans.filter(
                   (se) =>
                     entriesByRefId.get(se.ref_id)?.big_plan.project_ref_id ===
                     p.ref_id
                 );
 
-                if (theProjects.length === 0) {
+                if (theBigPlans.length === 0) {
                   return null;
                 }
+
+                const fullProjectName = computeProjectHierarchicalNameFromRoot(
+                  p,
+                  allProjectsByRefId
+                );
 
                 return (
                   <Box key={p.ref_id}>
                     <Divider>
-                      <Typography variant="h6">{p.name}</Typography>
+                      <Typography variant="h6">{fullProjectName}</Typography>
                     </Divider>
                     <>
                       {isBigScreen && (
-                        <BigScreenTimeline bigPlans={theProjects} />
+                        <BigScreenTimeline bigPlans={theBigPlans} />
                       )}
                       {!isBigScreen && (
-                        <SmallScreenTimeline bigPlans={theProjects} />
+                        <SmallScreenTimeline bigPlans={theBigPlans} />
                       )}
                     </>
                   </Box>
