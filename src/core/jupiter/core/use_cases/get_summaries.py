@@ -136,6 +136,7 @@ class GetSummariesUseCase(
                 ref_id=root_project_real.ref_id,
                 parent_project_ref_id=root_project_real.parent_ref_id,
                 name=root_project_real.name,
+                order_of_child_projects=root_project_real.order_of_child_projects,
             )
             projects = await uow.get(FastInfoRepository).find_all_project_summaries(
                 parent_ref_id=project_collection.workspace.ref_id,

@@ -1,5 +1,7 @@
 """The SQLite implementation of the fast info repository."""
 
+import json
+
 from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.core.domain.chores.chore_name import ChoreName
 from jupiter.core.domain.core.entity_icon import EntityIconDatabaseDecoder
@@ -71,7 +73,7 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
         allow_archived: bool,
     ) -> list[ProjectSummary]:
         """Find all summaries about projects."""
-        query = """select ref_id, parent_project_ref_id, name from project where project_collection_ref_id = :parent_ref_id"""
+        query = """select ref_id, parent_project_ref_id, name, order_of_child_projects from project where project_collection_ref_id = :parent_ref_id"""
         if not allow_archived:
             query += " and archived=0"
         result = (
@@ -88,6 +90,10 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
                 if row["parent_project_ref_id"]
                 else None,
                 name=_PROJECT_NAME_DECODER.decode(row["name"]),
+                order_of_child_projects=[
+                    _ENTITY_ID_DECODER.decode(idx)
+                    for idx in json.loads(row["order_of_child_projects"])
+                ],
             )
             for row in result
         ]

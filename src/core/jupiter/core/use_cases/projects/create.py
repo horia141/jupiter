@@ -67,4 +67,13 @@ class ProjectCreateUseCase(
         new_project = await uow.get_for(Project).create(new_project)
         await progress_reporter.mark_created(new_project)
 
+        parent_project = await uow.get_for(Project).load_by_id(
+            args.parent_project_ref_id
+        )
+        parent_project = parent_project.add_child_project(
+            ctx=context.domain_context,
+            child_project_ref_id=new_project.ref_id,
+        )
+        await uow.get_for(Project).save(parent_project)
+
         return ProjectCreateResult(new_project=new_project)

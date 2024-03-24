@@ -117,6 +117,7 @@ export function ShowReport({
   const allProjectsByRefId = new Map<string, ProjectSummary>(
     allProjects.map((p) => [p.ref_id, p])
   );
+  console.log(allProjectsSorted);
 
   return (
     <Stack spacing={2} useFlexGap sx={{ paddingTop: "1rem" }}>

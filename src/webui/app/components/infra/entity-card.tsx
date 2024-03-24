@@ -19,6 +19,7 @@ const SWIPE_COMPLETE_THRESHOLD = 150;
 
 interface EntityCardProps {
   showAsArchived?: boolean;
+  extraControls?: JSX.Element;
   allowSwipe?: boolean;
   allowMarkDone?: boolean;
   allowMarkNotDone?: boolean;
@@ -106,10 +107,11 @@ export function EntityCard(props: PropsWithChildren<EntityCardProps>) {
           <CardActions
             sx={{
               display: "flex",
-              flexDirection: "column",
+              flexDirection: "row",
               alignItems: "flex-end",
             }}
           >
+            {props.extraControls}
             {props.allowMarkDone && (
               <IconButton
                 size="medium"

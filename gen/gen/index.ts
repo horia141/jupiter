@@ -255,6 +255,7 @@ export type { ProjectLoadArgs } from './models/ProjectLoadArgs';
 export type { ProjectLoadResult } from './models/ProjectLoadResult';
 export type { ProjectName } from './models/ProjectName';
 export type { ProjectRemoveArgs } from './models/ProjectRemoveArgs';
+export type { ProjectReorderChildrenArgs } from './models/ProjectReorderChildrenArgs';
 export type { ProjectSummary } from './models/ProjectSummary';
 export type { ProjectUpdateArgs } from './models/ProjectUpdateArgs';
 export type { PushGenerationExtraInfo } from './models/PushGenerationExtraInfo';

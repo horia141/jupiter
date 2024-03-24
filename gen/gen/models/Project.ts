@@ -19,5 +19,6 @@ export type Project = {
     name: ProjectName;
     project_collection: string;
     parent_project_ref_id?: EntityId;
+    order_of_child_projects: Array<EntityId>;
 };
 

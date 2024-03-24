@@ -35,10 +35,29 @@ export function sortProjectsByTreeOrder(
     }
     finalProjects.push(currentProject);
     const children = projectsByParentRefId.get(currentProject.ref_id) || [];
-    stack.push(...children);
+    const sortedChildren = sortProjectsByOrderWithinParent(
+      currentProject,
+      children
+    );
+    stack.push(...sortedChildren);
   }
 
   return finalProjects;
+}
+
+function sortProjectsByOrderWithinParent(
+  parent: Project | ProjectSummary,
+  children: (Project | ProjectSummary)[]
+): ProjectSummary[] {
+  return [...children].sort((a, b) => {
+    const first = parent.order_of_child_projects.findIndex(
+      (x) => x === a.ref_id
+    );
+    const second = parent.order_of_child_projects.findIndex(
+      (x) => x === b.ref_id
+    );
+    return second - first;
+  });
 }
 
 export function computeProjectHierarchicalNameFromRoot(
@@ -77,4 +96,38 @@ export function computeProjectDistanceFromRoot(
     currentProject = currentProjectTmp;
   }
   return distance;
+}
+
+export function shiftProjectUpInListOfChildren(
+  project: Project | ProjectSummary,
+  orderOfChildProjects: string[]
+): string[] {
+  const index = orderOfChildProjects.findIndex((x) => x === project.ref_id);
+  if (index === -1) {
+    throw new Error("Invariant violation");
+  }
+  if (index === 0) {
+    return orderOfChildProjects;
+  }
+  const newOrderOfChildProjects = [...orderOfChildProjects];
+  newOrderOfChildProjects[index] = orderOfChildProjects[index - 1];
+  newOrderOfChildProjects[index - 1] = orderOfChildProjects[index];
+  return newOrderOfChildProjects;
+}
+
+export function shiftProjectDownInListOfChildren(
+  project: Project | ProjectSummary,
+  orderOfChildProjects: string[]
+): string[] {
+  const index = orderOfChildProjects.findIndex((x) => x === project.ref_id);
+  if (index === -1) {
+    throw new Error("Invariant violation");
+  }
+  if (index === orderOfChildProjects.length - 1) {
+    return orderOfChildProjects;
+  }
+  const newOrderOfChildProjects = [...orderOfChildProjects];
+  newOrderOfChildProjects[index] = orderOfChildProjects[index + 1];
+  newOrderOfChildProjects[index + 1] = orderOfChildProjects[index];
+  return newOrderOfChildProjects;
 }

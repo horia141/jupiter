@@ -31,6 +31,7 @@ class ProjectSummary(CompositeValue):
     ref_id: EntityId
     parent_project_ref_id: EntityId | None
     name: ProjectName
+    order_of_child_projects: list[EntityId]
 
 
 @value

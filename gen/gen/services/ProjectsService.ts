@@ -10,6 +10,7 @@ import type { ProjectFindResult } from '../models/ProjectFindResult';
 import type { ProjectLoadArgs } from '../models/ProjectLoadArgs';
 import type { ProjectLoadResult } from '../models/ProjectLoadResult';
 import type { ProjectRemoveArgs } from '../models/ProjectRemoveArgs';
+import type { ProjectReorderChildrenArgs } from '../models/ProjectReorderChildrenArgs';
 import type { ProjectUpdateArgs } from '../models/ProjectUpdateArgs';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -147,6 +148,29 @@ export class ProjectsService {
         return this.httpRequest.request({
             method: 'POST',
             url: '/project-remove',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Reorder the children of a project.
+     * Reorder the children of a project.
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
+     * @throws ApiError
+     */
+    public projectReorderChildren(
+        requestBody?: ProjectReorderChildrenArgs,
+    ): CancelablePromise<any> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/project-reorder-children',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

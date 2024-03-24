@@ -31,6 +31,7 @@ class Project(LeafEntity):
     project_collection: ParentLink
     parent_project_ref_id: EntityId | None
     name: ProjectName
+    order_of_child_projects: list[EntityId]
 
     inbox_tasks = RefsMany(InboxTask, project_ref_id=IsRefId())
     habits = RefsMany(Habit, project_ref_id=IsRefId())
@@ -54,6 +55,7 @@ class Project(LeafEntity):
             project_collection=ParentLink(project_collection_ref_id),
             parent_project_ref_id=None,
             name=name,
+            order_of_child_projects=[],
         )
 
     @staticmethod
@@ -70,6 +72,7 @@ class Project(LeafEntity):
             project_collection=ParentLink(project_collection_ref_id),
             parent_project_ref_id=parent_project_ref_id,
             name=name,
+            order_of_child_projects=[],
         )
 
     @update_entity_action
@@ -98,10 +101,60 @@ class Project(LeafEntity):
             name=name.or_else(self.name),
         )
 
+    @update_entity_action
+    def add_child_project(
+        self,
+        ctx: DomainContext,
+        child_project_ref_id: EntityId,
+    ) -> "Project":
+        """Add a child project."""
+        return self._new_version(
+            ctx,
+            order_of_child_projects=[
+                *self.order_of_child_projects,
+                child_project_ref_id,
+            ],
+        )
+
+    @update_entity_action
+    def remove_child_project(
+        self,
+        ctx: DomainContext,
+        child_project_ref_id: EntityId,
+    ) -> "Project":
+        """Remove a child project."""
+        return self._new_version(
+            ctx,
+            order_of_child_projects=[
+                child_ref_id
+                for child_ref_id in self.order_of_child_projects
+                if child_ref_id != child_project_ref_id
+            ],
+        )
+
+    @update_entity_action
+    def reorder_child_projects(
+        self,
+        ctx: DomainContext,
+        new_order: list[EntityId],
+    ) -> "Project":
+        """Reorder child projects."""
+        return self._new_version(
+            ctx,
+            order_of_child_projects=new_order,
+        )
+
     @property
     def is_root(self) -> bool:
         """Return True if this is a root project."""
         return self.parent_project_ref_id is None
+
+    @property
+    def surely_parent_project_ref_id(self) -> EntityId:
+        """Return the parent ref id."""
+        if self.parent_project_ref_id is None:
+            raise Exception("This is a root project.")
+        return self.parent_project_ref_id
 
 
 class ProjectRepository(LeafEntityRepository[Project], abc.ABC):

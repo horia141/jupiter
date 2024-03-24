@@ -164,6 +164,13 @@ class ProjectArchiveService:
         for child_project in child_projects:
             await self.do_it(ctx, uow, progress_reporter, workspace, child_project)
 
+        # remove from parent project list
+        parent_project = await uow.get_for(Project).load_by_id(
+            project.surely_parent_project_ref_id
+        )
+        parent_project = parent_project.remove_child_project(ctx, project.ref_id)
+        await uow.get_for(Project).save(parent_project)
+
         # archive project
         project = project.mark_archived(ctx)
         await uow.get_for(Project).save(project)
