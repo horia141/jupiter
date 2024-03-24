@@ -54,7 +54,7 @@ class LoadTopLevelInfoResult(UseCaseResultBase):
     default_user_feature_flags: UserFeatureFlags
     user_feature_hack: UserFeature
     deafult_workspace_name: WorkspaceName
-    default_first_project_name: ProjectName
+    default_root_project_name: ProjectName
     workspace_feature_flag_controls: WorkspaceFeatureFlagsControls
     default_workspace_feature_flags: WorkspaceFeatureFlags
     workspace_feature_hack: WorkspaceFeature
@@ -113,7 +113,7 @@ class LoadTopLevelInfoUseCase(
             default_user_feature_flags=BASIC_USER_FEATURE_FLAGS,
             user_feature_hack=UserFeature.GAMIFICATION,
             deafult_workspace_name=WorkspaceName("Work"),
-            default_first_project_name=ProjectName("Work"),
+            default_root_project_name=ProjectName("Life"),
             workspace_feature_flag_controls=workspace_feature_flags_controls,
             default_workspace_feature_flags=BASIC_WORKSPACE_FEATURE_FLAGS,
             workspace_feature_hack=WorkspaceFeature.INBOX_TASKS,

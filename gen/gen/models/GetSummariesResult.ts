@@ -16,8 +16,8 @@ import type { VacationSummary } from './VacationSummary';
  * Get summaries result.
  */
 export type GetSummariesResult = {
-    default_project?: ProjectSummary;
     vacations?: Array<VacationSummary>;
+    root_project?: ProjectSummary;
     projects?: Array<ProjectSummary>;
     inbox_tasks?: Array<InboxTaskSummary>;
     habits?: Array<HabitSummary>;

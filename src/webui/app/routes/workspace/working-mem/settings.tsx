@@ -16,7 +16,7 @@ import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import type { Project } from "jupiter-gen";
+import type { ProjectSummary } from "jupiter-gen";
 import { ApiError, RecurringTaskPeriod, WorkspaceFeature } from "jupiter-gen";
 import { useContext } from "react";
 import { z } from "zod";
@@ -28,18 +28,22 @@ import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { periodName } from "~/logic/domain/period";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
-import { getIntent } from "~/logic/intent";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const UpdateFormSchema = {
-  intent: z.string(),
-  generationPeriod: z.nativeEnum(RecurringTaskPeriod),
-  cleanupProject: z.string().optional(),
-};
+const UpdateFormSchema = z.discriminatedUnion("intent", [
+  z.object({
+    intent: z.literal("change-generation-period"),
+    generationPeriod: z.nativeEnum(RecurringTaskPeriod),
+  }),
+  z.object({
+    intent: z.literal("change-cleanup-project"),
+    cleanupProject: z.string(),
+  }),
+]);
 
 export const handle = {
   displayType: DisplayType.LEAF,
@@ -50,7 +54,6 @@ export async function loader({ request }: LoaderArgs) {
   const summaryResponse = await getLoggedInApiClient(
     session
   ).getSummaries.getSummaries({
-    include_default_project: true,
     include_projects: true,
   });
 
@@ -61,8 +64,7 @@ export async function loader({ request }: LoaderArgs) {
   return json({
     generationPeriod: response.generation_period,
     cleanupProject: response.cleanup_project,
-    defaultProject: summaryResponse.default_project as Project,
-    allProjects: summaryResponse.projects as Array<Project>,
+    allProjects: summaryResponse.projects as Array<ProjectSummary>,
   });
 }
 
@@ -70,10 +72,8 @@ export async function action({ request }: ActionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const form = await parseForm(request, UpdateFormSchema);
 
-  const { intent } = getIntent<undefined>(form.intent);
-
   try {
-    switch (intent) {
+    switch (form.intent) {
       case "change-generation-period": {
         await getLoggedInApiClient(
           session
@@ -93,9 +93,6 @@ export async function action({ request }: ActionArgs) {
 
         return redirect(`/workspace/working-mem/settings`);
       }
-
-      default:
-        throw new Response("Bad Intent", { status: 500 });
     }
   } catch (error) {
     if (
@@ -191,15 +188,20 @@ export default function MetricsSettings() {
               Change Generation Period
             </Button>
 
-            <Button
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="change-cleanup-project"
-            >
-              Change Cleanup Project
-            </Button>
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.PROJECTS
+            ) && (
+              <Button
+                variant="contained"
+                disabled={!inputsEnabled}
+                type="submit"
+                name="intent"
+                value="change-cleanup-project"
+              >
+                Change Cleanup Project
+              </Button>
+            )}
           </ButtonGroup>
         </CardActions>
       </Card>

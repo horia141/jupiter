@@ -30,7 +30,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 class EmailTaskChangeGenerationProjectArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
-    generation_project_ref_id: EntityId | None
+    generation_project_ref_id: EntityId
 
 
 @mutation_use_case([WorkspaceFeature.EMAIL_TASKS, WorkspaceFeature.PROJECTS])
@@ -57,16 +57,9 @@ class EmailTaskChangeGenerationProjectUseCase(
         )
         old_generation_project_ref_id = email_task_collection.generation_project_ref_id
 
-        if args.generation_project_ref_id is not None:
-            generation_project = await uow.get_for(Project).load_by_id(
-                args.generation_project_ref_id,
-            )
-            generation_project_ref_id = generation_project.ref_id
-        else:
-            generation_project = await uow.get_for(Project).load_by_id(
-                workspace.default_project_ref_id,
-            )
-            generation_project_ref_id = workspace.default_project_ref_id
+        await uow.get_for(Project).load_by_id(
+            args.generation_project_ref_id,
+        )
 
         email_tasks = await uow.get_for(EmailTask).find_all(
             parent_ref_id=email_task_collection.ref_id,
@@ -85,7 +78,7 @@ class EmailTaskChangeGenerationProjectUseCase(
         )
 
         if (
-            old_generation_project_ref_id != generation_project_ref_id
+            old_generation_project_ref_id != args.generation_project_ref_id
             and len(email_tasks) > 0
         ):
             updated_generated_inbox_tasks = []
@@ -96,7 +89,7 @@ class EmailTaskChangeGenerationProjectUseCase(
                 ]
                 update_inbox_task = inbox_task.update_link_to_email_task(
                     ctx=context.domain_context,
-                    project_ref_id=generation_project_ref_id,
+                    project_ref_id=args.generation_project_ref_id,
                     from_address=email_task.from_address,
                     from_name=email_task.from_name,
                     to_address=email_task.to_address,
@@ -114,7 +107,7 @@ class EmailTaskChangeGenerationProjectUseCase(
 
         email_task_collection = email_task_collection.change_generation_project(
             context.domain_context,
-            generation_project_ref_id=generation_project_ref_id,
+            generation_project_ref_id=args.generation_project_ref_id,
         )
 
         await uow.get_for(EmailTaskCollection).save(email_task_collection)

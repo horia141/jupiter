@@ -9,6 +9,6 @@ import type { EntityId } from './EntityId';
  */
 export type ProjectChangeParentArgs = {
     ref_id: EntityId;
-    parent_project_ref_id?: EntityId;
+    parent_project_ref_id: EntityId;
 };
 

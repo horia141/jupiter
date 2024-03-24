@@ -48,11 +48,10 @@ class ProjectRemoveService:
         project: Project,
     ) -> None:
         """Remove the project."""
+        if project.is_root:
+            raise Exception("The root project cannot be removed")
+
         # test it's not the workspace default project nor a metric collection project nor a person catchup one
-        if workspace.default_project_ref_id == project.ref_id:
-            raise ProjectInSignificantUseError(
-                "The project is being used as the workspace default one"
-            )
         metric_collection = await uow.get_for(MetricCollection).load_by_parent(
             workspace.ref_id
         )

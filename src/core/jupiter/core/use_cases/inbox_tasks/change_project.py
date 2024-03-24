@@ -5,6 +5,7 @@ from jupiter.core.domain.inbox_tasks.inbox_task import (
     CannotModifyGeneratedTaskError,
     InboxTask,
 )
+from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.errors import InputValidationError
@@ -24,7 +25,7 @@ class InboxTaskChangeProjectArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
     ref_id: EntityId
-    project_ref_id: EntityId | None
+    project_ref_id: EntityId
 
 
 @mutation_use_case([WorkspaceFeature.INBOX_TASKS, WorkspaceFeature.PROJECTS])
@@ -41,14 +42,13 @@ class InboxTaskChangeProjectUseCase(
         args: InboxTaskChangeProjectArgs,
     ) -> None:
         """Execute the command's action."""
-        workspace = context.workspace
-
         inbox_task = await uow.get_for(InboxTask).load_by_id(args.ref_id)
+
+        await uow.get_for(Project).load_by_id(args.project_ref_id)
 
         try:
             inbox_task = inbox_task.change_project(
-                ctx=context.domain_context,
-                project_ref_id=args.project_ref_id or workspace.default_project_ref_id,
+                ctx=context.domain_context, project_ref_id=args.project_ref_id
             )
         except CannotModifyGeneratedTaskError as err:
             raise InputValidationError(

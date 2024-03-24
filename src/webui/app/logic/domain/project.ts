@@ -1,5 +1,9 @@
 import type { Project, ProjectSummary } from "jupiter-gen";
 
+export function isRootProject(project: Project | ProjectSummary): boolean {
+  return !project.parent_project_ref_id;
+}
+
 export function sortProjectsByTreeOrder(
   projects: (Project | ProjectSummary)[]
 ): ProjectSummary[] {

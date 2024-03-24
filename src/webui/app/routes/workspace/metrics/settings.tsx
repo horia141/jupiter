@@ -16,7 +16,7 @@ import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import type { Project } from "jupiter-gen";
+import type { ProjectSummary } from "jupiter-gen";
 import { ApiError, WorkspaceFeature } from "jupiter-gen";
 import { useContext } from "react";
 import { z } from "zod";
@@ -34,7 +34,7 @@ import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
 
 const UpdateFormSchema = {
-  project: z.string().optional(),
+  project: z.string(),
 };
 
 export const handle = {
@@ -46,7 +46,6 @@ export async function loader({ request }: LoaderArgs) {
   const summaryResponse = await getLoggedInApiClient(
     session
   ).getSummaries.getSummaries({
-    include_default_project: true,
     include_projects: true,
   });
 
@@ -56,8 +55,7 @@ export async function loader({ request }: LoaderArgs) {
 
   return json({
     collectionProject: metricSettingsResponse.collection_project,
-    defaultProject: summaryResponse.default_project as Project,
-    allProjects: summaryResponse.projects as Array<Project>,
+    allProjects: summaryResponse.projects as Array<ProjectSummary>,
   });
 }
 
@@ -66,10 +64,6 @@ export async function action({ request }: ActionArgs) {
   const form = await parseForm(request, UpdateFormSchema);
 
   try {
-    if (form.project === undefined) {
-      throw new Error("Invalid application state");
-    }
-
     await getLoggedInApiClient(session).metrics.metricChangeCollectionProject({
       collection_project_ref_id: form.project,
     });

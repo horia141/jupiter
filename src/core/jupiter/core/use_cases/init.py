@@ -75,7 +75,7 @@ class InitArgs(UseCaseArgsBase):
     auth_password: PasswordNewPlain
     auth_password_repeat: PasswordNewPlain
     workspace_name: WorkspaceName
-    workspace_first_project_name: ProjectName
+    workspace_root_project_name: ProjectName
     workspace_feature_flags: set[WorkspaceFeature]
 
 
@@ -172,21 +172,14 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 new_project_collection,
             )
 
-            new_default_project = Project.new_project(
+            new_root_project = Project.new_root_project(
                 ctx=context.domain_context,
                 project_collection_ref_id=new_project_collection.ref_id,
-                parent_project_ref_id=None,
-                name=args.workspace_first_project_name,
+                name=args.workspace_root_project_name,
             )
-            new_default_project = await uow.get_for(Project).create(
-                new_default_project,
+            new_root_project = await uow.get_for(Project).create(
+                new_root_project,
             )
-
-            new_workspace = new_workspace.change_default_project(
-                ctx=context.domain_context,
-                default_project_ref_id=new_default_project.ref_id,
-            )
-            await uow.get_for(Workspace).save(new_workspace)
 
             new_inbox_task_collection = InboxTaskCollection.new_inbox_task_collection(
                 ctx=context.domain_context,
@@ -201,7 +194,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                     ctx=context.domain_context,
                     workspace_ref_id=new_workspace.ref_id,
                     generation_period=RecurringTaskPeriod.DAILY,
-                    cleanup_project_ref_id=new_default_project.ref_id,
+                    cleanup_project_ref_id=new_root_project.ref_id,
                 )
             )
             new_working_mem_collection = await uow.get_for(WorkingMemCollection).create(
@@ -238,7 +231,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 periods={RecurringTaskPeriod.WEEKLY},
                 writing_task_eisen=Eisen.IMPORTANT,
                 writing_task_difficulty=Difficulty.MEDIUM,
-                writing_project_ref_id=new_default_project.ref_id,
+                writing_project_ref_id=new_root_project.ref_id,
             )
             journal_collection = await uow.get_for(JournalCollection).create(
                 journal_collection,
@@ -263,7 +256,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             new_metric_collection = MetricCollection.new_metric_collection(
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
-                collection_project_ref_id=new_default_project.ref_id,
+                collection_project_ref_id=new_root_project.ref_id,
             )
             new_metric_collection = await uow.get_for(MetricCollection).create(
                 new_metric_collection,
@@ -272,7 +265,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             new_person_collection = PersonCollection.new_person_collection(
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
-                catch_up_project_ref_id=new_default_project.ref_id,
+                catch_up_project_ref_id=new_root_project.ref_id,
             )
             new_person_collection = await uow.get_for(PersonCollection).create(
                 new_person_collection,
@@ -291,7 +284,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             new_slack_task_collection = SlackTaskCollection.new_slack_task_collection(
                 ctx=context.domain_context,
                 push_integration_group_ref_id=new_push_integration_group.ref_id,
-                generation_project_ref_id=new_default_project.ref_id,
+                generation_project_ref_id=new_root_project.ref_id,
             )
             new_slack_task_collection = await uow.get_for(SlackTaskCollection).create(
                 new_slack_task_collection,
@@ -300,7 +293,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             new_email_task_collection = EmailTaskCollection.new_email_task_collection(
                 ctx=context.domain_context,
                 push_integration_group_ref_id=new_push_integration_group.ref_id,
-                generation_project_ref_id=new_default_project.ref_id,
+                generation_project_ref_id=new_root_project.ref_id,
             )
             new_email_task_collection = await uow.get_for(EmailTaskCollection).create(
                 new_email_task_collection,
@@ -337,7 +330,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
 
         async with self._search_storage_engine.get_unit_of_work() as search_uow:
             await search_uow.search_repository.upsert(
-                new_workspace.ref_id, new_default_project
+                new_workspace.ref_id, new_root_project
             )
 
         auth_token = self._auth_token_stamper.stamp_for_general(new_user)

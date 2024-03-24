@@ -104,7 +104,7 @@ async def main() -> None:
 
     top_level_context = TopLevelContext(
         default_workspace_name=top_level_info.deafult_workspace_name,
-        default_first_project_name=top_level_info.default_first_project_name,
+        default_first_project_name=top_level_info.default_root_project_name,
         user=top_level_info.user,
         workspace=top_level_info.workspace,
     )

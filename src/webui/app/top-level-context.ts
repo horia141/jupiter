@@ -44,7 +44,6 @@ export const TopLevelInfoContext = createContext<TopLevelInfo>({
     last_modified_time: "0",
     archived_time: "0",
     name: "food",
-    default_project_ref_id: "bad",
     feature_flags: {},
   },
 });

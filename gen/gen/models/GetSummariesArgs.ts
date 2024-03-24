@@ -7,7 +7,6 @@
  */
 export type GetSummariesArgs = {
     allow_archived?: boolean;
-    include_default_project?: boolean;
     include_vacations?: boolean;
     include_projects?: boolean;
     include_inbox_tasks?: boolean;

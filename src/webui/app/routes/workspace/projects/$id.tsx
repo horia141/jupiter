@@ -28,7 +28,7 @@ import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
-import { getIntent } from "~/logic/intent";
+import { isRootProject } from "~/logic/domain/project";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation as useLoaderDataForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -38,11 +38,22 @@ const ParamsSchema = {
   id: z.string(),
 };
 
-const UpdateFormSchema = {
-  intent: z.string(),
-  parentProjectRefId: z.string().optional(),
-  name: z.string().optional(),
-};
+const UpdateFormSchema = z.discriminatedUnion("intent", [
+  z.object({
+    intent: z.literal("update"),
+    name: z.string(),
+  }),
+  z.object({
+    intent: z.literal("change-parent"),
+    parentProjectRefId: z.string(),
+  }),
+  z.object({
+    intent: z.literal("create-note"),
+  }),
+  z.object({
+    intent: z.literal("archive"),
+  }),
+]);
 
 export const handle = {
   displayType: DisplayType.LEAF,
@@ -65,6 +76,7 @@ export async function loader({ request, params }: LoaderArgs) {
     });
 
     return json({
+      rootProject: summaryResponse.root_project as ProjectSummary,
       allProjects: summaryResponse.projects as Array<ProjectSummary>,
       project: response.project,
       note: response.note,
@@ -86,10 +98,8 @@ export async function action({ request, params }: ActionArgs) {
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
 
-  const { intent } = getIntent<undefined>(form.intent);
-
   try {
-    switch (intent) {
+    switch (form.intent) {
       case "update": {
         await getLoggedInApiClient(session).projects.projectUpdate({
           ref_id: id,
@@ -105,11 +115,7 @@ export async function action({ request, params }: ActionArgs) {
       case "change-parent": {
         await getLoggedInApiClient(session).projects.projectChangeParent({
           ref_id: id,
-          parent_project_ref_id:
-            form.parentProjectRefId !== undefined &&
-            form.parentProjectRefId !== "none"
-              ? form.parentProjectRefId
-              : undefined,
+          parent_project_ref_id: form.parentProjectRefId,
         });
 
         return redirect(`/workspace/projects/${id}`);
@@ -164,21 +170,17 @@ export default function Project() {
   );
   const [selectedProject, setSelectedProject] = useState(
     parentProject === undefined
-      ? { project_ref_id: "none", label: "none" }
+      ? {
+          project_ref_id: loaderData.rootProject.ref_id,
+          label: loaderData.rootProject.name,
+        }
       : { project_ref_id: parentProject.ref_id, label: parentProject.name }
   );
 
-  const allProjectsAsOptions = [
-    {
-      project_ref_id: "none",
-      label: "None",
-    },
-  ].concat(
-    loaderData.allProjects.map((project) => ({
-      project_ref_id: project.ref_id,
-      label: project.name,
-    }))
-  );
+  const allProjectsAsOptions = loaderData.allProjects.map((project) => ({
+    project_ref_id: project.ref_id,
+    label: project.name,
+  }));
 
   useEffect(() => {
     const parentProject = loaderData.allProjects.find(
@@ -186,7 +188,10 @@ export default function Project() {
     );
     setSelectedProject(
       parentProject === undefined
-        ? { project_ref_id: "none", label: "none" }
+        ? {
+            project_ref_id: loaderData.rootProject.ref_id,
+            label: loaderData.rootProject.name,
+          }
         : { project_ref_id: parentProject.ref_id, label: parentProject.name }
     );
   }, [loaderData]);
@@ -194,7 +199,7 @@ export default function Project() {
   return (
     <LeafPanel
       key={loaderData.project.ref_id}
-      showArchiveButton
+      showArchiveButton={!isRootProject(loaderData.project)}
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/projects"
     >
@@ -206,7 +211,7 @@ export default function Project() {
               <Autocomplete
                 id="parentProject"
                 options={allProjectsAsOptions}
-                readOnly={!inputsEnabled}
+                readOnly={!inputsEnabled || isRootProject(loaderData.project)}
                 value={selectedProject}
                 disableClearable={true}
                 onChange={(e, v) => setSelectedProject(v)}
@@ -257,7 +262,7 @@ export default function Project() {
 
             <Button
               variant="outlined"
-              disabled={!inputsEnabled}
+              disabled={!inputsEnabled || isRootProject(loaderData.project)}
               type="submit"
               name="intent"
               value="change-parent"

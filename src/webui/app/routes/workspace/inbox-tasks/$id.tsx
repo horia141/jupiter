@@ -30,7 +30,7 @@ import type {
   Habit,
   Metric,
   Person,
-  Project,
+  ProjectSummary,
   SlackTask,
   WorkingMem,
 } from "jupiter-gen";
@@ -108,7 +108,6 @@ export async function loader({ request, params }: LoaderArgs) {
     session
   ).getSummaries.getSummaries({
     allow_archived: true,
-    include_default_project: true,
     include_projects: true,
     include_big_plans: true,
   });
@@ -123,8 +122,8 @@ export async function loader({ request, params }: LoaderArgs) {
 
     return json({
       info: result,
-      defaultProject: summaryResponse.default_project as Project,
-      allProjects: summaryResponse.projects as Array<Project>,
+      rootProject: summaryResponse.root_project as ProjectSummary,
+      allProjects: summaryResponse.projects as Array<ProjectSummary>,
       allBigPlans: summaryResponse.big_plans as Array<BigPlan>,
     });
   } catch (error) {
@@ -206,9 +205,12 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "change-project": {
+        if (form.project === undefined) {
+          throw new Error("Unexpected null project");
+        }
         await getLoggedInApiClient(session).inboxTasks.inboxTaskChangeProject({
           ref_id: id,
-          project_ref_id: form.project ? form.project : undefined,
+          project_ref_id: form.project,
         });
 
         return redirect(`/workspace/inbox-tasks/${id}`);
@@ -306,7 +308,7 @@ export default function InboxTask() {
   const canChangeProject = doesInboxTaskAllowChangingProject(inboxTask.source);
   const canChangeBigPlan = doesInboxTaskAllowChangingBigPlan(inboxTask.source);
 
-  const allProjectsById: { [k: string]: Project } = {};
+  const allProjectsById: { [k: string]: ProjectSummary } = {};
   if (
     isWorkspaceFeatureAvailable(
       topLevelInfo.workspace,
@@ -350,7 +352,7 @@ export default function InboxTask() {
   ) {
     setSelectedBigPlan({ label, big_plan_id });
     if (big_plan_id === "none") {
-      setSelectedProject(loaderData.defaultProject.ref_id);
+      setSelectedProject(loaderData.rootProject.ref_id);
       setBlockedToSelectProject(false);
     } else {
       const projectId = allBigPlansById[big_plan_id].project_ref_id;
@@ -553,7 +555,7 @@ export default function InboxTask() {
                   onChange={handleChangeProject}
                   label="Project"
                 >
-                  {loaderData.allProjects.map((p: Project) => (
+                  {loaderData.allProjects.map((p) => (
                     <MenuItem key={p.ref_id} value={p.ref_id}>
                       {p.name}
                     </MenuItem>
@@ -561,7 +563,7 @@ export default function InboxTask() {
                 </Select>
                 <FieldError
                   actionResult={actionData}
-                  fieldName="/project_key"
+                  fieldName="/project_ref_id"
                 />
               </FormControl>
             )}

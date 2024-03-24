@@ -1,4 +1,6 @@
 """The project."""
+import abc
+
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.chores.chore import Chore
 from jupiter.core.domain.core.notes.note import Note
@@ -18,6 +20,7 @@ from jupiter.core.framework.entity import (
     entity,
     update_entity_action,
 )
+from jupiter.core.framework.repository import LeafEntityRepository
 from jupiter.core.framework.update_action import UpdateAction
 
 
@@ -40,10 +43,25 @@ class Project(LeafEntity):
 
     @staticmethod
     @create_entity_action
+    def new_root_project(
+        ctx: DomainContext,
+        project_collection_ref_id: EntityId,
+        name: ProjectName,
+    ) -> "Project":
+        """Create a root project."""
+        return Project._create(
+            ctx,
+            project_collection=ParentLink(project_collection_ref_id),
+            parent_project_ref_id=None,
+            name=name,
+        )
+
+    @staticmethod
+    @create_entity_action
     def new_project(
         ctx: DomainContext,
         project_collection_ref_id: EntityId,
-        parent_project_ref_id: EntityId | None,
+        parent_project_ref_id: EntityId,
         name: ProjectName,
     ) -> "Project":
         """Create a project."""
@@ -58,9 +76,11 @@ class Project(LeafEntity):
     def change_parent(
         self,
         ctx: DomainContext,
-        parent_project_ref_id: EntityId | None,
+        parent_project_ref_id: EntityId,
     ) -> "Project":
         """Change the parent project of the project."""
+        if self.is_root:
+            raise Exception("Cannot change the parent of a root project.")
         return self._new_version(
             ctx,
             parent_project_ref_id=parent_project_ref_id,
@@ -77,3 +97,16 @@ class Project(LeafEntity):
             ctx,
             name=name.or_else(self.name),
         )
+
+    @property
+    def is_root(self) -> bool:
+        """Return True if this is a root project."""
+        return self.parent_project_ref_id is None
+
+
+class ProjectRepository(LeafEntityRepository[Project], abc.ABC):
+    """A repository of projects."""
+
+    @abc.abstractmethod
+    async def load_root_project(self, parent_ref_id: EntityId) -> Project:
+        """Load the root project."""

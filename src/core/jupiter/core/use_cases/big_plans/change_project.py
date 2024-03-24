@@ -4,6 +4,7 @@ from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
+from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
@@ -22,7 +23,7 @@ class BigPlanChangeProjectArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
     ref_id: EntityId
-    project_ref_id: EntityId | None
+    project_ref_id: EntityId
 
 
 @mutation_use_case([WorkspaceFeature.BIG_PLANS, WorkspaceFeature.PROJECTS])
@@ -41,10 +42,12 @@ class BigPlanChangeProjectUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
+        await uow.get_for(Project).load_by_id(args.project_ref_id)
+
         big_plan = await uow.get_for(BigPlan).load_by_id(args.ref_id)
         big_plan = big_plan.change_project(
             context.domain_context,
-            project_ref_id=args.project_ref_id or workspace.default_project_ref_id,
+            project_ref_id=args.project_ref_id,
         )
 
         await uow.get_for(BigPlan).save(big_plan)

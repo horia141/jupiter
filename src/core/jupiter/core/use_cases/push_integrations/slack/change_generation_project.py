@@ -30,7 +30,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 class SlackTaskChangeGenerationProjectArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
-    generation_project_ref_id: EntityId | None
+    generation_project_ref_id: EntityId
 
 
 @mutation_use_case([WorkspaceFeature.SLACK_TASKS, WorkspaceFeature.PROJECTS])
@@ -57,16 +57,9 @@ class SlackTaskChangeGenerationProjectUseCase(
         )
         old_generation_project_ref_id = slack_task_collection.generation_project_ref_id
 
-        if args.generation_project_ref_id is not None:
-            generation_project = await uow.get_for(Project).load_by_id(
-                args.generation_project_ref_id,
-            )
-            generation_project_ref_id = generation_project.ref_id
-        else:
-            generation_project = await uow.get_for(Project).load_by_id(
-                workspace.default_project_ref_id,
-            )
-            generation_project_ref_id = workspace.default_project_ref_id
+        await uow.get_for(Project).load_by_id(
+            args.generation_project_ref_id,
+        )
 
         slack_tasks = await uow.get_for(SlackTask).find_all(
             parent_ref_id=slack_task_collection.ref_id,
@@ -85,7 +78,7 @@ class SlackTaskChangeGenerationProjectUseCase(
         )
 
         if (
-            old_generation_project_ref_id != generation_project_ref_id
+            old_generation_project_ref_id != args.generation_project_ref_id
             and len(slack_tasks) > 0
         ):
             updated_generated_inbox_tasks = []
@@ -96,7 +89,7 @@ class SlackTaskChangeGenerationProjectUseCase(
                 ]
                 update_inbox_task = inbox_task.update_link_to_slack_task(
                     ctx=context.domain_context,
-                    project_ref_id=generation_project_ref_id,
+                    project_ref_id=args.generation_project_ref_id,
                     user=slack_task.user,
                     channel=slack_task.channel,
                     message=slack_task.message,
@@ -112,7 +105,7 @@ class SlackTaskChangeGenerationProjectUseCase(
 
         slack_task_collection = slack_task_collection.change_generation_project(
             ctx=context.domain_context,
-            generation_project_ref_id=generation_project_ref_id,
+            generation_project_ref_id=args.generation_project_ref_id,
         )
 
         await uow.get_for(SlackTaskCollection).save(slack_task_collection)

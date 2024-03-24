@@ -6,6 +6,7 @@ from jupiter.core.domain.core import schedules
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
+from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
@@ -25,7 +26,7 @@ class ChoreChangeProjectArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
     ref_id: EntityId
-    project_ref_id: EntityId | None
+    project_ref_id: EntityId
 
 
 @mutation_use_case([WorkspaceFeature.CHORES, WorkspaceFeature.PROJECTS])
@@ -55,6 +56,8 @@ class ChoreChangeProjectUseCase(
             chore_ref_id=[args.ref_id],
         )
 
+        await uow.get_for(Project).load_by_id(args.project_ref_id)
+
         for inbox_task in all_inbox_tasks:
             schedule = schedules.get_schedule(
                 chore.gen_params.period,
@@ -69,7 +72,7 @@ class ChoreChangeProjectUseCase(
 
             inbox_task = inbox_task.update_link_to_chore(
                 ctx=context.domain_context,
-                project_ref_id=args.project_ref_id or workspace.default_project_ref_id,
+                project_ref_id=args.project_ref_id,
                 name=schedule.full_name,
                 timeline=schedule.timeline,
                 actionable_date=schedule.actionable_date,
@@ -82,7 +85,7 @@ class ChoreChangeProjectUseCase(
 
         chore = chore.change_project(
             ctx=context.domain_context,
-            project_ref_id=args.project_ref_id or workspace.default_project_ref_id,
+            project_ref_id=args.project_ref_id,
         )
         await uow.get_for(Chore).save(chore)
         await progress_reporter.mark_updated(chore)

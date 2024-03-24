@@ -21,7 +21,6 @@ from jupiter.core.domain.push_integrations.slack.slack_task_collection import (
 )
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.working_mem.working_mem_collection import WorkingMemCollection
-from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.use_case import (
@@ -57,14 +56,14 @@ class ProjectRemoveUseCase(
         args: ProjectRemoveArgs,
     ) -> None:
         """Execute the command's action."""
-        if args.backup_project_ref_id:
-            if context.workspace.default_project_ref_id == args.ref_id:
-                workspace = context.workspace.change_default_project(
-                    context.domain_context,
-                    args.backup_project_ref_id,
-                )
-                await uow.get_for(Workspace).save(workspace)
+        workspace = context.workspace
 
+        project = await uow.get_for(Project).load_by_id(args.ref_id)
+
+        if project.is_root:
+            raise InputValidationError("The root project cannot be archived")
+
+        if args.backup_project_ref_id:
             metric_collection = await uow.get_for(MetricCollection).load_by_parent(
                 workspace.ref_id
             )
@@ -152,7 +151,6 @@ class ProjectRemoveUseCase(
                 except ProjectTreeHasCyclesError as err:
                     raise InputValidationError("The project tree has cycles.") from err
 
-        project = await uow.get_for(Project).load_by_id(args.ref_id)
         project_remove_service = ProjectRemoveService()
         await project_remove_service.do_it(
             context.domain_context, uow, progress_reporter, context.workspace, project

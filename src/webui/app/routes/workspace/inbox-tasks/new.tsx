@@ -19,7 +19,7 @@ import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import type { BigPlanSummary, Project } from "jupiter-gen";
+import type { BigPlanSummary, Project, ProjectSummary } from "jupiter-gen";
 import { ApiError, Difficulty, Eisen, WorkspaceFeature } from "jupiter-gen";
 import { useContext, useState } from "react";
 import { z } from "zod";
@@ -76,7 +76,6 @@ export async function loader({ request }: LoaderArgs) {
   const summaryResponse = await getLoggedInApiClient(
     session
   ).getSummaries.getSummaries({
-    include_default_project: true,
     include_projects: true,
     include_big_plans: reason === "standard",
   });
@@ -101,8 +100,8 @@ export async function loader({ request }: LoaderArgs) {
 
   const defaultProject =
     reason === "for-big-plan"
-      ? (ownerProject as Project)
-      : (summaryResponse.default_project as Project);
+      ? (ownerProject as ProjectSummary)
+      : (summaryResponse.root_project as ProjectSummary);
 
   const defaultBigPlan: BigPlanACOption =
     reason === "for-big-plan"

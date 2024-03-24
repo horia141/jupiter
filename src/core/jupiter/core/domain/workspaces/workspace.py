@@ -28,7 +28,7 @@ from jupiter.core.domain.smart_lists.smart_list_collection import SmartListColle
 from jupiter.core.domain.sync_target import SyncTarget
 from jupiter.core.domain.vacations.vacation_collection import VacationCollection
 from jupiter.core.domain.workspaces.workspace_name import WorkspaceName
-from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
+from jupiter.core.framework.base.entity_id import BAD_REF_ID
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     ContainsOne,
@@ -47,7 +47,6 @@ class Workspace(RootEntity):
     """The workspace where everything happens."""
 
     name: WorkspaceName
-    default_project_ref_id: EntityId
     feature_flags: WorkspaceFeatureFlags
 
     inbox_task_collection = ContainsOne(InboxTaskCollection, workspace_ref_id=IsRefId())
@@ -98,18 +97,6 @@ class Workspace(RootEntity):
         return self._new_version(
             ctx,
             name=name.or_else(self.name),
-        )
-
-    @update_entity_action
-    def change_default_project(
-        self,
-        ctx: DomainContext,
-        default_project_ref_id: EntityId,
-    ) -> "Workspace":
-        """Change the default project of the workspace."""
-        return self._new_version(
-            ctx,
-            default_project_ref_id=default_project_ref_id,
         )
 
     @update_entity_action

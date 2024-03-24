@@ -7,9 +7,7 @@ import {
   CardHeader,
   FormControl,
   InputLabel,
-  MenuItem,
   OutlinedInput,
-  Select,
   Stack,
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
@@ -17,7 +15,6 @@ import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import type { Project } from "jupiter-gen";
 import { ApiError, WorkspaceFeature } from "jupiter-gen";
 import { useContext } from "react";
 import { z } from "zod";
@@ -30,7 +27,6 @@ import { ToolPanel } from "~/components/infra/layout/tool-panel";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
-import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { getIntent } from "~/logic/intent";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -51,20 +47,12 @@ export const handle = {
 
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
-  const summaryResponse = await getLoggedInApiClient(
-    session
-  ).getSummaries.getSummaries({
-    include_default_project: true,
-    include_projects: true,
-  });
   const result = await getLoggedInApiClient(session).workspaces.workspaceLoad(
     {}
   );
 
   return json({
     workspace: result.workspace,
-    defaultProject: summaryResponse.default_project as Project,
-    allProjects: summaryResponse.projects as Array<Project>,
   });
 }
 
@@ -82,16 +70,6 @@ export async function action({ request }: ActionArgs) {
             should_change: true,
             value: form.name,
           },
-        });
-
-        return redirect(`/workspace/settings`);
-      }
-
-      case "change-default-project": {
-        await getLoggedInApiClient(
-          session
-        ).workspaces.workspaceChangeDefaultProject({
-          default_project_ref_id: form.defaultProject,
         });
 
         return redirect(`/workspace/settings`);
@@ -172,67 +150,6 @@ export default function Settings() {
               </ButtonGroup>
             </CardActions>
           </Card>
-
-          {isWorkspaceFeatureAvailable(
-            topLevelInfo.workspace,
-            WorkspaceFeature.PROJECTS
-          ) && (
-            <Card>
-              <GlobalError
-                intent="change-default-project"
-                actionResult={actionData}
-              />
-              <CardHeader title="Default Project" />
-              <CardContent>
-                <Stack spacing={2} useFlexGap>
-                  <FormControl fullWidth>
-                    <InputLabel id="defaultProject">Default Project</InputLabel>
-                    <Select
-                      labelId="defaultProject"
-                      name="defaultProject"
-                      readOnly={!inputsEnabled}
-                      defaultValue={loaderData.defaultProject.ref_id}
-                      label="Default Project"
-                    >
-                      {loaderData.allProjects.map((p) => (
-                        <MenuItem key={p.ref_id} value={p.ref_id}>
-                          {p.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                    <FieldError
-                      actionResult={actionData}
-                      fieldName="/deafult_project_ref_id"
-                    />
-                  </FormControl>
-                </Stack>
-              </CardContent>
-
-              <CardActions>
-                <ButtonGroup>
-                  <Button
-                    variant="contained"
-                    disabled={!inputsEnabled}
-                    type="submit"
-                    name="intent"
-                    value="change-default-project"
-                  >
-                    Change Default Project
-                  </Button>
-                </ButtonGroup>
-              </CardActions>
-            </Card>
-          )}
-          {!isWorkspaceFeatureAvailable(
-            topLevelInfo.workspace,
-            WorkspaceFeature.PROJECTS
-          ) && (
-            <input
-              type="hidden"
-              name="defaultProject"
-              value={loaderData.defaultProject.ref_id}
-            />
-          )}
 
           <Card>
             <GlobalError

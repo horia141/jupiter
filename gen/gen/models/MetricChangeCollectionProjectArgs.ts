@@ -8,6 +8,6 @@ import type { EntityId } from './EntityId';
  * PersonFindArgs.
  */
 export type MetricChangeCollectionProjectArgs = {
-    collection_project_ref_id?: EntityId;
+    collection_project_ref_id: EntityId;
 };
 

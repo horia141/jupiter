@@ -19,7 +19,7 @@ from jupiter.core.domain.habits.habit_collection import HabitCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.persons.person_collection import PersonCollection
-from jupiter.core.domain.projects.project import Project
+from jupiter.core.domain.projects.project import ProjectRepository
 from jupiter.core.domain.projects.project_collection import ProjectCollection
 from jupiter.core.domain.smart_lists.smart_list_collection import SmartListCollection
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -42,7 +42,6 @@ class GetSummariesArgs(UseCaseArgsBase):
     """Get summaries args."""
 
     allow_archived: bool | None
-    include_default_project: bool | None
     include_vacations: bool | None
     include_projects: bool | None
     include_inbox_tasks: bool | None
@@ -58,8 +57,8 @@ class GetSummariesArgs(UseCaseArgsBase):
 class GetSummariesResult(UseCaseResultBase):
     """Get summaries result."""
 
-    default_project: ProjectSummary | None
     vacations: list[VacationSummary] | None
+    root_project: ProjectSummary | None
     projects: list[ProjectSummary] | None
     inbox_tasks: list[InboxTaskSummary] | None
     habits: list[HabitSummary] | None
@@ -114,17 +113,6 @@ class GetSummariesUseCase(
             workspace.ref_id,
         )
 
-        default_project = None
-        if args.include_default_project:
-            default_project_full = await uow.get_for(Project).load_by_id(
-                workspace.default_project_ref_id,
-            )
-            default_project = ProjectSummary(
-                ref_id=default_project_full.ref_id,
-                parent_project_ref_id=default_project_full.parent_project_ref_id,
-                name=default_project_full.name,
-            )
-
         vacations = None
         if (
             workspace.is_feature_available(WorkspaceFeature.VACATIONS)
@@ -134,11 +122,21 @@ class GetSummariesUseCase(
                 parent_ref_id=vacation_collection.workspace.ref_id,
                 allow_archived=allow_archived,
             )
+
+        root_project = None
         projects = None
         if (
             workspace.is_feature_available(WorkspaceFeature.PROJECTS)
             and args.include_projects
         ):
+            root_project_real = await uow.get(ProjectRepository).load_root_project(
+                project_collection.ref_id
+            )
+            root_project = ProjectSummary(
+                ref_id=root_project_real.ref_id,
+                parent_project_ref_id=root_project_real.parent_ref_id,
+                name=root_project_real.name,
+            )
             projects = await uow.get(FastInfoRepository).find_all_project_summaries(
                 parent_ref_id=project_collection.workspace.ref_id,
                 allow_archived=allow_archived,
@@ -212,8 +210,8 @@ class GetSummariesUseCase(
             )
 
         return GetSummariesResult(
-            default_project=default_project,
             vacations=vacations,
+            root_project=root_project,
             projects=projects,
             inbox_tasks=inbox_tasks,
             habits=habits,

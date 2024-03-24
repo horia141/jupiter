@@ -22,7 +22,7 @@ class ProjectChangeParentArgs(UseCaseArgsBase):
     """Project change parent args."""
 
     ref_id: EntityId
-    parent_project_ref_id: EntityId | None
+    parent_project_ref_id: EntityId
 
 
 @mutation_use_case(WorkspaceFeature.PROJECTS)
@@ -40,6 +40,8 @@ class ProjectChangeParentUseCase(
     ) -> None:
         """Execute the command's action."""
         project = await uow.get_for(Project).load_by_id(args.ref_id)
+        if project.is_root:
+            raise InputValidationError("Root projects cannot have a parent project.")
         project = project.change_parent(
             ctx=context.domain_context,
             parent_project_ref_id=args.parent_project_ref_id,

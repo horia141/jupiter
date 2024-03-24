@@ -9,6 +9,7 @@ from jupiter.core.domain.features import (
 from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
+from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
@@ -28,7 +29,7 @@ class HabitChangeProjectArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
     ref_id: EntityId
-    project_ref_id: EntityId | None
+    project_ref_id: EntityId
 
 
 @mutation_use_case([WorkspaceFeature.HABITS, WorkspaceFeature.PROJECTS])
@@ -64,6 +65,8 @@ class HabitChangeProjectUseCase(
             habit_ref_id=[args.ref_id],
         )
 
+        await uow.get_for(Project).load_by_id(args.project_ref_id)
+
         for inbox_task in all_inbox_tasks:
             schedule = schedules.get_schedule(
                 habit.gen_params.period,
@@ -78,7 +81,7 @@ class HabitChangeProjectUseCase(
 
             inbox_task = inbox_task.update_link_to_habit(
                 context.domain_context,
-                project_ref_id=args.project_ref_id or workspace.default_project_ref_id,
+                project_ref_id=args.project_ref_id,
                 name=schedule.full_name,
                 timeline=schedule.timeline,
                 repeat_index=inbox_task.recurring_repeat_index,
@@ -93,7 +96,7 @@ class HabitChangeProjectUseCase(
 
         habit = habit.change_project(
             context.domain_context,
-            project_ref_id=args.project_ref_id or workspace.default_project_ref_id,
+            project_ref_id=args.project_ref_id,
         )
         await uow.get_for(Habit).save(habit)
         await progress_reporter.mark_updated(habit)

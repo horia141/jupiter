@@ -26,7 +26,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 class WorkingMemChangeCleanUpProjectArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
-    cleanup_project_ref_id: EntityId | None
+    cleanup_project_ref_id: EntityId
 
 
 @mutation_use_case([WorkspaceFeature.WORKING_MEM, WorkspaceFeature.PROJECTS])
@@ -50,13 +50,9 @@ class WorkingMemChangeCleanUpProjectUseCase(
         )
         old_catch_up_project_ref_id = working_mem_collection.cleanup_project_ref_id
 
-        if args.cleanup_project_ref_id is not None:
-            project = await uow.get_for(Project).load_by_id(
-                args.cleanup_project_ref_id,
-            )
-            cleanup_project_ref_id = project.ref_id
-        else:
-            cleanup_project_ref_id = workspace.default_project_ref_id
+        await uow.get_for(Project).load_by_id(
+            args.cleanup_project_ref_id,
+        )
 
         working_mems = await uow.get_for(WorkingMem).find_all(
             parent_ref_id=working_mem_collection.ref_id,
@@ -64,7 +60,7 @@ class WorkingMemChangeCleanUpProjectUseCase(
         )
 
         if (
-            old_catch_up_project_ref_id != cleanup_project_ref_id
+            old_catch_up_project_ref_id != args.cleanup_project_ref_id
             and len(working_mems) > 0
         ):
             inbox_task_collection = await uow.get_for(
@@ -82,7 +78,7 @@ class WorkingMemChangeCleanUpProjectUseCase(
             for inbox_task in all_collection_inbox_tasks:
                 inbox_task = inbox_task.update_link_to_working_mem_cleanup(
                     context.domain_context,
-                    project_ref_id=cleanup_project_ref_id,
+                    project_ref_id=args.cleanup_project_ref_id,
                     name=inbox_task.name,
                     due_date=cast(ADate, inbox_task.due_date),
                     recurring_timeline=cast(str, inbox_task.recurring_timeline),
@@ -95,7 +91,7 @@ class WorkingMemChangeCleanUpProjectUseCase(
 
             working_mem_collection = working_mem_collection.change_cleanup_project(
                 context.domain_context,
-                cleanup_project_ref_id=cleanup_project_ref_id,
+                cleanup_project_ref_id=args.cleanup_project_ref_id,
             )
 
             await uow.get_for(WorkingMemCollection).save(working_mem_collection)

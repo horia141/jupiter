@@ -26,7 +26,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 class MetricChangeCollectionProjectArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
-    collection_project_ref_id: EntityId | None
+    collection_project_ref_id: EntityId
 
 
 @mutation_use_case([WorkspaceFeature.METRICS, WorkspaceFeature.PROJECTS])
@@ -50,13 +50,9 @@ class MetricChangeCollectionProjectUseCase(
         )
         old_catch_up_project_ref_id = metric_collection.collection_project_ref_id
 
-        if args.collection_project_ref_id is not None:
-            project = await uow.get_for(Project).load_by_id(
-                args.collection_project_ref_id,
-            )
-            collection_project_ref_id = project.ref_id
-        else:
-            collection_project_ref_id = workspace.default_project_ref_id
+        await uow.get_for(Project).load_by_id(
+            args.collection_project_ref_id,
+        )
 
         metrics = await uow.get_for(Metric).find_all(
             parent_ref_id=metric_collection.ref_id,
@@ -64,7 +60,7 @@ class MetricChangeCollectionProjectUseCase(
         )
 
         if (
-            old_catch_up_project_ref_id != collection_project_ref_id
+            old_catch_up_project_ref_id != args.collection_project_ref_id
             and len(metrics) > 0
         ):
             inbox_task_collection = await uow.get_for(
@@ -82,7 +78,7 @@ class MetricChangeCollectionProjectUseCase(
             for inbox_task in all_collection_inbox_tasks:
                 inbox_task = inbox_task.update_link_to_metric(
                     context.domain_context,
-                    project_ref_id=collection_project_ref_id,
+                    project_ref_id=args.collection_project_ref_id,
                     name=inbox_task.name,
                     recurring_timeline=cast(str, inbox_task.recurring_timeline),
                     eisen=inbox_task.eisen,
@@ -98,7 +94,7 @@ class MetricChangeCollectionProjectUseCase(
 
             metric_collection = metric_collection.change_collection_project(
                 context.domain_context,
-                collection_project_ref_id=collection_project_ref_id,
+                collection_project_ref_id=args.collection_project_ref_id,
             )
 
             await uow.get_for(MetricCollection).save(metric_collection)

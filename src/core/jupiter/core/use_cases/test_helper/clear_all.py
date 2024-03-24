@@ -40,8 +40,9 @@ from jupiter.core.domain.metrics.service.remove_service import MetricRemoveServi
 from jupiter.core.domain.persons.person import Person
 from jupiter.core.domain.persons.person_collection import PersonCollection
 from jupiter.core.domain.persons.service.remove_service import PersonRemoveService
-from jupiter.core.domain.projects.project import Project
+from jupiter.core.domain.projects.project import Project, ProjectRepository
 from jupiter.core.domain.projects.project_collection import ProjectCollection
+from jupiter.core.domain.projects.project_name import ProjectName
 from jupiter.core.domain.projects.service.remove_service import ProjectRemoveService
 from jupiter.core.domain.push_integrations.email.email_task import EmailTask
 from jupiter.core.domain.push_integrations.email.email_task_collection import (
@@ -74,7 +75,6 @@ from jupiter.core.domain.vacations.vacation import Vacation
 from jupiter.core.domain.vacations.vacation_collection import VacationCollection
 from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.domain.workspaces.workspace_name import WorkspaceName
-from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
     ProgressReporter,
@@ -99,7 +99,7 @@ class ClearAllArgs(UseCaseArgsBase):
     auth_new_password: PasswordNewPlain
     auth_new_password_repeat: PasswordNewPlain
     workspace_name: WorkspaceName
-    workspace_default_project_ref_id: EntityId
+    workspace_root_project_name: ProjectName
     workspace_feature_flags: set[WorkspaceFeature]
 
 
@@ -225,19 +225,11 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
                 await uow.get(ScorePeriodBestRepository).remove(period_best.key)
 
         async with progress_reporter.section("Resetting workspace"):
-            default_project = await uow.get_for(Project).load_by_id(
-                args.workspace_default_project_ref_id,
-            )
-
             workspace = workspace.update(
                 ctx=context.domain_context,
                 name=UpdateAction.change_to(args.workspace_name),
             )
 
-            workspace = workspace.change_default_project(
-                ctx=context.domain_context,
-                default_project_ref_id=default_project.ref_id,
-            )
             workspace = workspace.change_feature_flags(
                 ctx=context.domain_context,
                 feature_flag_controls=workspace_feature_flags_controls,
@@ -245,6 +237,15 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
             )
 
             await uow.get_for(Workspace).save(workspace)
+
+            root_project = await uow.get(ProjectRepository).load_root_project(
+                project_collection.ref_id
+            )
+            root_project = root_project.update(
+                ctx=context.domain_context,
+                name=UpdateAction.change_to(args.workspace_root_project_name),
+            )
+            await uow.get_for(Project).save(root_project)
 
         async with progress_reporter.section("Clearing habits"):
             all_habits = await uow.get_for(Habit).find_all(
@@ -310,24 +311,6 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
                     vacation.ref_id,
                 )
 
-        async with progress_reporter.section("Clearing projects"):
-            all_projects = await uow.get_for(Project).find_all(
-                parent_ref_id=project_collection.ref_id,
-                allow_archived=True,
-            )
-
-            project_remove_service = ProjectRemoveService()
-            for project in all_projects:
-                if project.ref_id == args.workspace_default_project_ref_id:
-                    continue
-                await project_remove_service.do_it(
-                    context.domain_context,
-                    uow,
-                    progress_reporter,
-                    workspace,
-                    project,
-                )
-
         async with progress_reporter.section("Clearing smart lists"):
             all_smart_lists = await uow.get_for(SmartList).find_all(
                 parent_ref_id=smart_list_collection.ref_id,
@@ -350,7 +333,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
 
             metric_collection = metric_collection.change_collection_project(
                 context.domain_context,
-                collection_project_ref_id=default_project.ref_id,
+                collection_project_ref_id=root_project.ref_id,
             )
 
             await uow.get_for(MetricCollection).save(metric_collection)
@@ -373,7 +356,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
 
             person_collection = person_collection.change_catch_up_project(
                 context.domain_context,
-                catch_up_project_ref_id=default_project.ref_id,
+                catch_up_project_ref_id=root_project.ref_id,
             )
 
             await uow.get_for(PersonCollection).save(person_collection)
@@ -395,7 +378,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
             )
             slack_task_collection = slack_task_collection.change_generation_project(
                 context.domain_context,
-                generation_project_ref_id=default_project.ref_id,
+                generation_project_ref_id=root_project.ref_id,
             )
 
             await uow.get_for(SlackTaskCollection).save(slack_task_collection)
@@ -413,7 +396,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
             )
             email_task_collection = email_task_collection.change_generation_project(
                 context.domain_context,
-                generation_project_ref_id=default_project.ref_id,
+                generation_project_ref_id=root_project.ref_id,
             )
 
             await uow.get_for(EmailTaskCollection).save(email_task_collection)
@@ -433,6 +416,24 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
             for inbox_task in all_inbox_tasks:
                 await inbox_task_remove_service.do_it(
                     context.domain_context, uow, progress_reporter, inbox_task
+                )
+
+        async with progress_reporter.section("Clearing projects"):
+            all_projects = await uow.get_for(Project).find_all(
+                parent_ref_id=project_collection.ref_id,
+                allow_archived=True,
+            )
+
+            project_remove_service = ProjectRemoveService()
+            for project in all_projects:
+                if project.is_root:
+                    continue
+                await project_remove_service.do_it(
+                    context.domain_context,
+                    uow,
+                    progress_reporter,
+                    workspace,
+                    project,
                 )
 
         async with progress_reporter.section("Clearing notes"):

@@ -8,6 +8,6 @@ import type { EntityId } from './EntityId';
  * PersonFindArgs.
  */
 export type SlackTaskChangeGenerationProjectArgs = {
-    generation_project_ref_id?: EntityId;
+    generation_project_ref_id: EntityId;
 };
 

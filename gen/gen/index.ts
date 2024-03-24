@@ -382,7 +382,6 @@ export type { WorkingMemLoadResult } from './models/WorkingMemLoadResult';
 export type { WorkingMemLoadSettingsArgs } from './models/WorkingMemLoadSettingsArgs';
 export type { WorkingMemLoadSettingsResult } from './models/WorkingMemLoadSettingsResult';
 export type { Workspace } from './models/Workspace';
-export type { WorkspaceChangeDefaultProjectArgs } from './models/WorkspaceChangeDefaultProjectArgs';
 export type { WorkspaceChangeFeatureFlagsArgs } from './models/WorkspaceChangeFeatureFlagsArgs';
 export { WorkspaceFeature } from './models/WorkspaceFeature';
 export type { WorkspaceFeatureFlagsControls } from './models/WorkspaceFeatureFlagsControls';

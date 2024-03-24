@@ -54,7 +54,7 @@ const WorkspaceInitFormSchema = {
   authPassword: z.string(),
   authPasswordRepeat: z.string(),
   workspaceName: z.string(),
-  workspaceFirstProjectName: z.string(),
+  workspaceRootProjectName: z.string(),
   workspaceFeatureFlags: z.array(z.nativeEnum(WorkspaceFeature)),
 };
 
@@ -71,7 +71,7 @@ export async function loader({ request }: LoaderArgs) {
     userFeatureFlagControls: result.user_feature_flag_controls,
     defaultUserFeatureFlags: result.default_user_feature_flags,
     defaultWorkspaceName: result.deafult_workspace_name,
-    defaultFirstProjectName: result.default_first_project_name,
+    defaultRootProjectName: result.default_root_project_name,
     workspaceFeatureFlagControls: result.workspace_feature_flag_controls,
     defaultWorkspaceFeatureFlags: result.default_workspace_feature_flags,
   });
@@ -91,7 +91,7 @@ export async function action({ request }: ActionArgs) {
       auth_password: form.authPassword,
       auth_password_repeat: form.authPasswordRepeat,
       workspace_name: form.workspaceName,
-      workspace_first_project_name: form.workspaceFirstProjectName,
+      workspace_root_project_name: form.workspaceRootProjectName,
       workspace_feature_flags: form.workspaceFeatureFlags,
     });
 
@@ -242,16 +242,16 @@ export default function WorkspaceInit() {
                     </FormControl>
 
                     <FormControl fullWidth>
-                      <InputLabel id="name">First Project Name</InputLabel>
+                      <InputLabel id="name">Root Project Name</InputLabel>
                       <OutlinedInput
-                        label="First Project Name"
-                        name="workspaceFirstProjectName"
+                        label="Root Project Name"
+                        name="workspaceRootProjectName"
                         readOnly={!inputsEnabled}
-                        defaultValue={loaderData.defaultFirstProjectName}
+                        defaultValue={loaderData.defaultRootProjectName}
                       />
                       <FieldError
                         actionResult={actionData}
-                        fieldName="/workspace_first_project_name"
+                        fieldName="/workspace_root_project_name"
                       />
                     </FormControl>
                   </Stack>

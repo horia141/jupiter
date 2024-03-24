@@ -32,7 +32,7 @@ import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
 
 const CreateFormSchema = {
-  parentProjectRefId: z.string().optional(),
+  parentProjectRefId: z.string(),
   name: z.string(),
 };
 
@@ -45,11 +45,11 @@ export async function loader({ request }: LoaderArgs) {
   const summaryResponse = await getLoggedInApiClient(
     session
   ).getSummaries.getSummaries({
-    include_default_project: true,
     include_projects: true,
   });
 
   return json({
+    rootProject: summaryResponse.root_project as ProjectSummary,
     allProjects: summaryResponse.projects as Array<ProjectSummary>,
   });
 }
@@ -61,11 +61,7 @@ export async function action({ request }: ActionArgs) {
   try {
     const response = await getLoggedInApiClient(session).projects.projectCreate(
       {
-        parent_project_ref_id:
-          form.parentProjectRefId !== undefined &&
-          form.parentProjectRefId !== "none"
-            ? form.parentProjectRefId
-            : undefined,
+        parent_project_ref_id: form.parentProjectRefId,
         name: form.name,
       }
     );
@@ -94,21 +90,14 @@ export default function NewProject() {
   const inputsEnabled = transition.state === "idle";
 
   const [selectedProject, setSelectedProject] = useState({
-    project_ref_id: "none",
-    label: "none",
+    project_ref_id: loaderData.rootProject.ref_id,
+    label: loaderData.rootProject.name,
   });
 
-  const allProjectsAsOptions = [
-    {
-      project_ref_id: "none",
-      label: "None",
-    },
-  ].concat(
-    loaderData.allProjects.map((project) => ({
-      project_ref_id: project.ref_id,
-      label: project.name,
-    }))
-  );
+  const allProjectsAsOptions = loaderData.allProjects.map((project) => ({
+    project_ref_id: project.ref_id,
+    label: project.name,
+  }));
 
   return (
     <LeafPanel returnLocation="/workspace/projects">

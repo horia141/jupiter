@@ -16,7 +16,7 @@ import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import type { Project } from "jupiter-gen";
+import type { ProjectSummary } from "jupiter-gen";
 import { ApiError, WorkspaceFeature } from "jupiter-gen";
 import { useContext } from "react";
 import { z } from "zod";
@@ -46,7 +46,6 @@ export async function loader({ request }: LoaderArgs) {
   const summaryResponse = await getLoggedInApiClient(
     session
   ).getSummaries.getSummaries({
-    include_default_project: true,
     include_projects: true,
   });
 
@@ -56,8 +55,7 @@ export async function loader({ request }: LoaderArgs) {
 
   return json({
     generationProject: slackTaskSettingsResponse.generation_project,
-    defaultProject: summaryResponse.default_project as Project,
-    allProjects: summaryResponse.projects as Array<Project>,
+    allProjects: summaryResponse.projects as Array<ProjectSummary>,
   });
 }
 

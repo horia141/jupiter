@@ -24,7 +24,7 @@ export type LoadTopLevelInfoResult = {
     default_user_feature_flags: Record<string, boolean>;
     user_feature_hack: UserFeature;
     deafult_workspace_name: WorkspaceName;
-    default_first_project_name: ProjectName;
+    default_root_project_name: ProjectName;
     workspace_feature_flag_controls: WorkspaceFeatureFlagsControls;
     default_workspace_feature_flags: Record<string, boolean>;
     workspace_feature_hack: WorkspaceFeature;

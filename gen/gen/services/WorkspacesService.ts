@@ -1,7 +1,6 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { WorkspaceChangeDefaultProjectArgs } from '../models/WorkspaceChangeDefaultProjectArgs';
 import type { WorkspaceChangeFeatureFlagsArgs } from '../models/WorkspaceChangeFeatureFlagsArgs';
 import type { WorkspaceLoadArgs } from '../models/WorkspaceLoadArgs';
 import type { WorkspaceLoadResult } from '../models/WorkspaceLoadResult';
@@ -13,29 +12,6 @@ import type { BaseHttpRequest } from '../core/BaseHttpRequest';
 export class WorkspacesService {
 
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
-    /**
-     * UseCase for changing the default project of a workspace.
-     * UseCase for changing the default project of a workspace.
-     * @param requestBody The input data
-     * @returns any Successful response / Empty body
-     * @throws ApiError
-     */
-    public workspaceChangeDefaultProject(
-        requestBody?: WorkspaceChangeDefaultProjectArgs,
-    ): CancelablePromise<any> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/workspace-change-default-project',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
 
     /**
      * Usecase for changing the feature flags for the workspace.

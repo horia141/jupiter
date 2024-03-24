@@ -26,7 +26,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 class ProjectCreateArgs(UseCaseArgsBase):
     """Project create args."""
 
-    parent_project_ref_id: EntityId | None
+    parent_project_ref_id: EntityId
     name: ProjectName
 
 

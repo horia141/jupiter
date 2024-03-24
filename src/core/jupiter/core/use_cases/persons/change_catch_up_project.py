@@ -26,7 +26,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 class PersonChangeCatchUpProjectArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
-    catch_up_project_ref_id: EntityId | None
+    catch_up_project_ref_id: EntityId
 
 
 @mutation_use_case([WorkspaceFeature.PERSONS, WorkspaceFeature.PROJECTS])
@@ -50,16 +50,9 @@ class PersonChangeCatchUpProjectUseCase(
         )
         old_catch_up_project_ref_id = person_collection.catch_up_project_ref_id
 
-        if args.catch_up_project_ref_id is not None:
-            catch_up_project = await uow.get_for(Project).load_by_id(
-                args.catch_up_project_ref_id,
-            )
-            catch_up_project_ref_id = catch_up_project.ref_id
-        else:
-            catch_up_project = await uow.get_for(Project).load_by_id(
-                workspace.default_project_ref_id,
-            )
-            catch_up_project_ref_id = workspace.default_project_ref_id
+        await uow.get_for(Project).load_by_id(
+            args.catch_up_project_ref_id,
+        )
 
         persons = await uow.get_for(Person).find_all(
             parent_ref_id=person_collection.ref_id,
@@ -83,11 +76,14 @@ class PersonChangeCatchUpProjectUseCase(
             person_ref_id=[p.ref_id for p in persons],
         )
 
-        if old_catch_up_project_ref_id != catch_up_project_ref_id and len(persons) > 0:
+        if (
+            old_catch_up_project_ref_id != args.catch_up_project_ref_id
+            and len(persons) > 0
+        ):
             for inbox_task in all_catch_up_inbox_tasks:
                 inbox_task = inbox_task.update_link_to_person_catch_up(
                     ctx=context.domain_context,
-                    project_ref_id=catch_up_project_ref_id,
+                    project_ref_id=args.catch_up_project_ref_id,
                     name=inbox_task.name,
                     recurring_timeline=cast(str, inbox_task.recurring_timeline),
                     eisen=inbox_task.eisen,
@@ -103,7 +99,7 @@ class PersonChangeCatchUpProjectUseCase(
                 person = persons_by_ref_id[cast(EntityId, inbox_task.person_ref_id)]
                 inbox_task = inbox_task.update_link_to_person_birthday(
                     ctx=context.domain_context,
-                    project_ref_id=catch_up_project_ref_id,
+                    project_ref_id=args.catch_up_project_ref_id,
                     name=inbox_task.name,
                     recurring_timeline=cast(str, inbox_task.recurring_timeline),
                     preparation_days_cnt=person.preparation_days_cnt_for_birthday,
@@ -115,7 +111,7 @@ class PersonChangeCatchUpProjectUseCase(
 
         person_collection = person_collection.change_catch_up_project(
             ctx=context.domain_context,
-            catch_up_project_ref_id=catch_up_project_ref_id,
+            catch_up_project_ref_id=args.catch_up_project_ref_id,
         )
 
         await uow.get_for(PersonCollection).save(person_collection)

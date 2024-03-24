@@ -9,6 +9,8 @@ from jupiter.core.domain.features import (
     FeatureUnavailableError,
     WorkspaceFeature,
 )
+from jupiter.core.domain.projects.project import Project, ProjectRepository
+from jupiter.core.domain.projects.project_collection import ProjectCollection
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
@@ -70,10 +72,22 @@ class BigPlanCreateUseCase(
             workspace.ref_id,
         )
 
+        if args.project_ref_id is None:
+            project_collection = await uow.get_for(ProjectCollection).load_by_parent(
+                workspace.ref_id,
+            )
+            root_project = await uow.get(ProjectRepository).load_root_project(
+                project_collection.ref_id
+            )
+            project_ref_id = root_project.ref_id
+        else:
+            await uow.get_for(Project).load_by_id(args.project_ref_id)
+            project_ref_id = args.project_ref_id
+
         new_big_plan = BigPlan.new_big_plan(
             context.domain_context,
             big_plan_collection_ref_id=big_plan_collection.ref_id,
-            project_ref_id=args.project_ref_id or workspace.default_project_ref_id,
+            project_ref_id=project_ref_id,
             name=args.name,
             status=BigPlanStatus.ACCEPTED,
             actionable_date=args.actionable_date,
