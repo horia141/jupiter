@@ -10,6 +10,7 @@ class NoteDomain(EnumValue):
 
     INBOX_TASK = "inbox-task"
     WORKING_MEM = "working-mem"
+    CALENDAR_EVENT = "calendar-event"
     HABIT = "habit"
     CHORE = "chore"
     BIG_PLAN = "big-plan"

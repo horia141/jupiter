@@ -3,6 +3,7 @@ import abc
 from collections.abc import Iterable
 
 from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
+from jupiter.core.domain.calendar.calendar import Calendar
 from jupiter.core.domain.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.core.notes.note_collection import NoteCollection
 from jupiter.core.domain.docs.doc_collection import DocCollection
@@ -27,6 +28,7 @@ from jupiter.core.domain.push_integrations.group.push_integration_group import (
 from jupiter.core.domain.smart_lists.smart_list_collection import SmartListCollection
 from jupiter.core.domain.sync_target import SyncTarget
 from jupiter.core.domain.vacations.vacation_collection import VacationCollection
+from jupiter.core.domain.working_mem.working_mem_collection import WorkingMemCollection
 from jupiter.core.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.core.framework.base.entity_id import BAD_REF_ID
 from jupiter.core.framework.context import DomainContext
@@ -50,6 +52,8 @@ class Workspace(RootEntity):
     feature_flags: WorkspaceFeatureFlags
 
     inbox_task_collection = ContainsOne(InboxTaskCollection, workspace_ref_id=IsRefId())
+    working_mem_collection = ContainsOne(WorkingMemCollection, workspace_ref_id=IsRefId())
+    calendar = ContainsOne(Calendar, workspace_ref_id=IsRefId())
     habit_collection = ContainsOne(HabitCollection, workspace_ref_id=IsRefId())
     chore_collection = ContainsOne(ChoreCollection, workspace_ref_id=IsRefId())
     big_plan_collection = ContainsOne(BigPlanCollection, workspace_ref_id=IsRefId())

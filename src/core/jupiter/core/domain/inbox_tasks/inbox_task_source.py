@@ -1,5 +1,4 @@
 """The origin of an inbox task."""
-
 from jupiter.core.framework.value import EnumValue, enum_value
 
 
