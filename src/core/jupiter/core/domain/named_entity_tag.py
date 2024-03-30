@@ -10,6 +10,8 @@ class NamedEntityTag(EnumValue):
 
     INBOX_TASK = "InboxTask"  # InboxTask.__name__
     WORKING_MEM = "WorkingMem"  # WorkingMem.__name__
+    CALENDAR = "Calendar" # Calendar.__name__
+    CALENDAR_EVENT = "CalendarEvent" # CalendarEvent.__name__
     HABIT = "Habit"  # Habit.__name__
     CHORE = "Chore"  # Chore.__name__
     BIG_PLAN = "BigPlan"  # BigPlan.__name__

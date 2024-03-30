@@ -5,6 +5,9 @@ from jupiter.core.domain.auth.auth_token_ext import AuthTokenExt
 from jupiter.core.domain.auth.password_new_plain import PasswordNewPlain
 from jupiter.core.domain.auth.recovery_token_plain import RecoveryTokenPlain
 from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
+from jupiter.core.domain.calendar.calendar import Calendar
+from jupiter.core.domain.calendar.calendar_collection import CalendarCollection
+from jupiter.core.domain.calendar.calendar_name import CalendarName
 from jupiter.core.domain.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
@@ -75,6 +78,7 @@ class InitArgs(UseCaseArgsBase):
     auth_password: PasswordNewPlain
     auth_password_repeat: PasswordNewPlain
     workspace_name: WorkspaceName
+    workspace_init_calendar_name: CalendarName
     workspace_root_project_name: ProjectName
     workspace_feature_flags: set[WorkspaceFeature]
 
@@ -156,14 +160,6 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             )
             new_workspace = await uow.get_for(Workspace).create(new_workspace)
 
-            new_vacation_collection = VacationCollection.new_vacation_collection(
-                ctx=context.domain_context,
-                workspace_ref_id=new_workspace.ref_id,
-            )
-            new_vacation_collection = await uow.get_for(VacationCollection).create(
-                new_vacation_collection,
-            )
-
             new_project_collection = ProjectCollection.new_project_collection(
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
@@ -200,6 +196,21 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             new_working_mem_collection = await uow.get_for(WorkingMemCollection).create(
                 new_working_mem_collection,
             )
+
+            new_calendar_collection = CalendarCollection.new_calendar_collection(
+                ctx=context.domain_context,
+                workspace_ref_id=new_workspace.ref_id,
+            )
+            new_calendar_collection = await uow.get_for(CalendarCollection).create(
+                new_calendar_collection,
+            )
+
+            new_init_calendar = Calendar.new_calendar_for_user(
+                ctx=context.domain_context,
+                calendar_collection_ref_id=new_calendar_collection.ref_id,
+                name=args.workspace_init_calendar_name,
+            )
+            new_init_calendar = await uow.get_for(Calendar).create(new_init_calendar)
 
             new_habit_collection = HabitCollection.new_habit_collection(
                 ctx=context.domain_context,
@@ -243,6 +254,14 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             )
             new_doc_collection = await uow.get_for(DocCollection).create(
                 new_doc_collection
+            )
+
+            new_vacation_collection = VacationCollection.new_vacation_collection(
+                ctx=context.domain_context,
+                workspace_ref_id=new_workspace.ref_id,
+            )
+            new_vacation_collection = await uow.get_for(VacationCollection).create(
+                new_vacation_collection,
             )
 
             new_smart_list_collection = SmartListCollection.new_smart_list_collection(

@@ -3,10 +3,12 @@
 import json
 
 from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
+from jupiter.core.domain.calendar.calendar_name import CalendarName
 from jupiter.core.domain.chores.chore_name import ChoreName
 from jupiter.core.domain.core.entity_icon import EntityIconDatabaseDecoder
 from jupiter.core.domain.fast_info_repository import (
     BigPlanSummary,
+    CalendarSummary,
     ChoreSummary,
     FastInfoRepository,
     HabitSummary,
@@ -30,12 +32,13 @@ from jupiter.core.repository.sqlite.infra.repository import SqliteRepository
 from sqlalchemy import text
 
 _ENTITY_ID_DECODER = EntityIdDatabaseDecoder()
-_VACATION_NAME_DECODER = EntityNameDatabaseDecoder(VacationName)
 _INBOX_TASK_NAME_DECODER = EntityNameDatabaseDecoder(InboxTaskName)
-_PROJECT_NAME_DECODER = EntityNameDatabaseDecoder(ProjectName)
+_CALENDAR_NAME_DECODER = EntityNameDatabaseDecoder(CalendarName)
 _HABIT_NAME_DECODER = EntityNameDatabaseDecoder(HabitName)
 _CHORE_NAME_DECODER = EntityNameDatabaseDecoder(ChoreName)
 _BIG_PLAN_NAME_DECODER = EntityNameDatabaseDecoder(BigPlanName)
+_VACATION_NAME_DECODER = EntityNameDatabaseDecoder(VacationName)
+_PROJECT_NAME_DECODER = EntityNameDatabaseDecoder(ProjectName)
 _SMART_LIST_NAME_DECODER = EntityNameDatabaseDecoder(SmartListName)
 _METRIC_NAME_DECODER = EntityNameDatabaseDecoder(MetricName)
 _PERSON_NAME_DECODER = EntityNameDatabaseDecoder(PersonName)
@@ -44,6 +47,94 @@ _ENTITY_ICON_DECODER = EntityIconDatabaseDecoder()
 
 class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
     """The Sqlite based implementation for the fast info repository."""
+
+    async def find_all_inbox_task_summaries(
+        self,
+        parent_ref_id: EntityId,
+        allow_archived: bool,
+    ) -> list[InboxTaskSummary]:
+        """Find all summaries about inbox tasks."""
+        query = """select ref_id, name from inbox_task where inbox_task_collection_ref_id = :parent_ref_id"""
+        if not allow_archived:
+            query += " and archived=0"
+        result = (
+            await self._connection.execute(
+                text(query), {"parent_ref_id": parent_ref_id.as_int()}
+            )
+        ).fetchall()
+        return [
+            InboxTaskSummary(
+                ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
+                name=_INBOX_TASK_NAME_DECODER.decode(row["name"]),
+            )
+            for row in result
+        ]
+    
+    async def find_all_calendar_summaries(
+        self,
+        parent_ref_id: EntityId,
+        allow_archived: bool,
+    ) -> list[CalendarSummary]:
+        """Find all summaries about calendars."""
+        query = """select ref_id, name from calendar where calendar_collection_ref_id = :parent_ref_id"""
+        if not allow_archived:
+            query += " and archived=0"
+        result = (
+            await self._connection.execute(
+                text(query), {"parent_ref_id": parent_ref_id.as_int()}
+            )
+        ).fetchall()
+        return [
+            CalendarSummary(
+                ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
+                name=_CALENDAR_NAME_DECODER.decode(row["name"]),
+            )
+            for row in result
+        ]
+
+    async def find_all_habit_summaries(
+        self,
+        parent_ref_id: EntityId,
+        allow_archived: bool,
+    ) -> list[HabitSummary]:
+        """Find all summaries about habits."""
+        query = """select ref_id, name from habit where habit_collection_ref_id = :parent_ref_id"""
+        if not allow_archived:
+            query += " and archived=0"
+        result = (
+            await self._connection.execute(
+                text(query), {"parent_ref_id": parent_ref_id.as_int()}
+            )
+        ).fetchall()
+        return [
+            HabitSummary(
+                ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
+                name=_HABIT_NAME_DECODER.decode(row["name"]),
+            )
+            for row in result
+        ]
+
+    async def find_all_chore_summaries(
+        self,
+        parent_ref_id: EntityId,
+        allow_archived: bool,
+    ) -> list[ChoreSummary]:
+        """Find all summaries about chores."""
+        query = """select ref_id, name from chore where chore_collection_ref_id = :parent_ref_id"""
+        if not allow_archived:
+            query += " and archived=0"
+        result = (
+            await self._connection.execute(
+                text(query), {"parent_ref_id": parent_ref_id.as_int()}
+            )
+        ).fetchall()
+        return [
+            ChoreSummary(
+                ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
+                name=_CHORE_NAME_DECODER.decode(row["name"]),
+            )
+            for row in result
+        ]
 
     async def find_all_vacation_summaries(
         self,
@@ -94,72 +185,6 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
                     _ENTITY_ID_DECODER.decode(idx)
                     for idx in json.loads(row["order_of_child_projects"])
                 ],
-            )
-            for row in result
-        ]
-
-    async def find_all_inbox_task_summaries(
-        self,
-        parent_ref_id: EntityId,
-        allow_archived: bool,
-    ) -> list[InboxTaskSummary]:
-        """Find all summaries about inbox tasks."""
-        query = """select ref_id, name from inbox_task where inbox_task_collection_ref_id = :parent_ref_id"""
-        if not allow_archived:
-            query += " and archived=0"
-        result = (
-            await self._connection.execute(
-                text(query), {"parent_ref_id": parent_ref_id.as_int()}
-            )
-        ).fetchall()
-        return [
-            InboxTaskSummary(
-                ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
-                name=_INBOX_TASK_NAME_DECODER.decode(row["name"]),
-            )
-            for row in result
-        ]
-
-    async def find_all_habit_summaries(
-        self,
-        parent_ref_id: EntityId,
-        allow_archived: bool,
-    ) -> list[HabitSummary]:
-        """Find all summaries about habits."""
-        query = """select ref_id, name from habit where habit_collection_ref_id = :parent_ref_id"""
-        if not allow_archived:
-            query += " and archived=0"
-        result = (
-            await self._connection.execute(
-                text(query), {"parent_ref_id": parent_ref_id.as_int()}
-            )
-        ).fetchall()
-        return [
-            HabitSummary(
-                ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
-                name=_HABIT_NAME_DECODER.decode(row["name"]),
-            )
-            for row in result
-        ]
-
-    async def find_all_chore_summaries(
-        self,
-        parent_ref_id: EntityId,
-        allow_archived: bool,
-    ) -> list[ChoreSummary]:
-        """Find all summaries about chores."""
-        query = """select ref_id, name from chore where chore_collection_ref_id = :parent_ref_id"""
-        if not allow_archived:
-            query += " and archived=0"
-        result = (
-            await self._connection.execute(
-                text(query), {"parent_ref_id": parent_ref_id.as_int()}
-            )
-        ).fetchall()
-        return [
-            ChoreSummary(
-                ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
-                name=_CHORE_NAME_DECODER.decode(row["name"]),
             )
             for row in result
         ]

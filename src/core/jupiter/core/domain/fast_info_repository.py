@@ -2,6 +2,7 @@
 import abc
 
 from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
+from jupiter.core.domain.calendar.calendar_name import CalendarName
 from jupiter.core.domain.chores.chore_name import ChoreName
 from jupiter.core.domain.core.entity_icon import EntityIcon
 from jupiter.core.domain.habits.habit_name import HabitName
@@ -14,6 +15,38 @@ from jupiter.core.domain.vacations.vacation_name import VacationName
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.repository import Repository
 from jupiter.core.framework.value import CompositeValue, value
+
+
+@value
+class InboxTaskSummary(CompositeValue):
+    """Summary information about an inbox task."""
+
+    ref_id: EntityId
+    name: InboxTaskName
+
+
+@value
+class CalendarSummary(CompositeValue):
+    """Summary information about a calendar."""
+
+    ref_id: EntityId
+    name: CalendarName
+
+
+@value
+class HabitSummary(CompositeValue):
+    """Summary information about a habit."""
+
+    ref_id: EntityId
+    name: HabitName
+
+
+@value
+class ChoreSummary(CompositeValue):
+    """Summary information about a chore."""
+
+    ref_id: EntityId
+    name: ChoreName
 
 
 @value
@@ -32,31 +65,6 @@ class ProjectSummary(CompositeValue):
     parent_project_ref_id: EntityId | None
     name: ProjectName
     order_of_child_projects: list[EntityId]
-
-
-@value
-class InboxTaskSummary(CompositeValue):
-    """Summary information about an inbox task."""
-
-    ref_id: EntityId
-    name: InboxTaskName
-
-
-@value
-class HabitSummary(CompositeValue):
-    """Summary information about a habit."""
-
-    ref_id: EntityId
-    name: HabitName
-
-
-@value
-class ChoreSummary(CompositeValue):
-    """Summary information about a chore."""
-
-    ref_id: EntityId
-    name: ChoreName
-
 
 @value
 class BigPlanSummary(CompositeValue):
@@ -97,28 +105,20 @@ class FastInfoRepository(Repository, abc.ABC):
     """A query-like repository for scanning information quickly about entities."""
 
     @abc.abstractmethod
-    async def find_all_vacation_summaries(
-        self,
-        parent_ref_id: EntityId,
-        allow_archived: bool,
-    ) -> list[VacationSummary]:
-        """Find all summaries about vacations."""
-
-    @abc.abstractmethod
-    async def find_all_project_summaries(
-        self,
-        parent_ref_id: EntityId,
-        allow_archived: bool,
-    ) -> list[ProjectSummary]:
-        """Find all summaries about projects."""
-
-    @abc.abstractmethod
     async def find_all_inbox_task_summaries(
         self,
         parent_ref_id: EntityId,
         allow_archived: bool,
     ) -> list[InboxTaskSummary]:
         """Find all summaries about inbox tasks."""
+
+    @abc.abstractmethod
+    async def find_all_calendar_summaries(
+        self,
+        parent_ref_id: EntityId,
+        allow_archived: bool,
+    ) -> list[CalendarSummary]:
+        """Find all summaries about calendars."""
 
     @abc.abstractmethod
     async def find_all_habit_summaries(
@@ -143,6 +143,22 @@ class FastInfoRepository(Repository, abc.ABC):
         allow_archived: bool,
     ) -> list[BigPlanSummary]:
         """Find all summaries about big plans."""
+
+    @abc.abstractmethod
+    async def find_all_vacation_summaries(
+        self,
+        parent_ref_id: EntityId,
+        allow_archived: bool,
+    ) -> list[VacationSummary]:
+        """Find all summaries about vacations."""
+
+    @abc.abstractmethod
+    async def find_all_project_summaries(
+        self,
+        parent_ref_id: EntityId,
+        allow_archived: bool,
+    ) -> list[ProjectSummary]:
+        """Find all summaries about projects."""
 
     @abc.abstractmethod
     async def find_all_smart_list_summaries(

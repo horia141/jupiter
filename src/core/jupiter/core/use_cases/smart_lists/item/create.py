@@ -1,5 +1,4 @@
 """The command for creating a smart list item."""
-
 from jupiter.core.domain.core.tags.tag_name import TagName
 from jupiter.core.domain.core.url import URL
 from jupiter.core.domain.features import WorkspaceFeature

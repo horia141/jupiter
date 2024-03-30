@@ -11,7 +11,7 @@ from jupiter.core.framework.entity import BranchEntity, ContainsMany, IsRefId, P
 class Calendar(BranchEntity):
     """A calendar."""
     
-    calendar: ParentLink
+    calendar_collection: ParentLink
 
     source: CalendarSource
     name: CalendarName
@@ -22,13 +22,13 @@ class Calendar(BranchEntity):
     @create_entity_action
     def new_calendar_for_user(
         ctx: DomainContext,
-        calendar_ref_id: EntityId,
+        calendar_collection_ref_id: EntityId,
         name: CalendarName,
     ) -> "Calendar":
         """Create a calendar."""
         return Calendar._create(
             ctx,
-            calendar=ParentLink(calendar_ref_id),
+            calendar_collection=ParentLink(calendar_collection_ref_id),
             source=CalendarSource.USER,
             name=name,
         )
