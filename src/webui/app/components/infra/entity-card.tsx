@@ -103,35 +103,38 @@ export function EntityCard(props: PropsWithChildren<EntityCardProps>) {
         }}
       >
         <CardContent>{props.children}</CardContent>
-        {isBigScreen && (
-          <CardActions
-            sx={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "flex-end",
-            }}
-          >
-            {props.extraControls}
-            {props.allowMarkDone && (
-              <IconButton
-                size="medium"
-                color="success"
-                onClick={markDoneHandler}
-              >
-                <CheckCircleIcon fontSize="medium" />
-              </IconButton>
-            )}
-            {props.allowMarkNotDone && (
-              <IconButton
-                size="medium"
-                color="warning"
-                onClick={markNotDoneHandler}
-              >
-                <DeleteIcon fontSize="medium" />
-              </IconButton>
-            )}
-          </CardActions>
-        )}
+
+        <CardActions
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "flex-end",
+          }}
+        >
+          {props.extraControls}
+          {isBigScreen && (
+            <>
+              {props.allowMarkDone && (
+                <IconButton
+                  size="medium"
+                  color="success"
+                  onClick={markDoneHandler}
+                >
+                  <CheckCircleIcon fontSize="medium" />
+                </IconButton>
+              )}
+              {props.allowMarkNotDone && (
+                <IconButton
+                  size="medium"
+                  color="warning"
+                  onClick={markNotDoneHandler}
+                >
+                  <DeleteIcon fontSize="medium" />
+                </IconButton>
+              )}
+            </>
+          )}
+        </CardActions>
       </Card>
     </motion.div>
   );

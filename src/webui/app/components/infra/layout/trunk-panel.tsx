@@ -4,7 +4,7 @@ import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import CloseIcon from "@mui/icons-material/Close";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import { Box, Button, ButtonGroup, IconButton, styled } from "@mui/material";
-import { Form, Link, useLocation } from "@remix-run/react";
+import { Link, useLocation } from "@remix-run/react";
 import { AnimatePresence, motion, useIsPresent } from "framer-motion";
 import type { PropsWithChildren } from "react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
@@ -126,57 +126,53 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
       }}
       transition={{ duration: 0.5 }}
     >
-      <Form method="post">
-        {!shouldShowABranch && (isBigScreen || !shouldShowALeaf) && (
-          <TrunkPanelControls id="trunk-panel-controls">
-            <TrunkPanelControlsInner
-              isbigscreen={isBigScreen ? "true" : "false"}
-            >
-              <ButtonGroup size="small">
-                <IconButton onClick={handleScrollTop}>
-                  <ArrowUpwardIcon />
-                </IconButton>
-                <IconButton onClick={handleScrollBottom}>
-                  <ArrowDownwardIcon />
-                </IconButton>
-              </ButtonGroup>
-
-              {props.createLocation && (
-                <Button
-                  variant="contained"
-                  to={props.createLocation}
-                  component={Link}
-                >
-                  <AddIcon />
-                </Button>
-              )}
-
-              {props.extraControls && (
-                <TrunkPanelExtraControls
-                  isBigScreen={isBigScreen}
-                  controls={props.extraControls}
-                />
-              )}
-
-              <IconButton sx={{ marginLeft: "auto" }}>
-                <Link to={props.returnLocation}>
-                  <CloseIcon />
-                </Link>
+      {!shouldShowABranch && (isBigScreen || !shouldShowALeaf) && (
+        <TrunkPanelControls id="trunk-panel-controls">
+          <TrunkPanelControlsInner isbigscreen={isBigScreen ? "true" : "false"}>
+            <ButtonGroup size="small">
+              <IconButton onClick={handleScrollTop}>
+                <ArrowUpwardIcon />
               </IconButton>
-            </TrunkPanelControlsInner>
-          </TrunkPanelControls>
-        )}
+              <IconButton onClick={handleScrollBottom}>
+                <ArrowDownwardIcon />
+              </IconButton>
+            </ButtonGroup>
 
-        <TrunkPanelContent
-          id="trunk-panel-content"
-          ref={containerRef}
-          isbigscreen={isBigScreen ? "true" : "false"}
-          hasbranch={shouldShowABranch ? "true" : "false"}
-          hasleaf={shouldShowALeaf ? "true" : "false"}
-        >
-          {props.children}
-        </TrunkPanelContent>
-      </Form>
+            {props.createLocation && (
+              <Button
+                variant="contained"
+                to={props.createLocation}
+                component={Link}
+              >
+                <AddIcon />
+              </Button>
+            )}
+
+            {props.extraControls && (
+              <TrunkPanelExtraControls
+                isBigScreen={isBigScreen}
+                controls={props.extraControls}
+              />
+            )}
+
+            <IconButton sx={{ marginLeft: "auto" }}>
+              <Link to={props.returnLocation}>
+                <CloseIcon />
+              </Link>
+            </IconButton>
+          </TrunkPanelControlsInner>
+        </TrunkPanelControls>
+      )}
+
+      <TrunkPanelContent
+        id="trunk-panel-content"
+        ref={containerRef}
+        isbigscreen={isBigScreen ? "true" : "false"}
+        hasbranch={shouldShowABranch ? "true" : "false"}
+        hasleaf={shouldShowALeaf ? "true" : "false"}
+      >
+        {props.children}
+      </TrunkPanelContent>
     </TrunkPanelFrame>
   );
 }

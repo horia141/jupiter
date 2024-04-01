@@ -4,7 +4,7 @@ import { IconButton } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Outlet, useActionData } from "@remix-run/react";
+import { Form, Outlet, useActionData } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { StatusCodes } from "http-status-codes";
 import { ApiError } from "jupiter-gen";
@@ -115,63 +115,65 @@ export default function Projects() {
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
         <GlobalError actionResult={actionData} />
         <EntityStack>
-          {sortedProjects.map((project) => {
-            const parentProject = project.parent_project_ref_id
-              ? allProjectsByRefId.get(project.parent_project_ref_id)
-              : undefined;
-            const indent = computeProjectDistanceFromRoot(
-              project,
-              allProjectsByRefId
-            );
-            return (
-              <EntityCard
-                key={project.ref_id}
-                indent={indent}
-                extraControls={
-                  isRootProject(project) ||
-                  parentProject === undefined ? undefined : (
-                    <>
-                      <IconButton
-                        size="medium"
-                        type="submit"
-                        name="intent"
-                        value={makeIntent("reorder", {
-                          refId: parentProject.ref_id,
-                          newOrderOfChildProjects:
-                            shiftProjectUpInListOfChildren(
-                              project,
-                              parentProject.order_of_child_projects
-                            ),
-                        })}
-                      >
-                        <ArrowUpwardIcon fontSize="medium" />
-                      </IconButton>
+          <Form method="post">
+            {sortedProjects.map((project) => {
+              const parentProject = project.parent_project_ref_id
+                ? allProjectsByRefId.get(project.parent_project_ref_id)
+                : undefined;
+              const indent = computeProjectDistanceFromRoot(
+                project,
+                allProjectsByRefId
+              );
+              return (
+                <EntityCard
+                  key={project.ref_id}
+                  indent={indent}
+                  extraControls={
+                    isRootProject(project) ||
+                    parentProject === undefined ? undefined : (
+                      <>
+                        <IconButton
+                          size="medium"
+                          type="submit"
+                          name="intent"
+                          value={makeIntent("reorder", {
+                            refId: parentProject.ref_id,
+                            newOrderOfChildProjects:
+                              shiftProjectUpInListOfChildren(
+                                project,
+                                parentProject.order_of_child_projects
+                              ),
+                          })}
+                        >
+                          <ArrowUpwardIcon fontSize="medium" />
+                        </IconButton>
 
-                      <IconButton
-                        size="medium"
-                        type="submit"
-                        name="intent"
-                        value={makeIntent("reorder", {
-                          refId: parentProject.ref_id,
-                          newOrderOfChildProjects:
-                            shiftProjectDownInListOfChildren(
-                              project,
-                              parentProject.order_of_child_projects
-                            ),
-                        })}
-                      >
-                        <ArrowDownwardIcon fontSize="medium" />
-                      </IconButton>
-                    </>
-                  )
-                }
-              >
-                <EntityLink to={`/workspace/projects/${project.ref_id}`}>
-                  <EntityNameComponent name={project.name} />
-                </EntityLink>
-              </EntityCard>
-            );
-          })}
+                        <IconButton
+                          size="medium"
+                          type="submit"
+                          name="intent"
+                          value={makeIntent("reorder", {
+                            refId: parentProject.ref_id,
+                            newOrderOfChildProjects:
+                              shiftProjectDownInListOfChildren(
+                                project,
+                                parentProject.order_of_child_projects
+                              ),
+                          })}
+                        >
+                          <ArrowDownwardIcon fontSize="medium" />
+                        </IconButton>
+                      </>
+                    )
+                  }
+                >
+                  <EntityLink to={`/workspace/projects/${project.ref_id}`}>
+                    <EntityNameComponent name={project.name} />
+                  </EntityLink>
+                </EntityCard>
+              );
+            })}
+          </Form>
         </EntityStack>
       </NestingAwareBlock>
 
