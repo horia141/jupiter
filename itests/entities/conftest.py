@@ -21,9 +21,6 @@ def logged_in_user(browser: Browser, base_url: str) -> TestUser:
 
     page.goto(base_url)
 
-
-    print(browser_context.cookies())
-
     page.get_by_role("link", name="Go To The Workspace").click()
     page.locator("input[name=\"emailAddress\"]").click()
     page.get_by_role("link", name="New Workspace").click()
@@ -36,8 +33,6 @@ def logged_in_user(browser: Browser, base_url: str) -> TestUser:
 
     expect(page.locator("#trunk-panel-content")).to_contain_text(re.compile("There are no inbox tasks to show"))
 
-    print(browser_context.cookies())
-
     page.close()
 
     yield new_random_user
@@ -46,17 +41,15 @@ def logged_in_user(browser: Browser, base_url: str) -> TestUser:
 def page_logged_in(context: BrowserContext, page: Page, logged_in_user: TestUser) -> TestUser:
     page.goto("/login")
 
-    print(context.cookies())
-
-    page.locator("input[name=\"emailAddress\"]").click()
     page.locator("input[name=\"emailAddress\"]").fill(logged_in_user.email)
-    page.locator("input[name=\"password\"]").click()
     page.locator("input[name=\"password\"]").fill(logged_in_user.password)
-
-    time.sleep(3)
 
     page.locator("#login").click()
 
-    print(context.cookies())
+    # There's some bizzaro interaction that happens between playwright and its
+    # messing about with the browser, and Remix and its taking over of the
+    # application communication, and especialy the redirects. If there's no wait
+    # here then the redirect from "post /login" with cookies will not work!
+    page.wait_for_url("/workspace/*")
 
     yield logged_in_user

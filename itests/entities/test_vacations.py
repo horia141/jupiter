@@ -11,12 +11,12 @@ from itests.conftest import TestUser
 def test_vacation_create(page: Page, page_logged_in: TestUser) -> None:
     print(f"Archivatio {page_logged_in.email}")
     page.goto("/workspace/vacations")
-    page.locator("#trunk-new-leaf-entty").click()
+    page.locator("#trunk-new-leaf-entity").click()
     page.locator("input[name=\"name\"]").fill("First Vacation")
     page.locator("input[name=\"startDate\"]").fill("2024-12-10")
     page.locator("input[name=\"endDate\"]").fill("2024-12-15")
 
-    expect(page.wait("/workspace/vacations/*"))
+    page.wait_for_url("/workspace/vacations/*")
 
 def test_vacation_archive(page: Page, page_logged_in: TestUser) -> None:
     page.goto("/workspace/vacations")
