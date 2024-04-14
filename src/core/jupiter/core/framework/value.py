@@ -78,7 +78,7 @@ class SecretValue(Value):
         """Get a string representation of this value."""
         # Just a very silly protection. Even if someone tries to print or store this they'll get
         # some ugly text like this.
-        return "****************"
+        return f"{self.__class__.__name__}(\"****************\")"
 
     def __str__(self) -> str:
         """Get a string representation of this value."""

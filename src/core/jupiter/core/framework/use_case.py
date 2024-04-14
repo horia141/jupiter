@@ -247,8 +247,8 @@ class MutationUseCase(
             )
             try:
                 await self._invocation_recorder.record(invocation_record)
-            except:  # noqa: E722
-                LOGGER.critical("Error writing invocation record")
+            except Exception as err:  # noqa: E722
+                LOGGER.critical("Error writing invocation record", exc_info=err)
             raise
 
         user_ref_id = context.user_ref_id

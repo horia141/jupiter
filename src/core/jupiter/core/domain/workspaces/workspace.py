@@ -81,7 +81,6 @@ class Workspace(RootEntity):
         return Workspace._create(
             ctx,
             name=name,
-            default_project_ref_id=BAD_REF_ID,
             feature_flags=feature_flag_controls.validate_and_complete(
                 feature_flags_delta=feature_flags, current_feature_flags={}
             ),
