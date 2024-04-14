@@ -39,6 +39,8 @@ export const handle = {
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
 
+  console.log("Init", session);
+
   if (session.has("authTokenExt")) {
     const apiClient = getGuestApiClient(session);
     const result = await apiClient.loadTopLevelInfo.loadTopLevelInfo({});
@@ -47,13 +49,9 @@ export async function loader({ request }: LoaderArgs) {
     }
   }
 
-  const data = { error: session.get("error") };
+  console.log("Error", session.get("error"));
 
-  return json(data, {
-    headers: {
-      "Set-Cookie": await commitSession(session),
-    },
-  });
+  return json({});
 }
 
 // @secureFn
@@ -67,6 +65,8 @@ export async function action({ request }: ActionArgs) {
       password: form.password,
     });
 
+    console.log(result);
+
     session.set("authTokenExt", result.auth_token_ext);
 
     // Login succeeded, send them to the home page.
@@ -76,6 +76,7 @@ export async function action({ request }: ActionArgs) {
       },
     });
   } catch (error) {
+    console.log("Were're in error land", error);
     if (
       error instanceof ApiError &&
       error.status === StatusCodes.UNPROCESSABLE_ENTITY
@@ -136,6 +137,7 @@ export default function Login() {
           <CardActions>
             <ButtonGroup>
               <Button
+                id="login"
                 variant="contained"
                 disabled={!inputsEnabled}
                 type="submit"

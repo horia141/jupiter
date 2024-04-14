@@ -22,8 +22,4 @@ class TestUser:
 
 @pytest.fixture
 def new_random_user() -> TestUser:
-    return TestUser(
-        email=f"horia-{uuid.uuid4()}@example.com",
-        name="Horia",
-        password="password-123",
-    )
+    return TestUser.new_random()

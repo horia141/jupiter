@@ -13,7 +13,6 @@ WEBUI_PID=
 export SQLITE_DB_URL=sqlite+aiosqlite:///../../.build-cache/itest/jupiter.sqlite
 
 kill_jupiter() {
-    echo "TRAPPED TRAPPED TRAPPED"
     if [ -n "$WEBAPI_PID" ]; then
         kill $WEBAPI_PID
     fi
@@ -32,6 +31,17 @@ kill_jupiter() {
 
 ci_mode() {
     # Add your ci mode logic here
+    local extra_args=()
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            *)
+                extra_args+=("$1")
+                shift
+                ;;
+        esac
+    done
+
     trap kill_jupiter EXIT
     
     cd src/webapi
@@ -47,7 +57,7 @@ ci_mode() {
     wait_for_service_to_start webapi http://localhost:$WEBAPI_PORT
     wait_for_service_to_start webui http://localhost:$WEBUI_PORT
 
-    run_tests http://localhost:$WEBUI_PORT
+    run_tests http://localhost:$WEBUI_PORT "${extra_args[@]}"
 
     kill $WEBAPI_PID
     kill $WEBUI_PID
@@ -57,41 +67,48 @@ ci_mode() {
 dev_mode() {
     # Add your dev mode logic here
     # Check if --webui-url option is provided
+    local webui_url="http://localhost:10020"
+    local extra_args=()
+
     while [[ $# -gt 0 ]]; do
-        key="$1"
-        case $key in
+        case "$1" in
             --webui-url)
                 webui_url="$2"
-                echo "Using custom web UI URL: $webui_url"
                 shift
                 shift
                 ;;
             *)
+                extra_args+=("$1")
                 shift
-                echo "Using standard web UI URL: http://localhost:10020"
-                webui_url="http://localhost:10020"
                 ;;
         esac
     done
 
+    echo "Using web UI URL: $webui_url"
+
     wait_for_service_to_start webui $webui_url
 
-    run_tests $webui_url --headed
+    run_tests $webui_url --headed "${extra_args[@]}"
 }
 
 run_tests() {
+    local webui_url=$1
+    shift
+
     pytest itests \
         --html-report=.build-cache/itest/test-report.html \
         --title="Jupiter Integration Tests" \
-        --base-url=$1 \
-        $2
+        --base-url=$webui_url \
+        "$@"
 }
 
 # Main function
 main() {
     if [ "$1" == "ci" ]; then
-        ci_mode
+        shift
+        ci_mode "$@"
     elif [ "$1" == "dev" ]; then
+        shift
         dev_mode "$@"
     else
         echo "Usage: $0 {ci|dev [--webui-url <URL>]}"
