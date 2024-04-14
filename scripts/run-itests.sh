@@ -10,7 +10,7 @@ WEBAPI_PORT=$(get_free_port)
 WEBAPI_PID=
 WEBUI_PORT=$(get_free_port)
 WEBUI_PID=
-SQLITE_DB_URL=sqlite+aiosqlite:///../../.build-cache/itest/jupiter.sqlite
+export SQLITE_DB_URL=sqlite+aiosqlite:///../../.build-cache/itest/jupiter.sqlite
 
 kill_jupiter() {
     echo "TRAPPED TRAPPED TRAPPED"
