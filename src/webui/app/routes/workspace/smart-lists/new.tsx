@@ -98,7 +98,8 @@ export default function NewSmartList() {
 
         <CardActions>
           <ButtonGroup>
-            <Button variant="contained" disabled={!inputsEnabled} type="submit">
+            <Button id="smart-list-create"
+              variant="contained" disabled={!inputsEnabled} type="submit">
               Create
             </Button>
           </ButtonGroup>

@@ -197,6 +197,7 @@ export default function Vacation() {
         <CardActions>
           <ButtonGroup>
             <Button
+              id="vacation-update"
               variant="contained"
               disabled={!inputsEnabled}
               type="submit"
@@ -214,6 +215,7 @@ export default function Vacation() {
           <CardActions>
             <ButtonGroup>
               <Button
+                id="vacation-create-note"
                 variant="contained"
                 disabled={!inputsEnabled}
                 type="submit"

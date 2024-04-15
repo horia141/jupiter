@@ -175,7 +175,8 @@ export default function NewBigPlan() {
 
         <CardActions>
           <ButtonGroup>
-            <Button variant="contained" disabled={!inputsEnabled} type="submit">
+            <Button id="big-plan-create"
+              variant="contained" disabled={!inputsEnabled} type="submit">
               Create
             </Button>
           </ButtonGroup>

@@ -309,7 +309,8 @@ export default function NewMetric() {
 
         <CardActions>
           <ButtonGroup>
-            <Button variant="contained" disabled={!inputsEnabled} type="submit">
+            <Button id="metric-create"
+              variant="contained" disabled={!inputsEnabled} type="submit">
               Create
             </Button>
           </ButtonGroup>

@@ -121,6 +121,7 @@ export default function NewJournal() {
         <CardActions>
           <ButtonGroup>
             <Button
+            id="journal-create"
               variant="contained"
               disabled={!inputsEnabled}
               type="submit"

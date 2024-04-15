@@ -402,6 +402,8 @@ export default function NewPerson() {
         <CardActions>
           <ButtonGroup>
             <Button
+            id="person-create"
+              
               variant="contained"
               disabled={!inputsEnabled}
               type="submit"

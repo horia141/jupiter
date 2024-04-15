@@ -119,6 +119,7 @@ export default function NewVacation() {
         <CardActions>
           <ButtonGroup>
             <Button
+              id="vacation-create"
               variant="contained"
               disabled={!inputsEnabled}
               type="submit"

@@ -222,6 +222,7 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
 
           {props.showArchiveButton && (
             <IconButton
+              id="leaf-entity-archive"
               sx={{ marginLeft: "auto" }}
               disabled={!props.enableArchiveButton}
               type="submit"
