@@ -44,7 +44,7 @@ class RecurringTaskDueAtMonth(AtomicValue[int]):
 
         if value < bounds[0] or value > bounds[1]:
             raise InputValidationError(
-                f"Expected the due month info for {str(period)} period to be a value between {bounds[0]} and {bounds[1]}",
+                f"Expected the due month info for {period!s} period to be a value between {bounds[0]} and {bounds[1]}",
             )
 
         return RecurringTaskDueAtMonth(value)

@@ -837,7 +837,7 @@ class _StandardEntityDecoder(
             raise RealmDecodingError(
                 f"Expected value of type {self._the_type.__name__} to have a version"
             )
-        if type(value["version"]) is not int:
+        if not isinstance(value["version"], int):
             raise RealmDecodingError(
                 f"Expected version field of type {self._the_type.__name__} to be an integer"
             )
@@ -846,7 +846,7 @@ class _StandardEntityDecoder(
             raise RealmDecodingError(
                 f"Expected value of type {self._the_type.__name__} to have a archived bit"
             )
-        if type(value["archived"]) is not bool:
+        if not isinstance(value["archived"], bool):
             raise RealmDecodingError(
                 f"Expected archived field of type {self._the_type.__name__} to be a boolean"
             )

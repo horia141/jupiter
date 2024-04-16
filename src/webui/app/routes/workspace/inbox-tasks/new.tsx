@@ -421,9 +421,12 @@ export default function NewInboxTask() {
         </CardContent>
         <CardActions>
           <ButtonGroup>
-            <Button 
-            id="inbox-task-create"
-            variant="contained" disabled={!inputsEnabled} type="submit">
+            <Button
+              id="inbox-task-create"
+              variant="contained"
+              disabled={!inputsEnabled}
+              type="submit"
+            >
               Create
             </Button>
           </ButtonGroup>

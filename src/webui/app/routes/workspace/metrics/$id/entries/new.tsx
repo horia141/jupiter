@@ -135,8 +135,12 @@ export default function NewMetricEntry() {
 
         <CardActions>
           <ButtonGroup>
-            <Button id="metric-entry-create"
-              variant="contained" disabled={!inputsEnabled} type="submit">
+            <Button
+              id="metric-entry-create"
+              variant="contained"
+              disabled={!inputsEnabled}
+              type="submit"
+            >
               Create
             </Button>
           </ButtonGroup>

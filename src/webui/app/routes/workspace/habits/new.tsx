@@ -289,8 +289,12 @@ export default function NewHabit() {
 
         <CardActions>
           <ButtonGroup>
-            <Button id="habit-create"
-              variant="contained" disabled={!inputsEnabled} type="submit">
+            <Button
+              id="habit-create"
+              variant="contained"
+              disabled={!inputsEnabled}
+              type="submit"
+            >
               Create
             </Button>
           </ButtonGroup>

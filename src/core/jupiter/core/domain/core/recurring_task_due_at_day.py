@@ -46,7 +46,7 @@ class RecurringTaskDueAtDay(AtomicValue[int]):
 
         if value < bounds[0] or value > bounds[1]:
             raise InputValidationError(
-                f"Expected the due day info for {str(period)} period to be a value between {bounds[0]} and {bounds[1]} but was {value}",
+                f"Expected the due day info for {period!s} period to be a value between {bounds[0]} and {bounds[1]} but was {value}",
             )
 
         return RecurringTaskDueAtDay(value)

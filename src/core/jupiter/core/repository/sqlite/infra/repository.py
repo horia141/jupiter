@@ -176,7 +176,7 @@ class SqliteEntityRepository(Generic[_EntityT], SqliteRepository, abc.ABC):
                 ) from err
         if result.rowcount == 0:
             raise self._not_found_err_cls(
-                f"Entity of type {entity.__class__} and id {str(entity.ref_id)} not found."
+                f"Entity of type {entity.__class__} and id {entity.ref_id!s} not found."
             )
         await upsert_events(
             self._realm_codec_registry,
@@ -461,7 +461,7 @@ class SqliteRootEntityRepository(
         result = (await self._connection.execute(query_stmt)).first()
         if result is None:
             raise self._not_found_err_cls(
-                f"Entity of type {self._entity_type.__name__} and id {str(entity_id)} not found."
+                f"Entity of type {self._entity_type.__name__} and id {entity_id!s} not found."
             )
         return self._row_to_entity(result)
 
@@ -509,7 +509,7 @@ class SqliteTrunkEntityRepository(
         result = (await self._connection.execute(query_stmt)).first()
         if result is None:
             raise self._not_found_err_cls(
-                f"Entity of type {self._entity_type.__name__} and parent id {str(parent_ref_id)} not found."
+                f"Entity of type {self._entity_type.__name__} and parent id {parent_ref_id!s} not found."
             )
         return self._row_to_entity(result)
 
@@ -525,7 +525,7 @@ class SqliteTrunkEntityRepository(
         result = (await self._connection.execute(query_stmt)).first()
         if result is None:
             raise self._not_found_err_cls(
-                f"Entity of type {self._entity_type.__name__} and id {str(entity_id)} not found."
+                f"Entity of type {self._entity_type.__name__} and id {entity_id!s} not found."
             )
         return self._row_to_entity(result)
 
@@ -546,7 +546,7 @@ class SqliteStubEntityRepository(
         result = (await self._connection.execute(query_stmt)).first()
         if result is None:
             raise self._not_found_err_cls(
-                f"Entity of type {self._entity_type.__name__} and parent id {str(parent_ref_id)} not found."
+                f"Entity of type {self._entity_type.__name__} and parent id {parent_ref_id!s} not found."
             )
         return self._row_to_entity(result)
 

@@ -73,8 +73,9 @@ class PasswordNewPlainWebDecoder(RealmDecoder[PasswordNewPlain, WebRealm]):
         return PasswordNewPlain(value)
 
 
-
-class PasswordNewPlainEventStoreRealmEncoder(RealmEncoder[PasswordNewPlain, EventStoreRealm]):
+class PasswordNewPlainEventStoreRealmEncoder(
+    RealmEncoder[PasswordNewPlain, EventStoreRealm]
+):
     """Encode a password newplain for storage in the Event Store."""
 
     def encode(self, value: PasswordNewPlain) -> RealmThing:

@@ -150,8 +150,7 @@ export default function NewProject() {
         <CardActions>
           <ButtonGroup>
             <Button
-            id="project-create"
-              
+              id="project-create"
               variant="contained"
               disabled={!inputsEnabled}
               type="submit"

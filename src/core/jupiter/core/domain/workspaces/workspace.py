@@ -28,7 +28,6 @@ from jupiter.core.domain.smart_lists.smart_list_collection import SmartListColle
 from jupiter.core.domain.sync_target import SyncTarget
 from jupiter.core.domain.vacations.vacation_collection import VacationCollection
 from jupiter.core.domain.workspaces.workspace_name import WorkspaceName
-from jupiter.core.framework.base.entity_id import BAD_REF_ID
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     ContainsOne,

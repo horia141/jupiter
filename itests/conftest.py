@@ -1,12 +1,12 @@
-from dataclasses import dataclass
-import re
 import uuid
-from playwright.sync_api import Page, expect
+from dataclasses import dataclass
+
 import pytest
+
 
 @dataclass
 class TestUser:
-    __test__ = False # pytest will ignore this class
+    __test__ = False  # pytest will ignore this class
 
     email: str
     name: str
@@ -20,6 +20,7 @@ class TestUser:
             password="password-123",
         )
 
-@pytest.fixture
+
+@pytest.fixture()
 def new_random_user() -> TestUser:
     return TestUser.new_random()

@@ -118,8 +118,12 @@ export default function NewSmartListTag() {
 
         <CardActions>
           <ButtonGroup>
-            <Button id="smart-list-tag-create"
-              variant="contained" disabled={!inputsEnabled} type="submit">
+            <Button
+              id="smart-list-tag-create"
+              variant="contained"
+              disabled={!inputsEnabled}
+              type="submit"
+            >
               Create
             </Button>
           </ButtonGroup>

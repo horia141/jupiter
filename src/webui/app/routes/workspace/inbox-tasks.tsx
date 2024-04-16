@@ -34,7 +34,7 @@ import {
   InboxTaskStatus,
   RecurringTaskPeriod,
 } from "jupiter-gen";
-import { memo, useContext, useState } from "react";
+import React, { memo, useContext, useState } from "react";
 import { InboxTaskStatusTag } from "~/components/inbox-task-status-tag";
 
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
@@ -44,7 +44,6 @@ import ViewListIcon from "@mui/icons-material/ViewList";
 import Grid from "@mui/material/Unstable_Grid2";
 import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";
-import React from "react";
 import { z } from "zod";
 import { getLoggedInApiClient } from "~/api-clients";
 import type { InboxTaskShowOptions } from "~/components/inbox-task-card";
