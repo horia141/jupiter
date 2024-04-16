@@ -28,6 +28,7 @@ httpie = "^3.2.1"
 autoflake = "^2.0.2"
 ruff = "^0.3.7"
 watchfiles = "^0.21.0"
+openapi-python-client = "^0.19.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
