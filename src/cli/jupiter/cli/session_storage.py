@@ -1,6 +1,6 @@
 """Session storage for the CLI app."""
-from dataclasses import dataclass
 import json
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Final
 
@@ -27,7 +27,9 @@ class SessionStorage:
     _session_info_path: Final[Path]
     _realm_codec_registry: Final[RealmCodecRegistry]
 
-    def __init__(self, session_info_path: Path, realm_codec_registry: RealmCodecRegistry) -> None:
+    def __init__(
+        self, session_info_path: Path, realm_codec_registry: RealmCodecRegistry
+    ) -> None:
         """Constructor."""
         self._session_info_path = session_info_path
         self._realm_codec_registry = realm_codec_registry
@@ -40,7 +42,9 @@ class SessionStorage:
                 session_dict = json.loads(session_str)
                 if "auth_token_ext" not in session_dict:
                     raise SessionInfoNotFoundError("No auth token found")
-                auth_token_ext = self._realm_codec_registry.db_decode(AuthTokenExt, session_dict["auth_token_ext"])
+                auth_token_ext = self._realm_codec_registry.db_decode(
+                    AuthTokenExt, session_dict["auth_token_ext"]
+                )
                 return SessionInfo(auth_token_ext=auth_token_ext)
         except (FileNotFoundError, RealmDecodingError) as err:
             raise SessionInfoNotFoundError("No session info found") from err
@@ -53,7 +57,9 @@ class SessionStorage:
                 session_dict = json.loads(session_str)
                 if "auth_token_ext" not in session_dict:
                     return None
-                auth_token_ext = self._realm_codec_registry.db_decode(AuthTokenExt, session_dict["auth_token_ext"])
+                auth_token_ext = self._realm_codec_registry.db_decode(
+                    AuthTokenExt, session_dict["auth_token_ext"]
+                )
                 return SessionInfo(auth_token_ext=auth_token_ext)
         except (FileNotFoundError, RealmDecodingError):
             return None
@@ -61,9 +67,14 @@ class SessionStorage:
     def store(self, session: SessionInfo) -> None:
         """Store session data."""
         with self._session_info_path.open("w") as f:
-            session_dict = json.dumps({
-                "auth_token_ext": self._realm_codec_registry.db_encode(session.auth_token_ext),
-            }, indent=4)
+            session_dict = json.dumps(
+                {
+                    "auth_token_ext": self._realm_codec_registry.db_encode(
+                        session.auth_token_ext
+                    ),
+                },
+                indent=4,
+            )
             f.write(session_dict)
 
     def clear(self) -> None:

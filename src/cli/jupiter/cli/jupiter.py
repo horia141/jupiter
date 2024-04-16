@@ -69,7 +69,9 @@ async def main() -> None:
         realm_codec_registry, sqlite_connection
     )
 
-    session_storage = SessionStorage(global_properties.session_info_path, realm_codec_registry)
+    session_storage = SessionStorage(
+        global_properties.session_info_path, realm_codec_registry
+    )
 
     auth_token_stamper = AuthTokenStamper(
         auth_token_secret=global_properties.auth_token_secret,

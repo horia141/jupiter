@@ -11,7 +11,7 @@
   "workspaces": [
     "src/desktop",
     "src/webui",
-    "gen"
+    "gen/ts/webapi-client"
   ],
   "devDependencies": {
     "@types/react-beautiful-dnd": "^13.1.3",
