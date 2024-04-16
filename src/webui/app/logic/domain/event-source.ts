@@ -1,4 +1,4 @@
-import { EventSource } from "jupiter-gen";
+import { EventSource } from "webapi-client";
 
 export function eventSourceName(source: EventSource) {
   switch (source) {

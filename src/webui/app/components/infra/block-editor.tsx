@@ -8,7 +8,7 @@ import NestedList from "@editorjs/nested-list";
 import Quote from "@editorjs/quote";
 import Table from "@editorjs/table";
 import DragDrop from "editorjs-drag-drop";
-import type { ListItem } from "jupiter-gen";
+import type { ListItem } from "webapi-client";
 import {
   BulletedListBlock,
   ChecklistBlock,
@@ -21,7 +21,7 @@ import {
   ParagraphBlock,
   QuoteBlock,
   TableBlock,
-} from "jupiter-gen";
+} from "webapi-client";
 import { useEffect, useRef } from "react";
 import type { OneOfNoteContentBlock } from "~/logic/domain/notes";
 

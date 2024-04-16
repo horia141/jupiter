@@ -1,4 +1,4 @@
-import type { EntityName, SlackTask } from "jupiter-gen";
+import type { EntityName, SlackTask } from "webapi-client";
 
 export function slackTaskNiceName(slackTask: SlackTask): EntityName {
   if (slackTask.channel) {

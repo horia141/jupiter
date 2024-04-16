@@ -3,7 +3,7 @@ import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Outlet, useFetcher } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
-import type { SmartList } from "jupiter-gen";
+import type { SmartList } from "webapi-client";
 import { getLoggedInApiClient } from "~/api-clients";
 import EntityIconComponent from "~/components/entity-icon";
 import { EntityNameComponent } from "~/components/entity-name";

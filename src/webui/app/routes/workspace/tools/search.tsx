@@ -21,7 +21,7 @@ import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { ApiError, NamedEntityTag } from "jupiter-gen";
+import { ApiError, NamedEntityTag } from "webapi-client";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { CheckboxAsString, parseQuery } from "zodix";

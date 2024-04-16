@@ -1,4 +1,4 @@
-import type { PersonBirthday, RecurringTaskDueAtMonth } from "jupiter-gen";
+import type { PersonBirthday, RecurringTaskDueAtMonth } from "webapi-client";
 
 const MONTH_NAME_INDEX = [
   "Jan",

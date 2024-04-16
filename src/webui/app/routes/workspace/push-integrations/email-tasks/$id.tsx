@@ -21,8 +21,8 @@ import {
   useTransition,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import type { InboxTask } from "jupiter-gen";
-import { ApiError, Difficulty, Eisen, InboxTaskStatus } from "jupiter-gen";
+import type { InboxTask } from "webapi-client";
+import { ApiError, Difficulty, Eisen, InboxTaskStatus } from "webapi-client";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";

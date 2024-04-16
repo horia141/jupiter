@@ -1,4 +1,4 @@
-import type { ADate, Timestamp } from "jupiter-gen";
+import type { ADate, Timestamp } from "webapi-client";
 import { DateTime } from "luxon";
 import { timestampToDate } from "~/logic/domain/timestamp";
 import { FatChip } from "./infra/chips";

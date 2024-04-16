@@ -9,8 +9,8 @@ import type {
   BigPlanFindResultEntry,
   Project,
   ProjectSummary,
-} from "jupiter-gen";
-import { BigPlanStatus, WorkspaceFeature } from "jupiter-gen";
+} from "webapi-client";
+import { BigPlanStatus, WorkspaceFeature } from "webapi-client";
 import { ADateTag } from "~/components/adate-tag";
 import { BigPlanStatusTag } from "~/components/big-plan-status-tag";
 import { ProjectTag } from "~/components/project-tag";

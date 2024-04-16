@@ -3,7 +3,7 @@ import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Outlet, useFetcher, useNavigate } from "@remix-run/react";
 
-import type { Vacation, VacationFindResultEntry } from "jupiter-gen";
+import type { Vacation, VacationFindResultEntry } from "webapi-client";
 
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";

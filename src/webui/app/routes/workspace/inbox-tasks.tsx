@@ -27,13 +27,13 @@ import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Link, Outlet, useFetcher } from "@remix-run/react";
 
-import type { InboxTask, InboxTaskFindResultEntry } from "jupiter-gen";
+import type { InboxTask, InboxTaskFindResultEntry } from "webapi-client";
 import {
   Eisen,
   InboxTaskSource,
   InboxTaskStatus,
   RecurringTaskPeriod,
-} from "jupiter-gen";
+} from "webapi-client";
 import React, { memo, useContext, useState } from "react";
 import { InboxTaskStatusTag } from "~/components/inbox-task-status-tag";
 

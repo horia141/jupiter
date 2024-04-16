@@ -3,13 +3,13 @@ import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Outlet, useFetcher } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
-import type { Journal, ReportPeriodResult } from "jupiter-gen";
+import type { Journal, ReportPeriodResult } from "webapi-client";
 import {
   RecurringTaskPeriod,
   UserFeature,
   WorkspaceFeature,
-} from "jupiter-gen";
-import type { JournalFindResultEntry } from "jupiter-gen/dist/models/JournalFindResultEntry";
+} from "webapi-client";
+import type { JournalFindResultEntry } from "webapi-client/dist/models/JournalFindResultEntry";
 import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
 import { EntityNameComponent } from "~/components/entity-name";

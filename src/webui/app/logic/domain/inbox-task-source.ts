@@ -1,4 +1,4 @@
-import { InboxTaskSource } from "jupiter-gen";
+import { InboxTaskSource } from "webapi-client";
 
 export function inboxTaskSourceName(source: InboxTaskSource): string {
   switch (source) {

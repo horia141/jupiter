@@ -4,8 +4,8 @@ import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Link, Outlet, useFetcher, useParams } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import type { MetricEntry } from "jupiter-gen";
-import { ApiError } from "jupiter-gen";
+import type { MetricEntry } from "webapi-client";
+import { ApiError } from "webapi-client";
 import { z } from "zod";
 import { parseParams } from "zodix";
 

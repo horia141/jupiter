@@ -1,5 +1,5 @@
 {
-  "name": "jupiter-gen",
+  "name": "webapi-client",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "version": "0.0.1",

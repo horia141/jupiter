@@ -1,4 +1,4 @@
-import { InboxTaskStatus } from "jupiter-gen";
+import { InboxTaskStatus } from "webapi-client";
 import { inboxTaskStatusName } from "~/logic/domain/inbox-task-status";
 import { SlimChip } from "./infra/chips";
 

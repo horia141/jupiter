@@ -29,7 +29,7 @@ import CardMembershipIcon from "@mui/icons-material/CardMembership";
 import SecurityIcon from "@mui/icons-material/Security";
 import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
 import { AnimatePresence, useAnimate } from "framer-motion";
-import { UserFeature } from "jupiter-gen";
+import { UserFeature } from "webapi-client";
 import { useContext, useEffect, useState } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
 import { DocsHelp, DocsHelpSubject } from "~/components/docs-help";

@@ -1,4 +1,4 @@
-import type { SlackTask } from "jupiter-gen";
+import type { SlackTask } from "webapi-client";
 import { slackTaskNiceName } from "~/logic/domain/slack-task";
 import { LinkTag } from "./infra/link-tag";
 

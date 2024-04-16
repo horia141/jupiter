@@ -1,5 +1,5 @@
 import { Box, Chip, MenuItem, Select } from "@mui/material";
-import { NamedEntityTag } from "jupiter-gen";
+import { NamedEntityTag } from "webapi-client";
 import { entityTagName } from "~/logic/domain/entity-tag";
 import { inferEntityTagsForEnabledFeatures } from "~/logic/domain/workspace";
 import type { TopLevelInfo } from "~/top-level-context";

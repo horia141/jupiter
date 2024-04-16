@@ -7,7 +7,7 @@ import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Link, Outlet, useTransition } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { StatusCodes } from "http-status-codes";
-import { ApiError, EventSource, SyncTarget } from "jupiter-gen";
+import { ApiError, EventSource, SyncTarget } from "webapi-client";
 import { z } from "zod";
 import { parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";

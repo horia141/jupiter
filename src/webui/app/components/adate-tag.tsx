@@ -1,4 +1,4 @@
-import type { ADate } from "jupiter-gen";
+import type { ADate } from "webapi-client";
 import { aDateToDate } from "~/logic/domain/adate";
 import { SlimChip } from "./infra/chips";
 

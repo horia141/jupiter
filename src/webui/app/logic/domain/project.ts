@@ -1,4 +1,4 @@
-import type { Project, ProjectSummary } from "jupiter-gen";
+import type { Project, ProjectSummary } from "webapi-client";
 
 export function isRootProject(project: Project | ProjectSummary): boolean {
   return !project.parent_project_ref_id;

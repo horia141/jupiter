@@ -1,5 +1,5 @@
 import { Box, Chip, MenuItem, Select } from "@mui/material";
-import { SyncTarget } from "jupiter-gen";
+import { SyncTarget } from "webapi-client";
 import { syncTargetName } from "~/logic/domain/sync-target";
 import { inferSyncTargetsForEnabledFeatures } from "~/logic/domain/workspace";
 import type { TopLevelInfo } from "~/top-level-context";

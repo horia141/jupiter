@@ -10,7 +10,7 @@ import {
   IconButton,
   styled,
 } from "@mui/material";
-import type { AuthTokenExt } from "jupiter-gen";
+import type { AuthTokenExt } from "webapi-client";
 import { useContext, useEffect, useRef, useState } from "react";
 import useWebSocket, { ReadyState } from "react-use-websocket";
 import { ClientOnly } from "remix-utils";

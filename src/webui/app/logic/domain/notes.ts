@@ -11,7 +11,7 @@ import {
   ParagraphBlock,
   QuoteBlock,
   TableBlock,
-} from "jupiter-gen";
+} from "webapi-client";
 import { z } from "zod";
 
 export type OneOfNoteContentBlock =

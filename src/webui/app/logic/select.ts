@@ -1,4 +1,4 @@
-import type { EntityId } from "jupiter-gen";
+import type { EntityId } from "webapi-client";
 import { z } from "zod";
 
 export function selectZod<R extends string>(zodEntity: z.ZodType<R>) {

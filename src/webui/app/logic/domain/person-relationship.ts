@@ -1,4 +1,4 @@
-import { PersonRelationship } from "jupiter-gen";
+import { PersonRelationship } from "webapi-client";
 
 export function personRelationshipName(
   relationship: PersonRelationship

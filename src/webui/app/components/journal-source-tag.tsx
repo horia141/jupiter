@@ -1,4 +1,4 @@
-import { JournalSource } from "jupiter-gen/dist/models/JournalSource";
+import { JournalSource } from "webapi-client/dist/models/JournalSource";
 import { journalSourceName } from "~/logic/domain/journal";
 import { SlimChip } from "./infra/chips";
 

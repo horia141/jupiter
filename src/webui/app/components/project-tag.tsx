@@ -1,4 +1,4 @@
-import type { Project } from "jupiter-gen";
+import type { Project } from "webapi-client";
 import { SlimChip } from "./infra/chips";
 
 interface Props {

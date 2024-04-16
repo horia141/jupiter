@@ -33,7 +33,7 @@ import type {
   ProjectSummary,
   SlackTask,
   WorkingMem,
-} from "jupiter-gen";
+} from "webapi-client";
 import {
   ApiError,
   Difficulty,
@@ -42,7 +42,7 @@ import {
   InboxTaskStatus,
   NoteDomain,
   WorkspaceFeature,
-} from "jupiter-gen";
+} from "webapi-client";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";

@@ -1,4 +1,4 @@
-import { Env, Hosting } from "jupiter-gen";
+import { Env, Hosting } from "webapi-client";
 import { createContext } from "react";
 import type { GlobalPropertiesServer } from "./global-properties-server";
 

@@ -1,4 +1,4 @@
-import type { Chore } from "jupiter-gen";
+import type { Chore } from "webapi-client";
 import { LinkTag } from "./infra/link-tag";
 
 interface Props {

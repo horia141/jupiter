@@ -5,7 +5,7 @@ import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Link, Outlet, useFetcher } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
-import { WorkspaceFeature, type Metric } from "jupiter-gen";
+import { WorkspaceFeature, type Metric } from "webapi-client";
 import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
 import EntityIconComponent from "~/components/entity-icon";

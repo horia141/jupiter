@@ -24,7 +24,7 @@ import {
   Eisen,
   PersonRelationship,
   RecurringTaskPeriod,
-} from "jupiter-gen";
+} from "webapi-client";
 import { useState } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
