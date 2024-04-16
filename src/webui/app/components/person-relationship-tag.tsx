@@ -1,4 +1,4 @@
-import { PersonRelationship } from "webapi-client";
+import { PersonRelationship } from "@jupiter/webapi-client";
 import { personRelationshipName } from "~/logic/domain/person-relationship";
 import { SlimChip } from "./infra/chips";
 

@@ -1,4 +1,4 @@
-import { BigPlanStatus } from "webapi-client";
+import { BigPlanStatus } from "@jupiter/webapi-client";
 import {
   bigPlanStatusIcon,
   bigPlanStatusName,

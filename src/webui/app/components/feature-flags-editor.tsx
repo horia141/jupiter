@@ -3,8 +3,8 @@ import type {
   Hosting,
   UserFeatureFlagsControls,
   WorkspaceFeatureFlagsControls,
-} from "webapi-client";
-import { FeatureControl, UserFeature, WorkspaceFeature } from "webapi-client";
+} from "@jupiter/webapi-client";
+import { FeatureControl, UserFeature, WorkspaceFeature } from "@jupiter/webapi-client";
 import {
   featureControlImpliesReadonly,
   userFeatureName,

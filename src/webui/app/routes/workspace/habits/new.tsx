@@ -16,14 +16,14 @@ import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import type { ProjectSummary } from "webapi-client";
+import type { ProjectSummary } from "@jupiter/webapi-client";
 import {
   ApiError,
   Difficulty,
   Eisen,
   RecurringTaskPeriod,
   WorkspaceFeature,
-} from "webapi-client";
+} from "@jupiter/webapi-client";
 import { useContext } from "react";
 import { z } from "zod";
 import { CheckboxAsString, parseForm } from "zodix";

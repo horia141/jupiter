@@ -21,13 +21,13 @@ import type {
   ProjectSummary,
   ReportPeriodResult,
   WorkableSummary,
-} from "webapi-client";
+} from "@jupiter/webapi-client";
 import {
   InboxTaskSource,
   RecurringTaskPeriod,
   UserFeature,
   WorkspaceFeature,
-} from "webapi-client";
+} from "@jupiter/webapi-client";
 import { useState } from "react";
 
 import { EntityNameOneLineComponent } from "~/components/entity-name";

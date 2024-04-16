@@ -1,4 +1,4 @@
-import { Hosting } from "webapi-client";
+import { Hosting } from "@jupiter/webapi-client";
 
 export function hostingName(hosting: Hosting): string {
   switch (hosting) {

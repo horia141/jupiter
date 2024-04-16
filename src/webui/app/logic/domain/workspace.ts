@@ -1,10 +1,10 @@
-import type { Workspace } from "webapi-client";
+import type { Workspace } from "@jupiter/webapi-client";
 import {
   InboxTaskSource,
   NamedEntityTag,
   SyncTarget,
   WorkspaceFeature,
-} from "webapi-client";
+} from "@jupiter/webapi-client";
 
 export function isWorkspaceFeatureAvailable(
   workspace: Workspace,

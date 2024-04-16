@@ -1,4 +1,4 @@
-import type { Habit } from "webapi-client";
+import type { Habit } from "@jupiter/webapi-client";
 import { compareDifficulty } from "./difficulty";
 import { compareEisen } from "./eisen";
 import { comparePeriods } from "./period";

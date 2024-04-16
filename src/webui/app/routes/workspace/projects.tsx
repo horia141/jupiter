@@ -7,7 +7,7 @@ import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Form, Outlet, useActionData } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { StatusCodes } from "http-status-codes";
-import { ApiError } from "webapi-client";
+import { ApiError } from "@jupiter/webapi-client";
 import { z } from "zod";
 import { parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";

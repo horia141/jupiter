@@ -1,5 +1,5 @@
 import { Autocomplete, TextField } from "@mui/material";
-import type { EntityId, SmartListTag } from "webapi-client";
+import type { EntityId, SmartListTag } from "@jupiter/webapi-client";
 import { useState } from "react";
 
 interface Props {

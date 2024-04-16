@@ -23,7 +23,7 @@ import {
   useTransition,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import type { InboxTask } from "webapi-client";
+import type { InboxTask } from "@jupiter/webapi-client";
 import {
   ApiError,
   Difficulty,
@@ -32,7 +32,7 @@ import {
   NoteDomain,
   PersonRelationship,
   RecurringTaskPeriod,
-} from "webapi-client";
+} from "@jupiter/webapi-client";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";

@@ -1,7 +1,7 @@
 import type { ActionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { StatusCodes } from "http-status-codes";
-import { ApiError, Eisen, InboxTaskStatus } from "webapi-client";
+import { ApiError, Eisen, InboxTaskStatus } from "@jupiter/webapi-client";
 import { z } from "zod";
 import { parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";

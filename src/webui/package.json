@@ -38,7 +38,7 @@
     "http-status-codes": "^2.2.0",
     "isbot": "^3.6.5",
     "js-cookie": "^3.0.5",
-    "webapi-client": "^0.0.1",
+    "@jupiter/webapi-client": "^0.0.1",
     "luxon": "^3.2.0",
     "buffer-polyfill": "npm:buffer@^6.0.3",
     "notistack": "^3.0.1",

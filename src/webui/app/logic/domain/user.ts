@@ -1,4 +1,4 @@
-import type { User, UserFeature } from "webapi-client";
+import type { User, UserFeature } from "@jupiter/webapi-client";
 
 export function isUserFeatureAvailable(
   user: User,

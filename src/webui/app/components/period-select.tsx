@@ -1,5 +1,5 @@
 import { Box, Chip, MenuItem, Select } from "@mui/material";
-import { RecurringTaskPeriod } from "webapi-client";
+import { RecurringTaskPeriod } from "@jupiter/webapi-client";
 import { periodName } from "~/logic/domain/period";
 
 interface PeriodSelectProps {

@@ -1,5 +1,6 @@
 {
-  "name": "webapi-client",
+  "name": "@jupiter/webapi-client",
+  "access": "public",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "version": "0.0.1",

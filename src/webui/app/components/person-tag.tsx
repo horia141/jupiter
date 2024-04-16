@@ -1,4 +1,4 @@
-import type { Person } from "webapi-client";
+import type { Person } from "@jupiter/webapi-client";
 import { LinkTag } from "./infra/link-tag";
 
 interface Props {

@@ -4,7 +4,7 @@ import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Link, Outlet, useFetcher } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
-import { WorkspaceFeature, type EmailTask } from "webapi-client";
+import { WorkspaceFeature, type EmailTask } from "@jupiter/webapi-client";
 import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
 import { ADateTag } from "~/components/adate-tag";

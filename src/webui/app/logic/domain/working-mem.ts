@@ -1,4 +1,4 @@
-import type { WorkingMem } from "webapi-client";
+import type { WorkingMem } from "@jupiter/webapi-client";
 import { aDateToDate } from "./adate";
 
 export function sortWorkingMemsNaturally(workingMems: WorkingMem[]) {

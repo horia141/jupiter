@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { Env } from "webapi-client";
+import { Env } from "@jupiter/webapi-client";
 import { useContext } from "react";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 

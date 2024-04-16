@@ -1,4 +1,4 @@
-import { SyncTarget } from "webapi-client";
+import { SyncTarget } from "@jupiter/webapi-client";
 
 export function syncTargetName(syncTarget: SyncTarget): string {
   switch (syncTarget) {

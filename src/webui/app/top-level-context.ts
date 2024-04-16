@@ -4,7 +4,7 @@ import type {
   UserScoreOverview,
   Workspace,
   WorkspaceFeatureFlagsControls,
-} from "webapi-client";
+} from "@jupiter/webapi-client";
 import { createContext } from "react";
 
 export interface TopLevelInfo {

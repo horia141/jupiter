@@ -1,4 +1,4 @@
-import { NamedEntityTag } from "webapi-client";
+import { NamedEntityTag } from "@jupiter/webapi-client";
 
 export function entityTagName(entityTag: NamedEntityTag): string {
   switch (entityTag) {

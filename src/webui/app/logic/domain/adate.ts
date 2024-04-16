@@ -1,4 +1,4 @@
-import type { ADate } from "webapi-client";
+import type { ADate } from "@jupiter/webapi-client";
 import { DateTime } from "luxon";
 
 export function aDateToDate(aDate: ADate): DateTime {

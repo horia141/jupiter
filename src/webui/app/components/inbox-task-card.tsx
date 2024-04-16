@@ -26,7 +26,7 @@ import {
   type Metric,
   type Person,
   type SlackTask,
-} from "webapi-client";
+} from "@jupiter/webapi-client";
 import { DateTime } from "luxon";
 import { useContext, useState } from "react";
 import { GlobalPropertiesContext } from "~/global-properties-client";

@@ -1,4 +1,4 @@
-import { Difficulty } from "webapi-client";
+import { Difficulty } from "@jupiter/webapi-client";
 import { difficultyName } from "~/logic/domain/difficulty";
 import { SlimChip } from "./infra/chips";
 

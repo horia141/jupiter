@@ -1,4 +1,4 @@
-import { RecurringTaskPeriod } from "webapi-client";
+import { RecurringTaskPeriod } from "@jupiter/webapi-client";
 
 export function periodName(status: RecurringTaskPeriod): string {
   switch (status) {

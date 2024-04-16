@@ -1,4 +1,4 @@
-import { InboxTaskStatus } from "webapi-client";
+import { InboxTaskStatus } from "@jupiter/webapi-client";
 
 export function inboxTaskStatusIcon(status: InboxTaskStatus): string {
   switch (status) {

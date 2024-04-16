@@ -1,4 +1,4 @@
-import type { BigPlan } from "webapi-client";
+import type { BigPlan } from "@jupiter/webapi-client";
 import { LinkTag } from "./infra/link-tag";
 
 interface Props {

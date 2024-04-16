@@ -1,4 +1,4 @@
-import { Eisen } from "webapi-client";
+import { Eisen } from "@jupiter/webapi-client";
 
 export function eisenIcon(eisen: Eisen): string {
   switch (eisen) {

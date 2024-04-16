@@ -1,5 +1,5 @@
-import type { EntitySummary } from "webapi-client";
-import { NamedEntityTag } from "webapi-client";
+import type { EntitySummary } from "@jupiter/webapi-client";
+import { NamedEntityTag } from "@jupiter/webapi-client";
 import { SlimChip } from "./infra/chips";
 import { EntityFakeLink, EntityLink } from "./infra/entity-card";
 import { TimeDiffTag } from "./time-diff-tag";

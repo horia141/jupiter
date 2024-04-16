@@ -1,4 +1,4 @@
-import type { Timestamp } from "webapi-client";
+import type { Timestamp } from "@jupiter/webapi-client";
 import { DateTime } from "luxon";
 
 export function timestampToDate(timestamp: Timestamp): DateTime {

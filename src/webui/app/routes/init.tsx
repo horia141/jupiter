@@ -27,7 +27,7 @@ import {
   useTransition,
 } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { ApiError, UserFeature, WorkspaceFeature } from "webapi-client";
+import { ApiError, UserFeature, WorkspaceFeature } from "@jupiter/webapi-client";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";

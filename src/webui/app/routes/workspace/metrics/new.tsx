@@ -18,7 +18,7 @@ import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { ApiError, Difficulty, Eisen, RecurringTaskPeriod } from "webapi-client";
+import { ApiError, Difficulty, Eisen, RecurringTaskPeriod } from "@jupiter/webapi-client";
 import { useState } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";

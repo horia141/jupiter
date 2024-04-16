@@ -31,7 +31,7 @@ import {
   RecurringTaskPeriod,
   SyncTarget,
   WorkspaceFeature,
-} from "webapi-client";
+} from "@jupiter/webapi-client";
 import { DateTime } from "luxon";
 import React, { useContext, useState } from "react";
 import { z } from "zod";

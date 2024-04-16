@@ -1,4 +1,4 @@
-import { Difficulty } from "webapi-client";
+import { Difficulty } from "@jupiter/webapi-client";
 
 export function difficultyName(difficulty: Difficulty): string {
   switch (difficulty) {
