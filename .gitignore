@@ -17,3 +17,4 @@ public/build/
 gen/ts/webapi-client/dist/
 .sqlite
 session-info
+.ruff_cache/
