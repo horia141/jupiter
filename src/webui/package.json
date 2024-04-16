@@ -1,7 +1,8 @@
 {
   "private": true,
   "sideEffects": false,
-  "name": "jupiter-webui",
+  "name": "@jupiter/webui",
+  "access": "public",
   "version": "0.1.0",
   "description": "The Jupiter Web application",
   "author": "Horia Coman <horia141@gmail.com>",

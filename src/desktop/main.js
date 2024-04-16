@@ -7,7 +7,7 @@ const createWindow = () => {
     height: 600,
   });
 
-  win.loadURL("http://localhost:10020/workspace");
+  win.loadURL("http://localhost:10010/workspace");
 
   // win.webContents.openDevTools({ mode: "detach" });
 };
