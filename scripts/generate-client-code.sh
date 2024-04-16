@@ -26,9 +26,9 @@ python scripts/process-openapi.py .build-cache/apigen/openapi.json
 
 npx openapi \
     --input .build-cache/apigen/openapi.json \
-    --request gen/request-template.ts \
-    --output gen/gen \
+    --request gen/ts/webapi-client/request-template.ts \
+    --output gen/ts/webapi-client/gen \
     --client fetch \
     --name ApiClient
 
-(cd gen && npx tsc)
+(cd gen/ts/webapi-client && npx tsc)
