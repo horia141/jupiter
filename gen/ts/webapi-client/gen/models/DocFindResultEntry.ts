@@ -10,7 +10,7 @@ import type { Note } from './Note';
  */
 export type DocFindResultEntry = {
     doc: Doc;
-    note?: Note;
-    subdocs?: Array<Doc>;
+    note?: (Note | null);
+    subdocs?: (Array<Doc> | null);
 };
 

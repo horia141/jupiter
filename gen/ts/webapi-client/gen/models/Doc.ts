@@ -15,9 +15,9 @@ export type Doc = {
     archived: boolean;
     created_time: Timestamp;
     last_modified_time: Timestamp;
-    archived_time?: Timestamp;
+    archived_time?: (Timestamp | null);
     name: DocName;
-    doc_collection: string;
-    parent_doc_ref_id?: EntityId;
+    doc_collection_ref_id: string;
+    parent_doc_ref_id?: (EntityId | null);
 };
 

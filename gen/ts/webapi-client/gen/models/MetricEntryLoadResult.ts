@@ -10,6 +10,6 @@ import type { Note } from './Note';
  */
 export type MetricEntryLoadResult = {
     metric_entry: MetricEntry;
-    note?: Note;
+    note?: (Note | null);
 };
 

@@ -18,7 +18,7 @@ export type EntitySummary = {
     archived: boolean;
     created_time: Timestamp;
     last_modified_time: Timestamp;
-    archived_time?: Timestamp;
+    archived_time?: (Timestamp | null);
     snippet: string;
 };
 

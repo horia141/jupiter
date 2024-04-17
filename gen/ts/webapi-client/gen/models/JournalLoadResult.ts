@@ -12,6 +12,6 @@ import type { Note } from './Note';
 export type JournalLoadResult = {
     journal: Journal;
     note: Note;
-    writing_task?: InboxTask;
+    writing_task?: (InboxTask | null);
 };
 

@@ -27,9 +27,9 @@ export type Note = {
     archived: boolean;
     created_time: Timestamp;
     last_modified_time: Timestamp;
-    archived_time?: Timestamp;
+    archived_time?: (Timestamp | null);
     name: EntityName;
-    note_collection: string;
+    note_collection_ref_id: string;
     domain: NoteDomain;
     source_entity_ref_id: EntityId;
     content: Array<(ParagraphBlock | HeadingBlock | BulletedListBlock | NumberedListBlock | ChecklistBlock | TableBlock | CodeBlock | QuoteBlock | DividerBlock | LinkBlock | EntityReferenceBlock)>;

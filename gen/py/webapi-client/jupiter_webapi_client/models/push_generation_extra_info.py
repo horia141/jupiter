@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Type, TypeVar, Union
+from typing import Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -17,43 +17,67 @@ class PushGenerationExtraInfo:
 
     Attributes:
         timezone (str): A timezone in this domain.
-        name (Union[Unset, str]): The name of an inbox task.
-        status (Union[Unset, InboxTaskStatus]): The status of an inbox task.
-        eisen (Union[Unset, Eisen]): The Eisenhower status of a particular task.
-        difficulty (Union[Unset, Difficulty]): The difficulty of a particular task.
-        actionable_date (Union[Unset, str]): A date or possibly a datetime for the application.
-        due_date (Union[Unset, str]): A date or possibly a datetime for the application.
+        name (Union[None, Unset, str]):
+        status (Union[InboxTaskStatus, None, Unset]):
+        eisen (Union[Eisen, None, Unset]):
+        difficulty (Union[Difficulty, None, Unset]):
+        actionable_date (Union[None, Unset, str]):
+        due_date (Union[None, Unset, str]):
     """
 
     timezone: str
-    name: Union[Unset, str] = UNSET
-    status: Union[Unset, InboxTaskStatus] = UNSET
-    eisen: Union[Unset, Eisen] = UNSET
-    difficulty: Union[Unset, Difficulty] = UNSET
-    actionable_date: Union[Unset, str] = UNSET
-    due_date: Union[Unset, str] = UNSET
+    name: Union[None, Unset, str] = UNSET
+    status: Union[InboxTaskStatus, None, Unset] = UNSET
+    eisen: Union[Eisen, None, Unset] = UNSET
+    difficulty: Union[Difficulty, None, Unset] = UNSET
+    actionable_date: Union[None, Unset, str] = UNSET
+    due_date: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         timezone = self.timezone
 
-        name = self.name
+        name: Union[None, Unset, str]
+        if isinstance(self.name, Unset):
+            name = UNSET
+        else:
+            name = self.name
 
-        status: Union[Unset, str] = UNSET
-        if not isinstance(self.status, Unset):
+        status: Union[None, Unset, str]
+        if isinstance(self.status, Unset):
+            status = UNSET
+        elif isinstance(self.status, InboxTaskStatus):
             status = self.status.value
+        else:
+            status = self.status
 
-        eisen: Union[Unset, str] = UNSET
-        if not isinstance(self.eisen, Unset):
+        eisen: Union[None, Unset, str]
+        if isinstance(self.eisen, Unset):
+            eisen = UNSET
+        elif isinstance(self.eisen, Eisen):
             eisen = self.eisen.value
+        else:
+            eisen = self.eisen
 
-        difficulty: Union[Unset, str] = UNSET
-        if not isinstance(self.difficulty, Unset):
+        difficulty: Union[None, Unset, str]
+        if isinstance(self.difficulty, Unset):
+            difficulty = UNSET
+        elif isinstance(self.difficulty, Difficulty):
             difficulty = self.difficulty.value
+        else:
+            difficulty = self.difficulty
 
-        actionable_date = self.actionable_date
+        actionable_date: Union[None, Unset, str]
+        if isinstance(self.actionable_date, Unset):
+            actionable_date = UNSET
+        else:
+            actionable_date = self.actionable_date
 
-        due_date = self.due_date
+        due_date: Union[None, Unset, str]
+        if isinstance(self.due_date, Unset):
+            due_date = UNSET
+        else:
+            due_date = self.due_date
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -82,32 +106,83 @@ class PushGenerationExtraInfo:
         d = src_dict.copy()
         timezone = d.pop("timezone")
 
-        name = d.pop("name", UNSET)
+        def _parse_name(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
 
-        _status = d.pop("status", UNSET)
-        status: Union[Unset, InboxTaskStatus]
-        if isinstance(_status, Unset):
-            status = UNSET
-        else:
-            status = InboxTaskStatus(_status)
+        name = _parse_name(d.pop("name", UNSET))
 
-        _eisen = d.pop("eisen", UNSET)
-        eisen: Union[Unset, Eisen]
-        if isinstance(_eisen, Unset):
-            eisen = UNSET
-        else:
-            eisen = Eisen(_eisen)
+        def _parse_status(data: object) -> Union[InboxTaskStatus, None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                status_type_0 = InboxTaskStatus(data)
 
-        _difficulty = d.pop("difficulty", UNSET)
-        difficulty: Union[Unset, Difficulty]
-        if isinstance(_difficulty, Unset):
-            difficulty = UNSET
-        else:
-            difficulty = Difficulty(_difficulty)
+                return status_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[InboxTaskStatus, None, Unset], data)
 
-        actionable_date = d.pop("actionable_date", UNSET)
+        status = _parse_status(d.pop("status", UNSET))
 
-        due_date = d.pop("due_date", UNSET)
+        def _parse_eisen(data: object) -> Union[Eisen, None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                eisen_type_0 = Eisen(data)
+
+                return eisen_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[Eisen, None, Unset], data)
+
+        eisen = _parse_eisen(d.pop("eisen", UNSET))
+
+        def _parse_difficulty(data: object) -> Union[Difficulty, None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                difficulty_type_0 = Difficulty(data)
+
+                return difficulty_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[Difficulty, None, Unset], data)
+
+        difficulty = _parse_difficulty(d.pop("difficulty", UNSET))
+
+        def _parse_actionable_date(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        actionable_date = _parse_actionable_date(d.pop("actionable_date", UNSET))
+
+        def _parse_due_date(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        due_date = _parse_due_date(d.pop("due_date", UNSET))
 
         push_generation_extra_info = cls(
             timezone=timezone,

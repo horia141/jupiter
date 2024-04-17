@@ -26,7 +26,7 @@ class GenLogEntry:
         created_time (str): A timestamp in the application.
         last_modified_time (str): A timestamp in the application.
         name (str): The name for an entity which acts as both name and unique identifier.
-        gen_log (str):
+        gen_log_ref_id (str):
         source (EventSource): The source of the modification which this event records.
         gen_even_if_not_modified (bool):
         today (str): A date or possibly a datetime for the application.
@@ -35,15 +35,15 @@ class GenLogEntry:
         entity_created_records (List['EntitySummary']):
         entity_updated_records (List['EntitySummary']):
         entity_removed_records (List['EntitySummary']):
-        archived_time (Union[Unset, str]): A timestamp in the application.
-        period (Union[Unset, List[RecurringTaskPeriod]]):
-        filter_project_ref_ids (Union[Unset, List[str]]):
-        filter_habit_ref_ids (Union[Unset, List[str]]):
-        filter_chore_ref_ids (Union[Unset, List[str]]):
-        filter_metric_ref_ids (Union[Unset, List[str]]):
-        filter_person_ref_ids (Union[Unset, List[str]]):
-        filter_slack_task_ref_ids (Union[Unset, List[str]]):
-        filter_email_task_ref_ids (Union[Unset, List[str]]):
+        archived_time (Union[None, Unset, str]):
+        period (Union[List[RecurringTaskPeriod], None, Unset]):
+        filter_project_ref_ids (Union[List[str], None, Unset]):
+        filter_habit_ref_ids (Union[List[str], None, Unset]):
+        filter_chore_ref_ids (Union[List[str], None, Unset]):
+        filter_metric_ref_ids (Union[List[str], None, Unset]):
+        filter_person_ref_ids (Union[List[str], None, Unset]):
+        filter_slack_task_ref_ids (Union[List[str], None, Unset]):
+        filter_email_task_ref_ids (Union[List[str], None, Unset]):
     """
 
     ref_id: str
@@ -52,7 +52,7 @@ class GenLogEntry:
     created_time: str
     last_modified_time: str
     name: str
-    gen_log: str
+    gen_log_ref_id: str
     source: EventSource
     gen_even_if_not_modified: bool
     today: str
@@ -61,15 +61,15 @@ class GenLogEntry:
     entity_created_records: List["EntitySummary"]
     entity_updated_records: List["EntitySummary"]
     entity_removed_records: List["EntitySummary"]
-    archived_time: Union[Unset, str] = UNSET
-    period: Union[Unset, List[RecurringTaskPeriod]] = UNSET
-    filter_project_ref_ids: Union[Unset, List[str]] = UNSET
-    filter_habit_ref_ids: Union[Unset, List[str]] = UNSET
-    filter_chore_ref_ids: Union[Unset, List[str]] = UNSET
-    filter_metric_ref_ids: Union[Unset, List[str]] = UNSET
-    filter_person_ref_ids: Union[Unset, List[str]] = UNSET
-    filter_slack_task_ref_ids: Union[Unset, List[str]] = UNSET
-    filter_email_task_ref_ids: Union[Unset, List[str]] = UNSET
+    archived_time: Union[None, Unset, str] = UNSET
+    period: Union[List[RecurringTaskPeriod], None, Unset] = UNSET
+    filter_project_ref_ids: Union[List[str], None, Unset] = UNSET
+    filter_habit_ref_ids: Union[List[str], None, Unset] = UNSET
+    filter_chore_ref_ids: Union[List[str], None, Unset] = UNSET
+    filter_metric_ref_ids: Union[List[str], None, Unset] = UNSET
+    filter_person_ref_ids: Union[List[str], None, Unset] = UNSET
+    filter_slack_task_ref_ids: Union[List[str], None, Unset] = UNSET
+    filter_email_task_ref_ids: Union[List[str], None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -85,7 +85,7 @@ class GenLogEntry:
 
         name = self.name
 
-        gen_log = self.gen_log
+        gen_log_ref_id = self.gen_log_ref_id
 
         source = self.source.value
 
@@ -115,41 +115,85 @@ class GenLogEntry:
             entity_removed_records_item = entity_removed_records_item_data.to_dict()
             entity_removed_records.append(entity_removed_records_item)
 
-        archived_time = self.archived_time
+        archived_time: Union[None, Unset, str]
+        if isinstance(self.archived_time, Unset):
+            archived_time = UNSET
+        else:
+            archived_time = self.archived_time
 
-        period: Union[Unset, List[str]] = UNSET
-        if not isinstance(self.period, Unset):
+        period: Union[List[str], None, Unset]
+        if isinstance(self.period, Unset):
+            period = UNSET
+        elif isinstance(self.period, list):
             period = []
-            for period_item_data in self.period:
-                period_item = period_item_data.value
-                period.append(period_item)
+            for period_type_0_item_data in self.period:
+                period_type_0_item = period_type_0_item_data.value
+                period.append(period_type_0_item)
 
-        filter_project_ref_ids: Union[Unset, List[str]] = UNSET
-        if not isinstance(self.filter_project_ref_ids, Unset):
+        else:
+            period = self.period
+
+        filter_project_ref_ids: Union[List[str], None, Unset]
+        if isinstance(self.filter_project_ref_ids, Unset):
+            filter_project_ref_ids = UNSET
+        elif isinstance(self.filter_project_ref_ids, list):
             filter_project_ref_ids = self.filter_project_ref_ids
 
-        filter_habit_ref_ids: Union[Unset, List[str]] = UNSET
-        if not isinstance(self.filter_habit_ref_ids, Unset):
+        else:
+            filter_project_ref_ids = self.filter_project_ref_ids
+
+        filter_habit_ref_ids: Union[List[str], None, Unset]
+        if isinstance(self.filter_habit_ref_ids, Unset):
+            filter_habit_ref_ids = UNSET
+        elif isinstance(self.filter_habit_ref_ids, list):
             filter_habit_ref_ids = self.filter_habit_ref_ids
 
-        filter_chore_ref_ids: Union[Unset, List[str]] = UNSET
-        if not isinstance(self.filter_chore_ref_ids, Unset):
+        else:
+            filter_habit_ref_ids = self.filter_habit_ref_ids
+
+        filter_chore_ref_ids: Union[List[str], None, Unset]
+        if isinstance(self.filter_chore_ref_ids, Unset):
+            filter_chore_ref_ids = UNSET
+        elif isinstance(self.filter_chore_ref_ids, list):
             filter_chore_ref_ids = self.filter_chore_ref_ids
 
-        filter_metric_ref_ids: Union[Unset, List[str]] = UNSET
-        if not isinstance(self.filter_metric_ref_ids, Unset):
+        else:
+            filter_chore_ref_ids = self.filter_chore_ref_ids
+
+        filter_metric_ref_ids: Union[List[str], None, Unset]
+        if isinstance(self.filter_metric_ref_ids, Unset):
+            filter_metric_ref_ids = UNSET
+        elif isinstance(self.filter_metric_ref_ids, list):
             filter_metric_ref_ids = self.filter_metric_ref_ids
 
-        filter_person_ref_ids: Union[Unset, List[str]] = UNSET
-        if not isinstance(self.filter_person_ref_ids, Unset):
+        else:
+            filter_metric_ref_ids = self.filter_metric_ref_ids
+
+        filter_person_ref_ids: Union[List[str], None, Unset]
+        if isinstance(self.filter_person_ref_ids, Unset):
+            filter_person_ref_ids = UNSET
+        elif isinstance(self.filter_person_ref_ids, list):
             filter_person_ref_ids = self.filter_person_ref_ids
 
-        filter_slack_task_ref_ids: Union[Unset, List[str]] = UNSET
-        if not isinstance(self.filter_slack_task_ref_ids, Unset):
+        else:
+            filter_person_ref_ids = self.filter_person_ref_ids
+
+        filter_slack_task_ref_ids: Union[List[str], None, Unset]
+        if isinstance(self.filter_slack_task_ref_ids, Unset):
+            filter_slack_task_ref_ids = UNSET
+        elif isinstance(self.filter_slack_task_ref_ids, list):
             filter_slack_task_ref_ids = self.filter_slack_task_ref_ids
 
-        filter_email_task_ref_ids: Union[Unset, List[str]] = UNSET
-        if not isinstance(self.filter_email_task_ref_ids, Unset):
+        else:
+            filter_slack_task_ref_ids = self.filter_slack_task_ref_ids
+
+        filter_email_task_ref_ids: Union[List[str], None, Unset]
+        if isinstance(self.filter_email_task_ref_ids, Unset):
+            filter_email_task_ref_ids = UNSET
+        elif isinstance(self.filter_email_task_ref_ids, list):
+            filter_email_task_ref_ids = self.filter_email_task_ref_ids
+
+        else:
             filter_email_task_ref_ids = self.filter_email_task_ref_ids
 
         field_dict: Dict[str, Any] = {}
@@ -162,7 +206,7 @@ class GenLogEntry:
                 "created_time": created_time,
                 "last_modified_time": last_modified_time,
                 "name": name,
-                "gen_log": gen_log,
+                "gen_log_ref_id": gen_log_ref_id,
                 "source": source,
                 "gen_even_if_not_modified": gen_even_if_not_modified,
                 "today": today,
@@ -211,7 +255,7 @@ class GenLogEntry:
 
         name = d.pop("name")
 
-        gen_log = d.pop("gen_log")
+        gen_log_ref_id = d.pop("gen_log_ref_id")
 
         source = EventSource(d.pop("source"))
 
@@ -249,28 +293,155 @@ class GenLogEntry:
 
             entity_removed_records.append(entity_removed_records_item)
 
-        archived_time = d.pop("archived_time", UNSET)
+        def _parse_archived_time(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
 
-        period = []
-        _period = d.pop("period", UNSET)
-        for period_item_data in _period or []:
-            period_item = RecurringTaskPeriod(period_item_data)
+        archived_time = _parse_archived_time(d.pop("archived_time", UNSET))
 
-            period.append(period_item)
+        def _parse_period(data: object) -> Union[List[RecurringTaskPeriod], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                period_type_0 = []
+                _period_type_0 = data
+                for period_type_0_item_data in _period_type_0:
+                    period_type_0_item = RecurringTaskPeriod(period_type_0_item_data)
 
-        filter_project_ref_ids = cast(List[str], d.pop("filter_project_ref_ids", UNSET))
+                    period_type_0.append(period_type_0_item)
 
-        filter_habit_ref_ids = cast(List[str], d.pop("filter_habit_ref_ids", UNSET))
+                return period_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List[RecurringTaskPeriod], None, Unset], data)
 
-        filter_chore_ref_ids = cast(List[str], d.pop("filter_chore_ref_ids", UNSET))
+        period = _parse_period(d.pop("period", UNSET))
 
-        filter_metric_ref_ids = cast(List[str], d.pop("filter_metric_ref_ids", UNSET))
+        def _parse_filter_project_ref_ids(data: object) -> Union[List[str], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                filter_project_ref_ids_type_0 = cast(List[str], data)
 
-        filter_person_ref_ids = cast(List[str], d.pop("filter_person_ref_ids", UNSET))
+                return filter_project_ref_ids_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List[str], None, Unset], data)
 
-        filter_slack_task_ref_ids = cast(List[str], d.pop("filter_slack_task_ref_ids", UNSET))
+        filter_project_ref_ids = _parse_filter_project_ref_ids(d.pop("filter_project_ref_ids", UNSET))
 
-        filter_email_task_ref_ids = cast(List[str], d.pop("filter_email_task_ref_ids", UNSET))
+        def _parse_filter_habit_ref_ids(data: object) -> Union[List[str], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                filter_habit_ref_ids_type_0 = cast(List[str], data)
+
+                return filter_habit_ref_ids_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List[str], None, Unset], data)
+
+        filter_habit_ref_ids = _parse_filter_habit_ref_ids(d.pop("filter_habit_ref_ids", UNSET))
+
+        def _parse_filter_chore_ref_ids(data: object) -> Union[List[str], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                filter_chore_ref_ids_type_0 = cast(List[str], data)
+
+                return filter_chore_ref_ids_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List[str], None, Unset], data)
+
+        filter_chore_ref_ids = _parse_filter_chore_ref_ids(d.pop("filter_chore_ref_ids", UNSET))
+
+        def _parse_filter_metric_ref_ids(data: object) -> Union[List[str], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                filter_metric_ref_ids_type_0 = cast(List[str], data)
+
+                return filter_metric_ref_ids_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List[str], None, Unset], data)
+
+        filter_metric_ref_ids = _parse_filter_metric_ref_ids(d.pop("filter_metric_ref_ids", UNSET))
+
+        def _parse_filter_person_ref_ids(data: object) -> Union[List[str], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                filter_person_ref_ids_type_0 = cast(List[str], data)
+
+                return filter_person_ref_ids_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List[str], None, Unset], data)
+
+        filter_person_ref_ids = _parse_filter_person_ref_ids(d.pop("filter_person_ref_ids", UNSET))
+
+        def _parse_filter_slack_task_ref_ids(data: object) -> Union[List[str], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                filter_slack_task_ref_ids_type_0 = cast(List[str], data)
+
+                return filter_slack_task_ref_ids_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List[str], None, Unset], data)
+
+        filter_slack_task_ref_ids = _parse_filter_slack_task_ref_ids(d.pop("filter_slack_task_ref_ids", UNSET))
+
+        def _parse_filter_email_task_ref_ids(data: object) -> Union[List[str], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                filter_email_task_ref_ids_type_0 = cast(List[str], data)
+
+                return filter_email_task_ref_ids_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List[str], None, Unset], data)
+
+        filter_email_task_ref_ids = _parse_filter_email_task_ref_ids(d.pop("filter_email_task_ref_ids", UNSET))
 
         gen_log_entry = cls(
             ref_id=ref_id,
@@ -279,7 +450,7 @@ class GenLogEntry:
             created_time=created_time,
             last_modified_time=last_modified_time,
             name=name,
-            gen_log=gen_log,
+            gen_log_ref_id=gen_log_ref_id,
             source=source,
             gen_even_if_not_modified=gen_even_if_not_modified,
             today=today,

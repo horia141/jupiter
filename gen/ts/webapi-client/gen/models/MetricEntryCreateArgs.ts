@@ -11,6 +11,6 @@ import type { EntityId } from './EntityId';
 export type MetricEntryCreateArgs = {
     metric_ref_id: EntityId;
     value: number;
-    collection_time?: ADate;
+    collection_time?: (ADate | null);
 };
 

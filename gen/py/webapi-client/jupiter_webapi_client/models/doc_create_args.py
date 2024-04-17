@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -30,7 +30,7 @@ class DocCreateArgs:
         name (str): The doc name.
         content (List[Union['BulletedListBlock', 'ChecklistBlock', 'CodeBlock', 'DividerBlock', 'EntityReferenceBlock',
             'HeadingBlock', 'LinkBlock', 'NumberedListBlock', 'ParagraphBlock', 'QuoteBlock', 'TableBlock']]):
-        parent_doc_ref_id (Union[Unset, str]): A generic entity id.
+        parent_doc_ref_id (Union[None, Unset, str]):
     """
 
     name: str
@@ -49,7 +49,7 @@ class DocCreateArgs:
             "TableBlock",
         ]
     ]
-    parent_doc_ref_id: Union[Unset, str] = UNSET
+    parent_doc_ref_id: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -94,7 +94,11 @@ class DocCreateArgs:
 
             content.append(content_item)
 
-        parent_doc_ref_id = self.parent_doc_ref_id
+        parent_doc_ref_id: Union[None, Unset, str]
+        if isinstance(self.parent_doc_ref_id, Unset):
+            parent_doc_ref_id = UNSET
+        else:
+            parent_doc_ref_id = self.parent_doc_ref_id
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -235,7 +239,14 @@ class DocCreateArgs:
 
             content.append(content_item)
 
-        parent_doc_ref_id = d.pop("parent_doc_ref_id", UNSET)
+        def _parse_parent_doc_ref_id(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        parent_doc_ref_id = _parse_parent_doc_ref_id(d.pop("parent_doc_ref_id", UNSET))
 
         doc_create_args = cls(
             name=name,

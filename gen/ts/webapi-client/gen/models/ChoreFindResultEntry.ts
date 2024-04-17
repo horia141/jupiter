@@ -12,8 +12,8 @@ import type { Project } from './Project';
  */
 export type ChoreFindResultEntry = {
     chore: Chore;
-    note?: Note;
-    project?: Project;
-    inbox_tasks?: Array<InboxTask>;
+    note?: (Note | null);
+    project?: (Project | null);
+    inbox_tasks?: (Array<InboxTask> | null);
 };
 

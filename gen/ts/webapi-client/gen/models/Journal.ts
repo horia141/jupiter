@@ -19,9 +19,9 @@ export type Journal = {
     archived: boolean;
     created_time: Timestamp;
     last_modified_time: Timestamp;
-    archived_time?: Timestamp;
+    archived_time?: (Timestamp | null);
     name: EntityName;
-    journal_collection: string;
+    journal_collection_ref_id: string;
     source: JournalSource;
     right_now: ADate;
     period: RecurringTaskPeriod;

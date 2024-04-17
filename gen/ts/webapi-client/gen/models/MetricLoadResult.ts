@@ -12,7 +12,7 @@ import type { Note } from './Note';
  */
 export type MetricLoadResult = {
     metric: Metric;
-    note?: Note;
+    note?: (Note | null);
     metric_entries: Array<MetricEntry>;
     metric_collection_inbox_tasks: Array<InboxTask>;
 };

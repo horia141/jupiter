@@ -1,3 +1,23 @@
+import type {
+  BigPlan,
+  Chore,
+  EmailTask,
+  Habit,
+  Metric,
+  Person,
+  ProjectSummary,
+  SlackTask,
+  WorkingMem,
+} from "@jupiter/webapi-client";
+import {
+  ApiError,
+  Difficulty,
+  Eisen,
+  InboxTaskSource,
+  InboxTaskStatus,
+  NoteDomain,
+  WorkspaceFeature,
+} from "@jupiter/webapi-client";
 import type { SelectChangeEvent } from "@mui/material";
 import {
   Autocomplete,
@@ -23,26 +43,6 @@ import {
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useParams, useTransition } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import type {
-  BigPlan,
-  Chore,
-  EmailTask,
-  Habit,
-  Metric,
-  Person,
-  ProjectSummary,
-  SlackTask,
-  WorkingMem,
-} from "@jupiter/webapi-client";
-import {
-  ApiError,
-  Difficulty,
-  Eisen,
-  InboxTaskSource,
-  InboxTaskStatus,
-  NoteDomain,
-  WorkspaceFeature,
-} from "@jupiter/webapi-client";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";

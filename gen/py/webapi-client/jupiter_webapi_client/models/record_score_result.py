@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -19,12 +19,12 @@ class RecordScoreResult:
     Attributes:
         latest_task_score (int):
         score_overview (UserScoreOverview): An overview of the scores for a user.
-        has_lucky_puppy_bonus (Union[Unset, bool]):
+        has_lucky_puppy_bonus (Union[None, Unset, bool]):
     """
 
     latest_task_score: int
     score_overview: "UserScoreOverview"
-    has_lucky_puppy_bonus: Union[Unset, bool] = UNSET
+    has_lucky_puppy_bonus: Union[None, Unset, bool] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -32,7 +32,11 @@ class RecordScoreResult:
 
         score_overview = self.score_overview.to_dict()
 
-        has_lucky_puppy_bonus = self.has_lucky_puppy_bonus
+        has_lucky_puppy_bonus: Union[None, Unset, bool]
+        if isinstance(self.has_lucky_puppy_bonus, Unset):
+            has_lucky_puppy_bonus = UNSET
+        else:
+            has_lucky_puppy_bonus = self.has_lucky_puppy_bonus
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -56,7 +60,14 @@ class RecordScoreResult:
 
         score_overview = UserScoreOverview.from_dict(d.pop("score_overview"))
 
-        has_lucky_puppy_bonus = d.pop("has_lucky_puppy_bonus", UNSET)
+        def _parse_has_lucky_puppy_bonus(data: object) -> Union[None, Unset, bool]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, bool], data)
+
+        has_lucky_puppy_bonus = _parse_has_lucky_puppy_bonus(d.pop("has_lucky_puppy_bonus", UNSET))
 
         record_score_result = cls(
             latest_task_score=latest_task_score,

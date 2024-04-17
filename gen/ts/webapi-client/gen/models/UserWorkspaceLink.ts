@@ -14,7 +14,7 @@ export type UserWorkspaceLink = {
     archived: boolean;
     created_time: Timestamp;
     last_modified_time: Timestamp;
-    archived_time?: Timestamp;
+    archived_time?: (Timestamp | null);
     user_ref_id: EntityId;
     workspace_ref_id: EntityId;
 };

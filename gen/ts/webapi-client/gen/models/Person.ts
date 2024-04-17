@@ -18,11 +18,11 @@ export type Person = {
     archived: boolean;
     created_time: Timestamp;
     last_modified_time: Timestamp;
-    archived_time?: Timestamp;
+    archived_time?: (Timestamp | null);
     name: PersonName;
-    person_collection: string;
+    person_collection_ref_id: string;
     relationship: PersonRelationship;
-    catch_up_params?: RecurringTaskGenParams;
-    birthday?: PersonBirthday;
+    catch_up_params?: (RecurringTaskGenParams | null);
+    birthday?: (PersonBirthday | null);
 };
 

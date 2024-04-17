@@ -14,12 +14,12 @@ export type SearchArgs = {
     query: SearchQuery;
     limit: SearchLimit;
     include_archived: boolean;
-    filter_entity_tags?: Array<NamedEntityTag>;
-    filter_created_time_after?: ADate;
-    filter_created_time_before?: ADate;
-    filter_last_modified_time_after?: ADate;
-    filter_last_modified_time_before?: ADate;
-    filter_archived_time_after?: ADate;
-    filter_archived_time_before?: ADate;
+    filter_entity_tags?: (Array<NamedEntityTag> | null);
+    filter_created_time_after?: (ADate | null);
+    filter_created_time_before?: (ADate | null);
+    filter_last_modified_time_after?: (ADate | null);
+    filter_last_modified_time_before?: (ADate | null);
+    filter_archived_time_after?: (ADate | null);
+    filter_archived_time_before?: (ADate | null);
 };
 

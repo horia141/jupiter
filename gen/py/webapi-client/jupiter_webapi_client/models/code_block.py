@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Type, TypeVar, Union
+from typing import Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -17,15 +17,15 @@ class CodeBlock:
         correlation_id (str): A generic entity id.
         kind (CodeBlockKind):
         code (str):
-        language (Union[Unset, str]):
-        show_line_numbers (Union[Unset, bool]):
+        language (Union[None, Unset, str]):
+        show_line_numbers (Union[None, Unset, bool]):
     """
 
     correlation_id: str
     kind: CodeBlockKind
     code: str
-    language: Union[Unset, str] = UNSET
-    show_line_numbers: Union[Unset, bool] = UNSET
+    language: Union[None, Unset, str] = UNSET
+    show_line_numbers: Union[None, Unset, bool] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -35,9 +35,17 @@ class CodeBlock:
 
         code = self.code
 
-        language = self.language
+        language: Union[None, Unset, str]
+        if isinstance(self.language, Unset):
+            language = UNSET
+        else:
+            language = self.language
 
-        show_line_numbers = self.show_line_numbers
+        show_line_numbers: Union[None, Unset, bool]
+        if isinstance(self.show_line_numbers, Unset):
+            show_line_numbers = UNSET
+        else:
+            show_line_numbers = self.show_line_numbers
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -64,9 +72,23 @@ class CodeBlock:
 
         code = d.pop("code")
 
-        language = d.pop("language", UNSET)
+        def _parse_language(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
 
-        show_line_numbers = d.pop("show_line_numbers", UNSET)
+        language = _parse_language(d.pop("language", UNSET))
+
+        def _parse_show_line_numbers(data: object) -> Union[None, Unset, bool]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, bool], data)
+
+        show_line_numbers = _parse_show_line_numbers(d.pop("show_line_numbers", UNSET))
 
         code_block = cls(
             correlation_id=correlation_id,

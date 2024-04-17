@@ -10,6 +10,6 @@ import type { EntityId } from './EntityId';
 export type VacationFindArgs = {
     allow_archived: boolean;
     include_notes: boolean;
-    filter_ref_ids?: Array<EntityId>;
+    filter_ref_ids?: (Array<EntityId> | null);
 };
 

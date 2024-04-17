@@ -18,11 +18,11 @@ export type Metric = {
     archived: boolean;
     created_time: Timestamp;
     last_modified_time: Timestamp;
-    archived_time?: Timestamp;
+    archived_time?: (Timestamp | null);
     name: MetricName;
-    metric_collection: string;
-    icon?: EntityIcon;
-    collection_params?: RecurringTaskGenParams;
-    metric_unit?: MetricUnit;
+    metric_collection_ref_id: string;
+    icon?: (EntityIcon | null);
+    collection_params?: (RecurringTaskGenParams | null);
+    metric_unit?: (MetricUnit | null);
 };
 

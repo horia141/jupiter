@@ -11,8 +11,8 @@ import type { Timestamp } from './Timestamp';
 export type ScorePeriodBest = {
     created_time: Timestamp;
     last_modified_time: Timestamp;
-    score_log: string;
-    period?: RecurringTaskPeriod;
+    score_log_ref_id: string;
+    period?: (RecurringTaskPeriod | null);
     timeline: string;
     sub_period: RecurringTaskPeriod;
     total_score: number;

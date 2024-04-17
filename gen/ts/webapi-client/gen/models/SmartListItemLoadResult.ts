@@ -12,6 +12,6 @@ import type { SmartListTag } from './SmartListTag';
 export type SmartListItemLoadResult = {
     item: SmartListItem;
     tags: Array<SmartListTag>;
-    note?: Note;
+    note?: (Note | null);
 };
 

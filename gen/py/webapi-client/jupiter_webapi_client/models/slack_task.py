@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -23,13 +23,13 @@ class SlackTask:
         created_time (str): A timestamp in the application.
         last_modified_time (str): A timestamp in the application.
         name (str): The name for an entity which acts as both name and unique identifier.
-        slack_task_collection (str):
+        slack_task_collection_ref_id (str):
         user (str): A Slack user name.
         message (str):
         generation_extra_info (PushGenerationExtraInfo): Extra information for how to generate an inbox task.
         has_generated_task (bool):
-        archived_time (Union[Unset, str]): A timestamp in the application.
-        channel (Union[Unset, str]): A Slack channel name.
+        archived_time (Union[None, Unset, str]):
+        channel (Union[None, Unset, str]):
     """
 
     ref_id: str
@@ -38,13 +38,13 @@ class SlackTask:
     created_time: str
     last_modified_time: str
     name: str
-    slack_task_collection: str
+    slack_task_collection_ref_id: str
     user: str
     message: str
     generation_extra_info: "PushGenerationExtraInfo"
     has_generated_task: bool
-    archived_time: Union[Unset, str] = UNSET
-    channel: Union[Unset, str] = UNSET
+    archived_time: Union[None, Unset, str] = UNSET
+    channel: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -60,7 +60,7 @@ class SlackTask:
 
         name = self.name
 
-        slack_task_collection = self.slack_task_collection
+        slack_task_collection_ref_id = self.slack_task_collection_ref_id
 
         user = self.user
 
@@ -70,9 +70,17 @@ class SlackTask:
 
         has_generated_task = self.has_generated_task
 
-        archived_time = self.archived_time
+        archived_time: Union[None, Unset, str]
+        if isinstance(self.archived_time, Unset):
+            archived_time = UNSET
+        else:
+            archived_time = self.archived_time
 
-        channel = self.channel
+        channel: Union[None, Unset, str]
+        if isinstance(self.channel, Unset):
+            channel = UNSET
+        else:
+            channel = self.channel
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -84,7 +92,7 @@ class SlackTask:
                 "created_time": created_time,
                 "last_modified_time": last_modified_time,
                 "name": name,
-                "slack_task_collection": slack_task_collection,
+                "slack_task_collection_ref_id": slack_task_collection_ref_id,
                 "user": user,
                 "message": message,
                 "generation_extra_info": generation_extra_info,
@@ -115,7 +123,7 @@ class SlackTask:
 
         name = d.pop("name")
 
-        slack_task_collection = d.pop("slack_task_collection")
+        slack_task_collection_ref_id = d.pop("slack_task_collection_ref_id")
 
         user = d.pop("user")
 
@@ -125,9 +133,23 @@ class SlackTask:
 
         has_generated_task = d.pop("has_generated_task")
 
-        archived_time = d.pop("archived_time", UNSET)
+        def _parse_archived_time(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
 
-        channel = d.pop("channel", UNSET)
+        archived_time = _parse_archived_time(d.pop("archived_time", UNSET))
+
+        def _parse_channel(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        channel = _parse_channel(d.pop("channel", UNSET))
 
         slack_task = cls(
             ref_id=ref_id,
@@ -136,7 +158,7 @@ class SlackTask:
             created_time=created_time,
             last_modified_time=last_modified_time,
             name=name,
-            slack_task_collection=slack_task_collection,
+            slack_task_collection_ref_id=slack_task_collection_ref_id,
             user=user,
             message=message,
             generation_extra_info=generation_extra_info,

@@ -1,3 +1,4 @@
+import { WorkspaceFeature } from "@jupiter/webapi-client";
 import {
   Divider,
   List,
@@ -10,7 +11,6 @@ import {
 } from "@mui/material";
 import { Link } from "@remix-run/react";
 import { AnimatePresence, motion } from "framer-motion";
-import { WorkspaceFeature } from "@jupiter/webapi-client";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import type { TopLevelInfo } from "~/top-level-context";

@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Type, TypeVar, Union
+from typing import Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -23,31 +23,31 @@ class InboxTask:
         created_time (str): A timestamp in the application.
         last_modified_time (str): A timestamp in the application.
         name (str): The name of an inbox task.
-        inbox_task_collection (str):
+        inbox_task_collection_ref_id (str):
         source (InboxTaskSource): The origin of an inbox task.
         project_ref_id (str): A generic entity id.
         status (InboxTaskStatus): The status of an inbox task.
         eisen (Eisen): The Eisenhower status of a particular task.
-        archived_time (Union[Unset, str]): A timestamp in the application.
-        difficulty (Union[Unset, Difficulty]): The difficulty of a particular task.
-        actionable_date (Union[Unset, str]): A date or possibly a datetime for the application.
-        due_date (Union[Unset, str]): A date or possibly a datetime for the application.
-        notes (Union[Unset, str]):
-        working_mem_ref_id (Union[Unset, str]): A generic entity id.
-        habit_ref_id (Union[Unset, str]): A generic entity id.
-        chore_ref_id (Union[Unset, str]): A generic entity id.
-        big_plan_ref_id (Union[Unset, str]): A generic entity id.
-        journal_ref_id (Union[Unset, str]): A generic entity id.
-        metric_ref_id (Union[Unset, str]): A generic entity id.
-        person_ref_id (Union[Unset, str]): A generic entity id.
-        slack_task_ref_id (Union[Unset, str]): A generic entity id.
-        email_task_ref_id (Union[Unset, str]): A generic entity id.
-        recurring_timeline (Union[Unset, str]):
-        recurring_repeat_index (Union[Unset, int]):
-        recurring_gen_right_now (Union[Unset, str]): A timestamp in the application.
-        accepted_time (Union[Unset, str]): A timestamp in the application.
-        working_time (Union[Unset, str]): A timestamp in the application.
-        completed_time (Union[Unset, str]): A timestamp in the application.
+        archived_time (Union[None, Unset, str]):
+        difficulty (Union[Difficulty, None, Unset]):
+        actionable_date (Union[None, Unset, str]):
+        due_date (Union[None, Unset, str]):
+        notes (Union[None, Unset, str]):
+        working_mem_ref_id (Union[None, Unset, str]):
+        habit_ref_id (Union[None, Unset, str]):
+        chore_ref_id (Union[None, Unset, str]):
+        big_plan_ref_id (Union[None, Unset, str]):
+        journal_ref_id (Union[None, Unset, str]):
+        metric_ref_id (Union[None, Unset, str]):
+        person_ref_id (Union[None, Unset, str]):
+        slack_task_ref_id (Union[None, Unset, str]):
+        email_task_ref_id (Union[None, Unset, str]):
+        recurring_timeline (Union[None, Unset, str]):
+        recurring_repeat_index (Union[None, Unset, int]):
+        recurring_gen_right_now (Union[None, Unset, str]):
+        accepted_time (Union[None, Unset, str]):
+        working_time (Union[None, Unset, str]):
+        completed_time (Union[None, Unset, str]):
     """
 
     ref_id: str
@@ -56,31 +56,31 @@ class InboxTask:
     created_time: str
     last_modified_time: str
     name: str
-    inbox_task_collection: str
+    inbox_task_collection_ref_id: str
     source: InboxTaskSource
     project_ref_id: str
     status: InboxTaskStatus
     eisen: Eisen
-    archived_time: Union[Unset, str] = UNSET
-    difficulty: Union[Unset, Difficulty] = UNSET
-    actionable_date: Union[Unset, str] = UNSET
-    due_date: Union[Unset, str] = UNSET
-    notes: Union[Unset, str] = UNSET
-    working_mem_ref_id: Union[Unset, str] = UNSET
-    habit_ref_id: Union[Unset, str] = UNSET
-    chore_ref_id: Union[Unset, str] = UNSET
-    big_plan_ref_id: Union[Unset, str] = UNSET
-    journal_ref_id: Union[Unset, str] = UNSET
-    metric_ref_id: Union[Unset, str] = UNSET
-    person_ref_id: Union[Unset, str] = UNSET
-    slack_task_ref_id: Union[Unset, str] = UNSET
-    email_task_ref_id: Union[Unset, str] = UNSET
-    recurring_timeline: Union[Unset, str] = UNSET
-    recurring_repeat_index: Union[Unset, int] = UNSET
-    recurring_gen_right_now: Union[Unset, str] = UNSET
-    accepted_time: Union[Unset, str] = UNSET
-    working_time: Union[Unset, str] = UNSET
-    completed_time: Union[Unset, str] = UNSET
+    archived_time: Union[None, Unset, str] = UNSET
+    difficulty: Union[Difficulty, None, Unset] = UNSET
+    actionable_date: Union[None, Unset, str] = UNSET
+    due_date: Union[None, Unset, str] = UNSET
+    notes: Union[None, Unset, str] = UNSET
+    working_mem_ref_id: Union[None, Unset, str] = UNSET
+    habit_ref_id: Union[None, Unset, str] = UNSET
+    chore_ref_id: Union[None, Unset, str] = UNSET
+    big_plan_ref_id: Union[None, Unset, str] = UNSET
+    journal_ref_id: Union[None, Unset, str] = UNSET
+    metric_ref_id: Union[None, Unset, str] = UNSET
+    person_ref_id: Union[None, Unset, str] = UNSET
+    slack_task_ref_id: Union[None, Unset, str] = UNSET
+    email_task_ref_id: Union[None, Unset, str] = UNSET
+    recurring_timeline: Union[None, Unset, str] = UNSET
+    recurring_repeat_index: Union[None, Unset, int] = UNSET
+    recurring_gen_right_now: Union[None, Unset, str] = UNSET
+    accepted_time: Union[None, Unset, str] = UNSET
+    working_time: Union[None, Unset, str] = UNSET
+    completed_time: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -96,7 +96,7 @@ class InboxTask:
 
         name = self.name
 
-        inbox_task_collection = self.inbox_task_collection
+        inbox_task_collection_ref_id = self.inbox_task_collection_ref_id
 
         source = self.source.value
 
@@ -106,47 +106,127 @@ class InboxTask:
 
         eisen = self.eisen.value
 
-        archived_time = self.archived_time
+        archived_time: Union[None, Unset, str]
+        if isinstance(self.archived_time, Unset):
+            archived_time = UNSET
+        else:
+            archived_time = self.archived_time
 
-        difficulty: Union[Unset, str] = UNSET
-        if not isinstance(self.difficulty, Unset):
+        difficulty: Union[None, Unset, str]
+        if isinstance(self.difficulty, Unset):
+            difficulty = UNSET
+        elif isinstance(self.difficulty, Difficulty):
             difficulty = self.difficulty.value
+        else:
+            difficulty = self.difficulty
 
-        actionable_date = self.actionable_date
+        actionable_date: Union[None, Unset, str]
+        if isinstance(self.actionable_date, Unset):
+            actionable_date = UNSET
+        else:
+            actionable_date = self.actionable_date
 
-        due_date = self.due_date
+        due_date: Union[None, Unset, str]
+        if isinstance(self.due_date, Unset):
+            due_date = UNSET
+        else:
+            due_date = self.due_date
 
-        notes = self.notes
+        notes: Union[None, Unset, str]
+        if isinstance(self.notes, Unset):
+            notes = UNSET
+        else:
+            notes = self.notes
 
-        working_mem_ref_id = self.working_mem_ref_id
+        working_mem_ref_id: Union[None, Unset, str]
+        if isinstance(self.working_mem_ref_id, Unset):
+            working_mem_ref_id = UNSET
+        else:
+            working_mem_ref_id = self.working_mem_ref_id
 
-        habit_ref_id = self.habit_ref_id
+        habit_ref_id: Union[None, Unset, str]
+        if isinstance(self.habit_ref_id, Unset):
+            habit_ref_id = UNSET
+        else:
+            habit_ref_id = self.habit_ref_id
 
-        chore_ref_id = self.chore_ref_id
+        chore_ref_id: Union[None, Unset, str]
+        if isinstance(self.chore_ref_id, Unset):
+            chore_ref_id = UNSET
+        else:
+            chore_ref_id = self.chore_ref_id
 
-        big_plan_ref_id = self.big_plan_ref_id
+        big_plan_ref_id: Union[None, Unset, str]
+        if isinstance(self.big_plan_ref_id, Unset):
+            big_plan_ref_id = UNSET
+        else:
+            big_plan_ref_id = self.big_plan_ref_id
 
-        journal_ref_id = self.journal_ref_id
+        journal_ref_id: Union[None, Unset, str]
+        if isinstance(self.journal_ref_id, Unset):
+            journal_ref_id = UNSET
+        else:
+            journal_ref_id = self.journal_ref_id
 
-        metric_ref_id = self.metric_ref_id
+        metric_ref_id: Union[None, Unset, str]
+        if isinstance(self.metric_ref_id, Unset):
+            metric_ref_id = UNSET
+        else:
+            metric_ref_id = self.metric_ref_id
 
-        person_ref_id = self.person_ref_id
+        person_ref_id: Union[None, Unset, str]
+        if isinstance(self.person_ref_id, Unset):
+            person_ref_id = UNSET
+        else:
+            person_ref_id = self.person_ref_id
 
-        slack_task_ref_id = self.slack_task_ref_id
+        slack_task_ref_id: Union[None, Unset, str]
+        if isinstance(self.slack_task_ref_id, Unset):
+            slack_task_ref_id = UNSET
+        else:
+            slack_task_ref_id = self.slack_task_ref_id
 
-        email_task_ref_id = self.email_task_ref_id
+        email_task_ref_id: Union[None, Unset, str]
+        if isinstance(self.email_task_ref_id, Unset):
+            email_task_ref_id = UNSET
+        else:
+            email_task_ref_id = self.email_task_ref_id
 
-        recurring_timeline = self.recurring_timeline
+        recurring_timeline: Union[None, Unset, str]
+        if isinstance(self.recurring_timeline, Unset):
+            recurring_timeline = UNSET
+        else:
+            recurring_timeline = self.recurring_timeline
 
-        recurring_repeat_index = self.recurring_repeat_index
+        recurring_repeat_index: Union[None, Unset, int]
+        if isinstance(self.recurring_repeat_index, Unset):
+            recurring_repeat_index = UNSET
+        else:
+            recurring_repeat_index = self.recurring_repeat_index
 
-        recurring_gen_right_now = self.recurring_gen_right_now
+        recurring_gen_right_now: Union[None, Unset, str]
+        if isinstance(self.recurring_gen_right_now, Unset):
+            recurring_gen_right_now = UNSET
+        else:
+            recurring_gen_right_now = self.recurring_gen_right_now
 
-        accepted_time = self.accepted_time
+        accepted_time: Union[None, Unset, str]
+        if isinstance(self.accepted_time, Unset):
+            accepted_time = UNSET
+        else:
+            accepted_time = self.accepted_time
 
-        working_time = self.working_time
+        working_time: Union[None, Unset, str]
+        if isinstance(self.working_time, Unset):
+            working_time = UNSET
+        else:
+            working_time = self.working_time
 
-        completed_time = self.completed_time
+        completed_time: Union[None, Unset, str]
+        if isinstance(self.completed_time, Unset):
+            completed_time = UNSET
+        else:
+            completed_time = self.completed_time
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -158,7 +238,7 @@ class InboxTask:
                 "created_time": created_time,
                 "last_modified_time": last_modified_time,
                 "name": name,
-                "inbox_task_collection": inbox_task_collection,
+                "inbox_task_collection_ref_id": inbox_task_collection_ref_id,
                 "source": source,
                 "project_ref_id": project_ref_id,
                 "status": status,
@@ -223,7 +303,7 @@ class InboxTask:
 
         name = d.pop("name")
 
-        inbox_task_collection = d.pop("inbox_task_collection")
+        inbox_task_collection_ref_id = d.pop("inbox_task_collection_ref_id")
 
         source = InboxTaskSource(d.pop("source"))
 
@@ -233,50 +313,193 @@ class InboxTask:
 
         eisen = Eisen(d.pop("eisen"))
 
-        archived_time = d.pop("archived_time", UNSET)
+        def _parse_archived_time(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
 
-        _difficulty = d.pop("difficulty", UNSET)
-        difficulty: Union[Unset, Difficulty]
-        if isinstance(_difficulty, Unset):
-            difficulty = UNSET
-        else:
-            difficulty = Difficulty(_difficulty)
+        archived_time = _parse_archived_time(d.pop("archived_time", UNSET))
 
-        actionable_date = d.pop("actionable_date", UNSET)
+        def _parse_difficulty(data: object) -> Union[Difficulty, None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                difficulty_type_0 = Difficulty(data)
 
-        due_date = d.pop("due_date", UNSET)
+                return difficulty_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[Difficulty, None, Unset], data)
 
-        notes = d.pop("notes", UNSET)
+        difficulty = _parse_difficulty(d.pop("difficulty", UNSET))
 
-        working_mem_ref_id = d.pop("working_mem_ref_id", UNSET)
+        def _parse_actionable_date(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
 
-        habit_ref_id = d.pop("habit_ref_id", UNSET)
+        actionable_date = _parse_actionable_date(d.pop("actionable_date", UNSET))
 
-        chore_ref_id = d.pop("chore_ref_id", UNSET)
+        def _parse_due_date(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
 
-        big_plan_ref_id = d.pop("big_plan_ref_id", UNSET)
+        due_date = _parse_due_date(d.pop("due_date", UNSET))
 
-        journal_ref_id = d.pop("journal_ref_id", UNSET)
+        def _parse_notes(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
 
-        metric_ref_id = d.pop("metric_ref_id", UNSET)
+        notes = _parse_notes(d.pop("notes", UNSET))
 
-        person_ref_id = d.pop("person_ref_id", UNSET)
+        def _parse_working_mem_ref_id(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
 
-        slack_task_ref_id = d.pop("slack_task_ref_id", UNSET)
+        working_mem_ref_id = _parse_working_mem_ref_id(d.pop("working_mem_ref_id", UNSET))
 
-        email_task_ref_id = d.pop("email_task_ref_id", UNSET)
+        def _parse_habit_ref_id(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
 
-        recurring_timeline = d.pop("recurring_timeline", UNSET)
+        habit_ref_id = _parse_habit_ref_id(d.pop("habit_ref_id", UNSET))
 
-        recurring_repeat_index = d.pop("recurring_repeat_index", UNSET)
+        def _parse_chore_ref_id(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
 
-        recurring_gen_right_now = d.pop("recurring_gen_right_now", UNSET)
+        chore_ref_id = _parse_chore_ref_id(d.pop("chore_ref_id", UNSET))
 
-        accepted_time = d.pop("accepted_time", UNSET)
+        def _parse_big_plan_ref_id(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
 
-        working_time = d.pop("working_time", UNSET)
+        big_plan_ref_id = _parse_big_plan_ref_id(d.pop("big_plan_ref_id", UNSET))
 
-        completed_time = d.pop("completed_time", UNSET)
+        def _parse_journal_ref_id(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        journal_ref_id = _parse_journal_ref_id(d.pop("journal_ref_id", UNSET))
+
+        def _parse_metric_ref_id(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        metric_ref_id = _parse_metric_ref_id(d.pop("metric_ref_id", UNSET))
+
+        def _parse_person_ref_id(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        person_ref_id = _parse_person_ref_id(d.pop("person_ref_id", UNSET))
+
+        def _parse_slack_task_ref_id(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        slack_task_ref_id = _parse_slack_task_ref_id(d.pop("slack_task_ref_id", UNSET))
+
+        def _parse_email_task_ref_id(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        email_task_ref_id = _parse_email_task_ref_id(d.pop("email_task_ref_id", UNSET))
+
+        def _parse_recurring_timeline(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        recurring_timeline = _parse_recurring_timeline(d.pop("recurring_timeline", UNSET))
+
+        def _parse_recurring_repeat_index(data: object) -> Union[None, Unset, int]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, int], data)
+
+        recurring_repeat_index = _parse_recurring_repeat_index(d.pop("recurring_repeat_index", UNSET))
+
+        def _parse_recurring_gen_right_now(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        recurring_gen_right_now = _parse_recurring_gen_right_now(d.pop("recurring_gen_right_now", UNSET))
+
+        def _parse_accepted_time(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        accepted_time = _parse_accepted_time(d.pop("accepted_time", UNSET))
+
+        def _parse_working_time(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        working_time = _parse_working_time(d.pop("working_time", UNSET))
+
+        def _parse_completed_time(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        completed_time = _parse_completed_time(d.pop("completed_time", UNSET))
 
         inbox_task = cls(
             ref_id=ref_id,
@@ -285,7 +508,7 @@ class InboxTask:
             created_time=created_time,
             last_modified_time=last_modified_time,
             name=name,
-            inbox_task_collection=inbox_task_collection,
+            inbox_task_collection_ref_id=inbox_task_collection_ref_id,
             source=source,
             project_ref_id=project_ref_id,
             status=status,

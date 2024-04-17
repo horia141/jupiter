@@ -9,7 +9,7 @@ import type { UserScoreOverview } from './UserScoreOverview';
  */
 export type RecordScoreResult = {
     latest_task_score: number;
-    has_lucky_puppy_bonus?: boolean;
+    has_lucky_puppy_bonus?: (boolean | null);
     score_overview: UserScoreOverview;
 };
 

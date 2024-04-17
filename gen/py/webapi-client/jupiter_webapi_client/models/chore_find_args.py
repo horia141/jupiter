@@ -17,16 +17,16 @@ class ChoreFindArgs:
         include_project (bool):
         include_inbox_tasks (bool):
         include_notes (bool):
-        filter_ref_ids (Union[Unset, List[str]]):
-        filter_project_ref_ids (Union[Unset, List[str]]):
+        filter_ref_ids (Union[List[str], None, Unset]):
+        filter_project_ref_ids (Union[List[str], None, Unset]):
     """
 
     allow_archived: bool
     include_project: bool
     include_inbox_tasks: bool
     include_notes: bool
-    filter_ref_ids: Union[Unset, List[str]] = UNSET
-    filter_project_ref_ids: Union[Unset, List[str]] = UNSET
+    filter_ref_ids: Union[List[str], None, Unset] = UNSET
+    filter_project_ref_ids: Union[List[str], None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -38,12 +38,22 @@ class ChoreFindArgs:
 
         include_notes = self.include_notes
 
-        filter_ref_ids: Union[Unset, List[str]] = UNSET
-        if not isinstance(self.filter_ref_ids, Unset):
+        filter_ref_ids: Union[List[str], None, Unset]
+        if isinstance(self.filter_ref_ids, Unset):
+            filter_ref_ids = UNSET
+        elif isinstance(self.filter_ref_ids, list):
             filter_ref_ids = self.filter_ref_ids
 
-        filter_project_ref_ids: Union[Unset, List[str]] = UNSET
-        if not isinstance(self.filter_project_ref_ids, Unset):
+        else:
+            filter_ref_ids = self.filter_ref_ids
+
+        filter_project_ref_ids: Union[List[str], None, Unset]
+        if isinstance(self.filter_project_ref_ids, Unset):
+            filter_project_ref_ids = UNSET
+        elif isinstance(self.filter_project_ref_ids, list):
+            filter_project_ref_ids = self.filter_project_ref_ids
+
+        else:
             filter_project_ref_ids = self.filter_project_ref_ids
 
         field_dict: Dict[str, Any] = {}
@@ -74,9 +84,39 @@ class ChoreFindArgs:
 
         include_notes = d.pop("include_notes")
 
-        filter_ref_ids = cast(List[str], d.pop("filter_ref_ids", UNSET))
+        def _parse_filter_ref_ids(data: object) -> Union[List[str], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                filter_ref_ids_type_0 = cast(List[str], data)
 
-        filter_project_ref_ids = cast(List[str], d.pop("filter_project_ref_ids", UNSET))
+                return filter_ref_ids_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List[str], None, Unset], data)
+
+        filter_ref_ids = _parse_filter_ref_ids(d.pop("filter_ref_ids", UNSET))
+
+        def _parse_filter_project_ref_ids(data: object) -> Union[List[str], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                filter_project_ref_ids_type_0 = cast(List[str], data)
+
+                return filter_project_ref_ids_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List[str], None, Unset], data)
+
+        filter_project_ref_ids = _parse_filter_project_ref_ids(d.pop("filter_project_ref_ids", UNSET))
 
         chore_find_args = cls(
             allow_archived=allow_archived,

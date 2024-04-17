@@ -1,3 +1,4 @@
+import type { AuthTokenExt } from "@jupiter/webapi-client";
 import CallToActionIcon from "@mui/icons-material/CallToAction";
 import CloseIcon from "@mui/icons-material/Close";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -10,7 +11,6 @@ import {
   IconButton,
   styled,
 } from "@mui/material";
-import type { AuthTokenExt } from "@jupiter/webapi-client";
 import { useContext, useEffect, useRef, useState } from "react";
 import useWebSocket, { ReadyState } from "react-use-websocket";
 import { ClientOnly } from "remix-utils";

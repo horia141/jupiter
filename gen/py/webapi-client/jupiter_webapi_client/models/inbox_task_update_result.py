@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -17,16 +17,22 @@ class InboxTaskUpdateResult:
     """InboxTaskUpdate result.
 
     Attributes:
-        record_score_result (Union[Unset, RecordScoreResult]): The result of the score recording.
+        record_score_result (Union['RecordScoreResult', None, Unset]):
     """
 
-    record_score_result: Union[Unset, "RecordScoreResult"] = UNSET
+    record_score_result: Union["RecordScoreResult", None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
-        record_score_result: Union[Unset, Dict[str, Any]] = UNSET
-        if not isinstance(self.record_score_result, Unset):
+        from ..models.record_score_result import RecordScoreResult
+
+        record_score_result: Union[Dict[str, Any], None, Unset]
+        if isinstance(self.record_score_result, Unset):
+            record_score_result = UNSET
+        elif isinstance(self.record_score_result, RecordScoreResult):
             record_score_result = self.record_score_result.to_dict()
+        else:
+            record_score_result = self.record_score_result
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -41,12 +47,23 @@ class InboxTaskUpdateResult:
         from ..models.record_score_result import RecordScoreResult
 
         d = src_dict.copy()
-        _record_score_result = d.pop("record_score_result", UNSET)
-        record_score_result: Union[Unset, RecordScoreResult]
-        if isinstance(_record_score_result, Unset):
-            record_score_result = UNSET
-        else:
-            record_score_result = RecordScoreResult.from_dict(_record_score_result)
+
+        def _parse_record_score_result(data: object) -> Union["RecordScoreResult", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                record_score_result_type_0 = RecordScoreResult.from_dict(data)
+
+                return record_score_result_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["RecordScoreResult", None, Unset], data)
+
+        record_score_result = _parse_record_score_result(d.pop("record_score_result", UNSET))
 
         inbox_task_update_result = cls(
             record_score_result=record_score_result,

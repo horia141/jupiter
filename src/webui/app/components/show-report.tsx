@@ -1,3 +1,15 @@
+import type {
+  InboxTasksSummary,
+  ProjectSummary,
+  ReportPeriodResult,
+  WorkableSummary,
+} from "@jupiter/webapi-client";
+import {
+  InboxTaskSource,
+  RecurringTaskPeriod,
+  UserFeature,
+  WorkspaceFeature,
+} from "@jupiter/webapi-client";
 import {
   Box,
   Divider,
@@ -16,18 +28,6 @@ import {
   Tabs,
   Typography,
 } from "@mui/material";
-import type {
-  InboxTasksSummary,
-  ProjectSummary,
-  ReportPeriodResult,
-  WorkableSummary,
-} from "@jupiter/webapi-client";
-import {
-  InboxTaskSource,
-  RecurringTaskPeriod,
-  UserFeature,
-  WorkspaceFeature,
-} from "@jupiter/webapi-client";
 import { useState } from "react";
 
 import { EntityNameOneLineComponent } from "~/components/entity-name";

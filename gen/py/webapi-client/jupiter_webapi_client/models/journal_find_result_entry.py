@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -20,25 +20,36 @@ class JournalFindResultEntry:
 
     Attributes:
         journal (Journal): A journal for a particular range.
-        note (Union[Unset, Note]): A note in the notebook.
-        writing_task (Union[Unset, InboxTask]): An inbox task.
+        note (Union['Note', None, Unset]):
+        writing_task (Union['InboxTask', None, Unset]):
     """
 
     journal: "Journal"
-    note: Union[Unset, "Note"] = UNSET
-    writing_task: Union[Unset, "InboxTask"] = UNSET
+    note: Union["Note", None, Unset] = UNSET
+    writing_task: Union["InboxTask", None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
+        from ..models.inbox_task import InboxTask
+        from ..models.note import Note
+
         journal = self.journal.to_dict()
 
-        note: Union[Unset, Dict[str, Any]] = UNSET
-        if not isinstance(self.note, Unset):
+        note: Union[Dict[str, Any], None, Unset]
+        if isinstance(self.note, Unset):
+            note = UNSET
+        elif isinstance(self.note, Note):
             note = self.note.to_dict()
+        else:
+            note = self.note
 
-        writing_task: Union[Unset, Dict[str, Any]] = UNSET
-        if not isinstance(self.writing_task, Unset):
+        writing_task: Union[Dict[str, Any], None, Unset]
+        if isinstance(self.writing_task, Unset):
+            writing_task = UNSET
+        elif isinstance(self.writing_task, InboxTask):
             writing_task = self.writing_task.to_dict()
+        else:
+            writing_task = self.writing_task
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -63,19 +74,39 @@ class JournalFindResultEntry:
         d = src_dict.copy()
         journal = Journal.from_dict(d.pop("journal"))
 
-        _note = d.pop("note", UNSET)
-        note: Union[Unset, Note]
-        if isinstance(_note, Unset):
-            note = UNSET
-        else:
-            note = Note.from_dict(_note)
+        def _parse_note(data: object) -> Union["Note", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                note_type_0 = Note.from_dict(data)
 
-        _writing_task = d.pop("writing_task", UNSET)
-        writing_task: Union[Unset, InboxTask]
-        if isinstance(_writing_task, Unset):
-            writing_task = UNSET
-        else:
-            writing_task = InboxTask.from_dict(_writing_task)
+                return note_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["Note", None, Unset], data)
+
+        note = _parse_note(d.pop("note", UNSET))
+
+        def _parse_writing_task(data: object) -> Union["InboxTask", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                writing_task_type_0 = InboxTask.from_dict(data)
+
+                return writing_task_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["InboxTask", None, Unset], data)
+
+        writing_task = _parse_writing_task(d.pop("writing_task", UNSET))
 
         journal_find_result_entry = cls(
             journal=journal,

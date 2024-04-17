@@ -17,13 +17,13 @@ export type Habit = {
     archived: boolean;
     created_time: Timestamp;
     last_modified_time: Timestamp;
-    archived_time?: Timestamp;
+    archived_time?: (Timestamp | null);
     name: HabitName;
-    habit_collection: string;
+    habit_collection_ref_id: string;
     project_ref_id: EntityId;
     gen_params: RecurringTaskGenParams;
-    skip_rule?: RecurringTaskSkipRule;
+    skip_rule?: (RecurringTaskSkipRule | null);
     suspended: boolean;
-    repeats_in_period_count?: number;
+    repeats_in_period_count?: (number | null);
 };
 

@@ -17,14 +17,14 @@ export type ScoreLogEntry = {
     archived: boolean;
     created_time: Timestamp;
     last_modified_time: Timestamp;
-    archived_time?: Timestamp;
+    archived_time?: (Timestamp | null);
     name: EntityName;
-    score_log: string;
+    score_log_ref_id: string;
     source: ScoreSource;
     task_ref_id: EntityId;
-    difficulty?: Difficulty;
+    difficulty?: (Difficulty | null);
     success: boolean;
-    has_lucky_puppy_bonus?: boolean;
+    has_lucky_puppy_bonus?: (boolean | null);
     score: number;
 };
 

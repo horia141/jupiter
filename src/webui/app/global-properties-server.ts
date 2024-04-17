@@ -1,5 +1,5 @@
-import dotenv from "dotenv";
 import type { Env, Hosting } from "@jupiter/webapi-client";
+import dotenv from "dotenv";
 
 export interface GlobalPropertiesServer {
   env: Env;

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -20,25 +20,36 @@ class WorkingMemFindResultEntry:
 
     Attributes:
         working_mem (WorkingMem): An entry in the working_mem.txt system.
-        note (Union[Unset, Note]): A note in the notebook.
-        cleanup_task (Union[Unset, InboxTask]): An inbox task.
+        note (Union['Note', None, Unset]):
+        cleanup_task (Union['InboxTask', None, Unset]):
     """
 
     working_mem: "WorkingMem"
-    note: Union[Unset, "Note"] = UNSET
-    cleanup_task: Union[Unset, "InboxTask"] = UNSET
+    note: Union["Note", None, Unset] = UNSET
+    cleanup_task: Union["InboxTask", None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
+        from ..models.inbox_task import InboxTask
+        from ..models.note import Note
+
         working_mem = self.working_mem.to_dict()
 
-        note: Union[Unset, Dict[str, Any]] = UNSET
-        if not isinstance(self.note, Unset):
+        note: Union[Dict[str, Any], None, Unset]
+        if isinstance(self.note, Unset):
+            note = UNSET
+        elif isinstance(self.note, Note):
             note = self.note.to_dict()
+        else:
+            note = self.note
 
-        cleanup_task: Union[Unset, Dict[str, Any]] = UNSET
-        if not isinstance(self.cleanup_task, Unset):
+        cleanup_task: Union[Dict[str, Any], None, Unset]
+        if isinstance(self.cleanup_task, Unset):
+            cleanup_task = UNSET
+        elif isinstance(self.cleanup_task, InboxTask):
             cleanup_task = self.cleanup_task.to_dict()
+        else:
+            cleanup_task = self.cleanup_task
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -63,19 +74,39 @@ class WorkingMemFindResultEntry:
         d = src_dict.copy()
         working_mem = WorkingMem.from_dict(d.pop("working_mem"))
 
-        _note = d.pop("note", UNSET)
-        note: Union[Unset, Note]
-        if isinstance(_note, Unset):
-            note = UNSET
-        else:
-            note = Note.from_dict(_note)
+        def _parse_note(data: object) -> Union["Note", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                note_type_0 = Note.from_dict(data)
 
-        _cleanup_task = d.pop("cleanup_task", UNSET)
-        cleanup_task: Union[Unset, InboxTask]
-        if isinstance(_cleanup_task, Unset):
-            cleanup_task = UNSET
-        else:
-            cleanup_task = InboxTask.from_dict(_cleanup_task)
+                return note_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["Note", None, Unset], data)
+
+        note = _parse_note(d.pop("note", UNSET))
+
+        def _parse_cleanup_task(data: object) -> Union["InboxTask", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                cleanup_task_type_0 = InboxTask.from_dict(data)
+
+                return cleanup_task_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["InboxTask", None, Unset], data)
+
+        cleanup_task = _parse_cleanup_task(d.pop("cleanup_task", UNSET))
 
         working_mem_find_result_entry = cls(
             working_mem=working_mem,

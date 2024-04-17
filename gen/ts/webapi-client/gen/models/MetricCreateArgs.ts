@@ -16,14 +16,14 @@ import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
  */
 export type MetricCreateArgs = {
     name: MetricName;
-    icon?: EntityIcon;
-    collection_period?: RecurringTaskPeriod;
-    collection_eisen?: Eisen;
-    collection_difficulty?: Difficulty;
-    collection_actionable_from_day?: RecurringTaskDueAtDay;
-    collection_actionable_from_month?: RecurringTaskDueAtMonth;
-    collection_due_at_day?: RecurringTaskDueAtDay;
-    collection_due_at_month?: RecurringTaskDueAtMonth;
-    metric_unit?: MetricUnit;
+    icon?: (EntityIcon | null);
+    collection_period?: (RecurringTaskPeriod | null);
+    collection_eisen?: (Eisen | null);
+    collection_difficulty?: (Difficulty | null);
+    collection_actionable_from_day?: (RecurringTaskDueAtDay | null);
+    collection_actionable_from_month?: (RecurringTaskDueAtMonth | null);
+    collection_due_at_day?: (RecurringTaskDueAtDay | null);
+    collection_due_at_month?: (RecurringTaskDueAtMonth | null);
+    metric_unit?: (MetricUnit | null);
 };
 

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -21,22 +21,28 @@ class JournalLoadResult:
     Attributes:
         journal (Journal): A journal for a particular range.
         note (Note): A note in the notebook.
-        writing_task (Union[Unset, InboxTask]): An inbox task.
+        writing_task (Union['InboxTask', None, Unset]):
     """
 
     journal: "Journal"
     note: "Note"
-    writing_task: Union[Unset, "InboxTask"] = UNSET
+    writing_task: Union["InboxTask", None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
+        from ..models.inbox_task import InboxTask
+
         journal = self.journal.to_dict()
 
         note = self.note.to_dict()
 
-        writing_task: Union[Unset, Dict[str, Any]] = UNSET
-        if not isinstance(self.writing_task, Unset):
+        writing_task: Union[Dict[str, Any], None, Unset]
+        if isinstance(self.writing_task, Unset):
+            writing_task = UNSET
+        elif isinstance(self.writing_task, InboxTask):
             writing_task = self.writing_task.to_dict()
+        else:
+            writing_task = self.writing_task
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -62,12 +68,22 @@ class JournalLoadResult:
 
         note = Note.from_dict(d.pop("note"))
 
-        _writing_task = d.pop("writing_task", UNSET)
-        writing_task: Union[Unset, InboxTask]
-        if isinstance(_writing_task, Unset):
-            writing_task = UNSET
-        else:
-            writing_task = InboxTask.from_dict(_writing_task)
+        def _parse_writing_task(data: object) -> Union["InboxTask", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                writing_task_type_0 = InboxTask.from_dict(data)
+
+                return writing_task_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["InboxTask", None, Unset], data)
+
+        writing_task = _parse_writing_task(d.pop("writing_task", UNSET))
 
         journal_load_result = cls(
             journal=journal,

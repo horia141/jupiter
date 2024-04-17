@@ -11,8 +11,8 @@ export type CodeBlock = {
     correlation_id: CorrelationId;
     kind: CodeBlock.kind;
     code: string;
-    language?: string;
-    show_line_numbers?: boolean;
+    language?: (string | null);
+    show_line_numbers?: (boolean | null);
 };
 
 export namespace CodeBlock {

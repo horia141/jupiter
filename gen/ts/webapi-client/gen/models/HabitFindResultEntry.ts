@@ -12,8 +12,8 @@ import type { Project } from './Project';
  */
 export type HabitFindResultEntry = {
     habit: Habit;
-    project?: Project;
-    inbox_tasks?: Array<InboxTask>;
-    note?: Note;
+    project?: (Project | null);
+    inbox_tasks?: (Array<InboxTask> | null);
+    note?: (Note | null);
 };
 

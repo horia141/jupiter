@@ -11,6 +11,6 @@ export type JournalFindArgs = {
     allow_archived: boolean;
     include_notes: boolean;
     include_writing_tasks: boolean;
-    filter_ref_ids?: Array<EntityId>;
+    filter_ref_ids?: (Array<EntityId> | null);
 };
 

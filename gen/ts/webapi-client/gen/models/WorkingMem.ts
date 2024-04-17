@@ -17,9 +17,9 @@ export type WorkingMem = {
     archived: boolean;
     created_time: Timestamp;
     last_modified_time: Timestamp;
-    archived_time?: Timestamp;
+    archived_time?: (Timestamp | null);
     name: EntityName;
-    working_mem_collection: string;
+    working_mem_collection_ref_id: string;
     right_now: ADate;
     period: RecurringTaskPeriod;
     timeline: string;

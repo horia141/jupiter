@@ -22,11 +22,11 @@ export type BigPlanUpdateArgs = {
     };
     actionable_date: {
         should_change: boolean;
-        value?: ADate;
+        value?: (ADate | null);
     };
     due_date: {
         should_change: boolean;
-        value?: ADate;
+        value?: (ADate | null);
     };
 };
 

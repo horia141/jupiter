@@ -14,8 +14,8 @@ export type MetricCollection = {
     archived: boolean;
     created_time: Timestamp;
     last_modified_time: Timestamp;
-    archived_time?: Timestamp;
-    workspace: string;
+    archived_time?: (Timestamp | null);
+    workspace_ref_id: string;
     collection_project_ref_id: EntityId;
 };
 

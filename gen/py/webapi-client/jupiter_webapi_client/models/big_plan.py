@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Type, TypeVar, Union
+from typing import Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -20,15 +20,15 @@ class BigPlan:
         created_time (str): A timestamp in the application.
         last_modified_time (str): A timestamp in the application.
         name (str): The big plan name.
-        big_plan_collection (str):
+        big_plan_collection_ref_id (str):
         project_ref_id (str): A generic entity id.
         status (BigPlanStatus): The status of a big plan.
-        archived_time (Union[Unset, str]): A timestamp in the application.
-        actionable_date (Union[Unset, str]): A date or possibly a datetime for the application.
-        due_date (Union[Unset, str]): A date or possibly a datetime for the application.
-        accepted_time (Union[Unset, str]): A timestamp in the application.
-        working_time (Union[Unset, str]): A timestamp in the application.
-        completed_time (Union[Unset, str]): A timestamp in the application.
+        archived_time (Union[None, Unset, str]):
+        actionable_date (Union[None, Unset, str]):
+        due_date (Union[None, Unset, str]):
+        accepted_time (Union[None, Unset, str]):
+        working_time (Union[None, Unset, str]):
+        completed_time (Union[None, Unset, str]):
     """
 
     ref_id: str
@@ -37,15 +37,15 @@ class BigPlan:
     created_time: str
     last_modified_time: str
     name: str
-    big_plan_collection: str
+    big_plan_collection_ref_id: str
     project_ref_id: str
     status: BigPlanStatus
-    archived_time: Union[Unset, str] = UNSET
-    actionable_date: Union[Unset, str] = UNSET
-    due_date: Union[Unset, str] = UNSET
-    accepted_time: Union[Unset, str] = UNSET
-    working_time: Union[Unset, str] = UNSET
-    completed_time: Union[Unset, str] = UNSET
+    archived_time: Union[None, Unset, str] = UNSET
+    actionable_date: Union[None, Unset, str] = UNSET
+    due_date: Union[None, Unset, str] = UNSET
+    accepted_time: Union[None, Unset, str] = UNSET
+    working_time: Union[None, Unset, str] = UNSET
+    completed_time: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -61,23 +61,47 @@ class BigPlan:
 
         name = self.name
 
-        big_plan_collection = self.big_plan_collection
+        big_plan_collection_ref_id = self.big_plan_collection_ref_id
 
         project_ref_id = self.project_ref_id
 
         status = self.status.value
 
-        archived_time = self.archived_time
+        archived_time: Union[None, Unset, str]
+        if isinstance(self.archived_time, Unset):
+            archived_time = UNSET
+        else:
+            archived_time = self.archived_time
 
-        actionable_date = self.actionable_date
+        actionable_date: Union[None, Unset, str]
+        if isinstance(self.actionable_date, Unset):
+            actionable_date = UNSET
+        else:
+            actionable_date = self.actionable_date
 
-        due_date = self.due_date
+        due_date: Union[None, Unset, str]
+        if isinstance(self.due_date, Unset):
+            due_date = UNSET
+        else:
+            due_date = self.due_date
 
-        accepted_time = self.accepted_time
+        accepted_time: Union[None, Unset, str]
+        if isinstance(self.accepted_time, Unset):
+            accepted_time = UNSET
+        else:
+            accepted_time = self.accepted_time
 
-        working_time = self.working_time
+        working_time: Union[None, Unset, str]
+        if isinstance(self.working_time, Unset):
+            working_time = UNSET
+        else:
+            working_time = self.working_time
 
-        completed_time = self.completed_time
+        completed_time: Union[None, Unset, str]
+        if isinstance(self.completed_time, Unset):
+            completed_time = UNSET
+        else:
+            completed_time = self.completed_time
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -89,7 +113,7 @@ class BigPlan:
                 "created_time": created_time,
                 "last_modified_time": last_modified_time,
                 "name": name,
-                "big_plan_collection": big_plan_collection,
+                "big_plan_collection_ref_id": big_plan_collection_ref_id,
                 "project_ref_id": project_ref_id,
                 "status": status,
             }
@@ -124,23 +148,65 @@ class BigPlan:
 
         name = d.pop("name")
 
-        big_plan_collection = d.pop("big_plan_collection")
+        big_plan_collection_ref_id = d.pop("big_plan_collection_ref_id")
 
         project_ref_id = d.pop("project_ref_id")
 
         status = BigPlanStatus(d.pop("status"))
 
-        archived_time = d.pop("archived_time", UNSET)
+        def _parse_archived_time(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
 
-        actionable_date = d.pop("actionable_date", UNSET)
+        archived_time = _parse_archived_time(d.pop("archived_time", UNSET))
 
-        due_date = d.pop("due_date", UNSET)
+        def _parse_actionable_date(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
 
-        accepted_time = d.pop("accepted_time", UNSET)
+        actionable_date = _parse_actionable_date(d.pop("actionable_date", UNSET))
 
-        working_time = d.pop("working_time", UNSET)
+        def _parse_due_date(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
 
-        completed_time = d.pop("completed_time", UNSET)
+        due_date = _parse_due_date(d.pop("due_date", UNSET))
+
+        def _parse_accepted_time(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        accepted_time = _parse_accepted_time(d.pop("accepted_time", UNSET))
+
+        def _parse_working_time(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        working_time = _parse_working_time(d.pop("working_time", UNSET))
+
+        def _parse_completed_time(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        completed_time = _parse_completed_time(d.pop("completed_time", UNSET))
 
         big_plan = cls(
             ref_id=ref_id,
@@ -149,7 +215,7 @@ class BigPlan:
             created_time=created_time,
             last_modified_time=last_modified_time,
             name=name,
-            big_plan_collection=big_plan_collection,
+            big_plan_collection_ref_id=big_plan_collection_ref_id,
             project_ref_id=project_ref_id,
             status=status,
             archived_time=archived_time,

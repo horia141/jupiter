@@ -20,14 +20,14 @@ import type { WorkingMem } from './WorkingMem';
 export type InboxTaskLoadResult = {
     inbox_task: InboxTask;
     project: Project;
-    working_mem?: WorkingMem;
-    habit?: Habit;
-    chore?: Chore;
-    big_plan?: BigPlan;
-    metric?: Metric;
-    person?: Person;
-    slack_task?: SlackTask;
-    email_task?: EmailTask;
-    note?: Note;
+    working_mem?: (WorkingMem | null);
+    habit?: (Habit | null);
+    chore?: (Chore | null);
+    big_plan?: (BigPlan | null);
+    metric?: (Metric | null);
+    person?: (Person | null);
+    slack_task?: (SlackTask | null);
+    email_task?: (EmailTask | null);
+    note?: (Note | null);
 };
 

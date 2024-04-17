@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Type, TypeVar, Union
+from typing import Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -18,57 +18,93 @@ class MetricCreateArgs:
 
     Attributes:
         name (str): THe metric name.
-        icon (Union[Unset, str]): The icon for an entity.
-        collection_period (Union[Unset, RecurringTaskPeriod]): A period for a particular task.
-        collection_eisen (Union[Unset, Eisen]): The Eisenhower status of a particular task.
-        collection_difficulty (Union[Unset, Difficulty]): The difficulty of a particular task.
-        collection_actionable_from_day (Union[Unset, int]): The due day for a recurring task.
-        collection_actionable_from_month (Union[Unset, int]): The due month for a recurring task.
-        collection_due_at_day (Union[Unset, int]): The due day for a recurring task.
-        collection_due_at_month (Union[Unset, int]): The due month for a recurring task.
-        metric_unit (Union[Unset, MetricUnit]): The unit for a metric.
+        icon (Union[None, Unset, str]):
+        collection_period (Union[None, RecurringTaskPeriod, Unset]):
+        collection_eisen (Union[Eisen, None, Unset]):
+        collection_difficulty (Union[Difficulty, None, Unset]):
+        collection_actionable_from_day (Union[None, Unset, int]):
+        collection_actionable_from_month (Union[None, Unset, int]):
+        collection_due_at_day (Union[None, Unset, int]):
+        collection_due_at_month (Union[None, Unset, int]):
+        metric_unit (Union[MetricUnit, None, Unset]):
     """
 
     name: str
-    icon: Union[Unset, str] = UNSET
-    collection_period: Union[Unset, RecurringTaskPeriod] = UNSET
-    collection_eisen: Union[Unset, Eisen] = UNSET
-    collection_difficulty: Union[Unset, Difficulty] = UNSET
-    collection_actionable_from_day: Union[Unset, int] = UNSET
-    collection_actionable_from_month: Union[Unset, int] = UNSET
-    collection_due_at_day: Union[Unset, int] = UNSET
-    collection_due_at_month: Union[Unset, int] = UNSET
-    metric_unit: Union[Unset, MetricUnit] = UNSET
+    icon: Union[None, Unset, str] = UNSET
+    collection_period: Union[None, RecurringTaskPeriod, Unset] = UNSET
+    collection_eisen: Union[Eisen, None, Unset] = UNSET
+    collection_difficulty: Union[Difficulty, None, Unset] = UNSET
+    collection_actionable_from_day: Union[None, Unset, int] = UNSET
+    collection_actionable_from_month: Union[None, Unset, int] = UNSET
+    collection_due_at_day: Union[None, Unset, int] = UNSET
+    collection_due_at_month: Union[None, Unset, int] = UNSET
+    metric_unit: Union[MetricUnit, None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         name = self.name
 
-        icon = self.icon
+        icon: Union[None, Unset, str]
+        if isinstance(self.icon, Unset):
+            icon = UNSET
+        else:
+            icon = self.icon
 
-        collection_period: Union[Unset, str] = UNSET
-        if not isinstance(self.collection_period, Unset):
+        collection_period: Union[None, Unset, str]
+        if isinstance(self.collection_period, Unset):
+            collection_period = UNSET
+        elif isinstance(self.collection_period, RecurringTaskPeriod):
             collection_period = self.collection_period.value
+        else:
+            collection_period = self.collection_period
 
-        collection_eisen: Union[Unset, str] = UNSET
-        if not isinstance(self.collection_eisen, Unset):
+        collection_eisen: Union[None, Unset, str]
+        if isinstance(self.collection_eisen, Unset):
+            collection_eisen = UNSET
+        elif isinstance(self.collection_eisen, Eisen):
             collection_eisen = self.collection_eisen.value
+        else:
+            collection_eisen = self.collection_eisen
 
-        collection_difficulty: Union[Unset, str] = UNSET
-        if not isinstance(self.collection_difficulty, Unset):
+        collection_difficulty: Union[None, Unset, str]
+        if isinstance(self.collection_difficulty, Unset):
+            collection_difficulty = UNSET
+        elif isinstance(self.collection_difficulty, Difficulty):
             collection_difficulty = self.collection_difficulty.value
+        else:
+            collection_difficulty = self.collection_difficulty
 
-        collection_actionable_from_day = self.collection_actionable_from_day
+        collection_actionable_from_day: Union[None, Unset, int]
+        if isinstance(self.collection_actionable_from_day, Unset):
+            collection_actionable_from_day = UNSET
+        else:
+            collection_actionable_from_day = self.collection_actionable_from_day
 
-        collection_actionable_from_month = self.collection_actionable_from_month
+        collection_actionable_from_month: Union[None, Unset, int]
+        if isinstance(self.collection_actionable_from_month, Unset):
+            collection_actionable_from_month = UNSET
+        else:
+            collection_actionable_from_month = self.collection_actionable_from_month
 
-        collection_due_at_day = self.collection_due_at_day
+        collection_due_at_day: Union[None, Unset, int]
+        if isinstance(self.collection_due_at_day, Unset):
+            collection_due_at_day = UNSET
+        else:
+            collection_due_at_day = self.collection_due_at_day
 
-        collection_due_at_month = self.collection_due_at_month
+        collection_due_at_month: Union[None, Unset, int]
+        if isinstance(self.collection_due_at_month, Unset):
+            collection_due_at_month = UNSET
+        else:
+            collection_due_at_month = self.collection_due_at_month
 
-        metric_unit: Union[Unset, str] = UNSET
-        if not isinstance(self.metric_unit, Unset):
+        metric_unit: Union[None, Unset, str]
+        if isinstance(self.metric_unit, Unset):
+            metric_unit = UNSET
+        elif isinstance(self.metric_unit, MetricUnit):
             metric_unit = self.metric_unit.value
+        else:
+            metric_unit = self.metric_unit
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -103,43 +139,122 @@ class MetricCreateArgs:
         d = src_dict.copy()
         name = d.pop("name")
 
-        icon = d.pop("icon", UNSET)
+        def _parse_icon(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
 
-        _collection_period = d.pop("collection_period", UNSET)
-        collection_period: Union[Unset, RecurringTaskPeriod]
-        if isinstance(_collection_period, Unset):
-            collection_period = UNSET
-        else:
-            collection_period = RecurringTaskPeriod(_collection_period)
+        icon = _parse_icon(d.pop("icon", UNSET))
 
-        _collection_eisen = d.pop("collection_eisen", UNSET)
-        collection_eisen: Union[Unset, Eisen]
-        if isinstance(_collection_eisen, Unset):
-            collection_eisen = UNSET
-        else:
-            collection_eisen = Eisen(_collection_eisen)
+        def _parse_collection_period(data: object) -> Union[None, RecurringTaskPeriod, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                collection_period_type_0 = RecurringTaskPeriod(data)
 
-        _collection_difficulty = d.pop("collection_difficulty", UNSET)
-        collection_difficulty: Union[Unset, Difficulty]
-        if isinstance(_collection_difficulty, Unset):
-            collection_difficulty = UNSET
-        else:
-            collection_difficulty = Difficulty(_collection_difficulty)
+                return collection_period_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[None, RecurringTaskPeriod, Unset], data)
 
-        collection_actionable_from_day = d.pop("collection_actionable_from_day", UNSET)
+        collection_period = _parse_collection_period(d.pop("collection_period", UNSET))
 
-        collection_actionable_from_month = d.pop("collection_actionable_from_month", UNSET)
+        def _parse_collection_eisen(data: object) -> Union[Eisen, None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                collection_eisen_type_0 = Eisen(data)
 
-        collection_due_at_day = d.pop("collection_due_at_day", UNSET)
+                return collection_eisen_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[Eisen, None, Unset], data)
 
-        collection_due_at_month = d.pop("collection_due_at_month", UNSET)
+        collection_eisen = _parse_collection_eisen(d.pop("collection_eisen", UNSET))
 
-        _metric_unit = d.pop("metric_unit", UNSET)
-        metric_unit: Union[Unset, MetricUnit]
-        if isinstance(_metric_unit, Unset):
-            metric_unit = UNSET
-        else:
-            metric_unit = MetricUnit(_metric_unit)
+        def _parse_collection_difficulty(data: object) -> Union[Difficulty, None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                collection_difficulty_type_0 = Difficulty(data)
+
+                return collection_difficulty_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[Difficulty, None, Unset], data)
+
+        collection_difficulty = _parse_collection_difficulty(d.pop("collection_difficulty", UNSET))
+
+        def _parse_collection_actionable_from_day(data: object) -> Union[None, Unset, int]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, int], data)
+
+        collection_actionable_from_day = _parse_collection_actionable_from_day(
+            d.pop("collection_actionable_from_day", UNSET)
+        )
+
+        def _parse_collection_actionable_from_month(data: object) -> Union[None, Unset, int]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, int], data)
+
+        collection_actionable_from_month = _parse_collection_actionable_from_month(
+            d.pop("collection_actionable_from_month", UNSET)
+        )
+
+        def _parse_collection_due_at_day(data: object) -> Union[None, Unset, int]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, int], data)
+
+        collection_due_at_day = _parse_collection_due_at_day(d.pop("collection_due_at_day", UNSET))
+
+        def _parse_collection_due_at_month(data: object) -> Union[None, Unset, int]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, int], data)
+
+        collection_due_at_month = _parse_collection_due_at_month(d.pop("collection_due_at_month", UNSET))
+
+        def _parse_metric_unit(data: object) -> Union[MetricUnit, None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                metric_unit_type_0 = MetricUnit(data)
+
+                return metric_unit_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[MetricUnit, None, Unset], data)
+
+        metric_unit = _parse_metric_unit(d.pop("metric_unit", UNSET))
 
         metric_create_args = cls(
             name=name,

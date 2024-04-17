@@ -16,15 +16,15 @@ import type { VacationSummary } from './VacationSummary';
  * Get summaries result.
  */
 export type GetSummariesResult = {
-    vacations?: Array<VacationSummary>;
-    root_project?: ProjectSummary;
-    projects?: Array<ProjectSummary>;
-    inbox_tasks?: Array<InboxTaskSummary>;
-    habits?: Array<HabitSummary>;
-    chores?: Array<ChoreSummary>;
-    big_plans?: Array<BigPlanSummary>;
-    smart_lists?: Array<SmartListSummary>;
-    metrics?: Array<MetricSummary>;
-    persons?: Array<PersonSummary>;
+    vacations?: (Array<VacationSummary> | null);
+    root_project?: (ProjectSummary | null);
+    projects?: (Array<ProjectSummary> | null);
+    inbox_tasks?: (Array<InboxTaskSummary> | null);
+    habits?: (Array<HabitSummary> | null);
+    chores?: (Array<ChoreSummary> | null);
+    big_plans?: (Array<BigPlanSummary> | null);
+    smart_lists?: (Array<SmartListSummary> | null);
+    metrics?: (Array<MetricSummary> | null);
+    persons?: (Array<PersonSummary> | null);
 };
 

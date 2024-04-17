@@ -16,9 +16,9 @@ export type MetricEntry = {
     archived: boolean;
     created_time: Timestamp;
     last_modified_time: Timestamp;
-    archived_time?: Timestamp;
+    archived_time?: (Timestamp | null);
     name: EntityName;
-    metric: string;
+    metric_ref_id: string;
     collection_time: ADate;
     value: number;
 };

@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Type, TypeVar, Union
+from typing import Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -20,11 +20,11 @@ class WorkingMem:
         created_time (str): A timestamp in the application.
         last_modified_time (str): A timestamp in the application.
         name (str): The name for an entity which acts as both name and unique identifier.
-        working_mem_collection (str):
+        working_mem_collection_ref_id (str):
         right_now (str): A date or possibly a datetime for the application.
         period (RecurringTaskPeriod): A period for a particular task.
         timeline (str):
-        archived_time (Union[Unset, str]): A timestamp in the application.
+        archived_time (Union[None, Unset, str]):
     """
 
     ref_id: str
@@ -33,11 +33,11 @@ class WorkingMem:
     created_time: str
     last_modified_time: str
     name: str
-    working_mem_collection: str
+    working_mem_collection_ref_id: str
     right_now: str
     period: RecurringTaskPeriod
     timeline: str
-    archived_time: Union[Unset, str] = UNSET
+    archived_time: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -53,7 +53,7 @@ class WorkingMem:
 
         name = self.name
 
-        working_mem_collection = self.working_mem_collection
+        working_mem_collection_ref_id = self.working_mem_collection_ref_id
 
         right_now = self.right_now
 
@@ -61,7 +61,11 @@ class WorkingMem:
 
         timeline = self.timeline
 
-        archived_time = self.archived_time
+        archived_time: Union[None, Unset, str]
+        if isinstance(self.archived_time, Unset):
+            archived_time = UNSET
+        else:
+            archived_time = self.archived_time
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -73,7 +77,7 @@ class WorkingMem:
                 "created_time": created_time,
                 "last_modified_time": last_modified_time,
                 "name": name,
-                "working_mem_collection": working_mem_collection,
+                "working_mem_collection_ref_id": working_mem_collection_ref_id,
                 "right_now": right_now,
                 "period": period,
                 "timeline": timeline,
@@ -99,7 +103,7 @@ class WorkingMem:
 
         name = d.pop("name")
 
-        working_mem_collection = d.pop("working_mem_collection")
+        working_mem_collection_ref_id = d.pop("working_mem_collection_ref_id")
 
         right_now = d.pop("right_now")
 
@@ -107,7 +111,14 @@ class WorkingMem:
 
         timeline = d.pop("timeline")
 
-        archived_time = d.pop("archived_time", UNSET)
+        def _parse_archived_time(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        archived_time = _parse_archived_time(d.pop("archived_time", UNSET))
 
         working_mem = cls(
             ref_id=ref_id,
@@ -116,7 +127,7 @@ class WorkingMem:
             created_time=created_time,
             last_modified_time=last_modified_time,
             name=name,
-            working_mem_collection=working_mem_collection,
+            working_mem_collection_ref_id=working_mem_collection_ref_id,
             right_now=right_now,
             period=period,
             timeline=timeline,

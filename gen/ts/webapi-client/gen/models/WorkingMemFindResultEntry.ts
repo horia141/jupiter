@@ -11,7 +11,7 @@ import type { WorkingMem } from './WorkingMem';
  */
 export type WorkingMemFindResultEntry = {
     working_mem: WorkingMem;
-    note?: Note;
-    cleanup_task?: InboxTask;
+    note?: (Note | null);
+    cleanup_task?: (InboxTask | null);
 };
 

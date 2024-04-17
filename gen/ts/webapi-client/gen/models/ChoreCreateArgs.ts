@@ -18,16 +18,16 @@ import type { RecurringTaskSkipRule } from './RecurringTaskSkipRule';
 export type ChoreCreateArgs = {
     name: ChoreName;
     period: RecurringTaskPeriod;
-    project_ref_id?: EntityId;
-    eisen?: Eisen;
-    difficulty?: Difficulty;
-    actionable_from_day?: RecurringTaskDueAtDay;
-    actionable_from_month?: RecurringTaskDueAtMonth;
-    due_at_day?: RecurringTaskDueAtDay;
-    due_at_month?: RecurringTaskDueAtMonth;
+    project_ref_id?: (EntityId | null);
+    eisen?: (Eisen | null);
+    difficulty?: (Difficulty | null);
+    actionable_from_day?: (RecurringTaskDueAtDay | null);
+    actionable_from_month?: (RecurringTaskDueAtMonth | null);
+    due_at_day?: (RecurringTaskDueAtDay | null);
+    due_at_month?: (RecurringTaskDueAtMonth | null);
     must_do: boolean;
-    skip_rule?: RecurringTaskSkipRule;
-    start_at_date?: ADate;
-    end_at_date?: ADate;
+    skip_rule?: (RecurringTaskSkipRule | null);
+    start_at_date?: (ADate | null);
+    end_at_date?: (ADate | null);
 };
 

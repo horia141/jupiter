@@ -11,8 +11,8 @@ import type { InboxTaskSource } from './InboxTaskSource';
 export type InboxTaskFindArgs = {
     allow_archived: boolean;
     include_notes: boolean;
-    filter_ref_ids?: Array<EntityId>;
-    filter_project_ref_ids?: Array<EntityId>;
-    filter_sources?: Array<InboxTaskSource>;
+    filter_ref_ids?: (Array<EntityId> | null);
+    filter_project_ref_ids?: (Array<EntityId> | null);
+    filter_sources?: (Array<InboxTaskSource> | null);
 };
 

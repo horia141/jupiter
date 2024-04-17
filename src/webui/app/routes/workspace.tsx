@@ -24,12 +24,12 @@ import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Form, Link, useCatch, useOutlet } from "@remix-run/react";
 import Sidebar from "~/components/sidebar";
 
+import { UserFeature } from "@jupiter/webapi-client";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import CardMembershipIcon from "@mui/icons-material/CardMembership";
 import SecurityIcon from "@mui/icons-material/Security";
 import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
 import { AnimatePresence, useAnimate } from "framer-motion";
-import { UserFeature } from "@jupiter/webapi-client";
 import { useContext, useEffect, useState } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
 import { DocsHelp, DocsHelpSubject } from "~/components/docs-help";

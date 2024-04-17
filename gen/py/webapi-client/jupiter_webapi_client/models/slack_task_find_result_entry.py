@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -19,19 +19,25 @@ class SlackTaskFindResultEntry:
 
     Attributes:
         slack_task (SlackTask): A Slack task which needs to be converted into an inbox task.
-        inbox_task (Union[Unset, InboxTask]): An inbox task.
+        inbox_task (Union['InboxTask', None, Unset]):
     """
 
     slack_task: "SlackTask"
-    inbox_task: Union[Unset, "InboxTask"] = UNSET
+    inbox_task: Union["InboxTask", None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
+        from ..models.inbox_task import InboxTask
+
         slack_task = self.slack_task.to_dict()
 
-        inbox_task: Union[Unset, Dict[str, Any]] = UNSET
-        if not isinstance(self.inbox_task, Unset):
+        inbox_task: Union[Dict[str, Any], None, Unset]
+        if isinstance(self.inbox_task, Unset):
+            inbox_task = UNSET
+        elif isinstance(self.inbox_task, InboxTask):
             inbox_task = self.inbox_task.to_dict()
+        else:
+            inbox_task = self.inbox_task
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -53,12 +59,22 @@ class SlackTaskFindResultEntry:
         d = src_dict.copy()
         slack_task = SlackTask.from_dict(d.pop("slack_task"))
 
-        _inbox_task = d.pop("inbox_task", UNSET)
-        inbox_task: Union[Unset, InboxTask]
-        if isinstance(_inbox_task, Unset):
-            inbox_task = UNSET
-        else:
-            inbox_task = InboxTask.from_dict(_inbox_task)
+        def _parse_inbox_task(data: object) -> Union["InboxTask", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                inbox_task_type_0 = InboxTask.from_dict(data)
+
+                return inbox_task_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["InboxTask", None, Unset], data)
+
+        inbox_task = _parse_inbox_task(d.pop("inbox_task", UNSET))
 
         slack_task_find_result_entry = cls(
             slack_task=slack_task,

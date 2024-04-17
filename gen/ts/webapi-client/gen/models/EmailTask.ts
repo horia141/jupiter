@@ -18,9 +18,9 @@ export type EmailTask = {
     archived: boolean;
     created_time: Timestamp;
     last_modified_time: Timestamp;
-    archived_time?: Timestamp;
+    archived_time?: (Timestamp | null);
     name: EntityName;
-    email_task_collection: string;
+    email_task_collection_ref_id: string;
     from_address: EmailAddress;
     from_name: EmailUserName;
     to_address: EmailAddress;

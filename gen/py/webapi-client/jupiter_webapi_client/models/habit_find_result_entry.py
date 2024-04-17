@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -21,34 +21,50 @@ class HabitFindResultEntry:
 
     Attributes:
         habit (Habit): A habit.
-        project (Union[Unset, Project]): The project.
-        inbox_tasks (Union[Unset, List['InboxTask']]):
-        note (Union[Unset, Note]): A note in the notebook.
+        project (Union['Project', None, Unset]):
+        inbox_tasks (Union[List['InboxTask'], None, Unset]):
+        note (Union['Note', None, Unset]):
     """
 
     habit: "Habit"
-    project: Union[Unset, "Project"] = UNSET
-    inbox_tasks: Union[Unset, List["InboxTask"]] = UNSET
-    note: Union[Unset, "Note"] = UNSET
+    project: Union["Project", None, Unset] = UNSET
+    inbox_tasks: Union[List["InboxTask"], None, Unset] = UNSET
+    note: Union["Note", None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
+        from ..models.note import Note
+        from ..models.project import Project
+
         habit = self.habit.to_dict()
 
-        project: Union[Unset, Dict[str, Any]] = UNSET
-        if not isinstance(self.project, Unset):
+        project: Union[Dict[str, Any], None, Unset]
+        if isinstance(self.project, Unset):
+            project = UNSET
+        elif isinstance(self.project, Project):
             project = self.project.to_dict()
+        else:
+            project = self.project
 
-        inbox_tasks: Union[Unset, List[Dict[str, Any]]] = UNSET
-        if not isinstance(self.inbox_tasks, Unset):
+        inbox_tasks: Union[List[Dict[str, Any]], None, Unset]
+        if isinstance(self.inbox_tasks, Unset):
+            inbox_tasks = UNSET
+        elif isinstance(self.inbox_tasks, list):
             inbox_tasks = []
-            for inbox_tasks_item_data in self.inbox_tasks:
-                inbox_tasks_item = inbox_tasks_item_data.to_dict()
-                inbox_tasks.append(inbox_tasks_item)
+            for inbox_tasks_type_0_item_data in self.inbox_tasks:
+                inbox_tasks_type_0_item = inbox_tasks_type_0_item_data.to_dict()
+                inbox_tasks.append(inbox_tasks_type_0_item)
 
-        note: Union[Unset, Dict[str, Any]] = UNSET
-        if not isinstance(self.note, Unset):
+        else:
+            inbox_tasks = self.inbox_tasks
+
+        note: Union[Dict[str, Any], None, Unset]
+        if isinstance(self.note, Unset):
+            note = UNSET
+        elif isinstance(self.note, Note):
             note = self.note.to_dict()
+        else:
+            note = self.note
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -76,26 +92,61 @@ class HabitFindResultEntry:
         d = src_dict.copy()
         habit = Habit.from_dict(d.pop("habit"))
 
-        _project = d.pop("project", UNSET)
-        project: Union[Unset, Project]
-        if isinstance(_project, Unset):
-            project = UNSET
-        else:
-            project = Project.from_dict(_project)
+        def _parse_project(data: object) -> Union["Project", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                project_type_0 = Project.from_dict(data)
 
-        inbox_tasks = []
-        _inbox_tasks = d.pop("inbox_tasks", UNSET)
-        for inbox_tasks_item_data in _inbox_tasks or []:
-            inbox_tasks_item = InboxTask.from_dict(inbox_tasks_item_data)
+                return project_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["Project", None, Unset], data)
 
-            inbox_tasks.append(inbox_tasks_item)
+        project = _parse_project(d.pop("project", UNSET))
 
-        _note = d.pop("note", UNSET)
-        note: Union[Unset, Note]
-        if isinstance(_note, Unset):
-            note = UNSET
-        else:
-            note = Note.from_dict(_note)
+        def _parse_inbox_tasks(data: object) -> Union[List["InboxTask"], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                inbox_tasks_type_0 = []
+                _inbox_tasks_type_0 = data
+                for inbox_tasks_type_0_item_data in _inbox_tasks_type_0:
+                    inbox_tasks_type_0_item = InboxTask.from_dict(inbox_tasks_type_0_item_data)
+
+                    inbox_tasks_type_0.append(inbox_tasks_type_0_item)
+
+                return inbox_tasks_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List["InboxTask"], None, Unset], data)
+
+        inbox_tasks = _parse_inbox_tasks(d.pop("inbox_tasks", UNSET))
+
+        def _parse_note(data: object) -> Union["Note", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                note_type_0 = Note.from_dict(data)
+
+                return note_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["Note", None, Unset], data)
+
+        note = _parse_note(d.pop("note", UNSET))
 
         habit_find_result_entry = cls(
             habit=habit,

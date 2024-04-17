@@ -11,7 +11,7 @@ import type { UserScoreOverview } from './UserScoreOverview';
  */
 export type UserLoadResult = {
     user: User;
-    user_score_overview?: UserScoreOverview;
-    user_score_history?: UserScoreHistory;
+    user_score_overview?: (UserScoreOverview | null);
+    user_score_history?: (UserScoreHistory | null);
 };
 

@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Type, TypeVar, Union
+from typing import Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -13,17 +13,21 @@ class SmartListItemUpdateArgsUrl:
     """
     Attributes:
         should_change (bool):
-        value (Union[Unset, str]): A URL in this domain.
+        value (Union[None, Unset, str]):
     """
 
     should_change: bool
-    value: Union[Unset, str] = UNSET
+    value: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         should_change = self.should_change
 
-        value = self.value
+        value: Union[None, Unset, str]
+        if isinstance(self.value, Unset):
+            value = UNSET
+        else:
+            value = self.value
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -42,7 +46,14 @@ class SmartListItemUpdateArgsUrl:
         d = src_dict.copy()
         should_change = d.pop("should_change")
 
-        value = d.pop("value", UNSET)
+        def _parse_value(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        value = _parse_value(d.pop("value", UNSET))
 
         smart_list_item_update_args_url = cls(
             should_change=should_change,

@@ -1,3 +1,4 @@
+import { ApiError, EventSource, SyncTarget } from "@jupiter/webapi-client";
 import ArchiveIcon from "@mui/icons-material/Archive";
 import TuneIcon from "@mui/icons-material/Tune";
 import { Button, Card, CardContent } from "@mui/material";
@@ -7,7 +8,6 @@ import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Link, Outlet, useTransition } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { StatusCodes } from "http-status-codes";
-import { ApiError, EventSource, SyncTarget } from "@jupiter/webapi-client";
 import { z } from "zod";
 import { parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";

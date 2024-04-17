@@ -12,6 +12,6 @@ import type { SmartListName } from './SmartListName';
 export type SmartListSummary = {
     ref_id: EntityId;
     name: SmartListName;
-    icon?: EntityIcon;
+    icon?: (EntityIcon | null);
 };
 

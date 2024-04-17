@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -38,8 +38,8 @@ class ReportPeriodResult:
         per_habit_breakdown (List['PerHabitBreakdownItem']):
         per_chore_breakdown (List['PerChoreBreakdownItem']):
         per_big_plan_breakdown (List['PerBigPlanBreakdownItem']):
-        breakdown_period (Union[Unset, RecurringTaskPeriod]): A period for a particular task.
-        user_score_overview (Union[Unset, UserScoreOverview]): An overview of the scores for a user.
+        breakdown_period (Union[None, RecurringTaskPeriod, Unset]):
+        user_score_overview (Union['UserScoreOverview', None, Unset]):
     """
 
     today: str
@@ -53,11 +53,13 @@ class ReportPeriodResult:
     per_habit_breakdown: List["PerHabitBreakdownItem"]
     per_chore_breakdown: List["PerChoreBreakdownItem"]
     per_big_plan_breakdown: List["PerBigPlanBreakdownItem"]
-    breakdown_period: Union[Unset, RecurringTaskPeriod] = UNSET
-    user_score_overview: Union[Unset, "UserScoreOverview"] = UNSET
+    breakdown_period: Union[None, RecurringTaskPeriod, Unset] = UNSET
+    user_score_overview: Union["UserScoreOverview", None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
+        from ..models.user_score_overview import UserScoreOverview
+
         today = self.today
 
         period = self.period.value
@@ -101,13 +103,21 @@ class ReportPeriodResult:
             per_big_plan_breakdown_item = per_big_plan_breakdown_item_data.to_dict()
             per_big_plan_breakdown.append(per_big_plan_breakdown_item)
 
-        breakdown_period: Union[Unset, str] = UNSET
-        if not isinstance(self.breakdown_period, Unset):
+        breakdown_period: Union[None, Unset, str]
+        if isinstance(self.breakdown_period, Unset):
+            breakdown_period = UNSET
+        elif isinstance(self.breakdown_period, RecurringTaskPeriod):
             breakdown_period = self.breakdown_period.value
+        else:
+            breakdown_period = self.breakdown_period
 
-        user_score_overview: Union[Unset, Dict[str, Any]] = UNSET
-        if not isinstance(self.user_score_overview, Unset):
+        user_score_overview: Union[Dict[str, Any], None, Unset]
+        if isinstance(self.user_score_overview, Unset):
+            user_score_overview = UNSET
+        elif isinstance(self.user_score_overview, UserScoreOverview):
             user_score_overview = self.user_score_overview.to_dict()
+        else:
+            user_score_overview = self.user_score_overview
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -202,19 +212,39 @@ class ReportPeriodResult:
 
             per_big_plan_breakdown.append(per_big_plan_breakdown_item)
 
-        _breakdown_period = d.pop("breakdown_period", UNSET)
-        breakdown_period: Union[Unset, RecurringTaskPeriod]
-        if isinstance(_breakdown_period, Unset):
-            breakdown_period = UNSET
-        else:
-            breakdown_period = RecurringTaskPeriod(_breakdown_period)
+        def _parse_breakdown_period(data: object) -> Union[None, RecurringTaskPeriod, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                breakdown_period_type_0 = RecurringTaskPeriod(data)
 
-        _user_score_overview = d.pop("user_score_overview", UNSET)
-        user_score_overview: Union[Unset, UserScoreOverview]
-        if isinstance(_user_score_overview, Unset):
-            user_score_overview = UNSET
-        else:
-            user_score_overview = UserScoreOverview.from_dict(_user_score_overview)
+                return breakdown_period_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[None, RecurringTaskPeriod, Unset], data)
+
+        breakdown_period = _parse_breakdown_period(d.pop("breakdown_period", UNSET))
+
+        def _parse_user_score_overview(data: object) -> Union["UserScoreOverview", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                user_score_overview_type_0 = UserScoreOverview.from_dict(data)
+
+                return user_score_overview_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["UserScoreOverview", None, Unset], data)
+
+        user_score_overview = _parse_user_score_overview(d.pop("user_score_overview", UNSET))
 
         report_period_result = cls(
             today=today,

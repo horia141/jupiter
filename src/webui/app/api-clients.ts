@@ -1,6 +1,6 @@
+import { ApiClient, Hosting } from "@jupiter/webapi-client";
 import type { Session } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
-import { ApiClient, Hosting } from "@jupiter/webapi-client";
 import { GLOBAL_PROPERTIES } from "./global-properties-server";
 
 const _API_CLIENTS_BY_SESSION = new Map<undefined | string, ApiClient>();

@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Type, TypeVar, Union
+from typing import Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -15,12 +15,12 @@ class WorkableBigPlan:
     Attributes:
         ref_id (str): A generic entity id.
         name (str): The big plan name.
-        actionable_date (Union[Unset, str]): A date or possibly a datetime for the application.
+        actionable_date (Union[None, Unset, str]):
     """
 
     ref_id: str
     name: str
-    actionable_date: Union[Unset, str] = UNSET
+    actionable_date: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -28,7 +28,11 @@ class WorkableBigPlan:
 
         name = self.name
 
-        actionable_date = self.actionable_date
+        actionable_date: Union[None, Unset, str]
+        if isinstance(self.actionable_date, Unset):
+            actionable_date = UNSET
+        else:
+            actionable_date = self.actionable_date
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -50,7 +54,14 @@ class WorkableBigPlan:
 
         name = d.pop("name")
 
-        actionable_date = d.pop("actionable_date", UNSET)
+        def _parse_actionable_date(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        actionable_date = _parse_actionable_date(d.pop("actionable_date", UNSET))
 
         workable_big_plan = cls(
             ref_id=ref_id,

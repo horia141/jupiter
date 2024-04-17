@@ -772,6 +772,15 @@ class WebServiceApp:
         return handler
 
     def _custom_openapi(self) -> dict[str, Any]:  # type: ignore
+        def build_field_name(
+            field: dataclasses.Field[DomainThing],
+            field_type: type[DomainThing] | ForwardRef | str | type[ParentLink],
+        ) -> str:
+            if field_type is ParentLink:
+                return f"{field.name}_ref_id"
+            else:
+                return field.name
+
         def build_primitive_type(primitive_type: type[Primitive]) -> str:
             if primitive_type is type(None):
                 return "null"
@@ -824,9 +833,9 @@ class WebServiceApp:
                     isinstance(field_type_origin, type)
                     and issubclass(field_type_origin, types.UnionType)
                 ):
-                    field_type_no, is_optional = normalize_optional(field_type)
-                    if is_optional:
-                        return build_composite_field(field, field_type_no)
+                    # field_type_no, is_optional = normalize_optional(field_type)
+                    # if is_optional:
+                    #     return build_composite_field(field, field_type_no)
 
                     field_args = cast(
                         list[type[DomainThing] | ForwardRef | str], get_args(field_type)
@@ -902,8 +911,8 @@ class WebServiceApp:
                 CompositeValue | Entity | Record | UseCaseArgsBase | UseCaseResultBase
             ],
         ) -> dict[str, Any]:
-            requred = [
-                f.name
+            required = [
+                build_field_name(f, f.type)
                 for f in dataclasses.fields(composite_value_type)
                 if f.name != "events" and not normalize_optional(f.type)[1]
             ]
@@ -912,13 +921,13 @@ class WebServiceApp:
                 "description": composite_value_type.__doc__,
                 "type": "object",
                 "properties": {
-                    f.name: build_composite_field(f, f.type)
+                    build_field_name(f, f.type): build_composite_field(f, f.type)
                     for f in dataclasses.fields(composite_value_type)
                     if f.name != "events"
                 },
             }
-            if len(requred) > 0:
-                result["required"] = requred
+            if len(required) > 0:
+                result["required"] = required
             return result
 
         def build_secret_value_schema(

@@ -14,6 +14,6 @@ export type HabitLoadResult = {
     habit: Habit;
     project: Project;
     inbox_tasks: Array<InboxTask>;
-    note?: Note;
+    note?: (Note | null);
 };
 

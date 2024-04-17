@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Type, TypeVar, Union
+from typing import Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -15,12 +15,12 @@ class SmartListSummary:
     Attributes:
         ref_id (str): A generic entity id.
         name (str): The smart list name.
-        icon (Union[Unset, str]): The icon for an entity.
+        icon (Union[None, Unset, str]):
     """
 
     ref_id: str
     name: str
-    icon: Union[Unset, str] = UNSET
+    icon: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -28,7 +28,11 @@ class SmartListSummary:
 
         name = self.name
 
-        icon = self.icon
+        icon: Union[None, Unset, str]
+        if isinstance(self.icon, Unset):
+            icon = UNSET
+        else:
+            icon = self.icon
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -50,7 +54,14 @@ class SmartListSummary:
 
         name = d.pop("name")
 
-        icon = d.pop("icon", UNSET)
+        def _parse_icon(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        icon = _parse_icon(d.pop("icon", UNSET))
 
         smart_list_summary = cls(
             ref_id=ref_id,

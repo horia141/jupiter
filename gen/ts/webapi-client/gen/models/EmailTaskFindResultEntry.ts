@@ -10,6 +10,6 @@ import type { InboxTask } from './InboxTask';
  */
 export type EmailTaskFindResultEntry = {
     email_task: EmailTask;
-    inbox_task?: InboxTask;
+    inbox_task?: (InboxTask | null);
 };
 

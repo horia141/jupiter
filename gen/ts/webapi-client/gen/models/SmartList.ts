@@ -16,9 +16,9 @@ export type SmartList = {
     archived: boolean;
     created_time: Timestamp;
     last_modified_time: Timestamp;
-    archived_time?: Timestamp;
+    archived_time?: (Timestamp | null);
     name: SmartListName;
-    smart_list_collection: string;
-    icon?: EntityIcon;
+    smart_list_collection_ref_id: string;
+    icon?: (EntityIcon | null);
 };
 

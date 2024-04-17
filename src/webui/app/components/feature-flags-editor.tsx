@@ -1,10 +1,14 @@
-import { FormControl, FormControlLabel, Switch, Tooltip } from "@mui/material";
 import type {
   Hosting,
   UserFeatureFlagsControls,
   WorkspaceFeatureFlagsControls,
 } from "@jupiter/webapi-client";
-import { FeatureControl, UserFeature, WorkspaceFeature } from "@jupiter/webapi-client";
+import {
+  FeatureControl,
+  UserFeature,
+  WorkspaceFeature,
+} from "@jupiter/webapi-client";
+import { FormControl, FormControlLabel, Switch, Tooltip } from "@mui/material";
 import {
   featureControlImpliesReadonly,
   userFeatureName,

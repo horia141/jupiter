@@ -16,9 +16,9 @@ export type SmartListTag = {
     archived: boolean;
     created_time: Timestamp;
     last_modified_time: Timestamp;
-    archived_time?: Timestamp;
+    archived_time?: (Timestamp | null);
     name: EntityName;
-    smart_list: string;
+    smart_list_ref_id: string;
     tag_name: TagName;
 };
 

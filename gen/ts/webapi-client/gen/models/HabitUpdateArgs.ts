@@ -26,35 +26,35 @@ export type HabitUpdateArgs = {
     };
     eisen: {
         should_change: boolean;
-        value?: Eisen;
+        value?: (Eisen | null);
     };
     difficulty: {
         should_change: boolean;
-        value?: Difficulty;
+        value?: (Difficulty | null);
     };
     actionable_from_day: {
         should_change: boolean;
-        value?: RecurringTaskDueAtDay;
+        value?: (RecurringTaskDueAtDay | null);
     };
     actionable_from_month: {
         should_change: boolean;
-        value?: RecurringTaskDueAtMonth;
+        value?: (RecurringTaskDueAtMonth | null);
     };
     due_at_day: {
         should_change: boolean;
-        value?: RecurringTaskDueAtDay;
+        value?: (RecurringTaskDueAtDay | null);
     };
     due_at_month: {
         should_change: boolean;
-        value?: RecurringTaskDueAtMonth;
+        value?: (RecurringTaskDueAtMonth | null);
     };
     skip_rule: {
         should_change: boolean;
-        value?: RecurringTaskSkipRule;
+        value?: (RecurringTaskSkipRule | null);
     };
     repeats_in_period_count: {
         should_change: boolean;
-        value?: number;
+        value?: (number | null);
     };
 };
 

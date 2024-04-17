@@ -26,7 +26,7 @@ export type SmartListItemUpdateArgs = {
     };
     url: {
         should_change: boolean;
-        value?: URL;
+        value?: (URL | null);
     };
 };
 

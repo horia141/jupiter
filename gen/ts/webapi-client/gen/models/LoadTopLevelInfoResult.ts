@@ -28,8 +28,8 @@ export type LoadTopLevelInfoResult = {
     workspace_feature_flag_controls: WorkspaceFeatureFlagsControls;
     default_workspace_feature_flags: Record<string, boolean>;
     workspace_feature_hack: WorkspaceFeature;
-    user?: User;
-    user_score_overview?: UserScoreOverview;
-    workspace?: Workspace;
+    user?: (User | null);
+    user_score_overview?: (UserScoreOverview | null);
+    workspace?: (Workspace | null);
 };
 

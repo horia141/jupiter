@@ -14,6 +14,6 @@ export type ChoreLoadResult = {
     chore: Chore;
     project: Project;
     inbox_tasks: Array<InboxTask>;
-    note?: Note;
+    note?: (Note | null);
 };
 

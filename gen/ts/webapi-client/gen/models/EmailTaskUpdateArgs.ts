@@ -38,27 +38,27 @@ export type EmailTaskUpdateArgs = {
     };
     generation_name: {
         should_change: boolean;
-        value?: InboxTaskName;
+        value?: (InboxTaskName | null);
     };
     generation_status: {
         should_change: boolean;
-        value?: InboxTaskStatus;
+        value?: (InboxTaskStatus | null);
     };
     generation_eisen: {
         should_change: boolean;
-        value?: Eisen;
+        value?: (Eisen | null);
     };
     generation_difficulty: {
         should_change: boolean;
-        value?: Difficulty;
+        value?: (Difficulty | null);
     };
     generation_actionable_date: {
         should_change: boolean;
-        value?: ADate;
+        value?: (ADate | null);
     };
     generation_due_date: {
         should_change: boolean;
-        value?: ADate;
+        value?: (ADate | null);
     };
 };
 

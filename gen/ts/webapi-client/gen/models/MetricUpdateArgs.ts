@@ -22,35 +22,35 @@ export type MetricUpdateArgs = {
     };
     icon: {
         should_change: boolean;
-        value?: EntityIcon;
+        value?: (EntityIcon | null);
     };
     collection_period: {
         should_change: boolean;
-        value?: RecurringTaskPeriod;
+        value?: (RecurringTaskPeriod | null);
     };
     collection_eisen: {
         should_change: boolean;
-        value?: Eisen;
+        value?: (Eisen | null);
     };
     collection_difficulty: {
         should_change: boolean;
-        value?: Difficulty;
+        value?: (Difficulty | null);
     };
     collection_actionable_from_day: {
         should_change: boolean;
-        value?: RecurringTaskDueAtDay;
+        value?: (RecurringTaskDueAtDay | null);
     };
     collection_actionable_from_month: {
         should_change: boolean;
-        value?: RecurringTaskDueAtMonth;
+        value?: (RecurringTaskDueAtMonth | null);
     };
     collection_due_at_day: {
         should_change: boolean;
-        value?: RecurringTaskDueAtDay;
+        value?: (RecurringTaskDueAtDay | null);
     };
     collection_due_at_month: {
         should_change: boolean;
-        value?: RecurringTaskDueAtMonth;
+        value?: (RecurringTaskDueAtMonth | null);
     };
 };
 

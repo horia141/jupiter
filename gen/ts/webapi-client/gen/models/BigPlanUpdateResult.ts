@@ -8,6 +8,6 @@ import type { RecordScoreResult } from './RecordScoreResult';
  * InboxTaskUpdate result.
  */
 export type BigPlanUpdateResult = {
-    record_score_result?: RecordScoreResult;
+    record_score_result?: (RecordScoreResult | null);
 };
 

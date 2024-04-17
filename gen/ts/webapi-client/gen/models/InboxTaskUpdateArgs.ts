@@ -28,15 +28,15 @@ export type InboxTaskUpdateArgs = {
     };
     difficulty: {
         should_change: boolean;
-        value?: Difficulty;
+        value?: (Difficulty | null);
     };
     actionable_date: {
         should_change: boolean;
-        value?: ADate;
+        value?: (ADate | null);
     };
     due_date: {
         should_change: boolean;
-        value?: ADate;
+        value?: (ADate | null);
     };
 };
 

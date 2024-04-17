@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Type, TypeVar, Union
+from typing import Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -16,24 +16,24 @@ class ScorePeriodBest:
     Attributes:
         created_time (str): A timestamp in the application.
         last_modified_time (str): A timestamp in the application.
-        score_log (str):
+        score_log_ref_id (str):
         timeline (str):
         sub_period (RecurringTaskPeriod): A period for a particular task.
         total_score (int):
         inbox_task_cnt (int):
         big_plan_cnt (int):
-        period (Union[Unset, RecurringTaskPeriod]): A period for a particular task.
+        period (Union[None, RecurringTaskPeriod, Unset]):
     """
 
     created_time: str
     last_modified_time: str
-    score_log: str
+    score_log_ref_id: str
     timeline: str
     sub_period: RecurringTaskPeriod
     total_score: int
     inbox_task_cnt: int
     big_plan_cnt: int
-    period: Union[Unset, RecurringTaskPeriod] = UNSET
+    period: Union[None, RecurringTaskPeriod, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -41,7 +41,7 @@ class ScorePeriodBest:
 
         last_modified_time = self.last_modified_time
 
-        score_log = self.score_log
+        score_log_ref_id = self.score_log_ref_id
 
         timeline = self.timeline
 
@@ -53,9 +53,13 @@ class ScorePeriodBest:
 
         big_plan_cnt = self.big_plan_cnt
 
-        period: Union[Unset, str] = UNSET
-        if not isinstance(self.period, Unset):
+        period: Union[None, Unset, str]
+        if isinstance(self.period, Unset):
+            period = UNSET
+        elif isinstance(self.period, RecurringTaskPeriod):
             period = self.period.value
+        else:
+            period = self.period
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -63,7 +67,7 @@ class ScorePeriodBest:
             {
                 "created_time": created_time,
                 "last_modified_time": last_modified_time,
-                "score_log": score_log,
+                "score_log_ref_id": score_log_ref_id,
                 "timeline": timeline,
                 "sub_period": sub_period,
                 "total_score": total_score,
@@ -83,7 +87,7 @@ class ScorePeriodBest:
 
         last_modified_time = d.pop("last_modified_time")
 
-        score_log = d.pop("score_log")
+        score_log_ref_id = d.pop("score_log_ref_id")
 
         timeline = d.pop("timeline")
 
@@ -95,17 +99,27 @@ class ScorePeriodBest:
 
         big_plan_cnt = d.pop("big_plan_cnt")
 
-        _period = d.pop("period", UNSET)
-        period: Union[Unset, RecurringTaskPeriod]
-        if isinstance(_period, Unset):
-            period = UNSET
-        else:
-            period = RecurringTaskPeriod(_period)
+        def _parse_period(data: object) -> Union[None, RecurringTaskPeriod, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                period_type_0 = RecurringTaskPeriod(data)
+
+                return period_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[None, RecurringTaskPeriod, Unset], data)
+
+        period = _parse_period(d.pop("period", UNSET))
 
         score_period_best = cls(
             created_time=created_time,
             last_modified_time=last_modified_time,
-            score_log=score_log,
+            score_log_ref_id=score_log_ref_id,
             timeline=timeline,
             sub_period=sub_period,
             total_score=total_score,

@@ -16,9 +16,9 @@ export type Vacation = {
     archived: boolean;
     created_time: Timestamp;
     last_modified_time: Timestamp;
-    archived_time?: Timestamp;
+    archived_time?: (Timestamp | null);
     name: VacationName;
-    vacation_collection: string;
+    vacation_collection_ref_id: string;
     start_date: ADate;
     end_date: ADate;
 };

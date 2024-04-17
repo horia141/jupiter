@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Type, TypeVar, Union
+from typing import Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -18,8 +18,8 @@ class VacationCollection:
         archived (bool):
         created_time (str): A timestamp in the application.
         last_modified_time (str): A timestamp in the application.
-        workspace (str):
-        archived_time (Union[Unset, str]): A timestamp in the application.
+        workspace_ref_id (str):
+        archived_time (Union[None, Unset, str]):
     """
 
     ref_id: str
@@ -27,8 +27,8 @@ class VacationCollection:
     archived: bool
     created_time: str
     last_modified_time: str
-    workspace: str
-    archived_time: Union[Unset, str] = UNSET
+    workspace_ref_id: str
+    archived_time: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -42,9 +42,13 @@ class VacationCollection:
 
         last_modified_time = self.last_modified_time
 
-        workspace = self.workspace
+        workspace_ref_id = self.workspace_ref_id
 
-        archived_time = self.archived_time
+        archived_time: Union[None, Unset, str]
+        if isinstance(self.archived_time, Unset):
+            archived_time = UNSET
+        else:
+            archived_time = self.archived_time
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -55,7 +59,7 @@ class VacationCollection:
                 "archived": archived,
                 "created_time": created_time,
                 "last_modified_time": last_modified_time,
-                "workspace": workspace,
+                "workspace_ref_id": workspace_ref_id,
             }
         )
         if archived_time is not UNSET:
@@ -76,9 +80,16 @@ class VacationCollection:
 
         last_modified_time = d.pop("last_modified_time")
 
-        workspace = d.pop("workspace")
+        workspace_ref_id = d.pop("workspace_ref_id")
 
-        archived_time = d.pop("archived_time", UNSET)
+        def _parse_archived_time(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        archived_time = _parse_archived_time(d.pop("archived_time", UNSET))
 
         vacation_collection = cls(
             ref_id=ref_id,
@@ -86,7 +97,7 @@ class VacationCollection:
             archived=archived,
             created_time=created_time,
             last_modified_time=last_modified_time,
-            workspace=workspace,
+            workspace_ref_id=workspace_ref_id,
             archived_time=archived_time,
         )
 

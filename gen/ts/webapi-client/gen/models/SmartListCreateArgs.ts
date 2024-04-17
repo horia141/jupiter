@@ -10,6 +10,6 @@ import type { SmartListName } from './SmartListName';
  */
 export type SmartListCreateArgs = {
     name: SmartListName;
-    icon?: EntityIcon;
+    icon?: (EntityIcon | null);
 };
 

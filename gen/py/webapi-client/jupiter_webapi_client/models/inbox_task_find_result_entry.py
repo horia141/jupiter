@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -28,64 +28,105 @@ class InboxTaskFindResultEntry:
     Attributes:
         inbox_task (InboxTask): An inbox task.
         project (Project): The project.
-        note (Union[Unset, Note]): A note in the notebook.
-        habit (Union[Unset, Habit]): A habit.
-        chore (Union[Unset, Chore]): A chore.
-        big_plan (Union[Unset, BigPlan]): A big plan.
-        metric (Union[Unset, Metric]): A metric.
-        person (Union[Unset, Person]): A person.
-        slack_task (Union[Unset, SlackTask]): A Slack task which needs to be converted into an inbox task.
-        email_task (Union[Unset, EmailTask]): An email task which needs to be converted into an inbox task.
+        note (Union['Note', None, Unset]):
+        habit (Union['Habit', None, Unset]):
+        chore (Union['Chore', None, Unset]):
+        big_plan (Union['BigPlan', None, Unset]):
+        metric (Union['Metric', None, Unset]):
+        person (Union['Person', None, Unset]):
+        slack_task (Union['SlackTask', None, Unset]):
+        email_task (Union['EmailTask', None, Unset]):
     """
 
     inbox_task: "InboxTask"
     project: "Project"
-    note: Union[Unset, "Note"] = UNSET
-    habit: Union[Unset, "Habit"] = UNSET
-    chore: Union[Unset, "Chore"] = UNSET
-    big_plan: Union[Unset, "BigPlan"] = UNSET
-    metric: Union[Unset, "Metric"] = UNSET
-    person: Union[Unset, "Person"] = UNSET
-    slack_task: Union[Unset, "SlackTask"] = UNSET
-    email_task: Union[Unset, "EmailTask"] = UNSET
+    note: Union["Note", None, Unset] = UNSET
+    habit: Union["Habit", None, Unset] = UNSET
+    chore: Union["Chore", None, Unset] = UNSET
+    big_plan: Union["BigPlan", None, Unset] = UNSET
+    metric: Union["Metric", None, Unset] = UNSET
+    person: Union["Person", None, Unset] = UNSET
+    slack_task: Union["SlackTask", None, Unset] = UNSET
+    email_task: Union["EmailTask", None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
+        from ..models.big_plan import BigPlan
+        from ..models.chore import Chore
+        from ..models.email_task import EmailTask
+        from ..models.habit import Habit
+        from ..models.metric import Metric
+        from ..models.note import Note
+        from ..models.person import Person
+        from ..models.slack_task import SlackTask
+
         inbox_task = self.inbox_task.to_dict()
 
         project = self.project.to_dict()
 
-        note: Union[Unset, Dict[str, Any]] = UNSET
-        if not isinstance(self.note, Unset):
+        note: Union[Dict[str, Any], None, Unset]
+        if isinstance(self.note, Unset):
+            note = UNSET
+        elif isinstance(self.note, Note):
             note = self.note.to_dict()
+        else:
+            note = self.note
 
-        habit: Union[Unset, Dict[str, Any]] = UNSET
-        if not isinstance(self.habit, Unset):
+        habit: Union[Dict[str, Any], None, Unset]
+        if isinstance(self.habit, Unset):
+            habit = UNSET
+        elif isinstance(self.habit, Habit):
             habit = self.habit.to_dict()
+        else:
+            habit = self.habit
 
-        chore: Union[Unset, Dict[str, Any]] = UNSET
-        if not isinstance(self.chore, Unset):
+        chore: Union[Dict[str, Any], None, Unset]
+        if isinstance(self.chore, Unset):
+            chore = UNSET
+        elif isinstance(self.chore, Chore):
             chore = self.chore.to_dict()
+        else:
+            chore = self.chore
 
-        big_plan: Union[Unset, Dict[str, Any]] = UNSET
-        if not isinstance(self.big_plan, Unset):
+        big_plan: Union[Dict[str, Any], None, Unset]
+        if isinstance(self.big_plan, Unset):
+            big_plan = UNSET
+        elif isinstance(self.big_plan, BigPlan):
             big_plan = self.big_plan.to_dict()
+        else:
+            big_plan = self.big_plan
 
-        metric: Union[Unset, Dict[str, Any]] = UNSET
-        if not isinstance(self.metric, Unset):
+        metric: Union[Dict[str, Any], None, Unset]
+        if isinstance(self.metric, Unset):
+            metric = UNSET
+        elif isinstance(self.metric, Metric):
             metric = self.metric.to_dict()
+        else:
+            metric = self.metric
 
-        person: Union[Unset, Dict[str, Any]] = UNSET
-        if not isinstance(self.person, Unset):
+        person: Union[Dict[str, Any], None, Unset]
+        if isinstance(self.person, Unset):
+            person = UNSET
+        elif isinstance(self.person, Person):
             person = self.person.to_dict()
+        else:
+            person = self.person
 
-        slack_task: Union[Unset, Dict[str, Any]] = UNSET
-        if not isinstance(self.slack_task, Unset):
+        slack_task: Union[Dict[str, Any], None, Unset]
+        if isinstance(self.slack_task, Unset):
+            slack_task = UNSET
+        elif isinstance(self.slack_task, SlackTask):
             slack_task = self.slack_task.to_dict()
+        else:
+            slack_task = self.slack_task
 
-        email_task: Union[Unset, Dict[str, Any]] = UNSET
-        if not isinstance(self.email_task, Unset):
+        email_task: Union[Dict[str, Any], None, Unset]
+        if isinstance(self.email_task, Unset):
+            email_task = UNSET
+        elif isinstance(self.email_task, EmailTask):
             email_task = self.email_task.to_dict()
+        else:
+            email_task = self.email_task
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -132,61 +173,141 @@ class InboxTaskFindResultEntry:
 
         project = Project.from_dict(d.pop("project"))
 
-        _note = d.pop("note", UNSET)
-        note: Union[Unset, Note]
-        if isinstance(_note, Unset):
-            note = UNSET
-        else:
-            note = Note.from_dict(_note)
+        def _parse_note(data: object) -> Union["Note", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                note_type_0 = Note.from_dict(data)
 
-        _habit = d.pop("habit", UNSET)
-        habit: Union[Unset, Habit]
-        if isinstance(_habit, Unset):
-            habit = UNSET
-        else:
-            habit = Habit.from_dict(_habit)
+                return note_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["Note", None, Unset], data)
 
-        _chore = d.pop("chore", UNSET)
-        chore: Union[Unset, Chore]
-        if isinstance(_chore, Unset):
-            chore = UNSET
-        else:
-            chore = Chore.from_dict(_chore)
+        note = _parse_note(d.pop("note", UNSET))
 
-        _big_plan = d.pop("big_plan", UNSET)
-        big_plan: Union[Unset, BigPlan]
-        if isinstance(_big_plan, Unset):
-            big_plan = UNSET
-        else:
-            big_plan = BigPlan.from_dict(_big_plan)
+        def _parse_habit(data: object) -> Union["Habit", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                habit_type_0 = Habit.from_dict(data)
 
-        _metric = d.pop("metric", UNSET)
-        metric: Union[Unset, Metric]
-        if isinstance(_metric, Unset):
-            metric = UNSET
-        else:
-            metric = Metric.from_dict(_metric)
+                return habit_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["Habit", None, Unset], data)
 
-        _person = d.pop("person", UNSET)
-        person: Union[Unset, Person]
-        if isinstance(_person, Unset):
-            person = UNSET
-        else:
-            person = Person.from_dict(_person)
+        habit = _parse_habit(d.pop("habit", UNSET))
 
-        _slack_task = d.pop("slack_task", UNSET)
-        slack_task: Union[Unset, SlackTask]
-        if isinstance(_slack_task, Unset):
-            slack_task = UNSET
-        else:
-            slack_task = SlackTask.from_dict(_slack_task)
+        def _parse_chore(data: object) -> Union["Chore", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                chore_type_0 = Chore.from_dict(data)
 
-        _email_task = d.pop("email_task", UNSET)
-        email_task: Union[Unset, EmailTask]
-        if isinstance(_email_task, Unset):
-            email_task = UNSET
-        else:
-            email_task = EmailTask.from_dict(_email_task)
+                return chore_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["Chore", None, Unset], data)
+
+        chore = _parse_chore(d.pop("chore", UNSET))
+
+        def _parse_big_plan(data: object) -> Union["BigPlan", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                big_plan_type_0 = BigPlan.from_dict(data)
+
+                return big_plan_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["BigPlan", None, Unset], data)
+
+        big_plan = _parse_big_plan(d.pop("big_plan", UNSET))
+
+        def _parse_metric(data: object) -> Union["Metric", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                metric_type_0 = Metric.from_dict(data)
+
+                return metric_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["Metric", None, Unset], data)
+
+        metric = _parse_metric(d.pop("metric", UNSET))
+
+        def _parse_person(data: object) -> Union["Person", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                person_type_0 = Person.from_dict(data)
+
+                return person_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["Person", None, Unset], data)
+
+        person = _parse_person(d.pop("person", UNSET))
+
+        def _parse_slack_task(data: object) -> Union["SlackTask", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                slack_task_type_0 = SlackTask.from_dict(data)
+
+                return slack_task_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["SlackTask", None, Unset], data)
+
+        slack_task = _parse_slack_task(d.pop("slack_task", UNSET))
+
+        def _parse_email_task(data: object) -> Union["EmailTask", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                email_task_type_0 = EmailTask.from_dict(data)
+
+                return email_task_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["EmailTask", None, Unset], data)
+
+        email_task = _parse_email_task(d.pop("email_task", UNSET))
 
         inbox_task_find_result_entry = cls(
             inbox_task=inbox_task,

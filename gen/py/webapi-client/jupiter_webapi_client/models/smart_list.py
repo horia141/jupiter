@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Type, TypeVar, Union
+from typing import Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -19,9 +19,9 @@ class SmartList:
         created_time (str): A timestamp in the application.
         last_modified_time (str): A timestamp in the application.
         name (str): The smart list name.
-        smart_list_collection (str):
-        archived_time (Union[Unset, str]): A timestamp in the application.
-        icon (Union[Unset, str]): The icon for an entity.
+        smart_list_collection_ref_id (str):
+        archived_time (Union[None, Unset, str]):
+        icon (Union[None, Unset, str]):
     """
 
     ref_id: str
@@ -30,9 +30,9 @@ class SmartList:
     created_time: str
     last_modified_time: str
     name: str
-    smart_list_collection: str
-    archived_time: Union[Unset, str] = UNSET
-    icon: Union[Unset, str] = UNSET
+    smart_list_collection_ref_id: str
+    archived_time: Union[None, Unset, str] = UNSET
+    icon: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -48,11 +48,19 @@ class SmartList:
 
         name = self.name
 
-        smart_list_collection = self.smart_list_collection
+        smart_list_collection_ref_id = self.smart_list_collection_ref_id
 
-        archived_time = self.archived_time
+        archived_time: Union[None, Unset, str]
+        if isinstance(self.archived_time, Unset):
+            archived_time = UNSET
+        else:
+            archived_time = self.archived_time
 
-        icon = self.icon
+        icon: Union[None, Unset, str]
+        if isinstance(self.icon, Unset):
+            icon = UNSET
+        else:
+            icon = self.icon
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -64,7 +72,7 @@ class SmartList:
                 "created_time": created_time,
                 "last_modified_time": last_modified_time,
                 "name": name,
-                "smart_list_collection": smart_list_collection,
+                "smart_list_collection_ref_id": smart_list_collection_ref_id,
             }
         )
         if archived_time is not UNSET:
@@ -89,11 +97,25 @@ class SmartList:
 
         name = d.pop("name")
 
-        smart_list_collection = d.pop("smart_list_collection")
+        smart_list_collection_ref_id = d.pop("smart_list_collection_ref_id")
 
-        archived_time = d.pop("archived_time", UNSET)
+        def _parse_archived_time(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
 
-        icon = d.pop("icon", UNSET)
+        archived_time = _parse_archived_time(d.pop("archived_time", UNSET))
+
+        def _parse_icon(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        icon = _parse_icon(d.pop("icon", UNSET))
 
         smart_list = cls(
             ref_id=ref_id,
@@ -102,7 +124,7 @@ class SmartList:
             created_time=created_time,
             last_modified_time=last_modified_time,
             name=name,
-            smart_list_collection=smart_list_collection,
+            smart_list_collection_ref_id=smart_list_collection_ref_id,
             archived_time=archived_time,
             icon=icon,
         )

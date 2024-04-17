@@ -12,6 +12,6 @@ import type { EntityId } from './EntityId';
 export type WorkableBigPlan = {
     ref_id: EntityId;
     name: BigPlanName;
-    actionable_date?: ADate;
+    actionable_date?: (ADate | null);
 };
 

@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Type, TypeVar, Union
+from typing import Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -17,25 +17,25 @@ class SearchArgs:
         query (str): A search query parameter for searches.
         limit (int): A search limit parameter for searches.
         include_archived (bool):
-        filter_entity_tags (Union[Unset, List[NamedEntityTag]]):
-        filter_created_time_after (Union[Unset, str]): A date or possibly a datetime for the application.
-        filter_created_time_before (Union[Unset, str]): A date or possibly a datetime for the application.
-        filter_last_modified_time_after (Union[Unset, str]): A date or possibly a datetime for the application.
-        filter_last_modified_time_before (Union[Unset, str]): A date or possibly a datetime for the application.
-        filter_archived_time_after (Union[Unset, str]): A date or possibly a datetime for the application.
-        filter_archived_time_before (Union[Unset, str]): A date or possibly a datetime for the application.
+        filter_entity_tags (Union[List[NamedEntityTag], None, Unset]):
+        filter_created_time_after (Union[None, Unset, str]):
+        filter_created_time_before (Union[None, Unset, str]):
+        filter_last_modified_time_after (Union[None, Unset, str]):
+        filter_last_modified_time_before (Union[None, Unset, str]):
+        filter_archived_time_after (Union[None, Unset, str]):
+        filter_archived_time_before (Union[None, Unset, str]):
     """
 
     query: str
     limit: int
     include_archived: bool
-    filter_entity_tags: Union[Unset, List[NamedEntityTag]] = UNSET
-    filter_created_time_after: Union[Unset, str] = UNSET
-    filter_created_time_before: Union[Unset, str] = UNSET
-    filter_last_modified_time_after: Union[Unset, str] = UNSET
-    filter_last_modified_time_before: Union[Unset, str] = UNSET
-    filter_archived_time_after: Union[Unset, str] = UNSET
-    filter_archived_time_before: Union[Unset, str] = UNSET
+    filter_entity_tags: Union[List[NamedEntityTag], None, Unset] = UNSET
+    filter_created_time_after: Union[None, Unset, str] = UNSET
+    filter_created_time_before: Union[None, Unset, str] = UNSET
+    filter_last_modified_time_after: Union[None, Unset, str] = UNSET
+    filter_last_modified_time_before: Union[None, Unset, str] = UNSET
+    filter_archived_time_after: Union[None, Unset, str] = UNSET
+    filter_archived_time_before: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -45,24 +45,53 @@ class SearchArgs:
 
         include_archived = self.include_archived
 
-        filter_entity_tags: Union[Unset, List[str]] = UNSET
-        if not isinstance(self.filter_entity_tags, Unset):
+        filter_entity_tags: Union[List[str], None, Unset]
+        if isinstance(self.filter_entity_tags, Unset):
+            filter_entity_tags = UNSET
+        elif isinstance(self.filter_entity_tags, list):
             filter_entity_tags = []
-            for filter_entity_tags_item_data in self.filter_entity_tags:
-                filter_entity_tags_item = filter_entity_tags_item_data.value
-                filter_entity_tags.append(filter_entity_tags_item)
+            for filter_entity_tags_type_0_item_data in self.filter_entity_tags:
+                filter_entity_tags_type_0_item = filter_entity_tags_type_0_item_data.value
+                filter_entity_tags.append(filter_entity_tags_type_0_item)
 
-        filter_created_time_after = self.filter_created_time_after
+        else:
+            filter_entity_tags = self.filter_entity_tags
 
-        filter_created_time_before = self.filter_created_time_before
+        filter_created_time_after: Union[None, Unset, str]
+        if isinstance(self.filter_created_time_after, Unset):
+            filter_created_time_after = UNSET
+        else:
+            filter_created_time_after = self.filter_created_time_after
 
-        filter_last_modified_time_after = self.filter_last_modified_time_after
+        filter_created_time_before: Union[None, Unset, str]
+        if isinstance(self.filter_created_time_before, Unset):
+            filter_created_time_before = UNSET
+        else:
+            filter_created_time_before = self.filter_created_time_before
 
-        filter_last_modified_time_before = self.filter_last_modified_time_before
+        filter_last_modified_time_after: Union[None, Unset, str]
+        if isinstance(self.filter_last_modified_time_after, Unset):
+            filter_last_modified_time_after = UNSET
+        else:
+            filter_last_modified_time_after = self.filter_last_modified_time_after
 
-        filter_archived_time_after = self.filter_archived_time_after
+        filter_last_modified_time_before: Union[None, Unset, str]
+        if isinstance(self.filter_last_modified_time_before, Unset):
+            filter_last_modified_time_before = UNSET
+        else:
+            filter_last_modified_time_before = self.filter_last_modified_time_before
 
-        filter_archived_time_before = self.filter_archived_time_before
+        filter_archived_time_after: Union[None, Unset, str]
+        if isinstance(self.filter_archived_time_after, Unset):
+            filter_archived_time_after = UNSET
+        else:
+            filter_archived_time_after = self.filter_archived_time_after
+
+        filter_archived_time_before: Union[None, Unset, str]
+        if isinstance(self.filter_archived_time_before, Unset):
+            filter_archived_time_before = UNSET
+        else:
+            filter_archived_time_before = self.filter_archived_time_before
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -99,24 +128,85 @@ class SearchArgs:
 
         include_archived = d.pop("include_archived")
 
-        filter_entity_tags = []
-        _filter_entity_tags = d.pop("filter_entity_tags", UNSET)
-        for filter_entity_tags_item_data in _filter_entity_tags or []:
-            filter_entity_tags_item = NamedEntityTag(filter_entity_tags_item_data)
+        def _parse_filter_entity_tags(data: object) -> Union[List[NamedEntityTag], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                filter_entity_tags_type_0 = []
+                _filter_entity_tags_type_0 = data
+                for filter_entity_tags_type_0_item_data in _filter_entity_tags_type_0:
+                    filter_entity_tags_type_0_item = NamedEntityTag(filter_entity_tags_type_0_item_data)
 
-            filter_entity_tags.append(filter_entity_tags_item)
+                    filter_entity_tags_type_0.append(filter_entity_tags_type_0_item)
 
-        filter_created_time_after = d.pop("filter_created_time_after", UNSET)
+                return filter_entity_tags_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List[NamedEntityTag], None, Unset], data)
 
-        filter_created_time_before = d.pop("filter_created_time_before", UNSET)
+        filter_entity_tags = _parse_filter_entity_tags(d.pop("filter_entity_tags", UNSET))
 
-        filter_last_modified_time_after = d.pop("filter_last_modified_time_after", UNSET)
+        def _parse_filter_created_time_after(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
 
-        filter_last_modified_time_before = d.pop("filter_last_modified_time_before", UNSET)
+        filter_created_time_after = _parse_filter_created_time_after(d.pop("filter_created_time_after", UNSET))
 
-        filter_archived_time_after = d.pop("filter_archived_time_after", UNSET)
+        def _parse_filter_created_time_before(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
 
-        filter_archived_time_before = d.pop("filter_archived_time_before", UNSET)
+        filter_created_time_before = _parse_filter_created_time_before(d.pop("filter_created_time_before", UNSET))
+
+        def _parse_filter_last_modified_time_after(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        filter_last_modified_time_after = _parse_filter_last_modified_time_after(
+            d.pop("filter_last_modified_time_after", UNSET)
+        )
+
+        def _parse_filter_last_modified_time_before(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        filter_last_modified_time_before = _parse_filter_last_modified_time_before(
+            d.pop("filter_last_modified_time_before", UNSET)
+        )
+
+        def _parse_filter_archived_time_after(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        filter_archived_time_after = _parse_filter_archived_time_after(d.pop("filter_archived_time_after", UNSET))
+
+        def _parse_filter_archived_time_before(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        filter_archived_time_before = _parse_filter_archived_time_before(d.pop("filter_archived_time_before", UNSET))
 
         search_args = cls(
             query=query,

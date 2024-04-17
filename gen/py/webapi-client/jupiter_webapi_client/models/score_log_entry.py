@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Type, TypeVar, Union
+from typing import Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -21,14 +21,14 @@ class ScoreLogEntry:
         created_time (str): A timestamp in the application.
         last_modified_time (str): A timestamp in the application.
         name (str): The name for an entity which acts as both name and unique identifier.
-        score_log (str):
+        score_log_ref_id (str):
         source (ScoreSource): The source of a score.
         task_ref_id (str): A generic entity id.
         success (bool):
         score (int):
-        archived_time (Union[Unset, str]): A timestamp in the application.
-        difficulty (Union[Unset, Difficulty]): The difficulty of a particular task.
-        has_lucky_puppy_bonus (Union[Unset, bool]):
+        archived_time (Union[None, Unset, str]):
+        difficulty (Union[Difficulty, None, Unset]):
+        has_lucky_puppy_bonus (Union[None, Unset, bool]):
     """
 
     ref_id: str
@@ -37,14 +37,14 @@ class ScoreLogEntry:
     created_time: str
     last_modified_time: str
     name: str
-    score_log: str
+    score_log_ref_id: str
     source: ScoreSource
     task_ref_id: str
     success: bool
     score: int
-    archived_time: Union[Unset, str] = UNSET
-    difficulty: Union[Unset, Difficulty] = UNSET
-    has_lucky_puppy_bonus: Union[Unset, bool] = UNSET
+    archived_time: Union[None, Unset, str] = UNSET
+    difficulty: Union[Difficulty, None, Unset] = UNSET
+    has_lucky_puppy_bonus: Union[None, Unset, bool] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -60,7 +60,7 @@ class ScoreLogEntry:
 
         name = self.name
 
-        score_log = self.score_log
+        score_log_ref_id = self.score_log_ref_id
 
         source = self.source.value
 
@@ -70,13 +70,25 @@ class ScoreLogEntry:
 
         score = self.score
 
-        archived_time = self.archived_time
+        archived_time: Union[None, Unset, str]
+        if isinstance(self.archived_time, Unset):
+            archived_time = UNSET
+        else:
+            archived_time = self.archived_time
 
-        difficulty: Union[Unset, str] = UNSET
-        if not isinstance(self.difficulty, Unset):
+        difficulty: Union[None, Unset, str]
+        if isinstance(self.difficulty, Unset):
+            difficulty = UNSET
+        elif isinstance(self.difficulty, Difficulty):
             difficulty = self.difficulty.value
+        else:
+            difficulty = self.difficulty
 
-        has_lucky_puppy_bonus = self.has_lucky_puppy_bonus
+        has_lucky_puppy_bonus: Union[None, Unset, bool]
+        if isinstance(self.has_lucky_puppy_bonus, Unset):
+            has_lucky_puppy_bonus = UNSET
+        else:
+            has_lucky_puppy_bonus = self.has_lucky_puppy_bonus
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -88,7 +100,7 @@ class ScoreLogEntry:
                 "created_time": created_time,
                 "last_modified_time": last_modified_time,
                 "name": name,
-                "score_log": score_log,
+                "score_log_ref_id": score_log_ref_id,
                 "source": source,
                 "task_ref_id": task_ref_id,
                 "success": success,
@@ -119,7 +131,7 @@ class ScoreLogEntry:
 
         name = d.pop("name")
 
-        score_log = d.pop("score_log")
+        score_log_ref_id = d.pop("score_log_ref_id")
 
         source = ScoreSource(d.pop("source"))
 
@@ -129,16 +141,40 @@ class ScoreLogEntry:
 
         score = d.pop("score")
 
-        archived_time = d.pop("archived_time", UNSET)
+        def _parse_archived_time(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
 
-        _difficulty = d.pop("difficulty", UNSET)
-        difficulty: Union[Unset, Difficulty]
-        if isinstance(_difficulty, Unset):
-            difficulty = UNSET
-        else:
-            difficulty = Difficulty(_difficulty)
+        archived_time = _parse_archived_time(d.pop("archived_time", UNSET))
 
-        has_lucky_puppy_bonus = d.pop("has_lucky_puppy_bonus", UNSET)
+        def _parse_difficulty(data: object) -> Union[Difficulty, None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                difficulty_type_0 = Difficulty(data)
+
+                return difficulty_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[Difficulty, None, Unset], data)
+
+        difficulty = _parse_difficulty(d.pop("difficulty", UNSET))
+
+        def _parse_has_lucky_puppy_bonus(data: object) -> Union[None, Unset, bool]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, bool], data)
+
+        has_lucky_puppy_bonus = _parse_has_lucky_puppy_bonus(d.pop("has_lucky_puppy_bonus", UNSET))
 
         score_log_entry = cls(
             ref_id=ref_id,
@@ -147,7 +183,7 @@ class ScoreLogEntry:
             created_time=created_time,
             last_modified_time=last_modified_time,
             name=name,
-            score_log=score_log,
+            score_log_ref_id=score_log_ref_id,
             source=source,
             task_ref_id=task_ref_id,
             success=success,

@@ -13,6 +13,6 @@ export type PersonLoadResult = {
     person: Person;
     catch_up_inbox_tasks: Array<InboxTask>;
     birthday_inbox_tasks: Array<InboxTask>;
-    note?: Note;
+    note?: (Note | null);
 };
 

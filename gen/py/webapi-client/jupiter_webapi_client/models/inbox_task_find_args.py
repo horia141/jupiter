@@ -16,16 +16,16 @@ class InboxTaskFindArgs:
     Attributes:
         allow_archived (bool):
         include_notes (bool):
-        filter_ref_ids (Union[Unset, List[str]]):
-        filter_project_ref_ids (Union[Unset, List[str]]):
-        filter_sources (Union[Unset, List[InboxTaskSource]]):
+        filter_ref_ids (Union[List[str], None, Unset]):
+        filter_project_ref_ids (Union[List[str], None, Unset]):
+        filter_sources (Union[List[InboxTaskSource], None, Unset]):
     """
 
     allow_archived: bool
     include_notes: bool
-    filter_ref_ids: Union[Unset, List[str]] = UNSET
-    filter_project_ref_ids: Union[Unset, List[str]] = UNSET
-    filter_sources: Union[Unset, List[InboxTaskSource]] = UNSET
+    filter_ref_ids: Union[List[str], None, Unset] = UNSET
+    filter_project_ref_ids: Union[List[str], None, Unset] = UNSET
+    filter_sources: Union[List[InboxTaskSource], None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -33,20 +33,35 @@ class InboxTaskFindArgs:
 
         include_notes = self.include_notes
 
-        filter_ref_ids: Union[Unset, List[str]] = UNSET
-        if not isinstance(self.filter_ref_ids, Unset):
+        filter_ref_ids: Union[List[str], None, Unset]
+        if isinstance(self.filter_ref_ids, Unset):
+            filter_ref_ids = UNSET
+        elif isinstance(self.filter_ref_ids, list):
             filter_ref_ids = self.filter_ref_ids
 
-        filter_project_ref_ids: Union[Unset, List[str]] = UNSET
-        if not isinstance(self.filter_project_ref_ids, Unset):
+        else:
+            filter_ref_ids = self.filter_ref_ids
+
+        filter_project_ref_ids: Union[List[str], None, Unset]
+        if isinstance(self.filter_project_ref_ids, Unset):
+            filter_project_ref_ids = UNSET
+        elif isinstance(self.filter_project_ref_ids, list):
             filter_project_ref_ids = self.filter_project_ref_ids
 
-        filter_sources: Union[Unset, List[str]] = UNSET
-        if not isinstance(self.filter_sources, Unset):
+        else:
+            filter_project_ref_ids = self.filter_project_ref_ids
+
+        filter_sources: Union[List[str], None, Unset]
+        if isinstance(self.filter_sources, Unset):
+            filter_sources = UNSET
+        elif isinstance(self.filter_sources, list):
             filter_sources = []
-            for filter_sources_item_data in self.filter_sources:
-                filter_sources_item = filter_sources_item_data.value
-                filter_sources.append(filter_sources_item)
+            for filter_sources_type_0_item_data in self.filter_sources:
+                filter_sources_type_0_item = filter_sources_type_0_item_data.value
+                filter_sources.append(filter_sources_type_0_item)
+
+        else:
+            filter_sources = self.filter_sources
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -72,16 +87,61 @@ class InboxTaskFindArgs:
 
         include_notes = d.pop("include_notes")
 
-        filter_ref_ids = cast(List[str], d.pop("filter_ref_ids", UNSET))
+        def _parse_filter_ref_ids(data: object) -> Union[List[str], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                filter_ref_ids_type_0 = cast(List[str], data)
 
-        filter_project_ref_ids = cast(List[str], d.pop("filter_project_ref_ids", UNSET))
+                return filter_ref_ids_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List[str], None, Unset], data)
 
-        filter_sources = []
-        _filter_sources = d.pop("filter_sources", UNSET)
-        for filter_sources_item_data in _filter_sources or []:
-            filter_sources_item = InboxTaskSource(filter_sources_item_data)
+        filter_ref_ids = _parse_filter_ref_ids(d.pop("filter_ref_ids", UNSET))
 
-            filter_sources.append(filter_sources_item)
+        def _parse_filter_project_ref_ids(data: object) -> Union[List[str], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                filter_project_ref_ids_type_0 = cast(List[str], data)
+
+                return filter_project_ref_ids_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List[str], None, Unset], data)
+
+        filter_project_ref_ids = _parse_filter_project_ref_ids(d.pop("filter_project_ref_ids", UNSET))
+
+        def _parse_filter_sources(data: object) -> Union[List[InboxTaskSource], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                filter_sources_type_0 = []
+                _filter_sources_type_0 = data
+                for filter_sources_type_0_item_data in _filter_sources_type_0:
+                    filter_sources_type_0_item = InboxTaskSource(filter_sources_type_0_item_data)
+
+                    filter_sources_type_0.append(filter_sources_type_0_item)
+
+                return filter_sources_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List[InboxTaskSource], None, Unset], data)
+
+        filter_sources = _parse_filter_sources(d.pop("filter_sources", UNSET))
 
         inbox_task_find_args = cls(
             allow_archived=allow_archived,

@@ -15,10 +15,10 @@ export type Project = {
     archived: boolean;
     created_time: Timestamp;
     last_modified_time: Timestamp;
-    archived_time?: Timestamp;
+    archived_time?: (Timestamp | null);
     name: ProjectName;
-    project_collection: string;
-    parent_project_ref_id?: EntityId;
+    project_collection_ref_id: string;
+    parent_project_ref_id?: (EntityId | null);
     order_of_child_projects: Array<EntityId>;
 };
 

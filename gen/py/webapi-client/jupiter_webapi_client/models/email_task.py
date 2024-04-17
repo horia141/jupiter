@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -23,7 +23,7 @@ class EmailTask:
         created_time (str): A timestamp in the application.
         last_modified_time (str): A timestamp in the application.
         name (str): The name for an entity which acts as both name and unique identifier.
-        email_task_collection (str):
+        email_task_collection_ref_id (str):
         from_address (str): An email address.
         from_name (str): An email user name.
         to_address (str): An email address.
@@ -31,7 +31,7 @@ class EmailTask:
         body (str):
         generation_extra_info (PushGenerationExtraInfo): Extra information for how to generate an inbox task.
         has_generated_task (bool):
-        archived_time (Union[Unset, str]): A timestamp in the application.
+        archived_time (Union[None, Unset, str]):
     """
 
     ref_id: str
@@ -40,7 +40,7 @@ class EmailTask:
     created_time: str
     last_modified_time: str
     name: str
-    email_task_collection: str
+    email_task_collection_ref_id: str
     from_address: str
     from_name: str
     to_address: str
@@ -48,7 +48,7 @@ class EmailTask:
     body: str
     generation_extra_info: "PushGenerationExtraInfo"
     has_generated_task: bool
-    archived_time: Union[Unset, str] = UNSET
+    archived_time: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -64,7 +64,7 @@ class EmailTask:
 
         name = self.name
 
-        email_task_collection = self.email_task_collection
+        email_task_collection_ref_id = self.email_task_collection_ref_id
 
         from_address = self.from_address
 
@@ -80,7 +80,11 @@ class EmailTask:
 
         has_generated_task = self.has_generated_task
 
-        archived_time = self.archived_time
+        archived_time: Union[None, Unset, str]
+        if isinstance(self.archived_time, Unset):
+            archived_time = UNSET
+        else:
+            archived_time = self.archived_time
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -92,7 +96,7 @@ class EmailTask:
                 "created_time": created_time,
                 "last_modified_time": last_modified_time,
                 "name": name,
-                "email_task_collection": email_task_collection,
+                "email_task_collection_ref_id": email_task_collection_ref_id,
                 "from_address": from_address,
                 "from_name": from_name,
                 "to_address": to_address,
@@ -124,7 +128,7 @@ class EmailTask:
 
         name = d.pop("name")
 
-        email_task_collection = d.pop("email_task_collection")
+        email_task_collection_ref_id = d.pop("email_task_collection_ref_id")
 
         from_address = d.pop("from_address")
 
@@ -140,7 +144,14 @@ class EmailTask:
 
         has_generated_task = d.pop("has_generated_task")
 
-        archived_time = d.pop("archived_time", UNSET)
+        def _parse_archived_time(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        archived_time = _parse_archived_time(d.pop("archived_time", UNSET))
 
         email_task = cls(
             ref_id=ref_id,
@@ -149,7 +160,7 @@ class EmailTask:
             created_time=created_time,
             last_modified_time=last_modified_time,
             name=name,
-            email_task_collection=email_task_collection,
+            email_task_collection_ref_id=email_task_collection_ref_id,
             from_address=from_address,
             from_name=from_name,
             to_address=to_address,

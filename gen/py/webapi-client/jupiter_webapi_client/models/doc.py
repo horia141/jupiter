@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Type, TypeVar, Union
+from typing import Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -19,9 +19,9 @@ class Doc:
         created_time (str): A timestamp in the application.
         last_modified_time (str): A timestamp in the application.
         name (str): The doc name.
-        doc_collection (str):
-        archived_time (Union[Unset, str]): A timestamp in the application.
-        parent_doc_ref_id (Union[Unset, str]): A generic entity id.
+        doc_collection_ref_id (str):
+        archived_time (Union[None, Unset, str]):
+        parent_doc_ref_id (Union[None, Unset, str]):
     """
 
     ref_id: str
@@ -30,9 +30,9 @@ class Doc:
     created_time: str
     last_modified_time: str
     name: str
-    doc_collection: str
-    archived_time: Union[Unset, str] = UNSET
-    parent_doc_ref_id: Union[Unset, str] = UNSET
+    doc_collection_ref_id: str
+    archived_time: Union[None, Unset, str] = UNSET
+    parent_doc_ref_id: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -48,11 +48,19 @@ class Doc:
 
         name = self.name
 
-        doc_collection = self.doc_collection
+        doc_collection_ref_id = self.doc_collection_ref_id
 
-        archived_time = self.archived_time
+        archived_time: Union[None, Unset, str]
+        if isinstance(self.archived_time, Unset):
+            archived_time = UNSET
+        else:
+            archived_time = self.archived_time
 
-        parent_doc_ref_id = self.parent_doc_ref_id
+        parent_doc_ref_id: Union[None, Unset, str]
+        if isinstance(self.parent_doc_ref_id, Unset):
+            parent_doc_ref_id = UNSET
+        else:
+            parent_doc_ref_id = self.parent_doc_ref_id
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -64,7 +72,7 @@ class Doc:
                 "created_time": created_time,
                 "last_modified_time": last_modified_time,
                 "name": name,
-                "doc_collection": doc_collection,
+                "doc_collection_ref_id": doc_collection_ref_id,
             }
         )
         if archived_time is not UNSET:
@@ -89,11 +97,25 @@ class Doc:
 
         name = d.pop("name")
 
-        doc_collection = d.pop("doc_collection")
+        doc_collection_ref_id = d.pop("doc_collection_ref_id")
 
-        archived_time = d.pop("archived_time", UNSET)
+        def _parse_archived_time(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
 
-        parent_doc_ref_id = d.pop("parent_doc_ref_id", UNSET)
+        archived_time = _parse_archived_time(d.pop("archived_time", UNSET))
+
+        def _parse_parent_doc_ref_id(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        parent_doc_ref_id = _parse_parent_doc_ref_id(d.pop("parent_doc_ref_id", UNSET))
 
         doc = cls(
             ref_id=ref_id,
@@ -102,7 +124,7 @@ class Doc:
             created_time=created_time,
             last_modified_time=last_modified_time,
             name=name,
-            doc_collection=doc_collection,
+            doc_collection_ref_id=doc_collection_ref_id,
             archived_time=archived_time,
             parent_doc_ref_id=parent_doc_ref_id,
         )

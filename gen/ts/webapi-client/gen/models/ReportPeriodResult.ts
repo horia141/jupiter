@@ -23,7 +23,7 @@ export type ReportPeriodResult = {
     period: RecurringTaskPeriod;
     sources: Array<InboxTaskSource>;
     breakdowns: Array<ReportBreakdown>;
-    breakdown_period?: RecurringTaskPeriod;
+    breakdown_period?: (RecurringTaskPeriod | null);
     global_inbox_tasks_summary: InboxTasksSummary;
     global_big_plans_summary: WorkableSummary;
     per_project_breakdown: Array<PerProjectBreakdownItem>;
@@ -31,6 +31,6 @@ export type ReportPeriodResult = {
     per_habit_breakdown: Array<PerHabitBreakdownItem>;
     per_chore_breakdown: Array<PerChoreBreakdownItem>;
     per_big_plan_breakdown: Array<PerBigPlanBreakdownItem>;
-    user_score_overview?: UserScoreOverview;
+    user_score_overview?: (UserScoreOverview | null);
 };
 

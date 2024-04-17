@@ -14,7 +14,7 @@ export type ScoreLog = {
     archived: boolean;
     created_time: Timestamp;
     last_modified_time: Timestamp;
-    archived_time?: Timestamp;
-    user: string;
+    archived_time?: (Timestamp | null);
+    user_ref_id: string;
 };
 

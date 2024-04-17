@@ -10,6 +10,6 @@ import type { Vacation } from './Vacation';
  */
 export type VacationFindResultEntry = {
     vacation: Vacation;
-    note?: Note;
+    note?: (Note | null);
 };
 

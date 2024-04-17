@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -21,46 +21,67 @@ class SmartListFindResponseEntry:
 
     Attributes:
         smart_list (SmartList): A smart list.
-        note (Union[Unset, Note]): A note in the notebook.
-        smart_list_tags (Union[Unset, List['SmartListTag']]):
-        smart_list_items (Union[Unset, List['SmartListItem']]):
-        smart_list_item_notes (Union[Unset, List['Note']]):
+        note (Union['Note', None, Unset]):
+        smart_list_tags (Union[List['SmartListTag'], None, Unset]):
+        smart_list_items (Union[List['SmartListItem'], None, Unset]):
+        smart_list_item_notes (Union[List['Note'], None, Unset]):
     """
 
     smart_list: "SmartList"
-    note: Union[Unset, "Note"] = UNSET
-    smart_list_tags: Union[Unset, List["SmartListTag"]] = UNSET
-    smart_list_items: Union[Unset, List["SmartListItem"]] = UNSET
-    smart_list_item_notes: Union[Unset, List["Note"]] = UNSET
+    note: Union["Note", None, Unset] = UNSET
+    smart_list_tags: Union[List["SmartListTag"], None, Unset] = UNSET
+    smart_list_items: Union[List["SmartListItem"], None, Unset] = UNSET
+    smart_list_item_notes: Union[List["Note"], None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
+        from ..models.note import Note
+
         smart_list = self.smart_list.to_dict()
 
-        note: Union[Unset, Dict[str, Any]] = UNSET
-        if not isinstance(self.note, Unset):
+        note: Union[Dict[str, Any], None, Unset]
+        if isinstance(self.note, Unset):
+            note = UNSET
+        elif isinstance(self.note, Note):
             note = self.note.to_dict()
+        else:
+            note = self.note
 
-        smart_list_tags: Union[Unset, List[Dict[str, Any]]] = UNSET
-        if not isinstance(self.smart_list_tags, Unset):
+        smart_list_tags: Union[List[Dict[str, Any]], None, Unset]
+        if isinstance(self.smart_list_tags, Unset):
+            smart_list_tags = UNSET
+        elif isinstance(self.smart_list_tags, list):
             smart_list_tags = []
-            for smart_list_tags_item_data in self.smart_list_tags:
-                smart_list_tags_item = smart_list_tags_item_data.to_dict()
-                smart_list_tags.append(smart_list_tags_item)
+            for smart_list_tags_type_0_item_data in self.smart_list_tags:
+                smart_list_tags_type_0_item = smart_list_tags_type_0_item_data.to_dict()
+                smart_list_tags.append(smart_list_tags_type_0_item)
 
-        smart_list_items: Union[Unset, List[Dict[str, Any]]] = UNSET
-        if not isinstance(self.smart_list_items, Unset):
+        else:
+            smart_list_tags = self.smart_list_tags
+
+        smart_list_items: Union[List[Dict[str, Any]], None, Unset]
+        if isinstance(self.smart_list_items, Unset):
+            smart_list_items = UNSET
+        elif isinstance(self.smart_list_items, list):
             smart_list_items = []
-            for smart_list_items_item_data in self.smart_list_items:
-                smart_list_items_item = smart_list_items_item_data.to_dict()
-                smart_list_items.append(smart_list_items_item)
+            for smart_list_items_type_0_item_data in self.smart_list_items:
+                smart_list_items_type_0_item = smart_list_items_type_0_item_data.to_dict()
+                smart_list_items.append(smart_list_items_type_0_item)
 
-        smart_list_item_notes: Union[Unset, List[Dict[str, Any]]] = UNSET
-        if not isinstance(self.smart_list_item_notes, Unset):
+        else:
+            smart_list_items = self.smart_list_items
+
+        smart_list_item_notes: Union[List[Dict[str, Any]], None, Unset]
+        if isinstance(self.smart_list_item_notes, Unset):
+            smart_list_item_notes = UNSET
+        elif isinstance(self.smart_list_item_notes, list):
             smart_list_item_notes = []
-            for smart_list_item_notes_item_data in self.smart_list_item_notes:
-                smart_list_item_notes_item = smart_list_item_notes_item_data.to_dict()
-                smart_list_item_notes.append(smart_list_item_notes_item)
+            for smart_list_item_notes_type_0_item_data in self.smart_list_item_notes:
+                smart_list_item_notes_type_0_item = smart_list_item_notes_type_0_item_data.to_dict()
+                smart_list_item_notes.append(smart_list_item_notes_type_0_item)
+
+        else:
+            smart_list_item_notes = self.smart_list_item_notes
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -90,33 +111,88 @@ class SmartListFindResponseEntry:
         d = src_dict.copy()
         smart_list = SmartList.from_dict(d.pop("smart_list"))
 
-        _note = d.pop("note", UNSET)
-        note: Union[Unset, Note]
-        if isinstance(_note, Unset):
-            note = UNSET
-        else:
-            note = Note.from_dict(_note)
+        def _parse_note(data: object) -> Union["Note", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                note_type_0 = Note.from_dict(data)
 
-        smart_list_tags = []
-        _smart_list_tags = d.pop("smart_list_tags", UNSET)
-        for smart_list_tags_item_data in _smart_list_tags or []:
-            smart_list_tags_item = SmartListTag.from_dict(smart_list_tags_item_data)
+                return note_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["Note", None, Unset], data)
 
-            smart_list_tags.append(smart_list_tags_item)
+        note = _parse_note(d.pop("note", UNSET))
 
-        smart_list_items = []
-        _smart_list_items = d.pop("smart_list_items", UNSET)
-        for smart_list_items_item_data in _smart_list_items or []:
-            smart_list_items_item = SmartListItem.from_dict(smart_list_items_item_data)
+        def _parse_smart_list_tags(data: object) -> Union[List["SmartListTag"], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                smart_list_tags_type_0 = []
+                _smart_list_tags_type_0 = data
+                for smart_list_tags_type_0_item_data in _smart_list_tags_type_0:
+                    smart_list_tags_type_0_item = SmartListTag.from_dict(smart_list_tags_type_0_item_data)
 
-            smart_list_items.append(smart_list_items_item)
+                    smart_list_tags_type_0.append(smart_list_tags_type_0_item)
 
-        smart_list_item_notes = []
-        _smart_list_item_notes = d.pop("smart_list_item_notes", UNSET)
-        for smart_list_item_notes_item_data in _smart_list_item_notes or []:
-            smart_list_item_notes_item = Note.from_dict(smart_list_item_notes_item_data)
+                return smart_list_tags_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List["SmartListTag"], None, Unset], data)
 
-            smart_list_item_notes.append(smart_list_item_notes_item)
+        smart_list_tags = _parse_smart_list_tags(d.pop("smart_list_tags", UNSET))
+
+        def _parse_smart_list_items(data: object) -> Union[List["SmartListItem"], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                smart_list_items_type_0 = []
+                _smart_list_items_type_0 = data
+                for smart_list_items_type_0_item_data in _smart_list_items_type_0:
+                    smart_list_items_type_0_item = SmartListItem.from_dict(smart_list_items_type_0_item_data)
+
+                    smart_list_items_type_0.append(smart_list_items_type_0_item)
+
+                return smart_list_items_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List["SmartListItem"], None, Unset], data)
+
+        smart_list_items = _parse_smart_list_items(d.pop("smart_list_items", UNSET))
+
+        def _parse_smart_list_item_notes(data: object) -> Union[List["Note"], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                smart_list_item_notes_type_0 = []
+                _smart_list_item_notes_type_0 = data
+                for smart_list_item_notes_type_0_item_data in _smart_list_item_notes_type_0:
+                    smart_list_item_notes_type_0_item = Note.from_dict(smart_list_item_notes_type_0_item_data)
+
+                    smart_list_item_notes_type_0.append(smart_list_item_notes_type_0_item)
+
+                return smart_list_item_notes_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List["Note"], None, Unset], data)
+
+        smart_list_item_notes = _parse_smart_list_item_notes(d.pop("smart_list_item_notes", UNSET))
 
         smart_list_find_response_entry = cls(
             smart_list=smart_list,

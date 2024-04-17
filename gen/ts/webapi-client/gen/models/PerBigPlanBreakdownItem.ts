@@ -13,7 +13,7 @@ import type { EntityName } from './EntityName';
 export type PerBigPlanBreakdownItem = {
     ref_id: EntityId;
     name: EntityName;
-    actionable_date?: ADate;
+    actionable_date?: (ADate | null);
     summary: BigPlanWorkSummary;
 };
 

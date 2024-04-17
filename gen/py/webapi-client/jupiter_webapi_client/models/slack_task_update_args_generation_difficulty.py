@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Type, TypeVar, Union
+from typing import Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -14,19 +14,23 @@ class SlackTaskUpdateArgsGenerationDifficulty:
     """
     Attributes:
         should_change (bool):
-        value (Union[Unset, Difficulty]): The difficulty of a particular task.
+        value (Union[Difficulty, None, Unset]):
     """
 
     should_change: bool
-    value: Union[Unset, Difficulty] = UNSET
+    value: Union[Difficulty, None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         should_change = self.should_change
 
-        value: Union[Unset, str] = UNSET
-        if not isinstance(self.value, Unset):
+        value: Union[None, Unset, str]
+        if isinstance(self.value, Unset):
+            value = UNSET
+        elif isinstance(self.value, Difficulty):
             value = self.value.value
+        else:
+            value = self.value
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -45,12 +49,22 @@ class SlackTaskUpdateArgsGenerationDifficulty:
         d = src_dict.copy()
         should_change = d.pop("should_change")
 
-        _value = d.pop("value", UNSET)
-        value: Union[Unset, Difficulty]
-        if isinstance(_value, Unset):
-            value = UNSET
-        else:
-            value = Difficulty(_value)
+        def _parse_value(data: object) -> Union[Difficulty, None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                value_type_0 = Difficulty(data)
+
+                return value_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[Difficulty, None, Unset], data)
+
+        value = _parse_value(d.pop("value", UNSET))
 
         slack_task_update_args_generation_difficulty = cls(
             should_change=should_change,

@@ -12,9 +12,9 @@ import type { SmartListTag } from './SmartListTag';
  */
 export type SmartListFindResponseEntry = {
     smart_list: SmartList;
-    note?: Note;
-    smart_list_tags?: Array<SmartListTag>;
-    smart_list_items?: Array<SmartListItem>;
-    smart_list_item_notes?: Array<Note>;
+    note?: (Note | null);
+    smart_list_tags?: (Array<SmartListTag> | null);
+    smart_list_items?: (Array<SmartListItem> | null);
+    smart_list_item_notes?: (Array<Note> | null);
 };
 

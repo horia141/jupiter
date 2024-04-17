@@ -14,11 +14,11 @@ import type { Timezone } from './Timezone';
  */
 export type PushGenerationExtraInfo = {
     timezone: Timezone;
-    name?: InboxTaskName;
-    status?: InboxTaskStatus;
-    eisen?: Eisen;
-    difficulty?: Difficulty;
-    actionable_date?: ADate;
-    due_date?: ADate;
+    name?: (InboxTaskName | null);
+    status?: (InboxTaskStatus | null);
+    eisen?: (Eisen | null);
+    difficulty?: (Difficulty | null);
+    actionable_date?: (ADate | null);
+    due_date?: (ADate | null);
 };
 

@@ -13,11 +13,11 @@ import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
  */
 export type RecurringTaskGenParams = {
     period: RecurringTaskPeriod;
-    eisen?: Eisen;
-    difficulty?: Difficulty;
-    actionable_from_day?: RecurringTaskDueAtDay;
-    actionable_from_month?: RecurringTaskDueAtMonth;
-    due_at_day?: RecurringTaskDueAtDay;
-    due_at_month?: RecurringTaskDueAtMonth;
+    eisen?: (Eisen | null);
+    difficulty?: (Difficulty | null);
+    actionable_from_day?: (RecurringTaskDueAtDay | null);
+    actionable_from_month?: (RecurringTaskDueAtMonth | null);
+    due_at_day?: (RecurringTaskDueAtDay | null);
+    due_at_month?: (RecurringTaskDueAtMonth | null);
 };
 

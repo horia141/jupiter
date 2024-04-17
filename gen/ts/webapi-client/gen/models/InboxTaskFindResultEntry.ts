@@ -18,14 +18,14 @@ import type { SlackTask } from './SlackTask';
  */
 export type InboxTaskFindResultEntry = {
     inbox_task: InboxTask;
-    note?: Note;
+    note?: (Note | null);
     project: Project;
-    habit?: Habit;
-    chore?: Chore;
-    big_plan?: BigPlan;
-    metric?: Metric;
-    person?: Person;
-    slack_task?: SlackTask;
-    email_task?: EmailTask;
+    habit?: (Habit | null);
+    chore?: (Chore | null);
+    big_plan?: (BigPlan | null);
+    metric?: (Metric | null);
+    person?: (Person | null);
+    slack_task?: (SlackTask | null);
+    email_task?: (EmailTask | null);
 };
 

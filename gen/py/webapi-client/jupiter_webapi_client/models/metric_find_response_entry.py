@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -21,46 +21,67 @@ class MetricFindResponseEntry:
 
     Attributes:
         metric (Metric): A metric.
-        note (Union[Unset, Note]): A note in the notebook.
-        metric_entries (Union[Unset, List['MetricEntry']]):
-        metric_collection_inbox_tasks (Union[Unset, List['InboxTask']]):
-        metric_entry_notes (Union[Unset, List['Note']]):
+        note (Union['Note', None, Unset]):
+        metric_entries (Union[List['MetricEntry'], None, Unset]):
+        metric_collection_inbox_tasks (Union[List['InboxTask'], None, Unset]):
+        metric_entry_notes (Union[List['Note'], None, Unset]):
     """
 
     metric: "Metric"
-    note: Union[Unset, "Note"] = UNSET
-    metric_entries: Union[Unset, List["MetricEntry"]] = UNSET
-    metric_collection_inbox_tasks: Union[Unset, List["InboxTask"]] = UNSET
-    metric_entry_notes: Union[Unset, List["Note"]] = UNSET
+    note: Union["Note", None, Unset] = UNSET
+    metric_entries: Union[List["MetricEntry"], None, Unset] = UNSET
+    metric_collection_inbox_tasks: Union[List["InboxTask"], None, Unset] = UNSET
+    metric_entry_notes: Union[List["Note"], None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
+        from ..models.note import Note
+
         metric = self.metric.to_dict()
 
-        note: Union[Unset, Dict[str, Any]] = UNSET
-        if not isinstance(self.note, Unset):
+        note: Union[Dict[str, Any], None, Unset]
+        if isinstance(self.note, Unset):
+            note = UNSET
+        elif isinstance(self.note, Note):
             note = self.note.to_dict()
+        else:
+            note = self.note
 
-        metric_entries: Union[Unset, List[Dict[str, Any]]] = UNSET
-        if not isinstance(self.metric_entries, Unset):
+        metric_entries: Union[List[Dict[str, Any]], None, Unset]
+        if isinstance(self.metric_entries, Unset):
+            metric_entries = UNSET
+        elif isinstance(self.metric_entries, list):
             metric_entries = []
-            for metric_entries_item_data in self.metric_entries:
-                metric_entries_item = metric_entries_item_data.to_dict()
-                metric_entries.append(metric_entries_item)
+            for metric_entries_type_0_item_data in self.metric_entries:
+                metric_entries_type_0_item = metric_entries_type_0_item_data.to_dict()
+                metric_entries.append(metric_entries_type_0_item)
 
-        metric_collection_inbox_tasks: Union[Unset, List[Dict[str, Any]]] = UNSET
-        if not isinstance(self.metric_collection_inbox_tasks, Unset):
+        else:
+            metric_entries = self.metric_entries
+
+        metric_collection_inbox_tasks: Union[List[Dict[str, Any]], None, Unset]
+        if isinstance(self.metric_collection_inbox_tasks, Unset):
+            metric_collection_inbox_tasks = UNSET
+        elif isinstance(self.metric_collection_inbox_tasks, list):
             metric_collection_inbox_tasks = []
-            for metric_collection_inbox_tasks_item_data in self.metric_collection_inbox_tasks:
-                metric_collection_inbox_tasks_item = metric_collection_inbox_tasks_item_data.to_dict()
-                metric_collection_inbox_tasks.append(metric_collection_inbox_tasks_item)
+            for metric_collection_inbox_tasks_type_0_item_data in self.metric_collection_inbox_tasks:
+                metric_collection_inbox_tasks_type_0_item = metric_collection_inbox_tasks_type_0_item_data.to_dict()
+                metric_collection_inbox_tasks.append(metric_collection_inbox_tasks_type_0_item)
 
-        metric_entry_notes: Union[Unset, List[Dict[str, Any]]] = UNSET
-        if not isinstance(self.metric_entry_notes, Unset):
+        else:
+            metric_collection_inbox_tasks = self.metric_collection_inbox_tasks
+
+        metric_entry_notes: Union[List[Dict[str, Any]], None, Unset]
+        if isinstance(self.metric_entry_notes, Unset):
+            metric_entry_notes = UNSET
+        elif isinstance(self.metric_entry_notes, list):
             metric_entry_notes = []
-            for metric_entry_notes_item_data in self.metric_entry_notes:
-                metric_entry_notes_item = metric_entry_notes_item_data.to_dict()
-                metric_entry_notes.append(metric_entry_notes_item)
+            for metric_entry_notes_type_0_item_data in self.metric_entry_notes:
+                metric_entry_notes_type_0_item = metric_entry_notes_type_0_item_data.to_dict()
+                metric_entry_notes.append(metric_entry_notes_type_0_item)
+
+        else:
+            metric_entry_notes = self.metric_entry_notes
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -90,33 +111,92 @@ class MetricFindResponseEntry:
         d = src_dict.copy()
         metric = Metric.from_dict(d.pop("metric"))
 
-        _note = d.pop("note", UNSET)
-        note: Union[Unset, Note]
-        if isinstance(_note, Unset):
-            note = UNSET
-        else:
-            note = Note.from_dict(_note)
+        def _parse_note(data: object) -> Union["Note", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                note_type_0 = Note.from_dict(data)
 
-        metric_entries = []
-        _metric_entries = d.pop("metric_entries", UNSET)
-        for metric_entries_item_data in _metric_entries or []:
-            metric_entries_item = MetricEntry.from_dict(metric_entries_item_data)
+                return note_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["Note", None, Unset], data)
 
-            metric_entries.append(metric_entries_item)
+        note = _parse_note(d.pop("note", UNSET))
 
-        metric_collection_inbox_tasks = []
-        _metric_collection_inbox_tasks = d.pop("metric_collection_inbox_tasks", UNSET)
-        for metric_collection_inbox_tasks_item_data in _metric_collection_inbox_tasks or []:
-            metric_collection_inbox_tasks_item = InboxTask.from_dict(metric_collection_inbox_tasks_item_data)
+        def _parse_metric_entries(data: object) -> Union[List["MetricEntry"], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                metric_entries_type_0 = []
+                _metric_entries_type_0 = data
+                for metric_entries_type_0_item_data in _metric_entries_type_0:
+                    metric_entries_type_0_item = MetricEntry.from_dict(metric_entries_type_0_item_data)
 
-            metric_collection_inbox_tasks.append(metric_collection_inbox_tasks_item)
+                    metric_entries_type_0.append(metric_entries_type_0_item)
 
-        metric_entry_notes = []
-        _metric_entry_notes = d.pop("metric_entry_notes", UNSET)
-        for metric_entry_notes_item_data in _metric_entry_notes or []:
-            metric_entry_notes_item = Note.from_dict(metric_entry_notes_item_data)
+                return metric_entries_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List["MetricEntry"], None, Unset], data)
 
-            metric_entry_notes.append(metric_entry_notes_item)
+        metric_entries = _parse_metric_entries(d.pop("metric_entries", UNSET))
+
+        def _parse_metric_collection_inbox_tasks(data: object) -> Union[List["InboxTask"], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                metric_collection_inbox_tasks_type_0 = []
+                _metric_collection_inbox_tasks_type_0 = data
+                for metric_collection_inbox_tasks_type_0_item_data in _metric_collection_inbox_tasks_type_0:
+                    metric_collection_inbox_tasks_type_0_item = InboxTask.from_dict(
+                        metric_collection_inbox_tasks_type_0_item_data
+                    )
+
+                    metric_collection_inbox_tasks_type_0.append(metric_collection_inbox_tasks_type_0_item)
+
+                return metric_collection_inbox_tasks_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List["InboxTask"], None, Unset], data)
+
+        metric_collection_inbox_tasks = _parse_metric_collection_inbox_tasks(
+            d.pop("metric_collection_inbox_tasks", UNSET)
+        )
+
+        def _parse_metric_entry_notes(data: object) -> Union[List["Note"], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                metric_entry_notes_type_0 = []
+                _metric_entry_notes_type_0 = data
+                for metric_entry_notes_type_0_item_data in _metric_entry_notes_type_0:
+                    metric_entry_notes_type_0_item = Note.from_dict(metric_entry_notes_type_0_item_data)
+
+                    metric_entry_notes_type_0.append(metric_entry_notes_type_0_item)
+
+                return metric_entry_notes_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List["Note"], None, Unset], data)
+
+        metric_entry_notes = _parse_metric_entry_notes(d.pop("metric_entry_notes", UNSET))
 
         metric_find_response_entry = cls(
             metric=metric,

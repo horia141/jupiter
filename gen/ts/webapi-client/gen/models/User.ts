@@ -18,7 +18,7 @@ export type User = {
     archived: boolean;
     created_time: Timestamp;
     last_modified_time: Timestamp;
-    archived_time?: Timestamp;
+    archived_time?: (Timestamp | null);
     email_address: EmailAddress;
     name: UserName;
     avatar: Avatar;

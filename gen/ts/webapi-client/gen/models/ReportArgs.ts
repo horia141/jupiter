@@ -12,18 +12,18 @@ import type { ReportBreakdown } from './ReportBreakdown';
  * Report args.
  */
 export type ReportArgs = {
-    today?: ADate;
+    today?: (ADate | null);
     period: RecurringTaskPeriod;
-    sources?: Array<InboxTaskSource>;
-    breakdowns?: Array<ReportBreakdown>;
-    filter_project_ref_ids?: Array<EntityId>;
-    filter_big_plan_ref_ids?: Array<EntityId>;
-    filter_habit_ref_ids?: Array<EntityId>;
-    filter_chore_ref_ids?: Array<EntityId>;
-    filter_metric_ref_ids?: Array<EntityId>;
-    filter_person_ref_ids?: Array<EntityId>;
-    filter_slack_task_ref_ids?: Array<EntityId>;
-    filter_email_task_ref_ids?: Array<EntityId>;
-    breakdown_period?: RecurringTaskPeriod;
+    sources?: (Array<InboxTaskSource> | null);
+    breakdowns?: (Array<ReportBreakdown> | null);
+    filter_project_ref_ids?: (Array<EntityId> | null);
+    filter_big_plan_ref_ids?: (Array<EntityId> | null);
+    filter_habit_ref_ids?: (Array<EntityId> | null);
+    filter_chore_ref_ids?: (Array<EntityId> | null);
+    filter_metric_ref_ids?: (Array<EntityId> | null);
+    filter_person_ref_ids?: (Array<EntityId> | null);
+    filter_slack_task_ref_ids?: (Array<EntityId> | null);
+    filter_email_task_ref_ids?: (Array<EntityId> | null);
+    breakdown_period?: (RecurringTaskPeriod | null);
 };
 

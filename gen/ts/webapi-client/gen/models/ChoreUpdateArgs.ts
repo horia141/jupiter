@@ -27,27 +27,27 @@ export type ChoreUpdateArgs = {
     };
     eisen: {
         should_change: boolean;
-        value?: Eisen;
+        value?: (Eisen | null);
     };
     difficulty: {
         should_change: boolean;
-        value?: Difficulty;
+        value?: (Difficulty | null);
     };
     actionable_from_day: {
         should_change: boolean;
-        value?: RecurringTaskDueAtDay;
+        value?: (RecurringTaskDueAtDay | null);
     };
     actionable_from_month: {
         should_change: boolean;
-        value?: RecurringTaskDueAtMonth;
+        value?: (RecurringTaskDueAtMonth | null);
     };
     due_at_day: {
         should_change: boolean;
-        value?: RecurringTaskDueAtDay;
+        value?: (RecurringTaskDueAtDay | null);
     };
     due_at_month: {
         should_change: boolean;
-        value?: RecurringTaskDueAtMonth;
+        value?: (RecurringTaskDueAtMonth | null);
     };
     must_do: {
         should_change: boolean;
@@ -55,7 +55,7 @@ export type ChoreUpdateArgs = {
     };
     skip_rule: {
         should_change: boolean;
-        value?: RecurringTaskSkipRule;
+        value?: (RecurringTaskSkipRule | null);
     };
     start_at_date: {
         should_change: boolean;
@@ -63,7 +63,7 @@ export type ChoreUpdateArgs = {
     };
     end_at_date: {
         should_change: boolean;
-        value?: ADate;
+        value?: (ADate | null);
     };
 };
 

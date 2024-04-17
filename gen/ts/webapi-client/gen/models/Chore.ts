@@ -18,15 +18,15 @@ export type Chore = {
     archived: boolean;
     created_time: Timestamp;
     last_modified_time: Timestamp;
-    archived_time?: Timestamp;
+    archived_time?: (Timestamp | null);
     name: ChoreName;
-    chore_collection: string;
+    chore_collection_ref_id: string;
     project_ref_id: EntityId;
     gen_params: RecurringTaskGenParams;
     suspended: boolean;
     must_do: boolean;
     start_at_date: ADate;
-    end_at_date?: ADate;
-    skip_rule?: RecurringTaskSkipRule;
+    end_at_date?: (ADate | null);
+    skip_rule?: (RecurringTaskSkipRule | null);
 };
 

@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Type, TypeVar, Union
+from typing import Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -14,19 +14,23 @@ class PersonUpdateArgsCatchUpPeriod:
     """
     Attributes:
         should_change (bool):
-        value (Union[Unset, RecurringTaskPeriod]): A period for a particular task.
+        value (Union[None, RecurringTaskPeriod, Unset]):
     """
 
     should_change: bool
-    value: Union[Unset, RecurringTaskPeriod] = UNSET
+    value: Union[None, RecurringTaskPeriod, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         should_change = self.should_change
 
-        value: Union[Unset, str] = UNSET
-        if not isinstance(self.value, Unset):
+        value: Union[None, Unset, str]
+        if isinstance(self.value, Unset):
+            value = UNSET
+        elif isinstance(self.value, RecurringTaskPeriod):
             value = self.value.value
+        else:
+            value = self.value
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -45,12 +49,22 @@ class PersonUpdateArgsCatchUpPeriod:
         d = src_dict.copy()
         should_change = d.pop("should_change")
 
-        _value = d.pop("value", UNSET)
-        value: Union[Unset, RecurringTaskPeriod]
-        if isinstance(_value, Unset):
-            value = UNSET
-        else:
-            value = RecurringTaskPeriod(_value)
+        def _parse_value(data: object) -> Union[None, RecurringTaskPeriod, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                value_type_0 = RecurringTaskPeriod(data)
+
+                return value_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[None, RecurringTaskPeriod, Unset], data)
+
+        value = _parse_value(d.pop("value", UNSET))
 
         person_update_args_catch_up_period = cls(
             should_change=should_change,

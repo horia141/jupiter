@@ -15,6 +15,6 @@ export type SmartListItemCreateArgs = {
     name: SmartListItemName;
     is_done: boolean;
     tag_names: Array<TagName>;
-    url?: URL;
+    url?: (URL | null);
 };
 

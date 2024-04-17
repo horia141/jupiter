@@ -22,6 +22,6 @@ import type { TableBlock } from './TableBlock';
 export type DocCreateArgs = {
     name: DocName;
     content: Array<(ParagraphBlock | HeadingBlock | BulletedListBlock | NumberedListBlock | ChecklistBlock | TableBlock | CodeBlock | QuoteBlock | DividerBlock | LinkBlock | EntityReferenceBlock)>;
-    parent_doc_ref_id?: EntityId;
+    parent_doc_ref_id?: (EntityId | null);
 };
 

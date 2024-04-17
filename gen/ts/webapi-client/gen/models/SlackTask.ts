@@ -18,13 +18,13 @@ export type SlackTask = {
     archived: boolean;
     created_time: Timestamp;
     last_modified_time: Timestamp;
-    archived_time?: Timestamp;
+    archived_time?: (Timestamp | null);
     name: EntityName;
-    slack_task_collection: string;
+    slack_task_collection_ref_id: string;
     user: SlackUserName;
     message: string;
     generation_extra_info: PushGenerationExtraInfo;
     has_generated_task: boolean;
-    channel?: SlackChannelName;
+    channel?: (SlackChannelName | null);
 };
 

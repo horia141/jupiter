@@ -1,6 +1,6 @@
+import type { InboxTask } from "@jupiter/webapi-client";
 import { Divider, Stack, Typography } from "@mui/material";
 import { AnimatePresence, motion } from "framer-motion";
-import type { InboxTask } from "@jupiter/webapi-client";
 import type {
   InboxTaskOptimisticState,
   InboxTaskParent,

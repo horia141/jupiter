@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -41,9 +41,9 @@ class LoadTopLevelInfoResult:
         workspace_feature_flag_controls (WorkspaceFeatureFlagsControls): Feature settings controls for the workspace.
         default_workspace_feature_flags (LoadTopLevelInfoResultDefaultWorkspaceFeatureFlags):
         workspace_feature_hack (WorkspaceFeature): A particular feature of a Jupiter workspace.
-        user (Union[Unset, User]): A user of Jupiter.
-        user_score_overview (Union[Unset, UserScoreOverview]): An overview of the scores for a user.
-        workspace (Union[Unset, Workspace]): The workspace where everything happens.
+        user (Union['User', None, Unset]):
+        user_score_overview (Union['UserScoreOverview', None, Unset]):
+        workspace (Union['Workspace', None, Unset]):
     """
 
     env: Env
@@ -56,12 +56,16 @@ class LoadTopLevelInfoResult:
     workspace_feature_flag_controls: "WorkspaceFeatureFlagsControls"
     default_workspace_feature_flags: "LoadTopLevelInfoResultDefaultWorkspaceFeatureFlags"
     workspace_feature_hack: WorkspaceFeature
-    user: Union[Unset, "User"] = UNSET
-    user_score_overview: Union[Unset, "UserScoreOverview"] = UNSET
-    workspace: Union[Unset, "Workspace"] = UNSET
+    user: Union["User", None, Unset] = UNSET
+    user_score_overview: Union["UserScoreOverview", None, Unset] = UNSET
+    workspace: Union["Workspace", None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
+        from ..models.user import User
+        from ..models.user_score_overview import UserScoreOverview
+        from ..models.workspace import Workspace
+
         env = self.env.value
 
         hosting = self.hosting.value
@@ -82,17 +86,29 @@ class LoadTopLevelInfoResult:
 
         workspace_feature_hack = self.workspace_feature_hack.value
 
-        user: Union[Unset, Dict[str, Any]] = UNSET
-        if not isinstance(self.user, Unset):
+        user: Union[Dict[str, Any], None, Unset]
+        if isinstance(self.user, Unset):
+            user = UNSET
+        elif isinstance(self.user, User):
             user = self.user.to_dict()
+        else:
+            user = self.user
 
-        user_score_overview: Union[Unset, Dict[str, Any]] = UNSET
-        if not isinstance(self.user_score_overview, Unset):
+        user_score_overview: Union[Dict[str, Any], None, Unset]
+        if isinstance(self.user_score_overview, Unset):
+            user_score_overview = UNSET
+        elif isinstance(self.user_score_overview, UserScoreOverview):
             user_score_overview = self.user_score_overview.to_dict()
+        else:
+            user_score_overview = self.user_score_overview
 
-        workspace: Union[Unset, Dict[str, Any]] = UNSET
-        if not isinstance(self.workspace, Unset):
+        workspace: Union[Dict[str, Any], None, Unset]
+        if isinstance(self.workspace, Unset):
+            workspace = UNSET
+        elif isinstance(self.workspace, Workspace):
             workspace = self.workspace.to_dict()
+        else:
+            workspace = self.workspace
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -160,26 +176,56 @@ class LoadTopLevelInfoResult:
 
         workspace_feature_hack = WorkspaceFeature(d.pop("workspace_feature_hack"))
 
-        _user = d.pop("user", UNSET)
-        user: Union[Unset, User]
-        if isinstance(_user, Unset):
-            user = UNSET
-        else:
-            user = User.from_dict(_user)
+        def _parse_user(data: object) -> Union["User", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                user_type_0 = User.from_dict(data)
 
-        _user_score_overview = d.pop("user_score_overview", UNSET)
-        user_score_overview: Union[Unset, UserScoreOverview]
-        if isinstance(_user_score_overview, Unset):
-            user_score_overview = UNSET
-        else:
-            user_score_overview = UserScoreOverview.from_dict(_user_score_overview)
+                return user_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["User", None, Unset], data)
 
-        _workspace = d.pop("workspace", UNSET)
-        workspace: Union[Unset, Workspace]
-        if isinstance(_workspace, Unset):
-            workspace = UNSET
-        else:
-            workspace = Workspace.from_dict(_workspace)
+        user = _parse_user(d.pop("user", UNSET))
+
+        def _parse_user_score_overview(data: object) -> Union["UserScoreOverview", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                user_score_overview_type_0 = UserScoreOverview.from_dict(data)
+
+                return user_score_overview_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["UserScoreOverview", None, Unset], data)
+
+        user_score_overview = _parse_user_score_overview(d.pop("user_score_overview", UNSET))
+
+        def _parse_workspace(data: object) -> Union["Workspace", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                workspace_type_0 = Workspace.from_dict(data)
+
+                return workspace_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["Workspace", None, Unset], data)
+
+        workspace = _parse_workspace(d.pop("workspace", UNSET))
 
         load_top_level_info_result = cls(
             env=env,

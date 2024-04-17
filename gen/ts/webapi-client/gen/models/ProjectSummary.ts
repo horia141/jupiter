@@ -10,7 +10,7 @@ import type { ProjectName } from './ProjectName';
  */
 export type ProjectSummary = {
     ref_id: EntityId;
-    parent_project_ref_id?: EntityId;
+    parent_project_ref_id?: (EntityId | null);
     name: ProjectName;
     order_of_child_projects: Array<EntityId>;
 };

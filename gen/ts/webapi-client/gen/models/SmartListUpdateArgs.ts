@@ -17,7 +17,7 @@ export type SmartListUpdateArgs = {
     };
     icon: {
         should_change: boolean;
-        value?: EntityIcon;
+        value?: (EntityIcon | null);
     };
 };
 

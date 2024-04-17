@@ -17,13 +17,13 @@ import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
 export type PersonCreateArgs = {
     name: PersonName;
     relationship: PersonRelationship;
-    catch_up_period?: RecurringTaskPeriod;
-    catch_up_eisen?: Eisen;
-    catch_up_difficulty?: Difficulty;
-    catch_up_actionable_from_day?: RecurringTaskDueAtDay;
-    catch_up_actionable_from_month?: RecurringTaskDueAtMonth;
-    catch_up_due_at_day?: RecurringTaskDueAtDay;
-    catch_up_due_at_month?: RecurringTaskDueAtMonth;
-    birthday?: PersonBirthday;
+    catch_up_period?: (RecurringTaskPeriod | null);
+    catch_up_eisen?: (Eisen | null);
+    catch_up_difficulty?: (Difficulty | null);
+    catch_up_actionable_from_day?: (RecurringTaskDueAtDay | null);
+    catch_up_actionable_from_month?: (RecurringTaskDueAtMonth | null);
+    catch_up_due_at_day?: (RecurringTaskDueAtDay | null);
+    catch_up_due_at_month?: (RecurringTaskDueAtMonth | null);
+    birthday?: (PersonBirthday | null);
 };
 

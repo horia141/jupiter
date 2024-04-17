@@ -27,35 +27,35 @@ export type PersonUpdateArgs = {
     };
     catch_up_period: {
         should_change: boolean;
-        value?: RecurringTaskPeriod;
+        value?: (RecurringTaskPeriod | null);
     };
     catch_up_eisen: {
         should_change: boolean;
-        value?: Eisen;
+        value?: (Eisen | null);
     };
     catch_up_difficulty: {
         should_change: boolean;
-        value?: Difficulty;
+        value?: (Difficulty | null);
     };
     catch_up_actionable_from_day: {
         should_change: boolean;
-        value?: RecurringTaskDueAtDay;
+        value?: (RecurringTaskDueAtDay | null);
     };
     catch_up_actionable_from_month: {
         should_change: boolean;
-        value?: RecurringTaskDueAtMonth;
+        value?: (RecurringTaskDueAtMonth | null);
     };
     catch_up_due_at_day: {
         should_change: boolean;
-        value?: RecurringTaskDueAtDay;
+        value?: (RecurringTaskDueAtDay | null);
     };
     catch_up_due_at_month: {
         should_change: boolean;
-        value?: RecurringTaskDueAtMonth;
+        value?: (RecurringTaskDueAtMonth | null);
     };
     birthday: {
         should_change: boolean;
-        value?: PersonBirthday;
+        value?: (PersonBirthday | null);
     };
 };
 

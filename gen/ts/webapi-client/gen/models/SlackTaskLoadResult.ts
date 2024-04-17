@@ -10,6 +10,6 @@ import type { SlackTask } from './SlackTask';
  */
 export type SlackTaskLoadResult = {
     slack_task: SlackTask;
-    inbox_task?: InboxTask;
+    inbox_task?: (InboxTask | null);
 };
 

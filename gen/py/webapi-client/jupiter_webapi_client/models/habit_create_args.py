@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Type, TypeVar, Union
+from typing import Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -18,28 +18,28 @@ class HabitCreateArgs:
     Attributes:
         name (str): The habit name.
         period (RecurringTaskPeriod): A period for a particular task.
-        project_ref_id (Union[Unset, str]): A generic entity id.
-        eisen (Union[Unset, Eisen]): The Eisenhower status of a particular task.
-        difficulty (Union[Unset, Difficulty]): The difficulty of a particular task.
-        actionable_from_day (Union[Unset, int]): The due day for a recurring task.
-        actionable_from_month (Union[Unset, int]): The due month for a recurring task.
-        due_at_day (Union[Unset, int]): The due day for a recurring task.
-        due_at_month (Union[Unset, int]): The due month for a recurring task.
-        skip_rule (Union[Unset, str]): The rules for skipping a recurring task.
-        repeats_in_period_count (Union[Unset, int]):
+        project_ref_id (Union[None, Unset, str]):
+        eisen (Union[Eisen, None, Unset]):
+        difficulty (Union[Difficulty, None, Unset]):
+        actionable_from_day (Union[None, Unset, int]):
+        actionable_from_month (Union[None, Unset, int]):
+        due_at_day (Union[None, Unset, int]):
+        due_at_month (Union[None, Unset, int]):
+        skip_rule (Union[None, Unset, str]):
+        repeats_in_period_count (Union[None, Unset, int]):
     """
 
     name: str
     period: RecurringTaskPeriod
-    project_ref_id: Union[Unset, str] = UNSET
-    eisen: Union[Unset, Eisen] = UNSET
-    difficulty: Union[Unset, Difficulty] = UNSET
-    actionable_from_day: Union[Unset, int] = UNSET
-    actionable_from_month: Union[Unset, int] = UNSET
-    due_at_day: Union[Unset, int] = UNSET
-    due_at_month: Union[Unset, int] = UNSET
-    skip_rule: Union[Unset, str] = UNSET
-    repeats_in_period_count: Union[Unset, int] = UNSET
+    project_ref_id: Union[None, Unset, str] = UNSET
+    eisen: Union[Eisen, None, Unset] = UNSET
+    difficulty: Union[Difficulty, None, Unset] = UNSET
+    actionable_from_day: Union[None, Unset, int] = UNSET
+    actionable_from_month: Union[None, Unset, int] = UNSET
+    due_at_day: Union[None, Unset, int] = UNSET
+    due_at_month: Union[None, Unset, int] = UNSET
+    skip_rule: Union[None, Unset, str] = UNSET
+    repeats_in_period_count: Union[None, Unset, int] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -47,27 +47,63 @@ class HabitCreateArgs:
 
         period = self.period.value
 
-        project_ref_id = self.project_ref_id
+        project_ref_id: Union[None, Unset, str]
+        if isinstance(self.project_ref_id, Unset):
+            project_ref_id = UNSET
+        else:
+            project_ref_id = self.project_ref_id
 
-        eisen: Union[Unset, str] = UNSET
-        if not isinstance(self.eisen, Unset):
+        eisen: Union[None, Unset, str]
+        if isinstance(self.eisen, Unset):
+            eisen = UNSET
+        elif isinstance(self.eisen, Eisen):
             eisen = self.eisen.value
+        else:
+            eisen = self.eisen
 
-        difficulty: Union[Unset, str] = UNSET
-        if not isinstance(self.difficulty, Unset):
+        difficulty: Union[None, Unset, str]
+        if isinstance(self.difficulty, Unset):
+            difficulty = UNSET
+        elif isinstance(self.difficulty, Difficulty):
             difficulty = self.difficulty.value
+        else:
+            difficulty = self.difficulty
 
-        actionable_from_day = self.actionable_from_day
+        actionable_from_day: Union[None, Unset, int]
+        if isinstance(self.actionable_from_day, Unset):
+            actionable_from_day = UNSET
+        else:
+            actionable_from_day = self.actionable_from_day
 
-        actionable_from_month = self.actionable_from_month
+        actionable_from_month: Union[None, Unset, int]
+        if isinstance(self.actionable_from_month, Unset):
+            actionable_from_month = UNSET
+        else:
+            actionable_from_month = self.actionable_from_month
 
-        due_at_day = self.due_at_day
+        due_at_day: Union[None, Unset, int]
+        if isinstance(self.due_at_day, Unset):
+            due_at_day = UNSET
+        else:
+            due_at_day = self.due_at_day
 
-        due_at_month = self.due_at_month
+        due_at_month: Union[None, Unset, int]
+        if isinstance(self.due_at_month, Unset):
+            due_at_month = UNSET
+        else:
+            due_at_month = self.due_at_month
 
-        skip_rule = self.skip_rule
+        skip_rule: Union[None, Unset, str]
+        if isinstance(self.skip_rule, Unset):
+            skip_rule = UNSET
+        else:
+            skip_rule = self.skip_rule
 
-        repeats_in_period_count = self.repeats_in_period_count
+        repeats_in_period_count: Union[None, Unset, int]
+        if isinstance(self.repeats_in_period_count, Unset):
+            repeats_in_period_count = UNSET
+        else:
+            repeats_in_period_count = self.repeats_in_period_count
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -105,33 +141,102 @@ class HabitCreateArgs:
 
         period = RecurringTaskPeriod(d.pop("period"))
 
-        project_ref_id = d.pop("project_ref_id", UNSET)
+        def _parse_project_ref_id(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
 
-        _eisen = d.pop("eisen", UNSET)
-        eisen: Union[Unset, Eisen]
-        if isinstance(_eisen, Unset):
-            eisen = UNSET
-        else:
-            eisen = Eisen(_eisen)
+        project_ref_id = _parse_project_ref_id(d.pop("project_ref_id", UNSET))
 
-        _difficulty = d.pop("difficulty", UNSET)
-        difficulty: Union[Unset, Difficulty]
-        if isinstance(_difficulty, Unset):
-            difficulty = UNSET
-        else:
-            difficulty = Difficulty(_difficulty)
+        def _parse_eisen(data: object) -> Union[Eisen, None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                eisen_type_0 = Eisen(data)
 
-        actionable_from_day = d.pop("actionable_from_day", UNSET)
+                return eisen_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[Eisen, None, Unset], data)
 
-        actionable_from_month = d.pop("actionable_from_month", UNSET)
+        eisen = _parse_eisen(d.pop("eisen", UNSET))
 
-        due_at_day = d.pop("due_at_day", UNSET)
+        def _parse_difficulty(data: object) -> Union[Difficulty, None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                difficulty_type_0 = Difficulty(data)
 
-        due_at_month = d.pop("due_at_month", UNSET)
+                return difficulty_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[Difficulty, None, Unset], data)
 
-        skip_rule = d.pop("skip_rule", UNSET)
+        difficulty = _parse_difficulty(d.pop("difficulty", UNSET))
 
-        repeats_in_period_count = d.pop("repeats_in_period_count", UNSET)
+        def _parse_actionable_from_day(data: object) -> Union[None, Unset, int]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, int], data)
+
+        actionable_from_day = _parse_actionable_from_day(d.pop("actionable_from_day", UNSET))
+
+        def _parse_actionable_from_month(data: object) -> Union[None, Unset, int]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, int], data)
+
+        actionable_from_month = _parse_actionable_from_month(d.pop("actionable_from_month", UNSET))
+
+        def _parse_due_at_day(data: object) -> Union[None, Unset, int]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, int], data)
+
+        due_at_day = _parse_due_at_day(d.pop("due_at_day", UNSET))
+
+        def _parse_due_at_month(data: object) -> Union[None, Unset, int]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, int], data)
+
+        due_at_month = _parse_due_at_month(d.pop("due_at_month", UNSET))
+
+        def _parse_skip_rule(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        skip_rule = _parse_skip_rule(d.pop("skip_rule", UNSET))
+
+        def _parse_repeats_in_period_count(data: object) -> Union[None, Unset, int]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, int], data)
+
+        repeats_in_period_count = _parse_repeats_in_period_count(d.pop("repeats_in_period_count", UNSET))
 
         habit_create_args = cls(
             name=name,

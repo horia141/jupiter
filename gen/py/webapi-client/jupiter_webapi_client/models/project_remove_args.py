@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Type, TypeVar, Union
+from typing import Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -14,17 +14,21 @@ class ProjectRemoveArgs:
 
     Attributes:
         ref_id (str): A generic entity id.
-        backup_project_ref_id (Union[Unset, str]): A generic entity id.
+        backup_project_ref_id (Union[None, Unset, str]):
     """
 
     ref_id: str
-    backup_project_ref_id: Union[Unset, str] = UNSET
+    backup_project_ref_id: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         ref_id = self.ref_id
 
-        backup_project_ref_id = self.backup_project_ref_id
+        backup_project_ref_id: Union[None, Unset, str]
+        if isinstance(self.backup_project_ref_id, Unset):
+            backup_project_ref_id = UNSET
+        else:
+            backup_project_ref_id = self.backup_project_ref_id
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -43,7 +47,14 @@ class ProjectRemoveArgs:
         d = src_dict.copy()
         ref_id = d.pop("ref_id")
 
-        backup_project_ref_id = d.pop("backup_project_ref_id", UNSET)
+        def _parse_backup_project_ref_id(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        backup_project_ref_id = _parse_backup_project_ref_id(d.pop("backup_project_ref_id", UNSET))
 
         project_remove_args = cls(
             ref_id=ref_id,

@@ -13,11 +13,11 @@ import type { InboxTaskName } from './InboxTaskName';
  */
 export type InboxTaskCreateArgs = {
     name: InboxTaskName;
-    project_ref_id?: EntityId;
-    big_plan_ref_id?: EntityId;
-    eisen?: Eisen;
-    difficulty?: Difficulty;
-    actionable_date?: ADate;
-    due_date?: ADate;
+    project_ref_id?: (EntityId | null);
+    big_plan_ref_id?: (EntityId | null);
+    eisen?: (Eisen | null);
+    difficulty?: (Difficulty | null);
+    actionable_date?: (ADate | null);
+    due_date?: (ADate | null);
 };
 

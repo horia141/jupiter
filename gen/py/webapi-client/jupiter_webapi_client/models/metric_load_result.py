@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -23,16 +23,18 @@ class MetricLoadResult:
         metric (Metric): A metric.
         metric_entries (List['MetricEntry']):
         metric_collection_inbox_tasks (List['InboxTask']):
-        note (Union[Unset, Note]): A note in the notebook.
+        note (Union['Note', None, Unset]):
     """
 
     metric: "Metric"
     metric_entries: List["MetricEntry"]
     metric_collection_inbox_tasks: List["InboxTask"]
-    note: Union[Unset, "Note"] = UNSET
+    note: Union["Note", None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
+        from ..models.note import Note
+
         metric = self.metric.to_dict()
 
         metric_entries = []
@@ -45,9 +47,13 @@ class MetricLoadResult:
             metric_collection_inbox_tasks_item = metric_collection_inbox_tasks_item_data.to_dict()
             metric_collection_inbox_tasks.append(metric_collection_inbox_tasks_item)
 
-        note: Union[Unset, Dict[str, Any]] = UNSET
-        if not isinstance(self.note, Unset):
+        note: Union[Dict[str, Any], None, Unset]
+        if isinstance(self.note, Unset):
+            note = UNSET
+        elif isinstance(self.note, Note):
             note = self.note.to_dict()
+        else:
+            note = self.note
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -87,12 +93,22 @@ class MetricLoadResult:
 
             metric_collection_inbox_tasks.append(metric_collection_inbox_tasks_item)
 
-        _note = d.pop("note", UNSET)
-        note: Union[Unset, Note]
-        if isinstance(_note, Unset):
-            note = UNSET
-        else:
-            note = Note.from_dict(_note)
+        def _parse_note(data: object) -> Union["Note", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                note_type_0 = Note.from_dict(data)
+
+                return note_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["Note", None, Unset], data)
+
+        note = _parse_note(d.pop("note", UNSET))
 
         metric_load_result = cls(
             metric=metric,

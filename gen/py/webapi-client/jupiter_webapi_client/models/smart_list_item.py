@@ -19,11 +19,11 @@ class SmartListItem:
         created_time (str): A timestamp in the application.
         last_modified_time (str): A timestamp in the application.
         name (str): The smart list item name.
-        smart_list (str):
+        smart_list_ref_id (str):
         is_done (bool):
         tags_ref_id (List[str]):
-        archived_time (Union[Unset, str]): A timestamp in the application.
-        url (Union[Unset, str]): A URL in this domain.
+        archived_time (Union[None, Unset, str]):
+        url (Union[None, Unset, str]):
     """
 
     ref_id: str
@@ -32,11 +32,11 @@ class SmartListItem:
     created_time: str
     last_modified_time: str
     name: str
-    smart_list: str
+    smart_list_ref_id: str
     is_done: bool
     tags_ref_id: List[str]
-    archived_time: Union[Unset, str] = UNSET
-    url: Union[Unset, str] = UNSET
+    archived_time: Union[None, Unset, str] = UNSET
+    url: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -52,15 +52,23 @@ class SmartListItem:
 
         name = self.name
 
-        smart_list = self.smart_list
+        smart_list_ref_id = self.smart_list_ref_id
 
         is_done = self.is_done
 
         tags_ref_id = self.tags_ref_id
 
-        archived_time = self.archived_time
+        archived_time: Union[None, Unset, str]
+        if isinstance(self.archived_time, Unset):
+            archived_time = UNSET
+        else:
+            archived_time = self.archived_time
 
-        url = self.url
+        url: Union[None, Unset, str]
+        if isinstance(self.url, Unset):
+            url = UNSET
+        else:
+            url = self.url
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -72,7 +80,7 @@ class SmartListItem:
                 "created_time": created_time,
                 "last_modified_time": last_modified_time,
                 "name": name,
-                "smart_list": smart_list,
+                "smart_list_ref_id": smart_list_ref_id,
                 "is_done": is_done,
                 "tags_ref_id": tags_ref_id,
             }
@@ -99,15 +107,29 @@ class SmartListItem:
 
         name = d.pop("name")
 
-        smart_list = d.pop("smart_list")
+        smart_list_ref_id = d.pop("smart_list_ref_id")
 
         is_done = d.pop("is_done")
 
         tags_ref_id = cast(List[str], d.pop("tags_ref_id"))
 
-        archived_time = d.pop("archived_time", UNSET)
+        def _parse_archived_time(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
 
-        url = d.pop("url", UNSET)
+        archived_time = _parse_archived_time(d.pop("archived_time", UNSET))
+
+        def _parse_url(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        url = _parse_url(d.pop("url", UNSET))
 
         smart_list_item = cls(
             ref_id=ref_id,
@@ -116,7 +138,7 @@ class SmartListItem:
             created_time=created_time,
             last_modified_time=last_modified_time,
             name=name,
-            smart_list=smart_list,
+            smart_list_ref_id=smart_list_ref_id,
             is_done=is_done,
             tags_ref_id=tags_ref_id,
             archived_time=archived_time,

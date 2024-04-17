@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Type, TypeVar, Union
+from typing import Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -14,25 +14,37 @@ class BigPlanCreateArgs:
 
     Attributes:
         name (str): The big plan name.
-        project_ref_id (Union[Unset, str]): A generic entity id.
-        actionable_date (Union[Unset, str]): A date or possibly a datetime for the application.
-        due_date (Union[Unset, str]): A date or possibly a datetime for the application.
+        project_ref_id (Union[None, Unset, str]):
+        actionable_date (Union[None, Unset, str]):
+        due_date (Union[None, Unset, str]):
     """
 
     name: str
-    project_ref_id: Union[Unset, str] = UNSET
-    actionable_date: Union[Unset, str] = UNSET
-    due_date: Union[Unset, str] = UNSET
+    project_ref_id: Union[None, Unset, str] = UNSET
+    actionable_date: Union[None, Unset, str] = UNSET
+    due_date: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         name = self.name
 
-        project_ref_id = self.project_ref_id
+        project_ref_id: Union[None, Unset, str]
+        if isinstance(self.project_ref_id, Unset):
+            project_ref_id = UNSET
+        else:
+            project_ref_id = self.project_ref_id
 
-        actionable_date = self.actionable_date
+        actionable_date: Union[None, Unset, str]
+        if isinstance(self.actionable_date, Unset):
+            actionable_date = UNSET
+        else:
+            actionable_date = self.actionable_date
 
-        due_date = self.due_date
+        due_date: Union[None, Unset, str]
+        if isinstance(self.due_date, Unset):
+            due_date = UNSET
+        else:
+            due_date = self.due_date
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -55,11 +67,32 @@ class BigPlanCreateArgs:
         d = src_dict.copy()
         name = d.pop("name")
 
-        project_ref_id = d.pop("project_ref_id", UNSET)
+        def _parse_project_ref_id(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
 
-        actionable_date = d.pop("actionable_date", UNSET)
+        project_ref_id = _parse_project_ref_id(d.pop("project_ref_id", UNSET))
 
-        due_date = d.pop("due_date", UNSET)
+        def _parse_actionable_date(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        actionable_date = _parse_actionable_date(d.pop("actionable_date", UNSET))
+
+        def _parse_due_date(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        due_date = _parse_due_date(d.pop("due_date", UNSET))
 
         big_plan_create_args = cls(
             name=name,

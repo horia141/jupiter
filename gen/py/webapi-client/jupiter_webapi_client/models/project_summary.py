@@ -16,13 +16,13 @@ class ProjectSummary:
         ref_id (str): A generic entity id.
         name (str): The project name.
         order_of_child_projects (List[str]):
-        parent_project_ref_id (Union[Unset, str]): A generic entity id.
+        parent_project_ref_id (Union[None, Unset, str]):
     """
 
     ref_id: str
     name: str
     order_of_child_projects: List[str]
-    parent_project_ref_id: Union[Unset, str] = UNSET
+    parent_project_ref_id: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -32,7 +32,11 @@ class ProjectSummary:
 
         order_of_child_projects = self.order_of_child_projects
 
-        parent_project_ref_id = self.parent_project_ref_id
+        parent_project_ref_id: Union[None, Unset, str]
+        if isinstance(self.parent_project_ref_id, Unset):
+            parent_project_ref_id = UNSET
+        else:
+            parent_project_ref_id = self.parent_project_ref_id
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -57,7 +61,14 @@ class ProjectSummary:
 
         order_of_child_projects = cast(List[str], d.pop("order_of_child_projects"))
 
-        parent_project_ref_id = d.pop("parent_project_ref_id", UNSET)
+        def _parse_parent_project_ref_id(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        parent_project_ref_id = _parse_parent_project_ref_id(d.pop("parent_project_ref_id", UNSET))
 
         project_summary = cls(
             ref_id=ref_id,

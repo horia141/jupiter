@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -20,25 +20,36 @@ class UserLoadResult:
 
     Attributes:
         user (User): A user of Jupiter.
-        user_score_overview (Union[Unset, UserScoreOverview]): An overview of the scores for a user.
-        user_score_history (Union[Unset, UserScoreHistory]): A history of user scores over time.
+        user_score_overview (Union['UserScoreOverview', None, Unset]):
+        user_score_history (Union['UserScoreHistory', None, Unset]):
     """
 
     user: "User"
-    user_score_overview: Union[Unset, "UserScoreOverview"] = UNSET
-    user_score_history: Union[Unset, "UserScoreHistory"] = UNSET
+    user_score_overview: Union["UserScoreOverview", None, Unset] = UNSET
+    user_score_history: Union["UserScoreHistory", None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
+        from ..models.user_score_history import UserScoreHistory
+        from ..models.user_score_overview import UserScoreOverview
+
         user = self.user.to_dict()
 
-        user_score_overview: Union[Unset, Dict[str, Any]] = UNSET
-        if not isinstance(self.user_score_overview, Unset):
+        user_score_overview: Union[Dict[str, Any], None, Unset]
+        if isinstance(self.user_score_overview, Unset):
+            user_score_overview = UNSET
+        elif isinstance(self.user_score_overview, UserScoreOverview):
             user_score_overview = self.user_score_overview.to_dict()
+        else:
+            user_score_overview = self.user_score_overview
 
-        user_score_history: Union[Unset, Dict[str, Any]] = UNSET
-        if not isinstance(self.user_score_history, Unset):
+        user_score_history: Union[Dict[str, Any], None, Unset]
+        if isinstance(self.user_score_history, Unset):
+            user_score_history = UNSET
+        elif isinstance(self.user_score_history, UserScoreHistory):
             user_score_history = self.user_score_history.to_dict()
+        else:
+            user_score_history = self.user_score_history
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -63,19 +74,39 @@ class UserLoadResult:
         d = src_dict.copy()
         user = User.from_dict(d.pop("user"))
 
-        _user_score_overview = d.pop("user_score_overview", UNSET)
-        user_score_overview: Union[Unset, UserScoreOverview]
-        if isinstance(_user_score_overview, Unset):
-            user_score_overview = UNSET
-        else:
-            user_score_overview = UserScoreOverview.from_dict(_user_score_overview)
+        def _parse_user_score_overview(data: object) -> Union["UserScoreOverview", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                user_score_overview_type_0 = UserScoreOverview.from_dict(data)
 
-        _user_score_history = d.pop("user_score_history", UNSET)
-        user_score_history: Union[Unset, UserScoreHistory]
-        if isinstance(_user_score_history, Unset):
-            user_score_history = UNSET
-        else:
-            user_score_history = UserScoreHistory.from_dict(_user_score_history)
+                return user_score_overview_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["UserScoreOverview", None, Unset], data)
+
+        user_score_overview = _parse_user_score_overview(d.pop("user_score_overview", UNSET))
+
+        def _parse_user_score_history(data: object) -> Union["UserScoreHistory", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                user_score_history_type_0 = UserScoreHistory.from_dict(data)
+
+                return user_score_history_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["UserScoreHistory", None, Unset], data)
+
+        user_score_history = _parse_user_score_history(d.pop("user_score_history", UNSET))
 
         user_load_result = cls(
             user=user,

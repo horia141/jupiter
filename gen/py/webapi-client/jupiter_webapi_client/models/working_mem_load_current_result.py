@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -17,16 +17,22 @@ class WorkingMemLoadCurrentResult:
     """Working mem load current result.
 
     Attributes:
-        entry (Union[Unset, WorkingMemLoadCurrentEntry]): Working mem load current entry.
+        entry (Union['WorkingMemLoadCurrentEntry', None, Unset]):
     """
 
-    entry: Union[Unset, "WorkingMemLoadCurrentEntry"] = UNSET
+    entry: Union["WorkingMemLoadCurrentEntry", None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
-        entry: Union[Unset, Dict[str, Any]] = UNSET
-        if not isinstance(self.entry, Unset):
+        from ..models.working_mem_load_current_entry import WorkingMemLoadCurrentEntry
+
+        entry: Union[Dict[str, Any], None, Unset]
+        if isinstance(self.entry, Unset):
+            entry = UNSET
+        elif isinstance(self.entry, WorkingMemLoadCurrentEntry):
             entry = self.entry.to_dict()
+        else:
+            entry = self.entry
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -41,12 +47,23 @@ class WorkingMemLoadCurrentResult:
         from ..models.working_mem_load_current_entry import WorkingMemLoadCurrentEntry
 
         d = src_dict.copy()
-        _entry = d.pop("entry", UNSET)
-        entry: Union[Unset, WorkingMemLoadCurrentEntry]
-        if isinstance(_entry, Unset):
-            entry = UNSET
-        else:
-            entry = WorkingMemLoadCurrentEntry.from_dict(_entry)
+
+        def _parse_entry(data: object) -> Union["WorkingMemLoadCurrentEntry", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                entry_type_0 = WorkingMemLoadCurrentEntry.from_dict(data)
+
+                return entry_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["WorkingMemLoadCurrentEntry", None, Unset], data)
+
+        entry = _parse_entry(d.pop("entry", UNSET))
 
         working_mem_load_current_result = cls(
             entry=entry,

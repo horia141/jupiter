@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -23,13 +23,13 @@ class Habit:
         created_time (str): A timestamp in the application.
         last_modified_time (str): A timestamp in the application.
         name (str): The habit name.
-        habit_collection (str):
+        habit_collection_ref_id (str):
         project_ref_id (str): A generic entity id.
         gen_params (RecurringTaskGenParams): Parameters for metric collection.
         suspended (bool):
-        archived_time (Union[Unset, str]): A timestamp in the application.
-        skip_rule (Union[Unset, str]): The rules for skipping a recurring task.
-        repeats_in_period_count (Union[Unset, int]):
+        archived_time (Union[None, Unset, str]):
+        skip_rule (Union[None, Unset, str]):
+        repeats_in_period_count (Union[None, Unset, int]):
     """
 
     ref_id: str
@@ -38,13 +38,13 @@ class Habit:
     created_time: str
     last_modified_time: str
     name: str
-    habit_collection: str
+    habit_collection_ref_id: str
     project_ref_id: str
     gen_params: "RecurringTaskGenParams"
     suspended: bool
-    archived_time: Union[Unset, str] = UNSET
-    skip_rule: Union[Unset, str] = UNSET
-    repeats_in_period_count: Union[Unset, int] = UNSET
+    archived_time: Union[None, Unset, str] = UNSET
+    skip_rule: Union[None, Unset, str] = UNSET
+    repeats_in_period_count: Union[None, Unset, int] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -60,7 +60,7 @@ class Habit:
 
         name = self.name
 
-        habit_collection = self.habit_collection
+        habit_collection_ref_id = self.habit_collection_ref_id
 
         project_ref_id = self.project_ref_id
 
@@ -68,11 +68,23 @@ class Habit:
 
         suspended = self.suspended
 
-        archived_time = self.archived_time
+        archived_time: Union[None, Unset, str]
+        if isinstance(self.archived_time, Unset):
+            archived_time = UNSET
+        else:
+            archived_time = self.archived_time
 
-        skip_rule = self.skip_rule
+        skip_rule: Union[None, Unset, str]
+        if isinstance(self.skip_rule, Unset):
+            skip_rule = UNSET
+        else:
+            skip_rule = self.skip_rule
 
-        repeats_in_period_count = self.repeats_in_period_count
+        repeats_in_period_count: Union[None, Unset, int]
+        if isinstance(self.repeats_in_period_count, Unset):
+            repeats_in_period_count = UNSET
+        else:
+            repeats_in_period_count = self.repeats_in_period_count
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -84,7 +96,7 @@ class Habit:
                 "created_time": created_time,
                 "last_modified_time": last_modified_time,
                 "name": name,
-                "habit_collection": habit_collection,
+                "habit_collection_ref_id": habit_collection_ref_id,
                 "project_ref_id": project_ref_id,
                 "gen_params": gen_params,
                 "suspended": suspended,
@@ -116,7 +128,7 @@ class Habit:
 
         name = d.pop("name")
 
-        habit_collection = d.pop("habit_collection")
+        habit_collection_ref_id = d.pop("habit_collection_ref_id")
 
         project_ref_id = d.pop("project_ref_id")
 
@@ -124,11 +136,32 @@ class Habit:
 
         suspended = d.pop("suspended")
 
-        archived_time = d.pop("archived_time", UNSET)
+        def _parse_archived_time(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
 
-        skip_rule = d.pop("skip_rule", UNSET)
+        archived_time = _parse_archived_time(d.pop("archived_time", UNSET))
 
-        repeats_in_period_count = d.pop("repeats_in_period_count", UNSET)
+        def _parse_skip_rule(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        skip_rule = _parse_skip_rule(d.pop("skip_rule", UNSET))
+
+        def _parse_repeats_in_period_count(data: object) -> Union[None, Unset, int]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, int], data)
+
+        repeats_in_period_count = _parse_repeats_in_period_count(d.pop("repeats_in_period_count", UNSET))
 
         habit = cls(
             ref_id=ref_id,
@@ -137,7 +170,7 @@ class Habit:
             created_time=created_time,
             last_modified_time=last_modified_time,
             name=name,
-            habit_collection=habit_collection,
+            habit_collection_ref_id=habit_collection_ref_id,
             project_ref_id=project_ref_id,
             gen_params=gen_params,
             suspended=suspended,

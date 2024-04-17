@@ -1,5 +1,5 @@
-import { Typography } from "@mui/material";
 import type { PersonBirthday } from "@jupiter/webapi-client";
+import { Typography } from "@mui/material";
 
 interface BirthdayTagProps {
   birthday: PersonBirthday;

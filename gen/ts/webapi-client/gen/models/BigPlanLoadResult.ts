@@ -14,6 +14,6 @@ export type BigPlanLoadResult = {
     big_plan: BigPlan;
     project: Project;
     inbox_tasks: Array<InboxTask>;
-    note?: Note;
+    note?: (Note | null);
 };
 

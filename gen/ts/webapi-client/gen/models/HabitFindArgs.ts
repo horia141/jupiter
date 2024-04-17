@@ -12,7 +12,7 @@ export type HabitFindArgs = {
     include_notes: boolean;
     include_project: boolean;
     include_inbox_tasks: boolean;
-    filter_ref_ids?: Array<EntityId>;
-    filter_project_ref_ids?: Array<EntityId>;
+    filter_ref_ids?: (Array<EntityId> | null);
+    filter_project_ref_ids?: (Array<EntityId> | null);
 };
 

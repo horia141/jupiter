@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -25,97 +25,148 @@ class GetSummariesResult:
     """Get summaries result.
 
     Attributes:
-        vacations (Union[Unset, List['VacationSummary']]):
-        root_project (Union[Unset, ProjectSummary]): Summary information about a project.
-        projects (Union[Unset, List['ProjectSummary']]):
-        inbox_tasks (Union[Unset, List['InboxTaskSummary']]):
-        habits (Union[Unset, List['HabitSummary']]):
-        chores (Union[Unset, List['ChoreSummary']]):
-        big_plans (Union[Unset, List['BigPlanSummary']]):
-        smart_lists (Union[Unset, List['SmartListSummary']]):
-        metrics (Union[Unset, List['MetricSummary']]):
-        persons (Union[Unset, List['PersonSummary']]):
+        vacations (Union[List['VacationSummary'], None, Unset]):
+        root_project (Union['ProjectSummary', None, Unset]):
+        projects (Union[List['ProjectSummary'], None, Unset]):
+        inbox_tasks (Union[List['InboxTaskSummary'], None, Unset]):
+        habits (Union[List['HabitSummary'], None, Unset]):
+        chores (Union[List['ChoreSummary'], None, Unset]):
+        big_plans (Union[List['BigPlanSummary'], None, Unset]):
+        smart_lists (Union[List['SmartListSummary'], None, Unset]):
+        metrics (Union[List['MetricSummary'], None, Unset]):
+        persons (Union[List['PersonSummary'], None, Unset]):
     """
 
-    vacations: Union[Unset, List["VacationSummary"]] = UNSET
-    root_project: Union[Unset, "ProjectSummary"] = UNSET
-    projects: Union[Unset, List["ProjectSummary"]] = UNSET
-    inbox_tasks: Union[Unset, List["InboxTaskSummary"]] = UNSET
-    habits: Union[Unset, List["HabitSummary"]] = UNSET
-    chores: Union[Unset, List["ChoreSummary"]] = UNSET
-    big_plans: Union[Unset, List["BigPlanSummary"]] = UNSET
-    smart_lists: Union[Unset, List["SmartListSummary"]] = UNSET
-    metrics: Union[Unset, List["MetricSummary"]] = UNSET
-    persons: Union[Unset, List["PersonSummary"]] = UNSET
+    vacations: Union[List["VacationSummary"], None, Unset] = UNSET
+    root_project: Union["ProjectSummary", None, Unset] = UNSET
+    projects: Union[List["ProjectSummary"], None, Unset] = UNSET
+    inbox_tasks: Union[List["InboxTaskSummary"], None, Unset] = UNSET
+    habits: Union[List["HabitSummary"], None, Unset] = UNSET
+    chores: Union[List["ChoreSummary"], None, Unset] = UNSET
+    big_plans: Union[List["BigPlanSummary"], None, Unset] = UNSET
+    smart_lists: Union[List["SmartListSummary"], None, Unset] = UNSET
+    metrics: Union[List["MetricSummary"], None, Unset] = UNSET
+    persons: Union[List["PersonSummary"], None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
-        vacations: Union[Unset, List[Dict[str, Any]]] = UNSET
-        if not isinstance(self.vacations, Unset):
+        from ..models.project_summary import ProjectSummary
+
+        vacations: Union[List[Dict[str, Any]], None, Unset]
+        if isinstance(self.vacations, Unset):
+            vacations = UNSET
+        elif isinstance(self.vacations, list):
             vacations = []
-            for vacations_item_data in self.vacations:
-                vacations_item = vacations_item_data.to_dict()
-                vacations.append(vacations_item)
+            for vacations_type_0_item_data in self.vacations:
+                vacations_type_0_item = vacations_type_0_item_data.to_dict()
+                vacations.append(vacations_type_0_item)
 
-        root_project: Union[Unset, Dict[str, Any]] = UNSET
-        if not isinstance(self.root_project, Unset):
+        else:
+            vacations = self.vacations
+
+        root_project: Union[Dict[str, Any], None, Unset]
+        if isinstance(self.root_project, Unset):
+            root_project = UNSET
+        elif isinstance(self.root_project, ProjectSummary):
             root_project = self.root_project.to_dict()
+        else:
+            root_project = self.root_project
 
-        projects: Union[Unset, List[Dict[str, Any]]] = UNSET
-        if not isinstance(self.projects, Unset):
+        projects: Union[List[Dict[str, Any]], None, Unset]
+        if isinstance(self.projects, Unset):
+            projects = UNSET
+        elif isinstance(self.projects, list):
             projects = []
-            for projects_item_data in self.projects:
-                projects_item = projects_item_data.to_dict()
-                projects.append(projects_item)
+            for projects_type_0_item_data in self.projects:
+                projects_type_0_item = projects_type_0_item_data.to_dict()
+                projects.append(projects_type_0_item)
 
-        inbox_tasks: Union[Unset, List[Dict[str, Any]]] = UNSET
-        if not isinstance(self.inbox_tasks, Unset):
+        else:
+            projects = self.projects
+
+        inbox_tasks: Union[List[Dict[str, Any]], None, Unset]
+        if isinstance(self.inbox_tasks, Unset):
+            inbox_tasks = UNSET
+        elif isinstance(self.inbox_tasks, list):
             inbox_tasks = []
-            for inbox_tasks_item_data in self.inbox_tasks:
-                inbox_tasks_item = inbox_tasks_item_data.to_dict()
-                inbox_tasks.append(inbox_tasks_item)
+            for inbox_tasks_type_0_item_data in self.inbox_tasks:
+                inbox_tasks_type_0_item = inbox_tasks_type_0_item_data.to_dict()
+                inbox_tasks.append(inbox_tasks_type_0_item)
 
-        habits: Union[Unset, List[Dict[str, Any]]] = UNSET
-        if not isinstance(self.habits, Unset):
+        else:
+            inbox_tasks = self.inbox_tasks
+
+        habits: Union[List[Dict[str, Any]], None, Unset]
+        if isinstance(self.habits, Unset):
+            habits = UNSET
+        elif isinstance(self.habits, list):
             habits = []
-            for habits_item_data in self.habits:
-                habits_item = habits_item_data.to_dict()
-                habits.append(habits_item)
+            for habits_type_0_item_data in self.habits:
+                habits_type_0_item = habits_type_0_item_data.to_dict()
+                habits.append(habits_type_0_item)
 
-        chores: Union[Unset, List[Dict[str, Any]]] = UNSET
-        if not isinstance(self.chores, Unset):
+        else:
+            habits = self.habits
+
+        chores: Union[List[Dict[str, Any]], None, Unset]
+        if isinstance(self.chores, Unset):
+            chores = UNSET
+        elif isinstance(self.chores, list):
             chores = []
-            for chores_item_data in self.chores:
-                chores_item = chores_item_data.to_dict()
-                chores.append(chores_item)
+            for chores_type_0_item_data in self.chores:
+                chores_type_0_item = chores_type_0_item_data.to_dict()
+                chores.append(chores_type_0_item)
 
-        big_plans: Union[Unset, List[Dict[str, Any]]] = UNSET
-        if not isinstance(self.big_plans, Unset):
+        else:
+            chores = self.chores
+
+        big_plans: Union[List[Dict[str, Any]], None, Unset]
+        if isinstance(self.big_plans, Unset):
+            big_plans = UNSET
+        elif isinstance(self.big_plans, list):
             big_plans = []
-            for big_plans_item_data in self.big_plans:
-                big_plans_item = big_plans_item_data.to_dict()
-                big_plans.append(big_plans_item)
+            for big_plans_type_0_item_data in self.big_plans:
+                big_plans_type_0_item = big_plans_type_0_item_data.to_dict()
+                big_plans.append(big_plans_type_0_item)
 
-        smart_lists: Union[Unset, List[Dict[str, Any]]] = UNSET
-        if not isinstance(self.smart_lists, Unset):
+        else:
+            big_plans = self.big_plans
+
+        smart_lists: Union[List[Dict[str, Any]], None, Unset]
+        if isinstance(self.smart_lists, Unset):
+            smart_lists = UNSET
+        elif isinstance(self.smart_lists, list):
             smart_lists = []
-            for smart_lists_item_data in self.smart_lists:
-                smart_lists_item = smart_lists_item_data.to_dict()
-                smart_lists.append(smart_lists_item)
+            for smart_lists_type_0_item_data in self.smart_lists:
+                smart_lists_type_0_item = smart_lists_type_0_item_data.to_dict()
+                smart_lists.append(smart_lists_type_0_item)
 
-        metrics: Union[Unset, List[Dict[str, Any]]] = UNSET
-        if not isinstance(self.metrics, Unset):
+        else:
+            smart_lists = self.smart_lists
+
+        metrics: Union[List[Dict[str, Any]], None, Unset]
+        if isinstance(self.metrics, Unset):
+            metrics = UNSET
+        elif isinstance(self.metrics, list):
             metrics = []
-            for metrics_item_data in self.metrics:
-                metrics_item = metrics_item_data.to_dict()
-                metrics.append(metrics_item)
+            for metrics_type_0_item_data in self.metrics:
+                metrics_type_0_item = metrics_type_0_item_data.to_dict()
+                metrics.append(metrics_type_0_item)
 
-        persons: Union[Unset, List[Dict[str, Any]]] = UNSET
-        if not isinstance(self.persons, Unset):
+        else:
+            metrics = self.metrics
+
+        persons: Union[List[Dict[str, Any]], None, Unset]
+        if isinstance(self.persons, Unset):
+            persons = UNSET
+        elif isinstance(self.persons, list):
             persons = []
-            for persons_item_data in self.persons:
-                persons_item = persons_item_data.to_dict()
-                persons.append(persons_item)
+            for persons_type_0_item_data in self.persons:
+                persons_type_0_item = persons_type_0_item_data.to_dict()
+                persons.append(persons_type_0_item)
+
+        else:
+            persons = self.persons
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -156,75 +207,221 @@ class GetSummariesResult:
         from ..models.vacation_summary import VacationSummary
 
         d = src_dict.copy()
-        vacations = []
-        _vacations = d.pop("vacations", UNSET)
-        for vacations_item_data in _vacations or []:
-            vacations_item = VacationSummary.from_dict(vacations_item_data)
 
-            vacations.append(vacations_item)
+        def _parse_vacations(data: object) -> Union[List["VacationSummary"], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                vacations_type_0 = []
+                _vacations_type_0 = data
+                for vacations_type_0_item_data in _vacations_type_0:
+                    vacations_type_0_item = VacationSummary.from_dict(vacations_type_0_item_data)
 
-        _root_project = d.pop("root_project", UNSET)
-        root_project: Union[Unset, ProjectSummary]
-        if isinstance(_root_project, Unset):
-            root_project = UNSET
-        else:
-            root_project = ProjectSummary.from_dict(_root_project)
+                    vacations_type_0.append(vacations_type_0_item)
 
-        projects = []
-        _projects = d.pop("projects", UNSET)
-        for projects_item_data in _projects or []:
-            projects_item = ProjectSummary.from_dict(projects_item_data)
+                return vacations_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List["VacationSummary"], None, Unset], data)
 
-            projects.append(projects_item)
+        vacations = _parse_vacations(d.pop("vacations", UNSET))
 
-        inbox_tasks = []
-        _inbox_tasks = d.pop("inbox_tasks", UNSET)
-        for inbox_tasks_item_data in _inbox_tasks or []:
-            inbox_tasks_item = InboxTaskSummary.from_dict(inbox_tasks_item_data)
+        def _parse_root_project(data: object) -> Union["ProjectSummary", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                root_project_type_0 = ProjectSummary.from_dict(data)
 
-            inbox_tasks.append(inbox_tasks_item)
+                return root_project_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["ProjectSummary", None, Unset], data)
 
-        habits = []
-        _habits = d.pop("habits", UNSET)
-        for habits_item_data in _habits or []:
-            habits_item = HabitSummary.from_dict(habits_item_data)
+        root_project = _parse_root_project(d.pop("root_project", UNSET))
 
-            habits.append(habits_item)
+        def _parse_projects(data: object) -> Union[List["ProjectSummary"], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                projects_type_0 = []
+                _projects_type_0 = data
+                for projects_type_0_item_data in _projects_type_0:
+                    projects_type_0_item = ProjectSummary.from_dict(projects_type_0_item_data)
 
-        chores = []
-        _chores = d.pop("chores", UNSET)
-        for chores_item_data in _chores or []:
-            chores_item = ChoreSummary.from_dict(chores_item_data)
+                    projects_type_0.append(projects_type_0_item)
 
-            chores.append(chores_item)
+                return projects_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List["ProjectSummary"], None, Unset], data)
 
-        big_plans = []
-        _big_plans = d.pop("big_plans", UNSET)
-        for big_plans_item_data in _big_plans or []:
-            big_plans_item = BigPlanSummary.from_dict(big_plans_item_data)
+        projects = _parse_projects(d.pop("projects", UNSET))
 
-            big_plans.append(big_plans_item)
+        def _parse_inbox_tasks(data: object) -> Union[List["InboxTaskSummary"], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                inbox_tasks_type_0 = []
+                _inbox_tasks_type_0 = data
+                for inbox_tasks_type_0_item_data in _inbox_tasks_type_0:
+                    inbox_tasks_type_0_item = InboxTaskSummary.from_dict(inbox_tasks_type_0_item_data)
 
-        smart_lists = []
-        _smart_lists = d.pop("smart_lists", UNSET)
-        for smart_lists_item_data in _smart_lists or []:
-            smart_lists_item = SmartListSummary.from_dict(smart_lists_item_data)
+                    inbox_tasks_type_0.append(inbox_tasks_type_0_item)
 
-            smart_lists.append(smart_lists_item)
+                return inbox_tasks_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List["InboxTaskSummary"], None, Unset], data)
 
-        metrics = []
-        _metrics = d.pop("metrics", UNSET)
-        for metrics_item_data in _metrics or []:
-            metrics_item = MetricSummary.from_dict(metrics_item_data)
+        inbox_tasks = _parse_inbox_tasks(d.pop("inbox_tasks", UNSET))
 
-            metrics.append(metrics_item)
+        def _parse_habits(data: object) -> Union[List["HabitSummary"], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                habits_type_0 = []
+                _habits_type_0 = data
+                for habits_type_0_item_data in _habits_type_0:
+                    habits_type_0_item = HabitSummary.from_dict(habits_type_0_item_data)
 
-        persons = []
-        _persons = d.pop("persons", UNSET)
-        for persons_item_data in _persons or []:
-            persons_item = PersonSummary.from_dict(persons_item_data)
+                    habits_type_0.append(habits_type_0_item)
 
-            persons.append(persons_item)
+                return habits_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List["HabitSummary"], None, Unset], data)
+
+        habits = _parse_habits(d.pop("habits", UNSET))
+
+        def _parse_chores(data: object) -> Union[List["ChoreSummary"], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                chores_type_0 = []
+                _chores_type_0 = data
+                for chores_type_0_item_data in _chores_type_0:
+                    chores_type_0_item = ChoreSummary.from_dict(chores_type_0_item_data)
+
+                    chores_type_0.append(chores_type_0_item)
+
+                return chores_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List["ChoreSummary"], None, Unset], data)
+
+        chores = _parse_chores(d.pop("chores", UNSET))
+
+        def _parse_big_plans(data: object) -> Union[List["BigPlanSummary"], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                big_plans_type_0 = []
+                _big_plans_type_0 = data
+                for big_plans_type_0_item_data in _big_plans_type_0:
+                    big_plans_type_0_item = BigPlanSummary.from_dict(big_plans_type_0_item_data)
+
+                    big_plans_type_0.append(big_plans_type_0_item)
+
+                return big_plans_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List["BigPlanSummary"], None, Unset], data)
+
+        big_plans = _parse_big_plans(d.pop("big_plans", UNSET))
+
+        def _parse_smart_lists(data: object) -> Union[List["SmartListSummary"], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                smart_lists_type_0 = []
+                _smart_lists_type_0 = data
+                for smart_lists_type_0_item_data in _smart_lists_type_0:
+                    smart_lists_type_0_item = SmartListSummary.from_dict(smart_lists_type_0_item_data)
+
+                    smart_lists_type_0.append(smart_lists_type_0_item)
+
+                return smart_lists_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List["SmartListSummary"], None, Unset], data)
+
+        smart_lists = _parse_smart_lists(d.pop("smart_lists", UNSET))
+
+        def _parse_metrics(data: object) -> Union[List["MetricSummary"], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                metrics_type_0 = []
+                _metrics_type_0 = data
+                for metrics_type_0_item_data in _metrics_type_0:
+                    metrics_type_0_item = MetricSummary.from_dict(metrics_type_0_item_data)
+
+                    metrics_type_0.append(metrics_type_0_item)
+
+                return metrics_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List["MetricSummary"], None, Unset], data)
+
+        metrics = _parse_metrics(d.pop("metrics", UNSET))
+
+        def _parse_persons(data: object) -> Union[List["PersonSummary"], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                persons_type_0 = []
+                _persons_type_0 = data
+                for persons_type_0_item_data in _persons_type_0:
+                    persons_type_0_item = PersonSummary.from_dict(persons_type_0_item_data)
+
+                    persons_type_0.append(persons_type_0_item)
+
+                return persons_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List["PersonSummary"], None, Unset], data)
+
+        persons = _parse_persons(d.pop("persons", UNSET))
 
         get_summaries_result = cls(
             vacations=vacations,

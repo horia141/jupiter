@@ -27,7 +27,10 @@ import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Link, Outlet, useFetcher } from "@remix-run/react";
 
-import type { InboxTask, InboxTaskFindResultEntry } from "@jupiter/webapi-client";
+import type {
+  InboxTask,
+  InboxTaskFindResultEntry,
+} from "@jupiter/webapi-client";
 import {
   Eisen,
   InboxTaskSource,

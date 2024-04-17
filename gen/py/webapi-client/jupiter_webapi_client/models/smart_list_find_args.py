@@ -18,11 +18,11 @@ class SmartListFindArgs:
         include_tags (bool):
         include_items (bool):
         include_item_notes (bool):
-        filter_ref_ids (Union[Unset, List[str]]):
-        filter_is_done (Union[Unset, bool]):
-        filter_tag_names (Union[Unset, List[str]]):
-        filter_tag_ref_id (Union[Unset, List[str]]):
-        filter_item_ref_id (Union[Unset, List[str]]):
+        filter_ref_ids (Union[List[str], None, Unset]):
+        filter_is_done (Union[None, Unset, bool]):
+        filter_tag_names (Union[List[str], None, Unset]):
+        filter_tag_ref_id (Union[List[str], None, Unset]):
+        filter_item_ref_id (Union[List[str], None, Unset]):
     """
 
     allow_archived: bool
@@ -30,11 +30,11 @@ class SmartListFindArgs:
     include_tags: bool
     include_items: bool
     include_item_notes: bool
-    filter_ref_ids: Union[Unset, List[str]] = UNSET
-    filter_is_done: Union[Unset, bool] = UNSET
-    filter_tag_names: Union[Unset, List[str]] = UNSET
-    filter_tag_ref_id: Union[Unset, List[str]] = UNSET
-    filter_item_ref_id: Union[Unset, List[str]] = UNSET
+    filter_ref_ids: Union[List[str], None, Unset] = UNSET
+    filter_is_done: Union[None, Unset, bool] = UNSET
+    filter_tag_names: Union[List[str], None, Unset] = UNSET
+    filter_tag_ref_id: Union[List[str], None, Unset] = UNSET
+    filter_item_ref_id: Union[List[str], None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -48,22 +48,46 @@ class SmartListFindArgs:
 
         include_item_notes = self.include_item_notes
 
-        filter_ref_ids: Union[Unset, List[str]] = UNSET
-        if not isinstance(self.filter_ref_ids, Unset):
+        filter_ref_ids: Union[List[str], None, Unset]
+        if isinstance(self.filter_ref_ids, Unset):
+            filter_ref_ids = UNSET
+        elif isinstance(self.filter_ref_ids, list):
             filter_ref_ids = self.filter_ref_ids
 
-        filter_is_done = self.filter_is_done
+        else:
+            filter_ref_ids = self.filter_ref_ids
 
-        filter_tag_names: Union[Unset, List[str]] = UNSET
-        if not isinstance(self.filter_tag_names, Unset):
+        filter_is_done: Union[None, Unset, bool]
+        if isinstance(self.filter_is_done, Unset):
+            filter_is_done = UNSET
+        else:
+            filter_is_done = self.filter_is_done
+
+        filter_tag_names: Union[List[str], None, Unset]
+        if isinstance(self.filter_tag_names, Unset):
+            filter_tag_names = UNSET
+        elif isinstance(self.filter_tag_names, list):
             filter_tag_names = self.filter_tag_names
 
-        filter_tag_ref_id: Union[Unset, List[str]] = UNSET
-        if not isinstance(self.filter_tag_ref_id, Unset):
+        else:
+            filter_tag_names = self.filter_tag_names
+
+        filter_tag_ref_id: Union[List[str], None, Unset]
+        if isinstance(self.filter_tag_ref_id, Unset):
+            filter_tag_ref_id = UNSET
+        elif isinstance(self.filter_tag_ref_id, list):
             filter_tag_ref_id = self.filter_tag_ref_id
 
-        filter_item_ref_id: Union[Unset, List[str]] = UNSET
-        if not isinstance(self.filter_item_ref_id, Unset):
+        else:
+            filter_tag_ref_id = self.filter_tag_ref_id
+
+        filter_item_ref_id: Union[List[str], None, Unset]
+        if isinstance(self.filter_item_ref_id, Unset):
+            filter_item_ref_id = UNSET
+        elif isinstance(self.filter_item_ref_id, list):
+            filter_item_ref_id = self.filter_item_ref_id
+
+        else:
             filter_item_ref_id = self.filter_item_ref_id
 
         field_dict: Dict[str, Any] = {}
@@ -103,15 +127,82 @@ class SmartListFindArgs:
 
         include_item_notes = d.pop("include_item_notes")
 
-        filter_ref_ids = cast(List[str], d.pop("filter_ref_ids", UNSET))
+        def _parse_filter_ref_ids(data: object) -> Union[List[str], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                filter_ref_ids_type_0 = cast(List[str], data)
 
-        filter_is_done = d.pop("filter_is_done", UNSET)
+                return filter_ref_ids_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List[str], None, Unset], data)
 
-        filter_tag_names = cast(List[str], d.pop("filter_tag_names", UNSET))
+        filter_ref_ids = _parse_filter_ref_ids(d.pop("filter_ref_ids", UNSET))
 
-        filter_tag_ref_id = cast(List[str], d.pop("filter_tag_ref_id", UNSET))
+        def _parse_filter_is_done(data: object) -> Union[None, Unset, bool]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, bool], data)
 
-        filter_item_ref_id = cast(List[str], d.pop("filter_item_ref_id", UNSET))
+        filter_is_done = _parse_filter_is_done(d.pop("filter_is_done", UNSET))
+
+        def _parse_filter_tag_names(data: object) -> Union[List[str], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                filter_tag_names_type_0 = cast(List[str], data)
+
+                return filter_tag_names_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List[str], None, Unset], data)
+
+        filter_tag_names = _parse_filter_tag_names(d.pop("filter_tag_names", UNSET))
+
+        def _parse_filter_tag_ref_id(data: object) -> Union[List[str], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                filter_tag_ref_id_type_0 = cast(List[str], data)
+
+                return filter_tag_ref_id_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List[str], None, Unset], data)
+
+        filter_tag_ref_id = _parse_filter_tag_ref_id(d.pop("filter_tag_ref_id", UNSET))
+
+        def _parse_filter_item_ref_id(data: object) -> Union[List[str], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                filter_item_ref_id_type_0 = cast(List[str], data)
+
+                return filter_item_ref_id_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List[str], None, Unset], data)
+
+        filter_item_ref_id = _parse_filter_item_ref_id(d.pop("filter_item_ref_id", UNSET))
 
         smart_list_find_args = cls(
             allow_archived=allow_archived,

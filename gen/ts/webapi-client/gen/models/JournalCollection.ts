@@ -16,8 +16,8 @@ export type JournalCollection = {
     archived: boolean;
     created_time: Timestamp;
     last_modified_time: Timestamp;
-    archived_time?: Timestamp;
-    workspace: string;
+    archived_time?: (Timestamp | null);
+    workspace_ref_id: string;
     periods: Array<RecurringTaskPeriod>;
     writing_task_project_ref_id: EntityId;
     writing_task_gen_params: RecurringTaskGenParams;

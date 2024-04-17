@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Type, TypeVar, Union
+from typing import Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -15,12 +15,12 @@ class MetricEntryCreateArgs:
     Attributes:
         metric_ref_id (str): A generic entity id.
         value (float):
-        collection_time (Union[Unset, str]): A date or possibly a datetime for the application.
+        collection_time (Union[None, Unset, str]):
     """
 
     metric_ref_id: str
     value: float
-    collection_time: Union[Unset, str] = UNSET
+    collection_time: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -28,7 +28,11 @@ class MetricEntryCreateArgs:
 
         value = self.value
 
-        collection_time = self.collection_time
+        collection_time: Union[None, Unset, str]
+        if isinstance(self.collection_time, Unset):
+            collection_time = UNSET
+        else:
+            collection_time = self.collection_time
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -50,7 +54,14 @@ class MetricEntryCreateArgs:
 
         value = d.pop("value")
 
-        collection_time = d.pop("collection_time", UNSET)
+        def _parse_collection_time(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        collection_time = _parse_collection_time(d.pop("collection_time", UNSET))
 
         metric_entry_create_args = cls(
             metric_ref_id=metric_ref_id,

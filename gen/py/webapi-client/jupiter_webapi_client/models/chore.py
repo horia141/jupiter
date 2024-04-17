@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -23,15 +23,15 @@ class Chore:
         created_time (str): A timestamp in the application.
         last_modified_time (str): A timestamp in the application.
         name (str): The chore name.
-        chore_collection (str):
+        chore_collection_ref_id (str):
         project_ref_id (str): A generic entity id.
         gen_params (RecurringTaskGenParams): Parameters for metric collection.
         suspended (bool):
         must_do (bool):
         start_at_date (str): A date or possibly a datetime for the application.
-        archived_time (Union[Unset, str]): A timestamp in the application.
-        end_at_date (Union[Unset, str]): A date or possibly a datetime for the application.
-        skip_rule (Union[Unset, str]): The rules for skipping a recurring task.
+        archived_time (Union[None, Unset, str]):
+        end_at_date (Union[None, Unset, str]):
+        skip_rule (Union[None, Unset, str]):
     """
 
     ref_id: str
@@ -40,15 +40,15 @@ class Chore:
     created_time: str
     last_modified_time: str
     name: str
-    chore_collection: str
+    chore_collection_ref_id: str
     project_ref_id: str
     gen_params: "RecurringTaskGenParams"
     suspended: bool
     must_do: bool
     start_at_date: str
-    archived_time: Union[Unset, str] = UNSET
-    end_at_date: Union[Unset, str] = UNSET
-    skip_rule: Union[Unset, str] = UNSET
+    archived_time: Union[None, Unset, str] = UNSET
+    end_at_date: Union[None, Unset, str] = UNSET
+    skip_rule: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -64,7 +64,7 @@ class Chore:
 
         name = self.name
 
-        chore_collection = self.chore_collection
+        chore_collection_ref_id = self.chore_collection_ref_id
 
         project_ref_id = self.project_ref_id
 
@@ -76,11 +76,23 @@ class Chore:
 
         start_at_date = self.start_at_date
 
-        archived_time = self.archived_time
+        archived_time: Union[None, Unset, str]
+        if isinstance(self.archived_time, Unset):
+            archived_time = UNSET
+        else:
+            archived_time = self.archived_time
 
-        end_at_date = self.end_at_date
+        end_at_date: Union[None, Unset, str]
+        if isinstance(self.end_at_date, Unset):
+            end_at_date = UNSET
+        else:
+            end_at_date = self.end_at_date
 
-        skip_rule = self.skip_rule
+        skip_rule: Union[None, Unset, str]
+        if isinstance(self.skip_rule, Unset):
+            skip_rule = UNSET
+        else:
+            skip_rule = self.skip_rule
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -92,7 +104,7 @@ class Chore:
                 "created_time": created_time,
                 "last_modified_time": last_modified_time,
                 "name": name,
-                "chore_collection": chore_collection,
+                "chore_collection_ref_id": chore_collection_ref_id,
                 "project_ref_id": project_ref_id,
                 "gen_params": gen_params,
                 "suspended": suspended,
@@ -126,7 +138,7 @@ class Chore:
 
         name = d.pop("name")
 
-        chore_collection = d.pop("chore_collection")
+        chore_collection_ref_id = d.pop("chore_collection_ref_id")
 
         project_ref_id = d.pop("project_ref_id")
 
@@ -138,11 +150,32 @@ class Chore:
 
         start_at_date = d.pop("start_at_date")
 
-        archived_time = d.pop("archived_time", UNSET)
+        def _parse_archived_time(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
 
-        end_at_date = d.pop("end_at_date", UNSET)
+        archived_time = _parse_archived_time(d.pop("archived_time", UNSET))
 
-        skip_rule = d.pop("skip_rule", UNSET)
+        def _parse_end_at_date(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        end_at_date = _parse_end_at_date(d.pop("end_at_date", UNSET))
+
+        def _parse_skip_rule(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        skip_rule = _parse_skip_rule(d.pop("skip_rule", UNSET))
 
         chore = cls(
             ref_id=ref_id,
@@ -151,7 +184,7 @@ class Chore:
             created_time=created_time,
             last_modified_time=last_modified_time,
             name=name,
-            chore_collection=chore_collection,
+            chore_collection_ref_id=chore_collection_ref_id,
             project_ref_id=project_ref_id,
             gen_params=gen_params,
             suspended=suspended,

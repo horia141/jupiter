@@ -3,7 +3,10 @@ import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Outlet, useFetcher } from "@remix-run/react";
 
-import { type WorkingMem, type WorkingMemFindResultEntry } from "@jupiter/webapi-client";
+import {
+  type WorkingMem,
+  type WorkingMemFindResultEntry,
+} from "@jupiter/webapi-client";
 
 import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";

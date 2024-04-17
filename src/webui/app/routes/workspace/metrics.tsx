@@ -1,3 +1,4 @@
+import { WorkspaceFeature, type Metric } from "@jupiter/webapi-client";
 import TuneIcon from "@mui/icons-material/Tune";
 import { Button } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
@@ -5,7 +6,6 @@ import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Link, Outlet, useFetcher } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
-import { WorkspaceFeature, type Metric } from "@jupiter/webapi-client";
 import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
 import EntityIconComponent from "~/components/entity-icon";

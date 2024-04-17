@@ -10,6 +10,6 @@ import type { Project } from './Project';
  */
 export type ProjectLoadResult = {
     project: Project;
-    note?: Note;
+    note?: (Note | null);
 };
 

@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Type, TypeVar, Union
+from typing import Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -14,17 +14,21 @@ class DocChangeParentArgs:
 
     Attributes:
         ref_id (str): A generic entity id.
-        parent_node_ref_id (Union[Unset, str]): A generic entity id.
+        parent_node_ref_id (Union[None, Unset, str]):
     """
 
     ref_id: str
-    parent_node_ref_id: Union[Unset, str] = UNSET
+    parent_node_ref_id: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         ref_id = self.ref_id
 
-        parent_node_ref_id = self.parent_node_ref_id
+        parent_node_ref_id: Union[None, Unset, str]
+        if isinstance(self.parent_node_ref_id, Unset):
+            parent_node_ref_id = UNSET
+        else:
+            parent_node_ref_id = self.parent_node_ref_id
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -43,7 +47,14 @@ class DocChangeParentArgs:
         d = src_dict.copy()
         ref_id = d.pop("ref_id")
 
-        parent_node_ref_id = d.pop("parent_node_ref_id", UNSET)
+        def _parse_parent_node_ref_id(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        parent_node_ref_id = _parse_parent_node_ref_id(d.pop("parent_node_ref_id", UNSET))
 
         doc_change_parent_args = cls(
             ref_id=ref_id,

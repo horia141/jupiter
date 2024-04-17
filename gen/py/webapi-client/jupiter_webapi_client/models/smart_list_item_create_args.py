@@ -17,14 +17,14 @@ class SmartListItemCreateArgs:
         name (str): The smart list item name.
         is_done (bool):
         tag_names (List[str]):
-        url (Union[Unset, str]): A URL in this domain.
+        url (Union[None, Unset, str]):
     """
 
     smart_list_ref_id: str
     name: str
     is_done: bool
     tag_names: List[str]
-    url: Union[Unset, str] = UNSET
+    url: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -36,7 +36,11 @@ class SmartListItemCreateArgs:
 
         tag_names = self.tag_names
 
-        url = self.url
+        url: Union[None, Unset, str]
+        if isinstance(self.url, Unset):
+            url = UNSET
+        else:
+            url = self.url
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -64,7 +68,14 @@ class SmartListItemCreateArgs:
 
         tag_names = cast(List[str], d.pop("tag_names"))
 
-        url = d.pop("url", UNSET)
+        def _parse_url(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        url = _parse_url(d.pop("url", UNSET))
 
         smart_list_item_create_args = cls(
             smart_list_ref_id=smart_list_ref_id,

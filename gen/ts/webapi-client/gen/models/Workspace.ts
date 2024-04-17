@@ -15,7 +15,7 @@ export type Workspace = {
     archived: boolean;
     created_time: Timestamp;
     last_modified_time: Timestamp;
-    archived_time?: Timestamp;
+    archived_time?: (Timestamp | null);
     name: WorkspaceName;
     feature_flags: Record<string, boolean>;
 };

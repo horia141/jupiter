@@ -18,9 +18,9 @@ export type GCLogEntry = {
     archived: boolean;
     created_time: Timestamp;
     last_modified_time: Timestamp;
-    archived_time?: Timestamp;
+    archived_time?: (Timestamp | null);
     name: EntityName;
-    gc_log: string;
+    gc_log_ref_id: string;
     source: EventSource;
     gc_targets: Array<SyncTarget>;
     opened: boolean;

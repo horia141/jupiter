@@ -10,6 +10,6 @@ import type { EntityId } from './EntityId';
 export type SlackTaskFindArgs = {
     allow_archived: boolean;
     include_inbox_tasks: boolean;
-    filter_ref_ids?: Array<EntityId>;
+    filter_ref_ids?: (Array<EntityId> | null);
 };
 
