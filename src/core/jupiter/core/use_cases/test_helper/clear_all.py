@@ -116,11 +116,10 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
     ) -> None:
         """Execute the command's action."""
         user = context.user
+        workspace = context.workspace
 
         async with self._domain_storage_engine.get_unit_of_work() as uow:
             score_log = await uow.get_for(ScoreLog).load_by_parent(user.ref_id)
-
-            workspace = context.workspace
             (
                 user_feature_flags_controls,
                 workspace_feature_flags_controls,
@@ -448,8 +447,8 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
 
         async with progress_reporter.section("Clearing use case invocation records"):
             async with self._use_case_storage_engine.get_unit_of_work() as uc_uow:
-                await uc_uow.mutation_use_case_invocation_record_repository.clear_all()
+                await uc_uow.mutation_use_case_invocation_record_repository.clear_all(workspace.ref_id)
 
         async with progress_reporter.section("Clearing the search index"):
             async with self._search_storage_engine.get_unit_of_work() as search_uow:
-                await search_uow.search_repository.drop()
+                await search_uow.search_repository.drop(workspace.ref_id)
