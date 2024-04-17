@@ -68,6 +68,7 @@ import type {
 import {
   canInboxTaskBeInStatus,
   filterInboxTasksForDisplay,
+  inboxTaskFindEntryToParent,
   isInboxTaskCoreFieldEditable,
   sortInboxTasksByEisenAndDifficulty,
   sortInboxTasksNaturally,
@@ -160,12 +161,7 @@ export default function InboxTasks() {
   }
   const entriesByRefId: { [key: string]: InboxTaskParent } = {};
   for (const entry of entries) {
-    entriesByRefId[entry.inbox_task.ref_id] = {
-      bigPlan: entry.big_plan,
-      slackTask: entry.slack_task,
-      emailTask: entry.email_task,
-      ...entry,
-    };
+    entriesByRefId[entry.inbox_task.ref_id] = inboxTaskFindEntryToParent(entry);
   }
 
   const [selectedView, setSelectedView] = useState(View.SWIFTVIEW);

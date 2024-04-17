@@ -5,7 +5,10 @@ export function aDateToDate(aDate: ADate): DateTime {
   return DateTime.fromISO(aDate);
 }
 
-export function compareADate(adate1?: ADate, adate2?: ADate): number {
+export function compareADate(
+  adate1?: ADate | null,
+  adate2?: ADate | null
+): number {
   if (
     (adate1 === undefined || adate1 === null) &&
     (adate2 === undefined || adate2 === null)

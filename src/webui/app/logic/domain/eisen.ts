@@ -33,14 +33,6 @@ const EISEN_MAP = {
   [Eisen.IMPORTANT_AND_URGENT]: 3,
 };
 
-export function compareEisen(eisen1?: Eisen, eisen2?: Eisen): number {
-  if (eisen1 === undefined && eisen2 === undefined) {
-    return 0;
-  } else if (eisen1 === undefined) {
-    return -1;
-  } else if (eisen2 === undefined) {
-    return 1;
-  } else {
-    return EISEN_MAP[eisen1] - EISEN_MAP[eisen2];
-  }
+export function compareEisen(eisen1: Eisen, eisen2: Eisen): number {
+  return EISEN_MAP[eisen1] - EISEN_MAP[eisen2];
 }

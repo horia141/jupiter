@@ -332,7 +332,7 @@ const TagsContained = styled(Box)({
 
 interface OverdueWarningProps {
   status: InboxTaskStatus;
-  dueDate?: ADate;
+  dueDate?: ADate | null;
 }
 
 function OverdueWarning({ status, dueDate }: OverdueWarningProps) {

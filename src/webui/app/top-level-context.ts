@@ -11,7 +11,7 @@ export interface TopLevelInfo {
   userFeatureFlagControls: UserFeatureFlagsControls;
   workspaceFeatureFlagControls: WorkspaceFeatureFlagsControls;
   user: User;
-  userScoreOverview?: UserScoreOverview;
+  userScoreOverview?: UserScoreOverview | null;
   workspace: Workspace;
 }
 

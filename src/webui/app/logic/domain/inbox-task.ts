@@ -1,19 +1,22 @@
 import type {
   BigPlan,
   Chore,
-  Difficulty,
   Eisen,
   EmailTask,
   EntityId,
   Habit,
   InboxTask,
+  InboxTaskFindResultEntry,
   Metric,
   Person,
   Project,
   RecurringTaskPeriod,
-  SlackTask,
+  SlackTask} from "@jupiter/webapi-client";
+import {
+  Difficulty,
+  InboxTaskSource,
+  InboxTaskStatus
 } from "@jupiter/webapi-client";
-import { InboxTaskSource, InboxTaskStatus } from "@jupiter/webapi-client";
 import type { DateTime } from "luxon";
 import { aDateToDate, compareADate } from "./adate";
 import { compareDifficulty } from "./difficulty";
@@ -33,6 +36,21 @@ export interface InboxTaskParent {
   person?: Person;
   slackTask?: SlackTask;
   emailTask?: EmailTask;
+}
+
+export function inboxTaskFindEntryToParent(
+  entry: InboxTaskFindResultEntry
+): InboxTaskParent {
+  return {
+    project: entry.project,
+    bigPlan: entry.big_plan ?? undefined,
+    habit: entry.habit ?? undefined,
+    chore: entry.chore ?? undefined,
+    metric: entry.metric ?? undefined,
+    person: entry.person ?? undefined,
+    slackTask: entry.slack_task ?? undefined,
+    emailTask: entry.email_task ?? undefined,
+  };
 }
 
 interface InboxTaskFilterOptions {
@@ -107,7 +125,7 @@ export function filterInboxTasksForDisplay(
     }
 
     if (options.allowDifficulties !== undefined) {
-      if (inboxTask.difficulty !== undefined) {
+      if (inboxTask.difficulty !== undefined && inboxTask.difficulty !== null) {
         if (!options.allowDifficulties.includes(inboxTask.difficulty)) {
           return false;
         }
@@ -206,7 +224,11 @@ export function sortInboxTasksNaturally(
       (cleanOptions.dueDateAscending ? 1 : -1) *
         compareADate(i1.due_date, i2.due_date) ||
       -1 * compareEisen(i1.eisen, i2.eisen) ||
-      -1 * compareDifficulty(i1.difficulty, i2.difficulty)
+      -1 *
+        compareDifficulty(
+          i1.difficulty ?? Difficulty.EASY,
+          i2.difficulty ?? Difficulty.EASY
+        )
     );
   });
 }
@@ -225,7 +247,11 @@ export function sortInboxTasksByEisenAndDifficulty(
   return [...inboxTasks].sort((i1, i2) => {
     return (
       -1 * compareEisen(i1.eisen, i2.eisen) ||
-      -1 * compareDifficulty(i1.difficulty, i2.difficulty) ||
+      -1 *
+        compareDifficulty(
+          i1.difficulty ?? Difficulty.EASY,
+          i2.difficulty ?? Difficulty.EASY
+        ) ||
       (cleanOptions.dueDateAscending ? 1 : -1) *
         compareADate(i1.due_date, i2.due_date)
     );
