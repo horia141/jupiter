@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "tests"
+name = "jupiter-itests"
 version = "0.1.0"
 description = "Big integration tests"
 authors = ["Horia Coman <horia141@gmail.com>"]
@@ -13,6 +13,7 @@ documentation = "https://jupiter-goals.readthedocs.io/"
 [tool.poetry.dependencies]
 python = ">=3.10, <3.11"
 jupiter-core = {path = "../src/core", develop = true}
+jupiter-webapi-client = {path = "../gen/py/webapi-client", develop = true}
 pytest-playwright = "^0.4.4"
 
 [tool.poetry.dev-dependencies]
