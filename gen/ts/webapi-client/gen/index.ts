@@ -269,6 +269,7 @@ export type { RecurringTaskGenParams } from './models/RecurringTaskGenParams';
 export { RecurringTaskPeriod } from './models/RecurringTaskPeriod';
 export type { RecurringTaskSkipRule } from './models/RecurringTaskSkipRule';
 export type { RecurringTaskWorkSummary } from './models/RecurringTaskWorkSummary';
+export type { RemoveAllArgs } from './models/RemoveAllArgs';
 export type { ReportArgs } from './models/ReportArgs';
 export { ReportBreakdown } from './models/ReportBreakdown';
 export type { ReportPeriodResult } from './models/ReportPeriodResult';
@@ -389,6 +390,7 @@ export type { WorkspaceFeatureFlagsControls } from './models/WorkspaceFeatureFla
 export type { WorkspaceLoadArgs } from './models/WorkspaceLoadArgs';
 export type { WorkspaceLoadResult } from './models/WorkspaceLoadResult';
 export type { WorkspaceName } from './models/WorkspaceName';
+export type { WorkspaceSetFeatureArgs } from './models/WorkspaceSetFeatureArgs';
 export type { WorkspaceUpdateArgs } from './models/WorkspaceUpdateArgs';
 
 export { AuthService } from './services/AuthService';

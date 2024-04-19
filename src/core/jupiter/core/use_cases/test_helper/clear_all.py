@@ -8,7 +8,6 @@ from jupiter.core.domain.big_plans.service.remove_service import BigPlanRemoveSe
 from jupiter.core.domain.chores.chore import Chore
 from jupiter.core.domain.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.chores.service.remove_service import ChoreRemoveService
-from jupiter.core.domain.clear_all.clear_all_service import ClearAllService
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_collection import NoteCollection
 from jupiter.core.domain.core.notes.service.note_remove_service import NoteRemoveService
@@ -33,7 +32,8 @@ from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskColle
 from jupiter.core.domain.inbox_tasks.service.remove_service import (
     InboxTaskRemoveService,
 )
-from jupiter.core.domain.infra.generic_remover import generic_remover
+from jupiter.core.domain.infra.generic_crown_remover import generic_crown_remover
+from jupiter.core.domain.infra.generic_root_remover import generic_root_remover
 from jupiter.core.domain.metrics.metric import Metric
 from jupiter.core.domain.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.metrics.service.remove_service import MetricRemoveService
@@ -95,13 +95,13 @@ class ClearAllArgs(UseCaseArgsBase):
 
     user_name: UserName
     user_timezone: Timezone
-    user_feature_flags: set[UserFeature]
+    user_feature_flags: set[UserFeature] | None
     auth_current_password: PasswordPlain
     auth_new_password: PasswordNewPlain
     auth_new_password_repeat: PasswordNewPlain
     workspace_name: WorkspaceName
     workspace_root_project_name: ProjectName
-    workspace_feature_flags: set[WorkspaceFeature]
+    workspace_feature_flags: set[WorkspaceFeature] | None
 
 
 @mutation_use_case()
@@ -143,16 +143,6 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
                 push_integration_group.ref_id,
             )
 
-            user_feature_flags = {}
-            for user_feature in UserFeature:
-                user_feature_flags[user_feature] = user_feature in args.user_feature_flags
-
-            workspace_feature_flags = {}
-            for workspace_feature in WorkspaceFeature:
-                workspace_feature_flags[workspace_feature] = (
-                    workspace_feature in args.workspace_feature_flags
-                )
-
             async with progress_reporter.section("Setting things back to default"):
                 user = user.update(
                     ctx=context.domain_context,
@@ -160,11 +150,17 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
                     timezone=UpdateAction.change_to(args.user_timezone),
                 )
 
-                user = user.change_feature_flags(
-                    ctx=context.domain_context,
-                    feature_flag_controls=user_feature_flags_controls,
-                    feature_flags=user_feature_flags,
-                )
+                if args.user_feature_flags is not None:
+                    user_feature_flags = {}
+                    for user_feature in UserFeature:
+                        user_feature_flags[user_feature] = user_feature in args.user_feature_flags
+
+                    user = user.change_feature_flags(
+                        ctx=context.domain_context,
+                        feature_flag_controls=user_feature_flags_controls,
+                        feature_flags=user_feature_flags,
+                    )
+                
                 await uow.get_for(User).save(user)
 
                 auth = await uow.get_for(Auth).load_by_parent(parent_ref_id=user.ref_id)
@@ -181,11 +177,18 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
                     name=UpdateAction.change_to(args.workspace_name),
                 )
 
-                workspace = workspace.change_feature_flags(
-                    ctx=context.domain_context,
-                    feature_flag_controls=workspace_feature_flags_controls,
-                    feature_flags=workspace_feature_flags,
-                )
+                if args.workspace_feature_flags is not None:
+                    workspace_feature_flags = {}
+                    for workspace_feature in WorkspaceFeature:
+                        workspace_feature_flags[workspace_feature] = (
+                            workspace_feature in args.workspace_feature_flags
+                        )
+
+                    workspace = workspace.change_feature_flags(
+                        ctx=context.domain_context,
+                        feature_flag_controls=workspace_feature_flags_controls,
+                        feature_flags=workspace_feature_flags,
+                    )
 
                 await uow.get_for(Workspace).save(workspace)
 
@@ -218,12 +221,15 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
                     generation_project_ref_id=root_project.ref_id,
                 )
 
-        clear_all_service = ClearAllService(
-            use_case_storage_engine=self._use_case_storage_engine,
-            domain_storage_engine=self._domain_storage_engine,
-            search_storage_engine=self._search_storage_engine,
-        )
+            await generic_root_remover(context.domain_context, uow, progress_reporter, User, user.ref_id)
+            await generic_root_remover(context.domain_context, uow, progress_reporter, Workspace, workspace.ref_id)
 
-        await clear_all_service.do(context.domain_context, progress_reporter, user, workspace)
+        async with progress_reporter.section("Clearing use case invocation records"):
+            async with self._use_case_storage_engine.get_unit_of_work() as uc_uow:
+                await uc_uow.mutation_use_case_invocation_record_repository.clear_all(workspace.ref_id)
+
+        async with progress_reporter.section("Clearing the search index"):
+            async with self._search_storage_engine.get_unit_of_work() as search_uow:
+                await search_uow.search_repository.drop(workspace.ref_id)
 
 

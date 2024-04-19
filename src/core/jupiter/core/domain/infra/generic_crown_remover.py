@@ -1,5 +1,4 @@
 """A generic archiver service."""
-
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
@@ -7,7 +6,7 @@ from jupiter.core.framework.entity import CrownEntity, LeafSupportEntity, OwnsLi
 from jupiter.core.framework.use_case import ProgressReporter
 
 
-async def generic_remover(
+async def generic_crown_remover(
     ctx: DomainContext,
     uow: DomainUnitOfWork,
     progress_reporter: ProgressReporter,
@@ -31,9 +30,10 @@ async def generic_remover(
             for linked_entity in linked_entities:
                 await _remover(linked_entity)
 
-        await uow.get_for(entity_type).remove(entity.ref_id)
-        if not isinstance(entity, LeafSupportEntity):
-            await progress_reporter.mark_removed(entity)
+        if entity.is_safe_to_archive:
+            await uow.get_for(entity_type).remove(entity.ref_id)
+            if not isinstance(entity, LeafSupportEntity):
+                await progress_reporter.mark_removed(entity)
 
     entity = await uow.get_for(entity_type).load_by_id(ref_id)
 

@@ -1,7 +1,7 @@
 """The command for removing a vacation entry."""
 
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.infra.generic_remover import generic_remover
+from jupiter.core.domain.infra.generic_crown_remover import generic_crown_remover
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.vacations.vacation import Vacation
 from jupiter.core.framework.base.entity_id import EntityId
@@ -37,6 +37,6 @@ class VacationRemoveUseCase(
         args: VacationRemoveArgs,
     ) -> None:
         """Execute the command's action."""
-        await generic_remover(
+        await generic_crown_remover(
             context.domain_context, uow, progress_reporter, Vacation, args.ref_id
         )

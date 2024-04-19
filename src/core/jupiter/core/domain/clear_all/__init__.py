@@ -1,1 +1,0 @@
-"""Entities around the large scale clearing of all data in the system."""

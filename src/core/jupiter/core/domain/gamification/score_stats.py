@@ -84,7 +84,7 @@ class ScoreStats(Record):
 
 class ScoreStatsRepository(
     RecordRepository[
-        ScoreStats, tuple[EntityId, RecurringTaskPeriod | None, str], EntityId
+        ScoreStats, tuple[EntityId, RecurringTaskPeriod | None, str]
     ],
     abc.ABC,
 ):

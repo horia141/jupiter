@@ -19,10 +19,11 @@ async def generic_archiver(
     async def _archiver(entity: CrownEntity) -> None:
         if entity.archived:
             return
-        entity = entity.mark_archived(ctx)
-        await uow.get_for(entity.__class__).save(entity)
-        if not isinstance(entity, LeafSupportEntity):
-            await progress_reporter.mark_updated(entity)
+        if entity.is_safe_to_archive:
+            entity = entity.mark_archived(ctx)
+            await uow.get_for(entity.__class__).save(entity)
+            if not isinstance(entity, LeafSupportEntity):
+                await progress_reporter.mark_updated(entity)
 
         for field in entity.__class__.__dict__.values():
             if not isinstance(field, OwnsLink):

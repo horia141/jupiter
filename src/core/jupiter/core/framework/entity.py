@@ -106,6 +106,11 @@ class Entity(Concept):
             )
         )
         return archived_entity
+    
+    @property
+    def is_safe_to_archive(self) -> bool:
+        """Check if the entity is safe to archive."""
+        return True
 
     @property
     def parent_ref_id(self) -> EntityId:

@@ -27,6 +27,7 @@ from jupiter.core.framework.repository import (
 )
 from jupiter.core.repository.sqlite.infra.repository import (
     SqliteLeafEntityRepository,
+    SqliteRecordRepository,
     SqliteRepository,
     SqliteTrunkEntityRepository,
 )
@@ -88,7 +89,7 @@ class SqliteScoreLogEntryRepository(
         )
 
 
-class SqliteScoreStatsRepository(SqliteRepository, ScoreStatsRepository):
+class SqliteScoreStatsRepository(SqliteRecordRepository[ScoreStats], ScoreStatsRepository):
     """Sqlite implementation of the score stats repository."""
 
     _score_stats_table: Final[Table]
@@ -236,7 +237,7 @@ class SqliteScoreStatsRepository(SqliteRepository, ScoreStatsRepository):
         return self._realm_codec_registry.db_decode(ScoreStats, row._mapping)  # type: ignore[attr-defined]
 
 
-class SqliteScorePeriodBestRepository(SqliteRepository, ScorePeriodBestRepository):
+class SqliteScorePeriodBestRepository(SqliteRecordRepository[ScorePeriodBest], ScorePeriodBestRepository):
     """Sqlite implementation of the score period best repository."""
 
     _score_period_best_table: Final[Table]

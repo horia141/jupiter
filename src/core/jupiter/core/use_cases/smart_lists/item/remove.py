@@ -1,7 +1,7 @@
 """The command for removing a smart list item."""
 
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.infra.generic_remover import generic_remover
+from jupiter.core.domain.infra.generic_crown_remover import generic_crown_remover
 from jupiter.core.domain.smart_lists.smart_list_item import SmartListItem
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -37,6 +37,6 @@ class SmartListItemRemoveUseCase(
         args: SmartListItemRemoveArgs,
     ) -> None:
         """Execute the command's action."""
-        await generic_remover(
+        await generic_crown_remover(
             context.domain_context, uow, progress_reporter, SmartListItem, args.ref_id
         )

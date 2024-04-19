@@ -1,8 +1,8 @@
 """A container for all the group of various push integrations we have."""
-
 from jupiter.core.domain.push_integrations.email.email_task_collection import (
     EmailTaskCollection,
 )
+from jupiter.core.domain.push_integrations.slack.slack_task_collection import SlackTaskCollection
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
@@ -21,6 +21,9 @@ class PushIntegrationGroup(TrunkEntity):
 
     workspace: ParentLink
 
+    slack_task_collection = ContainsOne(
+        SlackTaskCollection, push_integration_group_ref_id=IsRefId()
+    )
     email_task_collection = ContainsOne(
         EmailTaskCollection, push_integration_group_ref_id=IsRefId()
     )

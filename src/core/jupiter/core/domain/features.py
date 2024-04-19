@@ -41,7 +41,7 @@ class FeatureControl(EnumValue):
     @property
     def standard_flag(self) -> bool:
         """The standard value for a feature flag controlled by this feature control."""
-        return self == FeatureControl.ALWAYS_ON or self == FeatureControl.USER
+        return self == FeatureControl.ALWAYS_ON
 
     def check(self, property_name: str, property_value: bool) -> bool:
         """Verify if the property can be set."""

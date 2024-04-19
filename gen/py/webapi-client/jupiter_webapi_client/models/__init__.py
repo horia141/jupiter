@@ -319,6 +319,7 @@ from .record_score_result import RecordScoreResult
 from .recurring_task_gen_params import RecurringTaskGenParams
 from .recurring_task_period import RecurringTaskPeriod
 from .recurring_task_work_summary import RecurringTaskWorkSummary
+from .remove_all_args import RemoveAllArgs
 from .report_args import ReportArgs
 from .report_breakdown import ReportBreakdown
 from .report_period_result import ReportPeriodResult
@@ -452,6 +453,7 @@ from .workspace_feature_flags_controls import WorkspaceFeatureFlagsControls
 from .workspace_feature_flags_controls_controls import WorkspaceFeatureFlagsControlsControls
 from .workspace_load_args import WorkspaceLoadArgs
 from .workspace_load_result import WorkspaceLoadResult
+from .workspace_set_feature_args import WorkspaceSetFeatureArgs
 from .workspace_update_args import WorkspaceUpdateArgs
 from .workspace_update_args_name import WorkspaceUpdateArgsName
 
@@ -773,6 +775,7 @@ __all__ = (
     "RecurringTaskGenParams",
     "RecurringTaskPeriod",
     "RecurringTaskWorkSummary",
+    "RemoveAllArgs",
     "ReportArgs",
     "ReportBreakdown",
     "ReportPeriodResult",
@@ -906,6 +909,7 @@ __all__ = (
     "WorkspaceFeatureFlagsControlsControls",
     "WorkspaceLoadArgs",
     "WorkspaceLoadResult",
+    "WorkspaceSetFeatureArgs",
     "WorkspaceUpdateArgs",
     "WorkspaceUpdateArgsName",
 )

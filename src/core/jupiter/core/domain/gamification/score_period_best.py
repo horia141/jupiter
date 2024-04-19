@@ -92,7 +92,6 @@ class ScorePeriodBestRepository(
     RecordRepository[
         ScorePeriodBest,
         tuple[EntityId, RecurringTaskPeriod | None, str, RecurringTaskPeriod],
-        EntityId,
     ],
     abc.ABC,
 ):

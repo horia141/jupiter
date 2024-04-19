@@ -1,7 +1,23 @@
 """Tests about vacations."""
+from collections.abc import Iterator
 import time
 
+from jupiter.core.domain.features import WorkspaceFeature
 from playwright.sync_api import Page, expect
+import pytest
+
+from itests.conftest import TestUser
+from jupiter_webapi_client.client import AuthenticatedClient
+from jupiter_webapi_client.api.test_helper.workspace_set_feature import sync_detailed as workspace_set_feature_sync
+from jupiter_webapi_client.models.workspace_set_feature_args import WorkspaceSetFeatureArgs
+
+
+@pytest.fixture(autouse=True, scope="module")
+def enable_vacations_feature(logged_in_user: tuple[AuthenticatedClient, TestUser]) -> Iterator[None]:
+    client, _ = logged_in_user
+    workspace_set_feature_sync(client=client, body=WorkspaceSetFeatureArgs(feature=WorkspaceFeature.VACATIONS, value=True))
+    yield
+    workspace_set_feature_sync(client=client, body=WorkspaceSetFeatureArgs(feature=WorkspaceFeature.VACATIONS, value=False))
 
 
 def test_vacation_create(page: Page) -> None:
