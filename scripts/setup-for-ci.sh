@@ -23,3 +23,4 @@ playwright install
 
 npm ci --ws --include-workspace-root
 (cd gen && npx tsc)
+

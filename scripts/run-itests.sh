@@ -7,27 +7,9 @@ source scripts/common.sh
 mkdir -p .build-cache/itest
 
 WEBAPI_PORT=$(get_free_port)
-WEBAPI_PID=
 WEBUI_PORT=$(get_free_port)
-WEBUI_PID=
 export SQLITE_DB_URL=sqlite+aiosqlite:///../../.build-cache/itest/jupiter.sqlite
 
-kill_jupiter() {
-    if [ -n "$WEBAPI_PID" ]; then
-        kill $WEBAPI_PID
-    fi
-    WEBAPI_PID=$(netstat -anvp tcp | grep -m 1 $WEBAPI_PORT | awk '{split($9, a, "/"); print a[1]}')
-    if [ -n "$WEBAPI_PID" ]; then
-        kill $WEBAPI_PID
-    fi
-    if [ -n "$WEBUI_PID" ]; then
-        pkill -P $WEBUI_PID
-    fi
-    WEBUI_PID=$(netstat -anvp tcp | grep -m 1 $WEBUI_PORT | awk '{split($9, a, "/"); print a[1]}')
-    if [ -n "$WEBUI_PID" ]; then
-        pkill -P $WEBUI_PID
-    fi
-}
 
 ci_mode() {
     # Add your ci mode logic here
@@ -42,25 +24,15 @@ ci_mode() {
         esac
     done
 
-    trap kill_jupiter EXIT
+    trap "npx pm2 delete webapi:${WEBAPI_PORT} webui:${WEBUI_PORT}" EXIT
+
+    HOST=0.0.0.0 PORT=$WEBAPI_PORT npx pm2 start --name=webapi:${WEBAPI_PORT} --interpreter=none --no-autorestart --cwd=src/webapi python -- -m jupiter.webapi.jupiter
+    HOST=0.0.0.0 PORT=$WEBUI_PORT npx pm2 start --name=webui:${WEBUI_PORT} --interpreter=none --no-autorestart --cwd=src/webui npm -- run dev
     
-    cd src/webapi
-    HOST=0.0.0.0 PORT=$WEBAPI_PORT python -m jupiter.webapi.jupiter &
-    WEBAPI_PID=$!
-    cd ../..
-
-    cd src/webui
-    LOCAL_WEBAPI_SERVER_URL=http://localhost:$WEBAPI_PORT PORT=$WEBUI_PORT npm run dev &
-    WEBUI_PID=$!
-    cd ../..
-
     wait_for_service_to_start webapi http://localhost:$WEBAPI_PORT
     wait_for_service_to_start webui http://localhost:$WEBUI_PORT
 
     run_tests http://localhost:$WEBUI_PORT "${extra_args[@]}"
-
-    kill $WEBAPI_PID
-    kill $WEBUI_PID
 }
 
 # Function to handle the "dev" mode
@@ -96,6 +68,7 @@ run_tests() {
     shift
 
     pytest itests \
+        -o log_cli=true \
         --html-report=.build-cache/itest/test-report.html \
         --title="Jupiter Integration Tests" \
         --base-url=$webui_url \
@@ -111,7 +84,7 @@ main() {
         shift
         dev_mode "$@"
     else
-        echo "Usage: $0 {ci|dev [--webui-url <URL>]}"
+        echo "Usage: $0 {ci|dev [--webui-url <URL>]} ...pytest-args"
         exit 1
     fi
 }

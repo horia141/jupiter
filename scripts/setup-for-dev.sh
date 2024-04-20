@@ -10,6 +10,7 @@ set -ex
 # brew install shellcheck
 brew install cloc
 brew install create-dmg
+brew install pueue
 docker pull hadolint/hadolint:latest-debian
 
 # gem install mdl # TODO(revert this to bundler with local install)
