@@ -13,11 +13,10 @@ from jupiter_webapi_client.models.workspace_set_feature_args import WorkspaceSet
 
 
 @pytest.fixture(autouse=True, scope="module")
-def enable_vacations_feature(logged_in_user: tuple[AuthenticatedClient, TestUser]) -> Iterator[None]:
-    client, _ = logged_in_user
-    workspace_set_feature_sync(client=client, body=WorkspaceSetFeatureArgs(feature=WorkspaceFeature.VACATIONS, value=True))
+def enable_vacations_feature(logged_in_client: AuthenticatedClient) -> Iterator[None]:
+    workspace_set_feature_sync(client=logged_in_client, body=WorkspaceSetFeatureArgs(feature=WorkspaceFeature.VACATIONS, value=True))
     yield
-    workspace_set_feature_sync(client=client, body=WorkspaceSetFeatureArgs(feature=WorkspaceFeature.VACATIONS, value=False))
+    workspace_set_feature_sync(client=logged_in_client, body=WorkspaceSetFeatureArgs(feature=WorkspaceFeature.VACATIONS, value=False))
 
 
 def test_vacation_create(page: Page) -> None:

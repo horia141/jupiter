@@ -27,18 +27,21 @@ ci_mode() {
     trap "npx pm2 delete webapi:${WEBAPI_PORT} webui:${WEBUI_PORT}" EXIT
 
     HOST=0.0.0.0 PORT=$WEBAPI_PORT npx pm2 start --name=webapi:${WEBAPI_PORT} --interpreter=none --no-autorestart --cwd=src/webapi python -- -m jupiter.webapi.jupiter
-    HOST=0.0.0.0 PORT=$WEBUI_PORT npx pm2 start --name=webui:${WEBUI_PORT} --interpreter=none --no-autorestart --cwd=src/webui npm -- run dev
+    LOCAL_WEBAPI_SERVER_URL=http://localhost:$WEBAPI_PORT HOST=0.0.0.0 PORT=$WEBUI_PORT npx pm2 start --name=webui:${WEBUI_PORT} --interpreter=none --no-autorestart --cwd=src/webui npm -- run dev
     
+    echo "Using Web API $webapi_url and Web UI $webui_url"
+
     wait_for_service_to_start webapi http://localhost:$WEBAPI_PORT
     wait_for_service_to_start webui http://localhost:$WEBUI_PORT
 
-    run_tests http://localhost:$WEBUI_PORT "${extra_args[@]}"
+    run_tests http://localhost:$WEBAPI_PORT http://localhost:$WEBUI_PORT "${extra_args[@]}"
 }
 
 # Function to handle the "dev" mode
 dev_mode() {
     # Add your dev mode logic here
     # Check if --webui-url option is provided
+    local webapi_url="http://localhost:8010"
     local webui_url="http://localhost:10020"
     local extra_args=()
 
@@ -56,18 +59,22 @@ dev_mode() {
         esac
     done
 
-    echo "Using web UI URL: $webui_url"
+    echo "Using Web API $webapi_url and Web UI $webui_url"
 
+    wait_for_service_to_start webapi $webapi_url
     wait_for_service_to_start webui $webui_url
 
-    run_tests $webui_url --headed "${extra_args[@]}"
+    run_tests $webapi_url $webui_url --headed "${extra_args[@]}"
 }
 
 run_tests() {
+    echo $@
+    local webapi_url=$1
+    shift
     local webui_url=$1
     shift
 
-    pytest itests \
+    LOCAL_WEBAPI_SERVER_URL=$webapi_url pytest itests \
         -o log_cli=true \
         --html-report=.build-cache/itest/test-report.html \
         --title="Jupiter Integration Tests" \
