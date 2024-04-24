@@ -1,6 +1,7 @@
 """Fixtures with auth sessions."""
 import os
 from collections.abc import Iterator
+import re
 
 import pytest
 import validators
@@ -30,6 +31,8 @@ from itests.conftest import TestUser
 def webapi_server_url() -> str:
     """The URL of the local Web API server."""
     local_webapi_server_url = os.getenv("LOCAL_WEBAPI_SERVER_URL")
+    if re.match(r"^http://0[.]0[.]0[.]0:\d+$", local_webapi_server_url):
+        return local_webapi_server_url
     validation_result = validators.url(local_webapi_server_url)
     if validation_result is not True:
         raise Exception(f"Invalid Web API URL '{local_webapi_server_url}'")

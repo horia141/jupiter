@@ -2,4 +2,4 @@
 
 set -ex
 
-playwright codegen http://localhost:10020
+playwright codegen http://0.0.0.0:10020

@@ -27,22 +27,22 @@ ci_mode() {
     trap "npx pm2 delete webapi:${WEBAPI_PORT} webui:${WEBUI_PORT}" EXIT
 
     HOST=0.0.0.0 PORT=$WEBAPI_PORT npx pm2 start --name=webapi:${WEBAPI_PORT} --interpreter=none --no-autorestart --cwd=src/webapi python -- -m jupiter.webapi.jupiter
-    LOCAL_WEBAPI_SERVER_URL=http://localhost:$WEBAPI_PORT HOST=0.0.0.0 PORT=$WEBUI_PORT npx pm2 start --name=webui:${WEBUI_PORT} --interpreter=none --no-autorestart --cwd=src/webui npm -- run dev
+    LOCAL_WEBAPI_SERVER_URL=http://0.0.0.0:$WEBAPI_PORT HOST=0.0.0.0 PORT=$WEBUI_PORT npx pm2 start --name=webui:${WEBUI_PORT} --interpreter=none --no-autorestart --cwd=src/webui npm -- run dev
     
     echo "Using Web API $webapi_url and Web UI $webui_url"
 
-    wait_for_service_to_start webapi http://localhost:$WEBAPI_PORT
-    wait_for_service_to_start webui http://localhost:$WEBUI_PORT
+    wait_for_service_to_start webapi http://0.0.0.0:$WEBAPI_PORT
+    wait_for_service_to_start webui http://0.0.0.0:$WEBUI_PORT
 
-    run_tests http://localhost:$WEBAPI_PORT http://localhost:$WEBUI_PORT "${extra_args[@]}"
+    run_tests http://0.0.0.0:$WEBAPI_PORT http://0.0.0.0:$WEBUI_PORT "${extra_args[@]}"
 }
 
 # Function to handle the "dev" mode
 dev_mode() {
     # Add your dev mode logic here
     # Check if --webui-url option is provided
-    local webapi_url="http://localhost:8010"
-    local webui_url="http://localhost:10020"
+    local webapi_url="http://0.0.0.0:8010"
+    local webui_url="http://0.0.0.0:10020"
     local extra_args=()
 
     while [[ $# -gt 0 ]]; do
