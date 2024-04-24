@@ -31,6 +31,6 @@ cloc \
   mkdocs.yml \
   scripts/ \
   src/ \
-  tests/ \
+  itests/ \
 
 cat "${CLOC_BUILDINFO}"

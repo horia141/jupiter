@@ -34,9 +34,7 @@ class RecordNotFoundError(Exception):
     """Error raised when a record is not found."""
 
 
-class RecordRepository(
-    Generic[RecordT, RecordKeyT], Repository, abc.ABC
-):
+class RecordRepository(Generic[RecordT, RecordKeyT], Repository, abc.ABC):
     """A repository for records."""
 
     @abc.abstractmethod
@@ -48,7 +46,7 @@ class RecordRepository(
         """Save a record."""
 
     @abc.abstractmethod
-    async def remove(self, key: RecordKeyT) -> RecordT:
+    async def remove(self, record: RecordT) -> RecordT:
         """Hard remove a record - an irreversible operation."""
 
     @abc.abstractmethod

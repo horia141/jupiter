@@ -1,7 +1,7 @@
 """Domain-level storage interaction."""
 import abc
 from contextlib import AbstractAsyncContextManager
-from typing import Any, TypeVar, overload
+from typing import TypeVar, overload
 
 from jupiter.core.domain.search.infra.search_repository import SearchRepository
 from jupiter.core.framework.entity import (
@@ -77,8 +77,7 @@ class DomainUnitOfWork(abc.ABC):
 
     @abc.abstractmethod
     def get_for_record(
-        self,
-        record_type: type[_RecordT]
+        self, record_type: type[_RecordT]
     ) -> RecordRepository[_RecordT, object]:
         """Retrieve a repository for a specific record type."""
 

@@ -28,7 +28,6 @@ from jupiter.core.framework.repository import (
 from jupiter.core.repository.sqlite.infra.repository import (
     SqliteLeafEntityRepository,
     SqliteRecordRepository,
-    SqliteRepository,
     SqliteTrunkEntityRepository,
 )
 from jupiter.core.repository.sqlite.infra.row import RowType
@@ -89,7 +88,12 @@ class SqliteScoreLogEntryRepository(
         )
 
 
-class SqliteScoreStatsRepository(SqliteRecordRepository[ScoreStats], ScoreStatsRepository):
+class SqliteScoreStatsRepository(
+    SqliteRecordRepository[
+        ScoreStats, tuple[EntityId, RecurringTaskPeriod | None, str]
+    ],
+    ScoreStatsRepository,
+):
     """Sqlite implementation of the score stats repository."""
 
     _score_stats_table: Final[Table]
@@ -156,23 +160,21 @@ class SqliteScoreStatsRepository(SqliteRecordRepository[ScoreStats], ScoreStatsR
             )
         return record
 
-    async def remove(
-        self, key: tuple[EntityId, RecurringTaskPeriod | None, str]
-    ) -> ScoreStats:
+    async def remove(self, record: ScoreStats) -> ScoreStats:
         """Remove a score stats."""
         result = await self._connection.execute(
             delete(self._score_stats_table)
-            .where(self._score_stats_table.c.score_log_ref_id == key[0].as_int())
+            .where(self._score_stats_table.c.score_log_ref_id == record.key[0].as_int())
             .where(
-                self._score_stats_table.c.period == key[1].value
-                if key[1] is not None
+                self._score_stats_table.c.period == record.key[1].value
+                if record.key[1] is not None
                 else self._score_stats_table.c.period.is_(None)
             )
-            .where(self._score_stats_table.c.timeline == key[2])
+            .where(self._score_stats_table.c.timeline == record.key[2])
         )
         if result.rowcount == 0:
             raise RecordNotFoundError(
-                f"The score stats {key[0]}:{key[1]}:{key[2]} does not exist"
+                f"The score stats {record.key[0]}:{record.key[1]}:{record.key[2]} does not exist"
             )
         return self._row_to_entity(result)
 
@@ -237,7 +239,13 @@ class SqliteScoreStatsRepository(SqliteRecordRepository[ScoreStats], ScoreStatsR
         return self._realm_codec_registry.db_decode(ScoreStats, row._mapping)  # type: ignore[attr-defined]
 
 
-class SqliteScorePeriodBestRepository(SqliteRecordRepository[ScorePeriodBest], ScorePeriodBestRepository):
+class SqliteScorePeriodBestRepository(
+    SqliteRecordRepository[
+        ScorePeriodBest,
+        tuple[EntityId, RecurringTaskPeriod | None, str, RecurringTaskPeriod],
+    ],
+    ScorePeriodBestRepository,
+):
     """Sqlite implementation of the score period best repository."""
 
     _score_period_best_table: Final[Table]
@@ -309,24 +317,25 @@ class SqliteScorePeriodBestRepository(SqliteRecordRepository[ScorePeriodBest], S
             )
         return record
 
-    async def remove(
-        self, key: tuple[EntityId, RecurringTaskPeriod | None, str, RecurringTaskPeriod]
-    ) -> ScorePeriodBest:
+    async def remove(self, record: ScorePeriodBest) -> ScorePeriodBest:
         """Remove a score period best."""
         result = await self._connection.execute(
             delete(self._score_period_best_table)
-            .where(self._score_period_best_table.c.score_log_ref_id == key[0].as_int())
             .where(
-                self._score_period_best_table.c.period == key[1].value
-                if key[1] is not None
+                self._score_period_best_table.c.score_log_ref_id
+                == record.key[0].as_int()
+            )
+            .where(
+                self._score_period_best_table.c.period == record.key[1].value
+                if record.key[1] is not None
                 else self._score_period_best_table.c.period.is_(None)
             )
-            .where(self._score_period_best_table.c.timeline == key[2])
-            .where(self._score_period_best_table.c.sub_period == key[3].value)
+            .where(self._score_period_best_table.c.timeline == record.key[2])
+            .where(self._score_period_best_table.c.sub_period == record.key[3].value)
         )
         if result.rowcount == 0:
             raise RecordNotFoundError(
-                f"The score period best {key[0]}:{key[1]}:{key[2]}:{key[3]} does not exist"
+                f"The score period best {record.key[0]}:{record.key[1]}:{record.key[2]}:{record.key[3]} does not exist"
             )
         return self._row_to_entity(result)
 

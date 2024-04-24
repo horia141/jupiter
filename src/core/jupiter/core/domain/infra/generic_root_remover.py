@@ -2,11 +2,19 @@
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
-from jupiter.core.framework.entity import ContainsLink, CrownEntity, Entity, RootEntity, LeafSupportEntity, OwnsLink, StubEntity, TrunkEntity
+from jupiter.core.framework.entity import (
+    ContainsLink,
+    CrownEntity,
+    Entity,
+    LeafSupportEntity,
+    RootEntity,
+    StubEntity,
+    TrunkEntity,
+)
 from jupiter.core.framework.record import ContainsRecords, Record
 from jupiter.core.framework.use_case import ProgressReporter
 
-from rich import print
+
 async def generic_root_remover(
     ctx: DomainContext,
     uow: DomainUnitOfWork,
@@ -18,7 +26,9 @@ async def generic_root_remover(
 
     async def _remover(entity: Entity) -> None:
         for field in entity.__class__.__dict__.values():
-            if not isinstance(field, ContainsLink) and not isinstance(field, ContainsRecords):
+            if not isinstance(field, ContainsLink) and not isinstance(
+                field, ContainsRecords
+            ):
                 continue
 
             if issubclass(field.the_type, TrunkEntity):
@@ -46,7 +56,7 @@ async def generic_root_remover(
                 )
 
                 for linked_record in linked_records:
-                    await uow.get_for_record(field.the_type).remove(linked_record.key)
+                    await uow.get_for_record(field.the_type).remove(linked_record)
             else:
                 raise Exception(f"Unsupported field type {field.the_type}")
 

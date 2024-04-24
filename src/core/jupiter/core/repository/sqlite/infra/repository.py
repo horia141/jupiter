@@ -18,7 +18,6 @@ from typing import (
 )
 
 import inflection
-from jupiter.core.framework.record import Record
 import pendulum
 from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.core.framework.base.entity_name import EntityName
@@ -36,6 +35,7 @@ from jupiter.core.framework.entity import (
 )
 from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.realm import DatabaseRealm, RealmCodecRegistry
+from jupiter.core.framework.record import Record
 from jupiter.core.framework.repository import (
     EntityAlreadyExistsError,
     EntityNotFoundError,
@@ -77,6 +77,7 @@ from sqlalchemy.ext.asyncio import AsyncConnection
 
 _EntityT = TypeVar("_EntityT", bound=Entity)
 _RecordT = TypeVar("_RecordT", bound=Record)
+_RecordKeyPrefixT = TypeVar("_RecordKeyPrefixT")
 
 
 class SqliteRepository(abc.ABC):
@@ -188,7 +189,7 @@ class SqliteEntityRepository(Generic[_EntityT], SqliteRepository, abc.ABC):
             entity,
         )
         return entity
-    
+
     async def remove(self, ref_id: EntityId) -> _EntityT:
         """Hard remove a crown - an irreversible operation."""
         query_stmt = select(self._table).where(
@@ -549,7 +550,7 @@ class SqliteTrunkEntityRepository(
                 f"Entity of type {self._entity_type.__name__} and id {entity_id!s} not found."
             )
         return self._row_to_entity(result)
-    
+
     async def remove_by_parent(self, parent_ref_id: EntityId) -> _TrunkEntityT:
         """Hard remove the entity with the given parent - an irreversible operation."""
         query_stmt = select(self._table).where(
@@ -588,7 +589,6 @@ class SqliteStubEntityRepository(
                 f"Entity of type {self._entity_type.__name__} and parent id {parent_ref_id!s} not found."
             )
         return self._row_to_entity(result)
-    
 
     async def remove_by_parent(self, parent_ref_id: EntityId) -> _StubEntityT:
         """Hard remove the entity with the given parent - an irreversible operation."""
@@ -697,5 +697,10 @@ class SqliteLeafEntityRepository(
     """A repository for leaf entities backed by SQLite, meant to be used as a mixin."""
 
 
-class SqliteRecordRepository(Generic[_RecordT], SqliteRepository, RecordRepository[_RecordT, object], abc.ABC):
+class SqliteRecordRepository(
+    Generic[_RecordT, _RecordKeyPrefixT],
+    SqliteRepository,
+    RecordRepository[_RecordT, _RecordKeyPrefixT],
+    abc.ABC,
+):
     """A repository for records backed by SQLite, meant to be used as a mixin."""

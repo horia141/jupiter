@@ -60,6 +60,11 @@ class ScoreStats(Record):
         )
 
     @property
+    def raw_key(self) -> object:
+        """The raw key of the score stats."""
+        return self.key
+
+    @property
     def key(self) -> tuple[EntityId, RecurringTaskPeriod | None, str]:
         """The key of the score stats."""
         return self.score_log.ref_id, self.period, self.timeline
@@ -83,9 +88,7 @@ class ScoreStats(Record):
 
 
 class ScoreStatsRepository(
-    RecordRepository[
-        ScoreStats, tuple[EntityId, RecurringTaskPeriod | None, str]
-    ],
+    RecordRepository[ScoreStats, tuple[EntityId, RecurringTaskPeriod | None, str]],
     abc.ABC,
 ):
     """A repository of score stats."""

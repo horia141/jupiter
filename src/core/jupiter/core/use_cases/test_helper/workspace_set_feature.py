@@ -4,8 +4,12 @@ from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.use_case import ProgressReporter
 from jupiter.core.framework.use_case_io import UseCaseArgsBase, use_case_args
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInMutationUseCaseContext, AppTransactionalLoggedInMutationUseCase
+from jupiter.core.use_cases.infra.use_cases import (
+    AppLoggedInMutationUseCaseContext,
+    AppTransactionalLoggedInMutationUseCase,
+)
 from jupiter.core.utils.feature_flag_controls import infer_feature_flag_controls
+
 
 @use_case_args
 class WorkspaceSetFeatureArgs(UseCaseArgsBase):

@@ -18,6 +18,7 @@ const SWIPE_THRESHOLD = 200;
 const SWIPE_COMPLETE_THRESHOLD = 150;
 
 interface EntityCardProps {
+  entityId?: string;
   showAsArchived?: boolean;
   extraControls?: JSX.Element;
   allowSwipe?: boolean;
@@ -90,6 +91,7 @@ export function EntityCard(props: PropsWithChildren<EntityCardProps>) {
       transition={{ duration: 1 }}
     >
       <Card
+        id={props.entityId}
         sx={{
           display: "flex",
           marginLeft: props.indent ? `${props.indent}rem` : "0",

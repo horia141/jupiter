@@ -24,6 +24,7 @@ from typing_extensions import dataclass_transform
 
 _RecordT = TypeVar("_RecordT", bound="Record")
 
+
 @dataclass(frozen=True)
 class Record(Concept):
     """A base class for a simplified object to store."""
@@ -64,8 +65,9 @@ class Record(Concept):
                     ),
                 )
         return self
-    
-    def key(self) -> object:
+
+    @property
+    def raw_key(self) -> object:
         """Get the key of the record."""
         raise NotImplementedError("key() method must be implemented in a subclass")
 

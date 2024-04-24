@@ -167,7 +167,9 @@ FeatureScope = (
 
 
 BASIC_USER_FEATURE_FLAGS = {UserFeature.GAMIFICATION: True}
-BASIC_USER_FEATURE_FLAGS_ARR = [f for f, v in BASIC_USER_FEATURE_FLAGS.items() if v is True]
+BASIC_USER_FEATURE_FLAGS_ARR = [
+    f for f, v in BASIC_USER_FEATURE_FLAGS.items() if v is True
+]
 
 
 USER_FEATURE_FLAGS_CONTROLS = UserFeatureFlagsControls(
@@ -193,7 +195,7 @@ BASIC_WORKSPACE_FEATURE_FLAGS = {
 }
 BASIC_WORKSPACE_FEATURE_FLAGS_ARR = [
     f for f, v in BASIC_WORKSPACE_FEATURE_FLAGS.items() if v is True
-    ]
+]
 
 
 HOSTED_GLOBAL_WORKSPACE_FEATURE_FLAGS_CONTROLS = WorkspaceFeatureFlagsControls(

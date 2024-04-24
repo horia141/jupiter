@@ -2,7 +2,9 @@
 from jupiter.core.domain.push_integrations.email.email_task_collection import (
     EmailTaskCollection,
 )
-from jupiter.core.domain.push_integrations.slack.slack_task_collection import SlackTaskCollection
+from jupiter.core.domain.push_integrations.slack.slack_task_collection import (
+    SlackTaskCollection,
+)
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (

@@ -50,7 +50,9 @@ class Workspace(RootEntity):
     feature_flags: WorkspaceFeatureFlags
 
     inbox_task_collection = ContainsOne(InboxTaskCollection, workspace_ref_id=IsRefId())
-    working_mem_collection = ContainsOne(WorkingMemCollection, workspace_ref_id=IsRefId())
+    working_mem_collection = ContainsOne(
+        WorkingMemCollection, workspace_ref_id=IsRefId()
+    )
     habit_collection = ContainsOne(HabitCollection, workspace_ref_id=IsRefId())
     chore_collection = ContainsOne(ChoreCollection, workspace_ref_id=IsRefId())
     big_plan_collection = ContainsOne(BigPlanCollection, workspace_ref_id=IsRefId())

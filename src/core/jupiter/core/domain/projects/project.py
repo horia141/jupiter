@@ -143,7 +143,7 @@ class Project(LeafEntity):
             ctx,
             order_of_child_projects=new_order,
         )
-    
+
     @property
     def is_safe_to_archive(self) -> bool:
         """Return True if it is safe to archive the project."""

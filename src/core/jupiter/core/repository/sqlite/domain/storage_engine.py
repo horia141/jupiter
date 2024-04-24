@@ -70,7 +70,7 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
         dict[type[Entity], type[SqliteEntityRepository[Entity]]]
     ]
     _record_repository_factories: Final[
-        dict[type[Record], type[SqliteRecordRepository[Record]]]
+        dict[type[Record], type[SqliteRecordRepository[Record, object]]]
     ]
     _repository_factories: Final[dict[type[Repository], type[SqliteRepository]]]
 
@@ -83,7 +83,7 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
             type[Entity], type[SqliteEntityRepository[Entity]]
         ],
         record_repository_factories: dict[
-            type[Record], type[SqliteRecordRepository[Record]]
+            type[Record], type[SqliteRecordRepository[Record, object]]
         ],
         repository_factories: dict[type[Repository], type[SqliteRepository]],
     ) -> None:
@@ -182,8 +182,10 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
                 CrownEntityRepository[_CrownEntityT],
                 repository,
             )
-        
-    def get_for_record(self, record_type: type[_RecordT]) -> RecordRepository[_RecordT, object]:
+
+    def get_for_record(
+        self, record_type: type[_RecordT]
+    ) -> RecordRepository[_RecordT, object]:
         """Return a repository for a particular record."""
         if record_type not in self._record_repository_factories:
             raise ValueError(f"No repository for record type: {record_type}")
@@ -286,7 +288,7 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
         dict[type[Entity], type[SqliteEntityRepository[Entity]]]
     ]
     _record_repository_factories: Final[
-        dict[type[Record], type[SqliteRecordRepository[Record]]]
+        dict[type[Record], type[SqliteRecordRepository[Record, object]]]
     ]
     _repository_factories: Final[dict[type[Repository], type[SqliteRepository]]]
 
@@ -298,7 +300,7 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
             type[Entity], type[SqliteEntityRepository[Entity]]
         ],
         record_repository_factories: dict[
-            type[Record], type[SqliteRecordRepository[Record]]
+            type[Record], type[SqliteRecordRepository[Record, object]]
         ],
         repository_factories: dict[type[Repository], type[SqliteRepository]],
     ) -> None:
@@ -340,7 +342,7 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
                         return possible_concept_type
 
             return None
-        
+
         def figure_out_record(the_type: type[Repository]) -> type[Record] | None:
             """Figure out the entity type from the repository type."""
             if not hasattr(the_type, "__orig_bases__"):
@@ -381,7 +383,7 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
                 return base  # A hack, we might be finding it too fast!
 
             return None
-        
+
         def figure_out_abstract_record_repository(
             the_type: type[Repository],
         ) -> type[RecordRepository[Record, object]] | None:
@@ -463,7 +465,11 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
         def extract_record_repositories(
             the_module: ModuleType,
         ) -> Iterator[
-            tuple[type[Record], type[RecordRepository[Record, object]], type[SqliteRecordRepository[Record]]]
+            tuple[
+                type[Record],
+                type[RecordRepository[Record, object]],
+                type[SqliteRecordRepository[Record, object]],
+            ]
         ]:
             """Extract all record repositories from a module."""
             for _name, obj in the_module.__dict__.items():
@@ -494,7 +500,7 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
                     raise Exception(
                         f"Could not figure out record type for repository: {obj}"
                     )
-                
+
                 abstract_repository_type = figure_out_abstract_record_repository(
                     cast(type, obj)
                 )
@@ -503,7 +509,7 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
                     raise Exception(
                         f"Could not figure out abstract repository type for repository: {obj}"
                     )
-                
+
                 yield record_type, abstract_repository_type, obj
 
         def extract_repositories(
@@ -571,7 +577,11 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
                 ] = concrete_entity_repository_type
 
             # extract all record repositories
-            for (record_type, abstract_record_repository_type, concrete_record_repository_type) in extract_record_repositories(m):
+            for (
+                record_type,
+                abstract_record_repository_type,
+                concrete_record_repository_type,
+            ) in extract_record_repositories(m):
                 if record_type in record_repository_factories:
                     raise Exception(
                         f"Record type {record_type} already has a repository"

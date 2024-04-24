@@ -90,6 +90,7 @@ export default function Vacations({ request }: LoaderArgs) {
           {sortedVacations.map((vacation) => {
             return (
               <EntityCard
+                entityId={`vacation-${vacation.ref_id}`}
                 key={vacation.ref_id}
                 allowSwipe
                 allowMarkNotDone
