@@ -31,7 +31,7 @@ wait_for_service_to_start() {
             echo "Waiting for ${service}. Attempt $((attempts+1)) of $max_attempts."
         fi
         
-        ((attempts++))
+        attempts=$(expr $attempts + 1)
         sleep 1  # Adjust the sleep time as needed
     done
 
