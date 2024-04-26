@@ -1,7 +1,7 @@
 """Fixtures with auth sessions."""
 import os
-from collections.abc import Iterator
 import re
+from collections.abc import Iterator
 
 import pytest
 import validators
