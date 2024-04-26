@@ -92,7 +92,8 @@ export default function Journals() {
             ) as JournalFindResultEntry;
             return (
               <EntityCard
-                key={entry.journal.ref_id}
+                key={`journal-${entry.journal.ref_id}`}
+                entityId={`journal-${entry.journal.ref_id}`}
                 allowSwipe
                 allowMarkNotDone
                 onMarkNotDone={() => archiveJournal(entry.journal)}

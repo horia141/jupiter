@@ -97,7 +97,8 @@ export default function EmailTasks() {
         <EntityStack>
           {sortedEntries.map((entry) => (
             <EntityCard
-              key={entry.email_task.ref_id}
+              key={`email-task-${entry.email_task.ref_id}`}
+              entityId={`email-task-${entry.email_task.ref_id}`}
               allowSwipe
               allowMarkNotDone
               onMarkNotDone={() => archiveEmailTask(entry.email_task)}

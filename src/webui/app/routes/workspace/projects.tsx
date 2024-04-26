@@ -126,7 +126,8 @@ export default function Projects() {
               );
               return (
                 <EntityCard
-                  key={project.ref_id}
+                  entityId={`project-${project.ref_id}`}
+                  key={`project-${project.ref_id}`}
                   indent={indent}
                   extraControls={
                     isRootProject(project) ||

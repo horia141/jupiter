@@ -93,7 +93,8 @@ export default function SlackTasks() {
         <EntityStack>
           {sortedEntries.map((entry) => (
             <EntityCard
-              key={entry.slack_task.ref_id}
+              key={`slack-task-${entry.slack_task.ref_id}`}
+              entityId={`slack-task-${entry.slack_task.ref_id}`}
               allowSwipe
               allowMarkNotDone
               onMarkNotDone={() => archiveSlackTask(entry.slack_task)}

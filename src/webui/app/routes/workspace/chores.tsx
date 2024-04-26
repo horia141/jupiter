@@ -99,7 +99,8 @@ export default function Chores() {
             ) as ChoreFindResultEntry;
             return (
               <EntityCard
-                key={chore.ref_id}
+                key={`chore-${chore.ref_id}`}
+                entityId={`chore-${chore.ref_id}`}
                 allowSwipe
                 allowMarkNotDone
                 onMarkNotDone={() => archiveChore(chore)}

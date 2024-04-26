@@ -98,7 +98,8 @@ export default function Habits() {
             ) as HabitFindResultEntry;
             return (
               <EntityCard
-                key={habit.ref_id}
+                key={`habit-${habit.ref_id}`}
+                entityId={`habit-${habit.ref_id}`}
                 allowSwipe
                 allowMarkNotDone
                 onMarkNotDone={() => archiveHabit(habit)}

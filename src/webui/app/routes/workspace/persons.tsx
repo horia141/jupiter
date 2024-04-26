@@ -101,7 +101,8 @@ export default function Persons() {
         <EntityStack>
           {loaderData.entries.map((entry) => (
             <EntityCard
-              key={entry.person.ref_id}
+              entityId={`person-${entry.person.ref_id}`}
+              key={`person-${entry.person.ref_id}`}
               allowSwipe
               allowMarkNotDone
               onMarkNotDone={() => archivePerson(entry.person)}

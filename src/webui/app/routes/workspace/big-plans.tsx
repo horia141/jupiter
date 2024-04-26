@@ -509,7 +509,8 @@ function List({
     <EntityStack>
       {bigPlans.map((entry) => (
         <EntityCard
-          key={entry.ref_id}
+          key={`big-plan-${entry.ref_id}`}
+          entityId={`big-plan-${entry.ref_id}`}
           allowSwipe
           allowMarkNotDone
           onMarkNotDone={() => onArchiveBigPlan(entry)}

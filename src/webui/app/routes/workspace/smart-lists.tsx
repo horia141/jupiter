@@ -78,7 +78,8 @@ export default function SmartLists() {
         <EntityStack>
           {loaderData.entries.map((entry) => (
             <EntityCard
-              key={entry.smart_list.ref_id}
+              key={`smart-list-${entry.smart_list.ref_id}`}
+              entityId={`smart-list-${entry.smart_list.ref_id}`}
               allowSwipe
               allowMarkNotDone
               onMarkNotDone={() => archiveSmartList(entry.smart_list)}

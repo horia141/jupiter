@@ -84,7 +84,8 @@ export default function WorkingMemArchive({ request }: LoaderArgs) {
           {sortedWorkingMems.map((workingMem) => {
             return (
               <EntityCard
-                key={workingMem.ref_id}
+                entityId={`working-mem-${workingMem.ref_id}`}
+                key={`working-mem-${workingMem.ref_id}`}
                 allowSwipe
                 allowMarkNotDone={
                   aDateToDate(workingMem.right_now) > today.minus({ days: 14 })

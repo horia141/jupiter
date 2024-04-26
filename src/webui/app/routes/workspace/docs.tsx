@@ -68,7 +68,8 @@ export default function Docs() {
         <EntityStack>
           {loaderData.entries.map((entry) => (
             <EntityCard
-              key={entry.doc.ref_id}
+              key={`doc-${entry.doc.ref_id}`}
+              entityId={`doc-${entry.doc.ref_id}`}
               allowSwipe
               allowMarkNotDone
               onMarkNotDone={() => archiveDoc(entry.doc)}

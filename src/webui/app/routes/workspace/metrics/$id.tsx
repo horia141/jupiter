@@ -115,7 +115,8 @@ export default function Metric() {
         <EntityStack>
           {sortedEntries.map((entry) => (
             <EntityCard
-              key={entry.ref_id}
+              entityId={`metric-entry-${entry.ref_id}`}
+              key={`metric-entry-${entry.ref_id}`}
               allowSwipe
               allowMarkNotDone
               onMarkNotDone={() => archiveEntry(entry)}

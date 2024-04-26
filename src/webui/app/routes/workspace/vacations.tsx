@@ -91,7 +91,7 @@ export default function Vacations({ request }: LoaderArgs) {
             return (
               <EntityCard
                 entityId={`vacation-${vacation.ref_id}`}
-                key={vacation.ref_id}
+                key={`vacation-${vacation.ref_id}`}
                 allowSwipe
                 allowMarkNotDone
                 onMarkNotDone={() => archiveVacation(vacation)}
