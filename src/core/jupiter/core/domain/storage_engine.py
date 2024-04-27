@@ -10,8 +10,10 @@ from jupiter.core.framework.entity import (
     StubEntity,
     TrunkEntity,
 )
+from jupiter.core.framework.record import Record
 from jupiter.core.framework.repository import (
     CrownEntityRepository,
+    RecordRepository,
     Repository,
     RootEntityRepository,
     StubEntityRepository,
@@ -23,6 +25,7 @@ _RootEntityT = TypeVar("_RootEntityT", bound=RootEntity)
 _StubEntityT = TypeVar("_StubEntityT", bound=StubEntity)
 _TrunkEntityT = TypeVar("_TrunkEntityT", bound=TrunkEntity)
 _CrownEntityT = TypeVar("_CrownEntityT", bound=CrownEntity)
+_RecordT = TypeVar("_RecordT", bound=Record)
 
 
 class DomainUnitOfWork(abc.ABC):
@@ -70,7 +73,13 @@ class DomainUnitOfWork(abc.ABC):
     ) -> RootEntityRepository[_RootEntityT] | StubEntityRepository[
         _StubEntityT
     ] | TrunkEntityRepository[_TrunkEntityT] | CrownEntityRepository[_CrownEntityT]:
-        """Retrieve a repository for a specific entity type.""" ""
+        """Retrieve a repository for a specific entity type."""
+
+    @abc.abstractmethod
+    def get_for_record(
+        self, record_type: type[_RecordT]
+    ) -> RecordRepository[_RecordT, object]:
+        """Retrieve a repository for a specific record type."""
 
 
 class DomainStorageEngine(abc.ABC):

@@ -1,7 +1,7 @@
 """The base value object for any kind of tag tag."""
 import re
 from functools import total_ordering
-from typing import Final, TypeVar
+from typing import Final
 
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.primitive import Primitive
@@ -12,9 +12,6 @@ from jupiter.core.use_cases.infra.realms import (
 )
 
 _TAG_RE: Final[re.Pattern[str]] = re.compile(r"^[a-zA-Z0-9]([a-zA-Z0-9]*-?)*$")
-
-
-_TagNameT = TypeVar("_TagNameT", bound="TagName")
 
 
 @total_ordering

@@ -36,7 +36,7 @@ class Record(Concept):
     def _create(
         cls: type[_RecordT],
         ctx: DomainContext,
-        **kwargs: Union[None, bool, str, int, float, object],
+        **kwargs: None | bool | str | float | object,
     ) -> _RecordT:
         """Create a new record."""
         return cls(
@@ -48,7 +48,7 @@ class Record(Concept):
     def _new_version(
         self: _RecordT,
         ctx: DomainContext,
-        **kwargs: Union[None, bool, str, int, float, object],
+        **kwargs: None | bool | str | float | object,
     ) -> _RecordT:
         # To hell with your types!
         # We only want to create a new version if there's any actual change in the root. This means we both
@@ -65,6 +65,11 @@ class Record(Concept):
                     ),
                 )
         return self
+
+    @property
+    def raw_key(self) -> object:
+        """Get the key of the record."""
+        raise NotImplementedError("key() method must be implemented in a subclass")
 
 
 @dataclass_transform(frozen_default=True)

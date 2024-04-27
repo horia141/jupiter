@@ -34,9 +34,7 @@ class RecordNotFoundError(Exception):
     """Error raised when a record is not found."""
 
 
-class RecordRepository(
-    Generic[RecordT, RecordKeyT, RecordKeyPrefixT], Repository, abc.ABC
-):
+class RecordRepository(Generic[RecordT, RecordKeyT], Repository, abc.ABC):
     """A repository for records."""
 
     @abc.abstractmethod
@@ -48,7 +46,7 @@ class RecordRepository(
         """Save a record."""
 
     @abc.abstractmethod
-    async def remove(self, key: RecordKeyT) -> RecordT:
+    async def remove(self, record: RecordT) -> RecordT:
         """Hard remove a record - an irreversible operation."""
 
     @abc.abstractmethod
@@ -56,7 +54,7 @@ class RecordRepository(
         """Load a record by it's unique key."""
 
     @abc.abstractmethod
-    async def find_all(self, prefix: RecordKeyPrefixT) -> list[RecordT]:
+    async def find_all(self, parent_ref_id: EntityId) -> list[RecordT]:
         """Find all records matching some criteria."""
 
 
@@ -81,6 +79,10 @@ class EntityRepository(Generic[EntityT], Repository, abc.ABC):
     @abc.abstractmethod
     async def save(self, entity: EntityT) -> EntityT:
         """Save an entity."""
+
+    @abc.abstractmethod
+    async def remove(self, ref_id: EntityId) -> EntityT:
+        """Hard remove an entity - an irreversible operation."""
 
 
 RootEntityT = TypeVar("RootEntityT", bound=RootEntity)
@@ -130,6 +132,10 @@ class TrunkEntityRepository(EntityRepository[TrunkEntityT], abc.ABC):
     ) -> TrunkEntityT:
         """Retrieve a trunk by its id."""
 
+    @abc.abstractmethod
+    async def remove_by_parent(self, parent_ref_id: EntityId) -> TrunkEntityT:
+        """Remove a trunk by its owning parent id."""
+
 
 class StubEntityAlreadyExistsError(EntityAlreadyExistsError):
     """Error raised when a stub entity with the given key already exists."""
@@ -148,6 +154,10 @@ class StubEntityRepository(EntityRepository[StubEntityT], abc.ABC):
     @abc.abstractmethod
     async def load_by_parent(self, parent_ref_id: EntityId) -> StubEntityT:
         """Retrieve a stub by its owning parent id."""
+
+    @abc.abstractmethod
+    async def remove_by_parent(self, parent_ref_id: EntityId) -> StubEntityT:
+        """Remove a stub by its owning parent id."""
 
 
 CrownEntityT = TypeVar("CrownEntityT", bound=CrownEntity)
@@ -180,10 +190,6 @@ class CrownEntityRepository(EntityRepository[CrownEntityT], abc.ABC):
         **kwargs: EntityLinkFilterCompiled,
     ) -> list[CrownEntityT]:
         """Find all crowns with generic filters."""
-
-    @abc.abstractmethod
-    async def remove(self, ref_id: EntityId) -> CrownEntityT:
-        """Hard remove a crown - an irreversible operation."""
 
 
 BranchEntityT = TypeVar("BranchEntityT", bound=BranchEntity)

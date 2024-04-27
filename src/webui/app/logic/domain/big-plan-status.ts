@@ -1,4 +1,4 @@
-import { BigPlanStatus } from "jupiter-gen";
+import { BigPlanStatus } from "@jupiter/webapi-client";
 
 export function bigPlanStatusName(status: BigPlanStatus): string {
   switch (status) {

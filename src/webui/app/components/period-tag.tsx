@@ -1,4 +1,4 @@
-import { RecurringTaskPeriod } from "jupiter-gen";
+import { RecurringTaskPeriod } from "@jupiter/webapi-client";
 import { periodName } from "~/logic/domain/period";
 import { SlimChip } from "./infra/chips";
 interface Props {

@@ -1,7 +1,7 @@
 {
   "private": true,
   "sideEffects": false,
-  "name": "jupiter-desktop",
+  "name": "@jupiter/desktop",
   "version": "0.1.0",
   "description": "The Jupiter Desktop application",
   "main": "main.js",

@@ -1,3 +1,9 @@
+import type { InboxTask, ProjectSummary } from "@jupiter/webapi-client";
+import {
+  ApiError,
+  InboxTaskStatus,
+  RecurringTaskPeriod,
+} from "@jupiter/webapi-client";
 import {
   Button,
   ButtonGroup,
@@ -21,8 +27,6 @@ import {
   useTransition,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import type { InboxTask, ProjectSummary } from "jupiter-gen";
-import { ApiError, InboxTaskStatus, RecurringTaskPeriod } from "jupiter-gen";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";

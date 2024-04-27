@@ -1,4 +1,4 @@
-import type { Metric } from "jupiter-gen";
+import type { Metric } from "@jupiter/webapi-client";
 import { LinkTag } from "./infra/link-tag";
 
 interface Props {

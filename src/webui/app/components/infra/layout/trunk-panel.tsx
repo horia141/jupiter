@@ -140,6 +140,7 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
 
             {props.createLocation && (
               <Button
+                id="trunk-new-leaf-entity"
                 variant="contained"
                 to={props.createLocation}
                 component={Link}

@@ -1,9 +1,9 @@
+import type { SmartList } from "@jupiter/webapi-client";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Outlet, useFetcher } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
-import type { SmartList } from "jupiter-gen";
 import { getLoggedInApiClient } from "~/api-clients";
 import EntityIconComponent from "~/components/entity-icon";
 import { EntityNameComponent } from "~/components/entity-name";
@@ -78,7 +78,8 @@ export default function SmartLists() {
         <EntityStack>
           {loaderData.entries.map((entry) => (
             <EntityCard
-              key={entry.smart_list.ref_id}
+              key={`smart-list-${entry.smart_list.ref_id}`}
+              entityId={`smart-list-${entry.smart_list.ref_id}`}
               allowSwipe
               allowMarkNotDone
               onMarkNotDone={() => archiveSmartList(entry.smart_list)}

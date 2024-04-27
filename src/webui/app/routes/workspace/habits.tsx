@@ -1,10 +1,18 @@
+import type {
+  Habit,
+  HabitFindResultEntry,
+  Project,
+} from "@jupiter/webapi-client";
+import {
+  Eisen,
+  RecurringTaskPeriod,
+  WorkspaceFeature,
+} from "@jupiter/webapi-client";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Outlet, useFetcher } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
-import type { Habit, HabitFindResultEntry, Project } from "jupiter-gen";
-import { Eisen, RecurringTaskPeriod, WorkspaceFeature } from "jupiter-gen";
 import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
 import { DifficultyTag } from "~/components/difficulty-tag";
@@ -90,7 +98,8 @@ export default function Habits() {
             ) as HabitFindResultEntry;
             return (
               <EntityCard
-                key={habit.ref_id}
+                key={`habit-${habit.ref_id}`}
+                entityId={`habit-${habit.ref_id}`}
                 allowSwipe
                 allowMarkNotDone
                 onMarkNotDone={() => archiveHabit(habit)}

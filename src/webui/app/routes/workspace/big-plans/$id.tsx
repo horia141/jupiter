@@ -1,3 +1,11 @@
+import type { InboxTask, ProjectSummary } from "@jupiter/webapi-client";
+import {
+  ApiError,
+  BigPlanStatus,
+  InboxTaskStatus,
+  NoteDomain,
+  WorkspaceFeature,
+} from "@jupiter/webapi-client";
 import type { SelectChangeEvent } from "@mui/material";
 import {
   Button,
@@ -23,14 +31,6 @@ import {
   useTransition,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import type { InboxTask, ProjectSummary } from "jupiter-gen";
-import {
-  ApiError,
-  BigPlanStatus,
-  InboxTaskStatus,
-  NoteDomain,
-  WorkspaceFeature,
-} from "jupiter-gen";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";

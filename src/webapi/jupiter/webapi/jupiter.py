@@ -1,5 +1,6 @@
 """The Jupiter Web RPC API."""
 import asyncio
+import logging
 
 import aiohttp
 import jupiter.core.domain
@@ -23,10 +24,29 @@ from jupiter.core.utils.global_properties import build_global_properties
 from jupiter.webapi.app import WebServiceApp
 from jupiter.webapi.time_provider import CronRunTimeProvider, PerRequestTimeProvider
 from jupiter.webapi.websocket_progress_reporter import WebsocketProgressReporterFactory
+from rich.console import Console
+from rich.logging import RichHandler
 
 
 async def main() -> None:
     """Application main function."""
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+        handlers=[
+            RichHandler(
+                console=Console(width=128),
+                show_path=False,
+                omit_repeated_times=False,
+                rich_tracebacks=True,
+                markup=True,
+                enable_link_path=False,
+                log_time_format="%Y-%m-%d %H:%M:%S",
+            )
+        ],
+    )
+
     request_time_provider = PerRequestTimeProvider()
     cron_run_time_provider = CronRunTimeProvider()
 

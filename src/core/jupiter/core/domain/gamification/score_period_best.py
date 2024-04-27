@@ -73,6 +73,11 @@ class ScorePeriodBest(Record):
         )
 
     @property
+    def raw_key(self) -> object:
+        """The raw key of the score best."""
+        return self.key
+
+    @property
     def key(
         self,
     ) -> tuple[EntityId, RecurringTaskPeriod | None, str, RecurringTaskPeriod]:
@@ -92,7 +97,6 @@ class ScorePeriodBestRepository(
     RecordRepository[
         ScorePeriodBest,
         tuple[EntityId, RecurringTaskPeriod | None, str, RecurringTaskPeriod],
-        EntityId,
     ],
     abc.ABC,
 ):

@@ -1,5 +1,5 @@
+import type { RecordScoreResult } from "@jupiter/webapi-client";
 import { createCookie } from "@remix-run/node";
-import type { RecordScoreResult } from "jupiter-gen";
 import { GLOBAL_PROPERTIES } from "~/global-properties-server";
 
 // TODO(horia141): secrets!

@@ -8,7 +8,6 @@ from typing import (
     Generic,
     Sequence,
     TypeVar,
-    Union,
     cast,
 )
 
@@ -45,7 +44,7 @@ class Entity(Concept):
     def _create(
         cls: type[_EntityT],
         ctx: DomainContext,
-        **kwargs: Union[None, bool, str, int, float, object],
+        **kwargs: None | bool | str | float | object,
     ) -> _EntityT:
         """Create a new entity."""
         return cls(
@@ -62,7 +61,7 @@ class Entity(Concept):
     def _new_version(
         self: _EntityT,
         ctx: DomainContext,
-        **kwargs: Union[None, bool, str, int, float, object],
+        **kwargs: None | bool | str | float | object,
     ) -> _EntityT:
         # To hell with your types!
         # We only want to create a new version if there's any actual change in the root. This means we both
@@ -107,6 +106,11 @@ class Entity(Concept):
             )
         )
         return archived_entity
+
+    @property
+    def is_safe_to_archive(self) -> bool:
+        """Check if the entity is safe to archive."""
+        return True
 
     @property
     def parent_ref_id(self) -> EntityId:

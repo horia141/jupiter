@@ -154,9 +154,13 @@ class SqliteSearchRepository(SqliteRepository, SearchRepository):
             .where(self._search_index_table.c.ref_id == entity.ref_id.as_int())
         )
 
-    async def drop(self) -> None:
+    async def drop(self, workspace_ref_id: EntityId) -> None:
         """Remove everything from the index."""
-        await self._connection.execute(delete(self._search_index_table))
+        await self._connection.execute(
+            delete(self._search_index_table).where(
+                self._search_index_table.c.workspace_ref_id == workspace_ref_id.as_int()
+            )
+        )
 
     async def search(
         self,

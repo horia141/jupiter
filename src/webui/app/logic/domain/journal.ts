@@ -1,5 +1,5 @@
-import type { Journal } from "jupiter-gen";
-import { JournalSource } from "jupiter-gen";
+import type { Journal } from "@jupiter/webapi-client";
+import { JournalSource } from "@jupiter/webapi-client";
 import { compareADate } from "./adate";
 import { comparePeriods } from "./period";
 

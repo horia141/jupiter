@@ -1,3 +1,5 @@
+import type { ProjectSummary } from "@jupiter/webapi-client";
+import { ApiError, NoteDomain } from "@jupiter/webapi-client";
 import {
   Autocomplete,
   Button,
@@ -16,8 +18,6 @@ import { json, redirect, Response } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useParams, useTransition } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import type { ProjectSummary } from "jupiter-gen";
-import { ApiError, NoteDomain } from "jupiter-gen";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";

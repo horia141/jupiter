@@ -1,11 +1,11 @@
+import type { MetricEntry } from "@jupiter/webapi-client";
+import { ApiError } from "@jupiter/webapi-client";
 import { ResponsiveLine } from "@nivo/line";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Link, Outlet, useFetcher, useParams } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import type { MetricEntry } from "jupiter-gen";
-import { ApiError } from "jupiter-gen";
 import { z } from "zod";
 import { parseParams } from "zodix";
 
@@ -115,7 +115,8 @@ export default function Metric() {
         <EntityStack>
           {sortedEntries.map((entry) => (
             <EntityCard
-              key={entry.ref_id}
+              entityId={`metric-entry-${entry.ref_id}`}
+              key={`metric-entry-${entry.ref_id}`}
               allowSwipe
               allowMarkNotDone
               onMarkNotDone={() => archiveEntry(entry)}

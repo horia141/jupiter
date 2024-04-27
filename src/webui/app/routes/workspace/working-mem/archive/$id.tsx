@@ -1,3 +1,9 @@
+import type { InboxTask } from "@jupiter/webapi-client";
+import {
+  ApiError,
+  InboxTaskStatus,
+  RecurringTaskPeriod,
+} from "@jupiter/webapi-client";
 import {
   Card,
   CardContent,
@@ -13,8 +19,6 @@ import { json, redirect, Response } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useFetcher, useParams, useTransition } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import type { InboxTask } from "jupiter-gen";
-import { ApiError, InboxTaskStatus, RecurringTaskPeriod } from "jupiter-gen";
 import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";

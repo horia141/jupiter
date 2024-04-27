@@ -1,16 +1,16 @@
+import type {
+  BigPlan,
+  BigPlanFindResultEntry,
+  Project,
+  ProjectSummary,
+} from "@jupiter/webapi-client";
+import { BigPlanStatus, WorkspaceFeature } from "@jupiter/webapi-client";
 import ViewListIcon from "@mui/icons-material/ViewList";
 import ViewTimelineIcon from "@mui/icons-material/ViewTimeline";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Link, Outlet, useFetcher } from "@remix-run/react";
-import type {
-  BigPlan,
-  BigPlanFindResultEntry,
-  Project,
-  ProjectSummary,
-} from "jupiter-gen";
-import { BigPlanStatus, WorkspaceFeature } from "jupiter-gen";
 import { ADateTag } from "~/components/adate-tag";
 import { BigPlanStatusTag } from "~/components/big-plan-status-tag";
 import { ProjectTag } from "~/components/project-tag";
@@ -509,7 +509,8 @@ function List({
     <EntityStack>
       {bigPlans.map((entry) => (
         <EntityCard
-          key={entry.ref_id}
+          key={`big-plan-${entry.ref_id}`}
+          entityId={`big-plan-${entry.ref_id}`}
           allowSwipe
           allowMarkNotDone
           onMarkNotDone={() => onArchiveBigPlan(entry)}

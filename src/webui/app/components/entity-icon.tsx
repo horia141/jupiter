@@ -1,4 +1,4 @@
-import type { EntityIcon } from "jupiter-gen";
+import type { EntityIcon } from "@jupiter/webapi-client";
 
 interface EntityIconProps {
   icon: EntityIcon;

@@ -1,3 +1,4 @@
+import { ApiError, NamedEntityTag } from "@jupiter/webapi-client";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
   Accordion,
@@ -21,7 +22,6 @@ import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { ApiError, NamedEntityTag } from "jupiter-gen";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { CheckboxAsString, parseQuery } from "zodix";

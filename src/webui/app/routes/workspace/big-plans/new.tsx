@@ -1,3 +1,5 @@
+import type { ProjectSummary } from "@jupiter/webapi-client";
+import { ApiError, WorkspaceFeature } from "@jupiter/webapi-client";
 import {
   Button,
   ButtonGroup,
@@ -16,8 +18,6 @@ import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import type { ProjectSummary } from "jupiter-gen";
-import { ApiError, WorkspaceFeature } from "jupiter-gen";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
@@ -175,7 +175,12 @@ export default function NewBigPlan() {
 
         <CardActions>
           <ButtonGroup>
-            <Button variant="contained" disabled={!inputsEnabled} type="submit">
+            <Button
+              id="big-plan-create"
+              variant="contained"
+              disabled={!inputsEnabled}
+              type="submit"
+            >
               Create
             </Button>
           </ButtonGroup>

@@ -1,6 +1,7 @@
 """SQlite based repository for the invocation record of mutation use cases."""
 from typing import Final
 
+from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.realm import EventStoreRealm, RealmCodecRegistry
 from jupiter.core.framework.use_case import MutationUseCaseInvocationRecord, UseCaseArgs
 from jupiter.core.repository.sqlite.infra.repository import SqliteRepository
@@ -81,8 +82,11 @@ class SqliteMutationUseCaseInvocationRecordRepository(
             ),
         )
 
-    async def clear_all(self) -> None:
+    async def clear_all(self, workspace_ref_id: EntityId) -> None:
         """Clear all entries in the invocation record."""
         await self._connection.execute(
-            delete(self._mutation_use_case_invocation_record_table),
+            delete(self._mutation_use_case_invocation_record_table).where(
+                self._mutation_use_case_invocation_record_table.c.workspace_ref_id
+                == workspace_ref_id.as_int()
+            ),
         )

@@ -28,22 +28,22 @@ def hashable_value(cls: type[_ValueT]) -> type[_ValueT]:
     return dataclass(eq=True, unsafe_hash=True, frozen=True)(cls)
 
 
-_PrimitiveT = TypeVar("_PrimitiveT", bound=Primitive, covariant=True)
+_PrimitiveT_co = TypeVar("_PrimitiveT_co", bound=Primitive, covariant=True)
 
 _AtomicValueT = TypeVar("_AtomicValueT", bound="AtomicValue[Primitive]")
 
 
 @dataclass(frozen=True)
 class AtomicValue(
-    Generic[_PrimitiveT],
+    Generic[_PrimitiveT_co],
     Value,
 ):
     """An atomic value object in the domain."""
 
     @classmethod
-    def base_type_hack(cls: type[_AtomicValueT]) -> type[_PrimitiveT]:
+    def base_type_hack(cls: type[_AtomicValueT]) -> type[_PrimitiveT_co]:
         """Get the base type of this value."""
-        return cast(type[_PrimitiveT], get_args(cls.__orig_bases__[0])[0])  # type: ignore[attr-defined]
+        return cast(type[_PrimitiveT_co], get_args(cls.__orig_bases__[0])[0])  # type: ignore[attr-defined]
 
 
 @dataclass(frozen=True)
@@ -78,7 +78,7 @@ class SecretValue(Value):
         """Get a string representation of this value."""
         # Just a very silly protection. Even if someone tries to print or store this they'll get
         # some ugly text like this.
-        return "****************"
+        return f'{self.__class__.__name__}("****************")'
 
     def __str__(self) -> str:
         """Get a string representation of this value."""

@@ -145,6 +145,11 @@ class Project(LeafEntity):
         )
 
     @property
+    def is_safe_to_archive(self) -> bool:
+        """Return True if it is safe to archive the project."""
+        return not self.is_root
+
+    @property
     def is_root(self) -> bool:
         """Return True if this is a root project."""
         return self.parent_project_ref_id is None

@@ -1,3 +1,9 @@
+import {
+  ApiError,
+  Difficulty,
+  Eisen,
+  RecurringTaskPeriod,
+} from "@jupiter/webapi-client";
 import type { SelectChangeEvent } from "@mui/material";
 import {
   Button,
@@ -18,7 +24,6 @@ import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { ApiError, Difficulty, Eisen, RecurringTaskPeriod } from "jupiter-gen";
 import { useState } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
@@ -309,7 +314,12 @@ export default function NewMetric() {
 
         <CardActions>
           <ButtonGroup>
-            <Button variant="contained" disabled={!inputsEnabled} type="submit">
+            <Button
+              id="metric-create"
+              variant="contained"
+              disabled={!inputsEnabled}
+              type="submit"
+            >
               Create
             </Button>
           </ButtonGroup>

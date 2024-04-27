@@ -1,4 +1,4 @@
-import { Env } from "jupiter-gen";
+import { Env } from "@jupiter/webapi-client";
 
 export function isDevelopment(env: Env) {
   return env !== Env.PRODUCTION;

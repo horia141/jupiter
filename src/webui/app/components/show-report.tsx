@@ -1,3 +1,15 @@
+import type {
+  InboxTasksSummary,
+  ProjectSummary,
+  ReportPeriodResult,
+  WorkableSummary,
+} from "@jupiter/webapi-client";
+import {
+  InboxTaskSource,
+  RecurringTaskPeriod,
+  UserFeature,
+  WorkspaceFeature,
+} from "@jupiter/webapi-client";
 import {
   Box,
   Divider,
@@ -16,18 +28,6 @@ import {
   Tabs,
   Typography,
 } from "@mui/material";
-import type {
-  InboxTasksSummary,
-  ProjectSummary,
-  ReportPeriodResult,
-  WorkableSummary,
-} from "jupiter-gen";
-import {
-  InboxTaskSource,
-  RecurringTaskPeriod,
-  UserFeature,
-  WorkspaceFeature,
-} from "jupiter-gen";
 import { useState } from "react";
 
 import { EntityNameOneLineComponent } from "~/components/entity-name";
@@ -117,7 +117,6 @@ export function ShowReport({
   const allProjectsByRefId = new Map<string, ProjectSummary>(
     allProjects.map((p) => [p.ref_id, p])
   );
-  console.log(allProjectsSorted);
 
   return (
     <Stack spacing={2} useFlexGap sx={{ paddingTop: "1rem" }}>

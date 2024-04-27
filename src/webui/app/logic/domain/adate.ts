@@ -1,11 +1,14 @@
-import type { ADate } from "jupiter-gen";
+import type { ADate } from "@jupiter/webapi-client";
 import { DateTime } from "luxon";
 
 export function aDateToDate(aDate: ADate): DateTime {
   return DateTime.fromISO(aDate);
 }
 
-export function compareADate(adate1?: ADate, adate2?: ADate): number {
+export function compareADate(
+  adate1?: ADate | null,
+  adate2?: ADate | null
+): number {
   if (
     (adate1 === undefined || adate1 === null) &&
     (adate2 === undefined || adate2 === null)

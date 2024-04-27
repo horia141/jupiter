@@ -33,8 +33,8 @@ class SearchRepository(Repository, abc.ABC):
         """Remove an entity from the search index."""
 
     @abc.abstractmethod
-    async def drop(self) -> None:
-        """Remove all entries from the search index."""
+    async def drop(self, workspace_ref_id: EntityId) -> None:
+        """Remove all entries from the search index for a particular workspace."""
 
     @abc.abstractmethod
     async def search(

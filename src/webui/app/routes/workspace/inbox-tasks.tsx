@@ -27,14 +27,17 @@ import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Link, Outlet, useFetcher } from "@remix-run/react";
 
-import type { InboxTask, InboxTaskFindResultEntry } from "jupiter-gen";
+import type {
+  InboxTask,
+  InboxTaskFindResultEntry,
+} from "@jupiter/webapi-client";
 import {
   Eisen,
   InboxTaskSource,
   InboxTaskStatus,
   RecurringTaskPeriod,
-} from "jupiter-gen";
-import { memo, useContext, useState } from "react";
+} from "@jupiter/webapi-client";
+import React, { memo, useContext, useState } from "react";
 import { InboxTaskStatusTag } from "~/components/inbox-task-status-tag";
 
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
@@ -44,7 +47,6 @@ import ViewListIcon from "@mui/icons-material/ViewList";
 import Grid from "@mui/material/Unstable_Grid2";
 import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";
-import React from "react";
 import { z } from "zod";
 import { getLoggedInApiClient } from "~/api-clients";
 import type { InboxTaskShowOptions } from "~/components/inbox-task-card";
@@ -66,6 +68,7 @@ import type {
 import {
   canInboxTaskBeInStatus,
   filterInboxTasksForDisplay,
+  inboxTaskFindEntryToParent,
   isInboxTaskCoreFieldEditable,
   sortInboxTasksByEisenAndDifficulty,
   sortInboxTasksNaturally,
@@ -158,12 +161,7 @@ export default function InboxTasks() {
   }
   const entriesByRefId: { [key: string]: InboxTaskParent } = {};
   for (const entry of entries) {
-    entriesByRefId[entry.inbox_task.ref_id] = {
-      bigPlan: entry.big_plan,
-      slackTask: entry.slack_task,
-      emailTask: entry.email_task,
-      ...entry,
-    };
+    entriesByRefId[entry.inbox_task.ref_id] = inboxTaskFindEntryToParent(entry);
   }
 
   const [selectedView, setSelectedView] = useState(View.SWIFTVIEW);

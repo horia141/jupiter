@@ -1,5 +1,5 @@
+import type { EntityName } from "@jupiter/webapi-client";
 import { Typography } from "@mui/material";
-import type { EntityName } from "jupiter-gen";
 
 interface EntityNameProps {
   compact?: boolean;

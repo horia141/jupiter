@@ -14,6 +14,7 @@ secrets.info
 build/
 public/build/
 .env
-gen/dist/
+gen/ts/webapi-client/dist/
 .sqlite
 session-info
+.ruff_cache/

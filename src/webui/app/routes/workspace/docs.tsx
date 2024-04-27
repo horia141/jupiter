@@ -1,9 +1,9 @@
+import type { Doc } from "@jupiter/webapi-client";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Outlet, useFetcher } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
-import type { Doc } from "jupiter-gen";
 import { getLoggedInApiClient } from "~/api-clients";
 import { EntityNameComponent } from "~/components/entity-name";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
@@ -68,7 +68,8 @@ export default function Docs() {
         <EntityStack>
           {loaderData.entries.map((entry) => (
             <EntityCard
-              key={entry.doc.ref_id}
+              key={`doc-${entry.doc.ref_id}`}
+              entityId={`doc-${entry.doc.ref_id}`}
               allowSwipe
               allowMarkNotDone
               onMarkNotDone={() => archiveDoc(entry.doc)}

@@ -63,6 +63,6 @@ class UpdateAction(Generic[UpdateActionT]):
     def __repr__(self) -> str:
         """The representation of this action."""
         if self._should_change:
-            return f"UpdateAction.change_to({repr(self._value)})"
+            return f"UpdateAction.change_to({self._value!r})"
         else:
             return "UpdateAction.do_nothing()"

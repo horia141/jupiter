@@ -2,31 +2,39 @@
 
 set -ex
 
+source scripts/common.sh
+
 export HOST=0.0.0.0
 export PORT=8004
 export SQLITE_DB_URL=sqlite+aiosqlite:///../../.build-cache/apigen/jupiter-gen.sqlite
 
 mkdir -p .build-cache/apigen
 
+mkdir -p gen/ts
+mkdir -p gen/py
+
 cd src/webapi
 python -m jupiter.webapi.jupiter &
 WEBAPI_PID=$!
 cd ../..
 
-sleep 5
+wait_for_service_to_start webapi http://0.0.0.0:${PORT}
 
 rm -f .build-cache/apigen/openapi.json
 http --timeout 2 get 127.0.0.1:${PORT}/openapi.json > .build-cache/apigen/openapi.json
 
 kill $WEBAPI_PID
 
-python scripts/process-openapi.py .build-cache/apigen/openapi.json
-
 npx openapi \
     --input .build-cache/apigen/openapi.json \
-    --request gen/request-template.ts \
-    --output gen/gen \
+    --request gen/ts/webapi-client/request-template.ts \
+    --output gen/ts/webapi-client/gen \
     --client fetch \
     --name ApiClient
 
-(cd gen && npx tsc)
+(cd gen/ts/webapi-client && npx tsc)
+
+trap "rm -rf jupiter-webapi-client" EXIT
+poetry run openapi-python-client generate --path .build-cache/apigen/openapi.json
+rm -rf gen/py/webapi-client
+mv jupiter-webapi-client gen/py/webapi-client

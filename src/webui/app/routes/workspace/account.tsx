@@ -1,3 +1,4 @@
+import { ApiError, UserFeature } from "@jupiter/webapi-client";
 import {
   Autocomplete,
   Button,
@@ -17,7 +18,6 @@ import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { ApiError, UserFeature } from "jupiter-gen";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";

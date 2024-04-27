@@ -253,9 +253,9 @@ async def generic_loader(  # type: ignore[no-untyped-def]
             **entity_link1.get_for_entity(entity),
         )
 
-        final_first_linked_entities: _LinkedEntity1T | (
-            _LinkedEntity1T | None
-        ) | Iterable[_LinkedEntity1T]
+        final_first_linked_entities: _LinkedEntity1T | (None) | Iterable[
+            _LinkedEntity1T
+        ]
         if (
             isinstance(entity_link1, ContainsOne)
             or isinstance(entity_link1, OwnsOne)
@@ -288,9 +288,9 @@ async def generic_loader(  # type: ignore[no-untyped-def]
                 **entity_link2.get_for_entity(entity),
             )
 
-            final_second_linked_entities: _LinkedEntity2T | (
-                _LinkedEntity2T | None
-            ) | Iterable[_LinkedEntity2T]
+            final_second_linked_entities: _LinkedEntity2T | (None) | Iterable[
+                _LinkedEntity2T
+            ]
             if (
                 isinstance(entity_link2, ContainsOne)
                 or isinstance(entity_link2, OwnsOne)

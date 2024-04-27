@@ -1,3 +1,8 @@
+import {
+  ApiError,
+  UserFeature,
+  WorkspaceFeature,
+} from "@jupiter/webapi-client";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
   Accordion,
@@ -27,7 +32,6 @@ import {
   useTransition,
 } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { ApiError, UserFeature, WorkspaceFeature } from "jupiter-gen";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";

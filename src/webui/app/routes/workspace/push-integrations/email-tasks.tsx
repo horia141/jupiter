@@ -1,10 +1,10 @@
+import { WorkspaceFeature, type EmailTask } from "@jupiter/webapi-client";
 import { Button } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Link, Outlet, useFetcher } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
-import { WorkspaceFeature, type EmailTask } from "jupiter-gen";
 import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
 import { ADateTag } from "~/components/adate-tag";
@@ -97,7 +97,8 @@ export default function EmailTasks() {
         <EntityStack>
           {sortedEntries.map((entry) => (
             <EntityCard
-              key={entry.email_task.ref_id}
+              key={`email-task-${entry.email_task.ref_id}`}
+              entityId={`email-task-${entry.email_task.ref_id}`}
               allowSwipe
               allowMarkNotDone
               onMarkNotDone={() => archiveEmailTask(entry.email_task)}

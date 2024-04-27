@@ -1,3 +1,4 @@
+import { ApiError } from "@jupiter/webapi-client";
 import {
   Button,
   ButtonGroup,
@@ -14,7 +15,6 @@ import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, Link, useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { ApiError } from "jupiter-gen";
 import { z } from "zod";
 import { parseForm } from "zodix";
 import { getGuestApiClient } from "~/api-clients";
@@ -47,13 +47,7 @@ export async function loader({ request }: LoaderArgs) {
     }
   }
 
-  const data = { error: session.get("error") };
-
-  return json(data, {
-    headers: {
-      "Set-Cookie": await commitSession(session),
-    },
-  });
+  return json({});
 }
 
 // @secureFn
@@ -136,6 +130,7 @@ export default function Login() {
           <CardActions>
             <ButtonGroup>
               <Button
+                id="login"
                 variant="contained"
                 disabled={!inputsEnabled}
                 type="submit"

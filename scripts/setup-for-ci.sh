@@ -17,7 +17,9 @@ poetry install --no-interaction --no-ansi
 (cd src/core && poetry install --no-interaction --no-ansi)
 (cd src/cli && poetry install --no-interaction --no-ansi)
 (cd src/webapi && poetry install --no-interaction --no-ansi)
-(cd tests && poetry install --no-interaction --no-ansi)
+(cd itests && poetry install --no-interaction --no-ansi)
+
+playwright install
 
 npm ci --ws --include-workspace-root
-(cd gen && npx tsc)
+(cd gen/ts/webapi-client && npx tsc)

@@ -1,3 +1,5 @@
+import type { ProjectSummary } from "@jupiter/webapi-client";
+import { ApiError } from "@jupiter/webapi-client";
 import {
   Autocomplete,
   Button,
@@ -16,8 +18,6 @@ import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import type { ProjectSummary } from "jupiter-gen";
-import { ApiError } from "jupiter-gen";
 import { useState } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
@@ -150,6 +150,7 @@ export default function NewProject() {
         <CardActions>
           <ButtonGroup>
             <Button
+              id="project-create"
               variant="contained"
               disabled={!inputsEnabled}
               type="submit"

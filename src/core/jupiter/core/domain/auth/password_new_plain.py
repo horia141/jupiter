@@ -6,7 +6,9 @@ from typing import Final
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.realm import (
     CliRealm,
+    EventStoreRealm,
     RealmDecoder,
+    RealmEncoder,
     RealmThing,
     WebRealm,
     only_in_realm,
@@ -18,7 +20,7 @@ _PASSWORD_MIN_LENGTH: Final[int] = 10
 
 
 @secret_value
-@only_in_realm(CliRealm, WebRealm)
+@only_in_realm(CliRealm, WebRealm, EventStoreRealm)
 class PasswordNewPlain(SecretValue):
     """A new password in plain text, as received from a user."""
 
@@ -69,3 +71,13 @@ class PasswordNewPlainWebDecoder(RealmDecoder[PasswordNewPlain, WebRealm]):
             )
 
         return PasswordNewPlain(value)
+
+
+class PasswordNewPlainEventStoreRealmEncoder(
+    RealmEncoder[PasswordNewPlain, EventStoreRealm]
+):
+    """Encode a password newplain for storage in the Event Store."""
+
+    def encode(self, value: PasswordNewPlain) -> RealmThing:
+        """Encode a password newplain for storage in the Event Store."""
+        return "***********"

@@ -41,7 +41,7 @@ class FeatureControl(EnumValue):
     @property
     def standard_flag(self) -> bool:
         """The standard value for a feature flag controlled by this feature control."""
-        return self == FeatureControl.ALWAYS_ON or self == FeatureControl.USER
+        return self == FeatureControl.ALWAYS_ON
 
     def check(self, property_name: str, property_value: bool) -> bool:
         """Verify if the property can be set."""
@@ -167,6 +167,9 @@ FeatureScope = (
 
 
 BASIC_USER_FEATURE_FLAGS = {UserFeature.GAMIFICATION: True}
+BASIC_USER_FEATURE_FLAGS_ARR = [
+    f for f, v in BASIC_USER_FEATURE_FLAGS.items() if v is True
+]
 
 
 USER_FEATURE_FLAGS_CONTROLS = UserFeatureFlagsControls(
@@ -190,6 +193,9 @@ BASIC_WORKSPACE_FEATURE_FLAGS = {
     WorkspaceFeature.SLACK_TASKS: False,
     WorkspaceFeature.EMAIL_TASKS: False,
 }
+BASIC_WORKSPACE_FEATURE_FLAGS_ARR = [
+    f for f, v in BASIC_WORKSPACE_FEATURE_FLAGS.items() if v is True
+]
 
 
 HOSTED_GLOBAL_WORKSPACE_FEATURE_FLAGS_CONTROLS = WorkspaceFeatureFlagsControls(

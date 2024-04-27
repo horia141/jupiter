@@ -1,4 +1,4 @@
-import type { EventSource } from "jupiter-gen";
+import type { EventSource } from "@jupiter/webapi-client";
 import { eventSourceName } from "~/logic/domain/event-source";
 import { SlimChip } from "./infra/chips";
 

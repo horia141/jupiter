@@ -227,7 +227,9 @@ class MutationUseCase(
     ) -> tuple[UseCaseContext, UseCaseResult]:
         """Execute the command's action."""
         LOGGER.info(
-            f"Invoking mutation command {self.__class__.__name__} with args {args}",
+            "Invoking mutation command %s with args %s",
+            self.__class__.__name__,
+            args,
         )
         context = await self._build_context(session)
         progress_reporter = self._progress_reporter_factory.new_reporter(context)
@@ -247,8 +249,8 @@ class MutationUseCase(
             )
             try:
                 await self._invocation_recorder.record(invocation_record)
-            except:  # noqa: E722
-                LOGGER.critical("Error writing invocation record")
+            except Exception as err:  # noqa: BLE001
+                LOGGER.critical("Error writing invocation record", exc_info=err)
             raise
 
         user_ref_id = context.user_ref_id
@@ -294,7 +296,9 @@ class ReadonlyUseCase(
     ) -> tuple[UseCaseContext, UseCaseResult]:
         """Execute the command's action."""
         LOGGER.info(
-            f"Invoking readonly command {self.__class__.__name__} with args {args}",
+            "Invoking readonly command %s with args %s",
+            self.__class__.__name__,
+            args,
         )
         context = await self._build_context(session)
         result = await self._execute(context, args)

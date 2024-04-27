@@ -1,3 +1,4 @@
+import type { UserScore, UserScoreOverview } from "@jupiter/webapi-client";
 import {
   Box,
   styled,
@@ -8,7 +9,6 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
-import type { UserScore, UserScoreOverview } from "jupiter-gen";
 import { useBigScreen } from "~/rendering/use-big-screen";
 
 interface ScoreOverviewProps {

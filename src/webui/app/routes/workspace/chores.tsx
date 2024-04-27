@@ -1,10 +1,18 @@
+import type {
+  Chore,
+  ChoreFindResultEntry,
+  Project,
+} from "@jupiter/webapi-client";
+import {
+  Eisen,
+  RecurringTaskPeriod,
+  WorkspaceFeature,
+} from "@jupiter/webapi-client";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Outlet, useFetcher } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
-import type { Chore, ChoreFindResultEntry, Project } from "jupiter-gen";
-import { Eisen, RecurringTaskPeriod, WorkspaceFeature } from "jupiter-gen";
 import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
 import Check from "~/components/check";
@@ -91,7 +99,8 @@ export default function Chores() {
             ) as ChoreFindResultEntry;
             return (
               <EntityCard
-                key={chore.ref_id}
+                key={`chore-${chore.ref_id}`}
+                entityId={`chore-${chore.ref_id}`}
                 allowSwipe
                 allowMarkNotDone
                 onMarkNotDone={() => archiveChore(chore)}

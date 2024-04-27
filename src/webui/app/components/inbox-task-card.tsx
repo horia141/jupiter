@@ -1,3 +1,16 @@
+import {
+  WorkspaceFeature,
+  type ADate,
+  type BigPlan,
+  type Chore,
+  type EmailTask,
+  type Habit,
+  type InboxTask,
+  type InboxTaskStatus,
+  type Metric,
+  type Person,
+  type SlackTask,
+} from "@jupiter/webapi-client";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import DeleteIcon from "@mui/icons-material/Delete";
 import type { ChipProps } from "@mui/material";
@@ -14,19 +27,6 @@ import {
 } from "@mui/material";
 import type { PanInfo } from "framer-motion";
 import { motion, useMotionValue, useTransform } from "framer-motion";
-import {
-  WorkspaceFeature,
-  type ADate,
-  type BigPlan,
-  type Chore,
-  type EmailTask,
-  type Habit,
-  type InboxTask,
-  type InboxTaskStatus,
-  type Metric,
-  type Person,
-  type SlackTask,
-} from "jupiter-gen";
 import { DateTime } from "luxon";
 import { useContext, useState } from "react";
 import { GlobalPropertiesContext } from "~/global-properties-client";
@@ -332,7 +332,7 @@ const TagsContained = styled(Box)({
 
 interface OverdueWarningProps {
   status: InboxTaskStatus;
-  dueDate?: ADate;
+  dueDate?: ADate | null;
 }
 
 function OverdueWarning({ status, dueDate }: OverdueWarningProps) {

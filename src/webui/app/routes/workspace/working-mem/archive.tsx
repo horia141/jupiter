@@ -3,7 +3,10 @@ import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Outlet, useFetcher } from "@remix-run/react";
 
-import { type WorkingMem, type WorkingMemFindResultEntry } from "jupiter-gen";
+import {
+  type WorkingMem,
+  type WorkingMemFindResultEntry,
+} from "@jupiter/webapi-client";
 
 import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";
@@ -81,7 +84,8 @@ export default function WorkingMemArchive({ request }: LoaderArgs) {
           {sortedWorkingMems.map((workingMem) => {
             return (
               <EntityCard
-                key={workingMem.ref_id}
+                entityId={`working-mem-${workingMem.ref_id}`}
+                key={`working-mem-${workingMem.ref_id}`}
                 allowSwipe
                 allowMarkNotDone={
                   aDateToDate(workingMem.right_now) > today.minus({ days: 14 })

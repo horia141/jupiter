@@ -35,7 +35,7 @@ class SqliteNoteRepository(SqliteLeafEntityRepository[Note], NoteRepository):
         result = (await self._connection.execute(query_stmt)).first()
         if result is None:
             raise EntityNotFoundError(
-                f"Note in domain {domain} with source {str(source_entity_ref_id)} does not exist"
+                f"Note in domain {domain} with source {source_entity_ref_id!s} does not exist"
             )
         return self._row_to_entity(result)
 

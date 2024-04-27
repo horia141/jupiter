@@ -1,3 +1,4 @@
+import { ApiError } from "@jupiter/webapi-client";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import { IconButton } from "@mui/material";
@@ -7,7 +8,6 @@ import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Form, Outlet, useActionData } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { StatusCodes } from "http-status-codes";
-import { ApiError } from "jupiter-gen";
 import { z } from "zod";
 import { parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
@@ -126,7 +126,8 @@ export default function Projects() {
               );
               return (
                 <EntityCard
-                  key={project.ref_id}
+                  entityId={`project-${project.ref_id}`}
+                  key={`project-${project.ref_id}`}
                   indent={indent}
                   extraControls={
                     isRootProject(project) ||

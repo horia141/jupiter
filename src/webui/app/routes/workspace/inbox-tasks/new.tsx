@@ -1,3 +1,14 @@
+import type {
+  BigPlanSummary,
+  Project,
+  ProjectSummary,
+} from "@jupiter/webapi-client";
+import {
+  ApiError,
+  Difficulty,
+  Eisen,
+  WorkspaceFeature,
+} from "@jupiter/webapi-client";
 import type { SelectChangeEvent } from "@mui/material";
 import {
   Autocomplete,
@@ -19,8 +30,6 @@ import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import type { BigPlanSummary, Project, ProjectSummary } from "jupiter-gen";
-import { ApiError, Difficulty, Eisen, WorkspaceFeature } from "jupiter-gen";
 import { useContext, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseQuery } from "zodix";
@@ -421,7 +430,12 @@ export default function NewInboxTask() {
         </CardContent>
         <CardActions>
           <ButtonGroup>
-            <Button variant="contained" disabled={!inputsEnabled} type="submit">
+            <Button
+              id="inbox-task-create"
+              variant="contained"
+              disabled={!inputsEnabled}
+              type="submit"
+            >
               Create
             </Button>
           </ButtonGroup>

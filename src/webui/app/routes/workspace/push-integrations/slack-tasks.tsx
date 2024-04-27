@@ -1,10 +1,10 @@
+import { WorkspaceFeature, type SlackTask } from "@jupiter/webapi-client";
 import { Button } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Link, Outlet, useFetcher } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
-import { WorkspaceFeature, type SlackTask } from "jupiter-gen";
 import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
 import { ADateTag } from "~/components/adate-tag";
@@ -93,7 +93,8 @@ export default function SlackTasks() {
         <EntityStack>
           {sortedEntries.map((entry) => (
             <EntityCard
-              key={entry.slack_task.ref_id}
+              key={`slack-task-${entry.slack_task.ref_id}`}
+              entityId={`slack-task-${entry.slack_task.ref_id}`}
               allowSwipe
               allowMarkNotDone
               onMarkNotDone={() => archiveSlackTask(entry.slack_task)}

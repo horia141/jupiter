@@ -1,4 +1,8 @@
-import { FeatureControl, UserFeature, WorkspaceFeature } from "jupiter-gen";
+import {
+  FeatureControl,
+  UserFeature,
+  WorkspaceFeature,
+} from "@jupiter/webapi-client";
 import { DocsHelpSubject } from "~/components/docs-help";
 
 export function userFeatureName(feature: UserFeature): string {
