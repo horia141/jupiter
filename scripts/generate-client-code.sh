@@ -35,6 +35,11 @@ npx openapi \
 (cd gen/ts/webapi-client && npx tsc)
 
 trap "rm -rf jupiter-webapi-client" EXIT
-poetry run openapi-python-client generate --path .build-cache/apigen/openapi.json
-rm -rf gen/py/webapi-client
-mv jupiter-webapi-client gen/py/webapi-client
+if [[ -d gen/py/webapi-client ]]; then
+    mv gen/py/webapi-client jupiter-webapi-client
+    poetry run openapi-python-client update --path .build-cache/apigen/openapi.json
+    mv jupiter-webapi-client gen/py/webapi-client
+else
+    poetry run openapi-python-client generate --path .build-cache/apigen/openapi.json
+    mv jupiter-webapi-client gen/py/webapi-client
+fi
