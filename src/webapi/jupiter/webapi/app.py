@@ -84,8 +84,8 @@ from starlette import status
 from starlette.middleware.base import BaseHTTPMiddleware
 
 STANDARD_RESPONSES: dict[int | str, dict[str, Any]] = {
-    410: {"description": "Workspace Or User Not Found", "content": {"plain/text": {}}},
-    406: {"description": "Feature Not Available", "content": {"plain/text": {}}},
+    410: {"description": "Workspace Or User Not Found", "content": {"application/json": {}}},
+    406: {"description": "Feature Not Available", "content": {"application/json": {}}},
     422: {"description": "Validation Error", "content": {"application/json": {}}},
 }
 
