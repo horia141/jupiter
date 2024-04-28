@@ -1,5 +1,5 @@
 """Exceptions handling for the webapi module."""
-from fastapi.responses import JSONResponse, PlainTextResponse
+from fastapi.responses import JSONResponse
 from jupiter.core.domain.auth.auth_token import (
     ExpiredAuthTokenError,
     InvalidAuthTokenError,
@@ -193,9 +193,7 @@ class InvalidAuthTokenHandler(WebExceptionHandler[InvalidAuthTokenError]):
 class UserNotFoundHandler(WebExceptionHandler[UserNotFoundError]):
     """Handle user not found errors."""
 
-    def handle(
-        self, app: WebServiceApp, exception: UserNotFoundError
-    ) -> JSONResponse:
+    def handle(self, app: WebServiceApp, exception: UserNotFoundError) -> JSONResponse:
         """Handle user not found errors."""
         return JSONResponse(
             status_code=status.HTTP_410_GONE,

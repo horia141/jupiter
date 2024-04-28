@@ -84,7 +84,10 @@ from starlette import status
 from starlette.middleware.base import BaseHTTPMiddleware
 
 STANDARD_RESPONSES: dict[int | str, dict[str, Any]] = {
-    410: {"description": "Workspace Or User Not Found", "content": {"application/json": {}}},
+    410: {
+        "description": "Workspace Or User Not Found",
+        "content": {"application/json": {}},
+    },
     406: {"description": "Feature Not Available", "content": {"application/json": {}}},
     422: {"description": "Validation Error", "content": {"application/json": {}}},
 }
@@ -715,35 +718,45 @@ class WebServiceApp:
             )
         elif issubclass(use_case_type, AppLoggedInMutationUseCase):
             scoped_to_app = use_case_type.get_scoped_to_app()  # type: ignore
+            scoped_to_env = use_case_type.get_scoped_to_env()  # type: ignore
             if scoped_to_app is None or EventSource.WEB in scoped_to_app:
-                self._use_case_commands[use_case_type] = LoggedInMutationCommand(
-                    realm_codec_registry=self._realm_codec_registry,
-                    use_case=use_case_type(  # type: ignore
-                        global_properties=self._global_properties,
-                        time_provider=self._request_time_provider,
-                        invocation_recorder=self._invocation_recorder,
-                        progress_reporter_factory=self._progress_reporter_factory,
-                        auth_token_stamper=self._auth_token_stamper,
-                        domain_storage_engine=self._domain_storage_engine,
-                        search_storage_engine=self._search_storage_engine,
-                        use_case_storage_engine=self._use_case_storage_engine,
-                    ),
-                    root_module=root_module,
-                )
+                if (
+                    scoped_to_env is None
+                    or self._global_properties.env in scoped_to_env
+                ):
+                    self._use_case_commands[use_case_type] = LoggedInMutationCommand(
+                        realm_codec_registry=self._realm_codec_registry,
+                        use_case=use_case_type(  # type: ignore
+                            global_properties=self._global_properties,
+                            time_provider=self._request_time_provider,
+                            invocation_recorder=self._invocation_recorder,
+                            progress_reporter_factory=self._progress_reporter_factory,
+                            auth_token_stamper=self._auth_token_stamper,
+                            domain_storage_engine=self._domain_storage_engine,
+                            search_storage_engine=self._search_storage_engine,
+                            use_case_storage_engine=self._use_case_storage_engine,
+                        ),
+                        root_module=root_module,
+                    )
         elif issubclass(use_case_type, AppLoggedInReadonlyUseCase):
             scoped_to_app = use_case_type.get_scoped_to_app()  # type: ignore
+            scoped_to_env = use_case_type.get_scoped_to_env()  # type: ignore
             if scoped_to_app is None or EventSource.WEB in scoped_to_app:
-                self._use_case_commands[use_case_type] = LoggedInReadonlyCommand(
-                    realm_codec_registry=self._realm_codec_registry,
-                    use_case=use_case_type(  # type: ignore
-                        global_properties=self._global_properties,
-                        time_provider=self._request_time_provider,
-                        auth_token_stamper=self._auth_token_stamper,
-                        domain_storage_engine=self._domain_storage_engine,
-                        search_storage_engine=self._search_storage_engine,
-                    ),
-                    root_module=root_module,
-                )
+                if (
+                    scoped_to_env is None
+                    or self._global_properties.env in scoped_to_env
+                ):
+                    self._use_case_commands[use_case_type] = LoggedInReadonlyCommand(
+                        realm_codec_registry=self._realm_codec_registry,
+                        use_case=use_case_type(  # type: ignore
+                            global_properties=self._global_properties,
+                            time_provider=self._request_time_provider,
+                            auth_token_stamper=self._auth_token_stamper,
+                            domain_storage_engine=self._domain_storage_engine,
+                            search_storage_engine=self._search_storage_engine,
+                        ),
+                        root_module=root_module,
+                    )
         elif issubclass(use_case_type, AppBackgroundMutationUseCase):
             self._use_case_commands[use_case_type] = CronCommand(
                 realm_codec_registry=self._realm_codec_registry,
