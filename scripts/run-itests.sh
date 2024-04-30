@@ -23,11 +23,11 @@ ci_mode() {
     local webui_port=$(get_free_port)
     local webui_url=http://0.0.0.0:${webui_port}
 
-    run_jupiter $namespace $webapi_port $webui_port wait:all no-monit
+    run_jupiter "$namespace" "$webapi_port" "$webui_port" wait:all no-monit
 
     echo "Using Web API $webapi_url and Web UI $webui_url"
 
-    run_tests $webapi_url $webui_url "${extra_args[@]}"
+    run_tests "$webapi_url" "$webui_url" "${extra_args[@]}"
 }
 
 # Function to handle the "dev" mode
@@ -66,7 +66,7 @@ dev_mode() {
         esac
     done
 
-    if [[ -z $webapi_url ]]; then
+    if [[ -z "$webapi_url" ]]; then
         webapi_url="http://0.0.0.0:$STANDARD_WEBAPI_PORT"
     fi
 
@@ -76,10 +76,10 @@ dev_mode() {
 
     echo "Using Web API $webapi_url and Web UI $webui_url"
 
-    wait_for_service_to_start webapi $webapi_url
-    wait_for_service_to_start webui $webui_url
+    wait_for_service_to_start webapi "$webapi_url"
+    wait_for_service_to_start webui "$webui_url"
 
-    run_tests $webapi_url $webui_url --headed "${extra_args[@]}"
+    run_tests "$webapi_url" "$webui_url" --headed "${extra_args[@]}"
 }
 
 run_tests() {
@@ -88,14 +88,11 @@ run_tests() {
     local webui_url=$1
     shift
 
-    echo $webapi_url
-    echo $webui_port
-
     LOCAL_WEBAPI_SERVER_URL=$webapi_url pytest itests \
         -o log_cli=true \
         --html-report=.build-cache/itest/test-report.html \
         --title="Jupiter Integration Tests" \
-        --base-url=$webui_url \
+        --base-url="$webui_url" \
         "$@"
 }
 

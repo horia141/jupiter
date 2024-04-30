@@ -5,15 +5,16 @@ set -ex
 source scripts/common.sh
 
 WEBAPI_PORT=$(get_free_port)
+WEBAPI_URL=http://0.0.0.0:${WEBAPI_PORT}
 WEBUI_PORT=$(get_free_port)
 
-run_jupiter apigen $WEBAPI_PORT $WEBUI_PORT wait:webapi no-monit
+run_jupiter apigen "$WEBAPI_PORT" "$WEBUI_PORT" wait:webapi no-monit
 
 mkdir -p gen/ts
 mkdir -p gen/py
 
 rm -f .build-cache/apigen/openapi.json
-http --timeout 2 get http://0.0.0.0:${WEBAPI_PORT}/openapi.json > .build-cache/apigen/openapi.json
+http --timeout 2 get "$WEBAPI_URL/openapi.json" > .build-cache/apigen/openapi.json
 
 stop_jupiter apigen
 
