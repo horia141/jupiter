@@ -80,7 +80,7 @@ get_free_port() {
 
 wait_for_service_to_start() {
     local service=$1
-    local url=$2/healthz
+    local url=${2/0.0.0.0/localhost}/healthz
 
     local attempts=0
     local max_attempts=21
