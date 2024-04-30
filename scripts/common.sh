@@ -28,6 +28,7 @@ run_jupiter() {
 
     sleep 3
     npx pm2 list
+    npx pm2 logs
 
     if [[ "$should_wait" == "wait:all" ]]; then
         wait_for_service_to_start webapi "$WEBAPI_SERVER_URL"
