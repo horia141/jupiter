@@ -83,6 +83,7 @@ def test_vacation_view_one(page: Page, create_vacation) -> None:
 
 def test_vacation_create(page: Page, browser: Browser) -> None:
     page.goto("/workspace/vacations")
+    page.wait_for_selector("#trunk-panel")
     page.locator("#trunk-new-leaf-entity").click()
     page.locator('input[name="name"]').fill("First Vacation")
     page.locator('input[name="startDate"]').fill("2024-12-10")
