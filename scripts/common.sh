@@ -26,6 +26,9 @@ run_jupiter() {
     echo "$WEBAPI_PORT" > "$RUN_ROOT/$NAMESPACE/webapi.port"
     echo "$WEBUI_PORT" > "$RUN_ROOT/$NAMESPACE/webui.port"
 
+    sleep 3
+    npx pm2 list
+
     if [[ "$should_wait" == "wait:all" ]]; then
         wait_for_service_to_start webapi "$WEBAPI_SERVER_URL"
         wait_for_service_to_start webui "$WEBUI_SERVER_URL"

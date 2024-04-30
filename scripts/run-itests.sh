@@ -25,9 +25,6 @@ ci_mode() {
 
     run_jupiter "$namespace" "$webapi_port" "$webui_port" wait:all no-monit
 
-    sleep 3
-    npx pm2 list
-
     echo "Using Web API $webapi_url and Web UI $webui_url"
 
     run_tests "$webapi_url" "$webui_url" "${extra_args[@]}"
