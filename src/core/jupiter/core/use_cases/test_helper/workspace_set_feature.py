@@ -1,4 +1,5 @@
 """Set a particular feature in the workspace."""
+from jupiter.core.domain.env import Env
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.workspaces.workspace import Workspace
@@ -7,6 +8,7 @@ from jupiter.core.framework.use_case_io import UseCaseArgsBase, use_case_args
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
+    mutation_use_case,
 )
 from jupiter.core.utils.feature_flag_controls import infer_feature_flag_controls
 
@@ -19,6 +21,7 @@ class WorkspaceSetFeatureArgs(UseCaseArgsBase):
     value: bool
 
 
+@mutation_use_case(exclude_env=[Env.PRODUCTION])
 class WorkspaceSetFeatureUseCase(
     AppTransactionalLoggedInMutationUseCase[WorkspaceSetFeatureArgs, None]
 ):

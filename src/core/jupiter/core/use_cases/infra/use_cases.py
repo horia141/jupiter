@@ -11,6 +11,7 @@ from jupiter.core.domain.auth.auth_token import (
 )
 from jupiter.core.domain.auth.auth_token_ext import AuthTokenExt
 from jupiter.core.domain.auth.auth_token_stamper import AuthTokenStamper
+from jupiter.core.domain.env import Env
 from jupiter.core.domain.features import (
     FeatureScope,
     FeatureUnavailableError,
@@ -249,6 +250,11 @@ class AppLoggedInMutationUseCase(
         """The apps the command is available in."""
         return None
 
+    @staticmethod
+    def get_scoped_to_env() -> list[Env] | None:
+        """The apps the command is available in."""
+        return None
+
     def __init__(
         self,
         time_provider: TimeProvider,
@@ -411,6 +417,11 @@ class AppLoggedInReadonlyUseCase(
         """The apps the command is available in."""
         return None
 
+    @staticmethod
+    def get_scoped_to_env() -> list[Env] | None:
+        """The apps the command is available in."""
+        return None
+
     def __init__(
         self,
         global_properties: GlobalProperties,
@@ -543,7 +554,11 @@ class AppBackgroundMutationUseCase(
 _MutationUseCaseT = TypeVar("_MutationUseCaseT", bound=AppLoggedInMutationUseCase[Any, Any])  # type: ignore
 
 
-def mutation_use_case(feature_scope: FeatureScope = None, exclude_app: list[EventSource] | None = None) -> Callable[[type[_MutationUseCaseT]], type[_MutationUseCaseT]]:  # type: ignore
+def mutation_use_case(  # type: ignore
+    feature_scope: FeatureScope = None,
+    exclude_app: list[EventSource] | None = None,
+    exclude_env: list[Env] | None = None,
+) -> Callable[[type[_MutationUseCaseT]], type[_MutationUseCaseT]]:
     """A decorator for use cases that scopes them to a feature."""
 
     def decorator(cls: type[_MutationUseCaseT]) -> type[_MutationUseCaseT]:  # type: ignore
@@ -552,8 +567,12 @@ def mutation_use_case(feature_scope: FeatureScope = None, exclude_app: list[Even
             for s in EventSource
             if (True if exclude_app is None else s not in exclude_app)
         ]
+        env_scope = [
+            e for e in Env if (True if exclude_env is None else e not in exclude_env)
+        ]
         cls.get_scoped_to_feature = lambda *args: feature_scope  # type: ignore
         cls.get_scoped_to_app = lambda *args: app_scope  # type: ignore
+        cls.get_scoped_to_env = lambda *args: env_scope  # type: ignore
         return cls
 
     return decorator
@@ -562,7 +581,11 @@ def mutation_use_case(feature_scope: FeatureScope = None, exclude_app: list[Even
 _ReadonlyUseCaseT = TypeVar("_ReadonlyUseCaseT", bound=AppLoggedInReadonlyUseCase[Any, Any])  # type: ignore
 
 
-def readonly_use_case(feature_scope: FeatureScope = None, exclude_app: list[EventSource] | None = None) -> Callable[[type[_ReadonlyUseCaseT]], type[_ReadonlyUseCaseT]]:  # type: ignore
+def readonly_use_case(  # type: ignore
+    feature_scope: FeatureScope = None,
+    exclude_app: list[EventSource] | None = None,
+    exclude_env: list[Env] | None = None,
+) -> Callable[[type[_ReadonlyUseCaseT]], type[_ReadonlyUseCaseT]]:
     """A decorator for use cases that scopes them to a feature."""
 
     def decorator(cls: type[_ReadonlyUseCaseT]) -> type[_ReadonlyUseCaseT]:  # type: ignore
@@ -571,8 +594,12 @@ def readonly_use_case(feature_scope: FeatureScope = None, exclude_app: list[Even
             for s in EventSource
             if (True if exclude_app is None else s not in exclude_app)
         ]
+        env_scope = [
+            e for e in Env if (True if exclude_env is None else e not in exclude_env)
+        ]
         cls.get_scoped_to_feature = lambda *args: feature_scope  # type: ignore
         cls.get_scoped_to_app = lambda *args: app_scope  # type: ignore
+        cls.get_scoped_to_env = lambda *args: env_scope  # type: ignore
         return cls
 
     return decorator

@@ -1,4 +1,5 @@
 """The command for removeing all branch and leaf type entities."""
+from jupiter.core.domain.env import Env
 from jupiter.core.domain.infra.generic_destroyer import generic_destroyer
 from jupiter.core.domain.user.user import User
 from jupiter.core.domain.user_workspace_link.user_workspace_link import (
@@ -22,7 +23,7 @@ class RemoveAllArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
 
-@mutation_use_case()
+@mutation_use_case(exclude_env=[Env.PRODUCTION])
 class RemoveAllUseCase(AppLoggedInMutationUseCase[RemoveAllArgs, None]):
     """The command for removeing all branch and leaf type entities."""
 

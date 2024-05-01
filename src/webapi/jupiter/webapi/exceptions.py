@@ -1,5 +1,5 @@
 """Exceptions handling for the webapi module."""
-from fastapi.responses import JSONResponse, PlainTextResponse
+from fastapi.responses import JSONResponse
 from jupiter.core.domain.auth.auth_token import (
     ExpiredAuthTokenError,
     InvalidAuthTokenError,
@@ -193,11 +193,9 @@ class InvalidAuthTokenHandler(WebExceptionHandler[InvalidAuthTokenError]):
 class UserNotFoundHandler(WebExceptionHandler[UserNotFoundError]):
     """Handle user not found errors."""
 
-    def handle(
-        self, app: WebServiceApp, exception: UserNotFoundError
-    ) -> PlainTextResponse:
+    def handle(self, app: WebServiceApp, exception: UserNotFoundError) -> JSONResponse:
         """Handle user not found errors."""
-        return PlainTextResponse(
+        return JSONResponse(
             status_code=status.HTTP_410_GONE,
             content="User does not exist",
         )
@@ -208,9 +206,9 @@ class WorkspaceNotFoundHandler(WebExceptionHandler[WorkspaceNotFoundError]):
 
     def handle(
         self, app: WebServiceApp, exception: WorkspaceNotFoundError
-    ) -> PlainTextResponse:
+    ) -> JSONResponse:
         """Handle workspace not found errors."""
-        return PlainTextResponse(
+        return JSONResponse(
             status_code=status.HTTP_410_GONE,
             content="Workspace does not exist",
         )
@@ -223,9 +221,9 @@ class JournalExistsForDatePeriodCombinationHandler(
 
     def handle(
         self, app: WebServiceApp, exception: JournalExistsForDatePeriodCombinationError
-    ) -> PlainTextResponse:
+    ) -> JSONResponse:
         """Handle journal exists for date period combination errors."""
-        return PlainTextResponse(
+        return JSONResponse(
             status_code=status.HTTP_409_CONFLICT,
             content="Journal already exists for this date and period combination",
         )

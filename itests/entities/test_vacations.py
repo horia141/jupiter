@@ -53,7 +53,9 @@ def create_vacation(logged_in_client: AuthenticatedClient):
     return _create_vacation
 
 
-def test_vacation_view_all(page: Page, create_vacation) -> None:
+def test_vacation_view_all(
+    logged_in_client: AuthenticatedClient, page: Page, create_vacation
+) -> None:
     vacation1 = create_vacation("First Vacation", 12, 10, 12, 15)
     vacation2 = create_vacation("Second Vacation", 12, 20, 12, 25)
     vacation3 = create_vacation("Third Vacation", 12, 22, 12, 27)
@@ -83,6 +85,7 @@ def test_vacation_view_one(page: Page, create_vacation) -> None:
 
 def test_vacation_create(page: Page, browser: Browser) -> None:
     page.goto("/workspace/vacations")
+    page.wait_for_selector("#trunk-panel")
     page.locator("#trunk-new-leaf-entity").click()
     page.locator('input[name="name"]').fill("First Vacation")
     page.locator('input[name="startDate"]').fill("2024-12-10")

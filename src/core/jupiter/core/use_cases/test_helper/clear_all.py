@@ -3,6 +3,7 @@ from jupiter.core.domain.auth.auth import Auth
 from jupiter.core.domain.auth.password_new_plain import PasswordNewPlain
 from jupiter.core.domain.auth.password_plain import PasswordPlain
 from jupiter.core.domain.core.timezone import Timezone
+from jupiter.core.domain.env import Env
 from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.infra.generic_root_remover import generic_root_remover
 from jupiter.core.domain.metrics.metric_collection import MetricCollection
@@ -51,7 +52,7 @@ class ClearAllArgs(UseCaseArgsBase):
     workspace_feature_flags: set[WorkspaceFeature] | None
 
 
-@mutation_use_case()
+@mutation_use_case(exclude_env=[Env.PRODUCTION])
 class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
     """The command for clearing all branch and leaf type entities."""
 

@@ -27,19 +27,22 @@ import { ToolPanel } from "~/components/infra/layout/tool-panel";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
-import { getIntent } from "~/logic/intent";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const WorkspaceSettingsFormSchema = {
-  intent: z.string(),
-  name: z.string(),
-  defaultProject: z.string(),
-  featureFlags: z.array(z.nativeEnum(WorkspaceFeature)),
-};
+const UpdateFormSchema = z.discriminatedUnion("intent", [
+  z.object({
+    intent: z.literal("update"),
+    name: z.string(),
+  }),
+  z.object({
+    intent: z.literal("change-feature-flags"),
+    featureFlags: z.array(z.nativeEnum(WorkspaceFeature)),
+  }),
+]);
 
 export const handle = {
   displayType: DisplayType.TOOL,
@@ -58,12 +61,10 @@ export async function loader({ request }: LoaderArgs) {
 
 export async function action({ request }: ActionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
-  const form = await parseForm(request, WorkspaceSettingsFormSchema);
-
-  const { intent } = getIntent<undefined>(form.intent);
+  const form = await parseForm(request, UpdateFormSchema);
 
   try {
-    switch (intent) {
+    switch (form.intent) {
       case "update": {
         await getLoggedInApiClient(session).workspaces.workspaceUpdate({
           name: {
@@ -93,7 +94,7 @@ export async function action({ request }: ActionArgs) {
       error instanceof ApiError &&
       error.status === StatusCodes.UNPROCESSABLE_ENTITY
     ) {
-      return json(validationErrorToUIErrorInfo(error.body, intent));
+      return json(validationErrorToUIErrorInfo(error.body, form.intent));
     }
 
     throw error;

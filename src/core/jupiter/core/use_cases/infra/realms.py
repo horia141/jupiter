@@ -218,7 +218,6 @@ class _UpdateActionWebDecoder(RealmDecoder[UpdateAction[DomainThing], WebRealm])
         if value["should_change"] is False:
             final_value = UpdateAction.do_nothing()
         else:
-
             if isinstance(self._the_type, ForwardRef) or isinstance(
                 self._the_type, str
             ):
@@ -234,7 +233,7 @@ class _UpdateActionWebDecoder(RealmDecoder[UpdateAction[DomainThing], WebRealm])
                     )
             else:
                 update_action_decoder = self._realm_codec_registry.get_decoder(
-                    field_type, self._realm, self._root_type
+                    self._the_type, self._realm, self._root_type
                 )
 
                 final_value = UpdateAction.change_to(
@@ -1169,7 +1168,7 @@ class _StandardUseCaseArgsWebDecoder(
                 else:
                     field_value = value[field.name]
                     decoder = self._realm_codec_registry.get_decoder(
-                        field_type, WebRealm, self._the_type
+                        field.type, WebRealm, self._the_type
                     )
                     ctor_args[field.name] = decoder.decode(field_value)
             except InputValidationError as err:

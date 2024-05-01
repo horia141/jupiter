@@ -2,6 +2,21 @@
 
 set -ex
 
-trap "npx pm2 delete all" EXIT
-npx pm2 --no-color start scripts/pm2.dev.config.js
-npx pm2 monit
+source scripts/common.sh
+
+NAMESPACE=$1
+
+if [[ -z "${NAMESPACE}" ]]; then
+    NAMESPACE=$STANDARD_NAMESPACE
+    WEBAPI_PORT=$STANDARD_WEBAPI_PORT
+    WEBUI_PORT=$STANDARD_WEBUI_PORT
+elif [[ "${NAMESPACE}" == "--gen" ]]; then
+    NAMESPACE=$(get_namespace)
+    WEBAPI_PORT=$(get_free_port)
+    WEBUI_PORT=$(get_free_port)
+else
+    WEBAPI_PORT=$(get_free_port)
+    WEBUI_PORT=$(get_free_port)
+fi
+
+run_jupiter "$NAMESPACE" "$WEBAPI_PORT" "$WEBUI_PORT" no-wait monit

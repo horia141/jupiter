@@ -16,6 +16,7 @@ from jupiter.cli.command.rendering import RichConsoleProgressReporterFactory
 from jupiter.cli.session_storage import SessionInfo, SessionStorage
 from jupiter.cli.top_level_context import TopLevelContext
 from jupiter.core.domain.auth.auth_token_stamper import AuthTokenStamper
+from jupiter.core.domain.env import Env
 from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainStorageEngine, SearchStorageEngine
 from jupiter.core.domain.user.user import User
@@ -96,6 +97,10 @@ class Command(abc.ABC):
     @property
     def is_allowed_for_cli(self) -> bool:
         """Is this command allowed for the CLI."""
+        return True
+
+    def is_allowed_for_environment(self, env: Env) -> bool:
+        """Is this command allowed for a particular environment."""
         return True
 
     @property
@@ -806,6 +811,13 @@ class LoggedInMutationCommand(
             return True
         return EventSource.CLI in scoped_to_app
 
+    def is_allowed_for_environment(self, env: Env) -> bool:
+        """Is this command allowed for a particular environment."""
+        scoped_to_env = self._use_case.get_scoped_to_env()
+        if scoped_to_env is None:
+            return True
+        return env in scoped_to_env
+
     def is_allowed_for_user(self, user: User) -> bool:
         """Is this command allowed for a particular user."""
         scoped_feature = self._use_case.get_scoped_to_feature()
@@ -889,6 +901,13 @@ class LoggedInReadonlyCommand(
         if scoped_to_app is None:
             return True
         return EventSource.CLI in scoped_to_app
+
+    def is_allowed_for_environment(self, env: Env) -> bool:
+        """Is this command allowed for a particular environment."""
+        scoped_to_env = self._use_case.get_scoped_to_env()
+        if scoped_to_env is None:
+            return True
+        return env in scoped_to_env
 
     def is_allowed_for_user(self, user: User) -> bool:
         """Is this command allowed for a particular user."""
@@ -1377,6 +1396,9 @@ class CliApp:
             self._commands.values(), self._use_case_commands.values()
         ):
             if not command.is_allowed_for_cli:
+                continue
+
+            if not command.is_allowed_for_environment(self._global_properties.env):
                 continue
 
             if (

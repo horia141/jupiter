@@ -17,9 +17,18 @@ function hydrate() {
 // playwrights infra. This is necessary because we don't want to
 // cause hydration mismatches.
 // The rabbit hole goes deep: https://github.com/facebook/react/issues/24430
-document.querySelectorAll("html > x-pw-glass").forEach((s) => {
-  s.parentNode?.removeChild(s);
-});
+
+document
+  .querySelectorAll(
+    [
+      "html > *:not(body, head)",
+      'script[src*="extension://"]',
+      'link[href*="extension://"]',
+    ].join(", ")
+  )
+  .forEach((s) => {
+    s.parentNode?.removeChild(s);
+  });
 
 if (window.requestIdleCallback) {
   window.requestIdleCallback(hydrate);

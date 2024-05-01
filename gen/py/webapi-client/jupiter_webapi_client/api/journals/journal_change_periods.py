@@ -32,6 +32,10 @@ def _get_kwargs(
 def _parse_response(*, client: Union[AuthenticatedClient, Client], response: httpx.Response) -> Optional[Any]:
     if response.status_code == HTTPStatus.OK:
         return None
+    if response.status_code == HTTPStatus.GONE:
+        return None
+    if response.status_code == HTTPStatus.NOT_ACCEPTABLE:
+        return None
     if response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY:
         return None
     if client.raise_on_unexpected_status:

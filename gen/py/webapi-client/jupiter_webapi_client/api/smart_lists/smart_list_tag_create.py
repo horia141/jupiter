@@ -37,6 +37,12 @@ def _parse_response(
         response_200 = SmartListTagCreateResult.from_dict(response.json())
 
         return response_200
+    if response.status_code == HTTPStatus.GONE:
+        response_410 = cast(Any, None)
+        return response_410
+    if response.status_code == HTTPStatus.NOT_ACCEPTABLE:
+        response_406 = cast(Any, None)
+        return response_406
     if response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY:
         response_422 = cast(Any, None)
         return response_422
