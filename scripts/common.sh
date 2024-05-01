@@ -19,21 +19,17 @@ run_jupiter() {
 
     mkdir -p "$RUN_ROOT/$NAMESPACE"
 
-    export local SCRIPT_ARGS_MEGAHACK=
     if [[ -z "$CI" ]]; then
-        SCRIPT_ARGS_MEGAHACK="-qF"
+        envsubst < scripts/pm2.config.dev.template.js > "$RUN_ROOT/$NAMESPACE/pm2.config.js"
+    else
+        envsubst < scripts/pm2.config.ci.template.js > "$RUN_ROOT/$NAMESPACE/pm2.config.js"
     fi
-
-    envsubst < scripts/pm2.config.template.js > "$RUN_ROOT/$NAMESPACE/pm2.config.js"
 
     trap "npx pm2 delete $RUN_ROOT/$NAMESPACE/pm2.config.js" EXIT
     npx pm2 --no-color start "$RUN_ROOT/$NAMESPACE/pm2.config.js"
 
     echo "$WEBAPI_PORT" > "$RUN_ROOT/$NAMESPACE/webapi.port"
     echo "$WEBUI_PORT" > "$RUN_ROOT/$NAMESPACE/webui.port"
-
-    sleep 3
-    npx pm2 logs 0
 
     if [[ "$should_wait" == "wait:all" ]]; then
         wait_for_service_to_start webapi "$WEBAPI_SERVER_URL"
