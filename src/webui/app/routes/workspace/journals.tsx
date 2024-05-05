@@ -1,13 +1,4 @@
-import type {
-  Journal,
-  JournalFindResultEntry,
-  ReportPeriodResult,
-} from "@jupiter/webapi-client";
-import {
-  RecurringTaskPeriod,
-  UserFeature,
-  WorkspaceFeature,
-} from "@jupiter/webapi-client";
+import type { Journal, JournalFindResultEntry } from "@jupiter/webapi-client";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -15,17 +6,11 @@ import { Outlet, useFetcher } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
-import { EntityNameComponent } from "~/components/entity-name";
-import { EntityCard, EntityLink } from "~/components/infra/entity-card";
-import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
-import { JournalSourceTag } from "~/components/journal-source-tag";
-import { PeriodTag } from "~/components/period-tag";
+import { JournalStack } from "~/components/journal-stack";
 import { sortJournalsNaturally } from "~/logic/domain/journal";
-import { isUserFeatureAvailable } from "~/logic/domain/user";
-import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
@@ -85,55 +70,13 @@ export default function Journals() {
       returnLocation="/workspace"
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
-        <EntityStack>
-          {sortedJournals.map((journal) => {
-            const entry = entriesByRefId.get(
-              journal.ref_id
-            ) as JournalFindResultEntry;
-            return (
-              <EntityCard
-                key={`journal-${entry.journal.ref_id}`}
-                entityId={`journal-${entry.journal.ref_id}`}
-                allowSwipe
-                allowMarkNotDone
-                onMarkNotDone={() => archiveJournal(entry.journal)}
-              >
-                <EntityLink to={`/workspace/journals/${entry.journal.ref_id}`}>
-                  <EntityNameComponent name={entry.journal.name} />
-                  <JournalSourceTag source={entry.journal.source} />
-                  <PeriodTag period={entry.journal.period} />
-                  {isUserFeatureAvailable(
-                    topLevelInfo.user,
-                    UserFeature.GAMIFICATION
-                  ) && (
-                    <GamificationTag
-                      period={entry.journal.period}
-                      report={entry.journal.report}
-                    />
-                  )}
-                  {
-                    entry.journal.report.global_inbox_tasks_summary.done
-                      .total_cnt
-                  }{" "}
-                  tasks done
-                  {isWorkspaceFeatureAvailable(
-                    topLevelInfo.workspace,
-                    WorkspaceFeature.BIG_PLANS
-                  ) && (
-                    <>
-                      {" "}
-                      and{" "}
-                      {
-                        entry.journal.report.global_big_plans_summary.done_cnt
-                      }{" "}
-                      big plans done
-                    </>
-                  )}
-                </EntityLink>
-              </EntityCard>
-            );
-          })}
-        </EntityStack>
+        <JournalStack
+          topLevelInfo={topLevelInfo}
+          journals={sortedJournals}
+          allowSwipe
+          allowMarkNotDone
+          onMarkNotDone={(journal) => archiveJournal(journal)}
+        />
       </NestingAwareBlock>
 
       <AnimatePresence mode="wait" initial={false}>
@@ -146,39 +89,3 @@ export default function Journals() {
 export const ErrorBoundary = makeErrorBoundary(
   () => `There was an error loading the journals! Please try again!`
 );
-
-interface GamificationTagProps {
-  period: RecurringTaskPeriod;
-  report: ReportPeriodResult;
-}
-
-function GamificationTag({ period, report }: GamificationTagProps) {
-  if (!report.user_score_overview) {
-    return null;
-  }
-
-  switch (period) {
-    case RecurringTaskPeriod.DAILY:
-      return (
-        <>{report.user_score_overview.daily_score.total_score} points from </>
-      );
-    case RecurringTaskPeriod.WEEKLY:
-      return (
-        <>{report.user_score_overview.weekly_score.total_score} points from </>
-      );
-    case RecurringTaskPeriod.MONTHLY:
-      return (
-        <>{report.user_score_overview.monthly_score.total_score} points from </>
-      );
-    case RecurringTaskPeriod.QUARTERLY:
-      return (
-        <>
-          {report.user_score_overview.quarterly_score.total_score} points from{" "}
-        </>
-      );
-    case RecurringTaskPeriod.YEARLY:
-      return (
-        <>{report.user_score_overview.yearly_score.total_score} points from </>
-      );
-  }
-}

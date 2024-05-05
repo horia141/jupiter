@@ -13,5 +13,6 @@ export type JournalLoadResult = {
     journal: Journal;
     note: Note;
     writing_task?: (InboxTask | null);
+    sub_period_journals: Array<Journal>;
 };
 

@@ -1,4 +1,6 @@
 """A journal for a particular time range."""
+import abc
+
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
@@ -20,6 +22,10 @@ from jupiter.core.framework.entity import (
     create_entity_action,
     entity,
     update_entity_action,
+)
+from jupiter.core.framework.repository import (
+    EntityAlreadyExistsError,
+    LeafEntityRepository,
 )
 from jupiter.core.framework.update_action import UpdateAction
 
@@ -118,3 +124,22 @@ class Journal(LeafEntity):
     def build_name(right_now: ADate, period: RecurringTaskPeriod) -> EntityName:
         """Build the name of the journal."""
         return EntityName(f"{period.value.capitalize()} journal for {right_now}")
+
+
+class JournalExistsForDatePeriodCombinationError(EntityAlreadyExistsError):
+    """An error raised when a journal already exists for a date and period combination."""
+
+
+class JournalRepository(LeafEntityRepository[Journal], abc.ABC):
+    """The repository for journals."""
+
+    @abc.abstractmethod
+    async def find_all_in_range(
+        self,
+        parent_ref_id: EntityId,
+        allow_archived: bool,
+        filter_periods: list[RecurringTaskPeriod],
+        filter_start_date: ADate,
+        filter_end_date: ADate,
+    ) -> list[Journal]:
+        """Find all journals in a range."""

@@ -16,6 +16,7 @@ import {
   OutlinedInput,
   Select,
   Stack,
+  Typography,
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect, Response } from "@remix-run/node";
@@ -37,11 +38,13 @@ import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import { JournalStack } from "~/components/journal-stack";
 import { ShowReport } from "~/components/show-report";
 import {
   aGlobalError,
   validationErrorToUIErrorInfo,
 } from "~/logic/action-result";
+import { sortJournalsNaturally } from "~/logic/domain/journal";
 import { periodName } from "~/logic/domain/period";
 import { LeafPanelExpansionState } from "~/rendering/leaf-panel-expansion";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -86,6 +89,7 @@ export async function loader({ request, params }: LoaderArgs) {
       journal: result.journal,
       note: result.note,
       writingTask: result.writing_task,
+      subPeriodJournals: result.sub_period_journals,
     });
   } catch (error) {
     if (error instanceof ApiError && error.status === StatusCodes.NOT_FOUND) {
@@ -197,6 +201,8 @@ export default function Journal() {
     );
   }
 
+  const sortedSubJournals = sortJournalsNaturally(loaderData.subPeriodJournals);
+
   return (
     <LeafPanel
       key={loaderData.journal.ref_id}
@@ -304,6 +310,12 @@ export default function Journal() {
           onCardMarkNotDone={handleCardMarkNotDone}
         />
       )}
+
+      <Typography variant="h5" sx={{ marginBottom: "1rem" }}>
+        Other Journals in this Period
+      </Typography>
+
+      <JournalStack topLevelInfo={topLevelInfo} journals={sortedSubJournals} />
     </LeafPanel>
   );
 }

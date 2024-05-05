@@ -1,9 +1,10 @@
 """Retrieve details about a journal."""
+from jupiter.core.domain.core import schedules
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.infra.generic_loader import generic_loader
-from jupiter.core.domain.journals.journal import Journal
+from jupiter.core.domain.journals.journal import Journal, JournalRepository
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case_io import (
@@ -34,6 +35,7 @@ class JournalLoadResult(UseCaseResultBase):
     journal: Journal
     note: Note
     writing_task: InboxTask | None
+    sub_period_journals: list[Journal]
 
 
 @readonly_use_case(WorkspaceFeature.JOURNALS)
@@ -57,4 +59,24 @@ class JournalLoadUseCase(
             Journal.writing_task,
             allow_archived=args.allow_archived,
         )
-        return JournalLoadResult(journal=journal, note=note, writing_task=writing_task)
+
+        schedule = schedules.get_schedule(
+            period=journal.period,
+            name=journal.name,
+            right_now=journal.right_now.to_timestamp_at_end_of_day(),
+        )
+
+        sub_period_journals = await uow.get(JournalRepository).find_all_in_range(
+            parent_ref_id=journal.journal_collection.ref_id,
+            allow_archived=args.allow_archived,
+            filter_periods=journal.period.all_smaller_periods,
+            filter_start_date=schedule.first_day,
+            filter_end_date=schedule.end_day,
+        )
+
+        return JournalLoadResult(
+            journal=journal,
+            note=note,
+            writing_task=writing_task,
+            sub_period_journals=sub_period_journals,
+        )

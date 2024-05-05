@@ -5,7 +5,7 @@ from jupiter.core.domain.auth.auth_token import (
     InvalidAuthTokenError,
 )
 from jupiter.core.domain.features import FeatureUnavailableError
-from jupiter.core.domain.journals.infra.journal_repository import (
+from jupiter.core.domain.journals.journal import (
     JournalExistsForDatePeriodCombinationError,
 )
 from jupiter.core.domain.projects.errors import ProjectInSignificantUseError

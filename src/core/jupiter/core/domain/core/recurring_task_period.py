@@ -15,6 +15,29 @@ class RecurringTaskPeriod(EnumValue):
     QUARTERLY = "quarterly"
     YEARLY = "yearly"
 
+    @property
+    def all_smaller_periods(self) -> list["RecurringTaskPeriod"]:
+        """All smaller periods."""
+        if self == RecurringTaskPeriod.DAILY:
+            return []
+        elif self == RecurringTaskPeriod.WEEKLY:
+            return [RecurringTaskPeriod.DAILY]
+        elif self == RecurringTaskPeriod.MONTHLY:
+            return [RecurringTaskPeriod.DAILY, RecurringTaskPeriod.WEEKLY]
+        elif self == RecurringTaskPeriod.QUARTERLY:
+            return [
+                RecurringTaskPeriod.DAILY,
+                RecurringTaskPeriod.WEEKLY,
+                RecurringTaskPeriod.MONTHLY,
+            ]
+        elif self == RecurringTaskPeriod.YEARLY:
+            return [
+                RecurringTaskPeriod.DAILY,
+                RecurringTaskPeriod.WEEKLY,
+                RecurringTaskPeriod.MONTHLY,
+                RecurringTaskPeriod.QUARTERLY,
+            ]
+
     def __lt__(self, other: object) -> bool:
         """Compare this with another."""
         if not isinstance(other, RecurringTaskPeriod):
