@@ -24,7 +24,7 @@ COPY src/webui/remix.env.d.ts src/webui/remix.env.d.ts
 RUN npm install --ws --include-workspace-root
 
 # hadolint ignore=DL3003
-RUN cd gen && npx tsc
+RUN cd gen/ts/webapi-client && npx tsc
 
 COPY src/webui/app src/webui/app
 COPY src/webui/public/favicon.ico src/webui/public/favicon.ico
