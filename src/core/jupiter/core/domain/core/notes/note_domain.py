@@ -1,6 +1,4 @@
 """The source of the note."""
-
-
 from jupiter.core.framework.value import EnumValue, enum_value
 
 
@@ -10,6 +8,7 @@ class NoteDomain(EnumValue):
 
     INBOX_TASK = "inbox-task"
     WORKING_MEM = "working-mem"
+    TIME_PLAN = "time-plan"
     HABIT = "habit"
     CHORE = "chore"
     BIG_PLAN = "big-plan"

@@ -160,6 +160,13 @@ class IsParentLink:
 
 
 @dataclass(frozen=True)
+class IsFieldRefId:
+    """Transform a generic filter based on a current entity's field."""
+
+    field_name: str
+
+
+@dataclass(frozen=True)
 class IsOneOfRefId:
     """Transforms a generic filter based on a current entity's field with a list of ref ids."""
 
@@ -178,7 +185,13 @@ class ParentLink:
 
 
 EntityLinkFilterRaw = (
-    None | AtomicValue[Primitive] | EnumValue | IsRefId | IsParentLink | IsOneOfRefId
+    None
+    | AtomicValue[Primitive]
+    | EnumValue
+    | IsRefId
+    | IsParentLink
+    | IsFieldRefId
+    | IsOneOfRefId
 )
 EntityLinkFilterCompiled = (
     NoFilter
@@ -218,6 +231,11 @@ class EntityLink(Generic[_EntityT]):
                 reified_filters[k] = entity.parent_ref_id
             elif isinstance(v, IsRefId):
                 reified_filters[k] = entity.ref_id
+            elif isinstance(v, IsFieldRefId):
+                possible = getattr(entity, v.field_name)
+                if not isinstance(possible, EntityId):
+                    raise Exception("Invalid type of filter")
+                reified_filters[k] = possible
             else:
                 possible = getattr(entity, v.field_name)
                 if not isinstance(possible, list):
@@ -481,6 +499,7 @@ def _check_entity_can_be_filterd_by(
                 )
             elif (
                 isinstance(filter_rule, IsRefId)
+                or isinstance(filter_rule, IsFieldRefId)
                 or isinstance(filter_rule, IsOneOfRefId)
                 or isinstance(filter_rule, IsParentLink)
             ):
