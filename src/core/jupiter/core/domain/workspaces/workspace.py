@@ -137,6 +137,14 @@ class Workspace(RootEntity):
                 WorkspaceFeature.WORKING_MEM
             ):
                 inferred_entity_tags.append(entity_tag)
+            elif entity_tag is NamedEntityTag.TIME_PLAN and self.is_feature_available(
+                WorkspaceFeature.TIME_PLANS
+            ):
+                inferred_entity_tags.append(entity_tag)
+            elif entity_tag is NamedEntityTag.TIME_PLAN_ACTIVITY and self.is_feature_available(
+                WorkspaceFeature.TIME_PLANS
+            ):
+                inferred_entity_tags.append(entity_tag)
             elif entity_tag is NamedEntityTag.HABIT and self.is_feature_available(
                 WorkspaceFeature.HABITS
             ):
@@ -271,6 +279,10 @@ class Workspace(RootEntity):
                 inferred_sync_targets.append(sync_target)
             elif sync_target is SyncTarget.WORKING_MEM and self.is_feature_available(
                 WorkspaceFeature.WORKING_MEM
+            ):
+                inferred_sync_targets.append(sync_target)
+            elif sync_target is SyncTarget.TIME_PLANS and self.is_feature_available(
+                WorkspaceFeature.TIME_PLANS
             ):
                 inferred_sync_targets.append(sync_target)
             elif sync_target is SyncTarget.HABITS and self.is_feature_available(

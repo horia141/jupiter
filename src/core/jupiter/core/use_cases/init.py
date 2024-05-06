@@ -38,6 +38,7 @@ from jupiter.core.domain.push_integrations.slack.slack_task_collection import (
     SlackTaskCollection,
 )
 from jupiter.core.domain.smart_lists.smart_list_collection import SmartListCollection
+from jupiter.core.domain.time_plans.time_plan_domain import TimePlanDomain
 from jupiter.core.domain.user.user import User
 from jupiter.core.domain.user.user_name import UserName
 from jupiter.core.domain.user_workspace_link.user_workspace_link import (
@@ -199,6 +200,15 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             )
             new_working_mem_collection = await uow.get_for(WorkingMemCollection).create(
                 new_working_mem_collection,
+            )
+
+            new_time_plan_domain = TimePlanDomain.new_time_plan_domain(
+                ctx=context.domain_context,
+                workspace_ref_id=new_workspace.ref_id,
+                days_until_gc=7
+            )
+            new_time_plan_domain = await uow.get_for(TimePlanDomain).create(
+                new_time_plan_domain
             )
 
             new_habit_collection = HabitCollection.new_habit_collection(
