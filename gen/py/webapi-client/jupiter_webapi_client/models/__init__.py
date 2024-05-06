@@ -194,9 +194,9 @@ from .journal_load_args import JournalLoadArgs
 from .journal_load_result import JournalLoadResult
 from .journal_load_settings_args import JournalLoadSettingsArgs
 from .journal_load_settings_result import JournalLoadSettingsResult
+from .journal_remove_args import JournalRemoveArgs
 from .journal_source import JournalSource
 from .journal_update_report_args import JournalUpdateReportArgs
-from .journalremove_args import JournalremoveArgs
 from .link_block import LinkBlock
 from .link_block_kind import LinkBlockKind
 from .list_item import ListItem
@@ -396,6 +396,33 @@ from .smart_list_update_args_name import SmartListUpdateArgsName
 from .sync_target import SyncTarget
 from .table_block import TableBlock
 from .table_block_kind import TableBlockKind
+from .time_plan import TimePlan
+from .time_plan_activity import TimePlanActivity
+from .time_plan_activity_archive_args import TimePlanActivityArchiveArgs
+from .time_plan_activity_create_for_big_plan_args import TimePlanActivityCreateForBigPlanArgs
+from .time_plan_activity_create_for_big_plan_result import TimePlanActivityCreateForBigPlanResult
+from .time_plan_activity_create_for_inbox_task_args import TimePlanActivityCreateForInboxTaskArgs
+from .time_plan_activity_create_for_inbox_task_result import TimePlanActivityCreateForInboxTaskResult
+from .time_plan_activity_feasability import TimePlanActivityFeasability
+from .time_plan_activity_kind import TimePlanActivityKind
+from .time_plan_activity_target import TimePlanActivityTarget
+from .time_plan_activity_update_args import TimePlanActivityUpdateArgs
+from .time_plan_activity_update_args_feasability import TimePlanActivityUpdateArgsFeasability
+from .time_plan_activity_update_args_kind import TimePlanActivityUpdateArgsKind
+from .time_plan_archive_args import TimePlanArchiveArgs
+from .time_plan_change_time_config_args import TimePlanChangeTimeConfigArgs
+from .time_plan_change_time_config_args_period import TimePlanChangeTimeConfigArgsPeriod
+from .time_plan_change_time_config_args_right_now import TimePlanChangeTimeConfigArgsRightNow
+from .time_plan_create_args import TimePlanCreateArgs
+from .time_plan_create_result import TimePlanCreateResult
+from .time_plan_domain import TimePlanDomain
+from .time_plan_find_args import TimePlanFindArgs
+from .time_plan_find_result import TimePlanFindResult
+from .time_plan_find_result_entry import TimePlanFindResultEntry
+from .time_plan_load_args import TimePlanLoadArgs
+from .time_plan_load_result import TimePlanLoadResult
+from .time_plan_remove_args import TimePlanRemoveArgs
+from .time_plan_source import TimePlanSource
 from .user import User
 from .user_change_feature_flags_args import UserChangeFeatureFlagsArgs
 from .user_feature import UserFeature
@@ -652,7 +679,7 @@ __all__ = (
     "JournalLoadResult",
     "JournalLoadSettingsArgs",
     "JournalLoadSettingsResult",
-    "JournalremoveArgs",
+    "JournalRemoveArgs",
     "JournalSource",
     "JournalUpdateReportArgs",
     "LinkBlock",
@@ -852,6 +879,33 @@ __all__ = (
     "SyncTarget",
     "TableBlock",
     "TableBlockKind",
+    "TimePlan",
+    "TimePlanActivity",
+    "TimePlanActivityArchiveArgs",
+    "TimePlanActivityCreateForBigPlanArgs",
+    "TimePlanActivityCreateForBigPlanResult",
+    "TimePlanActivityCreateForInboxTaskArgs",
+    "TimePlanActivityCreateForInboxTaskResult",
+    "TimePlanActivityFeasability",
+    "TimePlanActivityKind",
+    "TimePlanActivityTarget",
+    "TimePlanActivityUpdateArgs",
+    "TimePlanActivityUpdateArgsFeasability",
+    "TimePlanActivityUpdateArgsKind",
+    "TimePlanArchiveArgs",
+    "TimePlanChangeTimeConfigArgs",
+    "TimePlanChangeTimeConfigArgsPeriod",
+    "TimePlanChangeTimeConfigArgsRightNow",
+    "TimePlanCreateArgs",
+    "TimePlanCreateResult",
+    "TimePlanDomain",
+    "TimePlanFindArgs",
+    "TimePlanFindResult",
+    "TimePlanFindResultEntry",
+    "TimePlanLoadArgs",
+    "TimePlanLoadResult",
+    "TimePlanRemoveArgs",
+    "TimePlanSource",
     "User",
     "UserChangeFeatureFlagsArgs",
     "UserFeature",

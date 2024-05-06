@@ -37,7 +37,7 @@ class TimePlanDomain(TrunkEntity):
         return TimePlanDomain._create(
             ctx, workspace=ParentLink(workspace_ref_id), days_until_gc=days_until_gc
         )
-    
+
     @update_entity_action
     def update(self, ctx: DomainContext, days_until_gc: int) -> "TimePlanDomain":
         """Update the time plan domain."""
@@ -45,7 +45,4 @@ class TimePlanDomain(TrunkEntity):
             raise InputValidationError("Days until gc cannot be negative")
         if days_until_gc > 30:
             raise InputValidationError("Days until GC cannot be larger than 30")
-        return self._new_version(
-            ctx,
-            days_until_gc=days_until_gc
-        )
+        return self._new_version(ctx, days_until_gc=days_until_gc)

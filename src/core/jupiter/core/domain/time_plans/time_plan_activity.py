@@ -48,7 +48,9 @@ class TimePlanActivity(LeafEntity):
     ) -> "TimePlanActivity":
         return TimePlanActivity._create(
             ctx,
-            name=TimePlanActivity.build_name(TimePlanActivityTarget.INBOX_TASK, inbox_task_ref_id),
+            name=TimePlanActivity.build_name(
+                TimePlanActivityTarget.INBOX_TASK, inbox_task_ref_id
+            ),
             time_plan=ParentLink(time_plan_ref_id),
             target=TimePlanActivityTarget.INBOX_TASK,
             target_ref_id=inbox_task_ref_id,
@@ -67,7 +69,9 @@ class TimePlanActivity(LeafEntity):
     ) -> "TimePlanActivity":
         return TimePlanActivity._create(
             ctx,
-            name=TimePlanActivity.build_name(TimePlanActivityTarget.INBOX_TASK, big_plan_ref_id),
+            name=TimePlanActivity.build_name(
+                TimePlanActivityTarget.INBOX_TASK, big_plan_ref_id
+            ),
             time_plan=ParentLink(time_plan_ref_id),
             target=TimePlanActivityTarget.BIG_PLAN,
             target_ref_id=big_plan_ref_id,
@@ -87,7 +91,7 @@ class TimePlanActivity(LeafEntity):
             kind=kind.or_else(self.kind),
             feasability=feasability.or_else(self.feasability),
         )
-    
+
     @staticmethod
     def build_name(target: TimePlanActivityTarget, entity_id: EntityId) -> EntityName:
         return EntityName(f"Work on {target} {entity_id}")

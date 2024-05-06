@@ -45,7 +45,7 @@ class TimePlanFindResult(UseCaseResultBase):
     entries: list[TimePlanFindResultEntry]
 
 
-@readonly_use_case(WorkspaceFeature.JOURNALS)
+@readonly_use_case(WorkspaceFeature.TIME_PLANS)
 class TimePlanFindUseCase(
     AppTransactionalLoggedInReadOnlyUseCase[TimePlanFindArgs, TimePlanFindResult]
 ):

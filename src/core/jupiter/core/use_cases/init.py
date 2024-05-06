@@ -205,7 +205,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             new_time_plan_domain = TimePlanDomain.new_time_plan_domain(
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
-                days_until_gc=7
+                days_until_gc=7,
             )
             new_time_plan_domain = await uow.get_for(TimePlanDomain).create(
                 new_time_plan_domain

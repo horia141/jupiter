@@ -17,7 +17,9 @@ from sqlalchemy import (
 from sqlalchemy.ext.asyncio import AsyncConnection
 
 
-class SqliteTimePlanRepository(SqliteLeafEntityRepository[TimePlan], TimePlanRepository):
+class SqliteTimePlanRepository(
+    SqliteLeafEntityRepository[TimePlan], TimePlanRepository
+):
     """A repository for time plans."""
 
     def __init__(

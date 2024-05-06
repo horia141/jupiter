@@ -8,6 +8,7 @@
 export enum NoteDomain {
     INBOX_TASK = 'inbox-task',
     WORKING_MEM = 'working-mem',
+    TIME_PLAN = 'time-plan',
     HABIT = 'habit',
     CHORE = 'chore',
     BIG_PLAN = 'big-plan',

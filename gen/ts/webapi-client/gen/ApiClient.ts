@@ -28,6 +28,7 @@ import { ReportService } from './services/ReportService';
 import { SearchService } from './services/SearchService';
 import { SmartListsService } from './services/SmartListsService';
 import { TestHelperService } from './services/TestHelperService';
+import { TimePlansService } from './services/TimePlansService';
 import { UsersService } from './services/UsersService';
 import { VacationsService } from './services/VacationsService';
 import { WorkingMemService } from './services/WorkingMemService';
@@ -60,6 +61,7 @@ export class ApiClient {
     public readonly search: SearchService;
     public readonly smartLists: SmartListsService;
     public readonly testHelper: TestHelperService;
+    public readonly timePlans: TimePlansService;
     public readonly users: UsersService;
     public readonly vacations: VacationsService;
     public readonly workingMem: WorkingMemService;
@@ -103,6 +105,7 @@ export class ApiClient {
         this.search = new SearchService(this.request);
         this.smartLists = new SmartListsService(this.request);
         this.testHelper = new TestHelperService(this.request);
+        this.timePlans = new TimePlansService(this.request);
         this.users = new UsersService(this.request);
         this.vacations = new VacationsService(this.request);
         this.workingMem = new WorkingMemService(this.request);

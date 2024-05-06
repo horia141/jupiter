@@ -3,28 +3,35 @@ from typing import Any, Dict, List, Type, TypeVar
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-T = TypeVar("T", bound="JournalremoveArgs")
+from ..models.recurring_task_period import RecurringTaskPeriod
+
+T = TypeVar("T", bound="TimePlanCreateArgs")
 
 
 @_attrs_define
-class JournalremoveArgs:
+class TimePlanCreateArgs:
     """Args.
 
     Attributes:
-        ref_id (str): A generic entity id.
+        right_now (str): A date or possibly a datetime for the application.
+        period (RecurringTaskPeriod): A period for a particular task.
     """
 
-    ref_id: str
+    right_now: str
+    period: RecurringTaskPeriod
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
-        ref_id = self.ref_id
+        right_now = self.right_now
+
+        period = self.period.value
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
-                "ref_id": ref_id,
+                "right_now": right_now,
+                "period": period,
             }
         )
 
@@ -33,14 +40,17 @@ class JournalremoveArgs:
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         d = src_dict.copy()
-        ref_id = d.pop("ref_id")
+        right_now = d.pop("right_now")
 
-        journalremove_args = cls(
-            ref_id=ref_id,
+        period = RecurringTaskPeriod(d.pop("period"))
+
+        time_plan_create_args = cls(
+            right_now=right_now,
+            period=period,
         )
 
-        journalremove_args.additional_properties = d
-        return journalremove_args
+        time_plan_create_args.additional_properties = d
+        return time_plan_create_args
 
     @property
     def additional_keys(self) -> List[str]:

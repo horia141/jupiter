@@ -141,8 +141,9 @@ class Workspace(RootEntity):
                 WorkspaceFeature.TIME_PLANS
             ):
                 inferred_entity_tags.append(entity_tag)
-            elif entity_tag is NamedEntityTag.TIME_PLAN_ACTIVITY and self.is_feature_available(
-                WorkspaceFeature.TIME_PLANS
+            elif (
+                entity_tag is NamedEntityTag.TIME_PLAN_ACTIVITY
+                and self.is_feature_available(WorkspaceFeature.TIME_PLANS)
             ):
                 inferred_entity_tags.append(entity_tag)
             elif entity_tag is NamedEntityTag.HABIT and self.is_feature_available(

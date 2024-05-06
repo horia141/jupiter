@@ -29,7 +29,7 @@ class TimePlanActivityUpdateArgs(UseCaseArgsBase):
     feasability: UpdateAction[TimePlanActivityFeasability]
 
 
-@mutation_use_case(WorkspaceFeature.PERSONS)
+@mutation_use_case(WorkspaceFeature.TIME_PLANS)
 class TimePlanActivityUpdateUseCase(
     AppTransactionalLoggedInMutationUseCase[TimePlanActivityUpdateArgs, None]
 ):

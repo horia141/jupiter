@@ -29,6 +29,16 @@ export function inferEntityTagsForEnabledFeatures(
     ) {
       inferredEntityTags.push(entityTag);
     } else if (
+      entityTag === NamedEntityTag.TIME_PLAN &&
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.TIME_PLANS)
+    ) {
+      inferredEntityTags.push(entityTag);
+    } else if (
+      entityTag === NamedEntityTag.TIME_PLAN_ACTIVITY &&
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.TIME_PLANS)
+    ) {
+      inferredEntityTags.push(entityTag);
+    } else if (
       entityTag === NamedEntityTag.HABIT &&
       isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.HABITS)
     ) {
@@ -191,6 +201,11 @@ export function inferSyncTargetsForEnabledFeatures(
     } else if (
       syncTarget === SyncTarget.WORKING_MEM &&
       isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.WORKING_MEM)
+    ) {
+      inferredSyncTargets.push(syncTarget);
+    } else if (
+      syncTarget === SyncTarget.TIME_PLANS &&
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.TIME_PLANS)
     ) {
       inferredSyncTargets.push(syncTarget);
     } else if (

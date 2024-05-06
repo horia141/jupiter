@@ -8,6 +8,7 @@ export enum DocsHelpSubject {
   GAMIFICATION,
   INBOX_TASKS,
   WORKING_MEM,
+  TIME_PLANS,
   HABITS,
   CHORES,
   BIG_PLANS,
@@ -59,6 +60,8 @@ function subjectToUrl(subject: DocsHelpSubject) {
       return "concepts/inbox-tasks/";
     case DocsHelpSubject.WORKING_MEM:
       return "concepts/working-mem/";
+    case DocsHelpSubject.TIME_PLANS:
+      return "concepts/time-plans/";
     case DocsHelpSubject.HABITS:
       return "concepts/habits/";
     case DocsHelpSubject.CHORES:

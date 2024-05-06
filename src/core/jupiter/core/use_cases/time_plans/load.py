@@ -68,7 +68,7 @@ class TimePlanLoadUseCase(
 
         sub_period_time_plans = await uow.get(TimePlanRepository).find_all_in_range(
             parent_ref_id=time_plan.time_plan_domain.ref_id,
-            allow_archived=args.allow_archived,
+            allow_archived=False,
             filter_periods=time_plan.period.all_smaller_periods,
             filter_start_date=schedule.first_day,
             filter_end_date=schedule.end_day,

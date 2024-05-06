@@ -14,6 +14,7 @@ class NoteDomain(str, Enum):
     PROJECT = "project"
     SMART_LIST = "smart-list"
     SMART_LIST_ITEM = "smart-list-item"
+    TIME_PLAN = "time-plan"
     VACATION = "vacation"
     WORKING_MEM = "working-mem"
 

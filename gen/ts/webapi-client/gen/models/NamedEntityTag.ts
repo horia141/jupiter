@@ -8,6 +8,8 @@
 export enum NamedEntityTag {
     INBOX_TASK = 'InboxTask',
     WORKING_MEM = 'WorkingMem',
+    TIME_PLAN = 'TimePlan',
+    TIME_PLAN_ACTIVITY = 'TimePlanActivity',
     HABIT = 'Habit',
     CHORE = 'Chore',
     BIG_PLAN = 'BigPlan',

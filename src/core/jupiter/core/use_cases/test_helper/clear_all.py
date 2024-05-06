@@ -156,10 +156,11 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
                 time_plan_domain = await uow.get_for(TimePlanDomain).load_by_parent(
                     workspace.ref_id
                 )
-                time_plan_domain = time_plan_domain.update(context.domain_context, days_until_gc=7)
+                time_plan_domain = time_plan_domain.update(
+                    context.domain_context, days_until_gc=7
+                )
                 await uow.get_for(TimePlanDomain).save(time_plan_domain)
 
-                
                 root_project = await uow.get(ProjectRepository).load_root_project(
                     project_collection.ref_id
                 )
@@ -169,12 +170,16 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
                 )
                 await uow.get_for(Project).save(root_project)
 
-                journal_collection = await uow.get_for(JournalCollection).load_by_parent(
-                    workspace.ref_id
-                )
-                journal_collection = journal_collection.change_periods(context.domain_context, periods={RecurringTaskPeriod.WEEKLY}).change_writing_tasks(
+                journal_collection = await uow.get_for(
+                    JournalCollection
+                ).load_by_parent(workspace.ref_id)
+                journal_collection = journal_collection.change_periods(
+                    context.domain_context, periods={RecurringTaskPeriod.WEEKLY}
+                ).change_writing_tasks(
                     context.domain_context,
-                    writing_task_project_ref_id=UpdateAction.change_to(root_project.ref_id),
+                    writing_task_project_ref_id=UpdateAction.change_to(
+                        root_project.ref_id
+                    ),
                     writing_task_eisen=UpdateAction.change_to(Eisen.IMPORTANT),
                     writing_task_difficulty=UpdateAction.change_to(Difficulty.MEDIUM),
                 )
