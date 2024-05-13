@@ -52,6 +52,8 @@ class TimePlanActivityLoadUseCase(
         args: TimePlanActivityLoadArgs,
     ) -> TimePlanActivityLoadResult:
         """Execute the command's action."""
+        workspace = context.workspace
+
         time_plan_activity, target_inbox_task, target_big_plan = await generic_loader(
             uow, 
             TimePlanActivity, 
@@ -60,6 +62,9 @@ class TimePlanActivityLoadUseCase(
             TimePlanActivity.target_big_plan,
             allow_archived=args.allow_archived
         )
+
+        if not workspace.is_feature_available(WorkspaceFeature.BIG_PLANS):
+            target_big_plan = None
 
         return TimePlanActivityLoadResult(time_plan_activity=time_plan_activity, 
                                           target_inbox_task=target_inbox_task,

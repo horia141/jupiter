@@ -63,6 +63,7 @@ import {
 import { getSession } from "~/sessions";
 import type { TopLevelInfo } from "~/top-level-context";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { BigPlanStack } from "~/components/big-plan-stack";
 
 export const handle = {
   displayType: DisplayType.TRUNK,
@@ -506,38 +507,11 @@ function List({
   onArchiveBigPlan,
 }: ListProps) {
   return (
-    <EntityStack>
-      {bigPlans.map((entry) => (
-        <EntityCard
-          key={`big-plan-${entry.ref_id}`}
-          entityId={`big-plan-${entry.ref_id}`}
-          allowSwipe
-          allowMarkNotDone
-          onMarkNotDone={() => onArchiveBigPlan(entry)}
-        >
-          <EntityLink to={`/workspace/big-plans/${entry.ref_id}`}>
-            <EntityNameComponent name={entry.name} />
-          </EntityLink>
-          <Divider />
-          <BigPlanStatusTag status={entry.status} />
-          {isWorkspaceFeatureAvailable(
-            topLevelInfo.workspace,
-            WorkspaceFeature.PROJECTS
-          ) && (
-            <ProjectTag
-              project={entriesByRefId.get(entry.ref_id)?.project as Project}
-            />
-          )}
-
-          {entry.actionable_date && (
-            <ADateTag label="Actionable Date" date={entry.actionable_date} />
-          )}
-          {entry.due_date && (
-            <ADateTag label="Due Date" date={entry.due_date} />
-          )}
-        </EntityCard>
-      ))}
-    </EntityStack>
+    <BigPlanStack
+      topLevelInfo={topLevelInfo}
+      bigPlans={bigPlans}
+      entriesByRefId={entriesByRefId}
+      onCardMarkNotDone={onArchiveBigPlan} />
   );
 }
 

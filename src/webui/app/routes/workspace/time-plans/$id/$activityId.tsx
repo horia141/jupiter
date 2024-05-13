@@ -20,6 +20,7 @@ import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { CheckboxAsString, parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
+import { BigPlanStack } from "~/components/big-plan-stack";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
@@ -27,6 +28,7 @@ import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { TagsEditor } from "~/components/tags-editor";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
+import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -135,7 +137,7 @@ export default function TimePlanActivity() {
 
     const cardActionFetcher = useFetcher();
 
-    function handleCardMarkDone(it: InboxTask) {
+    function handleInboxTaskMarkDone(it: InboxTask) {
       cardActionFetcher.submit(
         {
           id: it.ref_id,
@@ -148,7 +150,7 @@ export default function TimePlanActivity() {
       );
     }
   
-    function handleCardMarkNotDone(it: InboxTask) {
+    function handleInboxTaskMarkNotDone(it: InboxTask) {
       cardActionFetcher.submit(
         {
           id: it.ref_id,
@@ -160,6 +162,32 @@ export default function TimePlanActivity() {
         }
       );
     }
+
+    function handleBigPlanMarkDone(bp: BigPlan) {
+        cardActionFetcher.submit(
+          {
+            id: bp.ref_id,
+            status: BigPlanStatus.DONE,
+          },
+          {
+            method: "post",
+            action: "/workspace/big-plans/update-status",
+          }
+        );
+      }
+    
+      function handleBigPlanMarkNotDone(bp: BigPlan) {
+        cardActionFetcher.submit(
+          {
+            id: bp.ref_id,
+            status: BigPlanStatus.NOT_DONE,
+          },
+          {
+            method: "post",
+            action: "/workspace/big-plans/update-status",
+          }
+        );
+      }
 
   return (
     <LeafPanel
@@ -241,8 +269,22 @@ export default function TimePlanActivity() {
           }}
           label="Target Inbox Task"
           inboxTasks={[loaderData.targetInboxTask]}
-          onCardMarkDone={handleCardMarkDone}
-          onCardMarkNotDone={handleCardMarkNotDone}
+          onCardMarkDone={handleInboxTaskMarkDone}
+          onCardMarkNotDone={handleInboxTaskMarkNotDone}
+        />
+      )}
+
+    {isWorkspaceFeatureAvailable(
+        topLevelInfo.workspace,
+        WorkspaceFeature.BIG_PLANS
+    ) && loaderData.targetBigPlan && (
+        <BigPlanStack
+          topLevelInfo={topLevelInfo}
+          showLabel
+          label="Target Big Plan"
+          inboxTasks={[loaderData.targetBigPlan]}
+          onCardMarkDone={handleBigPlanMarkDone}
+          onCardMarkNotDone={handleBigPlanMarkNotDone}
         />
       )}
     </LeafPanel>
