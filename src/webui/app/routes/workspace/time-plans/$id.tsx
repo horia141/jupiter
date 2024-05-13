@@ -243,6 +243,59 @@ export default function TimePlan() {
         </CardContent>
       </Card>
 
+      <Card>
+        <CardContent>
+          <ButtonGroup>
+              <Button
+                variant="contained"
+                disabled={!inputsEnabled}
+                to={`/workspace/inbox-tasks/new?timePlanRefId=${loaderData.timePlan.ref_id}`}
+                component={Link}
+              >
+                New Inbox Task
+              </Button>
+
+              <Button
+                variant="outlined"
+                disabled={!inputsEnabled}
+                to={`/workspace/big-plans/new?timePlanRefId=${loaderData.timePlan.ref_id}`}
+                component={Link}
+              >
+                New Big Plan
+              </Button>
+
+              <Button
+                variant="outlined"
+                disabled={!inputsEnabled}
+                to={`/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-inbox-tasks`}
+                component={Link}
+              >
+                From Current Inbox Tasks
+              </Button>
+
+              <Button
+                variant="outlined"
+                disabled={!inputsEnabled}
+                to={`/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-big-plans`}
+                component={Link}
+              >
+                From Current Big Plans
+              </Button>
+
+              {sortedSubTimePlans.length > 0 &&
+              <Button
+                variant="outlined"
+                disabled={!inputsEnabled}
+                to={`/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-time-plans/${sortedSubTimePlans[0].ref_id}`}
+              >
+                From Current Time Plan
+              </Button>}
+            </ButtonGroup>
+        </CardContent>
+      </Card>
+
+      <span>The view of the current timeplan</span>
+
       <Typography variant="h5" sx={{ marginBottom: "1rem" }}>
         Other Time Plans in this Period
       </Typography>
