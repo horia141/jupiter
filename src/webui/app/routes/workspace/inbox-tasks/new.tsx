@@ -53,7 +53,9 @@ import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
 
 const QuerySchema = {
-  reason: z.literal("for-big-plan").optional(),
+  timePlanReason: z.literal("for-time-plan").optional(),
+  timePlanRefId: z.string().optional(),
+  bigPlanReason: z.literal("for-big-plan").optional(),
   bigPlanRefId: z.string().optional(),
 };
 
@@ -80,18 +82,26 @@ export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const query = parseQuery(request, QuerySchema);
 
-  const reason = query.reason || "standard";
+  const timePlanReason = query.timePlanReason || "standard";
+
+  if (timePlanReason === "for-time-plan") {
+    if (!query.timePlanRefId) {
+      throw new Response("Missing Time Plan Id", { status: 500 });
+    }
+  }
+
+  const bigPlanReason = query.bigPlanReason || "standard";
 
   const summaryResponse = await getLoggedInApiClient(
     session
   ).getSummaries.getSummaries({
     include_projects: true,
-    include_big_plans: reason === "standard",
+    include_big_plans: bigPlanReason === "standard",
   });
 
   let ownerBigPlan = null;
   let ownerProject = null;
-  if (reason === "for-big-plan" && query.bigPlanRefId) {
+  if (bigPlanReason === "for-big-plan") {
     if (!query.bigPlanRefId) {
       throw new Response("Missing Big Plan Id", { status: 500 });
     }
@@ -108,12 +118,12 @@ export async function loader({ request }: LoaderArgs) {
   }
 
   const defaultProject =
-    reason === "for-big-plan"
+    bigPlanReason === "for-big-plan"
       ? (ownerProject as ProjectSummary)
       : (summaryResponse.root_project as ProjectSummary);
 
   const defaultBigPlan: BigPlanACOption =
-    reason === "for-big-plan"
+    bigPlanReason === "for-big-plan"
       ? {
           label: ownerBigPlan?.name as string,
           big_plan_id: query.bigPlanRefId as string,
@@ -124,13 +134,14 @@ export async function loader({ request }: LoaderArgs) {
         };
 
   return json({
-    reason: reason,
+    timePlanReason: timePlanReason,
+    bigPlanReason: bigPlanReason,
     defaultProject: defaultProject,
     defaultBigPlan: defaultBigPlan,
     ownerBigPlan: ownerBigPlan,
     allProjects: summaryResponse.projects as Array<Project>,
     allBigPlans:
-      reason === "standard"
+      bigPlanReason === "standard"
         ? (summaryResponse.big_plans as Array<BigPlanSummary>)
         : [ownerBigPlan as BigPlanSummary],
   });
@@ -142,15 +153,19 @@ export async function action({ request }: ActionArgs) {
   const form = await parseForm(request, CreateFormSchema);
 
   try {
-    const reason = query.reason || "standard";
+    const timePlanReason = query.timePlanReason || "standard";
+    const bigPlanReason = query.bigPlanReason || "standard";
 
     const result = await getLoggedInApiClient(
       session
     ).inboxTasks.inboxTaskCreate({
       name: form.name,
+      time_plan_ref_id: timePlanReason === "standard"
+        ? undefined
+        : (query.timePlanRefId as string),
       project_ref_id: form.project !== undefined ? form.project : undefined,
       big_plan_ref_id:
-        reason === "standard"
+        bigPlanReason === "standard"
           ? form.bigPlan !== undefined && form.bigPlan !== "none"
             ? form.bigPlan
             : undefined
@@ -167,11 +182,20 @@ export async function action({ request }: ActionArgs) {
           : undefined,
     });
 
-    switch (reason) {
+    switch (bigPlanReason) {
       case "standard":
-        return redirect(
-          `/workspace/inbox-tasks/${result.new_inbox_task.ref_id}`
-        );
+        switch (timePlanReason) {
+          case "standard":
+            return redirect(
+              `/workspace/inbox-tasks/${result.new_inbox_task.ref_id}`
+            );
+
+          case "for-time-plan":
+            return redirect(
+              `/workspace/time-plans/${result.new_time_plan_activity.time_plan_ref_id}/${result.new_time_plan_activity.ref_id}}`
+            );
+        }
+      
       case "for-big-plan":
         return redirect(`/workspace/big-plans/${query.bigPlanRefId as string}`);
     }
@@ -203,7 +227,7 @@ export default function NewInboxTask() {
     loaderData.defaultProject.ref_id
   );
   const [blockedToSelectProject, setBlockedToSelectProject] = useState(
-    loaderData.reason === "for-big-plan"
+    loaderData.bigPlanReason === "for-big-plan"
   );
 
   const inputsEnabled = transition.state === "idle";
@@ -295,7 +319,7 @@ export default function NewInboxTask() {
                   disablePortal
                   id="bigPlan"
                   options={allBigPlansAsOptions}
-                  readOnly={!inputsEnabled || loaderData.reason !== "standard"}
+                  readOnly={!inputsEnabled || loaderData.bigPlanReason !== "standard"}
                   value={selectedBigPlan}
                   disableClearable={true}
                   onChange={handleChangeBigPlan}
@@ -392,7 +416,7 @@ export default function NewInboxTask() {
                 readOnly={!inputsEnabled}
                 name="actionableDate"
                 defaultValue={
-                  loaderData.reason === "for-big-plan" &&
+                  loaderData.bigPlanReason === "for-big-plan" &&
                   loaderData.ownerBigPlan?.actionable_date
                     ? aDateToDate(
                         loaderData.ownerBigPlan.actionable_date
@@ -415,7 +439,7 @@ export default function NewInboxTask() {
                 readOnly={!inputsEnabled}
                 name="dueDate"
                 defaultValue={
-                  loaderData.reason === "for-big-plan" &&
+                  loaderData.bigPlanReason === "for-big-plan" &&
                   loaderData.ownerBigPlan?.due_date
                     ? aDateToDate(loaderData.ownerBigPlan.due_date).toFormat(
                         "yyyy-MM-dd"

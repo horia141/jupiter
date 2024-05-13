@@ -249,7 +249,7 @@ export default function TimePlan() {
               <Button
                 variant="contained"
                 disabled={!inputsEnabled}
-                to={`/workspace/inbox-tasks/new?timePlanRefId=${loaderData.timePlan.ref_id}`}
+                to={`/workspace/inbox-tasks/new?timePlanReason=for-time-plan&timePlanRefId=${loaderData.timePlan.ref_id}`}
                 component={Link}
               >
                 New Inbox Task
@@ -258,7 +258,7 @@ export default function TimePlan() {
               <Button
                 variant="outlined"
                 disabled={!inputsEnabled}
-                to={`/workspace/big-plans/new?timePlanRefId=${loaderData.timePlan.ref_id}`}
+                to={`/workspace/big-plans/new?timePlanReason=for-time-plan&timePlanRefId=${loaderData.timePlan.ref_id}`}
                 component={Link}
               >
                 New Big Plan
