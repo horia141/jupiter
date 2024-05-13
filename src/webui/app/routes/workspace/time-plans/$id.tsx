@@ -294,6 +294,8 @@ export default function TimePlan() {
         </CardContent>
       </Card>
 
+      <Outlet />
+
       <span>The view of the current timeplan</span>
 
       <Typography variant="h5" sx={{ marginBottom: "1rem" }}>
