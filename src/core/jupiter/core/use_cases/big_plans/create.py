@@ -1,5 +1,4 @@
 """The command for creating a big plan."""
-
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
@@ -9,9 +8,14 @@ from jupiter.core.domain.features import (
     FeatureUnavailableError,
     WorkspaceFeature,
 )
+from jupiter.core.domain.infra.generic_creator import generic_creator
 from jupiter.core.domain.projects.project import Project, ProjectRepository
 from jupiter.core.domain.projects.project_collection import ProjectCollection
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
+from jupiter.core.domain.time_plans.time_plan import TimePlan
+from jupiter.core.domain.time_plans.time_plan_activity import TimePlanActivity
+from jupiter.core.domain.time_plans.time_plan_activity_feasability import TimePlanActivityFeasability
+from jupiter.core.domain.time_plans.time_plan_activity_kind import TimePlanActivityKind
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     ProgressReporter,
@@ -34,6 +38,7 @@ class BigPlanCreateArgs(UseCaseArgsBase):
     """Big plan create args."""
 
     name: BigPlanName
+    time_plan_ref_id: EntityId | None
     project_ref_id: EntityId | None
     actionable_date: ADate | None
     due_date: ADate | None
@@ -44,6 +49,7 @@ class BigPlanCreateResult(UseCaseResultBase):
     """Big plan create result."""
 
     new_big_plan: BigPlan
+    new_time_plan_activity: TimePlanActivity | None
 
 
 @mutation_use_case(WorkspaceFeature.BIG_PLANS)
@@ -63,14 +69,21 @@ class BigPlanCreateUseCase(
         workspace = context.workspace
 
         if (
+            not workspace.is_feature_available(WorkspaceFeature.TIME_PLANS)
+            and args.time_plan_ref_id is not None
+        ):
+            raise FeatureUnavailableError(WorkspaceFeature.TIME_PLANS)
+        if (
             not workspace.is_feature_available(WorkspaceFeature.PROJECTS)
             and args.project_ref_id is not None
         ):
             raise FeatureUnavailableError(WorkspaceFeature.PROJECTS)
 
-        big_plan_collection = await uow.get_for(BigPlanCollection).load_by_parent(
-            workspace.ref_id,
-        )
+        time_plan: TimePlan | None = None
+        if args.time_plan_ref_id:
+            time_plan = await uow.get_for(TimePlan).load_by_id(
+                args.time_plan_ref_id
+            )
 
         if args.project_ref_id is None:
             project_collection = await uow.get_for(ProjectCollection).load_by_parent(
@@ -84,6 +97,10 @@ class BigPlanCreateUseCase(
             await uow.get_for(Project).load_by_id(args.project_ref_id)
             project_ref_id = args.project_ref_id
 
+        big_plan_collection = await uow.get_for(BigPlanCollection).load_by_parent(
+            workspace.ref_id,
+        )
+
         new_big_plan = BigPlan.new_big_plan(
             context.domain_context,
             big_plan_collection_ref_id=big_plan_collection.ref_id,
@@ -93,7 +110,19 @@ class BigPlanCreateUseCase(
             actionable_date=args.actionable_date,
             due_date=args.due_date,
         )
-        new_big_plan = await uow.get_for(BigPlan).create(new_big_plan)
-        await progress_reporter.mark_created(new_big_plan)
+        new_big_plan = await generic_creator(uow, progress_reporter, new_big_plan)
 
-        return BigPlanCreateResult(new_big_plan=new_big_plan)
+        new_time_plan_activity = None
+        if time_plan:
+            new_time_plan_activity = TimePlanActivity.new_activity_for_big_plan(
+                context.domain_context,
+                time_plan_ref_id=time_plan.ref_id,
+                big_plan_ref_id=new_big_plan.ref_id,
+                kind=TimePlanActivityKind.FINISH,
+                feasability=TimePlanActivityFeasability.MUST_DO
+            )
+            new_time_plan_activity = await generic_creator(
+                uow, progress_reporter, new_time_plan_activity
+            )
+
+        return BigPlanCreateResult(new_big_plan=new_big_plan, new_time_plan_activity=new_time_plan_activity)

@@ -37,7 +37,7 @@ class TimePlanActivityLoadResult(UseCaseResultBase):
     target_big_plan: BigPlan | None
 
 
-@readonly_use_case(WorkspaceFeature.time_planS)
+@readonly_use_case(WorkspaceFeature.TIME_PLANS)
 class TimePlanActivityLoadUseCase(
     AppTransactionalLoggedInReadOnlyUseCase[
         TimePlanActivityLoadArgs, TimePlanActivityLoadResult
