@@ -128,9 +128,38 @@ export default function TimePlanActivity() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
+  const topLevelInfo = useContext(TopLevelInfoContext);
 
   const inputsEnabled =
     transition.state === "idle" && !loaderData.item.archived;
+
+    const cardActionFetcher = useFetcher();
+
+    function handleCardMarkDone(it: InboxTask) {
+      cardActionFetcher.submit(
+        {
+          id: it.ref_id,
+          status: InboxTaskStatus.DONE,
+        },
+        {
+          method: "post",
+          action: "/workspace/inbox-tasks/update-status-and-eisen",
+        }
+      );
+    }
+  
+    function handleCardMarkNotDone(it: InboxTask) {
+      cardActionFetcher.submit(
+        {
+          id: it.ref_id,
+          status: InboxTaskStatus.NOT_DONE,
+        },
+        {
+          method: "post",
+          action: "/workspace/inbox-tasks/update-status-and-eisen",
+        }
+      );
+    }
 
   return (
     <LeafPanel
@@ -199,6 +228,23 @@ export default function TimePlanActivity() {
           </ButtonGroup>
         </CardActions>
       </Card>
+
+      {loaderData.targetInboxTask && (
+        <InboxTaskStack
+          topLevelInfo={topLevelInfo}
+          showLabel
+          showOptions={{
+            showStatus: true,
+            showDueDate: true,
+            showHandleMarkDone: true,
+            showHandleMarkNotDone: true,
+          }}
+          label="Target Inbox Task"
+          inboxTasks={[loaderData.targetInboxTask]}
+          onCardMarkDone={handleCardMarkDone}
+          onCardMarkNotDone={handleCardMarkNotDone}
+        />
+      )}
     </LeafPanel>
   );
 }
