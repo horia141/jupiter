@@ -25,9 +25,13 @@ import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
+import { EntityCard } from "~/components/infra/entity-card";
+import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import { TimePlanActivityFeasabilityTag } from "~/components/time-plan-activity-feasability-tag";
+import { TimePlanActivityKindTag } from "~/components/time-plan-activity-kind-tag";
 import { TimePlanStack } from "~/components/time-plan-stack";
 import {
   aGlobalError,
@@ -143,6 +147,7 @@ export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export default function TimePlan() {
+  const { id } = useParams();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
@@ -294,7 +299,19 @@ export default function TimePlan() {
         </CardContent>
       </Card>
 
-      <Outlet />
+      <EntityStack>
+        {loaderData.timePlanActivities.map((entry) => {
+          <EntityCard
+            entityId={`time-plan-activity-${entry.ref_id}`}
+            key={`time-plan-activity-${entry.ref_id}`}>
+              <EntityLink to={`/workspace/time-plans/${loaderData.time_plan.ref_id}/${entry.ref_id}`}>
+                TODO: time plan name here
+                <TimePlanActivityKindTag kind={entry.kind} />
+                <TimePlanActivityFeasabilityTag feasability={entry.feasability} />
+                </EntityLink>
+          </EntityCard>
+        })}
+      </EntityStack>
 
       <span>The view of the current timeplan</span>
 
@@ -306,6 +323,8 @@ export default function TimePlan() {
         topLevelInfo={topLevelInfo}
         timePlans={sortedSubTimePlans}
       />
+
+      <Outlet />
     </LeafPanel>
   );
 }
