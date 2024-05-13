@@ -1,11 +1,16 @@
 """Retrieve details about a time plan."""
+from jupiter.core.domain.big_plans.big_plan import BigPlan
+from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.core.domain.core import schedules
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.infra.generic_loader import generic_loader
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.time_plans.time_plan import TimePlan, TimePlanRepository
 from jupiter.core.domain.time_plans.time_plan_activity import TimePlanActivity
+from jupiter.core.domain.time_plans.time_plan_activity_target import TimePlanActivityTarget
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
@@ -35,6 +40,8 @@ class TimePlanLoadResult(UseCaseResultBase):
     time_plan: TimePlan
     note: Note
     activities: list[TimePlanActivity]
+    target_inbox_tasks: list[InboxTask]
+    target_big_plans: list[BigPlan]
     sub_period_time_plans: list[TimePlan]
 
 
@@ -51,6 +58,8 @@ class TimePlanLoadUseCase(
         args: TimePlanLoadArgs,
     ) -> TimePlanLoadResult:
         """Execute the command's actions."""
+        workspace = context.workspace
+
         time_plan, activities, note = await generic_loader(
             uow,
             TimePlan,
@@ -58,6 +67,20 @@ class TimePlanLoadUseCase(
             TimePlan.activities,
             TimePlan.note,
             allow_archived=args.allow_archived,
+        )
+
+        inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(workspace.ref_id)
+        target_inbox_tasks = await uow.get_for(InboxTask).find_all(
+            parent_ref_id=inbox_task_collection.ref_id,
+            allow_archived=True,
+            filter_ref_ids=[a.target_ref_id for a in activities if a.target == TimePlanActivityTarget.INBOX_TASK]
+        )
+
+        big_plan_collection = await uow.get_for(BigPlanCollection).load_by_parent(workspace.ref_id)
+        target_big_plans = await uow.get_for(BigPlan).find_all(
+            parent_ref_id=big_plan_collection.ref_id,
+            allow_archived=True,
+            filter_ref_ids=[a.target_ref_id for a in activities if a.target == TimePlanActivityTarget.BIG_PLAN]
         )
 
         schedule = schedules.get_schedule(
@@ -76,7 +99,9 @@ class TimePlanLoadUseCase(
 
         return TimePlanLoadResult(
             time_plan=time_plan,
-            activities=list(activities),
             note=note,
+            activities=list(activities),
+            target_inbox_tasks=target_inbox_tasks,
+            target_big_plans=target_big_plans,
             sub_period_time_plans=sub_period_time_plans,
         )

@@ -23,9 +23,11 @@ import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
+import { BigPlanStatusTag } from "~/components/big-plan-status-tag";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
+import { InboxTaskStatusTag } from "~/components/inbox-task-status-tag";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
-import { EntityCard } from "~/components/infra/entity-card";
+import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
@@ -81,6 +83,9 @@ export async function loader({ request, params }: LoaderArgs) {
       allProjects: summaryResponse.projects as Array<ProjectSummary>,
       timePlan: result.time_plan,
       note: result.note,
+      activities: result.activities,
+      targetInboxTasks: result.targetInboxTasks,
+      targetBigPlans: result.targetBigPlans,
       subPeriodTimePlans: result.sub_period_time_plans,
     });
   } catch (error) {
@@ -161,6 +166,13 @@ export default function TimePlan() {
 
   const sortedSubTimePlans = sortTimePlansNaturally(
     loaderData.subPeriodTimePlans
+  );
+
+  const inboxTasksByRefId = new Map<string, InboxTask>(
+    loaderData.targetInboxTasks.map((it) => [it.ref_id, it])
+  );
+  const bigPlansByRefId = new Map<string, BigPlan>(
+    loaderData.targetBigPlans.map((bp) => [bp.ref_id, bp])
   );
 
   return (
@@ -300,20 +312,16 @@ export default function TimePlan() {
       </Card>
 
       <EntityStack>
-        {loaderData.timePlanActivities.map((entry) => {
-          <EntityCard
+        {loaderData.activities.map((entry) => (
+          <ActivityCard
             entityId={`time-plan-activity-${entry.ref_id}`}
-            key={`time-plan-activity-${entry.ref_id}`}>
-              <EntityLink to={`/workspace/time-plans/${loaderData.time_plan.ref_id}/${entry.ref_id}`}>
-                TODO: time plan name here
-                <TimePlanActivityKindTag kind={entry.kind} />
-                <TimePlanActivityFeasabilityTag feasability={entry.feasability} />
-                </EntityLink>
-          </EntityCard>
-        })}
+            key={`time-plan-activity-${entry.ref_id}`}
+            timePlan={loaderData.time_plan}
+            activity={entry}
+            inboxTasksByRefId={inboxTasksByRefId}
+            bigPlansByRefId={bigPlansByRefId} />
+        ))}
       </EntityStack>
-
-      <span>The view of the current timeplan</span>
 
       <Typography variant="h5" sx={{ marginBottom: "1rem" }}>
         Other Time Plans in this Period
@@ -337,3 +345,37 @@ export const ErrorBoundary = makeErrorBoundary(
   () =>
     `There was an error loading time plan #${useParams().id}. Please try again!`
 );
+
+interface ActivityCardProps {
+  entityId: string;
+  timePlan: TimePlan;
+  activity: TimePlanActivity;
+  inboxTasksByRefId: Map<string, InboxTask>;
+  bigPlansByRefId: Map<string, BigPlan>;
+}
+
+function ActivityCard(props: ActivityCardProps) {
+  if (props.activity.target == TimePlanActivityTarget.INBOX_TASK) {
+    const inboxTask = props.inboxTasksByRefId.get(props.activity.target_ref_id);
+    return <EntityCard
+            entityId={props.entityId}>
+              <EntityLink to={`/workspace/time-plans/${props.timePlan.ref_id}/${props.activity.ref_id}`}>
+                {inboxTask.name}
+                <InboxTaskStatusTag status={inboxTask.status} />
+                <TimePlanActivityKindTag kind={props.activity.kind} />
+                <TimePlanActivityFeasabilityTag feasability={props.activity.feasability} />
+                </EntityLink>
+          </EntityCard>;
+  } else {
+    const bigPlan = props.bigPlansByRefId.get(props.activity.target_ref_id);
+    return <EntityCard
+            entityId={props.entityId}>
+              <EntityLink to={`/workspace/time-plans/${props.timePlan.ref_id}/${props.activity.ref_id}`}>
+                {bigPlan.name}
+                <BigPlanStatusTag status={bigPlan.status} />
+                <TimePlanActivityKindTag kind={props.activity.kind} />
+                <TimePlanActivityFeasabilityTag feasability={props.activity.feasability} />
+                </EntityLink>
+          </EntityCard>;
+  }
+}
