@@ -193,7 +193,7 @@ export async function action({ request }: ActionArgs) {
 
           case "for-time-plan":
             return redirect(
-              `/workspace/time-plans/${result.new_time_plan_activity?.time_plan_ref_id}/${result.new_time_plan_activity?.ref_id}}`
+              `/workspace/time-plans/${result.new_time_plan_activity?.time_plan_ref_id}/${result.new_time_plan_activity?.ref_id}`
             );
         }
         break;

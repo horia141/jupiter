@@ -1,5 +1,5 @@
 import type { BigPlan, InboxTask, ProjectSummary, TimePlan, TimePlanActivity } from "@jupiter/webapi-client";
-import { ApiError, RecurringTaskPeriod, TimePlanActivityTarget } from "@jupiter/webapi-client";
+import { ApiError, RecurringTaskPeriod, TimePlanActivityTarget, WorkspaceFeature } from "@jupiter/webapi-client";
 import {
   Button,
   ButtonGroup,
@@ -47,13 +47,14 @@ import {
 } from "~/logic/action-result";
 import { periodName } from "~/logic/domain/period";
 import { sortTimePlansNaturally } from "~/logic/domain/time-plan";
+import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { LeafPanelExpansionState } from "~/rendering/leaf-panel-expansion";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
-import { TopLevelInfoContext } from "~/top-level-context";
+import { TopLevelInfo, TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = {
   id: z.string(),
@@ -177,7 +178,7 @@ export default function TimePlanView() {
     loaderData.targetInboxTasks.map((it) => [it.ref_id, it])
   );
   const bigPlansByRefId = new Map<string, BigPlan>(
-    loaderData.targetBigPlans.map((bp) => [bp.ref_id, bp])
+    loaderData.targetBigPlans ? loaderData.targetBigPlans.map((bp) => [bp.ref_id, bp]) : []
   );
 
   return (
@@ -277,6 +278,7 @@ export default function TimePlanView() {
               New Inbox Task
             </Button>
 
+            {isWorkspaceFeatureAvailable(topLevelInfo.workspace, WorkspaceFeature.BIG_PLANS) &&
             <Button
               variant="outlined"
               disabled={!inputsEnabled}
@@ -284,7 +286,7 @@ export default function TimePlanView() {
               component={Link}
             >
               New Big Plan
-            </Button>
+            </Button>}
 
             <Button
               variant="outlined"
@@ -295,6 +297,7 @@ export default function TimePlanView() {
               From Current Inbox Tasks
             </Button>
 
+            {isWorkspaceFeatureAvailable(topLevelInfo.workspace, WorkspaceFeature.BIG_PLANS) &&
             <Button
               variant="outlined"
               disabled={!inputsEnabled}
@@ -302,7 +305,7 @@ export default function TimePlanView() {
               component={Link}
             >
               From Current Big Plans
-            </Button>
+            </Button>}
 
             {sortedSubTimePlans.length > 0 && (
               <Button
@@ -321,8 +324,9 @@ export default function TimePlanView() {
       <EntityStack>
         {loaderData.activities.map((entry) => (
           <ActivityCard
-            entityId={`time-plan-activity-${entry.ref_id}`}
             key={`time-plan-activity-${entry.ref_id}`}
+            entityId={`time-plan-activity-${entry.ref_id}`}
+            topLevelInfo={topLevelInfo}
             timePlan={loaderData.timePlan}
             activity={entry}
             inboxTasksByRefId={inboxTasksByRefId}
@@ -356,6 +360,7 @@ export const ErrorBoundary = makeErrorBoundary(
 
 interface ActivityCardProps {
   entityId: string;
+  topLevelInfo: TopLevelInfo;
   timePlan: TimePlan;
   activity: TimePlanActivity;
   inboxTasksByRefId: Map<string, InboxTask>;
@@ -379,7 +384,7 @@ function ActivityCard(props: ActivityCardProps) {
         </EntityLink>
       </EntityCard>
     );
-  } else {
+  } else if (isWorkspaceFeatureAvailable(props.topLevelInfo.workspace, WorkspaceFeature.BIG_PLANS)) {
     const bigPlan = props.bigPlansByRefId.get(props.activity.target_ref_id)!;
     return (
       <EntityCard entityId={props.entityId}>
@@ -395,5 +400,7 @@ function ActivityCard(props: ActivityCardProps) {
         </EntityLink>
       </EntityCard>
     );
+  } else {
+    return <></>;
   }
 }

@@ -43,7 +43,7 @@ class TimePlanLoadResult(UseCaseResultBase):
     note: Note
     activities: list[TimePlanActivity]
     target_inbox_tasks: list[InboxTask]
-    target_big_plans: list[BigPlan]
+    target_big_plans: list[BigPlan] | None
     sub_period_time_plans: list[TimePlan]
 
 
@@ -84,18 +84,20 @@ class TimePlanLoadUseCase(
             ],
         )
 
-        big_plan_collection = await uow.get_for(BigPlanCollection).load_by_parent(
-            workspace.ref_id
-        )
-        target_big_plans = await uow.get_for(BigPlan).find_all(
-            parent_ref_id=big_plan_collection.ref_id,
-            allow_archived=True,
-            filter_ref_ids=[
-                a.target_ref_id
-                for a in activities
-                if a.target == TimePlanActivityTarget.BIG_PLAN
-            ],
-        )
+        target_big_plans = None
+        if workspace.is_feature_available(WorkspaceFeature.BIG_PLANS):
+            big_plan_collection = await uow.get_for(BigPlanCollection).load_by_parent(
+                workspace.ref_id
+            )
+            target_big_plans = await uow.get_for(BigPlan).find_all(
+                parent_ref_id=big_plan_collection.ref_id,
+                allow_archived=True,
+                filter_ref_ids=[
+                    a.target_ref_id
+                    for a in activities
+                    if a.target == TimePlanActivityTarget.BIG_PLAN
+                ],
+            )
 
         schedule = schedules.get_schedule(
             period=time_plan.period,

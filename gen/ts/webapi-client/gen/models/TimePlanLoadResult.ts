@@ -16,7 +16,7 @@ export type TimePlanLoadResult = {
     note: Note;
     activities: Array<TimePlanActivity>;
     target_inbox_tasks: Array<InboxTask>;
-    target_big_plans: Array<BigPlan>;
+    target_big_plans?: (Array<BigPlan> | null);
     sub_period_time_plans: Array<TimePlan>;
 };
 

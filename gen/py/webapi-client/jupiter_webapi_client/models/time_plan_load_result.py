@@ -1,7 +1,9 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar
+from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
+
+from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
     from ..models.big_plan import BigPlan
@@ -23,16 +25,16 @@ class TimePlanLoadResult:
         note (Note): A note in the notebook.
         activities (List['TimePlanActivity']):
         target_inbox_tasks (List['InboxTask']):
-        target_big_plans (List['BigPlan']):
         sub_period_time_plans (List['TimePlan']):
+        target_big_plans (Union[List['BigPlan'], None, Unset]):
     """
 
     time_plan: "TimePlan"
     note: "Note"
     activities: List["TimePlanActivity"]
     target_inbox_tasks: List["InboxTask"]
-    target_big_plans: List["BigPlan"]
     sub_period_time_plans: List["TimePlan"]
+    target_big_plans: Union[List["BigPlan"], None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -50,15 +52,22 @@ class TimePlanLoadResult:
             target_inbox_tasks_item = target_inbox_tasks_item_data.to_dict()
             target_inbox_tasks.append(target_inbox_tasks_item)
 
-        target_big_plans = []
-        for target_big_plans_item_data in self.target_big_plans:
-            target_big_plans_item = target_big_plans_item_data.to_dict()
-            target_big_plans.append(target_big_plans_item)
-
         sub_period_time_plans = []
         for sub_period_time_plans_item_data in self.sub_period_time_plans:
             sub_period_time_plans_item = sub_period_time_plans_item_data.to_dict()
             sub_period_time_plans.append(sub_period_time_plans_item)
+
+        target_big_plans: Union[List[Dict[str, Any]], None, Unset]
+        if isinstance(self.target_big_plans, Unset):
+            target_big_plans = UNSET
+        elif isinstance(self.target_big_plans, list):
+            target_big_plans = []
+            for target_big_plans_type_0_item_data in self.target_big_plans:
+                target_big_plans_type_0_item = target_big_plans_type_0_item_data.to_dict()
+                target_big_plans.append(target_big_plans_type_0_item)
+
+        else:
+            target_big_plans = self.target_big_plans
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -68,10 +77,11 @@ class TimePlanLoadResult:
                 "note": note,
                 "activities": activities,
                 "target_inbox_tasks": target_inbox_tasks,
-                "target_big_plans": target_big_plans,
                 "sub_period_time_plans": sub_period_time_plans,
             }
         )
+        if target_big_plans is not UNSET:
+            field_dict["target_big_plans"] = target_big_plans
 
         return field_dict
 
@@ -102,13 +112,6 @@ class TimePlanLoadResult:
 
             target_inbox_tasks.append(target_inbox_tasks_item)
 
-        target_big_plans = []
-        _target_big_plans = d.pop("target_big_plans")
-        for target_big_plans_item_data in _target_big_plans:
-            target_big_plans_item = BigPlan.from_dict(target_big_plans_item_data)
-
-            target_big_plans.append(target_big_plans_item)
-
         sub_period_time_plans = []
         _sub_period_time_plans = d.pop("sub_period_time_plans")
         for sub_period_time_plans_item_data in _sub_period_time_plans:
@@ -116,13 +119,35 @@ class TimePlanLoadResult:
 
             sub_period_time_plans.append(sub_period_time_plans_item)
 
+        def _parse_target_big_plans(data: object) -> Union[List["BigPlan"], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                target_big_plans_type_0 = []
+                _target_big_plans_type_0 = data
+                for target_big_plans_type_0_item_data in _target_big_plans_type_0:
+                    target_big_plans_type_0_item = BigPlan.from_dict(target_big_plans_type_0_item_data)
+
+                    target_big_plans_type_0.append(target_big_plans_type_0_item)
+
+                return target_big_plans_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List["BigPlan"], None, Unset], data)
+
+        target_big_plans = _parse_target_big_plans(d.pop("target_big_plans", UNSET))
+
         time_plan_load_result = cls(
             time_plan=time_plan,
             note=note,
             activities=activities,
             target_inbox_tasks=target_inbox_tasks,
-            target_big_plans=target_big_plans,
             sub_period_time_plans=sub_period_time_plans,
+            target_big_plans=target_big_plans,
         )
 
         time_plan_load_result.additional_properties = d
