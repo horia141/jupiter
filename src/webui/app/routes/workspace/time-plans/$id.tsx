@@ -1,5 +1,5 @@
-import type { ProjectSummary } from "@jupiter/webapi-client";
-import { ApiError, RecurringTaskPeriod } from "@jupiter/webapi-client";
+import type { BigPlan, InboxTask, ProjectSummary, TimePlan, TimePlanActivity } from "@jupiter/webapi-client";
+import { ApiError, RecurringTaskPeriod, TimePlanActivityTarget } from "@jupiter/webapi-client";
 import {
   Button,
   ButtonGroup,
@@ -17,7 +17,13 @@ import {
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect, Response } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useParams, useTransition } from "@remix-run/react";
+import {
+  Link,
+  Outlet,
+  useActionData,
+  useParams,
+  useTransition,
+} from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
@@ -84,8 +90,8 @@ export async function loader({ request, params }: LoaderArgs) {
       timePlan: result.time_plan,
       note: result.note,
       activities: result.activities,
-      targetInboxTasks: result.targetInboxTasks,
-      targetBigPlans: result.targetBigPlans,
+      targetInboxTasks: result.target_inbox_tasks,
+      targetBigPlans: result.target_big_plans,
       subPeriodTimePlans: result.sub_period_time_plans,
     });
   } catch (error) {
@@ -151,8 +157,7 @@ export async function action({ request, params }: ActionArgs) {
 export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
-export default function TimePlan() {
-  const { id } = useParams();
+export default function TimePlanView() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
@@ -263,51 +268,53 @@ export default function TimePlan() {
       <Card>
         <CardContent>
           <ButtonGroup>
-              <Button
-                variant="contained"
-                disabled={!inputsEnabled}
-                to={`/workspace/inbox-tasks/new?timePlanReason=for-time-plan&timePlanRefId=${loaderData.timePlan.ref_id}`}
-                component={Link}
-              >
-                New Inbox Task
-              </Button>
+            <Button
+              variant="contained"
+              disabled={!inputsEnabled}
+              to={`/workspace/inbox-tasks/new?timePlanReason=for-time-plan&timePlanRefId=${loaderData.timePlan.ref_id}`}
+              component={Link}
+            >
+              New Inbox Task
+            </Button>
 
-              <Button
-                variant="outlined"
-                disabled={!inputsEnabled}
-                to={`/workspace/big-plans/new?timePlanReason=for-time-plan&timePlanRefId=${loaderData.timePlan.ref_id}`}
-                component={Link}
-              >
-                New Big Plan
-              </Button>
+            <Button
+              variant="outlined"
+              disabled={!inputsEnabled}
+              to={`/workspace/big-plans/new?timePlanReason=for-time-plan&timePlanRefId=${loaderData.timePlan.ref_id}`}
+              component={Link}
+            >
+              New Big Plan
+            </Button>
 
-              <Button
-                variant="outlined"
-                disabled={!inputsEnabled}
-                to={`/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-inbox-tasks`}
-                component={Link}
-              >
-                From Current Inbox Tasks
-              </Button>
+            <Button
+              variant="outlined"
+              disabled={!inputsEnabled}
+              to={`/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-inbox-tasks`}
+              component={Link}
+            >
+              From Current Inbox Tasks
+            </Button>
 
-              <Button
-                variant="outlined"
-                disabled={!inputsEnabled}
-                to={`/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-big-plans`}
-                component={Link}
-              >
-                From Current Big Plans
-              </Button>
+            <Button
+              variant="outlined"
+              disabled={!inputsEnabled}
+              to={`/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-big-plans`}
+              component={Link}
+            >
+              From Current Big Plans
+            </Button>
 
-              {sortedSubTimePlans.length > 0 &&
+            {sortedSubTimePlans.length > 0 && (
               <Button
                 variant="outlined"
                 disabled={!inputsEnabled}
                 to={`/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-time-plans/${sortedSubTimePlans[0].ref_id}`}
+                component={Link}
               >
                 From Current Time Plan
-              </Button>}
-            </ButtonGroup>
+              </Button>
+            )}
+          </ButtonGroup>
         </CardContent>
       </Card>
 
@@ -316,10 +323,11 @@ export default function TimePlan() {
           <ActivityCard
             entityId={`time-plan-activity-${entry.ref_id}`}
             key={`time-plan-activity-${entry.ref_id}`}
-            timePlan={loaderData.time_plan}
+            timePlan={loaderData.timePlan}
             activity={entry}
             inboxTasksByRefId={inboxTasksByRefId}
-            bigPlansByRefId={bigPlansByRefId} />
+            bigPlansByRefId={bigPlansByRefId}
+          />
         ))}
       </EntityStack>
 
@@ -355,27 +363,37 @@ interface ActivityCardProps {
 }
 
 function ActivityCard(props: ActivityCardProps) {
-  if (props.activity.target == TimePlanActivityTarget.INBOX_TASK) {
-    const inboxTask = props.inboxTasksByRefId.get(props.activity.target_ref_id);
-    return <EntityCard
-            entityId={props.entityId}>
-              <EntityLink to={`/workspace/time-plans/${props.timePlan.ref_id}/${props.activity.ref_id}`}>
-                {inboxTask.name}
-                <InboxTaskStatusTag status={inboxTask.status} />
-                <TimePlanActivityKindTag kind={props.activity.kind} />
-                <TimePlanActivityFeasabilityTag feasability={props.activity.feasability} />
-                </EntityLink>
-          </EntityCard>;
+  if (props.activity.target === TimePlanActivityTarget.INBOX_TASK) {
+    const inboxTask = props.inboxTasksByRefId.get(props.activity.target_ref_id)!;
+    return (
+      <EntityCard entityId={props.entityId}>
+        <EntityLink
+          to={`/workspace/time-plans/${props.timePlan.ref_id}/${props.activity.ref_id}`}
+        >
+          {inboxTask.name}
+          <InboxTaskStatusTag status={inboxTask.status} />
+          <TimePlanActivityKindTag kind={props.activity.kind} />
+          <TimePlanActivityFeasabilityTag
+            feasability={props.activity.feasability}
+          />
+        </EntityLink>
+      </EntityCard>
+    );
   } else {
-    const bigPlan = props.bigPlansByRefId.get(props.activity.target_ref_id);
-    return <EntityCard
-            entityId={props.entityId}>
-              <EntityLink to={`/workspace/time-plans/${props.timePlan.ref_id}/${props.activity.ref_id}`}>
-                {bigPlan.name}
-                <BigPlanStatusTag status={bigPlan.status} />
-                <TimePlanActivityKindTag kind={props.activity.kind} />
-                <TimePlanActivityFeasabilityTag feasability={props.activity.feasability} />
-                </EntityLink>
-          </EntityCard>;
+    const bigPlan = props.bigPlansByRefId.get(props.activity.target_ref_id)!;
+    return (
+      <EntityCard entityId={props.entityId}>
+        <EntityLink
+          to={`/workspace/time-plans/${props.timePlan.ref_id}/${props.activity.ref_id}`}
+        >
+          {bigPlan.name}
+          <BigPlanStatusTag status={bigPlan.status} />
+          <TimePlanActivityKindTag kind={props.activity.kind} />
+          <TimePlanActivityFeasabilityTag
+            feasability={props.activity.feasability}
+          />
+        </EntityLink>
+      </EntityCard>
+    );
   }
 }

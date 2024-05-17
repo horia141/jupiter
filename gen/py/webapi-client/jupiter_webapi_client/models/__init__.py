@@ -405,6 +405,8 @@ from .time_plan_activity_create_for_inbox_task_args import TimePlanActivityCreat
 from .time_plan_activity_create_for_inbox_task_result import TimePlanActivityCreateForInboxTaskResult
 from .time_plan_activity_feasability import TimePlanActivityFeasability
 from .time_plan_activity_kind import TimePlanActivityKind
+from .time_plan_activity_load_args import TimePlanActivityLoadArgs
+from .time_plan_activity_load_result import TimePlanActivityLoadResult
 from .time_plan_activity_target import TimePlanActivityTarget
 from .time_plan_activity_update_args import TimePlanActivityUpdateArgs
 from .time_plan_activity_update_args_feasability import TimePlanActivityUpdateArgsFeasability
@@ -888,6 +890,8 @@ __all__ = (
     "TimePlanActivityCreateForInboxTaskResult",
     "TimePlanActivityFeasability",
     "TimePlanActivityKind",
+    "TimePlanActivityLoadArgs",
+    "TimePlanActivityLoadResult",
     "TimePlanActivityTarget",
     "TimePlanActivityUpdateArgs",
     "TimePlanActivityUpdateArgsFeasability",

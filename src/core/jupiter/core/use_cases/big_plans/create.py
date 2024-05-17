@@ -14,7 +14,9 @@ from jupiter.core.domain.projects.project_collection import ProjectCollection
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.time_plans.time_plan import TimePlan
 from jupiter.core.domain.time_plans.time_plan_activity import TimePlanActivity
-from jupiter.core.domain.time_plans.time_plan_activity_feasability import TimePlanActivityFeasability
+from jupiter.core.domain.time_plans.time_plan_activity_feasability import (
+    TimePlanActivityFeasability,
+)
 from jupiter.core.domain.time_plans.time_plan_activity_kind import TimePlanActivityKind
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
@@ -81,9 +83,7 @@ class BigPlanCreateUseCase(
 
         time_plan: TimePlan | None = None
         if args.time_plan_ref_id:
-            time_plan = await uow.get_for(TimePlan).load_by_id(
-                args.time_plan_ref_id
-            )
+            time_plan = await uow.get_for(TimePlan).load_by_id(args.time_plan_ref_id)
 
         if args.project_ref_id is None:
             project_collection = await uow.get_for(ProjectCollection).load_by_parent(
@@ -119,10 +119,12 @@ class BigPlanCreateUseCase(
                 time_plan_ref_id=time_plan.ref_id,
                 big_plan_ref_id=new_big_plan.ref_id,
                 kind=TimePlanActivityKind.FINISH,
-                feasability=TimePlanActivityFeasability.MUST_DO
+                feasability=TimePlanActivityFeasability.MUST_DO,
             )
             new_time_plan_activity = await generic_creator(
                 uow, progress_reporter, new_time_plan_activity
             )
 
-        return BigPlanCreateResult(new_big_plan=new_big_plan, new_time_plan_activity=new_time_plan_activity)
+        return BigPlanCreateResult(
+            new_big_plan=new_big_plan, new_time_plan_activity=new_time_plan_activity
+        )

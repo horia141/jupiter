@@ -71,8 +71,7 @@ Now, instead of running the Docker image, you can directly run the scripts, like
 
 ```bash
 $ mkdir ~/my-jupier-work-dir
-$ cd src/cli # still in jupiter root
-$ SQLITE_DB_URL=sqlite+aiosqlite:///~/my-jupiter-work-dir python -m jupiter.cli.jupiter --help
+$ ./scripts/run-dev.sh
 ```
 
 By using this approach you will be running in [local mode](../concepts/hosted-vs-local-mode.md).

@@ -160,9 +160,10 @@ export async function action({ request }: ActionArgs) {
       session
     ).inboxTasks.inboxTaskCreate({
       name: form.name,
-      time_plan_ref_id: timePlanReason === "standard"
-        ? undefined
-        : (query.timePlanRefId as string),
+      time_plan_ref_id:
+        timePlanReason === "standard"
+          ? undefined
+          : (query.timePlanRefId as string),
       project_ref_id: form.project !== undefined ? form.project : undefined,
       big_plan_ref_id:
         bigPlanReason === "standard"
@@ -192,10 +193,11 @@ export async function action({ request }: ActionArgs) {
 
           case "for-time-plan":
             return redirect(
-              `/workspace/time-plans/${result.new_time_plan_activity.time_plan_ref_id}/${result.new_time_plan_activity.ref_id}}`
+              `/workspace/time-plans/${result.new_time_plan_activity?.time_plan_ref_id}/${result.new_time_plan_activity?.ref_id}}`
             );
         }
-      
+        break;
+
       case "for-big-plan":
         return redirect(`/workspace/big-plans/${query.bigPlanRefId as string}`);
     }
@@ -319,7 +321,9 @@ export default function NewInboxTask() {
                   disablePortal
                   id="bigPlan"
                   options={allBigPlansAsOptions}
-                  readOnly={!inputsEnabled || loaderData.bigPlanReason !== "standard"}
+                  readOnly={
+                    !inputsEnabled || loaderData.bigPlanReason !== "standard"
+                  }
                   value={selectedBigPlan}
                   disableClearable={true}
                   onChange={handleChangeBigPlan}

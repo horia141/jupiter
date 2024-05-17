@@ -10,7 +10,9 @@ from jupiter.core.domain.infra.generic_loader import generic_loader
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.time_plans.time_plan import TimePlan, TimePlanRepository
 from jupiter.core.domain.time_plans.time_plan_activity import TimePlanActivity
-from jupiter.core.domain.time_plans.time_plan_activity_target import TimePlanActivityTarget
+from jupiter.core.domain.time_plans.time_plan_activity_target import (
+    TimePlanActivityTarget,
+)
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
@@ -69,18 +71,30 @@ class TimePlanLoadUseCase(
             allow_archived=args.allow_archived,
         )
 
-        inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(workspace.ref_id)
+        inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
+            workspace.ref_id
+        )
         target_inbox_tasks = await uow.get_for(InboxTask).find_all(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
-            filter_ref_ids=[a.target_ref_id for a in activities if a.target == TimePlanActivityTarget.INBOX_TASK]
+            filter_ref_ids=[
+                a.target_ref_id
+                for a in activities
+                if a.target == TimePlanActivityTarget.INBOX_TASK
+            ],
         )
 
-        big_plan_collection = await uow.get_for(BigPlanCollection).load_by_parent(workspace.ref_id)
+        big_plan_collection = await uow.get_for(BigPlanCollection).load_by_parent(
+            workspace.ref_id
+        )
         target_big_plans = await uow.get_for(BigPlan).find_all(
             parent_ref_id=big_plan_collection.ref_id,
             allow_archived=True,
-            filter_ref_ids=[a.target_ref_id for a in activities if a.target == TimePlanActivityTarget.BIG_PLAN]
+            filter_ref_ids=[
+                a.target_ref_id
+                for a in activities
+                if a.target == TimePlanActivityTarget.BIG_PLAN
+            ],
         )
 
         schedule = schedules.get_schedule(

@@ -18,7 +18,9 @@ from jupiter.core.domain.projects.project_collection import ProjectCollection
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.time_plans.time_plan import TimePlan
 from jupiter.core.domain.time_plans.time_plan_activity import TimePlanActivity
-from jupiter.core.domain.time_plans.time_plan_activity_feasability import TimePlanActivityFeasability
+from jupiter.core.domain.time_plans.time_plan_activity_feasability import (
+    TimePlanActivityFeasability,
+)
 from jupiter.core.domain.time_plans.time_plan_activity_kind import TimePlanActivityKind
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
@@ -90,12 +92,10 @@ class InboxTaskCreateUseCase(
             and args.big_plan_ref_id is not None
         ):
             raise FeatureUnavailableError(WorkspaceFeature.BIG_PLANS)
-        
+
         time_plan: TimePlan | None = None
         if args.time_plan_ref_id:
-            time_plan = await uow.get_for(TimePlan).load_by_id(
-                args.time_plan_ref_id
-            )
+            time_plan = await uow.get_for(TimePlan).load_by_id(args.time_plan_ref_id)
 
         big_plan: BigPlan | None = None
         if args.big_plan_ref_id:
@@ -144,12 +144,12 @@ class InboxTaskCreateUseCase(
                 time_plan_ref_id=time_plan.ref_id,
                 inbox_task_ref_id=new_inbox_task.ref_id,
                 kind=TimePlanActivityKind.FINISH,
-                feasability=TimePlanActivityFeasability.MUST_DO
+                feasability=TimePlanActivityFeasability.MUST_DO,
             )
             new_time_plan_activity = await generic_creator(
                 uow, progress_reporter, new_time_plan_activity
             )
 
         return InboxTaskCreateResult(
-            new_inbox_task=new_inbox_task,
-            new_time_plan_activity=new_time_plan_activity)
+            new_inbox_task=new_inbox_task, new_time_plan_activity=new_time_plan_activity
+        )

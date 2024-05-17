@@ -11,6 +11,7 @@ import type { EntityId } from './EntityId';
  */
 export type BigPlanCreateArgs = {
     name: BigPlanName;
+    time_plan_ref_id?: (EntityId | null);
     project_ref_id?: (EntityId | null);
     actionable_date?: (ADate | null);
     due_date?: (ADate | null);

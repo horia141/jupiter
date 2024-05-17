@@ -20,7 +20,7 @@ import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
-import { parseForm } from "zodix";
+import { parseForm, parseQuery } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
@@ -35,7 +35,7 @@ import { TopLevelInfoContext } from "~/top-level-context";
 
 const QuerySchema = {
   timePlanReason: z.literal("for-time-plan").optional(),
-  timePlanRefId: z.string().optional()
+  timePlanRefId: z.string().optional(),
 };
 
 const CreateFormSchema = {
@@ -81,12 +81,13 @@ export async function action({ request }: ActionArgs) {
 
   try {
     const timePlanReason = query.timePlanReason || "standard";
-  
+
     const result = await getLoggedInApiClient(session).bigPlans.bigPlanCreate({
       name: form.name,
-      time_plan_ref_id: timePlanReason === "standard"
-        ? undefined
-        : (query.timePlanRefId as string),
+      time_plan_ref_id:
+        timePlanReason === "standard"
+          ? undefined
+          : (query.timePlanRefId as string),
       project_ref_id: form.project !== undefined ? form.project : undefined,
       actionable_date:
         form.actionableDate !== undefined && form.actionableDate !== ""
@@ -104,9 +105,9 @@ export async function action({ request }: ActionArgs) {
 
       case "for-time-plan":
         return redirect(
-          `/workspace/time-plans/${result.new_time_plan_activity.time_plan_ref_id}/${result.new_time_plan_activity.ref_id}}`
+          `/workspace/time-plans/${result.new_time_plan_activity?.time_plan_ref_id}/${result.new_time_plan_activity?.ref_id}}`
         );
-      }
+    }
   } catch (error) {
     if (
       error instanceof ApiError &&

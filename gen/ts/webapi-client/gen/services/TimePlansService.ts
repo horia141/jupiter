@@ -6,6 +6,8 @@ import type { TimePlanActivityCreateForBigPlanArgs } from '../models/TimePlanAct
 import type { TimePlanActivityCreateForBigPlanResult } from '../models/TimePlanActivityCreateForBigPlanResult';
 import type { TimePlanActivityCreateForInboxTaskArgs } from '../models/TimePlanActivityCreateForInboxTaskArgs';
 import type { TimePlanActivityCreateForInboxTaskResult } from '../models/TimePlanActivityCreateForInboxTaskResult';
+import type { TimePlanActivityLoadArgs } from '../models/TimePlanActivityLoadArgs';
+import type { TimePlanActivityLoadResult } from '../models/TimePlanActivityLoadResult';
 import type { TimePlanActivityUpdateArgs } from '../models/TimePlanActivityUpdateArgs';
 import type { TimePlanArchiveArgs } from '../models/TimePlanArchiveArgs';
 import type { TimePlanChangeTimeConfigArgs } from '../models/TimePlanChangeTimeConfigArgs';
@@ -83,6 +85,29 @@ export class TimePlansService {
         return this.httpRequest.request({
             method: 'POST',
             url: '/time-plan-activity-create-for-inbox-task',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Use case for loading a time plan activity activity.
+     * Use case for loading a time plan activity activity.
+     * @param requestBody The input data
+     * @returns TimePlanActivityLoadResult Successful response
+     * @throws ApiError
+     */
+    public timePlanActivityLoad(
+        requestBody?: TimePlanActivityLoadArgs,
+    ): CancelablePromise<TimePlanActivityLoadResult> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/time-plan-activity-load',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

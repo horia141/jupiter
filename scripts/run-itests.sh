@@ -23,7 +23,14 @@ ci_mode() {
     local webui_port=$(get_free_port)
     local webui_url=http://0.0.0.0:${webui_port}
 
-    run_jupiter "$namespace" "$webapi_port" "$webui_port" wait:all no-monit
+    local in_ci=
+    if [[ -z "$CI" ]]; then
+        in_ci="dev"
+    else
+        in_ci="ci"
+    fi
+
+    run_jupiter "$namespace" "$webapi_port" "$webui_port" wait:all no-monit $in_ci
 
     echo "Using Web API $webapi_url and Web UI $webui_url"
 

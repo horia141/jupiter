@@ -4,6 +4,8 @@ from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
 if TYPE_CHECKING:
+    from ..models.big_plan import BigPlan
+    from ..models.inbox_task import InboxTask
     from ..models.note import Note
     from ..models.time_plan import TimePlan
     from ..models.time_plan_activity import TimePlanActivity
@@ -20,12 +22,16 @@ class TimePlanLoadResult:
         time_plan (TimePlan): A plan for a particular period of time.
         note (Note): A note in the notebook.
         activities (List['TimePlanActivity']):
+        target_inbox_tasks (List['InboxTask']):
+        target_big_plans (List['BigPlan']):
         sub_period_time_plans (List['TimePlan']):
     """
 
     time_plan: "TimePlan"
     note: "Note"
     activities: List["TimePlanActivity"]
+    target_inbox_tasks: List["InboxTask"]
+    target_big_plans: List["BigPlan"]
     sub_period_time_plans: List["TimePlan"]
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -39,6 +45,16 @@ class TimePlanLoadResult:
             activities_item = activities_item_data.to_dict()
             activities.append(activities_item)
 
+        target_inbox_tasks = []
+        for target_inbox_tasks_item_data in self.target_inbox_tasks:
+            target_inbox_tasks_item = target_inbox_tasks_item_data.to_dict()
+            target_inbox_tasks.append(target_inbox_tasks_item)
+
+        target_big_plans = []
+        for target_big_plans_item_data in self.target_big_plans:
+            target_big_plans_item = target_big_plans_item_data.to_dict()
+            target_big_plans.append(target_big_plans_item)
+
         sub_period_time_plans = []
         for sub_period_time_plans_item_data in self.sub_period_time_plans:
             sub_period_time_plans_item = sub_period_time_plans_item_data.to_dict()
@@ -51,6 +67,8 @@ class TimePlanLoadResult:
                 "time_plan": time_plan,
                 "note": note,
                 "activities": activities,
+                "target_inbox_tasks": target_inbox_tasks,
+                "target_big_plans": target_big_plans,
                 "sub_period_time_plans": sub_period_time_plans,
             }
         )
@@ -59,6 +77,8 @@ class TimePlanLoadResult:
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+        from ..models.big_plan import BigPlan
+        from ..models.inbox_task import InboxTask
         from ..models.note import Note
         from ..models.time_plan import TimePlan
         from ..models.time_plan_activity import TimePlanActivity
@@ -75,6 +95,20 @@ class TimePlanLoadResult:
 
             activities.append(activities_item)
 
+        target_inbox_tasks = []
+        _target_inbox_tasks = d.pop("target_inbox_tasks")
+        for target_inbox_tasks_item_data in _target_inbox_tasks:
+            target_inbox_tasks_item = InboxTask.from_dict(target_inbox_tasks_item_data)
+
+            target_inbox_tasks.append(target_inbox_tasks_item)
+
+        target_big_plans = []
+        _target_big_plans = d.pop("target_big_plans")
+        for target_big_plans_item_data in _target_big_plans:
+            target_big_plans_item = BigPlan.from_dict(target_big_plans_item_data)
+
+            target_big_plans.append(target_big_plans_item)
+
         sub_period_time_plans = []
         _sub_period_time_plans = d.pop("sub_period_time_plans")
         for sub_period_time_plans_item_data in _sub_period_time_plans:
@@ -86,6 +120,8 @@ class TimePlanLoadResult:
             time_plan=time_plan,
             note=note,
             activities=activities,
+            target_inbox_tasks=target_inbox_tasks,
+            target_big_plans=target_big_plans,
             sub_period_time_plans=sub_period_time_plans,
         )
 

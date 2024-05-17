@@ -3,9 +3,8 @@ from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.infra.generic_loader import generic_loader
-from jupiter.core.domain.time_plans.time_plan_activity import TimePlanActivity
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.domain.time_plans.time_plan_activity_target import TimePlanActivityTarget
+from jupiter.core.domain.time_plans.time_plan_activity import TimePlanActivity
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
@@ -55,17 +54,19 @@ class TimePlanActivityLoadUseCase(
         workspace = context.workspace
 
         time_plan_activity, target_inbox_task, target_big_plan = await generic_loader(
-            uow, 
-            TimePlanActivity, 
-            args.ref_id, 
-            TimePlanActivity.target_inbox_task, 
+            uow,
+            TimePlanActivity,
+            args.ref_id,
+            TimePlanActivity.target_inbox_task,
             TimePlanActivity.target_big_plan,
-            allow_archived=args.allow_archived
+            allow_archived=args.allow_archived,
         )
 
         if not workspace.is_feature_available(WorkspaceFeature.BIG_PLANS):
             target_big_plan = None
 
-        return TimePlanActivityLoadResult(time_plan_activity=time_plan_activity, 
-                                          target_inbox_task=target_inbox_task,
-                                          target_big_plan=target_big_plan)
+        return TimePlanActivityLoadResult(
+            time_plan_activity=time_plan_activity,
+            target_inbox_task=target_inbox_task,
+            target_big_plan=target_big_plan,
+        )

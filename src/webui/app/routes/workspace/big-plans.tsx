@@ -1,7 +1,6 @@
 import type {
   BigPlan,
   BigPlanFindResultEntry,
-  Project,
   ProjectSummary,
 } from "@jupiter/webapi-client";
 import { BigPlanStatus, WorkspaceFeature } from "@jupiter/webapi-client";
@@ -11,9 +10,7 @@ import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Link, Outlet, useFetcher } from "@remix-run/react";
-import { ADateTag } from "~/components/adate-tag";
 import { BigPlanStatusTag } from "~/components/big-plan-status-tag";
-import { ProjectTag } from "~/components/project-tag";
 
 import {
   Box,
@@ -37,11 +34,9 @@ import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";
 import { useContext, useState } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
-import {
-  EntityNameComponent,
-  EntityNameOneLineComponent,
-} from "~/components/entity-name";
-import { EntityCard, EntityLink } from "~/components/infra/entity-card";
+import { BigPlanStack } from "~/components/big-plan-stack";
+import { EntityNameOneLineComponent } from "~/components/entity-name";
+import { EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
@@ -63,7 +58,6 @@ import {
 import { getSession } from "~/sessions";
 import type { TopLevelInfo } from "~/top-level-context";
 import { TopLevelInfoContext } from "~/top-level-context";
-import { BigPlanStack } from "~/components/big-plan-stack";
 
 export const handle = {
   displayType: DisplayType.TRUNK,
@@ -511,7 +505,8 @@ function List({
       topLevelInfo={topLevelInfo}
       bigPlans={bigPlans}
       entriesByRefId={entriesByRefId}
-      onCardMarkNotDone={onArchiveBigPlan} />
+      onCardMarkNotDone={onArchiveBigPlan}
+    />
   );
 }
 

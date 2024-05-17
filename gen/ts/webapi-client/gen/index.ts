@@ -345,6 +345,8 @@ export type { TimePlanActivityCreateForInboxTaskArgs } from './models/TimePlanAc
 export type { TimePlanActivityCreateForInboxTaskResult } from './models/TimePlanActivityCreateForInboxTaskResult';
 export { TimePlanActivityFeasability } from './models/TimePlanActivityFeasability';
 export { TimePlanActivityKind } from './models/TimePlanActivityKind';
+export type { TimePlanActivityLoadArgs } from './models/TimePlanActivityLoadArgs';
+export type { TimePlanActivityLoadResult } from './models/TimePlanActivityLoadResult';
 export { TimePlanActivityTarget } from './models/TimePlanActivityTarget';
 export type { TimePlanActivityUpdateArgs } from './models/TimePlanActivityUpdateArgs';
 export type { TimePlanArchiveArgs } from './models/TimePlanArchiveArgs';

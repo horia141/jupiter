@@ -22,14 +22,12 @@ export async function action({ request }: ActionArgs) {
   const form = await parseForm(request, UpdateStatusFormSchema);
 
   try {
-    const result = await getLoggedInApiClient(
-      session
-    ).bigPlans.bigPlanUpdate({
+    const result = await getLoggedInApiClient(session).bigPlans.bigPlanUpdate({
       ref_id: form.id,
       name: { should_change: false },
       status: { should_change: true, value: form.status },
-      actionable_date: {should_change: false},
-      due_date: {should_change: false},
+      actionable_date: { should_change: false },
+      due_date: { should_change: false },
     });
 
     if (result.record_score_result) {
