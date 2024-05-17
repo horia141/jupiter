@@ -27,6 +27,8 @@ const SMALL_SCREEN_ANIMATION_END = "100vw";
 
 interface BranchPanelProps {
   createLocation?: string;
+  showArchiveButton?: boolean;
+  enableArchiveButton?: boolean;
   extraControls?: JSX.Element[];
   returnLocation: string;
 }
@@ -155,6 +157,19 @@ export function BranchPanel(props: PropsWithChildren<BranchPanelProps>) {
                 controls={props.extraControls}
               />
             )}
+
+          {props.showArchiveButton && (
+            <IconButton
+              id="leaf-entity-archive"
+              sx={{ marginLeft: "auto" }}
+              disabled={!props.enableArchiveButton}
+              type="submit"
+              name="intent"
+              value="archive"
+            >
+              <DeleteIcon />
+            </IconButton>
+          )}
 
             <IconButton sx={{ marginLeft: "auto" }}>
               <Link to={props.returnLocation}>

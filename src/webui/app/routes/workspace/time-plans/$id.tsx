@@ -37,6 +37,7 @@ import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
+import { BranchPanel } from "~/components/infra/layout/branch-panel";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { TimePlanActivityFeasabilityTag } from "~/components/time-plan-activity-feasability-tag";
 import { TimePlanActivityKindTag } from "~/components/time-plan-activity-kind-tag";
@@ -67,7 +68,7 @@ const UpdateFormSchema = {
 };
 
 export const handle = {
-  displayType: DisplayType.LEAF,
+  displayType: DisplayType.BRANCH,
 };
 
 export async function loader({ request, params }: LoaderArgs) {
@@ -182,12 +183,11 @@ export default function TimePlanView() {
   );
 
   return (
-    <LeafPanel
+    <BranchPanel
       key={loaderData.timePlan.ref_id}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/time-plans"
-      initialExpansionState={LeafPanelExpansionState.FULL}
     >
       <GlobalError actionResult={actionData} />
       <Card
@@ -344,8 +344,10 @@ export default function TimePlanView() {
         timePlans={sortedSubTimePlans}
       />
 
-      <Outlet />
-    </LeafPanel>
+      <AnimatePresence mode="wait" initial={false}>
+        <Outlet />
+      </AnimatePresence>
+    </BranchPanel>
   );
 }
 
