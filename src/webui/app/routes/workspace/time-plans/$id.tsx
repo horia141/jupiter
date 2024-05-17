@@ -48,6 +48,7 @@ import {
 } from "~/logic/action-result";
 import { periodName } from "~/logic/domain/period";
 import { sortTimePlansNaturally } from "~/logic/domain/time-plan";
+import { sortTimePlanActivitiesNaturally } from "~/logic/domain/time-plan-activity";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { LeafPanelExpansionState } from "~/rendering/leaf-panel-expansion";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -171,6 +172,9 @@ export default function TimePlanView() {
   const inputsEnabled =
     transition.state === "idle" && !loaderData.timePlan.archived;
 
+  const sortedActivities = sortTimePlanActivitiesNaturally(
+    loaderData.activities
+  );
   const sortedSubTimePlans = sortTimePlansNaturally(
     loaderData.subPeriodTimePlans
   );
@@ -322,7 +326,7 @@ export default function TimePlanView() {
       </Card>
 
       <EntityStack>
-        {loaderData.activities.map((entry) => (
+        {sortedActivities.map((entry) => (
           <ActivityCard
             key={`time-plan-activity-${entry.ref_id}`}
             entityId={`time-plan-activity-${entry.ref_id}`}
