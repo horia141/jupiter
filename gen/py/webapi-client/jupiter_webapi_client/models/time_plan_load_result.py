@@ -27,6 +27,7 @@ class TimePlanLoadResult:
         target_inbox_tasks (List['InboxTask']):
         sub_period_time_plans (List['TimePlan']):
         target_big_plans (Union[List['BigPlan'], None, Unset]):
+        previous_time_plan (Union['TimePlan', None, Unset]):
     """
 
     time_plan: "TimePlan"
@@ -35,9 +36,12 @@ class TimePlanLoadResult:
     target_inbox_tasks: List["InboxTask"]
     sub_period_time_plans: List["TimePlan"]
     target_big_plans: Union[List["BigPlan"], None, Unset] = UNSET
+    previous_time_plan: Union["TimePlan", None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
+        from ..models.time_plan import TimePlan
+
         time_plan = self.time_plan.to_dict()
 
         note = self.note.to_dict()
@@ -69,6 +73,14 @@ class TimePlanLoadResult:
         else:
             target_big_plans = self.target_big_plans
 
+        previous_time_plan: Union[Dict[str, Any], None, Unset]
+        if isinstance(self.previous_time_plan, Unset):
+            previous_time_plan = UNSET
+        elif isinstance(self.previous_time_plan, TimePlan):
+            previous_time_plan = self.previous_time_plan.to_dict()
+        else:
+            previous_time_plan = self.previous_time_plan
+
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -82,6 +94,8 @@ class TimePlanLoadResult:
         )
         if target_big_plans is not UNSET:
             field_dict["target_big_plans"] = target_big_plans
+        if previous_time_plan is not UNSET:
+            field_dict["previous_time_plan"] = previous_time_plan
 
         return field_dict
 
@@ -141,6 +155,23 @@ class TimePlanLoadResult:
 
         target_big_plans = _parse_target_big_plans(d.pop("target_big_plans", UNSET))
 
+        def _parse_previous_time_plan(data: object) -> Union["TimePlan", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                previous_time_plan_type_0 = TimePlan.from_dict(data)
+
+                return previous_time_plan_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["TimePlan", None, Unset], data)
+
+        previous_time_plan = _parse_previous_time_plan(d.pop("previous_time_plan", UNSET))
+
         time_plan_load_result = cls(
             time_plan=time_plan,
             note=note,
@@ -148,6 +179,7 @@ class TimePlanLoadResult:
             target_inbox_tasks=target_inbox_tasks,
             sub_period_time_plans=sub_period_time_plans,
             target_big_plans=target_big_plans,
+            previous_time_plan=previous_time_plan,
         )
 
         time_plan_load_result.additional_properties = d

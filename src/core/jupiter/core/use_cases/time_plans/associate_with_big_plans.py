@@ -1,14 +1,11 @@
 """Use case for creating time plan actitivities for big plans."""
-from typing import cast
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.big_plans.big_plan import BigPlan
-from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.core.domain.infra.generic_creator import generic_creator
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.time_plans.time_plan import TimePlan
-from jupiter.core.domain.time_plans.time_plan_activity import TimePlanActivity, TimePlanAlreadyAssociatedWithTarget
+from jupiter.core.domain.time_plans.time_plan_activity import TimePlanActivity
 from jupiter.core.domain.time_plans.time_plan_activity_feasability import (
     TimePlanActivityFeasability,
 )
@@ -65,11 +62,13 @@ class TimePlanAssociateWithBigPlansUseCase(
 
         _ = await uow.get_for(TimePlan).load_by_id(args.ref_id)
 
-        big_plan_collection = await uow.get_for(BigPlanCollection).load_by_parent(workspace.ref_id)
+        big_plan_collection = await uow.get_for(BigPlanCollection).load_by_parent(
+            workspace.ref_id
+        )
         big_plans = await uow.get_for(BigPlan).find_all(
             parent_ref_id=big_plan_collection.ref_id,
             allow_archived=False,
-            filter_ref_ids=args.big_plan_ref_id
+            filter_ref_ids=args.big_plan_ref_id,
         )
 
         new_time_plan_actitivies = []

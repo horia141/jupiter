@@ -1,18 +1,9 @@
 """Use case for creating time plan actitivities for already existin activities."""
-from typing import cast
-from jupiter.core.domain.big_plans.big_plan import BigPlan
-from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.big_plans.big_plan import BigPlan
-from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.core.domain.infra.generic_creator import generic_creator
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.time_plans.time_plan import TimePlan
-from jupiter.core.domain.time_plans.time_plan_activity import TimePlanActivity, TimePlanAlreadyAssociatedWithTarget
-from jupiter.core.domain.time_plans.time_plan_activity_feasability import (
-    TimePlanActivityFeasability,
-)
-from jupiter.core.domain.time_plans.time_plan_activity_kind import TimePlanActivityKind
+from jupiter.core.domain.time_plans.time_plan_activity import TimePlanActivity
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     ProgressReporter,
@@ -62,14 +53,12 @@ class TimePlanAssociateWithActivitiesUseCase(
         args: TimePlanAssociateWithActivitiesArgs,
     ) -> TimePlanAssociateWithActivitiesResult:
         """Execute the command's actions."""
-        workspace = context.workspace
-
         _ = await uow.get_for(TimePlan).load_by_id(args.ref_id)
 
         activities = await uow.get_for(TimePlanActivity).find_all(
             parent_ref_id=args.other_time_plan_ref_id,
             allow_archived=False,
-            filter_ref_ids=args.activity_ref_ids
+            filter_ref_ids=args.activity_ref_ids,
         )
 
         new_time_plan_actitivies = []
@@ -78,7 +67,7 @@ class TimePlanAssociateWithActivitiesUseCase(
             new_time_plan_activity = TimePlanActivity.new_activity_from_existing(
                 context.domain_context,
                 time_plan_ref_id=args.ref_id,
-                existing_activity=activity
+                existing_activity=activity,
             )
             new_time_plan_activity = await generic_creator(
                 uow, progress_reporter, new_time_plan_activity

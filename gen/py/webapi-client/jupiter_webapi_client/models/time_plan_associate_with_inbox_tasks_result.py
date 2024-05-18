@@ -7,28 +7,31 @@ if TYPE_CHECKING:
     from ..models.time_plan_activity import TimePlanActivity
 
 
-T = TypeVar("T", bound="TimePlanActivityCreateForInboxTaskResult")
+T = TypeVar("T", bound="TimePlanAssociateWithInboxTasksResult")
 
 
 @_attrs_define
-class TimePlanActivityCreateForInboxTaskResult:
+class TimePlanAssociateWithInboxTasksResult:
     """Result.
 
     Attributes:
-        new_time_plan_activity (TimePlanActivity): A certain activity that happens in a plan.
+        new_time_plan_activities (List['TimePlanActivity']):
     """
 
-    new_time_plan_activity: "TimePlanActivity"
+    new_time_plan_activities: List["TimePlanActivity"]
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
-        new_time_plan_activity = self.new_time_plan_activity.to_dict()
+        new_time_plan_activities = []
+        for new_time_plan_activities_item_data in self.new_time_plan_activities:
+            new_time_plan_activities_item = new_time_plan_activities_item_data.to_dict()
+            new_time_plan_activities.append(new_time_plan_activities_item)
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
-                "new_time_plan_activity": new_time_plan_activity,
+                "new_time_plan_activities": new_time_plan_activities,
             }
         )
 
@@ -39,14 +42,19 @@ class TimePlanActivityCreateForInboxTaskResult:
         from ..models.time_plan_activity import TimePlanActivity
 
         d = src_dict.copy()
-        new_time_plan_activity = TimePlanActivity.from_dict(d.pop("new_time_plan_activity"))
+        new_time_plan_activities = []
+        _new_time_plan_activities = d.pop("new_time_plan_activities")
+        for new_time_plan_activities_item_data in _new_time_plan_activities:
+            new_time_plan_activities_item = TimePlanActivity.from_dict(new_time_plan_activities_item_data)
 
-        time_plan_activity_create_for_inbox_task_result = cls(
-            new_time_plan_activity=new_time_plan_activity,
+            new_time_plan_activities.append(new_time_plan_activities_item)
+
+        time_plan_associate_with_inbox_tasks_result = cls(
+            new_time_plan_activities=new_time_plan_activities,
         )
 
-        time_plan_activity_create_for_inbox_task_result.additional_properties = d
-        return time_plan_activity_create_for_inbox_task_result
+        time_plan_associate_with_inbox_tasks_result.additional_properties = d
+        return time_plan_associate_with_inbox_tasks_result
 
     @property
     def additional_keys(self) -> List[str]:

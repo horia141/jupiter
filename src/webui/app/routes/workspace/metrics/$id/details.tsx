@@ -296,8 +296,8 @@ export default function MetricDetails() {
   }
 
   return (
-    <LeafPanel key={`metric-${id}/details`}
-      key={loaderData.metric.ref_id}
+    <LeafPanel
+      key={`metric-${id}/details`}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation={`/workspace/metrics/${id}`}

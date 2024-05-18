@@ -71,7 +71,7 @@ export default function SlackTasks() {
 
   return (
     <TrunkPanel
-    key={"slack-tasks"}
+      key={"slack-tasks"}
       extraControls={[
         <>
           {isWorkspaceFeatureAvailable(

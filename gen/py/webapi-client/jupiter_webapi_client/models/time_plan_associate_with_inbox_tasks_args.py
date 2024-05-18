@@ -1,34 +1,35 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar
+from typing import Any, Dict, List, Type, TypeVar, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-if TYPE_CHECKING:
-    from ..models.time_plan_activity import TimePlanActivity
-
-
-T = TypeVar("T", bound="TimePlanActivityCreateForBigPlanResult")
+T = TypeVar("T", bound="TimePlanAssociateWithInboxTasksArgs")
 
 
 @_attrs_define
-class TimePlanActivityCreateForBigPlanResult:
-    """Result.
+class TimePlanAssociateWithInboxTasksArgs:
+    """Args.
 
     Attributes:
-        new_time_plan_activity (TimePlanActivity): A certain activity that happens in a plan.
+        ref_id (str): A generic entity id.
+        inbox_task_ref_id (List[str]):
     """
 
-    new_time_plan_activity: "TimePlanActivity"
+    ref_id: str
+    inbox_task_ref_id: List[str]
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
-        new_time_plan_activity = self.new_time_plan_activity.to_dict()
+        ref_id = self.ref_id
+
+        inbox_task_ref_id = self.inbox_task_ref_id
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
-                "new_time_plan_activity": new_time_plan_activity,
+                "ref_id": ref_id,
+                "inbox_task_ref_id": inbox_task_ref_id,
             }
         )
 
@@ -36,17 +37,18 @@ class TimePlanActivityCreateForBigPlanResult:
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
-        from ..models.time_plan_activity import TimePlanActivity
-
         d = src_dict.copy()
-        new_time_plan_activity = TimePlanActivity.from_dict(d.pop("new_time_plan_activity"))
+        ref_id = d.pop("ref_id")
 
-        time_plan_activity_create_for_big_plan_result = cls(
-            new_time_plan_activity=new_time_plan_activity,
+        inbox_task_ref_id = cast(List[str], d.pop("inbox_task_ref_id"))
+
+        time_plan_associate_with_inbox_tasks_args = cls(
+            ref_id=ref_id,
+            inbox_task_ref_id=inbox_task_ref_id,
         )
 
-        time_plan_activity_create_for_big_plan_result.additional_properties = d
-        return time_plan_activity_create_for_big_plan_result
+        time_plan_associate_with_inbox_tasks_args.additional_properties = d
+        return time_plan_associate_with_inbox_tasks_args
 
     @property
     def additional_keys(self) -> List[str]:

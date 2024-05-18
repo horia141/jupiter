@@ -59,7 +59,7 @@ class InboxTaskFindArgs(UseCaseArgsBase):
     allow_archived: bool
     include_notes: bool
     filter_just_workable: bool | None
-    filter_ref_ids: list[EntityId] | None 
+    filter_ref_ids: list[EntityId] | None
     filter_project_ref_ids: list[EntityId] | None
     filter_sources: list[InboxTaskSource] | None
 
@@ -124,7 +124,11 @@ class InboxTaskFindUseCase(
                 f"Sources {','.join(s.value for s in big_diff)} are not supported in this workspace"
             )
 
-        filter_status: list[InboxTaskStatus] | NoFilter = InboxTaskStatus.all_workable_statuses() if args.filter_just_workable else NoFilter()
+        filter_status: list[InboxTaskStatus] | NoFilter = (
+            InboxTaskStatus.all_workable_statuses()
+            if args.filter_just_workable
+            else NoFilter()
+        )
         filter_sources = workspace.infer_sources_for_enabled_features(
             args.filter_sources
         )

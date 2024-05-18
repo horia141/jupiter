@@ -399,10 +399,6 @@ from .table_block_kind import TableBlockKind
 from .time_plan import TimePlan
 from .time_plan_activity import TimePlanActivity
 from .time_plan_activity_archive_args import TimePlanActivityArchiveArgs
-from .time_plan_activity_create_for_big_plan_args import TimePlanActivityCreateForBigPlanArgs
-from .time_plan_activity_create_for_big_plan_result import TimePlanActivityCreateForBigPlanResult
-from .time_plan_activity_create_for_inbox_task_args import TimePlanActivityCreateForInboxTaskArgs
-from .time_plan_activity_create_for_inbox_task_result import TimePlanActivityCreateForInboxTaskResult
 from .time_plan_activity_feasability import TimePlanActivityFeasability
 from .time_plan_activity_kind import TimePlanActivityKind
 from .time_plan_activity_load_args import TimePlanActivityLoadArgs
@@ -412,6 +408,12 @@ from .time_plan_activity_update_args import TimePlanActivityUpdateArgs
 from .time_plan_activity_update_args_feasability import TimePlanActivityUpdateArgsFeasability
 from .time_plan_activity_update_args_kind import TimePlanActivityUpdateArgsKind
 from .time_plan_archive_args import TimePlanArchiveArgs
+from .time_plan_associate_with_activities_args import TimePlanAssociateWithActivitiesArgs
+from .time_plan_associate_with_activities_result import TimePlanAssociateWithActivitiesResult
+from .time_plan_associate_with_big_plans_args import TimePlanAssociateWithBigPlansArgs
+from .time_plan_associate_with_big_plans_result import TimePlanAssociateWithBigPlansResult
+from .time_plan_associate_with_inbox_tasks_args import TimePlanAssociateWithInboxTasksArgs
+from .time_plan_associate_with_inbox_tasks_result import TimePlanAssociateWithInboxTasksResult
 from .time_plan_change_time_config_args import TimePlanChangeTimeConfigArgs
 from .time_plan_change_time_config_args_period import TimePlanChangeTimeConfigArgsPeriod
 from .time_plan_change_time_config_args_right_now import TimePlanChangeTimeConfigArgsRightNow
@@ -884,10 +886,6 @@ __all__ = (
     "TimePlan",
     "TimePlanActivity",
     "TimePlanActivityArchiveArgs",
-    "TimePlanActivityCreateForBigPlanArgs",
-    "TimePlanActivityCreateForBigPlanResult",
-    "TimePlanActivityCreateForInboxTaskArgs",
-    "TimePlanActivityCreateForInboxTaskResult",
     "TimePlanActivityFeasability",
     "TimePlanActivityKind",
     "TimePlanActivityLoadArgs",
@@ -897,6 +895,12 @@ __all__ = (
     "TimePlanActivityUpdateArgsFeasability",
     "TimePlanActivityUpdateArgsKind",
     "TimePlanArchiveArgs",
+    "TimePlanAssociateWithActivitiesArgs",
+    "TimePlanAssociateWithActivitiesResult",
+    "TimePlanAssociateWithBigPlansArgs",
+    "TimePlanAssociateWithBigPlansResult",
+    "TimePlanAssociateWithInboxTasksArgs",
+    "TimePlanAssociateWithInboxTasksResult",
     "TimePlanChangeTimeConfigArgs",
     "TimePlanChangeTimeConfigArgsPeriod",
     "TimePlanChangeTimeConfigArgsRightNow",

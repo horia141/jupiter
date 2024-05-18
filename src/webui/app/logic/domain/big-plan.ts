@@ -10,7 +10,7 @@ export function bigPlanFindEntryToParent(
   entry: BigPlanFindEntry
 ): BigPlanParent {
   return {
-    project: entry.project
+    project: entry.project,
   };
 }
 

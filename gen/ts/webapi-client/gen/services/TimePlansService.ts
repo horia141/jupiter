@@ -2,14 +2,16 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { TimePlanActivityArchiveArgs } from '../models/TimePlanActivityArchiveArgs';
-import type { TimePlanActivityCreateForBigPlanArgs } from '../models/TimePlanActivityCreateForBigPlanArgs';
-import type { TimePlanActivityCreateForBigPlanResult } from '../models/TimePlanActivityCreateForBigPlanResult';
-import type { TimePlanActivityCreateForInboxTaskArgs } from '../models/TimePlanActivityCreateForInboxTaskArgs';
-import type { TimePlanActivityCreateForInboxTaskResult } from '../models/TimePlanActivityCreateForInboxTaskResult';
 import type { TimePlanActivityLoadArgs } from '../models/TimePlanActivityLoadArgs';
 import type { TimePlanActivityLoadResult } from '../models/TimePlanActivityLoadResult';
 import type { TimePlanActivityUpdateArgs } from '../models/TimePlanActivityUpdateArgs';
 import type { TimePlanArchiveArgs } from '../models/TimePlanArchiveArgs';
+import type { TimePlanAssociateWithActivitiesArgs } from '../models/TimePlanAssociateWithActivitiesArgs';
+import type { TimePlanAssociateWithActivitiesResult } from '../models/TimePlanAssociateWithActivitiesResult';
+import type { TimePlanAssociateWithBigPlansArgs } from '../models/TimePlanAssociateWithBigPlansArgs';
+import type { TimePlanAssociateWithBigPlansResult } from '../models/TimePlanAssociateWithBigPlansResult';
+import type { TimePlanAssociateWithInboxTasksArgs } from '../models/TimePlanAssociateWithInboxTasksArgs';
+import type { TimePlanAssociateWithInboxTasksResult } from '../models/TimePlanAssociateWithInboxTasksResult';
 import type { TimePlanChangeTimeConfigArgs } from '../models/TimePlanChangeTimeConfigArgs';
 import type { TimePlanCreateArgs } from '../models/TimePlanCreateArgs';
 import type { TimePlanCreateResult } from '../models/TimePlanCreateResult';
@@ -39,52 +41,6 @@ export class TimePlansService {
         return this.httpRequest.request({
             method: 'POST',
             url: '/time-plan-activity-archive',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * Use case for creating a time plan activity from a big plan.
-     * Use case for creating a time plan activity from a big plan.
-     * @param requestBody The input data
-     * @returns TimePlanActivityCreateForBigPlanResult Successful response
-     * @throws ApiError
-     */
-    public timePlanActivityCreateForBigPlan(
-        requestBody?: TimePlanActivityCreateForBigPlanArgs,
-    ): CancelablePromise<TimePlanActivityCreateForBigPlanResult> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/time-plan-activity-create-for-big-plan',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * Use case for creating a time plan from an inbox task.
-     * Use case for creating a time plan from an inbox task.
-     * @param requestBody The input data
-     * @returns TimePlanActivityCreateForInboxTaskResult Successful response
-     * @throws ApiError
-     */
-    public timePlanActivityCreateForInboxTask(
-        requestBody?: TimePlanActivityCreateForInboxTaskArgs,
-    ): CancelablePromise<TimePlanActivityCreateForInboxTaskResult> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/time-plan-activity-create-for-inbox-task',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -154,6 +110,75 @@ export class TimePlansService {
         return this.httpRequest.request({
             method: 'POST',
             url: '/time-plan-archive',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Use case for creating activities starting from already existin activities.
+     * Use case for creating activities starting from already existin activities.
+     * @param requestBody The input data
+     * @returns TimePlanAssociateWithActivitiesResult Successful response
+     * @throws ApiError
+     */
+    public timePlanAssociateWithActivities(
+        requestBody?: TimePlanAssociateWithActivitiesArgs,
+    ): CancelablePromise<TimePlanAssociateWithActivitiesResult> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/time-plan-associate-with-activities',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Use case for creating activities starting from big plans.
+     * Use case for creating activities starting from big plans.
+     * @param requestBody The input data
+     * @returns TimePlanAssociateWithBigPlansResult Successful response
+     * @throws ApiError
+     */
+    public timePlanAssociateWithBigPlans(
+        requestBody?: TimePlanAssociateWithBigPlansArgs,
+    ): CancelablePromise<TimePlanAssociateWithBigPlansResult> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/time-plan-associate-with-big-plans',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Use case for creating activities starting from inbox tasks.
+     * Use case for creating activities starting from inbox tasks.
+     * @param requestBody The input data
+     * @returns TimePlanAssociateWithInboxTasksResult Successful response
+     * @throws ApiError
+     */
+    public timePlanAssociateWithInboxTasks(
+        requestBody?: TimePlanAssociateWithInboxTasksArgs,
+    ): CancelablePromise<TimePlanAssociateWithInboxTasksResult> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/time-plan-associate-with-inbox-tasks',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

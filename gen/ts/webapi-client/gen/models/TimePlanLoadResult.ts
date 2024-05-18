@@ -18,5 +18,6 @@ export type TimePlanLoadResult = {
     target_inbox_tasks: Array<InboxTask>;
     target_big_plans?: (Array<BigPlan> | null);
     sub_period_time_plans: Array<TimePlan>;
+    previous_time_plan?: (TimePlan | null);
 };
 

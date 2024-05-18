@@ -5,20 +5,20 @@ import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
-from ...models.time_plan_activity_create_for_inbox_task_args import TimePlanActivityCreateForInboxTaskArgs
-from ...models.time_plan_activity_create_for_inbox_task_result import TimePlanActivityCreateForInboxTaskResult
+from ...models.time_plan_associate_with_big_plans_args import TimePlanAssociateWithBigPlansArgs
+from ...models.time_plan_associate_with_big_plans_result import TimePlanAssociateWithBigPlansResult
 from ...types import Response
 
 
 def _get_kwargs(
     *,
-    body: TimePlanActivityCreateForInboxTaskArgs,
+    body: TimePlanAssociateWithBigPlansArgs,
 ) -> Dict[str, Any]:
     headers: Dict[str, Any] = {}
 
     _kwargs: Dict[str, Any] = {
         "method": "post",
-        "url": "/time-plan-activity-create-for-inbox-task",
+        "url": "/time-plan-associate-with-big-plans",
     }
 
     _body = body.to_dict()
@@ -32,9 +32,9 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Optional[Union[Any, TimePlanActivityCreateForInboxTaskResult]]:
+) -> Optional[Union[Any, TimePlanAssociateWithBigPlansResult]]:
     if response.status_code == HTTPStatus.OK:
-        response_200 = TimePlanActivityCreateForInboxTaskResult.from_dict(response.json())
+        response_200 = TimePlanAssociateWithBigPlansResult.from_dict(response.json())
 
         return response_200
     if response.status_code == HTTPStatus.GONE:
@@ -54,7 +54,7 @@ def _parse_response(
 
 def _build_response(
     *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Response[Union[Any, TimePlanActivityCreateForInboxTaskResult]]:
+) -> Response[Union[Any, TimePlanAssociateWithBigPlansResult]]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -66,21 +66,21 @@ def _build_response(
 def sync_detailed(
     *,
     client: AuthenticatedClient,
-    body: TimePlanActivityCreateForInboxTaskArgs,
-) -> Response[Union[Any, TimePlanActivityCreateForInboxTaskResult]]:
-    """Use case for creating a time plan from an inbox task.
+    body: TimePlanAssociateWithBigPlansArgs,
+) -> Response[Union[Any, TimePlanAssociateWithBigPlansResult]]:
+    """Use case for creating activities starting from big plans.
 
-     Use case for creating a time plan from an inbox task.
+     Use case for creating activities starting from big plans.
 
     Args:
-        body (TimePlanActivityCreateForInboxTaskArgs): Args.
+        body (TimePlanAssociateWithBigPlansArgs): Args.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Union[Any, TimePlanActivityCreateForInboxTaskResult]]
+        Response[Union[Any, TimePlanAssociateWithBigPlansResult]]
     """
 
     kwargs = _get_kwargs(
@@ -97,21 +97,21 @@ def sync_detailed(
 def sync(
     *,
     client: AuthenticatedClient,
-    body: TimePlanActivityCreateForInboxTaskArgs,
-) -> Optional[Union[Any, TimePlanActivityCreateForInboxTaskResult]]:
-    """Use case for creating a time plan from an inbox task.
+    body: TimePlanAssociateWithBigPlansArgs,
+) -> Optional[Union[Any, TimePlanAssociateWithBigPlansResult]]:
+    """Use case for creating activities starting from big plans.
 
-     Use case for creating a time plan from an inbox task.
+     Use case for creating activities starting from big plans.
 
     Args:
-        body (TimePlanActivityCreateForInboxTaskArgs): Args.
+        body (TimePlanAssociateWithBigPlansArgs): Args.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Union[Any, TimePlanActivityCreateForInboxTaskResult]
+        Union[Any, TimePlanAssociateWithBigPlansResult]
     """
 
     return sync_detailed(
@@ -123,21 +123,21 @@ def sync(
 async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
-    body: TimePlanActivityCreateForInboxTaskArgs,
-) -> Response[Union[Any, TimePlanActivityCreateForInboxTaskResult]]:
-    """Use case for creating a time plan from an inbox task.
+    body: TimePlanAssociateWithBigPlansArgs,
+) -> Response[Union[Any, TimePlanAssociateWithBigPlansResult]]:
+    """Use case for creating activities starting from big plans.
 
-     Use case for creating a time plan from an inbox task.
+     Use case for creating activities starting from big plans.
 
     Args:
-        body (TimePlanActivityCreateForInboxTaskArgs): Args.
+        body (TimePlanAssociateWithBigPlansArgs): Args.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Union[Any, TimePlanActivityCreateForInboxTaskResult]]
+        Response[Union[Any, TimePlanAssociateWithBigPlansResult]]
     """
 
     kwargs = _get_kwargs(
@@ -152,21 +152,21 @@ async def asyncio_detailed(
 async def asyncio(
     *,
     client: AuthenticatedClient,
-    body: TimePlanActivityCreateForInboxTaskArgs,
-) -> Optional[Union[Any, TimePlanActivityCreateForInboxTaskResult]]:
-    """Use case for creating a time plan from an inbox task.
+    body: TimePlanAssociateWithBigPlansArgs,
+) -> Optional[Union[Any, TimePlanAssociateWithBigPlansResult]]:
+    """Use case for creating activities starting from big plans.
 
-     Use case for creating a time plan from an inbox task.
+     Use case for creating activities starting from big plans.
 
     Args:
-        body (TimePlanActivityCreateForInboxTaskArgs): Args.
+        body (TimePlanAssociateWithBigPlansArgs): Args.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Union[Any, TimePlanActivityCreateForInboxTaskResult]
+        Union[Any, TimePlanAssociateWithBigPlansResult]
     """
 
     return (

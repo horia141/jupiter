@@ -66,7 +66,7 @@ export default function Journals() {
 
   return (
     <TrunkPanel
-    key={"journals"}
+      key={"journals"}
       createLocation="/workspace/journals/new"
       returnLocation="/workspace"
     >

@@ -80,7 +80,7 @@ export default function Vacations({ request }: LoaderArgs) {
 
   return (
     <TrunkPanel
-    key={"vacations"}
+      key={"vacations"}
       createLocation="/workspace/vacations/new"
       returnLocation="/workspace"
     >

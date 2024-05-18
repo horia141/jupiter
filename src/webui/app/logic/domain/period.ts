@@ -23,7 +23,9 @@ const PERIOD_MAP = {
   [RecurringTaskPeriod.YEARLY]: 4,
 };
 
-export function oneLessThanPeriod(period: RecurringTaskPeriod): RecurringTaskPeriod {
+export function oneLessThanPeriod(
+  period: RecurringTaskPeriod
+): RecurringTaskPeriod {
   switch (period) {
     case RecurringTaskPeriod.DAILY:
       throw new Error(`Invalid period ${period} for computing one less`);
@@ -38,7 +40,9 @@ export function oneLessThanPeriod(period: RecurringTaskPeriod): RecurringTaskPer
   }
 }
 
-export function oneMoreThanPeriod(period: RecurringTaskPeriod): RecurringTaskPeriod {
+export function oneMoreThanPeriod(
+  period: RecurringTaskPeriod
+): RecurringTaskPeriod {
   switch (period) {
     case RecurringTaskPeriod.DAILY:
       return RecurringTaskPeriod.WEEKLY;

@@ -34,9 +34,7 @@ export default function Gamification() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
 
   return (
-    <TrunkPanel 
-    key={"gamification"}
-    returnLocation="/workspace">
+    <TrunkPanel key={"gamification"} returnLocation="/workspace">
       <ToolPanel>
         <Stack useFlexGap gap={2}>
           {loaderData.userScoreOverview && (

@@ -7,7 +7,7 @@ import type { TimePlanActivity } from './TimePlanActivity';
 /**
  * Result.
  */
-export type TimePlanActivityCreateForInboxTaskResult = {
-    new_time_plan_activity: TimePlanActivity;
+export type TimePlanAssociateWithBigPlansResult = {
+    new_time_plan_activities: Array<TimePlanActivity>;
 };
 

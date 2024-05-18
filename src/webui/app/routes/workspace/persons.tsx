@@ -75,7 +75,7 @@ export default function Persons() {
 
   return (
     <TrunkPanel
-    key={"persons"}
+      key={"persons"}
       createLocation="/workspace/persons/new"
       extraControls={[
         <>

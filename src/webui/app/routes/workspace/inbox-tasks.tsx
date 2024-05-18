@@ -381,7 +381,7 @@ export default function InboxTasks() {
 
   return (
     <TrunkPanel
-    key={"inbox-tasks"}
+      key={"inbox-tasks"}
       createLocation="/workspace/inbox-tasks/new"
       extraControls={extraControls}
       returnLocation="/workspace"
@@ -2075,7 +2075,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
         {acceptedTasks.length === 0 && (
           <NoTasksCard
             parent="inbox task"
-            parentNewLocation ="/workspace/inbox-tasks/new"
+            parentNewLocation="/workspace/inbox-tasks/new"
           />
         )}
         <InboxTaskStack

@@ -112,6 +112,6 @@ class TimePlanRepository(LeafEntityRepository[TimePlan], abc.ABC):
         parent_ref_id: EntityId,
         allow_archived: bool,
         period: RecurringTaskPeriod,
-        right_now: ADate
+        right_now: ADate,
     ) -> TimePlan | None:
         """Find the previous time plan to a given right now at a certain period."""

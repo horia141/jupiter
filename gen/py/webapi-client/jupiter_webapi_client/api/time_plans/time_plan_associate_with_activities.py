@@ -5,20 +5,20 @@ import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
-from ...models.time_plan_activity_create_for_big_plan_args import TimePlanActivityCreateForBigPlanArgs
-from ...models.time_plan_activity_create_for_big_plan_result import TimePlanActivityCreateForBigPlanResult
+from ...models.time_plan_associate_with_activities_args import TimePlanAssociateWithActivitiesArgs
+from ...models.time_plan_associate_with_activities_result import TimePlanAssociateWithActivitiesResult
 from ...types import Response
 
 
 def _get_kwargs(
     *,
-    body: TimePlanActivityCreateForBigPlanArgs,
+    body: TimePlanAssociateWithActivitiesArgs,
 ) -> Dict[str, Any]:
     headers: Dict[str, Any] = {}
 
     _kwargs: Dict[str, Any] = {
         "method": "post",
-        "url": "/time-plan-activity-create-for-big-plan",
+        "url": "/time-plan-associate-with-activities",
     }
 
     _body = body.to_dict()
@@ -32,9 +32,9 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Optional[Union[Any, TimePlanActivityCreateForBigPlanResult]]:
+) -> Optional[Union[Any, TimePlanAssociateWithActivitiesResult]]:
     if response.status_code == HTTPStatus.OK:
-        response_200 = TimePlanActivityCreateForBigPlanResult.from_dict(response.json())
+        response_200 = TimePlanAssociateWithActivitiesResult.from_dict(response.json())
 
         return response_200
     if response.status_code == HTTPStatus.GONE:
@@ -54,7 +54,7 @@ def _parse_response(
 
 def _build_response(
     *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Response[Union[Any, TimePlanActivityCreateForBigPlanResult]]:
+) -> Response[Union[Any, TimePlanAssociateWithActivitiesResult]]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -66,21 +66,21 @@ def _build_response(
 def sync_detailed(
     *,
     client: AuthenticatedClient,
-    body: TimePlanActivityCreateForBigPlanArgs,
-) -> Response[Union[Any, TimePlanActivityCreateForBigPlanResult]]:
-    """Use case for creating a time plan activity from a big plan.
+    body: TimePlanAssociateWithActivitiesArgs,
+) -> Response[Union[Any, TimePlanAssociateWithActivitiesResult]]:
+    """Use case for creating activities starting from already existin activities.
 
-     Use case for creating a time plan activity from a big plan.
+     Use case for creating activities starting from already existin activities.
 
     Args:
-        body (TimePlanActivityCreateForBigPlanArgs): Args.
+        body (TimePlanAssociateWithActivitiesArgs): Args.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Union[Any, TimePlanActivityCreateForBigPlanResult]]
+        Response[Union[Any, TimePlanAssociateWithActivitiesResult]]
     """
 
     kwargs = _get_kwargs(
@@ -97,21 +97,21 @@ def sync_detailed(
 def sync(
     *,
     client: AuthenticatedClient,
-    body: TimePlanActivityCreateForBigPlanArgs,
-) -> Optional[Union[Any, TimePlanActivityCreateForBigPlanResult]]:
-    """Use case for creating a time plan activity from a big plan.
+    body: TimePlanAssociateWithActivitiesArgs,
+) -> Optional[Union[Any, TimePlanAssociateWithActivitiesResult]]:
+    """Use case for creating activities starting from already existin activities.
 
-     Use case for creating a time plan activity from a big plan.
+     Use case for creating activities starting from already existin activities.
 
     Args:
-        body (TimePlanActivityCreateForBigPlanArgs): Args.
+        body (TimePlanAssociateWithActivitiesArgs): Args.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Union[Any, TimePlanActivityCreateForBigPlanResult]
+        Union[Any, TimePlanAssociateWithActivitiesResult]
     """
 
     return sync_detailed(
@@ -123,21 +123,21 @@ def sync(
 async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
-    body: TimePlanActivityCreateForBigPlanArgs,
-) -> Response[Union[Any, TimePlanActivityCreateForBigPlanResult]]:
-    """Use case for creating a time plan activity from a big plan.
+    body: TimePlanAssociateWithActivitiesArgs,
+) -> Response[Union[Any, TimePlanAssociateWithActivitiesResult]]:
+    """Use case for creating activities starting from already existin activities.
 
-     Use case for creating a time plan activity from a big plan.
+     Use case for creating activities starting from already existin activities.
 
     Args:
-        body (TimePlanActivityCreateForBigPlanArgs): Args.
+        body (TimePlanAssociateWithActivitiesArgs): Args.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Union[Any, TimePlanActivityCreateForBigPlanResult]]
+        Response[Union[Any, TimePlanAssociateWithActivitiesResult]]
     """
 
     kwargs = _get_kwargs(
@@ -152,21 +152,21 @@ async def asyncio_detailed(
 async def asyncio(
     *,
     client: AuthenticatedClient,
-    body: TimePlanActivityCreateForBigPlanArgs,
-) -> Optional[Union[Any, TimePlanActivityCreateForBigPlanResult]]:
-    """Use case for creating a time plan activity from a big plan.
+    body: TimePlanAssociateWithActivitiesArgs,
+) -> Optional[Union[Any, TimePlanAssociateWithActivitiesResult]]:
+    """Use case for creating activities starting from already existin activities.
 
-     Use case for creating a time plan activity from a big plan.
+     Use case for creating activities starting from already existin activities.
 
     Args:
-        body (TimePlanActivityCreateForBigPlanArgs): Args.
+        body (TimePlanAssociateWithActivitiesArgs): Args.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Union[Any, TimePlanActivityCreateForBigPlanResult]
+        Union[Any, TimePlanAssociateWithActivitiesResult]
     """
 
     return (

@@ -74,7 +74,7 @@ export default function Metrics() {
 
   return (
     <TrunkPanel
-    key={"metrics"}
+      key={"metrics"}
       createLocation="/workspace/metrics/new"
       extraControls={[
         <>

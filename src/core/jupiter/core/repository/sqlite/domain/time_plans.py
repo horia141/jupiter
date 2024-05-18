@@ -6,7 +6,11 @@ from jupiter.core.domain.time_plans.time_plan import (
     TimePlanExistsForDatePeriodCombinationError,
     TimePlanRepository,
 )
-from jupiter.core.domain.time_plans.time_plan_activity import TimePlanActivity, TimePlanActivityRespository, TimePlanAlreadyAssociatedWithTarget
+from jupiter.core.domain.time_plans.time_plan_activity import (
+    TimePlanActivity,
+    TimePlanActivityRespository,
+    TimePlanAlreadyAssociatedWithTargetError,
+)
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.realm import RealmCodecRegistry
 from jupiter.core.repository.sqlite.infra.repository import (
@@ -68,13 +72,13 @@ class SqliteTimePlanRepository(
 
         results = await self._connection.execute(query_stmt)
         return [self._row_to_entity(row) for row in results]
-    
+
     async def find_previous(
         self,
         parent_ref_id: EntityId,
         allow_archived: bool,
         period: RecurringTaskPeriod,
-        right_now: ADate
+        right_now: ADate,
     ) -> TimePlan | None:
         """Find all time plans in a range."""
         query_stmt = self._table.select().where(
@@ -83,14 +87,13 @@ class SqliteTimePlanRepository(
 
         if not allow_archived:
             query_stmt = query_stmt.where(self._table.c.archived.is_(False))
-            
 
-        query_stmt = (query_stmt.where(
-            self._table.c.period == period.value
-        ).where(
-            self._table.c.right_now <= right_now.the_date
-        ).order_by(self._table.c.right_now.desc())
-        .limit(1))
+        query_stmt = (
+            query_stmt.where(self._table.c.period == period.value)
+            .where(self._table.c.right_now <= right_now.the_date)
+            .order_by(self._table.c.right_now.desc())
+            .limit(1)
+        )
 
         result_rows = await self._connection.execute(query_stmt)
         results = [self._row_to_entity(row) for row in result_rows]
@@ -115,5 +118,5 @@ class SqliteTimePlanActivityRepository(
             realm_codec_registry,
             connection,
             metadata,
-            already_exists_err_cls=TimePlanAlreadyAssociatedWithTarget,
+            already_exists_err_cls=TimePlanAlreadyAssociatedWithTargetError,
         )

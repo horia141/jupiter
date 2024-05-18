@@ -82,8 +82,12 @@ class BigPlanFindUseCase(
             and args.filter_project_ref_ids is not None
         ):
             raise FeatureUnavailableError(WorkspaceFeature.PROJECTS)
-        
-        filter_status: list[BigPlanStatus] | NoFilter = BigPlanStatus.all_workable_statuses() if args.filter_just_workable else NoFilter()
+
+        filter_status: list[BigPlanStatus] | NoFilter = (
+            BigPlanStatus.all_workable_statuses()
+            if args.filter_just_workable
+            else NoFilter()
+        )
 
         project_collection = await uow.get_for(ProjectCollection).load_by_parent(
             workspace.ref_id,
@@ -97,7 +101,6 @@ class BigPlanFindUseCase(
             project_by_ref_id = {p.ref_id: p for p in projects}
         else:
             project_by_ref_id = None
-
 
         inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             workspace.ref_id,

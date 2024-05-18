@@ -87,7 +87,7 @@ export default function Habits() {
 
   return (
     <TrunkPanel
-    key={"habits"}
+      key={"habits"}
       createLocation="/workspace/habits/new"
       returnLocation="/workspace"
     >

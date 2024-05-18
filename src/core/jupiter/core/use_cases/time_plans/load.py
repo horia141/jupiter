@@ -118,7 +118,7 @@ class TimePlanLoadUseCase(
             parent_ref_id=time_plan.time_plan_domain.ref_id,
             allow_archived=False,
             period=time_plan.period,
-            right_now=time_plan.right_now
+            right_now=time_plan.right_now,
         )
 
         return TimePlanLoadResult(
@@ -128,5 +128,5 @@ class TimePlanLoadUseCase(
             target_inbox_tasks=target_inbox_tasks,
             target_big_plans=target_big_plans,
             sub_period_time_plans=sub_period_time_plans,
-            previous_time_plan=previous_time_plan
+            previous_time_plan=previous_time_plan,
         )

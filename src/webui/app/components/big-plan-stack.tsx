@@ -1,14 +1,8 @@
+import type { BigPlan, BigPlanFindResultEntry } from "@jupiter/webapi-client";
 import { Divider, Typography } from "@mui/material";
-import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import type { TopLevelInfo } from "~/top-level-context";
-import { ADateTag } from "./adate-tag";
-import { BigPlanStatusTag } from "./big-plan-status-tag";
-import { EntityNameComponent } from "./entity-name";
-import { EntityCard, EntityLink } from "./infra/entity-card";
-import { EntityStack } from "./infra/entity-stack";
-import { ProjectTag } from "./project-tag";
-import { BigPlan, BigPlanFindResultEntry, Project, WorkspaceFeature } from "@jupiter/webapi-client";
 import { BigPlanCard } from "./big-plan-card";
+import { EntityStack } from "./infra/entity-stack";
 
 interface BigPlanStackProps {
   topLevelInfo: TopLevelInfo;
@@ -30,7 +24,7 @@ export function BigPlanStack(props: BigPlanStackProps) {
       )}
 
       {props.bigPlans.map((entry) => (
-        <BigPlanCard 
+        <BigPlanCard
           key={`big-plan-${entry.ref_id}`}
           topLevelInfo={props.topLevelInfo}
           allowSwipe
@@ -41,7 +35,7 @@ export function BigPlanStack(props: BigPlanStackProps) {
             showActionableDate: true,
             showDueDate: true,
             showHandleMarkDone: true,
-            showHandleMarkNotDone: true
+            showHandleMarkNotDone: true,
           }}
           parent={foogazi}
           onMarkDone={() => props.onCardMarkDone && props.onCardMarkDone(entry)}

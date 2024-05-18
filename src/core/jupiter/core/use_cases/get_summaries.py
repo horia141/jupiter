@@ -136,7 +136,7 @@ class GetSummariesUseCase(
         if (
             workspace.is_feature_available(WorkspaceFeature.PROJECTS)
             and args.include_projects
-        ):  
+        ):
             projects = await uow.get(FastInfoRepository).find_all_project_summaries(
                 parent_ref_id=project_collection.workspace.ref_id,
                 allow_archived=allow_archived,

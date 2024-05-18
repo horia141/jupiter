@@ -1,5 +1,13 @@
-import type { BigPlan, InboxTask, ProjectSummary, TimePlan, TimePlanActivity } from "@jupiter/webapi-client";
-import { ApiError, RecurringTaskPeriod, TimePlanActivityTarget, WorkspaceFeature } from "@jupiter/webapi-client";
+import type {
+  BigPlan,
+  InboxTask,
+  ProjectSummary,
+} from "@jupiter/webapi-client";
+import {
+  ApiError,
+  RecurringTaskPeriod,
+  WorkspaceFeature,
+} from "@jupiter/webapi-client";
 import {
   Button,
   ButtonGroup,
@@ -24,24 +32,19 @@ import {
   useParams,
   useTransition,
 } from "@remix-run/react";
+import { AnimatePresence } from "framer-motion";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
-import { BigPlanStatusTag } from "~/components/big-plan-status-tag";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
-import { InboxTaskStatusTag } from "~/components/inbox-task-status-tag";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
-import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { BranchPanel } from "~/components/infra/layout/branch-panel";
-import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { TimePlanActivityCard } from "~/components/time-plan-activity-card";
-import { TimePlanActivityFeasabilityTag } from "~/components/time-plan-activity-feasability-tag";
-import { TimePlanActivityKindTag } from "~/components/time-plan-activity-kind-tag";
 import { TimePlanStack } from "~/components/time-plan-stack";
 import {
   aGlobalError,
@@ -51,13 +54,12 @@ import { periodName } from "~/logic/domain/period";
 import { sortTimePlansNaturally } from "~/logic/domain/time-plan";
 import { sortTimePlanActivitiesNaturally } from "~/logic/domain/time-plan-activity";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
-import { LeafPanelExpansionState } from "~/rendering/leaf-panel-expansion";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
-import { TopLevelInfo, TopLevelInfoContext } from "~/top-level-context";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = {
   id: z.string(),
@@ -184,7 +186,9 @@ export default function TimePlanView() {
     loaderData.targetInboxTasks.map((it) => [it.ref_id, it])
   );
   const bigPlansByRefId = new Map<string, BigPlan>(
-    loaderData.targetBigPlans ? loaderData.targetBigPlans.map((bp) => [bp.ref_id, bp]) : []
+    loaderData.targetBigPlans
+      ? loaderData.targetBigPlans.map((bp) => [bp.ref_id, bp])
+      : []
   );
 
   return (
@@ -283,15 +287,19 @@ export default function TimePlanView() {
               New Inbox Task
             </Button>
 
-            {isWorkspaceFeatureAvailable(topLevelInfo.workspace, WorkspaceFeature.BIG_PLANS) &&
-            <Button
-              variant="outlined"
-              disabled={!inputsEnabled}
-              to={`/workspace/big-plans/new?timePlanReason=for-time-plan&timePlanRefId=${loaderData.timePlan.ref_id}`}
-              component={Link}
-            >
-              New Big Plan
-            </Button>}
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.BIG_PLANS
+            ) && (
+              <Button
+                variant="outlined"
+                disabled={!inputsEnabled}
+                to={`/workspace/big-plans/new?timePlanReason=for-time-plan&timePlanRefId=${loaderData.timePlan.ref_id}`}
+                component={Link}
+              >
+                New Big Plan
+              </Button>
+            )}
 
             <Button
               variant="outlined"
@@ -302,15 +310,19 @@ export default function TimePlanView() {
               From Current Inbox Tasks
             </Button>
 
-            {isWorkspaceFeatureAvailable(topLevelInfo.workspace, WorkspaceFeature.BIG_PLANS) &&
-            <Button
-              variant="outlined"
-              disabled={!inputsEnabled}
-              to={`/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-big-plans`}
-              component={Link}
-            >
-              From Current Big Plans
-            </Button>}
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.BIG_PLANS
+            ) && (
+              <Button
+                variant="outlined"
+                disabled={!inputsEnabled}
+                to={`/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-big-plans`}
+                component={Link}
+              >
+                From Current Big Plans
+              </Button>
+            )}
 
             {sortedSubTimePlans.length > 0 && (
               <Button

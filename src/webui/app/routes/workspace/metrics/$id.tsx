@@ -94,8 +94,7 @@ export default function Metric() {
 
   return (
     <BranchPanel
-    key={`metric-${loaderData.metric.ref_id}`}
-      key={loaderData.metric.ref_id}
+      key={`metric-${loaderData.metric.ref_id}`}
       createLocation={`/workspace/metrics/${loaderData.metric.ref_id}/entries/new`}
       extraControls={[
         <Button

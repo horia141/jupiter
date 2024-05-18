@@ -59,7 +59,8 @@ export default function NewDoc() {
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <LeafPanel key={"docs/new"}
+    <LeafPanel
+      key={"docs/new"}
       returnLocation="/workspace/docs"
       initialExpansionState={LeafPanelExpansionState.FULL}
     >

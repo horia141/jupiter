@@ -1,5 +1,6 @@
 """A certain activity that happens in a plan."""
 import abc
+
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.time_plans.time_plan_activity_feasability import (
@@ -21,7 +22,10 @@ from jupiter.core.framework.entity import (
     entity,
     update_entity_action,
 )
-from jupiter.core.framework.repository import EntityAlreadyExistsError, LeafEntityRepository
+from jupiter.core.framework.repository import (
+    EntityAlreadyExistsError,
+    LeafEntityRepository,
+)
 from jupiter.core.framework.update_action import UpdateAction
 
 
@@ -44,7 +48,7 @@ class TimePlanActivity(LeafEntity):
     def new_activity_from_existing(
         ctx: DomainContext,
         time_plan_ref_id: EntityId,
-        existing_activity: "TimePlanActivity"
+        existing_activity: "TimePlanActivity",
     ) -> "TimePlanActivity":
         return TimePlanActivity._create(
             ctx,
@@ -116,7 +120,7 @@ class TimePlanActivity(LeafEntity):
         return EntityName(f"Work on {target} {entity_id}")
 
 
-class TimePlanAlreadyAssociatedWithTarget(EntityAlreadyExistsError):
+class TimePlanAlreadyAssociatedWithTargetError(EntityAlreadyExistsError):
     """An error raised when a time plan is already associated with a target entity."""
 
 

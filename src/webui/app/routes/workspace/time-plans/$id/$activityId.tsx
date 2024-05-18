@@ -1,4 +1,12 @@
-import { ApiError, BigPlan, BigPlanStatus, InboxTask, InboxTaskStatus, TimePlanActivityFeasability, TimePlanActivityKind, WorkspaceFeature } from "@jupiter/webapi-client";
+import type { BigPlan, InboxTask } from "@jupiter/webapi-client";
+import {
+  ApiError,
+  BigPlanStatus,
+  InboxTaskStatus,
+  TimePlanActivityFeasability,
+  TimePlanActivityKind,
+  WorkspaceFeature,
+} from "@jupiter/webapi-client";
 import {
   Button,
   ButtonGroup,
@@ -12,7 +20,12 @@ import {
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useFetcher, useParams, useTransition } from "@remix-run/react";
+import {
+  useActionData,
+  useFetcher,
+  useParams,
+  useTransition,
+} from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
@@ -56,7 +69,7 @@ export async function loader({ request, params }: LoaderArgs) {
       session
     ).timePlans.timePlanActivityLoad({
       ref_id: activityId,
-      allow_archived: true
+      allow_archived: true,
     });
 
     return json({

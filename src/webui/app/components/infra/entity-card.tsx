@@ -102,9 +102,10 @@ export function EntityCard(props: PropsWithChildren<EntityCardProps>) {
           alignItems: "center",
           touchAction: "pan-y",
           position: "relative",
-          backgroundColor: ((props.allowSelect && !props.selected) && props.showAsArchived)
-            ? theme.palette.action.hover
-            : "transparent",
+          backgroundColor:
+            props.allowSelect && !props.selected && props.showAsArchived
+              ? theme.palette.action.hover
+              : "transparent",
         }}
         onClick={(e) => {
           if (props.onClick) {

@@ -61,7 +61,7 @@ class InboxTaskStatus(EnumValue):
         all_values = self.get_all_values()
 
         return all_values.index(self.value) < all_values.index(other.value)
-    
+
     @staticmethod
     def all_workable_statuses() -> list["InboxTaskStatus"]:
         """All workable statuses."""

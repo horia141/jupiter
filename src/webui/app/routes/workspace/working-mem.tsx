@@ -91,7 +91,7 @@ export default function WorkingMem() {
 
   return (
     <TrunkPanel
-    key={"working-mem"}
+      key={"working-mem"}
       returnLocation="/workspace"
       extraControls={[
         <Button
