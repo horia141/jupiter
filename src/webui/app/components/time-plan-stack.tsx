@@ -5,6 +5,7 @@ import { EntityCard, EntityLink } from "./infra/entity-card";
 import { EntityStack } from "./infra/entity-stack";
 import { PeriodTag } from "./period-tag";
 import { TimePlanSourceTag } from "./time-plan-source-tag";
+import { TimePlanCard } from "./time-plan-card";
 
 interface TimePlanStackProps {
   topLevelInfo: TopLevelInfo;
@@ -18,22 +19,12 @@ export function TimePlanStack(props: TimePlanStackProps) {
   return (
     <EntityStack>
       {props.timePlans.map((timePlan) => (
-        <EntityCard
-          key={`time-plan-${timePlan.ref_id}`}
-          entityId={`time-plan-${timePlan.ref_id}`}
+        <TimePlanCard
+          topLevelInfo={props.topLevelInfo}
+          timePlan={timePlan}
           allowSwipe={props.allowSwipe}
           allowMarkNotDone={props.allowMarkNotDone}
-          onMarkNotDone={() =>
-            props.onMarkNotDone && props.onMarkNotDone(timePlan)
-          }
-        >
-          <EntityLink to={`/workspace/time-plans/${timePlan.ref_id}`}>
-            <EntityNameComponent name={timePlan.name} />
-            <TimePlanSourceTag source={timePlan.source} />
-            <PeriodTag period={timePlan.period} />
-            TODO: Something around activities here!
-          </EntityLink>
-        </EntityCard>
+          onMarkNotDone={props.onMarkNotDone} />
       ))}
     </EntityStack>
   );

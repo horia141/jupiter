@@ -105,3 +105,13 @@ class TimePlanRepository(LeafEntityRepository[TimePlan], abc.ABC):
         filter_end_date: ADate,
     ) -> list[TimePlan]:
         """Find all time plans in a range."""
+
+    @abc.abstractmethod
+    async def find_previous(
+        self,
+        parent_ref_id: EntityId,
+        allow_archived: bool,
+        period: RecurringTaskPeriod,
+        right_now: ADate
+    ) -> TimePlan | None:
+        """Find the previous time plan to a given right now at a certain period."""

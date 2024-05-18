@@ -1,4 +1,4 @@
-"""Use case for creating time plan actitivities for big plans."""
+"""Use case for creating time plan actitivities for already existin activities."""
 from typing import cast
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
@@ -31,62 +31,60 @@ from jupiter.core.use_cases.infra.use_cases import (
 
 
 @use_case_args
-class TimePlanAssociateWithBigPlansArgs(UseCaseArgsBase):
+class TimePlanAssociateWithActivitiesArgs(UseCaseArgsBase):
     """Args."""
 
     ref_id: EntityId
-    big_plan_ref_id: list[EntityId]
+    other_time_plan_ref_id: EntityId
+    activity_ref_ids: list[EntityId]
 
 
 @use_case_result
-class TimePlanAssociateWithBigPlansResult(UseCaseResultBase):
+class TimePlanAssociateWithActivitiesResult(UseCaseResultBase):
     """Result."""
 
     new_time_plan_activities: list[TimePlanActivity]
 
 
 @mutation_use_case(WorkspaceFeature.TIME_PLANS)
-class TimePlanAssociateWithBigPlansUseCase(
+class TimePlanAssociateWithActivitiesUseCase(
     AppTransactionalLoggedInMutationUseCase[
-        TimePlanAssociateWithBigPlansArgs, TimePlanAssociateWithBigPlansResult
+        TimePlanAssociateWithActivitiesArgs, TimePlanAssociateWithActivitiesResult
     ]
 ):
-    """Use case for creating activities starting from big plans."""
+    """Use case for creating activities starting from already existin activities."""
 
     async def _perform_transactional_mutation(
         self,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
         context: AppLoggedInMutationUseCaseContext,
-        args: TimePlanAssociateWithBigPlansArgs,
-    ) -> TimePlanAssociateWithBigPlansResult:
+        args: TimePlanAssociateWithActivitiesArgs,
+    ) -> TimePlanAssociateWithActivitiesResult:
         """Execute the command's actions."""
         workspace = context.workspace
 
         _ = await uow.get_for(TimePlan).load_by_id(args.ref_id)
 
-        big_plan_collection = await uow.get_for(BigPlanCollection).load_by_parent(workspace.ref_id)
-        big_plans = await uow.get_for(BigPlan).find_all(
-            parent_ref_id=big_plan_collection.ref_id,
+        activities = await uow.get_for(TimePlanActivity).find_all(
+            parent_ref_id=args.other_time_plan_ref_id,
             allow_archived=False,
-            filter_ref_ids=args.big_plan_ref_id
+            filter_ref_ids=args.activity_ref_ids
         )
 
         new_time_plan_actitivies = []
 
-        for big_plan in big_plans:
-            new_time_plan_activity = TimePlanActivity.new_activity_for_big_plan(
+        for activity in activities:
+            new_time_plan_activity = TimePlanActivity.new_activity_from_existing(
                 context.domain_context,
                 time_plan_ref_id=args.ref_id,
-                big_plan_ref_id=big_plan.ref_id,
-                kind=TimePlanActivityKind.FINISH,
-                feasability=TimePlanActivityFeasability.MUST_DO,
+                existing_activity=activity
             )
             new_time_plan_activity = await generic_creator(
                 uow, progress_reporter, new_time_plan_activity
             )
             new_time_plan_actitivies.append(new_time_plan_activity)
 
-        return TimePlanAssociateWithBigPlansResult(
+        return TimePlanAssociateWithActivitiesResult(
             new_time_plan_activities=new_time_plan_actitivies
         )

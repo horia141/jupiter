@@ -35,7 +35,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 class TimePlanAssociateWithInboxTasksArgs(UseCaseArgsBase):
     """Args."""
 
-    time_plan_ref_id: EntityId
+    ref_id: EntityId
     inbox_task_ref_id: list[EntityId]
 
 
@@ -64,7 +64,7 @@ class TimePlanAssociateWithInboxTasksUseCase(
         """Execute the command's actions."""
         workspace = context.workspace
 
-        _ = await uow.get_for(TimePlan).load_by_id(args.time_plan_ref_id)
+        _ = await uow.get_for(TimePlan).load_by_id(args.ref_id)
 
         inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(workspace.ref_id)
         inbox_tasks = await uow.get_for(InboxTask).find_all(
@@ -88,7 +88,7 @@ class TimePlanAssociateWithInboxTasksUseCase(
         for inbox_task in inbox_tasks:
             new_time_plan_activity = TimePlanActivity.new_activity_for_inbox_task(
                 context.domain_context,
-                time_plan_ref_id=args.time_plan_ref_id,
+                time_plan_ref_id=args.ref_id,
                 inbox_task_ref_id=inbox_task.ref_id,
                 kind=TimePlanActivityKind.FINISH,
                 feasability=TimePlanActivityFeasability.MUST_DO,
@@ -102,7 +102,7 @@ class TimePlanAssociateWithInboxTasksUseCase(
             try:
                 new_time_plan_activity = TimePlanActivity.new_activity_for_big_plan(
                     context.domain_context,
-                    time_plan_ref_id=args.time_plan_ref_id,
+                    time_plan_ref_id=args.ref_id,
                     big_plan_ref_id=big_plan.ref_id,
                     kind=TimePlanActivityKind.MAKE_PROGRESS,
                     feasability=TimePlanActivityFeasability.MUST_DO

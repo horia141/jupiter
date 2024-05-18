@@ -45,6 +45,7 @@ class TimePlanLoadResult(UseCaseResultBase):
     target_inbox_tasks: list[InboxTask]
     target_big_plans: list[BigPlan] | None
     sub_period_time_plans: list[TimePlan]
+    previous_time_plan: TimePlan | None
 
 
 @readonly_use_case(WorkspaceFeature.TIME_PLANS)
@@ -113,6 +114,13 @@ class TimePlanLoadUseCase(
             filter_end_date=schedule.end_day,
         )
 
+        previous_time_plan = await uow.get(TimePlanRepository).find_previous(
+            parent_ref_id=time_plan.time_plan_domain.ref_id,
+            allow_archived=False,
+            period=time_plan.period,
+            right_now=time_plan.right_now
+        )
+
         return TimePlanLoadResult(
             time_plan=time_plan,
             note=note,
@@ -120,4 +128,5 @@ class TimePlanLoadUseCase(
             target_inbox_tasks=target_inbox_tasks,
             target_big_plans=target_big_plans,
             sub_period_time_plans=sub_period_time_plans,
+            previous_time_plan=previous_time_plan
         )

@@ -39,6 +39,7 @@ import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { BranchPanel } from "~/components/infra/layout/branch-panel";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import { TimePlanActivityCard } from "~/components/time-plan-activity-card";
 import { TimePlanActivityFeasabilityTag } from "~/components/time-plan-activity-feasability-tag";
 import { TimePlanActivityKindTag } from "~/components/time-plan-activity-kind-tag";
 import { TimePlanStack } from "~/components/time-plan-stack";
@@ -327,9 +328,8 @@ export default function TimePlanView() {
 
       <EntityStack>
         {sortedActivities.map((entry) => (
-          <ActivityCard
+          <TimePlanActivityCard
             key={`time-plan-activity-${entry.ref_id}`}
-            entityId={`time-plan-activity-${entry.ref_id}`}
             topLevelInfo={topLevelInfo}
             timePlan={loaderData.timePlan}
             activity={entry}
@@ -362,62 +362,4 @@ export const CatchBoundary = makeCatchBoundary(
 export const ErrorBoundary = makeErrorBoundary(
   () =>
     `There was an error loading time plan #${useParams().id}. Please try again!`
-);
-
-interface ActivityCardProps {
-  entityId: string;
-  topLevelInfo: TopLevelInfo;
-  timePlan: TimePlan;
-  activity: TimePlanActivity;
-  inboxTasksByRefId: Map<string, InboxTask>;
-  bigPlansByRefId: Map<string, BigPlan>;
-}
-
-function ActivityCard(props: ActivityCardProps) {
-  if (props.activity.target === TimePlanActivityTarget.INBOX_TASK) {
-    const inboxTask = props.inboxTasksByRefId.get(props.activity.target_ref_id)!;
-    return (
-      <EntityCard entityId={props.entityId}>
-        <EntityLink
-          to={`/workspace/time-plans/${props.timePlan.ref_id}/${props.activity.ref_id}`}
-        >
-          {inboxTask.name}
-          <InboxTaskStatusTag status={inboxTask.status} />
-          <TimePlanActivityKindTag kind={props.activity.kind} />
-          <TimePlanActivityFeasabilityTag
-            feasability={props.activity.feasability}
-          />
-        </EntityLink>
-      </EntityCard>
-    );
-  } else if (isWorkspaceFeatureAvailable(props.topLevelInfo.workspace, WorkspaceFeature.BIG_PLANS)) {
-    const bigPlan = props.bigPlansByRefId.get(props.activity.target_ref_id)!;
-    return (
-      <EntityCard entityId={props.entityId}>
-        <EntityLink
-          to={`/workspace/time-plans/${props.timePlan.ref_id}/${props.activity.ref_id}`}
-        >
-          {bigPlan.name}
-          <BigPlanStatusTag status={bigPlan.status} />
-          <TimePlanActivityKindTag kind={props.activity.kind} />
-          <TimePlanActivityFeasabilityTag
-            feasability={props.activity.feasability}
-          />
-        </EntityLink>
-      </EntityCard>
-    );
-  } else {
-    return <></>;
-  }
-}
-
-
-export const CatchBoundary = makeCatchBoundary(
-  () =>
-    `Could not find time plan  #${useParams().id}`
-);
-
-export const ErrorBoundary = makeErrorBoundary(
-  () =>
-    `There was an error loading time plan activity #${useParams().id}. Please try again!`
 );

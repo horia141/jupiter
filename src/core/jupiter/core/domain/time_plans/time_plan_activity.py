@@ -41,6 +41,23 @@ class TimePlanActivity(LeafEntity):
 
     @staticmethod
     @create_entity_action
+    def new_activity_from_existing(
+        ctx: DomainContext,
+        time_plan_ref_id: EntityId,
+        existing_activity: "TimePlanActivity"
+    ) -> "TimePlanActivity":
+        return TimePlanActivity._create(
+            ctx,
+            name=existing_activity.name,
+            time_plan=ParentLink(time_plan_ref_id),
+            target=existing_activity.target,
+            target_ref_id=existing_activity.target_ref_id,
+            kind=existing_activity.kind,
+            feasability=existing_activity.feasability,
+        )
+
+    @staticmethod
+    @create_entity_action
     def new_activity_for_inbox_task(
         ctx: DomainContext,
         time_plan_ref_id: EntityId,
