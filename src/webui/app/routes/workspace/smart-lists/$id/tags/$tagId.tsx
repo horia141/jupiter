@@ -115,7 +115,7 @@ export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export default function SmartListTag() {
-  const { key } = useParams();
+  const { id, tagId } = useParams();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
@@ -125,10 +125,10 @@ export default function SmartListTag() {
 
   return (
     <LeafPanel
-      key={loaderData.smartListTag.ref_id}
+      key={`smart-list-${id}/tag-${tagId}`}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
-      returnLocation={`/workspace/smart-lists/${key}/tags`}
+      returnLocation={`/workspace/smart-lists/${id}/tags`}
     >
       <Card>
         <GlobalError actionResult={actionData} />
@@ -166,12 +166,12 @@ export default function SmartListTag() {
 }
 
 export const CatchBoundary = makeCatchBoundary(
-  () => `Could not find smart list tag #${useParams().key}:#${useParams().id}!`
+  () => `Could not find smart list tag #${useParams().id}:#${useParams().tagId}!`
 );
 
 export const ErrorBoundary = makeErrorBoundary(
   () =>
-    `There was an error loading smart list tag #${useParams().key}:#${
-      useParams().id
+    `There was an error loading smart list tag #${useParams().id}:#${
+      useParams().tagId
     }! Please try again!`
 );

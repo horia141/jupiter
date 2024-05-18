@@ -88,6 +88,7 @@ export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export default function NewMetricEntry() {
+  const {id} = useParams();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
@@ -96,7 +97,7 @@ export default function NewMetricEntry() {
 
   return (
     <LeafPanel
-      key={loaderData.metric.ref_id}
+      key={`metric-${id}/entries/new`}
       returnLocation={`/workspace/metrics/${loaderData.metric.ref_id}`}
     >
       <Card>

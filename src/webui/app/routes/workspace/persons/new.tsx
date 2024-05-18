@@ -153,7 +153,7 @@ export default function NewPerson() {
   }
 
   return (
-    <LeafPanel returnLocation="/workspace/persons">
+    <LeafPanel key={"persons/new"} returnLocation="/workspace/persons">
       <Card>
         <GlobalError actionResult={actionData} />
         <CardContent>

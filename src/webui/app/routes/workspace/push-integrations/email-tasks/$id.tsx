@@ -245,7 +245,7 @@ export default function EmailTask() {
 
   return (
     <LeafPanel
-      key={loaderData.emailTask.ref_id}
+      key={`email-tasks-${loaderData.emailTask.ref_id}`}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/push-integrations/email-tasks"

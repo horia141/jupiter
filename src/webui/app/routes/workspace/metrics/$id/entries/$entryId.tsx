@@ -131,7 +131,7 @@ export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export default function MetricEntry() {
-  const { id } = useParams();
+  const { id, entryId } = useParams();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
@@ -141,7 +141,7 @@ export default function MetricEntry() {
 
   return (
     <LeafPanel
-      key={loaderData.metricEntry.ref_id}
+      key={`metric-${id}/entry-${entryId}`}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation={`/workspace/metrics/${id}`}

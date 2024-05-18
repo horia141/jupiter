@@ -100,7 +100,9 @@ export default function SlackTasksSettings() {
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <LeafPanel returnLocation="/workspace/push-integrations/slack-tasks">
+    <LeafPanel 
+      key={"slack-tasks/settings"}
+      returnLocation="/workspace/push-integrations/slack-tasks">
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
         WorkspaceFeature.PROJECTS

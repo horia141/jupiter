@@ -325,7 +325,7 @@ export default function Person() {
 
   return (
     <LeafPanel
-      key={person.ref_id}
+      key={`person-${person.ref_id}`}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/persons"

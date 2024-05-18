@@ -157,7 +157,7 @@ export default function TimePlanAddFromCurrentTimePlans() {
 
   return (
     <LeafPanel
-      key={`time-plan-${id}:add-from-current-time-plans:${otherTimePlanId}`}
+      key={`time-plan-${id}/add-from-current-time-plans-${otherTimePlanId}`}
       returnLocation={`/workspace/time-plans/${id}`}
       initialExpansionState={LeafPanelExpansionState.LARGE}
     >

@@ -162,7 +162,7 @@ export default function WorkingMem() {
 
   return (
     <LeafPanel
-      key={loaderData.workingMem.ref_id}
+      key={`working-mem-${loaderData.workingMem.ref_id}`}
       showArchiveButton={
         aDateToDate(loaderData.workingMem.right_now) > today.minus({ days: 14 })
       }

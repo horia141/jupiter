@@ -160,7 +160,7 @@ export default function SmartListItem() {
 
   return (
     <LeafPanel
-      key={loaderData.item.ref_id}
+      key={`smart-list-${id}/item-${loaderData.item.ref_id}`}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation={`/workspace/smart-lists/${id}/items`}

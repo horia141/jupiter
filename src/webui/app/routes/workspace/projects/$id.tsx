@@ -198,7 +198,7 @@ export default function Project() {
 
   return (
     <LeafPanel
-      key={loaderData.project.ref_id}
+      key={`projects-${loaderData.project.ref_id}`}
       showArchiveButton={!isRootProject(loaderData.project)}
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/projects"

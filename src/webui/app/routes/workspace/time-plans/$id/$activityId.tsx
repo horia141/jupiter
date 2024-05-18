@@ -138,7 +138,7 @@ export async function action({ request, params }: ActionArgs) {
 }
 
 export default function TimePlanActivity() {
-  const { id } = useParams();
+  const { id, activityId } = useParams();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
@@ -203,7 +203,7 @@ export default function TimePlanActivity() {
 
   return (
     <LeafPanel
-      key={`time-plan-activity-${loaderData.timePlanActivity.ref_id}`}
+      key={`time-plan-${id}/activity-${activityId}`}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation={`/workspace/time-plans/${id}`}

@@ -81,7 +81,7 @@ export default function NewTimePlan() {
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <LeafPanel returnLocation="/workspace/time-plans">
+    <LeafPanel key={"time-plans"} returnLocation="/workspace/time-plans">
       <GlobalError actionResult={actionData} />
       <Card>
         <CardContent>

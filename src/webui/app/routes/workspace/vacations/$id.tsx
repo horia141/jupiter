@@ -142,7 +142,7 @@ export default function Vacation() {
 
   return (
     <LeafPanel
-      key={vacation.ref_id}
+      key={`vacation-${vacation.ref_id}`}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/vacations"

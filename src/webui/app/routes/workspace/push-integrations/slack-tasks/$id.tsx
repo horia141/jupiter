@@ -235,7 +235,7 @@ export default function SlackTask() {
 
   return (
     <LeafPanel
-      key={loaderData.slackTask.ref_id}
+      key={`slack-tasks/${loaderData.slackTask.ref_id}`}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/push-integrations/slack-tasks"
