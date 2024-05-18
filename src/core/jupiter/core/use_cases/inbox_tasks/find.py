@@ -124,7 +124,7 @@ class InboxTaskFindUseCase(
                 f"Sources {','.join(s.value for s in big_diff)} are not supported in this workspace"
             )
 
-        filter_status = [s for s in InboxTaskStatus if s.is_workable] if args.filter_just_workable else NoFilter()
+        filter_status: list[InboxTaskStatus] | NoFilter = InboxTaskStatus.all_workable_statuses() if args.filter_just_workable else NoFilter()
         filter_sources = workspace.infer_sources_for_enabled_features(
             args.filter_sources
         )

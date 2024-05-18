@@ -3,6 +3,7 @@ from collections import defaultdict
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
+from jupiter.core.domain.big_plans.big_plan_status import BigPlanStatus
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_collection import NoteCollection
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
@@ -39,6 +40,7 @@ class BigPlanFindArgs(UseCaseArgsBase):
     include_project: bool
     include_inbox_tasks: bool
     include_notes: bool
+    filter_just_workable: bool | None
     filter_ref_ids: list[EntityId] | None
     filter_project_ref_ids: list[EntityId] | None
 
@@ -80,6 +82,8 @@ class BigPlanFindUseCase(
             and args.filter_project_ref_ids is not None
         ):
             raise FeatureUnavailableError(WorkspaceFeature.PROJECTS)
+        
+        filter_status: list[BigPlanStatus] | NoFilter = BigPlanStatus.all_workable_statuses() if args.filter_just_workable else NoFilter()
 
         project_collection = await uow.get_for(ProjectCollection).load_by_parent(
             workspace.ref_id,
@@ -94,16 +98,19 @@ class BigPlanFindUseCase(
         else:
             project_by_ref_id = None
 
+
         inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             workspace.ref_id,
         )
         big_plan_collection = await uow.get_for(BigPlanCollection).load_by_parent(
             workspace.ref_id,
         )
+
         big_plans = await uow.get_for(BigPlan).find_all_generic(
             parent_ref_id=big_plan_collection.ref_id,
             allow_archived=args.allow_archived,
             ref_id=args.filter_ref_ids or NoFilter(),
+            status=filter_status,
             project_ref_id=args.filter_project_ref_ids or NoFilter(),
         )
 

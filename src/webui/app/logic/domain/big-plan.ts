@@ -2,6 +2,18 @@ import type { BigPlan } from "@jupiter/webapi-client";
 import { compareADate } from "./adate";
 import { compareBigPlanStatus } from "./big-plan-status";
 
+export interface BigPlanParent {
+  project?: Project;
+}
+
+export function bigPlanFindEntryToParent(
+  entry: BigPlanFindEntry
+): BigPlanParent {
+  return {
+    project: entry.project
+  };
+}
+
 export function sortBigPlansNaturally(
   bigPlans: Array<BigPlan>
 ): Array<BigPlan> {

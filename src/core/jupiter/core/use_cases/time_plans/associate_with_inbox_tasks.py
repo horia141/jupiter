@@ -9,7 +9,7 @@ from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.infra.generic_creator import generic_creator
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.time_plans.time_plan import TimePlan
-from jupiter.core.domain.time_plans.time_plan_activity import TimePlanActivity
+from jupiter.core.domain.time_plans.time_plan_activity import TimePlanActivity, TimePlanAlreadyAssociatedWithTarget
 from jupiter.core.domain.time_plans.time_plan_activity_feasability import (
     TimePlanActivityFeasability,
 )
@@ -76,7 +76,7 @@ class TimePlanAssociateWithInboxTasksUseCase(
         big_plan_ref_ids = [cast(EntityId, it.big_plan_ref_id) for it in inbox_tasks if it.source == InboxTaskSource.BIG_PLAN]
         big_plans = []
         if len(big_plan_ref_ids) > 0:
-            big_plan_collection = await uow.get_for(BigPlanCollection)
+            big_plan_collection = await uow.get_for(BigPlanCollection).load_by_parent(workspace.ref_id)
             big_plans = await uow.get_for(BigPlan).find_all(
                 parent_ref_id=big_plan_collection.ref_id,
                 allow_archived=False,

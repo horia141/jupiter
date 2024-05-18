@@ -8,6 +8,7 @@ import { EntityCard, EntityLink } from "./infra/entity-card";
 import { EntityStack } from "./infra/entity-stack";
 import { ProjectTag } from "./project-tag";
 import { BigPlan, BigPlanFindResultEntry, Project, WorkspaceFeature } from "@jupiter/webapi-client";
+import { BigPlanCard } from "./big-plan-card";
 
 interface BigPlanStackProps {
   topLevelInfo: TopLevelInfo;
@@ -29,41 +30,25 @@ export function BigPlanStack(props: BigPlanStackProps) {
       )}
 
       {props.bigPlans.map((entry) => (
-        <EntityCard
+        <BigPlanCard 
           key={`big-plan-${entry.ref_id}`}
-          entityId={`big-plan-${entry.ref_id}`}
+          topLevelInfo={props.topLevelInfo}
           allowSwipe
-          allowMarkDone
-          allowMarkNotDone
+          bigPlan={entry}
+          showOptions={{
+            showStatus: true,
+            showParent: true,
+            showActionableDate: true,
+            showDueDate: true,
+            showHandleMarkDone: true,
+            showHandleMarkNotDone: true
+          }}
+          parent={foogazi}
           onMarkDone={() => props.onCardMarkDone && props.onCardMarkDone(entry)}
           onMarkNotDone={() =>
             props.onCardMarkNotDone && props.onCardMarkNotDone(entry)
           }
-        >
-          <EntityLink to={`/workspace/big-plans/${entry.ref_id}`}>
-            <EntityNameComponent name={entry.name} />
-          </EntityLink>
-          <Divider />
-          <BigPlanStatusTag status={entry.status} />
-          {isWorkspaceFeatureAvailable(
-            props.topLevelInfo.workspace,
-            WorkspaceFeature.PROJECTS
-          ) &&
-            props.entriesByRefId && (
-              <ProjectTag
-                project={
-                  props.entriesByRefId.get(entry.ref_id)?.project as Project
-                }
-              />
-            )}
-
-          {entry.actionable_date && (
-            <ADateTag label="Actionable Date" date={entry.actionable_date} />
-          )}
-          {entry.due_date && (
-            <ADateTag label="Due Date" date={entry.due_date} />
-          )}
-        </EntityCard>
+        />
       ))}
     </EntityStack>
   );
