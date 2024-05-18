@@ -262,7 +262,7 @@ export default function BigPlan() {
 
   return (
     <LeafPanel
-      key={loaderData.bigPlan.ref_id}
+      key={`big-plan-${loaderData.bigPlan.ref_id}`}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation={"/workspace/big-plans"}

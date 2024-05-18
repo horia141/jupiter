@@ -205,7 +205,7 @@ export default function Journal() {
 
   return (
     <LeafPanel
-      key={loaderData.journal.ref_id}
+      key={`journal-${loaderData.journal.ref_id}`}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/journals"

@@ -381,6 +381,7 @@ export default function InboxTasks() {
 
   return (
     <TrunkPanel
+    key={"inbox-tasks"}
       createLocation="/workspace/inbox-tasks/new"
       extraControls={extraControls}
       returnLocation="/workspace"

@@ -189,7 +189,7 @@ export default function TimePlanView() {
 
   return (
     <BranchPanel
-      key={loaderData.timePlan.ref_id}
+      key={`time-plan-${loaderData.timePlan.ref_id}`}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/time-plans"

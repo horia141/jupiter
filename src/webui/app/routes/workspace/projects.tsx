@@ -109,6 +109,7 @@ export default function Projects() {
 
   return (
     <TrunkPanel
+    key={"projects"}
       createLocation="/workspace/projects/new"
       returnLocation="/workspace"
     >

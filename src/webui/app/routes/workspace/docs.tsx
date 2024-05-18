@@ -61,6 +61,7 @@ export default function Docs() {
 
   return (
     <TrunkPanel
+    key={"docs"}
       createLocation="/workspace/docs/new"
       returnLocation="/workspace"
     >

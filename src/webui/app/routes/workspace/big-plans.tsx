@@ -190,6 +190,7 @@ export default function BigPlans() {
 
   return (
     <TrunkPanel
+      key={"big-plans"}
       createLocation="/workspace/big-plans/new"
       extraControls={extraControls}
       returnLocation="/workspace"

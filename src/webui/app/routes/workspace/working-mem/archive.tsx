@@ -78,7 +78,10 @@ export default function WorkingMemArchive({ request }: LoaderArgs) {
   const today = DateTime.now();
 
   return (
-    <BranchPanel returnLocation="/workspace/working-mem">
+    <BranchPanel 
+
+    key={`working-mem/archive}`}
+    returnLocation="/workspace/working-mem">
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
         <EntityStack>
           {sortedWorkingMems.map((workingMem) => {

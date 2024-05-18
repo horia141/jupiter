@@ -100,7 +100,7 @@ export default function SmartListViewItems() {
 
   return (
     <BranchPanel
-      key={`${loaderData.smartList.ref_id}/items`}
+    key={`smart-list-${loaderData.smartList.ref_id}/items`}
       createLocation={`/workspace/smart-lists/${loaderData.smartList.ref_id}/items/new`}
       extraControls={[
         <Button

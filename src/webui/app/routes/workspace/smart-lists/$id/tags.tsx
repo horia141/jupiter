@@ -94,7 +94,7 @@ export default function SmartListViewTags() {
 
   return (
     <BranchPanel
-      key={`${loaderData.smartList.ref_id}/tags`}
+      key={`smart-list-${loaderData.smartList.ref_id}/tags`}
       createLocation={`/workspace/smart-lists/${loaderData.smartList.ref_id}/tags/new`}
       extraControls={[
         <Button

@@ -123,7 +123,7 @@ export default function Account() {
   const allTimezonesAsOptions = (Intl as any).supportedValuesOf("timeZone");
 
   return (
-    <TrunkPanel returnLocation="/workspace">
+    <TrunkPanel key={"account"} returnLocation="/workspace">
       <ToolPanel>
         <Stack useFlexGap gap={2}>
           <Card>

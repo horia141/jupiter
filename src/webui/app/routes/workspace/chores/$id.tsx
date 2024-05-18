@@ -316,7 +316,7 @@ export default function Chore() {
 
   return (
     <LeafPanel
-      key={loaderData.chore.ref_id}
+      key={`chore-{loaderData.chore.ref_id}`}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/chores"

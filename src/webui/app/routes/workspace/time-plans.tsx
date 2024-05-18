@@ -67,6 +67,7 @@ export default function TimePlans() {
 
   return (
     <TrunkPanel
+    key={"time-plans"}
       createLocation="/workspace/time-plans/new"
       returnLocation="/workspace"
     >

@@ -75,6 +75,7 @@ export default function EmailTasks() {
 
   return (
     <TrunkPanel
+    key={"email-tasks"}
       extraControls={[
         <>
           {isWorkspaceFeatureAvailable(

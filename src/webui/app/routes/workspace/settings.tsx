@@ -115,7 +115,8 @@ export default function Settings() {
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <TrunkPanel returnLocation="/workspace">
+    <TrunkPanel 
+    key={"settings"} returnLocation="/workspace">
       <ToolPanel>
         <Stack useFlexGap gap={2}>
           <Card>
