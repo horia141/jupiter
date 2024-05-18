@@ -66,3 +66,8 @@ class InboxTaskStatus(EnumValue):
     def all_workable_statuses() -> list["InboxTaskStatus"]:
         """All workable statuses."""
         return [s for s in InboxTaskStatus if s.is_workable]
+    
+    @staticmethod
+    def all_completed_statuses() -> list["InboxTaskStatus"]:
+        """All completed statuses."""
+        return [s for s in InboxTaskStatus if s.is_completed]

@@ -65,3 +65,8 @@ class BigPlanStatus(EnumValue):
     def all_workable_statuses() -> list["BigPlanStatus"]:
         """All workable statuses."""
         return [s for s in BigPlanStatus if s.is_workable]
+
+    @staticmethod
+    def all_completed_statuses() -> list["BigPlanStatus"]:
+        """All completed statuses."""
+        return [s for s in BigPlanStatus if s.is_completed]

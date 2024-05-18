@@ -38,7 +38,9 @@ import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
+import { BigPlanStack } from "~/components/big-plan-stack";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
+import { InboxTaskStack } from "~/components/inbox-task-stack";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
@@ -98,6 +100,8 @@ export async function loader({ request, params }: LoaderArgs) {
       activities: result.activities,
       targetInboxTasks: result.target_inbox_tasks,
       targetBigPlans: result.target_big_plans,
+      completedNontargetInboxTasks: result.completed_nontarget_inbox_tasks,
+      completedNontargetBigPlans: result.completed_nontarget_big_plans,
       subPeriodTimePlans: result.sub_period_time_plans,
     });
   } catch (error) {
@@ -351,6 +355,29 @@ export default function TimePlanView() {
         ))}
       </EntityStack>
 
+      {loaderData.completedNontargetInboxTasks.length > 0 && 
+      <InboxTaskStack
+        topLevelInfo={topLevelInfo}
+        showLabel
+        label="Untracked Inbox Tasks completed in this period"
+        showOptions={{
+          showStatus: true,
+          showEisen: true,
+          showDifficulty: true
+        }}
+        inboxTasks={loaderData.completedNontargetInboxTasks} />
+      }
+
+      {loaderData.completedNontargetBigPlans && loaderData.completedNontargetBigPlans.length > 0 &&
+      <BigPlanStack 
+        topLevelInfo={topLevelInfo}
+        showLabel
+        label="Untracked Inbox Tasks completed in this period"
+        bigPlans={loaderData.completedNontargetBigPlans}
+        />}
+
+      {loaderData.sortedSubTimePlans.length > 0 &&
+      <>
       <Typography variant="h5" sx={{ marginBottom: "1rem" }}>
         Other Time Plans in this Period
       </Typography>
@@ -358,7 +385,7 @@ export default function TimePlanView() {
       <TimePlanStack
         topLevelInfo={topLevelInfo}
         timePlans={sortedSubTimePlans}
-      />
+      /></>}
 
       <AnimatePresence mode="wait" initial={false}>
         <Outlet />
