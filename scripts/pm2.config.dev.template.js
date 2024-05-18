@@ -3,8 +3,8 @@ module.exports = {
       name   : "${NAMESPACE}:webapi",
       cwd: "src/webapi",
       interpreter: "none",
-      script: "python",
-      args: "-m watchfiles jupiter.webapi.jupiter.sync_main . ../core",
+      script: "script",
+      args: "$SCRIPT_ARGS python -m watchfiles jupiter.webapi.jupiter.sync_main . ../core",
       log_file: "$WEBAPI_LOG_FILE",
       env: {
         PY_COLORS: "1",
@@ -15,8 +15,8 @@ module.exports = {
         name: "${NAMESPACE}:webui",
         cwd: "src/webui",
         interpreter: "none",
-        script: "npm",
-        args: "run dev",
+        script: "script",
+        args: "$SCRIPT_ARGS npm run dev",
         log_file: "$WEBUI_LOG_FILE",
         env: {
             LOCAL_WEBAPI_SERVER_URL: "$WEBAPI_SERVER_URL",

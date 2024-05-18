@@ -18,6 +18,13 @@ run_jupiter() {
     local should_monit=$5
     local in_ci=$6
 
+    export local SCRIPT_ARGS=
+    local platform=$(uname -s | awk '{print tolower($0)}')
+    if [[ "${platform}" == "darwin" ]]
+    then
+        SCRIPT_ARGS="-qF"
+    fi
+
     mkdir -p "$RUN_ROOT/$NAMESPACE"
 
     if [[ "$in_ci" == "dev" ]]; then
