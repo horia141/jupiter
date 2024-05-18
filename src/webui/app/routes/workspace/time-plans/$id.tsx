@@ -410,3 +410,14 @@ function ActivityCard(props: ActivityCardProps) {
     return <></>;
   }
 }
+
+
+export const CatchBoundary = makeCatchBoundary(
+  () =>
+    `Could not find time plan  #${useParams().id}`
+);
+
+export const ErrorBoundary = makeErrorBoundary(
+  () =>
+    `There was an error loading time plan activity #${useParams().id}. Please try again!`
+);

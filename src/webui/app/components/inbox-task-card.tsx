@@ -72,10 +72,13 @@ export interface InboxTaskCardProps {
   topLevelInfo: TopLevelInfo;
   compact?: boolean;
   allowSwipe?: boolean;
+  allowSelect?: boolean;
+  selected?: boolean;
   showOptions: InboxTaskShowOptions;
   inboxTask: InboxTask;
   optimisticState?: InboxTaskOptimisticState;
   parent?: InboxTaskParent;
+  onClick?: (it: InboxTask) => void;
   onMarkDone?: (it: InboxTask) => void;
   onMarkNotDone?: (it: InboxTask) => void;
 }
@@ -157,7 +160,15 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
       exit={{ opacity: 0, height: "0px", marginTop: "0px" }}
       transition={{ duration: 1 }}
     >
-      <StyledCard enabled={inputsEnabled.toString()}>
+      <StyledCard 
+          enabled={((props.allowSelect && !props.selected) && inputsEnabled).toString()}
+          onClick={(e) => {
+            if (props.onClick) {
+              e.preventDefault();
+              props.onClick(props.inboxTask);
+            }
+          }}
+          >
         <OverdueWarning
           status={props.inboxTask.status}
           dueDate={props.inboxTask.due_date}

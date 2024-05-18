@@ -17,6 +17,7 @@ from jupiter.core.domain.habits.habit_collection import HabitCollection
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
+from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.core.domain.metrics.metric import Metric
 from jupiter.core.domain.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.persons.person import Person
@@ -57,7 +58,8 @@ class InboxTaskFindArgs(UseCaseArgsBase):
 
     allow_archived: bool
     include_notes: bool
-    filter_ref_ids: list[EntityId] | None
+    filter_just_workable: bool | None
+    filter_ref_ids: list[EntityId] | None 
     filter_project_ref_ids: list[EntityId] | None
     filter_sources: list[InboxTaskSource] | None
 
@@ -122,6 +124,7 @@ class InboxTaskFindUseCase(
                 f"Sources {','.join(s.value for s in big_diff)} are not supported in this workspace"
             )
 
+        filter_status = [s for s in InboxTaskStatus if s.is_workable] if args.filter_just_workable else NoFilter()
         filter_sources = workspace.infer_sources_for_enabled_features(
             args.filter_sources
         )
@@ -170,6 +173,7 @@ class InboxTaskFindUseCase(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=args.allow_archived,
             ref_id=args.filter_ref_ids or NoFilter(),
+            status=filter_status,
             source=filter_sources,
             project_ref_id=args.filter_project_ref_ids or NoFilter(),
         )

@@ -133,6 +133,12 @@ def upgrade() -> None:
     )
     op.execute(
         """
+        CREATE UNIQUE INDEX ix_time_plan_activity_time_plan_ref_id_target_target_ref_id ON time_plan_activity (time_plan_ref_id, target, target_ref_id)
+        WHERE archived=0;
+    """
+    )
+    op.execute(
+        """
         CREATE TABLE time_plan_activity_event (
             owner_ref_id INTEGER NOT NULL,
             timestamp DATETIME NOT NULL,

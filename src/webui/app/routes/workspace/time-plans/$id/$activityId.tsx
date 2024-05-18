@@ -308,7 +308,7 @@ export default function TimePlanActivity() {
 export const CatchBoundary = makeCatchBoundary(
   () =>
     `Could not find time plan activity #${useParams().id}:#${
-      useParams().itemId
+      useParams().activityId
     }!`
 );
 

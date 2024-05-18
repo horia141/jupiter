@@ -6,6 +6,7 @@ from jupiter.core.domain.time_plans.time_plan import (
     TimePlanExistsForDatePeriodCombinationError,
     TimePlanRepository,
 )
+from jupiter.core.domain.time_plans.time_plan_activity import TimePlanActivity, TimePlanActivityRespository, TimePlanAlreadyAssociatedWithTarget
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.realm import RealmCodecRegistry
 from jupiter.core.repository.sqlite.infra.repository import (
@@ -67,3 +68,23 @@ class SqliteTimePlanRepository(
 
         results = await self._connection.execute(query_stmt)
         return [self._row_to_entity(row) for row in results]
+
+
+class SqliteTimePlanActivityRepository(
+    SqliteLeafEntityRepository[TimePlanActivity], TimePlanActivityRespository
+):
+    """A repository for time plan activities."""
+
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        connection: AsyncConnection,
+        metadata: MetaData,
+    ) -> None:
+        """Constructor."""
+        super().__init__(
+            realm_codec_registry,
+            connection,
+            metadata,
+            already_exists_err_cls=TimePlanAlreadyAssociatedWithTarget,
+        )

@@ -22,6 +22,11 @@ class InboxTaskStatus(EnumValue):
     DONE = "done"
 
     @property
+    def is_workable(self) -> bool:
+        """Whether the status means the task is not completed."""
+        return not self.is_completed
+
+    @property
     def is_accepted(self) -> bool:
         """Whether the status means work has been accepted on the inbox task."""
         return self in (InboxTaskStatus.ACCEPTED, InboxTaskStatus.RECURRING)

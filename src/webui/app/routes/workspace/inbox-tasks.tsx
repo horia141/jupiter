@@ -2074,7 +2074,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
         {acceptedTasks.length === 0 && (
           <NoTasksCard
             parent="inbox task"
-            parentNewLocations="/workspace/inbox-tasks/new"
+            parentNewLocation ="/workspace/inbox-tasks/new"
           />
         )}
         <InboxTaskStack
