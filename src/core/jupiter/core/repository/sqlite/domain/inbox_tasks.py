@@ -142,7 +142,7 @@ class SqliteInboxTaskRepository(
         end_completed_time = filter_end_completed_date.to_timestamp_at_end_of_day()
 
         query_stmt = query_stmt.where(
-            self._table.c.status.in_(InboxTaskStatus.all_completed_statuses())
+            self._table.c.status.in_(s.value for s in InboxTaskStatus.all_completed_statuses())
         ).where(
             self._table.c.completed_time.is_not(None)
         ).where(

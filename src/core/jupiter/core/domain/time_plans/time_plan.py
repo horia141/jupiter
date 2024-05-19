@@ -55,7 +55,7 @@ class TimePlan(LeafEntity):
             ctx,
             name=TimePlan.build_name(right_now, period),
             time_plan_domain=ParentLink(time_plan_domain_ref_id),
-            source=TimePlanSource.RECURRING,
+            source=TimePlanSource.USER,
             right_now=right_now,
             period=period,
             timeline=infer_timeline(period, right_now.to_timestamp_at_end_of_day()),

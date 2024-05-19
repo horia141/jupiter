@@ -117,7 +117,7 @@ class TimePlanActivity(LeafEntity):
 
     @staticmethod
     def build_name(target: TimePlanActivityTarget, entity_id: EntityId) -> EntityName:
-        return EntityName(f"Work on {target} {entity_id}")
+        return EntityName(f"Work on {str(target.value)} {entity_id}")
 
 
 class TimePlanAlreadyAssociatedWithTargetError(EntityAlreadyExistsError):

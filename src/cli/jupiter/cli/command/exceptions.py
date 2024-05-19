@@ -1,6 +1,9 @@
 """Specific exception handling."""
 import sys
 
+from jupiter.core.domain.journals.journal import JournalExistsForDatePeriodCombinationError
+from jupiter.core.domain.time_plans.time_plan import TimePlanExistsForDatePeriodCombinationError
+
 from jupiter.cli.command.command import CliApp, CliExceptionHandler
 from jupiter.cli.session_storage import SessionInfoNotFoundError
 from jupiter.core.domain.auth.auth_token import (
@@ -120,6 +123,28 @@ class ProjectInSignificantUseHandler(CliExceptionHandler[ProjectInSignificantUse
         """Handle project in significant use errors."""
         print(f"The selected project is still being used. Reason: {exception}")
         print("Please select a backup project via --backup-project-id")
+        sys.exit(1)
+
+
+class TimePlanExistsForDatePeriodCombinationHandler(CliExceptionHandler[TimePlanExistsForDatePeriodCombinationError]):
+    """Handle time plans already existing."""
+
+    def handle(
+        self, app: CliApp, console: Console, exception: TimePlanExistsForDatePeriodCombinationError
+    ) -> None:
+        """Handle time plans already existing."""
+        print(f"A time plan for that particular day and period already exists")
+        sys.exit(1)
+
+
+class JournalExistsForDatePeriodCombinationHandler(CliExceptionHandler[JournalExistsForDatePeriodCombinationError]):
+    """Handle journal already existing."""
+
+    def handle(
+        self, app: CliApp, console: Console, exception: JournalExistsForDatePeriodCombinationError
+    ) -> None:
+        """Handle journal already existing."""
+        print(f"A journal for that particular day and period already exists")
         sys.exit(1)
 
 
