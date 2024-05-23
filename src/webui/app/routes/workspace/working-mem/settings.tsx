@@ -123,7 +123,10 @@ export default function MetricsSettings() {
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <LeafPanel returnLocation="/workspace/working-mem">
+    <LeafPanel
+      key={"working-mem/settings"}
+      returnLocation="/workspace/working-mem"
+    >
       <Card>
         <GlobalError actionResult={actionData} />
 

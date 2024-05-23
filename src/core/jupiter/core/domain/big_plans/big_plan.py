@@ -1,5 +1,8 @@
 """A big plan."""
 
+import abc
+from typing import Iterable
+
 from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.core.domain.big_plans.big_plan_status import BigPlanStatus
 from jupiter.core.domain.core.adate import ADate
@@ -20,6 +23,7 @@ from jupiter.core.framework.entity import (
     entity,
     update_entity_action,
 )
+from jupiter.core.framework.repository import LeafEntityRepository
 from jupiter.core.framework.update_action import UpdateAction
 
 
@@ -146,3 +150,18 @@ class BigPlan(LeafEntity):
             actionable_date=new_actionable_date,
             due_date=new_due_date,
         )
+
+
+class BigPlanRepository(LeafEntityRepository[BigPlan], abc.ABC):
+    """A repository of big plans."""
+
+    @abc.abstractmethod
+    async def find_completed_in_range(
+        self,
+        parent_ref_id: EntityId,
+        allow_archived: bool,
+        filter_start_completed_date: ADate,
+        filter_end_completed_date: ADate,
+        filter_exclude_ref_ids: Iterable[EntityId] | None = None,
+    ) -> list[BigPlan]:
+        """Find all completed big plans in a time range."""

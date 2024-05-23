@@ -1,9 +1,4 @@
-import type {
-  BigPlan,
-  BigPlanFindResultEntry,
-  Project,
-  ProjectSummary,
-} from "@jupiter/webapi-client";
+import type { BigPlan } from "@jupiter/webapi-client";
 import { BigPlanStatus, WorkspaceFeature } from "@jupiter/webapi-client";
 import ViewListIcon from "@mui/icons-material/ViewList";
 import ViewTimelineIcon from "@mui/icons-material/ViewTimeline";
@@ -11,9 +6,7 @@ import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Link, Outlet, useFetcher } from "@remix-run/react";
-import { ADateTag } from "~/components/adate-tag";
 import { BigPlanStatusTag } from "~/components/big-plan-status-tag";
-import { ProjectTag } from "~/components/project-tag";
 
 import {
   Box,
@@ -37,17 +30,19 @@ import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";
 import { useContext, useState } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
-import {
-  EntityNameComponent,
-  EntityNameOneLineComponent,
-} from "~/components/entity-name";
-import { EntityCard, EntityLink } from "~/components/infra/entity-card";
+import { BigPlanStack } from "~/components/big-plan-stack";
+import { EntityNameOneLineComponent } from "~/components/entity-name";
+import { EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import { aDateToDate } from "~/logic/domain/adate";
-import { sortBigPlansNaturally } from "~/logic/domain/big-plan";
+import type { BigPlanParent } from "~/logic/domain/big-plan";
+import {
+  bigPlanFindEntryToParent,
+  sortBigPlansNaturally,
+} from "~/logic/domain/big-plan";
 import {
   computeProjectHierarchicalNameFromRoot,
   sortProjectsByTreeOrder,
@@ -83,7 +78,7 @@ export async function loader({ request }: LoaderArgs) {
   });
   return json({
     bigPlans: response.entries,
-    allProjects: summaryResponse.projects as Array<ProjectSummary>,
+    allProjects: summaryResponse.projects || undefined,
   });
 }
 
@@ -105,9 +100,9 @@ export default function BigPlans() {
   const sortedBigPlans = sortBigPlansNaturally(
     loaderData.bigPlans.map((b) => b.big_plan)
   );
-  const entriesByRefId = new Map<string, BigPlanFindResultEntry>();
+  const entriesByRefId = new Map<string, BigPlanParent>();
   for (const entry of loaderData.bigPlans) {
-    entriesByRefId.set(entry.big_plan.ref_id, entry);
+    entriesByRefId.set(entry.big_plan.ref_id, bigPlanFindEntryToParent(entry));
   }
 
   const topLevelInfo = useContext(TopLevelInfoContext);
@@ -188,13 +183,14 @@ export default function BigPlans() {
     ];
   }
 
-  const sortedProjects = sortProjectsByTreeOrder(loaderData.allProjects);
+  const sortedProjects = sortProjectsByTreeOrder(loaderData.allProjects || []);
   const allProjectsByRefId = new Map(
-    loaderData.allProjects.map((p) => [p.ref_id, p])
+    loaderData.allProjects?.map((p) => [p.ref_id, p])
   );
 
   return (
     <TrunkPanel
+      key={"big-plans"}
       createLocation="/workspace/big-plans/new"
       extraControls={extraControls}
       returnLocation="/workspace"
@@ -255,8 +251,7 @@ export default function BigPlans() {
               {sortedProjects.map((p) => {
                 const theBigPlans = sortedBigPlans.filter(
                   (se) =>
-                    entriesByRefId.get(se.ref_id)?.big_plan.project_ref_id ===
-                    p.ref_id
+                    entriesByRefId.get(se.ref_id)?.project?.ref_id === p.ref_id
                 );
 
                 if (theBigPlans.length === 0) {
@@ -495,7 +490,7 @@ const TimelineLink = styled(Link)<TimelineLinkProps>(
 interface ListProps {
   topLevelInfo: TopLevelInfo;
   bigPlans: Array<BigPlan>;
-  entriesByRefId: Map<string, BigPlanFindResultEntry>;
+  entriesByRefId: Map<string, BigPlanParent>;
   onArchiveBigPlan: (bigPlan: BigPlan) => void;
 }
 
@@ -506,38 +501,12 @@ function List({
   onArchiveBigPlan,
 }: ListProps) {
   return (
-    <EntityStack>
-      {bigPlans.map((entry) => (
-        <EntityCard
-          key={`big-plan-${entry.ref_id}`}
-          entityId={`big-plan-${entry.ref_id}`}
-          allowSwipe
-          allowMarkNotDone
-          onMarkNotDone={() => onArchiveBigPlan(entry)}
-        >
-          <EntityLink to={`/workspace/big-plans/${entry.ref_id}`}>
-            <EntityNameComponent name={entry.name} />
-          </EntityLink>
-          <Divider />
-          <BigPlanStatusTag status={entry.status} />
-          {isWorkspaceFeatureAvailable(
-            topLevelInfo.workspace,
-            WorkspaceFeature.PROJECTS
-          ) && (
-            <ProjectTag
-              project={entriesByRefId.get(entry.ref_id)?.project as Project}
-            />
-          )}
-
-          {entry.actionable_date && (
-            <ADateTag label="Actionable Date" date={entry.actionable_date} />
-          )}
-          {entry.due_date && (
-            <ADateTag label="Due Date" date={entry.due_date} />
-          )}
-        </EntityCard>
-      ))}
-    </EntityStack>
+    <BigPlanStack
+      topLevelInfo={topLevelInfo}
+      bigPlans={bigPlans}
+      entriesByRefId={entriesByRefId}
+      onCardMarkNotDone={onArchiveBigPlan}
+    />
   );
 }
 

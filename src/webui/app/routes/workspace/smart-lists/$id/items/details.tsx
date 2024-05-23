@@ -145,7 +145,7 @@ export default function SmartListDetails() {
 
   return (
     <LeafPanel
-      key={loaderData.smartList.ref_id}
+      key={`smart-list-${id}/details`}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation={`/workspace/smart-lists/${id}/items`}
@@ -221,12 +221,12 @@ export default function SmartListDetails() {
 }
 
 export const CatchBoundary = makeCatchBoundary(
-  () => `Could not find smart list #${useParams().key}!`
+  () => `Could not find smart list #${useParams().id}!`
 );
 
 export const ErrorBoundary = makeErrorBoundary(
   () =>
     `There was an error loading smart list #${
-      useParams().key
+      useParams().id
     }! Please try again!`
 );

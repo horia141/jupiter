@@ -262,7 +262,7 @@ export default function BigPlan() {
 
   return (
     <LeafPanel
-      key={loaderData.bigPlan.ref_id}
+      key={`big-plan-${loaderData.bigPlan.ref_id}`}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation={"/workspace/big-plans"}
@@ -433,7 +433,7 @@ export default function BigPlan() {
         <Button
           variant="contained"
           disabled={loaderData.bigPlan.archived}
-          to={`/workspace/inbox-tasks/new?reason=for-big-plan&bigPlanRefId=${loaderData.bigPlan.ref_id}`}
+          to={`/workspace/inbox-tasks/new?bigPlanReason=for-big-plan&bigPlanRefId=${loaderData.bigPlan.ref_id}`}
           component={Link}
         >
           New Task

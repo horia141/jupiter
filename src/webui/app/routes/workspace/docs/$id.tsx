@@ -100,7 +100,7 @@ export default function Doc() {
 
   return (
     <LeafPanel
-      key={loaderData.doc.ref_id}
+      key={`doc-${loaderData.doc.ref_id}`}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/docs"

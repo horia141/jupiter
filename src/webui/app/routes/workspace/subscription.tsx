@@ -12,7 +12,7 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 
 export default function Subscription() {
   return (
-    <TrunkPanel returnLocation="/workspace">
+    <TrunkPanel key={"subscription"} returnLocation="/workspace">
       <div dangerouslySetInnerHTML={stripeEmbed()} />
     </TrunkPanel>
   );

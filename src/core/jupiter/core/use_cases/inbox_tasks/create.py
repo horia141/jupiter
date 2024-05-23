@@ -12,9 +12,16 @@ from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
+from jupiter.core.domain.infra.generic_creator import generic_creator
 from jupiter.core.domain.projects.project import Project, ProjectRepository
 from jupiter.core.domain.projects.project_collection import ProjectCollection
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
+from jupiter.core.domain.time_plans.time_plan import TimePlan
+from jupiter.core.domain.time_plans.time_plan_activity import TimePlanActivity
+from jupiter.core.domain.time_plans.time_plan_activity_feasability import (
+    TimePlanActivityFeasability,
+)
+from jupiter.core.domain.time_plans.time_plan_activity_kind import TimePlanActivityKind
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     ProgressReporter,
@@ -37,6 +44,7 @@ class InboxTaskCreateArgs(UseCaseArgsBase):
     """InboxTaskCreate args."""
 
     name: InboxTaskName
+    time_plan_ref_id: EntityId | None
     project_ref_id: EntityId | None
     big_plan_ref_id: EntityId | None
     eisen: Eisen | None
@@ -50,6 +58,7 @@ class InboxTaskCreateResult(UseCaseResultBase):
     """InboxTaskCreate result."""
 
     new_inbox_task: InboxTask
+    new_time_plan_activity: TimePlanActivity | None
 
 
 @mutation_use_case(WorkspaceFeature.INBOX_TASKS)
@@ -69,6 +78,11 @@ class InboxTaskCreateUseCase(
         workspace = context.workspace
 
         if (
+            not workspace.is_feature_available(WorkspaceFeature.TIME_PLANS)
+            and args.time_plan_ref_id is not None
+        ):
+            raise FeatureUnavailableError(WorkspaceFeature.TIME_PLANS)
+        if (
             not workspace.is_feature_available(WorkspaceFeature.PROJECTS)
             and args.project_ref_id is not None
         ):
@@ -79,15 +93,15 @@ class InboxTaskCreateUseCase(
         ):
             raise FeatureUnavailableError(WorkspaceFeature.BIG_PLANS)
 
+        time_plan: TimePlan | None = None
+        if args.time_plan_ref_id:
+            time_plan = await uow.get_for(TimePlan).load_by_id(args.time_plan_ref_id)
+
         big_plan: BigPlan | None = None
         if args.big_plan_ref_id:
             big_plan = await uow.get_for(BigPlan).load_by_id(
                 args.big_plan_ref_id,
             )
-
-        inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
-            workspace.ref_id,
-        )
 
         if args.project_ref_id is None:
             project_collection = await uow.get_for(ProjectCollection).load_by_parent(
@@ -100,6 +114,10 @@ class InboxTaskCreateUseCase(
         else:
             await uow.get_for(Project).load_by_id(args.project_ref_id)
             project_ref_id = args.project_ref_id
+
+        inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
+            workspace.ref_id,
+        )
 
         new_inbox_task = InboxTask.new_inbox_task(
             ctx=context.domain_context,
@@ -117,7 +135,21 @@ class InboxTaskCreateUseCase(
             big_plan_due_date=big_plan.due_date if big_plan else None,
         )
 
-        new_inbox_task = await uow.get_for(InboxTask).create(new_inbox_task)
-        await progress_reporter.mark_created(new_inbox_task)
+        new_inbox_task = await generic_creator(uow, progress_reporter, new_inbox_task)
 
-        return InboxTaskCreateResult(new_inbox_task=new_inbox_task)
+        new_time_plan_activity = None
+        if time_plan:
+            new_time_plan_activity = TimePlanActivity.new_activity_for_inbox_task(
+                context.domain_context,
+                time_plan_ref_id=time_plan.ref_id,
+                inbox_task_ref_id=new_inbox_task.ref_id,
+                kind=TimePlanActivityKind.FINISH,
+                feasability=TimePlanActivityFeasability.MUST_DO,
+            )
+            new_time_plan_activity = await generic_creator(
+                uow, progress_reporter, new_time_plan_activity
+            )
+
+        return InboxTaskCreateResult(
+            new_inbox_task=new_inbox_task, new_time_plan_activity=new_time_plan_activity
+        )

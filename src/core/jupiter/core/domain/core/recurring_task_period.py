@@ -16,6 +16,31 @@ class RecurringTaskPeriod(EnumValue):
     YEARLY = "yearly"
 
     @property
+    def all_higher_periods(self) -> list["RecurringTaskPeriod"]:
+        """All higher periods."""
+        if self == RecurringTaskPeriod.DAILY:
+            return [
+                RecurringTaskPeriod.WEEKLY,
+                RecurringTaskPeriod.MONTHLY,
+                RecurringTaskPeriod.QUARTERLY,
+                RecurringTaskPeriod.YEARLY,
+            ]
+        elif self == RecurringTaskPeriod.WEEKLY:
+            return [
+                RecurringTaskPeriod.MONTHLY,
+                RecurringTaskPeriod.QUARTERLY,
+                RecurringTaskPeriod.YEARLY,
+            ]
+        elif self == RecurringTaskPeriod.MONTHLY:
+            return [RecurringTaskPeriod.QUARTERLY, RecurringTaskPeriod.YEARLY]
+        elif self == RecurringTaskPeriod.QUARTERLY:
+            return [
+                RecurringTaskPeriod.YEARLY,
+            ]
+        elif self == RecurringTaskPeriod.YEARLY:
+            return []
+
+    @property
     def all_smaller_periods(self) -> list["RecurringTaskPeriod"]:
         """All smaller periods."""
         if self == RecurringTaskPeriod.DAILY:

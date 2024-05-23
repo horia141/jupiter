@@ -100,7 +100,7 @@ export default function NewProject() {
   }));
 
   return (
-    <LeafPanel returnLocation="/workspace/projects">
+    <LeafPanel key={"projects/new"} returnLocation="/workspace/projects">
       <Card>
         <GlobalError actionResult={actionData} />
         <CardContent>

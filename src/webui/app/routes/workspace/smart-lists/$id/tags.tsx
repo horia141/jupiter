@@ -94,7 +94,7 @@ export default function SmartListViewTags() {
 
   return (
     <BranchPanel
-      key={`${loaderData.smartList.ref_id}/tags`}
+      key={`smart-list-${loaderData.smartList.ref_id}/tags`}
       createLocation={`/workspace/smart-lists/${loaderData.smartList.ref_id}/tags/new`}
       extraControls={[
         <Button
@@ -152,12 +152,12 @@ export default function SmartListViewTags() {
 }
 
 export const CatchBoundary = makeCatchBoundary(
-  () => `Could not find smart list #${useParams().key}!`
+  () => `Could not find smart list #${useParams().id}!`
 );
 
 export const ErrorBoundary = makeErrorBoundary(
   () =>
     `There was an error loading smart list #${
-      useParams().key
+      useParams().id
     }! Please try again!`
 );

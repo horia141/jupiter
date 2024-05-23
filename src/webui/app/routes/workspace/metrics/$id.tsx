@@ -94,7 +94,7 @@ export default function Metric() {
 
   return (
     <BranchPanel
-      key={loaderData.metric.ref_id}
+      key={`metric-${loaderData.metric.ref_id}`}
       createLocation={`/workspace/metrics/${loaderData.metric.ref_id}/entries/new`}
       extraControls={[
         <Button
@@ -143,12 +143,12 @@ export default function Metric() {
 }
 
 export const CatchBoundary = makeCatchBoundary(
-  () => `Could not find metric #${useParams().key}!`
+  () => `Could not find metric #${useParams().id}!`
 );
 
 export const ErrorBoundary = makeErrorBoundary(
   () =>
-    `There was an error loading metric #${useParams().key}! Please try again!`
+    `There was an error loading metric #${useParams().id}! Please try again!`
 );
 
 interface MetricGraphProps {

@@ -27,6 +27,8 @@ export function workspaceFeatureName(feature: WorkspaceFeature): string {
       return "Inbox Tasks";
     case WorkspaceFeature.WORKING_MEM:
       return "Working Mem";
+    case WorkspaceFeature.TIME_PLANS:
+      return "Time Plans";
     case WorkspaceFeature.HABITS:
       return "Habits";
     case WorkspaceFeature.CHORES:
@@ -62,6 +64,8 @@ export function workspaceFeatureToDocsHelpSubject(
       return DocsHelpSubject.INBOX_TASKS;
     case WorkspaceFeature.WORKING_MEM:
       return DocsHelpSubject.WORKING_MEM;
+    case WorkspaceFeature.TIME_PLANS:
+      return DocsHelpSubject.TIME_PLANS;
     case WorkspaceFeature.HABITS:
       return DocsHelpSubject.HABITS;
     case WorkspaceFeature.CHORES:

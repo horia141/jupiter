@@ -55,6 +55,22 @@ export function EntitySummaryLink({
           {commonSequence}
         </EntityLink>
       );
+    case NamedEntityTag.TIME_PLAN:
+      return (
+        <EntityLink to={`/workspace/time-plans/${summary.ref_id}`}>
+          <SlimChip label={"Time Plan"} color={"primary"} />
+          {commonSequence}
+        </EntityLink>
+      );
+    case NamedEntityTag.TIME_PLAN_ACTIVITY:
+      return (
+        <EntityLink
+          to={`/workspace/time-plans/${summary.parent_ref_id}/activities/${summary.ref_id}`}
+        >
+          <SlimChip label={"Time Plan Acticity"} color={"primary"} />
+          {commonSequence}
+        </EntityLink>
+      );
     case NamedEntityTag.HABIT:
       return (
         <EntityLink to={`/workspace/habits/${summary.ref_id}`}>

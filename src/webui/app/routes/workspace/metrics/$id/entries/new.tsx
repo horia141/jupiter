@@ -13,7 +13,7 @@ import {
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useTransition } from "@remix-run/react";
+import { useActionData, useParams, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
 import { z } from "zod";
@@ -88,6 +88,7 @@ export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export default function NewMetricEntry() {
+  const { id } = useParams();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
@@ -96,7 +97,7 @@ export default function NewMetricEntry() {
 
   return (
     <LeafPanel
-      key={loaderData.metric.ref_id}
+      key={`metric-${id}/entries/new`}
       returnLocation={`/workspace/metrics/${loaderData.metric.ref_id}`}
     >
       <Card>

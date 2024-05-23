@@ -9,6 +9,9 @@ from jupiter.core.domain.journals.journal import (
     JournalExistsForDatePeriodCombinationError,
 )
 from jupiter.core.domain.projects.errors import ProjectInSignificantUseError
+from jupiter.core.domain.time_plans.time_plan import (
+    TimePlanExistsForDatePeriodCombinationError,
+)
 from jupiter.core.domain.user.user import UserAlreadyExistsError, UserNotFoundError
 from jupiter.core.domain.workspaces.workspace import WorkspaceNotFoundError
 from jupiter.core.framework.errors import (
@@ -211,6 +214,21 @@ class WorkspaceNotFoundHandler(WebExceptionHandler[WorkspaceNotFoundError]):
         return JSONResponse(
             status_code=status.HTTP_410_GONE,
             content="Workspace does not exist",
+        )
+
+
+class TimePlanExistsForDatePeriodCombinationHandler(
+    WebExceptionHandler[TimePlanExistsForDatePeriodCombinationError]
+):
+    """Handle time plan exists for date period combination errors."""
+
+    def handle(
+        self, app: WebServiceApp, exception: TimePlanExistsForDatePeriodCombinationError
+    ) -> JSONResponse:
+        """Handle time plan exists for date period combination errors."""
+        return JSONResponse(
+            status_code=status.HTTP_409_CONFLICT,
+            content="Time plan already exists for this date and period combination",
         )
 
 

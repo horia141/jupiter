@@ -61,6 +61,17 @@ class ADate(AtomicValue[Date]):
         except ValueError as err:
             raise InputValidationError(f"Invalid date because: {err}") from None
 
+    def to_timestamp_at_start_of_day(self) -> Timestamp:
+        """Transform to a timetamp at the start of the day."""
+        return Timestamp.from_date_and_time(
+            DateTime(
+                self.the_date.year,
+                self.the_date.month,
+                self.the_date.day,
+                tzinfo=UTC,
+            ).start_of("day"),
+        )
+
     def to_timestamp_at_end_of_day(self) -> Timestamp:
         """Transform to a timestamp at the end of the day."""
         return Timestamp.from_date_and_time(

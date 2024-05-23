@@ -299,7 +299,7 @@ export default function Habit() {
 
   return (
     <LeafPanel
-      key={loaderData.habit.ref_id}
+      key={`habit-${loaderData.habit.ref_id}`}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/habits"

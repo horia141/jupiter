@@ -68,6 +68,7 @@ export default function SmartLists() {
 
   return (
     <TrunkPanel
+      key={"smart-lists"}
       createLocation="/workspace/smart-lists/new"
       returnLocation="/workspace"
     >

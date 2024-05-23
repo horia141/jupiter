@@ -6,6 +6,10 @@ export function entityTagName(entityTag: NamedEntityTag): string {
       return "Inbox Task";
     case NamedEntityTag.WORKING_MEM:
       return "Working Mem";
+    case NamedEntityTag.TIME_PLAN:
+      return "Time Plan";
+    case NamedEntityTag.TIME_PLAN_ACTIVITY:
+      return "Time Plan Activity";
     case NamedEntityTag.HABIT:
       return "Habit";
     case NamedEntityTag.CHORE:

@@ -16,6 +16,7 @@ class InboxTaskCreateArgs:
 
     Attributes:
         name (str): The name of an inbox task.
+        time_plan_ref_id (Union[None, Unset, str]):
         project_ref_id (Union[None, Unset, str]):
         big_plan_ref_id (Union[None, Unset, str]):
         eisen (Union[Eisen, None, Unset]):
@@ -25,6 +26,7 @@ class InboxTaskCreateArgs:
     """
 
     name: str
+    time_plan_ref_id: Union[None, Unset, str] = UNSET
     project_ref_id: Union[None, Unset, str] = UNSET
     big_plan_ref_id: Union[None, Unset, str] = UNSET
     eisen: Union[Eisen, None, Unset] = UNSET
@@ -35,6 +37,12 @@ class InboxTaskCreateArgs:
 
     def to_dict(self) -> Dict[str, Any]:
         name = self.name
+
+        time_plan_ref_id: Union[None, Unset, str]
+        if isinstance(self.time_plan_ref_id, Unset):
+            time_plan_ref_id = UNSET
+        else:
+            time_plan_ref_id = self.time_plan_ref_id
 
         project_ref_id: Union[None, Unset, str]
         if isinstance(self.project_ref_id, Unset):
@@ -83,6 +91,8 @@ class InboxTaskCreateArgs:
                 "name": name,
             }
         )
+        if time_plan_ref_id is not UNSET:
+            field_dict["time_plan_ref_id"] = time_plan_ref_id
         if project_ref_id is not UNSET:
             field_dict["project_ref_id"] = project_ref_id
         if big_plan_ref_id is not UNSET:
@@ -102,6 +112,15 @@ class InboxTaskCreateArgs:
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         d = src_dict.copy()
         name = d.pop("name")
+
+        def _parse_time_plan_ref_id(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        time_plan_ref_id = _parse_time_plan_ref_id(d.pop("time_plan_ref_id", UNSET))
 
         def _parse_project_ref_id(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -175,6 +194,7 @@ class InboxTaskCreateArgs:
 
         inbox_task_create_args = cls(
             name=name,
+            time_plan_ref_id=time_plan_ref_id,
             project_ref_id=project_ref_id,
             big_plan_ref_id=big_plan_ref_id,
             eisen=eisen,

@@ -123,21 +123,20 @@ class GetSummariesUseCase(
                 allow_archived=allow_archived,
             )
 
-        root_project = None
+        root_project_real = await uow.get(ProjectRepository).load_root_project(
+            project_collection.ref_id
+        )
+        root_project = ProjectSummary(
+            ref_id=root_project_real.ref_id,
+            parent_project_ref_id=root_project_real.parent_ref_id,
+            name=root_project_real.name,
+            order_of_child_projects=root_project_real.order_of_child_projects,
+        )
         projects = None
         if (
             workspace.is_feature_available(WorkspaceFeature.PROJECTS)
             and args.include_projects
         ):
-            root_project_real = await uow.get(ProjectRepository).load_root_project(
-                project_collection.ref_id
-            )
-            root_project = ProjectSummary(
-                ref_id=root_project_real.ref_id,
-                parent_project_ref_id=root_project_real.parent_ref_id,
-                name=root_project_real.name,
-                order_of_child_projects=root_project_real.order_of_child_projects,
-            )
             projects = await uow.get(FastInfoRepository).find_all_project_summaries(
                 parent_ref_id=project_collection.workspace.ref_id,
                 allow_archived=allow_archived,

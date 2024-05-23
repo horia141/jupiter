@@ -58,6 +58,7 @@ class JournalLoadUseCase(
             Journal.note,
             Journal.writing_task,
             allow_archived=args.allow_archived,
+            allow_subentity_archived=True,
         )
 
         schedule = schedules.get_schedule(
@@ -68,7 +69,7 @@ class JournalLoadUseCase(
 
         sub_period_journals = await uow.get(JournalRepository).find_all_in_range(
             parent_ref_id=journal.journal_collection.ref_id,
-            allow_archived=args.allow_archived,
+            allow_archived=False,
             filter_periods=journal.period.all_smaller_periods,
             filter_start_date=schedule.first_day,
             filter_end_date=schedule.end_day,

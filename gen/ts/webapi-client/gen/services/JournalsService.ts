@@ -12,7 +12,7 @@ import type { JournalLoadArgs } from '../models/JournalLoadArgs';
 import type { JournalLoadResult } from '../models/JournalLoadResult';
 import type { JournalLoadSettingsArgs } from '../models/JournalLoadSettingsArgs';
 import type { JournalLoadSettingsResult } from '../models/JournalLoadSettingsResult';
-import type { JournalremoveArgs } from '../models/JournalremoveArgs';
+import type { JournalRemoveArgs } from '../models/JournalRemoveArgs';
 import type { JournalUpdateReportArgs } from '../models/JournalUpdateReportArgs';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -191,7 +191,7 @@ export class JournalsService {
      * @throws ApiError
      */
     public journalRemove(
-        requestBody?: JournalremoveArgs,
+        requestBody?: JournalRemoveArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',

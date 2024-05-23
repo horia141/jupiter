@@ -1073,3 +1073,14 @@ class InboxTaskRepository(LeafEntityRepository[InboxTask], abc.ABC):
         filter_last_modified_time_end: ADate | None = None,
     ) -> list[InboxTask]:
         """Find all inbox tasks."""
+
+    @abc.abstractmethod
+    async def find_completed_in_range(
+        self,
+        parent_ref_id: EntityId,
+        allow_archived: bool,
+        filter_start_completed_date: ADate,
+        filter_end_completed_date: ADate,
+        filter_exclude_ref_ids: Iterable[EntityId] | None = None,
+    ) -> list[InboxTask]:
+        """Find all completed inbox tasks in a time range."""

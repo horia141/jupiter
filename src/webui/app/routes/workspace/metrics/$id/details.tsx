@@ -297,7 +297,7 @@ export default function MetricDetails() {
 
   return (
     <LeafPanel
-      key={loaderData.metric.ref_id}
+      key={`metric-${id}/details`}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation={`/workspace/metrics/${id}`}
@@ -547,10 +547,10 @@ export default function MetricDetails() {
 }
 
 export const CatchBoundary = makeCatchBoundary(
-  () => `Could not find metric #${useParams().key}!`
+  () => `Could not find metric #${useParams().id}!`
 );
 
 export const ErrorBoundary = makeErrorBoundary(
   () =>
-    `There was an error loading metric #${useParams().key}! Please try again!`
+    `There was an error loading metric #${useParams().id}! Please try again!`
 );

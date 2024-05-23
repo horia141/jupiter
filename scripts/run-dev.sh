@@ -19,4 +19,4 @@ else
     WEBUI_PORT=$(get_free_port)
 fi
 
-run_jupiter "$NAMESPACE" "$WEBAPI_PORT" "$WEBUI_PORT" no-wait monit
+run_jupiter "$NAMESPACE" "$WEBAPI_PORT" "$WEBUI_PORT" no-wait monit dev

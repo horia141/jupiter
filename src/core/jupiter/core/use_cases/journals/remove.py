@@ -16,7 +16,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 
 
 @use_case_args
-class JournalremoveArgs(UseCaseArgsBase):
+class JournalRemoveArgs(UseCaseArgsBase):
     """Args."""
 
     ref_id: EntityId
@@ -24,7 +24,7 @@ class JournalremoveArgs(UseCaseArgsBase):
 
 @mutation_use_case(WorkspaceFeature.JOURNALS)
 class JournalRemoveUseCase(
-    AppTransactionalLoggedInMutationUseCase[JournalremoveArgs, None]
+    AppTransactionalLoggedInMutationUseCase[JournalRemoveArgs, None]
 ):
     """Use case for removing a journal."""
 
@@ -33,7 +33,7 @@ class JournalRemoveUseCase(
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
         context: AppLoggedInMutationUseCaseContext,
-        args: JournalremoveArgs,
+        args: JournalRemoveArgs,
     ) -> None:
         """Execute the command's action."""
         await generic_crown_remover(

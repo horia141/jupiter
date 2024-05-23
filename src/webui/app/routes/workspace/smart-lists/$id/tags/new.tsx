@@ -18,12 +18,12 @@ import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
+import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
-import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
 
@@ -85,8 +85,7 @@ export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export default function NewSmartListTag() {
-  const { key } = useParams();
-  const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
+  const { id } = useParams();
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
 
@@ -94,10 +93,10 @@ export default function NewSmartListTag() {
 
   return (
     <LeafPanel
-      key={loaderData.smartList.ref_id}
+      key={`smart-list-${id}/tags/new`}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
-      returnLocation={`/workspace/smart-lists/${key}/tags`}
+      returnLocation={`/workspace/smart-lists/${id}/tags`}
     >
       <Card>
         <GlobalError actionResult={actionData} />
@@ -133,6 +132,13 @@ export default function NewSmartListTag() {
   );
 }
 
+export const CatchBoundary = makeCatchBoundary(
+  () => `Could not find smart list tag #${useParams().id}`
+);
+
 export const ErrorBoundary = makeErrorBoundary(
-  () => `There was an error creating the smart list tag! Please try again!`
+  () =>
+    `There was an error loading smart list tag #${
+      useParams().id
+    }! Please try again!`
 );

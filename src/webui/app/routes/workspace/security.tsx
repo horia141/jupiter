@@ -89,7 +89,7 @@ export default function Security() {
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <TrunkPanel returnLocation="/workspace">
+    <TrunkPanel key={"security"} returnLocation="/workspace">
       <ToolPanel>
         <Stack useFlexGap gap={2}>
           <Card>

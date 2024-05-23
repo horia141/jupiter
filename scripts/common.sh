@@ -16,10 +16,20 @@ run_jupiter() {
     export local WEBUI_SERVER_URL=http://0.0.0.0:${WEBUI_PORT}
     local should_wait=$4
     local should_monit=$5
+    local in_ci=$6
+
+    export local SCRIPT_ARGS=
+    local platform=$(uname -s | awk '{print tolower($0)}')
+    if [[ "${platform}" == "darwin" ]]
+    then
+        SCRIPT_ARGS="-qF"
+    else
+        SCRIPT_ARGS="-c"
+    fi
 
     mkdir -p "$RUN_ROOT/$NAMESPACE"
 
-    if [[ -z "$CI" ]]; then
+    if [[ "$in_ci" == "dev" ]]; then
         envsubst < scripts/pm2.config.dev.template.js > "$RUN_ROOT/$NAMESPACE/pm2.config.js"
     else
         envsubst < scripts/pm2.config.ci.template.js > "$RUN_ROOT/$NAMESPACE/pm2.config.js"

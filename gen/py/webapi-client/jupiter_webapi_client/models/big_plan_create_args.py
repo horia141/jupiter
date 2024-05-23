@@ -14,12 +14,14 @@ class BigPlanCreateArgs:
 
     Attributes:
         name (str): The big plan name.
+        time_plan_ref_id (Union[None, Unset, str]):
         project_ref_id (Union[None, Unset, str]):
         actionable_date (Union[None, Unset, str]):
         due_date (Union[None, Unset, str]):
     """
 
     name: str
+    time_plan_ref_id: Union[None, Unset, str] = UNSET
     project_ref_id: Union[None, Unset, str] = UNSET
     actionable_date: Union[None, Unset, str] = UNSET
     due_date: Union[None, Unset, str] = UNSET
@@ -27,6 +29,12 @@ class BigPlanCreateArgs:
 
     def to_dict(self) -> Dict[str, Any]:
         name = self.name
+
+        time_plan_ref_id: Union[None, Unset, str]
+        if isinstance(self.time_plan_ref_id, Unset):
+            time_plan_ref_id = UNSET
+        else:
+            time_plan_ref_id = self.time_plan_ref_id
 
         project_ref_id: Union[None, Unset, str]
         if isinstance(self.project_ref_id, Unset):
@@ -53,6 +61,8 @@ class BigPlanCreateArgs:
                 "name": name,
             }
         )
+        if time_plan_ref_id is not UNSET:
+            field_dict["time_plan_ref_id"] = time_plan_ref_id
         if project_ref_id is not UNSET:
             field_dict["project_ref_id"] = project_ref_id
         if actionable_date is not UNSET:
@@ -66,6 +76,15 @@ class BigPlanCreateArgs:
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         d = src_dict.copy()
         name = d.pop("name")
+
+        def _parse_time_plan_ref_id(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        time_plan_ref_id = _parse_time_plan_ref_id(d.pop("time_plan_ref_id", UNSET))
 
         def _parse_project_ref_id(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -96,6 +115,7 @@ class BigPlanCreateArgs:
 
         big_plan_create_args = cls(
             name=name,
+            time_plan_ref_id=time_plan_ref_id,
             project_ref_id=project_ref_id,
             actionable_date=actionable_date,
             due_date=due_date,

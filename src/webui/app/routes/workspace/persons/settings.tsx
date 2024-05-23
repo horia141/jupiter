@@ -98,7 +98,7 @@ export default function PersonsSettings() {
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <LeafPanel returnLocation="/workspace/persons">
+    <LeafPanel key={"persons/settings"} returnLocation="/workspace/persons">
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
         WorkspaceFeature.PROJECTS

@@ -2,6 +2,7 @@ import AddIcon from "@mui/icons-material/Add";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import CloseIcon from "@mui/icons-material/Close";
+import DeleteIcon from "@mui/icons-material/Delete";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import { Box, Button, ButtonGroup, IconButton, styled } from "@mui/material";
 import { Link, useLocation } from "@remix-run/react";
@@ -27,6 +28,8 @@ const SMALL_SCREEN_ANIMATION_END = "100vw";
 
 interface BranchPanelProps {
   createLocation?: string;
+  showArchiveButton?: boolean;
+  enableArchiveButton?: boolean;
   extraControls?: JSX.Element[];
   returnLocation: string;
 }
@@ -156,8 +159,23 @@ export function BranchPanel(props: PropsWithChildren<BranchPanelProps>) {
               />
             )}
 
-            <IconButton sx={{ marginLeft: "auto" }}>
-              <Link to={props.returnLocation}>
+            {props.showArchiveButton && (
+              <IconButton
+                id="leaf-entity-archive"
+                sx={{ marginLeft: "auto" }}
+                disabled={!props.enableArchiveButton}
+                type="submit"
+                name="intent"
+                value="archive"
+              >
+                <DeleteIcon />
+              </IconButton>
+            )}
+
+            <IconButton
+              sx={{ marginLeft: !props.showArchiveButton ? "auto" : undefined }}
+            >
+              <Link style={{ display: "flex" }} to={props.returnLocation}>
                 <CloseIcon />
               </Link>
             </IconButton>

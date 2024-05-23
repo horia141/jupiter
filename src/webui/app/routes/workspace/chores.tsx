@@ -88,6 +88,7 @@ export default function Chores() {
 
   return (
     <TrunkPanel
+      key={"chores"}
       createLocation="/workspace/chores/new"
       returnLocation="/workspace"
     >

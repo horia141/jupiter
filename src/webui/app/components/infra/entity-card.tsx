@@ -22,9 +22,12 @@ interface EntityCardProps {
   showAsArchived?: boolean;
   extraControls?: JSX.Element;
   allowSwipe?: boolean;
+  allowSelect?: boolean;
+  selected?: boolean;
   allowMarkDone?: boolean;
   allowMarkNotDone?: boolean;
   indent?: number;
+  onClick?: () => void;
   onMarkDone?: () => void;
   onMarkNotDone?: () => void;
 }
@@ -99,9 +102,16 @@ export function EntityCard(props: PropsWithChildren<EntityCardProps>) {
           alignItems: "center",
           touchAction: "pan-y",
           position: "relative",
-          backgroundColor: props.showAsArchived
-            ? theme.palette.action.hover
-            : "transparent",
+          backgroundColor:
+            (props.allowSelect && props.selected) || props.showAsArchived
+              ? theme.palette.action.hover
+              : "transparent",
+        }}
+        onClick={(e) => {
+          if (props.onClick) {
+            e.preventDefault();
+            props.onClick();
+          }
         }}
       >
         <CardContent>{props.children}</CardContent>

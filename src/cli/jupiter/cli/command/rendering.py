@@ -34,6 +34,11 @@ from jupiter.core.domain.push_integrations.slack.slack_channel_name import (
 )
 from jupiter.core.domain.push_integrations.slack.slack_user_name import SlackUserName
 from jupiter.core.domain.sync_target import SyncTarget
+from jupiter.core.domain.time_plans.time_plan_activity_feasability import (
+    TimePlanActivityFeasability,
+)
+from jupiter.core.domain.time_plans.time_plan_activity_kind import TimePlanActivityKind
+from jupiter.core.domain.time_plans.time_plan_source import TimePlanSource
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.entity import CrownEntity
@@ -409,17 +414,17 @@ def parent_entity_name_to_rich_text(parent_name: EntityName) -> Text:
 
 def period_to_rich_text(period: RecurringTaskPeriod) -> Text:
     """Transform a period into text."""
-    return Text(str(period).capitalize(), style="underline")
+    return Text(str(period.value).capitalize(), style="underline")
 
 
 def eisen_to_rich_text(eisen: Eisen) -> Text:
     """Transform an eisenhower value into text."""
-    return Text(str(eisen).capitalize(), style="underline green")
+    return Text(str(eisen.value).capitalize(), style="underline green")
 
 
 def person_relationship_to_rich_text(person_relationship: PersonRelationship) -> Text:
     """Transform person relationship into text."""
-    return Text(str(person_relationship).capitalize(), style="underline yellow")
+    return Text(str(person_relationship.value).capitalize(), style="underline yellow")
 
 
 def person_birthday_to_rich_text(birthday: PersonBirthday) -> Text:
@@ -429,17 +434,17 @@ def person_birthday_to_rich_text(birthday: PersonBirthday) -> Text:
 
 def metric_unit_to_rich_text(metric_unit: MetricUnit) -> Text:
     """Transform a metric unit into text."""
-    return Text(str(metric_unit).capitalize(), style="italic")
+    return Text(str(metric_unit.value).capitalize(), style="italic")
 
 
 def source_to_rich_text(source: InboxTaskSource) -> Text:
     """Transform a source value into text."""
-    return Text(str(source).capitalize(), style="underline italic blue")
+    return Text(str(source.value).capitalize(), style="underline italic blue")
 
 
 def difficulty_to_rich_text(difficulty: Difficulty) -> Text:
     """Transform a difficulty value into text."""
-    return Text(str(difficulty).capitalize(), style="underline")
+    return Text(str(difficulty.value).capitalize(), style="underline")
 
 
 def skip_rule_to_rich_text(skip_rule: RecurringTaskSkipRule) -> Text:
@@ -629,3 +634,20 @@ def boolean_to_rich_text(value: bool, label: str) -> Text:
         return Text(f"✅ {label}")
     else:
         return Text(f"⛔ {label}")
+
+
+def time_plan_source_to_rich_text(value: TimePlanSource) -> Text:
+    """Transform a time plan source to rich text."""
+    return Text(str(value.value).capitalize(), style="gray")
+
+
+def time_plan_activity_kind_to_rich_text(kind: TimePlanActivityKind) -> Text:
+    """Transform a time plan kind to rich text."""
+    return Text(str(kind.value).capitalize(), style="blue")
+
+
+def time_plan_activity_feasability_to_rich_text(
+    feasability: TimePlanActivityFeasability,
+) -> Text:
+    """Transform a time plan feasaibility to rich text."""
+    return Text(str(feasability.value).capitalize(), style="red")

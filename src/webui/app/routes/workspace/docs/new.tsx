@@ -60,6 +60,7 @@ export default function NewDoc() {
 
   return (
     <LeafPanel
+      key={"docs/new"}
       returnLocation="/workspace/docs"
       initialExpansionState={LeafPanelExpansionState.FULL}
     >

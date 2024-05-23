@@ -21,8 +21,13 @@ class BigPlanStatus(EnumValue):
     DONE = "done"
 
     @property
+    def is_workable(self) -> bool:
+        """Whether the status means the big plan is not completed."""
+        return not self.is_completed
+
+    @property
     def is_accepted(self) -> bool:
-        """Whether the status means work has been accepted on the inbox task."""
+        """Whether the status means work has been accepted on the big plan."""
         return self == BigPlanStatus.ACCEPTED
 
     @property
@@ -32,7 +37,7 @@ class BigPlanStatus(EnumValue):
 
     @property
     def is_working(self) -> bool:
-        """Whether the status means work is ongoing for the inbox task."""
+        """Whether the status means work is ongoing for the big plan."""
         return self in (BigPlanStatus.IN_PROGRESS, BigPlanStatus.BLOCKED)
 
     @property
@@ -42,7 +47,7 @@ class BigPlanStatus(EnumValue):
 
     @property
     def is_completed(self) -> bool:
-        """Whether the status means work is completed on the inbox task."""
+        """Whether the status means work is completed on the big plan."""
         return self in (BigPlanStatus.NOT_DONE, BigPlanStatus.DONE)
 
     def __lt__(self, other: object) -> bool:
@@ -55,3 +60,13 @@ class BigPlanStatus(EnumValue):
         all_values = self.get_all_values()
 
         return all_values.index(self.value) < all_values.index(other.value)
+
+    @staticmethod
+    def all_workable_statuses() -> list["BigPlanStatus"]:
+        """All workable statuses."""
+        return [s for s in BigPlanStatus if s.is_workable]
+
+    @staticmethod
+    def all_completed_statuses() -> list["BigPlanStatus"]:
+        """All completed statuses."""
+        return [s for s in BigPlanStatus if s.is_completed]

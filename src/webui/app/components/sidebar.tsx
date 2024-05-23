@@ -103,6 +103,22 @@ export default function Sidebar(props: SidebarProps) {
 
             {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
+              WorkspaceFeature.TIME_PLANS
+            ) && (
+              <ListItem disablePadding>
+                <ListItemButton
+                  to="/workspace/time-plans"
+                  component={Link}
+                  onClick={onClickNavigation}
+                >
+                  <ListItemIcon>🏭</ListItemIcon>
+                  <ListItemText primary="Time Plans" />
+                </ListItemButton>
+              </ListItem>
+            )}
+
+            {isWorkspaceFeatureAvailable(
+              props.topLevelInfo.workspace,
               WorkspaceFeature.HABITS
             ) && (
               <ListItem disablePadding>

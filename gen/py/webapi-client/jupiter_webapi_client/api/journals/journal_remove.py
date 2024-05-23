@@ -5,13 +5,13 @@ import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
-from ...models.journalremove_args import JournalremoveArgs
+from ...models.journal_remove_args import JournalRemoveArgs
 from ...types import Response
 
 
 def _get_kwargs(
     *,
-    body: JournalremoveArgs,
+    body: JournalRemoveArgs,
 ) -> Dict[str, Any]:
     headers: Dict[str, Any] = {}
 
@@ -56,14 +56,14 @@ def _build_response(*, client: Union[AuthenticatedClient, Client], response: htt
 def sync_detailed(
     *,
     client: AuthenticatedClient,
-    body: JournalremoveArgs,
+    body: JournalRemoveArgs,
 ) -> Response[Any]:
     """Use case for removing a journal.
 
      Use case for removing a journal.
 
     Args:
-        body (JournalremoveArgs): Args.
+        body (JournalRemoveArgs): Args.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -87,14 +87,14 @@ def sync_detailed(
 async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
-    body: JournalremoveArgs,
+    body: JournalRemoveArgs,
 ) -> Response[Any]:
     """Use case for removing a journal.
 
      Use case for removing a journal.
 
     Args:
-        body (JournalremoveArgs): Args.
+        body (JournalRemoveArgs): Args.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.

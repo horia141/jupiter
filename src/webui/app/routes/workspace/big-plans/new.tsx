@@ -20,7 +20,7 @@ import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
-import { parseForm } from "zodix";
+import { parseForm, parseQuery } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
@@ -32,6 +32,11 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
+
+const QuerySchema = {
+  timePlanReason: z.literal("for-time-plan").optional(),
+  timePlanRefId: z.string().optional(),
+};
 
 const CreateFormSchema = {
   name: z.string(),
@@ -46,6 +51,16 @@ export const handle = {
 
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
+  const query = parseQuery(request, QuerySchema);
+
+  const timePlanReason = query.timePlanReason || "standard";
+
+  if (timePlanReason === "for-time-plan") {
+    if (!query.timePlanRefId) {
+      throw new Response("Missing Time Plan Id", { status: 500 });
+    }
+  }
+
   const summaryResponse = await getLoggedInApiClient(
     session
   ).getSummaries.getSummaries({
@@ -53,6 +68,7 @@ export async function loader({ request }: LoaderArgs) {
   });
 
   return json({
+    timePlanReason: timePlanReason,
     rootProject: summaryResponse.root_project as ProjectSummary,
     allProjects: summaryResponse.projects as Array<ProjectSummary>,
   });
@@ -60,11 +76,18 @@ export async function loader({ request }: LoaderArgs) {
 
 export async function action({ request }: ActionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
+  const query = parseQuery(request, QuerySchema);
   const form = await parseForm(request, CreateFormSchema);
 
   try {
+    const timePlanReason = query.timePlanReason || "standard";
+
     const result = await getLoggedInApiClient(session).bigPlans.bigPlanCreate({
       name: form.name,
+      time_plan_ref_id:
+        timePlanReason === "standard"
+          ? undefined
+          : (query.timePlanRefId as string),
       project_ref_id: form.project !== undefined ? form.project : undefined,
       actionable_date:
         form.actionableDate !== undefined && form.actionableDate !== ""
@@ -76,7 +99,15 @@ export async function action({ request }: ActionArgs) {
           : undefined,
     });
 
-    return redirect(`/workspace/big-plans/${result.new_big_plan.ref_id}`);
+    switch (timePlanReason) {
+      case "standard":
+        return redirect(`/workspace/big-plans/${result.new_big_plan.ref_id}`);
+
+      case "for-time-plan":
+        return redirect(
+          `/workspace/time-plans/${result.new_time_plan_activity?.time_plan_ref_id}/${result.new_time_plan_activity?.ref_id}`
+        );
+    }
   } catch (error) {
     if (
       error instanceof ApiError &&
@@ -102,7 +133,7 @@ export default function NewBigPlan() {
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <LeafPanel returnLocation="/workspace/big-plans">
+    <LeafPanel key={`big-plans/new`} returnLocation="/workspace/big-plans">
       <Card>
         <GlobalError actionResult={actionData} />
         <CardContent>

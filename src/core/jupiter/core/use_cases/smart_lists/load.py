@@ -74,12 +74,14 @@ class SmartListLoadUseCase(
         note_collection = await uow.get_for(NoteCollection).load_by_parent(
             context.workspace.ref_id,
         )
-        smart_list_item_notes = await uow.get_for(Note).find_all_generic(
-            parent_ref_id=note_collection.ref_id,
-            domain=NoteDomain.SMART_LIST_ITEM,
-            allow_archived=args.allow_archived,
-            source_entity_ref_id=[item.ref_id for item in smart_list_items],
-        )
+        smart_list_item_notes = []
+        if len(smart_list_items) > 0:
+            smart_list_item_notes = await uow.get_for(Note).find_all_generic(
+                parent_ref_id=note_collection.ref_id,
+                domain=NoteDomain.SMART_LIST_ITEM,
+                allow_archived=args.allow_archived,
+                source_entity_ref_id=[item.ref_id for item in smart_list_items],
+            )
 
         return SmartListLoadResult(
             smart_list=smart_list,

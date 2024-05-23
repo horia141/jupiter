@@ -94,7 +94,7 @@ export default function MetricsSettings() {
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <LeafPanel returnLocation="/workspace/metrics">
+    <LeafPanel key={"metrics/settings"} returnLocation="/workspace/metrics">
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
         WorkspaceFeature.PROJECTS

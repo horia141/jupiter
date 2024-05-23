@@ -160,6 +160,13 @@ class IsParentLink:
 
 
 @dataclass(frozen=True)
+class IsFieldRefId:
+    """Transform a generic filter based on a current entity's field."""
+
+    field_name: str
+
+
+@dataclass(frozen=True)
 class IsOneOfRefId:
     """Transforms a generic filter based on a current entity's field with a list of ref ids."""
 
@@ -178,7 +185,13 @@ class ParentLink:
 
 
 EntityLinkFilterRaw = (
-    None | AtomicValue[Primitive] | EnumValue | IsRefId | IsParentLink | IsOneOfRefId
+    None
+    | AtomicValue[Primitive]
+    | EnumValue
+    | IsRefId
+    | IsParentLink
+    | IsFieldRefId
+    | IsOneOfRefId
 )
 EntityLinkFilterCompiled = (
     NoFilter
@@ -189,6 +202,16 @@ EntityLinkFilterCompiled = (
 )
 EntityLinkFiltersRaw = dict[str, EntityLinkFilterRaw]
 EntityLinkFiltersCompiled = dict[str, EntityLinkFilterCompiled]
+
+
+class SelfCond:
+    """An entity condition for a link."""
+
+    filters: EntityLinkFiltersRaw
+
+    def __init__(self, **kwargs: EntityLinkFilterRaw) -> None:
+        """Constructor."""
+        self.filters = kwargs
 
 
 @dataclass(init=False)
@@ -218,6 +241,11 @@ class EntityLink(Generic[_EntityT]):
                 reified_filters[k] = entity.parent_ref_id
             elif isinstance(v, IsRefId):
                 reified_filters[k] = entity.ref_id
+            elif isinstance(v, IsFieldRefId):
+                possible = getattr(entity, v.field_name)
+                if not isinstance(possible, EntityId):
+                    raise Exception("Invalid type of filter")
+                reified_filters[k] = possible
             else:
                 possible = getattr(entity, v.field_name)
                 if not isinstance(possible, list):
@@ -273,6 +301,31 @@ class RefsOne(Generic[_EntityT], RefsLink[_EntityT]):
 
 class RefsAtMostOne(Generic[_EntityT], RefsLink[_EntityT]):
     """An entity that can reference at most one other entity."""
+
+
+class RefsAtMostOneCond(Generic[_EntityT], RefsLink[_EntityT]):
+    """An entity that can reference at most one other entity."""
+
+    self_cond: SelfCond
+
+    def __init__(
+        self,
+        the_type: type[_EntityT],
+        self_cond: SelfCond,
+        **kwargs: EntityLinkFilterRaw,
+    ) -> None:
+        """Constructor."""
+        super().__init__(the_type, **kwargs)
+        self.self_cond = self_cond
+
+    def eval_self_cond(self, entity: Entity) -> bool:
+        """Whether this entity passes the tests defined in self cond."""
+        for k, v in self.self_cond.filters.items():
+            if isinstance(v, EnumValue):
+                return cast(bool, getattr(entity, k) == v)
+            else:
+                raise Exception("Invalid type of filter")
+        return True
 
 
 class RefsMany(Generic[_EntityT], RefsLink[_EntityT]):
@@ -481,6 +534,7 @@ def _check_entity_can_be_filterd_by(
                 )
             elif (
                 isinstance(filter_rule, IsRefId)
+                or isinstance(filter_rule, IsFieldRefId)
                 or isinstance(filter_rule, IsOneOfRefId)
                 or isinstance(filter_rule, IsParentLink)
             ):

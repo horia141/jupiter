@@ -109,6 +109,7 @@ class WorkspaceFeature(EnumValue):
 
     INBOX_TASKS = "inbox-tasks"
     WORKING_MEM = "working-mem"
+    TIME_PLANS = "time-plans"
     HABITS = "habits"
     CHORES = "chores"
     BIG_PLANS = "big-plans"
@@ -180,6 +181,7 @@ USER_FEATURE_FLAGS_CONTROLS = UserFeatureFlagsControls(
 BASIC_WORKSPACE_FEATURE_FLAGS = {
     WorkspaceFeature.INBOX_TASKS: True,
     WorkspaceFeature.WORKING_MEM: False,
+    WorkspaceFeature.TIME_PLANS: False,
     WorkspaceFeature.HABITS: True,
     WorkspaceFeature.CHORES: False,
     WorkspaceFeature.BIG_PLANS: False,
@@ -202,6 +204,7 @@ HOSTED_GLOBAL_WORKSPACE_FEATURE_FLAGS_CONTROLS = WorkspaceFeatureFlagsControls(
     {
         WorkspaceFeature.INBOX_TASKS: FeatureControl.ALWAYS_ON,
         WorkspaceFeature.WORKING_MEM: FeatureControl.USER,
+        WorkspaceFeature.TIME_PLANS: FeatureControl.USER,
         WorkspaceFeature.HABITS: FeatureControl.USER,
         WorkspaceFeature.CHORES: FeatureControl.USER,
         WorkspaceFeature.BIG_PLANS: FeatureControl.USER,
@@ -222,6 +225,7 @@ LOCAL_WORKSPACE_FEATURE_FLAGS_CONTROLS = WorkspaceFeatureFlagsControls(
     {
         WorkspaceFeature.INBOX_TASKS: FeatureControl.ALWAYS_ON,
         WorkspaceFeature.WORKING_MEM: FeatureControl.USER,
+        WorkspaceFeature.TIME_PLANS: FeatureControl.USER,
         WorkspaceFeature.HABITS: FeatureControl.USER,
         WorkspaceFeature.CHORES: FeatureControl.USER,
         WorkspaceFeature.BIG_PLANS: FeatureControl.USER,

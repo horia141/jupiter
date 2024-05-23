@@ -100,7 +100,10 @@ export default function EmailTasksSettings() {
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <LeafPanel returnLocation="/workspace/push-integrations/email-tasks">
+    <LeafPanel
+      key={"email-tasks/settings"}
+      returnLocation="/workspace/push-integrations/email-tasks"
+    >
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
         WorkspaceFeature.PROJECTS

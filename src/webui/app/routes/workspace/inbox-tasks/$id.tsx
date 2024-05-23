@@ -387,7 +387,7 @@ export default function InboxTask() {
 
   return (
     <LeafPanel
-      key={inboxTask.ref_id}
+      key={`inbox-task-${inboxTask.ref_id}`}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/inbox-tasks"

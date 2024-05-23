@@ -72,7 +72,7 @@ export default function NewVacation() {
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <LeafPanel returnLocation="/workspace/vacations">
+    <LeafPanel key={"vacations/new"} returnLocation="/workspace/vacations">
       <Card>
         <GlobalError actionResult={actionData} />
         <CardContent>
