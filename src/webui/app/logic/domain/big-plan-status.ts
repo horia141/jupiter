@@ -1,4 +1,4 @@
-import { BigPlanStatus } from "@jupiter/webapi-client";
+import { BigPlan, BigPlanStatus } from "@jupiter/webapi-client";
 
 export function bigPlanStatusName(status: BigPlanStatus): string {
   switch (status) {
@@ -48,4 +48,8 @@ export function compareBigPlanStatus(
   status2: BigPlanStatus
 ): number {
   return BIG_PLAN_STATUS_MAP[status1] - BIG_PLAN_STATUS_MAP[status2];
+}
+
+export function isCompleted(status: BigPlanStatus): boolean {
+  return status === BigPlanStatus.DONE || status === BigPlanStatus.NOT_DONE;
 }

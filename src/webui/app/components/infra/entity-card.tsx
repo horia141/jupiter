@@ -27,6 +27,7 @@ interface EntityCardProps {
   allowMarkDone?: boolean;
   allowMarkNotDone?: boolean;
   indent?: number;
+  markButtonsStyle?: "row" | "column";
   onClick?: () => void;
   onMarkDone?: () => void;
   onMarkNotDone?: () => void;
@@ -119,14 +120,14 @@ export function EntityCard(props: PropsWithChildren<EntityCardProps>) {
         <CardActions
           sx={{
             display: "flex",
-            flexDirection: "row",
+            flexDirection: props.markButtonsStyle || "row",
             alignItems: "flex-end",
           }}
         >
           {props.extraControls}
-          {isBigScreen && (
-            <>
-              {props.allowMarkDone && (
+          {isBigScreen && 
+
+              props.allowMarkDone && (
                 <IconButton
                   size="medium"
                   color="success"
@@ -144,8 +145,8 @@ export function EntityCard(props: PropsWithChildren<EntityCardProps>) {
                   <DeleteIcon fontSize="medium" />
                 </IconButton>
               )}
-            </>
-          )}
+
+          
         </CardActions>
       </Card>
     </motion.div>

@@ -40,8 +40,8 @@ export function sortTimePlanActivitiesNaturally(
 
     if (j1.target !== j2.target) {
       return (
-        TIME_PLAN_ACTIVITY_TARGET_MAP[j2.target] -
-        TIME_PLAN_ACTIVITY_TARGET_MAP[j1.target]
+        TIME_PLAN_ACTIVITY_TARGET_MAP[j1.target] -
+        TIME_PLAN_ACTIVITY_TARGET_MAP[j2.target]
       );
     }
 

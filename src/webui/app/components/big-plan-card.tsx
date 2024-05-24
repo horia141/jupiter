@@ -47,6 +47,7 @@ export function BigPlanCard(props: BigPlanCardProps) {
           ? () => props.onClick && props.onClick(props.bigPlan)
           : undefined
       }
+      markButtonsStyle="column"
       onMarkDone={() => props.onMarkDone && props.onMarkDone(props.bigPlan)}
       onMarkNotDone={() =>
         props.onMarkNotDone && props.onMarkNotDone(props.bigPlan)
