@@ -31,7 +31,6 @@ export function useBranchNeedsToShowLeaf() {
       return true;
     }
   }
-
   return false;
 }
 

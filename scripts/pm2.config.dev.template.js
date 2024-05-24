@@ -11,12 +11,12 @@ module.exports = {
         SQLITE_DB_URL: "$WEBAPI_SQLITE_DB_URL",
         PORT: "$WEBAPI_PORT"
       }
-    },{
+    }, {
         name: "${NAMESPACE}:webui",
         cwd: "src/webui",
         interpreter: "none",
-        script: "npm",
-        args: "run dev",
+        script: "remix",
+        args: "dev",
         log_file: "$WEBUI_LOG_FILE",
         env: {
             LOCAL_WEBAPI_SERVER_URL: "$WEBAPI_SERVER_URL",

@@ -281,7 +281,7 @@ export default function TimePlanView() {
         </Card>
 
         <Card>
-          <CardContent>
+          <CardContent sx={{ overflowX: "scroll" }}>
             <ButtonGroup>
               <Button
                 variant="contained"
@@ -423,11 +423,11 @@ export default function TimePlanView() {
             />
           </>
         )}
-
-        <AnimatePresence mode="wait" initial={false}>
-          <Outlet />
-        </AnimatePresence>
       </NestingAwareBlock>
+
+      <AnimatePresence mode="wait" initial={false}>
+        <Outlet />
+      </AnimatePresence>
     </BranchPanel>
   );
 }
