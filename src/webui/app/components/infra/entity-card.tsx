@@ -125,28 +125,20 @@ export function EntityCard(props: PropsWithChildren<EntityCardProps>) {
           }}
         >
           {props.extraControls}
-          {isBigScreen && 
-
-              props.allowMarkDone && (
-                <IconButton
-                  size="medium"
-                  color="success"
-                  onClick={markDoneHandler}
-                >
-                  <CheckCircleIcon fontSize="medium" />
-                </IconButton>
-              )}
-              {props.allowMarkNotDone && (
-                <IconButton
-                  size="medium"
-                  color="warning"
-                  onClick={markNotDoneHandler}
-                >
-                  <DeleteIcon fontSize="medium" />
-                </IconButton>
-              )}
-
-          
+          {isBigScreen && props.allowMarkDone && (
+            <IconButton size="medium" color="success" onClick={markDoneHandler}>
+              <CheckCircleIcon fontSize="medium" />
+            </IconButton>
+          )}
+          {props.allowMarkNotDone && (
+            <IconButton
+              size="medium"
+              color="warning"
+              onClick={markNotDoneHandler}
+            >
+              <DeleteIcon fontSize="medium" />
+            </IconButton>
+          )}
         </CardActions>
       </Card>
     </motion.div>

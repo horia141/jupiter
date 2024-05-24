@@ -277,19 +277,34 @@ export default function NewInboxTask() {
     { label, big_plan_id }: BigPlanACOption
   ) {
     setSelectedBigPlan({ label, big_plan_id });
-    if (big_plan_id === "none") {
-      setSelectedProject(loaderData.defaultProject.ref_id);
-      setBlockedToSelectProject(false);
-    } else {
-      const projectId = allBigPlansById[big_plan_id].project_ref_id;
-      const projectKey = allProjectsById[projectId].ref_id;
-      setSelectedProject(projectKey);
-      setBlockedToSelectProject(true);
+
+    if (
+      isWorkspaceFeatureAvailable(
+        topLevelInfo.workspace,
+        WorkspaceFeature.PROJECTS
+      )
+    ) {
+      if (big_plan_id === "none") {
+        setSelectedProject(loaderData.defaultProject.ref_id);
+        setBlockedToSelectProject(false);
+      } else {
+        const projectId = allBigPlansById[big_plan_id].project_ref_id;
+        const projectKey = allProjectsById[projectId].ref_id;
+        setSelectedProject(projectKey);
+        setBlockedToSelectProject(true);
+      }
     }
   }
 
   function handleChangeProject(e: SelectChangeEvent) {
-    setSelectedProject(e.target.value);
+    if (
+      isWorkspaceFeatureAvailable(
+        topLevelInfo.workspace,
+        WorkspaceFeature.PROJECTS
+      )
+    ) {
+      setSelectedProject(e.target.value);
+    }
   }
 
   return (
@@ -370,7 +385,7 @@ export default function NewInboxTask() {
                 </Select>
                 <FieldError
                   actionResult={actionData}
-                  fieldName="/project_key"
+                  fieldName="/project_ref_id"
                 />
               </FormControl>
             )}

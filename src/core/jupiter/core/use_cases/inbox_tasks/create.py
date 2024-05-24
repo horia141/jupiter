@@ -17,7 +17,10 @@ from jupiter.core.domain.projects.project import Project, ProjectRepository
 from jupiter.core.domain.projects.project_collection import ProjectCollection
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.time_plans.time_plan import TimePlan
-from jupiter.core.domain.time_plans.time_plan_activity import TimePlanActivity
+from jupiter.core.domain.time_plans.time_plan_activity import (
+    TimePlanActivity,
+    TimePlanAlreadyAssociatedWithTargetError,
+)
 from jupiter.core.domain.time_plans.time_plan_activity_feasability import (
     TimePlanActivityFeasability,
 )
@@ -149,6 +152,24 @@ class InboxTaskCreateUseCase(
             new_time_plan_activity = await generic_creator(
                 uow, progress_reporter, new_time_plan_activity
             )
+
+            if big_plan:
+                try:
+                    new_big_plan_time_plan_activity = (
+                        TimePlanActivity.new_activity_for_big_plan(
+                            context.domain_context,
+                            time_plan_ref_id=time_plan.ref_id,
+                            big_plan_ref_id=big_plan.ref_id,
+                            kind=TimePlanActivityKind.MAKE_PROGRESS,
+                            feasability=TimePlanActivityFeasability.MUST_DO,
+                        )
+                    )
+                    new_big_plan_time_plan_activity = await generic_creator(
+                        uow, progress_reporter, new_big_plan_time_plan_activity
+                    )
+                except TimePlanAlreadyAssociatedWithTargetError:
+                    # We were already working on this plan, no need to panic
+                    pass
 
         return InboxTaskCreateResult(
             new_inbox_task=new_inbox_task, new_time_plan_activity=new_time_plan_activity

@@ -14,8 +14,8 @@ import { InboxTaskStatusTag } from "~/components/inbox-task-status-tag";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { TimePlanActivityFeasabilityTag } from "~/components/time-plan-activity-feasability-tag";
 import { TimePlanActivityKindTag } from "~/components/time-plan-activity-kind-tag";
-import { isCompleted } from "~/logic/domain/inbox-task-status";
 import { isCompleted as isBigPlanCompleted } from "~/logic/domain/big-plan-status";
+import { isCompleted } from "~/logic/domain/inbox-task-status";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import type { TopLevelInfo } from "~/top-level-context";
 
@@ -51,7 +51,13 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
         <EntityLink
           to={`/workspace/time-plans/${props.timePlan.ref_id}/${props.activity.ref_id}`}
         >
-          <Typography sx={{fontWeight: isCompleted(inboxTask.status) ? "bold" : "normal"}}>{inboxTask.name}</Typography>
+          <Typography
+            sx={{
+              fontWeight: isCompleted(inboxTask.status) ? "bold" : "normal",
+            }}
+          >
+            {inboxTask.name}
+          </Typography>
           <InboxTaskStatusTag status={inboxTask.status} />
           <TimePlanActivityKindTag kind={props.activity.kind} />
           <TimePlanActivityFeasabilityTag
@@ -81,7 +87,15 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
         <EntityLink
           to={`/workspace/time-plans/${props.timePlan.ref_id}/${props.activity.ref_id}`}
         >
-          <Typography sx={{fontWeight: isBigPlanCompleted(bigPlan.status) ? "bold" : "normal"}}>{bigPlan.name}</Typography>
+          <Typography
+            sx={{
+              fontWeight: isBigPlanCompleted(bigPlan.status)
+                ? "bold"
+                : "normal",
+            }}
+          >
+            {bigPlan.name}
+          </Typography>
           <BigPlanStatusTag status={bigPlan.status} />
           <TimePlanActivityKindTag kind={props.activity.kind} />
           <TimePlanActivityFeasabilityTag

@@ -58,7 +58,7 @@ import { periodName } from "~/logic/domain/period";
 import { sortTimePlansNaturally } from "~/logic/domain/time-plan";
 import { sortTimePlanActivitiesNaturally } from "~/logic/domain/time-plan-activity";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
-import { basicShouldRevalidate, standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
+import { basicShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
@@ -171,8 +171,7 @@ export async function action({ request, params }: ActionArgs) {
   }
 }
 
-export const shouldRevalidate: ShouldRevalidateFunction =
-  basicShouldRevalidate;
+export const shouldRevalidate: ShouldRevalidateFunction = basicShouldRevalidate;
 
 export default function TimePlanView() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
