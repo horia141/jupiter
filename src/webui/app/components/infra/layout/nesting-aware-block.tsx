@@ -22,12 +22,14 @@ export function NestingAwareBlock(
   }
 
   return (
-    <Stack
-      spacing={2}
-      useFlexGap
-      sx={{ paddingLeft: "1rem", paddingRight: "1rem" }}
-    >
-      <Form method="post">{props.children}</Form>
-    </Stack>
+    <Form method="post">
+      <Stack
+        spacing={2}
+        useFlexGap
+        sx={{ paddingLeft: "1rem", paddingRight: "1rem" }}
+      >
+        {props.children}
+      </Stack>
+    </Form>
   );
 }
