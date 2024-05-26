@@ -33,9 +33,8 @@ interface TimePlanActivityCardProps {
 
 export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
   if (props.activity.target === TimePlanActivityTarget.INBOX_TASK) {
-    const inboxTask = props.inboxTasksByRefId.get(
-      props.activity.target_ref_id
-    )!;
+    const inboxTask = props.inboxTasksByRefId.get(props.activity.target_ref_id);
+
     return (
       <EntityCard
         entityId={`time-plan-activity-${props.timePlan.ref_id}`}
@@ -53,12 +52,16 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
         >
           <Typography
             sx={{
-              fontWeight: isCompleted(inboxTask.status) ? "bold" : "normal",
+              fontWeight: inboxTask
+                ? isCompleted(inboxTask.status)
+                  ? "bold"
+                  : "normal"
+                : "lighter",
             }}
           >
-            {inboxTask.name}
+            {inboxTask ? inboxTask.name : "Archived Task"}
           </Typography>
-          <InboxTaskStatusTag status={inboxTask.status} />
+          {inboxTask && <InboxTaskStatusTag status={inboxTask.status} />}
           <TimePlanActivityKindTag kind={props.activity.kind} />
           <TimePlanActivityFeasabilityTag
             feasability={props.activity.feasability}
@@ -72,7 +75,7 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
       WorkspaceFeature.BIG_PLANS
     )
   ) {
-    const bigPlan = props.bigPlansByRefId.get(props.activity.target_ref_id)!;
+    const bigPlan = props.bigPlansByRefId.get(props.activity.target_ref_id);
     return (
       <EntityCard
         entityId={`time-plan-activity-${props.timePlan.ref_id}`}
@@ -89,14 +92,16 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
         >
           <Typography
             sx={{
-              fontWeight: isBigPlanCompleted(bigPlan.status)
-                ? "bold"
-                : "normal",
+              fontWeight: bigPlan
+                ? isBigPlanCompleted(bigPlan.status)
+                  ? "bold"
+                  : "normal"
+                : "lighter",
             }}
           >
-            {bigPlan.name}
+            {bigPlan ? bigPlan.name : "Archived Big Plan"}
           </Typography>
-          <BigPlanStatusTag status={bigPlan.status} />
+          {bigPlan && <BigPlanStatusTag status={bigPlan.status} />}
           <TimePlanActivityKindTag kind={props.activity.kind} />
           <TimePlanActivityFeasabilityTag
             feasability={props.activity.feasability}
