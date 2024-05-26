@@ -21,10 +21,16 @@ export function filterActivitiesByTargetStatus(
 ): TimePlanActivity[] {
   return timePlanActivities.filter((activity) => {
     if (activity.target === TimePlanActivityTarget.INBOX_TASK) {
-      const inboxTask = targetInboxTasks.get(activity.target_ref_id)!;
+      const inboxTask = targetInboxTasks.get(activity.target_ref_id);
+      if (!inboxTask) {
+        return false;
+      }
       return !isInboxTaskCompleted(inboxTask.status);
     } else {
-      const bigPlan = targetBigPlans.get(activity.target_ref_id)!;
+      const bigPlan = targetBigPlans.get(activity.target_ref_id);
+      if (!bigPlan) {
+        return false;
+      }
       return !isBigPlanCompleted(bigPlan.status);
     }
   });
