@@ -9,10 +9,6 @@ import {
 } from "@jupiter/webapi-client";
 import {
   Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
   FormControl,
   FormLabel,
   Stack,
@@ -39,6 +35,7 @@ import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import { SectionCard } from "~/components/infra/section-card";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { timePlanActivityFeasabilityName } from "~/logic/domain/time-plan-activity-feasability";
 import { timePlanActivityKindName } from "~/logic/domain/time-plan-activity-kind";
@@ -217,102 +214,100 @@ export default function TimePlanActivity() {
       enableArchiveButton={inputsEnabled}
       returnLocation={`/workspace/time-plans/${id}`}
     >
-      <Card sx={{ marginBottom: "1rem" }}>
-        <GlobalError actionResult={actionData} />
-        <CardContent>
-          <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <FormLabel id="kind">Kind</FormLabel>
-              <ToggleButtonGroup
-                value={kind}
-                exclusive
-                onChange={(_, newKind) => setKind(newKind)}
-              >
-                <ToggleButton
-                  disabled={!inputsEnabled}
-                  value={TimePlanActivityKind.FINISH}
-                >
-                  {timePlanActivityKindName(TimePlanActivityKind.FINISH)}
-                </ToggleButton>
-                <ToggleButton
-                  disabled={!inputsEnabled}
-                  value={TimePlanActivityKind.MAKE_PROGRESS}
-                >
-                  {timePlanActivityKindName(TimePlanActivityKind.MAKE_PROGRESS)}
-                </ToggleButton>
-              </ToggleButtonGroup>
-              <input name="kind" type="hidden" value={kind} />
-              <FieldError actionResult={actionData} fieldName="/kind" />
-            </FormControl>
-
-            <FormControl fullWidth>
-              <FormLabel id="feasability">Feasability</FormLabel>
-              <ToggleButtonGroup
-                value={feasability}
-                exclusive
-                onChange={(_, newFeasability) => setFeasability(newFeasability)}
-              >
-                <ToggleButton
-                  disabled={!inputsEnabled}
-                  value={TimePlanActivityFeasability.MUST_DO}
-                >
-                  {timePlanActivityFeasabilityName(
-                    TimePlanActivityFeasability.MUST_DO
-                  )}
-                </ToggleButton>
-                <ToggleButton
-                  disabled={!inputsEnabled}
-                  value={TimePlanActivityFeasability.NICE_TO_HAVE}
-                >
-                  {timePlanActivityFeasabilityName(
-                    TimePlanActivityFeasability.NICE_TO_HAVE
-                  )}
-                </ToggleButton>
-                <ToggleButton
-                  disabled={!inputsEnabled}
-                  value={TimePlanActivityFeasability.STRETCH}
-                >
-                  {timePlanActivityFeasabilityName(
-                    TimePlanActivityFeasability.STRETCH
-                  )}
-                </ToggleButton>
-              </ToggleButtonGroup>
-              <input name="feasability" type="hidden" value={feasability} />
-              <FieldError actionResult={actionData} fieldName="/feasability" />
-            </FormControl>
-          </Stack>
-        </CardContent>
-
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="update"
+      <GlobalError actionResult={actionData} />
+      <SectionCard
+        title="Properties"
+        actions={[
+          <Button
+            key="save"
+            variant="contained"
+            disabled={!inputsEnabled}
+            type="submit"
+            name="intent"
+            value="update"
+          >
+            Save
+          </Button>,
+        ]}
+      >
+        <Stack spacing={2} useFlexGap>
+          <FormControl fullWidth>
+            <FormLabel id="kind">Kind</FormLabel>
+            <ToggleButtonGroup
+              value={kind}
+              exclusive
+              onChange={(_, newKind) => setKind(newKind)}
             >
-              Save
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
+              <ToggleButton
+                disabled={!inputsEnabled}
+                value={TimePlanActivityKind.FINISH}
+              >
+                {timePlanActivityKindName(TimePlanActivityKind.FINISH)}
+              </ToggleButton>
+              <ToggleButton
+                disabled={!inputsEnabled}
+                value={TimePlanActivityKind.MAKE_PROGRESS}
+              >
+                {timePlanActivityKindName(TimePlanActivityKind.MAKE_PROGRESS)}
+              </ToggleButton>
+            </ToggleButtonGroup>
+            <input name="kind" type="hidden" value={kind} />
+            <FieldError actionResult={actionData} fieldName="/kind" />
+          </FormControl>
+
+          <FormControl fullWidth>
+            <FormLabel id="feasability">Feasability</FormLabel>
+            <ToggleButtonGroup
+              value={feasability}
+              exclusive
+              onChange={(_, newFeasability) => setFeasability(newFeasability)}
+            >
+              <ToggleButton
+                disabled={!inputsEnabled}
+                value={TimePlanActivityFeasability.MUST_DO}
+              >
+                {timePlanActivityFeasabilityName(
+                  TimePlanActivityFeasability.MUST_DO
+                )}
+              </ToggleButton>
+              <ToggleButton
+                disabled={!inputsEnabled}
+                value={TimePlanActivityFeasability.NICE_TO_HAVE}
+              >
+                {timePlanActivityFeasabilityName(
+                  TimePlanActivityFeasability.NICE_TO_HAVE
+                )}
+              </ToggleButton>
+              <ToggleButton
+                disabled={!inputsEnabled}
+                value={TimePlanActivityFeasability.STRETCH}
+              >
+                {timePlanActivityFeasabilityName(
+                  TimePlanActivityFeasability.STRETCH
+                )}
+              </ToggleButton>
+            </ToggleButtonGroup>
+            <input name="feasability" type="hidden" value={feasability} />
+            <FieldError actionResult={actionData} fieldName="/feasability" />
+          </FormControl>
+        </Stack>
+      </SectionCard>
 
       {loaderData.targetInboxTask && (
-        <InboxTaskStack
-          topLevelInfo={topLevelInfo}
-          showLabel
-          showOptions={{
-            showStatus: true,
-            showDueDate: true,
-            showHandleMarkDone: true,
-            showHandleMarkNotDone: true,
-          }}
-          label="Target Inbox Task"
-          inboxTasks={[loaderData.targetInboxTask]}
-          onCardMarkDone={handleInboxTaskMarkDone}
-          onCardMarkNotDone={handleInboxTaskMarkNotDone}
-        />
+        <SectionCard title="Target Inbox Task">
+          <InboxTaskStack
+            topLevelInfo={topLevelInfo}
+            showOptions={{
+              showStatus: true,
+              showDueDate: true,
+              showHandleMarkDone: true,
+              showHandleMarkNotDone: true,
+            }}
+            inboxTasks={[loaderData.targetInboxTask]}
+            onCardMarkDone={handleInboxTaskMarkDone}
+            onCardMarkNotDone={handleInboxTaskMarkNotDone}
+          />
+        </SectionCard>
       )}
 
       {isWorkspaceFeatureAvailable(
@@ -320,14 +315,14 @@ export default function TimePlanActivity() {
         WorkspaceFeature.BIG_PLANS
       ) &&
         loaderData.targetBigPlan && (
-          <BigPlanStack
-            topLevelInfo={topLevelInfo}
-            showLabel
-            label="Target Big Plan"
-            bigPlans={[loaderData.targetBigPlan]}
-            onCardMarkDone={handleBigPlanMarkDone}
-            onCardMarkNotDone={handleBigPlanMarkNotDone}
-          />
+          <SectionCard title="Target Big Plan">
+            <BigPlanStack
+              topLevelInfo={topLevelInfo}
+              bigPlans={[loaderData.targetBigPlan]}
+              onCardMarkDone={handleBigPlanMarkDone}
+              onCardMarkNotDone={handleBigPlanMarkNotDone}
+            />
+          </SectionCard>
         )}
     </LeafPanel>
   );

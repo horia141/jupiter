@@ -4,6 +4,8 @@ import {
   type InboxTask,
   type TimePlanActivity,
 } from "@jupiter/webapi-client";
+import { isCompleted as isBigPlanCompleted } from "./big-plan-status";
+import { isCompleted as isInboxTaskCompleted } from "./inbox-task-status";
 import { compareTimePlanActivityFeasability } from "./time-plan-activity-feasability";
 import { compareTimePlanActivityKind } from "./time-plan-activity-kind";
 
@@ -11,6 +13,22 @@ const TIME_PLAN_ACTIVITY_TARGET_MAP = {
   [TimePlanActivityTarget.BIG_PLAN]: 0,
   [TimePlanActivityTarget.INBOX_TASK]: 1,
 };
+
+export function filterActivitiesByTargetStatus(
+  timePlanActivities: TimePlanActivity[],
+  targetInboxTasks: Map<string, InboxTask>,
+  targetBigPlans: Map<string, BigPlan>
+): TimePlanActivity[] {
+  return timePlanActivities.filter((activity) => {
+    if (activity.target === TimePlanActivityTarget.INBOX_TASK) {
+      const inboxTask = targetInboxTasks.get(activity.target_ref_id)!;
+      return !isInboxTaskCompleted(inboxTask.status);
+    } else {
+      const bigPlan = targetBigPlans.get(activity.target_ref_id)!;
+      return !isBigPlanCompleted(bigPlan.status);
+    }
+  });
+}
 
 export function sortTimePlanActivitiesNaturally(
   timePlanActivities: TimePlanActivity[],

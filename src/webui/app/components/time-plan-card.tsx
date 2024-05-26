@@ -31,7 +31,6 @@ export function TimePlanCard(props: TimePlanCardProps) {
         <EntityNameComponent name={timePlan.name} />
         <TimePlanSourceTag source={timePlan.source} />
         <PeriodTag period={timePlan.period} />
-        TODO: Something around activities here!
       </EntityLink>
     </EntityCard>
   );

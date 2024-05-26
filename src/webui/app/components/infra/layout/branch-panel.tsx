@@ -5,7 +5,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import { Box, Button, ButtonGroup, IconButton, styled } from "@mui/material";
-import { Link, useLocation } from "@remix-run/react";
+import { Form, Link, useLocation } from "@remix-run/react";
 import { AnimatePresence, motion, useIsPresent } from "framer-motion";
 import React, {
   useCallback,
@@ -130,58 +130,64 @@ export function BranchPanel(props: PropsWithChildren<BranchPanelProps>) {
       }}
       transition={{ duration: 0.5 }}
     >
-      {(isBigScreen || !shouldShowALeaf) && (
-        <BranchPanelControls id="branch-panel-controls">
-          <TrunkPanelControlsInner isbigscreen={isBigScreen ? "true" : "false"}>
-            <ButtonGroup size="small">
-              <IconButton onClick={handleScrollTop}>
-                <ArrowUpwardIcon />
-              </IconButton>
-              <IconButton onClick={handleScrollBottom}>
-                <ArrowDownwardIcon />
-              </IconButton>
-            </ButtonGroup>
-
-            {props.createLocation && (
-              <Button
-                variant="contained"
-                to={props.createLocation}
-                component={Link}
-              >
-                <AddIcon />
-              </Button>
-            )}
-
-            {props.extraControls && (
-              <TrunkPanelExtraControls
-                isBigScreen={isBigScreen}
-                controls={props.extraControls}
-              />
-            )}
-
-            {props.showArchiveButton && (
-              <IconButton
-                id="leaf-entity-archive"
-                sx={{ marginLeft: "auto" }}
-                disabled={!props.enableArchiveButton}
-                type="submit"
-                name="intent"
-                value="archive"
-              >
-                <DeleteIcon />
-              </IconButton>
-            )}
-
-            <IconButton
-              sx={{ marginLeft: !props.showArchiveButton ? "auto" : undefined }}
+      <Form method="post">
+        {(isBigScreen || !shouldShowALeaf) && (
+          <BranchPanelControls id="branch-panel-controls">
+            <TrunkPanelControlsInner
+              isbigscreen={isBigScreen ? "true" : "false"}
             >
-              <Link style={{ display: "flex" }} to={props.returnLocation}>
-                <CloseIcon />
-              </Link>
-            </IconButton>
-          </TrunkPanelControlsInner>
-        </BranchPanelControls>
-      )}
+              <ButtonGroup size="small">
+                <IconButton onClick={handleScrollTop}>
+                  <ArrowUpwardIcon />
+                </IconButton>
+                <IconButton onClick={handleScrollBottom}>
+                  <ArrowDownwardIcon />
+                </IconButton>
+              </ButtonGroup>
+
+              {props.createLocation && (
+                <Button
+                  variant="contained"
+                  to={props.createLocation}
+                  component={Link}
+                >
+                  <AddIcon />
+                </Button>
+              )}
+
+              {props.extraControls && (
+                <TrunkPanelExtraControls
+                  isBigScreen={isBigScreen}
+                  controls={props.extraControls}
+                />
+              )}
+
+              {props.showArchiveButton && (
+                <IconButton
+                  id="leaf-entity-archive"
+                  sx={{ marginLeft: "auto" }}
+                  disabled={!props.enableArchiveButton}
+                  type="submit"
+                  name="intent"
+                  value="archive"
+                >
+                  <DeleteIcon />
+                </IconButton>
+              )}
+
+              <IconButton
+                sx={{
+                  marginLeft: !props.showArchiveButton ? "auto" : undefined,
+                }}
+              >
+                <Link style={{ display: "flex" }} to={props.returnLocation}>
+                  <CloseIcon />
+                </Link>
+              </IconButton>
+            </TrunkPanelControlsInner>
+          </BranchPanelControls>
+        )}
+      </Form>
 
       <BranchPanelContent
         id="branch-panel-content"

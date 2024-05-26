@@ -1,10 +1,6 @@
 import { ApiError, RecurringTaskPeriod } from "@jupiter/webapi-client";
 import {
   Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
   FormControl,
   InputLabel,
   MenuItem,
@@ -24,6 +20,7 @@ import { getLoggedInApiClient } from "~/api-clients";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import { SectionCard } from "~/components/infra/section-card";
 import {
   aGlobalError,
   validationErrorToUIErrorInfo,
@@ -83,58 +80,57 @@ export default function NewTimePlan() {
   return (
     <LeafPanel key={"time-plans"} returnLocation="/workspace/time-plans">
       <GlobalError actionResult={actionData} />
-      <Card>
-        <CardContent>
-          <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <InputLabel id="rightNow" shrink margin="dense">
-                The Date
-              </InputLabel>
-              <OutlinedInput
-                type="date"
-                label="rightNow"
-                name="rightNow"
-                readOnly={!inputsEnabled}
-                defaultValue={DateTime.now().toISODate()}
-              />
+      <SectionCard
+        title="Properties"
+        actions={[
+          <Button
+            key="add"
+            id="time-plan-create"
+            variant="contained"
+            disabled={!inputsEnabled}
+            type="submit"
+            name="intent"
+            value="create"
+          >
+            Create
+          </Button>,
+        ]}
+      >
+        <Stack spacing={2} useFlexGap>
+          <FormControl fullWidth>
+            <InputLabel id="rightNow" shrink margin="dense">
+              The Date
+            </InputLabel>
+            <OutlinedInput
+              type="date"
+              label="rightNow"
+              name="rightNow"
+              readOnly={!inputsEnabled}
+              defaultValue={DateTime.now().toISODate()}
+            />
 
-              <FieldError actionResult={actionData} fieldName="/right_now" />
-            </FormControl>
+            <FieldError actionResult={actionData} fieldName="/right_now" />
+          </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="period">Period</InputLabel>
-              <Select
-                labelId="status"
-                name="period"
-                readOnly={!inputsEnabled}
-                defaultValue={RecurringTaskPeriod.DAILY}
-                label="Period"
-              >
-                {Object.values(RecurringTaskPeriod).map((s) => (
-                  <MenuItem key={s} value={s}>
-                    {periodName(s)}
-                  </MenuItem>
-                ))}
-              </Select>
-              <FieldError actionResult={actionData} fieldName="/period" />
-            </FormControl>
-          </Stack>
-        </CardContent>
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              id="time-plan-create"
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="create"
+          <FormControl fullWidth>
+            <InputLabel id="period">Period</InputLabel>
+            <Select
+              labelId="status"
+              name="period"
+              readOnly={!inputsEnabled}
+              defaultValue={RecurringTaskPeriod.DAILY}
+              label="Period"
             >
-              Create
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
+              {Object.values(RecurringTaskPeriod).map((s) => (
+                <MenuItem key={s} value={s}>
+                  {periodName(s)}
+                </MenuItem>
+              ))}
+            </Select>
+            <FieldError actionResult={actionData} fieldName="/period" />
+          </FormControl>
+        </Stack>
+      </SectionCard>
     </LeafPanel>
   );
 }

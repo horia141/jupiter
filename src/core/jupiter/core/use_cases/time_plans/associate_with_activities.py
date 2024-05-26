@@ -1,9 +1,24 @@
 """Use case for creating time plan actitivities for already existin activities."""
+from typing import cast
+
+from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.infra.generic_creator import generic_creator
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.time_plans.time_plan import TimePlan
-from jupiter.core.domain.time_plans.time_plan_activity import TimePlanActivity
+from jupiter.core.domain.time_plans.time_plan_activity import (
+    TimePlanActivity,
+    TimePlanAlreadyAssociatedWithTargetError,
+)
+from jupiter.core.domain.time_plans.time_plan_activity_feasability import (
+    TimePlanActivityFeasability,
+)
+from jupiter.core.domain.time_plans.time_plan_activity_kind import TimePlanActivityKind
+from jupiter.core.domain.time_plans.time_plan_activity_target import (
+    TimePlanActivityTarget,
+)
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     ProgressReporter,
@@ -64,12 +79,42 @@ class TimePlanAssociateWithActivitiesUseCase(
         new_time_plan_actitivies = []
 
         for activity in activities:
+            if activity.target == TimePlanActivityTarget.INBOX_TASK:
+                inbox_task = await uow.get_for(InboxTask).load_by_id(
+                    activity.target_ref_id
+                )
+
+                if inbox_task.source == InboxTaskSource.BIG_PLAN:
+                    big_plan = await uow.get_for(BigPlan).load_by_id(
+                        cast(EntityId, inbox_task.big_plan_ref_id)
+                    )
+
+                    try:
+                        new_big_plan_time_plan_activity = (
+                            TimePlanActivity.new_activity_for_big_plan(
+                                context.domain_context,
+                                time_plan_ref_id=args.ref_id,
+                                big_plan_ref_id=big_plan.ref_id,
+                                kind=TimePlanActivityKind.MAKE_PROGRESS,
+                                feasability=TimePlanActivityFeasability.MUST_DO,
+                            )
+                        )
+                        new_big_plan_time_plan_activity = await generic_creator(
+                            uow, progress_reporter, new_big_plan_time_plan_activity
+                        )
+                        new_time_plan_actitivies.append(new_big_plan_time_plan_activity)
+                    except TimePlanAlreadyAssociatedWithTargetError:
+                        # We were already working on this plan, no need to panic
+                        pass
+            else:
+                big_plan = await uow.get_for(BigPlan).load_by_id(activity.target_ref_id)
+
             new_time_plan_activity = TimePlanActivity.new_activity_from_existing(
                 context.domain_context,
                 time_plan_ref_id=args.ref_id,
                 existing_activity_name=activity.name,
                 existing_activity_target=activity.target,
-                existing_activity_target_ref_id=activity.target_ref_id,
+                existing_activity_target_ref_id=inbox_task.ref_id,
                 existing_activity_kind=activity.kind,
                 existing_activity_feasability=activity.feasability,
             )

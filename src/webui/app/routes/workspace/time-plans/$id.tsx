@@ -11,17 +11,12 @@ import {
 } from "@jupiter/webapi-client";
 import {
   Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
   FormControl,
   InputLabel,
   MenuItem,
   OutlinedInput,
   Select,
   Stack,
-  Typography,
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect, Response } from "@remix-run/node";
@@ -48,6 +43,7 @@ import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { BranchPanel } from "~/components/infra/layout/branch-panel";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
+import { SectionCard } from "~/components/infra/section-card";
 import { TimePlanActivityCard } from "~/components/time-plan-activity-card";
 import { TimePlanStack } from "~/components/time-plan-stack";
 import {
@@ -59,7 +55,6 @@ import { sortTimePlansNaturally } from "~/logic/domain/time-plan";
 import { sortTimePlanActivitiesNaturally } from "~/logic/domain/time-plan-activity";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { basicShouldRevalidate } from "~/rendering/standard-should-revalidate";
-import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
@@ -182,8 +177,6 @@ export default function TimePlanView() {
 
   const topLevelInfo = useContext(TopLevelInfoContext);
 
-  const isBigScreen = useBigScreen();
-
   const inputsEnabled =
     transition.state === "idle" && !loaderData.timePlan.archived;
 
@@ -214,89 +207,83 @@ export default function TimePlanView() {
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
         <GlobalError actionResult={actionData} />
-        <Card
-          sx={{
-            marginBottom: "1rem",
-            display: "flex",
-            flexDirection: isBigScreen ? "row" : "column",
-          }}
+        <SectionCard
+          title="Properties"
+          actions={[
+            <Button
+              key="change-time-config"
+              variant="contained"
+              disabled={!inputsEnabled}
+              type="submit"
+              name="intent"
+              value="change-time-config"
+            >
+              Save
+            </Button>,
+          ]}
         >
-          <CardContent sx={{ flexGrow: "1" }}>
-            <Stack direction={"row"} spacing={2} useFlexGap>
-              <FormControl fullWidth>
-                <InputLabel id="rightNow" shrink margin="dense">
-                  The Date
-                </InputLabel>
-                <OutlinedInput
-                  type="date"
-                  label="rightNow"
-                  name="rightNow"
-                  readOnly={!inputsEnabled}
-                  defaultValue={loaderData.timePlan.right_now}
-                />
+          <Stack direction={"row"} spacing={2} useFlexGap>
+            <FormControl fullWidth>
+              <InputLabel id="rightNow" shrink margin="dense">
+                The Date
+              </InputLabel>
+              <OutlinedInput
+                type="date"
+                label="rightNow"
+                name="rightNow"
+                readOnly={!inputsEnabled}
+                defaultValue={loaderData.timePlan.right_now}
+              />
 
-                <FieldError actionResult={actionData} fieldName="/right_now" />
-              </FormControl>
+              <FieldError actionResult={actionData} fieldName="/right_now" />
+            </FormControl>
 
-              <FormControl fullWidth>
-                <InputLabel id="period">Period</InputLabel>
-                <Select
-                  labelId="status"
-                  name="period"
-                  readOnly={!inputsEnabled}
-                  defaultValue={loaderData.timePlan.period}
-                  label="Period"
-                >
-                  {Object.values(RecurringTaskPeriod).map((s) => (
-                    <MenuItem key={s} value={s}>
-                      {periodName(s)}
-                    </MenuItem>
-                  ))}
-                </Select>
-                <FieldError actionResult={actionData} fieldName="/status" />
-              </FormControl>
-            </Stack>
-          </CardContent>
-          <CardActions>
-            <ButtonGroup>
-              <Button
-                variant="contained"
-                disabled={!inputsEnabled}
-                type="submit"
-                name="intent"
-                value="change-time-config"
+            <FormControl fullWidth>
+              <InputLabel id="period">Period</InputLabel>
+              <Select
+                labelId="status"
+                name="period"
+                readOnly={!inputsEnabled}
+                defaultValue={loaderData.timePlan.period}
+                label="Period"
               >
-                Save
-              </Button>
-            </ButtonGroup>
-          </CardActions>
-        </Card>
-        <Card>
-          <CardContent>
-            <EntityNoteEditor
-              initialNote={loaderData.note}
-              inputsEnabled={inputsEnabled}
-            />
-          </CardContent>
-        </Card>
+                {Object.values(RecurringTaskPeriod).map((s) => (
+                  <MenuItem key={s} value={s}>
+                    {periodName(s)}
+                  </MenuItem>
+                ))}
+              </Select>
+              <FieldError actionResult={actionData} fieldName="/status" />
+            </FormControl>
+          </Stack>
+        </SectionCard>
+        <SectionCard title="Notes">
+          <EntityNoteEditor
+            initialNote={loaderData.note}
+            inputsEnabled={inputsEnabled}
+          />
+        </SectionCard>
 
-        <Card>
-          <CardContent sx={{ overflowX: "scroll" }}>
-            <ButtonGroup>
-              <Button
-                variant="contained"
-                disabled={!inputsEnabled}
-                to={`/workspace/inbox-tasks/new?timePlanReason=for-time-plan&timePlanRefId=${loaderData.timePlan.ref_id}`}
-                component={Link}
-              >
-                New Inbox Task
-              </Button>
+        <SectionCard
+          title="Activities"
+          actions={[
+            <Button
+              key="new-inbox-task"
+              variant="outlined"
+              disabled={!inputsEnabled}
+              to={`/workspace/inbox-tasks/new?timePlanReason=for-time-plan&timePlanRefId=${loaderData.timePlan.ref_id}`}
+              component={Link}
+            >
+              New Inbox Task
+            </Button>,
 
+            <>
               {isWorkspaceFeatureAvailable(
                 topLevelInfo.workspace,
                 WorkspaceFeature.BIG_PLANS
               ) && (
                 <Button
+                  key="new-big-plan"
                   variant="outlined"
                   disabled={!inputsEnabled}
                   to={`/workspace/big-plans/new?timePlanReason=for-time-plan&timePlanRefId=${loaderData.timePlan.ref_id}`}
@@ -305,21 +292,25 @@ export default function TimePlanView() {
                   New Big Plan
                 </Button>
               )}
+            </>,
 
-              <Button
-                variant="outlined"
-                disabled={!inputsEnabled}
-                to={`/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-inbox-tasks`}
-                component={Link}
-              >
-                From Current Inbox Tasks
-              </Button>
+            <Button
+              key="from-current-inbox-tasks"
+              variant="outlined"
+              disabled={!inputsEnabled}
+              to={`/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-inbox-tasks`}
+              component={Link}
+            >
+              From Current Inbox Tasks
+            </Button>,
 
+            <>
               {isWorkspaceFeatureAvailable(
                 topLevelInfo.workspace,
                 WorkspaceFeature.BIG_PLANS
               ) && (
                 <Button
+                  key="from-current-big-plans"
                   variant="outlined"
                   disabled={!inputsEnabled}
                   to={`/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-big-plans`}
@@ -328,100 +319,88 @@ export default function TimePlanView() {
                   From Current Big Plans
                 </Button>
               )}
-
-              <Button
-                variant="outlined"
-                disabled={!inputsEnabled}
-                to={`/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-time-plans/${loaderData.timePlan.ref_id}`}
-                component={Link}
-              >
-                From Time Plans
-              </Button>
-            </ButtonGroup>
-          </CardContent>
-        </Card>
-
-        <EntityStack>
-          {sortedActivities.map((entry) => (
-            <TimePlanActivityCard
-              key={`time-plan-activity-${entry.ref_id}`}
-              topLevelInfo={topLevelInfo}
-              timePlan={loaderData.timePlan}
-              activity={entry}
-              indent={
-                entry.target === TimePlanActivityTarget.INBOX_TASK &&
-                targetInboxTasksByRefId.get(entry.target_ref_id)
-                  ?.big_plan_ref_id
-                  ? 2
-                  : 0
-              }
-              inboxTasksByRefId={targetInboxTasksByRefId}
-              bigPlansByRefId={targetBigPlansByRefId}
-            />
-          ))}
-        </EntityStack>
+            </>,
+            <Button
+              key="from-time-plans"
+              variant="outlined"
+              disabled={!inputsEnabled}
+              to={`/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-time-plans/${loaderData.timePlan.ref_id}`}
+              component={Link}
+            >
+              From Time Plans
+            </Button>,
+          ]}
+        >
+          <EntityStack>
+            {sortedActivities.map((entry) => (
+              <TimePlanActivityCard
+                key={`time-plan-activity-${entry.ref_id}`}
+                topLevelInfo={topLevelInfo}
+                timePlan={loaderData.timePlan}
+                activity={entry}
+                indent={
+                  entry.target === TimePlanActivityTarget.INBOX_TASK &&
+                  targetInboxTasksByRefId.get(entry.target_ref_id)
+                    ?.big_plan_ref_id
+                    ? 2
+                    : 0
+                }
+                inboxTasksByRefId={targetInboxTasksByRefId}
+                bigPlansByRefId={targetBigPlansByRefId}
+              />
+            ))}
+          </EntityStack>
+        </SectionCard>
 
         {loaderData.completedNontargetInboxTasks.length > 0 && (
-          <InboxTaskStack
-            topLevelInfo={topLevelInfo}
-            showLabel
-            label="Untracked Inbox Tasks completed in this period"
-            showOptions={{
-              showStatus: true,
-              showEisen: true,
-              showDifficulty: true,
-            }}
-            inboxTasks={loaderData.completedNontargetInboxTasks}
-          />
+          <SectionCard title="Completed & Untracked Inbox Tasks">
+            <InboxTaskStack
+              topLevelInfo={topLevelInfo}
+              showOptions={{
+                showStatus: true,
+                showEisen: true,
+                showDifficulty: true,
+              }}
+              inboxTasks={loaderData.completedNontargetInboxTasks}
+            />
+          </SectionCard>
         )}
 
         {loaderData.completedNontargetBigPlans &&
           loaderData.completedNontargetBigPlans.length > 0 && (
-            <BigPlanStack
-              topLevelInfo={topLevelInfo}
-              showLabel
-              label="Untracked Big Plans completed in this period"
-              bigPlans={loaderData.completedNontargetBigPlans}
-            />
+            <SectionCard title="Completed & Untracked Big Plans">
+              <BigPlanStack
+                topLevelInfo={topLevelInfo}
+                bigPlans={loaderData.completedNontargetBigPlans}
+              />
+            </SectionCard>
           )}
 
         {sortedSubTimePlans.length > 0 && (
-          <>
-            <Typography variant="h5" sx={{ marginBottom: "1rem" }}>
-              Other Time Plans in this Period
-            </Typography>
-
+          <SectionCard title="Lower Time Plans">
             <TimePlanStack
               topLevelInfo={topLevelInfo}
               timePlans={sortedSubTimePlans}
             />
-          </>
+          </SectionCard>
         )}
 
         {loaderData.higherTimePlan && (
-          <>
-            <Typography variant="h5" sx={{ marginBottom: "1rem" }}>
-              Higher Time Plan
-            </Typography>
-
+          <SectionCard title="Higher Time Plan">
             <TimePlanStack
               topLevelInfo={topLevelInfo}
               timePlans={[loaderData.higherTimePlan]}
             />
-          </>
+          </SectionCard>
         )}
 
         {loaderData.previousTimePlan && (
-          <>
-            <Typography variant="h5" sx={{ marginBottom: "1rem" }}>
-              Previous Time Plan
-            </Typography>
-
+          <SectionCard title="Previous Time Plan">
             <TimePlanStack
               topLevelInfo={topLevelInfo}
               timePlans={[loaderData.previousTimePlan]}
             />
-          </>
+          </SectionCard>
         )}
       </NestingAwareBlock>
 

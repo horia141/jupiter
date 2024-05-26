@@ -1,12 +1,5 @@
 import { ApiError, TimePlanActivityTarget } from "@jupiter/webapi-client";
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
-  Stack,
-} from "@mui/material";
+import { Button, Stack } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -21,6 +14,7 @@ import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import { SectionCard } from "~/components/infra/section-card";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import type { InboxTaskParent } from "~/logic/domain/inbox-task";
 import {
@@ -155,63 +149,61 @@ export default function TimePlanAddFromCurrentInboxTasks() {
       returnLocation={`/workspace/time-plans/${id}`}
       initialExpansionState={LeafPanelExpansionState.LARGE}
     >
-      <Card sx={{ marginBottom: "1rem" }}>
-        <GlobalError actionResult={actionData} />
-        <CardContent>
-          <Stack spacing={2} useFlexGap>
-            {sortedInboxTasks.map((inboxTask) => (
-              <InboxTaskCard
-                key={`inbox-task-${inboxTask.ref_id}`}
-                topLevelInfo={topLevelInfo}
-                inboxTask={inboxTask}
-                compact
-                allowSelect
-                selected={
-                  alreadyIncludedInboxTaskRefIds.has(inboxTask.ref_id) ||
-                  targetInboxTaskRefIds.has(inboxTask.ref_id)
+      <GlobalError actionResult={actionData} />
+      <SectionCard
+        title="Current Inbox Tasks"
+        actions={[
+          <Button
+            key="add"
+            variant="contained"
+            disabled={!inputsEnabled}
+            type="submit"
+            name="intent"
+            value="add"
+          >
+            Add
+          </Button>,
+        ]}
+      >
+        <Stack spacing={2} useFlexGap>
+          {sortedInboxTasks.map((inboxTask) => (
+            <InboxTaskCard
+              key={`inbox-task-${inboxTask.ref_id}`}
+              topLevelInfo={topLevelInfo}
+              inboxTask={inboxTask}
+              compact
+              allowSelect
+              selected={
+                alreadyIncludedInboxTaskRefIds.has(inboxTask.ref_id) ||
+                targetInboxTaskRefIds.has(inboxTask.ref_id)
+              }
+              showOptions={{
+                showProject: true,
+                showEisen: true,
+                showDifficulty: true,
+                showDueDate: true,
+                showParent: true,
+              }}
+              parent={entriesByRefId[inboxTask.ref_id]}
+              onClick={(it) => {
+                if (alreadyIncludedInboxTaskRefIds.has(inboxTask.ref_id)) {
+                  return;
                 }
-                showOptions={{
-                  showProject: true,
-                  showEisen: true,
-                  showDifficulty: true,
-                  showDueDate: true,
-                  showParent: true,
-                }}
-                parent={entriesByRefId[inboxTask.ref_id]}
-                onClick={(it) => {
-                  if (alreadyIncludedInboxTaskRefIds.has(inboxTask.ref_id)) {
-                    return;
-                  }
 
-                  setTargetInboxTaskRefIds((itri) =>
-                    toggleInboxTaskRefIds(itri, it.ref_id)
-                  );
-                }}
-              />
-            ))}
-          </Stack>
-        </CardContent>
+                setTargetInboxTaskRefIds((itri) =>
+                  toggleInboxTaskRefIds(itri, it.ref_id)
+                );
+              }}
+            />
+          ))}
+        </Stack>
 
         <input
           name="targetInboxTaskRefIds"
           type="hidden"
           value={Array.from(targetInboxTaskRefIds).join(",")}
         />
-
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="add"
-            >
-              Add
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
+      </SectionCard>
     </LeafPanel>
   );
 }

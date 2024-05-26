@@ -73,46 +73,56 @@ class InboxTaskLoadUseCase(
 
         if inbox_task.working_mem_ref_id is not None:
             working_mem = await uow.get_for(WorkingMem).load_by_id(
-                inbox_task.working_mem_ref_id
+                inbox_task.working_mem_ref_id, allow_archived=True
             )
         else:
             working_mem = None
 
         if inbox_task.habit_ref_id is not None:
-            habit = await uow.get_for(Habit).load_by_id(inbox_task.habit_ref_id)
+            habit = await uow.get_for(Habit).load_by_id(
+                inbox_task.habit_ref_id, allow_archived=True
+            )
         else:
             habit = None
 
         if inbox_task.chore_ref_id is not None:
-            chore = await uow.get_for(Chore).load_by_id(inbox_task.chore_ref_id)
+            chore = await uow.get_for(Chore).load_by_id(
+                inbox_task.chore_ref_id, allow_archived=True
+            )
         else:
             chore = None
 
         if inbox_task.big_plan_ref_id is not None:
-            big_plan = await uow.get_for(BigPlan).load_by_id(inbox_task.big_plan_ref_id)
+            big_plan = await uow.get_for(BigPlan).load_by_id(
+                inbox_task.big_plan_ref_id, allow_archived=True
+            )
         else:
             big_plan = None
 
         if inbox_task.metric_ref_id is not None:
-            metric = await uow.get_for(Metric).load_by_id(inbox_task.metric_ref_id)
+            metric = await uow.get_for(Metric).load_by_id(
+                inbox_task.metric_ref_id, allow_archived=True
+            )
         else:
             metric = None
 
         if inbox_task.person_ref_id is not None:
-            person = await uow.get_for(Person).load_by_id(inbox_task.person_ref_id)
+            person = await uow.get_for(Person).load_by_id(
+                inbox_task.person_ref_id, allow_archived=True
+            )
         else:
             person = None
 
         if inbox_task.slack_task_ref_id is not None:
             slack_task = await uow.get_for(SlackTask).load_by_id(
-                inbox_task.slack_task_ref_id
+                inbox_task.slack_task_ref_id, allow_archived=True
             )
         else:
             slack_task = None
 
         if inbox_task.email_task_ref_id is not None:
             email_task = await uow.get_for(EmailTask).load_by_id(
-                inbox_task.email_task_ref_id
+                inbox_task.email_task_ref_id, allow_archived=True
             )
         else:
             email_task = None

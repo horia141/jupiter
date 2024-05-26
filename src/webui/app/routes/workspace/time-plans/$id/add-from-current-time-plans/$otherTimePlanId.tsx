@@ -1,13 +1,6 @@
 import type { BigPlan, InboxTask } from "@jupiter/webapi-client";
 import { ApiError, TimePlanActivityTarget } from "@jupiter/webapi-client";
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
-  Typography,
-} from "@mui/material";
+import { Button } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -18,13 +11,18 @@ import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
+import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import { SectionCard } from "~/components/infra/section-card";
 import { TimePlanActivityCard } from "~/components/time-plan-activity-card";
 import { TimePlanCard } from "~/components/time-plan-card";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
-import { sortTimePlanActivitiesNaturally } from "~/logic/domain/time-plan-activity";
+import {
+  filterActivitiesByTargetStatus,
+  sortTimePlanActivitiesNaturally,
+} from "~/logic/domain/time-plan-activity";
 import { LeafPanelExpansionState } from "~/rendering/leaf-panel-expansion";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -152,8 +150,13 @@ export default function TimePlanAddFromCurrentTimePlans() {
       : []
   );
 
-  const sortedOtherActivities = sortTimePlanActivitiesNaturally(
+  const filteredOtherActivities = filterActivitiesByTargetStatus(
     loaderData.otherActivities,
+    otherTargetInboxTasksByRefId,
+    otherTargetBigPlansByRefId
+  );
+  const sortedOtherActivities = sortTimePlanActivitiesNaturally(
+    filteredOtherActivities,
     otherTargetInboxTasksByRefId,
     otherTargetBigPlansByRefId
   );
@@ -164,9 +167,23 @@ export default function TimePlanAddFromCurrentTimePlans() {
       returnLocation={`/workspace/time-plans/${id}`}
       initialExpansionState={LeafPanelExpansionState.LARGE}
     >
-      <Card sx={{ marginBottom: "1rem" }}>
-        <GlobalError actionResult={actionData} />
-        <CardContent>
+      <GlobalError actionResult={actionData} />
+      <SectionCard
+        title="Current Activities"
+        actions={[
+          <Button
+            key="add"
+            variant="contained"
+            disabled={!inputsEnabled}
+            type="submit"
+            name="intent"
+            value="add"
+          >
+            Add
+          </Button>,
+        ]}
+      >
+        <EntityStack>
           {sortedOtherActivities.map((activity) => (
             <TimePlanActivityCard
               key={`time-plan-activity-${activity.ref_id}`}
@@ -198,54 +215,34 @@ export default function TimePlanAddFromCurrentTimePlans() {
               bigPlansByRefId={otherTargetBigPlansByRefId}
             />
           ))}
-        </CardContent>
-
-        {loaderData.otherHigherTimePlan && (
-          <>
-            <Typography variant="h5" sx={{ marginBottom: "1rem" }}>
-              Higher Time Plan
-            </Typography>
-            <TimePlanCard
-              topLevelInfo={topLevelInfo}
-              timePlan={loaderData.otherHigherTimePlan}
-              relativeToTimePlan={loaderData.mainTimePlan}
-            />
-          </>
-        )}
-
-        {loaderData.otherPreviousTimePlan && (
-          <>
-            <Typography variant="h5" sx={{ marginBottom: "1rem" }}>
-              Previous Time Plan
-            </Typography>
-            <TimePlanCard
-              topLevelInfo={topLevelInfo}
-              timePlan={loaderData.otherPreviousTimePlan}
-              relativeToTimePlan={loaderData.mainTimePlan}
-            />
-          </>
-        )}
+        </EntityStack>
 
         <input
           name="targetActivitiesRefIds"
           type="hidden"
           value={Array.from(targetActivitiesRefIds).join(",")}
         />
+      </SectionCard>
 
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="add"
-            >
-              Add
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
+      {loaderData.otherHigherTimePlan && (
+        <SectionCard title="Higher Time Plan">
+          <TimePlanCard
+            topLevelInfo={topLevelInfo}
+            timePlan={loaderData.otherHigherTimePlan}
+            relativeToTimePlan={loaderData.mainTimePlan}
+          />
+        </SectionCard>
+      )}
+
+      {loaderData.otherPreviousTimePlan && (
+        <SectionCard title="Previous Time Plan">
+          <TimePlanCard
+            topLevelInfo={topLevelInfo}
+            timePlan={loaderData.otherPreviousTimePlan}
+            relativeToTimePlan={loaderData.mainTimePlan}
+          />
+        </SectionCard>
+      )}
     </LeafPanel>
   );
 }

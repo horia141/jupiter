@@ -1,12 +1,5 @@
 import { ApiError, TimePlanActivityTarget } from "@jupiter/webapi-client";
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
-  Stack,
-} from "@mui/material";
+import { Button, Stack } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -21,6 +14,7 @@ import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import { SectionCard } from "~/components/infra/section-card";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import type { BigPlanParent } from "~/logic/domain/big-plan";
 import {
@@ -157,60 +151,59 @@ export default function TimePlanAddFromCurrentBigPlans() {
       returnLocation={`/workspace/time-plans/${id}`}
       initialExpansionState={LeafPanelExpansionState.LARGE}
     >
-      <Card sx={{ marginBottom: "1rem" }}>
-        <GlobalError actionResult={actionData} />
-        <CardContent>
-          <Stack spacing={2} useFlexGap>
-            {sortedBigPlans.map((bigPlan) => (
-              <BigPlanCard
-                key={`big-plan-${bigPlan.ref_id}`}
-                topLevelInfo={topLevelInfo}
-                bigPlan={bigPlan}
-                compact
-                allowSelect
-                selected={
-                  alreadyIncludedBigPlanRefIds.has(bigPlan.ref_id) ||
-                  targetBigPlanRefIds.has(bigPlan.ref_id)
-                }
-                showOptions={{
-                  showDueDate: true,
-                  showParent: true,
-                }}
-                parent={entriesByRefId[bigPlan.ref_id]}
-                onClick={(it) => {
-                  if (alreadyIncludedBigPlanRefIds.has(bigPlan.ref_id)) {
-                    return;
-                  }
+      <GlobalError actionResult={actionData} />
 
-                  setTargetBigPlanRefIds((itri) =>
-                    toggleBigPlanRefIds(itri, it.ref_id)
-                  );
-                }}
-              />
-            ))}
-          </Stack>
-        </CardContent>
+      <SectionCard
+        title="Current Big Plans"
+        actions={[
+          <Button
+            key="add"
+            variant="contained"
+            disabled={!inputsEnabled}
+            type="submit"
+            name="intent"
+            value="add"
+          >
+            Add
+          </Button>,
+        ]}
+      >
+        <Stack spacing={2} useFlexGap>
+          {sortedBigPlans.map((bigPlan) => (
+            <BigPlanCard
+              key={`big-plan-${bigPlan.ref_id}`}
+              topLevelInfo={topLevelInfo}
+              bigPlan={bigPlan}
+              compact
+              allowSelect
+              selected={
+                alreadyIncludedBigPlanRefIds.has(bigPlan.ref_id) ||
+                targetBigPlanRefIds.has(bigPlan.ref_id)
+              }
+              showOptions={{
+                showDueDate: true,
+                showParent: true,
+              }}
+              parent={entriesByRefId[bigPlan.ref_id]}
+              onClick={(it) => {
+                if (alreadyIncludedBigPlanRefIds.has(bigPlan.ref_id)) {
+                  return;
+                }
+
+                setTargetBigPlanRefIds((itri) =>
+                  toggleBigPlanRefIds(itri, it.ref_id)
+                );
+              }}
+            />
+          ))}
+        </Stack>
 
         <input
           name="targetBigPlanRefIds"
           type="hidden"
           value={Array.from(targetBigPlanRefIds).join(",")}
         />
-
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="add"
-            >
-              Add
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
+      </SectionCard>
     </LeafPanel>
   );
 }

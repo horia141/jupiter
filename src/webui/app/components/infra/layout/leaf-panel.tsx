@@ -4,7 +4,7 @@ import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import DeleteIcon from "@mui/icons-material/Delete";
 import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight";
 import SwitchLeftIcon from "@mui/icons-material/SwitchLeft";
-import { ButtonGroup, IconButton, styled } from "@mui/material";
+import { ButtonGroup, IconButton, Stack, styled } from "@mui/material";
 import { Form, Link, useLocation, useNavigate } from "@remix-run/react";
 import { motion, useIsPresent } from "framer-motion";
 import type { PropsWithChildren } from "react";
@@ -239,7 +239,7 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
           ref={containerRef}
           isbigscreen={isBigScreen ? "true" : "false"}
         >
-          {props.children}
+          <Stack spacing={2}>{props.children}</Stack>
         </LeafPanelContent>
       </Form>
     </LeafPanelFrame>
