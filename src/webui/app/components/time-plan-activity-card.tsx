@@ -14,8 +14,6 @@ import { InboxTaskStatusTag } from "~/components/inbox-task-status-tag";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { TimePlanActivityFeasabilityTag } from "~/components/time-plan-activity-feasability-tag";
 import { TimePlanActivityKindTag } from "~/components/time-plan-activity-kind-tag";
-import { isCompleted as isBigPlanCompleted } from "~/logic/domain/big-plan-status";
-import { isCompleted } from "~/logic/domain/inbox-task-status";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import type { TopLevelInfo } from "~/top-level-context";
 import { ADateTag } from "./adate-tag";
@@ -26,6 +24,7 @@ interface TimePlanActivityCardProps {
   activity: TimePlanActivity;
   inboxTasksByRefId: Map<string, InboxTask>;
   bigPlansByRefId: Map<string, BigPlan>;
+  activityDoneness: Record<string, boolean>;
   allowSelect?: boolean;
   selected?: boolean;
   indent?: number;
@@ -55,7 +54,7 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
           <Typography
             sx={{
               fontWeight: inboxTask
-                ? isCompleted(inboxTask.status)
+                ? props.activityDoneness[props.activity.ref_id]
                   ? "bold"
                   : "normal"
                 : "lighter",
@@ -99,7 +98,7 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
           <Typography
             sx={{
               fontWeight: bigPlan
-                ? isBigPlanCompleted(bigPlan.status)
+                ? props.activityDoneness[props.activity.ref_id]
                   ? "bold"
                   : "normal"
                 : "lighter",

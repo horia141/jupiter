@@ -1,4 +1,7 @@
 """Retrieve details about a time plan."""
+from collections import defaultdict
+from typing import cast
+
 from jupiter.core.domain.big_plans.big_plan import BigPlan, BigPlanRepository
 from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.core.domain.core import schedules
@@ -6,10 +9,12 @@ from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask, InboxTaskRepository
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
+from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.infra.generic_loader import generic_loader
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.time_plans.time_plan import TimePlan, TimePlanRepository
 from jupiter.core.domain.time_plans.time_plan_activity import TimePlanActivity
+from jupiter.core.domain.time_plans.time_plan_activity_kind import TimePlanActivityKind
 from jupiter.core.domain.time_plans.time_plan_activity_target import (
     TimePlanActivityTarget,
 )
@@ -47,6 +52,7 @@ class TimePlanLoadResult(UseCaseResultBase):
     activities: list[TimePlanActivity]
     target_inbox_tasks: list[InboxTask] | None
     target_big_plans: list[BigPlan] | None
+    activity_doneness: dict[EntityId, bool] | None
     completed_nontarget_inbox_tasks: list[InboxTask] | None
     completed_nottarget_big_plans: list[BigPlan] | None
     sub_period_time_plans: list[TimePlan] | None
@@ -141,6 +147,73 @@ class TimePlanLoadUseCase(
                     filter_exclude_ref_ids=[bp.ref_id for bp in target_big_plans],
                 )
 
+        activity_doneness = None
+        if args.include_targets:
+            activity_doneness = {}
+            target_inbox_tasks_by_ref_id = {
+                it.ref_id: it for it in cast(list[InboxTask], target_inbox_tasks)
+            }
+            target_big_plans_by_ref_id = {
+                bp.ref_id: bp for bp in cast(list[BigPlan], target_big_plans)
+            }
+            activities_by_big_plan_ref_id: defaultdict[
+                EntityId, list[EntityId]
+            ] = defaultdict(list)
+
+            for activity in activities:
+                if activity.target != TimePlanActivityTarget.INBOX_TASK:
+                    continue
+
+                inbox_task = target_inbox_tasks_by_ref_id[activity.target_ref_id]
+
+                if activity.kind == TimePlanActivityKind.FINISH:
+                    activity_doneness[activity.ref_id] = inbox_task.is_completed
+                elif activity.kind == TimePlanActivityKind.MAKE_PROGRESS:
+                    from rich import print
+
+                    print(time_plan.start_date, time_plan.end_date, inbox_task)
+                    modified_in_time_plan = (
+                        inbox_task.is_working_or_more
+                        and time_plan.start_date.to_timestamp_at_start_of_day()
+                        <= inbox_task.last_modified_time
+                        and inbox_task.last_modified_time
+                        <= time_plan.end_date.to_timestamp_at_end_of_day()
+                    )
+                    activity_doneness[activity.ref_id] = (
+                        inbox_task.is_completed or modified_in_time_plan
+                    )
+
+                if inbox_task.source == InboxTaskSource.BIG_PLAN:
+                    activities_by_big_plan_ref_id[
+                        cast(EntityId, inbox_task.big_plan_ref_id)
+                    ].append(activity.ref_id)
+
+            for activity in activities:
+                if activity.target != TimePlanActivityTarget.BIG_PLAN:
+                    continue
+
+                big_plan = target_big_plans_by_ref_id[activity.target_ref_id]
+
+                if activity.kind == TimePlanActivityKind.FINISH:
+                    activity_doneness[activity.ref_id] = big_plan.is_completed
+                elif activity.kind == TimePlanActivityKind.MAKE_PROGRESS:
+                    modified_in_time_plan = (
+                        big_plan.is_working_or_more
+                        and time_plan.start_date.to_timestamp_at_start_of_day()
+                        <= big_plan.last_modified_time
+                        and big_plan.last_modified_time
+                        <= time_plan.end_date.to_timestamp_at_end_of_day()
+                    )
+                    all_subactivities_are_done = all(
+                        activity_doneness[a]
+                        for a in activities_by_big_plan_ref_id[big_plan.ref_id]
+                    )
+                    activity_doneness[activity.ref_id] = (
+                        big_plan.is_completed
+                        or modified_in_time_plan
+                        or all_subactivities_are_done
+                    )
+
         sub_period_time_plans = None
         higher_time_plan = None
         previous_time_plan = None
@@ -173,6 +246,7 @@ class TimePlanLoadUseCase(
             activities=list(activities),
             target_inbox_tasks=target_inbox_tasks,
             target_big_plans=target_big_plans,
+            activity_doneness=activity_doneness,
             completed_nontarget_inbox_tasks=completed_nontarget_inbox_tasks,
             completed_nottarget_big_plans=completed_nontarget_big_plans,
             sub_period_time_plans=sub_period_time_plans,

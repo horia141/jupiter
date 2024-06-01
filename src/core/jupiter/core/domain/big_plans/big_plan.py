@@ -171,6 +171,16 @@ class BigPlan(LeafEntity):
             ctx, actionable_date=actionable_date, due_date=due_date
         )
 
+    @property
+    def is_working_or_more(self) -> bool:
+        """Whether this task is being worked on or not."""
+        return self.status.is_working_or_more
+
+    @property
+    def is_completed(self) -> bool:
+        """Whether the big plan is completed or not."""
+        return self.status.is_completed
+
     @staticmethod
     def _check_actionable_and_due_dates(
         actionable_date: ADate | None,

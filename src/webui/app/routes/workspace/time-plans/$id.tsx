@@ -104,6 +104,7 @@ export async function loader({ request, params }: LoaderArgs) {
       activities: result.activities,
       targetInboxTasks: result.target_inbox_tasks as Array<InboxTask>,
       targetBigPlans: result.target_big_plans,
+      activityDoneness: result.activity_doneness as Record<string, boolean>,
       completedNontargetInboxTasks:
         result.completed_nontarget_inbox_tasks as Array<InboxTask>,
       completedNontargetBigPlans: result.completed_nottarget_big_plans,
@@ -352,6 +353,7 @@ export default function TimePlanView() {
                 }
                 inboxTasksByRefId={targetInboxTasksByRefId}
                 bigPlansByRefId={targetBigPlansByRefId}
+                activityDoneness={loaderData.activityDoneness}
               />
             ))}
           </EntityStack>

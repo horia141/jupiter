@@ -970,6 +970,16 @@ class InboxTask(LeafEntity):
         """Allow user changes for an inbox task."""
         return self.source.allow_user_changes
 
+    @property
+    def is_working_or_more(self) -> bool:
+        """Whether this task is being worked on or not."""
+        return self.status.is_working_or_more
+
+    @property
+    def is_completed(self) -> bool:
+        """Whether this task is complete or not."""
+        return self.status.is_completed
+
     @staticmethod
     def _build_name_for_habit(
         name: InboxTaskName,

@@ -76,6 +76,10 @@ export async function loader({ request, params }: LoaderArgs) {
       otherActivities: otherResult.activities,
       otherTargetInboxTasks: otherResult.target_inbox_tasks as Array<InboxTask>,
       otherTargetBigPlans: otherResult.target_big_plans,
+      otherActivityDoneness: otherResult.activity_doneness as Record<
+        string,
+        boolean
+      >,
       otherHigherTimePlan: otherResult.higher_time_plan as TimePlan,
       otherPreviousTimePlan: otherResult.previous_time_plan as TimePlan,
     });
@@ -248,6 +252,7 @@ export default function TimePlanAddFromCurrentTimePlans() {
               }}
               inboxTasksByRefId={otherTargetInboxTasksByRefId}
               bigPlansByRefId={otherTargetBigPlansByRefId}
+              activityDoneness={loaderData.otherActivityDoneness}
             />
           ))}
         </EntityStack>

@@ -425,6 +425,7 @@ from .time_plan_find_result import TimePlanFindResult
 from .time_plan_find_result_entry import TimePlanFindResultEntry
 from .time_plan_load_args import TimePlanLoadArgs
 from .time_plan_load_result import TimePlanLoadResult
+from .time_plan_load_result_activity_doneness_type_0 import TimePlanLoadResultActivityDonenessType0
 from .time_plan_remove_args import TimePlanRemoveArgs
 from .time_plan_source import TimePlanSource
 from .user import User
@@ -912,6 +913,7 @@ __all__ = (
     "TimePlanFindResultEntry",
     "TimePlanLoadArgs",
     "TimePlanLoadResult",
+    "TimePlanLoadResultActivityDonenessType0",
     "TimePlanRemoveArgs",
     "TimePlanSource",
     "User",
