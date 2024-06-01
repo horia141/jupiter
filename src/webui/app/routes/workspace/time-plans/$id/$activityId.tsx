@@ -24,7 +24,7 @@ import {
   useTransition,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
@@ -151,6 +151,11 @@ export default function TimePlanActivity() {
   const [feasability, setFeasability] = useState(
     loaderData.timePlanActivity.feasability
   );
+
+  useEffect(() => {
+    setKind(loaderData.timePlanActivity.kind);
+    setFeasability(loaderData.timePlanActivity.feasability);
+  }, [loaderData]);
 
   const cardActionFetcher = useFetcher();
 

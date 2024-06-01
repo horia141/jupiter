@@ -169,8 +169,6 @@ class TimePlanLoadUseCase(
                 if activity.kind == TimePlanActivityKind.FINISH:
                     activity_doneness[activity.ref_id] = inbox_task.is_completed
                 elif activity.kind == TimePlanActivityKind.MAKE_PROGRESS:
-                    from rich import print
-
                     print(time_plan.start_date, time_plan.end_date, inbox_task)
                     modified_in_time_plan = (
                         inbox_task.is_working_or_more
