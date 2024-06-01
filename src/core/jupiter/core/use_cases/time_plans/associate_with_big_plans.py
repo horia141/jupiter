@@ -33,6 +33,7 @@ class TimePlanAssociateWithBigPlansArgs(UseCaseArgsBase):
 
     ref_id: EntityId
     big_plan_ref_ids: list[EntityId]
+    override_existing_dates: bool
 
 
 @use_case_result
@@ -60,7 +61,7 @@ class TimePlanAssociateWithBigPlansUseCase(
         """Execute the command's actions."""
         workspace = context.workspace
 
-        _ = await uow.get_for(TimePlan).load_by_id(args.ref_id)
+        time_plan = await uow.get_for(TimePlan).load_by_id(args.ref_id)
 
         big_plan_collection = await uow.get_for(BigPlanCollection).load_by_parent(
             workspace.ref_id
@@ -85,6 +86,17 @@ class TimePlanAssociateWithBigPlansUseCase(
                 uow, progress_reporter, new_time_plan_activity
             )
             new_time_plan_actitivies.append(new_time_plan_activity)
+
+            if (
+                big_plan.actionable_date is None or big_plan.due_date is None
+            ) or args.override_existing_dates:
+                big_plan = big_plan.change_dates_via_time_plan(
+                    context.domain_context,
+                    actionable_date=time_plan.start_date,
+                    due_date=time_plan.end_date,
+                )
+                await uow.get_for(BigPlan).save(big_plan)
+                await progress_reporter.mark_updated(big_plan)
 
         return TimePlanAssociateWithBigPlansResult(
             new_time_plan_activities=new_time_plan_actitivies

@@ -23,6 +23,7 @@ from jupiter.core.framework.entity import (
     entity,
     update_entity_action,
 )
+from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.repository import LeafEntityRepository
 from jupiter.core.framework.update_action import UpdateAction
 
@@ -60,6 +61,7 @@ class BigPlan(LeafEntity):
         due_date: ADate | None,
     ) -> "BigPlan":
         """Create a big plan."""
+        BigPlan._check_actionable_and_due_dates(actionable_date, due_date)
         accepted_time = ctx.action_timestamp if status.is_accepted_or_more else None
         working_time = ctx.action_timestamp if status.is_working_or_more else None
         completed_time = ctx.action_timestamp if status.is_completed else None
@@ -101,6 +103,10 @@ class BigPlan(LeafEntity):
         due_date: UpdateAction[ADate | None],
     ) -> "BigPlan":
         """Update the big plan."""
+        BigPlan._check_actionable_and_due_dates(
+            actionable_date.or_else(self.actionable_date),
+            due_date.or_else(self.due_date),
+        )
         new_name = name.or_else(self.name)
 
         new_accepted_time = self.accepted_time
@@ -150,6 +156,33 @@ class BigPlan(LeafEntity):
             actionable_date=new_actionable_date,
             due_date=new_due_date,
         )
+
+    @update_entity_action
+    def change_dates_via_time_plan(
+        self,
+        ctx: DomainContext,
+        actionable_date: ADate,
+        due_date: ADate,
+    ) -> "BigPlan":
+        """Update the inbox task."""
+        self._check_actionable_and_due_dates(actionable_date, due_date)
+
+        return self._new_version(
+            ctx, actionable_date=actionable_date, due_date=due_date
+        )
+
+    @staticmethod
+    def _check_actionable_and_due_dates(
+        actionable_date: ADate | None,
+        due_date: ADate | None,
+    ) -> None:
+        if actionable_date is None or due_date is None:
+            return
+
+        if actionable_date > due_date:
+            raise InputValidationError(
+                f"The actionable date {actionable_date} should be before the due date {due_date}",
+            )
 
 
 class BigPlanRepository(LeafEntityRepository[BigPlan], abc.ABC):

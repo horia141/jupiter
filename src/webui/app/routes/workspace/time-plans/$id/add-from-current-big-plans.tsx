@@ -51,6 +51,9 @@ export async function loader({ request, params }: LoaderArgs) {
     ).timePlans.timePlanLoad({
       ref_id: id,
       allow_archived: false,
+      include_targets: false,
+      include_completed_nontarget: false,
+      include_other_time_plans: false,
     });
 
     const bigPlansResult = await getLoggedInApiClient(
@@ -96,6 +99,19 @@ export async function action({ request, params }: ActionArgs) {
         ).timePlans.timePlanAssociateWithBigPlans({
           ref_id: id,
           big_plan_ref_ids: form.targetBigPlanRefIds,
+          override_existing_dates: false,
+        });
+
+        return redirect(`/workspace/time-plans/${id}`);
+      }
+
+      case "add-and-override": {
+        await getLoggedInApiClient(
+          session
+        ).timePlans.timePlanAssociateWithBigPlans({
+          ref_id: id,
+          big_plan_ref_ids: form.targetBigPlanRefIds,
+          override_existing_dates: true,
         });
 
         return redirect(`/workspace/time-plans/${id}`);
@@ -165,6 +181,16 @@ export default function TimePlanAddFromCurrentBigPlans() {
             value="add"
           >
             Add
+          </Button>,
+          <Button
+            key="add-and-override"
+            variant="outlined"
+            disabled={!inputsEnabled}
+            type="submit"
+            name="intent"
+            value="add-and-override"
+          >
+            Add and Override Dates
           </Button>,
         ]}
       >

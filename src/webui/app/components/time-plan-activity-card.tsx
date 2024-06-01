@@ -18,6 +18,7 @@ import { isCompleted as isBigPlanCompleted } from "~/logic/domain/big-plan-statu
 import { isCompleted } from "~/logic/domain/inbox-task-status";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import type { TopLevelInfo } from "~/top-level-context";
+import { ADateTag } from "./adate-tag";
 
 interface TimePlanActivityCardProps {
   topLevelInfo: TopLevelInfo;
@@ -62,6 +63,9 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
             {inboxTask ? inboxTask.name : "Archived Task"}
           </Typography>
           {inboxTask && <InboxTaskStatusTag status={inboxTask.status} />}
+          {inboxTask?.due_date && (
+            <ADateTag label="Due At" date={inboxTask.due_date} />
+          )}
           <TimePlanActivityKindTag kind={props.activity.kind} />
           <TimePlanActivityFeasabilityTag
             feasability={props.activity.feasability}
@@ -102,6 +106,9 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
             {bigPlan ? bigPlan.name : "Archived Big Plan"}
           </Typography>
           {bigPlan && <BigPlanStatusTag status={bigPlan.status} />}
+          {bigPlan?.due_date && (
+            <ADateTag label="Due At" date={bigPlan.due_date} />
+          )}
           <TimePlanActivityKindTag kind={props.activity.kind} />
           <TimePlanActivityFeasabilityTag
             feasability={props.activity.feasability}

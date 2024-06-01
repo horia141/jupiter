@@ -945,6 +945,26 @@ class InboxTask(LeafEntity):
             difficulty=the_difficulty,
         )
 
+    @update_entity_action
+    def change_due_date_via_time_plan(
+        self,
+        ctx: DomainContext,
+        due_date: ADate,
+    ) -> "InboxTask":
+        """Update the inbox task."""
+        if not self.allow_user_changes:
+            raise CannotModifyGeneratedTaskError("name")
+
+        actionable_date = self.actionable_date
+        if actionable_date is not None and actionable_date > due_date:
+            actionable_date = None
+
+        self._check_actionable_and_due_dates(actionable_date, due_date)
+
+        return self._new_version(
+            ctx, actionable_date=actionable_date, due_date=due_date
+        )
+
     @property
     def allow_user_changes(self) -> bool:
         """Allow user changes for an inbox task."""
@@ -1044,7 +1064,7 @@ class InboxTask(LeafEntity):
             return
 
         if actionable_date > due_date:
-            raise Exception(
+            raise InputValidationError(
                 f"The actionable date {actionable_date} should be before the due date {due_date}",
             )
 

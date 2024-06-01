@@ -10,5 +10,6 @@ import type { EntityId } from './EntityId';
 export type TimePlanAssociateWithInboxTasksArgs = {
     ref_id: EntityId;
     inbox_task_ref_ids: Array<EntityId>;
+    override_existing_dates: boolean;
 };
 

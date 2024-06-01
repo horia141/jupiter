@@ -15,11 +15,11 @@ export type TimePlanLoadResult = {
     time_plan: TimePlan;
     note: Note;
     activities: Array<TimePlanActivity>;
-    target_inbox_tasks: Array<InboxTask>;
+    target_inbox_tasks?: (Array<InboxTask> | null);
     target_big_plans?: (Array<BigPlan> | null);
-    completed_nontarget_inbox_tasks: Array<InboxTask>;
+    completed_nontarget_inbox_tasks?: (Array<InboxTask> | null);
     completed_nottarget_big_plans?: (Array<BigPlan> | null);
-    sub_period_time_plans: Array<TimePlan>;
+    sub_period_time_plans?: (Array<TimePlan> | null);
     higher_time_plan?: (TimePlan | null);
     previous_time_plan?: (TimePlan | null);
 };

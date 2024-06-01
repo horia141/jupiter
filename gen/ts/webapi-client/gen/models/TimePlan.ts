@@ -25,5 +25,7 @@ export type TimePlan = {
     right_now: ADate;
     period: RecurringTaskPeriod;
     timeline: string;
+    start_date: ADate;
+    end_date: ADate;
 };
 

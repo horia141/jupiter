@@ -51,6 +51,9 @@ export async function loader({ request, params }: LoaderArgs) {
     ).timePlans.timePlanLoad({
       ref_id: id,
       allow_archived: false,
+      include_targets: false,
+      include_completed_nontarget: false,
+      include_other_time_plans: false,
     });
 
     const inboxTasksResult = await getLoggedInApiClient(
@@ -94,6 +97,19 @@ export async function action({ request, params }: ActionArgs) {
         ).timePlans.timePlanAssociateWithInboxTasks({
           ref_id: id,
           inbox_task_ref_ids: form.targetInboxTaskRefIds,
+          override_existing_dates: false,
+        });
+
+        return redirect(`/workspace/time-plans/${id}`);
+      }
+
+      case "add-and-override": {
+        await getLoggedInApiClient(
+          session
+        ).timePlans.timePlanAssociateWithInboxTasks({
+          ref_id: id,
+          inbox_task_ref_ids: form.targetInboxTaskRefIds,
+          override_existing_dates: true,
         });
 
         return redirect(`/workspace/time-plans/${id}`);
@@ -162,6 +178,16 @@ export default function TimePlanAddFromCurrentInboxTasks() {
             value="add"
           >
             Add
+          </Button>,
+          <Button
+            key="add-and-override"
+            variant="outlined"
+            disabled={!inputsEnabled}
+            type="submit"
+            name="intent"
+            value="add-and-override"
+          >
+            Add and Override Dates
           </Button>,
         ]}
       >

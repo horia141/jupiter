@@ -1,7 +1,9 @@
 import type {
+  ADate,
   BigPlanSummary,
   Project,
   ProjectSummary,
+  TimePlan,
 } from "@jupiter/webapi-client";
 import {
   ApiError,
@@ -84,10 +86,23 @@ export async function loader({ request }: LoaderArgs) {
 
   const timePlanReason = query.timePlanReason || "standard";
 
+  let associatedTimePlan = null;
   if (timePlanReason === "for-time-plan") {
     if (!query.timePlanRefId) {
       throw new Response("Missing Time Plan Id", { status: 500 });
     }
+
+    const timePlanResult = await getLoggedInApiClient(
+      session
+    ).timePlans.timePlanLoad({
+      allow_archived: false,
+      ref_id: query.timePlanRefId,
+      include_targets: false,
+      include_completed_nontarget: false,
+      include_other_time_plans: false,
+    });
+
+    associatedTimePlan = timePlanResult.time_plan;
   }
 
   const bigPlanReason = query.bigPlanReason || "standard";
@@ -136,6 +151,7 @@ export async function loader({ request }: LoaderArgs) {
   return json({
     timePlanReason: timePlanReason,
     bigPlanReason: bigPlanReason,
+    associatedTimePlan: associatedTimePlan,
     defaultProject: defaultProject,
     defaultBigPlan: defaultBigPlan,
     ownerBigPlan: ownerBigPlan,
@@ -435,8 +451,13 @@ export default function NewInboxTask() {
                 readOnly={!inputsEnabled}
                 name="actionableDate"
                 defaultValue={
-                  loaderData.bigPlanReason === "for-big-plan" &&
-                  loaderData.ownerBigPlan?.actionable_date
+                  loaderData.timePlanReason === "for-time-plan"
+                    ? aDateToDate(
+                        (loaderData.associatedTimePlan as TimePlan)
+                          .start_date as ADate
+                      ).toFormat("yyyy-MM-dd")
+                    : loaderData.bigPlanReason === "for-big-plan" &&
+                      loaderData.ownerBigPlan?.actionable_date
                     ? aDateToDate(
                         loaderData.ownerBigPlan.actionable_date
                       ).toFormat("yyyy-MM-dd")
@@ -458,8 +479,13 @@ export default function NewInboxTask() {
                 readOnly={!inputsEnabled}
                 name="dueDate"
                 defaultValue={
-                  loaderData.bigPlanReason === "for-big-plan" &&
-                  loaderData.ownerBigPlan?.due_date
+                  loaderData.timePlanReason === "for-time-plan"
+                    ? aDateToDate(
+                        (loaderData.associatedTimePlan as TimePlan)
+                          .end_date as ADate
+                      ).toFormat("yyyy-MM-dd")
+                    : loaderData.bigPlanReason === "for-big-plan" &&
+                      loaderData.ownerBigPlan?.due_date
                     ? aDateToDate(loaderData.ownerBigPlan.due_date).toFormat(
                         "yyyy-MM-dd"
                       )

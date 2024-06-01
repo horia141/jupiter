@@ -1,4 +1,4 @@
-import type { ProjectSummary } from "@jupiter/webapi-client";
+import type { ADate, ProjectSummary, TimePlan } from "@jupiter/webapi-client";
 import { ApiError, WorkspaceFeature } from "@jupiter/webapi-client";
 import {
   Button,
@@ -26,6 +26,7 @@ import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
+import { aDateToDate } from "~/logic/domain/adate";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -55,10 +56,23 @@ export async function loader({ request }: LoaderArgs) {
 
   const timePlanReason = query.timePlanReason || "standard";
 
+  let associatedTimePlan = null;
   if (timePlanReason === "for-time-plan") {
     if (!query.timePlanRefId) {
       throw new Response("Missing Time Plan Id", { status: 500 });
     }
+
+    const timePlanResult = await getLoggedInApiClient(
+      session
+    ).timePlans.timePlanLoad({
+      allow_archived: false,
+      ref_id: query.timePlanRefId,
+      include_targets: false,
+      include_completed_nontarget: false,
+      include_other_time_plans: false,
+    });
+
+    associatedTimePlan = timePlanResult.time_plan;
   }
 
   const summaryResponse = await getLoggedInApiClient(
@@ -69,6 +83,7 @@ export async function loader({ request }: LoaderArgs) {
 
   return json({
     timePlanReason: timePlanReason,
+    associatedTimePlan: associatedTimePlan,
     rootProject: summaryResponse.root_project as ProjectSummary,
     allProjects: summaryResponse.projects as Array<ProjectSummary>,
   });
@@ -180,6 +195,14 @@ export default function NewBigPlan() {
                 label="actionableDate"
                 name="actionableDate"
                 readOnly={!inputsEnabled}
+                defaultValue={
+                  loaderData.timePlanReason === "for-time-plan"
+                    ? aDateToDate(
+                        (loaderData.associatedTimePlan as TimePlan)
+                          .start_date as ADate
+                      ).toFormat("yyyy-MM-dd")
+                    : undefined
+                }
               />
 
               <FieldError
@@ -197,6 +220,14 @@ export default function NewBigPlan() {
                 label="dueDate"
                 name="dueDate"
                 readOnly={!inputsEnabled}
+                defaultValue={
+                  loaderData.timePlanReason === "for-time-plan"
+                    ? aDateToDate(
+                        (loaderData.associatedTimePlan as TimePlan)
+                          .end_date as ADate
+                      ).toFormat("yyyy-MM-dd")
+                    : undefined
+                }
               />
 
               <FieldError actionResult={actionData} fieldName="/due_date" />

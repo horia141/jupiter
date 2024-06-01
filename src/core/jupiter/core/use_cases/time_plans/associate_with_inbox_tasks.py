@@ -41,6 +41,7 @@ class TimePlanAssociateWithInboxTasksArgs(UseCaseArgsBase):
 
     ref_id: EntityId
     inbox_task_ref_ids: list[EntityId]
+    override_existing_dates: bool
 
 
 @use_case_result
@@ -68,7 +69,7 @@ class TimePlanAssociateWithInboxTasksUseCase(
         """Execute the command's actions."""
         workspace = context.workspace
 
-        _ = await uow.get_for(TimePlan).load_by_id(args.ref_id)
+        time_plan = await uow.get_for(TimePlan).load_by_id(args.ref_id)
 
         inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             workspace.ref_id
@@ -110,6 +111,15 @@ class TimePlanAssociateWithInboxTasksUseCase(
             )
             new_time_plan_actitivies.append(new_time_plan_activity)
 
+            if inbox_task.allow_user_changes and (
+                inbox_task.due_date is None or args.override_existing_dates
+            ):
+                inbox_task = inbox_task.change_due_date_via_time_plan(
+                    context.domain_context, due_date=time_plan.end_date
+                )
+                await uow.get_for(InboxTask).save(inbox_task)
+                await progress_reporter.mark_updated(inbox_task)
+
         for big_plan in big_plans:
             try:
                 new_time_plan_activity = TimePlanActivity.new_activity_for_big_plan(
@@ -123,6 +133,15 @@ class TimePlanAssociateWithInboxTasksUseCase(
                     uow, progress_reporter, new_time_plan_activity
                 )
                 new_time_plan_actitivies.append(new_time_plan_activity)
+
+                if big_plan.actionable_date is None or big_plan.due_date is None:
+                    big_plan = big_plan.change_dates_via_time_plan(
+                        context.domain_context,
+                        actionable_date=time_plan.start_date,
+                        due_date=time_plan.end_date,
+                    )
+                    await uow.get_for(BigPlan).save(big_plan)
+                    await progress_reporter.mark_updated(big_plan)
             except TimePlanAlreadyAssociatedWithTargetError:
                 # We were already working on this plan, no need to panic
                 pass

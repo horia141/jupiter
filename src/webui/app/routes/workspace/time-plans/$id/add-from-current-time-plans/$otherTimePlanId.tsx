@@ -1,4 +1,4 @@
-import type { BigPlan, InboxTask } from "@jupiter/webapi-client";
+import type { BigPlan, InboxTask, TimePlan } from "@jupiter/webapi-client";
 import { ApiError, TimePlanActivityTarget } from "@jupiter/webapi-client";
 import { Button } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
@@ -49,6 +49,9 @@ export async function loader({ request, params }: LoaderArgs) {
     ).timePlans.timePlanLoad({
       ref_id: id,
       allow_archived: false,
+      include_targets: false,
+      include_completed_nontarget: false,
+      include_other_time_plans: false,
     });
 
     const otherResult = await getLoggedInApiClient(
@@ -56,6 +59,9 @@ export async function loader({ request, params }: LoaderArgs) {
     ).timePlans.timePlanLoad({
       ref_id: otherTimePlanId,
       allow_archived: true,
+      include_targets: true,
+      include_completed_nontarget: false,
+      include_other_time_plans: true,
     });
 
     return json({
@@ -63,10 +69,10 @@ export async function loader({ request, params }: LoaderArgs) {
       mainActivities: mainResult.activities,
       otherTimePlan: otherResult.time_plan,
       otherActivities: otherResult.activities,
-      otherTargetInboxTasks: otherResult.target_inbox_tasks,
+      otherTargetInboxTasks: otherResult.target_inbox_tasks as Array<InboxTask>,
       otherTargetBigPlans: otherResult.target_big_plans,
-      otherHigherTimePlan: otherResult.higher_time_plan,
-      otherPreviousTimePlan: otherResult.previous_time_plan,
+      otherHigherTimePlan: otherResult.higher_time_plan as TimePlan,
+      otherPreviousTimePlan: otherResult.previous_time_plan as TimePlan,
     });
   } catch (error) {
     if (error instanceof ApiError && error.status === StatusCodes.NOT_FOUND) {
@@ -97,6 +103,20 @@ export async function action({ request, params }: ActionArgs) {
           ref_id: id,
           other_time_plan_ref_id: otherTimePlanId,
           activity_ref_ids: form.targetActivitiesRefIds,
+          override_existing_dates: false,
+        });
+
+        return redirect(`/workspace/time-plans/${id}`);
+      }
+
+      case "add-and-override": {
+        await getLoggedInApiClient(
+          session
+        ).timePlans.timePlanAssociateWithActivities({
+          ref_id: id,
+          other_time_plan_ref_id: otherTimePlanId,
+          activity_ref_ids: form.targetActivitiesRefIds,
+          override_existing_dates: true,
         });
 
         return redirect(`/workspace/time-plans/${id}`);
@@ -180,6 +200,16 @@ export default function TimePlanAddFromCurrentTimePlans() {
             value="add"
           >
             Add
+          </Button>,
+          <Button
+            key="add-and-override"
+            variant="outlined"
+            disabled={!inputsEnabled}
+            type="submit"
+            name="intent"
+            value="add-and-override"
+          >
+            Add and Override Dates
           </Button>,
         ]}
       >

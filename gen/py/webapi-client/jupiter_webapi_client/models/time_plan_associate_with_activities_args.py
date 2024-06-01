@@ -14,11 +14,13 @@ class TimePlanAssociateWithActivitiesArgs:
         ref_id (str): A generic entity id.
         other_time_plan_ref_id (str): A generic entity id.
         activity_ref_ids (List[str]):
+        override_existing_dates (bool):
     """
 
     ref_id: str
     other_time_plan_ref_id: str
     activity_ref_ids: List[str]
+    override_existing_dates: bool
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -28,6 +30,8 @@ class TimePlanAssociateWithActivitiesArgs:
 
         activity_ref_ids = self.activity_ref_ids
 
+        override_existing_dates = self.override_existing_dates
+
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -35,6 +39,7 @@ class TimePlanAssociateWithActivitiesArgs:
                 "ref_id": ref_id,
                 "other_time_plan_ref_id": other_time_plan_ref_id,
                 "activity_ref_ids": activity_ref_ids,
+                "override_existing_dates": override_existing_dates,
             }
         )
 
@@ -49,10 +54,13 @@ class TimePlanAssociateWithActivitiesArgs:
 
         activity_ref_ids = cast(List[str], d.pop("activity_ref_ids"))
 
+        override_existing_dates = d.pop("override_existing_dates")
+
         time_plan_associate_with_activities_args = cls(
             ref_id=ref_id,
             other_time_plan_ref_id=other_time_plan_ref_id,
             activity_ref_ids=activity_ref_ids,
+            override_existing_dates=override_existing_dates,
         )
 
         time_plan_associate_with_activities_args.additional_properties = d

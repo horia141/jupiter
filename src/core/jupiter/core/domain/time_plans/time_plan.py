@@ -1,6 +1,7 @@
 """A plan for a particular period of time."""
 import abc
 
+from jupiter.core.domain.core import schedules
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
@@ -38,6 +39,8 @@ class TimePlan(LeafEntity):
     right_now: ADate
     period: RecurringTaskPeriod
     timeline: str
+    start_date: ADate
+    end_date: ADate
 
     activities = ContainsMany(TimePlanActivity, time_plan_ref_id=IsRefId())
     note = OwnsOne(Note, domain=NoteDomain.TIME_PLAN, source_entity_ref_id=IsRefId())
@@ -51,6 +54,12 @@ class TimePlan(LeafEntity):
         period: RecurringTaskPeriod,
     ) -> "TimePlan":
         """Create a time plan, as instructed by the user."""
+        schedule = schedules.get_schedule(
+            period=period,
+            name=EntityName("Test"),
+            right_now=right_now.to_timestamp_at_end_of_day(),
+        )
+
         return TimePlan._create(
             ctx,
             name=TimePlan.build_name(right_now, period),
@@ -59,6 +68,8 @@ class TimePlan(LeafEntity):
             right_now=right_now,
             period=period,
             timeline=infer_timeline(period, right_now.to_timestamp_at_end_of_day()),
+            start_date=schedule.first_day,
+            end_date=schedule.end_day,
         )
 
     @update_entity_action
@@ -69,6 +80,12 @@ class TimePlan(LeafEntity):
         period: UpdateAction[RecurringTaskPeriod],
     ) -> "TimePlan":
         """Update the time plan."""
+        schedule = schedules.get_schedule(
+            period=period.or_else(self.period),
+            name=EntityName("Test"),
+            right_now=right_now.or_else(self.right_now).to_timestamp_at_end_of_day(),
+        )
+
         return self._new_version(
             ctx,
             name=TimePlan.build_name(
@@ -80,6 +97,8 @@ class TimePlan(LeafEntity):
                 period.or_else(self.period),
                 right_now.or_else(self.right_now).to_timestamp_at_end_of_day(),
             ),
+            start_date=schedule.first_day,
+            end_date=schedule.end_day,
         )
 
     @staticmethod

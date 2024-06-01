@@ -2,6 +2,7 @@ import type {
   BigPlan,
   InboxTask,
   ProjectSummary,
+  TimePlan,
 } from "@jupiter/webapi-client";
 import {
   ApiError,
@@ -91,6 +92,9 @@ export async function loader({ request, params }: LoaderArgs) {
     const result = await getLoggedInApiClient(session).timePlans.timePlanLoad({
       ref_id: id,
       allow_archived: true,
+      include_targets: true,
+      include_completed_nontarget: true,
+      include_other_time_plans: true,
     });
 
     return json({
@@ -98,13 +102,14 @@ export async function loader({ request, params }: LoaderArgs) {
       timePlan: result.time_plan,
       note: result.note,
       activities: result.activities,
-      targetInboxTasks: result.target_inbox_tasks,
+      targetInboxTasks: result.target_inbox_tasks as Array<InboxTask>,
       targetBigPlans: result.target_big_plans,
-      completedNontargetInboxTasks: result.completed_nontarget_inbox_tasks,
+      completedNontargetInboxTasks:
+        result.completed_nontarget_inbox_tasks as Array<InboxTask>,
       completedNontargetBigPlans: result.completed_nottarget_big_plans,
-      subPeriodTimePlans: result.sub_period_time_plans,
-      higherTimePlan: result.higher_time_plan,
-      previousTimePlan: result.previous_time_plan,
+      subPeriodTimePlans: result.sub_period_time_plans as Array<TimePlan>,
+      higherTimePlan: result.higher_time_plan as TimePlan,
+      previousTimePlan: result.previous_time_plan as TimePlan,
     });
   } catch (error) {
     if (error instanceof ApiError && error.status === StatusCodes.NOT_FOUND) {

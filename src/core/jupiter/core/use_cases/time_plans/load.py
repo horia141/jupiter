@@ -33,6 +33,9 @@ class TimePlanLoadArgs(UseCaseArgsBase):
 
     ref_id: EntityId
     allow_archived: bool
+    include_targets: bool
+    include_completed_nontarget: bool
+    include_other_time_plans: bool
 
 
 @use_case_result
@@ -42,11 +45,11 @@ class TimePlanLoadResult(UseCaseResultBase):
     time_plan: TimePlan
     note: Note
     activities: list[TimePlanActivity]
-    target_inbox_tasks: list[InboxTask]
+    target_inbox_tasks: list[InboxTask] | None
     target_big_plans: list[BigPlan] | None
-    completed_nontarget_inbox_tasks: list[InboxTask]
+    completed_nontarget_inbox_tasks: list[InboxTask] | None
     completed_nottarget_big_plans: list[BigPlan] | None
-    sub_period_time_plans: list[TimePlan]
+    sub_period_time_plans: list[TimePlan] | None
     higher_time_plan: TimePlan | None
     previous_time_plan: TimePlan | None
 
@@ -82,27 +85,32 @@ class TimePlanLoadUseCase(
             right_now=time_plan.right_now.to_timestamp_at_end_of_day(),
         )
 
+        target_inbox_tasks = None
         inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             workspace.ref_id
         )
-        target_inbox_tasks = await uow.get_for(InboxTask).find_all(
-            parent_ref_id=inbox_task_collection.ref_id,
-            allow_archived=True,
-            filter_ref_ids=[
-                a.target_ref_id
-                for a in activities
-                if a.target == TimePlanActivityTarget.INBOX_TASK
-            ],
-        )
-        completed_nontarget_inbox_tasks = await uow.get(
-            InboxTaskRepository
-        ).find_completed_in_range(
-            parent_ref_id=inbox_task_collection.ref_id,
-            allow_archived=True,
-            filter_start_completed_date=schedule.first_day,
-            filter_end_completed_date=schedule.end_day,
-            filter_exclude_ref_ids=[it.ref_id for it in target_inbox_tasks],
-        )
+        if args.include_targets:
+            target_inbox_tasks = await uow.get_for(InboxTask).find_all(
+                parent_ref_id=inbox_task_collection.ref_id,
+                allow_archived=True,
+                filter_ref_ids=[
+                    a.target_ref_id
+                    for a in activities
+                    if a.target == TimePlanActivityTarget.INBOX_TASK
+                ],
+            )
+
+        completed_nontarget_inbox_tasks = None
+        if args.include_completed_nontarget and target_inbox_tasks is not None:
+            completed_nontarget_inbox_tasks = await uow.get(
+                InboxTaskRepository
+            ).find_completed_in_range(
+                parent_ref_id=inbox_task_collection.ref_id,
+                allow_archived=True,
+                filter_start_completed_date=schedule.first_day,
+                filter_end_completed_date=schedule.end_day,
+                filter_exclude_ref_ids=[it.ref_id for it in target_inbox_tasks],
+            )
 
         target_big_plans = None
         completed_nontarget_big_plans = None
@@ -110,46 +118,54 @@ class TimePlanLoadUseCase(
             big_plan_collection = await uow.get_for(BigPlanCollection).load_by_parent(
                 workspace.ref_id
             )
-            target_big_plans = await uow.get_for(BigPlan).find_all(
-                parent_ref_id=big_plan_collection.ref_id,
-                allow_archived=True,
-                filter_ref_ids=[
-                    a.target_ref_id
-                    for a in activities
-                    if a.target == TimePlanActivityTarget.BIG_PLAN
-                ],
+
+            if args.include_targets:
+                target_big_plans = await uow.get_for(BigPlan).find_all(
+                    parent_ref_id=big_plan_collection.ref_id,
+                    allow_archived=True,
+                    filter_ref_ids=[
+                        a.target_ref_id
+                        for a in activities
+                        if a.target == TimePlanActivityTarget.BIG_PLAN
+                    ],
+                )
+
+            if args.include_completed_nontarget and target_big_plans:
+                completed_nontarget_big_plans = await uow.get(
+                    BigPlanRepository
+                ).find_completed_in_range(
+                    parent_ref_id=big_plan_collection.ref_id,
+                    allow_archived=True,
+                    filter_start_completed_date=schedule.first_day,
+                    filter_end_completed_date=schedule.end_day,
+                    filter_exclude_ref_ids=[bp.ref_id for bp in target_big_plans],
+                )
+
+        sub_period_time_plans = None
+        higher_time_plan = None
+        previous_time_plan = None
+        if args.include_other_time_plans:
+            sub_period_time_plans = await uow.get(TimePlanRepository).find_all_in_range(
+                parent_ref_id=time_plan.time_plan_domain.ref_id,
+                allow_archived=False,
+                filter_periods=time_plan.period.all_smaller_periods,
+                filter_start_date=schedule.first_day,
+                filter_end_date=schedule.end_day,
             )
-            completed_nontarget_big_plans = await uow.get(
-                BigPlanRepository
-            ).find_completed_in_range(
-                parent_ref_id=big_plan_collection.ref_id,
-                allow_archived=True,
-                filter_start_completed_date=schedule.first_day,
-                filter_end_completed_date=schedule.end_day,
-                filter_exclude_ref_ids=[bp.ref_id for bp in target_big_plans],
+
+            higher_time_plan = await uow.get(TimePlanRepository).find_higher(
+                parent_ref_id=time_plan.time_plan_domain.ref_id,
+                allow_archived=False,
+                period=time_plan.period,
+                right_now=time_plan.right_now,
             )
 
-        sub_period_time_plans = await uow.get(TimePlanRepository).find_all_in_range(
-            parent_ref_id=time_plan.time_plan_domain.ref_id,
-            allow_archived=False,
-            filter_periods=time_plan.period.all_smaller_periods,
-            filter_start_date=schedule.first_day,
-            filter_end_date=schedule.end_day,
-        )
-
-        higher_time_plan = await uow.get(TimePlanRepository).find_higher(
-            parent_ref_id=time_plan.time_plan_domain.ref_id,
-            allow_archived=False,
-            period=time_plan.period,
-            right_now=time_plan.right_now,
-        )
-
-        previous_time_plan = await uow.get(TimePlanRepository).find_previous(
-            parent_ref_id=time_plan.time_plan_domain.ref_id,
-            allow_archived=False,
-            period=time_plan.period,
-            right_now=time_plan.right_now,
-        )
+            previous_time_plan = await uow.get(TimePlanRepository).find_previous(
+                parent_ref_id=time_plan.time_plan_domain.ref_id,
+                allow_archived=False,
+                period=time_plan.period,
+                right_now=time_plan.right_now,
+            )
 
         return TimePlanLoadResult(
             time_plan=time_plan,

@@ -38,7 +38,7 @@ class TimePlanLoad(LoggedInReadonlyCommand[TimePlanLoadUseCase, TimePlanLoadResu
         result: TimePlanLoadResult,
     ) -> None:
         time_plan = result.time_plan
-        inbox_tasks_by_ref_id = {t.ref_id: t for t in result.target_inbox_tasks}
+        inbox_tasks_by_ref_id = {t.ref_id: t for t in result.target_inbox_tasks or []}
         big_plans_by_ref_id = {t.ref_id: t for t in result.target_big_plans or []}
         sorted_activities = sorted(
             result.activities, key=lambda a: (a.archived, a.feasability, a.kind)
@@ -97,7 +97,10 @@ class TimePlanLoad(LoggedInReadonlyCommand[TimePlanLoadUseCase, TimePlanLoadResu
 
             activity_tree.add(activity_text)
 
-        if len(result.completed_nontarget_inbox_tasks) > 0:
+        if (
+            result.completed_nontarget_inbox_tasks is not None
+            and len(result.completed_nontarget_inbox_tasks) > 0
+        ):
             completed_nontarget_tree = rich_tree.add(
                 "Completed Non-targets Inbox Tasks"
             )

@@ -26,6 +26,8 @@ class TimePlan:
         right_now (str): A date or possibly a datetime for the application.
         period (RecurringTaskPeriod): A period for a particular task.
         timeline (str):
+        start_date (str): A date or possibly a datetime for the application.
+        end_date (str): A date or possibly a datetime for the application.
         archived_time (Union[None, Unset, str]):
     """
 
@@ -40,6 +42,8 @@ class TimePlan:
     right_now: str
     period: RecurringTaskPeriod
     timeline: str
+    start_date: str
+    end_date: str
     archived_time: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -66,6 +70,10 @@ class TimePlan:
 
         timeline = self.timeline
 
+        start_date = self.start_date
+
+        end_date = self.end_date
+
         archived_time: Union[None, Unset, str]
         if isinstance(self.archived_time, Unset):
             archived_time = UNSET
@@ -87,6 +95,8 @@ class TimePlan:
                 "right_now": right_now,
                 "period": period,
                 "timeline": timeline,
+                "start_date": start_date,
+                "end_date": end_date,
             }
         )
         if archived_time is not UNSET:
@@ -119,6 +129,10 @@ class TimePlan:
 
         timeline = d.pop("timeline")
 
+        start_date = d.pop("start_date")
+
+        end_date = d.pop("end_date")
+
         def _parse_archived_time(data: object) -> Union[None, Unset, str]:
             if data is None:
                 return data
@@ -140,6 +154,8 @@ class TimePlan:
             right_now=right_now,
             period=period,
             timeline=timeline,
+            start_date=start_date,
+            end_date=end_date,
             archived_time=archived_time,
         )
 

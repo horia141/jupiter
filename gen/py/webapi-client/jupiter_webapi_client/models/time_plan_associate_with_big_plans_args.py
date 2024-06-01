@@ -13,10 +13,12 @@ class TimePlanAssociateWithBigPlansArgs:
     Attributes:
         ref_id (str): A generic entity id.
         big_plan_ref_ids (List[str]):
+        override_existing_dates (bool):
     """
 
     ref_id: str
     big_plan_ref_ids: List[str]
+    override_existing_dates: bool
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -24,12 +26,15 @@ class TimePlanAssociateWithBigPlansArgs:
 
         big_plan_ref_ids = self.big_plan_ref_ids
 
+        override_existing_dates = self.override_existing_dates
+
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
                 "ref_id": ref_id,
                 "big_plan_ref_ids": big_plan_ref_ids,
+                "override_existing_dates": override_existing_dates,
             }
         )
 
@@ -42,9 +47,12 @@ class TimePlanAssociateWithBigPlansArgs:
 
         big_plan_ref_ids = cast(List[str], d.pop("big_plan_ref_ids"))
 
+        override_existing_dates = d.pop("override_existing_dates")
+
         time_plan_associate_with_big_plans_args = cls(
             ref_id=ref_id,
             big_plan_ref_ids=big_plan_ref_ids,
+            override_existing_dates=override_existing_dates,
         )
 
         time_plan_associate_with_big_plans_args.additional_properties = d
