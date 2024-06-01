@@ -206,9 +206,13 @@ class TimePlanLoadUseCase(
                         and big_plan.last_modified_time
                         <= time_plan.end_date.to_timestamp_at_end_of_day()
                     )
-                    all_subactivities_are_done = all(
-                        activity_doneness[a]
-                        for a in activities_by_big_plan_ref_id[big_plan.ref_id]
+                    all_subactivities_are_done = (
+                        all(
+                            activity_doneness[a]
+                            for a in activities_by_big_plan_ref_id[big_plan.ref_id]
+                        )
+                        if len(activities_by_big_plan_ref_id[big_plan.ref_id]) > 0
+                        else False
                     )
                     activity_doneness[activity.ref_id] = (
                         big_plan.is_completed
