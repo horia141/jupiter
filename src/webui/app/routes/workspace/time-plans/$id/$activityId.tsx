@@ -1,7 +1,6 @@
-import type { BigPlan, InboxTask } from "@jupiter/webapi-client";
+import type { InboxTask } from "@jupiter/webapi-client";
 import {
   ApiError,
-  BigPlanStatus,
   InboxTaskStatus,
   TimePlanActivityFeasability,
   TimePlanActivityKind,
@@ -181,32 +180,6 @@ export default function TimePlanActivity() {
     );
   }
 
-  function handleBigPlanMarkDone(bp: BigPlan) {
-    cardActionFetcher.submit(
-      {
-        id: bp.ref_id,
-        status: BigPlanStatus.DONE,
-      },
-      {
-        method: "post",
-        action: "/workspace/big-plans/update-status",
-      }
-    );
-  }
-
-  function handleBigPlanMarkNotDone(bp: BigPlan) {
-    cardActionFetcher.submit(
-      {
-        id: bp.ref_id,
-        status: BigPlanStatus.NOT_DONE,
-      },
-      {
-        method: "post",
-        action: "/workspace/big-plans/update-status",
-      }
-    );
-  }
-
   return (
     <LeafPanel
       key={`time-plan-${id}/activity-${activityId}`}
@@ -318,9 +291,15 @@ export default function TimePlanActivity() {
           <SectionCard title="Target Big Plan">
             <BigPlanStack
               topLevelInfo={topLevelInfo}
+              showOptions={{
+                showStatus: true,
+                showParent: true,
+                showActionableDate: true,
+                showDueDate: true,
+                showHandleMarkDone: false,
+                showHandleMarkNotDone: false,
+              }}
               bigPlans={[loaderData.targetBigPlan]}
-              onCardMarkDone={handleBigPlanMarkDone}
-              onCardMarkNotDone={handleBigPlanMarkNotDone}
             />
           </SectionCard>
         )}

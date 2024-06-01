@@ -505,6 +505,14 @@ function List({
       topLevelInfo={topLevelInfo}
       bigPlans={bigPlans}
       entriesByRefId={entriesByRefId}
+      showOptions={{
+        showStatus: true,
+        showParent: true,
+        showActionableDate: true,
+        showDueDate: true,
+        showHandleMarkDone: true,
+        showHandleMarkNotDone: true,
+      }}
       onCardMarkNotDone={onArchiveBigPlan}
     />
   );

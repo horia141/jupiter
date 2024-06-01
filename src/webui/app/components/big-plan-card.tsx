@@ -48,9 +48,15 @@ export function BigPlanCard(props: BigPlanCardProps) {
           : undefined
       }
       markButtonsStyle="column"
-      onMarkDone={() => props.onMarkDone && props.onMarkDone(props.bigPlan)}
-      onMarkNotDone={() =>
-        props.onMarkNotDone && props.onMarkNotDone(props.bigPlan)
+      onMarkDone={
+        props.onMarkDone
+          ? () => props.onMarkDone && props.onMarkDone(props.bigPlan)
+          : undefined
+      }
+      onMarkNotDone={
+        props.onMarkNotDone
+          ? () => props.onMarkNotDone && props.onMarkNotDone(props.bigPlan)
+          : undefined
       }
     >
       <EntityLink to={`/workspace/big-plans/${props.bigPlan.ref_id}`}>

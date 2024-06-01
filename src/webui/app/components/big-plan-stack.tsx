@@ -2,6 +2,7 @@ import type { BigPlan } from "@jupiter/webapi-client";
 import { Divider, Typography } from "@mui/material";
 import type { BigPlanParent } from "~/logic/domain/big-plan";
 import type { TopLevelInfo } from "~/top-level-context";
+import type { BigPlanShowOptions } from "./big-plan-card";
 import { BigPlanCard } from "./big-plan-card";
 import { EntityStack } from "./infra/entity-stack";
 
@@ -11,6 +12,7 @@ interface BigPlanStackProps {
   label?: string;
   bigPlans: BigPlan[];
   entriesByRefId?: Map<string, BigPlanParent>;
+  showOptions: BigPlanShowOptions;
   onCardMarkDone?: (it: BigPlan) => void;
   onCardMarkNotDone?: (it: BigPlan) => void;
 }
@@ -31,20 +33,18 @@ export function BigPlanStack(props: BigPlanStackProps) {
             topLevelInfo={props.topLevelInfo}
             allowSwipe
             bigPlan={entry}
-            showOptions={{
-              showStatus: true,
-              showParent: true,
-              showActionableDate: true,
-              showDueDate: true,
-              showHandleMarkDone: true,
-              showHandleMarkNotDone: true,
-            }}
+            showOptions={props.showOptions}
             parent={props.entriesByRefId?.get(entry.ref_id)}
-            onMarkDone={() =>
-              props.onCardMarkDone && props.onCardMarkDone(entry)
+            onMarkDone={
+              props.onCardMarkDone
+                ? () => props.onCardMarkDone && props.onCardMarkDone(entry)
+                : undefined
             }
-            onMarkNotDone={() =>
-              props.onCardMarkNotDone && props.onCardMarkNotDone(entry)
+            onMarkNotDone={
+              props.onCardMarkNotDone
+                ? () =>
+                    props.onCardMarkNotDone && props.onCardMarkNotDone(entry)
+                : undefined
             }
           />
         );

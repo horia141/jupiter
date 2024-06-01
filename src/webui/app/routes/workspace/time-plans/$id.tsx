@@ -376,6 +376,14 @@ export default function TimePlanView() {
             <SectionCard title="Completed & Untracked Big Plans">
               <BigPlanStack
                 topLevelInfo={topLevelInfo}
+                showOptions={{
+                  showStatus: true,
+                  showParent: true,
+                  showActionableDate: true,
+                  showDueDate: true,
+                  showHandleMarkDone: false,
+                  showHandleMarkNotDone: false,
+                }}
                 bigPlans={loaderData.completedNontargetBigPlans}
               />
             </SectionCard>
