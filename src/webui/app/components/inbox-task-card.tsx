@@ -165,19 +165,17 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
           ((!props.allowSelect || !props.selected) && inputsEnabled) ||
           false
         ).toString()}
-        onClick={(e) => {
-          if (props.onClick) {
-            e.preventDefault();
-            props.onClick(props.inboxTask);
-          }
-        }}
+        onClick={(e) => props.onClick && props.onClick(props.inboxTask)}
       >
         <OverdueWarning
           status={props.inboxTask.status}
           dueDate={props.inboxTask.due_date}
         />
         <CardContent>
-          <EntityLink to={`/workspace/inbox-tasks/${props.inboxTask.ref_id}`}>
+          <EntityLink
+            to={`/workspace/inbox-tasks/${props.inboxTask.ref_id}`}
+            block={props.onClick !== undefined}
+          >
             <EntityNameComponent
               compact={props.compact}
               name={props.inboxTask.name}

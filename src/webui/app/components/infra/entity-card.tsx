@@ -108,12 +108,7 @@ export function EntityCard(props: PropsWithChildren<EntityCardProps>) {
               ? theme.palette.action.hover
               : "transparent",
         }}
-        onClick={(e) => {
-          if (props.onClick) {
-            e.preventDefault();
-            props.onClick();
-          }
-        }}
+        onClick={props.onClick}
       >
         <CardContent>{props.children}</CardContent>
 
@@ -147,10 +142,15 @@ export function EntityCard(props: PropsWithChildren<EntityCardProps>) {
 
 interface EntityLinkProps {
   to: string;
+  block?: boolean;
 }
 
 export function EntityLink(props: PropsWithChildren<EntityLinkProps>) {
-  return <StyledLink to={props.to}>{props.children}</StyledLink>;
+  if (!(props.block === true)) {
+    return <StyledLink to={props.to}>{props.children}</StyledLink>;
+  } else {
+    return <EntityFakeLink>{props.children}</EntityFakeLink>;
+  }
 }
 
 const StyledLink = styled(Link)(({ theme }) => ({

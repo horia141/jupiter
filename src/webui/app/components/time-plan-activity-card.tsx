@@ -50,6 +50,7 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
       >
         <EntityLink
           to={`/workspace/time-plans/${props.timePlan.ref_id}/${props.activity.ref_id}`}
+          block={props.onClick !== undefined}
         >
           <Typography
             sx={{
@@ -93,6 +94,7 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
       >
         <EntityLink
           to={`/workspace/time-plans/${props.timePlan.ref_id}/${props.activity.ref_id}`}
+          block={props.onClick !== undefined}
         >
           <Typography
             sx={{

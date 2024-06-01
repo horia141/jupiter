@@ -26,6 +26,7 @@ import {
 import { LeafPanelExpansionState } from "~/rendering/leaf-panel-expansion";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
+import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
 
@@ -37,6 +38,10 @@ const ParamsSchema = {
 const UpdateFormSchema = {
   intent: z.string(),
   targetActivitiesRefIds: z.string().transform((s) => s.split(",")),
+};
+
+export const handle = {
+  displayType: DisplayType.LEAF,
 };
 
 export async function loader({ request, params }: LoaderArgs) {
