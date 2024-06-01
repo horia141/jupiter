@@ -190,6 +190,10 @@ class TimePlanLoadUseCase(
                 if activity.target != TimePlanActivityTarget.BIG_PLAN:
                     continue
 
+                if activity.target_ref_id not in target_big_plans_by_ref_id:
+                    activity_doneness[activity.ref_id] = True
+                    continue
+
                 big_plan = target_big_plans_by_ref_id[activity.target_ref_id]
 
                 if activity.kind == TimePlanActivityKind.FINISH:
