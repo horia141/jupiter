@@ -18,6 +18,7 @@ import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
+  Link,
   useActionData,
   useFetcher,
   useParams,
@@ -39,6 +40,7 @@ import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { timePlanActivityFeasabilityName } from "~/logic/domain/time-plan-activity-feasability";
 import { timePlanActivityKindName } from "~/logic/domain/time-plan-activity-kind";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
+import { LeafPanelExpansionState } from "~/rendering/leaf-panel-expansion";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -191,6 +193,7 @@ export default function TimePlanActivity() {
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation={`/workspace/time-plans/${id}`}
+      initialExpansionState={LeafPanelExpansionState.MEDIUM}
     >
       <GlobalError actionResult={actionData} />
       <SectionCard
@@ -293,7 +296,29 @@ export default function TimePlanActivity() {
         WorkspaceFeature.BIG_PLANS
       ) &&
         loaderData.targetBigPlan && (
-          <SectionCard title="Target Big Plan">
+          <SectionCard
+            title="Target Big Plan"
+            actions={[
+              <Button
+                key="new-inbox-task"
+                variant="outlined"
+                disabled={!inputsEnabled}
+                to={`/workspace/inbox-tasks/new?timePlanReason=for-time-plan&timePlanRefId=${id}&bigPlanReason=for-big-plan&bigPlanRefId=${loaderData.targetBigPlan.ref_id}`}
+                component={Link}
+              >
+                New Inbox Task
+              </Button>,
+              <Button
+                key="from-current-inbox-tasks"
+                variant="outlined"
+                disabled={!inputsEnabled}
+                to={`/workspace/time-plans/${id}/add-from-current-inbox-tasks?bigPlanReason=for-big-plan&bigPlanRefId=${loaderData.targetBigPlan.ref_id}`}
+                component={Link}
+              >
+                From Current Inbox Tasks
+              </Button>,
+            ]}
+          >
             <BigPlanStack
               topLevelInfo={topLevelInfo}
               showOptions={{

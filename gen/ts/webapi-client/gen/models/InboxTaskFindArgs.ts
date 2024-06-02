@@ -15,5 +15,6 @@ export type InboxTaskFindArgs = {
     filter_ref_ids?: (Array<EntityId> | null);
     filter_project_ref_ids?: (Array<EntityId> | null);
     filter_sources?: (Array<InboxTaskSource> | null);
+    filter_big_plan_ref_ids?: (Array<EntityId> | null);
 };
 

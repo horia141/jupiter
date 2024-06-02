@@ -7,7 +7,7 @@ import { useActionData, useParams, useTransition } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext, useState } from "react";
 import { z } from "zod";
-import { parseForm, parseParams } from "zodix";
+import { parseForm, parseParams, parseQuery } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
 import { InboxTaskCard } from "~/components/inbox-task-card";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
@@ -32,6 +32,11 @@ const ParamsSchema = {
   id: z.string(),
 };
 
+const QuerySchema = {
+  bigPlanReason: z.literal("for-big-plan").optional(),
+  bigPlanRefId: z.string().optional(),
+};
+
 const UpdateFormSchema = {
   intent: z.string(),
   targetInboxTaskRefIds: z.string().transform((s) => s.split(",")),
@@ -44,6 +49,15 @@ export const handle = {
 export async function loader({ request, params }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const { id } = parseParams(params, ParamsSchema);
+  const query = parseQuery(request, QuerySchema);
+
+  const bigPlanReason = query.bigPlanReason || "standard";
+
+  if (bigPlanReason === "for-big-plan") {
+    if (!query.bigPlanRefId) {
+      throw new Response("Missing Big Plan Id", { status: 500 });
+    }
+  }
 
   try {
     const timePlanResult = await getLoggedInApiClient(
@@ -62,6 +76,8 @@ export async function loader({ request, params }: LoaderArgs) {
       allow_archived: false,
       include_notes: false,
       filter_just_workable: true,
+      filter_big_plan_ref_ids:
+        query.bigPlanRefId !== undefined ? [query.bigPlanRefId] : undefined,
     });
 
     return json({

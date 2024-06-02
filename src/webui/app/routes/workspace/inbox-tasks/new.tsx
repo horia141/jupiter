@@ -199,23 +199,24 @@ export async function action({ request }: ActionArgs) {
           : undefined,
     });
 
-    switch (bigPlanReason) {
+    switch (timePlanReason) {
+      case "for-time-plan":
+        return redirect(
+          `/workspace/time-plans/${result.new_time_plan_activity?.time_plan_ref_id}/${result.new_time_plan_activity?.ref_id}`
+        );
+
       case "standard":
-        switch (timePlanReason) {
+        switch (bigPlanReason) {
+          case "for-big-plan":
+            return redirect(
+              `/workspace/big-plans/${query.bigPlanRefId as string}`
+            );
+
           case "standard":
             return redirect(
               `/workspace/inbox-tasks/${result.new_inbox_task.ref_id}`
             );
-
-          case "for-time-plan":
-            return redirect(
-              `/workspace/time-plans/${result.new_time_plan_activity?.time_plan_ref_id}/${result.new_time_plan_activity?.ref_id}`
-            );
         }
-        break;
-
-      case "for-big-plan":
-        return redirect(`/workspace/big-plans/${query.bigPlanRefId as string}`);
     }
   } catch (error) {
     if (

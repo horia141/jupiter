@@ -62,6 +62,7 @@ class InboxTaskFindArgs(UseCaseArgsBase):
     filter_ref_ids: list[EntityId] | None
     filter_project_ref_ids: list[EntityId] | None
     filter_sources: list[InboxTaskSource] | None
+    filter_big_plan_ref_ids: list[EntityId] | None
 
 
 @use_case_result_part
@@ -180,6 +181,7 @@ class InboxTaskFindUseCase(
             status=filter_status,
             source=filter_sources,
             project_ref_id=args.filter_project_ref_ids or NoFilter(),
+            big_plan_ref_id=args.filter_big_plan_ref_ids or NoFilter(),
         )
 
         habits = await uow.get_for(Habit).find_all(
