@@ -1,5 +1,4 @@
 import { Stack } from "@mui/system";
-import { Form } from "@remix-run/react";
 import type { PropsWithChildren } from "react";
 import { useBigScreen } from "~/rendering/use-big-screen";
 
@@ -22,14 +21,12 @@ export function NestingAwareBlock(
   }
 
   return (
-    <Form method="post">
-      <Stack
-        spacing={2}
-        useFlexGap
-        sx={{ paddingLeft: "1rem", paddingRight: "1rem" }}
-      >
-        {props.children}
-      </Stack>
-    </Form>
+    <Stack
+      spacing={2}
+      useFlexGap
+      sx={{ paddingLeft: "1rem", paddingRight: "1rem" }}
+    >
+      {props.children}
+    </Stack>
   );
 }

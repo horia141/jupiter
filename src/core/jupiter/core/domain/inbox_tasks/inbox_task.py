@@ -1111,6 +1111,7 @@ class InboxTaskRepository(LeafEntityRepository[InboxTask], abc.ABC):
         allow_archived: bool,
         filter_start_completed_date: ADate,
         filter_end_completed_date: ADate,
+        filter_include_sources: Iterable[InboxTaskSource],
         filter_exclude_ref_ids: Iterable[EntityId] | None = None,
     ) -> list[InboxTask]:
         """Find all completed inbox tasks in a time range."""

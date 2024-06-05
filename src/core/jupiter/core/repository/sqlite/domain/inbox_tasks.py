@@ -136,6 +136,7 @@ class SqliteInboxTaskRepository(
         allow_archived: bool,
         filter_start_completed_date: ADate,
         filter_end_completed_date: ADate,
+        filter_include_sources: Iterable[InboxTaskSource],
         filter_exclude_ref_ids: Iterable[EntityId] | None = None,
     ) -> list[InboxTask]:
         """find all completed inbox tasks in a time range."""
@@ -156,6 +157,7 @@ class SqliteInboxTaskRepository(
                     s.value for s in InboxTaskStatus.all_completed_statuses()
                 )
             )
+            .where(self._table.c.source.in_(s.value for s in filter_include_sources))
             .where(self._table.c.completed_time.is_not(None))
             .where(self._table.c.completed_time >= start_completed_time.the_ts)
             .where(self._table.c.completed_time <= end_completed_time.the_ts)

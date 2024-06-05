@@ -182,7 +182,8 @@ export default function TimePlanAddFromCurrentTimePlans() {
   const filteredOtherActivities = filterActivitiesByTargetStatus(
     loaderData.otherActivities,
     otherTargetInboxTasksByRefId,
-    otherTargetBigPlansByRefId
+    otherTargetBigPlansByRefId,
+    loaderData.otherActivityDoneness
   );
   const sortedOtherActivities = sortTimePlanActivitiesNaturally(
     filteredOtherActivities,

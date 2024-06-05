@@ -108,6 +108,15 @@ class TimePlanLoadUseCase(
 
         completed_nontarget_inbox_tasks = None
         if args.include_completed_nontarget and target_inbox_tasks is not None:
+
+            # The rule here should be:
+            # If this is a inbox task or big plan include it always
+            # If this is a generated one, then:
+            #    If the recurring_task_period is strictly higher than the time plan is we include it
+            #    If the recurring_task_period is equal or lower than the time plan one we skip it
+            # expressed as: (it.source in (user, big-plan)) or (it.period  in (*all_higher_periods)
+            # But this is hard to express cause inbox_tasks don't yet remember the period
+            # of their source entity. Inference from the timeline is hard in SQL, etc.
             completed_nontarget_inbox_tasks = await uow.get(
                 InboxTaskRepository
             ).find_completed_in_range(
@@ -115,6 +124,7 @@ class TimePlanLoadUseCase(
                 allow_archived=True,
                 filter_start_completed_date=schedule.first_day,
                 filter_end_completed_date=schedule.end_day,
+                filter_include_sources=[InboxTaskSource.USER, InboxTaskSource.BIG_PLAN],
                 filter_exclude_ref_ids=[it.ref_id for it in target_inbox_tasks],
             )
 
@@ -153,9 +163,9 @@ class TimePlanLoadUseCase(
             target_inbox_tasks_by_ref_id = {
                 it.ref_id: it for it in cast(list[InboxTask], target_inbox_tasks)
             }
-            target_big_plans_by_ref_id = {
-                bp.ref_id: bp for bp in cast(list[BigPlan], target_big_plans)
-            }
+            target_big_plans_by_ref_id = (
+                {bp.ref_id: bp for bp in target_big_plans} if target_big_plans else {}
+            )
             activities_by_big_plan_ref_id: defaultdict[
                 EntityId, list[EntityId]
             ] = defaultdict(list)
@@ -169,7 +179,6 @@ class TimePlanLoadUseCase(
                 if activity.kind == TimePlanActivityKind.FINISH:
                     activity_doneness[activity.ref_id] = inbox_task.is_completed
                 elif activity.kind == TimePlanActivityKind.MAKE_PROGRESS:
-                    print(time_plan.start_date, time_plan.end_date, inbox_task)
                     modified_in_time_plan = (
                         inbox_task.is_working_or_more
                         and time_plan.start_date.to_timestamp_at_start_of_day()

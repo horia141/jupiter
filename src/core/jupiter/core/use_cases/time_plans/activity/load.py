@@ -60,6 +60,7 @@ class TimePlanActivityLoadUseCase(
             TimePlanActivity.target_inbox_task,
             TimePlanActivity.target_big_plan,
             allow_archived=args.allow_archived,
+            allow_subentity_archived=args.allow_archived,
         )
 
         if not workspace.is_feature_available(WorkspaceFeature.BIG_PLANS):
