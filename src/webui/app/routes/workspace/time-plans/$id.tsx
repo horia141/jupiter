@@ -52,7 +52,13 @@ import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { BranchPanel } from "~/components/infra/layout/branch-panel";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
+import {
+  NavMultiple,
+  NavSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
 import { SectionCard } from "~/components/infra/section-card";
+import { SectionCardNew } from "~/components/infra/section-card-new";
 import { TimePlanActivityCard } from "~/components/time-plan-activity-card";
 import { TimePlanStack } from "~/components/time-plan-stack";
 import {
@@ -326,6 +332,105 @@ export default function TimePlanView() {
             />
           </SectionCard>
 
+          <SectionCardNew
+            title="Activities"
+            actions={
+              <SectionActions
+                id="activities"
+                topLevelInfo={topLevelInfo}
+                inputsEnabled={inputsEnabled}
+                actions={[
+                  NavMultiple(
+                    NavSingle(
+                      "New Inbox Tasks",
+                      `/workspace/inbox-tasks/new?timePlanReason=for-time-plan&timePlanRefId=${loaderData.timePlan.ref_id}`
+                    ),
+                    NavSingle(
+                      "New Big Plan",
+                      `/workspace/big-plans/new?timePlanReason=for-time-plan&timePlanRefId=${loaderData.timePlan.ref_id}`,
+                      undefined,
+                      WorkspaceFeature.BIG_PLANS
+                    ),
+                    NavSingle(
+                      "From Current Inbox Tasks",
+                      `/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-inbox-tasks`
+                    ),
+                    NavSingle(
+                      "From Current Big Plans",
+                      `/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-big-plans`,
+                      undefined,
+                      WorkspaceFeature.BIG_PLANS
+                    ),
+                    NavSingle(
+                      "From Time Plans",
+                      `/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-time-plans/${loaderData.timePlan.ref_id}`
+                    )
+                  ),
+                ]}
+              />
+            }
+          >
+            {selectedView === View.MERGED && (
+              <ActivityList
+                topLevelInfo={topLevelInfo}
+                timePlan={loaderData.timePlan}
+                activities={loaderData.activities}
+                inboxTasksByRefId={targetInboxTasksByRefId}
+                bigPlansByRefId={targetBigPlansByRefId}
+                activityDoneness={loaderData.activityDoneness}
+              />
+            )}
+
+            {selectedView === View.BY_PROJECT && (
+              <>
+                {sortedProjects.map((p) => {
+                  const theActivities = loaderData.activities.filter((ac) => {
+                    switch (ac.target) {
+                      case TimePlanActivityTarget.INBOX_TASK:
+                        return (
+                          targetInboxTasksByRefId.get(ac.target_ref_id)
+                            ?.project_ref_id === p.ref_id
+                        );
+                      case TimePlanActivityTarget.BIG_PLAN:
+                        return (
+                          targetBigPlansByRefId.get(ac.target_ref_id)
+                            ?.project_ref_id === p.ref_id
+                        );
+                    }
+                    throw new Error("Should not get here");
+                  });
+
+                  if (theActivities.length === 0) {
+                    return null;
+                  }
+
+                  const fullProjectName =
+                    computeProjectHierarchicalNameFromRoot(
+                      p,
+                      allProjectsByRefId
+                    );
+
+                  return (
+                    <Box key={`project-${p.ref_id}`}>
+                      <Divider>
+                        <Typography variant="h6">{fullProjectName}</Typography>
+                      </Divider>
+
+                      <ActivityList
+                        topLevelInfo={topLevelInfo}
+                        timePlan={loaderData.timePlan}
+                        activities={theActivities}
+                        inboxTasksByRefId={targetInboxTasksByRefId}
+                        bigPlansByRefId={targetBigPlansByRefId}
+                        activityDoneness={loaderData.activityDoneness}
+                      />
+                    </Box>
+                  );
+                })}
+              </>
+            )}
+          </SectionCardNew>
+
           <SectionCard
             title="Activities"
             actions={[
@@ -392,67 +497,7 @@ export default function TimePlanView() {
                 From Time Plans
               </Button>,
             ]}
-          >
-            {selectedView === View.MERGED && (
-              <ActivityList
-                topLevelInfo={topLevelInfo}
-                timePlan={loaderData.timePlan}
-                activities={loaderData.activities}
-                inboxTasksByRefId={targetInboxTasksByRefId}
-                bigPlansByRefId={targetBigPlansByRefId}
-                activityDoneness={loaderData.activityDoneness}
-              />
-            )}
-
-            {selectedView === View.BY_PROJECT && (
-              <>
-                {sortedProjects.map((p) => {
-                  const theActivities = loaderData.activities.filter((ac) => {
-                    switch (ac.target) {
-                      case TimePlanActivityTarget.INBOX_TASK:
-                        return (
-                          targetInboxTasksByRefId.get(ac.target_ref_id)
-                            ?.project_ref_id === p.ref_id
-                        );
-                      case TimePlanActivityTarget.BIG_PLAN:
-                        return (
-                          targetBigPlansByRefId.get(ac.target_ref_id)
-                            ?.project_ref_id === p.ref_id
-                        );
-                    }
-                    throw new Error("Should not get here");
-                  });
-
-                  if (theActivities.length === 0) {
-                    return null;
-                  }
-
-                  const fullProjectName =
-                    computeProjectHierarchicalNameFromRoot(
-                      p,
-                      allProjectsByRefId
-                    );
-
-                  return (
-                    <Box key={`project-${p.ref_id}`}>
-                      <Divider>
-                        <Typography variant="h6">{fullProjectName}</Typography>
-                      </Divider>
-
-                      <ActivityList
-                        topLevelInfo={topLevelInfo}
-                        timePlan={loaderData.timePlan}
-                        activities={theActivities}
-                        inboxTasksByRefId={targetInboxTasksByRefId}
-                        bigPlansByRefId={targetBigPlansByRefId}
-                        activityDoneness={loaderData.activityDoneness}
-                      />
-                    </Box>
-                  );
-                })}
-              </>
-            )}
-          </SectionCard>
+          ></SectionCard>
 
           {loaderData.completedNontargetInboxTasks.length > 0 && (
             <SectionCard title="Completed & Untracked Inbox Tasks">
