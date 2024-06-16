@@ -1,9 +1,13 @@
 import type { WorkspaceFeature } from "@jupiter/webapi-client";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import BoltIcon from "@mui/icons-material/Bolt";
+import CheckBoxIcon from "@mui/icons-material/CheckBox";
+import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import {
+  Autocomplete,
   Button,
   ButtonGroup,
+  Checkbox,
   ClickAwayListener,
   Dialog,
   DialogActions,
@@ -15,6 +19,7 @@ import {
   Paper,
   Popper,
   Stack,
+  TextField,
   useTheme,
 } from "@mui/material";
 import { Link } from "@remix-run/react";
@@ -52,10 +57,19 @@ interface FilterFewOptionsDesc<K> {
   hideIfOneOption?: boolean;
 }
 
+interface FilterManyOptionsDesc<K> {
+  kind: "filter-many-options";
+  title: string;
+  options: Array<FilterOption<K>>;
+  onSelect: (selected: Array<K>) => void;
+  hideIfOneOption?: boolean;
+}
+
 type ActionDesc =
   | NavSingleDesc // A single button, can be a navigation or a callback
   | NavMultipleDesc // A group of buttons, can be a navigation or a callback
-  | FilterFewOptionsDesc<any>; // A group to filter on, can be a navigation or a callback
+  | FilterFewOptionsDesc<any> // A group to filter on, can be a navigation or a callback
+  | FilterManyOptionsDesc<any>; // A group to filter on, with many options
 
 export function NavSingle(
   text: string,
@@ -105,56 +119,40 @@ export function FilterFewOptions<K>(
   };
 }
 
+export function FilterManyOptions<K>(
+  title: string,
+  options: Array<FilterOption<K>>,
+  onSelect: (selected: Array<K>) => void
+): FilterManyOptionsDesc<K> {
+  return {
+    kind: "filter-many-options",
+    title: title,
+    options: options,
+    onSelect: onSelect,
+    hideIfOneOption: true,
+  };
+}
+
 interface SectionActionsProps {
   id: string;
   topLevelInfo: TopLevelInfo;
   inputsEnabled: boolean;
   actions: Array<ActionDesc>;
+  extraActions?: Array<ActionDesc>;
 }
 
 export function SectionActions(props: SectionActionsProps) {
   const isBigScreen = useBigScreen();
 
-  const [showExtraActionsDialog, setShowExtraActionsDialog] = useState(false);
-
   if (!isBigScreen) {
+    const allActions = props.actions.concat(props.extraActions ?? []);
     return (
-      <>
-        <Button
-          disabled={!props.inputsEnabled}
-          variant="outlined"
-          size="medium"
-          color="primary"
-          onClick={() => setShowExtraActionsDialog(true)}
-        >
-          <BoltIcon />
-        </Button>
-
-        <Dialog
-          onClose={() => setShowExtraActionsDialog(false)}
-          open={showExtraActionsDialog}
-        >
-          <DialogTitle>Actions</DialogTitle>
-          <DialogContent>
-            <Stack spacing={2}>
-              {props.actions.map((action, index) => (
-                <ActionView
-                  key={`action-${props.id}-${index}`}
-                  topLevelInfo={props.topLevelInfo}
-                  inputsEnabled={props.inputsEnabled}
-                  orientation="vertical"
-                  action={action}
-                />
-              ))}
-            </Stack>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setShowExtraActionsDialog(false)}>
-              Close
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </>
+      <SectionActionsWithDialog
+        id={props.id}
+        topLevelInfo={props.topLevelInfo}
+        inputsEnabled={props.inputsEnabled}
+        actions={allActions}
+      />
     );
   }
 
@@ -169,7 +167,69 @@ export function SectionActions(props: SectionActionsProps) {
           action={action}
         />
       ))}
+
+      <SectionActionsWithDialog
+        id={props.id}
+        topLevelInfo={props.topLevelInfo}
+        inputsEnabled={props.inputsEnabled}
+        actions={props.extraActions ?? []}
+      />
     </Stack>
+  );
+}
+
+interface SectionActionsWithDialogProps {
+  id: string;
+  topLevelInfo: TopLevelInfo;
+  inputsEnabled: boolean;
+  actions: Array<ActionDesc>;
+}
+
+function SectionActionsWithDialog(props: SectionActionsWithDialogProps) {
+  const [showExtraActionsDialog, setShowExtraActionsDialog] = useState(false);
+
+  if (props.actions.length === 0) {
+    return <></>;
+  }
+
+  return (
+    <>
+      <Button
+        disabled={!props.inputsEnabled}
+        variant="outlined"
+        size="medium"
+        color="primary"
+        sx={{ margin: "0.25rem" }}
+        onClick={() => setShowExtraActionsDialog(true)}
+      >
+        <BoltIcon />
+      </Button>
+
+      <Dialog
+        onClose={() => setShowExtraActionsDialog(false)}
+        open={showExtraActionsDialog}
+      >
+        <DialogTitle>Actions</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2}>
+            {props.actions.map((action, index) => (
+              <ActionView
+                key={`action-${props.id}-${index}`}
+                topLevelInfo={props.topLevelInfo}
+                inputsEnabled={props.inputsEnabled}
+                orientation="vertical"
+                action={action}
+              />
+            ))}
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowExtraActionsDialog(false)}>
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 }
 
@@ -204,6 +264,16 @@ function ActionView(props: ActionViewProps) {
     case "filter-few-options":
       return (
         <FilterFewOptionsView
+          topLevelInfo={props.topLevelInfo}
+          inputsEnabled={props.inputsEnabled}
+          orientation={props.orientation}
+          action={props.action}
+        />
+      );
+
+    case "filter-many-options":
+      return (
+        <FilterManyOptionsView
           topLevelInfo={props.topLevelInfo}
           inputsEnabled={props.inputsEnabled}
           orientation={props.orientation}
@@ -349,7 +419,7 @@ function NavMultipleCompactView(props: NavMultipleViewProps) {
       <Popper
         sx={{
           zIndex: theme.zIndex.appBar + 20,
-          backgroundColor: theme.palette.background.paper
+          backgroundColor: theme.palette.background.paper,
         }}
         open={open}
         anchorEl={anchorRef.current}
@@ -396,6 +466,25 @@ interface FilterFewOptionsViewProps<K> {
 function FilterFewOptionsView<K>(props: FilterFewOptionsViewProps<K>) {
   const [selected, setSelected] = useState<K>(props.action.defaultOption);
 
+  const realOptions: FilterOption<K>[] = [];
+  for (const option of props.action.options) {
+    if (option.gatedOn) {
+      const workspace = props.topLevelInfo.workspace;
+      if (!isWorkspaceFeatureAvailable(workspace, option.gatedOn)) {
+        continue;
+      }
+    }
+    realOptions.push(option);
+  }
+
+  if (realOptions.length === 0) {
+    return <></>;
+  }
+
+  if (props.action.hideIfOneOption && realOptions.length === 1) {
+    return <></>;
+  }
+
   return (
     <ButtonGroup orientation={props.orientation}>
       {props.action.options.map((option, index) => {
@@ -426,5 +515,75 @@ function FilterFewOptionsView<K>(props: FilterFewOptionsViewProps<K>) {
         );
       })}
     </ButtonGroup>
+  );
+}
+
+interface FilterManyOptionsViewProps<K> {
+  topLevelInfo: TopLevelInfo;
+  inputsEnabled: boolean;
+  orientation: "horizontal" | "vertical";
+  action: FilterManyOptionsDesc<K>;
+}
+
+function FilterManyOptionsView<K>(props: FilterManyOptionsViewProps<K>) {
+  const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
+  const checkedIcon = <CheckBoxIcon fontSize="small" />;
+
+  const [selected, setSelected] = useState<FilterOption<K>[]>([]);
+
+  const realOptions: FilterOption<K>[] = [];
+  for (const option of props.action.options) {
+    if (option.gatedOn) {
+      const workspace = props.topLevelInfo.workspace;
+      if (!isWorkspaceFeatureAvailable(workspace, option.gatedOn)) {
+        continue;
+      }
+    }
+    realOptions.push(option);
+  }
+
+  if (realOptions.length === 0) {
+    return <></>;
+  }
+
+  if (props.action.hideIfOneOption && realOptions.length === 1) {
+    return <></>;
+  }
+
+  return (
+    <Autocomplete
+      multiple
+      disableCloseOnSelect
+      size="small"
+      options={realOptions}
+      limitTags={2}
+      getOptionLabel={(option) => option.text}
+      value={selected}
+      onChange={(_, selected) => {
+        setSelected(selected);
+        props.action.onSelect(selected.map((option) => option.value));
+      }}
+      isOptionEqualToValue={(option, value) => option.value === value.value}
+      renderOption={(props, option, { selected }) => (
+        <li {...props}>
+          <Checkbox
+            icon={icon}
+            checkedIcon={checkedIcon}
+            style={{ marginRight: 8 }}
+            checked={selected}
+          />
+          {option.text}
+        </li>
+      )}
+      style={{ minWidth: "180px" }}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          multiline={false}
+          label={props.action.title}
+          placeholder={props.action.title}
+        />
+      )}
+    />
   );
 }

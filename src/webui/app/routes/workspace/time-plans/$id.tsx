@@ -8,6 +8,8 @@ import type {
 import {
   ApiError,
   RecurringTaskPeriod,
+  TimePlanActivityFeasability,
+  TimePlanActivityKind,
   TimePlanActivityTarget,
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
@@ -52,6 +54,7 @@ import { BranchPanel } from "~/components/infra/layout/branch-panel";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import {
   FilterFewOptions,
+  FilterManyOptions,
   NavMultipleCompact,
   NavSingle,
   SectionActions,
@@ -225,10 +228,21 @@ export default function TimePlanView() {
   const [selectedView, setSelectedView] = useState(
     inferDefaultSelectedView(topLevelInfo.workspace, loaderData.timePlan)
   );
+  const [selectedKinds, setSelectedKinds] = useState<TimePlanActivityKind[]>(
+    []
+  );
+  const [selectedFeasabilities, setSelectedFeasabilities] = useState<
+    TimePlanActivityFeasability[]
+  >([]);
+  const [selectedDoneness, setSelectedDoneness] = useState<boolean[]>([]);
+
   useEffect(() => {
     setSelectedView(
       inferDefaultSelectedView(topLevelInfo.workspace, loaderData.timePlan)
     );
+    setSelectedKinds([]);
+    setSelectedFeasabilities([]);
+    setSelectedDoneness([]);
   }, [topLevelInfo, loaderData]);
 
   const sortedProjects = sortProjectsByTreeOrder(loaderData.allProjects || []);
@@ -243,7 +257,6 @@ export default function TimePlanView() {
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/time-plans"
     >
-
       <Form method="post">
         <NestingAwareBlock shouldHide={shouldShowALeaf}>
           <GlobalError actionResult={actionData} />
@@ -355,6 +368,45 @@ export default function TimePlanView() {
                     (selected) => setSelectedView(selected)
                   ),
                 ]}
+                extraActions={[
+                  FilterManyOptions(
+                    "Kind",
+                    [
+                      { value: TimePlanActivityKind.FINISH, text: "Finish" },
+                      {
+                        value: TimePlanActivityKind.MAKE_PROGRESS,
+                        text: "Make Progress",
+                      },
+                    ],
+                    setSelectedKinds
+                  ),
+                  FilterManyOptions(
+                    "Feasability",
+                    [
+                      {
+                        value: TimePlanActivityFeasability.MUST_DO,
+                        text: "Must Do",
+                      },
+                      {
+                        value: TimePlanActivityFeasability.NICE_TO_HAVE,
+                        text: "Nice to Have",
+                      },
+                      {
+                        value: TimePlanActivityFeasability.STRETCH,
+                        text: "Stretch",
+                      },
+                    ],
+                    setSelectedFeasabilities
+                  ),
+                  FilterManyOptions(
+                    "Done",
+                    [
+                      { value: true, text: "Done" },
+                      { value: false, text: "Not Done" },
+                    ],
+                    setSelectedDoneness
+                  ),
+                ]}
               />
             }
           >
@@ -366,6 +418,9 @@ export default function TimePlanView() {
                 inboxTasksByRefId={targetInboxTasksByRefId}
                 bigPlansByRefId={targetBigPlansByRefId}
                 activityDoneness={loaderData.activityDoneness}
+                filterKind={selectedKinds}
+                filterFeasability={selectedFeasabilities}
+                filterDoneness={selectedDoneness}
               />
             )}
 
@@ -411,6 +466,9 @@ export default function TimePlanView() {
                         inboxTasksByRefId={targetInboxTasksByRefId}
                         bigPlansByRefId={targetBigPlansByRefId}
                         activityDoneness={loaderData.activityDoneness}
+                        filterKind={selectedKinds}
+                        filterFeasability={selectedFeasabilities}
+                        filterDoneness={selectedDoneness}
                       />
                     </Box>
                   );
@@ -479,7 +537,7 @@ export default function TimePlanView() {
           )}
         </NestingAwareBlock>
       </Form>
-    
+
       <AnimatePresence mode="wait" initial={false}>
         <Outlet />
       </AnimatePresence>
@@ -503,6 +561,9 @@ interface ActivityListProps {
   inboxTasksByRefId: Map<string, InboxTask>;
   bigPlansByRefId: Map<string, BigPlan>;
   activityDoneness: Record<string, boolean>;
+  filterKind: TimePlanActivityKind[];
+  filterFeasability: TimePlanActivityFeasability[];
+  filterDoneness: boolean[];
 }
 
 function ActivityList(props: ActivityListProps) {
@@ -514,23 +575,46 @@ function ActivityList(props: ActivityListProps) {
 
   return (
     <EntityStack>
-      {sortedActivities.map((entry) => (
-        <TimePlanActivityCard
-          key={`time-plan-activity-${entry.ref_id}`}
-          topLevelInfo={props.topLevelInfo}
-          timePlan={props.timePlan}
-          activity={entry}
-          indent={
-            entry.target === TimePlanActivityTarget.INBOX_TASK &&
-            props.inboxTasksByRefId.get(entry.target_ref_id)?.big_plan_ref_id
-              ? 2
-              : 0
-          }
-          inboxTasksByRefId={props.inboxTasksByRefId}
-          bigPlansByRefId={props.bigPlansByRefId}
-          activityDoneness={props.activityDoneness}
-        />
-      ))}
+      {sortedActivities.map((entry) => {
+        if (
+          props.filterKind.length > 0 &&
+          !props.filterKind.includes(entry.kind)
+        ) {
+          return null;
+        }
+
+        if (
+          props.filterFeasability.length > 0 &&
+          !props.filterFeasability.includes(entry.feasability)
+        ) {
+          return null;
+        }
+
+        if (
+          props.filterDoneness.length > 0 &&
+          !props.filterDoneness.includes(props.activityDoneness[entry.ref_id])
+        ) {
+          return null;
+        }
+
+        return (
+          <TimePlanActivityCard
+            key={`time-plan-activity-${entry.ref_id}`}
+            topLevelInfo={props.topLevelInfo}
+            timePlan={props.timePlan}
+            activity={entry}
+            indent={
+              entry.target === TimePlanActivityTarget.INBOX_TASK &&
+              props.inboxTasksByRefId.get(entry.target_ref_id)?.big_plan_ref_id
+                ? 2
+                : 0
+            }
+            inboxTasksByRefId={props.inboxTasksByRefId}
+            bigPlansByRefId={props.bigPlansByRefId}
+            activityDoneness={props.activityDoneness}
+          />
+        );
+      })}
     </EntityStack>
   );
 }
