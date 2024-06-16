@@ -291,6 +291,7 @@ function NavMultipleCompactView(props: NavMultipleViewProps) {
   const anchorRef = React.useRef<HTMLDivElement>(null);
   const [selectedIndex, setSelectedIndex] = React.useState(1);
   const theme = useTheme();
+  const isBigScreen = useBigScreen();
 
   const realActions: NavSingleDesc[] = [];
   for (const action of props.action.navs) {
@@ -347,14 +348,13 @@ function NavMultipleCompactView(props: NavMultipleViewProps) {
       </ButtonGroup>
       <Popper
         sx={{
-          zIndex: theme.zIndex.appBar + 1,
+          zIndex: theme.zIndex.appBar + 20,
           backgroundColor: theme.palette.background.paper
         }}
         open={open}
         anchorEl={anchorRef.current}
-        role={undefined}
+        disablePortal={!isBigScreen}
         transition
-        disablePortal
       >
         {({ TransitionProps, placement }) => (
           <Grow
