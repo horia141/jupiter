@@ -16,7 +16,6 @@ import ViewListIcon from "@mui/icons-material/ViewList";
 import {
   Box,
   Button,
-  ButtonGroup,
   Divider,
   FormControl,
   InputLabel,
@@ -31,7 +30,6 @@ import { json, redirect, Response } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   Form,
-  Link,
   Outlet,
   useActionData,
   useParams,
@@ -52,7 +50,14 @@ import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { BranchPanel } from "~/components/infra/layout/branch-panel";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
+import {
+  FilterFewOptions,
+  NavMultipleCompact,
+  NavSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
 import { SectionCard } from "~/components/infra/section-card";
+import { SectionCardNew } from "~/components/infra/section-card-new";
 import { TimePlanActivityCard } from "~/components/time-plan-activity-card";
 import { TimePlanStack } from "~/components/time-plan-stack";
 import {
@@ -231,43 +236,16 @@ export default function TimePlanView() {
     loaderData.allProjects?.map((p) => [p.ref_id, p])
   );
 
-  let extraControls: Array<JSX.Element> | undefined = undefined;
-  if (
-    isWorkspaceFeatureAvailable(
-      topLevelInfo.workspace,
-      WorkspaceFeature.PROJECTS
-    )
-  ) {
-    extraControls = [
-      <ButtonGroup key="merged">
-        <Button
-          variant={selectedView === View.MERGED ? "contained" : "outlined"}
-          startIcon={<ViewListIcon />}
-          onClick={() => setSelectedView(View.MERGED)}
-        >
-          Merged
-        </Button>
-        <Button
-          variant={selectedView === View.BY_PROJECT ? "contained" : "outlined"}
-          startIcon={<FlareIcon />}
-          onClick={() => setSelectedView(View.BY_PROJECT)}
-        >
-          By Project
-        </Button>
-      </ButtonGroup>,
-    ];
-  }
-
   return (
     <BranchPanel
       key={`time-plan-${loaderData.timePlan.ref_id}`}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/time-plans"
-      extraControls={extraControls}
     >
-      <NestingAwareBlock shouldHide={shouldShowALeaf}>
-        <Form method="post">
+
+      <Form method="post">
+        <NestingAwareBlock shouldHide={shouldShowALeaf}>
           <GlobalError actionResult={actionData} />
           <SectionCard
             title="Properties"
@@ -326,72 +304,59 @@ export default function TimePlanView() {
             />
           </SectionCard>
 
-          <SectionCard
+          <SectionCardNew
             title="Activities"
-            actions={[
-              <Button
-                key="new-inbox-task"
-                variant="outlined"
-                disabled={!inputsEnabled}
-                to={`/workspace/inbox-tasks/new?timePlanReason=for-time-plan&timePlanRefId=${loaderData.timePlan.ref_id}`}
-                component={Link}
-              >
-                New Inbox Task
-              </Button>,
-
-              <>
-                {isWorkspaceFeatureAvailable(
-                  topLevelInfo.workspace,
-                  WorkspaceFeature.BIG_PLANS
-                ) && (
-                  <Button
-                    key="new-big-plan"
-                    variant="outlined"
-                    disabled={!inputsEnabled}
-                    to={`/workspace/big-plans/new?timePlanReason=for-time-plan&timePlanRefId=${loaderData.timePlan.ref_id}`}
-                    component={Link}
-                  >
-                    New Big Plan
-                  </Button>
-                )}
-              </>,
-
-              <Button
-                key="from-current-inbox-tasks"
-                variant="outlined"
-                disabled={!inputsEnabled}
-                to={`/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-inbox-tasks`}
-                component={Link}
-              >
-                From Current Inbox Tasks
-              </Button>,
-
-              <>
-                {isWorkspaceFeatureAvailable(
-                  topLevelInfo.workspace,
-                  WorkspaceFeature.BIG_PLANS
-                ) && (
-                  <Button
-                    key="from-current-big-plans"
-                    variant="outlined"
-                    disabled={!inputsEnabled}
-                    to={`/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-big-plans`}
-                    component={Link}
-                  >
-                    From Current Big Plans
-                  </Button>
-                )}
-              </>,
-              <Button
-                key="from-time-plans"
-                variant="outlined"
-                disabled={!inputsEnabled}
-                to={`/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-time-plans/${loaderData.timePlan.ref_id}`}
-                component={Link}
-              >
-                From Time Plans
-              </Button>,
-            ]}
+            actions={
+              <SectionActions
+                id="activities"
+                topLevelInfo={topLevelInfo}
+                inputsEnabled={inputsEnabled}
+                actions={[
+                  NavMultipleCompact(
+                    NavSingle(
+                      "New Inbox Tasks",
+                      `/workspace/inbox-tasks/new?timePlanReason=for-time-plan&timePlanRefId=${loaderData.timePlan.ref_id}`
+                    ),
+                    NavSingle(
+                      "New Big Plan",
+                      `/workspace/big-plans/new?timePlanReason=for-time-plan&timePlanRefId=${loaderData.timePlan.ref_id}`,
+                      undefined,
+                      WorkspaceFeature.BIG_PLANS
+                    ),
+                    NavSingle(
+                      "From Current Inbox Tasks",
+                      `/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-inbox-tasks`
+                    ),
+                    NavSingle(
+                      "From Current Big Plans",
+                      `/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-big-plans`,
+                      undefined,
+                      WorkspaceFeature.BIG_PLANS
+                    ),
+                    NavSingle(
+                      "From Time Plans",
+                      `/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-time-plans/${loaderData.timePlan.ref_id}`
+                    )
+                  ),
+                  FilterFewOptions(
+                    [
+                      {
+                        value: View.MERGED,
+                        text: "Merged",
+                        icon: <ViewListIcon />,
+                      },
+                      {
+                        value: View.BY_PROJECT,
+                        text: "By Project",
+                        icon: <FlareIcon />,
+                        gatedOn: WorkspaceFeature.PROJECTS,
+                      },
+                    ],
+                    (selected) => setSelectedView(selected)
+                  ),
+                ]}
+              />
+            }
           >
             {selectedView === View.MERGED && (
               <ActivityList
@@ -452,7 +417,7 @@ export default function TimePlanView() {
                 })}
               </>
             )}
-          </SectionCard>
+          </SectionCardNew>
 
           {loaderData.completedNontargetInboxTasks.length > 0 && (
             <SectionCard title="Completed & Untracked Inbox Tasks">
@@ -512,9 +477,9 @@ export default function TimePlanView() {
               />
             </SectionCard>
           )}
-        </Form>
-      </NestingAwareBlock>
-
+        </NestingAwareBlock>
+      </Form>
+    
       <AnimatePresence mode="wait" initial={false}>
         <Outlet />
       </AnimatePresence>
