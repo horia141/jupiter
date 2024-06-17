@@ -139,3 +139,11 @@ class TimePlanAlreadyAssociatedWithTargetError(EntityAlreadyExistsError):
 
 class TimePlanActivityRespository(LeafEntityRepository[TimePlanActivity], abc.ABC):
     """An error raised when a time plan is already associated with a target entity."""
+
+    @abc.abstractmethod
+    async def find_all_with_target(
+        self,
+        target: TimePlanActivityTarget,
+        target_ref_id: EntityId,
+    ) -> list[EntityId]:
+        """Find all time plan ids with a certain entity in their activity set."""

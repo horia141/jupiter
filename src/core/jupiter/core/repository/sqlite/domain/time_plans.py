@@ -12,6 +12,9 @@ from jupiter.core.domain.time_plans.time_plan_activity import (
     TimePlanActivityRespository,
     TimePlanAlreadyAssociatedWithTargetError,
 )
+from jupiter.core.domain.time_plans.time_plan_activity_target import (
+    TimePlanActivityTarget,
+)
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.realm import RealmCodecRegistry
@@ -159,3 +162,24 @@ class SqliteTimePlanActivityRepository(
             metadata,
             already_exists_err_cls=TimePlanAlreadyAssociatedWithTargetError,
         )
+
+    async def find_all_with_target(
+        self, target: TimePlanActivityTarget, target_ref_id: EntityId
+    ) -> list[EntityId]:
+        """Find all time plan activities with a target."""
+        query_stmt = (
+            self._table.select()
+            .where(
+                self._table.c.target == target.value,
+            )
+            .where(
+                self._table.c.target_ref_id == target_ref_id.as_int(),
+            )
+            .where(
+                self._table.c.archived.is_(False),
+            )
+        )
+
+        results = await self._connection.execute(query_stmt)
+
+        return [self._row_to_entity(row).parent_ref_id for row in results]
