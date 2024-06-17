@@ -55,22 +55,23 @@ class TimePlanActivityArchiveUseCase(
                 source=InboxTaskSource.BIG_PLAN,
                 big_plan_ref_id=activity.target_ref_id,
             )
-            inbox_task_activities = await uow.get_for(
-                TimePlanActivity
-            ).find_all_generic(
-                parent_ref_id=activity.parent_ref_id,
-                allow_archived=False,
-                target=TimePlanActivityTarget.INBOX_TASK,
-                target_ref_id=[it.ref_id for it in inbox_tasks],
-            )
-            for inbox_task_activity in inbox_task_activities:
-                await generic_archiver(
-                    context.domain_context,
-                    uow,
-                    progress_reporter,
-                    TimePlanActivity,
-                    inbox_task_activity.ref_id,
+            if len(inbox_tasks) > 0:
+                inbox_task_activities = await uow.get_for(
+                    TimePlanActivity
+                ).find_all_generic(
+                    parent_ref_id=activity.parent_ref_id,
+                    allow_archived=False,
+                    target=TimePlanActivityTarget.INBOX_TASK,
+                    target_ref_id=[it.ref_id for it in inbox_tasks],
                 )
+                for inbox_task_activity in inbox_task_activities:
+                    await generic_archiver(
+                        context.domain_context,
+                        uow,
+                        progress_reporter,
+                        TimePlanActivity,
+                        inbox_task_activity.ref_id,
+                    )
 
         await generic_archiver(
             context.domain_context,

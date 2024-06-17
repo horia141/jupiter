@@ -327,7 +327,7 @@ export default function TimePlanView() {
                 actions={[
                   NavMultipleCompact(
                     NavSingle(
-                      "New Inbox Tasks",
+                      "New Inbox Task",
                       `/workspace/inbox-tasks/new?timePlanReason=for-time-plan&timePlanRefId=${loaderData.timePlan.ref_id}`
                     ),
                     NavSingle(
