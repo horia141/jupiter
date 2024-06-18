@@ -58,8 +58,6 @@ export function sortTimePlanActivitiesNaturally(
       if (j2Parent === undefined || j2Parent === null) {
         return -1;
       }
-
-      return j1Parent.localeCompare(j2Parent);
     }
 
     if (j1.target !== j2.target) {
