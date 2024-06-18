@@ -33,6 +33,7 @@ const StyledCard = styled(Card)<CardProps>(({ theme }) => ({
 
 const SectionTitle = styled(Chip)<ChipProps>(({ theme }) => ({
   position: "relative",
+  maxWidth: "calc(100% - 5rem)",
   top: "-0.05rem",
   fontSize: "1.5rem",
   fontVariant: "small-caps",
