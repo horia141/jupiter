@@ -18,6 +18,7 @@ import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { SectionCard } from "~/components/infra/section-card";
 import { TimePlanActivityCard } from "~/components/time-plan-activity-card";
 import { TimePlanCard } from "~/components/time-plan-card";
+import { TimePlanStack } from "~/components/time-plan-stack";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import {
   filterActivitiesByTargetStatus,
@@ -69,6 +70,16 @@ export async function loader({ request, params }: LoaderArgs) {
       include_other_time_plans: true,
     });
 
+    const otherHigherTimePlanResult = await getLoggedInApiClient(
+      session
+    ).timePlans.timePlanLoad({
+      ref_id: otherResult.higher_time_plan!.ref_id,
+      allow_archived: true,
+      include_targets: false,
+      include_completed_nontarget: false,
+      include_other_time_plans: true,
+    });
+
     return json({
       mainTimePlan: mainResult.time_plan,
       mainActivities: mainResult.activities,
@@ -82,6 +93,7 @@ export async function loader({ request, params }: LoaderArgs) {
       >,
       otherHigherTimePlan: otherResult.higher_time_plan as TimePlan,
       otherPreviousTimePlan: otherResult.previous_time_plan as TimePlan,
+      otherHigherTimePlanSubTimePlans: otherHigherTimePlanResult.sub_period_time_plans
     });
   } catch (error) {
     if (error instanceof ApiError && error.status === StatusCodes.NOT_FOUND) {
@@ -284,6 +296,14 @@ export default function TimePlanAddFromCurrentTimePlans() {
           />
         </SectionCard>
       )}
+
+      {loaderData.otherHigherTimePlanSubTimePlans && (
+        <SectionCard title="Sub Time Plans">
+          <TimePlanStack
+            topLevelInfo={topLevelInfo}
+            timePlans={loaderData.otherHigherTimePlanSubTimePlans}
+            />
+        </SectionCard>)}
     </LeafPanel>
   );
 }
