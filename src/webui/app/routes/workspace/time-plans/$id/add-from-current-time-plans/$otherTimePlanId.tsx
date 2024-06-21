@@ -38,7 +38,9 @@ const ParamsSchema = {
 
 const UpdateFormSchema = {
   intent: z.string(),
-  targetActivitiesRefIds: z.string().transform((s) => s.split(",")),
+  targetActivitiesRefIds: z
+    .string()
+    .transform((s) => (s === "" ? [] : s.split(","))),
 };
 
 export const handle = {
@@ -93,7 +95,8 @@ export async function loader({ request, params }: LoaderArgs) {
       >,
       otherHigherTimePlan: otherResult.higher_time_plan as TimePlan,
       otherPreviousTimePlan: otherResult.previous_time_plan as TimePlan,
-      otherHigherTimePlanSubTimePlans: otherHigherTimePlanResult.sub_period_time_plans
+      otherHigherTimePlanSubTimePlans:
+        otherHigherTimePlanResult.sub_period_time_plans,
     });
   } catch (error) {
     if (error instanceof ApiError && error.status === StatusCodes.NOT_FOUND) {
@@ -302,8 +305,9 @@ export default function TimePlanAddFromCurrentTimePlans() {
           <TimePlanStack
             topLevelInfo={topLevelInfo}
             timePlans={loaderData.otherHigherTimePlanSubTimePlans}
-            />
-        </SectionCard>)}
+          />
+        </SectionCard>
+      )}
     </LeafPanel>
   );
 }

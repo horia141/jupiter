@@ -11,6 +11,7 @@ from jupiter.core.domain.time_plans.time_plan_activity_feasability import (
 )
 from jupiter.core.domain.time_plans.time_plan_activity_kind import TimePlanActivityKind
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.use_case import (
     ProgressReporter,
 )
@@ -59,6 +60,9 @@ class TimePlanAssociateWithBigPlansUseCase(
         args: TimePlanAssociateWithBigPlansArgs,
     ) -> TimePlanAssociateWithBigPlansResult:
         """Execute the command's actions."""
+        if len(args.big_plan_ref_ids) == 0:
+            raise InputValidationError("You must specifiy some big plans")
+
         workspace = context.workspace
 
         time_plan = await uow.get_for(TimePlan).load_by_id(args.ref_id)

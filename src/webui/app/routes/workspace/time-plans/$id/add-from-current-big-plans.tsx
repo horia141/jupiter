@@ -1,11 +1,20 @@
-import { ApiError, TimePlanActivityTarget } from "@jupiter/webapi-client";
-import { Button, Stack } from "@mui/material";
+import type {
+  BigPlan,
+  Workspace} from "@jupiter/webapi-client";
+import {
+  ApiError,
+  TimePlanActivityTarget,
+  WorkspaceFeature,
+} from "@jupiter/webapi-client";
+import FlareIcon from "@mui/icons-material/Flare";
+import ViewListIcon from "@mui/icons-material/ViewList";
+import { Box, Divider, Stack, Typography } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useParams, useTransition } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
@@ -14,19 +23,36 @@ import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { SectionCard } from "~/components/infra/section-card";
+import {
+  ActionMultipleSpread,
+  ActionSingle,
+  FilterFewOptions,
+  SectionActions,
+} from "~/components/infra/section-actions";
+import { SectionCardNew } from "~/components/infra/section-card-new";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import type { BigPlanParent } from "~/logic/domain/big-plan";
 import {
   bigPlanFindEntryToParent,
   sortBigPlansNaturally,
 } from "~/logic/domain/big-plan";
+import {
+  computeProjectHierarchicalNameFromRoot,
+  sortProjectsByTreeOrder,
+} from "~/logic/domain/project";
+import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { LeafPanelExpansionState } from "~/rendering/leaf-panel-expansion";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
+import type { TopLevelInfo} from "~/top-level-context";
 import { TopLevelInfoContext } from "~/top-level-context";
+
+enum View {
+  MERGED = "merged",
+  BY_PROJECT = "by-project",
+}
 
 const ParamsSchema = {
   id: z.string(),
@@ -34,7 +60,9 @@ const ParamsSchema = {
 
 const UpdateFormSchema = {
   intent: z.string(),
-  targetBigPlanRefIds: z.string().transform((s) => s.split(",")),
+  targetBigPlanRefIds: z
+    .string()
+    .transform((s) => (s === "" ? [] : s.split(","))),
 };
 
 export const handle = {
@@ -44,6 +72,12 @@ export const handle = {
 export async function loader({ request, params }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const { id } = parseParams(params, ParamsSchema);
+
+  const summaryResponse = await getLoggedInApiClient(
+    session
+  ).getSummaries.getSummaries({
+    include_projects: true,
+  });
 
   try {
     const timePlanResult = await getLoggedInApiClient(
@@ -67,6 +101,7 @@ export async function loader({ request, params }: LoaderArgs) {
     });
 
     return json({
+      allProjects: summaryResponse.projects || undefined,
       timePlan: timePlanResult.time_plan,
       activities: timePlanResult.activities,
       bigPlans: bigPlansResult.entries,
@@ -156,10 +191,23 @@ export default function TimePlanAddFromCurrentBigPlans() {
     loaderData.bigPlans.map((e) => e.big_plan)
   );
 
+  const sortedProjects = sortProjectsByTreeOrder(loaderData.allProjects || []);
+  const allProjectsByRefId = new Map(
+    loaderData.allProjects?.map((p) => [p.ref_id, p])
+  );
+
   const entriesByRefId: { [key: string]: BigPlanParent } = {};
   for (const entry of loaderData.bigPlans) {
     entriesByRefId[entry.big_plan.ref_id] = bigPlanFindEntryToParent(entry);
   }
+
+  const [selectedView, setSelectedView] = useState(
+    inferDefaultSelectedView(topLevelInfo.workspace)
+  );
+
+  useEffect(() => {
+    setSelectedView(inferDefaultSelectedView(topLevelInfo.workspace));
+  }, [topLevelInfo]);
 
   return (
     <LeafPanel
@@ -169,67 +217,107 @@ export default function TimePlanAddFromCurrentBigPlans() {
     >
       <GlobalError actionResult={actionData} />
 
-      <SectionCard
+      <SectionCardNew
         title="Current Big Plans"
-        actions={[
-          <Button
-            key="add"
-            variant="contained"
-            disabled={!inputsEnabled}
-            type="submit"
-            name="intent"
-            value="add"
-          >
-            Add
-          </Button>,
-          <Button
-            key="add-and-override"
-            variant="outlined"
-            disabled={!inputsEnabled}
-            type="submit"
-            name="intent"
-            value="add-and-override"
-          >
-            Add and Override Dates
-          </Button>,
-        ]}
+        actions={
+          <SectionActions
+            id="add-from-current-big-plans"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionMultipleSpread(
+                ActionSingle({
+                  text: "Add",
+                  value: "add",
+                  highlight: true,
+                }),
+                ActionSingle({
+                  text: "Add And Override Dates",
+                  value: "add-and-override",
+                })
+              ),
+              FilterFewOptions(
+                selectedView,
+                [
+                  {
+                    value: View.MERGED,
+                    text: "Merged",
+                    icon: <ViewListIcon />,
+                  },
+                  {
+                    value: View.BY_PROJECT,
+                    text: "By Project",
+                    icon: <FlareIcon />,
+                    gatedOn: WorkspaceFeature.PROJECTS,
+                  },
+                ],
+                (selected) => setSelectedView(selected)
+              ),
+            ]}
+          />
+        }
       >
-        <Stack spacing={2} useFlexGap>
-          {sortedBigPlans.map((bigPlan) => (
-            <BigPlanCard
-              key={`big-plan-${bigPlan.ref_id}`}
-              topLevelInfo={topLevelInfo}
-              bigPlan={bigPlan}
-              compact
-              allowSelect
-              selected={
-                alreadyIncludedBigPlanRefIds.has(bigPlan.ref_id) ||
-                targetBigPlanRefIds.has(bigPlan.ref_id)
-              }
-              showOptions={{
-                showDueDate: true,
-                showParent: true,
-              }}
-              parent={entriesByRefId[bigPlan.ref_id]}
-              onClick={(it) => {
-                if (alreadyIncludedBigPlanRefIds.has(bigPlan.ref_id)) {
-                  return;
-                }
+        {selectedView === View.MERGED && (
+          <BigPlanList
+            topLevelInfo={topLevelInfo}
+            bigPlans={sortedBigPlans}
+            alreadyIncludedBigPlanRefIds={alreadyIncludedBigPlanRefIds}
+            targetBigPlanRefIds={targetBigPlanRefIds}
+            bigPlansByRefId={entriesByRefId}
+            onSelected={(it) =>
+              setTargetBigPlanRefIds((itri) =>
+                toggleBigPlanRefIds(itri, it.ref_id)
+              )
+            }
+          />
+        )}
 
-                setTargetBigPlanRefIds((itri) =>
-                  toggleBigPlanRefIds(itri, it.ref_id)
-                );
-              }}
-            />
-          ))}
-        </Stack>
+        {selectedView === View.BY_PROJECT && (
+          <>
+            {sortedProjects.map((p) => {
+              const theBigPlans = sortedBigPlans.filter(
+                (se) => entriesByRefId[se.ref_id]?.project?.ref_id === p.ref_id
+              );
+
+              if (theBigPlans.length === 0) {
+                return null;
+              }
+
+              const fullProjectName = computeProjectHierarchicalNameFromRoot(
+                p,
+                allProjectsByRefId
+              );
+
+              return (
+                <Box key={`project-${p.ref_id}`}>
+                  <Divider>
+                    <Typography variant="h6">{fullProjectName}</Typography>
+                  </Divider>
+
+                  <BigPlanList
+                    topLevelInfo={topLevelInfo}
+                    bigPlans={theBigPlans}
+                    alreadyIncludedBigPlanRefIds={alreadyIncludedBigPlanRefIds}
+                    targetBigPlanRefIds={targetBigPlanRefIds}
+                    bigPlansByRefId={entriesByRefId}
+                    onSelected={(it) =>
+                      setTargetBigPlanRefIds((itri) =>
+                        toggleBigPlanRefIds(itri, it.ref_id)
+                      )
+                    }
+                  />
+                </Box>
+              );
+            })}
+          </>
+        )}
 
         <input
           name="targetBigPlanRefIds"
           type="hidden"
           value={Array.from(targetBigPlanRefIds).join(",")}
         />
-      </SectionCard>
+      </SectionCardNew>
     </LeafPanel>
   );
 }
@@ -244,6 +332,47 @@ export const ErrorBoundary = makeErrorBoundary(
       useParams().id
     }. Please try again!`
 );
+
+interface BigPlanListProps {
+  topLevelInfo: TopLevelInfo;
+  bigPlans: Array<BigPlan>;
+  alreadyIncludedBigPlanRefIds: Set<string>;
+  targetBigPlanRefIds: Set<string>;
+  bigPlansByRefId: { [key: string]: BigPlanParent };
+  onSelected: (it: BigPlan) => void;
+}
+
+function BigPlanList(props: BigPlanListProps) {
+  return (
+    <Stack spacing={2} useFlexGap>
+      {props.bigPlans.map((bigPlan) => (
+        <BigPlanCard
+          key={`big-plan-${bigPlan.ref_id}`}
+          topLevelInfo={props.topLevelInfo}
+          bigPlan={bigPlan}
+          compact
+          allowSelect
+          selected={
+            props.alreadyIncludedBigPlanRefIds.has(bigPlan.ref_id) ||
+            props.targetBigPlanRefIds.has(bigPlan.ref_id)
+          }
+          showOptions={{
+            showDueDate: true,
+            showParent: true,
+          }}
+          parent={props.bigPlansByRefId[bigPlan.ref_id]}
+          onClick={(it) => {
+            if (props.alreadyIncludedBigPlanRefIds.has(bigPlan.ref_id)) {
+              return;
+            }
+
+            props.onSelected(it);
+          }}
+        />
+      ))}
+    </Stack>
+  );
+}
 
 function toggleBigPlanRefIds(
   bigPlanRefIds: Set<string>,
@@ -266,4 +395,12 @@ function toggleBigPlanRefIds(
     newBigPlanRefIds.add(newRefId);
     return newBigPlanRefIds;
   }
+}
+
+function inferDefaultSelectedView(workspace: Workspace) {
+  if (!isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.PROJECTS)) {
+    return View.MERGED;
+  }
+
+  return View.BY_PROJECT;
 }

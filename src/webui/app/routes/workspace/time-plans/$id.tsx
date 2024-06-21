@@ -326,32 +326,31 @@ export default function TimePlanView() {
                 inputsEnabled={inputsEnabled}
                 actions={[
                   NavMultipleCompact(
-                    NavSingle(
-                      "New Inbox Task",
-                      `/workspace/inbox-tasks/new?timePlanReason=for-time-plan&timePlanRefId=${loaderData.timePlan.ref_id}`
-                    ),
-                    NavSingle(
-                      "New Big Plan",
-                      `/workspace/big-plans/new?timePlanReason=for-time-plan&timePlanRefId=${loaderData.timePlan.ref_id}`,
-                      undefined,
-                      WorkspaceFeature.BIG_PLANS
-                    ),
-                    NavSingle(
-                      "From Current Inbox Tasks",
-                      `/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-inbox-tasks`
-                    ),
-                    NavSingle(
-                      "From Current Big Plans",
-                      `/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-big-plans`,
-                      undefined,
-                      WorkspaceFeature.BIG_PLANS
-                    ),
-                    NavSingle(
-                      "From Time Plans",
-                      `/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-time-plans/${loaderData.timePlan.ref_id}`
-                    )
+                    NavSingle({
+                      text: "New Inbox Task",
+                      link: `/workspace/inbox-tasks/new?timePlanReason=for-time-plan&timePlanRefId=${loaderData.timePlan.ref_id}`,
+                    }),
+                    NavSingle({
+                      text: "New Big Plan",
+                      link: `/workspace/big-plans/new?timePlanReason=for-time-plan&timePlanRefId=${loaderData.timePlan.ref_id}`,
+                      gatedOn: WorkspaceFeature.BIG_PLANS,
+                    }),
+                    NavSingle({
+                      text: "From Current Inbox Tasks",
+                      link: `/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-inbox-tasks`,
+                    }),
+                    NavSingle({
+                      text: "From Current Big Plans",
+                      link: `/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-big-plans`,
+                      gatedOn: WorkspaceFeature.BIG_PLANS,
+                    }),
+                    NavSingle({
+                      text: "From Time Plans",
+                      link: `/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-time-plans/${loaderData.timePlan.ref_id}`,
+                    })
                   ),
                   FilterFewOptions(
+                    selectedView,
                     [
                       {
                         value: View.MERGED,

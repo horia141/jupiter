@@ -20,6 +20,7 @@ from jupiter.core.domain.time_plans.time_plan_activity_target import (
     TimePlanActivityTarget,
 )
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.use_case import (
     ProgressReporter,
 )
@@ -69,6 +70,9 @@ class TimePlanAssociateWithActivitiesUseCase(
         args: TimePlanAssociateWithActivitiesArgs,
     ) -> TimePlanAssociateWithActivitiesResult:
         """Execute the command's actions."""
+        if len(args.activity_ref_ids) == 0:
+            raise InputValidationError("You must specifiy some activities")
+
         time_plan = await uow.get_for(TimePlan).load_by_id(args.ref_id)
 
         activities = await uow.get_for(TimePlanActivity).find_all(

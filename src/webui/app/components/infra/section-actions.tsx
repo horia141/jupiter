@@ -32,6 +32,7 @@ interface NavSingleDesc {
   kind: "nav-single";
   text: string;
   link: string;
+  highlight?: boolean;
   icon?: JSX.Element;
   gatedOn?: WorkspaceFeature;
 }
@@ -40,6 +41,21 @@ interface NavMultipleDesc {
   kind: "nav-multiple";
   approach: "spread" | "compact";
   navs: Array<NavSingleDesc>;
+}
+
+interface ActionSingleDesc {
+  kind: "action-single";
+  text: string;
+  value: string;
+  highlight?: boolean;
+  icon?: JSX.Element;
+  gatedOn?: WorkspaceFeature;
+}
+
+interface ActionMultipleDesc {
+  kind: "action-multiple";
+  approach: "spread" | "compact";
+  actions: Array<ActionSingleDesc>;
 }
 
 interface FilterOption<K> {
@@ -66,23 +82,17 @@ interface FilterManyOptionsDesc<K> {
 }
 
 type ActionDesc =
-  | NavSingleDesc // A single button, can be a navigation or a callback
-  | NavMultipleDesc // A group of buttons, can be a navigation or a callback
+  | NavSingleDesc // A single button, as a navigation
+  | NavMultipleDesc // A group of buttons, as a navigation
+  | ActionSingleDesc // A single button, as an action
+  | ActionMultipleDesc // A group of buttons, as an action
   | FilterFewOptionsDesc<any> // A group to filter on, can be a navigation or a callback
   | FilterManyOptionsDesc<any>; // A group to filter on, with many options
 
-export function NavSingle(
-  text: string,
-  link: string,
-  icon?: JSX.Element,
-  gatedOn?: WorkspaceFeature
-): NavSingleDesc {
+export function NavSingle(desc: Omit<NavSingleDesc, "kind">): NavSingleDesc {
   return {
     kind: "nav-single",
-    text,
-    link,
-    icon,
-    gatedOn,
+    ...desc,
   };
 }
 
@@ -93,6 +103,25 @@ export function NavMultipleSpread(
     kind: "nav-multiple",
     approach: "spread",
     navs: navs,
+  };
+}
+
+export function ActionSingle(
+  desc: Omit<ActionSingleDesc, "kind">
+): ActionSingleDesc {
+  return {
+    kind: "action-single",
+    ...desc,
+  };
+}
+
+export function ActionMultipleSpread(
+  ...actions: Array<ActionSingleDesc>
+): ActionMultipleDesc {
+  return {
+    kind: "action-multiple",
+    approach: "spread",
+    actions: actions,
   };
 }
 
@@ -107,12 +136,13 @@ export function NavMultipleCompact(
 }
 
 export function FilterFewOptions<K>(
+  defaultOption: K,
   options: Array<FilterOption<K>>,
   onSelect: (selected: K) => void
 ): FilterFewOptionsDesc<K> {
   return {
     kind: "filter-few-options",
-    defaultOption: options[0].value,
+    defaultOption: defaultOption,
     options: options,
     onSelect: onSelect,
     hideIfOneOption: true,
@@ -261,6 +291,25 @@ function ActionView(props: ActionViewProps) {
         />
       );
 
+    case "action-single":
+      return (
+        <ActionSingleView
+          topLevelInfo={props.topLevelInfo}
+          inputsEnabled={props.inputsEnabled}
+          action={props.action}
+        />
+      );
+
+    case "action-multiple":
+      return (
+        <ActionMultipleView
+          topLevelInfo={props.topLevelInfo}
+          inputsEnabled={props.inputsEnabled}
+          orientation={props.orientation}
+          action={props.action}
+        />
+      );
+
     case "filter-few-options":
       return (
         <FilterFewOptionsView
@@ -359,7 +408,7 @@ function NavMultipleSpreadView(props: NavMultipleViewProps) {
 function NavMultipleCompactView(props: NavMultipleViewProps) {
   const [open, setOpen] = useState(false);
   const anchorRef = React.useRef<HTMLDivElement>(null);
-  const [selectedIndex, setSelectedIndex] = React.useState(1);
+  const [selectedIndex, setSelectedIndex] = React.useState(0);
   const theme = useTheme();
   const isBigScreen = useBigScreen();
 
@@ -440,6 +489,182 @@ function NavMultipleCompactView(props: NavMultipleViewProps) {
                   {realActions.map((option, index) => (
                     <MenuItem
                       key={`nav-multiple-${index}`}
+                      selected={index === selectedIndex}
+                      onClick={(event) => handleMenuItemClick(event, index)}
+                    >
+                      {option.text}
+                    </MenuItem>
+                  ))}
+                </MenuList>
+              </ClickAwayListener>
+            </Paper>
+          </Grow>
+        )}
+      </Popper>
+    </>
+  );
+}
+
+interface ActionSingleViewProps {
+  topLevelInfo: TopLevelInfo;
+  inputsEnabled: boolean;
+  action: ActionSingleDesc;
+}
+
+function ActionSingleView(props: ActionSingleViewProps) {
+  if (props.action.gatedOn) {
+    const workspace = props.topLevelInfo.workspace;
+    if (!isWorkspaceFeatureAvailable(workspace, props.action.gatedOn)) {
+      return <></>;
+    }
+  }
+
+  return (
+    <Button
+      variant={props.action.highlight ? "contained" : "outlined"}
+      disabled={!props.inputsEnabled}
+      startIcon={props.action.icon}
+      type="submit"
+      name="intent"
+      value={props.action.value}
+    >
+      {props.action.text}
+    </Button>
+  );
+}
+
+interface ActionMultipleViewProps {
+  topLevelInfo: TopLevelInfo;
+  inputsEnabled: boolean;
+  orientation: "horizontal" | "vertical";
+  action: ActionMultipleDesc;
+}
+
+function ActionMultipleView(props: ActionMultipleViewProps) {
+  switch (props.action.approach) {
+    case "spread":
+      return <ActionMultipleSpreadView {...props} />;
+    case "compact":
+      return <ActionMultipleCompactView {...props} />;
+  }
+}
+
+function ActionMultipleSpreadView(props: ActionMultipleViewProps) {
+  return (
+    <ButtonGroup orientation={props.orientation}>
+      {props.action.actions.map((action, index) => {
+        if (action.gatedOn) {
+          const workspace = props.topLevelInfo.workspace;
+          if (!isWorkspaceFeatureAvailable(workspace, action.gatedOn)) {
+            return (
+              <React.Fragment key={`action-multiple-${index}`}></React.Fragment>
+            );
+          }
+        }
+
+        return (
+          <Button
+            key={`action-multiple-${index}`}
+            variant={action.highlight ? "contained" : "outlined"}
+            disabled={!props.inputsEnabled}
+            startIcon={action.icon}
+            type="submit"
+            name="intent"
+            value={action.value}
+          >
+            {action.text}
+          </Button>
+        );
+      })}
+    </ButtonGroup>
+  );
+}
+
+function ActionMultipleCompactView(props: ActionMultipleViewProps) {
+  const [open, setOpen] = useState(false);
+  const anchorRef = React.useRef<HTMLDivElement>(null);
+  const [selectedIndex, setSelectedIndex] = React.useState(0);
+  const theme = useTheme();
+  const isBigScreen = useBigScreen();
+
+  const realActions: ActionSingleDesc[] = [];
+  for (const action of props.action.actions) {
+    if (action.gatedOn) {
+      const workspace = props.topLevelInfo.workspace;
+      if (!isWorkspaceFeatureAvailable(workspace, action.gatedOn)) {
+        continue;
+      }
+    }
+    realActions.push(action);
+  }
+
+  function handleMenuItemClick(
+    event: React.MouseEvent<HTMLElement, MouseEvent>,
+    index: number
+  ) {
+    setSelectedIndex(index);
+    setOpen(false);
+  }
+
+  function handleClose(event: Event) {
+    if (
+      anchorRef.current &&
+      anchorRef.current.contains(event.target as HTMLElement)
+    ) {
+      return;
+    }
+
+    setOpen(false);
+  }
+
+  if (realActions.length === 0) {
+    return <></>;
+  }
+
+  return (
+    <>
+      <ButtonGroup ref={anchorRef}>
+        <Button
+          disabled={!props.inputsEnabled}
+          startIcon={realActions[selectedIndex].icon}
+          type="submit"
+          name="intent"
+          value={realActions[selectedIndex].value}
+        >
+          {realActions[selectedIndex].text}
+        </Button>
+        <Button
+          size="small"
+          disabled={!props.inputsEnabled}
+          onClick={() => setOpen((prevOpen) => !prevOpen)}
+        >
+          <ArrowDropDownIcon />
+        </Button>
+      </ButtonGroup>
+      <Popper
+        sx={{
+          zIndex: theme.zIndex.appBar + 20,
+          backgroundColor: theme.palette.background.paper,
+        }}
+        open={open}
+        anchorEl={anchorRef.current}
+        disablePortal={!isBigScreen}
+        transition
+      >
+        {({ TransitionProps, placement }) => (
+          <Grow
+            {...TransitionProps}
+            style={{
+              transformOrigin:
+                placement === "bottom" ? "center top" : "center bottom",
+            }}
+          >
+            <Paper>
+              <ClickAwayListener onClickAway={handleClose}>
+                <MenuList id="split-button-menu" autoFocusItem>
+                  {realActions.map((option, index) => (
+                    <MenuItem
+                      key={`action-multiple-${index}`}
                       selected={index === selectedIndex}
                       onClick={(event) => handleMenuItemClick(event, index)}
                     >

@@ -39,7 +39,9 @@ const QuerySchema = {
 
 const UpdateFormSchema = {
   intent: z.string(),
-  targetInboxTaskRefIds: z.string().transform((s) => s.split(",")),
+  targetInboxTaskRefIds: z
+    .string()
+    .transform((s) => (s === "" ? [] : s.split(","))),
 };
 
 export const handle = {
