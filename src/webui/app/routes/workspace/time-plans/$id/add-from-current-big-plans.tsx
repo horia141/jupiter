@@ -1,6 +1,4 @@
-import type {
-  BigPlan,
-  Workspace} from "@jupiter/webapi-client";
+import type { BigPlan, Workspace } from "@jupiter/webapi-client";
 import {
   ApiError,
   TimePlanActivityTarget,
@@ -46,7 +44,7 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
-import type { TopLevelInfo} from "~/top-level-context";
+import type { TopLevelInfo } from "~/top-level-context";
 import { TopLevelInfoContext } from "~/top-level-context";
 
 enum View {
@@ -191,15 +189,15 @@ export default function TimePlanAddFromCurrentBigPlans() {
     loaderData.bigPlans.map((e) => e.big_plan)
   );
 
-  const sortedProjects = sortProjectsByTreeOrder(loaderData.allProjects || []);
-  const allProjectsByRefId = new Map(
-    loaderData.allProjects?.map((p) => [p.ref_id, p])
-  );
-
   const entriesByRefId: { [key: string]: BigPlanParent } = {};
   for (const entry of loaderData.bigPlans) {
     entriesByRefId[entry.big_plan.ref_id] = bigPlanFindEntryToParent(entry);
   }
+
+  const sortedProjects = sortProjectsByTreeOrder(loaderData.allProjects || []);
+  const allProjectsByRefId = new Map(
+    loaderData.allProjects?.map((p) => [p.ref_id, p])
+  );
 
   const [selectedView, setSelectedView] = useState(
     inferDefaultSelectedView(topLevelInfo.workspace)
