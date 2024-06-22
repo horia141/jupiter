@@ -2,7 +2,7 @@
 
 ## About
 
-Jupiter is a tool for _life planning_. It provides goals management, task tracking,
+Jupiter is a tool for _life planning_. It provides goals management, task tracking, work planning,
 habit building, a journal, chores management, lists, metrics, a personal relationship manager, and
 much more all in a unified package.
 
