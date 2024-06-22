@@ -22,7 +22,7 @@ import {
   TextField,
   useTheme,
 } from "@mui/material";
-import { Link } from "@remix-run/react";
+import { Form, Link } from "@remix-run/react";
 import React, { useState } from "react";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { useBigScreen } from "~/rendering/use-big-screen";
@@ -43,6 +43,11 @@ interface NavMultipleDesc {
   navs: Array<NavSingleDesc>;
 }
 
+interface ActionExtraHiddenInput {
+  name: string;
+  value: string;
+}
+
 interface ActionSingleDesc {
   kind: "action-single";
   text: string;
@@ -50,12 +55,14 @@ interface ActionSingleDesc {
   highlight?: boolean;
   icon?: JSX.Element;
   gatedOn?: WorkspaceFeature;
+  extraHiddenInputs?: ActionExtraHiddenInput;
 }
 
 interface ActionMultipleDesc {
   kind: "action-multiple";
   approach: "spread" | "compact";
   actions: Array<ActionSingleDesc>;
+  extraHiddenInputs?: ActionExtraHiddenInput;
 }
 
 interface FilterOption<K> {
@@ -116,12 +123,12 @@ export function ActionSingle(
 }
 
 export function ActionMultipleSpread(
-  ...actions: Array<ActionSingleDesc>
+  desc: Omit<Omit<ActionMultipleDesc, "kind">, "approach">
 ): ActionMultipleDesc {
   return {
     kind: "action-multiple",
     approach: "spread",
-    actions: actions,
+    ...desc,
   };
 }
 
@@ -174,6 +181,8 @@ interface SectionActionsProps {
 export function SectionActions(props: SectionActionsProps) {
   const isBigScreen = useBigScreen();
 
+  const extraHiddenInputs = collectExtraHiddenInputs(props.actions);
+
   if (!isBigScreen) {
     const allActions = props.actions.concat(props.extraActions ?? []);
     return (
@@ -196,6 +205,10 @@ export function SectionActions(props: SectionActionsProps) {
           orientation="horizontal"
           action={action}
         />
+      ))}
+
+      {extraHiddenInputs.map((hi, index) => (
+        <input key={index} type="hidden" name={hi.name} value={hi.value} />
       ))}
 
       <SectionActionsWithDialog
@@ -222,6 +235,8 @@ function SectionActionsWithDialog(props: SectionActionsWithDialogProps) {
     return <></>;
   }
 
+  const extraHiddenInputs = collectExtraHiddenInputs(props.actions);
+
   return (
     <>
       <Button
@@ -241,17 +256,27 @@ function SectionActionsWithDialog(props: SectionActionsWithDialogProps) {
       >
         <DialogTitle>Actions</DialogTitle>
         <DialogContent>
-          <Stack spacing={2}>
-            {props.actions.map((action, index) => (
-              <ActionView
-                key={`action-${props.id}-${index}`}
-                topLevelInfo={props.topLevelInfo}
-                inputsEnabled={props.inputsEnabled}
-                orientation="vertical"
-                action={action}
+          <Form method="post">
+            <Stack spacing={2}>
+              {props.actions.map((action, index) => (
+                <ActionView
+                  key={`action-${props.id}-${index}`}
+                  topLevelInfo={props.topLevelInfo}
+                  inputsEnabled={props.inputsEnabled}
+                  orientation="vertical"
+                  action={action}
+                />
+              ))}
+            </Stack>
+            {extraHiddenInputs.map((hi, index) => (
+              <input
+                key={index}
+                type="hidden"
+                name={hi.name}
+                value={hi.value}
               />
             ))}
-          </Stack>
+          </Form>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setShowExtraActionsDialog(false)}>
@@ -811,4 +836,19 @@ function FilterManyOptionsView<K>(props: FilterManyOptionsViewProps<K>) {
       )}
     />
   );
+}
+
+function collectExtraHiddenInputs(
+  actions: ActionDesc[]
+): ActionExtraHiddenInput[] {
+  const extraHiddenInputs = [];
+  for (const action of actions) {
+    if (action.kind === "action-single" && action.extraHiddenInputs) {
+      extraHiddenInputs.push(action.extraHiddenInputs);
+    } else if (action.kind === "action-multiple" && action.extraHiddenInputs) {
+      extraHiddenInputs.push(action.extraHiddenInputs);
+    }
+  }
+
+  return extraHiddenInputs;
 }

@@ -1,6 +1,5 @@
 import type { BigPlan, InboxTask, TimePlan } from "@jupiter/webapi-client";
 import { ApiError, TimePlanActivityTarget } from "@jupiter/webapi-client";
-import { Button } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -15,7 +14,13 @@ import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import {
+  ActionMultipleSpread,
+  ActionSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
 import { SectionCard } from "~/components/infra/section-card";
+import { SectionCardNew } from "~/components/infra/section-card-new";
 import { TimePlanActivityCard } from "~/components/time-plan-activity-card";
 import { TimePlanCard } from "~/components/time-plan-card";
 import { TimePlanStack } from "~/components/time-plan-stack";
@@ -213,30 +218,34 @@ export default function TimePlanAddFromCurrentTimePlans() {
       initialExpansionState={LeafPanelExpansionState.LARGE}
     >
       <GlobalError actionResult={actionData} />
-      <SectionCard
+      <SectionCardNew
         title="Current Activities"
-        actions={[
-          <Button
-            key="add"
-            variant="contained"
-            disabled={!inputsEnabled}
-            type="submit"
-            name="intent"
-            value="add"
-          >
-            Add
-          </Button>,
-          <Button
-            key="add-and-override"
-            variant="outlined"
-            disabled={!inputsEnabled}
-            type="submit"
-            name="intent"
-            value="add-and-override"
-          >
-            Add and Override Dates
-          </Button>,
-        ]}
+        actions={
+          <SectionActions
+            id="add-from-current-time-plans"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionMultipleSpread({
+                actions: [
+                  ActionSingle({
+                    text: "Add",
+                    value: "add",
+                    highlight: true,
+                  }),
+                  ActionSingle({
+                    text: "Add And Override Dates",
+                    value: "add-and-override",
+                  }),
+                ],
+                extraHiddenInputs: {
+                  name: "targetActivitiesRefIds",
+                  value: Array.from(targetActivitiesRefIds).join(","),
+                },
+              }),
+            ]}
+          />
+        }
       >
         <EntityStack>
           {sortedOtherActivities.map((activity) => (
@@ -272,13 +281,7 @@ export default function TimePlanAddFromCurrentTimePlans() {
             />
           ))}
         </EntityStack>
-
-        <input
-          name="targetActivitiesRefIds"
-          type="hidden"
-          value={Array.from(targetActivitiesRefIds).join(",")}
-        />
-      </SectionCard>
+      </SectionCardNew>
 
       {loaderData.otherHigherTimePlan && (
         <SectionCard title="Higher Time Plan">

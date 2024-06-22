@@ -223,17 +223,23 @@ export default function TimePlanAddFromCurrentBigPlans() {
             topLevelInfo={topLevelInfo}
             inputsEnabled={inputsEnabled}
             actions={[
-              ActionMultipleSpread(
-                ActionSingle({
-                  text: "Add",
-                  value: "add",
-                  highlight: true,
-                }),
-                ActionSingle({
-                  text: "Add And Override Dates",
-                  value: "add-and-override",
-                })
-              ),
+              ActionMultipleSpread({
+                actions: [
+                  ActionSingle({
+                    text: "Add",
+                    value: "add",
+                    highlight: true,
+                  }),
+                  ActionSingle({
+                    text: "Add And Override Dates",
+                    value: "add-and-override",
+                  }),
+                ],
+                extraHiddenInputs: {
+                  name: "targetBigPlanRefIds",
+                  value: Array.from(targetBigPlanRefIds).join(","),
+                },
+              }),
               FilterFewOptions(
                 selectedView,
                 [
@@ -309,12 +315,6 @@ export default function TimePlanAddFromCurrentBigPlans() {
             })}
           </>
         )}
-
-        <input
-          name="targetBigPlanRefIds"
-          type="hidden"
-          value={Array.from(targetBigPlanRefIds).join(",")}
-        />
       </SectionCardNew>
     </LeafPanel>
   );

@@ -1,6 +1,4 @@
-import type {
-  InboxTask,
-  Workspace} from "@jupiter/webapi-client";
+import type { InboxTask, Workspace } from "@jupiter/webapi-client";
 import {
   ApiError,
   TimePlanActivityTarget,
@@ -46,7 +44,7 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
-import type { TopLevelInfo} from "~/top-level-context";
+import type { TopLevelInfo } from "~/top-level-context";
 import { TopLevelInfoContext } from "~/top-level-context";
 
 enum View {
@@ -238,17 +236,23 @@ export default function TimePlanAddFromCurrentInboxTasks() {
             topLevelInfo={topLevelInfo}
             inputsEnabled={inputsEnabled}
             actions={[
-              ActionMultipleSpread(
-                ActionSingle({
-                  text: "Add",
-                  value: "add",
-                  highlight: true,
-                }),
-                ActionSingle({
-                  text: "Add And Override Dates",
-                  value: "add-and-override",
-                })
-              ),
+              ActionMultipleSpread({
+                actions: [
+                  ActionSingle({
+                    text: "Add",
+                    value: "add",
+                    highlight: true,
+                  }),
+                  ActionSingle({
+                    text: "Add And Override Dates",
+                    value: "add-and-override",
+                  }),
+                ],
+                extraHiddenInputs: {
+                  name: "targetInboxTaskRefIds",
+                  value: Array.from(targetInboxTaskRefIds).join(","),
+                },
+              }),
               FilterFewOptions(
                 selectedView,
                 [
@@ -326,12 +330,6 @@ export default function TimePlanAddFromCurrentInboxTasks() {
             })}
           </>
         )}
-
-        <input
-          name="targetInboxTaskRefIds"
-          type="hidden"
-          value={Array.from(targetInboxTaskRefIds).join(",")}
-        />
       </SectionCardNew>
     </LeafPanel>
   );
