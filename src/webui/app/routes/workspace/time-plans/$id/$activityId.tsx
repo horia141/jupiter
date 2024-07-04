@@ -7,7 +7,6 @@ import {
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
 import {
-  Button,
   FormControl,
   FormLabel,
   Stack,
@@ -18,7 +17,6 @@ import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
-  Link,
   useActionData,
   useFetcher,
   useParams,
@@ -35,7 +33,13 @@ import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { SectionCard } from "~/components/infra/section-card";
+import {
+  ActionSingle,
+  NavMultipleSpread,
+  NavSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
+import { SectionCardNew } from "~/components/infra/section-card-new";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { timePlanActivityFeasabilityName } from "~/logic/domain/time-plan-activity-feasability";
 import { timePlanActivityKindName } from "~/logic/domain/time-plan-activity-kind";
@@ -196,20 +200,23 @@ export default function TimePlanActivity() {
       initialExpansionState={LeafPanelExpansionState.MEDIUM}
     >
       <GlobalError actionResult={actionData} />
-      <SectionCard
+      <SectionCardNew
+        id="time-plan-activity-properties"
         title="Properties"
-        actions={[
-          <Button
-            key="save"
-            variant="contained"
-            disabled={!inputsEnabled}
-            type="submit"
-            name="intent"
-            value="update"
-          >
-            Save
-          </Button>,
-        ]}
+        actions={
+          <SectionActions
+            id="time-plan-activity-properties"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Save",
+                value: "update",
+                highlight: true,
+              }),
+            ]}
+          />
+        }
       >
         <Stack spacing={2} useFlexGap>
           <FormControl fullWidth>
@@ -217,15 +224,17 @@ export default function TimePlanActivity() {
             <ToggleButtonGroup
               value={kind}
               exclusive
-              onChange={(_, newKind) => setKind(newKind)}
+              onChange={(_, newKind) => newKind !== null && setKind(newKind)}
             >
               <ToggleButton
+                id="time-plan-activity-kind-finish"
                 disabled={!inputsEnabled}
                 value={TimePlanActivityKind.FINISH}
               >
                 {timePlanActivityKindName(TimePlanActivityKind.FINISH)}
               </ToggleButton>
               <ToggleButton
+                id="time-plan-activity-kind-make-progress"
                 disabled={!inputsEnabled}
                 value={TimePlanActivityKind.MAKE_PROGRESS}
               >
@@ -241,9 +250,12 @@ export default function TimePlanActivity() {
             <ToggleButtonGroup
               value={feasability}
               exclusive
-              onChange={(_, newFeasability) => setFeasability(newFeasability)}
+              onChange={(_, newFeasability) =>
+                newFeasability !== null && setFeasability(newFeasability)
+              }
             >
               <ToggleButton
+                id="time-plan-activity-feasability-must-do"
                 disabled={!inputsEnabled}
                 value={TimePlanActivityFeasability.MUST_DO}
               >
@@ -252,6 +264,7 @@ export default function TimePlanActivity() {
                 )}
               </ToggleButton>
               <ToggleButton
+                id="time-plan-activity-feasability-should-do"
                 disabled={!inputsEnabled}
                 value={TimePlanActivityFeasability.NICE_TO_HAVE}
               >
@@ -260,6 +273,7 @@ export default function TimePlanActivity() {
                 )}
               </ToggleButton>
               <ToggleButton
+                id="time-plan-activity-feasability-stretch"
                 disabled={!inputsEnabled}
                 value={TimePlanActivityFeasability.STRETCH}
               >
@@ -272,10 +286,10 @@ export default function TimePlanActivity() {
             <FieldError actionResult={actionData} fieldName="/feasability" />
           </FormControl>
         </Stack>
-      </SectionCard>
+      </SectionCardNew>
 
       {loaderData.targetInboxTask && (
-        <SectionCard title="Target Inbox Task">
+        <SectionCardNew id="target" title="Target Inbox Task">
           <InboxTaskStack
             topLevelInfo={topLevelInfo}
             showOptions={{
@@ -288,7 +302,7 @@ export default function TimePlanActivity() {
             onCardMarkDone={handleInboxTaskMarkDone}
             onCardMarkNotDone={handleInboxTaskMarkNotDone}
           />
-        </SectionCard>
+        </SectionCardNew>
       )}
 
       {isWorkspaceFeatureAvailable(
@@ -296,28 +310,31 @@ export default function TimePlanActivity() {
         WorkspaceFeature.BIG_PLANS
       ) &&
         loaderData.targetBigPlan && (
-          <SectionCard
+          <SectionCardNew
+            id="target"
             title="Target Big Plan"
-            actions={[
-              <Button
-                key="new-inbox-task"
-                variant="outlined"
-                disabled={!inputsEnabled}
-                to={`/workspace/inbox-tasks/new?timePlanReason=for-time-plan&timePlanRefId=${id}&bigPlanReason=for-big-plan&bigPlanRefId=${loaderData.targetBigPlan.ref_id}`}
-                component={Link}
-              >
-                New Inbox Task
-              </Button>,
-              <Button
-                key="from-current-inbox-tasks"
-                variant="outlined"
-                disabled={!inputsEnabled}
-                to={`/workspace/time-plans/${id}/add-from-current-inbox-tasks?bigPlanReason=for-big-plan&bigPlanRefId=${loaderData.targetBigPlan.ref_id}`}
-                component={Link}
-              >
-                From Current Inbox Tasks
-              </Button>,
-            ]}
+            actions={
+              <SectionActions
+                id="target-big-plan"
+                topLevelInfo={topLevelInfo}
+                inputsEnabled={inputsEnabled}
+                actions={[
+                  NavMultipleSpread({
+                    navs: [
+                      NavSingle({
+                        text: "New Inbox Task",
+                        link: `/workspace/inbox-tasks/new?timePlanReason=for-time-plan&timePlanRefId=${id}&bigPlanReason=for-big-plan&bigPlanRefId=${loaderData.targetBigPlan.ref_id}`,
+                        highlight: true,
+                      }),
+                      NavSingle({
+                        text: "From Current Inbox Tasks",
+                        link: `/workspace/time-plans/${id}/add-from-current-inbox-tasks?bigPlanReason=for-big-plan&bigPlanRefId=${loaderData.targetBigPlan.ref_id}&timePlanActivityRefId=${activityId}`,
+                      }),
+                    ],
+                  }),
+                ]}
+              />
+            }
           >
             <BigPlanStack
               topLevelInfo={topLevelInfo}
@@ -331,7 +348,7 @@ export default function TimePlanActivity() {
               }}
               bigPlans={[loaderData.targetBigPlan]}
             />
-          </SectionCard>
+          </SectionCardNew>
         )}
     </LeafPanel>
   );

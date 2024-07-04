@@ -143,7 +143,7 @@ def test_vacation_create_note(page: Page, create_vacation) -> None:
 
     page.locator('#editorjs div[contenteditable="true"]').first.fill("This is a note.")
 
-    page.wait_for_url("/workspace/vacations/*")
+    page.wait_for_url(re.compile(r"/workspace/vacations/\d+"))
 
     expect(page.locator('#editorjs div[contenteditable="true"]').first).to_contain_text(
         "This is a note."

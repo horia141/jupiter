@@ -160,7 +160,7 @@ class SqliteScoreStatsRepository(
             )
         return record
 
-    async def remove(self, record: ScoreStats) -> ScoreStats:
+    async def remove(self, record: ScoreStats) -> None:
         """Remove a score stats."""
         result = await self._connection.execute(
             delete(self._score_stats_table)
@@ -176,7 +176,6 @@ class SqliteScoreStatsRepository(
             raise RecordNotFoundError(
                 f"The score stats {record.key[0]}:{record.key[1]}:{record.key[2]} does not exist"
             )
-        return self._row_to_entity(result)
 
     async def load_by_key_optional(
         self, key: tuple[EntityId, RecurringTaskPeriod | None, str]
@@ -317,7 +316,7 @@ class SqliteScorePeriodBestRepository(
             )
         return record
 
-    async def remove(self, record: ScorePeriodBest) -> ScorePeriodBest:
+    async def remove(self, record: ScorePeriodBest) -> None:
         """Remove a score period best."""
         result = await self._connection.execute(
             delete(self._score_period_best_table)
@@ -337,7 +336,6 @@ class SqliteScorePeriodBestRepository(
             raise RecordNotFoundError(
                 f"The score period best {record.key[0]}:{record.key[1]}:{record.key[2]}:{record.key[3]} does not exist"
             )
-        return self._row_to_entity(result)
 
     async def load_by_key_optional(
         self, key: tuple[EntityId, RecurringTaskPeriod | None, str, RecurringTaskPeriod]

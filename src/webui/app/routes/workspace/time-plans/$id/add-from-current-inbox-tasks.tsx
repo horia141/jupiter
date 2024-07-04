@@ -59,6 +59,7 @@ const ParamsSchema = {
 const QuerySchema = {
   bigPlanReason: z.literal("for-big-plan").optional(),
   bigPlanRefId: z.string().optional(),
+  timePlanActivityRefId: z.string().optional(),
 };
 
 const UpdateFormSchema = {
@@ -82,6 +83,10 @@ export async function loader({ request, params }: LoaderArgs) {
   if (bigPlanReason === "for-big-plan") {
     if (!query.bigPlanRefId) {
       throw new Response("Missing Big Plan Id", { status: 500 });
+    }
+
+    if (!query.timePlanActivityRefId) {
+      throw new Response("Missing Time Plan Activity Id", { status: 500 });
     }
   }
 
@@ -136,9 +141,12 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export async function action({ request, params }: ActionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const { id } = parseParams(params, ParamsSchema);
+  const query = parseQuery(request, QuerySchema);
   const form = await parseForm(request, UpdateFormSchema);
 
   try {
+    const bigPlanReason = query.bigPlanReason || "standard";
+
     switch (form.intent) {
       case "add": {
         await getLoggedInApiClient(
@@ -148,8 +156,7 @@ export async function action({ request, params }: ActionArgs) {
           inbox_task_ref_ids: form.targetInboxTaskRefIds,
           override_existing_dates: false,
         });
-
-        return redirect(`/workspace/time-plans/${id}`);
+        break;
       }
 
       case "add-and-override": {
@@ -160,12 +167,22 @@ export async function action({ request, params }: ActionArgs) {
           inbox_task_ref_ids: form.targetInboxTaskRefIds,
           override_existing_dates: true,
         });
-
-        return redirect(`/workspace/time-plans/${id}`);
+        break;
       }
 
       default:
         throw new Response("Bad Intent", { status: 500 });
+    }
+
+    switch (bigPlanReason) {
+      case "for-big-plan": {
+        return redirect(
+          `/workspace/time-plans/${id}/${query.timePlanActivityRefId as string}`
+        );
+      }
+
+      case "standard":
+        return redirect(`/workspace/time-plans/${id}`);
     }
   } catch (error) {
     if (
@@ -229,10 +246,11 @@ export default function TimePlanAddFromCurrentInboxTasks() {
     >
       <GlobalError actionResult={actionData} />
       <SectionCardNew
+        id="time-plan-current-inbox-tasks"
         title="Current Inbox Tasks"
         actions={
           <SectionActions
-            id="add-from-current-big-plans"
+            id="time-plan-add-from-current-big-plans"
             topLevelInfo={topLevelInfo}
             inputsEnabled={inputsEnabled}
             actions={[

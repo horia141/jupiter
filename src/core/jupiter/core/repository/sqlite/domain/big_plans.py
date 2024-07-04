@@ -27,7 +27,7 @@ class SqliteBigPlanRepository(SqliteLeafEntityRepository[BigPlan], BigPlanReposi
         filter_end_completed_date: ADate,
         filter_exclude_ref_ids: Iterable[EntityId] | None = None,
     ) -> list[BigPlan]:
-        """find all completed big plans in a time range."""
+        """Find all completed big plans in a time range."""
         query_stmt = select(self._table).where(
             self._table.c.big_plan_collection_ref_id == parent_ref_id.as_int(),
         )

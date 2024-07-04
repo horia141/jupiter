@@ -104,12 +104,22 @@ export function NavSingle(desc: Omit<NavSingleDesc, "kind">): NavSingleDesc {
 }
 
 export function NavMultipleSpread(
-  ...navs: Array<NavSingleDesc>
+  desc: Omit<Omit<NavMultipleDesc, "kind">, "approach">
 ): NavMultipleDesc {
   return {
     kind: "nav-multiple",
     approach: "spread",
-    navs: navs,
+    ...desc,
+  };
+}
+
+export function NavMultipleCompact(
+  desc: Omit<Omit<NavMultipleDesc, "kind">, "approach">
+): NavMultipleDesc {
+  return {
+    kind: "nav-multiple",
+    approach: "compact",
+    ...desc,
   };
 }
 
@@ -129,16 +139,6 @@ export function ActionMultipleSpread(
     kind: "action-multiple",
     approach: "spread",
     ...desc,
-  };
-}
-
-export function NavMultipleCompact(
-  ...navs: Array<NavSingleDesc>
-): NavMultipleDesc {
-  return {
-    kind: "nav-multiple",
-    approach: "compact",
-    navs: navs,
   };
 }
 
@@ -483,6 +483,7 @@ function NavMultipleCompactView(props: NavMultipleViewProps) {
           {realActions[selectedIndex].text}
         </Button>
         <Button
+          id="section-action-nav-multiple-compact-button"
           size="small"
           disabled={!props.inputsEnabled}
           onClick={() => setOpen((prevOpen) => !prevOpen)}

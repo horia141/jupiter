@@ -164,7 +164,7 @@ export function BranchPanel(props: PropsWithChildren<BranchPanelProps>) {
 
               {props.showArchiveButton && (
                 <IconButton
-                  id="leaf-entity-archive"
+                  id="branch-entity-archive"
                   sx={{ marginLeft: "auto" }}
                   disabled={!props.enableArchiveButton}
                   type="submit"

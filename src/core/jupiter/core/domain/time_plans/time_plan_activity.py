@@ -63,6 +63,7 @@ class TimePlanActivity(LeafEntity):
         existing_activity_kind: TimePlanActivityKind,
         existing_activity_feasability: TimePlanActivityFeasability,
     ) -> "TimePlanActivity":
+        """Create a new actvity from an existing one."""
         return TimePlanActivity._create(
             ctx,
             name=existing_activity_name,
@@ -82,9 +83,10 @@ class TimePlanActivity(LeafEntity):
         kind: TimePlanActivityKind,
         feasability: TimePlanActivityFeasability,
     ) -> "TimePlanActivity":
+        """Create a new activity from an inbox task."""
         return TimePlanActivity._create(
             ctx,
-            name=TimePlanActivity.build_name(
+            name=TimePlanActivity._build_name(
                 TimePlanActivityTarget.INBOX_TASK, inbox_task_ref_id
             ),
             time_plan=ParentLink(time_plan_ref_id),
@@ -103,9 +105,10 @@ class TimePlanActivity(LeafEntity):
         kind: TimePlanActivityKind,
         feasability: TimePlanActivityFeasability,
     ) -> "TimePlanActivity":
+        """Create a new activity from a big plan."""
         return TimePlanActivity._create(
             ctx,
-            name=TimePlanActivity.build_name(
+            name=TimePlanActivity._build_name(
                 TimePlanActivityTarget.INBOX_TASK, big_plan_ref_id
             ),
             time_plan=ParentLink(time_plan_ref_id),
@@ -122,6 +125,7 @@ class TimePlanActivity(LeafEntity):
         kind: UpdateAction[TimePlanActivityKind],
         feasability: UpdateAction[TimePlanActivityFeasability],
     ) -> "TimePlanActivity":
+        """Update the details of an activity."""
         return self._new_version(
             ctx,
             kind=kind.or_else(self.kind),
@@ -129,7 +133,7 @@ class TimePlanActivity(LeafEntity):
         )
 
     @staticmethod
-    def build_name(target: TimePlanActivityTarget, entity_id: EntityId) -> EntityName:
+    def _build_name(target: TimePlanActivityTarget, entity_id: EntityId) -> EntityName:
         return EntityName(f"Work on {target.value!s} {entity_id}")
 
 

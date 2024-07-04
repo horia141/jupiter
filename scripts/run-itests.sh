@@ -73,6 +73,9 @@ dev_mode() {
         esac
     done
 
+    echo $webapi_url
+    echo $webui_url
+
     if [[ -z "$webapi_url" ]]; then
         webapi_url="http://0.0.0.0:$STANDARD_WEBAPI_PORT"
     fi

@@ -59,7 +59,10 @@ export function BigPlanCard(props: BigPlanCardProps) {
           : undefined
       }
     >
-      <EntityLink to={`/workspace/big-plans/${props.bigPlan.ref_id}`}>
+      <EntityLink
+        to={`/workspace/big-plans/${props.bigPlan.ref_id}`}
+        block={props.onClick !== undefined}
+      >
         <EntityNameComponent
           compact={props.compact}
           name={props.bigPlan.name}

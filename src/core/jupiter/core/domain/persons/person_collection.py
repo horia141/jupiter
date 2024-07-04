@@ -1,8 +1,11 @@
 """The person collection."""
 
+from jupiter.core.domain.persons.person import Person
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
+    ContainsMany,
+    IsRefId,
     ParentLink,
     TrunkEntity,
     create_entity_action,
@@ -17,6 +20,8 @@ class PersonCollection(TrunkEntity):
 
     workspace: ParentLink
     catch_up_project_ref_id: EntityId
+
+    persons = ContainsMany(Person, person_collection_ref_id=IsRefId())
 
     @staticmethod
     @create_entity_action

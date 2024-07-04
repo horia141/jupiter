@@ -94,11 +94,16 @@ const ParamsSchema = {
   id: z.string(),
 };
 
-const UpdateFormSchema = {
-  intent: z.string(),
-  rightNow: z.string(),
-  period: z.nativeEnum(RecurringTaskPeriod),
-};
+const UpdateFormSchema = z.discriminatedUnion("intent", [
+  z.object({
+    intent: z.literal("change-time-config"),
+    rightNow: z.string(),
+    period: z.nativeEnum(RecurringTaskPeriod),
+  }),
+  z.object({
+    intent: z.literal("archive"),
+  }),
+]);
 
 export const handle = {
   displayType: DisplayType.BRANCH,
@@ -265,6 +270,7 @@ export default function TimePlanView() {
             actions={[
               <Button
                 key="change-time-config"
+                id="time-plan-update"
                 variant="contained"
                 disabled={!inputsEnabled}
                 type="submit"
@@ -294,7 +300,7 @@ export default function TimePlanView() {
               <FormControl fullWidth>
                 <InputLabel id="period">Period</InputLabel>
                 <Select
-                  labelId="status"
+                  labelId="period"
                   name="period"
                   readOnly={!inputsEnabled}
                   defaultValue={loaderData.timePlan.period}
@@ -318,6 +324,7 @@ export default function TimePlanView() {
           </SectionCard>
 
           <SectionCardNew
+            id="time-plan-activities"
             title="Activities"
             actions={
               <SectionActions
@@ -325,30 +332,32 @@ export default function TimePlanView() {
                 topLevelInfo={topLevelInfo}
                 inputsEnabled={inputsEnabled}
                 actions={[
-                  NavMultipleCompact(
-                    NavSingle({
-                      text: "New Inbox Task",
-                      link: `/workspace/inbox-tasks/new?timePlanReason=for-time-plan&timePlanRefId=${loaderData.timePlan.ref_id}`,
-                    }),
-                    NavSingle({
-                      text: "New Big Plan",
-                      link: `/workspace/big-plans/new?timePlanReason=for-time-plan&timePlanRefId=${loaderData.timePlan.ref_id}`,
-                      gatedOn: WorkspaceFeature.BIG_PLANS,
-                    }),
-                    NavSingle({
-                      text: "From Current Inbox Tasks",
-                      link: `/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-inbox-tasks`,
-                    }),
-                    NavSingle({
-                      text: "From Current Big Plans",
-                      link: `/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-big-plans`,
-                      gatedOn: WorkspaceFeature.BIG_PLANS,
-                    }),
-                    NavSingle({
-                      text: "From Time Plans",
-                      link: `/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-time-plans/${loaderData.timePlan.ref_id}`,
-                    })
-                  ),
+                  NavMultipleCompact({
+                    navs: [
+                      NavSingle({
+                        text: "New Inbox Task",
+                        link: `/workspace/inbox-tasks/new?timePlanReason=for-time-plan&timePlanRefId=${loaderData.timePlan.ref_id}`,
+                      }),
+                      NavSingle({
+                        text: "New Big Plan",
+                        link: `/workspace/big-plans/new?timePlanReason=for-time-plan&timePlanRefId=${loaderData.timePlan.ref_id}`,
+                        gatedOn: WorkspaceFeature.BIG_PLANS,
+                      }),
+                      NavSingle({
+                        text: "From Current Inbox Tasks",
+                        link: `/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-inbox-tasks`,
+                      }),
+                      NavSingle({
+                        text: "From Current Big Plans",
+                        link: `/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-big-plans`,
+                        gatedOn: WorkspaceFeature.BIG_PLANS,
+                      }),
+                      NavSingle({
+                        text: "From Time Plans",
+                        link: `/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-time-plans/${loaderData.timePlan.ref_id}`,
+                      }),
+                    ],
+                  }),
                   FilterFewOptions(
                     selectedView,
                     [
@@ -477,7 +486,10 @@ export default function TimePlanView() {
           </SectionCardNew>
 
           {loaderData.completedNontargetInboxTasks.length > 0 && (
-            <SectionCard title="Completed & Untracked Inbox Tasks">
+            <SectionCardNew
+              id="time-plan-untracked-inbox-tasks"
+              title="Completed & Untracked Inbox Tasks"
+            >
               <InboxTaskStack
                 topLevelInfo={topLevelInfo}
                 showOptions={{
@@ -487,12 +499,15 @@ export default function TimePlanView() {
                 }}
                 inboxTasks={loaderData.completedNontargetInboxTasks}
               />
-            </SectionCard>
+            </SectionCardNew>
           )}
 
           {loaderData.completedNontargetBigPlans &&
             loaderData.completedNontargetBigPlans.length > 0 && (
-              <SectionCard title="Completed & Untracked Big Plans">
+              <SectionCardNew
+                id="time-plan-untracked-big-plans"
+                title="Completed & Untracked Big Plans"
+              >
                 <BigPlanStack
                   topLevelInfo={topLevelInfo}
                   showOptions={{
@@ -505,34 +520,34 @@ export default function TimePlanView() {
                   }}
                   bigPlans={loaderData.completedNontargetBigPlans}
                 />
-              </SectionCard>
+              </SectionCardNew>
             )}
 
           {sortedSubTimePlans.length > 0 && (
-            <SectionCard title="Lower Time Plans">
+            <SectionCardNew id="time-plan-lower" title="Lower Time Plans">
               <TimePlanStack
                 topLevelInfo={topLevelInfo}
                 timePlans={sortedSubTimePlans}
               />
-            </SectionCard>
+            </SectionCardNew>
           )}
 
           {loaderData.higherTimePlan && (
-            <SectionCard title="Higher Time Plan">
+            <SectionCardNew id="time-plan-higher" title="Higher Time Plan">
               <TimePlanStack
                 topLevelInfo={topLevelInfo}
                 timePlans={[loaderData.higherTimePlan]}
               />
-            </SectionCard>
+            </SectionCardNew>
           )}
 
           {loaderData.previousTimePlan && (
-            <SectionCard title="Previous Time Plan">
+            <SectionCardNew id="time-plan-previous" title="Previous Time Plan">
               <TimePlanStack
                 topLevelInfo={topLevelInfo}
                 timePlans={[loaderData.previousTimePlan]}
               />
-            </SectionCard>
+            </SectionCardNew>
           )}
         </NestingAwareBlock>
       </Form>

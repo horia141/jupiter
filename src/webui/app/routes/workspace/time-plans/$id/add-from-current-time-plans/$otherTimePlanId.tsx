@@ -19,7 +19,6 @@ import {
   ActionSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { SectionCard } from "~/components/infra/section-card";
 import { SectionCardNew } from "~/components/infra/section-card-new";
 import { TimePlanActivityCard } from "~/components/time-plan-activity-card";
 import { TimePlanCard } from "~/components/time-plan-card";
@@ -77,15 +76,15 @@ export async function loader({ request, params }: LoaderArgs) {
       include_other_time_plans: true,
     });
 
-    const otherHigherTimePlanResult = await getLoggedInApiClient(
-      session
-    ).timePlans.timePlanLoad({
-      ref_id: otherResult.higher_time_plan!.ref_id,
-      allow_archived: true,
-      include_targets: false,
-      include_completed_nontarget: false,
-      include_other_time_plans: true,
-    });
+    const otherHigherTimePlanResult = otherResult.higher_time_plan
+      ? await getLoggedInApiClient(session).timePlans.timePlanLoad({
+          ref_id: otherResult.higher_time_plan!.ref_id,
+          allow_archived: true,
+          include_targets: false,
+          include_completed_nontarget: false,
+          include_other_time_plans: true,
+        })
+      : null;
 
     return json({
       mainTimePlan: mainResult.time_plan,
@@ -101,7 +100,7 @@ export async function loader({ request, params }: LoaderArgs) {
       otherHigherTimePlan: otherResult.higher_time_plan as TimePlan,
       otherPreviousTimePlan: otherResult.previous_time_plan as TimePlan,
       otherHigherTimePlanSubTimePlans:
-        otherHigherTimePlanResult.sub_period_time_plans,
+        otherHigherTimePlanResult?.sub_period_time_plans,
     });
   } catch (error) {
     if (error instanceof ApiError && error.status === StatusCodes.NOT_FOUND) {
@@ -219,6 +218,7 @@ export default function TimePlanAddFromCurrentTimePlans() {
     >
       <GlobalError actionResult={actionData} />
       <SectionCardNew
+        id="time-plan-current-activities"
         title="Current Activities"
         actions={
           <SectionActions
@@ -284,32 +284,41 @@ export default function TimePlanAddFromCurrentTimePlans() {
       </SectionCardNew>
 
       {loaderData.otherHigherTimePlan && (
-        <SectionCard title="Higher Time Plan">
+        <SectionCardNew
+          id="time-plan-higher-time-plan"
+          title="Higher Time Plan"
+        >
           <TimePlanCard
             topLevelInfo={topLevelInfo}
             timePlan={loaderData.otherHigherTimePlan}
             relativeToTimePlan={loaderData.mainTimePlan}
           />
-        </SectionCard>
+        </SectionCardNew>
       )}
 
       {loaderData.otherPreviousTimePlan && (
-        <SectionCard title="Previous Time Plan">
+        <SectionCardNew
+          id="time-plan-previous-time-plan"
+          title="Previous Time Plan"
+        >
           <TimePlanCard
             topLevelInfo={topLevelInfo}
             timePlan={loaderData.otherPreviousTimePlan}
             relativeToTimePlan={loaderData.mainTimePlan}
           />
-        </SectionCard>
+        </SectionCardNew>
       )}
 
       {loaderData.otherHigherTimePlanSubTimePlans && (
-        <SectionCard title="Sub Time Plans">
+        <SectionCardNew
+          id="time-plan-other-higher-time-plan"
+          title="Sub Time Plans"
+        >
           <TimePlanStack
             topLevelInfo={topLevelInfo}
             timePlans={loaderData.otherHigherTimePlanSubTimePlans}
           />
-        </SectionCard>
+        </SectionCardNew>
       )}
     </LeafPanel>
   );

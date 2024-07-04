@@ -46,7 +46,7 @@ class RecordRepository(Generic[RecordT, RecordKeyT], Repository, abc.ABC):
         """Save a record."""
 
     @abc.abstractmethod
-    async def remove(self, record: RecordT) -> RecordT:
+    async def remove(self, record: RecordT) -> None:
         """Hard remove a record - an irreversible operation."""
 
     @abc.abstractmethod

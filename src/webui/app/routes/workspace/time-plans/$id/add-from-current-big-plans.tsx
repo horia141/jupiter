@@ -216,6 +216,7 @@ export default function TimePlanAddFromCurrentBigPlans() {
       <GlobalError actionResult={actionData} />
 
       <SectionCardNew
+        id="time-plan-current-big-plans"
         title="Current Big Plans"
         actions={
           <SectionActions

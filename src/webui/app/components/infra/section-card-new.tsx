@@ -3,13 +3,14 @@ import { Card, CardContent, Chip, styled } from "@mui/material";
 import type { PropsWithChildren } from "react";
 
 interface SectionCardNewProps {
+  id?: string;
   title: string;
-  actions: JSX.Element;
+  actions?: JSX.Element;
 }
 
 export function SectionCardNew(props: PropsWithChildren<SectionCardNewProps>) {
   return (
-    <StyledCard>
+    <StyledCard id={props.id}>
       <SectionHeader>
         <SectionTitle label={props.title} />
         {props.actions}

@@ -8,6 +8,8 @@ from jupiter.core.framework.value import EnumValue, enum_value
 class NamedEntityTag(EnumValue):
     """A tag for all known entities."""
 
+    SCORE_LOG_ENTRY = "ScoreLogEntry"  # ScoreLogEntry.__name__
+
     INBOX_TASK = "InboxTask"  # InboxTask.__name__
     WORKING_MEM = "WorkingMem"  # WorkingMem.__name__
     TIME_PLAN = "TimePlan"  # TimePlan.__name__

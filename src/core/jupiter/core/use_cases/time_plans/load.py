@@ -146,7 +146,7 @@ class TimePlanLoadUseCase(
                     ],
                 )
 
-            if args.include_completed_nontarget and target_big_plans:
+            if args.include_completed_nontarget and target_big_plans is not None:
                 completed_nontarget_big_plans = await uow.get(
                     BigPlanRepository
                 ).find_completed_in_range(
