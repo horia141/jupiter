@@ -3,8 +3,10 @@ import abc
 from collections.abc import Iterable
 
 from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
+from jupiter.core.domain.calendar.calendar_domain import CalendarDomain
 from jupiter.core.domain.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.core.notes.note_collection import NoteCollection
+from jupiter.core.domain.core.time_events.time_event_domain import TimeEventDomain
 from jupiter.core.domain.docs.doc_collection import DocCollection
 from jupiter.core.domain.features import (
     WorkspaceFeature,
@@ -55,6 +57,7 @@ class Workspace(RootEntity):
         WorkingMemCollection, workspace_ref_id=IsRefId()
     )
     time_plan_domain = ContainsOne(TimePlanDomain, workspace_ref_id=IsRefId())
+    calendar = ContainsOne(CalendarDomain, workspace_ref_id=IsRefId())
     habit_collection = ContainsOne(HabitCollection, workspace_ref_id=IsRefId())
     chore_collection = ContainsOne(ChoreCollection, workspace_ref_id=IsRefId())
     big_plan_collection = ContainsOne(BigPlanCollection, workspace_ref_id=IsRefId())
@@ -70,6 +73,7 @@ class Workspace(RootEntity):
     )
 
     note_collection = ContainsOne(NoteCollection, workspace_ref_id=IsRefId())
+    time_event_domain = ContainsOne(TimeEventDomain, workspace_ref_id=IsRefId())
 
     gc_log = ContainsOne(GCLog, workspace_ref_id=IsRefId())
     gen_log = ContainsOne(GenLog, workspace_ref_id=IsRefId())
