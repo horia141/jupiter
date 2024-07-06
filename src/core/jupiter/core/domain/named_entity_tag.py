@@ -14,6 +14,9 @@ class NamedEntityTag(EnumValue):
     WORKING_MEM = "WorkingMem"  # WorkingMem.__name__
     TIME_PLAN = "TimePlan"  # TimePlan.__name__
     TIME_PLAN_ACTIVITY = "TimePlanActivity"  # TimePlanActivity.__name__
+    CALENDAR_STREAM = "CalendarStream"  # CalendarStream.__name__
+    CALENDAR_EVENT = "CalendarEvent"  # CalendarEvent.__name__
+    CALENDAR_FULL_DAY_BLOCK = "CalendarFullDayBlock"  # CalendarFullDayBlock.__name__
     HABIT = "Habit"  # Habit.__name__
     CHORE = "Chore"  # Chore.__name__
     BIG_PLAN = "BigPlan"  # BigPlan.__name__

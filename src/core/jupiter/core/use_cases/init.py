@@ -5,12 +5,17 @@ from jupiter.core.domain.auth.auth_token_ext import AuthTokenExt
 from jupiter.core.domain.auth.password_new_plain import PasswordNewPlain
 from jupiter.core.domain.auth.recovery_token_plain import RecoveryTokenPlain
 from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
+from jupiter.core.domain.calendar.calendar_domain import CalendarDomain
+from jupiter.core.domain.calendar.calendar_stream import CalendarStream
+from jupiter.core.domain.calendar.calendar_stream_color import CalendarStreamColor
+from jupiter.core.domain.calendar.calendar_stream_name import CalendarStreamName
 from jupiter.core.domain.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.core.email_address import EmailAddress
 from jupiter.core.domain.core.notes.note_collection import NoteCollection
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
+from jupiter.core.domain.core.time_events.time_event_domain import TimeEventDomain
 from jupiter.core.domain.core.timezone import Timezone
 from jupiter.core.domain.docs.doc_collection import DocCollection
 from jupiter.core.domain.features import (
@@ -76,6 +81,7 @@ class InitArgs(UseCaseArgsBase):
     auth_password: PasswordNewPlain
     auth_password_repeat: PasswordNewPlain
     workspace_name: WorkspaceName
+    workspace_first_calendar_stream_name: CalendarStreamName
     workspace_root_project_name: ProjectName
     workspace_feature_flags: set[WorkspaceFeature]
 
@@ -211,6 +217,24 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 new_time_plan_domain
             )
 
+            new_calendar_domain = CalendarDomain.new_calendar_domain(
+                ctx=context.domain_context,
+                workspace_ref_id=new_workspace.ref_id,
+            )
+            new_calendar_domain = await uow.get_for(CalendarDomain).create(
+                new_calendar_domain,
+            )
+            
+            new_first_calendar_stream = CalendarStream.new_calendar_stream_for_user(
+                ctx=context.domain_context,
+                calendar_domain_ref_id=new_calendar_domain.ref_id,
+                name=args.workspace_first_calendar_stream_name,
+                color=CalendarStreamColor.BLUE,
+            )
+            new_first_calendar_stream = await uow.get_for(CalendarStream).create(
+                new_first_calendar_stream,
+            )
+
             new_habit_collection = HabitCollection.new_habit_collection(
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
@@ -315,6 +339,14 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             )
             new_note_collection = await uow.get_for(NoteCollection).create(
                 new_note_collection
+            )
+
+            new_time_event_domain = TimeEventDomain.new_time_event_domain(
+                ctx=context.domain_context,
+                workspace_ref_id=new_workspace.ref_id,
+            )
+            new_time_event_domain = await uow.get_for(TimeEventDomain).create(
+                new_time_event_domain
             )
 
             new_gc_log = GCLog.new_gc_log(

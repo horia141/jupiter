@@ -1,9 +1,12 @@
 """A use case for retrieving summaries about entities."""
 
 from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
+from jupiter.core.domain.calendar.calendar_domain import CalendarDomain
+from jupiter.core.domain.calendar.calendar_stream import CalendarStream
 from jupiter.core.domain.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.fast_info_repository import (
     BigPlanSummary,
+    CalendarStreamSummary,
     ChoreSummary,
     FastInfoRepository,
     HabitSummary,
@@ -42,6 +45,7 @@ class GetSummariesArgs(UseCaseArgsBase):
     """Get summaries args."""
 
     allow_archived: bool | None
+    include_calendar_streams: bool | None
     include_vacations: bool | None
     include_projects: bool | None
     include_inbox_tasks: bool | None
@@ -58,6 +62,7 @@ class GetSummariesResult(UseCaseResultBase):
     """Get summaries result."""
 
     vacations: list[VacationSummary] | None
+    calendar_streams: list[CalendarStreamSummary] | None
     root_project: ProjectSummary | None
     projects: list[ProjectSummary] | None
     inbox_tasks: list[InboxTaskSummary] | None
@@ -88,10 +93,11 @@ class GetSummariesUseCase(
         vacation_collection = await uow.get_for(VacationCollection).load_by_parent(
             workspace.ref_id,
         )
-        project_collection = await uow.get_for(ProjectCollection).load_by_parent(
+        inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             workspace.ref_id,
         )
-        inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
+        calendar_domain = await uow.get_for(CalendarDomain).load_by_parent(workspace.ref_id)
+        project_collection = await uow.get_for(ProjectCollection).load_by_parent(
             workspace.ref_id,
         )
         habit_collection = await uow.get_for(HabitCollection).load_by_parent(
@@ -120,6 +126,16 @@ class GetSummariesUseCase(
         ):
             vacations = await uow.get(FastInfoRepository).find_all_vacation_summaries(
                 parent_ref_id=vacation_collection.workspace.ref_id,
+                allow_archived=allow_archived,
+            )
+
+        calendar_streams = None
+        if (
+            workspace.is_feature_available(WorkspaceFeature.CALENDAR)
+            and args.include_calendar_streams
+        ):
+            calendar_streams = await uow.get(FastInfoRepository).find_all_calendar_stream_summaries(
+                parent_ref_id=calendar_domain.workspace.ref_id,
                 allow_archived=allow_archived,
             )
 
@@ -211,6 +227,7 @@ class GetSummariesUseCase(
 
         return GetSummariesResult(
             vacations=vacations,
+            calendar_streams=calendar_streams,
             root_project=root_project,
             projects=projects,
             inbox_tasks=inbox_tasks,

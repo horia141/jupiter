@@ -43,7 +43,7 @@ class CalendarStream(LeafEntity):
 
     @staticmethod
     @create_entity_action
-    def new_calendar_for_user(
+    def new_calendar_stream_for_user(
         ctx: DomainContext,
         calendar_domain_ref_id: EntityId,
         name: CalendarStreamName,

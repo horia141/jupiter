@@ -1,5 +1,6 @@
 """The command for loading workspaces if they exist."""
 
+from jupiter.core.domain.calendar.calendar_stream_name import CalendarStreamName
 from jupiter.core.domain.env import Env
 from jupiter.core.domain.features import (
     BASIC_USER_FEATURE_FLAGS,
@@ -54,6 +55,7 @@ class LoadTopLevelInfoResult(UseCaseResultBase):
     default_user_feature_flags: UserFeatureFlags
     user_feature_hack: UserFeature
     deafult_workspace_name: WorkspaceName
+    default_first_calendar_stream_name: CalendarStreamName
     default_root_project_name: ProjectName
     workspace_feature_flag_controls: WorkspaceFeatureFlagsControls
     default_workspace_feature_flags: WorkspaceFeatureFlags
@@ -113,6 +115,7 @@ class LoadTopLevelInfoUseCase(
             default_user_feature_flags=BASIC_USER_FEATURE_FLAGS,
             user_feature_hack=UserFeature.GAMIFICATION,
             deafult_workspace_name=WorkspaceName("Work"),
+            default_first_calendar_stream_name=CalendarStreamName("Events"),
             default_root_project_name=ProjectName("Life"),
             workspace_feature_flag_controls=workspace_feature_flags_controls,
             default_workspace_feature_flags=BASIC_WORKSPACE_FEATURE_FLAGS,

@@ -2,6 +2,7 @@
 import abc
 
 from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
+from jupiter.core.domain.calendar.calendar_stream_name import CalendarStreamName
 from jupiter.core.domain.chores.chore_name import ChoreName
 from jupiter.core.domain.core.entity_icon import EntityIcon
 from jupiter.core.domain.habits.habit_name import HabitName
@@ -22,6 +23,14 @@ class VacationSummary(CompositeValue):
 
     ref_id: EntityId
     name: VacationName
+
+
+@value
+class CalendarStreamSummary(CompositeValue):
+    """Summary information about a calendar stream."""
+
+    ref_id: EntityId
+    name: CalendarStreamName
 
 
 @value
@@ -103,6 +112,14 @@ class FastInfoRepository(Repository, abc.ABC):
         allow_archived: bool,
     ) -> list[VacationSummary]:
         """Find all summaries about vacations."""
+
+    @abc.abstractmethod
+    async def find_all_calendar_stream_summaries(
+        self,
+        parent_ref_id: EntityId,
+        allow_archived: bool,
+    ) -> list[CalendarStreamSummary]:
+        """Find all summaries about calendar streams."""
 
     @abc.abstractmethod
     async def find_all_project_summaries(

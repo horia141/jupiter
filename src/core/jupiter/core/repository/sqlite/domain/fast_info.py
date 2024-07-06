@@ -3,10 +3,12 @@
 import json
 
 from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
+from jupiter.core.domain.calendar.calendar_stream_name import CalendarStreamName
 from jupiter.core.domain.chores.chore_name import ChoreName
 from jupiter.core.domain.core.entity_icon import EntityIconDatabaseDecoder
 from jupiter.core.domain.fast_info_repository import (
     BigPlanSummary,
+    CalendarStreamSummary,
     ChoreSummary,
     FastInfoRepository,
     HabitSummary,
@@ -30,6 +32,7 @@ from jupiter.core.repository.sqlite.infra.repository import SqliteRepository
 from sqlalchemy import text
 
 _ENTITY_ID_DECODER = EntityIdDatabaseDecoder()
+_CALENDAR_STREAM_NAME_DECODER = EntityNameDatabaseDecoder(CalendarStreamName)
 _VACATION_NAME_DECODER = EntityNameDatabaseDecoder(VacationName)
 _INBOX_TASK_NAME_DECODER = EntityNameDatabaseDecoder(InboxTaskName)
 _PROJECT_NAME_DECODER = EntityNameDatabaseDecoder(ProjectName)
@@ -63,6 +66,28 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
             VacationSummary(
                 ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
                 name=_VACATION_NAME_DECODER.decode(row["name"]),
+            )
+            for row in result
+        ]
+
+    async def find_all_calendar_stream_summaries(
+        self,
+        parent_ref_id: EntityId,
+        allow_archived: bool,
+    ) -> list[CalendarStreamSummary]:
+        """Find all summaries about calendar streams."""
+        query = """select ref_id, name from calendar_stream where calendar_stream_domain_ref_id = :parent_ref_id"""
+        if not allow_archived:
+            query += " and archived=0"
+        result = (
+            await self._connection.execute(
+                text(query), {"parent_ref_id": parent_ref_id.as_int()}
+            )
+        ).fetchall()
+        return [
+            CalendarStreamSummary(
+                ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
+                name=_CALENDAR_STREAM_NAME_DECODER.decode(row["name"]),
             )
             for row in result
         ]
