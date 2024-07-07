@@ -1,6 +1,6 @@
 """The command for loading workspaces if they exist."""
 
-from jupiter.core.domain.calendar.calendar_stream_name import CalendarStreamName
+from jupiter.core.domain.concept.calendar.calendar_stream_name import CalendarStreamName
 from jupiter.core.domain.env import Env
 from jupiter.core.domain.features import (
     BASIC_USER_FEATURE_FLAGS,

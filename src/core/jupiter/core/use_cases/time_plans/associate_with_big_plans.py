@@ -1,6 +1,6 @@
 """Use case for creating time plan actitivities for big plans."""
-from jupiter.core.domain.big_plans.big_plan import BigPlan
-from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
+from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
+from jupiter.core.domain.concept.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.infra.generic_creator import generic_creator
 from jupiter.core.domain.storage_engine import DomainUnitOfWork

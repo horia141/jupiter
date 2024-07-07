@@ -1,7 +1,7 @@
 """A service that records scores for various actions."""
 import asyncio
 
-from jupiter.core.domain.big_plans.big_plan import BigPlan
+from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.core.timeline import infer_timeline
 from jupiter.core.domain.gamification.score_log import ScoreLog

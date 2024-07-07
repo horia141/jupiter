@@ -2,9 +2,9 @@
 from collections.abc import Iterable
 from typing import Final, cast
 
-from jupiter.core.domain.big_plans.big_plan import BigPlan
-from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
-from jupiter.core.domain.big_plans.service.archive_service import BigPlanArchiveService
+from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
+from jupiter.core.domain.concept.big_plans.big_plan_collection import BigPlanCollection
+from jupiter.core.domain.concept.big_plans.service.archive_service import BigPlanArchiveService
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.gc.gc_log import GCLog
 from jupiter.core.domain.gc.gc_log_entry import GCLogEntry

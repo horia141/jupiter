@@ -3,9 +3,9 @@ from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_collection import NoteCollection
 from jupiter.core.domain.core.notes.note_content_block import OneOfNoteContentBlock
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
-from jupiter.core.domain.docs.doc import Doc
-from jupiter.core.domain.docs.doc_collection import DocCollection
-from jupiter.core.domain.docs.doc_name import DocName
+from jupiter.core.domain.concept.docs.doc import Doc
+from jupiter.core.domain.concept.docs.doc_collection import DocCollection
+from jupiter.core.domain.concept.docs.doc_name import DocName
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId

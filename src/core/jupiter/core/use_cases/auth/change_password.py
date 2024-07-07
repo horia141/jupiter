@@ -1,8 +1,8 @@
 """Use case for changing a password."""
 
-from jupiter.core.domain.auth.auth import Auth, IncorrectPasswordError
-from jupiter.core.domain.auth.password_new_plain import PasswordNewPlain
-from jupiter.core.domain.auth.password_plain import PasswordPlain
+from jupiter.core.domain.concept.auth.auth import Auth, IncorrectPasswordError
+from jupiter.core.domain.concept.auth.password_new_plain import PasswordNewPlain
+from jupiter.core.domain.concept.auth.password_plain import PasswordPlain
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.secure import secure_class
 from jupiter.core.framework.use_case import (

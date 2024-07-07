@@ -1,7 +1,7 @@
 """Use case for removing a calendar stream."""
-from jupiter.core.domain.calendar.calendar_domain import CalendarDomain
-from jupiter.core.domain.calendar.calendar_stream import CalendarStream
-from jupiter.core.domain.calendar.calendar_stream_source import CalendarStreamSource
+from jupiter.core.domain.concept.calendar.calendar_domain import CalendarDomain
+from jupiter.core.domain.concept.calendar.calendar_stream import CalendarStream
+from jupiter.core.domain.concept.calendar.calendar_stream_source import CalendarStreamSource
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.infra.generic_crown_remover import generic_crown_remover
 from jupiter.core.domain.storage_engine import DomainUnitOfWork

@@ -7,7 +7,7 @@ import jupiter.core.domain
 import jupiter.core.repository.sqlite.domain
 import jupiter.core.use_cases
 import jupiter.webapi.exceptions
-from jupiter.core.domain.auth.auth_token_stamper import AuthTokenStamper
+from jupiter.core.domain.concept.auth.auth_token_stamper import AuthTokenStamper
 from jupiter.core.repository.sqlite.connection import SqliteConnection
 from jupiter.core.repository.sqlite.domain.storage_engine import (
     SqliteDomainStorageEngine,

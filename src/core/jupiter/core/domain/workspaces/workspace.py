@@ -2,12 +2,12 @@
 import abc
 from collections.abc import Iterable
 
-from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
-from jupiter.core.domain.calendar.calendar_domain import CalendarDomain
-from jupiter.core.domain.chores.chore_collection import ChoreCollection
+from jupiter.core.domain.concept.big_plans.big_plan_collection import BigPlanCollection
+from jupiter.core.domain.concept.calendar.calendar_domain import CalendarDomain
+from jupiter.core.domain.concept.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.core.notes.note_collection import NoteCollection
 from jupiter.core.domain.core.time_events.time_event_domain import TimeEventDomain
-from jupiter.core.domain.docs.doc_collection import DocCollection
+from jupiter.core.domain.concept.docs.doc_collection import DocCollection
 from jupiter.core.domain.features import (
     WorkspaceFeature,
     WorkspaceFeatureFlags,

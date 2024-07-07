@@ -4,8 +4,8 @@ import typing
 from collections import defaultdict
 from typing import Final
 
-from jupiter.core.domain.chores.chore import Chore
-from jupiter.core.domain.chores.chore_collection import ChoreCollection
+from jupiter.core.domain.concept.chores.chore import Chore
+from jupiter.core.domain.concept.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.core import schedules
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.notes.note import Note

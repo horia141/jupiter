@@ -1,8 +1,8 @@
 """A use case for retrieving summaries about entities."""
 
-from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
-from jupiter.core.domain.calendar.calendar_domain import CalendarDomain
-from jupiter.core.domain.chores.chore_collection import ChoreCollection
+from jupiter.core.domain.concept.big_plans.big_plan_collection import BigPlanCollection
+from jupiter.core.domain.concept.calendar.calendar_domain import CalendarDomain
+from jupiter.core.domain.concept.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.fast_info_repository import (
     BigPlanSummary,
     CalendarStreamSummary,

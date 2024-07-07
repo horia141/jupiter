@@ -1,7 +1,7 @@
 """The command for changing the project for a chore."""
 from typing import cast
 
-from jupiter.core.domain.chores.chore import Chore
+from jupiter.core.domain.concept.chores.chore import Chore
 from jupiter.core.domain.core import schedules
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask

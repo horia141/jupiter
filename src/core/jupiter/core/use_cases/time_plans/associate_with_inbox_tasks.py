@@ -1,8 +1,8 @@
 """Use case for creating time plan actitivities for inbox tasks."""
 from typing import cast
 
-from jupiter.core.domain.big_plans.big_plan import BigPlan
-from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
+from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
+from jupiter.core.domain.concept.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection

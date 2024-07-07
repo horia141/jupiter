@@ -1,0 +1,1 @@
+"""Application level domain entities."""

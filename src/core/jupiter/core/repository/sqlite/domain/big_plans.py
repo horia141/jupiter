@@ -1,11 +1,11 @@
 """The SQLite repository for big plans."""
 from collections.abc import Iterable
 
-from jupiter.core.domain.big_plans.big_plan import (
+from jupiter.core.domain.concept.big_plans.big_plan import (
     BigPlan,
     BigPlanRepository,
 )
-from jupiter.core.domain.big_plans.big_plan_status import BigPlanStatus
+from jupiter.core.domain.concept.big_plans.big_plan_status import BigPlanStatus
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.repository.sqlite.infra.repository import (

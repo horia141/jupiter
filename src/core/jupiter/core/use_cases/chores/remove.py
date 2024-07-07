@@ -1,6 +1,6 @@
 """The command for removing a chore."""
 
-from jupiter.core.domain.chores.service.remove_service import ChoreRemoveService
+from jupiter.core.domain.concept.chores.service.remove_service import ChoreRemoveService
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId

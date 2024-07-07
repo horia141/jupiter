@@ -4,13 +4,13 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any, Final, Generic, TypeVar, Union
 
-from jupiter.core.domain.auth.auth_token import (
+from jupiter.core.domain.concept.auth.auth_token import (
     AuthToken,
     ExpiredAuthTokenError,
     InvalidAuthTokenError,
 )
-from jupiter.core.domain.auth.auth_token_ext import AuthTokenExt
-from jupiter.core.domain.auth.auth_token_stamper import AuthTokenStamper
+from jupiter.core.domain.concept.auth.auth_token_ext import AuthTokenExt
+from jupiter.core.domain.concept.auth.auth_token_stamper import AuthTokenStamper
 from jupiter.core.domain.env import Env
 from jupiter.core.domain.features import (
     FeatureScope,

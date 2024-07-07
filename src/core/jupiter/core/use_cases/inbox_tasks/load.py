@@ -1,7 +1,7 @@
 """The use case for loading a partcular inbox task."""
 
-from jupiter.core.domain.big_plans.big_plan import BigPlan
-from jupiter.core.domain.chores.chore import Chore
+from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
+from jupiter.core.domain.concept.chores.chore import Chore
 from jupiter.core.domain.core.notes.note import Note, NoteRepository
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.features import WorkspaceFeature

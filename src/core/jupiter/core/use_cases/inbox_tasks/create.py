@@ -1,6 +1,6 @@
 """The command for creating a inbox task."""
 
-from jupiter.core.domain.big_plans.big_plan import BigPlan
+from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen

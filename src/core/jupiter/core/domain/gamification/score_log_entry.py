@@ -2,8 +2,8 @@
 import abc
 import random
 
-from jupiter.core.domain.big_plans.big_plan import BigPlan
-from jupiter.core.domain.big_plans.big_plan_status import BigPlanStatus
+from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
+from jupiter.core.domain.concept.big_plans.big_plan_status import BigPlanStatus
 from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.gamification.score_source import ScoreSource
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask

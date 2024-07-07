@@ -1,8 +1,8 @@
 """The command for finding a chore."""
 from collections import defaultdict
 
-from jupiter.core.domain.chores.chore import Chore
-from jupiter.core.domain.chores.chore_collection import ChoreCollection
+from jupiter.core.domain.concept.chores.chore import Chore
+from jupiter.core.domain.concept.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_collection import NoteCollection
 from jupiter.core.domain.core.notes.note_domain import NoteDomain

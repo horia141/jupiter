@@ -1,0 +1,1 @@
+"""Concept level domain entities."""

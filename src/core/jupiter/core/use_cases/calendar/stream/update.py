@@ -1,7 +1,7 @@
 """Use case for updating a calendar stream."""
-from jupiter.core.domain.calendar.calendar_stream import CalendarStream
-from jupiter.core.domain.calendar.calendar_stream_color import CalendarStreamColor
-from jupiter.core.domain.calendar.calendar_stream_name import CalendarStreamName
+from jupiter.core.domain.concept.calendar.calendar_stream import CalendarStream
+from jupiter.core.domain.concept.calendar.calendar_stream_color import CalendarStreamColor
+from jupiter.core.domain.concept.calendar.calendar_stream_name import CalendarStreamName
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId

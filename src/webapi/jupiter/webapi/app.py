@@ -26,12 +26,12 @@ from fastapi.responses import JSONResponse, PlainTextResponse
 from fastapi.routing import APIRoute
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.types import DecoratedCallable
-from jupiter.core.domain.auth.auth_token_ext import (
+from jupiter.core.domain.concept.auth.auth_token_ext import (
     AuthTokenExt,
     AuthTokenExtDatabaseDecoder,
 )
-from jupiter.core.domain.auth.auth_token_stamper import AuthTokenStamper
-from jupiter.core.domain.auth.password_plain import PasswordPlain
+from jupiter.core.domain.concept.auth.auth_token_stamper import AuthTokenStamper
+from jupiter.core.domain.concept.auth.password_plain import PasswordPlain
 from jupiter.core.domain.core.email_address import EmailAddress
 from jupiter.core.domain.storage_engine import DomainStorageEngine, SearchStorageEngine
 from jupiter.core.framework.entity import Entity, ParentLink

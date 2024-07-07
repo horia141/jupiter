@@ -3,7 +3,7 @@ import sys
 
 from jupiter.cli.command.command import CliApp, CliExceptionHandler
 from jupiter.cli.session_storage import SessionInfoNotFoundError
-from jupiter.core.domain.auth.auth_token import (
+from jupiter.core.domain.concept.auth.auth_token import (
     ExpiredAuthTokenError,
     InvalidAuthTokenError,
 )

@@ -1,7 +1,7 @@
 """The result of a report."""
 from dataclasses import field
 
-from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
+from jupiter.core.domain.concept.big_plans.big_plan_name import BigPlanName
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.gamification.user_score_overview import UserScoreOverview

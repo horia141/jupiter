@@ -1,6 +1,6 @@
 """The command for removing a doc."""
-from jupiter.core.domain.docs.doc import Doc
-from jupiter.core.domain.docs.service.doc_remove_service import (
+from jupiter.core.domain.concept.docs.doc import Doc
+from jupiter.core.domain.concept.docs.service.doc_remove_service import (
     DocRemoveService,
 )
 from jupiter.core.domain.features import WorkspaceFeature

@@ -2,8 +2,8 @@
 from collections import defaultdict
 from typing import cast
 
-from jupiter.core.domain.big_plans.big_plan import BigPlan, BigPlanRepository
-from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
+from jupiter.core.domain.concept.big_plans.big_plan import BigPlan, BigPlanRepository
+from jupiter.core.domain.concept.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.core.domain.core import schedules
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.features import WorkspaceFeature

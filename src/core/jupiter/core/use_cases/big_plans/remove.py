@@ -1,6 +1,6 @@
 """The command for removing a big plan."""
 
-from jupiter.core.domain.big_plans.service.remove_service import BigPlanRemoveService
+from jupiter.core.domain.concept.big_plans.service.remove_service import BigPlanRemoveService
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId

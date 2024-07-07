@@ -1,8 +1,8 @@
 """The command for updating a chore."""
 from typing import cast
 
-from jupiter.core.domain.chores.chore import Chore
-from jupiter.core.domain.chores.chore_name import ChoreName
+from jupiter.core.domain.concept.chores.chore import Chore
+from jupiter.core.domain.concept.chores.chore_name import ChoreName
 from jupiter.core.domain.core import schedules
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.difficulty import Difficulty

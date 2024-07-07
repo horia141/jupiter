@@ -1,6 +1,6 @@
 """The command for associating a inbox task with a big plan."""
 
-from jupiter.core.domain.big_plans.big_plan import BigPlan
+from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task import (
     CannotModifyGeneratedTaskError,

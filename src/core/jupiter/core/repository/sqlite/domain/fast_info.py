@@ -2,9 +2,9 @@
 
 import json
 
-from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
-from jupiter.core.domain.calendar.calendar_stream_name import CalendarStreamName
-from jupiter.core.domain.chores.chore_name import ChoreName
+from jupiter.core.domain.concept.big_plans.big_plan_name import BigPlanName
+from jupiter.core.domain.concept.calendar.calendar_stream_name import CalendarStreamName
+from jupiter.core.domain.concept.chores.chore_name import ChoreName
 from jupiter.core.domain.core.entity_icon import EntityIconDatabaseDecoder
 from jupiter.core.domain.fast_info_repository import (
     BigPlanSummary,

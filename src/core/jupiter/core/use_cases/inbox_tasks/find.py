@@ -1,10 +1,10 @@
 """The command for finding a inbox task."""
 from collections import defaultdict
 
-from jupiter.core.domain.big_plans.big_plan import BigPlan
-from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
-from jupiter.core.domain.chores.chore import Chore
-from jupiter.core.domain.chores.chore_collection import ChoreCollection
+from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
+from jupiter.core.domain.concept.big_plans.big_plan_collection import BigPlanCollection
+from jupiter.core.domain.concept.chores.chore import Chore
+from jupiter.core.domain.concept.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_collection import NoteCollection
 from jupiter.core.domain.core.notes.note_domain import NoteDomain

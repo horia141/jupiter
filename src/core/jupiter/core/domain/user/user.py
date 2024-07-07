@@ -1,7 +1,7 @@
 """A user of Jupiter."""
 import abc
 
-from jupiter.core.domain.auth.auth import Auth
+from jupiter.core.domain.concept.auth.auth import Auth
 from jupiter.core.domain.core.email_address import EmailAddress
 from jupiter.core.domain.core.timezone import Timezone
 from jupiter.core.domain.features import (

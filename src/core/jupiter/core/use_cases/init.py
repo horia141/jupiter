@@ -1,15 +1,14 @@
 """UseCase for initialising the workspace."""
-
-from jupiter.core.domain.auth.auth import Auth
-from jupiter.core.domain.auth.auth_token_ext import AuthTokenExt
-from jupiter.core.domain.auth.password_new_plain import PasswordNewPlain
-from jupiter.core.domain.auth.recovery_token_plain import RecoveryTokenPlain
-from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
-from jupiter.core.domain.calendar.calendar_domain import CalendarDomain
-from jupiter.core.domain.calendar.calendar_stream import CalendarStream
-from jupiter.core.domain.calendar.calendar_stream_color import CalendarStreamColor
-from jupiter.core.domain.calendar.calendar_stream_name import CalendarStreamName
-from jupiter.core.domain.chores.chore_collection import ChoreCollection
+from jupiter.core.domain.concept.auth.auth import Auth
+from jupiter.core.domain.concept.auth.auth_token_ext import AuthTokenExt
+from jupiter.core.domain.concept.auth.password_new_plain import PasswordNewPlain
+from jupiter.core.domain.concept.auth.recovery_token_plain import RecoveryTokenPlain
+from jupiter.core.domain.concept.big_plans.big_plan_collection import BigPlanCollection
+from jupiter.core.domain.concept.calendar.calendar_domain import CalendarDomain
+from jupiter.core.domain.concept.calendar.calendar_stream import CalendarStream
+from jupiter.core.domain.concept.calendar.calendar_stream_color import CalendarStreamColor
+from jupiter.core.domain.concept.calendar.calendar_stream_name import CalendarStreamName
+from jupiter.core.domain.concept.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.core.email_address import EmailAddress
@@ -17,7 +16,7 @@ from jupiter.core.domain.core.notes.note_collection import NoteCollection
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.core.time_events.time_event_domain import TimeEventDomain
 from jupiter.core.domain.core.timezone import Timezone
-from jupiter.core.domain.docs.doc_collection import DocCollection
+from jupiter.core.domain.concept.docs.doc_collection import DocCollection
 from jupiter.core.domain.features import (
     UserFeature,
     WorkspaceFeature,
