@@ -1,4 +1,6 @@
 """Use case for creating a time plan."""
+from jupiter.core.domain.concept.time_plans.time_plan import TimePlan
+from jupiter.core.domain.concept.time_plans.time_plan_domain import TimePlanDomain
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_collection import NoteCollection
@@ -7,8 +9,6 @@ from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.infra.generic_creator import generic_creator
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.domain.time_plans.time_plan import TimePlan
-from jupiter.core.domain.time_plans.time_plan_domain import TimePlanDomain
 from jupiter.core.framework.use_case import (
     ProgressReporter,
 )

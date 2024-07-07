@@ -1,8 +1,8 @@
 """The command for removing a smart list item."""
 
+from jupiter.core.domain.concept.smart_lists.smart_list_item import SmartListItem
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.infra.generic_crown_remover import generic_crown_remover
-from jupiter.core.domain.smart_lists.smart_list_item import SmartListItem
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (

@@ -12,7 +12,9 @@ from typing import (
     overload,
 )
 
-from jupiter.core.domain.search.infra.search_repository import SearchRepository
+from jupiter.core.domain.application.search.infra.search_repository import (
+    SearchRepository,
+)
 from jupiter.core.domain.storage_engine import (
     DomainStorageEngine,
     DomainUnitOfWork,

@@ -2,18 +2,18 @@
 
 from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
 from jupiter.core.domain.concept.chores.chore import Chore
+from jupiter.core.domain.concept.habits.habit import Habit
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.concept.metrics.metric import Metric
+from jupiter.core.domain.concept.persons.person import Person
+from jupiter.core.domain.concept.projects.project import Project
+from jupiter.core.domain.concept.push_integrations.email.email_task import EmailTask
+from jupiter.core.domain.concept.push_integrations.slack.slack_task import SlackTask
+from jupiter.core.domain.concept.working_mem.working_mem import WorkingMem
 from jupiter.core.domain.core.notes.note import Note, NoteRepository
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.habits.habit import Habit
-from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
-from jupiter.core.domain.metrics.metric import Metric
-from jupiter.core.domain.persons.person import Person
-from jupiter.core.domain.projects.project import Project
-from jupiter.core.domain.push_integrations.email.email_task import EmailTask
-from jupiter.core.domain.push_integrations.slack.slack_task import SlackTask
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.domain.working_mem.working_mem import WorkingMem
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,

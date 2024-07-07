@@ -1,6 +1,6 @@
 """The SQLite based Workspace repository."""
 
-from jupiter.core.domain.workspaces.workspace import (
+from jupiter.core.domain.concept.workspaces.workspace import (
     Workspace,
     WorkspaceNotFoundError,
     WorkspaceRepository,

@@ -5,6 +5,13 @@ import json
 from jupiter.core.domain.concept.big_plans.big_plan_name import BigPlanName
 from jupiter.core.domain.concept.calendar.calendar_stream_name import CalendarStreamName
 from jupiter.core.domain.concept.chores.chore_name import ChoreName
+from jupiter.core.domain.concept.habits.habit_name import HabitName
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_name import InboxTaskName
+from jupiter.core.domain.concept.metrics.metric_name import MetricName
+from jupiter.core.domain.concept.persons.person_name import PersonName
+from jupiter.core.domain.concept.projects.project_name import ProjectName
+from jupiter.core.domain.concept.smart_lists.smart_list_name import SmartListName
+from jupiter.core.domain.concept.vacations.vacation_name import VacationName
 from jupiter.core.domain.core.entity_icon import EntityIconDatabaseDecoder
 from jupiter.core.domain.fast_info_repository import (
     BigPlanSummary,
@@ -19,13 +26,6 @@ from jupiter.core.domain.fast_info_repository import (
     SmartListSummary,
     VacationSummary,
 )
-from jupiter.core.domain.habits.habit_name import HabitName
-from jupiter.core.domain.inbox_tasks.inbox_task_name import InboxTaskName
-from jupiter.core.domain.metrics.metric_name import MetricName
-from jupiter.core.domain.persons.person_name import PersonName
-from jupiter.core.domain.projects.project_name import ProjectName
-from jupiter.core.domain.smart_lists.smart_list_name import SmartListName
-from jupiter.core.domain.vacations.vacation_name import VacationName
 from jupiter.core.framework.base.entity_id import EntityId, EntityIdDatabaseDecoder
 from jupiter.core.framework.base.entity_name import EntityNameDatabaseDecoder
 from jupiter.core.repository.sqlite.infra.repository import SqliteRepository

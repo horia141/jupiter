@@ -1,6 +1,8 @@
 """Use case for archiving a doc."""
 from jupiter.core.domain.concept.docs.doc import Doc
-from jupiter.core.domain.concept.docs.service.doc_archive_service import DocArchiveService
+from jupiter.core.domain.concept.docs.service.doc_archive_service import (
+    DocArchiveService,
+)
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId

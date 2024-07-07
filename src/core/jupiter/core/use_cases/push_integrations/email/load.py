@@ -1,10 +1,12 @@
 """Use case for loading a particular email task."""
 
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
+    InboxTaskCollection,
+)
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
+from jupiter.core.domain.concept.push_integrations.email.email_task import EmailTask
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
-from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
-from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
-from jupiter.core.domain.push_integrations.email.email_task import EmailTask
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case_io import (

@@ -1,5 +1,9 @@
 """The command for creating a metric."""
 
+from jupiter.core.domain.concept.metrics.metric import Metric
+from jupiter.core.domain.concept.metrics.metric_collection import MetricCollection
+from jupiter.core.domain.concept.metrics.metric_name import MetricName
+from jupiter.core.domain.concept.metrics.metric_unit import MetricUnit
 from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.core.entity_icon import EntityIcon
@@ -8,10 +12,6 @@ from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDu
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.metrics.metric import Metric
-from jupiter.core.domain.metrics.metric_collection import MetricCollection
-from jupiter.core.domain.metrics.metric_name import MetricName
-from jupiter.core.domain.metrics.metric_unit import MetricUnit
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.use_case import (
     ProgressReporter,

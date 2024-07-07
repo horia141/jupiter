@@ -1,10 +1,10 @@
 """Retrieve details about a journal."""
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.concept.journals.journal import Journal, JournalRepository
 from jupiter.core.domain.core import schedules
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.infra.generic_loader import generic_loader
-from jupiter.core.domain.journals.journal import Journal, JournalRepository
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case_io import (

@@ -1,10 +1,10 @@
 """Change the user feature flags."""
 
+from jupiter.core.domain.concept.user.user import User
 from jupiter.core.domain.features import UserFeature
 from jupiter.core.domain.storage_engine import (
     DomainUnitOfWork,
 )
-from jupiter.core.domain.user.user import User
 from jupiter.core.framework.use_case import (
     ProgressReporter,
 )

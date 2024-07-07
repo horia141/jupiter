@@ -1,6 +1,8 @@
 """Use case for creating a full day block in the calendar."""
 from jupiter.core.domain.concept.calendar.calendar_domain import CalendarDomain
-from jupiter.core.domain.concept.calendar.calendar_event_full_days import CalendarEventFullDays
+from jupiter.core.domain.concept.calendar.calendar_event_full_days import (
+    CalendarEventFullDays,
+)
 from jupiter.core.domain.concept.calendar.calendar_event_name import CalendarEventName
 from jupiter.core.domain.concept.calendar.calendar_stream import CalendarStream
 from jupiter.core.domain.core.adate import ADate

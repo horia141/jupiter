@@ -5,35 +5,37 @@ from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
 from jupiter.core.domain.concept.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.core.domain.concept.chores.chore import Chore
 from jupiter.core.domain.concept.chores.chore_collection import ChoreCollection
+from jupiter.core.domain.concept.habits.habit import Habit
+from jupiter.core.domain.concept.habits.habit_collection import HabitCollection
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
+    InboxTaskCollection,
+)
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_status import InboxTaskStatus
+from jupiter.core.domain.concept.metrics.metric import Metric
+from jupiter.core.domain.concept.metrics.metric_collection import MetricCollection
+from jupiter.core.domain.concept.persons.person import Person
+from jupiter.core.domain.concept.persons.person_collection import PersonCollection
+from jupiter.core.domain.concept.projects.project import Project
+from jupiter.core.domain.concept.projects.project_collection import ProjectCollection
+from jupiter.core.domain.concept.push_integrations.email.email_task import EmailTask
+from jupiter.core.domain.concept.push_integrations.email.email_task_collection import (
+    EmailTaskCollection,
+)
+from jupiter.core.domain.concept.push_integrations.group.push_integration_group import (
+    PushIntegrationGroup,
+)
+from jupiter.core.domain.concept.push_integrations.slack.slack_task import SlackTask
+from jupiter.core.domain.concept.push_integrations.slack.slack_task_collection import (
+    SlackTaskCollection,
+)
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_collection import NoteCollection
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.features import (
     FeatureUnavailableError,
     WorkspaceFeature,
-)
-from jupiter.core.domain.habits.habit import Habit
-from jupiter.core.domain.habits.habit_collection import HabitCollection
-from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
-from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
-from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
-from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
-from jupiter.core.domain.metrics.metric import Metric
-from jupiter.core.domain.metrics.metric_collection import MetricCollection
-from jupiter.core.domain.persons.person import Person
-from jupiter.core.domain.persons.person_collection import PersonCollection
-from jupiter.core.domain.projects.project import Project
-from jupiter.core.domain.projects.project_collection import ProjectCollection
-from jupiter.core.domain.push_integrations.email.email_task import EmailTask
-from jupiter.core.domain.push_integrations.email.email_task_collection import (
-    EmailTaskCollection,
-)
-from jupiter.core.domain.push_integrations.group.push_integration_group import (
-    PushIntegrationGroup,
-)
-from jupiter.core.domain.push_integrations.slack.slack_task import SlackTask
-from jupiter.core.domain.push_integrations.slack.slack_task_collection import (
-    SlackTaskCollection,
 )
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId

@@ -1,11 +1,11 @@
 """Use case for finding time plans."""
+from jupiter.core.domain.concept.time_plans.time_plan import TimePlan
+from jupiter.core.domain.concept.time_plans.time_plan_domain import TimePlanDomain
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_collection import NoteCollection
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.domain.time_plans.time_plan import TimePlan
-from jupiter.core.domain.time_plans.time_plan_domain import TimePlanDomain
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,

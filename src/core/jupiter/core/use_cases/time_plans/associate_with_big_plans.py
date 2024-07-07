@@ -1,15 +1,17 @@
 """Use case for creating time plan actitivities for big plans."""
 from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
 from jupiter.core.domain.concept.big_plans.big_plan_collection import BigPlanCollection
+from jupiter.core.domain.concept.time_plans.time_plan import TimePlan
+from jupiter.core.domain.concept.time_plans.time_plan_activity import TimePlanActivity
+from jupiter.core.domain.concept.time_plans.time_plan_activity_feasability import (
+    TimePlanActivityFeasability,
+)
+from jupiter.core.domain.concept.time_plans.time_plan_activity_kind import (
+    TimePlanActivityKind,
+)
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.infra.generic_creator import generic_creator
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.domain.time_plans.time_plan import TimePlan
-from jupiter.core.domain.time_plans.time_plan_activity import TimePlanActivity
-from jupiter.core.domain.time_plans.time_plan_activity_feasability import (
-    TimePlanActivityFeasability,
-)
-from jupiter.core.domain.time_plans.time_plan_activity_kind import TimePlanActivityKind
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.use_case import (

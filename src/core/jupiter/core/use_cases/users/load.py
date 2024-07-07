@@ -1,16 +1,20 @@
 """The command for loading the current user."""
 
-from jupiter.core.domain.features import UserFeature
-from jupiter.core.domain.gamification.service.score_history_service import (
+from jupiter.core.domain.application.gamification.service.score_history_service import (
     ScoreHistoryService,
 )
-from jupiter.core.domain.gamification.service.score_overview_service import (
+from jupiter.core.domain.application.gamification.service.score_overview_service import (
     ScoreOverviewService,
 )
-from jupiter.core.domain.gamification.user_score_history import UserScoreHistory
-from jupiter.core.domain.gamification.user_score_overview import UserScoreOverview
+from jupiter.core.domain.application.gamification.user_score_history import (
+    UserScoreHistory,
+)
+from jupiter.core.domain.application.gamification.user_score_overview import (
+    UserScoreOverview,
+)
+from jupiter.core.domain.concept.user.user import User
+from jupiter.core.domain.features import UserFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.domain.user.user import User
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,

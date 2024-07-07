@@ -3,7 +3,7 @@ from typing import Final
 
 from jupiter.core.domain.concept.auth.auth_token import AuthToken
 from jupiter.core.domain.concept.auth.auth_token_ext import AuthTokenExt
-from jupiter.core.domain.user.user import User
+from jupiter.core.domain.concept.user.user import User
 from jupiter.core.framework.secure import secure_class
 from jupiter.core.utils.time_provider import TimeProvider
 

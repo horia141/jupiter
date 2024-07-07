@@ -1,10 +1,10 @@
 """The command for archiving a inbox task."""
 
-from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
-from jupiter.core.domain.inbox_tasks.service.archive_service import (
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.concept.inbox_tasks.service.archive_service import (
     InboxTaskArchiveService,
 )
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (

@@ -10,9 +10,9 @@ from jupiter.cli.command.rendering import (
     inbox_task_summary_to_rich_text,
     project_to_rich_text,
 )
+from jupiter.core.domain.concept.projects.project import Project
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.projects.project import Project
 from jupiter.core.use_cases.big_plans.find import BigPlanFindResult, BigPlanFindUseCase
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
 from rich.console import Console

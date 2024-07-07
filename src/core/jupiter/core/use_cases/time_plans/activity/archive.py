@@ -1,14 +1,16 @@
 """Use case for archiving a time plan activity."""
-from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
-from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
-from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
-from jupiter.core.domain.infra.generic_archiver import generic_archiver
-from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.domain.time_plans.time_plan_activity import TimePlanActivity
-from jupiter.core.domain.time_plans.time_plan_activity_target import (
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
+    InboxTaskCollection,
+)
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
+from jupiter.core.domain.concept.time_plans.time_plan_activity import TimePlanActivity
+from jupiter.core.domain.concept.time_plans.time_plan_activity_target import (
     TimePlanActivityTarget,
 )
+from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.infra.generic_archiver import generic_archiver
+from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     ProgressReporter,

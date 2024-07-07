@@ -1,10 +1,10 @@
 """Change the workspace feature flags."""
 
+from jupiter.core.domain.concept.workspaces.workspace import Workspace
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import (
     DomainUnitOfWork,
 )
-from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.use_case import (
     ProgressReporter,
 )

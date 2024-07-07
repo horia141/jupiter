@@ -1,8 +1,8 @@
 """A doc in the docbook."""
 
+from jupiter.core.domain.concept.docs.doc_name import DocName
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
-from jupiter.core.domain.concept.docs.doc_name import DocName
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (

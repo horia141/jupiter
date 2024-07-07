@@ -1,10 +1,10 @@
 """Archive a doc."""
 
+from jupiter.core.domain.concept.docs.doc import Doc
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.core.notes.service.note_archive_service import (
     NoteArchiveService,
 )
-from jupiter.core.domain.concept.docs.doc import Doc
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.use_case import ProgressReporter

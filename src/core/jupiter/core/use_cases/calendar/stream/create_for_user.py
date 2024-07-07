@@ -1,7 +1,9 @@
 """Use case for creating a calendar stream."""
 from jupiter.core.domain.concept.calendar.calendar_domain import CalendarDomain
 from jupiter.core.domain.concept.calendar.calendar_stream import CalendarStream
-from jupiter.core.domain.concept.calendar.calendar_stream_color import CalendarStreamColor
+from jupiter.core.domain.concept.calendar.calendar_stream_color import (
+    CalendarStreamColor,
+)
 from jupiter.core.domain.concept.calendar.calendar_stream_name import CalendarStreamName
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.infra.generic_creator import generic_creator

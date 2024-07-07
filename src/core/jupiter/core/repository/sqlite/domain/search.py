@@ -2,15 +2,15 @@
 from collections.abc import Iterable
 from typing import Final
 
-from jupiter.core.domain.core.adate import ADate
-from jupiter.core.domain.entity_summary import EntitySummary
-from jupiter.core.domain.named_entity_tag import NamedEntityTag
-from jupiter.core.domain.search.infra.search_repository import (
+from jupiter.core.domain.application.search.infra.search_repository import (
     SearchMatch,
     SearchRepository,
 )
-from jupiter.core.domain.search.search_limit import SearchLimit
-from jupiter.core.domain.search.search_query import SearchQuery
+from jupiter.core.domain.application.search.search_limit import SearchLimit
+from jupiter.core.domain.application.search.search_query import SearchQuery
+from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.entity_summary import EntitySummary
+from jupiter.core.domain.named_entity_tag import NamedEntityTag
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.base.timestamp import Timestamp

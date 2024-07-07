@@ -1,26 +1,28 @@
 """The command for associating a inbox task with a big plan."""
 
 from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
-from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.inbox_tasks.inbox_task import (
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import (
     CannotModifyGeneratedTaskError,
     InboxTask,
 )
-from jupiter.core.domain.infra.generic_creator import generic_creator
-from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.domain.time_plans.time_plan import TimePlan
-from jupiter.core.domain.time_plans.time_plan_activity import (
+from jupiter.core.domain.concept.time_plans.time_plan import TimePlan
+from jupiter.core.domain.concept.time_plans.time_plan_activity import (
     TimePlanActivity,
     TimePlanActivityRespository,
     TimePlanAlreadyAssociatedWithTargetError,
 )
-from jupiter.core.domain.time_plans.time_plan_activity_feasability import (
+from jupiter.core.domain.concept.time_plans.time_plan_activity_feasability import (
     TimePlanActivityFeasability,
 )
-from jupiter.core.domain.time_plans.time_plan_activity_kind import TimePlanActivityKind
-from jupiter.core.domain.time_plans.time_plan_activity_target import (
+from jupiter.core.domain.concept.time_plans.time_plan_activity_kind import (
+    TimePlanActivityKind,
+)
+from jupiter.core.domain.concept.time_plans.time_plan_activity_target import (
     TimePlanActivityTarget,
 )
+from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.infra.generic_creator import generic_creator
+from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.use_case import (

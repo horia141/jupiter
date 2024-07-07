@@ -1,8 +1,8 @@
 """Use case for removing a time_plan."""
+from jupiter.core.domain.concept.time_plans.time_plan import TimePlan
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.infra.generic_crown_remover import generic_crown_remover
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.domain.time_plans.time_plan import TimePlan
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     ProgressReporter,

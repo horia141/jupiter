@@ -1,10 +1,10 @@
 """The command for hard removing a smart list."""
 
-from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.smart_lists.service.remove_service import (
+from jupiter.core.domain.concept.smart_lists.service.remove_service import (
     SmartListRemoveService,
 )
-from jupiter.core.domain.smart_lists.smart_list import SmartList
+from jupiter.core.domain.concept.smart_lists.smart_list import SmartList
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (

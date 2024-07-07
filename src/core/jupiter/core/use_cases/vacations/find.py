@@ -1,13 +1,13 @@
 """The command for finding vacations."""
 from collections import defaultdict
 
+from jupiter.core.domain.concept.vacations.vacation import Vacation
+from jupiter.core.domain.concept.vacations.vacation_collection import VacationCollection
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_collection import NoteCollection
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.domain.vacations.vacation import Vacation
-from jupiter.core.domain.vacations.vacation_collection import VacationCollection
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,

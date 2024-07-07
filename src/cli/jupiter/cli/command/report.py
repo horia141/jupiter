@@ -8,16 +8,16 @@ from jupiter.cli.command.rendering import (
     period_to_rich_text,
     user_score_overview_to_rich,
 )
-from jupiter.core.domain.core.adate import ADate
-from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
-from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
-from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
-from jupiter.core.domain.report.report_breakdown import ReportBreakdown
-from jupiter.core.domain.report.report_period_result import (
+from jupiter.core.domain.application.report.report_breakdown import ReportBreakdown
+from jupiter.core.domain.application.report.report_period_result import (
     InboxTasksSummary,
     WorkableSummary,
 )
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_status import InboxTaskStatus
+from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
 from jupiter.core.use_cases.report import (
     ReportResult,

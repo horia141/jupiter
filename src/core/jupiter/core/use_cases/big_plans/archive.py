@@ -1,7 +1,9 @@
 """The command for archiving a big plan."""
 
 from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
-from jupiter.core.domain.concept.big_plans.service.archive_service import BigPlanArchiveService
+from jupiter.core.domain.concept.big_plans.service.archive_service import (
+    BigPlanArchiveService,
+)
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId

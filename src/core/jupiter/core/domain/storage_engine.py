@@ -3,7 +3,9 @@ import abc
 from contextlib import AbstractAsyncContextManager
 from typing import TypeVar, overload
 
-from jupiter.core.domain.search.infra.search_repository import SearchRepository
+from jupiter.core.domain.application.search.infra.search_repository import (
+    SearchRepository,
+)
 from jupiter.core.framework.entity import (
     CrownEntity,
     RootEntity,

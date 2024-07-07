@@ -1,9 +1,11 @@
 """Remove a person."""
 
+from jupiter.core.domain.concept.persons.person import Person
+from jupiter.core.domain.concept.persons.person_collection import PersonCollection
+from jupiter.core.domain.concept.persons.service.remove_service import (
+    PersonRemoveService,
+)
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.persons.person import Person
-from jupiter.core.domain.persons.person_collection import PersonCollection
-from jupiter.core.domain.persons.service.remove_service import PersonRemoveService
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (

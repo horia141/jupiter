@@ -1,5 +1,10 @@
 """The command for creating a habit."""
 
+from jupiter.core.domain.concept.habits.habit import Habit
+from jupiter.core.domain.concept.habits.habit_collection import HabitCollection
+from jupiter.core.domain.concept.habits.habit_name import HabitName
+from jupiter.core.domain.concept.projects.project import Project, ProjectRepository
+from jupiter.core.domain.concept.projects.project_collection import ProjectCollection
 from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
@@ -11,11 +16,6 @@ from jupiter.core.domain.features import (
     FeatureUnavailableError,
     WorkspaceFeature,
 )
-from jupiter.core.domain.habits.habit import Habit
-from jupiter.core.domain.habits.habit_collection import HabitCollection
-from jupiter.core.domain.habits.habit_name import HabitName
-from jupiter.core.domain.projects.project import Project, ProjectRepository
-from jupiter.core.domain.projects.project_collection import ProjectCollection
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (

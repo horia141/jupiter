@@ -1,9 +1,11 @@
 """Load settings for working mems use case."""
+from jupiter.core.domain.concept.projects.project import Project
+from jupiter.core.domain.concept.working_mem.working_mem_collection import (
+    WorkingMemCollection,
+)
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.domain.working_mem.working_mem_collection import WorkingMemCollection
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,

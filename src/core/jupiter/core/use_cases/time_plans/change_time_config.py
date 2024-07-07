@@ -1,9 +1,9 @@
 """Command for updating the time configuration of a time_plan."""
+from jupiter.core.domain.concept.time_plans.time_plan import TimePlan
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.domain.time_plans.time_plan import TimePlan
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (

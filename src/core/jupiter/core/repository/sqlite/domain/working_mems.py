@@ -1,5 +1,8 @@
 """Respository implementation for working mems."""
-from jupiter.core.domain.working_mem.working_mem import WorkingMem, WorkingMemRepository
+from jupiter.core.domain.concept.working_mem.working_mem import (
+    WorkingMem,
+    WorkingMemRepository,
+)
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.repository import EntityNotFoundError
 from jupiter.core.repository.sqlite.infra.repository import SqliteLeafEntityRepository

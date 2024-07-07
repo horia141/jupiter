@@ -1,6 +1,25 @@
 """The command for creating a inbox task."""
 
 from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
+    InboxTaskCollection,
+)
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_name import InboxTaskName
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_status import InboxTaskStatus
+from jupiter.core.domain.concept.projects.project import Project, ProjectRepository
+from jupiter.core.domain.concept.projects.project_collection import ProjectCollection
+from jupiter.core.domain.concept.time_plans.time_plan import TimePlan
+from jupiter.core.domain.concept.time_plans.time_plan_activity import (
+    TimePlanActivity,
+    TimePlanAlreadyAssociatedWithTargetError,
+)
+from jupiter.core.domain.concept.time_plans.time_plan_activity_feasability import (
+    TimePlanActivityFeasability,
+)
+from jupiter.core.domain.concept.time_plans.time_plan_activity_kind import (
+    TimePlanActivityKind,
+)
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
@@ -8,23 +27,8 @@ from jupiter.core.domain.features import (
     FeatureUnavailableError,
     WorkspaceFeature,
 )
-from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
-from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
-from jupiter.core.domain.inbox_tasks.inbox_task_name import InboxTaskName
-from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.core.domain.infra.generic_creator import generic_creator
-from jupiter.core.domain.projects.project import Project, ProjectRepository
-from jupiter.core.domain.projects.project_collection import ProjectCollection
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.domain.time_plans.time_plan import TimePlan
-from jupiter.core.domain.time_plans.time_plan_activity import (
-    TimePlanActivity,
-    TimePlanAlreadyAssociatedWithTargetError,
-)
-from jupiter.core.domain.time_plans.time_plan_activity_feasability import (
-    TimePlanActivityFeasability,
-)
-from jupiter.core.domain.time_plans.time_plan_activity_kind import TimePlanActivityKind
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     ProgressReporter,

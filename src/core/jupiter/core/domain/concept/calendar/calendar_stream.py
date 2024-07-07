@@ -1,8 +1,14 @@
 """A specific calendar group or stream of events."""
-from jupiter.core.domain.concept.calendar.calendar_event_in_day import CalendarEventInDay
-from jupiter.core.domain.concept.calendar.calendar_stream_color import CalendarStreamColor
+from jupiter.core.domain.concept.calendar.calendar_event_in_day import (
+    CalendarEventInDay,
+)
+from jupiter.core.domain.concept.calendar.calendar_stream_color import (
+    CalendarStreamColor,
+)
 from jupiter.core.domain.concept.calendar.calendar_stream_name import CalendarStreamName
-from jupiter.core.domain.concept.calendar.calendar_stream_source import CalendarStreamSource
+from jupiter.core.domain.concept.calendar.calendar_stream_source import (
+    CalendarStreamSource,
+)
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.core.url import URL

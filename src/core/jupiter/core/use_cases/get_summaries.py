@@ -3,6 +3,18 @@
 from jupiter.core.domain.concept.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.core.domain.concept.calendar.calendar_domain import CalendarDomain
 from jupiter.core.domain.concept.chores.chore_collection import ChoreCollection
+from jupiter.core.domain.concept.habits.habit_collection import HabitCollection
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
+    InboxTaskCollection,
+)
+from jupiter.core.domain.concept.metrics.metric_collection import MetricCollection
+from jupiter.core.domain.concept.persons.person_collection import PersonCollection
+from jupiter.core.domain.concept.projects.project import ProjectRepository
+from jupiter.core.domain.concept.projects.project_collection import ProjectCollection
+from jupiter.core.domain.concept.smart_lists.smart_list_collection import (
+    SmartListCollection,
+)
+from jupiter.core.domain.concept.vacations.vacation_collection import VacationCollection
 from jupiter.core.domain.fast_info_repository import (
     BigPlanSummary,
     CalendarStreamSummary,
@@ -17,15 +29,7 @@ from jupiter.core.domain.fast_info_repository import (
     VacationSummary,
 )
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.habits.habit_collection import HabitCollection
-from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
-from jupiter.core.domain.metrics.metric_collection import MetricCollection
-from jupiter.core.domain.persons.person_collection import PersonCollection
-from jupiter.core.domain.projects.project import ProjectRepository
-from jupiter.core.domain.projects.project_collection import ProjectCollection
-from jupiter.core.domain.smart_lists.smart_list_collection import SmartListCollection
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.domain.vacations.vacation_collection import VacationCollection
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,

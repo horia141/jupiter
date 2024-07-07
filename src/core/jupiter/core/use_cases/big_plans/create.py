@@ -3,21 +3,23 @@ from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
 from jupiter.core.domain.concept.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.core.domain.concept.big_plans.big_plan_name import BigPlanName
 from jupiter.core.domain.concept.big_plans.big_plan_status import BigPlanStatus
+from jupiter.core.domain.concept.projects.project import Project, ProjectRepository
+from jupiter.core.domain.concept.projects.project_collection import ProjectCollection
+from jupiter.core.domain.concept.time_plans.time_plan import TimePlan
+from jupiter.core.domain.concept.time_plans.time_plan_activity import TimePlanActivity
+from jupiter.core.domain.concept.time_plans.time_plan_activity_feasability import (
+    TimePlanActivityFeasability,
+)
+from jupiter.core.domain.concept.time_plans.time_plan_activity_kind import (
+    TimePlanActivityKind,
+)
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.features import (
     FeatureUnavailableError,
     WorkspaceFeature,
 )
 from jupiter.core.domain.infra.generic_creator import generic_creator
-from jupiter.core.domain.projects.project import Project, ProjectRepository
-from jupiter.core.domain.projects.project_collection import ProjectCollection
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.domain.time_plans.time_plan import TimePlan
-from jupiter.core.domain.time_plans.time_plan_activity import TimePlanActivity
-from jupiter.core.domain.time_plans.time_plan_activity_feasability import (
-    TimePlanActivityFeasability,
-)
-from jupiter.core.domain.time_plans.time_plan_activity_kind import TimePlanActivityKind
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     ProgressReporter,

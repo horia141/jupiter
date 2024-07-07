@@ -3,6 +3,8 @@
 from jupiter.core.domain.concept.chores.chore import Chore
 from jupiter.core.domain.concept.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.concept.chores.chore_name import ChoreName
+from jupiter.core.domain.concept.projects.project import Project, ProjectRepository
+from jupiter.core.domain.concept.projects.project_collection import ProjectCollection
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
@@ -15,8 +17,6 @@ from jupiter.core.domain.features import (
     FeatureUnavailableError,
     WorkspaceFeature,
 )
-from jupiter.core.domain.projects.project import Project, ProjectRepository
-from jupiter.core.domain.projects.project_collection import ProjectCollection
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (

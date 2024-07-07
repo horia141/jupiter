@@ -1,8 +1,8 @@
 """Use case for archiving a time plan activity."""
+from jupiter.core.domain.concept.time_plans.time_plan_activity import TimePlanActivity
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.infra.generic_crown_remover import generic_crown_remover
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.domain.time_plans.time_plan_activity import TimePlanActivity
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     ProgressReporter,

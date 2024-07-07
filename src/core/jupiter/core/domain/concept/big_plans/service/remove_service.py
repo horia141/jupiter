@@ -1,12 +1,14 @@
 """Shared module for removing a big plan."""
 
 from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
+    InboxTaskCollection,
+)
+from jupiter.core.domain.concept.workspaces.workspace import Workspace
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.core.notes.service.note_remove_service import NoteRemoveService
-from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
-from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.use_case import ProgressReporter

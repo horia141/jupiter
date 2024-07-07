@@ -1,6 +1,6 @@
 """Implementation for projects repo via SQLite."""
 
-from jupiter.core.domain.projects.project import Project, ProjectRepository
+from jupiter.core.domain.concept.projects.project import Project, ProjectRepository
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.repository.sqlite.infra.repository import SqliteLeafEntityRepository
 

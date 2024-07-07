@@ -1,14 +1,14 @@
 """The command for updating a big plan."""
 
+from jupiter.core.domain.application.gamification.service.record_score_service import (
+    RecordScoreResult,
+    RecordScoreService,
+)
 from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
 from jupiter.core.domain.concept.big_plans.big_plan_name import BigPlanName
 from jupiter.core.domain.concept.big_plans.big_plan_status import BigPlanStatus
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.features import UserFeature, WorkspaceFeature
-from jupiter.core.domain.gamification.service.record_score_service import (
-    RecordScoreResult,
-    RecordScoreService,
-)
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.update_action import UpdateAction

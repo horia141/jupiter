@@ -2,11 +2,11 @@
 from jupiter.core.domain.concept.auth.auth import Auth
 from jupiter.core.domain.concept.auth.auth_token_ext import AuthTokenExt
 from jupiter.core.domain.concept.auth.password_plain import PasswordPlain
-from jupiter.core.domain.core.email_address import EmailAddress
-from jupiter.core.domain.user.user import (
+from jupiter.core.domain.concept.user.user import (
     UserNotFoundError,
     UserRepository,
 )
+from jupiter.core.domain.core.email_address import EmailAddress
 from jupiter.core.framework.secure import secure_class
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,

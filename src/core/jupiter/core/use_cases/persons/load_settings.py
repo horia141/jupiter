@@ -1,8 +1,8 @@
 """Load settings for persons use case."""
 
+from jupiter.core.domain.concept.persons.person_collection import PersonCollection
+from jupiter.core.domain.concept.projects.project import Project
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.persons.person_collection import PersonCollection
-from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case_io import (

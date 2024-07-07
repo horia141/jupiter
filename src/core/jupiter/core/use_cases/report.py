@@ -1,13 +1,13 @@
 """The command for reporting on progress."""
 
-from jupiter.core.domain.core.adate import ADate
-from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
-from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
-from jupiter.core.domain.report.report_breakdown import ReportBreakdown
-from jupiter.core.domain.report.report_period_result import (
+from jupiter.core.domain.application.report.report_breakdown import ReportBreakdown
+from jupiter.core.domain.application.report.report_period_result import (
     ReportPeriodResult,
 )
-from jupiter.core.domain.report.service.report_service import ReportService
+from jupiter.core.domain.application.report.service.report_service import ReportService
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
+from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,

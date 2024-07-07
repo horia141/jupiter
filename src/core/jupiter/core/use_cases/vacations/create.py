@@ -1,11 +1,11 @@
 """The command for creating a vacation."""
 
+from jupiter.core.domain.concept.vacations.vacation import Vacation
+from jupiter.core.domain.concept.vacations.vacation_collection import VacationCollection
+from jupiter.core.domain.concept.vacations.vacation_name import VacationName
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.domain.vacations.vacation import Vacation
-from jupiter.core.domain.vacations.vacation_collection import VacationCollection
-from jupiter.core.domain.vacations.vacation_name import VacationName
 from jupiter.core.framework.use_case import (
     ProgressReporter,
 )

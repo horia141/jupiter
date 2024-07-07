@@ -1,15 +1,17 @@
 """The command for finding smart lists."""
 from collections import defaultdict
 
+from jupiter.core.domain.concept.smart_lists.smart_list import SmartList
+from jupiter.core.domain.concept.smart_lists.smart_list_collection import (
+    SmartListCollection,
+)
+from jupiter.core.domain.concept.smart_lists.smart_list_item import SmartListItem
+from jupiter.core.domain.concept.smart_lists.smart_list_tag import SmartListTag
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_collection import NoteCollection
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.core.tags.tag_name import TagName
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.smart_lists.smart_list import SmartList
-from jupiter.core.domain.smart_lists.smart_list_collection import SmartListCollection
-from jupiter.core.domain.smart_lists.smart_list_item import SmartListItem
-from jupiter.core.domain.smart_lists.smart_list_tag import SmartListTag
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.entity import NoFilter

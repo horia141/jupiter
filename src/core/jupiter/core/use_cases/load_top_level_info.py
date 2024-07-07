@@ -1,6 +1,22 @@
 """The command for loading workspaces if they exist."""
 
+from jupiter.core.domain.application.gamification.service.score_overview_service import (
+    ScoreOverviewService,
+)
+from jupiter.core.domain.application.gamification.user_score_overview import (
+    UserScoreOverview,
+)
 from jupiter.core.domain.concept.calendar.calendar_stream_name import CalendarStreamName
+from jupiter.core.domain.concept.projects.project_name import ProjectName
+from jupiter.core.domain.concept.user.user import User, UserNotFoundError
+from jupiter.core.domain.concept.user_workspace_link.user_workspace_link import (
+    UserWorkspaceLinkRepository,
+)
+from jupiter.core.domain.concept.workspaces.workspace import (
+    Workspace,
+    WorkspaceNotFoundError,
+)
+from jupiter.core.domain.concept.workspaces.workspace_name import WorkspaceName
 from jupiter.core.domain.env import Env
 from jupiter.core.domain.features import (
     BASIC_USER_FEATURE_FLAGS,
@@ -12,21 +28,7 @@ from jupiter.core.domain.features import (
     WorkspaceFeatureFlags,
     WorkspaceFeatureFlagsControls,
 )
-from jupiter.core.domain.gamification.service.score_overview_service import (
-    ScoreOverviewService,
-)
-from jupiter.core.domain.gamification.user_score_overview import UserScoreOverview
 from jupiter.core.domain.hosting import Hosting
-from jupiter.core.domain.projects.project_name import ProjectName
-from jupiter.core.domain.user.user import User, UserNotFoundError
-from jupiter.core.domain.user_workspace_link.user_workspace_link import (
-    UserWorkspaceLinkRepository,
-)
-from jupiter.core.domain.workspaces.workspace import (
-    Workspace,
-    WorkspaceNotFoundError,
-)
-from jupiter.core.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,

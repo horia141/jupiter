@@ -1,9 +1,9 @@
 """Use case for loading a metric entry."""
 
+from jupiter.core.domain.concept.metrics.metric_entry import MetricEntry
 from jupiter.core.domain.core.notes.note import Note, NoteRepository
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.metrics.metric_entry import MetricEntry
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case_io import (

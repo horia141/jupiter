@@ -2,14 +2,16 @@
 
 from jupiter.core.domain.concept.chores.chore import Chore
 from jupiter.core.domain.concept.chores.chore_collection import ChoreCollection
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
+    InboxTaskCollection,
+)
+from jupiter.core.domain.concept.inbox_tasks.service.archive_service import (
+    InboxTaskArchiveService,
+)
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.core.notes.service.note_archive_service import (
     NoteArchiveService,
-)
-from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
-from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
-from jupiter.core.domain.inbox_tasks.service.archive_service import (
-    InboxTaskArchiveService,
 )
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.context import DomainContext

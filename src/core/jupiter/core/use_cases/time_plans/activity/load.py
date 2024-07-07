@@ -1,10 +1,10 @@
 """Use case for loading a time plan activity activity."""
 from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.concept.time_plans.time_plan_activity import TimePlanActivity
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.infra.generic_loader import generic_loader
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.domain.time_plans.time_plan_activity import TimePlanActivity
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,

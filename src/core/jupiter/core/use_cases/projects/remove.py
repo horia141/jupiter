@@ -1,26 +1,30 @@
 """Use case for removing a project."""
 
-from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.metrics.metric_collection import MetricCollection
-from jupiter.core.domain.persons.person_collection import PersonCollection
-from jupiter.core.domain.projects.project import Project
-from jupiter.core.domain.projects.project_collection import ProjectCollection
-from jupiter.core.domain.projects.service.check_cycles_service import (
+from jupiter.core.domain.concept.metrics.metric_collection import MetricCollection
+from jupiter.core.domain.concept.persons.person_collection import PersonCollection
+from jupiter.core.domain.concept.projects.project import Project
+from jupiter.core.domain.concept.projects.project_collection import ProjectCollection
+from jupiter.core.domain.concept.projects.service.check_cycles_service import (
     ProjectCheckCyclesService,
     ProjectTreeHasCyclesError,
 )
-from jupiter.core.domain.projects.service.remove_service import ProjectRemoveService
-from jupiter.core.domain.push_integrations.email.email_task_collection import (
+from jupiter.core.domain.concept.projects.service.remove_service import (
+    ProjectRemoveService,
+)
+from jupiter.core.domain.concept.push_integrations.email.email_task_collection import (
     EmailTaskCollection,
 )
-from jupiter.core.domain.push_integrations.group.push_integration_group import (
+from jupiter.core.domain.concept.push_integrations.group.push_integration_group import (
     PushIntegrationGroup,
 )
-from jupiter.core.domain.push_integrations.slack.slack_task_collection import (
+from jupiter.core.domain.concept.push_integrations.slack.slack_task_collection import (
     SlackTaskCollection,
 )
+from jupiter.core.domain.concept.working_mem.working_mem_collection import (
+    WorkingMemCollection,
+)
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.domain.working_mem.working_mem_collection import WorkingMemCollection
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.use_case import (

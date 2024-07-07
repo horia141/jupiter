@@ -1,5 +1,7 @@
 """Use case for removing a calendar in day event."""
-from jupiter.core.domain.concept.calendar.calendar_event_in_day import CalendarEventInDay
+from jupiter.core.domain.concept.calendar.calendar_event_in_day import (
+    CalendarEventInDay,
+)
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.infra.generic_crown_remover import generic_crown_remover
 from jupiter.core.domain.storage_engine import DomainUnitOfWork

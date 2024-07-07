@@ -1,6 +1,6 @@
 """SQLite implementation of garbage collection infra classes."""
 
-from jupiter.core.domain.gc.gc_log_entry import (
+from jupiter.core.domain.application.gc.gc_log_entry import (
     GCLogEntry,
     GCLogEntryRepository,
 )

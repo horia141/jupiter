@@ -1,4 +1,7 @@
 """UseCase for initialising the workspace."""
+from jupiter.core.domain.application.gamification.score_log import ScoreLog
+from jupiter.core.domain.application.gc.gc_log import GCLog
+from jupiter.core.domain.application.gen.gen_log import GenLog
 from jupiter.core.domain.concept.auth.auth import Auth
 from jupiter.core.domain.concept.auth.auth_token_ext import AuthTokenExt
 from jupiter.core.domain.concept.auth.password_new_plain import PasswordNewPlain
@@ -6,9 +9,46 @@ from jupiter.core.domain.concept.auth.recovery_token_plain import RecoveryTokenP
 from jupiter.core.domain.concept.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.core.domain.concept.calendar.calendar_domain import CalendarDomain
 from jupiter.core.domain.concept.calendar.calendar_stream import CalendarStream
-from jupiter.core.domain.concept.calendar.calendar_stream_color import CalendarStreamColor
+from jupiter.core.domain.concept.calendar.calendar_stream_color import (
+    CalendarStreamColor,
+)
 from jupiter.core.domain.concept.calendar.calendar_stream_name import CalendarStreamName
 from jupiter.core.domain.concept.chores.chore_collection import ChoreCollection
+from jupiter.core.domain.concept.docs.doc_collection import DocCollection
+from jupiter.core.domain.concept.habits.habit_collection import HabitCollection
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
+    InboxTaskCollection,
+)
+from jupiter.core.domain.concept.journals.journal_collection import JournalCollection
+from jupiter.core.domain.concept.metrics.metric_collection import MetricCollection
+from jupiter.core.domain.concept.persons.person_collection import PersonCollection
+from jupiter.core.domain.concept.projects.project import Project
+from jupiter.core.domain.concept.projects.project_collection import ProjectCollection
+from jupiter.core.domain.concept.projects.project_name import ProjectName
+from jupiter.core.domain.concept.push_integrations.email.email_task_collection import (
+    EmailTaskCollection,
+)
+from jupiter.core.domain.concept.push_integrations.group.push_integration_group import (
+    PushIntegrationGroup,
+)
+from jupiter.core.domain.concept.push_integrations.slack.slack_task_collection import (
+    SlackTaskCollection,
+)
+from jupiter.core.domain.concept.smart_lists.smart_list_collection import (
+    SmartListCollection,
+)
+from jupiter.core.domain.concept.time_plans.time_plan_domain import TimePlanDomain
+from jupiter.core.domain.concept.user.user import User
+from jupiter.core.domain.concept.user.user_name import UserName
+from jupiter.core.domain.concept.user_workspace_link.user_workspace_link import (
+    UserWorkspaceLink,
+)
+from jupiter.core.domain.concept.vacations.vacation_collection import VacationCollection
+from jupiter.core.domain.concept.working_mem.working_mem_collection import (
+    WorkingMemCollection,
+)
+from jupiter.core.domain.concept.workspaces.workspace import Workspace
+from jupiter.core.domain.concept.workspaces.workspace_name import WorkspaceName
 from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.core.email_address import EmailAddress
@@ -16,42 +56,10 @@ from jupiter.core.domain.core.notes.note_collection import NoteCollection
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.core.time_events.time_event_domain import TimeEventDomain
 from jupiter.core.domain.core.timezone import Timezone
-from jupiter.core.domain.concept.docs.doc_collection import DocCollection
 from jupiter.core.domain.features import (
     UserFeature,
     WorkspaceFeature,
 )
-from jupiter.core.domain.gamification.score_log import ScoreLog
-from jupiter.core.domain.gc.gc_log import GCLog
-from jupiter.core.domain.gen.gen_log import GenLog
-from jupiter.core.domain.habits.habit_collection import HabitCollection
-from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
-from jupiter.core.domain.journals.journal_collection import JournalCollection
-from jupiter.core.domain.metrics.metric_collection import MetricCollection
-from jupiter.core.domain.persons.person_collection import PersonCollection
-from jupiter.core.domain.projects.project import Project
-from jupiter.core.domain.projects.project_collection import ProjectCollection
-from jupiter.core.domain.projects.project_name import ProjectName
-from jupiter.core.domain.push_integrations.email.email_task_collection import (
-    EmailTaskCollection,
-)
-from jupiter.core.domain.push_integrations.group.push_integration_group import (
-    PushIntegrationGroup,
-)
-from jupiter.core.domain.push_integrations.slack.slack_task_collection import (
-    SlackTaskCollection,
-)
-from jupiter.core.domain.smart_lists.smart_list_collection import SmartListCollection
-from jupiter.core.domain.time_plans.time_plan_domain import TimePlanDomain
-from jupiter.core.domain.user.user import User
-from jupiter.core.domain.user.user_name import UserName
-from jupiter.core.domain.user_workspace_link.user_workspace_link import (
-    UserWorkspaceLink,
-)
-from jupiter.core.domain.vacations.vacation_collection import VacationCollection
-from jupiter.core.domain.working_mem.working_mem_collection import WorkingMemCollection
-from jupiter.core.domain.workspaces.workspace import Workspace
-from jupiter.core.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.core.framework.secure import secure_class
 from jupiter.core.framework.use_case import (
     ProgressReporter,

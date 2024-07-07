@@ -1,9 +1,9 @@
 """The command for archiving a working mem."""
 
+from jupiter.core.domain.concept.working_mem.working_mem import WorkingMem
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.infra.generic_archiver import generic_archiver
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.domain.working_mem.working_mem import WorkingMem
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     ProgressReporter,

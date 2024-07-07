@@ -1,7 +1,10 @@
 """Load previous runs of GC."""
 
-from jupiter.core.domain.gc.gc_log import GCLog
-from jupiter.core.domain.gc.gc_log_entry import GCLogEntry, GCLogEntryRepository
+from jupiter.core.domain.application.gc.gc_log import GCLog
+from jupiter.core.domain.application.gc.gc_log_entry import (
+    GCLogEntry,
+    GCLogEntryRepository,
+)
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,

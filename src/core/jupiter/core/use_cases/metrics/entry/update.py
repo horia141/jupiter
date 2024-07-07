@@ -1,8 +1,8 @@
 """The command for updating a metric entry's properties."""
 
+from jupiter.core.domain.concept.metrics.metric_entry import MetricEntry
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.metrics.metric_entry import MetricEntry
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.update_action import UpdateAction

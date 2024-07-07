@@ -7,16 +7,19 @@ from jupiter.core.domain.concept.auth.auth_token import (
     ExpiredAuthTokenError,
     InvalidAuthTokenError,
 )
-from jupiter.core.domain.features import FeatureUnavailableError
-from jupiter.core.domain.journals.journal import (
+from jupiter.core.domain.concept.journals.journal import (
     JournalExistsForDatePeriodCombinationError,
 )
-from jupiter.core.domain.projects.errors import ProjectInSignificantUseError
-from jupiter.core.domain.time_plans.time_plan import (
+from jupiter.core.domain.concept.projects.errors import ProjectInSignificantUseError
+from jupiter.core.domain.concept.time_plans.time_plan import (
     TimePlanExistsForDatePeriodCombinationError,
 )
-from jupiter.core.domain.user.user import UserAlreadyExistsError, UserNotFoundError
-from jupiter.core.domain.workspaces.workspace import WorkspaceNotFoundError
+from jupiter.core.domain.concept.user.user import (
+    UserAlreadyExistsError,
+    UserNotFoundError,
+)
+from jupiter.core.domain.concept.workspaces.workspace import WorkspaceNotFoundError
+from jupiter.core.domain.features import FeatureUnavailableError
 from jupiter.core.framework.errors import (
     InputValidationError,
     MultiInputValidationError,

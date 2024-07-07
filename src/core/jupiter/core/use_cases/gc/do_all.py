@@ -1,7 +1,7 @@
 """The command for doing garbage collection for all workspaces."""
 
-from jupiter.core.domain.gc.service.gc_service import GCService
-from jupiter.core.domain.workspaces.workspace import Workspace
+from jupiter.core.domain.application.gc.service.gc_service import GCService
+from jupiter.core.domain.concept.workspaces.workspace import Workspace
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (

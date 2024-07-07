@@ -1,6 +1,10 @@
 """The calendar domain."""
-from jupiter.core.domain.concept.calendar.calendar_event_full_days import CalendarEventFullDays
-from jupiter.core.domain.concept.calendar.calendar_event_in_day import CalendarEventInDay
+from jupiter.core.domain.concept.calendar.calendar_event_full_days import (
+    CalendarEventFullDays,
+)
+from jupiter.core.domain.concept.calendar.calendar_event_in_day import (
+    CalendarEventInDay,
+)
 from jupiter.core.domain.concept.calendar.calendar_stream import CalendarStream
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext

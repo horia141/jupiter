@@ -1,7 +1,7 @@
 """The command for doing a garbage collection run."""
 
+from jupiter.core.domain.application.gc.service.gc_service import GCService
 from jupiter.core.domain.features import FeatureUnavailableError
-from jupiter.core.domain.gc.service.gc_service import GCService
 from jupiter.core.domain.sync_target import SyncTarget
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (

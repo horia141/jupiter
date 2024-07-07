@@ -1,6 +1,6 @@
 """The SQLIte based user workspace links repository."""
 
-from jupiter.core.domain.user_workspace_link.user_workspace_link import (
+from jupiter.core.domain.concept.user_workspace_link.user_workspace_link import (
     UserWorkspaceLink,
     UserWorkspaceLinkRepository,
 )

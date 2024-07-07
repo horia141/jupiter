@@ -1,5 +1,7 @@
 """Use case for archiving a calendar full day event."""
-from jupiter.core.domain.concept.calendar.calendar_event_full_days import CalendarEventFullDays
+from jupiter.core.domain.concept.calendar.calendar_event_full_days import (
+    CalendarEventFullDays,
+)
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.infra.generic_archiver import generic_archiver
 from jupiter.core.domain.storage_engine import DomainUnitOfWork

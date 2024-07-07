@@ -1,7 +1,7 @@
 """The command for finding workspaces."""
 
+from jupiter.core.domain.concept.workspaces.workspace import Workspace
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,

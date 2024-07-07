@@ -1,6 +1,20 @@
 """Update a person."""
 import typing
 
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
+    InboxTaskCollection,
+)
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
+from jupiter.core.domain.concept.inbox_tasks.service.archive_service import (
+    InboxTaskArchiveService,
+)
+from jupiter.core.domain.concept.persons.person import Person
+from jupiter.core.domain.concept.persons.person_birthday import PersonBirthday
+from jupiter.core.domain.concept.persons.person_collection import PersonCollection
+from jupiter.core.domain.concept.persons.person_name import PersonName
+from jupiter.core.domain.concept.persons.person_relationship import PersonRelationship
+from jupiter.core.domain.concept.projects.project import Project
 from jupiter.core.domain.core import schedules
 from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
@@ -9,18 +23,6 @@ from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDu
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
-from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
-from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
-from jupiter.core.domain.inbox_tasks.service.archive_service import (
-    InboxTaskArchiveService,
-)
-from jupiter.core.domain.persons.person import Person
-from jupiter.core.domain.persons.person_birthday import PersonBirthday
-from jupiter.core.domain.persons.person_collection import PersonCollection
-from jupiter.core.domain.persons.person_name import PersonName
-from jupiter.core.domain.persons.person_relationship import PersonRelationship
-from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp

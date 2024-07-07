@@ -1,13 +1,13 @@
 """The SQLite repository for inbox tasks."""
 from collections.abc import Iterable
 
-from jupiter.core.domain.core.adate import ADate
-from jupiter.core.domain.inbox_tasks.inbox_task import (
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import (
     InboxTask,
     InboxTaskRepository,
 )
-from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
-from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_status import InboxTaskStatus
+from jupiter.core.domain.core.adate import ADate
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.repository.sqlite.infra.repository import (
     SqliteLeafEntityRepository,

@@ -1,11 +1,11 @@
 """The command for doing task generation for all workspaces."""
 
-from jupiter.core.domain.gen.service.gen_service import GenService
-from jupiter.core.domain.user.user import User
-from jupiter.core.domain.user_workspace_link.user_workspace_link import (
+from jupiter.core.domain.application.gen.service.gen_service import GenService
+from jupiter.core.domain.concept.user.user import User
+from jupiter.core.domain.concept.user_workspace_link.user_workspace_link import (
     UserWorkspaceLink,
 )
-from jupiter.core.domain.workspaces.workspace import Workspace
+from jupiter.core.domain.concept.workspaces.workspace import Workspace
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (

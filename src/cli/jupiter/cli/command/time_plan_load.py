@@ -13,11 +13,11 @@ from jupiter.cli.command.rendering import (
     time_plan_activity_kind_to_rich_text,
     time_plan_source_to_rich_text,
 )
-from jupiter.core.domain.core.adate import ADate
-from jupiter.core.domain.core.difficulty import Difficulty
-from jupiter.core.domain.time_plans.time_plan_activity_target import (
+from jupiter.core.domain.concept.time_plans.time_plan_activity_target import (
     TimePlanActivityTarget,
 )
+from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
 from jupiter.core.use_cases.time_plans.load import (
     TimePlanLoadResult,

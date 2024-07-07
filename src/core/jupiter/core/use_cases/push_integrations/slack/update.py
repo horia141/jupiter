@@ -1,22 +1,26 @@
 """The command for updating a slack task."""
 
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
+    InboxTaskCollection,
+)
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_name import InboxTaskName
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_status import InboxTaskStatus
+from jupiter.core.domain.concept.push_integrations.push_generation_extra_info import (
+    PushGenerationExtraInfo,
+)
+from jupiter.core.domain.concept.push_integrations.slack.slack_channel_name import (
+    SlackChannelName,
+)
+from jupiter.core.domain.concept.push_integrations.slack.slack_task import SlackTask
+from jupiter.core.domain.concept.push_integrations.slack.slack_user_name import (
+    SlackUserName,
+)
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
-from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
-from jupiter.core.domain.inbox_tasks.inbox_task_name import InboxTaskName
-from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
-from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
-from jupiter.core.domain.push_integrations.push_generation_extra_info import (
-    PushGenerationExtraInfo,
-)
-from jupiter.core.domain.push_integrations.slack.slack_channel_name import (
-    SlackChannelName,
-)
-from jupiter.core.domain.push_integrations.slack.slack_task import SlackTask
-from jupiter.core.domain.push_integrations.slack.slack_user_name import SlackUserName
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.update_action import UpdateAction
