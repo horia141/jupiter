@@ -24,7 +24,7 @@ async def generic_crown_remover(
                     f"Entity {entity.__class__} owns an non-crown entity {field.the_type}"
                 )
             linked_entities = await uow.get_for(field.the_type).find_all_generic(
-                parent_ref_id=None, allow_archived=False, **field.get_for_entity(entity)
+                parent_ref_id=None, allow_archived=True, **field.get_for_entity(entity)
             )
 
             for linked_entity in linked_entities:
@@ -35,6 +35,6 @@ async def generic_crown_remover(
             if not isinstance(entity, LeafSupportEntity):
                 await progress_reporter.mark_removed(entity)
 
-    entity = await uow.get_for(entity_type).load_by_id(ref_id)
+    entity = await uow.get_for(entity_type).load_by_id(ref_id, allow_archived=True)
 
     await _remover(entity)

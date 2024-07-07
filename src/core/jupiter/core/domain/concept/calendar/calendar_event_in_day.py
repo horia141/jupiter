@@ -32,7 +32,7 @@ class CalendarEventInDay(LeafEntity):
 
     time_event_in_day_block = OwnsOne(
         TimeEventInDayBlock,
-        domain=TimeEventNamespace.CALENDAR_EVENT_IN_DAY,
+        namespace=TimeEventNamespace.CALENDAR_EVENT_IN_DAY,
         source_entity_ref_id=IsRefId(),
     )
     note = OwnsAtMostOne(

@@ -1,4 +1,7 @@
 """A specific calendar group or stream of events."""
+from jupiter.core.domain.concept.calendar.calendar_event_full_days import (
+    CalendarEventFullDays,
+)
 from jupiter.core.domain.concept.calendar.calendar_event_in_day import (
     CalendarEventInDay,
 )
@@ -42,7 +45,8 @@ class CalendarStream(LeafEntity):
     color: CalendarStreamColor
     source_ical_url: URL | None
 
-    the_events = OwnsMany(CalendarEventInDay, calendar_ref_id=IsRefId())
+    in_day_events = OwnsMany(CalendarEventInDay, calendar_stream_ref_id=IsRefId())
+    full_days_events = OwnsMany(CalendarEventFullDays, calendar_stream_ref_id=IsRefId())
     note = OwnsAtMostOne(
         Note, domain=NoteDomain.CALENDAR_STREAM, source_entity_ref_id=IsRefId()
     )

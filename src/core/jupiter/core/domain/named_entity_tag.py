@@ -16,7 +16,9 @@ class NamedEntityTag(EnumValue):
     TIME_PLAN_ACTIVITY = "TimePlanActivity"  # TimePlanActivity.__name__
     CALENDAR_STREAM = "CalendarStream"  # CalendarStream.__name__
     CALENDAR_EVENT_IN_DAY = "CalendarEventInDay"  # CalendarEventInDay.__name__
-    CALENDAR_EVENT_FULL_DAYS_BLOCK = "CalendarEventFullDays"  # CalendarEventFullDays.__name__
+    CALENDAR_EVENT_FULL_DAYS_BLOCK = (
+        "CalendarEventFullDays"  # CalendarEventFullDays.__name__
+    )
     HABIT = "Habit"  # Habit.__name__
     CHORE = "Chore"  # Chore.__name__
     BIG_PLAN = "BigPlan"  # BigPlan.__name__

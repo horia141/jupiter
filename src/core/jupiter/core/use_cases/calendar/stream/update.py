@@ -42,7 +42,7 @@ class CalendarStreamUpdateUseCase(
         """Execute the command's action."""
         calendar_stream = await uow.get_for(CalendarStream).load_by_id(args.ref_id)
 
-        calendar_stream.update(
+        calendar_stream = calendar_stream.update(
             context.domain_context,
             name=args.name,
             color=args.color,
