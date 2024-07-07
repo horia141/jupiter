@@ -2,7 +2,6 @@
 
 from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.core.domain.calendar.calendar_domain import CalendarDomain
-from jupiter.core.domain.calendar.calendar_stream import CalendarStream
 from jupiter.core.domain.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.fast_info_repository import (
     BigPlanSummary,
@@ -96,7 +95,9 @@ class GetSummariesUseCase(
         inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             workspace.ref_id,
         )
-        calendar_domain = await uow.get_for(CalendarDomain).load_by_parent(workspace.ref_id)
+        calendar_domain = await uow.get_for(CalendarDomain).load_by_parent(
+            workspace.ref_id
+        )
         project_collection = await uow.get_for(ProjectCollection).load_by_parent(
             workspace.ref_id,
         )
@@ -134,7 +135,9 @@ class GetSummariesUseCase(
             workspace.is_feature_available(WorkspaceFeature.CALENDAR)
             and args.include_calendar_streams
         ):
-            calendar_streams = await uow.get(FastInfoRepository).find_all_calendar_stream_summaries(
+            calendar_streams = await uow.get(
+                FastInfoRepository
+            ).find_all_calendar_stream_summaries(
                 parent_ref_id=calendar_domain.workspace.ref_id,
                 allow_archived=allow_archived,
             )

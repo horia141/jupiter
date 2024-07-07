@@ -1,10 +1,10 @@
-"""A full day block in a calendar."""
-from jupiter.core.domain.calendar.calendar_full_day_block_name import (
-    CalendarFullDayBlockName,
-)
+"""An event in a calendar."""
+from jupiter.core.domain.calendar.calendar_event_name import CalendarEventName
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
-from jupiter.core.domain.core.time_events.time_event import TimeEvent
+from jupiter.core.domain.core.time_events.time_event_in_day_block import (
+    TimeEventInDayBlock,
+)
 from jupiter.core.domain.core.time_events.time_event_namespace import TimeEventNamespace
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
@@ -22,33 +22,33 @@ from jupiter.core.framework.update_action import UpdateAction
 
 
 @entity
-class CalendarFullDayBlock(LeafEntity):
-    """A full day block in a calendar."""
+class CalendarEventInDay(LeafEntity):
+    """An event in a calendar."""
 
     calendar_domain: ParentLink
 
     calendar_stream_ref_id: EntityId
-    name: CalendarFullDayBlockName
+    name: CalendarEventName
 
-    time_event = OwnsOne(
-        TimeEvent,
-        domain=TimeEventNamespace.CALENDAR_FULL_DAY_BLOCK,
+    time_event_in_day_block = OwnsOne(
+        TimeEventInDayBlock,
+        domain=TimeEventNamespace.CALENDAR_EVENT_IN_DAY,
         source_entity_ref_id=IsRefId(),
     )
     note = OwnsAtMostOne(
-        Note, domain=NoteDomain.CALENDAR_FULL_DAY_BLOCK, source_entity_ref_id=IsRefId()
+        Note, domain=NoteDomain.CALENDAR_EVENT, source_entity_ref_id=IsRefId()
     )
 
     @staticmethod
     @create_entity_action
-    def new_calendar_full_day_block(
+    def new_calendar_event_in_day(
         ctx: DomainContext,
         calendar_domain_ref_id: EntityId,
         calendar_stream_ref_id: EntityId,
-        name: CalendarFullDayBlockName,
-    ) -> "CalendarFullDayBlock":
+        name: CalendarEventName,
+    ) -> "CalendarEventInDay":
         """Create a calendar event."""
-        return CalendarFullDayBlock._create(
+        return CalendarEventInDay._create(
             ctx,
             calendar_domain=ParentLink(calendar_domain_ref_id),
             calendar_stream_ref_id=calendar_stream_ref_id,
@@ -59,8 +59,8 @@ class CalendarFullDayBlock(LeafEntity):
     def update(
         self,
         ctx: DomainContext,
-        name: UpdateAction[CalendarFullDayBlockName],
-    ) -> "CalendarFullDayBlock":
+        name: UpdateAction[CalendarEventName],
+    ) -> "CalendarEventInDay":
         """Update the calendar event."""
         return self._new_version(
             ctx,

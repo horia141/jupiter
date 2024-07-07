@@ -39,6 +39,13 @@ class UpdateAction(Generic[UpdateActionT]):
         else:
             return value_if_should_not_change
 
+    def test(self, test: Callable[[UpdateActionT], bool]) -> bool:
+        """Test the value of an update action if it is present."""
+        if self._should_change:
+            return test(typing.cast(UpdateActionT, self._value))
+        else:
+            return False
+
     def transform(
         self, transform: Callable[[UpdateActionT], NewT]
     ) -> "UpdateAction[NewT]":

@@ -8,20 +8,20 @@ from jupiter.core.use_cases.infra.realms import PrimitiveAtomicValueDatabaseEnco
 
 @hashable_value
 @total_ordering
-class CalendarTime(AtomicValue[str]):
+class TimeInDay(AtomicValue[str]):
     """The time in hh:mm format."""
 
     hour: int
     minute: int
 
     @staticmethod
-    def from_parts(hour: int, minute: int) -> "CalendarTime":
+    def from_parts(hour: int, minute: int) -> "TimeInDay":
         """Construct from parts."""
         if hour < 0 or hour > 23:
             raise InputValidationError(f"Invalid hour: {hour}")
         if minute < 0 or minute > 59:
             raise InputValidationError(f"Invalid minute: {minute}")
-        return CalendarTime(hour=hour, minute=minute)
+        return TimeInDay(hour=hour, minute=minute)
 
     def __str__(self) -> str:
         """Convert to a string."""
@@ -29,7 +29,7 @@ class CalendarTime(AtomicValue[str]):
 
     def __lt__(self, other: object) -> bool:
         """Compare this with another."""
-        if not isinstance(other, CalendarTime):
+        if not isinstance(other, TimeInDay):
             raise Exception(
                 f"Cannot compare with {other.__class__.__name__}",
             )
@@ -42,23 +42,23 @@ class CalendarTime(AtomicValue[str]):
         return self.minute < other.minute
 
 
-class CalendarTimeDatabaseEncoder(PrimitiveAtomicValueDatabaseEncoder[CalendarTime]):
+class TimeInDayDatabaseEncoder(PrimitiveAtomicValueDatabaseEncoder[TimeInDay]):
     """Encode to a database primitive."""
 
-    def to_primitive(self, value: CalendarTime) -> str:
+    def to_primitive(self, value: TimeInDay) -> str:
         """Encode to a database primitive."""
         return str(value)
 
 
-class CalendarTimeDatabaseDecoder(PrimitiveAtomicValueDatabaseEncoder[CalendarTime]):
+class TimeInDayDatabaseDecoder(PrimitiveAtomicValueDatabaseEncoder[TimeInDay]):
     """Decode from a database primitive."""
 
-    def from_raw_str(self, value: str) -> CalendarTime:
+    def from_raw_str(self, value: str) -> TimeInDay:
         """Decode from a raw string."""
         parts = value.split(":")
         if len(parts) != 2:
             raise InputValidationError(f"Invalid time: {value}")
         try:
-            return CalendarTime.from_parts(int(parts[0]), int(parts[1]))
+            return TimeInDay.from_parts(int(parts[0]), int(parts[1]))
         except ValueError as err:
             raise InputValidationError(f"Invalid time: {value}") from err

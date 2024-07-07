@@ -224,7 +224,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             new_calendar_domain = await uow.get_for(CalendarDomain).create(
                 new_calendar_domain,
             )
-            
+
             new_first_calendar_stream = CalendarStream.new_calendar_stream_for_user(
                 ctx=context.domain_context,
                 calendar_domain_ref_id=new_calendar_domain.ref_id,

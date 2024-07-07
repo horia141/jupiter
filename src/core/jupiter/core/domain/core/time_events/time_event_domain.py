@@ -1,5 +1,10 @@
 """Time event domain trunk entity."""
-from jupiter.core.domain.core.time_events.time_event import TimeEvent
+from jupiter.core.domain.core.time_events.time_event_full_days_block import (
+    TimeEventFullDaysBlock,
+)
+from jupiter.core.domain.core.time_events.time_event_in_day_block import (
+    TimeEventInDayBlock,
+)
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
@@ -17,7 +22,12 @@ class TimeEventDomain(TrunkEntity):
 
     workspace: ParentLink
 
-    the_evenst = ContainsMany(TimeEvent, time_event_domain_ref_id=IsRefId())
+    in_day_blocks = ContainsMany(
+        TimeEventInDayBlock, time_event_domain_ref_id=IsRefId()
+    )
+    full_days_blocks = ContainsMany(
+        TimeEventFullDaysBlock, time_event_domain_ref_id=IsRefId()
+    )
 
     @staticmethod
     def new_time_event_domain(

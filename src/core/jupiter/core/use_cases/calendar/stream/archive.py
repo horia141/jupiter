@@ -9,7 +9,11 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.use_case import ProgressReporter
 from jupiter.core.framework.use_case_io import UseCaseArgsBase, use_case_args
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInMutationUseCaseContext, AppTransactionalLoggedInMutationUseCase, mutation_use_case
+from jupiter.core.use_cases.infra.use_cases import (
+    AppLoggedInMutationUseCaseContext,
+    AppTransactionalLoggedInMutationUseCase,
+    mutation_use_case,
+)
 
 
 @use_case_args
@@ -21,9 +25,7 @@ class CalendarStreamArchiveArgs(UseCaseArgsBase):
 
 @mutation_use_case(WorkspaceFeature.CALENDAR)
 class CalendarStreamArchiveUseCase(
-    AppTransactionalLoggedInMutationUseCase[
-        CalendarStreamArchiveArgs, None
-    ]
+    AppTransactionalLoggedInMutationUseCase[CalendarStreamArchiveArgs, None]
 ):
     """Use case for archiving a calendar stream."""
 
@@ -38,14 +40,18 @@ class CalendarStreamArchiveUseCase(
         workspace = context.workspace
         calendar_stream = await uow.get_for(CalendarStream).load_by_id(args.ref_id)
         if calendar_stream.source == CalendarStreamSource.USER:
-            calendar_domain = await uow.get_for(CalendarDomain).load_by_parent(workspace.ref_id)
+            calendar_domain = await uow.get_for(CalendarDomain).load_by_parent(
+                workspace.ref_id
+            )
             all_user_calendars = await uow.get_for(CalendarStream).find_all_generic(
                 parent_ref_id=calendar_domain.ref_id,
                 source=CalendarStreamSource.USER,
-                allow_archived=False
+                allow_archived=False,
             )
 
             if len(all_user_calendars) == 1:
                 raise InputValidationError("You cannot archive the last user calendar")
 
-        await generic_archiver(context.domain_context, uow, progress_reporter, CalendarStream, args.ref_id)
+        await generic_archiver(
+            context.domain_context, uow, progress_reporter, CalendarStream, args.ref_id
+        )

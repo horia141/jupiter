@@ -83,6 +83,10 @@ class ADate(AtomicValue[Date]):
             ).end_of("day"),
         )
 
+    def add_days(self, days_cnt: int) -> "ADate":
+        """Add these number of days to this date."""
+        return ADate.from_date(self.the_date.add(days=days_cnt))
+
     def subtract_days(self, days_cnt: int) -> "ADate":
         """Subtract these number of days from this date."""
         return ADate.from_date(self.the_date.subtract(days=days_cnt))

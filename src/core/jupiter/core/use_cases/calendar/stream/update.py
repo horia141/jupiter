@@ -8,7 +8,11 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import ProgressReporter
 from jupiter.core.framework.use_case_io import UseCaseArgsBase, use_case_args
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInMutationUseCaseContext, AppTransactionalLoggedInMutationUseCase, mutation_use_case
+from jupiter.core.use_cases.infra.use_cases import (
+    AppLoggedInMutationUseCaseContext,
+    AppTransactionalLoggedInMutationUseCase,
+    mutation_use_case,
+)
 
 
 @use_case_args
@@ -19,11 +23,10 @@ class CalendarStreamUpdateArgs(UseCaseArgsBase):
     name: UpdateAction[CalendarStreamName]
     color: UpdateAction[CalendarStreamColor]
 
+
 @mutation_use_case(WorkspaceFeature.CALENDAR)
 class CalendarStreamUpdateUseCase(
-    AppTransactionalLoggedInMutationUseCase[
-        CalendarStreamUpdateArgs, None
-    ]
+    AppTransactionalLoggedInMutationUseCase[CalendarStreamUpdateArgs, None]
 ):
     """Use case for updating a calendar stream."""
 
@@ -45,4 +48,3 @@ class CalendarStreamUpdateUseCase(
 
         await uow.get_for(CalendarStream).save(calendar_stream)
         await progress_reporter.mark_updated(calendar_stream)
-    

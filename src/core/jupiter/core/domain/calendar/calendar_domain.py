@@ -1,6 +1,6 @@
 """The calendar domain."""
-from jupiter.core.domain.calendar.calendar_event import CalendarEvent
-from jupiter.core.domain.calendar.calendar_full_day_block import CalendarFullDayBlock
+from jupiter.core.domain.calendar.calendar_event_full_days import CalendarEventFullDays
+from jupiter.core.domain.calendar.calendar_event_in_day import CalendarEventInDay
 from jupiter.core.domain.calendar.calendar_stream import CalendarStream
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
@@ -21,9 +21,9 @@ class CalendarDomain(TrunkEntity):
     workspace: ParentLink
 
     calendars = ContainsMany(CalendarStream, calendar_domain_ref_id=IsRefId())
-    the_events = ContainsMany(CalendarEvent, calendar_domain_ref_id=IsRefId())
-    full_day_blocks = ContainsMany(
-        CalendarFullDayBlock, calendar_domain_ref_id=IsRefId()
+    in_day_events = ContainsMany(CalendarEventInDay, calendar_domain_ref_id=IsRefId())
+    full_days_events = ContainsMany(
+        CalendarEventFullDays, calendar_domain_ref_id=IsRefId()
     )
 
     @staticmethod
