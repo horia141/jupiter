@@ -7,12 +7,6 @@ from jupiter.core.domain.concept.auth.auth_token_ext import AuthTokenExt
 from jupiter.core.domain.concept.auth.password_new_plain import PasswordNewPlain
 from jupiter.core.domain.concept.auth.recovery_token_plain import RecoveryTokenPlain
 from jupiter.core.domain.concept.big_plans.big_plan_collection import BigPlanCollection
-from jupiter.core.domain.concept.calendar.calendar_domain import CalendarDomain
-from jupiter.core.domain.concept.calendar.calendar_stream import CalendarStream
-from jupiter.core.domain.concept.calendar.calendar_stream_color import (
-    CalendarStreamColor,
-)
-from jupiter.core.domain.concept.calendar.calendar_stream_name import CalendarStreamName
 from jupiter.core.domain.concept.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.concept.docs.doc_collection import DocCollection
 from jupiter.core.domain.concept.habits.habit_collection import HabitCollection
@@ -34,6 +28,12 @@ from jupiter.core.domain.concept.push_integrations.group.push_integration_group 
 from jupiter.core.domain.concept.push_integrations.slack.slack_task_collection import (
     SlackTaskCollection,
 )
+from jupiter.core.domain.concept.schedule.schedule_domain import ScheduleDomain
+from jupiter.core.domain.concept.schedule.schedule_stream import ScheduleStream
+from jupiter.core.domain.concept.schedule.schedule_stream_color import (
+    ScheduleStreamColor,
+)
+from jupiter.core.domain.concept.schedule.schedule_stream_name import ScheduleStreamName
 from jupiter.core.domain.concept.smart_lists.smart_list_collection import (
     SmartListCollection,
 )
@@ -88,7 +88,7 @@ class InitArgs(UseCaseArgsBase):
     auth_password: PasswordNewPlain
     auth_password_repeat: PasswordNewPlain
     workspace_name: WorkspaceName
-    workspace_first_calendar_stream_name: CalendarStreamName
+    workspace_first_schedule_stream_name: ScheduleStreamName
     workspace_root_project_name: ProjectName
     workspace_feature_flags: set[WorkspaceFeature]
 
@@ -224,22 +224,22 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 new_time_plan_domain
             )
 
-            new_calendar_domain = CalendarDomain.new_calendar_domain(
+            new_schedule_domain = ScheduleDomain.new_schedule_domain(
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
             )
-            new_calendar_domain = await uow.get_for(CalendarDomain).create(
-                new_calendar_domain,
+            new_schedule_domain = await uow.get_for(ScheduleDomain).create(
+                new_schedule_domain,
             )
 
-            new_first_calendar_stream = CalendarStream.new_calendar_stream_for_user(
+            new_first_schedule_stream = ScheduleStream.new_schedule_stream_for_user(
                 ctx=context.domain_context,
-                calendar_domain_ref_id=new_calendar_domain.ref_id,
-                name=args.workspace_first_calendar_stream_name,
-                color=CalendarStreamColor.BLUE,
+                schedule_domain_ref_id=new_schedule_domain.ref_id,
+                name=args.workspace_first_schedule_stream_name,
+                color=ScheduleStreamColor.BLUE,
             )
-            new_first_calendar_stream = await uow.get_for(CalendarStream).create(
-                new_first_calendar_stream,
+            new_first_schedule_stream = await uow.get_for(ScheduleStream).create(
+                new_first_schedule_stream,
             )
 
             new_habit_collection = HabitCollection.new_habit_collection(

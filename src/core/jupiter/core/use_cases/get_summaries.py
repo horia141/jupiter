@@ -1,7 +1,6 @@
 """A use case for retrieving summaries about entities."""
 
 from jupiter.core.domain.concept.big_plans.big_plan_collection import BigPlanCollection
-from jupiter.core.domain.concept.calendar.calendar_domain import CalendarDomain
 from jupiter.core.domain.concept.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.concept.habits.habit_collection import HabitCollection
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
@@ -11,13 +10,13 @@ from jupiter.core.domain.concept.metrics.metric_collection import MetricCollecti
 from jupiter.core.domain.concept.persons.person_collection import PersonCollection
 from jupiter.core.domain.concept.projects.project import ProjectRepository
 from jupiter.core.domain.concept.projects.project_collection import ProjectCollection
+from jupiter.core.domain.concept.schedule.schedule_domain import ScheduleDomain
 from jupiter.core.domain.concept.smart_lists.smart_list_collection import (
     SmartListCollection,
 )
 from jupiter.core.domain.concept.vacations.vacation_collection import VacationCollection
 from jupiter.core.domain.fast_info_repository import (
     BigPlanSummary,
-    CalendarStreamSummary,
     ChoreSummary,
     FastInfoRepository,
     HabitSummary,
@@ -25,6 +24,7 @@ from jupiter.core.domain.fast_info_repository import (
     MetricSummary,
     PersonSummary,
     ProjectSummary,
+    ScheduleStreamSummary,
     SmartListSummary,
     VacationSummary,
 )
@@ -48,7 +48,7 @@ class GetSummariesArgs(UseCaseArgsBase):
     """Get summaries args."""
 
     allow_archived: bool | None
-    include_calendar_streams: bool | None
+    include_schedule_streams: bool | None
     include_vacations: bool | None
     include_projects: bool | None
     include_inbox_tasks: bool | None
@@ -65,7 +65,7 @@ class GetSummariesResult(UseCaseResultBase):
     """Get summaries result."""
 
     vacations: list[VacationSummary] | None
-    calendar_streams: list[CalendarStreamSummary] | None
+    schedule_streams: list[ScheduleStreamSummary] | None
     root_project: ProjectSummary | None
     projects: list[ProjectSummary] | None
     inbox_tasks: list[InboxTaskSummary] | None
@@ -99,7 +99,7 @@ class GetSummariesUseCase(
         inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             workspace.ref_id,
         )
-        calendar_domain = await uow.get_for(CalendarDomain).load_by_parent(
+        schedule_domain = await uow.get_for(ScheduleDomain).load_by_parent(
             workspace.ref_id
         )
         project_collection = await uow.get_for(ProjectCollection).load_by_parent(
@@ -134,15 +134,15 @@ class GetSummariesUseCase(
                 allow_archived=allow_archived,
             )
 
-        calendar_streams = None
+        schedule_streams = None
         if (
-            workspace.is_feature_available(WorkspaceFeature.CALENDAR)
-            and args.include_calendar_streams
+            workspace.is_feature_available(WorkspaceFeature.SCHEDULE)
+            and args.include_schedule_streams
         ):
-            calendar_streams = await uow.get(
+            schedule_streams = await uow.get(
                 FastInfoRepository
-            ).find_all_calendar_stream_summaries(
-                parent_ref_id=calendar_domain.workspace.ref_id,
+            ).find_all_schedule_stream_summaries(
+                parent_ref_id=schedule_domain.workspace.ref_id,
                 allow_archived=allow_archived,
             )
 
@@ -234,7 +234,7 @@ class GetSummariesUseCase(
 
         return GetSummariesResult(
             vacations=vacations,
-            calendar_streams=calendar_streams,
+            schedule_streams=schedule_streams,
             root_project=root_project,
             projects=projects,
             inbox_tasks=inbox_tasks,

@@ -10,7 +10,7 @@ class SyncTarget(EnumValue):
     INBOX_TASKS = "inbox-tasks"
     WORKING_MEM = "working-mem"
     TIME_PLANS = "time-plans"
-    CALENDARS = "calendar"
+    SCHEDULES = "schedule"
     HABITS = "habits"
     CHORES = "chores"
     BIG_PLANS = "big-plans"

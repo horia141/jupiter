@@ -2,13 +2,13 @@
 import abc
 
 from jupiter.core.domain.concept.big_plans.big_plan_name import BigPlanName
-from jupiter.core.domain.concept.calendar.calendar_stream_name import CalendarStreamName
 from jupiter.core.domain.concept.chores.chore_name import ChoreName
 from jupiter.core.domain.concept.habits.habit_name import HabitName
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.core.domain.concept.metrics.metric_name import MetricName
 from jupiter.core.domain.concept.persons.person_name import PersonName
 from jupiter.core.domain.concept.projects.project_name import ProjectName
+from jupiter.core.domain.concept.schedule.schedule_stream_name import ScheduleStreamName
 from jupiter.core.domain.concept.smart_lists.smart_list_name import SmartListName
 from jupiter.core.domain.concept.vacations.vacation_name import VacationName
 from jupiter.core.domain.core.entity_icon import EntityIcon
@@ -26,11 +26,11 @@ class VacationSummary(CompositeValue):
 
 
 @value
-class CalendarStreamSummary(CompositeValue):
-    """Summary information about a calendar stream."""
+class ScheduleStreamSummary(CompositeValue):
+    """Summary information about a schedule stream."""
 
     ref_id: EntityId
-    name: CalendarStreamName
+    name: ScheduleStreamName
 
 
 @value
@@ -114,12 +114,12 @@ class FastInfoRepository(Repository, abc.ABC):
         """Find all summaries about vacations."""
 
     @abc.abstractmethod
-    async def find_all_calendar_stream_summaries(
+    async def find_all_schedule_stream_summaries(
         self,
         parent_ref_id: EntityId,
         allow_archived: bool,
-    ) -> list[CalendarStreamSummary]:
-        """Find all summaries about calendar streams."""
+    ) -> list[ScheduleStreamSummary]:
+        """Find all summaries about schedule streams."""
 
     @abc.abstractmethod
     async def find_all_project_summaries(

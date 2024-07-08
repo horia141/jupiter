@@ -5,7 +5,6 @@ from collections.abc import Iterable
 from jupiter.core.domain.application.gc.gc_log import GCLog
 from jupiter.core.domain.application.gen.gen_log import GenLog
 from jupiter.core.domain.concept.big_plans.big_plan_collection import BigPlanCollection
-from jupiter.core.domain.concept.calendar.calendar_domain import CalendarDomain
 from jupiter.core.domain.concept.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.concept.docs.doc_collection import DocCollection
 from jupiter.core.domain.concept.habits.habit_collection import HabitCollection
@@ -20,6 +19,7 @@ from jupiter.core.domain.concept.projects.project_collection import ProjectColle
 from jupiter.core.domain.concept.push_integrations.group.push_integration_group import (
     PushIntegrationGroup,
 )
+from jupiter.core.domain.concept.schedule.schedule_domain import ScheduleDomain
 from jupiter.core.domain.concept.smart_lists.smart_list_collection import (
     SmartListCollection,
 )
@@ -63,7 +63,7 @@ class Workspace(RootEntity):
         WorkingMemCollection, workspace_ref_id=IsRefId()
     )
     time_plan_domain = ContainsOne(TimePlanDomain, workspace_ref_id=IsRefId())
-    calendar = ContainsOne(CalendarDomain, workspace_ref_id=IsRefId())
+    schedule = ContainsOne(ScheduleDomain, workspace_ref_id=IsRefId())
     habit_collection = ContainsOne(HabitCollection, workspace_ref_id=IsRefId())
     chore_collection = ContainsOne(ChoreCollection, workspace_ref_id=IsRefId())
     big_plan_collection = ContainsOne(BigPlanCollection, workspace_ref_id=IsRefId())

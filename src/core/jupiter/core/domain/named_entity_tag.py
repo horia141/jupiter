@@ -14,10 +14,10 @@ class NamedEntityTag(EnumValue):
     WORKING_MEM = "WorkingMem"  # WorkingMem.__name__
     TIME_PLAN = "TimePlan"  # TimePlan.__name__
     TIME_PLAN_ACTIVITY = "TimePlanActivity"  # TimePlanActivity.__name__
-    CALENDAR_STREAM = "CalendarStream"  # CalendarStream.__name__
-    CALENDAR_EVENT_IN_DAY = "CalendarEventInDay"  # CalendarEventInDay.__name__
-    CALENDAR_EVENT_FULL_DAYS_BLOCK = (
-        "CalendarEventFullDays"  # CalendarEventFullDays.__name__
+    SCHEDULE_STREAM = "ScheduleStream"  # ScheduleStream.__name__
+    SCHEDULE_EVENT_IN_DAY = "ScheduleEventInDay"  # ScheduleEventInDay.__name__
+    SCHEDULE_EVENT_FULL_DAYS_BLOCK = (
+        "ScheduleEventFullDays"  # ScheduleEventFullDays.__name__
     )
     HABIT = "Habit"  # Habit.__name__
     CHORE = "Chore"  # Chore.__name__

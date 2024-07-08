@@ -3,19 +3,18 @@
 import json
 
 from jupiter.core.domain.concept.big_plans.big_plan_name import BigPlanName
-from jupiter.core.domain.concept.calendar.calendar_stream_name import CalendarStreamName
 from jupiter.core.domain.concept.chores.chore_name import ChoreName
 from jupiter.core.domain.concept.habits.habit_name import HabitName
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.core.domain.concept.metrics.metric_name import MetricName
 from jupiter.core.domain.concept.persons.person_name import PersonName
 from jupiter.core.domain.concept.projects.project_name import ProjectName
+from jupiter.core.domain.concept.schedule.schedule_stream_name import ScheduleStreamName
 from jupiter.core.domain.concept.smart_lists.smart_list_name import SmartListName
 from jupiter.core.domain.concept.vacations.vacation_name import VacationName
 from jupiter.core.domain.core.entity_icon import EntityIconDatabaseDecoder
 from jupiter.core.domain.fast_info_repository import (
     BigPlanSummary,
-    CalendarStreamSummary,
     ChoreSummary,
     FastInfoRepository,
     HabitSummary,
@@ -23,6 +22,7 @@ from jupiter.core.domain.fast_info_repository import (
     MetricSummary,
     PersonSummary,
     ProjectSummary,
+    ScheduleStreamSummary,
     SmartListSummary,
     VacationSummary,
 )
@@ -32,7 +32,7 @@ from jupiter.core.repository.sqlite.infra.repository import SqliteRepository
 from sqlalchemy import text
 
 _ENTITY_ID_DECODER = EntityIdDatabaseDecoder()
-_CALENDAR_STREAM_NAME_DECODER = EntityNameDatabaseDecoder(CalendarStreamName)
+_SCHEDULE_STREAM_NAME_DECODER = EntityNameDatabaseDecoder(ScheduleStreamName)
 _VACATION_NAME_DECODER = EntityNameDatabaseDecoder(VacationName)
 _INBOX_TASK_NAME_DECODER = EntityNameDatabaseDecoder(InboxTaskName)
 _PROJECT_NAME_DECODER = EntityNameDatabaseDecoder(ProjectName)
@@ -70,13 +70,13 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
             for row in result
         ]
 
-    async def find_all_calendar_stream_summaries(
+    async def find_all_schedule_stream_summaries(
         self,
         parent_ref_id: EntityId,
         allow_archived: bool,
-    ) -> list[CalendarStreamSummary]:
-        """Find all summaries about calendar streams."""
-        query = """select ref_id, name from calendar_stream where calendar_stream_domain_ref_id = :parent_ref_id"""
+    ) -> list[ScheduleStreamSummary]:
+        """Find all summaries about schedule streams."""
+        query = """select ref_id, name from schedule_stream where schedule_stream_domain_ref_id = :parent_ref_id"""
         if not allow_archived:
             query += " and archived=0"
         result = (
@@ -85,9 +85,9 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
             )
         ).fetchall()
         return [
-            CalendarStreamSummary(
+            ScheduleStreamSummary(
                 ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
-                name=_CALENDAR_STREAM_NAME_DECODER.decode(row["name"]),
+                name=_SCHEDULE_STREAM_NAME_DECODER.decode(row["name"]),
             )
             for row in result
         ]
