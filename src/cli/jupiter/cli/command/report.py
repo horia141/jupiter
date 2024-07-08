@@ -18,11 +18,11 @@ from jupiter.core.domain.concept.inbox_tasks.inbox_task_status import InboxTaskS
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
-from jupiter.core.use_cases.report import (
+from jupiter.core.use_cases.application.report import (
     ReportResult,
     ReportUseCase,
 )
+from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
 from rich.console import Console
 from rich.table import Table
 from rich.text import Text

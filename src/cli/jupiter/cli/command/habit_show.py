@@ -20,7 +20,7 @@ from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.use_cases.habits.find import HabitFindResult, HabitFindUseCase
+from jupiter.core.use_cases.concept.habits.find import HabitFindResult, HabitFindUseCase
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
 from rich.console import Console
 from rich.text import Text

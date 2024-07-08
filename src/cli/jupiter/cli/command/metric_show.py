@@ -17,8 +17,11 @@ from jupiter.cli.command.rendering import (
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.notes.note_content_block import ParagraphBlock
 from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.use_cases.concept.metrics.find import (
+    MetricFindResult,
+    MetricFindUseCase,
+)
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
-from jupiter.core.use_cases.metrics.find import MetricFindResult, MetricFindUseCase
 from rich.console import Console
 from rich.text import Text
 from rich.tree import Tree

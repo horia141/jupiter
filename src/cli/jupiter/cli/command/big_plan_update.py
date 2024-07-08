@@ -2,7 +2,7 @@
 
 
 from jupiter.cli.command.command import LoggedInMutationCommand
-from jupiter.core.use_cases.big_plans.update import (
+from jupiter.core.use_cases.concept.big_plans.update import (
     BigPlanUpdateResult,
     BigPlanUpdateUseCase,
 )

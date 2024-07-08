@@ -14,7 +14,7 @@ from jupiter.cli.command.rendering import (
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.use_cases.inbox_tasks.find import (
+from jupiter.core.use_cases.concept.inbox_tasks.find import (
     InboxTaskFindResult,
     InboxTaskFindUseCase,
 )

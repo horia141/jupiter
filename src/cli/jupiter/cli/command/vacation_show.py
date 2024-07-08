@@ -8,11 +8,11 @@ from jupiter.cli.command.rendering import (
     entity_name_to_rich_text,
     start_date_to_rich_text,
 )
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
-from jupiter.core.use_cases.vacations.find import (
+from jupiter.core.use_cases.concept.vacations.find import (
     VacationFindResult,
     VacationFindUseCase,
 )
+from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
 from rich.console import Console
 from rich.text import Text
 from rich.tree import Tree

@@ -2,7 +2,7 @@
 
 
 from jupiter.cli.command.command import LoggedInMutationCommand
-from jupiter.core.use_cases.inbox_tasks.update import (
+from jupiter.core.use_cases.concept.inbox_tasks.update import (
     InboxTaskUpdateResult,
     InboxTaskUpdateUseCase,
 )

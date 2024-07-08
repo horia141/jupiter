@@ -10,8 +10,11 @@ from jupiter.cli.command.rendering import (
 )
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.use_cases.concept.persons.find import (
+    PersonFindResult,
+    PersonFindUseCase,
+)
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
-from jupiter.core.use_cases.persons.find import PersonFindResult, PersonFindUseCase
 from rich.console import Console
 from rich.text import Text
 from rich.tree import Tree

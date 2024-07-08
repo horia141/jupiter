@@ -9,7 +9,10 @@ from jupiter.cli.command.rendering import (
     event_source_to_rich_text,
     sync_target_to_rich_text,
 )
-from jupiter.core.use_cases.gc.load_runs import GCLoadRunsResult, GCLoadRunsUseCase
+from jupiter.core.use_cases.application.gc.load_runs import (
+    GCLoadRunsResult,
+    GCLoadRunsUseCase,
+)
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
 from rich.console import Console
 from rich.text import Text

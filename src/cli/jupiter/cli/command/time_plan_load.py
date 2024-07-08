@@ -18,11 +18,11 @@ from jupiter.core.domain.concept.time_plans.time_plan_activity_target import (
 )
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.difficulty import Difficulty
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
-from jupiter.core.use_cases.time_plans.load import (
+from jupiter.core.use_cases.concept.time_plans.load import (
     TimePlanLoadResult,
     TimePlanLoadUseCase,
 )
+from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
 from rich.console import Console
 from rich.text import Text
 from rich.tree import Tree
