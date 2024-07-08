@@ -41,7 +41,7 @@ from jupiter.core.framework.repository import (
 )
 from jupiter.core.framework.utils import find_all_modules
 from jupiter.core.repository.sqlite.connection import SqliteConnection
-from jupiter.core.repository.sqlite.domain.search import SqliteSearchRepository
+from jupiter.core.repository.sqlite.domain.application.search import SqliteSearchRepository
 from jupiter.core.repository.sqlite.infra.repository import (
     SqliteCrownEntityRepository,
     SqliteEntityRepository,
