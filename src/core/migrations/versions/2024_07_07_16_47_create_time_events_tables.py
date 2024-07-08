@@ -62,6 +62,7 @@ def upgrade() -> None:
             last_modified_time DATETIME NOT NULL,
             archived_time DATETIME,
             time_event_domain_ref_id INTEGER NOT NULL,
+            name VARCHAR(32) NOT NULL,
             namespace VARCHAR(32) NOT NULL,
             source_entity_ref_id INTEGER NOT NULL,
             start_date DATE NOT NULL,
@@ -109,11 +110,11 @@ def upgrade() -> None:
             last_modified_time DATETIME NOT NULL,
             archived_time DATETIME,
             time_event_domain_ref_id INTEGER NOT NULL,
+            name VARCHAR(32) NOT NULL,
             namespace VARCHAR(32) NOT NULL,
             source_entity_ref_id INTEGER NOT NULL,
             start_date DATE NOT NULL,
             duration_days INTEGER NOT NULL,
-            timezone VARCHAR(32) NOT NULL,
             PRIMARY KEY (ref_id),
             FOREIGN KEY (time_event_domain_ref_id) REFERENCES time_event_domain (ref_id)
         )

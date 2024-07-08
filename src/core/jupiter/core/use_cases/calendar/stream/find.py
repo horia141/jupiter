@@ -1,5 +1,6 @@
 """Usecase for finding calendar streams."""
 from collections import defaultdict
+
 from jupiter.core.domain.concept.calendar.calendar_domain import CalendarDomain
 from jupiter.core.domain.concept.calendar.calendar_stream import CalendarStream
 from jupiter.core.domain.core.notes.note import Note
@@ -9,9 +10,18 @@ from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.entity import NoFilter
-from jupiter.core.framework.use_case import ProgressReporter
-from jupiter.core.framework.use_case_io import UseCaseArgsBase, UseCaseResultBase, use_case_args, use_case_result, use_case_result_part
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext, AppTransactionalLoggedInReadOnlyUseCase, readonly_use_case
+from jupiter.core.framework.use_case_io import (
+    UseCaseArgsBase,
+    UseCaseResultBase,
+    use_case_args,
+    use_case_result,
+    use_case_result_part,
+)
+from jupiter.core.use_cases.infra.use_cases import (
+    AppLoggedInReadonlyUseCaseContext,
+    AppTransactionalLoggedInReadOnlyUseCase,
+    readonly_use_case,
+)
 
 
 @use_case_args
@@ -40,7 +50,9 @@ class CalendarStreamFindResult(UseCaseResultBase):
 
 @readonly_use_case(WorkspaceFeature.CALENDAR)
 class CalendarStreamFindUseCase(
-    AppTransactionalLoggedInReadOnlyUseCase[CalendarStreamFindArgs, CalendarStreamFindResult]
+    AppTransactionalLoggedInReadOnlyUseCase[
+        CalendarStreamFindArgs, CalendarStreamFindResult
+    ]
 ):
     """Usecase for finding calendar streams."""
 

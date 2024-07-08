@@ -31,7 +31,7 @@ async def generic_crown_remover(
                 await _remover(linked_entity)
 
         if entity.is_safe_to_archive:
-            await uow.get_for(entity_type).remove(entity.ref_id)
+            await uow.get_for(entity.__class__).remove(entity.ref_id)
             if not isinstance(entity, LeafSupportEntity):
                 await progress_reporter.mark_removed(entity)
 

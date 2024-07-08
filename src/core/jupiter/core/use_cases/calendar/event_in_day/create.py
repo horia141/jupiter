@@ -97,8 +97,8 @@ class CalendarEventInDayCreateUseCase(
             duration_mins=args.duration_mins,
             timezone=user.timezone,
         )
-        new_time_event_in_day_block = await generic_creator(
-            uow, progress_reporter, new_time_event_in_day_block
+        new_time_event_in_day_block = await uow.get_for(TimeEventInDayBlock).create(
+            new_time_event_in_day_block
         )
 
         return CalendarEventInDayCreateResult(

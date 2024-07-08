@@ -4,9 +4,10 @@ import abc
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.time_events.time_event_namespace import TimeEventNamespace
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.base.entity_name import NOT_USED_NAME
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
-    LeafEntity,
+    LeafSupportEntity,
     ParentLink,
     create_entity_action,
     entity,
@@ -17,7 +18,7 @@ from jupiter.core.framework.repository import LeafEntityRepository
 
 
 @entity
-class TimeEventFullDaysBlock(LeafEntity):
+class TimeEventFullDaysBlock(LeafSupportEntity):
     """A full day block of time."""
 
     time_event_domain: ParentLink
@@ -42,6 +43,7 @@ class TimeEventFullDaysBlock(LeafEntity):
             raise InputValidationError("Duration must be at least 1 day.")
         return TimeEventFullDaysBlock._create(
             ctx,
+            name=NOT_USED_NAME,
             time_event_domain=ParentLink(time_event_domain_ref_id),
             namespace=namespace,
             source_entity_ref_id=source_entity_ref_id,

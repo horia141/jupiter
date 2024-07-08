@@ -43,7 +43,10 @@ class CalendarStreamRemoveUseCase(
         calendar_stream = await uow.get_for(CalendarStream).load_by_id(
             args.ref_id, allow_archived=True
         )
-        if not calendar_stream.archived and calendar_stream.source == CalendarStreamSource.USER:
+        if (
+            not calendar_stream.archived
+            and calendar_stream.source == CalendarStreamSource.USER
+        ):
             calendar_domain = await uow.get_for(CalendarDomain).load_by_parent(
                 workspace.ref_id
             )

@@ -2,8 +2,8 @@
 from jupiter.core.domain.concept.calendar.calendar_event_name import CalendarEventName
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
-from jupiter.core.domain.core.time_events.time_event_in_day_block import (
-    TimeEventInDayBlock,
+from jupiter.core.domain.core.time_events.time_event_full_days_block import (
+    TimeEventFullDaysBlock,
 )
 from jupiter.core.domain.core.time_events.time_event_namespace import TimeEventNamespace
 from jupiter.core.framework.base.entity_id import EntityId
@@ -31,7 +31,7 @@ class CalendarEventFullDays(LeafEntity):
     name: CalendarEventName
 
     time_event_full_day_block = OwnsOne(
-        TimeEventInDayBlock,
+        TimeEventFullDaysBlock,
         namespace=TimeEventNamespace.CALENDAR_FULL_DAY_BLOCK,
         source_entity_ref_id=IsRefId(),
     )

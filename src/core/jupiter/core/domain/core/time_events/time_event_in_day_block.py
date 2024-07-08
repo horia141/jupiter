@@ -9,7 +9,7 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.entity_name import NOT_USED_NAME
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
-    LeafEntity,
+    LeafSupportEntity,
     ParentLink,
     create_entity_action,
     entity,
@@ -20,7 +20,7 @@ from jupiter.core.framework.repository import LeafEntityRepository
 
 
 @entity
-class TimeEventInDayBlock(LeafEntity):
+class TimeEventInDayBlock(LeafSupportEntity):
     """Time event."""
 
     time_event_domain: ParentLink
@@ -46,7 +46,7 @@ class TimeEventInDayBlock(LeafEntity):
     ) -> "TimeEventInDayBlock":
         """Create a new time event."""
         if duration_mins < 1:
-            raise InputValidationError("Start time must be before end time.")
+            raise InputValidationError("Duration must be at least 1 minute.")
         return TimeEventInDayBlock._create(
             ctx,
             time_event_domain=ParentLink(time_event_domain_ref_id),
@@ -70,7 +70,7 @@ class TimeEventInDayBlock(LeafEntity):
     ) -> "TimeEventInDayBlock":
         """Update the time event."""
         if duration_mins < 1:
-            raise InputValidationError("Start time must be before end time.")
+            raise InputValidationError("Duration must be at least 1 minute.")
         return self._new_version(
             ctx,
             start_date=start_date,

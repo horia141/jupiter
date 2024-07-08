@@ -94,9 +94,9 @@ class CalendarEventFullDaysCreateUseCase(
             start_date=args.start_date,
             duration_days=args.duration_days,
         )
-        new_time_event_full_days_block = await generic_creator(
-            uow, progress_reporter, new_time_event_full_days_block
-        )
+        new_time_event_full_days_block = await uow.get_for(
+            TimeEventFullDaysBlock
+        ).create(new_time_event_full_days_block)
 
         return CalendarEventFullDaysCreateResult(
             new_calendar_event_full_days=new_calendar_event_full_days,
