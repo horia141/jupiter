@@ -159,7 +159,7 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
     def name(self) -> str:
         """The name of the command."""
         return inflection.dasherize(
-            inflection.underscore(self._use_case.__class__.__name__)
+            inflection.underscore(self.__class__.__name__)
         ).replace("-use-case", "")
 
     def description(self) -> str:
