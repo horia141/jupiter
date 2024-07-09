@@ -91,3 +91,12 @@ class TimeEventInDayBlockRepository(LeafEntityRepository[TimeEventInDayBlock], a
         allow_archived: bool = False,
     ) -> TimeEventInDayBlock:
         """Load a time event for a namespace."""
+
+    @abc.abstractmethod
+    async def find_all_between(
+        self,
+        parent_ref_id: EntityId,
+        start_date: ADate,
+        end_date: ADate,
+    ) -> list[TimeEventInDayBlock]:
+        """Find all time events between two dates."""

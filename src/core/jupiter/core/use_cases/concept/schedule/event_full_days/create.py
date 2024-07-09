@@ -89,7 +89,7 @@ class ScheduleEventFullDaysCreateUseCase(
         new_time_event_full_days_block = TimeEventFullDaysBlock.new_time_event(
             context.domain_context,
             time_event_domain_ref_id=time_event_domain.ref_id,
-            namespace=TimeEventNamespace.SCHEDULE_FULL_DAY_BLOCK,
+            namespace=TimeEventNamespace.SCHEDULE_FULL_DAYS_BLOCK,
             source_entity_ref_id=new_schedule_event_full_days.ref_id,
             start_date=args.start_date,
             duration_days=args.duration_days,

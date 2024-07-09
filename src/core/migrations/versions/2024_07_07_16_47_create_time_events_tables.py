@@ -86,6 +86,11 @@ def upgrade() -> None:
     )
     op.execute(
         """
+            CREATE INDEX ix_time_event_in_day_block_time_event_domain_ref_id_start_date ON time_event_in_day_block (time_event_domain_ref_id, start_date)
+        """
+    )
+    op.execute(
+        """
         CREATE TABLE time_event_in_day_block_event (
             owner_ref_id INTEGER NOT NULL,
             timestamp DATETIME NOT NULL,
@@ -115,6 +120,7 @@ def upgrade() -> None:
             source_entity_ref_id INTEGER NOT NULL,
             start_date DATE NOT NULL,
             duration_days INTEGER NOT NULL,
+            end_date DATE NOT NULL,
             PRIMARY KEY (ref_id),
             FOREIGN KEY (time_event_domain_ref_id) REFERENCES time_event_domain (ref_id)
         )
@@ -129,6 +135,16 @@ def upgrade() -> None:
         """
             CREATE INDEX ix_time_event_full_days_block_namespace_source_entity_ref_id ON time_event_full_days_block (namespace, source_entity_ref_id);
         """
+    )
+    op.execute(
+        """
+        CREATE INDEX ix_time_event_full_days_block_time_event_domain_ref_id_start_date ON time_event_full_days_block (time_event_domain_ref_id, start_date)
+    """
+    )
+    op.execute(
+        """
+        CREATE INDEX ix_time_event_full_days_block_time_event_domain_ref_id_end_date ON time_event_full_days_block (time_event_domain_ref_id, end_date)
+    """
     )
     op.execute(
         """

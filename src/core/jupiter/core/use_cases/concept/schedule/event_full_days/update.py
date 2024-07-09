@@ -59,7 +59,7 @@ class ScheduleEventFullDaysUpdateUseCase(
         await progress_reporter.mark_updated(schedule_event_full_days)
 
         time_event = await uow.get(TimeEventFullDaysBlockRepository).load_for_namespace(
-            namespace=TimeEventNamespace.SCHEDULE_FULL_DAY_BLOCK,
+            namespace=TimeEventNamespace.SCHEDULE_FULL_DAYS_BLOCK,
             source_entity_ref_id=schedule_event_full_days.ref_id,
         )
         time_event = time_event.update(

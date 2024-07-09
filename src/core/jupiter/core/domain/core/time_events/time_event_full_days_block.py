@@ -27,6 +27,7 @@ class TimeEventFullDaysBlock(LeafSupportEntity):
     source_entity_ref_id: EntityId
     start_date: ADate
     duration_days: int
+    end_date: ADate
 
     @staticmethod
     @create_entity_action
@@ -49,6 +50,7 @@ class TimeEventFullDaysBlock(LeafSupportEntity):
             source_entity_ref_id=source_entity_ref_id,
             start_date=start_date,
             duration_days=duration_days,
+            end_date=start_date.add_days(duration_days),
         )
 
     @update_entity_action
@@ -62,13 +64,11 @@ class TimeEventFullDaysBlock(LeafSupportEntity):
         if duration_days < 1:
             raise InputValidationError("Duration must be at least 1 day.")
         return self._new_version(
-            ctx, start_date=start_date, duration_days=duration_days
+            ctx,
+            start_date=start_date,
+            duration_days=duration_days,
+            end_date=start_date.add_days(duration_days),
         )
-
-    @property
-    def end_date(self) -> ADate:
-        """Get the end date."""
-        return self.start_date.add_days(self.duration_days)
 
 
 class TimeEventFullDaysBlockRepository(
@@ -83,3 +83,12 @@ class TimeEventFullDaysBlockRepository(
         source_entity_ref_id: EntityId,
     ) -> TimeEventFullDaysBlock:
         """Load a time event full days block for a namespace and source entity."""
+
+    @abc.abstractmethod
+    async def find_all_between(
+        self,
+        parent_ref_id: EntityId,
+        start_date: ADate,
+        end_date: ADate,
+    ) -> list[TimeEventFullDaysBlock]:
+        """Find all time events in a range."""

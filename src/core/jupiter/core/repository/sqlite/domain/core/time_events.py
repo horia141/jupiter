@@ -1,4 +1,5 @@
 """Sqltite implementation of the time events repository."""
+from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.time_events.time_event_full_days_block import (
     TimeEventFullDaysBlock,
     TimeEventFullDaysBlockRepository,
@@ -14,6 +15,7 @@ from jupiter.core.repository.sqlite.infra.repository import SqliteLeafEntityRepo
 from sqlalchemy import (
     select,
 )
+from sqlalchemy.sql import and_, or_
 
 
 class SqliteTimeEventInDayBlockRepository(
@@ -42,6 +44,20 @@ class SqliteTimeEventInDayBlockRepository(
             )
         return self._row_to_entity(result)
 
+    async def find_all_between(
+        self, parent_ref_id: EntityId, start_date: ADate, end_date: ADate
+    ) -> list[TimeEventInDayBlock]:
+        """Find all time events in day blocks between two dates."""
+        query_stmt = (
+            select(self._table)
+            .where(self._table.c.archived.is_(False))
+            .where(self._table.c.time_event_domain_ref_id == parent_ref_id.as_int())
+            .where(self._table.c.start_date >= start_date.the_date)
+            .where(self._table.c.start_date <= end_date.the_date)
+        )
+        result = await self._connection.execute(query_stmt)
+        return [self._row_to_entity(row) for row in result]
+
 
 class SqliteTimeEventFullDaysBlockRepository(
     SqliteLeafEntityRepository[TimeEventFullDaysBlock], TimeEventFullDaysBlockRepository
@@ -68,3 +84,27 @@ class SqliteTimeEventFullDaysBlockRepository(
                 f"Time event in full day block with namespace {namespace} and source {source_entity_ref_id} does not exist"
             )
         return self._row_to_entity(result)
+
+    async def find_all_between(
+        self, parent_ref_id: EntityId, start_date: ADate, end_date: ADate
+    ) -> list[TimeEventFullDaysBlock]:
+        """Find all time events in full day blocks between two dates."""
+        query_stmt = (
+            select(self._table)
+            .where(self._table.c.archived.is_(False))
+            .where(self._table.c.time_event_domain_ref_id == parent_ref_id.as_int())
+            .where(
+                or_(
+                    and_(
+                        self._table.c.start_date >= start_date.the_date,
+                        self._table.c.start_date <= end_date.the_date,
+                    ),
+                    and_(
+                        self._table.c.end_date >= start_date.the_date,
+                        self._table.c.end_date <= end_date.the_date,
+                    ),
+                )
+            )
+        )
+        result = await self._connection.execute(query_stmt)
+        return [self._row_to_entity(row) for row in result]
