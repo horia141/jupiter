@@ -86,6 +86,8 @@ class PersonEntry(UseCaseResultBase):
 class CalendarLoadForDateAndPeriodResult(UseCaseResultBase):
     """Result."""
 
+    right_now: ADate
+    period: RecurringTaskPeriod
     schedule_event_in_day_entries: list[ScheduleInDayEventEntry]
     schedule_event_full_days_entries: list[ScheduleFullDaysEventEntry]
     inbox_task_entries: list[InboxTaskEntry]
@@ -242,6 +244,8 @@ class CalendarLoadForDateAndPeriodUseCase(
         ]
 
         return CalendarLoadForDateAndPeriodResult(
+            right_now=args.right_now,
+            period=args.period,
             schedule_event_in_day_entries=schedule_event_in_day_entries,
             schedule_event_full_days_entries=schedule_event_full_days_entries,
             inbox_task_entries=inbox_task_entries,

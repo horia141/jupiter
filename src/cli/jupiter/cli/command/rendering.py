@@ -42,6 +42,7 @@ from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueA
 from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.core.recurring_task_skip_rule import RecurringTaskSkipRule
+from jupiter.core.domain.core.time_in_day import TimeInDay
 from jupiter.core.domain.core.timezone import Timezone
 from jupiter.core.domain.named_entity_tag import NamedEntityTag
 from jupiter.core.domain.sync_target import SyncTarget
@@ -385,7 +386,7 @@ def due_date_to_rich_text(due_date: ADate) -> Text:
 
 def date_with_label_to_rich_text(due_date: ADate, label: str) -> Text:
     """Transform a due date into text."""
-    return Text(f"{label} ").append(str(due_date), style="underline")
+    return Text(f"{label} ").append(str(due_date), style="blue underline")
 
 
 def project_to_rich_text(project_name: ProjectName) -> Text:
@@ -657,3 +658,8 @@ def time_plan_activity_feasability_to_rich_text(
 ) -> Text:
     """Transform a time plan feasaibility to rich text."""
     return Text(str(feasability.value).capitalize(), style="red")
+
+
+def time_in_day_to_rich_text(time_in_day: TimeInDay) -> Text:
+    """Transform a time in day to rich text."""
+    return Text(str(time_in_day), style="green")

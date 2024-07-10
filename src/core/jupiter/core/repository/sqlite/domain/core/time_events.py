@@ -95,13 +95,20 @@ class SqliteTimeEventFullDaysBlockRepository(
             .where(self._table.c.time_event_domain_ref_id == parent_ref_id.as_int())
             .where(
                 or_(
+                    # Start date is in range
                     and_(
                         self._table.c.start_date >= start_date.the_date,
                         self._table.c.start_date <= end_date.the_date,
                     ),
+                    # End date is in range
                     and_(
                         self._table.c.end_date >= start_date.the_date,
                         self._table.c.end_date <= end_date.the_date,
+                    ),
+                    # Start and end date span the range
+                    and_(
+                        self._table.c.start_date <= start_date.the_date,
+                        self._table.c.end_date >= end_date.the_date,
                     ),
                 )
             )
