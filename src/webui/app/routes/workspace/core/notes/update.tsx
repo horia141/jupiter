@@ -25,7 +25,7 @@ export async function action({ request }: ActionArgs) {
   const form = await parseForm(request, UpdateForEntityFormSchema);
 
   try {
-    await getLoggedInApiClient(session).core.noteUpdate({
+    await getLoggedInApiClient(session).notes.noteUpdate({
       ref_id: form.id,
       content: { should_change: true, value: form.content },
     });

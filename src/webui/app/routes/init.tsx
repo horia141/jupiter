@@ -59,6 +59,7 @@ const WorkspaceInitFormSchema = {
   authPasswordRepeat: z.string(),
   workspaceName: z.string(),
   workspaceRootProjectName: z.string(),
+  workspaceFirstScheduleStreamName: z.string(),
   workspaceFeatureFlags: z.array(z.nativeEnum(WorkspaceFeature)),
 };
 
@@ -76,6 +77,7 @@ export async function loader({ request }: LoaderArgs) {
     defaultUserFeatureFlags: result.default_user_feature_flags,
     defaultWorkspaceName: result.deafult_workspace_name,
     defaultRootProjectName: result.default_root_project_name,
+    defaultFirstScheduleStreamName: result.default_first_schedule_stream_name,
     workspaceFeatureFlagControls: result.workspace_feature_flag_controls,
     defaultWorkspaceFeatureFlags: result.default_workspace_feature_flags,
   });
@@ -87,7 +89,7 @@ export async function action({ request }: ActionArgs) {
   const form = await parseForm(request, WorkspaceInitFormSchema);
 
   try {
-    const result = await getGuestApiClient(session).init.init({
+    const result = await getGuestApiClient(session).application.init({
       user_email_address: form.userEmailAddress,
       user_name: form.userName,
       user_timezone: form.userTimezone,
@@ -96,6 +98,7 @@ export async function action({ request }: ActionArgs) {
       auth_password_repeat: form.authPasswordRepeat,
       workspace_name: form.workspaceName,
       workspace_root_project_name: form.workspaceRootProjectName,
+      workspace_first_schedule_stream_name: form.workspaceFirstScheduleStreamName,
       workspace_feature_flags: form.workspaceFeatureFlags,
     });
 
@@ -256,6 +259,20 @@ export default function WorkspaceInit() {
                       <FieldError
                         actionResult={actionData}
                         fieldName="/workspace_root_project_name"
+                      />
+                    </FormControl>
+
+                    <FormControl fullWidth>
+                      <InputLabel id="name">First Schedule Stream Name</InputLabel>
+                      <OutlinedInput
+                        label="First Schdule Stream Name"
+                        name="workspaceFirstScheduleStreamName"
+                        readOnly={!inputsEnabled}
+                        defaultValue={loaderData.defaultFirstScheduleStreamName}
+                      />
+                      <FieldError
+                        actionResult={actionData}
+                        fieldName="/workspace_first_schedule_stream_name"
                       />
                     </FormControl>
                   </Stack>

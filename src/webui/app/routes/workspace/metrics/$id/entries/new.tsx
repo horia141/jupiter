@@ -63,7 +63,7 @@ export async function action({ params, request }: ActionArgs) {
   try {
     const response = await getLoggedInApiClient(
       session
-    ).metrics.metricEntryCreate({
+    ).entry.metricEntryCreate({
       metric_ref_id: id,
       collection_time: form.collectionTime,
       value: form.value,

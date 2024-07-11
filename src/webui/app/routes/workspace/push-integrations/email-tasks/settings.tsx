@@ -51,7 +51,7 @@ export async function loader({ request }: LoaderArgs) {
 
   const emailTaskSettingsResponse = await getLoggedInApiClient(
     session
-  ).pushIntegrations.emailTaskLoadSettings({});
+  ).email.emailTaskLoadSettings({});
 
   return json({
     generationProject: emailTaskSettingsResponse.generation_project,
@@ -70,7 +70,7 @@ export async function action({ request }: ActionArgs) {
 
     await getLoggedInApiClient(
       session
-    ).pushIntegrations.emailTaskChangeGenerationProject({
+    ).email.emailTaskChangeGenerationProject({
       generation_project_ref_id: form.project,
     });
 

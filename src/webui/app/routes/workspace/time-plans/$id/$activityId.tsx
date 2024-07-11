@@ -73,7 +73,7 @@ export async function loader({ request, params }: LoaderArgs) {
   try {
     const result = await getLoggedInApiClient(
       session
-    ).timePlans.timePlanActivityLoad({
+    ).activity.timePlanActivityLoad({
       ref_id: activityId,
       allow_archived: true,
     });
@@ -106,7 +106,7 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (form.intent) {
       case "update": {
-        await getLoggedInApiClient(session).timePlans.timePlanActivityUpdate({
+        await getLoggedInApiClient(session).activity.timePlanActivityUpdate({
           ref_id: activityId,
           kind: {
             should_change: true,
@@ -122,7 +122,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).timePlans.timePlanActivityArchive({
+        await getLoggedInApiClient(session).activity.timePlanActivityArchive({
           ref_id: activityId,
         });
 

@@ -1,4 +1,6 @@
 """Command for loading a calendar."""
+from typing import cast
+
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     date_with_label_to_rich_text,
@@ -7,6 +9,7 @@ from jupiter.cli.command.rendering import (
     person_birthday_to_rich_text,
     time_in_day_to_rich_text,
 )
+from jupiter.core.domain.concept.persons.person_birthday import PersonBirthday
 from jupiter.core.use_cases.application.calendar.load_for_date_and_period import (
     CalendarLoadForDateAndPeriodResult,
     CalendarLoadForDateAndPeriodUseCase,
@@ -41,6 +44,27 @@ class CalendarShow(
 
         full_day_events_tree = Tree("Full Days Events", guide_style="bold bright_blue")
 
+        self.build_birthdays(result, full_day_events_tree)
+
+        self.build_schedule_full_days(result, full_day_events_tree)
+
+        rich_tree.add(full_day_events_tree)
+
+        # Process the in day events
+
+        in_day_events_tree = Tree("In Day Events", guide_style="bold bright_blue")
+
+        self.build_inbox_tasks(result, in_day_events_tree)
+
+        self.build_schedule_in_day(result, in_day_events_tree)
+
+        rich_tree.add(in_day_events_tree)
+
+        console.print(rich_tree)
+
+    def build_birthdays(
+        self, result: CalendarLoadForDateAndPeriodResult, full_day_events_tree: Tree
+    ) -> None:
         for person_entry in sorted(
             result.person_entries,
             key=lambda pe: (
@@ -53,10 +77,15 @@ class CalendarShow(
             person_text = Text("Birthday for ")
             person_text.append(entity_name_to_rich_text(person.name))
             person_text.append(" ")
-            person_text.append(person_birthday_to_rich_text(person.birthday))
+            person_text.append(
+                person_birthday_to_rich_text(cast(PersonBirthday, person.birthday))
+            )
 
             full_day_events_tree.add(person_text)
 
+    def build_schedule_full_days(
+        self, result: CalendarLoadForDateAndPeriodResult, full_day_events_tree: Tree
+    ) -> None:
         for schedule_event_full_days_entry in sorted(
             result.schedule_event_full_days_entries,
             key=lambda se: (se.time_event.start_date, se.time_event.end_date),
@@ -84,12 +113,9 @@ class CalendarShow(
 
             full_day_events_tree.add(schedule_event_full_days_text)
 
-        rich_tree.add(full_day_events_tree)
-
-        # Process the in day events
-
-        in_day_events_tree = Tree("In Day Events", guide_style="bold bright_blue")
-
+    def build_inbox_tasks(
+        self, result: CalendarLoadForDateAndPeriodResult, in_day_events_tree: Tree
+    ) -> None:
         for inbox_task_entry in sorted(
             result.inbox_task_entries,
             key=lambda it: (
@@ -105,15 +131,21 @@ class CalendarShow(
             inbox_task_text.append(entity_name_to_rich_text(inbox_task.name))
             inbox_task_text.append(" ")
             inbox_task_text.append(
-                date_with_label_to_rich_text(time_event.start_date, "from")
+                date_with_label_to_rich_text(time_event[0].start_date, "from")
             )
-            inbox_task_text.append(" ")
+            inbox_task_text.append(" at ")
             inbox_task_text.append(
-                date_with_label_to_rich_text(time_event.end_date, "to")
+                time_in_day_to_rich_text(time_event[0].start_time_in_day)
+            )
+            inbox_task_text.append(
+                f" that lasts for {time_event[0].duration_mins} minutes"
             )
 
             in_day_events_tree.add(inbox_task_text)
 
+    def build_schedule_in_day(
+        self, result: CalendarLoadForDateAndPeriodResult, in_day_events_tree: Tree
+    ) -> None:
         for schedule_event_in_day_entry in sorted(
             result.schedule_event_in_day_entries,
             key=lambda se: (
@@ -148,7 +180,3 @@ class CalendarShow(
             )
 
             in_day_events_tree.add(schedule_event_in_day_text)
-
-        rich_tree.add(in_day_events_tree)
-
-        console.print(rich_tree)

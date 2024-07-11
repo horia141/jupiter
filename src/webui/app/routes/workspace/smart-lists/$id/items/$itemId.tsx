@@ -61,7 +61,7 @@ export async function loader({ request, params }: LoaderArgs) {
   try {
     const result = await getLoggedInApiClient(
       session
-    ).smartLists.smartListItemLoad({
+    ).item.smartListItemLoad({
       ref_id: itemId,
       allow_archived: true,
     });
@@ -94,7 +94,7 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (form.intent) {
       case "update": {
-        await getLoggedInApiClient(session).smartLists.smartListItemUpdate({
+        await getLoggedInApiClient(session).item.smartListItemUpdate({
           ref_id: itemId,
           name: {
             should_change: true,
@@ -118,7 +118,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "create-note": {
-        await getLoggedInApiClient(session).core.noteCreate({
+        await getLoggedInApiClient(session).notes.noteCreate({
           domain: NoteDomain.SMART_LIST_ITEM,
           source_entity_ref_id: itemId,
           content: [],
@@ -128,7 +128,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).smartLists.smartListItemArchive({
+        await getLoggedInApiClient(session).item.smartListItemArchive({
           ref_id: itemId,
         });
 

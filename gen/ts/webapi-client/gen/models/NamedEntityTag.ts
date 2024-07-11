@@ -6,10 +6,14 @@
  * A tag for all known entities.
  */
 export enum NamedEntityTag {
+    SCORE_LOG_ENTRY = 'ScoreLogEntry',
     INBOX_TASK = 'InboxTask',
     WORKING_MEM = 'WorkingMem',
     TIME_PLAN = 'TimePlan',
     TIME_PLAN_ACTIVITY = 'TimePlanActivity',
+    SCHEDULE_STREAM = 'ScheduleStream',
+    SCHEDULE_EVENT_IN_DAY = 'ScheduleEventInDay',
+    SCHEDULE_EVENT_FULL_DAYS = 'ScheduleEventFullDays',
     HABIT = 'Habit',
     CHORE = 'Chore',
     BIG_PLAN = 'BigPlan',

@@ -80,7 +80,7 @@ export async function loader({ request }: LoaderArgs) {
   });
 
   try {
-    const reportResponse = await getLoggedInApiClient(session).report.report({
+    const reportResponse = await getLoggedInApiClient(session).application.report({
       today: today,
       period: period,
       breakdown_period:

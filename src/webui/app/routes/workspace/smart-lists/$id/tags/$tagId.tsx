@@ -49,7 +49,7 @@ export async function loader({ request, params }: LoaderArgs) {
   try {
     const result = await getLoggedInApiClient(
       session
-    ).smartLists.smartListTagLoad({
+    ).tag.smartListTagLoad({
       ref_id: tagId,
       allow_archived: true,
     });
@@ -77,7 +77,7 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (form.intent) {
       case "update": {
-        await getLoggedInApiClient(session).smartLists.smartListTagUpdate({
+        await getLoggedInApiClient(session).tag.smartListTagUpdate({
           ref_id: tagId,
           tag_name: {
             should_change: true,
@@ -89,7 +89,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).smartLists.smartListTagArchive({
+        await getLoggedInApiClient(session).tag.smartListTagArchive({
           ref_id: id,
         });
 

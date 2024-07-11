@@ -205,11 +205,15 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
         return self._use_case.__doc__ or ""
 
     def _build_tag(self) -> str:
-        return inflection.dasherize(
-            self._use_case.__module__[len(self._root_module.__name__) + 1 :].split(".")[
-                0
-            ]
-        )
+        some_modules = self._use_case.__module__[
+            len(self._root_module.__name__) + 1 :
+        ].split(".")
+        if len(some_modules) == 1:
+            the_one_module = some_modules[0]
+        else:
+            the_one_module = some_modules[-2]
+        the_one_tag = inflection.dasherize(the_one_module)
+        return the_one_tag
 
     @abc.abstractmethod
     def attach_route(self, app: FastAPI) -> None:

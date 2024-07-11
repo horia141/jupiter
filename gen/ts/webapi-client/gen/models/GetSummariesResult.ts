@@ -9,6 +9,7 @@ import type { InboxTaskSummary } from './InboxTaskSummary';
 import type { MetricSummary } from './MetricSummary';
 import type { PersonSummary } from './PersonSummary';
 import type { ProjectSummary } from './ProjectSummary';
+import type { ScheduleStreamSummary } from './ScheduleStreamSummary';
 import type { SmartListSummary } from './SmartListSummary';
 import type { VacationSummary } from './VacationSummary';
 
@@ -17,6 +18,7 @@ import type { VacationSummary } from './VacationSummary';
  */
 export type GetSummariesResult = {
     vacations?: (Array<VacationSummary> | null);
+    schedule_streams?: (Array<ScheduleStreamSummary> | null);
     root_project?: (ProjectSummary | null);
     projects?: (Array<ProjectSummary> | null);
     inbox_tasks?: (Array<InboxTaskSummary> | null);

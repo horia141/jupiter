@@ -41,6 +41,13 @@ export function EntitySummaryLink({
   }
 
   switch (summary.entity_tag) {
+    case NamedEntityTag.SCORE_LOG_ENTRY:
+      return (
+        <EntityLink to={"/nowhere"} block>
+          <SlimChip label={"Score Log Entry"} color={"primary"} />
+          {commonSequence}
+        </EntityLink>
+      );
     case NamedEntityTag.INBOX_TASK:
       return (
         <EntityLink to={`/workspace/inbox-tasks/${summary.ref_id}`}>
@@ -68,6 +75,31 @@ export function EntitySummaryLink({
           to={`/workspace/time-plans/${summary.parent_ref_id}/activities/${summary.ref_id}`}
         >
           <SlimChip label={"Time Plan Acticity"} color={"primary"} />
+          {commonSequence}
+        </EntityLink>
+      );
+    case NamedEntityTag.SCHEDULE_STREAM:
+      return (
+        <EntityLink to={`/workspace/calendar/schedule/stream/${summary.ref_id}`}>
+          <SlimChip label={"Schedule Stream"} color={"primary"} />
+          {commonSequence}
+        </EntityLink>
+      );
+    case NamedEntityTag.SCHEDULE_EVENT_IN_DAY:
+      return (
+        <EntityLink
+          to={`/workspace/calendar/schedule/schedule/event-in-day/${summary.ref_id}`}
+        >
+          <SlimChip label={"Schedule Event In Day"} color={"primary"} />
+          {commonSequence}
+        </EntityLink>
+      );
+    case NamedEntityTag.SCHEDULE_EVENT_FULL_DAYS:
+      return (
+        <EntityLink
+          to={`/workspace/calendar/schedule/schedule/event-full-days/${summary.ref_id}`}
+        >
+          <SlimChip label={"Schedule Event Full Days"} color={"primary"} />
           {commonSequence}
         </EntityLink>
       );

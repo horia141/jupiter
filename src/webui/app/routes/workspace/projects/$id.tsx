@@ -122,7 +122,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "create-note": {
-        await getLoggedInApiClient(session).core.noteCreate({
+        await getLoggedInApiClient(session).notes.noteCreate({
           domain: NoteDomain.PROJECT,
           source_entity_ref_id: id,
           content: [],

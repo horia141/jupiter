@@ -9,6 +9,7 @@ export enum DocsHelpSubject {
   INBOX_TASKS,
   WORKING_MEM,
   TIME_PLANS,
+  SCHEDULE,
   HABITS,
   CHORES,
   BIG_PLANS,
@@ -62,6 +63,8 @@ function subjectToUrl(subject: DocsHelpSubject) {
       return "concepts/working-mem/";
     case DocsHelpSubject.TIME_PLANS:
       return "concepts/time-plans/";
+    case DocsHelpSubject.SCHEDULE:
+      return "concepts/schedule/";
     case DocsHelpSubject.HABITS:
       return "concepts/habits/";
     case DocsHelpSubject.CHORES:

@@ -21,6 +21,7 @@ class InitArgs:
         auth_password (str): A new password in plain text, as received from a user.
         auth_password_repeat (str): A new password in plain text, as received from a user.
         workspace_name (str): The workspace name.
+        workspace_first_schedule_stream_name (str): The name of a schedule stream.
         workspace_root_project_name (str): The project name.
         workspace_feature_flags (List[WorkspaceFeature]):
     """
@@ -32,6 +33,7 @@ class InitArgs:
     auth_password: str
     auth_password_repeat: str
     workspace_name: str
+    workspace_first_schedule_stream_name: str
     workspace_root_project_name: str
     workspace_feature_flags: List[WorkspaceFeature]
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -54,6 +56,8 @@ class InitArgs:
 
         workspace_name = self.workspace_name
 
+        workspace_first_schedule_stream_name = self.workspace_first_schedule_stream_name
+
         workspace_root_project_name = self.workspace_root_project_name
 
         workspace_feature_flags = []
@@ -72,6 +76,7 @@ class InitArgs:
                 "auth_password": auth_password,
                 "auth_password_repeat": auth_password_repeat,
                 "workspace_name": workspace_name,
+                "workspace_first_schedule_stream_name": workspace_first_schedule_stream_name,
                 "workspace_root_project_name": workspace_root_project_name,
                 "workspace_feature_flags": workspace_feature_flags,
             }
@@ -101,6 +106,8 @@ class InitArgs:
 
         workspace_name = d.pop("workspace_name")
 
+        workspace_first_schedule_stream_name = d.pop("workspace_first_schedule_stream_name")
+
         workspace_root_project_name = d.pop("workspace_root_project_name")
 
         workspace_feature_flags = []
@@ -118,6 +125,7 @@ class InitArgs:
             auth_password=auth_password,
             auth_password_repeat=auth_password_repeat,
             workspace_name=workspace_name,
+            workspace_first_schedule_stream_name=workspace_first_schedule_stream_name,
             workspace_root_project_name=workspace_root_project_name,
             workspace_feature_flags=workspace_feature_flags,
         )

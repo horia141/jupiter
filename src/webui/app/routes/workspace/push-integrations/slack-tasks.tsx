@@ -35,7 +35,7 @@ export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const response = await getLoggedInApiClient(
     session
-  ).pushIntegrations.slackTaskFind({
+  ).slack.slackTaskFind({
     allow_archived: false,
     include_inbox_tasks: false,
   });

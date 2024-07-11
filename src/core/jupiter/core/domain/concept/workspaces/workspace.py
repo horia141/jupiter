@@ -156,6 +156,21 @@ class Workspace(RootEntity):
                 and self.is_feature_available(WorkspaceFeature.TIME_PLANS)
             ):
                 inferred_entity_tags.append(entity_tag)
+            elif (
+                entity_tag is NamedEntityTag.SCHEDULE_STREAM
+                and self.is_feature_available(WorkspaceFeature.SCHEDULE)
+            ):
+                inferred_entity_tags.append(entity_tag)
+            elif (
+                entity_tag is NamedEntityTag.SCHEDULE_EVENT_IN_DAY
+                and self.is_feature_available(WorkspaceFeature.SCHEDULE)
+            ):
+                inferred_entity_tags.append(entity_tag)
+            elif (
+                entity_tag is NamedEntityTag.SCHEDULE_EVENT_FULL_DAYS_BLOCK
+                and self.is_feature_available(WorkspaceFeature.SCHEDULE)
+            ):
+                inferred_entity_tags.append(entity_tag)
             elif entity_tag is NamedEntityTag.HABIT and self.is_feature_available(
                 WorkspaceFeature.HABITS
             ):
@@ -294,6 +309,10 @@ class Workspace(RootEntity):
                 inferred_sync_targets.append(sync_target)
             elif sync_target is SyncTarget.TIME_PLANS and self.is_feature_available(
                 WorkspaceFeature.TIME_PLANS
+            ):
+                inferred_sync_targets.append(sync_target)
+            elif sync_target is SyncTarget.SCHEDULE and self.is_feature_available(
+                WorkspaceFeature.SCHEDULE
             ):
                 inferred_sync_targets.append(sync_target)
             elif sync_target is SyncTarget.HABITS and self.is_feature_available(

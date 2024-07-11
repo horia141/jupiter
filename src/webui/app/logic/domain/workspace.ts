@@ -39,6 +39,21 @@ export function inferEntityTagsForEnabledFeatures(
     ) {
       inferredEntityTags.push(entityTag);
     } else if (
+      entityTag === NamedEntityTag.SCHEDULE_STREAM &&
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.SCHEDULE)
+    ) {
+      inferredEntityTags.push(entityTag);
+    } else if (
+      entityTag === NamedEntityTag.SCHEDULE_EVENT_IN_DAY &&
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.SCHEDULE)
+    ) {
+      inferredEntityTags.push(entityTag);
+    } else if (
+      entityTag === NamedEntityTag.SCHEDULE_EVENT_FULL_DAYS &&
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.SCHEDULE)
+    ) {
+      inferredEntityTags.push(entityTag);
+    } else if (
       entityTag === NamedEntityTag.HABIT &&
       isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.HABITS)
     ) {
@@ -206,6 +221,11 @@ export function inferSyncTargetsForEnabledFeatures(
     } else if (
       syncTarget === SyncTarget.TIME_PLANS &&
       isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.TIME_PLANS)
+    ) {
+      inferredSyncTargets.push(syncTarget);
+    } else if (
+      syncTarget === SyncTarget.SCHEDULE &&
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.SCHEDULE)
     ) {
       inferredSyncTargets.push(syncTarget);
     } else if (

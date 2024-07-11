@@ -61,7 +61,7 @@ export async function action({ request, params }: ActionArgs) {
   try {
     const response = await getLoggedInApiClient(
       session
-    ).smartLists.smartListTagCreate({
+    ).tag.smartListTagCreate({
       smart_list_ref_id: id,
       tag_name: form.name,
     });
