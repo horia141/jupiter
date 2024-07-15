@@ -47,9 +47,7 @@ export async function loader({ request, params }: LoaderArgs) {
   const { tagId } = parseParams(params, ParamsSchema);
 
   try {
-    const result = await getLoggedInApiClient(
-      session
-    ).tag.smartListTagLoad({
+    const result = await getLoggedInApiClient(session).tag.smartListTagLoad({
       ref_id: tagId,
       allow_archived: true,
     });

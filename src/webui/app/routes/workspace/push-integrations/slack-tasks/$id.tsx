@@ -79,9 +79,7 @@ export async function loader({ request, params }: LoaderArgs) {
   const { id } = parseParams(params, ParamsSchema);
 
   try {
-    const response = await getLoggedInApiClient(
-      session
-    ).slack.slackTaskLoad({
+    const response = await getLoggedInApiClient(session).slack.slackTaskLoad({
       ref_id: id,
       allow_archived: true,
     });

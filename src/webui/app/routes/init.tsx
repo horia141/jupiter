@@ -98,7 +98,8 @@ export async function action({ request }: ActionArgs) {
       auth_password_repeat: form.authPasswordRepeat,
       workspace_name: form.workspaceName,
       workspace_root_project_name: form.workspaceRootProjectName,
-      workspace_first_schedule_stream_name: form.workspaceFirstScheduleStreamName,
+      workspace_first_schedule_stream_name:
+        form.workspaceFirstScheduleStreamName,
       workspace_feature_flags: form.workspaceFeatureFlags,
     });
 
@@ -263,7 +264,9 @@ export default function WorkspaceInit() {
                     </FormControl>
 
                     <FormControl fullWidth>
-                      <InputLabel id="name">First Schedule Stream Name</InputLabel>
+                      <InputLabel id="name">
+                        First Schedule Stream Name
+                      </InputLabel>
                       <OutlinedInput
                         label="First Schdule Stream Name"
                         name="workspaceFirstScheduleStreamName"

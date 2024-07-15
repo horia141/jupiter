@@ -119,6 +119,22 @@ export default function Sidebar(props: SidebarProps) {
 
             {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
+              WorkspaceFeature.SCHEDULE
+            ) && (
+              <ListItem disablePadding>
+                <ListItemButton
+                  to="/workspace/calendar"
+                  component={Link}
+                  onClick={onClickNavigation}
+                >
+                  <ListItemIcon>📅</ListItemIcon>
+                  <ListItemText primary="Calendar" />
+                </ListItemButton>
+              </ListItem>
+            )}
+
+            {isWorkspaceFeatureAvailable(
+              props.topLevelInfo.workspace,
               WorkspaceFeature.HABITS
             ) && (
               <ListItem disablePadding>

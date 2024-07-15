@@ -68,9 +68,7 @@ export async function action({ request }: ActionArgs) {
       throw new Error("Invalid application state");
     }
 
-    await getLoggedInApiClient(
-      session
-    ).email.emailTaskChangeGenerationProject({
+    await getLoggedInApiClient(session).email.emailTaskChangeGenerationProject({
       generation_project_ref_id: form.project,
     });
 

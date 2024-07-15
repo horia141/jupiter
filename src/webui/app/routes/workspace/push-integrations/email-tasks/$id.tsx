@@ -81,9 +81,7 @@ export async function loader({ request, params }: LoaderArgs) {
   const { id } = parseParams(params, ParamsSchema);
 
   try {
-    const response = await getLoggedInApiClient(
-      session
-    ).email.emailTaskLoad({
+    const response = await getLoggedInApiClient(session).email.emailTaskLoad({
       ref_id: id,
       allow_archived: true,
     });

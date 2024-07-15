@@ -59,9 +59,7 @@ export async function loader({ request, params }: LoaderArgs) {
   const { itemId } = parseParams(params, ParamsSchema);
 
   try {
-    const result = await getLoggedInApiClient(
-      session
-    ).item.smartListItemLoad({
+    const result = await getLoggedInApiClient(session).item.smartListItemLoad({
       ref_id: itemId,
       allow_archived: true,
     });

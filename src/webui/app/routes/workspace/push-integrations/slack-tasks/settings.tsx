@@ -68,9 +68,7 @@ export async function action({ request }: ActionArgs) {
       throw new Error("Invalid application state");
     }
 
-    await getLoggedInApiClient(
-      session
-    ).slack.slackTaskChangeGenerationProject({
+    await getLoggedInApiClient(session).slack.slackTaskChangeGenerationProject({
       generation_project_ref_id: form.project,
     });
 

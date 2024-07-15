@@ -80,7 +80,9 @@ export function EntitySummaryLink({
       );
     case NamedEntityTag.SCHEDULE_STREAM:
       return (
-        <EntityLink to={`/workspace/calendar/schedule/stream/${summary.ref_id}`}>
+        <EntityLink
+          to={`/workspace/calendar/schedule/stream/${summary.ref_id}`}
+        >
           <SlimChip label={"Schedule Stream"} color={"primary"} />
           {commonSequence}
         </EntityLink>
@@ -88,7 +90,7 @@ export function EntitySummaryLink({
     case NamedEntityTag.SCHEDULE_EVENT_IN_DAY:
       return (
         <EntityLink
-          to={`/workspace/calendar/schedule/schedule/event-in-day/${summary.ref_id}`}
+          to={`/workspace/calendar/schedule/event-in-day/${summary.ref_id}`}
         >
           <SlimChip label={"Schedule Event In Day"} color={"primary"} />
           {commonSequence}
@@ -97,7 +99,7 @@ export function EntitySummaryLink({
     case NamedEntityTag.SCHEDULE_EVENT_FULL_DAYS:
       return (
         <EntityLink
-          to={`/workspace/calendar/schedule/schedule/event-full-days/${summary.ref_id}`}
+          to={`/workspace/calendar/schedule/event-full-days/${summary.ref_id}`}
         >
           <SlimChip label={"Schedule Event Full Days"} color={"primary"} />
           {commonSequence}
