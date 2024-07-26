@@ -30,10 +30,10 @@ import type { TopLevelInfo } from "~/top-level-context";
 
 interface NavSingleDesc {
   kind: "nav-single";
-  text: string;
+  text?: string;
+  icon?: JSX.Element;
   link: string;
   highlight?: boolean;
-  icon?: JSX.Element;
   gatedOn?: WorkspaceFeature;
 }
 
@@ -50,10 +50,10 @@ interface ActionExtraHiddenInput {
 
 interface ActionSingleDesc {
   kind: "action-single";
-  text: string;
+  text?: string;
+  icon?: JSX.Element;
   value: string;
   highlight?: boolean;
-  icon?: JSX.Element;
   gatedOn?: WorkspaceFeature;
   extraHiddenInputs?: ActionExtraHiddenInput;
 }
@@ -371,6 +371,10 @@ function NavSingleView(props: NavSingleViewProps) {
     }
   }
 
+  if (props.action.text === undefined && props.action.icon === undefined) {
+    throw new Error("A nav needs to have either a text or an icon");
+  }
+
   return (
     <Button
       variant="outlined"
@@ -411,6 +415,10 @@ function NavMultipleSpreadView(props: NavMultipleViewProps) {
               <React.Fragment key={`nav-multiple-${index}`}></React.Fragment>
             );
           }
+        }
+
+        if (nav.text === undefined && nav.icon === undefined) {
+          throw new Error("An nav needs to have either a text or an icon");
         }
 
         return (
@@ -545,6 +553,10 @@ function ActionSingleView(props: ActionSingleViewProps) {
     }
   }
 
+  if (props.action.text === undefined && props.action.icon === undefined) {
+    throw new Error("An action needs to have either a text or an icon");
+  }
+
   return (
     <Button
       variant={props.action.highlight ? "contained" : "outlined"}
@@ -586,6 +598,10 @@ function ActionMultipleSpreadView(props: ActionMultipleViewProps) {
               <React.Fragment key={`action-multiple-${index}`}></React.Fragment>
             );
           }
+        }
+
+        if (action.text === undefined && action.icon === undefined) {
+          throw new Error("An action needs to have either a text or an icon");
         }
 
         return (

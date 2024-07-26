@@ -26,6 +26,7 @@ const SMALL_SCREEN_ANIMATION_END = "100vw";
 interface TrunkPanelProps {
   createLocation?: string;
   extraControls?: JSX.Element[];
+  actions?: JSX.Element;
   returnLocation: string;
 }
 
@@ -155,6 +156,8 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
                 controls={props.extraControls}
               />
             )}
+
+            {props.actions}
 
             <IconButton sx={{ marginLeft: "auto" }}>
               <Link to={props.returnLocation}>
