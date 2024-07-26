@@ -41,6 +41,13 @@ export function EntitySummaryLink({
   }
 
   switch (summary.entity_tag) {
+    case NamedEntityTag.SCORE_LOG_ENTRY:
+      return (
+        <EntityLink to={`/not-valid}`}>
+          <SlimChip label={"Score Log Entry"} color={"primary"} />
+          {commonSequence}
+        </EntityLink>
+      );
     case NamedEntityTag.INBOX_TASK:
       return (
         <EntityLink to={`/workspace/inbox-tasks/${summary.ref_id}`}>

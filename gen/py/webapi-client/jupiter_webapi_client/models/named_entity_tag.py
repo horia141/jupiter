@@ -13,6 +13,7 @@ class NamedEntityTag(str, Enum):
     METRICENTRY = "MetricEntry"
     PERSON = "Person"
     PROJECT = "Project"
+    SCORELOGENTRY = "ScoreLogEntry"
     SLACKTASK = "SlackTask"
     SMARTLIST = "SmartList"
     SMARTLISTITEM = "SmartListItem"

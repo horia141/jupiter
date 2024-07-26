@@ -6,6 +6,7 @@
  * A tag for all known entities.
  */
 export enum NamedEntityTag {
+    SCORE_LOG_ENTRY = 'ScoreLogEntry',
     INBOX_TASK = 'InboxTask',
     WORKING_MEM = 'WorkingMem',
     TIME_PLAN = 'TimePlan',

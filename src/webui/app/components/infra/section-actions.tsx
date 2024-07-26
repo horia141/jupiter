@@ -55,14 +55,14 @@ interface ActionSingleDesc {
   highlight?: boolean;
   icon?: JSX.Element;
   gatedOn?: WorkspaceFeature;
-  extraHiddenInputs?: ActionExtraHiddenInput;
+  extraHiddenInputs?: ActionExtraHiddenInput[];
 }
 
 interface ActionMultipleDesc {
   kind: "action-multiple";
   approach: "spread" | "compact";
   actions: Array<ActionSingleDesc>;
-  extraHiddenInputs?: ActionExtraHiddenInput;
+  extraHiddenInputs?: ActionExtraHiddenInput[];
 }
 
 interface FilterOption<K> {
@@ -845,9 +845,9 @@ function collectExtraHiddenInputs(
   const extraHiddenInputs = [];
   for (const action of actions) {
     if (action.kind === "action-single" && action.extraHiddenInputs) {
-      extraHiddenInputs.push(action.extraHiddenInputs);
+      extraHiddenInputs.push(...action.extraHiddenInputs);
     } else if (action.kind === "action-multiple" && action.extraHiddenInputs) {
-      extraHiddenInputs.push(action.extraHiddenInputs);
+      extraHiddenInputs.push(...action.extraHiddenInputs);
     }
   }
 
