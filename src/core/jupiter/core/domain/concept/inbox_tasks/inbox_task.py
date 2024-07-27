@@ -390,7 +390,7 @@ class InboxTask(LeafEntity):
             actionable_date=actionable_date,
             due_date=due_date,
             project_ref_id=project_ref_id,
-            working_memmm_ref_id=None,
+            working_mem_ref_id=None,
             habit_ref_id=None,
             chore_ref_id=None,
             big_plan_ref_id=None,

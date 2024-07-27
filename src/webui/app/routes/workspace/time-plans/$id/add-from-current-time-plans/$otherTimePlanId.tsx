@@ -238,10 +238,12 @@ export default function TimePlanAddFromCurrentTimePlans() {
                     value: "add-and-override",
                   }),
                 ],
-                extraHiddenInputs: {
-                  name: "targetActivitiesRefIds",
-                  value: Array.from(targetActivitiesRefIds).join(","),
-                },
+                extraHiddenInputs: [
+                  {
+                    name: "targetActivitiesRefIds",
+                    value: Array.from(targetActivitiesRefIds).join(","),
+                  },
+                ],
               }),
             ]}
           />

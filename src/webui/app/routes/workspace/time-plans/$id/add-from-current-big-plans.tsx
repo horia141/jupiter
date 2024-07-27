@@ -236,10 +236,12 @@ export default function TimePlanAddFromCurrentBigPlans() {
                     value: "add-and-override",
                   }),
                 ],
-                extraHiddenInputs: {
-                  name: "targetBigPlanRefIds",
-                  value: Array.from(targetBigPlanRefIds).join(","),
-                },
+                extraHiddenInputs: [
+                  {
+                    name: "targetBigPlanRefIds",
+                    value: Array.from(targetBigPlanRefIds).join(","),
+                  },
+                ],
               }),
               FilterFewOptions(
                 selectedView,
