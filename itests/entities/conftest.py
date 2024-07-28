@@ -10,7 +10,7 @@ from jupiter.core.domain.features import (
     BASIC_WORKSPACE_FEATURE_FLAGS_ARR,
 )
 from jupiter_webapi_client import Client
-from jupiter_webapi_client.api.init.init import sync_detailed as init_sync
+from jupiter_webapi_client.api.application.init import sync_detailed as init_sync
 from jupiter_webapi_client.api.test_helper.clear_all import (
     sync_detailed as clear_all_sync,
 )
@@ -63,6 +63,7 @@ def new_user_and_workspace(
             auth_password_repeat=new_user.password,
             workspace_name="Test Workspace",
             workspace_root_project_name="Root Project",
+            workspace_first_schedule_stream_name="Life",
             workspace_feature_flags=BASIC_WORKSPACE_FEATURE_FLAGS_ARR,
         ),
     )

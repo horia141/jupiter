@@ -1,7 +1,10 @@
 import { RecurringTaskPeriod } from "@jupiter/webapi-client";
-import { Button, ButtonGroup } from "@mui/material";
-import { json, LoaderArgs, redirect } from "@remix-run/node";
-import { Outlet, ShouldRevalidateFunction, useParams, useTransition } from "@remix-run/react";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import type { LoaderArgs } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { Outlet, useTransition } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";
 import { useContext } from "react";
@@ -12,7 +15,13 @@ import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
-import { NavMultipleCompact, NavMultipleSpread, NavSingle, SectionActions } from "~/components/infra/section-actions";
+import {
+  NavMultipleCompact,
+  NavMultipleSpread,
+  NavSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
+import { periodName } from "~/logic/domain/period";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
@@ -21,8 +30,6 @@ import {
 } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 
 export const handle = {
   displayType: DisplayType.TRUNK,
@@ -53,11 +60,11 @@ export async function loader({ request }: LoaderArgs) {
     period: query.period,
   });
 
-  const nextInterval = DateTime.now();
-
   return json({
     today: query.today as string,
     period: query.period as RecurringTaskPeriod,
+    prevPeriodStartDate: response.prev_period_start_date,
+    nextPeriodStartDate: response.next_period_start_date,
     scheduleEventInDayEntries: response.schedule_event_in_day_entries,
     scheduleEventFullDayEntries: response.schedule_event_full_days_entries,
     inboxTaskEntries: response.inbox_task_entries,
@@ -71,7 +78,7 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function Schedules() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const transition = useTransition();
-  
+
   const topLevelInfo = useContext(TopLevelInfoContext);
 
   const inputsEnabled = transition.state === "idle";
@@ -79,63 +86,94 @@ export default function Schedules() {
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
 
   return (
-    <TrunkPanel 
-        key="calendar"
-        createLocation="/workspace/calendar/schedule/event-in-day/new"
-        actions={
-          <SectionActions
-            id="calendar"
-            topLevelInfo={topLevelInfo}
-            inputsEnabled={inputsEnabled}
-            actions={[
-                NavMultipleCompact({
-                  navs: [
-                    NavSingle({
-                      text: "New Event In Day",
-                      link: `/workspace/calendar/schedule/event-in-day/new`
-                    }),
-                    NavSingle({
-                      text: "New Event Full Days",
-                      link: `/workspace/calendar/schedule/event-full-days/new`
-                    }),
-                    NavSingle({
-                      text: "New Calendar Stream",
-                      link: `/workspace/calendar/schedule/stream/new`
-                    }),
-                    NavSingle({
-                      text: "View Calendar Streams",
-                      link: `/workspace/calendar/schedule/stream`
-                    })
-                  ]
+    <TrunkPanel
+      key="calendar"
+      createLocation="/workspace/calendar/schedule/event-in-day/new"
+      actions={
+        <SectionActions
+          id="calendar"
+          topLevelInfo={topLevelInfo}
+          inputsEnabled={inputsEnabled}
+          actions={[
+            NavMultipleCompact({
+              navs: [
+                NavSingle({
+                  text: "New Event In Day",
+                  link: `/workspace/calendar/schedule/event-in-day/new`,
                 }),
-              NavMultipleSpread({
-                navs: [
-                  NavSingle({
-                    text: "Today",
-                    link: `/workspace/calendar?today=${DateTime.now().toISODate()}&period=${loaderData.period}`
-                  }),
-                  NavSingle({
-                    icon: <ArrowBackIcon />,
-                    link: `/workspace/calendar?today=${DateTime.now().toISODate()}&period=${loaderData.period}`
-                  }),
-                  NavSingle({
-                    icon: <ArrowForwardIcon />,
-                    link: `/workspace/calendar?today=${DateTime.now().toISODate()}&period=${loaderData.period}`
-                  }),
-                ]
-              })
-            ]}
-            /> 
-        }
-        returnLocation="/workspace">
-        For {loaderData.today} and {loaderData.period}
+                NavSingle({
+                  text: "New Event Full Days",
+                  link: `/workspace/calendar/schedule/event-full-days/new`,
+                }),
+                NavSingle({
+                  text: "New Calendar Stream",
+                  link: `/workspace/calendar/schedule/stream/new`,
+                }),
+                NavSingle({
+                  text: "View Calendar Streams",
+                  link: `/workspace/calendar/schedule/stream`,
+                }),
+              ],
+            }),
+            NavMultipleSpread({
+              navs: [
+                NavSingle({
+                  text: "Today",
+                  link: `/workspace/calendar?today=${DateTime.now().toISODate()}&period=${
+                    loaderData.period
+                  }`,
+                }),
+                NavSingle({
+                  text: "Prev",
+                  icon: <ArrowBackIcon />,
+                  link: `/workspace/calendar?today=${loaderData.prevPeriodStartDate}&period=${loaderData.period}`,
+                }),
+                NavSingle({
+                  text: "Next",
+                  icon: <ArrowForwardIcon />,
+                  link: `/workspace/calendar?today=${loaderData.nextPeriodStartDate}&period=${loaderData.period}`,
+                }),
+              ],
+            }),
+            NavMultipleCompact({
+              navs: [
+                NavSingle({
+                  text: periodName(RecurringTaskPeriod.DAILY),
+                  highlight: loaderData.period === RecurringTaskPeriod.DAILY,
+                  link: `/workspace/calendar?today=${loaderData.today}&period=${RecurringTaskPeriod.DAILY}`,
+                }),
+                NavSingle({
+                  text: periodName(RecurringTaskPeriod.WEEKLY),
+                  highlight: loaderData.period === RecurringTaskPeriod.WEEKLY,
+                  link: `/workspace/calendar?today=${loaderData.today}&period=${RecurringTaskPeriod.WEEKLY}`,
+                }),
+                NavSingle({
+                  text: periodName(RecurringTaskPeriod.MONTHLY),
+                  highlight: loaderData.period === RecurringTaskPeriod.MONTHLY,
+                  link: `/workspace/calendar?today=${loaderData.today}&period=${RecurringTaskPeriod.MONTHLY}`,
+                }),
+                NavSingle({
+                  text: periodName(RecurringTaskPeriod.QUARTERLY),
+                  highlight:
+                    loaderData.period === RecurringTaskPeriod.QUARTERLY,
+                  link: `/workspace/calendar?today=${loaderData.today}&period=${RecurringTaskPeriod.QUARTERLY}`,
+                }),
+                NavSingle({
+                  text: periodName(RecurringTaskPeriod.YEARLY),
+                  highlight: loaderData.period === RecurringTaskPeriod.YEARLY,
+                  link: `/workspace/calendar?today=${loaderData.today}&period=${RecurringTaskPeriod.YEARLY}`,
+                }),
+              ],
+            }),
+          ]}
+        />
+      }
+      returnLocation="/workspace"
+    >
+      For {loaderData.today} and {loaderData.period}
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
-        <EntityStack>
-            
-
-        </EntityStack>
+        <EntityStack></EntityStack>
       </NestingAwareBlock>
-
       <AnimatePresence mode="wait" initial={false}>
         <Outlet />
       </AnimatePresence>

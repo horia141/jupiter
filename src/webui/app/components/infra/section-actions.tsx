@@ -371,8 +371,8 @@ function NavSingleView(props: NavSingleViewProps) {
     }
   }
 
-  if (props.action.text === undefined && props.action.icon === undefined) {
-    throw new Error("A nav needs to have either a text or an icon");
+  if (props.action.text === undefined) {
+    throw new Error("A nav needs to have either a text");
   }
 
   return (
@@ -417,8 +417,8 @@ function NavMultipleSpreadView(props: NavMultipleViewProps) {
           }
         }
 
-        if (nav.text === undefined && nav.icon === undefined) {
-          throw new Error("An nav needs to have either a text or an icon");
+        if (nav.text === undefined) {
+          throw new Error("An nav needs to have either a text");
         }
 
         return (
@@ -441,7 +441,6 @@ function NavMultipleSpreadView(props: NavMultipleViewProps) {
 function NavMultipleCompactView(props: NavMultipleViewProps) {
   const [open, setOpen] = useState(false);
   const anchorRef = React.useRef<HTMLDivElement>(null);
-  const [selectedIndex, setSelectedIndex] = React.useState(0);
   const theme = useTheme();
   const isBigScreen = useBigScreen();
 
@@ -456,11 +455,14 @@ function NavMultipleCompactView(props: NavMultipleViewProps) {
     realActions.push(action);
   }
 
+  const selectedIndex = Math.max(
+    0,
+    realActions.findIndex((nav) => nav.highlight)
+  );
+
   function handleMenuItemClick(
-    event: React.MouseEvent<HTMLElement, MouseEvent>,
-    index: number
+    event: React.MouseEvent<HTMLElement, MouseEvent>
   ) {
-    setSelectedIndex(index);
     setOpen(false);
   }
 
@@ -524,7 +526,9 @@ function NavMultipleCompactView(props: NavMultipleViewProps) {
                     <MenuItem
                       key={`nav-multiple-${index}`}
                       selected={index === selectedIndex}
-                      onClick={(event) => handleMenuItemClick(event, index)}
+                      component={Link}
+                      to={option.link}
+                      onClick={handleMenuItemClick}
                     >
                       {option.text}
                     </MenuItem>

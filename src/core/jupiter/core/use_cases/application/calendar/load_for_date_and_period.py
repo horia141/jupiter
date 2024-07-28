@@ -88,6 +88,8 @@ class CalendarLoadForDateAndPeriodResult(UseCaseResultBase):
 
     right_now: ADate
     period: RecurringTaskPeriod
+    prev_period_start_date: ADate
+    next_period_start_date: ADate
     schedule_event_in_day_entries: list[ScheduleInDayEventEntry]
     schedule_event_full_days_entries: list[ScheduleFullDaysEventEntry]
     inbox_task_entries: list[InboxTaskEntry]
@@ -113,6 +115,18 @@ class CalendarLoadForDateAndPeriodUseCase(
         schedule = schedules.get_schedule(
             period=args.period,
             right_now=args.right_now.to_timestamp_at_start_of_day(),
+            name=NOT_USED_NAME,
+        )
+        prev_schedule = schedules.get_schedule(
+            period=args.period,
+            right_now=schedule.first_day.subtract_days(
+                1
+            ).to_timestamp_at_start_of_day(),
+            name=NOT_USED_NAME,
+        )
+        next_schedule = schedules.get_schedule(
+            period=args.period,
+            right_now=schedule.end_day.add_days(1).to_timestamp_at_start_of_day(),
             name=NOT_USED_NAME,
         )
 
@@ -246,6 +260,8 @@ class CalendarLoadForDateAndPeriodUseCase(
         return CalendarLoadForDateAndPeriodResult(
             right_now=args.right_now,
             period=args.period,
+            prev_period_start_date=prev_schedule.first_day,
+            next_period_start_date=next_schedule.first_day,
             schedule_event_in_day_entries=schedule_event_in_day_entries,
             schedule_event_full_days_entries=schedule_event_full_days_entries,
             inbox_task_entries=inbox_task_entries,

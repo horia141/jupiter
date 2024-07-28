@@ -311,7 +311,7 @@ class Workspace(RootEntity):
                 WorkspaceFeature.TIME_PLANS
             ):
                 inferred_sync_targets.append(sync_target)
-            elif sync_target is SyncTarget.SCHEDULE and self.is_feature_available(
+            elif sync_target is SyncTarget.SCHEDULES and self.is_feature_available(
                 WorkspaceFeature.SCHEDULE
             ):
                 inferred_sync_targets.append(sync_target)
