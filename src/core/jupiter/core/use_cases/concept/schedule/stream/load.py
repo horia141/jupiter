@@ -1,5 +1,5 @@
-"""Use case for loading a particular project."""
-from jupiter.core.domain.concept.projects.project import Project
+"""Use case for loading a particular stream."""
+from jupiter.core.domain.concept.schedule.schedule_stream import ScheduleStream
 from jupiter.core.domain.core.notes.note import Note, NoteRepository
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.features import WorkspaceFeature
@@ -19,40 +19,44 @@ from jupiter.core.use_cases.infra.use_cases import (
 
 
 @use_case_args
-class ProjectLoadArgs(UseCaseArgsBase):
-    """ProjectLoadArgs."""
+class ScheduleStreamLoadArgs(UseCaseArgsBase):
+    """Args."""
 
     ref_id: EntityId
     allow_archived: bool
 
 
 @use_case_result
-class ProjectLoadResult(UseCaseResultBase):
-    """ProjectLoadResult."""
+class ScheduleStreamLoadResult(UseCaseResultBase):
+    """Result."""
 
-    project: Project
+    schedule_stream: ScheduleStream
     note: Note | None
 
 
-@readonly_use_case(WorkspaceFeature.PROJECTS)
-class ProjectLoadUseCase(
-    AppTransactionalLoggedInReadOnlyUseCase[ProjectLoadArgs, ProjectLoadResult]
+@readonly_use_case(WorkspaceFeature.SCHEDULE)
+class ScheduleStreamLoadUseCase(
+    AppTransactionalLoggedInReadOnlyUseCase[
+        ScheduleStreamLoadArgs, ScheduleStreamLoadResult
+    ]
 ):
-    """Use case for loading a particular project."""
+    """Use case for loading a particular stream."""
 
     async def _perform_transactional_read(
         self,
         uow: DomainUnitOfWork,
         context: AppLoggedInReadonlyUseCaseContext,
-        args: ProjectLoadArgs,
-    ) -> ProjectLoadResult:
+        args: ScheduleStreamLoadArgs,
+    ) -> ScheduleStreamLoadResult:
         """Execute the command's action."""
-        project = await uow.get_for(Project).load_by_id(
+        schedule_stream = await uow.get_for(ScheduleStream).load_by_id(
             args.ref_id, allow_archived=args.allow_archived
         )
 
         note = await uow.get(NoteRepository).load_optional_for_source(
-            NoteDomain.PROJECT, project.ref_id, allow_archived=args.allow_archived
+            NoteDomain.SCHEDULE_STREAM,
+            schedule_stream.ref_id,
+            allow_archived=args.allow_archived,
         )
 
-        return ProjectLoadResult(project=project, note=note)
+        return ScheduleStreamLoadResult(schedule_stream=schedule_stream, note=note)

@@ -304,6 +304,8 @@ export type { ScheduleStreamCreateForUserResult } from './models/ScheduleStreamC
 export type { ScheduleStreamFindArgs } from './models/ScheduleStreamFindArgs';
 export type { ScheduleStreamFindResult } from './models/ScheduleStreamFindResult';
 export type { ScheduleStreamFindResultEntry } from './models/ScheduleStreamFindResultEntry';
+export type { ScheduleStreamLoadArgs } from './models/ScheduleStreamLoadArgs';
+export type { ScheduleStreamLoadResult } from './models/ScheduleStreamLoadResult';
 export type { ScheduleStreamName } from './models/ScheduleStreamName';
 export type { ScheduleStreamRemoveArgs } from './models/ScheduleStreamRemoveArgs';
 export { ScheduleStreamSource } from './models/ScheduleStreamSource';

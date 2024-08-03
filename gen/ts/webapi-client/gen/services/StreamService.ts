@@ -6,6 +6,8 @@ import type { ScheduleStreamCreateForUserArgs } from '../models/ScheduleStreamCr
 import type { ScheduleStreamCreateForUserResult } from '../models/ScheduleStreamCreateForUserResult';
 import type { ScheduleStreamFindArgs } from '../models/ScheduleStreamFindArgs';
 import type { ScheduleStreamFindResult } from '../models/ScheduleStreamFindResult';
+import type { ScheduleStreamLoadArgs } from '../models/ScheduleStreamLoadArgs';
+import type { ScheduleStreamLoadResult } from '../models/ScheduleStreamLoadResult';
 import type { ScheduleStreamRemoveArgs } from '../models/ScheduleStreamRemoveArgs';
 import type { ScheduleStreamUpdateArgs } from '../models/ScheduleStreamUpdateArgs';
 
@@ -75,6 +77,29 @@ export class StreamService {
         return this.httpRequest.request({
             method: 'POST',
             url: '/schedule-stream-find',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Use case for loading a particular stream.
+     * Use case for loading a particular stream.
+     * @param requestBody The input data
+     * @returns ScheduleStreamLoadResult Successful response
+     * @throws ApiError
+     */
+    public scheduleStreamLoad(
+        requestBody?: ScheduleStreamLoadArgs,
+    ): CancelablePromise<ScheduleStreamLoadResult> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/schedule-stream-load',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

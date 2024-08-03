@@ -360,6 +360,8 @@ from .schedule_stream_create_for_user_result import ScheduleStreamCreateForUserR
 from .schedule_stream_find_args import ScheduleStreamFindArgs
 from .schedule_stream_find_result import ScheduleStreamFindResult
 from .schedule_stream_find_result_entry import ScheduleStreamFindResultEntry
+from .schedule_stream_load_args import ScheduleStreamLoadArgs
+from .schedule_stream_load_result import ScheduleStreamLoadResult
 from .schedule_stream_remove_args import ScheduleStreamRemoveArgs
 from .schedule_stream_source import ScheduleStreamSource
 from .schedule_stream_summary import ScheduleStreamSummary
@@ -893,6 +895,8 @@ __all__ = (
     "ScheduleStreamFindArgs",
     "ScheduleStreamFindResult",
     "ScheduleStreamFindResultEntry",
+    "ScheduleStreamLoadArgs",
+    "ScheduleStreamLoadResult",
     "ScheduleStreamRemoveArgs",
     "ScheduleStreamSource",
     "ScheduleStreamSummary",

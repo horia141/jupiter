@@ -4,7 +4,7 @@ import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import type { LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Outlet, useTransition } from "@remix-run/react";
+import { Outlet, useSearchParams, useTransition } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";
 import { useContext } from "react";
@@ -26,6 +26,7 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
+  useTrunkNeedsToShowBranch,
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
@@ -50,7 +51,7 @@ export async function loader({ request }: LoaderArgs) {
   if (query.today === undefined || query.period === undefined) {
     const today = DateTime.now().toISODate();
     const period = RecurringTaskPeriod.WEEKLY;
-    return redirect(`/workspace/calendar?today=${today}&period=${period}`);
+    return redirect(`${request.url}?today=${today}&period=${period}`);
   }
 
   const response = await getLoggedInApiClient(
@@ -78,12 +79,14 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function Schedules() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const transition = useTransition();
+  const [query, _] = useSearchParams();
 
   const topLevelInfo = useContext(TopLevelInfoContext);
 
   const inputsEnabled = transition.state === "idle";
 
-  const shouldShowALeaf = useTrunkNeedsToShowLeaf();
+  const shouldShowABranch = useTrunkNeedsToShowBranch();
+  const shouldShowALeafToo = useTrunkNeedsToShowLeaf();
 
   return (
     <TrunkPanel
@@ -99,19 +102,19 @@ export default function Schedules() {
               navs: [
                 NavSingle({
                   text: "New Event In Day",
-                  link: `/workspace/calendar/schedule/event-in-day/new`,
+                  link: `/workspace/calendar/schedule/event-in-day/new?${query}`,
                 }),
                 NavSingle({
                   text: "New Event Full Days",
-                  link: `/workspace/calendar/schedule/event-full-days/new`,
+                  link: `/workspace/calendar/schedule/event-full-days/new?${query}`,
                 }),
                 NavSingle({
                   text: "New Calendar Stream",
-                  link: `/workspace/calendar/schedule/stream/new`,
+                  link: `/workspace/calendar/schedule/stream/new?${query}`,
                 }),
                 NavSingle({
                   text: "View Calendar Streams",
-                  link: `/workspace/calendar/schedule/stream`,
+                  link: `/workspace/calendar/schedule/stream?${query}`,
                 }),
               ],
             }),
@@ -170,9 +173,13 @@ export default function Schedules() {
       }
       returnLocation="/workspace"
     >
-      For {loaderData.today} and {loaderData.period}
-      <NestingAwareBlock shouldHide={shouldShowALeaf}>
-        <EntityStack></EntityStack>
+      <NestingAwareBlock
+        branchForceHide={shouldShowABranch}
+        shouldHide={shouldShowABranch || shouldShowALeafToo}
+      >
+        <EntityStack>
+          For {loaderData.today} and {loaderData.period}
+        </EntityStack>
       </NestingAwareBlock>
       <AnimatePresence mode="wait" initial={false}>
         <Outlet />
