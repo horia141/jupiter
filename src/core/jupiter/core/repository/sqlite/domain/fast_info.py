@@ -76,7 +76,7 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
         allow_archived: bool,
     ) -> list[ScheduleStreamSummary]:
         """Find all summaries about schedule streams."""
-        query = """select ref_id, name from schedule_stream where schedule_stream_domain_ref_id = :parent_ref_id"""
+        query = """select ref_id, name from schedule_stream where schedule_domain_ref_id = :parent_ref_id"""
         if not allow_archived:
             query += " and archived=0"
         result = (

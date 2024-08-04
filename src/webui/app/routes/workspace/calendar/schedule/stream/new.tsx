@@ -119,5 +119,5 @@ export default function ScheduleStreamNew() {
 }
 
 export const ErrorBoundary = makeErrorBoundary(
-  () => `There was an error creating the project! Please try again!`
+  () => `There was an error creating the schedule stream! Please try again!`
 );

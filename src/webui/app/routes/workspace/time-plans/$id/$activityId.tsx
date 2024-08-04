@@ -102,7 +102,6 @@ export async function action({ request, params }: ActionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const { id, activityId } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
-  console.log(form);
 
   try {
     switch (form.intent) {
