@@ -36,7 +36,7 @@ class ScheduleEventFullDays(LeafEntity):
         source_entity_ref_id=IsRefId(),
     )
     note = OwnsAtMostOne(
-        Note, domain=NoteDomain.SCHEDULE_FULL_DAY_BLOCK, source_entity_ref_id=IsRefId()
+        Note, domain=NoteDomain.SCHEDULE_EVENT_FULL_DAYS, source_entity_ref_id=IsRefId()
     )
 
     @staticmethod

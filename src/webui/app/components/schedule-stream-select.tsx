@@ -7,7 +7,7 @@ interface ScheduleStreamSelectProps {
   name: string;
   readOnly: boolean;
   allScheduleStreams: Array<ScheduleStreamSummary>;
-  value: ScheduleStreamSummary;
+  defaultValue: ScheduleStreamSummary;
 }
 
 export function ScheduleStreamSelect(props: ScheduleStreamSelectProps) {
@@ -18,7 +18,7 @@ export function ScheduleStreamSelect(props: ScheduleStreamSelectProps) {
       name={props.name}
       readOnly={props.readOnly}
       disabled={props.readOnly}
-      defaultValue={props.value.ref_id}
+      defaultValue={props.defaultValue.ref_id}
     >
       {props.allScheduleStreams.map((st) => (
         <MenuItem key={st.ref_id} value={st.ref_id}>

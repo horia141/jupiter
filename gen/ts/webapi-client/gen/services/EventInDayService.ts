@@ -2,8 +2,11 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { ScheduleEventInDayArchiveArgs } from '../models/ScheduleEventInDayArchiveArgs';
+import type { ScheduleEventInDayChangeScheduleStreamArgs } from '../models/ScheduleEventInDayChangeScheduleStreamArgs';
 import type { ScheduleEventInDayCreateArgs } from '../models/ScheduleEventInDayCreateArgs';
 import type { ScheduleEventInDayCreateResult } from '../models/ScheduleEventInDayCreateResult';
+import type { ScheduleEventInDayLoadArgs } from '../models/ScheduleEventInDayLoadArgs';
+import type { ScheduleEventInDayLoadResult } from '../models/ScheduleEventInDayLoadResult';
 import type { ScheduleEventInDayRemoveArgs } from '../models/ScheduleEventInDayRemoveArgs';
 import type { ScheduleEventInDayUpdateArgs } from '../models/ScheduleEventInDayUpdateArgs';
 
@@ -38,6 +41,29 @@ export class EventInDayService {
     }
 
     /**
+     * Use case for changing the schedule stream of an event.
+     * Use case for changing the schedule stream of an event.
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
+     * @throws ApiError
+     */
+    public scheduleEventInDayChangeScheduleStream(
+        requestBody?: ScheduleEventInDayChangeScheduleStreamArgs,
+    ): CancelablePromise<any> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/schedule-event-in-day-change-schedule-stream',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
      * Use case for creating a schedule in day event.
      * Use case for creating a schedule in day event.
      * @param requestBody The input data
@@ -50,6 +76,29 @@ export class EventInDayService {
         return this.httpRequest.request({
             method: 'POST',
             url: '/schedule-event-in-day-create',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Use case for loading a schedule in day event.
+     * Use case for loading a schedule in day event.
+     * @param requestBody The input data
+     * @returns ScheduleEventInDayLoadResult Successful response
+     * @throws ApiError
+     */
+    public scheduleEventInDayLoad(
+        requestBody?: ScheduleEventInDayLoadArgs,
+    ): CancelablePromise<ScheduleEventInDayLoadResult> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/schedule-event-in-day-load',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

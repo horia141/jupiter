@@ -289,8 +289,11 @@ export type { ScheduleEventFullDaysRemoveArgs } from './models/ScheduleEventFull
 export type { ScheduleEventFullDaysUpdateArgs } from './models/ScheduleEventFullDaysUpdateArgs';
 export type { ScheduleEventInDay } from './models/ScheduleEventInDay';
 export type { ScheduleEventInDayArchiveArgs } from './models/ScheduleEventInDayArchiveArgs';
+export type { ScheduleEventInDayChangeScheduleStreamArgs } from './models/ScheduleEventInDayChangeScheduleStreamArgs';
 export type { ScheduleEventInDayCreateArgs } from './models/ScheduleEventInDayCreateArgs';
 export type { ScheduleEventInDayCreateResult } from './models/ScheduleEventInDayCreateResult';
+export type { ScheduleEventInDayLoadArgs } from './models/ScheduleEventInDayLoadArgs';
+export type { ScheduleEventInDayLoadResult } from './models/ScheduleEventInDayLoadResult';
 export type { ScheduleEventInDayRemoveArgs } from './models/ScheduleEventInDayRemoveArgs';
 export type { ScheduleEventInDayUpdateArgs } from './models/ScheduleEventInDayUpdateArgs';
 export type { ScheduleEventName } from './models/ScheduleEventName';

@@ -342,8 +342,11 @@ from .schedule_event_full_days_update_args_name import ScheduleEventFullDaysUpda
 from .schedule_event_full_days_update_args_start_date import ScheduleEventFullDaysUpdateArgsStartDate
 from .schedule_event_in_day import ScheduleEventInDay
 from .schedule_event_in_day_archive_args import ScheduleEventInDayArchiveArgs
+from .schedule_event_in_day_change_schedule_stream_args import ScheduleEventInDayChangeScheduleStreamArgs
 from .schedule_event_in_day_create_args import ScheduleEventInDayCreateArgs
 from .schedule_event_in_day_create_result import ScheduleEventInDayCreateResult
+from .schedule_event_in_day_load_args import ScheduleEventInDayLoadArgs
+from .schedule_event_in_day_load_result import ScheduleEventInDayLoadResult
 from .schedule_event_in_day_remove_args import ScheduleEventInDayRemoveArgs
 from .schedule_event_in_day_update_args import ScheduleEventInDayUpdateArgs
 from .schedule_event_in_day_update_args_duration_mins import ScheduleEventInDayUpdateArgsDurationMins
@@ -877,8 +880,11 @@ __all__ = (
     "ScheduleEventFullDaysUpdateArgsStartDate",
     "ScheduleEventInDay",
     "ScheduleEventInDayArchiveArgs",
+    "ScheduleEventInDayChangeScheduleStreamArgs",
     "ScheduleEventInDayCreateArgs",
     "ScheduleEventInDayCreateResult",
+    "ScheduleEventInDayLoadArgs",
+    "ScheduleEventInDayLoadResult",
     "ScheduleEventInDayRemoveArgs",
     "ScheduleEventInDayUpdateArgs",
     "ScheduleEventInDayUpdateArgsDurationMins",

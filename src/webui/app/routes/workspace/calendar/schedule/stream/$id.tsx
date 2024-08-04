@@ -66,11 +66,11 @@ export async function loader({ request, params }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const { id } = parseParams(params, ParamsSchema);
 
-  const response = await getLoggedInApiClient(
-    session
-  ).stream.scheduleStreamLoad({ ref_id: id, allow_archived: true });
-
   try {
+    const response = await getLoggedInApiClient(
+      session
+    ).stream.scheduleStreamLoad({ ref_id: id, allow_archived: true });
+
     return json({
       scheduleStream: response.schedule_stream,
       note: response.note,

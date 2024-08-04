@@ -36,7 +36,7 @@ class ScheduleEventInDay(LeafEntity):
         source_entity_ref_id=IsRefId(),
     )
     note = OwnsAtMostOne(
-        Note, domain=NoteDomain.SCHEDULE_EVENT, source_entity_ref_id=IsRefId()
+        Note, domain=NoteDomain.SCHEDULE_EVENT_IN_DAY, source_entity_ref_id=IsRefId()
     )
 
     @staticmethod
@@ -53,6 +53,18 @@ class ScheduleEventInDay(LeafEntity):
             schedule_domain=ParentLink(schedule_domain_ref_id),
             schedule_stream_ref_id=schedule_stream_ref_id,
             name=name,
+        )
+
+    @update_entity_action
+    def change_schedule_stream(
+        self,
+        ctx: DomainContext,
+        schedule_stream_ref_id: EntityId,
+    ) -> "ScheduleEventInDay":
+        """Change the schedule stream."""
+        return self._new_version(
+            ctx,
+            schedule_stream_ref_id=schedule_stream_ref_id,
         )
 
     @update_entity_action

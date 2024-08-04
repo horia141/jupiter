@@ -150,7 +150,7 @@ export default function ScheduleEventInDayNew() {
               name="scheduleStreamRefId"
               readOnly={!inputsEnabled}
               allScheduleStreams={loaderData.allScheduleStreams}
-              value={loaderData.allScheduleStreams[0]}
+              defaultValue={loaderData.allScheduleStreams[0]}
             />
             <FieldError
               actionResult={actionData}
@@ -199,18 +199,21 @@ export default function ScheduleEventInDayNew() {
           <Stack spacing={2} direction="row">
             <ButtonGroup variant="outlined">
               <Button
+                disabled={!inputsEnabled}
                 variant={durationMins === 15 ? "contained" : "outlined"}
                 onClick={() => setDurationMins(15)}
               >
                 15m
               </Button>
               <Button
+                disabled={!inputsEnabled}
                 variant={durationMins === 30 ? "contained" : "outlined"}
                 onClick={() => setDurationMins(30)}
               >
                 30m
               </Button>
               <Button
+                disabled={!inputsEnabled}
                 variant={durationMins === 60 ? "contained" : "outlined"}
                 onClick={() => setDurationMins(60)}
               >
