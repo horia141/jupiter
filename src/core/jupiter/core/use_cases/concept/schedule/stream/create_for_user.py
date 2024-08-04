@@ -63,5 +63,5 @@ class ScheduleStreamCreateForUserUseCase(
             name=args.name,
             color=args.color,
         )
-        await generic_creator(uow, progress_reporter, schedule_stream)
+        schedule_stream = await generic_creator(uow, progress_reporter, schedule_stream)
         return ScheduleStreamCreateForUserResult(new_schedule_stream=schedule_stream)

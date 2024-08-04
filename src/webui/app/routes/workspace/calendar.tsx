@@ -79,7 +79,7 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function Schedules() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const transition = useTransition();
-  const [query, _] = useSearchParams();
+  const [query] = useSearchParams();
 
   const topLevelInfo = useContext(TopLevelInfoContext);
 
@@ -178,9 +178,12 @@ export default function Schedules() {
         shouldHide={shouldShowABranch || shouldShowALeafToo}
       >
         <EntityStack>
-          For {loaderData.today} and {loaderData.period}
+          <p>
+            For {loaderData.today} and {loaderData.period}
+          </p>
         </EntityStack>
       </NestingAwareBlock>
+
       <AnimatePresence mode="wait" initial={false}>
         <Outlet />
       </AnimatePresence>

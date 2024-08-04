@@ -42,13 +42,14 @@ export const shouldRevalidate: ShouldRevalidateFunction = basicShouldRevalidate;
 
 export default function ScheduleStreamViewAll() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
-  const [query, setQuery] = useSearchParams();
+  const [query] = useSearchParams();
 
   const shouldShowALeaf = useBranchNeedsToShowLeaf();
 
   return (
     <BranchPanel
       key="calendar-schedule-stream"
+      createLocation="/workspace/calendar/schedule/stream/new"
       returnLocation="/workspace/calendar"
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
