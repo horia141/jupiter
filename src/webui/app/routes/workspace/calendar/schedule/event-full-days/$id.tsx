@@ -56,8 +56,7 @@ const UpdateFormSchema = z.discriminatedUnion("intent", [
     intent: z.literal("update"),
     name: z.string(),
     startDate: z.string(),
-    startTimeInDay: z.string().optional(),
-    durationMins: z.string().transform((v) => parseInt(v, 10)),
+    durationDays: z.string().transform((v) => parseInt(v, 10)),
   }),
   z.object({
     intent: z.literal("change-schedule-stream"),
@@ -88,7 +87,7 @@ export async function loader({ request, params }: LoaderArgs) {
   try {
     const response = await getLoggedInApiClient(
       session
-    ).eventInDay.scheduleEventInDayLoad({
+    ).eventFullDays.scheduleEventFullDaysLoad({
       ref_id: id,
       allow_archived: true,
     });
@@ -96,8 +95,8 @@ export async function loader({ request, params }: LoaderArgs) {
     return json({
       allScheduleStreams:
         summaryResponse.schedule_streams as Array<ScheduleStreamSummary>,
-      scheduleEventInDay: response.schedule_event_in_day,
-      timeEventInDayBlock: response.time_event_in_day_block,
+      scheduleEventFullDays: response.schedule_event_full_days,
+      timeEventFullDaysBlock: response.time_event_full_days_block,
       note: response.note,
     });
   } catch (error) {
@@ -120,53 +119,49 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (form.intent) {
       case "update": {
-        await getLoggedInApiClient(session).eventInDay.scheduleEventInDayUpdate(
-          {
-            ref_id: id,
-            name: {
-              should_change: true,
-              value: form.name,
-            },
-            start_date: {
-              should_change: true,
-              value: form.startDate,
-            },
-            start_time_in_day: {
-              should_change: true,
-              value: form.startTimeInDay,
-            },
-            duration_mins: {
-              should_change: true,
-              value: form.durationMins,
-            },
-          }
-        );
-        return redirect(`/workspace/calendar/schedule/event-in-day/${id}`);
+        await getLoggedInApiClient(
+          session
+        ).eventFullDays.scheduleEventFullDaysUpdate({
+          ref_id: id,
+          name: {
+            should_change: true,
+            value: form.name,
+          },
+          start_date: {
+            should_change: true,
+            value: form.startDate,
+          },
+          duration_days: {
+            should_change: true,
+            value: form.durationDays,
+          },
+        });
+        return redirect(`/workspace/calendar/schedule/event-full-days/${id}`);
       }
       case "change-schedule-stream": {
         await getLoggedInApiClient(
           session
-        ).eventInDay.scheduleEventInDayChangeScheduleStream({
+        ).eventFullDays.scheduleEventFullDaysChangeScheduleStream({
           ref_id: id,
           schedule_stream_ref_id: form.scheduleStreamRefId,
         });
-        return redirect(`/workspace/calendar/schedule/event-in-day/${id}`);
+        return redirect(`/workspace/calendar/schedule/event-full-days/${id}`);
       }
       case "create-note": {
         await getLoggedInApiClient(session).notes.noteCreate({
-          domain: NoteDomain.SCHEDULE_EVENT_IN_DAY,
+          domain: NoteDomain.SCHEDULE_EVENT_FULL_DAYS,
           source_entity_ref_id: id,
           content: [],
         });
-        return redirect(`/workspace/calendar/schedule/event-in-day/${id}`);
+        return redirect(`/workspace/calendar/schedule/event-full-days/${id}`);
       }
       case "archive": {
         await getLoggedInApiClient(
           session
-        ).eventInDay.scheduleEventInDayArchive({
+        ).eventFullDays.scheduleEventFullDaysArchive({
           ref_id: id,
         });
-        return redirect(`/workspace/calendar/schedule/event-in-day/${id}`);
+        return redirect(`/workspace/calendar/schedule/event-full-days/${id}`);
       }
 
       default:
@@ -186,21 +181,21 @@ export async function action({ request, params }: ActionArgs) {
 
 export const shouldRevalidate: ShouldRevalidateFunction = basicShouldRevalidate;
 
-export default function ScheduleEventInDayViewOne() {
+export default function ScheduleEventFullDaysViewOne() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const topLevelInfo = useContext(TopLevelInfoContext);
   const transition = useTransition();
 
   const inputsEnabled =
-    transition.state === "idle" && !loaderData.scheduleEventInDay.archived;
+    transition.state === "idle" && !loaderData.scheduleEventFullDays.archived;
 
-  const [durationMins, setDurationMins] = useState(
-    loaderData.timeEventInDayBlock.duration_mins
+  const [durationDays, setDurationDays] = useState(
+    loaderData.timeEventFullDaysBlock.duration_days
   );
   useEffect(() => {
-    setDurationMins(loaderData.timeEventInDayBlock.duration_mins);
-  }, [loaderData.timeEventInDayBlock.duration_mins]);
+    setDurationDays(loaderData.timeEventFullDaysBlock.duration_days);
+  }, [loaderData.timeEventFullDaysBlock.duration_days]);
 
   const allScheduleStreamsByRefId = new Map(
     loaderData.allScheduleStreams.map((st) => [st.ref_id, st])
@@ -208,18 +203,18 @@ export default function ScheduleEventInDayViewOne() {
 
   return (
     <LeafPanel
-      key={`schedule-event-in-day-${loaderData.scheduleEventInDay.ref_id}`}
+      key={`schedule-event-full-days-${loaderData.scheduleEventFullDays.ref_id}`}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/calendar"
     >
       <GlobalError actionResult={actionData} />
       <SectionCardNew
-        id="schedule-event-in-day-properties"
+        id="schedule-event-full-days-properties"
         title="Properties"
         actions={
           <SectionActions
-            id="schedule-event-in-day-properties"
+            id="schedule-event-full-days-properties"
             topLevelInfo={topLevelInfo}
             inputsEnabled={inputsEnabled}
             actions={[
@@ -251,7 +246,7 @@ export default function ScheduleEventInDayViewOne() {
               allScheduleStreams={loaderData.allScheduleStreams}
               defaultValue={
                 allScheduleStreamsByRefId.get(
-                  loaderData.scheduleEventInDay.schedule_stream_ref_id
+                  loaderData.scheduleEventFullDays.schedule_stream_ref_id
                 )!
               }
             />
@@ -266,7 +261,7 @@ export default function ScheduleEventInDayViewOne() {
               label="name"
               name="name"
               readOnly={!inputsEnabled}
-              defaultValue={loaderData.scheduleEventInDay.name}
+              defaultValue={loaderData.scheduleEventFullDays.name}
             />
             <FieldError actionResult={actionData} fieldName="/name" />
           </FormControl>
@@ -280,71 +275,53 @@ export default function ScheduleEventInDayViewOne() {
               label="startDate"
               name="startDate"
               readOnly={!inputsEnabled}
-              defaultValue={loaderData.timeEventInDayBlock.start_date}
+              defaultValue={loaderData.timeEventFullDaysBlock.start_date}
             />
 
             <FieldError actionResult={actionData} fieldName="/start_date" />
-          </FormControl>
-
-          <FormControl fullWidth>
-            <InputLabel id="startTimeInDay" shrink margin="dense">
-              Start Time
-            </InputLabel>
-            <OutlinedInput
-              type="time"
-              label="startTimeInDay"
-              name="startTimeInDay"
-              readOnly={!inputsEnabled}
-              defaultValue={loaderData.timeEventInDayBlock.start_time_in_day}
-            />
-
-            <FieldError
-              actionResult={actionData}
-              fieldName="/start_time_in_day"
-            />
           </FormControl>
 
           <Stack spacing={2} direction="row">
             <ButtonGroup variant="outlined">
               <Button
                 disabled={!inputsEnabled}
-                variant={durationMins === 15 ? "contained" : "outlined"}
-                onClick={() => setDurationMins(15)}
+                variant={durationDays === 1 ? "contained" : "outlined"}
+                onClick={() => setDurationDays(1)}
               >
-                15m
+                1D
               </Button>
               <Button
                 disabled={!inputsEnabled}
-                variant={durationMins === 30 ? "contained" : "outlined"}
-                onClick={() => setDurationMins(30)}
+                variant={durationDays === 3 ? "contained" : "outlined"}
+                onClick={() => setDurationDays(3)}
               >
-                30m
+                3d
               </Button>
               <Button
                 disabled={!inputsEnabled}
-                variant={durationMins === 60 ? "contained" : "outlined"}
-                onClick={() => setDurationMins(60)}
+                variant={durationDays === 7 ? "contained" : "outlined"}
+                onClick={() => setDurationDays(7)}
               >
-                60m
+                7d
               </Button>
             </ButtonGroup>
 
             <FormControl fullWidth>
-              <InputLabel id="durationMins" shrink margin="dense">
-                Duration (Mins)
+              <InputLabel id="durationDays" shrink margin="dense">
+                Duration (Days)
               </InputLabel>
               <OutlinedInput
                 type="number"
-                label="Duration (Mins)"
-                name="durationMins"
+                label="Duration (Days)"
+                name="durationDays"
                 readOnly={!inputsEnabled}
-                value={durationMins}
-                onChange={(e) => setDurationMins(parseInt(e.target.value, 10))}
+                value={durationDays}
+                onChange={(e) => setDurationDays(parseInt(e.target.value, 10))}
               />
 
               <FieldError
                 actionResult={actionData}
-                fieldName="/duration_mins"
+                fieldName="/duration_days"
               />
             </FormControl>
           </Stack>

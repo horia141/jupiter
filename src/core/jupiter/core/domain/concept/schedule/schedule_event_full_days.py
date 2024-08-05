@@ -30,7 +30,7 @@ class ScheduleEventFullDays(LeafEntity):
     schedule_stream_ref_id: EntityId
     name: ScheduleEventName
 
-    time_event_full_day_block = OwnsOne(
+    time_event_full_days_block = OwnsOne(
         TimeEventFullDaysBlock,
         namespace=TimeEventNamespace.SCHEDULE_FULL_DAYS_BLOCK,
         source_entity_ref_id=IsRefId(),
@@ -53,6 +53,18 @@ class ScheduleEventFullDays(LeafEntity):
             schedule_domain=ParentLink(schedule_domain_ref_id),
             schedule_stream_ref_id=schedule_stream_ref_id,
             name=name,
+        )
+
+    @update_entity_action
+    def change_schedule_stream(
+        self,
+        ctx: DomainContext,
+        schedule_stream_ref_id: EntityId,
+    ) -> "ScheduleEventFullDays":
+        """Change the schedule stream."""
+        return self._new_version(
+            ctx,
+            schedule_stream_ref_id=schedule_stream_ref_id,
         )
 
     @update_entity_action

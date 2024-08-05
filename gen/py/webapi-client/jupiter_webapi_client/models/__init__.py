@@ -333,8 +333,11 @@ from .reset_password_result import ResetPasswordResult
 from .schedule_domain import ScheduleDomain
 from .schedule_event_full_days import ScheduleEventFullDays
 from .schedule_event_full_days_archive_args import ScheduleEventFullDaysArchiveArgs
+from .schedule_event_full_days_change_schedule_stream_args import ScheduleEventFullDaysChangeScheduleStreamArgs
 from .schedule_event_full_days_create_args import ScheduleEventFullDaysCreateArgs
 from .schedule_event_full_days_create_result import ScheduleEventFullDaysCreateResult
+from .schedule_event_full_days_load_args import ScheduleEventFullDaysLoadArgs
+from .schedule_event_full_days_load_result import ScheduleEventFullDaysLoadResult
 from .schedule_event_full_days_remove_args import ScheduleEventFullDaysRemoveArgs
 from .schedule_event_full_days_update_args import ScheduleEventFullDaysUpdateArgs
 from .schedule_event_full_days_update_args_duration_days import ScheduleEventFullDaysUpdateArgsDurationDays
@@ -871,8 +874,11 @@ __all__ = (
     "ScheduleDomain",
     "ScheduleEventFullDays",
     "ScheduleEventFullDaysArchiveArgs",
+    "ScheduleEventFullDaysChangeScheduleStreamArgs",
     "ScheduleEventFullDaysCreateArgs",
     "ScheduleEventFullDaysCreateResult",
+    "ScheduleEventFullDaysLoadArgs",
+    "ScheduleEventFullDaysLoadResult",
     "ScheduleEventFullDaysRemoveArgs",
     "ScheduleEventFullDaysUpdateArgs",
     "ScheduleEventFullDaysUpdateArgsDurationDays",

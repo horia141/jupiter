@@ -13,7 +13,6 @@ import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { DateTime } from "luxon";
 import { useContext, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseQuery } from "zodix";
@@ -45,8 +44,7 @@ const CreateFormSchema = {
   scheduleStreamRefId: z.string(),
   name: z.string(),
   startDate: z.string(),
-  startTimeInDay: z.string().optional(),
-  durationMins: z.string().transform((v) => parseInt(v, 10)),
+  durationDays: z.string().transform((v) => parseInt(v, 10)),
 };
 
 export const handle = {
@@ -77,16 +75,15 @@ export async function action({ request }: ActionArgs) {
   try {
     const response = await getLoggedInApiClient(
       session
-    ).eventInDay.scheduleEventInDayCreate({
+    ).eventFullDays.scheduleEventFullDaysCreate({
       schedule_stream_ref_id: form.scheduleStreamRefId,
       name: form.name,
       start_date: form.startDate,
-      start_time_in_day: form.startTimeInDay ?? "",
-      duration_mins: form.durationMins,
+      duration_days: form.durationDays,
     });
 
     return redirect(
-      `/workspace/calendar/schedule/event-in-day/${response.new_schedule_event_in_day.ref_id}`
+      `/workspace/calendar/schedule/event-full-days/${response.new_schedule_event_full_days.ref_id}`
     );
   } catch (error) {
     if (
@@ -103,7 +100,7 @@ export async function action({ request }: ActionArgs) {
 export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
-export default function ScheduleEventInDayNew() {
+export default function ScheduleEventFullDaysNew() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const topLevelInfo = useContext(TopLevelInfoContext);
@@ -111,22 +108,20 @@ export default function ScheduleEventInDayNew() {
 
   const inputsEnabled = transition.state === "idle";
 
-  const rightNow = DateTime.now();
-
-  const [durationMins, setDurationMins] = useState(30);
+  const [durationDays, setDurationDays] = useState(1);
 
   return (
     <LeafPanel
-      key="schedule-event-in-day/new"
+      key="schedule-event-full-days/new"
       returnLocation="/workspace/calendar"
     >
       <GlobalError actionResult={actionData} />
       <SectionCardNew
-        id="schedule-event-in-day-properties"
+        id="schedule-event-full-days-properties"
         title="Properties"
         actions={
           <SectionActions
-            id="schedule-event-in-day-properties"
+            id="schedule-event-full-days-properties"
             topLevelInfo={topLevelInfo}
             inputsEnabled={inputsEnabled}
             actions={[
@@ -176,65 +171,47 @@ export default function ScheduleEventInDayNew() {
             <FieldError actionResult={actionData} fieldName="/start_date" />
           </FormControl>
 
-          <FormControl fullWidth>
-            <InputLabel id="startTimeInDay" shrink margin="dense">
-              Start Time
-            </InputLabel>
-            <OutlinedInput
-              type="time"
-              label="startTimeInDay"
-              name="startTimeInDay"
-              readOnly={!inputsEnabled}
-              defaultValue={rightNow.toFormat("HH:mm")}
-            />
-
-            <FieldError
-              actionResult={actionData}
-              fieldName="/start_time_in_day"
-            />
-          </FormControl>
-
           <Stack spacing={2} direction="row">
             <ButtonGroup variant="outlined">
               <Button
                 disabled={!inputsEnabled}
-                variant={durationMins === 15 ? "contained" : "outlined"}
-                onClick={() => setDurationMins(15)}
+                variant={durationDays === 1 ? "contained" : "outlined"}
+                onClick={() => setDurationDays(1)}
               >
-                15m
+                1d
               </Button>
               <Button
                 disabled={!inputsEnabled}
-                variant={durationMins === 30 ? "contained" : "outlined"}
-                onClick={() => setDurationMins(30)}
+                variant={durationDays === 3 ? "contained" : "outlined"}
+                onClick={() => setDurationDays(3)}
               >
-                30m
+                3d
               </Button>
               <Button
                 disabled={!inputsEnabled}
-                variant={durationMins === 60 ? "contained" : "outlined"}
-                onClick={() => setDurationMins(60)}
+                variant={durationDays === 7 ? "contained" : "outlined"}
+                onClick={() => setDurationDays(7)}
               >
-                60m
+                7d
               </Button>
             </ButtonGroup>
 
             <FormControl fullWidth>
-              <InputLabel id="durationMins" shrink margin="dense">
-                Duration (Mins)
+              <InputLabel id="durationDays" shrink margin="dense">
+                Duration (Days)
               </InputLabel>
               <OutlinedInput
                 type="number"
-                label="Duration (Mins)"
-                name="durationMins"
+                label="Duration (Days)"
+                name="durationDays"
                 readOnly={!inputsEnabled}
-                value={durationMins}
-                onChange={(e) => setDurationMins(parseInt(e.target.value, 10))}
+                value={durationDays}
+                onChange={(e) => setDurationDays(parseInt(e.target.value, 10))}
               />
 
               <FieldError
                 actionResult={actionData}
-                fieldName="/duration_mins"
+                fieldName="/duration_days"
               />
             </FormControl>
           </Stack>
@@ -245,5 +222,5 @@ export default function ScheduleEventInDayNew() {
 }
 
 export const ErrorBoundary = makeErrorBoundary(
-  () => `There was an error creating the event in day! Please try again!`
+  () => `There was an error creating the event full days! Please try again!`
 );

@@ -42,7 +42,9 @@ class ScheduleEventInDayLoadResult(UseCaseResultBase):
 
 @readonly_use_case(WorkspaceFeature.SCHEDULE)
 class ScheduleEventInDayLoadUseCase(
-    AppTransactionalLoggedInReadOnlyUseCase[ScheduleEventInDayLoadArgs, ScheduleEventInDayLoadResult]
+    AppTransactionalLoggedInReadOnlyUseCase[
+        ScheduleEventInDayLoadArgs, ScheduleEventInDayLoadResult
+    ]
 ):
     """Use case for loading a schedule in day event."""
 

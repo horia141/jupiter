@@ -2,8 +2,11 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { ScheduleEventFullDaysArchiveArgs } from '../models/ScheduleEventFullDaysArchiveArgs';
+import type { ScheduleEventFullDaysChangeScheduleStreamArgs } from '../models/ScheduleEventFullDaysChangeScheduleStreamArgs';
 import type { ScheduleEventFullDaysCreateArgs } from '../models/ScheduleEventFullDaysCreateArgs';
 import type { ScheduleEventFullDaysCreateResult } from '../models/ScheduleEventFullDaysCreateResult';
+import type { ScheduleEventFullDaysLoadArgs } from '../models/ScheduleEventFullDaysLoadArgs';
+import type { ScheduleEventFullDaysLoadResult } from '../models/ScheduleEventFullDaysLoadResult';
 import type { ScheduleEventFullDaysRemoveArgs } from '../models/ScheduleEventFullDaysRemoveArgs';
 import type { ScheduleEventFullDaysUpdateArgs } from '../models/ScheduleEventFullDaysUpdateArgs';
 
@@ -38,6 +41,29 @@ export class EventFullDaysService {
     }
 
     /**
+     * Use case for changing the schedule stream of an event.
+     * Use case for changing the schedule stream of an event.
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
+     * @throws ApiError
+     */
+    public scheduleEventFullDaysChangeScheduleStream(
+        requestBody?: ScheduleEventFullDaysChangeScheduleStreamArgs,
+    ): CancelablePromise<any> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/schedule-event-full-days-change-schedule-stream',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
      * Use case for creating a full day event in the schedule.
      * Use case for creating a full day event in the schedule.
      * @param requestBody The input data
@@ -50,6 +76,29 @@ export class EventFullDaysService {
         return this.httpRequest.request({
             method: 'POST',
             url: '/schedule-event-full-days-create',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Use case for loading a schedule full days event.
+     * Use case for loading a schedule full days event.
+     * @param requestBody The input data
+     * @returns ScheduleEventFullDaysLoadResult Successful response
+     * @throws ApiError
+     */
+    public scheduleEventFullDaysLoad(
+        requestBody?: ScheduleEventFullDaysLoadArgs,
+    ): CancelablePromise<ScheduleEventFullDaysLoadResult> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/schedule-event-full-days-load',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

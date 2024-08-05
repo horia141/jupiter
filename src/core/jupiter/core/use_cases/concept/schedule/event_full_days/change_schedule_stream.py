@@ -1,6 +1,6 @@
 """Use case for changing the schedule stream of an event."""
-from jupiter.core.domain.concept.schedule.schedule_event_in_day import (
-    ScheduleEventInDay,
+from jupiter.core.domain.concept.schedule.schedule_event_full_days import (
+    ScheduleEventFullDays,
 )
 from jupiter.core.domain.concept.schedule.schedule_stream import ScheduleStream
 from jupiter.core.domain.features import WorkspaceFeature
@@ -16,7 +16,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 
 
 @use_case_args
-class ScheduleEventInDayChangeScheduleStreamArgs(UseCaseArgsBase):
+class ScheduleEventFullDaysChangeScheduleStreamArgs(UseCaseArgsBase):
     """Args."""
 
     ref_id: EntityId
@@ -24,9 +24,9 @@ class ScheduleEventInDayChangeScheduleStreamArgs(UseCaseArgsBase):
 
 
 @mutation_use_case(WorkspaceFeature.SCHEDULE)
-class ScheduleEventInDayChangeScheduleStreamUseCase(
+class ScheduleEventFullDaysChangeScheduleStreamUseCase(
     AppTransactionalLoggedInMutationUseCase[
-        ScheduleEventInDayChangeScheduleStreamArgs, None
+        ScheduleEventFullDaysChangeScheduleStreamArgs, None
     ]
 ):
     """Use case for changing the schedule stream of an event."""
@@ -36,18 +36,18 @@ class ScheduleEventInDayChangeScheduleStreamUseCase(
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
         context: AppLoggedInMutationUseCaseContext,
-        args: ScheduleEventInDayChangeScheduleStreamArgs,
+        args: ScheduleEventFullDaysChangeScheduleStreamArgs,
     ) -> None:
         """Execute the command's action."""
         _ = await uow.get_for(ScheduleStream).load_by_id(args.schedule_stream_ref_id)
-        schedule_event_in_day = await uow.get_for(ScheduleEventInDay).load_by_id(
+        schedule_event_full_days = await uow.get_for(ScheduleEventFullDays).load_by_id(
             args.ref_id
         )
-        schedule_event_in_day = schedule_event_in_day.change_schedule_stream(
+        schedule_event_full_days = schedule_event_full_days.change_schedule_stream(
             context.domain_context,
             schedule_stream_ref_id=args.schedule_stream_ref_id,
         )
-        schedule_event_in_day = await uow.get_for(ScheduleEventInDay).save(
-            schedule_event_in_day
+        schedule_event_full_days = await uow.get_for(ScheduleEventFullDays).save(
+            schedule_event_full_days
         )
-        await progress_reporter.mark_updated(schedule_event_in_day)
+        await progress_reporter.mark_updated(schedule_event_full_days)
