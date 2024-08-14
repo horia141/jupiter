@@ -3,6 +3,7 @@
 /* eslint-disable */
 
 import type { EntityId } from './EntityId';
+import type { ScheduleStreamColor } from './ScheduleStreamColor';
 import type { ScheduleStreamName } from './ScheduleStreamName';
 
 /**
@@ -11,5 +12,6 @@ import type { ScheduleStreamName } from './ScheduleStreamName';
 export type ScheduleStreamSummary = {
     ref_id: EntityId;
     name: ScheduleStreamName;
+    color: ScheduleStreamColor;
 };
 

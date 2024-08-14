@@ -1,5 +1,6 @@
 import type { ScheduleStreamSummary } from "@jupiter/webapi-client";
-import { MenuItem, Select } from "@mui/material";
+import { Box, MenuItem, Select } from "@mui/material";
+import { ScheduleStreamColorTag } from "./schedule-stream-color-tag";
 
 interface ScheduleStreamSelectProps {
   labelId: string;
@@ -22,7 +23,10 @@ export function ScheduleStreamSelect(props: ScheduleStreamSelectProps) {
     >
       {props.allScheduleStreams.map((st) => (
         <MenuItem key={st.ref_id} value={st.ref_id}>
-          {st.name}
+          <Box sx={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
+            {st.name}
+            <ScheduleStreamColorTag color={st.color} />
+          </Box>
         </MenuItem>
       ))}
     </Select>

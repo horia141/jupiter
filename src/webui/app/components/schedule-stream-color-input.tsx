@@ -23,11 +23,9 @@ export function ScheduleStreamColorInput(props: ScheduleStreamColorInputProps) {
     >
       {Object.values(ScheduleStreamColor).map((st) => (
         <MenuItem key={st} value={st}>
-          <Box sx={{ display: "flex", alignItems: "center" }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
             <ScheduleStreamColorTag color={st} />
-            <Box sx={{ paddingLeft: "1rem" }}>
-              {scheduleStreamColorName(st)}
-            </Box>
+            {scheduleStreamColorName(st)}
           </Box>
         </MenuItem>
       ))}

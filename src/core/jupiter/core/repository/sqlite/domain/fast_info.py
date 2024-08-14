@@ -29,6 +29,7 @@ from jupiter.core.domain.fast_info_repository import (
 from jupiter.core.framework.base.entity_id import EntityId, EntityIdDatabaseDecoder
 from jupiter.core.framework.base.entity_name import EntityNameDatabaseDecoder
 from jupiter.core.repository.sqlite.infra.repository import SqliteRepository
+from jupiter_webapi_client.models.schedule_stream_color import ScheduleStreamColor
 from sqlalchemy import text
 
 _ENTITY_ID_DECODER = EntityIdDatabaseDecoder()
@@ -76,7 +77,7 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
         allow_archived: bool,
     ) -> list[ScheduleStreamSummary]:
         """Find all summaries about schedule streams."""
-        query = """select ref_id, name from schedule_stream where schedule_domain_ref_id = :parent_ref_id"""
+        query = """select ref_id, name, color from schedule_stream where schedule_domain_ref_id = :parent_ref_id"""
         if not allow_archived:
             query += " and archived=0"
         result = (
@@ -88,6 +89,8 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
             ScheduleStreamSummary(
                 ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
                 name=_SCHEDULE_STREAM_NAME_DECODER.decode(row["name"]),
+                color=ScheduleStreamColor(row["color"]),
+                # color=self._realm_codec_registry.db_decode(ScheduleStreamColor, row["color"])
             )
             for row in result
         ]

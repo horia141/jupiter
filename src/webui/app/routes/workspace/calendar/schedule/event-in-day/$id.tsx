@@ -1,9 +1,5 @@
-import type {
-  ScheduleStreamSummary} from "@jupiter/webapi-client";
-import {
-  ApiError,
-  NoteDomain
-} from "@jupiter/webapi-client";
+import type { ScheduleStreamSummary } from "@jupiter/webapi-client";
+import { ApiError, NoteDomain } from "@jupiter/webapi-client";
 import {
   Button,
   ButtonGroup,
@@ -16,13 +12,8 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import type {
-  ShouldRevalidateFunction} from "@remix-run/react";
-import {
-  useActionData,
-  useParams,
-  useTransition,
-} from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { useActionData, useParams, useTransition } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
