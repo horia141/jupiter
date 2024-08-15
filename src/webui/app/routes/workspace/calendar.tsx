@@ -1,18 +1,42 @@
-import { InboxTaskEntry, PersonEntry, RecurringTaskPeriod, ScheduleFullDaysEventEntry, ScheduleInDayEventEntry } from "@jupiter/webapi-client";
+import type {
+  ADate,
+  InboxTaskEntry,
+  PersonEntry,
+  ScheduleFullDaysEventEntry,
+  ScheduleInDayEventEntry,
+  TimeEventFullDaysBlock,
+  TimeEventInDayBlock,
+} from "@jupiter/webapi-client";
+import {
+  RecurringTaskPeriod,
+  TimeEventNamespace,
+} from "@jupiter/webapi-client";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import {
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow,
+} from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Outlet, useLocation, useSearchParams, useTransition } from "@remix-run/react";
+import {
+  Outlet,
+  useLocation,
+  useSearchParams,
+  useTransition,
+} from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";
-import { useContext } from "react";
+import React, { useContext } from "react";
 import { z } from "zod";
 import { parseQuery } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
 import { EntityNameComponent } from "~/components/entity-name";
-import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
@@ -24,6 +48,8 @@ import {
   NavSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
+import { ScheduleStreamColorTag } from "~/components/schedule-stream-color-tag";
+import { aDateToDate, allDaysBetween } from "~/logic/domain/adate";
 import { periodName } from "~/logic/domain/period";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -35,10 +61,9 @@ import {
 import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-
 enum View {
   CALENDAR = "calendar",
-  SCHEDULE = "schedule"
+  SCHEDULE = "schedule",
 }
 
 export const handle = {
@@ -58,10 +83,16 @@ export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const query = parseQuery(request, QuerySchema);
 
-  if (query.today === undefined || query.period === undefined || query.view === undefined) {
+  if (
+    query.today === undefined ||
+    query.period === undefined ||
+    query.view === undefined
+  ) {
     const today = DateTime.now().toISODate();
     const period = RecurringTaskPeriod.WEEKLY;
-    return redirect(`${request.url}?today=${today}&period=${period}&view=${View.CALENDAR}`);
+    return redirect(
+      `${request.url}?today=${today}&period=${period}&view=${View.CALENDAR}`
+    );
   }
 
   const response = await getLoggedInApiClient(
@@ -75,6 +106,8 @@ export async function loader({ request }: LoaderArgs) {
     today: query.today as string,
     period: query.period as RecurringTaskPeriod,
     view: query.view as View,
+    periodStartDate: response.period_start_date,
+    periodEndDate: response.period_end_date,
     prevPeriodStartDate: response.prev_period_start_date,
     nextPeriodStartDate: response.next_period_start_date,
     scheduleEventInDayEntries: response.schedule_event_in_day_entries,
@@ -93,7 +126,10 @@ export default function CalendarView() {
   const location = useLocation();
   const [query] = useSearchParams();
 
-  const calendarLocation = location.pathname.replace(/\/workspace\/calendar/, "");
+  const calendarLocation = location.pathname.replace(
+    /\/workspace\/calendar/,
+    ""
+  );
 
   const topLevelInfo = useContext(TopLevelInfoContext);
 
@@ -186,9 +222,7 @@ export default function CalendarView() {
               navs: [
                 NavSingle({
                   text: "Calendar",
-                  link: `/workspace/calendar${calendarLocation}?today=${loaderData.today}&period=${
-                    loaderData.period
-                  }&view=${View.CALENDAR}`,
+                  link: `/workspace/calendar${calendarLocation}?today=${loaderData.today}&period=${loaderData.period}&view=${View.CALENDAR}`,
                   highlight: loaderData.view === View.CALENDAR,
                 }),
                 NavSingle({
@@ -207,16 +241,20 @@ export default function CalendarView() {
         branchForceHide={shouldShowABranch}
         shouldHide={shouldShowABranch || shouldShowALeafToo}
       >
-        
-          {loaderData.view === View.CALENDAR && (
+        {loaderData.view === View.CALENDAR && (
           <EntityStack>
             <p>
-            For {loaderData.today} and {loaderData.period} and {loaderData.view}
+              For {loaderData.today} and {loaderData.period} and{" "}
+              {loaderData.view}
             </p>
-          </EntityStack>)}
+          </EntityStack>
+        )}
 
-          {loaderData.view === View.SCHEDULE && (
+        {loaderData.view === View.SCHEDULE && (
           <ViewAsSchedule
+            timezone={topLevelInfo.user.timezone}
+            periodStartDate={loaderData.periodStartDate}
+            periodEndDate={loaderData.periodEndDate}
             scheduleEventInDayEntries={loaderData.scheduleEventInDayEntries}
             scheduleEventFullDayEntries={loaderData.scheduleEventFullDayEntries}
             inboxTaskEntries={loaderData.inboxTaskEntries}
@@ -237,6 +275,9 @@ export const ErrorBoundary = makeErrorBoundary(
 );
 
 interface ViewAsScheduleProps {
+  timezone: string;
+  periodStartDate: ADate;
+  periodEndDate: ADate;
   scheduleEventInDayEntries: Array<ScheduleInDayEventEntry>;
   scheduleEventFullDayEntries: Array<ScheduleFullDaysEventEntry>;
   inboxTaskEntries: Array<InboxTaskEntry>;
@@ -244,27 +285,316 @@ interface ViewAsScheduleProps {
 }
 
 function ViewAsSchedule(props: ViewAsScheduleProps) {
-  const [query] = useSearchParams();
-  return (
-    <EntityStack>
-      {props.scheduleEventFullDayEntries.map((entry) => (
-        <EntityLink
-          
-          key={`schedule-event-full-days-${entry.event.ref_id}`}
-          to={`/workspace/calendar/schedule/event-full-days/${entry.event.ref_id}?${query}`}
-        >
-          <EntityNameComponent name={entry.event.name} />
-        </EntityLink>
-      ))}
-      
-      {props.scheduleEventInDayEntries.map((entry) => (
-        <EntityLink
-          key={`schedule-event-in-day-${entry.event.ref_id}`}
-          to={`/workspace/calendar/schedule/event-in-day/${entry.event.ref_id}?${query}`}
-        >
-          <EntityNameComponent name={entry.event.name} />
-        </EntityLink>
-      ))}
-    </EntityStack>
+  const combinedTimeEventFullDays: Array<CombinedTimeEventFullDaysEntry> = [];
+  for (const entry of props.scheduleEventFullDayEntries) {
+    combinedTimeEventFullDays.push({
+      time_event: entry.time_event,
+      entry: entry,
+    });
+  }
+  for (const entry of props.personEntries) {
+    combinedTimeEventFullDays.push({
+      time_event: entry.birthday_time_event,
+      entry: entry,
+    });
+  }
+
+  const combinedTimeEventInDay: Array<CombinedTimeEventInDayEntry> = [];
+  for (const entry of props.scheduleEventInDayEntries) {
+    combinedTimeEventInDay.push({
+      time_event: entry.time_event,
+      entry: entry,
+    });
+  }
+  for (const entry of props.inboxTaskEntries) {
+    for (const timeEvent of entry.time_events) {
+      combinedTimeEventInDay.push({
+        time_event: timeEvent,
+        entry: entry,
+      });
+    }
+  }
+
+  const daysToProcess = allDaysBetween(
+    props.periodStartDate,
+    props.periodEndDate
   );
+  const partitionedCombinedTimeEventFullDays =
+    combinedTimeEventFullDayEntryPartionByDay(
+      combinedTimeEventFullDays,
+      props.periodStartDate,
+      props.periodEndDate
+    );
+  const partitionedCombinedTimeEventInDay =
+    combinedTimeEventInDayEntryPartionByDay(
+      combinedTimeEventInDay,
+      props.periodStartDate,
+      props.periodEndDate
+    );
+
+  return (
+    <TableContainer component={Paper}>
+      <Table>
+        <TableBody>
+          {daysToProcess.map((date) => {
+            const partitionFullDays =
+              partitionedCombinedTimeEventFullDays[date] || [];
+            const partitionInDay =
+              partitionedCombinedTimeEventInDay[date] || [];
+
+            if (partitionFullDays.length === 0 && partitionInDay.length === 0) {
+              return <React.Fragment key={date}></React.Fragment>;
+            }
+
+            const firstRowFullDays = partitionFullDays[0];
+            const otherRowsFullDays = partitionFullDays.slice(1);
+            const firstRowInDay = partitionInDay[0];
+            const otherRowsInDay = partitionInDay.slice(1);
+
+            return (
+              <React.Fragment key={date}>
+                {firstRowFullDays && (
+                  <>
+                    <TableRow>
+                      <TableCell
+                        rowSpan={
+                          partitionFullDays.length + partitionInDay.length
+                        }
+                        sx={{ verticalAlign: "top" }}
+                      >
+                        {date}
+                      </TableCell>
+
+                      <CombinedTimeEventFullDaysRows entry={firstRowFullDays} />
+                    </TableRow>
+
+                    {otherRowsFullDays.map((entry, index) => (
+                      <TableRow key={index}>
+                        <CombinedTimeEventFullDaysRows entry={entry} />
+                      </TableRow>
+                    ))}
+
+                    {firstRowInDay && (
+                      <TableRow>
+                        <CombinedTimeEventInDaysRows entry={firstRowInDay} />
+                      </TableRow>
+                    )}
+
+                    {otherRowsInDay.map((entry, index) => (
+                      <TableRow key={index}>
+                        <CombinedTimeEventInDaysRows entry={entry} />
+                      </TableRow>
+                    ))}
+                  </>
+                )}
+
+                {firstRowFullDays === undefined && firstRowInDay && (
+                  <>
+                    <TableRow>
+                      <TableCell
+                        rowSpan={partitionInDay.length}
+                        sx={{ verticalAlign: "top" }}
+                      >
+                        {date}
+                      </TableCell>
+
+                      <CombinedTimeEventInDaysRows entry={firstRowInDay} />
+                    </TableRow>
+
+                    {otherRowsInDay.map((entry, index) => (
+                      <TableRow key={index}>
+                        <CombinedTimeEventInDaysRows entry={entry} />
+                      </TableRow>
+                    ))}
+                  </>
+                )}
+              </React.Fragment>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+}
+
+function CombinedTimeEventFullDaysRows({
+  entry,
+}: {
+  entry: CombinedTimeEventFullDaysEntry;
+}) {
+  const [query] = useSearchParams();
+
+  switch (entry.time_event.namespace) {
+    case TimeEventNamespace.SCHEDULE_FULL_DAYS_BLOCK:
+      const fullDaysEntry = entry.entry as ScheduleFullDaysEventEntry;
+      return (
+        <React.Fragment>
+          <TableCell>[AllDay]</TableCell>
+
+          <TableCell>
+            <EntityLink
+              key={`schedule-event-full-days-${fullDaysEntry.event.ref_id}`}
+              to={`/workspace/calendar/schedule/event-full-days/${fullDaysEntry.event.ref_id}?${query}`}
+            >
+              <EntityNameComponent name={fullDaysEntry.event.name} />
+            </EntityLink>
+          </TableCell>
+
+          <TableCell>
+            {fullDaysEntry.stream.name}{" "}
+            <ScheduleStreamColorTag color={fullDaysEntry.stream.color} />
+          </TableCell>
+        </React.Fragment>
+      );
+
+    case TimeEventNamespace.PERSON_BIRTHDAY:
+      throw new Error("Not implemented");
+
+    default:
+      throw new Error("Unexpected namespace");
+  }
+}
+
+function CombinedTimeEventInDaysRows({
+  entry,
+}: {
+  entry: CombinedTimeEventInDayEntry;
+}) {
+  const [query] = useSearchParams();
+
+  const startTime = DateTime.fromISO(
+    `${entry.time_event.start_date}T${entry.time_event.start_time_in_day}`,
+    { zone: "UTC" }
+  );
+  const endTime = startTime.plus({
+    minutes: entry.time_event.duration_mins,
+  });
+
+  switch (entry.time_event.namespace) {
+    case TimeEventNamespace.SCHEDULE_EVENT_IN_DAY:
+      const scheduleEntry = entry.entry as ScheduleInDayEventEntry;
+      return (
+        <React.Fragment>
+          <TableCell>
+            [{startTime.toFormat("HH:mm")} - {endTime.toFormat("HH:mm")}]
+          </TableCell>
+
+          <TableCell>
+            <EntityLink
+              key={`schedule-event-in-day-${scheduleEntry.event.ref_id}`}
+              to={`/workspace/calendar/schedule/event-in-day/${scheduleEntry.event.ref_id}?${query}`}
+            >
+              <EntityNameComponent name={scheduleEntry.event.name} />
+            </EntityLink>
+          </TableCell>
+
+          <TableCell>
+            {scheduleEntry.stream.name}{" "}
+            <ScheduleStreamColorTag color={scheduleEntry.stream.color} />
+          </TableCell>
+        </React.Fragment>
+      );
+
+    case TimeEventNamespace.INBOX_TASK:
+      throw new Error("Not implemented");
+
+    default:
+      throw new Error("Unexpected namespace");
+  }
+}
+
+interface CombinedTimeEventFullDaysEntry {
+  time_event: TimeEventFullDaysBlock;
+  entry: ScheduleFullDaysEventEntry | PersonEntry;
+}
+
+interface CombinedTimeEventInDayEntry {
+  time_event: TimeEventInDayBlock;
+  entry: ScheduleInDayEventEntry | InboxTaskEntry;
+}
+
+function combinedTimeEventFullDayEntryPartionByDay(
+  entries: Array<CombinedTimeEventFullDaysEntry>,
+  periodStartDate: ADate,
+  periodEndDate: ADate
+): Record<string, Array<CombinedTimeEventFullDaysEntry>> {
+  const partition: Record<string, Array<CombinedTimeEventFullDaysEntry>> = {};
+  const startDate = aDateToDate(periodStartDate);
+  const endDate = aDateToDate(periodEndDate);
+
+  for (const entry of entries) {
+    const firstDate = aDateToDate(entry.time_event.start_date);
+    for (let idx = 0; idx < entry.time_event.duration_days; idx++) {
+      const date = firstDate.plus({ days: idx });
+      if (date < startDate || date > endDate) {
+        continue;
+      }
+
+      const dateStr = date.toISODate();
+      if (partition[dateStr] === undefined) {
+        partition[dateStr] = [];
+      }
+      partition[dateStr].push(entry);
+    }
+  }
+
+  return partition;
+}
+
+function combinedTimeEventInDayEntryPartionByDay(
+  entries: Array<CombinedTimeEventInDayEntry>,
+  periodStartDate: ADate,
+  periodEndDate: ADate
+): Record<string, Array<CombinedTimeEventInDayEntry>> {
+  const partition: Record<string, Array<CombinedTimeEventInDayEntry>> = {};
+  const startDate = aDateToDate(periodStartDate);
+  const endDate = aDateToDate(periodEndDate);
+
+  for (const entry of entries) {
+    const date = aDateToDate(entry.time_event.start_date);
+    if (date < startDate || date > endDate) {
+      continue;
+    }
+
+    const dateStr = date.toISODate();
+    if (partition[dateStr] === undefined) {
+      partition[dateStr] = [];
+    }
+    partition[dateStr].push(entry);
+  }
+
+  // Now sort all partitions.
+  for (const dateStr in partition) {
+    partition[dateStr] = sortTimeEventInDayByStartTimeAndEndTime(
+      partition[dateStr]
+    );
+  }
+
+  return partition;
+}
+
+function sortTimeEventInDayByStartTimeAndEndTime(
+  entries: Array<CombinedTimeEventInDayEntry>
+) {
+  return entries.sort((a, b) => {
+    const aStartTime = DateTime.fromISO(
+      `${a.time_event.start_date}T${a.time_event.start_time_in_day}`,
+      { zone: "UTC" }
+    );
+    const bStartTime = DateTime.fromISO(
+      `${b.time_event.start_date}T${b.time_event.start_time_in_day}`,
+      { zone: "UTC" }
+    );
+
+    if (aStartTime === bStartTime) {
+      const aEndTime = aStartTime.plus({
+        minutes: a.time_event.duration_mins,
+      });
+      const bEndTime = bStartTime.plus({
+        minutes: b.time_event.duration_mins,
+      });
+      return aEndTime < bEndTime ? -1 : 1;
+    }
+    return aStartTime < bStartTime ? -1 : 1;
+  });
 }

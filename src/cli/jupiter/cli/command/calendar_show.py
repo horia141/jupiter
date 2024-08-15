@@ -119,13 +119,13 @@ class CalendarShow(
         for inbox_task_entry in sorted(
             result.inbox_task_entries,
             key=lambda it: (
-                it.time_event[0].start_date,
-                it.time_event[0].start_time_in_day,
-                it.time_event[0].duration_mins,
+                it.time_events[0].start_date,
+                it.time_events[0].start_time_in_day,
+                it.time_events[0].duration_mins,
             ),
         ):
             inbox_task = inbox_task_entry.inbox_task
-            time_event = inbox_task_entry.time_event
+            time_event = inbox_task_entry.time_events
 
             inbox_task_text = Text("")
             inbox_task_text.append(entity_name_to_rich_text(inbox_task.name))

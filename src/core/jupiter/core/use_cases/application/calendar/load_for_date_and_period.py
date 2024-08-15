@@ -71,7 +71,7 @@ class InboxTaskEntry(UseCaseResultBase):
     """Result entry."""
 
     inbox_task: InboxTask
-    time_event: list[TimeEventInDayBlock]
+    time_events: list[TimeEventInDayBlock]
 
 
 @use_case_result_part
@@ -88,6 +88,8 @@ class CalendarLoadForDateAndPeriodResult(UseCaseResultBase):
 
     right_now: ADate
     period: RecurringTaskPeriod
+    period_start_date: ADate
+    period_end_date: ADate
     prev_period_start_date: ADate
     next_period_start_date: ADate
     schedule_event_in_day_entries: list[ScheduleInDayEventEntry]
@@ -143,7 +145,7 @@ class CalendarLoadForDateAndPeriodUseCase(
             parent_ref_id=time_event_domain.ref_id,
             start_date=schedule.first_day,
             end_date=schedule.end_day,
-        ) 
+        )
         time_events_full_days: list[TimeEventFullDaysBlock] = await uow.get(
             TimeEventFullDaysBlockRepository
         ).find_all_between(
@@ -184,7 +186,7 @@ class CalendarLoadForDateAndPeriodUseCase(
             )
             for se in schedule_events_in_day
         ]
-        
+
         time_events_full_days_for_schedule_events_full_days: dict[
             EntityId, TimeEventFullDaysBlock
         ] = {
@@ -232,7 +234,7 @@ class CalendarLoadForDateAndPeriodUseCase(
         inbox_task_entries = [
             InboxTaskEntry(
                 inbox_task=inbox_task,
-                time_event=time_events_in_day_for_inbox_tasks[inbox_task.ref_id],
+                time_events=time_events_in_day_for_inbox_tasks[inbox_task.ref_id],
             )
             for inbox_task in inbox_tasks
         ]
@@ -260,6 +262,8 @@ class CalendarLoadForDateAndPeriodUseCase(
         return CalendarLoadForDateAndPeriodResult(
             right_now=args.right_now,
             period=args.period,
+            period_start_date=schedule.first_day,
+            period_end_date=schedule.end_day,
             prev_period_start_date=prev_schedule.first_day,
             next_period_start_date=next_schedule.first_day,
             schedule_event_in_day_entries=schedule_event_in_day_entries,

@@ -10,6 +10,6 @@ import type { TimeEventInDayBlock } from './TimeEventInDayBlock';
  */
 export type InboxTaskEntry = {
     inbox_task: InboxTask;
-    time_event: Array<TimeEventInDayBlock>;
+    time_events: Array<TimeEventInDayBlock>;
 };
 

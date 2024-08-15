@@ -22,6 +22,8 @@ class CalendarLoadForDateAndPeriodResult:
     Attributes:
         right_now (str): A date or possibly a datetime for the application.
         period (RecurringTaskPeriod): A period for a particular task.
+        period_start_date (str): A date or possibly a datetime for the application.
+        period_end_date (str): A date or possibly a datetime for the application.
         prev_period_start_date (str): A date or possibly a datetime for the application.
         next_period_start_date (str): A date or possibly a datetime for the application.
         schedule_event_in_day_entries (List['ScheduleInDayEventEntry']):
@@ -32,6 +34,8 @@ class CalendarLoadForDateAndPeriodResult:
 
     right_now: str
     period: RecurringTaskPeriod
+    period_start_date: str
+    period_end_date: str
     prev_period_start_date: str
     next_period_start_date: str
     schedule_event_in_day_entries: List["ScheduleInDayEventEntry"]
@@ -44,6 +48,10 @@ class CalendarLoadForDateAndPeriodResult:
         right_now = self.right_now
 
         period = self.period.value
+
+        period_start_date = self.period_start_date
+
+        period_end_date = self.period_end_date
 
         prev_period_start_date = self.prev_period_start_date
 
@@ -75,6 +83,8 @@ class CalendarLoadForDateAndPeriodResult:
             {
                 "right_now": right_now,
                 "period": period,
+                "period_start_date": period_start_date,
+                "period_end_date": period_end_date,
                 "prev_period_start_date": prev_period_start_date,
                 "next_period_start_date": next_period_start_date,
                 "schedule_event_in_day_entries": schedule_event_in_day_entries,
@@ -97,6 +107,10 @@ class CalendarLoadForDateAndPeriodResult:
         right_now = d.pop("right_now")
 
         period = RecurringTaskPeriod(d.pop("period"))
+
+        period_start_date = d.pop("period_start_date")
+
+        period_end_date = d.pop("period_end_date")
 
         prev_period_start_date = d.pop("prev_period_start_date")
 
@@ -137,6 +151,8 @@ class CalendarLoadForDateAndPeriodResult:
         calendar_load_for_date_and_period_result = cls(
             right_now=right_now,
             period=period,
+            period_start_date=period_start_date,
+            period_end_date=period_end_date,
             prev_period_start_date=prev_period_start_date,
             next_period_start_date=next_period_start_date,
             schedule_event_in_day_entries=schedule_event_in_day_entries,

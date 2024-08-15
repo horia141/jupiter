@@ -13,7 +13,12 @@ import {
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useParams, useSearchParams, useTransition } from "@remix-run/react";
+import {
+  useActionData,
+  useParams,
+  useSearchParams,
+  useTransition,
+} from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
@@ -128,7 +133,9 @@ export async function action({ request, params }: ActionArgs) {
             value: form.durationDays,
           },
         });
-        return redirect(`/workspace/calendar/schedule/event-full-days/${id}?${url.searchParams}`);
+        return redirect(
+          `/workspace/calendar/schedule/event-full-days/${id}?${url.searchParams}`
+        );
       }
       case "change-schedule-stream": {
         await getLoggedInApiClient(
@@ -137,7 +144,9 @@ export async function action({ request, params }: ActionArgs) {
           ref_id: id,
           schedule_stream_ref_id: form.scheduleStreamRefId,
         });
-        return redirect(`/workspace/calendar/schedule/event-full-days/${id}?${url.searchParams}`);
+        return redirect(
+          `/workspace/calendar/schedule/event-full-days/${id}?${url.searchParams}`
+        );
       }
       case "create-note": {
         await getLoggedInApiClient(session).notes.noteCreate({
@@ -145,7 +154,9 @@ export async function action({ request, params }: ActionArgs) {
           source_entity_ref_id: id,
           content: [],
         });
-        return redirect(`/workspace/calendar/schedule/event-full-days/${id}?${url.searchParams}`);
+        return redirect(
+          `/workspace/calendar/schedule/event-full-days/${id}?${url.searchParams}`
+        );
       }
       case "archive": {
         await getLoggedInApiClient(
@@ -153,7 +164,9 @@ export async function action({ request, params }: ActionArgs) {
         ).eventFullDays.scheduleEventFullDaysArchive({
           ref_id: id,
         });
-        return redirect(`/workspace/calendar/schedule/event-full-days/${id}?${url.searchParams}`);
+        return redirect(
+          `/workspace/calendar/schedule/event-full-days/${id}?${url.searchParams}`
+        );
       }
 
       default:

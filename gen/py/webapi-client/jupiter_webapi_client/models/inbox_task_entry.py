@@ -17,27 +17,27 @@ class InboxTaskEntry:
 
     Attributes:
         inbox_task (InboxTask): An inbox task.
-        time_event (List['TimeEventInDayBlock']):
+        time_events (List['TimeEventInDayBlock']):
     """
 
     inbox_task: "InboxTask"
-    time_event: List["TimeEventInDayBlock"]
+    time_events: List["TimeEventInDayBlock"]
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         inbox_task = self.inbox_task.to_dict()
 
-        time_event = []
-        for time_event_item_data in self.time_event:
-            time_event_item = time_event_item_data.to_dict()
-            time_event.append(time_event_item)
+        time_events = []
+        for time_events_item_data in self.time_events:
+            time_events_item = time_events_item_data.to_dict()
+            time_events.append(time_events_item)
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
                 "inbox_task": inbox_task,
-                "time_event": time_event,
+                "time_events": time_events,
             }
         )
 
@@ -51,16 +51,16 @@ class InboxTaskEntry:
         d = src_dict.copy()
         inbox_task = InboxTask.from_dict(d.pop("inbox_task"))
 
-        time_event = []
-        _time_event = d.pop("time_event")
-        for time_event_item_data in _time_event:
-            time_event_item = TimeEventInDayBlock.from_dict(time_event_item_data)
+        time_events = []
+        _time_events = d.pop("time_events")
+        for time_events_item_data in _time_events:
+            time_events_item = TimeEventInDayBlock.from_dict(time_events_item_data)
 
-            time_event.append(time_event_item)
+            time_events.append(time_events_item)
 
         inbox_task_entry = cls(
             inbox_task=inbox_task,
-            time_event=time_event,
+            time_events=time_events,
         )
 
         inbox_task_entry.additional_properties = d
