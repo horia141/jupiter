@@ -143,7 +143,7 @@ class CalendarLoadForDateAndPeriodUseCase(
             parent_ref_id=time_event_domain.ref_id,
             start_date=schedule.first_day,
             end_date=schedule.end_day,
-        )
+        ) 
         time_events_full_days: list[TimeEventFullDaysBlock] = await uow.get(
             TimeEventFullDaysBlockRepository
         ).find_all_between(
@@ -184,7 +184,7 @@ class CalendarLoadForDateAndPeriodUseCase(
             )
             for se in schedule_events_in_day
         ]
-
+        
         time_events_full_days_for_schedule_events_full_days: dict[
             EntityId, TimeEventFullDaysBlock
         ] = {

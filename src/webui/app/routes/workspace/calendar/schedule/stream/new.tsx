@@ -3,7 +3,7 @@ import { FormControl, InputLabel, OutlinedInput, Stack } from "@mui/material";
 import type { ActionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useTransition } from "@remix-run/react";
+import { useActionData, useSearchParams, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
@@ -36,6 +36,7 @@ export const handle = {
 export async function action({ request }: ActionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const form = await parseForm(request, CreateFormSchema);
+  const url = new URL(request.url);
 
   try {
     const response = await getLoggedInApiClient(
@@ -46,7 +47,7 @@ export async function action({ request }: ActionArgs) {
     });
 
     return redirect(
-      `/workspace/calendar/schedule/stream/${response.new_schedule_stream.ref_id}`
+      `/workspace/calendar/schedule/stream/${response.new_schedule_stream.ref_id}?${url.searchParams}`
     );
   } catch (error) {
     if (
@@ -67,13 +68,14 @@ export default function ScheduleStreamNew() {
   const actionData = useActionData<typeof action>();
   const topLevelInfo = useContext(TopLevelInfoContext);
   const transition = useTransition();
+  const [query] = useSearchParams();
 
   const inputsEnabled = transition.state === "idle";
 
   return (
     <LeafPanel
       key="schedule-stream/new"
-      returnLocation="/workspace/calendar/schedule/stream"
+      returnLocation={`/workspace/calendar/schedule/stream?${query}`}
     >
       <GlobalError actionResult={actionData} />
       <SectionCardNew

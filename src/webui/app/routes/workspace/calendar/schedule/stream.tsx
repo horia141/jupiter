@@ -49,8 +49,8 @@ export default function ScheduleStreamViewAll() {
   return (
     <BranchPanel
       key="calendar-schedule-stream"
-      createLocation="/workspace/calendar/schedule/stream/new"
-      returnLocation="/workspace/calendar"
+      createLocation={`/workspace/calendar/schedule/stream/new?${query}`}
+      returnLocation={`/workspace/calendar?${query}`}
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
         <EntityStack>

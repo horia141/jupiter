@@ -16,7 +16,7 @@ import {
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useParams, useTransition } from "@remix-run/react";
+import { useActionData, useParams, useSearchParams, useTransition } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
@@ -91,6 +91,7 @@ export async function action({ request, params }: ActionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
+  const url = new URL(request.url);
 
   try {
     switch (form.intent) {
@@ -107,7 +108,7 @@ export async function action({ request, params }: ActionArgs) {
           },
         });
 
-        return redirect(`/workspace/calendar/schedule/stream/${id}`);
+        return redirect(`/workspace/calendar/schedule/stream/${id}?${url.searchParams}`);
       }
 
       case "create-note": {
@@ -117,7 +118,7 @@ export async function action({ request, params }: ActionArgs) {
           content: [],
         });
 
-        return redirect(`/workspace/calendar/schedule/stream/${id}`);
+        return redirect(`/workspace/calendar/schedule/stream/${id}?${url.searchParams}`);
       }
 
       case "archive": {
@@ -125,7 +126,7 @@ export async function action({ request, params }: ActionArgs) {
           ref_id: id,
         });
 
-        return redirect(`/workspace/calendar/schedule/stream/${id}`);
+        return redirect(`/workspace/calendar/schedule/stream/${id}?${url.searchParams}`);
       }
 
       default:
@@ -150,6 +151,7 @@ export default function ScheduleStreamViewOne() {
   const actionData = useActionData<typeof action>();
   const topLevelInfo = useContext(TopLevelInfoContext);
   const transition = useTransition();
+  const [query] = useSearchParams();
 
   const inputsEnabled =
     transition.state === "idle" && !loaderData.scheduleStream.archived;
@@ -159,7 +161,7 @@ export default function ScheduleStreamViewOne() {
       key={`schedule-stream-${loaderData.scheduleStream.ref_id}`}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
-      returnLocation="/workspace/calendar/schedule/stream"
+      returnLocation={`/workspace/calendar/schedule/stream?${query}`}
     >
       <GlobalError actionResult={actionData} />
       <SectionCardNew

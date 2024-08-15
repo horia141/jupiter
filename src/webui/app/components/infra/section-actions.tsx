@@ -424,7 +424,7 @@ function NavMultipleSpreadView(props: NavMultipleViewProps) {
         return (
           <Button
             key={`nav-multiple-${index}`}
-            variant="outlined"
+            variant={nav.highlight ? "contained" : "outlined"}
             component={Link}
             disabled={!props.inputsEnabled}
             startIcon={nav.icon}

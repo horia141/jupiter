@@ -11,7 +11,7 @@ import {
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useTransition } from "@remix-run/react";
+import { useActionData, useSearchParams, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
 import { useContext, useState } from "react";
@@ -73,6 +73,7 @@ export async function loader({ request }: LoaderArgs) {
 export async function action({ request }: ActionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const form = await parseForm(request, CreateFormSchema);
+  const url = new URL(request.url);
 
   try {
     const response = await getLoggedInApiClient(
@@ -86,7 +87,7 @@ export async function action({ request }: ActionArgs) {
     });
 
     return redirect(
-      `/workspace/calendar/schedule/event-in-day/${response.new_schedule_event_in_day.ref_id}`
+      `/workspace/calendar/schedule/event-in-day/${response.new_schedule_event_in_day.ref_id}?${url.searchParams}`
     );
   } catch (error) {
     if (
@@ -108,6 +109,7 @@ export default function ScheduleEventInDayNew() {
   const actionData = useActionData<typeof action>();
   const topLevelInfo = useContext(TopLevelInfoContext);
   const transition = useTransition();
+  const [query] = useSearchParams();
 
   const inputsEnabled = transition.state === "idle";
 
@@ -118,7 +120,7 @@ export default function ScheduleEventInDayNew() {
   return (
     <LeafPanel
       key="schedule-event-in-day/new"
-      returnLocation="/workspace/calendar"
+      returnLocation={`/workspace/calendar?${query}`}
     >
       <GlobalError actionResult={actionData} />
       <SectionCardNew

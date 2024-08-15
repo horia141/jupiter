@@ -13,7 +13,7 @@ import {
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useParams, useTransition } from "@remix-run/react";
+import { useActionData, useParams, useSearchParams, useTransition } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
@@ -106,6 +106,7 @@ export async function action({ request, params }: ActionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
+  const url = new URL(request.url);
 
   try {
     switch (form.intent) {
@@ -127,7 +128,7 @@ export async function action({ request, params }: ActionArgs) {
             value: form.durationDays,
           },
         });
-        return redirect(`/workspace/calendar/schedule/event-full-days/${id}`);
+        return redirect(`/workspace/calendar/schedule/event-full-days/${id}?${url.searchParams}`);
       }
       case "change-schedule-stream": {
         await getLoggedInApiClient(
@@ -136,7 +137,7 @@ export async function action({ request, params }: ActionArgs) {
           ref_id: id,
           schedule_stream_ref_id: form.scheduleStreamRefId,
         });
-        return redirect(`/workspace/calendar/schedule/event-full-days/${id}`);
+        return redirect(`/workspace/calendar/schedule/event-full-days/${id}?${url.searchParams}`);
       }
       case "create-note": {
         await getLoggedInApiClient(session).notes.noteCreate({
@@ -144,7 +145,7 @@ export async function action({ request, params }: ActionArgs) {
           source_entity_ref_id: id,
           content: [],
         });
-        return redirect(`/workspace/calendar/schedule/event-full-days/${id}`);
+        return redirect(`/workspace/calendar/schedule/event-full-days/${id}?${url.searchParams}`);
       }
       case "archive": {
         await getLoggedInApiClient(
@@ -152,7 +153,7 @@ export async function action({ request, params }: ActionArgs) {
         ).eventFullDays.scheduleEventFullDaysArchive({
           ref_id: id,
         });
-        return redirect(`/workspace/calendar/schedule/event-full-days/${id}`);
+        return redirect(`/workspace/calendar/schedule/event-full-days/${id}?${url.searchParams}`);
       }
 
       default:
@@ -177,6 +178,7 @@ export default function ScheduleEventFullDaysViewOne() {
   const actionData = useActionData<typeof action>();
   const topLevelInfo = useContext(TopLevelInfoContext);
   const transition = useTransition();
+  const [query] = useSearchParams();
 
   const inputsEnabled =
     transition.state === "idle" && !loaderData.scheduleEventFullDays.archived;
@@ -197,7 +199,7 @@ export default function ScheduleEventFullDaysViewOne() {
       key={`schedule-event-full-days-${loaderData.scheduleEventFullDays.ref_id}`}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
-      returnLocation="/workspace/calendar"
+      returnLocation={`/workspace/calendar?${query}`}
     >
       <GlobalError actionResult={actionData} />
       <SectionCardNew
