@@ -15,6 +15,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import {
   Paper,
+  styled,
   Table,
   TableBody,
   TableCell,
@@ -51,7 +52,9 @@ import {
 import { ScheduleStreamColorTag } from "~/components/schedule-stream-color-tag";
 import { aDateToDate, allDaysBetween } from "~/logic/domain/adate";
 import { periodName } from "~/logic/domain/period";
+import { scheduleStreamColorHex } from "~/logic/domain/schedule-stream-color";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
+import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
@@ -285,6 +288,8 @@ interface ViewAsScheduleProps {
 }
 
 function ViewAsSchedule(props: ViewAsScheduleProps) {
+  const isBigScreen = useBigScreen();
+  
   const combinedTimeEventFullDays: Array<CombinedTimeEventFullDaysEntry> = [];
   for (const entry of props.scheduleEventFullDayEntries) {
     combinedTimeEventFullDays.push({
@@ -334,7 +339,7 @@ function ViewAsSchedule(props: ViewAsScheduleProps) {
 
   return (
     <TableContainer component={Paper}>
-      <Table>
+      <Table sx={{borderCollapse: "separate", borderSpacing: "0.2rem"}}>
         <TableBody>
           {daysToProcess.map((date) => {
             const partitionFullDays =
@@ -356,14 +361,14 @@ function ViewAsSchedule(props: ViewAsScheduleProps) {
                 {firstRowFullDays && (
                   <>
                     <TableRow>
-                      <TableCell
+                      <ViewAsScheduleDateCell
                         rowSpan={
                           partitionFullDays.length + partitionInDay.length
                         }
-                        sx={{ verticalAlign: "top" }}
+                        isbigscreen={isBigScreen.toString()}
                       >
                         {date}
-                      </TableCell>
+                      </ViewAsScheduleDateCell>
 
                       <CombinedTimeEventFullDaysRows entry={firstRowFullDays} />
                     </TableRow>
@@ -423,27 +428,27 @@ function CombinedTimeEventFullDaysRows({
   entry: CombinedTimeEventFullDaysEntry;
 }) {
   const [query] = useSearchParams();
+  const isBigScreen = useBigScreen();
 
   switch (entry.time_event.namespace) {
     case TimeEventNamespace.SCHEDULE_FULL_DAYS_BLOCK:
       const fullDaysEntry = entry.entry as ScheduleFullDaysEventEntry;
       return (
         <React.Fragment>
-          <TableCell>[AllDay]</TableCell>
+          <ViewAsScheduleTimeCell isbigscreen={isBigScreen.toString()}>[AllDay]</ViewAsScheduleTimeCell>
 
-          <TableCell>
+          <ViewAsScheduleEventCell 
+              color={scheduleStreamColorHex(fullDaysEntry.stream.color)}
+              isbigscreen={isBigScreen.toString()}
+              height="0.25rem">
             <EntityLink
+              light
               key={`schedule-event-full-days-${fullDaysEntry.event.ref_id}`}
               to={`/workspace/calendar/schedule/event-full-days/${fullDaysEntry.event.ref_id}?${query}`}
             >
               <EntityNameComponent name={fullDaysEntry.event.name} />
             </EntityLink>
-          </TableCell>
-
-          <TableCell>
-            {fullDaysEntry.stream.name}{" "}
-            <ScheduleStreamColorTag color={fullDaysEntry.stream.color} />
-          </TableCell>
+          </ViewAsScheduleEventCell>
         </React.Fragment>
       );
 
@@ -455,12 +460,18 @@ function CombinedTimeEventFullDaysRows({
   }
 }
 
+function timeEventInDayDurationToRems(durationMins: number): string {
+  const durationHours = 0.5 + Math.floor(durationMins / 30);
+  return `${durationHours}rem`;
+}
+
 function CombinedTimeEventInDaysRows({
   entry,
 }: {
   entry: CombinedTimeEventInDayEntry;
 }) {
   const [query] = useSearchParams();
+  const isBigScreen = useBigScreen();
 
   const startTime = DateTime.fromISO(
     `${entry.time_event.start_date}T${entry.time_event.start_time_in_day}`,
@@ -475,23 +486,22 @@ function CombinedTimeEventInDaysRows({
       const scheduleEntry = entry.entry as ScheduleInDayEventEntry;
       return (
         <React.Fragment>
-          <TableCell>
+          <ViewAsScheduleTimeCell isbigscreen={isBigScreen.toString()}>
             [{startTime.toFormat("HH:mm")} - {endTime.toFormat("HH:mm")}]
-          </TableCell>
+          </ViewAsScheduleTimeCell>
 
-          <TableCell>
+          <ViewAsScheduleEventCell 
+              color={scheduleStreamColorHex(scheduleEntry.stream.color)}
+              isbigscreen={isBigScreen.toString()}
+              height={timeEventInDayDurationToRems(scheduleEntry.time_event.duration_mins)}>
             <EntityLink
+              light
               key={`schedule-event-in-day-${scheduleEntry.event.ref_id}`}
               to={`/workspace/calendar/schedule/event-in-day/${scheduleEntry.event.ref_id}?${query}`}
             >
               <EntityNameComponent name={scheduleEntry.event.name} />
             </EntityLink>
-          </TableCell>
-
-          <TableCell>
-            {scheduleEntry.stream.name}{" "}
-            <ScheduleStreamColorTag color={scheduleEntry.stream.color} />
-          </TableCell>
+          </ViewAsScheduleEventCell>
         </React.Fragment>
       );
 
@@ -502,6 +512,41 @@ function CombinedTimeEventInDaysRows({
       throw new Error("Unexpected namespace");
   }
 }
+
+interface ViewAsScheduleDateCellProps {
+  isbigscreen: string;
+}
+
+const ViewAsScheduleDateCell = styled(TableCell)<ViewAsScheduleDateCellProps>(({isbigscreen}) => ({
+  verticalAlign: "top",
+  padding: "0.25rem",
+  width: isbigscreen === "true" ? "15%" : "25%"
+}));
+
+interface ViewAsScheduleTimeCellProps {
+  isbigscreen: string;
+}
+
+const ViewAsScheduleTimeCell = styled(TableCell)<ViewAsScheduleTimeCellProps>(({isbigscreen}) => ({
+  verticalAlign: "top",
+  padding: "0.25rem",
+  width: isbigscreen === "true" ? "15%" : "30%"
+}));
+
+interface ViewAsScheduleEventCellProps {
+  isbigscreen: string;
+  color: string;
+  height: string;
+}
+
+const ViewAsScheduleEventCell = styled(TableCell)<ViewAsScheduleEventCellProps>(({isbigscreen, color, height}) => ({
+  verticalAlign: "top",
+  backgroundColor: color,
+  padding: "0.25rem",
+  paddingLeft: "0.5rem",
+  paddingBottom: height,
+  borderRadius: "0.25rem",            
+}));
 
 interface CombinedTimeEventFullDaysEntry {
   time_event: TimeEventFullDaysBlock;

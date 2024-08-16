@@ -34,7 +34,7 @@ export function scheduleStreamColorHex(color: ScheduleStreamColor): string {
     case ScheduleStreamColor.RED:
       return "#f44336";
     case ScheduleStreamColor.YELLOW:
-      return "#ffeb3b";
+      return "#f7d560";
     case ScheduleStreamColor.PURPLE:
       return "#9c27b0";
     case ScheduleStreamColor.ORANGE:
