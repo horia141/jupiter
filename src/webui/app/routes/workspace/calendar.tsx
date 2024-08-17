@@ -6,6 +6,7 @@ import type {
   ScheduleInDayEventEntry,
   TimeEventFullDaysBlock,
   TimeEventInDayBlock,
+  Timezone,
 } from "@jupiter/webapi-client";
 import {
   RecurringTaskPeriod,
@@ -14,6 +15,7 @@ import {
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import {
+  Box,
   Paper,
   styled,
   Table,
@@ -21,6 +23,7 @@ import {
   TableCell,
   TableContainer,
   TableRow,
+  useTheme,
 } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
@@ -39,7 +42,6 @@ import { parseQuery } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
 import { EntityNameComponent } from "~/components/entity-name";
 import { EntityLink } from "~/components/infra/entity-card";
-import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
@@ -49,7 +51,6 @@ import {
   NavSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { ScheduleStreamColorTag } from "~/components/schedule-stream-color-tag";
 import { aDateToDate, allDaysBetween } from "~/logic/domain/adate";
 import { periodName } from "~/logic/domain/period";
 import { scheduleStreamColorHex } from "~/logic/domain/schedule-stream-color";
@@ -244,14 +245,20 @@ export default function CalendarView() {
         branchForceHide={shouldShowABranch}
         shouldHide={shouldShowABranch || shouldShowALeafToo}
       >
-        {loaderData.view === View.CALENDAR && (
-          <EntityStack>
-            <p>
-              For {loaderData.today} and {loaderData.period} and{" "}
-              {loaderData.view}
-            </p>
-          </EntityStack>
-        )}
+        {loaderData.view === View.CALENDAR &&
+          loaderData.period === RecurringTaskPeriod.DAILY && (
+            <ViewAsCalendarDaily
+              timezone={topLevelInfo.user.timezone}
+              periodStartDate={loaderData.periodStartDate}
+              periodEndDate={loaderData.periodEndDate}
+              scheduleEventInDayEntries={loaderData.scheduleEventInDayEntries}
+              scheduleEventFullDayEntries={
+                loaderData.scheduleEventFullDayEntries
+              }
+              inboxTaskEntries={loaderData.inboxTaskEntries}
+              personEntries={loaderData.personEntries}
+            />
+          )}
 
         {loaderData.view === View.SCHEDULE && (
           <ViewAsSchedule
@@ -277,7 +284,7 @@ export const ErrorBoundary = makeErrorBoundary(
   () => `There was an error loading the calendar events! Please try again!`
 );
 
-interface ViewAsScheduleProps {
+interface ViewAsProps {
   timezone: string;
   periodStartDate: ADate;
   periodEndDate: ADate;
@@ -287,9 +294,129 @@ interface ViewAsScheduleProps {
   personEntries: Array<PersonEntry>;
 }
 
-function ViewAsSchedule(props: ViewAsScheduleProps) {
+function ViewAsCalendarDaily(props: ViewAsProps) {
+  const [query] = useSearchParams();
+  const theme = useTheme();
   const isBigScreen = useBigScreen();
-  
+
+  const combinedTimeEventInDay: Array<CombinedTimeEventInDayEntry> = [];
+  for (const entry of props.scheduleEventInDayEntries) {
+    combinedTimeEventInDay.push({
+      time_event: entry.time_event,
+      entry: entry,
+    });
+  }
+  for (const entry of props.inboxTaskEntries) {
+    for (const timeEvent of entry.time_events) {
+      combinedTimeEventInDay.push({
+        time_event: timeEvent,
+        entry: entry,
+      });
+    }
+  }
+
+  const partitionedCombinedTimeEventInDay =
+    combinedTimeEventInDayEntryPartionByDay(
+      combinedTimeEventInDay,
+      props.periodStartDate,
+      props.periodEndDate
+    );
+  const thePartition =
+    partitionedCombinedTimeEventInDay[props.periodStartDate] || [];
+
+  const startOfDay = DateTime.fromISO(`${props.periodStartDate}T00:00:00`, {
+    zone: props.timezone,
+  });
+  const hours = Array.from({ length: 24 }, (_, i) =>
+    startOfDay.plus({ hours: i })
+  );
+
+  return (
+    <Box
+      sx={{
+        position: "relative",
+        width: isBigScreen ? "300px" : "calc(100% - 4rem)",
+        height: "96rem",
+        margin: "auto",
+      }}
+    >
+      {hours.map((hour, idx) => (
+        <Box
+          key={idx}
+          sx={{
+            position: "absolute",
+            height: "0.05rem",
+            backgroundColor: theme.palette.text.disabled,
+            top: `${idx * 4}rem`,
+            width: "100%",
+          }}
+        >
+          <Box
+            sx={{
+              position: "relative",
+              left: "-2.8rem",
+              top: "-0.7rem",
+              color: theme.palette.text.disabled,
+            }}
+          >
+            {hour.toFormat("HH:mm")}
+          </Box>
+        </Box>
+      ))}
+
+      {thePartition.map((entry, index) => {
+        switch (entry.time_event.namespace) {
+          case TimeEventNamespace.SCHEDULE_EVENT_IN_DAY:
+            const scheduleEntry = entry.entry as ScheduleInDayEventEntry;
+
+            const startTime = DateTime.fromISO(
+              `${scheduleEntry.time_event.start_date}T${scheduleEntry.time_event.start_time_in_day}`,
+              { zone: props.timezone }
+            );
+            const secondsSinceStartOfDay = startTime
+              .diff(startOfDay)
+              .as("minutes");
+            return (
+              <Box
+                key={index}
+                sx={{
+                  position: "absolute",
+                  top: calendarTimeEventInDayStartMinutesToRems(
+                    secondsSinceStartOfDay
+                  ),
+                  height: calendarTimeEventInDayDurationToRems(
+                    scheduleEntry.time_event.duration_mins
+                  ),
+                  backgroundColor: scheduleStreamColorHex(
+                    scheduleEntry.stream.color
+                  ),
+                  borderRadius: "0.25rem",
+                  width: "100%",
+                }}
+              >
+                <EntityLink
+                  key={`schedule-event-in-day-${scheduleEntry.event.ref_id}`}
+                  to={`/workspace/calendar/schedule/event-in-day/${scheduleEntry.event.ref_id}?${query}`}
+                >
+                  <EntityNameComponent name={scheduleEntry.event.name} />
+                </EntityLink>
+              </Box>
+            );
+
+          case TimeEventNamespace.INBOX_TASK:
+            throw new Error("Not implemented");
+
+          default:
+            throw new Error("Unexpected namespace");
+        }
+      })}
+    </Box>
+  );
+}
+
+function ViewAsSchedule(props: ViewAsProps) {
+  const isBigScreen = useBigScreen();
+
   const combinedTimeEventFullDays: Array<CombinedTimeEventFullDaysEntry> = [];
   for (const entry of props.scheduleEventFullDayEntries) {
     combinedTimeEventFullDays.push({
@@ -339,7 +466,7 @@ function ViewAsSchedule(props: ViewAsScheduleProps) {
 
   return (
     <TableContainer component={Paper}>
-      <Table sx={{borderCollapse: "separate", borderSpacing: "0.2rem"}}>
+      <Table sx={{ borderCollapse: "separate", borderSpacing: "0.2rem" }}>
         <TableBody>
           {daysToProcess.map((date) => {
             const partitionFullDays =
@@ -381,13 +508,19 @@ function ViewAsSchedule(props: ViewAsScheduleProps) {
 
                     {firstRowInDay && (
                       <TableRow>
-                        <CombinedTimeEventInDaysRows entry={firstRowInDay} />
+                        <CombinedTimeEventInDaysRows
+                          entry={firstRowInDay}
+                          timezone={props.timezone}
+                        />
                       </TableRow>
                     )}
 
                     {otherRowsInDay.map((entry, index) => (
                       <TableRow key={index}>
-                        <CombinedTimeEventInDaysRows entry={entry} />
+                        <CombinedTimeEventInDaysRows
+                          entry={entry}
+                          timezone={props.timezone}
+                        />
                       </TableRow>
                     ))}
                   </>
@@ -403,12 +536,18 @@ function ViewAsSchedule(props: ViewAsScheduleProps) {
                         {date}
                       </TableCell>
 
-                      <CombinedTimeEventInDaysRows entry={firstRowInDay} />
+                      <CombinedTimeEventInDaysRows
+                        entry={firstRowInDay}
+                        timezone={props.timezone}
+                      />
                     </TableRow>
 
                     {otherRowsInDay.map((entry, index) => (
                       <TableRow key={index}>
-                        <CombinedTimeEventInDaysRows entry={entry} />
+                        <CombinedTimeEventInDaysRows
+                          entry={entry}
+                          timezone={props.timezone}
+                        />
                       </TableRow>
                     ))}
                   </>
@@ -435,12 +574,15 @@ function CombinedTimeEventFullDaysRows({
       const fullDaysEntry = entry.entry as ScheduleFullDaysEventEntry;
       return (
         <React.Fragment>
-          <ViewAsScheduleTimeCell isbigscreen={isBigScreen.toString()}>[AllDay]</ViewAsScheduleTimeCell>
+          <ViewAsScheduleTimeCell isbigscreen={isBigScreen.toString()}>
+            [AllDay]
+          </ViewAsScheduleTimeCell>
 
-          <ViewAsScheduleEventCell 
-              color={scheduleStreamColorHex(fullDaysEntry.stream.color)}
-              isbigscreen={isBigScreen.toString()}
-              height="0.25rem">
+          <ViewAsScheduleEventCell
+            color={scheduleStreamColorHex(fullDaysEntry.stream.color)}
+            isbigscreen={isBigScreen.toString()}
+            height="0.25rem"
+          >
             <EntityLink
               light
               key={`schedule-event-full-days-${fullDaysEntry.event.ref_id}`}
@@ -460,22 +602,36 @@ function CombinedTimeEventFullDaysRows({
   }
 }
 
-function timeEventInDayDurationToRems(durationMins: number): string {
+function calendarTimeEventInDayStartMinutesToRems(startMins: number): string {
+  // Each 15 minutes is 1 rem. Display has 96=4*24 rem height.
+  const startHours = Math.max(0, startMins / 15);
+  return `${startHours}rem`;
+}
+
+function calendarTimeEventInDayDurationToRems(durationMins: number): string {
+  // Each 15 minutes is 1 rem. Display has 96=4*24 rem height.
+  const durationHours = Math.max(2, durationMins / 15);
+  return `${durationHours}rem`;
+}
+
+function scheduleTimeEventInDayDurationToRems(durationMins: number): string {
   const durationHours = 0.5 + Math.floor(durationMins / 30);
   return `${durationHours}rem`;
 }
 
 function CombinedTimeEventInDaysRows({
   entry,
+  timezone,
 }: {
   entry: CombinedTimeEventInDayEntry;
+  timezone: Timezone;
 }) {
   const [query] = useSearchParams();
   const isBigScreen = useBigScreen();
 
   const startTime = DateTime.fromISO(
     `${entry.time_event.start_date}T${entry.time_event.start_time_in_day}`,
-    { zone: "UTC" }
+    { zone: timezone }
   );
   const endTime = startTime.plus({
     minutes: entry.time_event.duration_mins,
@@ -490,10 +646,13 @@ function CombinedTimeEventInDaysRows({
             [{startTime.toFormat("HH:mm")} - {endTime.toFormat("HH:mm")}]
           </ViewAsScheduleTimeCell>
 
-          <ViewAsScheduleEventCell 
-              color={scheduleStreamColorHex(scheduleEntry.stream.color)}
-              isbigscreen={isBigScreen.toString()}
-              height={timeEventInDayDurationToRems(scheduleEntry.time_event.duration_mins)}>
+          <ViewAsScheduleEventCell
+            color={scheduleStreamColorHex(scheduleEntry.stream.color)}
+            isbigscreen={isBigScreen.toString()}
+            height={scheduleTimeEventInDayDurationToRems(
+              scheduleEntry.time_event.duration_mins
+            )}
+          >
             <EntityLink
               light
               key={`schedule-event-in-day-${scheduleEntry.event.ref_id}`}
@@ -517,21 +676,25 @@ interface ViewAsScheduleDateCellProps {
   isbigscreen: string;
 }
 
-const ViewAsScheduleDateCell = styled(TableCell)<ViewAsScheduleDateCellProps>(({isbigscreen}) => ({
-  verticalAlign: "top",
-  padding: "0.25rem",
-  width: isbigscreen === "true" ? "15%" : "25%"
-}));
+const ViewAsScheduleDateCell = styled(TableCell)<ViewAsScheduleDateCellProps>(
+  ({ isbigscreen }) => ({
+    verticalAlign: "top",
+    padding: "0.25rem",
+    width: isbigscreen === "true" ? "15%" : "25%",
+  })
+);
 
 interface ViewAsScheduleTimeCellProps {
   isbigscreen: string;
 }
 
-const ViewAsScheduleTimeCell = styled(TableCell)<ViewAsScheduleTimeCellProps>(({isbigscreen}) => ({
-  verticalAlign: "top",
-  padding: "0.25rem",
-  width: isbigscreen === "true" ? "15%" : "30%"
-}));
+const ViewAsScheduleTimeCell = styled(TableCell)<ViewAsScheduleTimeCellProps>(
+  ({ isbigscreen }) => ({
+    verticalAlign: "top",
+    padding: "0.25rem",
+    width: isbigscreen === "true" ? "15%" : "30%",
+  })
+);
 
 interface ViewAsScheduleEventCellProps {
   isbigscreen: string;
@@ -539,14 +702,16 @@ interface ViewAsScheduleEventCellProps {
   height: string;
 }
 
-const ViewAsScheduleEventCell = styled(TableCell)<ViewAsScheduleEventCellProps>(({isbigscreen, color, height}) => ({
-  verticalAlign: "top",
-  backgroundColor: color,
-  padding: "0.25rem",
-  paddingLeft: "0.5rem",
-  paddingBottom: height,
-  borderRadius: "0.25rem",            
-}));
+const ViewAsScheduleEventCell = styled(TableCell)<ViewAsScheduleEventCellProps>(
+  ({ isbigscreen, color, height }) => ({
+    verticalAlign: "top",
+    backgroundColor: color,
+    padding: "0.25rem",
+    paddingLeft: "0.5rem",
+    paddingBottom: height,
+    borderRadius: "0.25rem",
+  })
+);
 
 interface CombinedTimeEventFullDaysEntry {
   time_event: TimeEventFullDaysBlock;

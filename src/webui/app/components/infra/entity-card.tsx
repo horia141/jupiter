@@ -148,9 +148,15 @@ interface EntityLinkProps {
 
 export function EntityLink(props: PropsWithChildren<EntityLinkProps>) {
   if (!(props.block === true)) {
-    return <StyledLink to={props.to} light={props.light ? "true" : "false"}>{props.children}</StyledLink>;
+    return (
+      <StyledLink to={props.to} light={props.light ? "true" : "false"}>
+        {props.children}
+      </StyledLink>
+    );
   } else {
-    return <EntityFakeLink light={props.light}>{props.children}</EntityFakeLink>;
+    return (
+      <EntityFakeLink light={props.light}>{props.children}</EntityFakeLink>
+    );
   }
 }
 
@@ -160,9 +166,15 @@ interface StyledLinkProps {
 
 const StyledLink = styled(Link)<StyledLinkProps>(({ theme, light }) => ({
   textDecoration: "none",
-  color: light === "true" ? theme.palette.info.contrastText : theme.palette.info.dark,
+  color:
+    light === "true"
+      ? theme.palette.info.contrastText
+      : theme.palette.info.dark,
   ":visited": {
-    color: light === "true" ? theme.palette.info.contrastText : theme.palette.info.dark,
+    color:
+      light === "true"
+        ? theme.palette.info.contrastText
+        : theme.palette.info.dark,
   },
   display: "flex",
   gap: "0.5rem",
@@ -171,19 +183,29 @@ const StyledLink = styled(Link)<StyledLinkProps>(({ theme, light }) => ({
 }));
 
 interface EntityFakeLinkProps {
-  light?: boolean
+  light?: boolean;
 }
 
 export function EntityFakeLink(props: PropsWithChildren<EntityFakeLinkProps>) {
-  return <StyledFakeLink light={props.light ? "true" : "false"}>{props.children}</StyledFakeLink>;
+  return (
+    <StyledFakeLink light={props.light ? "true" : "false"}>
+      {props.children}
+    </StyledFakeLink>
+  );
 }
 
 const StyledFakeLink = styled("span")<StyledLinkProps>(({ theme, light }) => ({
   textDecoration: "none",
   width: "100%",
-  color: light === "true" ? theme.palette.info.contrastText : theme.palette.info.dark,
+  color:
+    light === "true"
+      ? theme.palette.info.contrastText
+      : theme.palette.info.dark,
   ":visited": {
-    color: light === "true" ? theme.palette.info.contrastText : theme.palette.info.dark,
+    color:
+      light === "true"
+        ? theme.palette.info.contrastText
+        : theme.palette.info.dark,
   },
   display: "flex",
   gap: "0.5rem",
