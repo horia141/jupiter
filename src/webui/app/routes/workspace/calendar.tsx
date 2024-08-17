@@ -373,6 +373,7 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
       sx={{
         width: isBigScreen ? "300px" : "calc(100% - 4rem)",
         margin: "auto",
+        paddingTop: isBigScreen || thePartititionFullDays.length > 0 ? "0" : "1rem",
       }}
     >
       {thePartititionFullDays.map((entry, index) => {
