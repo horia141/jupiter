@@ -36,7 +36,7 @@ import {
 } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";
-import React, { useContext } from "react";
+import React, { useContext, useLayoutEffect, useState } from "react";
 import { z } from "zod";
 import { parseQuery } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
@@ -300,6 +300,15 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
   const theme = useTheme();
   const isBigScreen = useBigScreen();
 
+  const [containerWidth, setContainerWidth] = useState(250);
+  useLayoutEffect(() => {
+    if (!isBigScreen && typeof window !== "undefined") {
+      setContainerWidth(Math.max(250, window.innerWidth - 4 * theme.typography.htmlFontSize - 50));
+    } else {
+      setContainerWidth(250);
+    }
+  }, [isBigScreen, theme]);
+
   const combinedTimeEventInDay: Array<CombinedTimeEventInDayEntry> = [];
   for (const entry of props.scheduleEventInDayEntries) {
     combinedTimeEventInDay.push({
@@ -385,12 +394,11 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
               scheduleEntry.event.name,
               theme.typography.htmlFontSize
             );
-            console.log(scheduleEntry.event.name, textWidthInPx);
-
+            
             const clippedName = clipEventNameToWhatFits(
               `[${startTime.toFormat("HH:mm")} - ${endTime.toFormat("HH:mm")}] ${scheduleEntry.event.name}`,
               theme.typography.htmlFontSize,
-              250, // 50px less than 300 for padding
+              containerWidth,
               minutesSinceStartOfDay,
               scheduleEntry.time_event.duration_mins
             );
