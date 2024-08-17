@@ -64,6 +64,7 @@ import {
 } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { measureText } from "~/utils";
 
 enum View {
   CALENDAR = "calendar",
@@ -373,19 +374,37 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
               `${scheduleEntry.time_event.start_date}T${scheduleEntry.time_event.start_time_in_day}`,
               { zone: props.timezone }
             );
-            const secondsSinceStartOfDay = startTime
+            const endTime = startTime.plus({
+              minutes: entry.time_event.duration_mins,
+            });
+            const minutesSinceStartOfDay = startTime
               .diff(startOfDay)
               .as("minutes");
+
+            const textWidthInPx = measureText(
+              scheduleEntry.event.name,
+              theme.typography.htmlFontSize
+            );
+            console.log(scheduleEntry.event.name, textWidthInPx);
+
+            const clippedName = clipEventNameToWhatFits(
+              `[${startTime.toFormat("HH:mm")} - ${endTime.toFormat("HH:mm")}] ${scheduleEntry.event.name}`,
+              theme.typography.htmlFontSize,
+              250, // 50px less than 300 for padding
+              minutesSinceStartOfDay,
+              scheduleEntry.time_event.duration_mins
+            );
+
             return (
               <Box
                 key={index}
                 sx={{
                   position: "absolute",
                   top: calendarTimeEventInDayStartMinutesToRems(
-                    secondsSinceStartOfDay
+                    minutesSinceStartOfDay
                   ),
                   height: calendarTimeEventInDayDurationToRems(
-                    scheduleEntry.time_event.duration_mins
+                    minutesSinceStartOfDay, scheduleEntry.time_event.duration_mins
                   ),
                   backgroundColor: scheduleStreamColorHex(
                     scheduleEntry.stream.color
@@ -398,7 +417,19 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
                   key={`schedule-event-in-day-${scheduleEntry.event.ref_id}`}
                   to={`/workspace/calendar/schedule/event-in-day/${scheduleEntry.event.ref_id}?${query}`}
                 >
-                  <EntityNameComponent name={scheduleEntry.event.name} />
+                  <Box sx={{
+                    position: "absolute",
+                    width: "100%",
+                    height: "100%",
+                    top: "0.25rem",
+                    left: "0.25rem",
+                    overflow: "hidden",
+                  }}>
+                  <EntityNameComponent name={clippedName} />
+                  {/* {" "}
+                  [{startTime.toFormat("HH:mm")} - {endTime.toFormat("HH:mm")}]
+                  */}
+                  </Box>
                 </EntityLink>
               </Box>
             );
@@ -602,21 +633,46 @@ function CombinedTimeEventFullDaysRows({
   }
 }
 
+function computeTimeEventInDayDurationInQuarters(minutesSinceStartOfDay: number, durationMins: number): number {
+  // Each 15 minutes is 1 rem. Display has 96=4*24 rem height.
+  // If the event goes beyond the day, we cap it at 24 hours.
+  const finalOffsetInMinutes = minutesSinceStartOfDay + durationMins;
+  let finalDurationInMins = durationMins
+  if (finalOffsetInMinutes > 24 * 60) {
+    finalDurationInMins = Math.max(15, 24 * 60 - minutesSinceStartOfDay);
+  }
+  return Math.max(2, finalDurationInMins / 15);
+}
+
+function clipEventNameToWhatFits(name: string, fontSize: number, containerWidth: number, minutesSinceStartOfDay: number, durationInMins: number): string {
+  const durationInQuarters = computeTimeEventInDayDurationInQuarters(0, durationInMins);
+  const durationInHalfs = Math.max(1, Math.floor(durationInQuarters / 2));
+  const textWidthInPx = measureText(name, fontSize);
+  const totalWidthInPx = containerWidth * durationInHalfs;
+
+  if (textWidthInPx <= totalWidthInPx) {
+    return name;
+  } else {
+    // Do some rough approximation here.
+    const maxChars = Math.floor(name.length * totalWidthInPx / textWidthInPx);
+    return name.substring(0, maxChars) + "...";
+  }
+}
+
 function calendarTimeEventInDayStartMinutesToRems(startMins: number): string {
   // Each 15 minutes is 1 rem. Display has 96=4*24 rem height.
   const startHours = Math.max(0, startMins / 15);
   return `${startHours}rem`;
 }
 
-function calendarTimeEventInDayDurationToRems(durationMins: number): string {
-  // Each 15 minutes is 1 rem. Display has 96=4*24 rem height.
-  const durationHours = Math.max(2, durationMins / 15);
-  return `${durationHours}rem`;
+function calendarTimeEventInDayDurationToRems(minutesSinceStartOfDay: number, durationMins: number): string {
+  const durationInQuarters =computeTimeEventInDayDurationInQuarters(minutesSinceStartOfDay, durationMins);
+  return `${durationInQuarters}rem`;
 }
 
 function scheduleTimeEventInDayDurationToRems(durationMins: number): string {
-  const durationHours = 0.5 + Math.floor(durationMins / 30);
-  return `${durationHours}rem`;
+  const durationInHalfs = 0.5 + Math.floor(durationMins / 30);
+  return `${durationInHalfs}rem`;
 }
 
 function CombinedTimeEventInDaysRows({
