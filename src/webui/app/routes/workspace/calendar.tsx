@@ -303,11 +303,30 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
   const [containerWidth, setContainerWidth] = useState(250);
   useLayoutEffect(() => {
     if (!isBigScreen && typeof window !== "undefined") {
-      setContainerWidth(Math.max(250, window.innerWidth - 4 * theme.typography.htmlFontSize - 50));
+      setContainerWidth(
+        Math.max(
+          250,
+          window.innerWidth - 4 * theme.typography.htmlFontSize - 64
+        )
+      );
     } else {
       setContainerWidth(250);
     }
   }, [isBigScreen, theme]);
+
+  const combinedTimeEventFullDays: Array<CombinedTimeEventFullDaysEntry> = [];
+  for (const entry of props.scheduleEventFullDayEntries) {
+    combinedTimeEventFullDays.push({
+      time_event: entry.time_event,
+      entry: entry,
+    });
+  }
+  for (const entry of props.personEntries) {
+    combinedTimeEventFullDays.push({
+      time_event: entry.birthday_time_event,
+      entry: entry,
+    });
+  }
 
   const combinedTimeEventInDay: Array<CombinedTimeEventInDayEntry> = [];
   for (const entry of props.scheduleEventInDayEntries) {
@@ -325,13 +344,21 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
     }
   }
 
+  const partitionedCombinedTimeEventFullDays =
+    combinedTimeEventFullDayEntryPartionByDay(
+      combinedTimeEventFullDays,
+      props.periodStartDate,
+      props.periodEndDate
+    );
+  const thePartititionFullDays =
+    partitionedCombinedTimeEventFullDays[props.periodStartDate] || [];
   const partitionedCombinedTimeEventInDay =
     combinedTimeEventInDayEntryPartionByDay(
       combinedTimeEventInDay,
       props.periodStartDate,
       props.periodEndDate
     );
-  const thePartition =
+  const thePartitionInDay =
     partitionedCombinedTimeEventInDay[props.periodStartDate] || [];
 
   const startOfDay = DateTime.fromISO(`${props.periodStartDate}T00:00:00`, {
@@ -344,111 +371,166 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
   return (
     <Box
       sx={{
-        position: "relative",
         width: isBigScreen ? "300px" : "calc(100% - 4rem)",
-        height: "96rem",
         margin: "auto",
       }}
     >
-      {hours.map((hour, idx) => (
-        <Box
-          key={idx}
-          sx={{
-            position: "absolute",
-            height: "0.05rem",
-            backgroundColor: theme.palette.text.disabled,
-            top: `${idx * 4}rem`,
-            width: "100%",
-          }}
-        >
-          <Box
-            sx={{
-              position: "relative",
-              left: "-2.8rem",
-              top: "-0.7rem",
-              color: theme.palette.text.disabled,
-            }}
-          >
-            {hour.toFormat("HH:mm")}
-          </Box>
-        </Box>
-      ))}
-
-      {thePartition.map((entry, index) => {
+      {thePartititionFullDays.map((entry, index) => {
         switch (entry.time_event.namespace) {
-          case TimeEventNamespace.SCHEDULE_EVENT_IN_DAY:
-            const scheduleEntry = entry.entry as ScheduleInDayEventEntry;
+          case TimeEventNamespace.SCHEDULE_FULL_DAYS_BLOCK:
+            const fullDaysEntry = entry.entry as ScheduleFullDaysEventEntry;
 
-            const startTime = DateTime.fromISO(
-              `${scheduleEntry.time_event.start_date}T${scheduleEntry.time_event.start_time_in_day}`,
-              { zone: props.timezone }
-            );
-            const endTime = startTime.plus({
-              minutes: entry.time_event.duration_mins,
-            });
-            const minutesSinceStartOfDay = startTime
-              .diff(startOfDay)
-              .as("minutes");
-
-            const textWidthInPx = measureText(
-              scheduleEntry.event.name,
-              theme.typography.htmlFontSize
-            );
-            
             const clippedName = clipEventNameToWhatFits(
-              `[${startTime.toFormat("HH:mm")} - ${endTime.toFormat("HH:mm")}] ${scheduleEntry.event.name}`,
+              `[All Day] ${fullDaysEntry.event.name}`,
               theme.typography.htmlFontSize,
-              containerWidth,
-              minutesSinceStartOfDay,
-              scheduleEntry.time_event.duration_mins
+              containerWidth - 32, // A hack of sorts
+              0,
+              15
             );
 
+            console.log(
+              "containerWidth",
+              containerWidth,
+              "clippedName",
+              clippedName
+            );
             return (
               <Box
                 key={index}
                 sx={{
-                  position: "absolute",
-                  top: calendarTimeEventInDayStartMinutesToRems(
-                    minutesSinceStartOfDay
-                  ),
-                  height: calendarTimeEventInDayDurationToRems(
-                    minutesSinceStartOfDay, scheduleEntry.time_event.duration_mins
-                  ),
                   backgroundColor: scheduleStreamColorHex(
-                    scheduleEntry.stream.color
+                    fullDaysEntry.stream.color
                   ),
                   borderRadius: "0.25rem",
+                  padding: "0.25rem",
+                  paddingLeft: "0.5rem",
                   width: "100%",
+                  height: "2rem",
+                  marginBottom: "0.25rem",
+                  overflow: "hidden",
                 }}
               >
                 <EntityLink
-                  key={`schedule-event-in-day-${scheduleEntry.event.ref_id}`}
-                  to={`/workspace/calendar/schedule/event-in-day/${scheduleEntry.event.ref_id}?${query}`}
+                  key={`schedule-event-full-days-${fullDaysEntry.event.ref_id}`}
+                  to={`/workspace/calendar/schedule/event-full-days/${fullDaysEntry.event.ref_id}?${query}`}
                 >
-                  <Box sx={{
-                    position: "absolute",
-                    width: "100%",
-                    height: "100%",
-                    top: "0.25rem",
-                    left: "0.25rem",
-                    overflow: "hidden",
-                  }}>
                   <EntityNameComponent name={clippedName} />
-                  {/* {" "}
-                  [{startTime.toFormat("HH:mm")} - {endTime.toFormat("HH:mm")}]
-                  */}
-                  </Box>
                 </EntityLink>
               </Box>
             );
 
-          case TimeEventNamespace.INBOX_TASK:
+          case TimeEventNamespace.PERSON_BIRTHDAY:
             throw new Error("Not implemented");
 
           default:
             throw new Error("Unexpected namespace");
         }
       })}
+
+      <Box
+        sx={{
+          position: "relative",
+          width: "100%",
+          height: "96rem",
+        }}
+      >
+        {hours.map((hour, idx) => (
+          <Box
+            key={idx}
+            sx={{
+              position: "absolute",
+              height: "0.05rem",
+              backgroundColor: theme.palette.text.disabled,
+              top: `${idx * 4}rem`,
+              width: "100%",
+            }}
+          >
+            <Box
+              sx={{
+                position: "relative",
+                left: "-2.8rem",
+                top: "-0.7rem",
+                color: theme.palette.text.disabled,
+              }}
+            >
+              {hour.toFormat("HH:mm")}
+            </Box>
+          </Box>
+        ))}
+
+        {thePartitionInDay.map((entry, index) => {
+          switch (entry.time_event.namespace) {
+            case TimeEventNamespace.SCHEDULE_EVENT_IN_DAY:
+              const scheduleEntry = entry.entry as ScheduleInDayEventEntry;
+
+              const startTime = DateTime.fromISO(
+                `${scheduleEntry.time_event.start_date}T${scheduleEntry.time_event.start_time_in_day}`,
+                { zone: props.timezone }
+              );
+              const endTime = startTime.plus({
+                minutes: entry.time_event.duration_mins,
+              });
+              const minutesSinceStartOfDay = startTime
+                .diff(startOfDay)
+                .as("minutes");
+
+              const clippedName = clipEventNameToWhatFits(
+                `[${startTime.toFormat("HH:mm")} - ${endTime.toFormat(
+                  "HH:mm"
+                )}] ${scheduleEntry.event.name}`,
+                theme.typography.htmlFontSize,
+                containerWidth,
+                minutesSinceStartOfDay,
+                scheduleEntry.time_event.duration_mins
+              );
+
+              return (
+                <Box
+                  key={index}
+                  sx={{
+                    position: "absolute",
+                    top: calendarTimeEventInDayStartMinutesToRems(
+                      minutesSinceStartOfDay
+                    ),
+                    height: calendarTimeEventInDayDurationToRems(
+                      minutesSinceStartOfDay,
+                      scheduleEntry.time_event.duration_mins
+                    ),
+                    backgroundColor: scheduleStreamColorHex(
+                      scheduleEntry.stream.color
+                    ),
+                    borderRadius: "0.25rem",
+                    width: "100%",
+                  }}
+                >
+                  <EntityLink
+                    key={`schedule-event-in-day-${scheduleEntry.event.ref_id}`}
+                    to={`/workspace/calendar/schedule/event-in-day/${scheduleEntry.event.ref_id}?${query}`}
+                  >
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        width: "100%",
+                        height: "100%",
+                        top: "0.25rem",
+                        left: "0.25rem",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <EntityNameComponent name={clippedName} />
+                    </Box>
+                  </EntityLink>
+                </Box>
+              );
+
+            case TimeEventNamespace.INBOX_TASK:
+              throw new Error("Not implemented");
+
+            default:
+              throw new Error("Unexpected namespace");
+          }
+        })}
+      </Box>
     </Box>
   );
 }
@@ -614,7 +696,7 @@ function CombinedTimeEventFullDaysRows({
       return (
         <React.Fragment>
           <ViewAsScheduleTimeCell isbigscreen={isBigScreen.toString()}>
-            [AllDay]
+            [All Day]
           </ViewAsScheduleTimeCell>
 
           <ViewAsScheduleEventCell
@@ -641,19 +723,31 @@ function CombinedTimeEventFullDaysRows({
   }
 }
 
-function computeTimeEventInDayDurationInQuarters(minutesSinceStartOfDay: number, durationMins: number): number {
+function computeTimeEventInDayDurationInQuarters(
+  minutesSinceStartOfDay: number,
+  durationMins: number
+): number {
   // Each 15 minutes is 1 rem. Display has 96=4*24 rem height.
   // If the event goes beyond the day, we cap it at 24 hours.
   const finalOffsetInMinutes = minutesSinceStartOfDay + durationMins;
-  let finalDurationInMins = durationMins
+  let finalDurationInMins = durationMins;
   if (finalOffsetInMinutes > 24 * 60) {
     finalDurationInMins = Math.max(15, 24 * 60 - minutesSinceStartOfDay);
   }
   return Math.max(2, finalDurationInMins / 15);
 }
 
-function clipEventNameToWhatFits(name: string, fontSize: number, containerWidth: number, minutesSinceStartOfDay: number, durationInMins: number): string {
-  const durationInQuarters = computeTimeEventInDayDurationInQuarters(0, durationInMins);
+function clipEventNameToWhatFits(
+  name: string,
+  fontSize: number,
+  containerWidth: number,
+  minutesSinceStartOfDay: number,
+  durationInMins: number
+): string {
+  const durationInQuarters = computeTimeEventInDayDurationInQuarters(
+    0,
+    durationInMins
+  );
   const durationInHalfs = Math.max(1, Math.floor(durationInQuarters / 2));
   const textWidthInPx = measureText(name, fontSize);
   const totalWidthInPx = containerWidth * durationInHalfs;
@@ -662,7 +756,7 @@ function clipEventNameToWhatFits(name: string, fontSize: number, containerWidth:
     return name;
   } else {
     // Do some rough approximation here.
-    const maxChars = Math.floor(name.length * totalWidthInPx / textWidthInPx);
+    const maxChars = Math.floor((name.length * totalWidthInPx) / textWidthInPx);
     return name.substring(0, maxChars) + "...";
   }
 }
@@ -673,8 +767,14 @@ function calendarTimeEventInDayStartMinutesToRems(startMins: number): string {
   return `${startHours}rem`;
 }
 
-function calendarTimeEventInDayDurationToRems(minutesSinceStartOfDay: number, durationMins: number): string {
-  const durationInQuarters =computeTimeEventInDayDurationInQuarters(minutesSinceStartOfDay, durationMins);
+function calendarTimeEventInDayDurationToRems(
+  minutesSinceStartOfDay: number,
+  durationMins: number
+): string {
+  const durationInQuarters = computeTimeEventInDayDurationInQuarters(
+    minutesSinceStartOfDay,
+    durationMins
+  );
   return `${durationInQuarters}rem`;
 }
 
