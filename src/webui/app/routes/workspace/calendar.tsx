@@ -16,6 +16,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import {
   Box,
+  Button,
   Paper,
   styled,
   Table,
@@ -285,6 +286,8 @@ export const ErrorBoundary = makeErrorBoundary(
   () => `There was an error loading the calendar events! Please try again!`
 );
 
+const MAX_VISIBLE_TIME_EVENT_FULL_DAYS = 3;
+
 interface ViewAsProps {
   timezone: string;
   periodStartDate: ADate;
@@ -313,6 +316,9 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
       setContainerWidth(250);
     }
   }, [isBigScreen, theme]);
+
+  const [showAllTimeEventFullDays, setShowAllTimeEventFullDays] =
+    useState(false);
 
   const combinedTimeEventFullDays: Array<CombinedTimeEventFullDaysEntry> = [];
   for (const entry of props.scheduleEventFullDayEntries) {
@@ -364,6 +370,7 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
   const startOfDay = DateTime.fromISO(`${props.periodStartDate}T00:00:00`, {
     zone: props.timezone,
   });
+
   const hours = Array.from({ length: 24 }, (_, i) =>
     startOfDay.plus({ hours: i })
   );
@@ -371,168 +378,238 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
   return (
     <Box
       sx={{
-        width: isBigScreen ? "300px" : "calc(100% - 4rem)",
-        margin: "auto",
-        paddingTop: isBigScreen || thePartititionFullDays.length > 0 ? "0" : "1rem",
+        margin: isBigScreen ? "auto" : "initial",
+        paddingTop:
+          isBigScreen || thePartititionFullDays.length > 0 ? "0" : "1rem",
       }}
     >
-      {thePartititionFullDays.map((entry, index) => {
-        switch (entry.time_event.namespace) {
-          case TimeEventNamespace.SCHEDULE_FULL_DAYS_BLOCK:
-            const fullDaysEntry = entry.entry as ScheduleFullDaysEventEntry;
-
-            const clippedName = clipEventNameToWhatFits(
-              `[All Day] ${fullDaysEntry.event.name}`,
-              theme.typography.htmlFontSize,
-              containerWidth - 32, // A hack of sorts
-              0,
-              15
-            );
-
-            console.log(
-              "containerWidth",
-              containerWidth,
-              "clippedName",
-              clippedName
-            );
-            return (
-              <Box
-                key={index}
-                sx={{
-                  backgroundColor: scheduleStreamColorHex(
-                    fullDaysEntry.stream.color
-                  ),
-                  borderRadius: "0.25rem",
-                  padding: "0.25rem",
-                  paddingLeft: "0.5rem",
-                  width: "100%",
-                  height: "2rem",
-                  marginBottom: "0.25rem",
-                  overflow: "hidden",
-                }}
-              >
-                <EntityLink
-                  key={`schedule-event-full-days-${fullDaysEntry.event.ref_id}`}
-                  to={`/workspace/calendar/schedule/event-full-days/${fullDaysEntry.event.ref_id}?${query}`}
-                >
-                  <EntityNameComponent name={clippedName} />
-                </EntityLink>
-              </Box>
-            );
-
-          case TimeEventNamespace.PERSON_BIRTHDAY:
-            throw new Error("Not implemented");
-
-          default:
-            throw new Error("Unexpected namespace");
-        }
-      })}
-
-      <Box
-        sx={{
-          position: "relative",
-          width: "100%",
-          height: "96rem",
-        }}
-      >
-        {hours.map((hour, idx) => (
-          <Box
-            key={idx}
+      <Box sx={{ display: "flex", flexDirection: "row" }}>
+        {thePartititionFullDays.length > MAX_VISIBLE_TIME_EVENT_FULL_DAYS && (
+          <Button
+            variant="outlined"
             sx={{
-              position: "absolute",
-              height: "0.05rem",
-              backgroundColor: theme.palette.text.disabled,
-              top: `${idx * 4}rem`,
-              width: "100%",
+              width: "3.5rem",
+              minWidth: "3.5rem",
+              height: "3.5rem",
+              alignSelf: "end",
             }}
+            onClick={() => setShowAllTimeEventFullDays((c) => !c)}
           >
-            <Box
-              sx={{
-                position: "relative",
-                left: "-2.8rem",
-                top: "-0.7rem",
-                color: theme.palette.text.disabled,
-              }}
-            >
-              {hour.toFormat("HH:mm")}
-            </Box>
-          </Box>
-        ))}
+            More ...
+          </Button>
+        )}
+        {thePartititionFullDays.length <= MAX_VISIBLE_TIME_EVENT_FULL_DAYS && (
+          <Box sx={{ width: "3.5rem" }}></Box>
+        )}
 
-        {thePartitionInDay.map((entry, index) => {
-          switch (entry.time_event.namespace) {
-            case TimeEventNamespace.SCHEDULE_EVENT_IN_DAY:
-              const scheduleEntry = entry.entry as ScheduleInDayEventEntry;
+        <Box sx={{ width: isBigScreen ? "300px" : undefined, flexGrow: 1 }}>
+          {thePartititionFullDays.map((entry, index) => {
+            if (
+              index >= MAX_VISIBLE_TIME_EVENT_FULL_DAYS &&
+              !showAllTimeEventFullDays
+            ) {
+              return null;
+            }
 
-              const startTime = DateTime.fromISO(
-                `${scheduleEntry.time_event.start_date}T${scheduleEntry.time_event.start_time_in_day}`,
-                { zone: props.timezone }
-              );
-              const endTime = startTime.plus({
-                minutes: entry.time_event.duration_mins,
-              });
-              const minutesSinceStartOfDay = startTime
-                .diff(startOfDay)
-                .as("minutes");
+            switch (entry.time_event.namespace) {
+              case TimeEventNamespace.SCHEDULE_FULL_DAYS_BLOCK:
+                const fullDaysEntry = entry.entry as ScheduleFullDaysEventEntry;
 
-              const clippedName = clipEventNameToWhatFits(
-                `[${startTime.toFormat("HH:mm")} - ${endTime.toFormat(
-                  "HH:mm"
-                )}] ${scheduleEntry.event.name}`,
-                theme.typography.htmlFontSize,
-                containerWidth,
-                minutesSinceStartOfDay,
-                scheduleEntry.time_event.duration_mins
-              );
+                const clippedName = clipEventNameToWhatFits(
+                  `[All Day] ${fullDaysEntry.event.name}`,
+                  theme.typography.htmlFontSize,
+                  containerWidth - 32, // A hack of sorts
+                  0,
+                  15
+                );
 
-              return (
-                <Box
-                  key={index}
-                  sx={{
-                    position: "absolute",
-                    top: calendarTimeEventInDayStartMinutesToRems(
-                      minutesSinceStartOfDay
-                    ),
-                    height: calendarTimeEventInDayDurationToRems(
-                      minutesSinceStartOfDay,
-                      scheduleEntry.time_event.duration_mins
-                    ),
-                    backgroundColor: scheduleStreamColorHex(
-                      scheduleEntry.stream.color
-                    ),
-                    borderRadius: "0.25rem",
-                    width: "100%",
-                  }}
-                >
-                  <EntityLink
-                    key={`schedule-event-in-day-${scheduleEntry.event.ref_id}`}
-                    to={`/workspace/calendar/schedule/event-in-day/${scheduleEntry.event.ref_id}?${query}`}
+                console.log(
+                  "containerWidth",
+                  containerWidth,
+                  "clippedName",
+                  clippedName
+                );
+                return (
+                  <Box
+                    key={index}
+                    sx={{
+                      backgroundColor: scheduleStreamColorHex(
+                        fullDaysEntry.stream.color
+                      ),
+                      borderRadius: "0.25rem",
+                      padding: "0.25rem",
+                      paddingLeft: "0.5rem",
+                      width: "100%",
+                      height: "2rem",
+                      marginBottom: "0.25rem",
+                      overflow: "hidden",
+                    }}
                   >
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        width: "100%",
-                        height: "100%",
-                        top: "0.25rem",
-                        left: "0.25rem",
-                        overflow: "hidden",
-                      }}
+                    <EntityLink
+                      key={`schedule-event-full-days-${fullDaysEntry.event.ref_id}`}
+                      to={`/workspace/calendar/schedule/event-full-days/${fullDaysEntry.event.ref_id}?${query}`}
                     >
                       <EntityNameComponent name={clippedName} />
-                    </Box>
-                  </EntityLink>
-                </Box>
-              );
+                    </EntityLink>
+                  </Box>
+                );
 
-            case TimeEventNamespace.INBOX_TASK:
-              throw new Error("Not implemented");
+              case TimeEventNamespace.PERSON_BIRTHDAY:
+                throw new Error("Not implemented");
 
-            default:
-              throw new Error("Unexpected namespace");
-          }
-        })}
+              default:
+                throw new Error("Unexpected namespace");
+            }
+          })}
+        </Box>
+
+        <Box sx={{ width: "3.5rem" }}></Box>
+      </Box>
+
+      <Box sx={{ display: "flex", flexDirection: "row" }}>
+        <ViewAsCalendarLeftColumn startOfDay={startOfDay} />
+        <Box
+          sx={{
+            position: "relative",
+            width: isBigScreen ? "300px" : "initial",
+            flexGrow: 1,
+            height: "96rem",
+          }}
+        >
+          {hours.map((hour, idx) => (
+            <Box
+              key={idx}
+              sx={{
+                position: "absolute",
+                height: "0.05rem",
+                backgroundColor: theme.palette.text.disabled,
+                top: `${idx * 4}rem`,
+                width: "100%",
+              }}
+            ></Box>
+          ))}
+
+          {thePartitionInDay.map((entry, index) => {
+            switch (entry.time_event.namespace) {
+              case TimeEventNamespace.SCHEDULE_EVENT_IN_DAY:
+                const scheduleEntry = entry.entry as ScheduleInDayEventEntry;
+
+                const startTime = DateTime.fromISO(
+                  `${scheduleEntry.time_event.start_date}T${scheduleEntry.time_event.start_time_in_day}`,
+                  { zone: props.timezone }
+                );
+                const endTime = startTime.plus({
+                  minutes: entry.time_event.duration_mins,
+                });
+                const minutesSinceStartOfDay = startTime
+                  .diff(startOfDay)
+                  .as("minutes");
+
+                const clippedName = clipEventNameToWhatFits(
+                  `[${startTime.toFormat("HH:mm")} - ${endTime.toFormat(
+                    "HH:mm"
+                  )}] ${scheduleEntry.event.name}`,
+                  theme.typography.htmlFontSize,
+                  containerWidth,
+                  minutesSinceStartOfDay,
+                  scheduleEntry.time_event.duration_mins
+                );
+
+                return (
+                  <Box
+                    key={index}
+                    sx={{
+                      position: "absolute",
+                      top: calendarTimeEventInDayStartMinutesToRems(
+                        minutesSinceStartOfDay
+                      ),
+                      height: calendarTimeEventInDayDurationToRems(
+                        minutesSinceStartOfDay,
+                        scheduleEntry.time_event.duration_mins
+                      ),
+                      backgroundColor: scheduleStreamColorHex(
+                        scheduleEntry.stream.color
+                      ),
+                      borderRadius: "0.25rem",
+                      width: "100%",
+                    }}
+                  >
+                    <EntityLink
+                      key={`schedule-event-in-day-${scheduleEntry.event.ref_id}`}
+                      to={`/workspace/calendar/schedule/event-in-day/${scheduleEntry.event.ref_id}?${query}`}
+                    >
+                      <Box
+                        sx={{
+                          position: "absolute",
+                          width: "100%",
+                          height: "100%",
+                          top: "0.25rem",
+                          left: "0.25rem",
+                          overflow: "hidden",
+                        }}
+                      >
+                        <EntityNameComponent name={clippedName} />
+                      </Box>
+                    </EntityLink>
+                  </Box>
+                );
+
+              case TimeEventNamespace.INBOX_TASK:
+                throw new Error("Not implemented");
+
+              default:
+                throw new Error("Unexpected namespace");
+            }
+          })}
+        </Box>
+        <ViewAsCalendarRightColumn />
       </Box>
     </Box>
+  );
+}
+
+interface ViewAsCalendarLeftColumnProps {
+  startOfDay: DateTime;
+}
+
+function ViewAsCalendarLeftColumn(props: ViewAsCalendarLeftColumnProps) {
+  const hours = Array.from({ length: 24 }, (_, i) =>
+    props.startOfDay.plus({ hours: i })
+  );
+
+  return (
+    <Box
+      sx={{
+        width: "3.5rem",
+        height: "96rem",
+      }}
+    >
+      {hours.map((hour, idx) => (
+        <Box
+          key={idx}
+          sx={{
+            height: "4rem",
+            width: "3.5rem",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "top",
+          }}
+        >
+          {hour.toFormat("HH:mm")}
+        </Box>
+      ))}
+    </Box>
+  );
+}
+
+function ViewAsCalendarRightColumn() {
+  return (
+    <Box
+      sx={{
+        width: "3.5rem",
+        height: "96rem",
+      }}
+    ></Box>
   );
 }
 

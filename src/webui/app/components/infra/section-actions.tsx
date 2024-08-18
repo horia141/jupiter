@@ -485,7 +485,7 @@ function NavMultipleCompactView(props: NavMultipleViewProps) {
     <>
       <ButtonGroup ref={anchorRef}>
         <Button
-          sx={{flexGrow: 10}}
+          sx={{ flexGrow: 10 }}
           disabled={!props.inputsEnabled}
           component={Link}
           startIcon={realActions[selectedIndex].icon}
@@ -495,7 +495,7 @@ function NavMultipleCompactView(props: NavMultipleViewProps) {
         </Button>
         <Button
           id="section-action-nav-multiple-compact-button"
-          sx={{flexGrow: 1}}
+          sx={{ flexGrow: 1 }}
           size="small"
           disabled={!props.inputsEnabled}
           onClick={() => setOpen((prevOpen) => !prevOpen)}
