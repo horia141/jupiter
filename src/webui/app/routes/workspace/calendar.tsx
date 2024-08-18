@@ -375,6 +375,8 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
     startOfDay.plus({ hours: i })
   );
 
+  const rightNow = DateTime.now().setZone(props.timezone);
+
   return (
     <Box
       sx={{
@@ -476,6 +478,17 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
             height: "96rem",
           }}
         >
+          <Box
+            sx={{
+              position: "absolute",
+              top: calendarTimeEventInDayStartMinutesToRems(rightNow.diff(startOfDay).as("minutes")),
+              height: "0.15rem",
+              width: "100%",
+              backgroundColor: theme.palette.info.dark,
+              zIndex: theme.zIndex.appBar,
+            }}
+            ></Box>
+
           {hours.map((hour, idx) => (
             <Box
               key={idx}
