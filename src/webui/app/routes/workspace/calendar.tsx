@@ -448,12 +448,6 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
                   containerWidth - 32 // A hack of sorts
                 );
 
-                console.log(
-                  "containerWidth",
-                  containerWidth,
-                  "clippedName",
-                  clippedName
-                );
                 return (
                   <Box
                     key={index}
@@ -675,7 +669,37 @@ function ViewAsCalendarWeekly(props: ViewAsProps) {
         paddingTop: isBigScreen || maxFullDaysEntriesCnt > 0 ? "0" : "1rem",
       }}
     >
-      {/* here we do daily stuff */}
+      <Box sx={{ display: "flex", flexDirection: "row", gap: "0.5rem"}}>
+        {maxFullDaysEntriesCnt > MAX_VISIBLE_TIME_EVENT_FULL_DAYS && (
+            <Button
+              variant="outlined"
+              sx={{
+                width: "3.5rem",
+                minWidth: "3.5rem",
+                height: "3.5rem",
+                alignSelf: "end",
+              }}
+              onClick={() => setShowAllTimeEventFullDays((c) => !c)}
+            >
+              More ...
+            </Button>
+          )}
+          {maxFullDaysEntriesCnt <= MAX_VISIBLE_TIME_EVENT_FULL_DAYS && (
+            <Box sx={{ width: "3.5rem" }}></Box>
+          )}
+
+          {allDays.map((date, idx) => (
+            <ViewAsCalendarTimeEventFullDaysColumn
+              key={idx}
+              today={props.today}
+              date={date}
+              timezone={props.timezone}
+              showAll={showAllTimeEventFullDays}
+              maxFullDaysEntriesCnt={maxFullDaysEntriesCnt}
+              timeEventFullDays={partitionedCombinedTimeEventFullDays[date] || []} />))}
+
+          <Box sx={{ width: "3.5rem" }}></Box>
+      </Box>
 
       <Box sx={{ display: "flex", flexDirection: "row" }}>
         <ViewAsCalendarLeftColumn startOfDay={startOfDay} />
@@ -690,6 +714,9 @@ function ViewAsCalendarWeekly(props: ViewAsProps) {
             timeEventsInDay={partitionedCombinedTimeEventInDay[date] || []}
           />
         ))}
+
+
+        <ViewAsCalendarRightColumn />
       </Box>
     </Box>
   );
@@ -739,6 +766,96 @@ function ViewAsCalendarRightColumn() {
     ></Box>
   );
 }
+
+
+
+interface ViewAsCalendarTimeEventFullDaysColumnProps {
+  today: ADate;
+  date: ADate;
+  timezone: Timezone;
+  showAll: boolean;
+  maxFullDaysEntriesCnt: number;
+  timeEventFullDays: Array<CombinedTimeEventFullDaysEntry>;
+}
+
+function ViewAsCalendarTimeEventFullDaysColumn(
+  props: ViewAsCalendarTimeEventFullDaysColumnProps
+) {
+  return (
+    <Box sx={{ flex: 1 }}>
+      {props.timeEventFullDays.map((entry, index) => {
+        if (
+          index >= MAX_VISIBLE_TIME_EVENT_FULL_DAYS &&
+          !props.showAll
+        ) {
+          return null;
+        }
+
+        return <ViewAsCalendarTimeEventFullDaysCell key={index} timezone={props.timezone} entry={entry} />;
+      })}
+    </Box>
+  );
+}
+
+interface ViewAsCalendarTimeEventFullDaysCellProps {
+  timezone: Timezone;
+  entry: CombinedTimeEventFullDaysEntry;
+}
+
+function ViewAsCalendarTimeEventFullDaysCell (props: ViewAsCalendarTimeEventFullDaysCellProps) {
+  const [query] = useSearchParams();
+  const theme = useTheme();
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const [containerWidth, setContainerWidth] = useState(120);
+  useEffect(() => {
+    setContainerWidth(containerRef.current?.clientWidth || 120);
+  }, [containerRef]);
+
+  switch (props.entry.time_event.namespace) {
+    case TimeEventNamespace.SCHEDULE_FULL_DAYS_BLOCK:
+      const fullDaysEntry = props.entry.entry as ScheduleFullDaysEventEntry;
+
+      const clippedName = clipTimeEventFullDaysNameToWhatFits(
+        fullDaysEntry.event.name,
+        12,
+        containerWidth - 32 // A hack of sorts
+      );
+
+      return (
+        <Box
+          ref={containerRef}
+          sx={{
+            fontSize: "12px",
+            backgroundColor: scheduleStreamColorHex(
+              fullDaysEntry.stream.color
+            ),
+            borderRadius: "0.25rem",
+            padding: "0.25rem",
+            paddingLeft: "0.5rem",
+            width: "100%",
+            height: "2rem",
+            marginBottom: "0.25rem",
+            overflow: "hidden",
+          }}
+        >
+          <EntityLink
+            key={`schedule-event-full-days-${fullDaysEntry.event.ref_id}`}
+            to={`/workspace/calendar/schedule/event-full-days/${fullDaysEntry.event.ref_id}?${query}`}
+          >
+            <EntityNameComponent name={clippedName} />
+          </EntityLink>
+        </Box>
+      );
+
+    case TimeEventNamespace.PERSON_BIRTHDAY:
+      throw new Error("Not implemented");
+
+    default:
+      throw new Error("Unexpected namespace");
+  }
+}
+
 
 interface ViewAsCalendarTimeEventInDayColumnProps {
   today: ADate;
@@ -822,7 +939,6 @@ function ViewAsCalendarTimeEventInDayCell(
   props: ViewAsCalendarTimeEventInDayCellProps
 ) {
   const [query] = useSearchParams();
-  const isBigScreen = useBigScreen();
   const theme = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -1109,15 +1225,14 @@ function clipTimeEventFullDaysNameToWhatFits(
   fontSize: number,
   containerWidth: number
 ): string {
-  const bigName = `[All Day] ${name}`;
-  const textWidthInPx = measureText(bigName, fontSize);
+  const textWidthInPx = measureText(name, fontSize);
 
   if (textWidthInPx <= containerWidth) {
-    return bigName;
+    return name;
   } else {
     // Do some rough approximation here.
     const maxChars = Math.floor(
-      (bigName.length * containerWidth) / textWidthInPx
+      (name.length * containerWidth) / textWidthInPx
     );
     return `${name.substring(0, maxChars)} ...`;
   }
