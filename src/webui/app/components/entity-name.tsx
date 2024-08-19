@@ -8,13 +8,13 @@ interface EntityNameProps {
 
 export function EntityNameComponent({ compact, name }: EntityNameProps) {
   return (
-    <Typography fontSize={!compact ? "1rem" : "0.85rem"}>{name}</Typography>
+    <Typography fontSize={!compact ? "unset" : "0.85rem"}>{name}</Typography>
   );
 }
 
 export function EntityNameOneLineComponent({ compact, name }: EntityNameProps) {
   return (
-    <Typography fontSize={!compact ? "1rem" : "0.85rem"} noWrap>
+    <Typography fontSize={!compact ? "unset" : "0.85rem"} noWrap>
       {name}
     </Typography>
   );
