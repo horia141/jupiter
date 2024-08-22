@@ -150,6 +150,7 @@ export default function CalendarView() {
     <TrunkPanel
       key="calendar"
       createLocation={`/workspace/calendar/schedule/event-in-day/new?${query}`}
+      disableScrollRestoration
       actions={
         <SectionActions
           id="calendar"
@@ -680,6 +681,7 @@ function ViewAsCalendarTimeEventInDayColumn(
   props: ViewAsCalendarTimeEventInDayColumnProps
 ) {
   const theme = useTheme();
+  const hour8Ref = useRef<HTMLDivElement>(null);
 
   const startOfDay = DateTime.fromISO(`${props.date}T00:00:00`, {
     zone: props.timezone,
@@ -688,6 +690,14 @@ function ViewAsCalendarTimeEventInDayColumn(
   const hours = Array.from({ length: 24 }, (_, i) =>
     startOfDay.plus({ hours: i })
   );
+
+  useEffect(() => {
+    if (!hour8Ref.current) {
+      return;
+    }
+
+    hour8Ref.current.scrollIntoView();
+  }, [hour8Ref.current]);
 
   return (
     <Box
@@ -715,6 +725,7 @@ function ViewAsCalendarTimeEventInDayColumn(
       {hours.map((hour, idx) => (
         <Box
           key={idx}
+          ref={idx === 8 ? hour8Ref : undefined}
           sx={{
             position: "absolute",
             height: "0.05rem",
