@@ -24,6 +24,7 @@ import {
   TableCell,
   TableContainer,
   TableRow,
+  Typography,
   useTheme,
 } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
@@ -491,6 +492,13 @@ function ViewAsCalendarWeekly(props: ViewAsProps) {
       }}
     >
       <Box sx={{ display: "flex", flexDirection: "row", gap: "0.5rem" }}>
+        <ViewAsCalendarEmptyCell />
+        {allDays.map((date, idx) => (
+          <ViewAsCalendarDateHeader key={idx} today={props.today} date={date} />
+        ))}
+        <ViewAsCalendarEmptyCell />
+      </Box>
+      <Box sx={{ display: "flex", flexDirection: "row", gap: "0.5rem" }}>
         {maxFullDaysEntriesCnt > MAX_VISIBLE_TIME_EVENT_FULL_DAYS && (
           <ViewAsCalendarMoreButton
             setShowAllTimeEventFullDays={setShowAllTimeEventFullDays}
@@ -530,6 +538,34 @@ function ViewAsCalendarWeekly(props: ViewAsProps) {
         ))}
 
         <ViewAsCalendarRightColumn />
+      </Box>
+    </Box>
+  );
+}
+
+interface ViewAsCalendarDateHeaderProps {
+  today: ADate;
+  date: ADate;
+}
+
+function ViewAsCalendarDateHeader(props: ViewAsCalendarDateHeaderProps) {
+  const theme = useTheme();
+  const theDate = DateTime.fromISO(`${props.date}T00:00:00`);
+  return (
+    <Box
+      sx={{
+        width: "3.5rem",
+        flexGrow: "1",
+        textAlign: "center",
+      }}
+    >
+      <Box sx={{
+        borderRadius: "50%",
+        width: "inherit",
+        backgroundColor: props.date === props.today ? theme.palette.info.light : "transparent",
+      }}>
+      <Typography sx={{fontSize: "1.1em"}}>{theDate.toFormat("ccc")}</Typography>
+      <Typography variant="h6">{theDate.toFormat("dd")}</Typography>
       </Box>
     </Box>
   );

@@ -92,8 +92,8 @@ class CalendarLoadForDateAndPeriodResult(UseCaseResultBase):
     period_end_date: ADate
     prev_period_start_date: ADate
     next_period_start_date: ADate
-    schedule_event_in_day_entries: list[ScheduleInDayEventEntry]
     schedule_event_full_days_entries: list[ScheduleFullDaysEventEntry]
+    schedule_event_in_day_entries: list[ScheduleInDayEventEntry]
     inbox_task_entries: list[InboxTaskEntry]
     person_entries: list[PersonEntry]
 
@@ -139,15 +139,15 @@ class CalendarLoadForDateAndPeriodUseCase(
             workspace.ref_id
         )
 
-        time_events_in_day: list[TimeEventInDayBlock] = await uow.get(
-            TimeEventInDayBlockRepository
+        time_events_full_days: list[TimeEventFullDaysBlock] = await uow.get(
+            TimeEventFullDaysBlockRepository
         ).find_all_between(
             parent_ref_id=time_event_domain.ref_id,
             start_date=schedule.first_day,
             end_date=schedule.end_day,
         )
-        time_events_full_days: list[TimeEventFullDaysBlock] = await uow.get(
-            TimeEventFullDaysBlockRepository
+        time_events_in_day: list[TimeEventInDayBlock] = await uow.get(
+            TimeEventInDayBlockRepository
         ).find_all_between(
             parent_ref_id=time_event_domain.ref_id,
             start_date=schedule.first_day,
@@ -214,6 +214,26 @@ class CalendarLoadForDateAndPeriodUseCase(
             for se in schedule_events_full_days
         ]
 
+        time_events_full_days_for_persons: dict[EntityId, TimeEventFullDaysBlock] = {
+            te.source_entity_ref_id: te
+            for te in time_events_full_days
+            if te.namespace == TimeEventNamespace.PERSON_BIRTHDAY
+        }
+        persons = []
+        if len(time_events_full_days_for_persons) > 0:
+            persons = await uow.get_for(Person).find_all_generic(
+                parent_ref_id=workspace.ref_id,
+                allow_archived=False,
+                ref_id=list(time_events_full_days_for_persons.keys()),
+            )
+        person_entries = [
+            PersonEntry(
+                person=person,
+                birthday_time_event=time_events_full_days_for_persons[person.ref_id],
+            )
+            for person in persons
+        ]
+
         time_events_in_day_for_inbox_tasks: dict[
             EntityId, list[TimeEventInDayBlock]
         ] = {
@@ -239,25 +259,6 @@ class CalendarLoadForDateAndPeriodUseCase(
             for inbox_task in inbox_tasks
         ]
 
-        time_events_full_days_for_persons: dict[EntityId, TimeEventFullDaysBlock] = {
-            te.source_entity_ref_id: te
-            for te in time_events_full_days
-            if te.namespace == TimeEventNamespace.PERSON_BIRTHDAY
-        }
-        persons = []
-        if len(time_events_full_days_for_persons) > 0:
-            persons = await uow.get_for(Person).find_all_generic(
-                parent_ref_id=workspace.ref_id,
-                allow_archived=False,
-                ref_id=list(time_events_full_days_for_persons.keys()),
-            )
-        person_entries = [
-            PersonEntry(
-                person=person,
-                birthday_time_event=time_events_full_days_for_persons[person.ref_id],
-            )
-            for person in persons
-        ]
 
         return CalendarLoadForDateAndPeriodResult(
             right_now=args.right_now,
@@ -266,8 +267,8 @@ class CalendarLoadForDateAndPeriodUseCase(
             period_end_date=schedule.end_day,
             prev_period_start_date=prev_schedule.first_day,
             next_period_start_date=next_schedule.first_day,
-            schedule_event_in_day_entries=schedule_event_in_day_entries,
             schedule_event_full_days_entries=schedule_event_full_days_entries,
+            schedule_event_in_day_entries=schedule_event_in_day_entries,
             inbox_task_entries=inbox_task_entries,
             person_entries=person_entries,
         )
