@@ -259,7 +259,6 @@ class CalendarLoadForDateAndPeriodUseCase(
             for inbox_task in inbox_tasks
         ]
 
-
         return CalendarLoadForDateAndPeriodResult(
             right_now=args.right_now,
             period=args.period,

@@ -505,7 +505,7 @@ function NavMultipleCompactView(props: NavMultipleViewProps) {
       </ButtonGroup>
       <Popper
         sx={{
-          zIndex: theme.zIndex.appBar + 20,
+          zIndex: theme.zIndex.appBar + 2000,
           backgroundColor: theme.palette.background.paper,
         }}
         open={open}

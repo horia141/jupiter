@@ -93,7 +93,14 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
     return () => {
       theRef.removeEventListener("scrollend", handleScrollSpecial);
     };
-  }, [containerRef, location, isBigScreen, isPresent, props.disableScrollRestoration, handleScroll]);
+  }, [
+    containerRef,
+    location,
+    isBigScreen,
+    isPresent,
+    props.disableScrollRestoration,
+    handleScroll,
+  ]);
 
   function handleScrollTop() {
     containerRef.current?.scrollTo({

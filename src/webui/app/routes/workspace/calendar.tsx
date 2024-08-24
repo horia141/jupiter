@@ -38,7 +38,14 @@ import {
 } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";
-import React, { useContext, useEffect, useRef, useState } from "react";
+import type {
+  PropsWithChildren} from "react";
+import React, {
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { z } from "zod";
 import { parseQuery } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
@@ -321,6 +328,7 @@ interface ViewAsProps {
 
 function ViewAsCalendarDaily(props: ViewAsProps) {
   const isBigScreen = useBigScreen();
+  const theme = useTheme();
 
   const [showAllTimeEventFullDays, setShowAllTimeEventFullDays] =
     useState(false);
@@ -381,33 +389,44 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
   return (
     <Box
       sx={{
+        position: "relative",
         margin: isBigScreen ? "auto" : "initial",
         width: isBigScreen ? "300px" : "100%",
         paddingTop:
           isBigScreen || thePartititionFullDays.length > 0 ? "0" : "1rem",
       }}
     >
-      <Box sx={{ display: "flex", flexDirection: "row" }}>
-        {thePartititionFullDays.length > MAX_VISIBLE_TIME_EVENT_FULL_DAYS && (
-          <ViewAsCalendarMoreButton
-            setShowAllTimeEventFullDays={setShowAllTimeEventFullDays}
-          />
-        )}
-        {thePartititionFullDays.length <= MAX_VISIBLE_TIME_EVENT_FULL_DAYS && (
+      <ViewAsCalendarDaysAndFullDaysContiner>
+        <Box sx={{ display: "flex", flexDirection: "row", gap: "0.5rem" }}>
           <ViewAsCalendarEmptyCell />
-        )}
+          <ViewAsCalendarDateHeader
+            today={props.today}
+            date={props.periodStartDate}
+          />
+          <ViewAsCalendarEmptyCell />
+        </Box>
 
-        <ViewAsCalendarTimeEventFullDaysColumn
-          today={props.today}
-          date={props.periodStartDate}
-          timezone={props.timezone}
-          showAll={showAllTimeEventFullDays}
-          maxFullDaysEntriesCnt={thePartititionFullDays.length}
-          timeEventFullDays={thePartititionFullDays}
-        />
+        <Box sx={{ display: "flex", flexDirection: "row" }}>
+          {thePartititionFullDays.length > MAX_VISIBLE_TIME_EVENT_FULL_DAYS && (
+            <ViewAsCalendarMoreButton
+              setShowAllTimeEventFullDays={setShowAllTimeEventFullDays}
+            />
+          )}
+          {thePartititionFullDays.length <=
+            MAX_VISIBLE_TIME_EVENT_FULL_DAYS && <ViewAsCalendarEmptyCell />}
 
-        <ViewAsCalendarEmptyCell />
-      </Box>
+          <ViewAsCalendarTimeEventFullDaysColumn
+            today={props.today}
+            date={props.periodStartDate}
+            timezone={props.timezone}
+            showAll={showAllTimeEventFullDays}
+            maxFullDaysEntriesCnt={thePartititionFullDays.length}
+            timeEventFullDays={thePartititionFullDays}
+          />
+
+          <ViewAsCalendarEmptyCell />
+        </Box>
+      </ViewAsCalendarDaysAndFullDaysContiner>
 
       <Box sx={{ display: "flex", flexDirection: "row" }}>
         <ViewAsCalendarLeftColumn startOfDay={startOfDay} />
@@ -426,6 +445,7 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
 
 function ViewAsCalendarWeekly(props: ViewAsProps) {
   const isBigScreen = useBigScreen();
+  const theme = useTheme();
 
   const [showAllTimeEventFullDays, setShowAllTimeEventFullDays] =
     useState(false);
@@ -486,42 +506,52 @@ function ViewAsCalendarWeekly(props: ViewAsProps) {
   return (
     <Box
       sx={{
+        position: "relative",
         width: "100%",
         margin: isBigScreen ? "auto" : "initial",
         paddingTop: isBigScreen || maxFullDaysEntriesCnt > 0 ? "0" : "1rem",
       }}
     >
-      <Box sx={{ display: "flex", flexDirection: "row", gap: "0.5rem" }}>
-        <ViewAsCalendarEmptyCell />
-        {allDays.map((date, idx) => (
-          <ViewAsCalendarDateHeader key={idx} today={props.today} date={date} />
-        ))}
-        <ViewAsCalendarEmptyCell />
-      </Box>
-      <Box sx={{ display: "flex", flexDirection: "row", gap: "0.5rem" }}>
-        {maxFullDaysEntriesCnt > MAX_VISIBLE_TIME_EVENT_FULL_DAYS && (
-          <ViewAsCalendarMoreButton
-            setShowAllTimeEventFullDays={setShowAllTimeEventFullDays}
-          />
-        )}
-        {maxFullDaysEntriesCnt <= MAX_VISIBLE_TIME_EVENT_FULL_DAYS && (
+      <ViewAsCalendarDaysAndFullDaysContiner>
+        <Box sx={{ display: "flex", flexDirection: "row", gap: "0.5rem" }}>
           <ViewAsCalendarEmptyCell />
-        )}
+          {allDays.map((date, idx) => (
+            <ViewAsCalendarDateHeader
+              key={idx}
+              today={props.today}
+              date={date}
+            />
+          ))}
+          <ViewAsCalendarEmptyCell />
+        </Box>
 
-        {allDays.map((date, idx) => (
-          <ViewAsCalendarTimeEventFullDaysColumn
-            key={idx}
-            today={props.today}
-            date={date}
-            timezone={props.timezone}
-            showAll={showAllTimeEventFullDays}
-            maxFullDaysEntriesCnt={maxFullDaysEntriesCnt}
-            timeEventFullDays={partitionedCombinedTimeEventFullDays[date] || []}
-          />
-        ))}
+        <Box sx={{ display: "flex", flexDirection: "row", gap: "0.5rem" }}>
+          {maxFullDaysEntriesCnt > MAX_VISIBLE_TIME_EVENT_FULL_DAYS && (
+            <ViewAsCalendarMoreButton
+              setShowAllTimeEventFullDays={setShowAllTimeEventFullDays}
+            />
+          )}
+          {maxFullDaysEntriesCnt <= MAX_VISIBLE_TIME_EVENT_FULL_DAYS && (
+            <ViewAsCalendarEmptyCell />
+          )}
 
-        <ViewAsCalendarEmptyCell />
-      </Box>
+          {allDays.map((date, idx) => (
+            <ViewAsCalendarTimeEventFullDaysColumn
+              key={idx}
+              today={props.today}
+              date={date}
+              timezone={props.timezone}
+              showAll={showAllTimeEventFullDays}
+              maxFullDaysEntriesCnt={maxFullDaysEntriesCnt}
+              timeEventFullDays={
+                partitionedCombinedTimeEventFullDays[date] || []
+              }
+            />
+          ))}
+
+          <ViewAsCalendarEmptyCell />
+        </Box>
+      </ViewAsCalendarDaysAndFullDaysContiner>
 
       <Box sx={{ display: "flex", flexDirection: "row" }}>
         <ViewAsCalendarLeftColumn startOfDay={startOfDay} />
@@ -559,13 +589,21 @@ function ViewAsCalendarDateHeader(props: ViewAsCalendarDateHeaderProps) {
         textAlign: "center",
       }}
     >
-      <Box sx={{
-        borderRadius: "50%",
-        width: "inherit",
-        backgroundColor: props.date === props.today ? theme.palette.info.light : "transparent",
-      }}>
-      <Typography sx={{fontSize: "1.1em"}}>{theDate.toFormat("ccc")}</Typography>
-      <Typography variant="h6">{theDate.toFormat("dd")}</Typography>
+      <Box
+        sx={{
+          borderRadius: "50%",
+          width: "inherit",
+          margin: "auto",
+          backgroundColor:
+            props.date === props.today
+              ? theme.palette.info.light
+              : "transparent",
+        }}
+      >
+        <Typography sx={{ fontSize: "1.1em" }}>
+          {theDate.toFormat("ccc")}
+        </Typography>
+        <Typography variant="h6">{theDate.toFormat("dd")}</Typography>
       </Box>
     </Box>
   );
@@ -891,6 +929,27 @@ function ViewAsCalendarMoreButton(props: ViewAsCalendarMoreButtonProps) {
     >
       More ...
     </Button>
+  );
+}
+
+function ViewAsCalendarDaysAndFullDaysContiner(props: PropsWithChildren) {
+  const theme = useTheme();
+  const isBigScreen = useBigScreen();
+
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        position: "sticky",
+        top: isBigScreen ? "-0.5rem" : "0px",
+        backgroundColor: theme.palette.background.paper,
+        zIndex: theme.zIndex.appBar + 200,
+        borderBottom: "1px solid darkgray",
+      }}
+    >
+      {props.children}
+    </Box>
   );
 }
 
