@@ -150,7 +150,9 @@ class CalendarLoadForDateAndPeriodUseCase(
             TimeEventInDayBlockRepository
         ).find_all_between(
             parent_ref_id=time_event_domain.ref_id,
-            start_date=schedule.first_day,
+            # Events can be at most 48hrs long, and to catch those that start before the period
+            # but end inside it we have this little approach.
+            start_date=schedule.first_day.subtract_days(2),
             end_date=schedule.end_day,
         )
 

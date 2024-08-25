@@ -18,6 +18,10 @@ from jupiter.core.framework.entity import (
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.repository import LeafEntityRepository
 
+# Define constants at the top level
+MIN_DURATION_MINS = 1
+MAX_DURATION_MINS = 2 * 24 * 60  # 48 hours
+
 
 @entity
 class TimeEventInDayBlock(LeafSupportEntity):
@@ -45,8 +49,14 @@ class TimeEventInDayBlock(LeafSupportEntity):
         timezone: Timezone,
     ) -> "TimeEventInDayBlock":
         """Create a new time event."""
-        if duration_mins < 1:
-            raise InputValidationError("Duration must be at least 1 minute.")
+        if duration_mins < MIN_DURATION_MINS:
+            raise InputValidationError(
+                f"Duration must be at least {MIN_DURATION_MINS} minute."
+            )
+        if duration_mins > MAX_DURATION_MINS:
+            raise InputValidationError(
+                f"Duration must be at most {MAX_DURATION_MINS // 60} hours."
+            )
         return TimeEventInDayBlock._create(
             ctx,
             time_event_domain=ParentLink(time_event_domain_ref_id),
@@ -69,8 +79,14 @@ class TimeEventInDayBlock(LeafSupportEntity):
         timezone: Timezone,
     ) -> "TimeEventInDayBlock":
         """Update the time event."""
-        if duration_mins < 1:
-            raise InputValidationError("Duration must be at least 1 minute.")
+        if duration_mins < MIN_DURATION_MINS:
+            raise InputValidationError(
+                f"Duration must be at least {MIN_DURATION_MINS} minute."
+            )
+        if duration_mins > MAX_DURATION_MINS:
+            raise InputValidationError(
+                f"Duration must be at most {MAX_DURATION_MINS // 60} hours."
+            )
         return self._new_version(
             ctx,
             start_date=start_date,

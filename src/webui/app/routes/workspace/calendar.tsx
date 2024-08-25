@@ -38,14 +38,8 @@ import {
 } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";
-import type {
-  PropsWithChildren} from "react";
-import React, {
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import type { PropsWithChildren } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { parseQuery } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
@@ -328,7 +322,6 @@ interface ViewAsProps {
 
 function ViewAsCalendarDaily(props: ViewAsProps) {
   const isBigScreen = useBigScreen();
-  const theme = useTheme();
 
   const [showAllTimeEventFullDays, setShowAllTimeEventFullDays] =
     useState(false);
@@ -375,7 +368,8 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
     combinedTimeEventInDayEntryPartionByDay(
       combinedTimeEventInDay,
       props.periodStartDate,
-      props.periodEndDate
+      props.periodEndDate,
+      props.timezone
     );
   const thePartitionInDay =
     partitionedCombinedTimeEventInDay[props.periodStartDate] || [];
@@ -445,7 +439,6 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
 
 function ViewAsCalendarWeekly(props: ViewAsProps) {
   const isBigScreen = useBigScreen();
-  const theme = useTheme();
 
   const [showAllTimeEventFullDays, setShowAllTimeEventFullDays] =
     useState(false);
@@ -490,7 +483,8 @@ function ViewAsCalendarWeekly(props: ViewAsProps) {
     combinedTimeEventInDayEntryPartionByDay(
       combinedTimeEventInDay,
       props.periodStartDate,
-      props.periodEndDate
+      props.periodEndDate,
+      props.timezone
     );
 
   const maxFullDaysEntriesCnt = Math.max(
@@ -513,7 +507,7 @@ function ViewAsCalendarWeekly(props: ViewAsProps) {
       }}
     >
       <ViewAsCalendarDaysAndFullDaysContiner>
-        <Box sx={{ display: "flex", flexDirection: "row", gap: "0.5rem" }}>
+        <Box sx={{ display: "flex", flexDirection: "row", gap: "0.1rem" }}>
           <ViewAsCalendarEmptyCell />
           {allDays.map((date, idx) => (
             <ViewAsCalendarDateHeader
@@ -525,7 +519,7 @@ function ViewAsCalendarWeekly(props: ViewAsProps) {
           <ViewAsCalendarEmptyCell />
         </Box>
 
-        <Box sx={{ display: "flex", flexDirection: "row", gap: "0.5rem" }}>
+        <Box sx={{ display: "flex", flexDirection: "row", gap: "0.1rem" }}>
           {maxFullDaysEntriesCnt > MAX_VISIBLE_TIME_EVENT_FULL_DAYS && (
             <ViewAsCalendarMoreButton
               setShowAllTimeEventFullDays={setShowAllTimeEventFullDays}
@@ -553,7 +547,7 @@ function ViewAsCalendarWeekly(props: ViewAsProps) {
         </Box>
       </ViewAsCalendarDaysAndFullDaysContiner>
 
-      <Box sx={{ display: "flex", flexDirection: "row" }}>
+      <Box sx={{ display: "flex", flexDirection: "row", gap: "0.1rem" }}>
         <ViewAsCalendarLeftColumn startOfDay={startOfDay} />
 
         {allDays.map((date, idx) => (
@@ -755,7 +749,7 @@ function ViewAsCalendarTimeEventInDayColumn(
   props: ViewAsCalendarTimeEventInDayColumnProps
 ) {
   const theme = useTheme();
-  const hour8Ref = useRef<HTMLDivElement>(null);
+  const hour6Ref = useRef<HTMLDivElement>(null);
 
   const startOfDay = DateTime.fromISO(`${props.date}T00:00:00`, {
     zone: props.timezone,
@@ -766,12 +760,12 @@ function ViewAsCalendarTimeEventInDayColumn(
   );
 
   useEffect(() => {
-    if (!hour8Ref.current) {
+    if (!hour6Ref.current) {
       return;
     }
 
-    hour8Ref.current.scrollIntoView();
-  }, [hour8Ref.current]);
+    hour6Ref.current.scrollIntoView();
+  }, []);
 
   return (
     <Box
@@ -799,13 +793,14 @@ function ViewAsCalendarTimeEventInDayColumn(
       {hours.map((hour, idx) => (
         <Box
           key={idx}
-          ref={idx === 8 ? hour8Ref : undefined}
+          ref={idx === 4 ? hour6Ref : undefined}
           sx={{
             position: "absolute",
             height: "0.05rem",
+            left: "-0.05rem", // Offset for gap: 0.1 in container
             backgroundColor: theme.palette.text.disabled,
             top: `${idx * 4}rem`,
-            width: "100%",
+            width: "calc(100% + 0.1rem)", // Offset for gap 0.1 in container
           }}
         ></Box>
       ))}
@@ -1004,7 +999,8 @@ function ViewAsSchedule(props: ViewAsProps) {
     combinedTimeEventInDayEntryPartionByDay(
       combinedTimeEventInDay,
       props.periodStartDate,
-      props.periodEndDate
+      props.periodEndDate,
+      props.timezone
     );
 
   return (
@@ -1244,6 +1240,30 @@ const ViewAsScheduleEventCell = styled(TableCell)<ViewAsScheduleEventCellProps>(
   })
 );
 
+function calculateStartTimeInTimezone(
+  timeEvent: TimeEventInDayBlock,
+  timezone: Timezone
+): DateTime {
+  return DateTime.fromISO(
+    `${timeEvent.start_date}T${timeEvent.start_time_in_day}`,
+    { zone: timezone }
+  );
+}
+
+function calculateEndTimeInTimezone(
+  timeEvent: TimeEventInDayBlock,
+  timezone: Timezone
+): DateTime {
+  const startTime = DateTime.fromISO(
+    `${timeEvent.start_date}T${timeEvent.start_time_in_day}`,
+    { zone: timezone }
+  );
+
+  const endTime = startTime.plus({ minutes: timeEvent.duration_mins });
+
+  return endTime;
+}
+
 function computeTimeEventInDayDurationInQuarters(
   minutesSinceStartOfDay: number,
   durationMins: number
@@ -1348,16 +1368,11 @@ function combinedTimeEventFullDayEntryPartionByDay(
   periodEndDate: ADate
 ): Record<string, Array<CombinedTimeEventFullDaysEntry>> {
   const partition: Record<string, Array<CombinedTimeEventFullDaysEntry>> = {};
-  const startDate = aDateToDate(periodStartDate);
-  const endDate = aDateToDate(periodEndDate);
 
   for (const entry of entries) {
     const firstDate = aDateToDate(entry.time_event.start_date);
     for (let idx = 0; idx < entry.time_event.duration_days; idx++) {
       const date = firstDate.plus({ days: idx });
-      if (date < startDate || date > endDate) {
-        continue;
-      }
 
       const dateStr = date.toISODate();
       if (partition[dateStr] === undefined) {
@@ -1370,26 +1385,141 @@ function combinedTimeEventFullDayEntryPartionByDay(
   return partition;
 }
 
+function splitTimeEventInDayEntryIntoPerDayEntries(
+  entry: CombinedTimeEventInDayEntry,
+  timezone: Timezone
+): {
+  day1: CombinedTimeEventInDayEntry;
+  day2?: CombinedTimeEventInDayEntry;
+  day3?: CombinedTimeEventInDayEntry;
+} {
+  const startTime = calculateStartTimeInTimezone(entry.time_event, timezone);
+  const endTime = calculateEndTimeInTimezone(entry.time_event, timezone);
+
+  if (startTime.day === endTime.day) {
+    // Here we have only one day.
+    return {
+      day1: entry,
+    };
+  } else if (startTime.day + 1 === endTime.day) {
+    // Here we have two days.
+    const day1TimeEvent = {
+      ...entry.time_event,
+      duration_mins:
+        -1 *
+        startTime.diff(startTime.set({ hour: 23, minute: 59 })).as("minutes"),
+    };
+    const day2TimeEvent = {
+      ...entry.time_event,
+      start_date: endTime.toISODate(),
+      start_time_in_day: "00:00",
+      duration_mins: endTime
+        .diff(endTime.set({ hour: 0, minute: 0 }))
+        .as("minutes"),
+    };
+
+    return {
+      day1: {
+        time_event: day1TimeEvent,
+        entry: {
+          ...entry.entry,
+          time_event: day1TimeEvent,
+        },
+      },
+      day2: {
+        time_event: day2TimeEvent,
+        entry: {
+          ...entry.entry,
+          time_event: day2TimeEvent,
+        },
+      },
+    };
+  } else if (startTime.day + 2 === endTime.day) {
+    // Here we have three days.
+    const day1TimeEvent = {
+      ...entry.time_event,
+      duration_mins:
+        -1 *
+        startTime.diff(startTime.set({ hour: 23, minute: 59 })).as("minutes"),
+    };
+    const day2TimeEvent = {
+      ...entry.time_event,
+      start_date: startTime.plus({ days: 1 }).toISODate(),
+      start_time_in_day: "00:00",
+      duration_mins: 24 * 60,
+    };
+    const day3TimeEvent = {
+      ...entry.time_event,
+      start_date: endTime.toISODate(),
+      start_time_in_day: "00:00",
+      duration_mins: endTime
+        .diff(endTime.set({ hour: 0, minute: 0 }))
+        .as("minutes"),
+    };
+
+    return {
+      day1: {
+        time_event: day1TimeEvent,
+        entry: {
+          ...entry.entry,
+          time_event: day1TimeEvent,
+        },
+      },
+      day2: {
+        time_event: day2TimeEvent,
+        entry: {
+          ...entry.entry,
+          time_event: day2TimeEvent,
+        },
+      },
+      day3: {
+        time_event: day3TimeEvent,
+        entry: {
+          ...entry.entry,
+          time_event: day3TimeEvent,
+        },
+      },
+    };
+  } else {
+    throw new Error("Unexpected time event duration");
+  }
+}
+
 function combinedTimeEventInDayEntryPartionByDay(
   entries: Array<CombinedTimeEventInDayEntry>,
   periodStartDate: ADate,
-  periodEndDate: ADate
+  periodEndDate: ADate,
+  timezone: Timezone
 ): Record<string, Array<CombinedTimeEventInDayEntry>> {
   const partition: Record<string, Array<CombinedTimeEventInDayEntry>> = {};
-  const startDate = aDateToDate(periodStartDate);
-  const endDate = aDateToDate(periodEndDate);
 
   for (const entry of entries) {
-    const date = aDateToDate(entry.time_event.start_date);
-    if (date < startDate || date > endDate) {
-      continue;
-    }
+    const splitEntries = splitTimeEventInDayEntryIntoPerDayEntries(
+      entry,
+      timezone
+    );
 
-    const dateStr = date.toISODate();
+    const dateStr = splitEntries.day1.time_event.start_date;
     if (partition[dateStr] === undefined) {
       partition[dateStr] = [];
     }
-    partition[dateStr].push(entry);
+    partition[dateStr].push(splitEntries.day1);
+
+    if (splitEntries.day2) {
+      const dateStr = splitEntries.day2.time_event.start_date;
+      if (partition[dateStr] === undefined) {
+        partition[dateStr] = [];
+      }
+      partition[dateStr].push(splitEntries.day2);
+    }
+
+    if (splitEntries.day3) {
+      const dateStr = splitEntries.day3.time_event.start_date;
+      if (partition[dateStr] === undefined) {
+        partition[dateStr] = [];
+      }
+      partition[dateStr].push(splitEntries.day3);
+    }
   }
 
   // Now sort all partitions.
