@@ -1,5 +1,6 @@
 import type {
   ADate,
+  EntityId,
   InboxTaskEntry,
   PersonEntry,
   ScheduleFullDaysEventEntry,
@@ -152,7 +153,7 @@ export default function CalendarView() {
     <TrunkPanel
       key="calendar"
       createLocation={`/workspace/calendar/schedule/event-in-day/new?${query}`}
-      disableScrollRestoration
+      fixedScrollRestaurationTo={320} // About 5am
       actions={
         <SectionActions
           id="calendar"
@@ -357,9 +358,7 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
   }
 
   const partitionedCombinedTimeEventFullDays =
-    combinedTimeEventFullDayEntryPartionByDay(
-      combinedTimeEventFullDays,
-    );
+    combinedTimeEventFullDayEntryPartionByDay(combinedTimeEventFullDays);
   const thePartititionFullDays =
     partitionedCombinedTimeEventFullDays[props.periodStartDate] || [];
   const partitionedCombinedTimeEventInDay =
@@ -471,9 +470,7 @@ function ViewAsCalendarWeekly(props: ViewAsProps) {
   }
 
   const partitionedCombinedTimeEventFullDays =
-    combinedTimeEventFullDayEntryPartionByDay(
-      combinedTimeEventFullDays,
-    );
+    combinedTimeEventFullDayEntryPartionByDay(combinedTimeEventFullDays);
   const partitionedCombinedTimeEventInDay =
     combinedTimeEventInDayEntryPartionByDay(
       combinedTimeEventInDay,
@@ -751,7 +748,6 @@ function ViewAsCalendarTimeEventInDayColumn(
   props: ViewAsCalendarTimeEventInDayColumnProps
 ) {
   const theme = useTheme();
-  const hour6Ref = useRef<HTMLDivElement>(null);
 
   const startOfDay = DateTime.fromISO(`${props.date}T00:00:00`, {
     zone: props.timezone,
@@ -761,16 +757,11 @@ function ViewAsCalendarTimeEventInDayColumn(
     startOfDay.plus({ hours: i })
   );
 
-  useEffect(() => {
-    if (!hour6Ref.current) {
-      return;
-    }
-
-    hour6Ref.current.scrollIntoView({
-      block: "start",
-      inline: "start",
-    });
-  }, []);
+  const timeBlockOffsetsMap = buildTimeBlockOffsetsMap(
+    props.timeEventsInDay,
+    startOfDay,
+    props.timezone
+  );
 
   return (
     <Box
@@ -799,7 +790,6 @@ function ViewAsCalendarTimeEventInDayColumn(
       {hours.map((hour, idx) => (
         <Box
           key={idx}
-          ref={idx === 4 ? hour6Ref : undefined}
           sx={{
             position: "absolute",
             height: "0.05rem",
@@ -814,6 +804,7 @@ function ViewAsCalendarTimeEventInDayColumn(
       {props.timeEventsInDay.map((entry, index) => (
         <ViewAsCalendarTimeEventInDayCell
           key={index}
+          offset={timeBlockOffsetsMap.get(entry.time_event.ref_id) || 0}
           startOfDay={startOfDay}
           timezone={props.timezone}
           entry={entry}
@@ -824,6 +815,7 @@ function ViewAsCalendarTimeEventInDayColumn(
 }
 
 interface ViewAsCalendarTimeEventInDayCellProps {
+  offset: number;
   startOfDay: DateTime;
   timezone: Timezone;
   entry: CombinedTimeEventInDayEntry;
@@ -870,7 +862,6 @@ function ViewAsCalendarTimeEventInDayCell(
         <Box
           ref={containerRef}
           sx={{
-            minWidth: "7rem",
             fontSize: "12px",
             position: "absolute",
             top: calendarTimeEventInDayStartMinutesToRems(
@@ -882,7 +873,11 @@ function ViewAsCalendarTimeEventInDayCell(
             ),
             backgroundColor: scheduleStreamColorHex(scheduleEntry.stream.color),
             borderRadius: "0.25rem",
-            width: "100%",
+            border: `1px solid ${theme.palette.background.paper}`,
+            minWidth: `calc(7rem - ${props.offset * 0.8}rem)`,
+            width: `calc(100% - ${props.offset * 0.8}rem)`,
+            marginLeft: `${props.offset * 0.8}rem`,
+            zIndex: props.offset,
           }}
         >
           <EntityLink
@@ -961,11 +956,16 @@ function ViewAsCalendarInDayContainer(props: PropsWithChildren) {
   const isBigScreen = useBigScreen();
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "row", gap: "0.1rem",
-      position: "relative",
-      minWidth: isBigScreen ? undefined : "fit-content",
-     }}>
-      {props.children }
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "row",
+        gap: "0.1rem",
+        position: "relative",
+        minWidth: isBigScreen ? undefined : "fit-content",
+      }}
+    >
+      {props.children}
     </Box>
   );
 }
@@ -1012,9 +1012,7 @@ function ViewAsSchedule(props: ViewAsProps) {
     props.periodEndDate
   );
   const partitionedCombinedTimeEventFullDays =
-    combinedTimeEventFullDayEntryPartionByDay(
-      combinedTimeEventFullDays,
-    );
+    combinedTimeEventFullDayEntryPartionByDay(combinedTimeEventFullDays);
   const partitionedCombinedTimeEventInDay =
     combinedTimeEventInDayEntryPartionByDay(
       combinedTimeEventInDay,
@@ -1381,7 +1379,7 @@ interface CombinedTimeEventInDayEntry {
 }
 
 function combinedTimeEventFullDayEntryPartionByDay(
-  entries: Array<CombinedTimeEventFullDaysEntry>,
+  entries: Array<CombinedTimeEventFullDaysEntry>
 ): Record<string, Array<CombinedTimeEventFullDaysEntry>> {
   const partition: Record<string, Array<CombinedTimeEventFullDaysEntry>> = {};
 
@@ -1570,4 +1568,91 @@ function sortTimeEventInDayByStartTimeAndEndTime(
     }
     return aStartTime < bStartTime ? -1 : 1;
   });
+}
+
+function buildTimeBlockOffsetsMap(
+  entries: Array<CombinedTimeEventInDayEntry>,
+  startOfDay: DateTime,
+  timezone: Timezone
+): Map<EntityId, number> {
+  const offsets = new Map<EntityId, number>();
+
+  const freeOffsetsMap = [];
+  for (let idx = 0; idx < 24 * 4; idx++) {
+    freeOffsetsMap.push({
+      time: startOfDay.plus({ minutes: idx * 15 }),
+      offset0: false,
+      offset1: false,
+      offset2: false,
+      offset3: false,
+      offset4: false,
+    });
+  }
+
+  for (const entry of entries) {
+    const startTime = calculateStartTimeInTimezone(entry.time_event, timezone);
+    const minutesSinceStartOfDay = startTime.diff(startOfDay).as("minutes");
+
+    const firstCellIdx = Math.floor(minutesSinceStartOfDay / 15);
+    const offsetCell = freeOffsetsMap[firstCellIdx];
+
+    if (offsetCell.offset0 === false) {
+      offsets.set(entry.time_event.ref_id, 0);
+      offsetCell.offset0 = true;
+      for (
+        let idx = minutesSinceStartOfDay;
+        idx < minutesSinceStartOfDay + entry.time_event.duration_mins;
+        idx += 15
+      ) {
+        freeOffsetsMap[Math.floor(idx / 15)].offset0 = true;
+      }
+      continue;
+    } else if (offsetCell.offset1 === false) {
+      offsets.set(entry.time_event.ref_id, 1);
+      offsetCell.offset1 = true;
+      for (
+        let idx = minutesSinceStartOfDay;
+        idx < minutesSinceStartOfDay + entry.time_event.duration_mins;
+        idx += 15
+      ) {
+        freeOffsetsMap[Math.floor(idx / 15)].offset1 = true;
+      }
+      continue;
+    } else if (offsetCell.offset2 === false) {
+      offsets.set(entry.time_event.ref_id, 2);
+      offsetCell.offset2 = true;
+      for (
+        let idx = minutesSinceStartOfDay;
+        idx < minutesSinceStartOfDay + entry.time_event.duration_mins;
+        idx += 15
+      ) {
+        freeOffsetsMap[Math.floor(idx / 15)].offset2 = true;
+      }
+      continue;
+    } else if (offsetCell.offset3 === false) {
+      offsets.set(entry.time_event.ref_id, 3);
+      offsetCell.offset3 = true;
+      for (
+        let idx = minutesSinceStartOfDay;
+        idx < minutesSinceStartOfDay + entry.time_event.duration_mins;
+        idx += 15
+      ) {
+        freeOffsetsMap[Math.floor(idx / 15)].offset3 = true;
+      }
+      continue;
+    } else {
+      offsets.set(entry.time_event.ref_id, 4);
+      offsetCell.offset4 = true;
+      for (
+        let idx = minutesSinceStartOfDay;
+        idx < minutesSinceStartOfDay + entry.time_event.duration_mins;
+        idx += 15
+      ) {
+        freeOffsetsMap[Math.floor(idx / 15)].offset4 = true;
+      }
+      continue;
+    }
+  }
+
+  return offsets;
 }

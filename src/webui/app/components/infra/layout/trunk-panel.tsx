@@ -28,7 +28,7 @@ interface TrunkPanelProps {
   extraControls?: JSX.Element[];
   actions?: JSX.Element;
   returnLocation: string;
-  disableScrollRestoration?: boolean;
+  fixedScrollRestaurationTo?: number;
 }
 
 export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
@@ -79,15 +79,15 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
       return;
     }
 
-    if (props.disableScrollRestoration) {
-      return;
-    }
-
     function handleScrollSpecial() {
       handleScroll(theRef, extractTrunkFromPath(location.pathname));
     }
 
-    restoreScrollPosition(theRef, extractTrunkFromPath(location.pathname));
+    restoreScrollPosition(
+      theRef,
+      extractTrunkFromPath(location.pathname),
+      props.fixedScrollRestaurationTo
+    );
     theRef.addEventListener("scrollend", handleScrollSpecial);
 
     return () => {
@@ -98,7 +98,7 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
     location,
     isBigScreen,
     isPresent,
-    props.disableScrollRestoration,
+    props.fixedScrollRestaurationTo,
     handleScroll,
   ]);
 
