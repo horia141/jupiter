@@ -359,16 +359,12 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
   const partitionedCombinedTimeEventFullDays =
     combinedTimeEventFullDayEntryPartionByDay(
       combinedTimeEventFullDays,
-      props.periodStartDate,
-      props.periodEndDate
     );
   const thePartititionFullDays =
     partitionedCombinedTimeEventFullDays[props.periodStartDate] || [];
   const partitionedCombinedTimeEventInDay =
     combinedTimeEventInDayEntryPartionByDay(
       combinedTimeEventInDay,
-      props.periodStartDate,
-      props.periodEndDate,
       props.timezone
     );
   const thePartitionInDay =
@@ -403,6 +399,7 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
         <Box sx={{ display: "flex", flexDirection: "row" }}>
           {thePartititionFullDays.length > MAX_VISIBLE_TIME_EVENT_FULL_DAYS && (
             <ViewAsCalendarMoreButton
+              showAllTimeEventFullDays={showAllTimeEventFullDays}
               setShowAllTimeEventFullDays={setShowAllTimeEventFullDays}
             />
           )}
@@ -422,7 +419,7 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
         </Box>
       </ViewAsCalendarDaysAndFullDaysContiner>
 
-      <Box sx={{ display: "flex", flexDirection: "row" }}>
+      <ViewAsCalendarInDayContainer>
         <ViewAsCalendarLeftColumn startOfDay={startOfDay} />
         <ViewAsCalendarTimeEventInDayColumn
           today={props.today}
@@ -432,7 +429,7 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
           timeEventsInDay={thePartitionInDay}
         />
         <ViewAsCalendarRightColumn />
-      </Box>
+      </ViewAsCalendarInDayContainer>
     </Box>
   );
 }
@@ -476,14 +473,10 @@ function ViewAsCalendarWeekly(props: ViewAsProps) {
   const partitionedCombinedTimeEventFullDays =
     combinedTimeEventFullDayEntryPartionByDay(
       combinedTimeEventFullDays,
-      props.periodStartDate,
-      props.periodEndDate
     );
   const partitionedCombinedTimeEventInDay =
     combinedTimeEventInDayEntryPartionByDay(
       combinedTimeEventInDay,
-      props.periodStartDate,
-      props.periodEndDate,
       props.timezone
     );
 
@@ -522,6 +515,7 @@ function ViewAsCalendarWeekly(props: ViewAsProps) {
         <Box sx={{ display: "flex", flexDirection: "row", gap: "0.1rem" }}>
           {maxFullDaysEntriesCnt > MAX_VISIBLE_TIME_EVENT_FULL_DAYS && (
             <ViewAsCalendarMoreButton
+              showAllTimeEventFullDays={showAllTimeEventFullDays}
               setShowAllTimeEventFullDays={setShowAllTimeEventFullDays}
             />
           )}
@@ -547,7 +541,7 @@ function ViewAsCalendarWeekly(props: ViewAsProps) {
         </Box>
       </ViewAsCalendarDaysAndFullDaysContiner>
 
-      <Box sx={{ display: "flex", flexDirection: "row", gap: "0.1rem" }}>
+      <ViewAsCalendarInDayContainer>
         <ViewAsCalendarLeftColumn startOfDay={startOfDay} />
 
         {allDays.map((date, idx) => (
@@ -562,7 +556,7 @@ function ViewAsCalendarWeekly(props: ViewAsProps) {
         ))}
 
         <ViewAsCalendarRightColumn />
-      </Box>
+      </ViewAsCalendarInDayContainer>
     </Box>
   );
 }
@@ -578,7 +572,7 @@ function ViewAsCalendarDateHeader(props: ViewAsCalendarDateHeaderProps) {
   return (
     <Box
       sx={{
-        width: "3.5rem",
+        minWidth: "7rem",
         flexGrow: "1",
         textAlign: "center",
       }}
@@ -586,7 +580,7 @@ function ViewAsCalendarDateHeader(props: ViewAsCalendarDateHeaderProps) {
       <Box
         sx={{
           borderRadius: "50%",
-          width: "inherit",
+          width: "50%",
           margin: "auto",
           backgroundColor:
             props.date === props.today
@@ -608,6 +602,7 @@ interface ViewAsCalendarLeftColumnProps {
 }
 
 function ViewAsCalendarLeftColumn(props: ViewAsCalendarLeftColumnProps) {
+  const theme = useTheme();
   const hours = Array.from({ length: 24 }, (_, i) =>
     props.startOfDay.plus({ hours: i })
   );
@@ -617,6 +612,12 @@ function ViewAsCalendarLeftColumn(props: ViewAsCalendarLeftColumnProps) {
       sx={{
         width: "3.5rem",
         height: "96rem",
+        position: "sticky",
+        left: "0px",
+        top: "0px",
+        backgroundColor: theme.palette.background.paper,
+        zIndex: theme.zIndex.appBar + 100,
+        borderRight: "1px solid darkgray",
       }}
     >
       {hours.map((hour, idx) => (
@@ -709,6 +710,7 @@ function ViewAsCalendarTimeEventFullDaysCell(
         <Box
           ref={containerRef}
           sx={{
+            minWidth: "7rem",
             fontSize: "12px",
             backgroundColor: scheduleStreamColorHex(fullDaysEntry.stream.color),
             borderRadius: "0.25rem",
@@ -764,7 +766,10 @@ function ViewAsCalendarTimeEventInDayColumn(
       return;
     }
 
-    hour6Ref.current.scrollIntoView();
+    hour6Ref.current.scrollIntoView({
+      block: "start",
+      inline: "start",
+    });
   }, []);
 
   return (
@@ -773,6 +778,7 @@ function ViewAsCalendarTimeEventInDayColumn(
         position: "relative",
         flexGrow: 1,
         height: "96rem",
+        minWidth: "7rem",
       }}
     >
       {props.today === props.date && (
@@ -864,6 +870,7 @@ function ViewAsCalendarTimeEventInDayCell(
         <Box
           ref={containerRef}
           sx={{
+            minWidth: "7rem",
             fontSize: "12px",
             position: "absolute",
             top: calendarTimeEventInDayStartMinutesToRems(
@@ -907,6 +914,7 @@ function ViewAsCalendarTimeEventInDayCell(
 }
 
 interface ViewAsCalendarMoreButtonProps {
+  showAllTimeEventFullDays: boolean;
   setShowAllTimeEventFullDays: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
@@ -922,7 +930,7 @@ function ViewAsCalendarMoreButton(props: ViewAsCalendarMoreButtonProps) {
       }}
       onClick={() => props.setShowAllTimeEventFullDays((c) => !c)}
     >
-      More ...
+      {props.showAllTimeEventFullDays ? "Show Less" : "Show More"}
     </Button>
   );
 }
@@ -937,6 +945,7 @@ function ViewAsCalendarDaysAndFullDaysContiner(props: PropsWithChildren) {
         display: "flex",
         flexDirection: "column",
         position: "sticky",
+        minWidth: isBigScreen ? undefined : "fit-content",
         top: isBigScreen ? "-0.5rem" : "0px",
         backgroundColor: theme.palette.background.paper,
         zIndex: theme.zIndex.appBar + 200,
@@ -948,8 +957,21 @@ function ViewAsCalendarDaysAndFullDaysContiner(props: PropsWithChildren) {
   );
 }
 
+function ViewAsCalendarInDayContainer(props: PropsWithChildren) {
+  const isBigScreen = useBigScreen();
+
+  return (
+    <Box sx={{ display: "flex", flexDirection: "row", gap: "0.1rem",
+      position: "relative",
+      minWidth: isBigScreen ? undefined : "fit-content",
+     }}>
+      {props.children }
+    </Box>
+  );
+}
+
 function ViewAsCalendarEmptyCell() {
-  return <Box sx={{ width: "3.5rem" }}></Box>;
+  return <Box sx={{ minWidth: "3.5rem" }}></Box>;
 }
 
 function ViewAsSchedule(props: ViewAsProps) {
@@ -992,14 +1014,10 @@ function ViewAsSchedule(props: ViewAsProps) {
   const partitionedCombinedTimeEventFullDays =
     combinedTimeEventFullDayEntryPartionByDay(
       combinedTimeEventFullDays,
-      props.periodStartDate,
-      props.periodEndDate
     );
   const partitionedCombinedTimeEventInDay =
     combinedTimeEventInDayEntryPartionByDay(
       combinedTimeEventInDay,
-      props.periodStartDate,
-      props.periodEndDate,
       props.timezone
     );
 
@@ -1364,8 +1382,6 @@ interface CombinedTimeEventInDayEntry {
 
 function combinedTimeEventFullDayEntryPartionByDay(
   entries: Array<CombinedTimeEventFullDaysEntry>,
-  periodStartDate: ADate,
-  periodEndDate: ADate
 ): Record<string, Array<CombinedTimeEventFullDaysEntry>> {
   const partition: Record<string, Array<CombinedTimeEventFullDaysEntry>> = {};
 
@@ -1487,8 +1503,6 @@ function splitTimeEventInDayEntryIntoPerDayEntries(
 
 function combinedTimeEventInDayEntryPartionByDay(
   entries: Array<CombinedTimeEventInDayEntry>,
-  periodStartDate: ADate,
-  periodEndDate: ADate,
   timezone: Timezone
 ): Record<string, Array<CombinedTimeEventInDayEntry>> {
   const partition: Record<string, Array<CombinedTimeEventInDayEntry>> = {};
