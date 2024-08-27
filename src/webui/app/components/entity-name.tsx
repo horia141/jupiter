@@ -4,11 +4,12 @@ import { Typography } from "@mui/material";
 interface EntityNameProps {
   compact?: boolean;
   name: EntityName;
+  color?: string;
 }
 
-export function EntityNameComponent({ compact, name }: EntityNameProps) {
+export function EntityNameComponent({ compact, name, color }: EntityNameProps) {
   return (
-    <Typography fontSize={!compact ? "unset" : "0.85rem"}>{name}</Typography>
+    <Typography fontSize={!compact ? "unset" : "0.85rem"} color={color}>{name}</Typography>
   );
 }
 

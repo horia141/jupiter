@@ -49,3 +49,28 @@ export function scheduleStreamColorHex(color: ScheduleStreamColor): string {
       return "#e91e63";
   }
 }
+
+export function scheduleStreamColorContrastingHex(color: ScheduleStreamColor): string {
+  switch (color) {
+    case ScheduleStreamColor.BLUE:
+      return "#ffffff";
+    case ScheduleStreamColor.GREEN:
+      return "#ffffff";
+    case ScheduleStreamColor.RED:
+      return "#ffffff";
+    case ScheduleStreamColor.YELLOW:
+      return "#000000";
+    case ScheduleStreamColor.PURPLE:
+      return "#ffffff";
+    case ScheduleStreamColor.ORANGE:
+      return "#000000";
+    case ScheduleStreamColor.GRAY:
+      return "#000000";
+    case ScheduleStreamColor.BROWN:
+      return "#ffffff";
+    case ScheduleStreamColor.CYAN:
+      return "#000000";
+    case ScheduleStreamColor.MAGENTA:
+      return "#ffffff";
+  }
+}

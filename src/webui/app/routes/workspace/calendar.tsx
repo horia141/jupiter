@@ -57,7 +57,7 @@ import {
 } from "~/components/infra/section-actions";
 import { aDateToDate, allDaysBetween } from "~/logic/domain/adate";
 import { periodName } from "~/logic/domain/period";
-import { scheduleStreamColorHex } from "~/logic/domain/schedule-stream-color";
+import { scheduleStreamColorContrastingHex, scheduleStreamColorHex } from "~/logic/domain/schedule-stream-color";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -723,7 +723,7 @@ function ViewAsCalendarTimeEventFullDaysCell(
             key={`schedule-event-full-days-${fullDaysEntry.event.ref_id}`}
             to={`/workspace/calendar/schedule/event-full-days/${fullDaysEntry.event.ref_id}?${query}`}
           >
-            <EntityNameComponent name={clippedName} />
+            <EntityNameComponent name={clippedName} color={scheduleStreamColorContrastingHex(fullDaysEntry.stream.color)} />
           </EntityLink>
         </Box>
       );
@@ -894,7 +894,7 @@ function ViewAsCalendarTimeEventInDayCell(
                 overflow: "hidden",
               }}
             >
-              <EntityNameComponent name={clippedName} />
+              <EntityNameComponent name={clippedName} color={scheduleStreamColorContrastingHex(scheduleEntry.stream.color)} />
             </Box>
           </EntityLink>
         </Box>
@@ -1147,7 +1147,7 @@ function ViewAsScheduleTimeEventFullDaysRows(
               key={`schedule-event-full-days-${fullDaysEntry.event.ref_id}`}
               to={`/workspace/calendar/schedule/event-full-days/${fullDaysEntry.event.ref_id}?${query}`}
             >
-              <EntityNameComponent name={fullDaysEntry.event.name} />
+              <EntityNameComponent name={fullDaysEntry.event.name} color={scheduleStreamColorContrastingHex(fullDaysEntry.stream.color)} />
             </EntityLink>
           </ViewAsScheduleEventCell>
         </React.Fragment>
@@ -1201,7 +1201,7 @@ function ViewAsScheduleTimeEventInDaysRows(
               key={`schedule-event-in-day-${scheduleEntry.event.ref_id}`}
               to={`/workspace/calendar/schedule/event-in-day/${scheduleEntry.event.ref_id}?${query}`}
             >
-              <EntityNameComponent name={scheduleEntry.event.name} />
+              <EntityNameComponent name={scheduleEntry.event.name} color={scheduleStreamColorContrastingHex(scheduleEntry.stream.color)} />
             </EntityLink>
           </ViewAsScheduleEventCell>
         </React.Fragment>
