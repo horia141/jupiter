@@ -345,7 +345,15 @@ export default function ScheduleEventInDayViewOne() {
                 name="durationMins"
                 readOnly={!inputsEnabled}
                 value={durationMins}
-                onChange={(e) => setDurationMins(parseInt(e.target.value, 10))}
+                onChange={(e) => {
+                  if (Number.isNaN(parseInt(e.target.value, 10))) {
+                    setDurationMins(0);
+                    e.preventDefault();
+                    return;
+                  }
+
+                  return setDurationMins(parseInt(e.target.value, 10));
+                }}
               />
 
               <FieldError
