@@ -24,6 +24,9 @@ from .big_plan_update_result import BigPlanUpdateResult
 from .big_plan_work_summary import BigPlanWorkSummary
 from .bulleted_list_block import BulletedListBlock
 from .bulleted_list_block_kind import BulletedListBlockKind
+from .calendar_events_entries import CalendarEventsEntries
+from .calendar_events_stats import CalendarEventsStats
+from .calendar_events_stats_per_subperiod import CalendarEventsStatsPerSubperiod
 from .calendar_load_for_date_and_period_args import CalendarLoadForDateAndPeriodArgs
 from .calendar_load_for_date_and_period_result import CalendarLoadForDateAndPeriodResult
 from .change_password_args import ChangePasswordArgs
@@ -446,7 +449,11 @@ from .table_block import TableBlock
 from .table_block_kind import TableBlockKind
 from .time_event_domain import TimeEventDomain
 from .time_event_full_days_block import TimeEventFullDaysBlock
+from .time_event_full_days_block_stats import TimeEventFullDaysBlockStats
+from .time_event_full_days_block_stats_per_group import TimeEventFullDaysBlockStatsPerGroup
 from .time_event_in_day_block import TimeEventInDayBlock
+from .time_event_in_day_block_stats import TimeEventInDayBlockStats
+from .time_event_in_day_block_stats_per_group import TimeEventInDayBlockStatsPerGroup
 from .time_event_namespace import TimeEventNamespace
 from .time_plan import TimePlan
 from .time_plan_activity import TimePlanActivity
@@ -567,6 +574,9 @@ __all__ = (
     "BigPlanWorkSummary",
     "BulletedListBlock",
     "BulletedListBlockKind",
+    "CalendarEventsEntries",
+    "CalendarEventsStats",
+    "CalendarEventsStatsPerSubperiod",
     "CalendarLoadForDateAndPeriodArgs",
     "CalendarLoadForDateAndPeriodResult",
     "ChangePasswordArgs",
@@ -987,7 +997,11 @@ __all__ = (
     "TableBlockKind",
     "TimeEventDomain",
     "TimeEventFullDaysBlock",
+    "TimeEventFullDaysBlockStats",
+    "TimeEventFullDaysBlockStatsPerGroup",
     "TimeEventInDayBlock",
+    "TimeEventInDayBlockStats",
+    "TimeEventInDayBlockStatsPerGroup",
     "TimeEventNamespace",
     "TimePlan",
     "TimePlanActivity",

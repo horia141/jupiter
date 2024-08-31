@@ -28,6 +28,7 @@ import {
   Typography,
   useTheme,
 } from "@mui/material";
+import Grid from "@mui/material/Unstable_Grid2";
 import type { LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -57,7 +58,10 @@ import {
 } from "~/components/infra/section-actions";
 import { aDateToDate, allDaysBetween } from "~/logic/domain/adate";
 import { periodName } from "~/logic/domain/period";
-import { scheduleStreamColorContrastingHex, scheduleStreamColorHex } from "~/logic/domain/schedule-stream-color";
+import {
+  scheduleStreamColorContrastingHex,
+  scheduleStreamColorHex,
+} from "~/logic/domain/schedule-stream-color";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -109,6 +113,7 @@ export async function loader({ request }: LoaderArgs) {
   ).calendar.calendarLoadForDateAndPeriod({
     right_now: query.today,
     period: query.period,
+    stats_subperiod: statsSubperiodForPeriod(query.period),
   });
 
   return json({
@@ -119,10 +124,12 @@ export async function loader({ request }: LoaderArgs) {
     periodEndDate: response.period_end_date,
     prevPeriodStartDate: response.prev_period_start_date,
     nextPeriodStartDate: response.next_period_start_date,
-    scheduleEventInDayEntries: response.schedule_event_in_day_entries,
-    scheduleEventFullDayEntries: response.schedule_event_full_days_entries,
-    inboxTaskEntries: response.inbox_task_entries,
-    personEntries: response.person_entries,
+    scheduleEventInDayEntries:
+      response.entries?.schedule_event_in_day_entries || [],
+    scheduleEventFullDayEntries:
+      response.entries?.schedule_event_full_days_entries || [],
+    inboxTaskEntries: response.entries?.inbox_task_entries || [],
+    personEntries: response.entries?.person_entries || [],
   });
 }
 
@@ -264,6 +271,7 @@ export default function CalendarView() {
               }
               inboxTaskEntries={loaderData.inboxTaskEntries}
               personEntries={loaderData.personEntries}
+              calendarLocation={calendarLocation}
             />
           )}
 
@@ -280,6 +288,24 @@ export default function CalendarView() {
               }
               inboxTaskEntries={loaderData.inboxTaskEntries}
               personEntries={loaderData.personEntries}
+              calendarLocation={calendarLocation}
+            />
+          )}
+
+        {loaderData.view === View.CALENDAR &&
+          loaderData.period === RecurringTaskPeriod.YEARLY && (
+            <ViewAsCalendarYearly
+              timezone={topLevelInfo.user.timezone}
+              today={theRealToday}
+              periodStartDate={loaderData.periodStartDate}
+              periodEndDate={loaderData.periodEndDate}
+              scheduleEventInDayEntries={loaderData.scheduleEventInDayEntries}
+              scheduleEventFullDayEntries={
+                loaderData.scheduleEventFullDayEntries
+              }
+              inboxTaskEntries={loaderData.inboxTaskEntries}
+              calendarLocation={calendarLocation}
+              personEntries={loaderData.personEntries}
             />
           )}
 
@@ -293,6 +319,7 @@ export default function CalendarView() {
             scheduleEventFullDayEntries={loaderData.scheduleEventFullDayEntries}
             inboxTaskEntries={loaderData.inboxTaskEntries}
             personEntries={loaderData.personEntries}
+            calendarLocation={calendarLocation}
           />
         )}
       </NestingAwareBlock>
@@ -319,6 +346,7 @@ interface ViewAsProps {
   scheduleEventFullDayEntries: Array<ScheduleFullDaysEventEntry>;
   inboxTaskEntries: Array<InboxTaskEntry>;
   personEntries: Array<PersonEntry>;
+  calendarLocation: string;
 }
 
 function ViewAsCalendarDaily(props: ViewAsProps) {
@@ -558,6 +586,196 @@ function ViewAsCalendarWeekly(props: ViewAsProps) {
   );
 }
 
+function ViewAsCalendarYearly(props: ViewAsProps) {
+  const isBigScreen = useBigScreen();
+  const combinedTimeEventFullDays: Array<CombinedTimeEventFullDaysEntry> = [];
+  for (const entry of props.scheduleEventFullDayEntries) {
+    combinedTimeEventFullDays.push({
+      time_event: entry.time_event,
+      entry: entry,
+    });
+  }
+  for (const entry of props.personEntries) {
+    combinedTimeEventFullDays.push({
+      time_event: entry.birthday_time_event,
+      entry: entry,
+    });
+  }
+
+  const combinedTimeEventInDay: Array<CombinedTimeEventInDayEntry> = [];
+  for (const entry of props.scheduleEventInDayEntries) {
+    combinedTimeEventInDay.push({
+      time_event: entry.time_event,
+      entry: entry,
+    });
+  }
+  for (const entry of props.inboxTaskEntries) {
+    for (const timeEvent of entry.time_events) {
+      combinedTimeEventInDay.push({
+        time_event: timeEvent,
+        entry: entry,
+      });
+    }
+  }
+
+  const partitionedCombinedTimeEventFullDays =
+    combinedTimeEventFullDayEntryPartionByMonth(combinedTimeEventFullDays);
+  const periodStartDate = DateTime.fromISO(props.periodStartDate);
+
+  return (
+    <Grid container columns={isBigScreen ? 10 : 11}>
+      <Grid xs={isBigScreen ? 1 : 2}>
+        <ViewAsCalendarGoToQuarterCell
+          label="Q1"
+          quarterStart={`${periodStartDate.year}-01-01`}
+          calendarLocation={props.calendarLocation}
+        />
+        <ViewAsCalendarGoToQuarterCell
+          label="Q2"
+          quarterStart={`${periodStartDate.year}-04-01`}
+          calendarLocation={props.calendarLocation}
+        />
+        <ViewAsCalendarGoToQuarterCell
+          label="Q3"
+          quarterStart={`${periodStartDate.year}-07-01`}
+          calendarLocation={props.calendarLocation}
+        />
+        <ViewAsCalendarGoToQuarterCell
+          label="Q4"
+          quarterStart={`${periodStartDate.year}-10-01`}
+          calendarLocation={props.calendarLocation}
+        />
+      </Grid>
+      <Grid xs={3}>
+        <ViewAsCalendarMonthCell
+          label="Jan"
+          month={`${periodStartDate.year}-01-01`}
+          entries={
+            partitionedCombinedTimeEventFullDays[
+              `${periodStartDate.year}-01-01`
+            ] || []
+          }
+          calendarLocation={props.calendarLocation}
+        />
+        <ViewAsCalendarMonthCell
+          label="Apr"
+          month={`${periodStartDate.year}-04-01`}
+          entries={
+            partitionedCombinedTimeEventFullDays[
+              `${periodStartDate.year}-04-01`
+            ] || []
+          }
+          calendarLocation={props.calendarLocation}
+        />
+        <ViewAsCalendarMonthCell
+          label="Jul"
+          month={`${periodStartDate.year}-07-01`}
+          entries={
+            partitionedCombinedTimeEventFullDays[
+              `${periodStartDate.year}-07-01`
+            ] || []
+          }
+          calendarLocation={props.calendarLocation}
+        />
+        <ViewAsCalendarMonthCell
+          label="Oct"
+          month={`${periodStartDate.year}-10-01`}
+          entries={
+            partitionedCombinedTimeEventFullDays[
+              `${periodStartDate.year}-10-01`
+            ] || []
+          }
+          calendarLocation={props.calendarLocation}
+        />
+      </Grid>
+      <Grid xs={3}>
+        <ViewAsCalendarMonthCell
+          label="Feb"
+          month={`${periodStartDate.year}-02-01`}
+          entries={
+            partitionedCombinedTimeEventFullDays[
+              `${periodStartDate.year}-02-01`
+            ] || []
+          }
+          calendarLocation={props.calendarLocation}
+        />
+        <ViewAsCalendarMonthCell
+          label="May"
+          month={`${periodStartDate.year}-05-01`}
+          entries={
+            partitionedCombinedTimeEventFullDays[
+              `${periodStartDate.year}-05-01`
+            ] || []
+          }
+          calendarLocation={props.calendarLocation}
+        />
+        <ViewAsCalendarMonthCell
+          label="Aug"
+          month={`${periodStartDate.year}-08-01`}
+          entries={
+            partitionedCombinedTimeEventFullDays[
+              `${periodStartDate.year}-08-01`
+            ] || []
+          }
+          calendarLocation={props.calendarLocation}
+        />
+        <ViewAsCalendarMonthCell
+          label="Nov"
+          month={`${periodStartDate.year}-11-01`}
+          entries={
+            partitionedCombinedTimeEventFullDays[
+              `${periodStartDate.year}-11-01`
+            ] || []
+          }
+          calendarLocation={props.calendarLocation}
+        />
+      </Grid>
+      <Grid xs={3}>
+        <ViewAsCalendarMonthCell
+          label="Mar"
+          month={`${periodStartDate.year}-03-01`}
+          entries={
+            partitionedCombinedTimeEventFullDays[
+              `${periodStartDate.year}-03-01`
+            ] || []
+          }
+          calendarLocation={props.calendarLocation}
+        />
+        <ViewAsCalendarMonthCell
+          label="Jun"
+          month={`${periodStartDate.year}-06-01`}
+          entries={
+            partitionedCombinedTimeEventFullDays[
+              `${periodStartDate.year}-06-01`
+            ] || []
+          }
+          calendarLocation={props.calendarLocation}
+        />
+        <ViewAsCalendarMonthCell
+          label="Sep"
+          month={`${periodStartDate.year}-09-01`}
+          entries={
+            partitionedCombinedTimeEventFullDays[
+              `${periodStartDate.year}-09-01`
+            ] || []
+          }
+          calendarLocation={props.calendarLocation}
+        />
+        <ViewAsCalendarMonthCell
+          label="Dec"
+          month={`${periodStartDate.year}-12-01`}
+          entries={
+            partitionedCombinedTimeEventFullDays[
+              `${periodStartDate.year}-12-01`
+            ] || []
+          }
+          calendarLocation={props.calendarLocation}
+        />
+      </Grid>
+    </Grid>
+  );
+}
+
 interface ViewAsCalendarDateHeaderProps {
   today: ADate;
   date: ADate;
@@ -723,7 +941,12 @@ function ViewAsCalendarTimeEventFullDaysCell(
             key={`schedule-event-full-days-${fullDaysEntry.event.ref_id}`}
             to={`/workspace/calendar/schedule/event-full-days/${fullDaysEntry.event.ref_id}?${query}`}
           >
-            <EntityNameComponent name={clippedName} color={scheduleStreamColorContrastingHex(fullDaysEntry.stream.color)} />
+            <EntityNameComponent
+              name={clippedName}
+              color={scheduleStreamColorContrastingHex(
+                fullDaysEntry.stream.color
+              )}
+            />
           </EntityLink>
         </Box>
       );
@@ -894,7 +1117,12 @@ function ViewAsCalendarTimeEventInDayCell(
                 overflow: "hidden",
               }}
             >
-              <EntityNameComponent name={clippedName} color={scheduleStreamColorContrastingHex(scheduleEntry.stream.color)} />
+              <EntityNameComponent
+                name={clippedName}
+                color={scheduleStreamColorContrastingHex(
+                  scheduleEntry.stream.color
+                )}
+              />
             </Box>
           </EntityLink>
         </Box>
@@ -966,6 +1194,77 @@ function ViewAsCalendarInDayContainer(props: PropsWithChildren) {
       }}
     >
       {props.children}
+    </Box>
+  );
+}
+
+interface ViewAsCalendarGoToQuarterCellProps {
+  label: string;
+  quarterStart: string;
+  calendarLocation: string;
+}
+
+function ViewAsCalendarGoToQuarterCell(
+  props: ViewAsCalendarGoToQuarterCellProps
+) {
+  const isBigScreen = useBigScreen();
+  return (
+    <Box
+      sx={{
+        minHeight: "6rem",
+        minWidth: "3rem",
+        border: "1px solid darkgray",
+        borderRadius: "0.25rem",
+        margin: isBigScreen ? "1rem" : "0.25rem",
+        display: "flex",
+        justifyContent: "center",
+      }}
+    >
+      <EntityLink
+        to={`/workspace/calendar${props.calendarLocation}?today=${props.quarterStart}&period=quarterly&view=calendar`}
+      >
+        <Typography variant="h6">{props.label}</Typography>
+      </EntityLink>
+    </Box>
+  );
+}
+
+interface ViewAsCalendarMonthCellProps {
+  label: string;
+  month: string;
+  entries: Array<CombinedTimeEventFullDaysEntry>;
+  calendarLocation: string;
+}
+
+function ViewAsCalendarMonthCell(props: ViewAsCalendarMonthCellProps) {
+  const isBigScreen = useBigScreen();
+
+  const scheduleEntries = props.entries.filter(
+    (s) =>
+      s.time_event.namespace === TimeEventNamespace.SCHEDULE_FULL_DAYS_BLOCK
+  );
+  const birthdayEntries = props.entries.filter(
+    (s) => s.time_event.namespace === TimeEventNamespace.PERSON_BIRTHDAY
+  );
+
+  return (
+    <Box
+      sx={{
+        minHeight: "6rem",
+        border: "1px solid darkgray",
+        borderRadius: "0.25rem",
+        margin: isBigScreen ? "1rem" : "0.25rem",
+        display: "flex",
+        justifyContent: "center",
+      }}
+    >
+      <EntityLink
+        to={`/workspace/calendar${props.calendarLocation}?today=${props.month}&period=monthly&view=calendar`}
+      >
+        {props.label}
+        {scheduleEntries.length} scheduled events
+        {birthdayEntries.length} birthday events
+      </EntityLink>
     </Box>
   );
 }
@@ -1147,7 +1446,12 @@ function ViewAsScheduleTimeEventFullDaysRows(
               key={`schedule-event-full-days-${fullDaysEntry.event.ref_id}`}
               to={`/workspace/calendar/schedule/event-full-days/${fullDaysEntry.event.ref_id}?${query}`}
             >
-              <EntityNameComponent name={fullDaysEntry.event.name} color={scheduleStreamColorContrastingHex(fullDaysEntry.stream.color)} />
+              <EntityNameComponent
+                name={fullDaysEntry.event.name}
+                color={scheduleStreamColorContrastingHex(
+                  fullDaysEntry.stream.color
+                )}
+              />
             </EntityLink>
           </ViewAsScheduleEventCell>
         </React.Fragment>
@@ -1201,7 +1505,12 @@ function ViewAsScheduleTimeEventInDaysRows(
               key={`schedule-event-in-day-${scheduleEntry.event.ref_id}`}
               to={`/workspace/calendar/schedule/event-in-day/${scheduleEntry.event.ref_id}?${query}`}
             >
-              <EntityNameComponent name={scheduleEntry.event.name} color={scheduleStreamColorContrastingHex(scheduleEntry.stream.color)} />
+              <EntityNameComponent
+                name={scheduleEntry.event.name}
+                color={scheduleStreamColorContrastingHex(
+                  scheduleEntry.stream.color
+                )}
+              />
             </EntityLink>
           </ViewAsScheduleEventCell>
         </React.Fragment>
@@ -1387,6 +1696,27 @@ function combinedTimeEventFullDayEntryPartionByDay(
     const firstDate = aDateToDate(entry.time_event.start_date);
     for (let idx = 0; idx < entry.time_event.duration_days; idx++) {
       const date = firstDate.plus({ days: idx });
+
+      const dateStr = date.toISODate();
+      if (partition[dateStr] === undefined) {
+        partition[dateStr] = [];
+      }
+      partition[dateStr].push(entry);
+    }
+  }
+
+  return partition;
+}
+
+function combinedTimeEventFullDayEntryPartionByMonth(
+  entries: Array<CombinedTimeEventFullDaysEntry>
+): Record<string, Array<CombinedTimeEventFullDaysEntry>> {
+  const partition: Record<string, Array<CombinedTimeEventFullDaysEntry>> = {};
+
+  for (const entry of entries) {
+    const firstDate = aDateToDate(entry.time_event.start_date);
+    for (let idx = 0; idx < entry.time_event.duration_days; idx++) {
+      const date = firstDate.plus({ days: idx }).startOf("month");
 
       const dateStr = date.toISODate();
       if (partition[dateStr] === undefined) {
@@ -1655,4 +1985,21 @@ function buildTimeBlockOffsetsMap(
   }
 
   return offsets;
+}
+
+function statsSubperiodForPeriod(
+  period: RecurringTaskPeriod
+): RecurringTaskPeriod | null {
+  switch (period) {
+    case RecurringTaskPeriod.DAILY:
+      return null;
+    case RecurringTaskPeriod.WEEKLY:
+      return RecurringTaskPeriod.DAILY;
+    case RecurringTaskPeriod.MONTHLY:
+      return RecurringTaskPeriod.DAILY;
+    case RecurringTaskPeriod.QUARTERLY:
+      return RecurringTaskPeriod.WEEKLY;
+    case RecurringTaskPeriod.YEARLY:
+      return RecurringTaskPeriod.MONTHLY;
+  }
 }

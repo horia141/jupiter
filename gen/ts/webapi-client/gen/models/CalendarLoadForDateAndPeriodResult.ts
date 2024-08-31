@@ -3,11 +3,9 @@
 /* eslint-disable */
 
 import type { ADate } from './ADate';
-import type { InboxTaskEntry } from './InboxTaskEntry';
-import type { PersonEntry } from './PersonEntry';
+import type { CalendarEventsEntries } from './CalendarEventsEntries';
+import type { CalendarEventsStats } from './CalendarEventsStats';
 import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
-import type { ScheduleFullDaysEventEntry } from './ScheduleFullDaysEventEntry';
-import type { ScheduleInDayEventEntry } from './ScheduleInDayEventEntry';
 
 /**
  * Result.
@@ -15,13 +13,12 @@ import type { ScheduleInDayEventEntry } from './ScheduleInDayEventEntry';
 export type CalendarLoadForDateAndPeriodResult = {
     right_now: ADate;
     period: RecurringTaskPeriod;
+    stats_subperiod?: (RecurringTaskPeriod | null);
     period_start_date: ADate;
     period_end_date: ADate;
     prev_period_start_date: ADate;
     next_period_start_date: ADate;
-    schedule_event_in_day_entries: Array<ScheduleInDayEventEntry>;
-    schedule_event_full_days_entries: Array<ScheduleFullDaysEventEntry>;
-    inbox_task_entries: Array<InboxTaskEntry>;
-    person_entries: Array<PersonEntry>;
+    entries?: (CalendarEventsEntries | null);
+    stats?: (CalendarEventsStats | null);
 };
 

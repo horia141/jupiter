@@ -17,6 +17,7 @@ from jupiter.core.framework.entity import (
 )
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.repository import LeafEntityRepository
+from jupiter.core.framework.value import CompositeValue, value
 
 # Define constants at the top level
 MIN_DURATION_MINS = 1
@@ -96,6 +97,22 @@ class TimeEventInDayBlock(LeafSupportEntity):
         )
 
 
+@value
+class TimeEventInDayBlockStatsPerGroup(CompositeValue):
+    """Just a slice of the stats."""
+
+    date: ADate
+    namespace: TimeEventNamespace
+    cnt: int
+
+
+@value
+class TimeEventInDayBlockStats(CompositeValue):
+    """Stats for time events."""
+
+    per_groups: list[TimeEventInDayBlockStatsPerGroup]
+
+
 class TimeEventInDayBlockRepository(LeafEntityRepository[TimeEventInDayBlock], abc.ABC):
     """Time event repository."""
 
@@ -116,3 +133,12 @@ class TimeEventInDayBlockRepository(LeafEntityRepository[TimeEventInDayBlock], a
         end_date: ADate,
     ) -> list[TimeEventInDayBlock]:
         """Find all time events between two dates."""
+
+    @abc.abstractmethod
+    async def stats_for_all_between(
+        self,
+        parent_ref_id: EntityId,
+        start_date: ADate,
+        end_date: ADate,
+    ) -> TimeEventInDayBlockStats:
+        """Get stats for all time events between two dates."""

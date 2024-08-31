@@ -11,5 +11,6 @@ import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
 export type CalendarLoadForDateAndPeriodArgs = {
     right_now: ADate;
     period: RecurringTaskPeriod;
+    stats_subperiod?: (RecurringTaskPeriod | null);
 };
 

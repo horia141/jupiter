@@ -50,7 +50,9 @@ export function scheduleStreamColorHex(color: ScheduleStreamColor): string {
   }
 }
 
-export function scheduleStreamColorContrastingHex(color: ScheduleStreamColor): string {
+export function scheduleStreamColorContrastingHex(
+  color: ScheduleStreamColor
+): string {
   switch (color) {
     case ScheduleStreamColor.BLUE:
       return "#ffffff";

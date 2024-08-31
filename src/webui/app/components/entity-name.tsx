@@ -9,7 +9,9 @@ interface EntityNameProps {
 
 export function EntityNameComponent({ compact, name, color }: EntityNameProps) {
   return (
-    <Typography fontSize={!compact ? "unset" : "0.85rem"} color={color}>{name}</Typography>
+    <Typography fontSize={!compact ? "unset" : "0.85rem"} color={color}>
+      {name}
+    </Typography>
   );
 }
 

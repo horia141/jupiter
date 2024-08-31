@@ -11,10 +11,12 @@ from jupiter.cli.command.rendering import (
 )
 from jupiter.core.domain.concept.persons.person_birthday import PersonBirthday
 from jupiter.core.use_cases.application.calendar.load_for_date_and_period import (
+    CalendarEventsStats,
     CalendarLoadForDateAndPeriodResult,
     CalendarLoadForDateAndPeriodUseCase,
 )
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
+from jupiter_webapi_client.models.calendar_events_entries import CalendarEventsEntries
 from rich.console import Console
 from rich.text import Text
 from rich.tree import Tree
@@ -40,33 +42,43 @@ class CalendarShow(
 
         rich_tree = Tree(header_text)
 
-        # Process the full days events
+        if result.entries:
+            # Process the full days events
 
-        full_day_events_tree = Tree("Full Days Events", guide_style="bold bright_blue")
+            full_day_events_tree = Tree(
+                "Full Days Events", guide_style="bold bright_blue"
+            )
 
-        self.build_birthdays(result, full_day_events_tree)
+            self.build_birthdays(result.entries, full_day_events_tree)
 
-        self.build_schedule_full_days(result, full_day_events_tree)
+            self.build_schedule_full_days(result.entries, full_day_events_tree)
 
-        rich_tree.add(full_day_events_tree)
+            rich_tree.add(full_day_events_tree)
 
-        # Process the in day events
+            # Process the in day events
 
-        in_day_events_tree = Tree("In Day Events", guide_style="bold bright_blue")
+            in_day_events_tree = Tree("In Day Events", guide_style="bold bright_blue")
 
-        self.build_inbox_tasks(result, in_day_events_tree)
+            self.build_inbox_tasks(result.entries, in_day_events_tree)
 
-        self.build_schedule_in_day(result, in_day_events_tree)
+            self.build_schedule_in_day(result.entries, in_day_events_tree)
 
-        rich_tree.add(in_day_events_tree)
+            rich_tree.add(in_day_events_tree)
+
+        if result.stats:
+            # Process the stats
+
+            stats_tree = self.build_stats(result.stats)
+
+            rich_tree.add(stats_tree)
 
         console.print(rich_tree)
 
     def build_birthdays(
-        self, result: CalendarLoadForDateAndPeriodResult, full_day_events_tree: Tree
+        self, entries: CalendarEventsEntries, full_day_events_tree: Tree
     ) -> None:
         for person_entry in sorted(
-            result.person_entries,
+            entries.person_entries,
             key=lambda pe: (
                 pe.birthday_time_event.start_date,
                 pe.birthday_time_event.end_date,
@@ -84,10 +96,10 @@ class CalendarShow(
             full_day_events_tree.add(person_text)
 
     def build_schedule_full_days(
-        self, result: CalendarLoadForDateAndPeriodResult, full_day_events_tree: Tree
+        self, entries: CalendarEventsEntries, full_day_events_tree: Tree
     ) -> None:
         for schedule_event_full_days_entry in sorted(
-            result.schedule_event_full_days_entries,
+            entries.schedule_event_full_days_entries,
             key=lambda se: (se.time_event.start_date, se.time_event.end_date),
         ):
             schedule_event_full_days = schedule_event_full_days_entry.event
@@ -114,10 +126,10 @@ class CalendarShow(
             full_day_events_tree.add(schedule_event_full_days_text)
 
     def build_inbox_tasks(
-        self, result: CalendarLoadForDateAndPeriodResult, in_day_events_tree: Tree
+        self, entries: CalendarEventsEntries, in_day_events_tree: Tree
     ) -> None:
         for inbox_task_entry in sorted(
-            result.inbox_task_entries,
+            entries.inbox_task_entries,
             key=lambda it: (
                 it.time_events[0].start_date,
                 it.time_events[0].start_time_in_day,
@@ -144,10 +156,10 @@ class CalendarShow(
             in_day_events_tree.add(inbox_task_text)
 
     def build_schedule_in_day(
-        self, result: CalendarLoadForDateAndPeriodResult, in_day_events_tree: Tree
+        self, entries: CalendarEventsEntries, in_day_events_tree: Tree
     ) -> None:
         for schedule_event_in_day_entry in sorted(
-            result.schedule_event_in_day_entries,
+            entries.schedule_event_in_day_entries,
             key=lambda se: (
                 se.time_event.start_date,
                 se.time_event.start_time_in_day,
@@ -180,3 +192,47 @@ class CalendarShow(
             )
 
             in_day_events_tree.add(schedule_event_in_day_text)
+
+    def build_stats(self, stats: CalendarEventsStats) -> Tree:
+        stats_tree = Tree("Stats", guide_style="bold bright_blue")
+
+        for stat in stats.per_subperiod:
+            per_subperiod_text = Text("")
+            per_subperiod_text.append(
+                date_with_label_to_rich_text(stat.period_start_date, "From")
+            )
+
+            per_subperiod_tree = Tree(per_subperiod_text)
+
+            per_subperiod_tree.add(
+                Text(
+                    f"{stat.schedule_event_full_days_cnt} scheduled full day events",
+                    style="gray62"
+                    if stat.schedule_event_full_days_cnt == 0
+                    else "default",
+                )
+            )
+            per_subperiod_tree.add(
+                Text(
+                    f"{stat.schedule_event_in_day_cnt} scheduled in day events",
+                    style="gray62"
+                    if stat.schedule_event_in_day_cnt == 0
+                    else "default",
+                )
+            )
+            per_subperiod_tree.add(
+                Text(
+                    f"{stat.inbox_task_cnt} inbox tasks",
+                    style="gray62" if stat.inbox_task_cnt == 0 else "default",
+                )
+            )
+            per_subperiod_tree.add(
+                Text(
+                    f"{stat.person_birthday_cnt} birthday events",
+                    style="gray62" if stat.person_birthday_cnt == 0 else "default",
+                )
+            )
+
+            stats_tree.add(per_subperiod_tree)
+
+        return stats_tree

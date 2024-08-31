@@ -15,6 +15,7 @@ from jupiter.core.framework.entity import (
 )
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.repository import LeafEntityRepository
+from jupiter.core.framework.value import CompositeValue, value
 
 
 @entity
@@ -71,6 +72,22 @@ class TimeEventFullDaysBlock(LeafSupportEntity):
         )
 
 
+@value
+class TimeEventFullDaysBlockStatsPerGroup(CompositeValue):
+    """Just a slice of the stats."""
+
+    date: ADate
+    namespace: TimeEventNamespace
+    cnt: int
+
+
+@value
+class TimeEventFullDaysBlockStats(CompositeValue):
+    """Stats for the time event full days block in a given time period."""
+
+    per_groups: list[TimeEventFullDaysBlockStatsPerGroup]
+
+
 class TimeEventFullDaysBlockRepository(
     LeafEntityRepository[TimeEventFullDaysBlock], abc.ABC
 ):
@@ -92,3 +109,12 @@ class TimeEventFullDaysBlockRepository(
         end_date: ADate,
     ) -> list[TimeEventFullDaysBlock]:
         """Find all time events in a range."""
+
+    @abc.abstractmethod
+    async def stats_for_all_between(
+        self,
+        parent_ref_id: EntityId,
+        start_date: ADate,
+        end_date: ADate,
+    ) -> TimeEventFullDaysBlockStats:
+        """Get stats for all time events in a range."""

@@ -1,15 +1,14 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar
+from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
 from ..models.recurring_task_period import RecurringTaskPeriod
+from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
-    from ..models.inbox_task_entry import InboxTaskEntry
-    from ..models.person_entry import PersonEntry
-    from ..models.schedule_full_days_event_entry import ScheduleFullDaysEventEntry
-    from ..models.schedule_in_day_event_entry import ScheduleInDayEventEntry
+    from ..models.calendar_events_entries import CalendarEventsEntries
+    from ..models.calendar_events_stats import CalendarEventsStats
 
 
 T = TypeVar("T", bound="CalendarLoadForDateAndPeriodResult")
@@ -26,10 +25,9 @@ class CalendarLoadForDateAndPeriodResult:
         period_end_date (str): A date or possibly a datetime for the application.
         prev_period_start_date (str): A date or possibly a datetime for the application.
         next_period_start_date (str): A date or possibly a datetime for the application.
-        schedule_event_in_day_entries (List['ScheduleInDayEventEntry']):
-        schedule_event_full_days_entries (List['ScheduleFullDaysEventEntry']):
-        inbox_task_entries (List['InboxTaskEntry']):
-        person_entries (List['PersonEntry']):
+        stats_subperiod (Union[None, RecurringTaskPeriod, Unset]):
+        entries (Union['CalendarEventsEntries', None, Unset]):
+        stats (Union['CalendarEventsStats', None, Unset]):
     """
 
     right_now: str
@@ -38,13 +36,15 @@ class CalendarLoadForDateAndPeriodResult:
     period_end_date: str
     prev_period_start_date: str
     next_period_start_date: str
-    schedule_event_in_day_entries: List["ScheduleInDayEventEntry"]
-    schedule_event_full_days_entries: List["ScheduleFullDaysEventEntry"]
-    inbox_task_entries: List["InboxTaskEntry"]
-    person_entries: List["PersonEntry"]
+    stats_subperiod: Union[None, RecurringTaskPeriod, Unset] = UNSET
+    entries: Union["CalendarEventsEntries", None, Unset] = UNSET
+    stats: Union["CalendarEventsStats", None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
+        from ..models.calendar_events_entries import CalendarEventsEntries
+        from ..models.calendar_events_stats import CalendarEventsStats
+
         right_now = self.right_now
 
         period = self.period.value
@@ -57,25 +57,29 @@ class CalendarLoadForDateAndPeriodResult:
 
         next_period_start_date = self.next_period_start_date
 
-        schedule_event_in_day_entries = []
-        for schedule_event_in_day_entries_item_data in self.schedule_event_in_day_entries:
-            schedule_event_in_day_entries_item = schedule_event_in_day_entries_item_data.to_dict()
-            schedule_event_in_day_entries.append(schedule_event_in_day_entries_item)
+        stats_subperiod: Union[None, Unset, str]
+        if isinstance(self.stats_subperiod, Unset):
+            stats_subperiod = UNSET
+        elif isinstance(self.stats_subperiod, RecurringTaskPeriod):
+            stats_subperiod = self.stats_subperiod.value
+        else:
+            stats_subperiod = self.stats_subperiod
 
-        schedule_event_full_days_entries = []
-        for schedule_event_full_days_entries_item_data in self.schedule_event_full_days_entries:
-            schedule_event_full_days_entries_item = schedule_event_full_days_entries_item_data.to_dict()
-            schedule_event_full_days_entries.append(schedule_event_full_days_entries_item)
+        entries: Union[Dict[str, Any], None, Unset]
+        if isinstance(self.entries, Unset):
+            entries = UNSET
+        elif isinstance(self.entries, CalendarEventsEntries):
+            entries = self.entries.to_dict()
+        else:
+            entries = self.entries
 
-        inbox_task_entries = []
-        for inbox_task_entries_item_data in self.inbox_task_entries:
-            inbox_task_entries_item = inbox_task_entries_item_data.to_dict()
-            inbox_task_entries.append(inbox_task_entries_item)
-
-        person_entries = []
-        for person_entries_item_data in self.person_entries:
-            person_entries_item = person_entries_item_data.to_dict()
-            person_entries.append(person_entries_item)
+        stats: Union[Dict[str, Any], None, Unset]
+        if isinstance(self.stats, Unset):
+            stats = UNSET
+        elif isinstance(self.stats, CalendarEventsStats):
+            stats = self.stats.to_dict()
+        else:
+            stats = self.stats
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -87,21 +91,21 @@ class CalendarLoadForDateAndPeriodResult:
                 "period_end_date": period_end_date,
                 "prev_period_start_date": prev_period_start_date,
                 "next_period_start_date": next_period_start_date,
-                "schedule_event_in_day_entries": schedule_event_in_day_entries,
-                "schedule_event_full_days_entries": schedule_event_full_days_entries,
-                "inbox_task_entries": inbox_task_entries,
-                "person_entries": person_entries,
             }
         )
+        if stats_subperiod is not UNSET:
+            field_dict["stats_subperiod"] = stats_subperiod
+        if entries is not UNSET:
+            field_dict["entries"] = entries
+        if stats is not UNSET:
+            field_dict["stats"] = stats
 
         return field_dict
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
-        from ..models.inbox_task_entry import InboxTaskEntry
-        from ..models.person_entry import PersonEntry
-        from ..models.schedule_full_days_event_entry import ScheduleFullDaysEventEntry
-        from ..models.schedule_in_day_event_entry import ScheduleInDayEventEntry
+        from ..models.calendar_events_entries import CalendarEventsEntries
+        from ..models.calendar_events_stats import CalendarEventsStats
 
         d = src_dict.copy()
         right_now = d.pop("right_now")
@@ -116,37 +120,56 @@ class CalendarLoadForDateAndPeriodResult:
 
         next_period_start_date = d.pop("next_period_start_date")
 
-        schedule_event_in_day_entries = []
-        _schedule_event_in_day_entries = d.pop("schedule_event_in_day_entries")
-        for schedule_event_in_day_entries_item_data in _schedule_event_in_day_entries:
-            schedule_event_in_day_entries_item = ScheduleInDayEventEntry.from_dict(
-                schedule_event_in_day_entries_item_data
-            )
+        def _parse_stats_subperiod(data: object) -> Union[None, RecurringTaskPeriod, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                stats_subperiod_type_0 = RecurringTaskPeriod(data)
 
-            schedule_event_in_day_entries.append(schedule_event_in_day_entries_item)
+                return stats_subperiod_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[None, RecurringTaskPeriod, Unset], data)
 
-        schedule_event_full_days_entries = []
-        _schedule_event_full_days_entries = d.pop("schedule_event_full_days_entries")
-        for schedule_event_full_days_entries_item_data in _schedule_event_full_days_entries:
-            schedule_event_full_days_entries_item = ScheduleFullDaysEventEntry.from_dict(
-                schedule_event_full_days_entries_item_data
-            )
+        stats_subperiod = _parse_stats_subperiod(d.pop("stats_subperiod", UNSET))
 
-            schedule_event_full_days_entries.append(schedule_event_full_days_entries_item)
+        def _parse_entries(data: object) -> Union["CalendarEventsEntries", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                entries_type_0 = CalendarEventsEntries.from_dict(data)
 
-        inbox_task_entries = []
-        _inbox_task_entries = d.pop("inbox_task_entries")
-        for inbox_task_entries_item_data in _inbox_task_entries:
-            inbox_task_entries_item = InboxTaskEntry.from_dict(inbox_task_entries_item_data)
+                return entries_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["CalendarEventsEntries", None, Unset], data)
 
-            inbox_task_entries.append(inbox_task_entries_item)
+        entries = _parse_entries(d.pop("entries", UNSET))
 
-        person_entries = []
-        _person_entries = d.pop("person_entries")
-        for person_entries_item_data in _person_entries:
-            person_entries_item = PersonEntry.from_dict(person_entries_item_data)
+        def _parse_stats(data: object) -> Union["CalendarEventsStats", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                stats_type_0 = CalendarEventsStats.from_dict(data)
 
-            person_entries.append(person_entries_item)
+                return stats_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["CalendarEventsStats", None, Unset], data)
+
+        stats = _parse_stats(d.pop("stats", UNSET))
 
         calendar_load_for_date_and_period_result = cls(
             right_now=right_now,
@@ -155,10 +178,9 @@ class CalendarLoadForDateAndPeriodResult:
             period_end_date=period_end_date,
             prev_period_start_date=prev_period_start_date,
             next_period_start_date=next_period_start_date,
-            schedule_event_in_day_entries=schedule_event_in_day_entries,
-            schedule_event_full_days_entries=schedule_event_full_days_entries,
-            inbox_task_entries=inbox_task_entries,
-            person_entries=person_entries,
+            stats_subperiod=stats_subperiod,
+            entries=entries,
+            stats=stats,
         )
 
         calendar_load_for_date_and_period_result.additional_properties = d
