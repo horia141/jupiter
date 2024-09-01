@@ -3,6 +3,8 @@ from typing import Any, Dict, List, Type, TypeVar
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
+from ..models.recurring_task_period import RecurringTaskPeriod
+
 T = TypeVar("T", bound="CalendarEventsStatsPerSubperiod")
 
 
@@ -11,6 +13,7 @@ class CalendarEventsStatsPerSubperiod:
     """Stats about a particular subperiod.
 
     Attributes:
+        period (RecurringTaskPeriod): A period for a particular task.
         period_start_date (str): A date or possibly a datetime for the application.
         schedule_event_full_days_cnt (int):
         schedule_event_in_day_cnt (int):
@@ -18,6 +21,7 @@ class CalendarEventsStatsPerSubperiod:
         person_birthday_cnt (int):
     """
 
+    period: RecurringTaskPeriod
     period_start_date: str
     schedule_event_full_days_cnt: int
     schedule_event_in_day_cnt: int
@@ -26,6 +30,8 @@ class CalendarEventsStatsPerSubperiod:
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
+        period = self.period.value
+
         period_start_date = self.period_start_date
 
         schedule_event_full_days_cnt = self.schedule_event_full_days_cnt
@@ -40,6 +46,7 @@ class CalendarEventsStatsPerSubperiod:
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
+                "period": period,
                 "period_start_date": period_start_date,
                 "schedule_event_full_days_cnt": schedule_event_full_days_cnt,
                 "schedule_event_in_day_cnt": schedule_event_in_day_cnt,
@@ -53,6 +60,8 @@ class CalendarEventsStatsPerSubperiod:
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         d = src_dict.copy()
+        period = RecurringTaskPeriod(d.pop("period"))
+
         period_start_date = d.pop("period_start_date")
 
         schedule_event_full_days_cnt = d.pop("schedule_event_full_days_cnt")
@@ -64,6 +73,7 @@ class CalendarEventsStatsPerSubperiod:
         person_birthday_cnt = d.pop("person_birthday_cnt")
 
         calendar_events_stats_per_subperiod = cls(
+            period=period,
             period_start_date=period_start_date,
             schedule_event_full_days_cnt=schedule_event_full_days_cnt,
             schedule_event_in_day_cnt=schedule_event_in_day_cnt,

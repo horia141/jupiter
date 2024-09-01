@@ -99,6 +99,7 @@ class CalendarEventsEntries(UseCaseResultBase):
 class CalendarEventsStatsPerSubperiod(UseCaseResultBase):
     """Stats about a particular subperiod."""
 
+    period: RecurringTaskPeriod
     period_start_date: ADate
     schedule_event_full_days_cnt: int
     schedule_event_in_day_cnt: int
@@ -151,7 +152,10 @@ class CalendarLoadForDateAndPeriodUseCase(
             raise InputValidationError(
                 "Stats subperiod is not allowed for daily period."
             )
-        elif args.stats_subperiod not in args.period.all_smaller_periods:
+        elif (
+            args.period is not RecurringTaskPeriod.DAILY
+            and args.stats_subperiod not in args.period.all_smaller_periods
+        ):
             raise InputValidationError(
                 f"Stats subperiod {args.stats_subperiod} is not smaller than period {args.period}."
             )
@@ -205,7 +209,10 @@ class CalendarLoadForDateAndPeriodUseCase(
             )
 
         stats: CalendarEventsStats | None = None
-        if schedule.period != RecurringTaskPeriod.DAILY:
+        if (
+            schedule.period != RecurringTaskPeriod.DAILY
+            and args.stats_subperiod is not None
+        ):
             stats = await self._build_stats(
                 uow, schedule, args.stats_subperiod, time_event_domain
             )
@@ -421,6 +428,7 @@ class CalendarLoadForDateAndPeriodUseCase(
 
             per_subperiod.append(
                 CalendarEventsStatsPerSubperiod(
+                    period=stats_subperiod,
                     period_start_date=curr_day,
                     schedule_event_full_days_cnt=schedule_event_full_days_cnt,
                     schedule_event_in_day_cnt=schedule_event_in_day_cnt,
