@@ -1247,6 +1247,8 @@ interface ViewAsCalendarMonthCellProps {
 }
 
 function ViewAsCalendarMonthCell(props: ViewAsCalendarMonthCellProps) {
+  const isBigScreen = useBigScreen();
+
   return (
     <Box
       sx={{
@@ -1262,6 +1264,8 @@ function ViewAsCalendarMonthCell(props: ViewAsCalendarMonthCellProps) {
     >
       <Typography variant="h6">{props.label}</Typography>
       <ViewAsStatsPerSubperiod
+        forceColumn={isBigScreen}
+        showCompact={!isBigScreen}
         view={View.CALENDAR}
         stats={props.stats}
         calendarLocation={props.calendarLocation}
@@ -1442,6 +1446,8 @@ function ViewAsScheduleMonthlyQuarterlyAndYearly(props: ViewAsProps) {
 
                 <ViewAsScheduleContentCell>
                   <ViewAsStatsPerSubperiod
+                    forceColumn={false}
+                    showCompact={!isBigScreen}
                     view={View.SCHEDULE}
                     stats={stats}
                     calendarLocation={props.calendarLocation}
@@ -1609,6 +1615,8 @@ const ViewAsScheduleEventCell = styled(TableCell)<ViewAsScheduleEventCellProps>(
 );
 
 interface ViewAsStatsPerSubperiodProps {
+  forceColumn: boolean;
+  showCompact: boolean;
   view: View;
   stats: CalendarEventsStatsPerSubperiod;
   calendarLocation: string;
@@ -1619,16 +1627,30 @@ function ViewAsStatsPerSubperiod(props: ViewAsStatsPerSubperiodProps) {
     <EntityLink
       to={`/workspace/calendar${props.calendarLocation}?today=${props.stats.period_start_date}&period=${props.stats.period}&view=${props.view}`}
     >
-      <Box sx={{ display: "flex", flexDirection: "column" }}>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: props.forceColumn ? "column" : "row",
+          gap: "0.25rem",
+          flexWrap: "wrap",
+        }}
+      >
         <span>
-          {props.stats.schedule_event_full_days_cnt} from scheduled full day
-          events
+          📅 {props.stats.schedule_event_full_days_cnt}{" "}
+          {!props.showCompact ? "from scheduled full day events" : ""}
         </span>
         <span>
-          {props.stats.schedule_event_in_day_cnt} from scheduled in day events
+          ⌚ {props.stats.schedule_event_in_day_cnt}{" "}
+          {!props.showCompact ? "from scheduled in day events" : ""}
         </span>
-        <span>{props.stats.inbox_task_cnt} from inbox task</span>
-        <span>{props.stats.person_birthday_cnt} from birthdays</span>
+        <span>
+          📥 {props.stats.inbox_task_cnt}{" "}
+          {!props.showCompact ? "from inbox task" : ""}
+        </span>
+        <span>
+          👨 {props.stats.person_birthday_cnt}{" "}
+          {!props.showCompact ? "from birthdays" : ""}
+        </span>
       </Box>
     </EntityLink>
   );
