@@ -511,35 +511,24 @@ function NavMultipleCompactView(props: NavMultipleViewProps) {
         open={open}
         anchorEl={anchorRef.current}
         disablePortal={!isBigScreen}
-        transition
       >
-        {({ TransitionProps, placement }) => (
-          <Grow
-            {...TransitionProps}
-            style={{
-              transformOrigin:
-                placement === "bottom" ? "center top" : "center bottom",
-            }}
-          >
-            <Paper>
-              <ClickAwayListener onClickAway={handleClose}>
-                <MenuList id="split-button-menu" autoFocusItem>
-                  {realActions.map((option, index) => (
-                    <MenuItem
-                      key={`nav-multiple-${index}`}
-                      selected={index === selectedIndex}
-                      component={Link}
-                      to={option.link}
-                      onClick={handleMenuItemClick}
-                    >
-                      {option.text}
-                    </MenuItem>
-                  ))}
-                </MenuList>
-              </ClickAwayListener>
-            </Paper>
-          </Grow>
-        )}
+        <Paper>
+          <ClickAwayListener onClickAway={handleClose}>
+            <MenuList id="split-button-menu" autoFocusItem>
+              {realActions.map((option, index) => (
+                <MenuItem
+                  key={`nav-multiple-${index}`}
+                  selected={index === selectedIndex}
+                  component={Link}
+                  to={option.link}
+                  onClick={handleMenuItemClick}
+                >
+                  {option.text}
+                </MenuItem>
+              ))}
+            </MenuList>
+          </ClickAwayListener>
+        </Paper>
       </Popper>
     </>
   );

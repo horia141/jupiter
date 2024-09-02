@@ -39,7 +39,7 @@ import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
 
 const QuerySchema = {
-  today: z
+  date: z
     .string()
     .regex(/[0-9][0-9][0-9][0-9][-][0-9][0-9][-][0-9][0-9]/)
     .optional(),
@@ -68,7 +68,7 @@ export async function loader({ request }: LoaderArgs) {
   });
 
   return json({
-    today: query.today,
+    date: query.date,
     allScheduleStreams:
       summaryResponse.schedule_streams as Array<ScheduleStreamSummary>,
   });
@@ -176,7 +176,7 @@ export default function ScheduleEventInDayNew() {
               label="startDate"
               name="startDate"
               readOnly={!inputsEnabled}
-              defaultValue={loaderData.today}
+              defaultValue={loaderData.date}
             />
 
             <FieldError actionResult={actionData} fieldName="/start_date" />

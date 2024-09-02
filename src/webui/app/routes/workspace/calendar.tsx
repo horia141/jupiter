@@ -86,7 +86,7 @@ export const handle = {
 };
 
 const QuerySchema = {
-  today: z
+  date: z
     .string()
     .regex(/[0-9][0-9][0-9][0-9][-][0-9][0-9][-][0-9][0-9]/)
     .optional(),
@@ -99,27 +99,27 @@ export async function loader({ request }: LoaderArgs) {
   const query = parseQuery(request, QuerySchema);
 
   if (
-    query.today === undefined ||
+    query.date === undefined ||
     query.period === undefined ||
     query.view === undefined
   ) {
-    const today = DateTime.now().toISODate();
+    const date = DateTime.now().toISODate();
     const period = RecurringTaskPeriod.WEEKLY;
     return redirect(
-      `${request.url}?today=${today}&period=${period}&view=${View.CALENDAR}`
+      `${request.url}?date=${date}&period=${period}&view=${View.CALENDAR}`
     );
   }
 
   const response = await getLoggedInApiClient(
     session
   ).calendar.calendarLoadForDateAndPeriod({
-    right_now: query.today,
+    right_now: query.date,
     period: query.period,
     stats_subperiod: statsSubperiodForPeriod(query.period),
   });
 
   return json({
-    today: query.today as string,
+    date: query.date as string,
     period: query.period as RecurringTaskPeriod,
     view: query.view as View,
     periodStartDate: response.period_start_date,
@@ -189,17 +189,17 @@ export default function CalendarView() {
               navs: [
                 NavSingle({
                   text: "Today",
-                  link: `/workspace/calendar${calendarLocation}?today=${theRealToday}&period=${loaderData.period}&view=${loaderData.view}`,
+                  link: `/workspace/calendar${calendarLocation}?date=${theRealToday}&period=${loaderData.period}&view=${loaderData.view}`,
                 }),
                 NavSingle({
                   text: "Prev",
                   icon: <ArrowBackIcon />,
-                  link: `/workspace/calendar${calendarLocation}?today=${loaderData.prevPeriodStartDate}&period=${loaderData.period}&view=${loaderData.view}`,
+                  link: `/workspace/calendar${calendarLocation}?date=${loaderData.prevPeriodStartDate}&period=${loaderData.period}&view=${loaderData.view}`,
                 }),
                 NavSingle({
                   text: "Next",
                   icon: <ArrowForwardIcon />,
-                  link: `/workspace/calendar${calendarLocation}?today=${loaderData.nextPeriodStartDate}&period=${loaderData.period}&view=${loaderData.view}`,
+                  link: `/workspace/calendar${calendarLocation}?date=${loaderData.nextPeriodStartDate}&period=${loaderData.period}&view=${loaderData.view}`,
                 }),
               ],
             }),
@@ -208,28 +208,28 @@ export default function CalendarView() {
                 NavSingle({
                   text: periodName(RecurringTaskPeriod.DAILY),
                   highlight: loaderData.period === RecurringTaskPeriod.DAILY,
-                  link: `/workspace/calendar${calendarLocation}?today=${loaderData.today}&period=${RecurringTaskPeriod.DAILY}&view=${loaderData.view}`,
+                  link: `/workspace/calendar${calendarLocation}?date=${loaderData.date}&period=${RecurringTaskPeriod.DAILY}&view=${loaderData.view}`,
                 }),
                 NavSingle({
                   text: periodName(RecurringTaskPeriod.WEEKLY),
                   highlight: loaderData.period === RecurringTaskPeriod.WEEKLY,
-                  link: `/workspace/calendar${calendarLocation}?today=${loaderData.today}&period=${RecurringTaskPeriod.WEEKLY}&view=${loaderData.view}`,
+                  link: `/workspace/calendar${calendarLocation}?date=${loaderData.date}&period=${RecurringTaskPeriod.WEEKLY}&view=${loaderData.view}`,
                 }),
                 NavSingle({
                   text: periodName(RecurringTaskPeriod.MONTHLY),
                   highlight: loaderData.period === RecurringTaskPeriod.MONTHLY,
-                  link: `/workspace/calendar${calendarLocation}?today=${loaderData.today}&period=${RecurringTaskPeriod.MONTHLY}&view=${loaderData.view}`,
+                  link: `/workspace/calendar${calendarLocation}?date=${loaderData.date}&period=${RecurringTaskPeriod.MONTHLY}&view=${loaderData.view}`,
                 }),
                 NavSingle({
                   text: periodName(RecurringTaskPeriod.QUARTERLY),
                   highlight:
                     loaderData.period === RecurringTaskPeriod.QUARTERLY,
-                  link: `/workspace/calendar${calendarLocation}?today=${loaderData.today}&period=${RecurringTaskPeriod.QUARTERLY}&view=${loaderData.view}`,
+                  link: `/workspace/calendar${calendarLocation}?date=${loaderData.date}&period=${RecurringTaskPeriod.QUARTERLY}&view=${loaderData.view}`,
                 }),
                 NavSingle({
                   text: periodName(RecurringTaskPeriod.YEARLY),
                   highlight: loaderData.period === RecurringTaskPeriod.YEARLY,
-                  link: `/workspace/calendar${calendarLocation}?today=${loaderData.today}&period=${RecurringTaskPeriod.YEARLY}&view=${loaderData.view}`,
+                  link: `/workspace/calendar${calendarLocation}?date=${loaderData.date}&period=${RecurringTaskPeriod.YEARLY}&view=${loaderData.view}`,
                 }),
               ],
             }),
@@ -237,12 +237,12 @@ export default function CalendarView() {
               navs: [
                 NavSingle({
                   text: "Calendar",
-                  link: `/workspace/calendar${calendarLocation}?today=${loaderData.today}&period=${loaderData.period}&view=${View.CALENDAR}`,
+                  link: `/workspace/calendar${calendarLocation}?date=${loaderData.date}&period=${loaderData.period}&view=${View.CALENDAR}`,
                   highlight: loaderData.view === View.CALENDAR,
                 }),
                 NavSingle({
                   text: "Schedule",
-                  link: `/workspace/calendar${calendarLocation}?today=${loaderData.today}&period=${loaderData.period}&&view=${View.SCHEDULE}`,
+                  link: `/workspace/calendar${calendarLocation}?date=${loaderData.date}&period=${loaderData.period}&&view=${View.SCHEDULE}`,
                   highlight: loaderData.view === View.SCHEDULE,
                 }),
               ],
@@ -1541,7 +1541,7 @@ function ViewAsCalendarGoToCell(props: ViewAsCalendarGoToCellProps) {
       }}
     >
       <EntityLink
-        to={`/workspace/calendar${props.calendarLocation}?today=${props.periodStart}&period=${props.period}&view=calendar`}
+        to={`/workspace/calendar${props.calendarLocation}?date=${props.periodStart}&period=${props.period}&view=calendar`}
       >
         <Typography variant="h6">{props.label}</Typography>
       </EntityLink>
@@ -1974,7 +1974,7 @@ interface ViewAsStatsPerSubperiodProps {
 function ViewAsStatsPerSubperiod(props: ViewAsStatsPerSubperiodProps) {
   return (
     <EntityLink
-      to={`/workspace/calendar${props.calendarLocation}?today=${props.stats.period_start_date}&period=${props.stats.period}&view=${props.view}`}
+      to={`/workspace/calendar${props.calendarLocation}?date=${props.stats.period_start_date}&period=${props.stats.period}&view=${props.view}`}
     >
       <Box
         sx={{
