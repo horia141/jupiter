@@ -296,6 +296,19 @@ export default function CalendarView() {
           )}
 
         {loaderData.view === View.CALENDAR &&
+          loaderData.period === RecurringTaskPeriod.QUARTERLY && (
+            <ViewAsCalendarQuarterly
+              timezone={topLevelInfo.user.timezone}
+              today={theRealToday}
+              periodStartDate={loaderData.periodStartDate}
+              periodEndDate={loaderData.periodEndDate}
+              entries={loaderData.entries}
+              stats={loaderData.stats}
+              calendarLocation={calendarLocation}
+            />
+          )}
+
+        {loaderData.view === View.CALENDAR &&
           loaderData.period === RecurringTaskPeriod.YEARLY && (
             <ViewAsCalendarYearly
               timezone={topLevelInfo.user.timezone}
@@ -617,8 +630,8 @@ function ViewAsCalendarMonthly(props: ViewAsProps) {
 
   const weeks = [];
   for (
-    let currWeek = periodStartDate;
-    currWeek < periodEndDate;
+    let currWeek = periodStartDate.startOf("week");
+    currWeek <= periodEndDate;
     currWeek = currWeek.plus({ weeks: 1 })
   ) {
     weeks.push(currWeek);
@@ -635,27 +648,37 @@ function ViewAsCalendarMonthly(props: ViewAsProps) {
       }}
     >
       <Box sx={{ gridRowStart: 1, gridColumnStart: 1 }}>Week</Box>
-
       <Box sx={{ gridRowStart: 1, gridColumnStart: "mon" }}>Mon</Box>
-
       <Box sx={{ gridRowStart: 1, gridColumnStart: "tue" }}>Tue</Box>
-
       <Box sx={{ gridRowStart: 1, gridColumnStart: "wed" }}>Wed</Box>
-
       <Box sx={{ gridRowStart: 1, gridColumnStart: "thu" }}>Thu</Box>
-
       <Box sx={{ gridRowStart: 1, gridColumnStart: "fri" }}>Fri</Box>
-
       <Box sx={{ gridRowStart: 1, gridColumnStart: "sat" }}>Sat</Box>
-
       <Box sx={{ gridRowStart: 1, gridColumnStart: "sun" }}>Sun</Box>
 
       {weeks.map((week, idx) => {
+        let gridRowStart = week.weekNumber - firstWeekIdx + 2;
+        if (
+          periodStartDate.month === 1 &&
+          periodStartDate.startOf("week").weekNumber > 10
+        ) {
+          // We're starting the year, but the first week of the year
+          // might be in the last year.
+          gridRowStart = idx + 2;
+        } else if (week.weekNumber < firstWeekIdx) {
+          // We're at the end of the year, and the week number is 1 of
+          // the next year.
+          gridRowStart = Math.min(
+            weeks.length + 1,
+            week.weeksInWeekYear + 1 - firstWeekIdx + 2
+          );
+        }
+
         return (
           <Box
             key={idx}
             sx={{
-              gridRowStart: week.weekNumber - firstWeekIdx + 2,
+              gridRowStart: gridRowStart,
               gridColumnStart: 1,
             }}
           >
@@ -671,16 +694,136 @@ function ViewAsCalendarMonthly(props: ViewAsProps) {
 
       {props.stats.per_subperiod.map((stats, idx) => {
         const startDate = DateTime.fromISO(stats.period_start_date);
+
+        let gridRowStart = startDate.weekNumber - firstWeekIdx + 2;
+        if (
+          periodStartDate.month === 1 &&
+          periodStartDate.startOf("week").weekNumber > 10
+        ) {
+          // We're starting the year, but the first week of the year
+          // might be in the last year.
+          let lastDay = startDate.endOf("week").day;
+          if (lastDay < startDate.day) {
+            lastDay = startDate.daysInMonth + lastDay;
+          }
+          gridRowStart = Math.floor(lastDay / 7) + 2;
+        } else if (startDate.weekNumber < firstWeekIdx) {
+          // We're at the end of the year, and the week number is 1 of
+          // the next year.
+          gridRowStart = Math.min(
+            weeks.length + 1,
+            periodStartDate.weeksInWeekYear + 1 - firstWeekIdx + 2
+          );
+        }
+
         return (
           <Box
             key={idx}
             sx={{
-              gridRowStart: startDate.weekNumber - firstWeekIdx + 2,
+              gridRowStart: gridRowStart,
               gridColumnStart: startDate.weekdayShort.toLowerCase(),
             }}
           >
             <ViewAsCalendarStatsCell
               label={startDate.day.toString()}
+              forceColumn={false}
+              showCompact={true}
+              stats={stats}
+              calendarLocation={props.calendarLocation}
+            />
+          </Box>
+        );
+      })}
+    </Box>
+  );
+}
+
+function ViewAsCalendarQuarterly(props: ViewAsProps) {
+  if (props.stats === undefined) {
+    throw new Error("Stats are required");
+  }
+
+  const periodStartDate = DateTime.fromISO(props.periodStartDate);
+  const periodEndDate = DateTime.fromISO(props.periodEndDate);
+
+  const months = [];
+  for (
+    let currMonth = periodStartDate;
+    currMonth < periodEndDate;
+    currMonth = currMonth.plus({ months: 1 })
+  ) {
+    months.push(currMonth);
+  }
+
+  return (
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns:
+          "3rem [w1] 1fr [w2] 1fr [w3] 1fr [w4] 1fr [w5] 1fr [w6] 1fr",
+        gridTemplateRows: "auto",
+        gridGap: "0.25rem",
+      }}
+    >
+      <Box sx={{ gridRowStart: 1, gridColumnStart: 1 }}>Month</Box>
+
+      <Box sx={{ gridRowStart: 1, gridColumnStart: "w1" }}>W1</Box>
+      <Box sx={{ gridRowStart: 1, gridColumnStart: "w2" }}>W2</Box>
+      <Box sx={{ gridRowStart: 1, gridColumnStart: "w3" }}>W3</Box>
+      <Box sx={{ gridRowStart: 1, gridColumnStart: "w4" }}>W4</Box>
+      <Box sx={{ gridRowStart: 1, gridColumnStart: "w5" }}>W5</Box>
+      <Box sx={{ gridRowStart: 1, gridColumnStart: "w6" }}>W6</Box>
+
+      {months.map((month, idx) => {
+        return (
+          <Box
+            key={idx}
+            sx={{
+              gridRowStart: month.month - periodStartDate.month + 2,
+              gridColumnStart: 1,
+            }}
+          >
+            <ViewAsCalendarGoToCell
+              label={month.monthShort}
+              period={RecurringTaskPeriod.MONTHLY}
+              periodStart={month.toISODate()}
+              calendarLocation={props.calendarLocation}
+            />
+          </Box>
+        );
+      })}
+
+      {props.stats.per_subperiod.map((stats, idx) => {
+        const startDate = DateTime.fromISO(stats.period_start_date);
+        const monthStartDate = startDate.startOf("month");
+
+        if (
+          periodStartDate.month === 10 &&
+          startDate.weekNumber < periodStartDate.weekNumber
+        ) {
+          // Last weeks of the year tend to behave in a complex way
+          // Checkout for more https://en.wikipedia.org/wiki/ISO_week_date.
+          // It's simpler not to show them in this context, and just
+          // let them appear in the next year.
+          return null;
+        }
+
+        let gridColumnStart =
+          startDate.weekNumber - monthStartDate.weekNumber + 1;
+        if (monthStartDate.month === 1) {
+          gridColumnStart = idx + 1;
+        }
+
+        return (
+          <Box
+            key={idx}
+            sx={{
+              gridRowStart: monthStartDate.month - periodStartDate.month + 2,
+              gridColumnStart: `w${gridColumnStart}`,
+            }}
+          >
+            <ViewAsCalendarStatsCell
+              label={`Week ${startDate.weekNumber}`}
               forceColumn={false}
               showCompact={true}
               stats={stats}
