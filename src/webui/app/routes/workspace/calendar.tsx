@@ -261,6 +261,7 @@ export default function CalendarView() {
             <ViewAsCalendarDaily
               timezone={topLevelInfo.user.timezone}
               today={theRealToday}
+              period={loaderData.period}
               periodStartDate={loaderData.periodStartDate}
               periodEndDate={loaderData.periodEndDate}
               entries={loaderData.entries}
@@ -274,6 +275,7 @@ export default function CalendarView() {
             <ViewAsCalendarWeekly
               timezone={topLevelInfo.user.timezone}
               today={theRealToday}
+              period={loaderData.period}
               periodStartDate={loaderData.periodStartDate}
               periodEndDate={loaderData.periodEndDate}
               entries={loaderData.entries}
@@ -287,6 +289,7 @@ export default function CalendarView() {
             <ViewAsCalendarMonthly
               timezone={topLevelInfo.user.timezone}
               today={theRealToday}
+              period={loaderData.period}
               periodStartDate={loaderData.periodStartDate}
               periodEndDate={loaderData.periodEndDate}
               entries={loaderData.entries}
@@ -300,6 +303,7 @@ export default function CalendarView() {
             <ViewAsCalendarQuarterly
               timezone={topLevelInfo.user.timezone}
               today={theRealToday}
+              period={loaderData.period}
               periodStartDate={loaderData.periodStartDate}
               periodEndDate={loaderData.periodEndDate}
               entries={loaderData.entries}
@@ -313,6 +317,7 @@ export default function CalendarView() {
             <ViewAsCalendarYearly
               timezone={topLevelInfo.user.timezone}
               today={theRealToday}
+              period={loaderData.period}
               periodStartDate={loaderData.periodStartDate}
               periodEndDate={loaderData.periodEndDate}
               entries={loaderData.entries}
@@ -327,6 +332,7 @@ export default function CalendarView() {
             <ViewAsScheduleDailyAndWeekly
               timezone={topLevelInfo.user.timezone}
               today={theRealToday}
+              period={loaderData.period}
               periodStartDate={loaderData.periodStartDate}
               periodEndDate={loaderData.periodEndDate}
               entries={loaderData.entries}
@@ -342,6 +348,7 @@ export default function CalendarView() {
             <ViewAsScheduleMonthlyQuarterlyAndYearly
               timezone={topLevelInfo.user.timezone}
               today={theRealToday}
+              period={loaderData.period}
               periodStartDate={loaderData.periodStartDate}
               periodEndDate={loaderData.periodEndDate}
               entries={loaderData.entries}
@@ -367,6 +374,7 @@ const MAX_VISIBLE_TIME_EVENT_FULL_DAYS = 3;
 interface ViewAsProps {
   today: ADate;
   timezone: Timezone;
+  period: RecurringTaskPeriod;
   periodStartDate: ADate;
   periodEndDate: ADate;
   entries?: CalendarEventsEntries;
@@ -383,6 +391,8 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
   if (props.entries === undefined) {
     throw new Error("Entries are required");
   }
+
+  const periodStartDate = DateTime.fromISO(props.periodStartDate);
 
   const combinedTimeEventFullDays: Array<CombinedTimeEventFullDaysEntry> = [];
   for (const entry of props.entries.schedule_event_full_days_entries) {
@@ -444,7 +454,14 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
     >
       <ViewAsCalendarDaysAndFullDaysContiner>
         <Box sx={{ display: "flex", flexDirection: "row", gap: "0.5rem" }}>
-          <ViewAsCalendarEmptyCell />
+          <ViewAsCalendarEmptyCell>
+            <Typography variant="h6">
+              {periodStartDate.toFormat("MMM")}
+            </Typography>
+            <Typography variant="h6">
+              {periodStartDate.toFormat("yyyy")}
+            </Typography>
+          </ViewAsCalendarEmptyCell>
           <ViewAsCalendarDateHeader
             today={props.today}
             date={props.periodStartDate}
@@ -500,6 +517,7 @@ function ViewAsCalendarWeekly(props: ViewAsProps) {
     throw new Error("Entries are required");
   }
 
+  const periodStartDate = DateTime.fromISO(props.periodStartDate);
   const combinedTimeEventFullDays: Array<CombinedTimeEventFullDaysEntry> = [];
   for (const entry of props.entries.schedule_event_full_days_entries) {
     combinedTimeEventFullDays.push({
@@ -559,7 +577,14 @@ function ViewAsCalendarWeekly(props: ViewAsProps) {
     >
       <ViewAsCalendarDaysAndFullDaysContiner>
         <Box sx={{ display: "flex", flexDirection: "row", gap: "0.1rem" }}>
-          <ViewAsCalendarEmptyCell />
+          <ViewAsCalendarEmptyCell>
+            <Typography variant="h6">
+              {periodStartDate.toFormat("MMM")}
+            </Typography>
+            <Typography variant="h6">
+              {periodStartDate.toFormat("yyyy")}
+            </Typography>
+          </ViewAsCalendarEmptyCell>
           {allDays.map((date, idx) => (
             <ViewAsCalendarDateHeader
               key={idx}
@@ -638,103 +663,108 @@ function ViewAsCalendarMonthly(props: ViewAsProps) {
   }
 
   return (
-    <Box
-      sx={{
-        display: "grid",
-        gridTemplateColumns:
-          "3rem [mon] 1fr [tue] 1fr [wed] 1fr [thu] 1fr [fri] 1fr [sat] 1fr [sun] 1fr",
-        gridTemplateRows: "auto",
-        gridGap: "0.25rem",
-      }}
-    >
-      <Box sx={{ gridRowStart: 1, gridColumnStart: 1 }}>Week</Box>
-      <Box sx={{ gridRowStart: 1, gridColumnStart: "mon" }}>Mon</Box>
-      <Box sx={{ gridRowStart: 1, gridColumnStart: "tue" }}>Tue</Box>
-      <Box sx={{ gridRowStart: 1, gridColumnStart: "wed" }}>Wed</Box>
-      <Box sx={{ gridRowStart: 1, gridColumnStart: "thu" }}>Thu</Box>
-      <Box sx={{ gridRowStart: 1, gridColumnStart: "fri" }}>Fri</Box>
-      <Box sx={{ gridRowStart: 1, gridColumnStart: "sat" }}>Sat</Box>
-      <Box sx={{ gridRowStart: 1, gridColumnStart: "sun" }}>Sun</Box>
+    <>
+      <Typography variant="h5">
+        Viewing {periodStartDate.monthLong} {periodStartDate.year}
+      </Typography>
 
-      {weeks.map((week, idx) => {
-        let gridRowStart = week.weekNumber - firstWeekIdx + 2;
-        if (
-          periodStartDate.month === 1 &&
-          periodStartDate.startOf("week").weekNumber > 10
-        ) {
-          // We're starting the year, but the first week of the year
-          // might be in the last year.
-          gridRowStart = idx + 2;
-        } else if (week.weekNumber < firstWeekIdx) {
-          // We're at the end of the year, and the week number is 1 of
-          // the next year.
-          gridRowStart = Math.min(
-            weeks.length + 1,
-            week.weeksInWeekYear + 1 - firstWeekIdx + 2
-          );
-        }
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns:
+            "3rem [mon] 1fr [tue] 1fr [wed] 1fr [thu] 1fr [fri] 1fr [sat] 1fr [sun] 1fr",
+          gridTemplateRows: "auto",
+          gridGap: "0.25rem",
+        }}
+      >
+        <Box sx={{ gridRowStart: 1, gridColumnStart: "mon" }}>Mon</Box>
+        <Box sx={{ gridRowStart: 1, gridColumnStart: "tue" }}>Tue</Box>
+        <Box sx={{ gridRowStart: 1, gridColumnStart: "wed" }}>Wed</Box>
+        <Box sx={{ gridRowStart: 1, gridColumnStart: "thu" }}>Thu</Box>
+        <Box sx={{ gridRowStart: 1, gridColumnStart: "fri" }}>Fri</Box>
+        <Box sx={{ gridRowStart: 1, gridColumnStart: "sat" }}>Sat</Box>
+        <Box sx={{ gridRowStart: 1, gridColumnStart: "sun" }}>Sun</Box>
 
-        return (
-          <Box
-            key={idx}
-            sx={{
-              gridRowStart: gridRowStart,
-              gridColumnStart: 1,
-            }}
-          >
-            <ViewAsCalendarGoToCell
-              label={`W${week.weekNumber}`}
-              period={RecurringTaskPeriod.WEEKLY}
-              periodStart={week.toISODate()}
-              calendarLocation={props.calendarLocation}
-            />
-          </Box>
-        );
-      })}
-
-      {props.stats.per_subperiod.map((stats, idx) => {
-        const startDate = DateTime.fromISO(stats.period_start_date);
-
-        let gridRowStart = startDate.weekNumber - firstWeekIdx + 2;
-        if (
-          periodStartDate.month === 1 &&
-          periodStartDate.startOf("week").weekNumber > 10
-        ) {
-          // We're starting the year, but the first week of the year
-          // might be in the last year.
-          let lastDay = startDate.endOf("week").day;
-          if (lastDay < startDate.day) {
-            lastDay = startDate.daysInMonth + lastDay;
+        {weeks.map((week, idx) => {
+          let gridRowStart = week.weekNumber - firstWeekIdx + 2;
+          if (
+            periodStartDate.month === 1 &&
+            periodStartDate.startOf("week").weekNumber > 10
+          ) {
+            // We're starting the year, but the first week of the year
+            // might be in the last year.
+            gridRowStart = idx + 2;
+          } else if (week.weekNumber < firstWeekIdx) {
+            // We're at the end of the year, and the week number is 1 of
+            // the next year.
+            gridRowStart = Math.min(
+              weeks.length + 1,
+              week.weeksInWeekYear + 1 - firstWeekIdx + 2
+            );
           }
-          gridRowStart = Math.floor(lastDay / 7) + 2;
-        } else if (startDate.weekNumber < firstWeekIdx) {
-          // We're at the end of the year, and the week number is 1 of
-          // the next year.
-          gridRowStart = Math.min(
-            weeks.length + 1,
-            periodStartDate.weeksInWeekYear + 1 - firstWeekIdx + 2
-          );
-        }
 
-        return (
-          <Box
-            key={idx}
-            sx={{
-              gridRowStart: gridRowStart,
-              gridColumnStart: startDate.weekdayShort.toLowerCase(),
-            }}
-          >
-            <ViewAsCalendarStatsCell
-              label={startDate.day.toString()}
-              forceColumn={false}
-              showCompact={true}
-              stats={stats}
-              calendarLocation={props.calendarLocation}
-            />
-          </Box>
-        );
-      })}
-    </Box>
+          return (
+            <Box
+              key={idx}
+              sx={{
+                gridRowStart: gridRowStart,
+                gridColumnStart: 1,
+              }}
+            >
+              <ViewAsCalendarGoToCell
+                label={`W${week.weekNumber}`}
+                period={RecurringTaskPeriod.WEEKLY}
+                periodStart={week.toISODate()}
+                calendarLocation={props.calendarLocation}
+              />
+            </Box>
+          );
+        })}
+
+        {props.stats.per_subperiod.map((stats, idx) => {
+          const startDate = DateTime.fromISO(stats.period_start_date);
+
+          let gridRowStart = startDate.weekNumber - firstWeekIdx + 2;
+          if (
+            periodStartDate.month === 1 &&
+            periodStartDate.startOf("week").weekNumber > 10
+          ) {
+            // We're starting the year, but the first week of the year
+            // might be in the last year.
+            let lastDay = startDate.endOf("week").day;
+            if (lastDay < startDate.day) {
+              lastDay = startDate.daysInMonth + lastDay;
+            }
+            gridRowStart = Math.floor(lastDay / 7) + 2;
+          } else if (startDate.weekNumber < firstWeekIdx) {
+            // We're at the end of the year, and the week number is 1 of
+            // the next year.
+            gridRowStart = Math.min(
+              weeks.length + 1,
+              periodStartDate.weeksInWeekYear + 1 - firstWeekIdx + 2
+            );
+          }
+
+          return (
+            <Box
+              key={idx}
+              sx={{
+                gridRowStart: gridRowStart,
+                gridColumnStart: startDate.weekdayShort.toLowerCase(),
+              }}
+            >
+              <ViewAsCalendarStatsCell
+                label={startDate.day.toString()}
+                forceColumn={false}
+                showCompact={true}
+                stats={stats}
+                calendarLocation={props.calendarLocation}
+              />
+            </Box>
+          );
+        })}
+      </Box>
+    </>
   );
 }
 
@@ -756,83 +786,88 @@ function ViewAsCalendarQuarterly(props: ViewAsProps) {
   }
 
   return (
-    <Box
-      sx={{
-        display: "grid",
-        gridTemplateColumns:
-          "3rem [w1] 1fr [w2] 1fr [w3] 1fr [w4] 1fr [w5] 1fr [w6] 1fr",
-        gridTemplateRows: "auto",
-        gridGap: "0.25rem",
-      }}
-    >
-      <Box sx={{ gridRowStart: 1, gridColumnStart: 1 }}>Month</Box>
+    <>
+      <Typography variant="h5">
+        Viewing {monthToQuarter(periodStartDate.month)} {periodStartDate.year}
+      </Typography>
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns:
+            "3rem [w1] 1fr [w2] 1fr [w3] 1fr [w4] 1fr [w5] 1fr [w6] 1fr",
+          gridTemplateRows: "auto",
+          gridGap: "0.25rem",
+        }}
+      >
+        <Box sx={{ gridRowStart: 1, gridColumnStart: 1 }}>Month</Box>
 
-      <Box sx={{ gridRowStart: 1, gridColumnStart: "w1" }}>W1</Box>
-      <Box sx={{ gridRowStart: 1, gridColumnStart: "w2" }}>W2</Box>
-      <Box sx={{ gridRowStart: 1, gridColumnStart: "w3" }}>W3</Box>
-      <Box sx={{ gridRowStart: 1, gridColumnStart: "w4" }}>W4</Box>
-      <Box sx={{ gridRowStart: 1, gridColumnStart: "w5" }}>W5</Box>
-      <Box sx={{ gridRowStart: 1, gridColumnStart: "w6" }}>W6</Box>
+        <Box sx={{ gridRowStart: 1, gridColumnStart: "w1" }}>W1</Box>
+        <Box sx={{ gridRowStart: 1, gridColumnStart: "w2" }}>W2</Box>
+        <Box sx={{ gridRowStart: 1, gridColumnStart: "w3" }}>W3</Box>
+        <Box sx={{ gridRowStart: 1, gridColumnStart: "w4" }}>W4</Box>
+        <Box sx={{ gridRowStart: 1, gridColumnStart: "w5" }}>W5</Box>
+        <Box sx={{ gridRowStart: 1, gridColumnStart: "w6" }}>W6</Box>
 
-      {months.map((month, idx) => {
-        return (
-          <Box
-            key={idx}
-            sx={{
-              gridRowStart: month.month - periodStartDate.month + 2,
-              gridColumnStart: 1,
-            }}
-          >
-            <ViewAsCalendarGoToCell
-              label={month.monthShort}
-              period={RecurringTaskPeriod.MONTHLY}
-              periodStart={month.toISODate()}
-              calendarLocation={props.calendarLocation}
-            />
-          </Box>
-        );
-      })}
+        {months.map((month, idx) => {
+          return (
+            <Box
+              key={idx}
+              sx={{
+                gridRowStart: month.month - periodStartDate.month + 2,
+                gridColumnStart: 1,
+              }}
+            >
+              <ViewAsCalendarGoToCell
+                label={month.monthShort}
+                period={RecurringTaskPeriod.MONTHLY}
+                periodStart={month.toISODate()}
+                calendarLocation={props.calendarLocation}
+              />
+            </Box>
+          );
+        })}
 
-      {props.stats.per_subperiod.map((stats, idx) => {
-        const startDate = DateTime.fromISO(stats.period_start_date);
-        const monthStartDate = startDate.startOf("month");
+        {props.stats.per_subperiod.map((stats, idx) => {
+          const startDate = DateTime.fromISO(stats.period_start_date);
+          const monthStartDate = startDate.startOf("month");
 
-        if (
-          periodStartDate.month === 10 &&
-          startDate.weekNumber < periodStartDate.weekNumber
-        ) {
-          // Last weeks of the year tend to behave in a complex way
-          // Checkout for more https://en.wikipedia.org/wiki/ISO_week_date.
-          // It's simpler not to show them in this context, and just
-          // let them appear in the next year.
-          return null;
-        }
+          if (
+            periodStartDate.month === 10 &&
+            startDate.weekNumber < periodStartDate.weekNumber
+          ) {
+            // Last weeks of the year tend to behave in a complex way
+            // Checkout for more https://en.wikipedia.org/wiki/ISO_week_date.
+            // It's simpler not to show them in this context, and just
+            // let them appear in the next year.
+            return null;
+          }
 
-        let gridColumnStart =
-          startDate.weekNumber - monthStartDate.weekNumber + 1;
-        if (monthStartDate.month === 1) {
-          gridColumnStart = idx + 1;
-        }
+          let gridColumnStart =
+            startDate.weekNumber - monthStartDate.weekNumber + 1;
+          if (monthStartDate.month === 1) {
+            gridColumnStart = idx + 1;
+          }
 
-        return (
-          <Box
-            key={idx}
-            sx={{
-              gridRowStart: monthStartDate.month - periodStartDate.month + 2,
-              gridColumnStart: `w${gridColumnStart}`,
-            }}
-          >
-            <ViewAsCalendarStatsCell
-              label={`Week ${startDate.weekNumber}`}
-              forceColumn={false}
-              showCompact={true}
-              stats={stats}
-              calendarLocation={props.calendarLocation}
-            />
-          </Box>
-        );
-      })}
-    </Box>
+          return (
+            <Box
+              key={idx}
+              sx={{
+                gridRowStart: monthStartDate.month - periodStartDate.month + 2,
+                gridColumnStart: `w${gridColumnStart}`,
+              }}
+            >
+              <ViewAsCalendarStatsCell
+                label={`Week ${startDate.weekNumber}`}
+                forceColumn={false}
+                showCompact={true}
+                stats={stats}
+                calendarLocation={props.calendarLocation}
+              />
+            </Box>
+          );
+        })}
+      </Box>
+    </>
   );
 }
 
@@ -846,218 +881,221 @@ function ViewAsCalendarYearly(props: ViewAsProps) {
   const periodStartDate = DateTime.fromISO(props.periodStartDate);
 
   return (
-    <Box
-      sx={{
-        display: "grid",
-        gridTemplateColumns: "3rem 1fr 1fr 1fr",
-        gridTemplateRows: "min-content min-content min-content min-content",
-        gridGap: "0.25rem",
-      }}
-    >
-      <Box sx={{ gridRowStart: 1, gridColumnStart: 1 }}>
-        <ViewAsCalendarGoToCell
-          label="Q1"
-          period={RecurringTaskPeriod.QUARTERLY}
-          periodStart={`${periodStartDate.year}-01-01`}
-          calendarLocation={props.calendarLocation}
-        />
-      </Box>
+    <>
+      <Typography variant="h5">Viewing {periodStartDate.year}</Typography>
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: "3rem 1fr 1fr 1fr",
+          gridTemplateRows: "min-content min-content min-content min-content",
+          gridGap: "0.25rem",
+        }}
+      >
+        <Box sx={{ gridRowStart: 1, gridColumnStart: 1 }}>
+          <ViewAsCalendarGoToCell
+            label="Q1"
+            period={RecurringTaskPeriod.QUARTERLY}
+            periodStart={`${periodStartDate.year}-01-01`}
+            calendarLocation={props.calendarLocation}
+          />
+        </Box>
 
-      <Box sx={{ gridRowStart: 1, gridColumnStart: 2 }}>
-        <ViewAsCalendarStatsCell
-          label="Jan"
-          forceColumn={isBigScreen}
-          showCompact={!isBigScreen}
-          stats={
-            props.stats.per_subperiod.find(
-              (s) => s.period_start_date === `${periodStartDate.year}-01-01`
-            )!
-          }
-          calendarLocation={props.calendarLocation}
-        />
-      </Box>
+        <Box sx={{ gridRowStart: 1, gridColumnStart: 2 }}>
+          <ViewAsCalendarStatsCell
+            label="Jan"
+            forceColumn={isBigScreen}
+            showCompact={!isBigScreen}
+            stats={
+              props.stats.per_subperiod.find(
+                (s) => s.period_start_date === `${periodStartDate.year}-01-01`
+              )!
+            }
+            calendarLocation={props.calendarLocation}
+          />
+        </Box>
 
-      <Box sx={{ gridRowStart: 1, gridColumnStart: 3 }}>
-        <ViewAsCalendarStatsCell
-          label="Feb"
-          forceColumn={isBigScreen}
-          showCompact={!isBigScreen}
-          stats={
-            props.stats.per_subperiod.find(
-              (s) => s.period_start_date === `${periodStartDate.year}-02-01`
-            )!
-          }
-          calendarLocation={props.calendarLocation}
-        />
-      </Box>
+        <Box sx={{ gridRowStart: 1, gridColumnStart: 3 }}>
+          <ViewAsCalendarStatsCell
+            label="Feb"
+            forceColumn={isBigScreen}
+            showCompact={!isBigScreen}
+            stats={
+              props.stats.per_subperiod.find(
+                (s) => s.period_start_date === `${periodStartDate.year}-02-01`
+              )!
+            }
+            calendarLocation={props.calendarLocation}
+          />
+        </Box>
 
-      <Box sx={{ gridRowStart: 1, gridColumnStart: 4 }}>
-        <ViewAsCalendarStatsCell
-          label="Mar"
-          forceColumn={isBigScreen}
-          showCompact={!isBigScreen}
-          stats={
-            props.stats.per_subperiod.find(
-              (s) => s.period_start_date === `${periodStartDate.year}-03-01`
-            )!
-          }
-          calendarLocation={props.calendarLocation}
-        />
-      </Box>
+        <Box sx={{ gridRowStart: 1, gridColumnStart: 4 }}>
+          <ViewAsCalendarStatsCell
+            label="Mar"
+            forceColumn={isBigScreen}
+            showCompact={!isBigScreen}
+            stats={
+              props.stats.per_subperiod.find(
+                (s) => s.period_start_date === `${periodStartDate.year}-03-01`
+              )!
+            }
+            calendarLocation={props.calendarLocation}
+          />
+        </Box>
 
-      <Box sx={{ gridRowStart: 2, gridColumnStart: 1 }}>
-        <ViewAsCalendarGoToCell
-          label="Q2"
-          period={RecurringTaskPeriod.QUARTERLY}
-          periodStart={`${periodStartDate.year}-04-01`}
-          calendarLocation={props.calendarLocation}
-        />
-      </Box>
+        <Box sx={{ gridRowStart: 2, gridColumnStart: 1 }}>
+          <ViewAsCalendarGoToCell
+            label="Q2"
+            period={RecurringTaskPeriod.QUARTERLY}
+            periodStart={`${periodStartDate.year}-04-01`}
+            calendarLocation={props.calendarLocation}
+          />
+        </Box>
 
-      <Box sx={{ gridRowStart: 2, gridColumnStart: 2 }}>
-        <ViewAsCalendarStatsCell
-          label="Apr"
-          forceColumn={isBigScreen}
-          showCompact={!isBigScreen}
-          stats={
-            props.stats.per_subperiod.find(
-              (s) => s.period_start_date === `${periodStartDate.year}-04-01`
-            )!
-          }
-          calendarLocation={props.calendarLocation}
-        />
-      </Box>
+        <Box sx={{ gridRowStart: 2, gridColumnStart: 2 }}>
+          <ViewAsCalendarStatsCell
+            label="Apr"
+            forceColumn={isBigScreen}
+            showCompact={!isBigScreen}
+            stats={
+              props.stats.per_subperiod.find(
+                (s) => s.period_start_date === `${periodStartDate.year}-04-01`
+              )!
+            }
+            calendarLocation={props.calendarLocation}
+          />
+        </Box>
 
-      <Box sx={{ gridRowStart: 2, gridColumnStart: 3 }}>
-        <ViewAsCalendarStatsCell
-          label="May"
-          forceColumn={isBigScreen}
-          showCompact={!isBigScreen}
-          stats={
-            props.stats.per_subperiod.find(
-              (s) => s.period_start_date === `${periodStartDate.year}-05-01`
-            )!
-          }
-          calendarLocation={props.calendarLocation}
-        />
-      </Box>
+        <Box sx={{ gridRowStart: 2, gridColumnStart: 3 }}>
+          <ViewAsCalendarStatsCell
+            label="May"
+            forceColumn={isBigScreen}
+            showCompact={!isBigScreen}
+            stats={
+              props.stats.per_subperiod.find(
+                (s) => s.period_start_date === `${periodStartDate.year}-05-01`
+              )!
+            }
+            calendarLocation={props.calendarLocation}
+          />
+        </Box>
 
-      <Box sx={{ gridRowStart: 2, gridColumnStart: 4 }}>
-        <ViewAsCalendarStatsCell
-          label="Jun"
-          forceColumn={isBigScreen}
-          showCompact={!isBigScreen}
-          stats={
-            props.stats.per_subperiod.find(
-              (s) => s.period_start_date === `${periodStartDate.year}-06-01`
-            )!
-          }
-          calendarLocation={props.calendarLocation}
-        />
-      </Box>
+        <Box sx={{ gridRowStart: 2, gridColumnStart: 4 }}>
+          <ViewAsCalendarStatsCell
+            label="Jun"
+            forceColumn={isBigScreen}
+            showCompact={!isBigScreen}
+            stats={
+              props.stats.per_subperiod.find(
+                (s) => s.period_start_date === `${periodStartDate.year}-06-01`
+              )!
+            }
+            calendarLocation={props.calendarLocation}
+          />
+        </Box>
 
-      <Box sx={{ gridRowStart: 3, gridColumnStart: 1 }}>
-        <ViewAsCalendarGoToCell
-          label="Q3"
-          period={RecurringTaskPeriod.QUARTERLY}
-          periodStart={`${periodStartDate.year}-07-01`}
-          calendarLocation={props.calendarLocation}
-        />
-      </Box>
+        <Box sx={{ gridRowStart: 3, gridColumnStart: 1 }}>
+          <ViewAsCalendarGoToCell
+            label="Q3"
+            period={RecurringTaskPeriod.QUARTERLY}
+            periodStart={`${periodStartDate.year}-07-01`}
+            calendarLocation={props.calendarLocation}
+          />
+        </Box>
 
-      <Box sx={{ gridRowStart: 3, gridColumnStart: 2 }}>
-        <ViewAsCalendarStatsCell
-          label="Jul"
-          forceColumn={isBigScreen}
-          showCompact={!isBigScreen}
-          stats={
-            props.stats.per_subperiod.find(
-              (s) => s.period_start_date === `${periodStartDate.year}-07-01`
-            )!
-          }
-          calendarLocation={props.calendarLocation}
-        />
-      </Box>
+        <Box sx={{ gridRowStart: 3, gridColumnStart: 2 }}>
+          <ViewAsCalendarStatsCell
+            label="Jul"
+            forceColumn={isBigScreen}
+            showCompact={!isBigScreen}
+            stats={
+              props.stats.per_subperiod.find(
+                (s) => s.period_start_date === `${periodStartDate.year}-07-01`
+              )!
+            }
+            calendarLocation={props.calendarLocation}
+          />
+        </Box>
 
-      <Box sx={{ gridRowStart: 3, gridColumnStart: 3 }}>
-        <ViewAsCalendarStatsCell
-          label="Aug"
-          forceColumn={isBigScreen}
-          showCompact={!isBigScreen}
-          stats={
-            props.stats.per_subperiod.find(
-              (s) => s.period_start_date === `${periodStartDate.year}-08-01`
-            )!
-          }
-          calendarLocation={props.calendarLocation}
-        />
-      </Box>
+        <Box sx={{ gridRowStart: 3, gridColumnStart: 3 }}>
+          <ViewAsCalendarStatsCell
+            label="Aug"
+            forceColumn={isBigScreen}
+            showCompact={!isBigScreen}
+            stats={
+              props.stats.per_subperiod.find(
+                (s) => s.period_start_date === `${periodStartDate.year}-08-01`
+              )!
+            }
+            calendarLocation={props.calendarLocation}
+          />
+        </Box>
 
-      <Box sx={{ gridRowStart: 3, gridColumnStart: 4 }}>
-        <ViewAsCalendarStatsCell
-          label="Sep"
-          forceColumn={isBigScreen}
-          showCompact={!isBigScreen}
-          stats={
-            props.stats.per_subperiod.find(
-              (s) => s.period_start_date === `${periodStartDate.year}-09-01`
-            )!
-          }
-          calendarLocation={props.calendarLocation}
-        />
-      </Box>
+        <Box sx={{ gridRowStart: 3, gridColumnStart: 4 }}>
+          <ViewAsCalendarStatsCell
+            label="Sep"
+            forceColumn={isBigScreen}
+            showCompact={!isBigScreen}
+            stats={
+              props.stats.per_subperiod.find(
+                (s) => s.period_start_date === `${periodStartDate.year}-09-01`
+              )!
+            }
+            calendarLocation={props.calendarLocation}
+          />
+        </Box>
 
-      <Box sx={{ gridRowStart: 4, gridColumnStart: 1 }}>
-        <ViewAsCalendarGoToCell
-          label="Q4"
-          period={RecurringTaskPeriod.QUARTERLY}
-          periodStart={`${periodStartDate.year}-10-01`}
-          calendarLocation={props.calendarLocation}
-        />
-      </Box>
+        <Box sx={{ gridRowStart: 4, gridColumnStart: 1 }}>
+          <ViewAsCalendarGoToCell
+            label="Q4"
+            period={RecurringTaskPeriod.QUARTERLY}
+            periodStart={`${periodStartDate.year}-10-01`}
+            calendarLocation={props.calendarLocation}
+          />
+        </Box>
 
-      <Box sx={{ gridRowStart: 4, gridColumnStart: 2 }}>
-        <ViewAsCalendarStatsCell
-          label="Oct"
-          forceColumn={isBigScreen}
-          showCompact={!isBigScreen}
-          stats={
-            props.stats.per_subperiod.find(
-              (s) => s.period_start_date === `${periodStartDate.year}-10-01`
-            )!
-          }
-          calendarLocation={props.calendarLocation}
-        />
-      </Box>
+        <Box sx={{ gridRowStart: 4, gridColumnStart: 2 }}>
+          <ViewAsCalendarStatsCell
+            label="Oct"
+            forceColumn={isBigScreen}
+            showCompact={!isBigScreen}
+            stats={
+              props.stats.per_subperiod.find(
+                (s) => s.period_start_date === `${periodStartDate.year}-10-01`
+              )!
+            }
+            calendarLocation={props.calendarLocation}
+          />
+        </Box>
 
-      <Box sx={{ gridRowStart: 4, gridColumnStart: 3 }}>
-        <ViewAsCalendarStatsCell
-          label="Nov"
-          forceColumn={isBigScreen}
-          showCompact={!isBigScreen}
-          stats={
-            props.stats.per_subperiod.find(
-              (s) => s.period_start_date === `${periodStartDate.year}-11-01`
-            )!
-          }
-          calendarLocation={props.calendarLocation}
-        />
-      </Box>
+        <Box sx={{ gridRowStart: 4, gridColumnStart: 3 }}>
+          <ViewAsCalendarStatsCell
+            label="Nov"
+            forceColumn={isBigScreen}
+            showCompact={!isBigScreen}
+            stats={
+              props.stats.per_subperiod.find(
+                (s) => s.period_start_date === `${periodStartDate.year}-11-01`
+              )!
+            }
+            calendarLocation={props.calendarLocation}
+          />
+        </Box>
 
-      <Box sx={{ gridRowStart: 4, gridColumnStart: 4 }}>
-        <ViewAsCalendarStatsCell
-          label="Dec"
-          forceColumn={isBigScreen}
-          showCompact={!isBigScreen}
-          stats={
-            props.stats.per_subperiod.find(
-              (s) => s.period_start_date === `${periodStartDate.year}-12-01`
-            )!
-          }
-          calendarLocation={props.calendarLocation}
-        />
+        <Box sx={{ gridRowStart: 4, gridColumnStart: 4 }}>
+          <ViewAsCalendarStatsCell
+            label="Dec"
+            forceColumn={isBigScreen}
+            showCompact={!isBigScreen}
+            stats={
+              props.stats.per_subperiod.find(
+                (s) => s.period_start_date === `${periodStartDate.year}-12-01`
+              )!
+            }
+            calendarLocation={props.calendarLocation}
+          />
+        </Box>
       </Box>
-    </Box>
+    </>
   );
 }
 
@@ -1544,8 +1582,12 @@ function ViewAsCalendarStatsCell(props: ViewAsCalendarStatsCellProps) {
   );
 }
 
-function ViewAsCalendarEmptyCell() {
-  return <Box sx={{ minWidth: "3.5rem" }}></Box>;
+function ViewAsCalendarEmptyCell(props: PropsWithChildren) {
+  return (
+    <Box sx={{ minWidth: "3.5rem", dispaly: "flex", flexDirection: "column" }}>
+      {props.children}
+    </Box>
+  );
 }
 
 function ViewAsScheduleDailyAndWeekly(props: ViewAsProps) {
@@ -1585,6 +1627,8 @@ function ViewAsScheduleDailyAndWeekly(props: ViewAsProps) {
     }
   }
 
+  const periodStartDate = DateTime.fromISO(props.periodStartDate);
+  const periodEndDate = DateTime.fromISO(props.periodEndDate);
   const daysToProcess = allDaysBetween(
     props.periodStartDate,
     props.periodEndDate
@@ -1598,101 +1642,119 @@ function ViewAsScheduleDailyAndWeekly(props: ViewAsProps) {
     );
 
   return (
-    <TableContainer component={Paper}>
-      <Table sx={{ borderCollapse: "separate", borderSpacing: "0.2rem" }}>
-        <TableBody>
-          {daysToProcess.map((date) => {
-            const partitionFullDays =
-              partitionedCombinedTimeEventFullDays[date] || [];
-            const partitionInDay =
-              partitionedCombinedTimeEventInDay[date] || [];
+    <>
+      {props.period === RecurringTaskPeriod.DAILY && (
+        <Typography variant="h5">
+          Viewing {periodStartDate.toFormat("dd MMM yyyy")}
+        </Typography>
+      )}
+      {props.period === RecurringTaskPeriod.WEEKLY && (
+        <Typography variant="h5">
+          Viewing W{periodStartDate.weekNumber} {periodStartDate.year} from{" "}
+          {periodStartDate.toFormat("dd MMM")} to{" "}
+          {periodEndDate.toFormat("dd MMM")}
+        </Typography>
+      )}
 
-            if (partitionFullDays.length === 0 && partitionInDay.length === 0) {
-              return <React.Fragment key={date}></React.Fragment>;
-            }
+      <TableContainer component={Paper}>
+        <Table sx={{ borderCollapse: "separate", borderSpacing: "0.2rem" }}>
+          <TableBody>
+            {daysToProcess.map((date) => {
+              const partitionFullDays =
+                partitionedCombinedTimeEventFullDays[date] || [];
+              const partitionInDay =
+                partitionedCombinedTimeEventInDay[date] || [];
 
-            const firstRowFullDays = partitionFullDays[0];
-            const otherRowsFullDays = partitionFullDays.slice(1);
-            const firstRowInDay = partitionInDay[0];
-            const otherRowsInDay = partitionInDay.slice(1);
+              if (
+                partitionFullDays.length === 0 &&
+                partitionInDay.length === 0
+              ) {
+                return <React.Fragment key={date}></React.Fragment>;
+              }
 
-            return (
-              <React.Fragment key={date}>
-                {firstRowFullDays && (
-                  <>
-                    <TableRow>
-                      <ViewAsScheduleDateCell
-                        rowSpan={
-                          partitionFullDays.length + partitionInDay.length
-                        }
-                        isbigscreen={isBigScreen.toString()}
-                      >
-                        {date}
-                      </ViewAsScheduleDateCell>
+              const firstRowFullDays = partitionFullDays[0];
+              const otherRowsFullDays = partitionFullDays.slice(1);
+              const firstRowInDay = partitionInDay[0];
+              const otherRowsInDay = partitionInDay.slice(1);
 
-                      <ViewAsScheduleTimeEventFullDaysRows
-                        entry={firstRowFullDays}
-                      />
-                    </TableRow>
-
-                    {otherRowsFullDays.map((entry, index) => (
-                      <TableRow key={index}>
-                        <ViewAsScheduleTimeEventFullDaysRows entry={entry} />
-                      </TableRow>
-                    ))}
-
-                    {firstRowInDay && (
+              return (
+                <React.Fragment key={date}>
+                  {firstRowFullDays && (
+                    <>
                       <TableRow>
+                        <ViewAsScheduleDateCell
+                          rowSpan={
+                            partitionFullDays.length + partitionInDay.length
+                          }
+                          isbigscreen={isBigScreen.toString()}
+                        >
+                          {date}
+                        </ViewAsScheduleDateCell>
+
+                        <ViewAsScheduleTimeEventFullDaysRows
+                          entry={firstRowFullDays}
+                        />
+                      </TableRow>
+
+                      {otherRowsFullDays.map((entry, index) => (
+                        <TableRow key={index}>
+                          <ViewAsScheduleTimeEventFullDaysRows entry={entry} />
+                        </TableRow>
+                      ))}
+
+                      {firstRowInDay && (
+                        <TableRow>
+                          <ViewAsScheduleTimeEventInDaysRows
+                            entry={firstRowInDay}
+                            timezone={props.timezone}
+                          />
+                        </TableRow>
+                      )}
+
+                      {otherRowsInDay.map((entry, index) => (
+                        <TableRow key={index}>
+                          <ViewAsScheduleTimeEventInDaysRows
+                            entry={entry}
+                            timezone={props.timezone}
+                          />
+                        </TableRow>
+                      ))}
+                    </>
+                  )}
+
+                  {firstRowFullDays === undefined && firstRowInDay && (
+                    <>
+                      <TableRow>
+                        <TableCell
+                          rowSpan={partitionInDay.length}
+                          sx={{ verticalAlign: "top" }}
+                        >
+                          {date}
+                        </TableCell>
+
                         <ViewAsScheduleTimeEventInDaysRows
                           entry={firstRowInDay}
                           timezone={props.timezone}
                         />
                       </TableRow>
-                    )}
 
-                    {otherRowsInDay.map((entry, index) => (
-                      <TableRow key={index}>
-                        <ViewAsScheduleTimeEventInDaysRows
-                          entry={entry}
-                          timezone={props.timezone}
-                        />
-                      </TableRow>
-                    ))}
-                  </>
-                )}
-
-                {firstRowFullDays === undefined && firstRowInDay && (
-                  <>
-                    <TableRow>
-                      <TableCell
-                        rowSpan={partitionInDay.length}
-                        sx={{ verticalAlign: "top" }}
-                      >
-                        {date}
-                      </TableCell>
-
-                      <ViewAsScheduleTimeEventInDaysRows
-                        entry={firstRowInDay}
-                        timezone={props.timezone}
-                      />
-                    </TableRow>
-
-                    {otherRowsInDay.map((entry, index) => (
-                      <TableRow key={index}>
-                        <ViewAsScheduleTimeEventInDaysRows
-                          entry={entry}
-                          timezone={props.timezone}
-                        />
-                      </TableRow>
-                    ))}
-                  </>
-                )}
-              </React.Fragment>
-            );
-          })}
-        </TableBody>
-      </Table>
-    </TableContainer>
+                      {otherRowsInDay.map((entry, index) => (
+                        <TableRow key={index}>
+                          <ViewAsScheduleTimeEventInDaysRows
+                            entry={entry}
+                            timezone={props.timezone}
+                          />
+                        </TableRow>
+                      ))}
+                    </>
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </>
   );
 }
 
@@ -1703,32 +1765,49 @@ function ViewAsScheduleMonthlyQuarterlyAndYearly(props: ViewAsProps) {
     throw new Error("Stats are required");
   }
 
-  return (
-    <TableContainer component={Paper}>
-      <Table sx={{ borderCollapse: "separate", borderSpacing: "0.2rem" }}>
-        <TableBody>
-          {props.stats.per_subperiod.map((stats, index) => {
-            return (
-              <TableRow key={index}>
-                <ViewAsScheduleDateCell isbigscreen={isBigScreen.toString()}>
-                  {stats.period_start_date}
-                </ViewAsScheduleDateCell>
+  const periodStartDate = DateTime.fromISO(props.periodStartDate);
 
-                <ViewAsScheduleContentCell>
-                  <ViewAsStatsPerSubperiod
-                    forceColumn={false}
-                    showCompact={!isBigScreen}
-                    view={View.SCHEDULE}
-                    stats={stats}
-                    calendarLocation={props.calendarLocation}
-                  />
-                </ViewAsScheduleContentCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
-    </TableContainer>
+  return (
+    <>
+      {props.period === RecurringTaskPeriod.MONTHLY && (
+        <Typography variant="h5">
+          Viewing {periodStartDate.monthLong} {periodStartDate.year}
+        </Typography>
+      )}
+      {props.period === RecurringTaskPeriod.QUARTERLY && (
+        <Typography variant="h5">
+          Viewing {monthToQuarter(periodStartDate.month)} {periodStartDate.year}
+        </Typography>
+      )}
+      {props.period === RecurringTaskPeriod.YEARLY && (
+        <Typography variant="h5">Viewing {periodStartDate.year}</Typography>
+      )}
+      <TableContainer component={Paper}>
+        <Table sx={{ borderCollapse: "separate", borderSpacing: "0.2rem" }}>
+          <TableBody>
+            {props.stats.per_subperiod.map((stats, index) => {
+              return (
+                <TableRow key={index}>
+                  <ViewAsScheduleDateCell isbigscreen={isBigScreen.toString()}>
+                    {stats.period_start_date}
+                  </ViewAsScheduleDateCell>
+
+                  <ViewAsScheduleContentCell>
+                    <ViewAsStatsPerSubperiod
+                      forceColumn={false}
+                      showCompact={!isBigScreen}
+                      view={View.SCHEDULE}
+                      stats={stats}
+                      calendarLocation={props.calendarLocation}
+                    />
+                  </ViewAsScheduleContentCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </>
   );
 }
 
@@ -2341,5 +2420,28 @@ function statsSubperiodForPeriod(
       return RecurringTaskPeriod.WEEKLY;
     case RecurringTaskPeriod.YEARLY:
       return RecurringTaskPeriod.MONTHLY;
+  }
+}
+
+function monthToQuarter(month: number): string {
+  switch (month) {
+    case 1:
+    case 2:
+    case 3:
+      return "Q1";
+    case 4:
+    case 5:
+    case 6:
+      return "Q2";
+    case 7:
+    case 8:
+    case 9:
+      return "Q3";
+    case 10:
+    case 11:
+    case 12:
+      return "Q4";
+    default:
+      throw new Error("Unexpected month");
   }
 }
