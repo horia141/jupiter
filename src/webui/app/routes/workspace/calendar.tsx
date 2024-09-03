@@ -731,9 +731,9 @@ function ViewAsCalendarMonthly(props: ViewAsProps) {
           ) {
             // We're starting the year, but the first week of the year
             // might be in the last year.
-            let lastDay = startDate.endOf("week").day;
+            let lastDay = startDate.endOf("week").day as number;
             if (lastDay < startDate.day) {
-              lastDay = startDate.daysInMonth + lastDay;
+              lastDay = (startDate.daysInMonth as number) + lastDay;
             }
             gridRowStart = Math.floor(lastDay / 7) + 2;
           } else if (startDate.weekNumber < firstWeekIdx) {

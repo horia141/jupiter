@@ -11,12 +11,12 @@ from jupiter.cli.command.rendering import (
 )
 from jupiter.core.domain.concept.persons.person_birthday import PersonBirthday
 from jupiter.core.use_cases.application.calendar.load_for_date_and_period import (
+    CalendarEventsEntries,
     CalendarEventsStats,
     CalendarLoadForDateAndPeriodResult,
     CalendarLoadForDateAndPeriodUseCase,
 )
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
-from jupiter_webapi_client.models.calendar_events_entries import CalendarEventsEntries
 from rich.console import Console
 from rich.text import Text
 from rich.tree import Tree
