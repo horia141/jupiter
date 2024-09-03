@@ -8,6 +8,7 @@ interface TimePlanStackProps {
   timePlans: Array<TimePlan>;
   allowSwipe?: boolean;
   allowMarkNotDone?: boolean;
+  relativeToTimePlan?: TimePlan;
   onMarkNotDone?: (timePlan: TimePlan) => void;
 }
 
@@ -22,6 +23,7 @@ export function TimePlanStack(props: TimePlanStackProps) {
           allowSwipe={props.allowSwipe}
           allowMarkNotDone={props.allowMarkNotDone}
           onMarkNotDone={props.onMarkNotDone}
+          relativeToTimePlan={props.relativeToTimePlan}
         />
       ))}
     </EntityStack>

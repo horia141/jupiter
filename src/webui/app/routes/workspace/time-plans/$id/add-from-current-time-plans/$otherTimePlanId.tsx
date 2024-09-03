@@ -238,12 +238,6 @@ export default function TimePlanAddFromCurrentTimePlans() {
                     value: "add-and-override",
                   }),
                 ],
-                extraHiddenInputs: [
-                  {
-                    name: "targetActivitiesRefIds",
-                    value: Array.from(targetActivitiesRefIds).join(","),
-                  },
-                ],
               }),
             ]}
           />
@@ -283,6 +277,11 @@ export default function TimePlanAddFromCurrentTimePlans() {
             />
           ))}
         </EntityStack>
+        <input
+          name="targetActivitiesRefIds"
+          type="hidden"
+          value={Array.from(targetActivitiesRefIds).join(",")}
+        />
       </SectionCardNew>
 
       {loaderData.otherHigherTimePlan && (
@@ -319,6 +318,7 @@ export default function TimePlanAddFromCurrentTimePlans() {
           <TimePlanStack
             topLevelInfo={topLevelInfo}
             timePlans={loaderData.otherHigherTimePlanSubTimePlans}
+            relativeToTimePlan={loaderData.mainTimePlan}
           />
         </SectionCardNew>
       )}

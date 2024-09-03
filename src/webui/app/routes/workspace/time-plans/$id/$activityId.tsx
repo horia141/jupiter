@@ -213,16 +213,6 @@ export default function TimePlanActivity() {
                 text: "Save",
                 value: "update",
                 highlight: true,
-                extraHiddenInputs: [
-                  {
-                    name: "kind",
-                    value: kind,
-                  },
-                  {
-                    name: "feasability",
-                    value: feasability,
-                  },
-                ],
               }),
             ]}
           />
@@ -251,6 +241,7 @@ export default function TimePlanActivity() {
                 {timePlanActivityKindName(TimePlanActivityKind.MAKE_PROGRESS)}
               </ToggleButton>
             </ToggleButtonGroup>
+            <input name="kind" type="hidden" value={kind} />
             <FieldError actionResult={actionData} fieldName="/kind" />
           </FormControl>
 
@@ -291,6 +282,7 @@ export default function TimePlanActivity() {
                 )}
               </ToggleButton>
             </ToggleButtonGroup>
+            <input name="feasability" type="hidden" value={feasability} />
             <FieldError actionResult={actionData} fieldName="/feasability" />
           </FormControl>
         </Stack>
