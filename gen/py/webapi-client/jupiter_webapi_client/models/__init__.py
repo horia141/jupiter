@@ -113,6 +113,8 @@ from .entity_summary import EntitySummary
 from .env import Env
 from .event_source import EventSource
 from .feature_control import FeatureControl
+from .full_days_block_load_args import FullDaysBlockLoadArgs
+from .full_days_block_load_result import FullDaysBlockLoadResult
 from .gc_do_all_args import GCDoAllArgs
 from .gc_do_args import GCDoArgs
 from .gc_load_runs_args import GCLoadRunsArgs
@@ -663,6 +665,8 @@ __all__ = (
     "Env",
     "EventSource",
     "FeatureControl",
+    "FullDaysBlockLoadArgs",
+    "FullDaysBlockLoadResult",
     "GCDoAllArgs",
     "GCDoArgs",
     "GCLoadRunsArgs",

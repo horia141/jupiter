@@ -5,7 +5,6 @@ import type {
   CalendarEventsStatsPerSubperiod,
   EntityId,
   InboxTaskEntry,
-  PersonBirthday,
   PersonEntry,
   ScheduleFullDaysEventEntry,
   ScheduleInDayEventEntry,
@@ -15,7 +14,6 @@ import type {
 } from "@jupiter/webapi-client";
 import {
   RecurringTaskPeriod,
-  ScheduleStreamColor,
   TimeEventNamespace,
 } from "@jupiter/webapi-client";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -66,6 +64,10 @@ import {
   scheduleStreamColorContrastingHex,
   scheduleStreamColorHex,
 } from "~/logic/domain/schedule-stream-color";
+import {
+  birthdayTimeEventName,
+  BIRTHDAY_TIME_EVENT_COLOR,
+} from "~/logic/domain/time-event";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -1281,7 +1283,7 @@ function ViewAsCalendarTimeEventFullDaysCell(
       const fullDaysEntry = props.entry.entry as PersonEntry;
 
       const clippedName = clipTimeEventFullDaysNameToWhatFits(
-        `${fullDaysEntry.person.name}'s Birthday`,
+        birthdayTimeEventName(fullDaysEntry.person),
         12,
         containerWidth - 32 // A hack of sorts
       );
@@ -1292,7 +1294,7 @@ function ViewAsCalendarTimeEventFullDaysCell(
           sx={{
             minWidth: "7rem",
             fontSize: "12px",
-            backgroundColor: scheduleStreamColorHex(ScheduleStreamColor.GREEN),
+            backgroundColor: scheduleStreamColorHex(BIRTHDAY_TIME_EVENT_COLOR),
             borderRadius: "0.25rem",
             padding: "0.25rem",
             paddingLeft: "0.5rem",
@@ -1309,7 +1311,7 @@ function ViewAsCalendarTimeEventFullDaysCell(
             <EntityNameComponent
               name={clippedName}
               color={scheduleStreamColorContrastingHex(
-                ScheduleStreamColor.GREEN
+                BIRTHDAY_TIME_EVENT_COLOR
               )}
             />
           </EntityLink>

@@ -16,6 +16,7 @@ import { EmailService } from './services/EmailService';
 import { EntryService } from './services/EntryService';
 import { EventFullDaysService } from './services/EventFullDaysService';
 import { EventInDayService } from './services/EventInDayService';
+import { FullDaysBlockService } from './services/FullDaysBlockService';
 import { GcService } from './services/GcService';
 import { GenService } from './services/GenService';
 import { GetSummariesService } from './services/GetSummariesService';
@@ -56,6 +57,7 @@ export class ApiClient {
     public readonly entry: EntryService;
     public readonly eventFullDays: EventFullDaysService;
     public readonly eventInDay: EventInDayService;
+    public readonly fullDaysBlock: FullDaysBlockService;
     public readonly gc: GcService;
     public readonly gen: GenService;
     public readonly getSummaries: GetSummariesService;
@@ -107,6 +109,7 @@ export class ApiClient {
         this.entry = new EntryService(this.request);
         this.eventFullDays = new EventFullDaysService(this.request);
         this.eventInDay = new EventInDayService(this.request);
+        this.fullDaysBlock = new FullDaysBlockService(this.request);
         this.gc = new GcService(this.request);
         this.gen = new GenService(this.request);
         this.getSummaries = new GetSummariesService(this.request);
