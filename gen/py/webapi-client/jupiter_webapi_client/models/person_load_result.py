@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from ..models.inbox_task import InboxTask
     from ..models.note import Note
     from ..models.person import Person
+    from ..models.time_event_full_days_block import TimeEventFullDaysBlock
 
 
 T = TypeVar("T", bound="PersonLoadResult")
@@ -20,12 +21,14 @@ class PersonLoadResult:
 
     Attributes:
         person (Person): A person.
+        birthday_time_event_blocks (List['TimeEventFullDaysBlock']):
         catch_up_inbox_tasks (List['InboxTask']):
         birthday_inbox_tasks (List['InboxTask']):
         note (Union['Note', None, Unset]):
     """
 
     person: "Person"
+    birthday_time_event_blocks: List["TimeEventFullDaysBlock"]
     catch_up_inbox_tasks: List["InboxTask"]
     birthday_inbox_tasks: List["InboxTask"]
     note: Union["Note", None, Unset] = UNSET
@@ -35,6 +38,11 @@ class PersonLoadResult:
         from ..models.note import Note
 
         person = self.person.to_dict()
+
+        birthday_time_event_blocks = []
+        for birthday_time_event_blocks_item_data in self.birthday_time_event_blocks:
+            birthday_time_event_blocks_item = birthday_time_event_blocks_item_data.to_dict()
+            birthday_time_event_blocks.append(birthday_time_event_blocks_item)
 
         catch_up_inbox_tasks = []
         for catch_up_inbox_tasks_item_data in self.catch_up_inbox_tasks:
@@ -59,6 +67,7 @@ class PersonLoadResult:
         field_dict.update(
             {
                 "person": person,
+                "birthday_time_event_blocks": birthday_time_event_blocks,
                 "catch_up_inbox_tasks": catch_up_inbox_tasks,
                 "birthday_inbox_tasks": birthday_inbox_tasks,
             }
@@ -73,9 +82,17 @@ class PersonLoadResult:
         from ..models.inbox_task import InboxTask
         from ..models.note import Note
         from ..models.person import Person
+        from ..models.time_event_full_days_block import TimeEventFullDaysBlock
 
         d = src_dict.copy()
         person = Person.from_dict(d.pop("person"))
+
+        birthday_time_event_blocks = []
+        _birthday_time_event_blocks = d.pop("birthday_time_event_blocks")
+        for birthday_time_event_blocks_item_data in _birthday_time_event_blocks:
+            birthday_time_event_blocks_item = TimeEventFullDaysBlock.from_dict(birthday_time_event_blocks_item_data)
+
+            birthday_time_event_blocks.append(birthday_time_event_blocks_item)
 
         catch_up_inbox_tasks = []
         _catch_up_inbox_tasks = d.pop("catch_up_inbox_tasks")
@@ -110,6 +127,7 @@ class PersonLoadResult:
 
         person_load_result = cls(
             person=person,
+            birthday_time_event_blocks=birthday_time_event_blocks,
             catch_up_inbox_tasks=catch_up_inbox_tasks,
             birthday_inbox_tasks=birthday_inbox_tasks,
             note=note,

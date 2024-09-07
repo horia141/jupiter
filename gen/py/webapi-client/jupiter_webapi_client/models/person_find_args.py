@@ -14,27 +14,31 @@ class PersonFindArgs:
 
     Attributes:
         allow_archived (bool):
+        include_notes (bool):
+        include_birthday_time_event_blocks (bool):
         include_catch_up_inbox_tasks (bool):
         include_birthday_inbox_tasks (bool):
-        include_notes (bool):
         filter_person_ref_ids (Union[List[str], None, Unset]):
     """
 
     allow_archived: bool
+    include_notes: bool
+    include_birthday_time_event_blocks: bool
     include_catch_up_inbox_tasks: bool
     include_birthday_inbox_tasks: bool
-    include_notes: bool
     filter_person_ref_ids: Union[List[str], None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         allow_archived = self.allow_archived
 
+        include_notes = self.include_notes
+
+        include_birthday_time_event_blocks = self.include_birthday_time_event_blocks
+
         include_catch_up_inbox_tasks = self.include_catch_up_inbox_tasks
 
         include_birthday_inbox_tasks = self.include_birthday_inbox_tasks
-
-        include_notes = self.include_notes
 
         filter_person_ref_ids: Union[List[str], None, Unset]
         if isinstance(self.filter_person_ref_ids, Unset):
@@ -50,9 +54,10 @@ class PersonFindArgs:
         field_dict.update(
             {
                 "allow_archived": allow_archived,
+                "include_notes": include_notes,
+                "include_birthday_time_event_blocks": include_birthday_time_event_blocks,
                 "include_catch_up_inbox_tasks": include_catch_up_inbox_tasks,
                 "include_birthday_inbox_tasks": include_birthday_inbox_tasks,
-                "include_notes": include_notes,
             }
         )
         if filter_person_ref_ids is not UNSET:
@@ -65,11 +70,13 @@ class PersonFindArgs:
         d = src_dict.copy()
         allow_archived = d.pop("allow_archived")
 
+        include_notes = d.pop("include_notes")
+
+        include_birthday_time_event_blocks = d.pop("include_birthday_time_event_blocks")
+
         include_catch_up_inbox_tasks = d.pop("include_catch_up_inbox_tasks")
 
         include_birthday_inbox_tasks = d.pop("include_birthday_inbox_tasks")
-
-        include_notes = d.pop("include_notes")
 
         def _parse_filter_person_ref_ids(data: object) -> Union[List[str], None, Unset]:
             if data is None:
@@ -90,9 +97,10 @@ class PersonFindArgs:
 
         person_find_args = cls(
             allow_archived=allow_archived,
+            include_notes=include_notes,
+            include_birthday_time_event_blocks=include_birthday_time_event_blocks,
             include_catch_up_inbox_tasks=include_catch_up_inbox_tasks,
             include_birthday_inbox_tasks=include_birthday_inbox_tasks,
-            include_notes=include_notes,
             filter_person_ref_ids=filter_person_ref_ids,
         )
 

@@ -5,6 +5,7 @@ import type {
   CalendarEventsStatsPerSubperiod,
   EntityId,
   InboxTaskEntry,
+  PersonBirthday,
   PersonEntry,
   ScheduleFullDaysEventEntry,
   ScheduleInDayEventEntry,
@@ -14,6 +15,7 @@ import type {
 } from "@jupiter/webapi-client";
 import {
   RecurringTaskPeriod,
+  ScheduleStreamColor,
   TimeEventNamespace,
 } from "@jupiter/webapi-client";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -1235,7 +1237,7 @@ function ViewAsCalendarTimeEventFullDaysCell(
   }, [containerRef]);
 
   switch (props.entry.time_event.namespace) {
-    case TimeEventNamespace.SCHEDULE_FULL_DAYS_BLOCK:
+    case TimeEventNamespace.SCHEDULE_FULL_DAYS_BLOCK: {
       const fullDaysEntry = props.entry.entry as ScheduleFullDaysEventEntry;
 
       const clippedName = clipTimeEventFullDaysNameToWhatFits(
@@ -1273,9 +1275,47 @@ function ViewAsCalendarTimeEventFullDaysCell(
           </EntityLink>
         </Box>
       );
+    }
 
-    case TimeEventNamespace.PERSON_BIRTHDAY:
-      throw new Error("Not implemented");
+    case TimeEventNamespace.PERSON_BIRTHDAY: {
+      const fullDaysEntry = props.entry.entry as PersonEntry;
+
+      const clippedName = clipTimeEventFullDaysNameToWhatFits(
+        `${fullDaysEntry.person.name}'s Birthday`,
+        12,
+        containerWidth - 32 // A hack of sorts
+      );
+
+      return (
+        <Box
+          ref={containerRef}
+          sx={{
+            minWidth: "7rem",
+            fontSize: "12px",
+            backgroundColor: scheduleStreamColorHex(ScheduleStreamColor.GREEN),
+            borderRadius: "0.25rem",
+            padding: "0.25rem",
+            paddingLeft: "0.5rem",
+            width: "100%",
+            height: "2rem",
+            marginBottom: "0.25rem",
+            overflow: "hidden",
+          }}
+        >
+          <EntityLink
+            key={`person-birthday-event-${fullDaysEntry.person.ref_id}`}
+            to={`/workspace/calendar/time-event/full-days-block/${fullDaysEntry.birthday_time_event.ref_id}?${query}`}
+          >
+            <EntityNameComponent
+              name={clippedName}
+              color={scheduleStreamColorContrastingHex(
+                ScheduleStreamColor.GREEN
+              )}
+            />
+          </EntityLink>
+        </Box>
+      );
+    }
 
     default:
       throw new Error("Unexpected namespace");
@@ -1380,7 +1420,7 @@ function ViewAsCalendarTimeEventInDayCell(
   }, [containerRef]);
 
   switch (props.entry.time_event.namespace) {
-    case TimeEventNamespace.SCHEDULE_EVENT_IN_DAY:
+    case TimeEventNamespace.SCHEDULE_EVENT_IN_DAY: {
       const scheduleEntry = props.entry.entry as ScheduleInDayEventEntry;
 
       const startTime = DateTime.fromISO(
@@ -1450,6 +1490,7 @@ function ViewAsCalendarTimeEventInDayCell(
           </EntityLink>
         </Box>
       );
+    }
 
     case TimeEventNamespace.INBOX_TASK:
       throw new Error("Not implemented");

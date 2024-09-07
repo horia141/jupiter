@@ -40,6 +40,7 @@ export async function loader({ request }: LoaderArgs) {
     allow_archived: false,
     include_catch_up_inbox_tasks: false,
     include_birthday_inbox_tasks: false,
+    include_birthday_time_event_blocks: false,
     include_notes: false,
   });
 
