@@ -79,7 +79,6 @@ export const shouldRevalidate: ShouldRevalidateFunction = basicShouldRevalidate;
 
 export default function TimeEventFullDaysBlockViewOne() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
-  const actionData = useActionData<typeof action>();
   const topLevelInfo = useContext(TopLevelInfoContext);
   const transition = useTransition();
   const [query] = useSearchParams();
