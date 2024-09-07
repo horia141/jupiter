@@ -53,6 +53,11 @@ from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueA
 from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
+from jupiter.core.domain.core.time_events.time_event_domain import TimeEventDomain
+from jupiter.core.domain.core.time_events.time_event_full_days_block import (
+    TimeEventFullDaysBlock,
+)
+from jupiter.core.domain.core.time_events.time_event_namespace import TimeEventNamespace
 from jupiter.core.domain.features import FeatureUnavailableError, WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainStorageEngine
 from jupiter.core.domain.sync_target import SyncTarget
@@ -196,6 +201,9 @@ class GenService:
                 workspace.ref_id,
             )
             note_collection = await uow.get_for(NoteCollection).load_by_parent(
+                workspace.ref_id,
+            )
+            time_event_domain = await uow.get_for(TimeEventDomain).load_by_parent(
                 workspace.ref_id,
             )
 
@@ -482,6 +490,16 @@ class GenService:
                         if all_persons
                         else NoFilter(),
                     )
+                    all_birthday_time_event_blocks = await uow.get_for(
+                        TimeEventFullDaysBlock
+                    ).find_all_generic(
+                        parent_ref_id=time_event_domain.ref_id,
+                        allow_archived=True,
+                        namespace=TimeEventNamespace.PERSON_BIRTHDAY,
+                        source_entity_ref_id=[m.ref_id for m in all_persons]
+                        if all_persons
+                        else NoFilter(),
+                    )
 
                 all_catch_up_inbox_tasks_by_person_ref_id_and_timeline = {}
                 for inbox_task in all_catch_up_inbox_tasks:
@@ -534,23 +552,41 @@ class GenService:
                     (inbox_task.person_ref_id, inbox_task.recurring_timeline)
                 ] = inbox_task
 
+            all_birthday_time_event_blocks_by_person_ref_id_and_start_date = {}
+            for time_event_block in all_birthday_time_event_blocks:
+                all_birthday_time_event_blocks_by_person_ref_id_and_start_date[
+                    (time_event_block.source_entity_ref_id, time_event_block.start_date)
+                ] = time_event_block
+
             for person in all_persons:
                 if person.birthday is None:
                     continue
 
-                gen_log_entry = await self._generate_birthday_inbox_task_for_person(
-                    ctx,
-                    progress_reporter=progress_reporter,
-                    user=user,
-                    inbox_task_collection=inbox_task_collection,
-                    project=project,
-                    today=today,
-                    person=person,
-                    birthday=person.birthday,
-                    all_inbox_tasks_by_person_ref_id_and_timeline=all_birthday_inbox_tasks_by_person_ref_id_and_timeline,
-                    gen_even_if_not_modified=gen_even_if_not_modified,
-                    gen_log_entry=gen_log_entry,
-                )
+                for idx in range(5):
+                    gen_log_entry = await self._generate_birthday_time_event_block_for_person(
+                        ctx,
+                        progress_reporter=progress_reporter,
+                        time_event_domain=time_event_domain,
+                        today=today.add_days(idx * 365),
+                        person=person,
+                        all_birthday_time_event_blocks_by_person_ref_id_and_start_date=all_birthday_time_event_blocks_by_person_ref_id_and_start_date,
+                        gen_even_if_not_modified=gen_even_if_not_modified,
+                        gen_log_entry=gen_log_entry,
+                    )
+
+                    gen_log_entry = await self._generate_birthday_inbox_task_for_person(
+                        ctx,
+                        progress_reporter=progress_reporter,
+                        user=user,
+                        inbox_task_collection=inbox_task_collection,
+                        project=project,
+                        today=today.add_days(idx * 365),
+                        person=person,
+                        birthday=person.birthday,
+                        all_inbox_tasks_by_person_ref_id_and_timeline=all_birthday_inbox_tasks_by_person_ref_id_and_timeline,
+                        gen_even_if_not_modified=gen_even_if_not_modified,
+                        gen_log_entry=gen_log_entry,
+                    )
 
         if (
             workspace.is_feature_available(WorkspaceFeature.SLACK_TASKS)
@@ -1193,6 +1229,55 @@ class GenService:
                 ctx,
                 inbox_task,
             )
+
+        return gen_log_entry
+
+    async def _generate_birthday_time_event_block_for_person(
+        self,
+        ctx: DomainContext,
+        progress_reporter: ProgressReporter,
+        time_event_domain: TimeEventDomain,
+        today: ADate,
+        person: Person,
+        all_birthday_time_event_blocks_by_person_ref_id_and_start_date: dict[
+            tuple[EntityId, ADate],
+            TimeEventFullDaysBlock,
+        ],
+        gen_even_if_not_modified: bool,
+        gen_log_entry: GenLogEntry,
+    ) -> GenLogEntry:
+        found_block = (
+            all_birthday_time_event_blocks_by_person_ref_id_and_start_date.get(
+                (person.ref_id, person.birthday_in_year(today)), None
+            )
+        )
+
+        if found_block:
+            if (
+                not gen_even_if_not_modified
+                and found_block.last_modified_time >= person.last_modified_time
+            ):
+                return gen_log_entry
+
+            found_block = found_block.update_for_person_birthday(
+                ctx,
+                birthday_date=person.birthday_in_year(today),
+            )
+
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
+                await uow.get_for(TimeEventFullDaysBlock).save(found_block)
+        else:
+            found_block = TimeEventFullDaysBlock.new_time_event_for_person_birthday(
+                ctx,
+                time_event_domain_ref_id=time_event_domain.ref_id,
+                person_ref_id=person.ref_id,
+                birthday_date=person.birthday_in_year(today),
+            )
+
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
+                found_block = await uow.get_for(TimeEventFullDaysBlock).create(
+                    found_block
+                )
 
         return gen_log_entry
 

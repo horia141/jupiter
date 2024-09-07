@@ -343,6 +343,10 @@ class Workspace(RootEntity):
                 WorkspaceFeature.PROJECTS
             ):
                 inferred_sync_targets.append(sync_target)
+            elif sync_target is SyncTarget.PERSONS and self.is_feature_available(
+                WorkspaceFeature.PERSONS
+            ):
+                inferred_sync_targets.append(sync_target)
             elif sync_target is SyncTarget.SMART_LISTS and self.is_feature_available(
                 WorkspaceFeature.SMART_LISTS
             ):

@@ -62,7 +62,7 @@ class ScheduleEventFullDaysUpdateUseCase(
             namespace=TimeEventNamespace.SCHEDULE_FULL_DAYS_BLOCK,
             source_entity_ref_id=schedule_event_full_days.ref_id,
         )
-        time_event = time_event.update(
+        time_event = time_event.update_for_schedule_event(
             context.domain_context,
             start_date=args.start_date.or_else(time_event.start_date),
             duration_days=args.duration_days.or_else(time_event.duration_days),

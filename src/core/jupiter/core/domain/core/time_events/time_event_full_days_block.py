@@ -32,11 +32,10 @@ class TimeEventFullDaysBlock(LeafSupportEntity):
 
     @staticmethod
     @create_entity_action
-    def new_time_event(
+    def new_time_event_for_schedule_event(
         ctx: DomainContext,
         time_event_domain_ref_id: EntityId,
-        namespace: TimeEventNamespace,
-        source_entity_ref_id: EntityId,
+        schedule_event_ref_id: EntityId,
         start_date: ADate,
         duration_days: int,
     ) -> "TimeEventFullDaysBlock":
@@ -47,15 +46,35 @@ class TimeEventFullDaysBlock(LeafSupportEntity):
             ctx,
             name=NOT_USED_NAME,
             time_event_domain=ParentLink(time_event_domain_ref_id),
-            namespace=namespace,
-            source_entity_ref_id=source_entity_ref_id,
+            namespace=TimeEventNamespace.SCHEDULE_FULL_DAYS_BLOCK,
+            source_entity_ref_id=schedule_event_ref_id,
             start_date=start_date,
             duration_days=duration_days,
             end_date=start_date.add_days(duration_days),
         )
 
+    @staticmethod
+    @create_entity_action
+    def new_time_event_for_person_birthday(
+        ctx: DomainContext,
+        time_event_domain_ref_id: EntityId,
+        person_ref_id: EntityId,
+        birthday_date: ADate,
+    ) -> "TimeEventFullDaysBlock":
+        """Create a new time event."""
+        return TimeEventFullDaysBlock._create(
+            ctx,
+            name=NOT_USED_NAME,
+            time_event_domain=ParentLink(time_event_domain_ref_id),
+            namespace=TimeEventNamespace.PERSON_BIRTHDAY,
+            source_entity_ref_id=person_ref_id,
+            start_date=birthday_date,
+            duration_days=1,
+            end_date=birthday_date.add_days(1),
+        )
+
     @update_entity_action
-    def update(
+    def update_for_schedule_event(
         self,
         ctx: DomainContext,
         start_date: ADate,
@@ -69,6 +88,20 @@ class TimeEventFullDaysBlock(LeafSupportEntity):
             start_date=start_date,
             duration_days=duration_days,
             end_date=start_date.add_days(duration_days),
+        )
+
+    @update_entity_action
+    def update_for_person_birthday(
+        self,
+        ctx: DomainContext,
+        birthday_date: ADate,
+    ) -> "TimeEventFullDaysBlock":
+        """Update the time event."""
+        return self._new_version(
+            ctx,
+            start_date=birthday_date,
+            duration_days=1,
+            end_date=birthday_date.add_days(1),
         )
 
 
@@ -98,8 +131,18 @@ class TimeEventFullDaysBlockRepository(
         self,
         namespace: TimeEventNamespace,
         source_entity_ref_id: EntityId,
+        allow_archived: bool = False,
     ) -> TimeEventFullDaysBlock:
         """Load a time event full days block for a namespace and source entity."""
+
+    @abc.abstractmethod
+    async def find_for_namespace(
+        self,
+        namespace: TimeEventNamespace,
+        source_entity_ref_id: EntityId,
+        allow_archived: bool = False,
+    ) -> list[TimeEventFullDaysBlock]:
+        """Find all time event full days block for a namespace and source entity."""
 
     @abc.abstractmethod
     async def find_all_between(

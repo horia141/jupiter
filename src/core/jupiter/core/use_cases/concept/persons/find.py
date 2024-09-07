@@ -13,6 +13,11 @@ from jupiter.core.domain.concept.projects.project import Project
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_collection import NoteCollection
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
+from jupiter.core.domain.core.time_events.time_event_domain import TimeEventDomain
+from jupiter.core.domain.core.time_events.time_event_full_days_block import (
+    TimeEventFullDaysBlock,
+)
+from jupiter.core.domain.core.time_events.time_event_namespace import TimeEventNamespace
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -35,9 +40,10 @@ class PersonFindArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
     allow_archived: bool
+    include_notes: bool
+    include_birthday_time_event_blocks: bool
     include_catch_up_inbox_tasks: bool
     include_birthday_inbox_tasks: bool
-    include_notes: bool
     filter_person_ref_ids: list[EntityId] | None
 
 
@@ -47,6 +53,7 @@ class PersonFindResultEntry(UseCaseResultBase):
 
     person: Person
     note: Note | None
+    birthday_time_event_blocks: list[TimeEventFullDaysBlock] | None
     catch_up_inbox_tasks: list[InboxTask] | None
     birthday_inbox_tasks: list[InboxTask] | None
 
@@ -80,6 +87,9 @@ class PersonFindUseCase(
         person_collection = await uow.get_for(PersonCollection).load_by_parent(
             workspace.ref_id,
         )
+        time_event_domain = await uow.get_for(TimeEventDomain).load_by_parent(
+            workspace.ref_id
+        )
         catch_up_project = await uow.get_for(Project).load_by_id(
             person_collection.catch_up_project_ref_id,
         )
@@ -88,6 +98,32 @@ class PersonFindUseCase(
             allow_archived=args.allow_archived,
             filter_ref_ids=args.filter_person_ref_ids,
         )
+
+        all_notes_by_person_ref_id: defaultdict[EntityId, Note] = defaultdict(None)
+        if args.include_notes:
+            notes_collection = await uow.get_for(NoteCollection).load_by_parent(
+                workspace.ref_id
+            )
+            all_notes = await uow.get_for(Note).find_all_generic(
+                parent_ref_id=notes_collection.ref_id,
+                domain=NoteDomain.PERSON,
+                allow_archived=True,
+                source_entity_ref_id=[p.ref_id for p in persons],
+            )
+            for n in all_notes:
+                all_notes_by_person_ref_id[cast(EntityId, n.source_entity_ref_id)] = n
+
+        if args.include_birthday_time_event_blocks:
+            birthday_time_event_blocks = await uow.get_for(
+                TimeEventFullDaysBlock
+            ).find_all_generic(
+                parent_ref_id=time_event_domain.ref_id,
+                allow_archived=True,
+                namespace=TimeEventNamespace.PERSON_BIRTHDAY,
+                source_entity_ref_id=[p.ref_id for p in persons],
+            )
+        else:
+            birthday_time_event_blocks = None
 
         if args.include_catch_up_inbox_tasks:
             catch_up_inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
@@ -109,26 +145,19 @@ class PersonFindUseCase(
         else:
             birthday_inbox_tasks = None
 
-        all_notes_by_person_ref_id: defaultdict[EntityId, Note] = defaultdict(None)
-        if args.include_notes:
-            notes_collection = await uow.get_for(NoteCollection).load_by_parent(
-                workspace.ref_id
-            )
-            all_notes = await uow.get_for(Note).find_all_generic(
-                parent_ref_id=notes_collection.ref_id,
-                domain=NoteDomain.PERSON,
-                allow_archived=True,
-                source_entity_ref_id=[p.ref_id for p in persons],
-            )
-            for n in all_notes:
-                all_notes_by_person_ref_id[cast(EntityId, n.source_entity_ref_id)] = n
-
         return PersonFindResult(
             catch_up_project=catch_up_project,
             entries=[
                 PersonFindResultEntry(
                     person=p,
                     note=all_notes_by_person_ref_id.get(p.ref_id, None),
+                    birthday_time_event_blocks=[
+                        it
+                        for it in birthday_time_event_blocks
+                        if it.source_entity_ref_id == p.ref_id
+                    ]
+                    if birthday_time_event_blocks is not None
+                    else None,
                     catch_up_inbox_tasks=[
                         it
                         for it in catch_up_inbox_tasks

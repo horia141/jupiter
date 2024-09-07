@@ -264,6 +264,11 @@ export function inferSyncTargetsForEnabledFeatures(
     ) {
       inferredSyncTargets.push(syncTarget);
     } else if (
+      syncTarget === SyncTarget.PERSONS &&
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.PERSONS)
+    ) {
+      inferredSyncTargets.push(syncTarget);
+    } else if (
       syncTarget === SyncTarget.SMART_LISTS &&
       isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.SMART_LISTS)
     ) {

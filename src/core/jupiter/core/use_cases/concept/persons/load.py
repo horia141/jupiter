@@ -8,6 +8,11 @@ from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskS
 from jupiter.core.domain.concept.persons.person import Person
 from jupiter.core.domain.core.notes.note import Note, NoteRepository
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
+from jupiter.core.domain.core.time_events.time_event_full_days_block import (
+    TimeEventFullDaysBlock,
+    TimeEventFullDaysBlockRepository,
+)
+from jupiter.core.domain.core.time_events.time_event_namespace import TimeEventNamespace
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -37,6 +42,7 @@ class PersonLoadResult(UseCaseResultBase):
     """PersonLoadResult."""
 
     person: Person
+    birthday_time_event_blocks: list[TimeEventFullDaysBlock]
     catch_up_inbox_tasks: list[InboxTask]
     birthday_inbox_tasks: list[InboxTask]
     note: Note | None
@@ -64,6 +70,19 @@ class PersonLoadUseCase(
             workspace.ref_id,
         )
 
+        note = await uow.get(NoteRepository).load_optional_for_source(
+            NoteDomain.PERSON,
+            person.ref_id,
+            allow_archived=args.allow_archived,
+        )
+        birthday_time_event_blocks = await uow.get(
+            TimeEventFullDaysBlockRepository
+        ).find_for_namespace(
+            TimeEventNamespace.PERSON_BIRTHDAY,
+            person.ref_id,
+            allow_archived=args.allow_archived,
+        )
+
         catch_up_inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
@@ -77,15 +96,10 @@ class PersonLoadUseCase(
             source=[InboxTaskSource.PERSON_BIRTHDAY],
         )
 
-        note = await uow.get(NoteRepository).load_optional_for_source(
-            NoteDomain.PERSON,
-            person.ref_id,
-            allow_archived=args.allow_archived,
-        )
-
         return PersonLoadResult(
             person=person,
+            note=note,
+            birthday_time_event_blocks=birthday_time_event_blocks,
             catch_up_inbox_tasks=catch_up_inbox_tasks,
             birthday_inbox_tasks=birthday_inbox_tasks,
-            note=note,
         )

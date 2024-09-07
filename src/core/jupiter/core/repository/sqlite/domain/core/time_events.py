@@ -120,6 +120,23 @@ class SqliteTimeEventFullDaysBlockRepository(
             )
         return self._row_to_entity(result)
 
+    async def find_for_namespace(
+        self,
+        namespace: TimeEventNamespace,
+        source_entity_ref_id: EntityId,
+        allow_archived: bool = False,
+    ) -> list[TimeEventFullDaysBlock]:
+        """Retrieve a time event in full day block via its namespace."""
+        query_stmt = (
+            select(self._table)
+            .where(self._table.c.namespace == namespace.value)
+            .where(self._table.c.source_entity_ref_id == source_entity_ref_id.as_int())
+        )
+        if not allow_archived:
+            query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        result = await self._connection.execute(query_stmt)
+        return [self._row_to_entity(row) for row in result]
+
     async def find_all_between(
         self, parent_ref_id: EntityId, start_date: ADate, end_date: ADate
     ) -> list[TimeEventFullDaysBlock]:
