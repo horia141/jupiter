@@ -494,7 +494,7 @@ class GenService:
                         TimeEventFullDaysBlock
                     ).find_all_generic(
                         parent_ref_id=time_event_domain.ref_id,
-                        allow_archived=True,
+                        allow_archived=False,
                         namespace=TimeEventNamespace.PERSON_BIRTHDAY,
                         source_entity_ref_id=[m.ref_id for m in all_persons]
                         if all_persons

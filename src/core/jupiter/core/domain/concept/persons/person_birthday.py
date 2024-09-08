@@ -1,6 +1,7 @@
 """The birthday of a person."""
 from typing import ClassVar
 
+from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.framework.errors import InputValidationError
@@ -44,6 +45,10 @@ class PersonBirthday(AtomicValue[str]):
         if month < 1 or month > 12:
             raise InputValidationError(f"Month is out of bounds with value {month}")
         return PersonBirthday(day, month)
+
+    def birthday_in_year(self, a_date: ADate) -> ADate:
+        """Get the birthday of the person in the given year."""
+        return ADate.from_components(a_date.year, self.month, self.day)
 
     def __str__(self) -> str:
         """String representation."""

@@ -211,8 +211,8 @@ export async function action({ request, params }: ActionArgs) {
               form.birthdayMonth === "N/A"
                 ? undefined
                 : birthdayFromParts(
-                    parseInt(form.birthdayDay),
-                    parseInt(form.birthdayMonth)
+                    parseInt(form.birthdayDay, 10),
+                    parseInt(form.birthdayMonth, 10)
                   ),
           },
         });

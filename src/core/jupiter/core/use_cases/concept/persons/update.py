@@ -22,6 +22,10 @@ from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueA
 from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
+from jupiter.core.domain.core.time_events.time_event_full_days_block import (
+    TimeEventFullDaysBlockRepository,
+)
+from jupiter.core.domain.core.time_events.time_event_namespace import TimeEventNamespace
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -174,6 +178,24 @@ class PersonUpdateUseCase(
             source=[InboxTaskSource.PERSON_BIRTHDAY],
             person_ref_id=[person.ref_id],
         )
+        birthday_time_event_blocks = await uow.get(
+            TimeEventFullDaysBlockRepository
+        ).find_for_namespace(
+            TimeEventNamespace.PERSON_BIRTHDAY,
+            source_entity_ref_id=person.ref_id,
+            allow_archived=True,
+        )
+
+        person = person.update(
+            ctx=context.domain_context,
+            name=args.name,
+            relationship=args.relationship,
+            birthday=args.birthday,
+            catch_up_params=catch_up_params,
+        )
+
+        await uow.get_for(Person).save(person)
+        await progress_reporter.mark_updated(person)
 
         # TODO(horia141): also create tasks here!
         # TODO(horia141): what if we change other person properties not just catch up params?
@@ -214,16 +236,27 @@ class PersonUpdateUseCase(
                 await progress_reporter.mark_updated(inbox_task)
 
         # Change the birthday inbox tasks
+        from rich import print
+
         if person.birthday is None:
             # Situation 1: we need to get rid of any existing catch ups persons because there's no collection catch ups.
             inbox_task_archive_service = InboxTaskArchiveService()
             for inbox_task in person_birthday_tasks:
+                print("Archiving it", inbox_task.ref_id)
                 await inbox_task_archive_service.do_it(
                     context.domain_context, uow, progress_reporter, inbox_task
                 )
+
+            for time_event_block in birthday_time_event_blocks:
+                print("Archiving time block", time_event_block.ref_id)
+                time_event_block = time_event_block.mark_archived(
+                    context.domain_context
+                )
+                await uow.get(TimeEventFullDaysBlockRepository).save(time_event_block)
         else:
             # Situation 2: we need to update the existing persons.
             for inbox_task in person_birthday_tasks:
+                print("Updating it", inbox_task.ref_id)
                 schedule = schedules.get_schedule(
                     RecurringTaskPeriod.YEARLY,
                     person.name,
@@ -253,13 +286,14 @@ class PersonUpdateUseCase(
                 await uow.get_for(InboxTask).save(inbox_task)
                 await progress_reporter.mark_updated(inbox_task)
 
-        person = person.update(
-            ctx=context.domain_context,
-            name=args.name,
-            relationship=args.relationship,
-            birthday=args.birthday,
-            catch_up_params=catch_up_params,
-        )
-
-        await uow.get_for(Person).save(person)
-        await progress_reporter.mark_updated(person)
+            for birthday_time_event_block in birthday_time_event_blocks:
+                print("Updating time block", birthday_time_event_block.ref_id)
+                birthday_time_event_block = (
+                    birthday_time_event_block.update_for_person_birthday(
+                        ctx=context.domain_context,
+                        birthday_date=person.birthday_in_year(birthday_time_event_block.start_date),
+                    )
+                )
+                await uow.get(TimeEventFullDaysBlockRepository).save(
+                    birthday_time_event_block
+                )

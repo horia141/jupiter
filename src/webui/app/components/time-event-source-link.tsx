@@ -1,9 +1,8 @@
 import type {
   TimeEventFullDaysBlock,
-  TimeEventInDayBlock} from "@jupiter/webapi-client";
-import {
-  TimeEventNamespace,
+  TimeEventInDayBlock,
 } from "@jupiter/webapi-client";
+import { TimeEventNamespace } from "@jupiter/webapi-client";
 import LaunchIcon from "@mui/icons-material/Launch";
 import { Button } from "@mui/material";
 import { Link } from "@remix-run/react";

@@ -103,6 +103,4 @@ class Person(LeafEntity):
         """Get the birthday of the person in the given year."""
         if self.birthday is None:
             raise Exception("This person has no birthday.")
-        return ADate.from_components(
-            a_date.year, self.birthday.month, self.birthday.day
-        )
+        return self.birthday.birthday_in_year(a_date)
