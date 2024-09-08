@@ -1,14 +1,10 @@
 import type {
   PersonEntry,
-  ScheduleFullDaysEventEntry} from "@jupiter/webapi-client";
-import {
-  TimeEventNamespace,
+  ScheduleFullDaysEventEntry,
 } from "@jupiter/webapi-client";
-import type {
-  CombinedTimeEventFullDaysEntry} from "~/logic/domain/time-event";
-import {
-  birthdayTimeEventName
-} from "~/logic/domain/time-event";
+import { TimeEventNamespace } from "@jupiter/webapi-client";
+import type { CombinedTimeEventFullDaysEntry } from "~/logic/domain/time-event";
+import { birthdayTimeEventName } from "~/logic/domain/time-event";
 import { EntityNameComponent } from "./entity-name";
 import { EntityCard, EntityLink } from "./infra/entity-card";
 
@@ -40,6 +36,7 @@ export function TimeEventFullDaysBlockCard(
   return (
     <EntityCard
       entityId={`time-event-full-days-block-${props.entry.time_event.ref_id}`}
+      showAsArchived={props.entry.time_event.archived}
     >
       <EntityLink
         to={`/workspace/calendar/time-event/full-days-block/${props.entry.time_event.ref_id}`}

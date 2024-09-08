@@ -64,10 +64,11 @@ import {
 } from "~/logic/domain/schedule-stream-color";
 import type {
   CombinedTimeEventFullDaysEntry,
-  CombinedTimeEventInDayEntry} from "~/logic/domain/time-event";
+  CombinedTimeEventInDayEntry,
+} from "~/logic/domain/time-event";
 import {
   birthdayTimeEventName,
-  BIRTHDAY_TIME_EVENT_COLOR
+  BIRTHDAY_TIME_EVENT_COLOR,
 } from "~/logic/domain/time-event";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useBigScreen } from "~/rendering/use-big-screen";

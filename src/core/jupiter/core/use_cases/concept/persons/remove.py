@@ -1,11 +1,8 @@
 """Remove a person."""
 
 from jupiter.core.domain.concept.persons.person import Person
-from jupiter.core.domain.concept.persons.person_collection import PersonCollection
-from jupiter.core.domain.concept.persons.service.remove_service import (
-    PersonRemoveService,
-)
 from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.infra.generic_crown_remover import generic_crown_remover
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
@@ -40,16 +37,6 @@ class PersonRemoveUseCase(
         args: PersonRemoveArgs,
     ) -> None:
         """Execute the command's action."""
-        workspace = context.workspace
-
-        person_collection = await uow.get_for(PersonCollection).load_by_parent(
-            workspace.ref_id,
-        )
-        person = await uow.get_for(Person).load_by_id(
-            args.ref_id,
-            allow_archived=True,
-        )
-
-        await PersonRemoveService().do_it(
-            context.domain_context, uow, progress_reporter, person_collection, person
+        await generic_crown_remover(
+            context.domain_context, uow, progress_reporter, Person, args.ref_id
         )
