@@ -51,7 +51,7 @@ export async function loader({ request }: LoaderArgs) {
 
   const emailTaskSettingsResponse = await getLoggedInApiClient(
     session
-  ).pushIntegrations.emailTaskLoadSettings({});
+  ).email.emailTaskLoadSettings({});
 
   return json({
     generationProject: emailTaskSettingsResponse.generation_project,
@@ -68,9 +68,7 @@ export async function action({ request }: ActionArgs) {
       throw new Error("Invalid application state");
     }
 
-    await getLoggedInApiClient(
-      session
-    ).pushIntegrations.emailTaskChangeGenerationProject({
+    await getLoggedInApiClient(session).email.emailTaskChangeGenerationProject({
       generation_project_ref_id: form.project,
     });
 

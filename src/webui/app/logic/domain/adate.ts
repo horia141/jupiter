@@ -27,3 +27,13 @@ export function compareADate(
     return iso1 > iso2 ? 1 : -1;
   }
 }
+
+export function allDaysBetween(start: ADate, end: ADate): ADate[] {
+  const startDate = aDateToDate(start);
+  const endDate = aDateToDate(end);
+  const days = [];
+  for (let date = startDate; date <= endDate; date = date.plus({ days: 1 })) {
+    days.push(date.toISODate());
+  }
+  return days;
+}

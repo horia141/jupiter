@@ -3,7 +3,12 @@
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
-from jupiter.core.framework.entity import CrownEntity, LeafSupportEntity, OwnsLink
+from jupiter.core.framework.entity import (
+    ContainsLink,
+    CrownEntity,
+    LeafSupportEntity,
+    OwnsLink,
+)
 from jupiter.core.framework.use_case import ProgressReporter
 
 
@@ -26,7 +31,7 @@ async def generic_archiver(
                 await progress_reporter.mark_updated(entity)
 
         for field in entity.__class__.__dict__.values():
-            if not isinstance(field, OwnsLink):
+            if not (isinstance(field, OwnsLink) or isinstance(field, ContainsLink)):
                 continue
             if not issubclass(field.the_type, CrownEntity):
                 raise Exception(

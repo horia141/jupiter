@@ -1,11 +1,11 @@
 """UseCase for showing the workspace."""
 
 from jupiter.cli.command.command import LoggedInReadonlyCommand
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
-from jupiter.core.use_cases.workspaces.load import (
+from jupiter.core.use_cases.concept.workspaces.load import (
     WorkspaceLoadResult,
     WorkspaceLoadUseCase,
 )
+from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
 from rich.console import Console
 from rich.text import Text
 from rich.tree import Tree

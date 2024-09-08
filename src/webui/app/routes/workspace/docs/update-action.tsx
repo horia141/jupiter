@@ -31,7 +31,7 @@ export async function action({ request }: ActionArgs) {
       ref_id: form.docId,
       name: { should_change: true, value: form.name },
     });
-    await getLoggedInApiClient(session).core.noteUpdate({
+    await getLoggedInApiClient(session).notes.noteUpdate({
       ref_id: form.noteId,
       content: { should_change: true, value: form.content },
     });

@@ -1,16 +1,20 @@
 """A query-like repository for scanning information quickly about entities."""
 import abc
 
-from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
-from jupiter.core.domain.chores.chore_name import ChoreName
+from jupiter.core.domain.concept.big_plans.big_plan_name import BigPlanName
+from jupiter.core.domain.concept.chores.chore_name import ChoreName
+from jupiter.core.domain.concept.habits.habit_name import HabitName
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_name import InboxTaskName
+from jupiter.core.domain.concept.metrics.metric_name import MetricName
+from jupiter.core.domain.concept.persons.person_name import PersonName
+from jupiter.core.domain.concept.projects.project_name import ProjectName
+from jupiter.core.domain.concept.schedule.schedule_stream_color import (
+    ScheduleStreamColor,
+)
+from jupiter.core.domain.concept.schedule.schedule_stream_name import ScheduleStreamName
+from jupiter.core.domain.concept.smart_lists.smart_list_name import SmartListName
+from jupiter.core.domain.concept.vacations.vacation_name import VacationName
 from jupiter.core.domain.core.entity_icon import EntityIcon
-from jupiter.core.domain.habits.habit_name import HabitName
-from jupiter.core.domain.inbox_tasks.inbox_task_name import InboxTaskName
-from jupiter.core.domain.metrics.metric_name import MetricName
-from jupiter.core.domain.persons.person_name import PersonName
-from jupiter.core.domain.projects.project_name import ProjectName
-from jupiter.core.domain.smart_lists.smart_list_name import SmartListName
-from jupiter.core.domain.vacations.vacation_name import VacationName
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.repository import Repository
 from jupiter.core.framework.value import CompositeValue, value
@@ -22,6 +26,15 @@ class VacationSummary(CompositeValue):
 
     ref_id: EntityId
     name: VacationName
+
+
+@value
+class ScheduleStreamSummary(CompositeValue):
+    """Summary information about a schedule stream."""
+
+    ref_id: EntityId
+    name: ScheduleStreamName
+    color: ScheduleStreamColor
 
 
 @value
@@ -103,6 +116,14 @@ class FastInfoRepository(Repository, abc.ABC):
         allow_archived: bool,
     ) -> list[VacationSummary]:
         """Find all summaries about vacations."""
+
+    @abc.abstractmethod
+    async def find_all_schedule_stream_summaries(
+        self,
+        parent_ref_id: EntityId,
+        allow_archived: bool,
+    ) -> list[ScheduleStreamSummary]:
+        """Find all summaries about schedule streams."""
 
     @abc.abstractmethod
     async def find_all_project_summaries(

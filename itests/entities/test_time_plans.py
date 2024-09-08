@@ -434,7 +434,6 @@ def test_time_plan_create_new_big_plan_activity(
     page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
-    page.locator("li", has_text="New Big Plan").click()
     page.locator("a", has_text="New Big Plan").click()
 
     page.wait_for_url(re.compile("/workspace/big-plans/new"))
@@ -537,7 +536,6 @@ def test_time_plan_associate_with_inbox_task(
     page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
-    page.locator("li", has_text="From Current Inbox Tasks").click()
     page.locator("a", has_text="From Current Inbox Tasks").click()
 
     page.wait_for_url(
@@ -570,7 +568,6 @@ def test_time_plan_associate_with_inbox_task_no_dates(
     page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
-    page.locator("li", has_text="From Current Inbox Tasks").click()
     page.locator("a", has_text="From Current Inbox Tasks").click()
 
     page.wait_for_url(
@@ -603,7 +600,6 @@ def test_time_plan_associate_with_inbox_task_and_override_dates(
     page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
-    page.locator("li", has_text="From Current Inbox Tasks").click()
     page.locator("a", has_text="From Current Inbox Tasks").click()
 
     page.wait_for_url(
@@ -639,7 +635,6 @@ def test_time_plan_associate_with_inbox_task_and_pulls_big_plan(
     page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
-    page.locator("li", has_text="From Current Inbox Tasks").click()
     page.locator("a", has_text="From Current Inbox Tasks").click()
 
     page.wait_for_url(
@@ -674,7 +669,6 @@ def test_time_plan_associate_with_inbox_task_and_pulls_big_plan_no_dates(
     page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
-    page.locator("li", has_text="From Current Inbox Tasks").click()
     page.locator("a", has_text="From Current Inbox Tasks").click()
 
     page.wait_for_url(
@@ -711,7 +705,6 @@ def test_time_plan_associate_with_inbox_task_and_pulls_big_plan_but_overwrites_d
     page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
-    page.locator("li", has_text="From Current Inbox Tasks").click()
     page.locator("a", has_text="From Current Inbox Tasks").click()
 
     page.wait_for_url(
@@ -747,7 +740,6 @@ def test_time_plan_associate_with_two_out_of_three_inbox_tasks(
     page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
-    page.locator("li", has_text="From Current Inbox Tasks").click()
     page.locator("a", has_text="From Current Inbox Tasks").click()
 
     page.wait_for_url(
@@ -794,7 +786,6 @@ def test_time_plan_associate_with_tasks_that_pull_in_some_more_big_plans(
     page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
-    page.locator("li", has_text="From Current Inbox Tasks").click()
     page.locator("a", has_text="From Current Inbox Tasks").click()
 
     page.wait_for_url(
@@ -835,7 +826,6 @@ def test_time_plan_associate_with_big_plan(
     page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
-    page.locator("li", has_text="From Current Big Plans").click()
     page.locator("a", has_text="From Current Big Plans").click()
 
     page.wait_for_url(
@@ -868,7 +858,6 @@ def test_time_plan_associate_with_big_plan_no_dates(
     page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
-    page.locator("li", has_text="From Current Big Plans").click()
     page.locator("a", has_text="From Current Big Plans").click()
 
     page.wait_for_url(
@@ -903,7 +892,6 @@ def test_time_plan_associate_with_big_plan_and_override_dates(
     page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
-    page.locator("li", has_text="From Current Big Plans").click()
     page.locator("a", has_text="From Current Big Plans").click()
 
     page.wait_for_url(
@@ -941,7 +929,6 @@ def test_time_plan_associate_previous_activity_inbox_task(
     page.goto(f"/workspace/time-plans/{time_plan_2.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
-    page.locator("li", has_text="From Time Plans").click()
     page.locator("a", has_text="From Time Plans").click()
 
     page.wait_for_url(
@@ -994,7 +981,6 @@ def test_time_plan_associate_previous_activity_inbox_task_no_dates(
     page.goto(f"/workspace/time-plans/{time_plan_2.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
-    page.locator("li", has_text="From Time Plans").click()
     page.locator("a", has_text="From Time Plans").click()
 
     page.wait_for_url(
@@ -1045,7 +1031,6 @@ def test_time_plan_associate_previous_activity_inbox_task_override_dates(
     page.goto(f"/workspace/time-plans/{time_plan_2.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
-    page.locator("li", has_text="From Time Plans").click()
     page.locator("a", has_text="From Time Plans").click()
 
     page.wait_for_url(
@@ -1100,7 +1085,6 @@ def test_time_plan_associate_previous_activity_inbox_task_and_pulls_big_plan(
     page.goto(f"/workspace/time-plans/{time_plan_2.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
-    page.locator("li", has_text="From Time Plans").click()
     page.locator("a", has_text="From Time Plans").click()
 
     page.wait_for_url(
@@ -1155,7 +1139,6 @@ def test_time_plan_associate_previous_activity_inbox_task_and_pulls_big_plan_no_
     page.goto(f"/workspace/time-plans/{time_plan_2.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
-    page.locator("li", has_text="From Time Plans").click()
     page.locator("a", has_text="From Time Plans").click()
 
     page.wait_for_url(
@@ -1210,7 +1193,6 @@ def test_time_plan_associate_previous_activity_inbox_task_and_pulls_big_plan_but
     page.goto(f"/workspace/time-plans/{time_plan_2.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
-    page.locator("li", has_text="From Time Plans").click()
     page.locator("a", has_text="From Time Plans").click()
 
     page.wait_for_url(
@@ -1271,7 +1253,6 @@ def test_time_plan_associate_previous_activity_two_of_three_inbox_tasks(
     page.goto(f"/workspace/time-plans/{time_plan_2.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
-    page.locator("li", has_text="From Time Plans").click()
     page.locator("a", has_text="From Time Plans").click()
 
     page.wait_for_url(
@@ -1346,7 +1327,6 @@ def test_time_plan_associate_previous_activity_tasks_that_pull_in_some_more_big_
     page.goto(f"/workspace/time-plans/{time_plan_2.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
-    page.locator("li", has_text="From Time Plans").click()
     page.locator("a", has_text="From Time Plans").click()
 
     page.wait_for_url(
@@ -1404,7 +1384,6 @@ def test_time_plan_associate_previous_activity_big_plan(
     page.goto(f"/workspace/time-plans/{time_plan_2.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
-    page.locator("li", has_text="From Time Plans").click()
     page.locator("a", has_text="From Time Plans").click()
 
     page.wait_for_url(
@@ -1456,7 +1435,6 @@ def test_time_plan_associate_previous_activity_big_plan_no_dates(
     page.goto(f"/workspace/time-plans/{time_plan_2.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
-    page.locator("li", has_text="From Time Plans").click()
     page.locator("a", has_text="From Time Plans").click()
 
     page.wait_for_url(
@@ -1508,7 +1486,6 @@ def test_time_plan_associate_previous_activity_big_plan_and_override_dates(
     page.goto(f"/workspace/time-plans/{time_plan_2.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
-    page.locator("li", has_text="From Time Plans").click()
     page.locator("a", has_text="From Time Plans").click()
 
     page.wait_for_url(
@@ -1571,7 +1548,6 @@ def test_time_plan_associate_previous_activity_some_already_associated(
     page.goto(f"/workspace/time-plans/{time_plan_2.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
-    page.locator("li", has_text="From Time Plans").click()
     page.locator("a", has_text="From Time Plans").click()
 
     page.wait_for_url(

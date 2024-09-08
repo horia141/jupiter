@@ -73,7 +73,7 @@ export async function loader({ request, params }: LoaderArgs) {
   try {
     const result = await getLoggedInApiClient(
       session
-    ).timePlans.timePlanActivityLoad({
+    ).activity.timePlanActivityLoad({
       ref_id: activityId,
       allow_archived: true,
     });
@@ -102,12 +102,11 @@ export async function action({ request, params }: ActionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const { id, activityId } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
-  console.log(form);
 
   try {
     switch (form.intent) {
       case "update": {
-        await getLoggedInApiClient(session).timePlans.timePlanActivityUpdate({
+        await getLoggedInApiClient(session).activity.timePlanActivityUpdate({
           ref_id: activityId,
           kind: {
             should_change: true,
@@ -123,7 +122,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).timePlans.timePlanActivityArchive({
+        await getLoggedInApiClient(session).activity.timePlanActivityArchive({
           ref_id: activityId,
         });
 
@@ -214,16 +213,6 @@ export default function TimePlanActivity() {
                 text: "Save",
                 value: "update",
                 highlight: true,
-                extraHiddenInputs: [
-                  {
-                    name: "kind",
-                    value: kind,
-                  },
-                  {
-                    name: "feasability",
-                    value: feasability,
-                  },
-                ],
               }),
             ]}
           />
@@ -252,6 +241,7 @@ export default function TimePlanActivity() {
                 {timePlanActivityKindName(TimePlanActivityKind.MAKE_PROGRESS)}
               </ToggleButton>
             </ToggleButtonGroup>
+            <input name="kind" type="hidden" value={kind} />
             <FieldError actionResult={actionData} fieldName="/kind" />
           </FormControl>
 
@@ -292,6 +282,7 @@ export default function TimePlanActivity() {
                 )}
               </ToggleButton>
             </ToggleButtonGroup>
+            <input name="feasability" type="hidden" value={feasability} />
             <FieldError actionResult={actionData} fieldName="/feasability" />
           </FormControl>
         </Stack>

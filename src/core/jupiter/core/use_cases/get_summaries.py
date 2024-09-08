@@ -1,7 +1,20 @@
 """A use case for retrieving summaries about entities."""
 
-from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
-from jupiter.core.domain.chores.chore_collection import ChoreCollection
+from jupiter.core.domain.concept.big_plans.big_plan_collection import BigPlanCollection
+from jupiter.core.domain.concept.chores.chore_collection import ChoreCollection
+from jupiter.core.domain.concept.habits.habit_collection import HabitCollection
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
+    InboxTaskCollection,
+)
+from jupiter.core.domain.concept.metrics.metric_collection import MetricCollection
+from jupiter.core.domain.concept.persons.person_collection import PersonCollection
+from jupiter.core.domain.concept.projects.project import ProjectRepository
+from jupiter.core.domain.concept.projects.project_collection import ProjectCollection
+from jupiter.core.domain.concept.schedule.schedule_domain import ScheduleDomain
+from jupiter.core.domain.concept.smart_lists.smart_list_collection import (
+    SmartListCollection,
+)
+from jupiter.core.domain.concept.vacations.vacation_collection import VacationCollection
 from jupiter.core.domain.fast_info_repository import (
     BigPlanSummary,
     ChoreSummary,
@@ -11,19 +24,12 @@ from jupiter.core.domain.fast_info_repository import (
     MetricSummary,
     PersonSummary,
     ProjectSummary,
+    ScheduleStreamSummary,
     SmartListSummary,
     VacationSummary,
 )
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.habits.habit_collection import HabitCollection
-from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
-from jupiter.core.domain.metrics.metric_collection import MetricCollection
-from jupiter.core.domain.persons.person_collection import PersonCollection
-from jupiter.core.domain.projects.project import ProjectRepository
-from jupiter.core.domain.projects.project_collection import ProjectCollection
-from jupiter.core.domain.smart_lists.smart_list_collection import SmartListCollection
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.domain.vacations.vacation_collection import VacationCollection
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,
@@ -42,6 +48,7 @@ class GetSummariesArgs(UseCaseArgsBase):
     """Get summaries args."""
 
     allow_archived: bool | None
+    include_schedule_streams: bool | None
     include_vacations: bool | None
     include_projects: bool | None
     include_inbox_tasks: bool | None
@@ -58,6 +65,7 @@ class GetSummariesResult(UseCaseResultBase):
     """Get summaries result."""
 
     vacations: list[VacationSummary] | None
+    schedule_streams: list[ScheduleStreamSummary] | None
     root_project: ProjectSummary | None
     projects: list[ProjectSummary] | None
     inbox_tasks: list[InboxTaskSummary] | None
@@ -88,10 +96,13 @@ class GetSummariesUseCase(
         vacation_collection = await uow.get_for(VacationCollection).load_by_parent(
             workspace.ref_id,
         )
-        project_collection = await uow.get_for(ProjectCollection).load_by_parent(
+        inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             workspace.ref_id,
         )
-        inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
+        schedule_domain = await uow.get_for(ScheduleDomain).load_by_parent(
+            workspace.ref_id
+        )
+        project_collection = await uow.get_for(ProjectCollection).load_by_parent(
             workspace.ref_id,
         )
         habit_collection = await uow.get_for(HabitCollection).load_by_parent(
@@ -120,6 +131,18 @@ class GetSummariesUseCase(
         ):
             vacations = await uow.get(FastInfoRepository).find_all_vacation_summaries(
                 parent_ref_id=vacation_collection.workspace.ref_id,
+                allow_archived=allow_archived,
+            )
+
+        schedule_streams = None
+        if (
+            workspace.is_feature_available(WorkspaceFeature.SCHEDULE)
+            and args.include_schedule_streams
+        ):
+            schedule_streams = await uow.get(
+                FastInfoRepository
+            ).find_all_schedule_stream_summaries(
+                parent_ref_id=schedule_domain.workspace.ref_id,
                 allow_archived=allow_archived,
             )
 
@@ -211,6 +234,7 @@ class GetSummariesUseCase(
 
         return GetSummariesResult(
             vacations=vacations,
+            schedule_streams=schedule_streams,
             root_project=root_project,
             projects=projects,
             inbox_tasks=inbox_tasks,

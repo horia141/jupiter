@@ -2,7 +2,7 @@
 
 from jupiter.cli.command.command import GuestMutationCommand
 from jupiter.core.framework.secure import secure_class
-from jupiter.core.use_cases.auth.reset_password import (
+from jupiter.core.use_cases.concept.auth.reset_password import (
     ResetPasswordResult,
     ResetPasswordUseCase,
 )

@@ -26,7 +26,9 @@ const SMALL_SCREEN_ANIMATION_END = "100vw";
 interface TrunkPanelProps {
   createLocation?: string;
   extraControls?: JSX.Element[];
+  actions?: JSX.Element;
   returnLocation: string;
+  fixedScrollRestaurationTo?: number;
 }
 
 export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
@@ -81,13 +83,24 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
       handleScroll(theRef, extractTrunkFromPath(location.pathname));
     }
 
-    restoreScrollPosition(theRef, extractTrunkFromPath(location.pathname));
+    restoreScrollPosition(
+      theRef,
+      extractTrunkFromPath(location.pathname),
+      props.fixedScrollRestaurationTo
+    );
     theRef.addEventListener("scrollend", handleScrollSpecial);
 
     return () => {
       theRef.removeEventListener("scrollend", handleScrollSpecial);
     };
-  }, [containerRef, location, isBigScreen, isPresent, handleScroll]);
+  }, [
+    containerRef,
+    location,
+    isBigScreen,
+    isPresent,
+    props.fixedScrollRestaurationTo,
+    handleScroll,
+  ]);
 
   function handleScrollTop() {
     containerRef.current?.scrollTo({
@@ -155,6 +168,8 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
                 controls={props.extraControls}
               />
             )}
+
+            {props.actions}
 
             <IconButton sx={{ marginLeft: "auto" }}>
               <Link to={props.returnLocation}>

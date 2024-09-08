@@ -9,6 +9,7 @@ export enum WorkspaceFeature {
     INBOX_TASKS = 'inbox-tasks',
     WORKING_MEM = 'working-mem',
     TIME_PLANS = 'time-plans',
+    SCHEDULE = 'schedule',
     HABITS = 'habits',
     CHORES = 'chores',
     BIG_PLANS = 'big-plans',

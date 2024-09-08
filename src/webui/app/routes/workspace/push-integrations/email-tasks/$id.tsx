@@ -81,9 +81,7 @@ export async function loader({ request, params }: LoaderArgs) {
   const { id } = parseParams(params, ParamsSchema);
 
   try {
-    const response = await getLoggedInApiClient(
-      session
-    ).pushIntegrations.emailTaskLoad({
+    const response = await getLoggedInApiClient(session).email.emailTaskLoad({
       ref_id: id,
       allow_archived: true,
     });
@@ -114,7 +112,7 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (intent) {
       case "update": {
-        await getLoggedInApiClient(session).pushIntegrations.emailTaskUpdate({
+        await getLoggedInApiClient(session).email.emailTaskUpdate({
           ref_id: id,
           from_address: {
             should_change: true,
@@ -181,7 +179,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).pushIntegrations.emailTaskArchive({
+        await getLoggedInApiClient(session).email.emailTaskArchive({
           ref_id: id,
         });
 

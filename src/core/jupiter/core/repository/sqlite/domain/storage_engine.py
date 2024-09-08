@@ -12,7 +12,9 @@ from typing import (
     overload,
 )
 
-from jupiter.core.domain.search.infra.search_repository import SearchRepository
+from jupiter.core.domain.application.search.infra.search_repository import (
+    SearchRepository,
+)
 from jupiter.core.domain.storage_engine import (
     DomainStorageEngine,
     DomainUnitOfWork,
@@ -39,7 +41,9 @@ from jupiter.core.framework.repository import (
 )
 from jupiter.core.framework.utils import find_all_modules
 from jupiter.core.repository.sqlite.connection import SqliteConnection
-from jupiter.core.repository.sqlite.domain.search import SqliteSearchRepository
+from jupiter.core.repository.sqlite.domain.application.search import (
+    SqliteSearchRepository,
+)
 from jupiter.core.repository.sqlite.infra.repository import (
     SqliteCrownEntityRepository,
     SqliteEntityRepository,

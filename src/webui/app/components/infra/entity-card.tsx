@@ -143,21 +143,38 @@ export function EntityCard(props: PropsWithChildren<EntityCardProps>) {
 interface EntityLinkProps {
   to: string;
   block?: boolean;
+  light?: boolean;
 }
 
 export function EntityLink(props: PropsWithChildren<EntityLinkProps>) {
   if (!(props.block === true)) {
-    return <StyledLink to={props.to}>{props.children}</StyledLink>;
+    return (
+      <StyledLink to={props.to} light={props.light ? "true" : "false"}>
+        {props.children}
+      </StyledLink>
+    );
   } else {
-    return <EntityFakeLink>{props.children}</EntityFakeLink>;
+    return (
+      <EntityFakeLink light={props.light}>{props.children}</EntityFakeLink>
+    );
   }
 }
 
-const StyledLink = styled(Link)(({ theme }) => ({
+interface StyledLinkProps {
+  light: string;
+}
+
+const StyledLink = styled(Link)<StyledLinkProps>(({ theme, light }) => ({
   textDecoration: "none",
-  color: theme.palette.info.dark,
+  color:
+    light === "true"
+      ? theme.palette.info.contrastText
+      : theme.palette.info.dark,
   ":visited": {
-    color: theme.palette.info.dark,
+    color:
+      light === "true"
+        ? theme.palette.info.contrastText
+        : theme.palette.info.dark,
   },
   display: "flex",
   gap: "0.5rem",
@@ -165,16 +182,30 @@ const StyledLink = styled(Link)(({ theme }) => ({
   alignItems: "center",
 }));
 
-export function EntityFakeLink(props: PropsWithChildren) {
-  return <StyledFakeLink>{props.children}</StyledFakeLink>;
+interface EntityFakeLinkProps {
+  light?: boolean;
 }
 
-const StyledFakeLink = styled("span")(({ theme }) => ({
+export function EntityFakeLink(props: PropsWithChildren<EntityFakeLinkProps>) {
+  return (
+    <StyledFakeLink light={props.light ? "true" : "false"}>
+      {props.children}
+    </StyledFakeLink>
+  );
+}
+
+const StyledFakeLink = styled("span")<StyledLinkProps>(({ theme, light }) => ({
   textDecoration: "none",
   width: "100%",
-  color: theme.palette.info.dark,
+  color:
+    light === "true"
+      ? theme.palette.info.contrastText
+      : theme.palette.info.dark,
   ":visited": {
-    color: theme.palette.info.dark,
+    color:
+      light === "true"
+        ? theme.palette.info.contrastText
+        : theme.palette.info.dark,
   },
   display: "flex",
   gap: "0.5rem",

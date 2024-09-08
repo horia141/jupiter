@@ -29,7 +29,7 @@ export function extractBirthday(birthday: PersonBirthday): {
 }
 
 export function birthdayFromParts(day: number, month: number): PersonBirthday {
-  return `${day} ${MONTH_NAME_INDEX[month]}` as PersonBirthday;
+  return `${day} ${MONTH_NAME_INDEX[month - 1]}` as PersonBirthday;
 }
 
 export function dueMonthToStr(dueMonth: RecurringTaskDueAtMonth): string {

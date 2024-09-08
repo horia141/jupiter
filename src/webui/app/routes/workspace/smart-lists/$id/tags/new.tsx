@@ -59,12 +59,12 @@ export async function action({ request, params }: ActionArgs) {
   const form = await parseForm(request, CreateFormSchema);
 
   try {
-    const response = await getLoggedInApiClient(
-      session
-    ).smartLists.smartListTagCreate({
-      smart_list_ref_id: id,
-      tag_name: form.name,
-    });
+    const response = await getLoggedInApiClient(session).tag.smartListTagCreate(
+      {
+        smart_list_ref_id: id,
+        tag_name: form.name,
+      }
+    );
 
     return redirect(
       `/workspace/smart-lists/${id}/tags/${response.new_smart_list_tag.ref_id}`

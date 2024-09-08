@@ -32,6 +32,11 @@ class ADate(AtomicValue[Date]):
     the_date: Date
 
     @staticmethod
+    def from_components(year: int, month: int, day: int) -> "ADate":
+        """Construct an ADate from its components."""
+        return ADate(Date(year, month, day))
+
+    @staticmethod
     def from_timestamp(timestamp: Timestamp) -> "ADate":
         """Construct an ADate from a timestamp."""
         return ADate(timestamp.as_date())
@@ -82,6 +87,10 @@ class ADate(AtomicValue[Date]):
                 tzinfo=UTC,
             ).end_of("day"),
         )
+
+    def add_days(self, days_cnt: int) -> "ADate":
+        """Add these number of days to this date."""
+        return ADate.from_date(self.the_date.add(days=days_cnt))
 
     def subtract_days(self, days_cnt: int) -> "ADate":
         """Subtract these number of days from this date."""

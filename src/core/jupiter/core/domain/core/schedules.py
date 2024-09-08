@@ -2,13 +2,13 @@
 import abc
 from typing import cast
 
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.core.recurring_task_skip_rule import RecurringTaskSkipRule
 from jupiter.core.domain.core.timeline import infer_timeline
-from jupiter.core.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.base.timestamp import Timestamp
 from pendulum.date import Date

@@ -37,6 +37,7 @@ class LoadTopLevelInfoResult:
         default_user_feature_flags (LoadTopLevelInfoResultDefaultUserFeatureFlags):
         user_feature_hack (UserFeature): A particular feature of a Jupiter user.
         deafult_workspace_name (str): The workspace name.
+        default_first_schedule_stream_name (str): The name of a schedule stream.
         default_root_project_name (str): The project name.
         workspace_feature_flag_controls (WorkspaceFeatureFlagsControls): Feature settings controls for the workspace.
         default_workspace_feature_flags (LoadTopLevelInfoResultDefaultWorkspaceFeatureFlags):
@@ -52,6 +53,7 @@ class LoadTopLevelInfoResult:
     default_user_feature_flags: "LoadTopLevelInfoResultDefaultUserFeatureFlags"
     user_feature_hack: UserFeature
     deafult_workspace_name: str
+    default_first_schedule_stream_name: str
     default_root_project_name: str
     workspace_feature_flag_controls: "WorkspaceFeatureFlagsControls"
     default_workspace_feature_flags: "LoadTopLevelInfoResultDefaultWorkspaceFeatureFlags"
@@ -77,6 +79,8 @@ class LoadTopLevelInfoResult:
         user_feature_hack = self.user_feature_hack.value
 
         deafult_workspace_name = self.deafult_workspace_name
+
+        default_first_schedule_stream_name = self.default_first_schedule_stream_name
 
         default_root_project_name = self.default_root_project_name
 
@@ -120,6 +124,7 @@ class LoadTopLevelInfoResult:
                 "default_user_feature_flags": default_user_feature_flags,
                 "user_feature_hack": user_feature_hack,
                 "deafult_workspace_name": deafult_workspace_name,
+                "default_first_schedule_stream_name": default_first_schedule_stream_name,
                 "default_root_project_name": default_root_project_name,
                 "workspace_feature_flag_controls": workspace_feature_flag_controls,
                 "default_workspace_feature_flags": default_workspace_feature_flags,
@@ -163,6 +168,8 @@ class LoadTopLevelInfoResult:
         user_feature_hack = UserFeature(d.pop("user_feature_hack"))
 
         deafult_workspace_name = d.pop("deafult_workspace_name")
+
+        default_first_schedule_stream_name = d.pop("default_first_schedule_stream_name")
 
         default_root_project_name = d.pop("default_root_project_name")
 
@@ -234,6 +241,7 @@ class LoadTopLevelInfoResult:
             default_user_feature_flags=default_user_feature_flags,
             user_feature_hack=user_feature_hack,
             deafult_workspace_name=deafult_workspace_name,
+            default_first_schedule_stream_name=default_first_schedule_stream_name,
             default_root_project_name=default_root_project_name,
             workspace_feature_flag_controls=workspace_feature_flag_controls,
             default_workspace_feature_flags=default_workspace_feature_flags,

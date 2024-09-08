@@ -5,6 +5,7 @@
 import type { Env } from './Env';
 import type { Hosting } from './Hosting';
 import type { ProjectName } from './ProjectName';
+import type { ScheduleStreamName } from './ScheduleStreamName';
 import type { User } from './User';
 import type { UserFeature } from './UserFeature';
 import type { UserFeatureFlagsControls } from './UserFeatureFlagsControls';
@@ -24,6 +25,7 @@ export type LoadTopLevelInfoResult = {
     default_user_feature_flags: Record<string, boolean>;
     user_feature_hack: UserFeature;
     deafult_workspace_name: WorkspaceName;
+    default_first_schedule_stream_name: ScheduleStreamName;
     default_root_project_name: ProjectName;
     workspace_feature_flag_controls: WorkspaceFeatureFlagsControls;
     default_workspace_feature_flags: Record<string, boolean>;

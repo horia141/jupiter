@@ -236,12 +236,6 @@ export default function TimePlanAddFromCurrentBigPlans() {
                     value: "add-and-override",
                   }),
                 ],
-                extraHiddenInputs: [
-                  {
-                    name: "targetBigPlanRefIds",
-                    value: Array.from(targetBigPlanRefIds).join(","),
-                  },
-                ],
               }),
               FilterFewOptions(
                 selectedView,
@@ -318,6 +312,12 @@ export default function TimePlanAddFromCurrentBigPlans() {
             })}
           </>
         )}
+
+        <input
+          name="targetBigPlanRefIds"
+          type="hidden"
+          value={Array.from(targetBigPlanRefIds).join(",")}
+        />
       </SectionCardNew>
     </LeafPanel>
   );

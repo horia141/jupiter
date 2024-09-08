@@ -12,7 +12,10 @@ from jupiter.cli.command.rendering import (
     period_to_rich_text,
     sync_target_to_rich_text,
 )
-from jupiter.core.use_cases.gen.load_runs import GenLoadRunsResult, GenLoadRunsUseCase
+from jupiter.core.use_cases.application.gen.load_runs import (
+    GenLoadRunsResult,
+    GenLoadRunsUseCase,
+)
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
 from rich.console import Console
 from rich.text import Text

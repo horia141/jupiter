@@ -22,7 +22,7 @@ import {
   TextField,
   useTheme,
 } from "@mui/material";
-import { Form, Link } from "@remix-run/react";
+import { Link } from "@remix-run/react";
 import React, { useState } from "react";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { useBigScreen } from "~/rendering/use-big-screen";
@@ -30,10 +30,10 @@ import type { TopLevelInfo } from "~/top-level-context";
 
 interface NavSingleDesc {
   kind: "nav-single";
-  text: string;
+  text?: string;
+  icon?: JSX.Element;
   link: string;
   highlight?: boolean;
-  icon?: JSX.Element;
   gatedOn?: WorkspaceFeature;
 }
 
@@ -43,26 +43,19 @@ interface NavMultipleDesc {
   navs: Array<NavSingleDesc>;
 }
 
-interface ActionExtraHiddenInput {
-  name: string;
-  value: string;
-}
-
 interface ActionSingleDesc {
   kind: "action-single";
-  text: string;
+  text?: string;
+  icon?: JSX.Element;
   value: string;
   highlight?: boolean;
-  icon?: JSX.Element;
   gatedOn?: WorkspaceFeature;
-  extraHiddenInputs?: ActionExtraHiddenInput[];
 }
 
 interface ActionMultipleDesc {
   kind: "action-multiple";
   approach: "spread" | "compact";
   actions: Array<ActionSingleDesc>;
-  extraHiddenInputs?: ActionExtraHiddenInput[];
 }
 
 interface FilterOption<K> {
@@ -181,8 +174,6 @@ interface SectionActionsProps {
 export function SectionActions(props: SectionActionsProps) {
   const isBigScreen = useBigScreen();
 
-  const extraHiddenInputs = collectExtraHiddenInputs(props.actions);
-
   if (!isBigScreen) {
     const allActions = props.actions.concat(props.extraActions ?? []);
     return (
@@ -205,10 +196,6 @@ export function SectionActions(props: SectionActionsProps) {
           orientation="horizontal"
           action={action}
         />
-      ))}
-
-      {extraHiddenInputs.map((hi, index) => (
-        <input key={index} type="hidden" name={hi.name} value={hi.value} />
       ))}
 
       <SectionActionsWithDialog
@@ -235,8 +222,6 @@ function SectionActionsWithDialog(props: SectionActionsWithDialogProps) {
     return <></>;
   }
 
-  const extraHiddenInputs = collectExtraHiddenInputs(props.actions);
-
   return (
     <>
       <Button
@@ -253,30 +238,21 @@ function SectionActionsWithDialog(props: SectionActionsWithDialogProps) {
       <Dialog
         onClose={() => setShowExtraActionsDialog(false)}
         open={showExtraActionsDialog}
+        disablePortal
       >
         <DialogTitle>Actions</DialogTitle>
         <DialogContent>
-          <Form method="post">
-            <Stack spacing={2}>
-              {props.actions.map((action, index) => (
-                <ActionView
-                  key={`action-${props.id}-${index}`}
-                  topLevelInfo={props.topLevelInfo}
-                  inputsEnabled={props.inputsEnabled}
-                  orientation="vertical"
-                  action={action}
-                />
-              ))}
-            </Stack>
-            {extraHiddenInputs.map((hi, index) => (
-              <input
-                key={index}
-                type="hidden"
-                name={hi.name}
-                value={hi.value}
+          <Stack spacing={2}>
+            {props.actions.map((action, index) => (
+              <ActionView
+                key={`action-${props.id}-${index}`}
+                topLevelInfo={props.topLevelInfo}
+                inputsEnabled={props.inputsEnabled}
+                orientation="vertical"
+                action={action}
               />
             ))}
-          </Form>
+          </Stack>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setShowExtraActionsDialog(false)}>
@@ -371,6 +347,10 @@ function NavSingleView(props: NavSingleViewProps) {
     }
   }
 
+  if (props.action.text === undefined) {
+    throw new Error("A nav needs to have either a text");
+  }
+
   return (
     <Button
       variant="outlined"
@@ -413,10 +393,14 @@ function NavMultipleSpreadView(props: NavMultipleViewProps) {
           }
         }
 
+        if (nav.text === undefined) {
+          throw new Error("An nav needs to have either a text");
+        }
+
         return (
           <Button
             key={`nav-multiple-${index}`}
-            variant="outlined"
+            variant={nav.highlight ? "contained" : "outlined"}
             component={Link}
             disabled={!props.inputsEnabled}
             startIcon={nav.icon}
@@ -433,7 +417,6 @@ function NavMultipleSpreadView(props: NavMultipleViewProps) {
 function NavMultipleCompactView(props: NavMultipleViewProps) {
   const [open, setOpen] = useState(false);
   const anchorRef = React.useRef<HTMLDivElement>(null);
-  const [selectedIndex, setSelectedIndex] = React.useState(0);
   const theme = useTheme();
   const isBigScreen = useBigScreen();
 
@@ -448,11 +431,14 @@ function NavMultipleCompactView(props: NavMultipleViewProps) {
     realActions.push(action);
   }
 
+  const selectedIndex = Math.max(
+    0,
+    realActions.findIndex((nav) => nav.highlight)
+  );
+
   function handleMenuItemClick(
-    event: React.MouseEvent<HTMLElement, MouseEvent>,
-    index: number
+    event: React.MouseEvent<HTMLElement, MouseEvent>
   ) {
-    setSelectedIndex(index);
     setOpen(false);
   }
 
@@ -475,6 +461,7 @@ function NavMultipleCompactView(props: NavMultipleViewProps) {
     <>
       <ButtonGroup ref={anchorRef}>
         <Button
+          sx={{ flexGrow: 10 }}
           disabled={!props.inputsEnabled}
           component={Link}
           startIcon={realActions[selectedIndex].icon}
@@ -484,6 +471,7 @@ function NavMultipleCompactView(props: NavMultipleViewProps) {
         </Button>
         <Button
           id="section-action-nav-multiple-compact-button"
+          sx={{ flexGrow: 1 }}
           size="small"
           disabled={!props.inputsEnabled}
           onClick={() => setOpen((prevOpen) => !prevOpen)}
@@ -493,39 +481,30 @@ function NavMultipleCompactView(props: NavMultipleViewProps) {
       </ButtonGroup>
       <Popper
         sx={{
-          zIndex: theme.zIndex.appBar + 20,
+          zIndex: theme.zIndex.appBar + 2000,
           backgroundColor: theme.palette.background.paper,
         }}
         open={open}
         anchorEl={anchorRef.current}
         disablePortal={!isBigScreen}
-        transition
       >
-        {({ TransitionProps, placement }) => (
-          <Grow
-            {...TransitionProps}
-            style={{
-              transformOrigin:
-                placement === "bottom" ? "center top" : "center bottom",
-            }}
-          >
-            <Paper>
-              <ClickAwayListener onClickAway={handleClose}>
-                <MenuList id="split-button-menu" autoFocusItem>
-                  {realActions.map((option, index) => (
-                    <MenuItem
-                      key={`nav-multiple-${index}`}
-                      selected={index === selectedIndex}
-                      onClick={(event) => handleMenuItemClick(event, index)}
-                    >
-                      {option.text}
-                    </MenuItem>
-                  ))}
-                </MenuList>
-              </ClickAwayListener>
-            </Paper>
-          </Grow>
-        )}
+        <Paper>
+          <ClickAwayListener onClickAway={handleClose}>
+            <MenuList id="split-button-menu" autoFocusItem>
+              {realActions.map((option, index) => (
+                <MenuItem
+                  key={`nav-multiple-${index}`}
+                  selected={index === selectedIndex}
+                  component={Link}
+                  to={option.link}
+                  onClick={handleMenuItemClick}
+                >
+                  {option.text}
+                </MenuItem>
+              ))}
+            </MenuList>
+          </ClickAwayListener>
+        </Paper>
       </Popper>
     </>
   );
@@ -543,6 +522,10 @@ function ActionSingleView(props: ActionSingleViewProps) {
     if (!isWorkspaceFeatureAvailable(workspace, props.action.gatedOn)) {
       return <></>;
     }
+  }
+
+  if (props.action.text === undefined && props.action.icon === undefined) {
+    throw new Error("An action needs to have either a text or an icon");
   }
 
   return (
@@ -586,6 +569,10 @@ function ActionMultipleSpreadView(props: ActionMultipleViewProps) {
               <React.Fragment key={`action-multiple-${index}`}></React.Fragment>
             );
           }
+        }
+
+        if (action.text === undefined && action.icon === undefined) {
+          throw new Error("An action needs to have either a text or an icon");
         }
 
         return (
@@ -837,19 +824,4 @@ function FilterManyOptionsView<K>(props: FilterManyOptionsViewProps<K>) {
       )}
     />
   );
-}
-
-function collectExtraHiddenInputs(
-  actions: ActionDesc[]
-): ActionExtraHiddenInput[] {
-  const extraHiddenInputs = [];
-  for (const action of actions) {
-    if (action.kind === "action-single" && action.extraHiddenInputs) {
-      extraHiddenInputs.push(...action.extraHiddenInputs);
-    } else if (action.kind === "action-multiple" && action.extraHiddenInputs) {
-      extraHiddenInputs.push(...action.extraHiddenInputs);
-    }
-  }
-
-  return extraHiddenInputs;
 }

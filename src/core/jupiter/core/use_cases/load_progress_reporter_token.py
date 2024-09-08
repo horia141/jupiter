@@ -1,6 +1,5 @@
 """The command for loading a progress reporter specific token."""
-
-from jupiter.core.domain.auth.auth_token_ext import AuthTokenExt
+from jupiter.core.domain.concept.auth.auth_token_ext import AuthTokenExt
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.secure import secure_class
 from jupiter.core.framework.use_case_io import (

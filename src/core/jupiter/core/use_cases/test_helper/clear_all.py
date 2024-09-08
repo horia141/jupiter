@@ -1,7 +1,27 @@
 """The command for clearing all branch and leaf type entities."""
-from jupiter.core.domain.auth.auth import Auth
-from jupiter.core.domain.auth.password_new_plain import PasswordNewPlain
-from jupiter.core.domain.auth.password_plain import PasswordPlain
+from jupiter.core.domain.concept.auth.auth import Auth
+from jupiter.core.domain.concept.auth.password_new_plain import PasswordNewPlain
+from jupiter.core.domain.concept.auth.password_plain import PasswordPlain
+from jupiter.core.domain.concept.journals.journal_collection import JournalCollection
+from jupiter.core.domain.concept.metrics.metric_collection import MetricCollection
+from jupiter.core.domain.concept.persons.person_collection import PersonCollection
+from jupiter.core.domain.concept.projects.project import Project, ProjectRepository
+from jupiter.core.domain.concept.projects.project_collection import ProjectCollection
+from jupiter.core.domain.concept.projects.project_name import ProjectName
+from jupiter.core.domain.concept.push_integrations.email.email_task_collection import (
+    EmailTaskCollection,
+)
+from jupiter.core.domain.concept.push_integrations.group.push_integration_group import (
+    PushIntegrationGroup,
+)
+from jupiter.core.domain.concept.push_integrations.slack.slack_task_collection import (
+    SlackTaskCollection,
+)
+from jupiter.core.domain.concept.time_plans.time_plan_domain import TimePlanDomain
+from jupiter.core.domain.concept.user.user import User
+from jupiter.core.domain.concept.user.user_name import UserName
+from jupiter.core.domain.concept.workspaces.workspace import Workspace
+from jupiter.core.domain.concept.workspaces.workspace_name import WorkspaceName
 from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
@@ -9,26 +29,6 @@ from jupiter.core.domain.core.timezone import Timezone
 from jupiter.core.domain.env import Env
 from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.infra.generic_root_remover import generic_root_remover
-from jupiter.core.domain.journals.journal_collection import JournalCollection
-from jupiter.core.domain.metrics.metric_collection import MetricCollection
-from jupiter.core.domain.persons.person_collection import PersonCollection
-from jupiter.core.domain.projects.project import Project, ProjectRepository
-from jupiter.core.domain.projects.project_collection import ProjectCollection
-from jupiter.core.domain.projects.project_name import ProjectName
-from jupiter.core.domain.push_integrations.email.email_task_collection import (
-    EmailTaskCollection,
-)
-from jupiter.core.domain.push_integrations.group.push_integration_group import (
-    PushIntegrationGroup,
-)
-from jupiter.core.domain.push_integrations.slack.slack_task_collection import (
-    SlackTaskCollection,
-)
-from jupiter.core.domain.time_plans.time_plan_domain import TimePlanDomain
-from jupiter.core.domain.user.user import User
-from jupiter.core.domain.user.user_name import UserName
-from jupiter.core.domain.workspaces.workspace import Workspace
-from jupiter.core.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
     ProgressReporter,

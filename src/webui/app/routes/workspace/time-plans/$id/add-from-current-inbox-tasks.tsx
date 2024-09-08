@@ -266,12 +266,6 @@ export default function TimePlanAddFromCurrentInboxTasks() {
                     value: "add-and-override",
                   }),
                 ],
-                extraHiddenInputs: [
-                  {
-                    name: "targetInboxTaskRefIds",
-                    value: Array.from(targetInboxTaskRefIds).join(","),
-                  },
-                ],
               }),
               FilterFewOptions(
                 selectedView,
@@ -350,6 +344,12 @@ export default function TimePlanAddFromCurrentInboxTasks() {
             })}
           </>
         )}
+
+        <input
+          name="targetInboxTaskRefIds"
+          type="hidden"
+          value={Array.from(targetInboxTaskRefIds).join(",")}
+        />
       </SectionCardNew>
     </LeafPanel>
   );

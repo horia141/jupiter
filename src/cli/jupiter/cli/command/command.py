@@ -15,12 +15,12 @@ import inflection
 from jupiter.cli.command.rendering import RichConsoleProgressReporterFactory
 from jupiter.cli.session_storage import SessionInfo, SessionStorage
 from jupiter.cli.top_level_context import TopLevelContext
-from jupiter.core.domain.auth.auth_token_stamper import AuthTokenStamper
+from jupiter.core.domain.concept.auth.auth_token_stamper import AuthTokenStamper
+from jupiter.core.domain.concept.user.user import User
+from jupiter.core.domain.concept.workspaces.workspace import Workspace
 from jupiter.core.domain.env import Env
 from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainStorageEngine, SearchStorageEngine
-from jupiter.core.domain.user.user import User
-from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.realm import CliRealm, RealmCodecRegistry
@@ -158,9 +158,19 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
 
     def name(self) -> str:
         """The name of the command."""
-        return inflection.dasherize(
-            inflection.underscore(self._use_case.__class__.__name__)
-        ).replace("-use-case", "")
+        if self.__class__ in (
+            LoggedInMutationCommand,
+            LoggedInReadonlyCommand,
+            GuestMutationCommand,
+            GuestReadonlyCommand,
+        ):
+            return inflection.dasherize(
+                inflection.underscore(self._use_case.__class__.__name__)
+            ).replace("-use-case", "")
+        else:
+            return inflection.dasherize(
+                inflection.underscore(self.__class__.__name__)
+            ).replace("-use-case", "")
 
     def description(self) -> str:
         """The description of the command."""

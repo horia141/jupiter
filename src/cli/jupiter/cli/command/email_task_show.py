@@ -1,5 +1,4 @@
 """UseCase for showing the email tasks."""
-
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     actionable_date_to_rich_text,
@@ -14,11 +13,11 @@ from jupiter.cli.command.rendering import (
     inbox_task_summary_to_rich_text,
 )
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
-from jupiter.core.use_cases.push_integrations.email.find import (
+from jupiter.core.use_cases.concept.push_integrations.email.find import (
     EmailTaskFindResult,
     EmailTaskFindUseCase,
 )
+from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
 from rich.console import Console
 from rich.text import Text
 from rich.tree import Tree

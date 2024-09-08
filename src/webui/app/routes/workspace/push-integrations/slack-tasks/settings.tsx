@@ -51,7 +51,7 @@ export async function loader({ request }: LoaderArgs) {
 
   const slackTaskSettingsResponse = await getLoggedInApiClient(
     session
-  ).pushIntegrations.slackTaskLoadSettings({});
+  ).slack.slackTaskLoadSettings({});
 
   return json({
     generationProject: slackTaskSettingsResponse.generation_project,
@@ -68,9 +68,7 @@ export async function action({ request }: ActionArgs) {
       throw new Error("Invalid application state");
     }
 
-    await getLoggedInApiClient(
-      session
-    ).pushIntegrations.slackTaskChangeGenerationProject({
+    await getLoggedInApiClient(session).slack.slackTaskChangeGenerationProject({
       generation_project_ref_id: form.project,
     });
 

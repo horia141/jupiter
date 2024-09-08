@@ -79,9 +79,7 @@ export async function loader({ request, params }: LoaderArgs) {
   const { id } = parseParams(params, ParamsSchema);
 
   try {
-    const response = await getLoggedInApiClient(
-      session
-    ).pushIntegrations.slackTaskLoad({
+    const response = await getLoggedInApiClient(session).slack.slackTaskLoad({
       ref_id: id,
       allow_archived: true,
     });
@@ -112,7 +110,7 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (intent) {
       case "update": {
-        await getLoggedInApiClient(session).pushIntegrations.slackTaskUpdate({
+        await getLoggedInApiClient(session).slack.slackTaskUpdate({
           ref_id: id,
           user: {
             should_change: true,
@@ -171,7 +169,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).pushIntegrations.slackTaskArchive({
+        await getLoggedInApiClient(session).slack.slackTaskArchive({
           ref_id: id,
         });
 

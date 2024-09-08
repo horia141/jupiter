@@ -73,7 +73,7 @@ export async function action({ request, params }: ActionArgs) {
   try {
     const response = await getLoggedInApiClient(
       session
-    ).smartLists.smartListItemCreate({
+    ).item.smartListItemCreate({
       smart_list_ref_id: id,
       name: form.name,
       is_done: form.isDone,

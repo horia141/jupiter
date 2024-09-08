@@ -5,6 +5,7 @@
 import type { EmailAddress } from './EmailAddress';
 import type { PasswordNewPlain } from './PasswordNewPlain';
 import type { ProjectName } from './ProjectName';
+import type { ScheduleStreamName } from './ScheduleStreamName';
 import type { Timezone } from './Timezone';
 import type { UserFeature } from './UserFeature';
 import type { UserName } from './UserName';
@@ -22,6 +23,7 @@ export type InitArgs = {
     auth_password: PasswordNewPlain;
     auth_password_repeat: PasswordNewPlain;
     workspace_name: WorkspaceName;
+    workspace_first_schedule_stream_name: ScheduleStreamName;
     workspace_root_project_name: ProjectName;
     workspace_feature_flags: Array<WorkspaceFeature>;
 };

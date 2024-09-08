@@ -8,8 +8,8 @@ from jupiter.cli.command.rendering import (
     entity_tag_to_rich_text,
 )
 from jupiter.core.framework.base.timestamp import Timestamp
+from jupiter.core.use_cases.application.search import SearchResult, SearchUseCase
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
-from jupiter.core.use_cases.search import SearchResult, SearchUseCase
 from rich.console import Console
 from rich.text import Text
 from rich.tree import Tree

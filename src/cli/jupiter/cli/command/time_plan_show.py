@@ -6,11 +6,11 @@ from jupiter.cli.command.rendering import (
     period_to_rich_text,
     time_plan_source_to_rich_text,
 )
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
-from jupiter.core.use_cases.time_plans.find import (
+from jupiter.core.use_cases.concept.time_plans.find import (
     TimePlanFindResult,
     TimePlanFindUseCase,
 )
+from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
 from rich.console import Console
 from rich.text import Text
 from rich.tree import Tree

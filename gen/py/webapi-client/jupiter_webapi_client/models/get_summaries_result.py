@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from ..models.metric_summary import MetricSummary
     from ..models.person_summary import PersonSummary
     from ..models.project_summary import ProjectSummary
+    from ..models.schedule_stream_summary import ScheduleStreamSummary
     from ..models.smart_list_summary import SmartListSummary
     from ..models.vacation_summary import VacationSummary
 
@@ -26,6 +27,7 @@ class GetSummariesResult:
 
     Attributes:
         vacations (Union[List['VacationSummary'], None, Unset]):
+        schedule_streams (Union[List['ScheduleStreamSummary'], None, Unset]):
         root_project (Union['ProjectSummary', None, Unset]):
         projects (Union[List['ProjectSummary'], None, Unset]):
         inbox_tasks (Union[List['InboxTaskSummary'], None, Unset]):
@@ -38,6 +40,7 @@ class GetSummariesResult:
     """
 
     vacations: Union[List["VacationSummary"], None, Unset] = UNSET
+    schedule_streams: Union[List["ScheduleStreamSummary"], None, Unset] = UNSET
     root_project: Union["ProjectSummary", None, Unset] = UNSET
     projects: Union[List["ProjectSummary"], None, Unset] = UNSET
     inbox_tasks: Union[List["InboxTaskSummary"], None, Unset] = UNSET
@@ -63,6 +66,18 @@ class GetSummariesResult:
 
         else:
             vacations = self.vacations
+
+        schedule_streams: Union[List[Dict[str, Any]], None, Unset]
+        if isinstance(self.schedule_streams, Unset):
+            schedule_streams = UNSET
+        elif isinstance(self.schedule_streams, list):
+            schedule_streams = []
+            for schedule_streams_type_0_item_data in self.schedule_streams:
+                schedule_streams_type_0_item = schedule_streams_type_0_item_data.to_dict()
+                schedule_streams.append(schedule_streams_type_0_item)
+
+        else:
+            schedule_streams = self.schedule_streams
 
         root_project: Union[Dict[str, Any], None, Unset]
         if isinstance(self.root_project, Unset):
@@ -173,6 +188,8 @@ class GetSummariesResult:
         field_dict.update({})
         if vacations is not UNSET:
             field_dict["vacations"] = vacations
+        if schedule_streams is not UNSET:
+            field_dict["schedule_streams"] = schedule_streams
         if root_project is not UNSET:
             field_dict["root_project"] = root_project
         if projects is not UNSET:
@@ -203,6 +220,7 @@ class GetSummariesResult:
         from ..models.metric_summary import MetricSummary
         from ..models.person_summary import PersonSummary
         from ..models.project_summary import ProjectSummary
+        from ..models.schedule_stream_summary import ScheduleStreamSummary
         from ..models.smart_list_summary import SmartListSummary
         from ..models.vacation_summary import VacationSummary
 
@@ -229,6 +247,28 @@ class GetSummariesResult:
             return cast(Union[List["VacationSummary"], None, Unset], data)
 
         vacations = _parse_vacations(d.pop("vacations", UNSET))
+
+        def _parse_schedule_streams(data: object) -> Union[List["ScheduleStreamSummary"], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                schedule_streams_type_0 = []
+                _schedule_streams_type_0 = data
+                for schedule_streams_type_0_item_data in _schedule_streams_type_0:
+                    schedule_streams_type_0_item = ScheduleStreamSummary.from_dict(schedule_streams_type_0_item_data)
+
+                    schedule_streams_type_0.append(schedule_streams_type_0_item)
+
+                return schedule_streams_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List["ScheduleStreamSummary"], None, Unset], data)
+
+        schedule_streams = _parse_schedule_streams(d.pop("schedule_streams", UNSET))
 
         def _parse_root_project(data: object) -> Union["ProjectSummary", None, Unset]:
             if data is None:
@@ -425,6 +465,7 @@ class GetSummariesResult:
 
         get_summaries_result = cls(
             vacations=vacations,
+            schedule_streams=schedule_streams,
             root_project=root_project,
             projects=projects,
             inbox_tasks=inbox_tasks,

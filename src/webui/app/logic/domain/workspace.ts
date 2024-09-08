@@ -39,6 +39,21 @@ export function inferEntityTagsForEnabledFeatures(
     ) {
       inferredEntityTags.push(entityTag);
     } else if (
+      entityTag === NamedEntityTag.SCHEDULE_STREAM &&
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.SCHEDULE)
+    ) {
+      inferredEntityTags.push(entityTag);
+    } else if (
+      entityTag === NamedEntityTag.SCHEDULE_EVENT_IN_DAY &&
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.SCHEDULE)
+    ) {
+      inferredEntityTags.push(entityTag);
+    } else if (
+      entityTag === NamedEntityTag.SCHEDULE_EVENT_FULL_DAYS &&
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.SCHEDULE)
+    ) {
+      inferredEntityTags.push(entityTag);
+    } else if (
       entityTag === NamedEntityTag.HABIT &&
       isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.HABITS)
     ) {
@@ -209,6 +224,11 @@ export function inferSyncTargetsForEnabledFeatures(
     ) {
       inferredSyncTargets.push(syncTarget);
     } else if (
+      syncTarget === SyncTarget.SCHEDULE &&
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.SCHEDULE)
+    ) {
+      inferredSyncTargets.push(syncTarget);
+    } else if (
       syncTarget === SyncTarget.HABITS &&
       isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.HABITS)
     ) {
@@ -241,6 +261,11 @@ export function inferSyncTargetsForEnabledFeatures(
     } else if (
       syncTarget === SyncTarget.PROJECTS &&
       isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.PROJECTS)
+    ) {
+      inferredSyncTargets.push(syncTarget);
+    } else if (
+      syncTarget === SyncTarget.PERSONS &&
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.PERSONS)
     ) {
       inferredSyncTargets.push(syncTarget);
     } else if (

@@ -43,6 +43,7 @@ import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import { TimeEventFullDaysBlockStack } from "~/components/time-event-full-days-block-stack";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { difficultyName } from "~/logic/domain/difficulty";
 import { eisenName } from "~/logic/domain/eisen";
@@ -53,6 +54,7 @@ import {
   extractBirthday,
 } from "~/logic/domain/person-birthday";
 import { personRelationshipName } from "~/logic/domain/person-relationship";
+import { sortBirthdayTimeEventsNaturally } from "~/logic/domain/time-event";
 import { getIntent } from "~/logic/intent";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -102,6 +104,7 @@ export async function loader({ request, params }: LoaderArgs) {
       catchUpInboxTasks: result.catch_up_inbox_tasks,
       birthdayInboxTasks: result.birthday_inbox_tasks,
       note: result.note,
+      birthdayTimeEventBlocks: result.birthday_time_event_blocks,
     });
   } catch (error) {
     if (error instanceof ApiError && error.status === StatusCodes.NOT_FOUND) {
@@ -208,8 +211,8 @@ export async function action({ request, params }: ActionArgs) {
               form.birthdayMonth === "N/A"
                 ? undefined
                 : birthdayFromParts(
-                    parseInt(form.birthdayDay),
-                    parseInt(form.birthdayMonth)
+                    parseInt(form.birthdayDay, 10),
+                    parseInt(form.birthdayMonth, 10)
                   ),
           },
         });
@@ -218,7 +221,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "create-note": {
-        await getLoggedInApiClient(session).core.noteCreate({
+        await getLoggedInApiClient(session).notes.noteCreate({
           domain: NoteDomain.PERSON,
           source_entity_ref_id: id,
           content: [],
@@ -279,6 +282,19 @@ export default function Person() {
     {
       dueDateAscending: false,
     }
+  );
+
+  const birthdayTimeEventEntries = loaderData.birthdayTimeEventBlocks.map(
+    (block) => ({
+      time_event: block,
+      entry: {
+        person: person,
+        birthday_time_event: block,
+      },
+    })
+  );
+  const sortedBirthdayTimeEventEntries = sortBirthdayTimeEventsNaturally(
+    birthdayTimeEventEntries
   );
 
   const inputsEnabled = transition.state === "idle" && !person.archived;
@@ -656,6 +672,14 @@ export default function Person() {
           inboxTasks={sortedCatchUpTasks}
           onCardMarkDone={handleCardMarkDone}
           onCardMarkNotDone={handleCardMarkNotDone}
+        />
+      )}
+
+      {sortedBirthdayTimeEventEntries.length > 0 && (
+        <TimeEventFullDaysBlockStack
+          showLabel
+          label="Birthday Time Events"
+          entries={sortedBirthdayTimeEventEntries}
         />
       )}
     </LeafPanel>
