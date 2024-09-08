@@ -76,7 +76,7 @@ export async function loader({ request, params }: LoaderArgs) {
 }
 
 export async function action({ request, params }: ActionArgs) {
-  const _ = await getSession(request.headers.get("Cookie"));
+  await getSession(request.headers.get("Cookie"));
   const { id } = parseParams(params, ParamsSchema);
   const url = new URL(request.url);
 
@@ -112,7 +112,10 @@ export default function TimeEventFullDaysBlockViewOne() {
       break;
 
     case TimeEventNamespace.PERSON_BIRTHDAY:
-      name = birthdayTimeEventName(loaderData.person!);
+      name = birthdayTimeEventName(
+        loaderData.fullDaysBlock,
+        loaderData.person!
+      );
       break;
 
     default:

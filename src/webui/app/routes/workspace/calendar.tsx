@@ -4,11 +4,9 @@ import type {
   CalendarEventsStats,
   CalendarEventsStatsPerSubperiod,
   EntityId,
-  InboxTaskEntry,
   PersonEntry,
   ScheduleFullDaysEventEntry,
   ScheduleInDayEventEntry,
-  TimeEventFullDaysBlock,
   TimeEventInDayBlock,
   Timezone,
 } from "@jupiter/webapi-client";
@@ -64,9 +62,12 @@ import {
   scheduleStreamColorContrastingHex,
   scheduleStreamColorHex,
 } from "~/logic/domain/schedule-stream-color";
+import type {
+  CombinedTimeEventFullDaysEntry,
+  CombinedTimeEventInDayEntry} from "~/logic/domain/time-event";
 import {
   birthdayTimeEventName,
-  BIRTHDAY_TIME_EVENT_COLOR,
+  BIRTHDAY_TIME_EVENT_COLOR
 } from "~/logic/domain/time-event";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useBigScreen } from "~/rendering/use-big-screen";
@@ -1283,7 +1284,7 @@ function ViewAsCalendarTimeEventFullDaysCell(
       const fullDaysEntry = props.entry.entry as PersonEntry;
 
       const clippedName = clipTimeEventFullDaysNameToWhatFits(
-        birthdayTimeEventName(fullDaysEntry.person),
+        birthdayTimeEventName(props.entry.time_event, fullDaysEntry.person),
         12,
         containerWidth - 32 // A hack of sorts
       );
@@ -2158,16 +2159,6 @@ function calendarTimeEventInDayDurationToRems(
 function scheduleTimeEventInDayDurationToRems(durationMins: number): string {
   const durationInHalfs = 0.5 + Math.floor(durationMins / 30);
   return `${durationInHalfs}rem`;
-}
-
-interface CombinedTimeEventFullDaysEntry {
-  time_event: TimeEventFullDaysBlock;
-  entry: ScheduleFullDaysEventEntry | PersonEntry;
-}
-
-interface CombinedTimeEventInDayEntry {
-  time_event: TimeEventInDayBlock;
-  entry: ScheduleInDayEventEntry | InboxTaskEntry;
 }
 
 function combinedTimeEventFullDayEntryPartionByDay(
