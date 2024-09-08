@@ -7,8 +7,8 @@ import {
   OutlinedInput,
   Stack,
 } from "@mui/material";
-import type { LoaderArgs } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   useActionData,
@@ -75,10 +75,21 @@ export async function loader({ request, params }: LoaderArgs) {
   }
 }
 
+export async function action({ request, params }: ActionArgs) {
+  const _ = await getSession(request.headers.get("Cookie"));
+  const { id } = parseParams(params, ParamsSchema);
+  const url = new URL(request.url);
+
+  return redirect(
+    `/workspace/calendar/time-event/full-days-block/${id}?${url.searchParams}`
+  );
+}
+
 export const shouldRevalidate: ShouldRevalidateFunction = basicShouldRevalidate;
 
 export default function TimeEventFullDaysBlockViewOne() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
+  const actionData = useActionData<typeof action>();
   const topLevelInfo = useContext(TopLevelInfoContext);
   const transition = useTransition();
   const [query] = useSearchParams();
@@ -111,6 +122,8 @@ export default function TimeEventFullDaysBlockViewOne() {
   return (
     <LeafPanel
       key={`time-event-full-days-block-${loaderData.fullDaysBlock.ref_id}`}
+      showArchiveButton
+      enableArchiveButton={inputsEnabled}
       returnLocation={`/workspace/calendar?${query}`}
     >
       <GlobalError actionResult={actionData} />

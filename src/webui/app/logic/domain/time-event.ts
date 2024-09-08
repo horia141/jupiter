@@ -1,4 +1,4 @@
-import type { Person} from "@jupiter/webapi-client";
+import type { Person } from "@jupiter/webapi-client";
 import { ScheduleStreamColor } from "@jupiter/webapi-client";
 
 export function birthdayTimeEventName(person: Person) {
