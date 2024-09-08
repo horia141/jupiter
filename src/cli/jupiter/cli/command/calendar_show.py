@@ -49,9 +49,9 @@ class CalendarShow(
                 "Full Days Events", guide_style="bold bright_blue"
             )
 
-            self.build_birthdays(result.entries, full_day_events_tree)
+            self._build_birthdays(result.entries, full_day_events_tree)
 
-            self.build_schedule_full_days(result.entries, full_day_events_tree)
+            self._build_schedule_full_days(result.entries, full_day_events_tree)
 
             rich_tree.add(full_day_events_tree)
 
@@ -59,22 +59,22 @@ class CalendarShow(
 
             in_day_events_tree = Tree("In Day Events", guide_style="bold bright_blue")
 
-            self.build_inbox_tasks(result.entries, in_day_events_tree)
+            self._build_inbox_tasks(result.entries, in_day_events_tree)
 
-            self.build_schedule_in_day(result.entries, in_day_events_tree)
+            self._build_schedule_in_day(result.entries, in_day_events_tree)
 
             rich_tree.add(in_day_events_tree)
 
         if result.stats:
             # Process the stats
 
-            stats_tree = self.build_stats(result.stats)
+            stats_tree = self._build_stats(result.stats)
 
             rich_tree.add(stats_tree)
 
         console.print(rich_tree)
 
-    def build_birthdays(
+    def _build_birthdays(
         self, entries: CalendarEventsEntries, full_day_events_tree: Tree
     ) -> None:
         for person_entry in sorted(
@@ -95,7 +95,7 @@ class CalendarShow(
 
             full_day_events_tree.add(person_text)
 
-    def build_schedule_full_days(
+    def _build_schedule_full_days(
         self, entries: CalendarEventsEntries, full_day_events_tree: Tree
     ) -> None:
         for schedule_event_full_days_entry in sorted(
@@ -125,7 +125,7 @@ class CalendarShow(
 
             full_day_events_tree.add(schedule_event_full_days_text)
 
-    def build_inbox_tasks(
+    def _build_inbox_tasks(
         self, entries: CalendarEventsEntries, in_day_events_tree: Tree
     ) -> None:
         for inbox_task_entry in sorted(
@@ -155,7 +155,7 @@ class CalendarShow(
 
             in_day_events_tree.add(inbox_task_text)
 
-    def build_schedule_in_day(
+    def _build_schedule_in_day(
         self, entries: CalendarEventsEntries, in_day_events_tree: Tree
     ) -> None:
         for schedule_event_in_day_entry in sorted(
@@ -193,7 +193,7 @@ class CalendarShow(
 
             in_day_events_tree.add(schedule_event_in_day_text)
 
-    def build_stats(self, stats: CalendarEventsStats) -> Tree:
+    def _build_stats(self, stats: CalendarEventsStats) -> Tree:
         stats_tree = Tree("Stats", guide_style="bold bright_blue")
 
         for stat in stats.per_subperiod:

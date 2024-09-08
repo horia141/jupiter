@@ -291,7 +291,9 @@ class PersonUpdateUseCase(
                 birthday_time_event_block = (
                     birthday_time_event_block.update_for_person_birthday(
                         ctx=context.domain_context,
-                        birthday_date=person.birthday_in_year(birthday_time_event_block.start_date),
+                        birthday_date=person.birthday_in_year(
+                            birthday_time_event_block.start_date
+                        ),
                     )
                 )
                 await uow.get(TimeEventFullDaysBlockRepository).save(
