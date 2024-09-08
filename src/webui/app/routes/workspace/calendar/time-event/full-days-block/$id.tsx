@@ -1,5 +1,6 @@
 import { ApiError, TimeEventNamespace } from "@jupiter/webapi-client";
 import {
+  Box,
   Button,
   ButtonGroup,
   FormControl,
@@ -31,6 +32,7 @@ import {
   SectionActions,
 } from "~/components/infra/section-actions";
 import { SectionCardNew } from "~/components/infra/section-card-new";
+import { TimeEventSourceLink } from "~/components/time-event-source-link";
 import { birthdayTimeEventName } from "~/logic/domain/time-event";
 import { basicShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -153,16 +155,20 @@ export default function TimeEventFullDaysBlockViewOne() {
         }
       >
         <Stack spacing={2} useFlexGap>
-          <FormControl fullWidth>
-            <InputLabel id="name">Name</InputLabel>
-            <OutlinedInput
-              label="name"
-              name="name"
-              readOnly={true}
-              defaultValue={name}
-            />
-            <FieldError actionResult={actionData} fieldName="/name" />
-          </FormControl>
+          <Box sx={{ display: "flex", flexDirection: "row", gap: "0.25rem" }}>
+            <FormControl fullWidth>
+              <InputLabel id="name">Name</InputLabel>
+              <OutlinedInput
+                label="name"
+                name="name"
+                readOnly={true}
+                defaultValue={name}
+              />
+              <FieldError actionResult={actionData} fieldName="/name" />
+            </FormControl>
+
+            <TimeEventSourceLink timeEvent={loaderData.fullDaysBlock} />
+          </Box>
 
           <FormControl fullWidth>
             <InputLabel id="startDate" shrink margin="dense">
