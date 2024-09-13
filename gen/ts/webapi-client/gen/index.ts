@@ -440,6 +440,7 @@ export type { VacationArchiveArgs } from './models/VacationArchiveArgs';
 export type { VacationCollection } from './models/VacationCollection';
 export type { VacationCreateArgs } from './models/VacationCreateArgs';
 export type { VacationCreateResult } from './models/VacationCreateResult';
+export type { VacationEntry } from './models/VacationEntry';
 export type { VacationFindArgs } from './models/VacationFindArgs';
 export type { VacationFindResult } from './models/VacationFindResult';
 export type { VacationFindResultEntry } from './models/VacationFindResultEntry';

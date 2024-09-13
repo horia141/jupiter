@@ -100,6 +100,10 @@ class ADate(AtomicValue[Date]):
         """Return the next day for a date."""
         return ADate.from_date(self.the_date.add(days=1))
 
+    def days_since(self, other: "ADate") -> int:
+        """Return the number of days between this and another date."""
+        return cast(int, self.the_date.diff(other.the_date).in_days())
+
     @property
     def year(self) -> int:
         """The year."""

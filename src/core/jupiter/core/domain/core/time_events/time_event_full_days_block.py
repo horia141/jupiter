@@ -73,6 +73,30 @@ class TimeEventFullDaysBlock(LeafSupportEntity):
             end_date=birthday_date.add_days(1),
         )
 
+    @staticmethod
+    @create_entity_action
+    def new_time_event_for_vacation(
+        ctx: DomainContext,
+        time_event_domain_ref_id: EntityId,
+        vacation_ref_id: EntityId,
+        start_date: ADate,
+        end_date: ADate,
+    ) -> "TimeEventFullDaysBlock":
+        """Create a new time event."""
+        duration_days = end_date.days_since(start_date)
+        if duration_days < 1:
+            raise InputValidationError("Duration must be at least 1 day.")
+        return TimeEventFullDaysBlock._create(
+            ctx,
+            name=NOT_USED_NAME,
+            time_event_domain=ParentLink(time_event_domain_ref_id),
+            namespace=TimeEventNamespace.VACATION,
+            source_entity_ref_id=vacation_ref_id,
+            start_date=start_date,
+            duration_days=duration_days,
+            end_date=end_date,
+        )
+
     @update_entity_action
     def update_for_schedule_event(
         self,
@@ -102,6 +126,24 @@ class TimeEventFullDaysBlock(LeafSupportEntity):
             start_date=birthday_date,
             duration_days=1,
             end_date=birthday_date.add_days(1),
+        )
+
+    @update_entity_action
+    def update_for_vacation(
+        self,
+        ctx: DomainContext,
+        start_date: ADate,
+        end_date: ADate,
+    ) -> "TimeEventFullDaysBlock":
+        """Update the time event."""
+        duration_days = end_date.days_since(start_date)
+        if duration_days < 1:
+            raise InputValidationError("Duration must be at least 1 day.")
+        return self._new_version(
+            ctx,
+            start_date=start_date,
+            duration_days=duration_days,
+            end_date=end_date,
         )
 
 

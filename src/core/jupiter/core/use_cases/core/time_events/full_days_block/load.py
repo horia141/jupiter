@@ -3,6 +3,7 @@ from jupiter.core.domain.concept.persons.person import Person
 from jupiter.core.domain.concept.schedule.schedule_event_full_days import (
     ScheduleEventFullDays,
 )
+from jupiter.core.domain.concept.vacations.vacation import Vacation
 from jupiter.core.domain.core.time_events.time_event_full_days_block import (
     TimeEventFullDaysBlock,
 )
@@ -37,6 +38,7 @@ class FullDaysBlockLoadResult(UseCaseResultBase):
     full_days_block: TimeEventFullDaysBlock
     schedule_event: ScheduleEventFullDays | None
     person: Person | None
+    vacation: Vacation | None
 
 
 @readonly_use_case()
@@ -73,8 +75,16 @@ class FullDaysBlockLoadUseCase(
                 allow_archived=args.allow_archived,
             )
 
+        vacation = None
+        if full_days_block.namespace == TimeEventNamespace.VACATION:
+            vacation = await uow.get_for(Vacation).load_by_id(
+                full_days_block.source_entity_ref_id,
+                allow_archived=args.allow_archived,
+            )
+
         return FullDaysBlockLoadResult(
             full_days_block=full_days_block,
             schedule_event=schedule_event,
             person=person,
+            vacation=vacation,
         )

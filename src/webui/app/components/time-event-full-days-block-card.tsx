@@ -1,6 +1,7 @@
 import type {
   PersonEntry,
   ScheduleFullDaysEventEntry,
+  VacationEntry,
 } from "@jupiter/webapi-client";
 import { TimeEventNamespace } from "@jupiter/webapi-client";
 import type { CombinedTimeEventFullDaysEntry } from "~/logic/domain/time-event";
@@ -26,6 +27,12 @@ export function TimeEventFullDaysBlockCard(
     case TimeEventNamespace.PERSON_BIRTHDAY: {
       const entry = props.entry.entry as PersonEntry;
       name = birthdayTimeEventName(entry.birthday_time_event, entry.person);
+      break;
+    }
+
+    case TimeEventNamespace.VACATION: {
+      const entry = props.entry.entry as VacationEntry;
+      name = entry.vacation.name;
       break;
     }
 

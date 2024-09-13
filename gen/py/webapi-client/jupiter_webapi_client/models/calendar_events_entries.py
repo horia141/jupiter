@@ -8,6 +8,7 @@ if TYPE_CHECKING:
     from ..models.person_entry import PersonEntry
     from ..models.schedule_full_days_event_entry import ScheduleFullDaysEventEntry
     from ..models.schedule_in_day_event_entry import ScheduleInDayEventEntry
+    from ..models.vacation_entry import VacationEntry
 
 
 T = TypeVar("T", bound="CalendarEventsEntries")
@@ -22,12 +23,14 @@ class CalendarEventsEntries:
         schedule_event_in_day_entries (List['ScheduleInDayEventEntry']):
         inbox_task_entries (List['InboxTaskEntry']):
         person_entries (List['PersonEntry']):
+        vacation_entries (List['VacationEntry']):
     """
 
     schedule_event_full_days_entries: List["ScheduleFullDaysEventEntry"]
     schedule_event_in_day_entries: List["ScheduleInDayEventEntry"]
     inbox_task_entries: List["InboxTaskEntry"]
     person_entries: List["PersonEntry"]
+    vacation_entries: List["VacationEntry"]
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -51,6 +54,11 @@ class CalendarEventsEntries:
             person_entries_item = person_entries_item_data.to_dict()
             person_entries.append(person_entries_item)
 
+        vacation_entries = []
+        for vacation_entries_item_data in self.vacation_entries:
+            vacation_entries_item = vacation_entries_item_data.to_dict()
+            vacation_entries.append(vacation_entries_item)
+
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -59,6 +67,7 @@ class CalendarEventsEntries:
                 "schedule_event_in_day_entries": schedule_event_in_day_entries,
                 "inbox_task_entries": inbox_task_entries,
                 "person_entries": person_entries,
+                "vacation_entries": vacation_entries,
             }
         )
 
@@ -70,6 +79,7 @@ class CalendarEventsEntries:
         from ..models.person_entry import PersonEntry
         from ..models.schedule_full_days_event_entry import ScheduleFullDaysEventEntry
         from ..models.schedule_in_day_event_entry import ScheduleInDayEventEntry
+        from ..models.vacation_entry import VacationEntry
 
         d = src_dict.copy()
         schedule_event_full_days_entries = []
@@ -104,11 +114,19 @@ class CalendarEventsEntries:
 
             person_entries.append(person_entries_item)
 
+        vacation_entries = []
+        _vacation_entries = d.pop("vacation_entries")
+        for vacation_entries_item_data in _vacation_entries:
+            vacation_entries_item = VacationEntry.from_dict(vacation_entries_item_data)
+
+            vacation_entries.append(vacation_entries_item)
+
         calendar_events_entries = cls(
             schedule_event_full_days_entries=schedule_event_full_days_entries,
             schedule_event_in_day_entries=schedule_event_in_day_entries,
             inbox_task_entries=inbox_task_entries,
             person_entries=person_entries,
+            vacation_entries=vacation_entries,
         )
 
         calendar_events_entries.additional_properties = d

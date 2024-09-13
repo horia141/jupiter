@@ -9,6 +9,7 @@ import type {
   ScheduleInDayEventEntry,
   TimeEventInDayBlock,
   Timezone,
+  VacationEntry,
 } from "@jupiter/webapi-client";
 import {
   RecurringTaskPeriod,
@@ -56,7 +57,11 @@ import {
   NavSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { aDateToDate, allDaysBetween } from "~/logic/domain/adate";
+import {
+  aDateToDate,
+  allDaysBetween,
+  compareADate,
+} from "~/logic/domain/adate";
 import { periodName } from "~/logic/domain/period";
 import {
   scheduleStreamColorContrastingHex,
@@ -69,6 +74,8 @@ import type {
 import {
   birthdayTimeEventName,
   BIRTHDAY_TIME_EVENT_COLOR,
+  compareNamespaceForSortingFullDaysTimeEvents,
+  VACATION_TIME_EVENT_COLOR,
 } from "~/logic/domain/time-event";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useBigScreen } from "~/rendering/use-big-screen";
@@ -413,6 +420,12 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
       entry: entry,
     });
   }
+  for (const entry of props.entries.vacation_entries) {
+    combinedTimeEventFullDays.push({
+      time_event: entry.time_event,
+      entry: entry,
+    });
+  }
 
   const combinedTimeEventInDay: Array<CombinedTimeEventInDayEntry> = [];
   for (const entry of props.entries.schedule_event_in_day_entries) {
@@ -534,6 +547,12 @@ function ViewAsCalendarWeekly(props: ViewAsProps) {
   for (const entry of props.entries.person_entries) {
     combinedTimeEventFullDays.push({
       time_event: entry.birthday_time_event,
+      entry: entry,
+    });
+  }
+  for (const entry of props.entries.vacation_entries) {
+    combinedTimeEventFullDays.push({
+      time_event: entry.time_event,
       entry: entry,
     });
   }
@@ -1285,7 +1304,10 @@ function ViewAsCalendarTimeEventFullDaysCell(
       const fullDaysEntry = props.entry.entry as PersonEntry;
 
       const clippedName = clipTimeEventFullDaysNameToWhatFits(
-        birthdayTimeEventName(props.entry.time_event, fullDaysEntry.person),
+        `👨 ${birthdayTimeEventName(
+          props.entry.time_event,
+          fullDaysEntry.person
+        )}`,
         12,
         containerWidth - 32 // A hack of sorts
       );
@@ -1321,8 +1343,48 @@ function ViewAsCalendarTimeEventFullDaysCell(
       );
     }
 
+    case TimeEventNamespace.VACATION: {
+      const fullDaysEntry = props.entry.entry as VacationEntry;
+
+      const clippedName = clipTimeEventFullDaysNameToWhatFits(
+        `🌴 ${fullDaysEntry.vacation.name}`,
+        12,
+        containerWidth - 32 // A hack of sorts
+      );
+
+      return (
+        <Box
+          ref={containerRef}
+          sx={{
+            minWidth: "7rem",
+            fontSize: "12px",
+            backgroundColor: scheduleStreamColorHex(VACATION_TIME_EVENT_COLOR),
+            borderRadius: "0.25rem",
+            padding: "0.25rem",
+            paddingLeft: "0.5rem",
+            width: "100%",
+            height: "2rem",
+            marginBottom: "0.25rem",
+            overflow: "hidden",
+          }}
+        >
+          <EntityLink
+            key={`vacation-event-${fullDaysEntry.time_event.ref_id}`}
+            to={`/workspace/calendar/time-event/full-days-block/${fullDaysEntry.time_event.ref_id}?${query}`}
+          >
+            <EntityNameComponent
+              name={clippedName}
+              color={scheduleStreamColorContrastingHex(
+                VACATION_TIME_EVENT_COLOR
+              )}
+            />
+          </EntityLink>
+        </Box>
+      );
+    }
+
     default:
-      throw new Error("Unexpected namespace");
+      throw new Error("Unknown namespace");
   }
 }
 
@@ -1500,7 +1562,7 @@ function ViewAsCalendarTimeEventInDayCell(
       throw new Error("Not implemented");
 
     default:
-      throw new Error("Unexpected namespace");
+      throw new Error("Unkown namespace");
   }
 }
 
@@ -1652,6 +1714,12 @@ function ViewAsScheduleDailyAndWeekly(props: ViewAsProps) {
   for (const entry of props.entries.person_entries) {
     combinedTimeEventFullDays.push({
       time_event: entry.birthday_time_event,
+      entry: entry,
+    });
+  }
+  for (const entry of props.entries.vacation_entries) {
+    combinedTimeEventFullDays.push({
+      time_event: entry.time_event,
       entry: entry,
     });
   }
@@ -1867,7 +1935,7 @@ function ViewAsScheduleTimeEventFullDaysRows(
   const isBigScreen = useBigScreen();
 
   switch (props.entry.time_event.namespace) {
-    case TimeEventNamespace.SCHEDULE_FULL_DAYS_BLOCK:
+    case TimeEventNamespace.SCHEDULE_FULL_DAYS_BLOCK: {
       const fullDaysEntry = props.entry.entry as ScheduleFullDaysEventEntry;
       return (
         <React.Fragment>
@@ -1895,12 +1963,73 @@ function ViewAsScheduleTimeEventFullDaysRows(
           </ViewAsScheduleEventCell>
         </React.Fragment>
       );
+    }
 
-    case TimeEventNamespace.PERSON_BIRTHDAY:
-      throw new Error("Not implemented");
+    case TimeEventNamespace.PERSON_BIRTHDAY: {
+      const fullDaysEntry = props.entry.entry as PersonEntry;
+      return (
+        <React.Fragment>
+          <ViewAsScheduleTimeCell isbigscreen={isBigScreen.toString()}>
+            [All Day]
+          </ViewAsScheduleTimeCell>
+
+          <ViewAsScheduleEventCell
+            color={scheduleStreamColorHex(BIRTHDAY_TIME_EVENT_COLOR)}
+            isbigscreen={isBigScreen.toString()}
+            height="0.25rem"
+          >
+            <EntityLink
+              light
+              key={`schedule-event-full-days-${fullDaysEntry.birthday_time_event.ref_id}`}
+              to={`/workspace/calendar/time-event/full-days-block/${fullDaysEntry.birthday_time_event.ref_id}?${query}`}
+            >
+              <EntityNameComponent
+                name={`👨 ${birthdayTimeEventName(
+                  fullDaysEntry.birthday_time_event,
+                  fullDaysEntry.person
+                )}`}
+                color={scheduleStreamColorContrastingHex(
+                  BIRTHDAY_TIME_EVENT_COLOR
+                )}
+              />
+            </EntityLink>
+          </ViewAsScheduleEventCell>
+        </React.Fragment>
+      );
+    }
+
+    case TimeEventNamespace.VACATION: {
+      const fullDaysEntry = props.entry.entry as VacationEntry;
+      return (
+        <React.Fragment>
+          <ViewAsScheduleTimeCell isbigscreen={isBigScreen.toString()}>
+            [All Day]
+          </ViewAsScheduleTimeCell>
+
+          <ViewAsScheduleEventCell
+            color={scheduleStreamColorHex(VACATION_TIME_EVENT_COLOR)}
+            isbigscreen={isBigScreen.toString()}
+            height="0.25rem"
+          >
+            <EntityLink
+              light
+              key={`schedule-event-full-days-${fullDaysEntry.time_event.ref_id}`}
+              to={`/workspace/calendar/time-event/full-days-block/${fullDaysEntry.time_event.ref_id}?${query}`}
+            >
+              <EntityNameComponent
+                name={`🌴 ${fullDaysEntry.vacation.name}`}
+                color={scheduleStreamColorContrastingHex(
+                  VACATION_TIME_EVENT_COLOR
+                )}
+              />
+            </EntityLink>
+          </ViewAsScheduleEventCell>
+        </React.Fragment>
+      );
+    }
 
     default:
-      throw new Error("Unexpected namespace");
+      throw new Error("Unkown namespace");
   }
 }
 
@@ -1959,7 +2088,7 @@ function ViewAsScheduleTimeEventInDaysRows(
       throw new Error("Not implemented");
 
     default:
-      throw new Error("Unexpected namespace");
+      throw new Error("Unkown namespace");
   }
 }
 
@@ -2044,6 +2173,10 @@ function ViewAsStatsPerSubperiod(props: ViewAsStatsPerSubperiodProps) {
         <span>
           👨 {props.stats.person_birthday_cnt}{" "}
           {!props.showCompact ? "from birthdays" : ""}
+        </span>
+        <span>
+          🌴 {props.stats.vacation_cnt}{" "}
+          {!props.showCompact ? "from Vacations" : ""}
         </span>
       </Box>
     </EntityLink>
@@ -2180,7 +2313,26 @@ function combinedTimeEventFullDayEntryPartionByDay(
     }
   }
 
+  for (const dateStr in partition) {
+    partition[dateStr] = sortTimeEventFullDaysByType(partition[dateStr]);
+  }
+
   return partition;
+}
+
+function sortTimeEventFullDaysByType(
+  entries: Array<CombinedTimeEventFullDaysEntry>
+) {
+  return entries.sort((a, b) => {
+    if (a.time_event.namespace === b.time_event.namespace) {
+      return compareADate(a.time_event.start_date, b.time_event.start_date);
+    }
+
+    return compareNamespaceForSortingFullDaysTimeEvents(
+      a.time_event.namespace,
+      b.time_event.namespace
+    );
+  });
 }
 
 function splitTimeEventInDayEntryIntoPerDayEntries(

@@ -69,6 +69,20 @@ export function TimeEventSourceLink(props: TimeEventSourceLinkProps) {
       );
     }
 
+    case TimeEventNamespace.VACATION: {
+      return (
+        <Button
+          startIcon={<LaunchIcon />}
+          variant="outlined"
+          size="small"
+          component={Link}
+          to={`/workspace/vacations/${props.timeEvent.source_entity_ref_id}`}
+        >
+          Link
+        </Button>
+      );
+    }
+
     default: {
       throw new Error("Unknown namespace");
     }

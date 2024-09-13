@@ -41,6 +41,7 @@ export async function loader({ request }: LoaderArgs) {
   const response = await getLoggedInApiClient(session).vacations.vacationFind({
     allow_archived: false,
     include_notes: false,
+    include_time_event_blocks: false,
   });
   return json(response.entries);
 }

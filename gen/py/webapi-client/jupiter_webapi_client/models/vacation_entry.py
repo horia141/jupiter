@@ -8,33 +8,33 @@ if TYPE_CHECKING:
     from ..models.vacation import Vacation
 
 
-T = TypeVar("T", bound="VacationCreateResult")
+T = TypeVar("T", bound="VacationEntry")
 
 
 @_attrs_define
-class VacationCreateResult:
-    """Vacation creation result.
+class VacationEntry:
+    """Result entry.
 
     Attributes:
-        new_vacation (Vacation): A vacation.
-        new_time_event_block (TimeEventFullDaysBlock): A full day block of time.
+        vacation (Vacation): A vacation.
+        time_event (TimeEventFullDaysBlock): A full day block of time.
     """
 
-    new_vacation: "Vacation"
-    new_time_event_block: "TimeEventFullDaysBlock"
+    vacation: "Vacation"
+    time_event: "TimeEventFullDaysBlock"
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
-        new_vacation = self.new_vacation.to_dict()
+        vacation = self.vacation.to_dict()
 
-        new_time_event_block = self.new_time_event_block.to_dict()
+        time_event = self.time_event.to_dict()
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
-                "new_vacation": new_vacation,
-                "new_time_event_block": new_time_event_block,
+                "vacation": vacation,
+                "time_event": time_event,
             }
         )
 
@@ -46,17 +46,17 @@ class VacationCreateResult:
         from ..models.vacation import Vacation
 
         d = src_dict.copy()
-        new_vacation = Vacation.from_dict(d.pop("new_vacation"))
+        vacation = Vacation.from_dict(d.pop("vacation"))
 
-        new_time_event_block = TimeEventFullDaysBlock.from_dict(d.pop("new_time_event_block"))
+        time_event = TimeEventFullDaysBlock.from_dict(d.pop("time_event"))
 
-        vacation_create_result = cls(
-            new_vacation=new_vacation,
-            new_time_event_block=new_time_event_block,
+        vacation_entry = cls(
+            vacation=vacation,
+            time_event=time_event,
         )
 
-        vacation_create_result.additional_properties = d
-        return vacation_create_result
+        vacation_entry.additional_properties = d
+        return vacation_entry
 
     @property
     def additional_keys(self) -> List[str]:

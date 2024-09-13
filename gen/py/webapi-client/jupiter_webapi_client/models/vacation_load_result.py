@@ -7,6 +7,7 @@ from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
     from ..models.note import Note
+    from ..models.time_event_full_days_block import TimeEventFullDaysBlock
     from ..models.vacation import Vacation
 
 
@@ -19,10 +20,12 @@ class VacationLoadResult:
 
     Attributes:
         vacation (Vacation): A vacation.
+        time_event_block (TimeEventFullDaysBlock): A full day block of time.
         note (Union['Note', None, Unset]):
     """
 
     vacation: "Vacation"
+    time_event_block: "TimeEventFullDaysBlock"
     note: Union["Note", None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -30,6 +33,8 @@ class VacationLoadResult:
         from ..models.note import Note
 
         vacation = self.vacation.to_dict()
+
+        time_event_block = self.time_event_block.to_dict()
 
         note: Union[Dict[str, Any], None, Unset]
         if isinstance(self.note, Unset):
@@ -44,6 +49,7 @@ class VacationLoadResult:
         field_dict.update(
             {
                 "vacation": vacation,
+                "time_event_block": time_event_block,
             }
         )
         if note is not UNSET:
@@ -54,10 +60,13 @@ class VacationLoadResult:
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         from ..models.note import Note
+        from ..models.time_event_full_days_block import TimeEventFullDaysBlock
         from ..models.vacation import Vacation
 
         d = src_dict.copy()
         vacation = Vacation.from_dict(d.pop("vacation"))
+
+        time_event_block = TimeEventFullDaysBlock.from_dict(d.pop("time_event_block"))
 
         def _parse_note(data: object) -> Union["Note", None, Unset]:
             if data is None:
@@ -78,6 +87,7 @@ class VacationLoadResult:
 
         vacation_load_result = cls(
             vacation=vacation,
+            time_event_block=time_event_block,
             note=note,
         )
 

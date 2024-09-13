@@ -5,12 +5,17 @@ from jupiter.core.domain.concept.vacations.vacation_name import VacationName
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
+from jupiter.core.domain.core.time_events.time_event_full_days_block import (
+    TimeEventFullDaysBlock,
+)
+from jupiter.core.domain.core.time_events.time_event_namespace import TimeEventNamespace
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     IsRefId,
     LeafEntity,
     OwnsAtMostOne,
+    OwnsOne,
     ParentLink,
     create_entity_action,
     entity,
@@ -31,6 +36,11 @@ class Vacation(LeafEntity):
 
     note = OwnsAtMostOne(
         Note, domain=NoteDomain.VACATION, source_entity_ref_id=IsRefId()
+    )
+    time_event_block = OwnsOne(
+        TimeEventFullDaysBlock,
+        namespace=TimeEventNamespace.VACATION,
+        source_entity_ref_id=IsRefId(),
     )
 
     @staticmethod

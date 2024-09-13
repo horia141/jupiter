@@ -10,4 +10,5 @@ export enum TimeEventNamespace {
     SCHEDULE_FULL_DAYS_BLOCK = 'schedule-full-days-block',
     INBOX_TASK = 'inbox-task',
     PERSON_BIRTHDAY = 'person-birthday',
+    VACATION = 'vacation',
 }

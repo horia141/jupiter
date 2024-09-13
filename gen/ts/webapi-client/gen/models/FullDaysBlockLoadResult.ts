@@ -5,6 +5,7 @@
 import type { Person } from './Person';
 import type { ScheduleEventFullDays } from './ScheduleEventFullDays';
 import type { TimeEventFullDaysBlock } from './TimeEventFullDaysBlock';
+import type { Vacation } from './Vacation';
 
 /**
  * FullDaysBlockLoadResult.
@@ -13,5 +14,6 @@ export type FullDaysBlockLoadResult = {
     full_days_block: TimeEventFullDaysBlock;
     schedule_event?: (ScheduleEventFullDays | null);
     person?: (Person | null);
+    vacation?: (Vacation | null);
 };
 

@@ -511,6 +511,7 @@ from .vacation_archive_args import VacationArchiveArgs
 from .vacation_collection import VacationCollection
 from .vacation_create_args import VacationCreateArgs
 from .vacation_create_result import VacationCreateResult
+from .vacation_entry import VacationEntry
 from .vacation_find_args import VacationFindArgs
 from .vacation_find_result import VacationFindResult
 from .vacation_find_result_entry import VacationFindResultEntry
@@ -1061,6 +1062,7 @@ __all__ = (
     "VacationCollection",
     "VacationCreateArgs",
     "VacationCreateResult",
+    "VacationEntry",
     "VacationFindArgs",
     "VacationFindResult",
     "VacationFindResultEntry",

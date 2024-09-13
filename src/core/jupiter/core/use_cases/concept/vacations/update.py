@@ -3,6 +3,9 @@
 from jupiter.core.domain.concept.vacations.vacation import Vacation
 from jupiter.core.domain.concept.vacations.vacation_name import VacationName
 from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.core.time_events.time_event_full_days_block import (
+    TimeEventFullDaysBlock,
+)
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.infra.generic_loader import generic_loader
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -43,7 +46,9 @@ class VacationUpdateUseCase(
         args: VacationUpdateArgs,
     ) -> None:
         """Execute the command's action."""
-        vacation = await generic_loader(uow, Vacation, args.ref_id)
+        vacation, time_event_block = await generic_loader(
+            uow, Vacation, args.ref_id, Vacation.time_event_block
+        )
 
         vacation = vacation.update(
             context.domain_context,
@@ -52,5 +57,15 @@ class VacationUpdateUseCase(
             end_date=args.end_date,
         )
 
-        await uow.get_for(Vacation).save(vacation)
+        vacation = await uow.get_for(Vacation).save(vacation)
         await progress_reporter.mark_updated(vacation)
+
+        time_event_block = time_event_block.update_for_vacation(
+            context.domain_context,
+            start_date=vacation.start_date,
+            end_date=vacation.end_date,
+        )
+
+        time_event_block = await uow.get_for(TimeEventFullDaysBlock).save(
+            time_event_block
+        )

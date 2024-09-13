@@ -23,6 +23,7 @@ import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import { TimeEventFullDaysBlockStack } from "~/components/time-event-full-days-block-stack";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -58,6 +59,7 @@ export async function loader({ request, params }: LoaderArgs) {
     return json({
       vacation: result.vacation,
       note: result.note,
+      timeEventBlock: result.time_event_block,
     });
   } catch (error) {
     if (error instanceof ApiError && error.status === StatusCodes.NOT_FOUND) {
@@ -134,11 +136,20 @@ export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export default function Vacation() {
-  const { vacation, note } = useLoaderDataSafeForAnimation<typeof loader>();
+  const { vacation, note, timeEventBlock } =
+    useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
 
   const inputsEnabled = transition.state === "idle" && !vacation.archived;
+
+  const timeEventBlockEntry = {
+    time_event: timeEventBlock,
+    entry: {
+      vacation: vacation,
+      time_event: timeEventBlock,
+    },
+  };
 
   return (
     <LeafPanel
@@ -237,6 +248,12 @@ export default function Vacation() {
           </>
         )}
       </Card>
+
+      <TimeEventFullDaysBlockStack
+        showLabel
+        label="Time Events"
+        entries={[timeEventBlockEntry]}
+      />
     </LeafPanel>
   );
 }

@@ -19,6 +19,7 @@ class CalendarEventsStatsPerSubperiod:
         schedule_event_in_day_cnt (int):
         inbox_task_cnt (int):
         person_birthday_cnt (int):
+        vacation_cnt (int):
     """
 
     period: RecurringTaskPeriod
@@ -27,6 +28,7 @@ class CalendarEventsStatsPerSubperiod:
     schedule_event_in_day_cnt: int
     inbox_task_cnt: int
     person_birthday_cnt: int
+    vacation_cnt: int
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -42,6 +44,8 @@ class CalendarEventsStatsPerSubperiod:
 
         person_birthday_cnt = self.person_birthday_cnt
 
+        vacation_cnt = self.vacation_cnt
+
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -52,6 +56,7 @@ class CalendarEventsStatsPerSubperiod:
                 "schedule_event_in_day_cnt": schedule_event_in_day_cnt,
                 "inbox_task_cnt": inbox_task_cnt,
                 "person_birthday_cnt": person_birthday_cnt,
+                "vacation_cnt": vacation_cnt,
             }
         )
 
@@ -72,6 +77,8 @@ class CalendarEventsStatsPerSubperiod:
 
         person_birthday_cnt = d.pop("person_birthday_cnt")
 
+        vacation_cnt = d.pop("vacation_cnt")
+
         calendar_events_stats_per_subperiod = cls(
             period=period,
             period_start_date=period_start_date,
@@ -79,6 +86,7 @@ class CalendarEventsStatsPerSubperiod:
             schedule_event_in_day_cnt=schedule_event_in_day_cnt,
             inbox_task_cnt=inbox_task_cnt,
             person_birthday_cnt=person_birthday_cnt,
+            vacation_cnt=vacation_cnt,
         )
 
         calendar_events_stats_per_subperiod.additional_properties = d

@@ -18,7 +18,7 @@ from rich.text import Text
 from rich.tree import Tree
 
 
-class VacationsShow(LoggedInReadonlyCommand[VacationFindUseCase, VacationFindResult]):
+class VacationShow(LoggedInReadonlyCommand[VacationFindUseCase, VacationFindResult]):
     """UseCase class for showing the vacations."""
 
     def _render_result(

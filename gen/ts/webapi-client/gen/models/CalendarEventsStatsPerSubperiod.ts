@@ -15,5 +15,6 @@ export type CalendarEventsStatsPerSubperiod = {
     schedule_event_in_day_cnt: number;
     inbox_task_cnt: number;
     person_birthday_cnt: number;
+    vacation_cnt: number;
 };
 

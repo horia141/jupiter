@@ -64,6 +64,7 @@ export async function loader({ request, params }: LoaderArgs) {
       fullDaysBlock: response.full_days_block,
       scheduleEvent: response.schedule_event,
       person: response.person,
+      vacation: response.vacation,
     });
   } catch (error) {
     if (error instanceof ApiError && error.status === StatusCodes.NOT_FOUND) {
@@ -118,6 +119,10 @@ export default function TimeEventFullDaysBlockViewOne() {
         loaderData.fullDaysBlock,
         loaderData.person!
       );
+      break;
+
+    case TimeEventNamespace.VACATION:
+      name = loaderData.vacation!.name;
       break;
 
     default:

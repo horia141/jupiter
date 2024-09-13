@@ -9,6 +9,7 @@ from jupiter.core.domain.concept.schedule.schedule_event_in_day import (
     ScheduleEventInDay,
 )
 from jupiter.core.domain.concept.schedule.schedule_stream import ScheduleStream
+from jupiter.core.domain.concept.vacations.vacation import Vacation
 from jupiter.core.domain.concept.workspaces.workspace import Workspace
 from jupiter.core.domain.core import schedules
 from jupiter.core.domain.core.adate import ADate
@@ -86,6 +87,14 @@ class PersonEntry(UseCaseResultBase):
 
 
 @use_case_result_part
+class VacationEntry(UseCaseResultBase):
+    """Result entry."""
+
+    vacation: Vacation
+    time_event: TimeEventFullDaysBlock
+
+
+@use_case_result_part
 class CalendarEventsEntries(UseCaseResultBase):
     """Full entries for results."""
 
@@ -93,6 +102,7 @@ class CalendarEventsEntries(UseCaseResultBase):
     schedule_event_in_day_entries: list[ScheduleInDayEventEntry]
     inbox_task_entries: list[InboxTaskEntry]
     person_entries: list[PersonEntry]
+    vacation_entries: list[VacationEntry]
 
 
 @use_case_result_part
@@ -105,6 +115,7 @@ class CalendarEventsStatsPerSubperiod(UseCaseResultBase):
     schedule_event_in_day_cnt: int
     inbox_task_cnt: int
     person_birthday_cnt: int
+    vacation_cnt: int
 
 
 @use_case_result_part
@@ -353,11 +364,32 @@ class CalendarLoadForDateAndPeriodUseCase(
             for person in persons
         ]
 
+        time_event_full_days_for_vacations: dict[EntityId, TimeEventFullDaysBlock] = {
+            te.source_entity_ref_id: te
+            for te in time_events_full_days
+            if te.namespace == TimeEventNamespace.VACATION
+        }
+        vacations = []
+        if len(time_event_full_days_for_vacations) > 0:
+            vacations = await uow.get_for(Vacation).find_all_generic(
+                parent_ref_id=workspace.ref_id,
+                allow_archived=False,
+                ref_id=list(time_event_full_days_for_vacations.keys()),
+            )
+        vacation_entries = [
+            VacationEntry(
+                vacation=vacation,
+                time_event=time_event_full_days_for_vacations[vacation.ref_id],
+            )
+            for vacation in vacations
+        ]
+
         entries = CalendarEventsEntries(
             schedule_event_full_days_entries=schedule_event_full_days_entries,
             schedule_event_in_day_entries=schedule_event_in_day_entries,
             inbox_task_entries=inbox_task_entries,
             person_entries=person_entries,
+            vacation_entries=vacation_entries,
         )
 
         return entries
@@ -397,6 +429,7 @@ class CalendarLoadForDateAndPeriodUseCase(
             schedule_event_in_day_cnt = 0
             inbox_task_cnt = 0
             person_birthday_cnt = 0
+            vacation_cnt = 0
 
             # This is O(N*M) with a rather small M, so it's fine. Probably faster due to memory locality boosts.
             for full_days_stats in full_days_raw_stats.per_groups:
@@ -413,6 +446,8 @@ class CalendarLoadForDateAndPeriodUseCase(
                         full_days_stats.namespace == TimeEventNamespace.PERSON_BIRTHDAY
                     ):
                         person_birthday_cnt += full_days_stats.cnt
+                    elif full_days_stats.namespace == TimeEventNamespace.VACATION:
+                        vacation_cnt += full_days_stats.cnt
             for in_day_stats in in_day_raw_stats.per_groups:
                 if (
                     in_day_stats.date >= subschedule.first_day
@@ -434,6 +469,7 @@ class CalendarLoadForDateAndPeriodUseCase(
                     schedule_event_in_day_cnt=schedule_event_in_day_cnt,
                     inbox_task_cnt=inbox_task_cnt,
                     person_birthday_cnt=person_birthday_cnt,
+                    vacation_cnt=vacation_cnt,
                 )
             )
 
