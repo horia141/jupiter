@@ -284,15 +284,15 @@ export default function Person() {
     }
   );
 
-  const birthdayTimeEventEntries = loaderData.birthdayTimeEventBlocks.map(
-    (block) => ({
+  const birthdayTimeEventEntries = loaderData.birthdayTimeEventBlocks
+    .filter((f) => !f.archived)
+    .map((block) => ({
       time_event: block,
       entry: {
         person: person,
         birthday_time_event: block,
       },
-    })
-  );
+    }));
   const sortedBirthdayTimeEventEntries = sortBirthdayTimeEventsNaturally(
     birthdayTimeEventEntries
   );
@@ -677,8 +677,9 @@ export default function Person() {
 
       {sortedBirthdayTimeEventEntries.length > 0 && (
         <TimeEventFullDaysBlockStack
-          showLabel
-          label="Birthday Time Events"
+          topLevelInfo={topLevelInfo}
+          inputsEnabled={inputsEnabled}
+          title="Birthday Time Events"
           entries={sortedBirthdayTimeEventEntries}
         />
       )}

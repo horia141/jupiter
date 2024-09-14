@@ -12,11 +12,11 @@ if TYPE_CHECKING:
     from ..models.vacation import Vacation
 
 
-T = TypeVar("T", bound="FullDaysBlockLoadResult")
+T = TypeVar("T", bound="TimeEventFullDaysBlockLoadResult")
 
 
 @_attrs_define
-class FullDaysBlockLoadResult:
+class TimeEventFullDaysBlockLoadResult:
     """FullDaysBlockLoadResult.
 
     Attributes:
@@ -140,15 +140,15 @@ class FullDaysBlockLoadResult:
 
         vacation = _parse_vacation(d.pop("vacation", UNSET))
 
-        full_days_block_load_result = cls(
+        time_event_full_days_block_load_result = cls(
             full_days_block=full_days_block,
             schedule_event=schedule_event,
             person=person,
             vacation=vacation,
         )
 
-        full_days_block_load_result.additional_properties = d
-        return full_days_block_load_result
+        time_event_full_days_block_load_result.additional_properties = d
+        return time_event_full_days_block_load_result
 
     @property
     def additional_keys(self) -> List[str]:

@@ -20,7 +20,7 @@ import {
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
-import { parseParams } from "zodix";
+import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
@@ -33,7 +33,8 @@ import {
 } from "~/components/infra/section-actions";
 import { SectionCardNew } from "~/components/infra/section-card-new";
 import { TimeEventSourceLink } from "~/components/time-event-source-link";
-import { birthdayTimeEventName } from "~/logic/domain/time-event";
+import { validationErrorToUIErrorInfo } from "~/logic/action-result";
+import { isTimeEventInDayBlockEditable } from "~/logic/domain/time-event";
 import { basicShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -43,6 +44,18 @@ import { TopLevelInfoContext } from "~/top-level-context";
 const ParamsSchema = {
   id: z.string(),
 };
+
+const UpdateFormSchema = z.discriminatedUnion("intent", [
+  z.object({
+    intent: z.literal("update"),
+    startDate: z.string(),
+    startTimeInDay: z.string().optional(),
+    durationMins: z.string().transform((v) => parseInt(v, 10)),
+  }),
+  z.object({
+    intent: z.literal("archive"),
+  }),
+]);
 
 export const handle = {
   displayType: DisplayType.LEAF,
@@ -55,16 +68,15 @@ export async function loader({ request, params }: LoaderArgs) {
   try {
     const response = await getLoggedInApiClient(
       session
-    ).fullDaysBlock.timeEventFullDaysBlockLoad({
+    ).inDayBlock.timeEventInDayBlockLoad({
       ref_id: id,
       allow_archived: true,
     });
 
     return json({
-      fullDaysBlock: response.full_days_block,
+      inDayBlock: response.in_day_block,
       scheduleEvent: response.schedule_event,
-      person: response.person,
-      vacation: response.vacation,
+      inboxTask: response.inbox_task,
     });
   } catch (error) {
     if (error instanceof ApiError && error.status === StatusCodes.NOT_FOUND) {
@@ -79,18 +91,65 @@ export async function loader({ request, params }: LoaderArgs) {
 }
 
 export async function action({ request, params }: ActionArgs) {
-  await getSession(request.headers.get("Cookie"));
+  const session = await getSession(request.headers.get("Cookie"));
   const { id } = parseParams(params, ParamsSchema);
+  const form = await parseForm(request, UpdateFormSchema);
   const url = new URL(request.url);
 
-  return redirect(
-    `/workspace/calendar/time-event/full-days-block/${id}?${url.searchParams}`
-  );
+  try {
+    switch (form.intent) {
+      case "update": {
+        await getLoggedInApiClient(
+          session
+        ).inDayBlock.timeEventInDayBlockUpdate({
+          ref_id: id,
+          start_date: {
+            should_change: true,
+            value: form.startDate,
+          },
+          start_time_in_day: {
+            should_change: true,
+            value: form.startTimeInDay,
+          },
+          duration_mins: {
+            should_change: true,
+            value: form.durationMins,
+          },
+        });
+        return redirect(
+          `/workspace/calendar/time-event/in-day-block/${id}?${url.searchParams}`
+        );
+      }
+
+      case "archive": {
+        await getLoggedInApiClient(
+          session
+        ).inDayBlock.timeEventInDayBlockArchive({
+          ref_id: id,
+        });
+        return redirect(
+          `/workspace/calendar/time-event/in-day-block/${id}?${url.searchParams}`
+        );
+      }
+
+      default:
+        throw new Response("Bad Intent", { status: 500 });
+    }
+  } catch (error) {
+    if (
+      error instanceof ApiError &&
+      error.status === StatusCodes.UNPROCESSABLE_ENTITY
+    ) {
+      return json(validationErrorToUIErrorInfo(error.body));
+    }
+
+    throw error;
+  }
 }
 
 export const shouldRevalidate: ShouldRevalidateFunction = basicShouldRevalidate;
 
-export default function TimeEventFullDaysBlockViewOne() {
+export default function TimeEventInDayBlockViewOne() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const topLevelInfo = useContext(TopLevelInfoContext);
@@ -98,31 +157,26 @@ export default function TimeEventFullDaysBlockViewOne() {
   const [query] = useSearchParams();
 
   const inputsEnabled =
-    transition.state === "idle" && !loaderData.fullDaysBlock.archived;
-  const corePropertyEditable = false;
+    transition.state === "idle" && !loaderData.inDayBlock.archived;
+  const corePropertyEditable = isTimeEventInDayBlockEditable(
+    loaderData.inDayBlock.namespace
+  );
 
-  const [durationDays, setDurationDays] = useState(
-    loaderData.fullDaysBlock.duration_days
+  const [durationMins, setDurationMins] = useState(
+    loaderData.inDayBlock.duration_mins
   );
   useEffect(() => {
-    setDurationDays(loaderData.fullDaysBlock.duration_days);
-  }, [loaderData.fullDaysBlock.duration_days]);
+    setDurationMins(loaderData.inDayBlock.duration_mins);
+  }, [loaderData.inDayBlock.duration_mins]);
 
   let name = null;
-  switch (loaderData.fullDaysBlock.namespace) {
-    case TimeEventNamespace.SCHEDULE_FULL_DAYS_BLOCK:
+  switch (loaderData.inDayBlock.namespace) {
+    case TimeEventNamespace.SCHEDULE_EVENT_IN_DAY:
       name = loaderData.scheduleEvent!.name;
       break;
 
-    case TimeEventNamespace.PERSON_BIRTHDAY:
-      name = birthdayTimeEventName(
-        loaderData.fullDaysBlock,
-        loaderData.person!
-      );
-      break;
-
-    case TimeEventNamespace.VACATION:
-      name = loaderData.vacation!.name;
+    case TimeEventNamespace.INBOX_TASK:
+      name = loaderData.inboxTask!.name;
       break;
 
     default:
@@ -131,20 +185,20 @@ export default function TimeEventFullDaysBlockViewOne() {
 
   return (
     <LeafPanel
-      key={`time-event-full-days-block-${loaderData.fullDaysBlock.ref_id}`}
-      showArchiveButton
-      enableArchiveButton={inputsEnabled}
+      key={`time-event-in-day-block-${loaderData.inDayBlock.ref_id}`}
+      showArchiveButton={corePropertyEditable}
+      enableArchiveButton={inputsEnabled && corePropertyEditable}
       returnLocation={`/workspace/calendar?${query}`}
     >
       <GlobalError actionResult={actionData} />
       <SectionCardNew
-        id="time-event-full-days-block-properties"
+        id="time-event-in-day-block-properties"
         title="Properties"
         actions={
           <SectionActions
-            id="time-event-full-days-block-properties"
+            id="time-event-in-day-block-properties"
             topLevelInfo={topLevelInfo}
-            inputsEnabled={inputsEnabled}
+            inputsEnabled={inputsEnabled && corePropertyEditable}
             actions={[
               ActionMultipleSpread({
                 actions: [
@@ -172,7 +226,7 @@ export default function TimeEventFullDaysBlockViewOne() {
               <FieldError actionResult={actionData} fieldName="/name" />
             </FormControl>
 
-            <TimeEventSourceLink timeEvent={loaderData.fullDaysBlock} />
+            <TimeEventSourceLink timeEvent={loaderData.inDayBlock} />
           </Box>
 
           <FormControl fullWidth>
@@ -183,54 +237,83 @@ export default function TimeEventFullDaysBlockViewOne() {
               type="date"
               label="startDate"
               name="startDate"
-              readOnly={!inputsEnabled || !corePropertyEditable}
-              defaultValue={loaderData.fullDaysBlock.start_date}
+              readOnly={!(inputsEnabled && corePropertyEditable)}
+              defaultValue={loaderData.inDayBlock.start_date}
             />
 
             <FieldError actionResult={actionData} fieldName="/start_date" />
           </FormControl>
 
+          <FormControl fullWidth>
+            <InputLabel id="startTimeInDay" shrink margin="dense">
+              Start Time
+            </InputLabel>
+            <OutlinedInput
+              type="time"
+              label="startTimeInDay"
+              name="startTimeInDay"
+              readOnly={!(inputsEnabled && corePropertyEditable)}
+              defaultValue={loaderData.inDayBlock.start_time_in_day}
+            />
+
+            <FieldError
+              actionResult={actionData}
+              fieldName="/start_time_in_day"
+            />
+          </FormControl>
+
           <Stack spacing={2} direction="row">
-            <ButtonGroup variant="outlined" disabled={!corePropertyEditable}>
+            <ButtonGroup
+              variant="outlined"
+              disabled={!(inputsEnabled && corePropertyEditable)}
+            >
               <Button
                 disabled={!inputsEnabled}
-                variant={durationDays === 1 ? "contained" : "outlined"}
-                onClick={() => setDurationDays(1)}
+                variant={durationMins === 15 ? "contained" : "outlined"}
+                onClick={() => setDurationMins(15)}
               >
-                1D
+                15m
               </Button>
               <Button
                 disabled={!inputsEnabled}
-                variant={durationDays === 3 ? "contained" : "outlined"}
-                onClick={() => setDurationDays(3)}
+                variant={durationMins === 30 ? "contained" : "outlined"}
+                onClick={() => setDurationMins(30)}
               >
-                3d
+                30m
               </Button>
               <Button
                 disabled={!inputsEnabled}
-                variant={durationDays === 7 ? "contained" : "outlined"}
-                onClick={() => setDurationDays(7)}
+                variant={durationMins === 60 ? "contained" : "outlined"}
+                onClick={() => setDurationMins(60)}
               >
-                7d
+                60m
               </Button>
             </ButtonGroup>
 
             <FormControl fullWidth>
-              <InputLabel id="durationDays" shrink margin="dense">
-                Duration (Days)
+              <InputLabel id="durationMins" shrink margin="dense">
+                Duration (Mins)
               </InputLabel>
               <OutlinedInput
                 type="number"
-                label="Duration (Days)"
-                name="durationDays"
-                readOnly={!inputsEnabled || !corePropertyEditable}
-                value={durationDays}
-                onChange={(e) => setDurationDays(parseInt(e.target.value, 10))}
+                label="Duration (Mins)"
+                name="durationMins"
+                readOnly={!(inputsEnabled && corePropertyEditable)}
+                value={durationMins}
+                onChange={(e) => {
+                  if (Number.isNaN(parseInt(e.target.value, 10))) {
+                    setDurationMins(0);
+                    e.preventDefault();
+                    return;
+                  }
+
+                  return setDurationMins(parseInt(e.target.value, 10));
+                }}
               />
 
               <FieldError
                 actionResult={actionData}
-                fieldName="/duration_days"
+                fieldName="/duration_mins"
               />
             </FormControl>
           </Stack>
@@ -241,12 +324,12 @@ export default function TimeEventFullDaysBlockViewOne() {
 }
 
 export const CatchBoundary = makeCatchBoundary(
-  () => `Could not find time event full days block #${useParams().id}!`
+  () => `Could not find time event in day block #${useParams().id}!`
 );
 
 export const ErrorBoundary = makeErrorBoundary(
   () =>
-    `There was an error loading time event full days block #${
+    `There was an error loading time event in day block #${
       useParams().id
     }. Please try again!`
 );

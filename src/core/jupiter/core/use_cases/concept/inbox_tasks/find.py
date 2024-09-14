@@ -33,6 +33,11 @@ from jupiter.core.domain.concept.push_integrations.slack.slack_task_collection i
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_collection import NoteCollection
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
+from jupiter.core.domain.core.time_events.time_event_domain import TimeEventDomain
+from jupiter.core.domain.core.time_events.time_event_in_day_block import (
+    TimeEventInDayBlock,
+)
+from jupiter.core.domain.core.time_events.time_event_namespace import TimeEventNamespace
 from jupiter.core.domain.features import (
     FeatureUnavailableError,
     WorkspaceFeature,
@@ -60,6 +65,7 @@ class InboxTaskFindArgs(UseCaseArgsBase):
 
     allow_archived: bool
     include_notes: bool
+    include_time_event_blocks: bool
     filter_just_workable: bool | None
     filter_ref_ids: list[EntityId] | None
     filter_project_ref_ids: list[EntityId] | None
@@ -74,6 +80,7 @@ class InboxTaskFindResultEntry(UseCaseResultBase):
     inbox_task: InboxTask
     note: Note | None
     project: Project
+    time_event_blocks: list[TimeEventInDayBlock] | None
     habit: Habit | None
     chore: Chore | None
     big_plan: BigPlan | None
@@ -269,6 +276,24 @@ class InboxTaskFindUseCase(
             for note in notes:
                 notes_by_inbox_task_ref_id[note.source_entity_ref_id] = note
 
+        time_event_blocks_by_inbox_task_ref_id: defaultdict[
+            EntityId, list[TimeEventInDayBlock]
+        ] = defaultdict(list)
+        if args.include_time_event_blocks:
+            time_event_domain = await uow.get_for(TimeEventDomain).load_by_parent(
+                workspace.ref_id
+            )
+            time_event_blocks = await uow.get_for(TimeEventInDayBlock).find_all_generic(
+                parent_ref_id=time_event_domain.ref_id,
+                allow_archived=True,
+                namespace=TimeEventNamespace.INBOX_TASK,
+                source_entity_ref_id=[it.ref_id for it in inbox_tasks],
+            )
+            for block in time_event_blocks:
+                time_event_blocks_by_inbox_task_ref_id[
+                    block.source_entity_ref_id
+                ].append(block)
+
         return InboxTaskFindResult(
             entries=[
                 InboxTaskFindResultEntry(
@@ -296,6 +321,9 @@ class InboxTaskFindUseCase(
                     if it.email_task_ref_id is not None
                     else None,
                     note=notes_by_inbox_task_ref_id.get(it.ref_id, None),
+                    time_event_blocks=time_event_blocks_by_inbox_task_ref_id.get(
+                        it.ref_id, None
+                    ),
                 )
                 for it in inbox_tasks
             ],

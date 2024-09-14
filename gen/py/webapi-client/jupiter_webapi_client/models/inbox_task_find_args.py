@@ -16,6 +16,7 @@ class InboxTaskFindArgs:
     Attributes:
         allow_archived (bool):
         include_notes (bool):
+        include_time_event_blocks (bool):
         filter_just_workable (Union[None, Unset, bool]):
         filter_ref_ids (Union[List[str], None, Unset]):
         filter_project_ref_ids (Union[List[str], None, Unset]):
@@ -25,6 +26,7 @@ class InboxTaskFindArgs:
 
     allow_archived: bool
     include_notes: bool
+    include_time_event_blocks: bool
     filter_just_workable: Union[None, Unset, bool] = UNSET
     filter_ref_ids: Union[List[str], None, Unset] = UNSET
     filter_project_ref_ids: Union[List[str], None, Unset] = UNSET
@@ -36,6 +38,8 @@ class InboxTaskFindArgs:
         allow_archived = self.allow_archived
 
         include_notes = self.include_notes
+
+        include_time_event_blocks = self.include_time_event_blocks
 
         filter_just_workable: Union[None, Unset, bool]
         if isinstance(self.filter_just_workable, Unset):
@@ -88,6 +92,7 @@ class InboxTaskFindArgs:
             {
                 "allow_archived": allow_archived,
                 "include_notes": include_notes,
+                "include_time_event_blocks": include_time_event_blocks,
             }
         )
         if filter_just_workable is not UNSET:
@@ -109,6 +114,8 @@ class InboxTaskFindArgs:
         allow_archived = d.pop("allow_archived")
 
         include_notes = d.pop("include_notes")
+
+        include_time_event_blocks = d.pop("include_time_event_blocks")
 
         def _parse_filter_just_workable(data: object) -> Union[None, Unset, bool]:
             if data is None:
@@ -195,6 +202,7 @@ class InboxTaskFindArgs:
         inbox_task_find_args = cls(
             allow_archived=allow_archived,
             include_notes=include_notes,
+            include_time_event_blocks=include_time_event_blocks,
             filter_just_workable=filter_just_workable,
             filter_ref_ids=filter_ref_ids,
             filter_project_ref_ids=filter_project_ref_ids,

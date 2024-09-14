@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from ..models.person import Person
     from ..models.project import Project
     from ..models.slack_task import SlackTask
+    from ..models.time_event_in_day_block import TimeEventInDayBlock
     from ..models.working_mem import WorkingMem
 
 
@@ -29,6 +30,7 @@ class InboxTaskLoadResult:
     Attributes:
         inbox_task (InboxTask): An inbox task.
         project (Project): The project.
+        time_event_blocks (List['TimeEventInDayBlock']):
         working_mem (Union['WorkingMem', None, Unset]):
         habit (Union['Habit', None, Unset]):
         chore (Union['Chore', None, Unset]):
@@ -42,6 +44,7 @@ class InboxTaskLoadResult:
 
     inbox_task: "InboxTask"
     project: "Project"
+    time_event_blocks: List["TimeEventInDayBlock"]
     working_mem: Union["WorkingMem", None, Unset] = UNSET
     habit: Union["Habit", None, Unset] = UNSET
     chore: Union["Chore", None, Unset] = UNSET
@@ -67,6 +70,11 @@ class InboxTaskLoadResult:
         inbox_task = self.inbox_task.to_dict()
 
         project = self.project.to_dict()
+
+        time_event_blocks = []
+        for time_event_blocks_item_data in self.time_event_blocks:
+            time_event_blocks_item = time_event_blocks_item_data.to_dict()
+            time_event_blocks.append(time_event_blocks_item)
 
         working_mem: Union[Dict[str, Any], None, Unset]
         if isinstance(self.working_mem, Unset):
@@ -146,6 +154,7 @@ class InboxTaskLoadResult:
             {
                 "inbox_task": inbox_task,
                 "project": project,
+                "time_event_blocks": time_event_blocks,
             }
         )
         if working_mem is not UNSET:
@@ -181,12 +190,20 @@ class InboxTaskLoadResult:
         from ..models.person import Person
         from ..models.project import Project
         from ..models.slack_task import SlackTask
+        from ..models.time_event_in_day_block import TimeEventInDayBlock
         from ..models.working_mem import WorkingMem
 
         d = src_dict.copy()
         inbox_task = InboxTask.from_dict(d.pop("inbox_task"))
 
         project = Project.from_dict(d.pop("project"))
+
+        time_event_blocks = []
+        _time_event_blocks = d.pop("time_event_blocks")
+        for time_event_blocks_item_data in _time_event_blocks:
+            time_event_blocks_item = TimeEventInDayBlock.from_dict(time_event_blocks_item_data)
+
+            time_event_blocks.append(time_event_blocks_item)
 
         def _parse_working_mem(data: object) -> Union["WorkingMem", None, Unset]:
             if data is None:
@@ -344,6 +361,7 @@ class InboxTaskLoadResult:
         inbox_task_load_result = cls(
             inbox_task=inbox_task,
             project=project,
+            time_event_blocks=time_event_blocks,
             working_mem=working_mem,
             habit=habit,
             chore=chore,

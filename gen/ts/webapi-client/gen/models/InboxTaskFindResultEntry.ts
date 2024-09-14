@@ -12,6 +12,7 @@ import type { Note } from './Note';
 import type { Person } from './Person';
 import type { Project } from './Project';
 import type { SlackTask } from './SlackTask';
+import type { TimeEventInDayBlock } from './TimeEventInDayBlock';
 
 /**
  * A single entry in the load all inbox tasks response.
@@ -20,6 +21,7 @@ export type InboxTaskFindResultEntry = {
     inbox_task: InboxTask;
     note?: (Note | null);
     project: Project;
+    time_event_blocks?: (Array<TimeEventInDayBlock> | null);
     habit?: (Habit | null);
     chore?: (Chore | null);
     big_plan?: (BigPlan | null);

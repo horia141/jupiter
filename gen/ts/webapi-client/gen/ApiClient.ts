@@ -22,6 +22,7 @@ import { GenService } from './services/GenService';
 import { GetSummariesService } from './services/GetSummariesService';
 import { HabitsService } from './services/HabitsService';
 import { InboxTasksService } from './services/InboxTasksService';
+import { InDayBlockService } from './services/InDayBlockService';
 import { ItemService } from './services/ItemService';
 import { JournalsService } from './services/JournalsService';
 import { LoadProgressReporterTokenService } from './services/LoadProgressReporterTokenService';
@@ -63,6 +64,7 @@ export class ApiClient {
     public readonly getSummaries: GetSummariesService;
     public readonly habits: HabitsService;
     public readonly inboxTasks: InboxTasksService;
+    public readonly inDayBlock: InDayBlockService;
     public readonly item: ItemService;
     public readonly journals: JournalsService;
     public readonly loadProgressReporterToken: LoadProgressReporterTokenService;
@@ -115,6 +117,7 @@ export class ApiClient {
         this.getSummaries = new GetSummariesService(this.request);
         this.habits = new HabitsService(this.request);
         this.inboxTasks = new InboxTasksService(this.request);
+        this.inDayBlock = new InDayBlockService(this.request);
         this.item = new ItemService(this.request);
         this.journals = new JournalsService(this.request);
         this.loadProgressReporterToken = new LoadProgressReporterTokenService(this.request);

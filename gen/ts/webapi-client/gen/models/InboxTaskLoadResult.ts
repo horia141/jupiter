@@ -12,6 +12,7 @@ import type { Note } from './Note';
 import type { Person } from './Person';
 import type { Project } from './Project';
 import type { SlackTask } from './SlackTask';
+import type { TimeEventInDayBlock } from './TimeEventInDayBlock';
 import type { WorkingMem } from './WorkingMem';
 
 /**
@@ -29,5 +30,6 @@ export type InboxTaskLoadResult = {
     slack_task?: (SlackTask | null);
     email_task?: (EmailTask | null);
     note?: (Note | null);
+    time_event_blocks: Array<TimeEventInDayBlock>;
 };
 

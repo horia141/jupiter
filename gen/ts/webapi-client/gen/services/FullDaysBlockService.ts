@@ -1,8 +1,8 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { FullDaysBlockLoadArgs } from '../models/FullDaysBlockLoadArgs';
-import type { FullDaysBlockLoadResult } from '../models/FullDaysBlockLoadResult';
+import type { TimeEventFullDaysBlockLoadArgs } from '../models/TimeEventFullDaysBlockLoadArgs';
+import type { TimeEventFullDaysBlockLoadResult } from '../models/TimeEventFullDaysBlockLoadResult';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
@@ -15,15 +15,15 @@ export class FullDaysBlockService {
      * Load a full day block and associated data.
      * Load a full day block and associated data.
      * @param requestBody The input data
-     * @returns FullDaysBlockLoadResult Successful response
+     * @returns TimeEventFullDaysBlockLoadResult Successful response
      * @throws ApiError
      */
-    public fullDaysBlockLoad(
-        requestBody?: FullDaysBlockLoadArgs,
-    ): CancelablePromise<FullDaysBlockLoadResult> {
+    public timeEventFullDaysBlockLoad(
+        requestBody?: TimeEventFullDaysBlockLoadArgs,
+    ): CancelablePromise<TimeEventFullDaysBlockLoadResult> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/full-days-block-load',
+            url: '/time-event-full-days-block-load',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

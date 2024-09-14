@@ -4,10 +4,10 @@ import type {
   CalendarEventsStats,
   CalendarEventsStatsPerSubperiod,
   EntityId,
+  InboxTaskEntry,
   PersonEntry,
   ScheduleFullDaysEventEntry,
   ScheduleInDayEventEntry,
-  TimeEventInDayBlock,
   Timezone,
   VacationEntry,
 } from "@jupiter/webapi-client";
@@ -74,7 +74,10 @@ import type {
 import {
   birthdayTimeEventName,
   BIRTHDAY_TIME_EVENT_COLOR,
+  calculateEndTimeInTimezone,
+  calculateStartTimeInTimezone,
   compareNamespaceForSortingFullDaysTimeEvents,
+  INBOX_TASK_TIME_EVENT_COLOR,
   VACATION_TIME_EVENT_COLOR,
 } from "~/logic/domain/time-event";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -110,17 +113,19 @@ const QuerySchema = {
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const query = parseQuery(request, QuerySchema);
+  const url = new URL(request.url);
 
   if (
     query.date === undefined ||
     query.period === undefined ||
     query.view === undefined
   ) {
-    const date = DateTime.now().toISODate();
-    const period = RecurringTaskPeriod.WEEKLY;
-    return redirect(
-      `${request.url}?date=${date}&period=${period}&view=${View.CALENDAR}`
-    );
+    // We do it like this so we keep the query params that are already there.
+    url.searchParams.set("date", query.date || DateTime.now().toISODate());
+    url.searchParams.set("period", query.period || RecurringTaskPeriod.WEEKLY);
+    url.searchParams.set("view", query.view || View.CALENDAR);
+
+    return redirect(`${url}`);
   }
 
   const response = await getLoggedInApiClient(
@@ -1489,13 +1494,14 @@ function ViewAsCalendarTimeEventInDayCell(
     case TimeEventNamespace.SCHEDULE_EVENT_IN_DAY: {
       const scheduleEntry = props.entry.entry as ScheduleInDayEventEntry;
 
-      const startTime = DateTime.fromISO(
-        `${scheduleEntry.time_event.start_date}T${scheduleEntry.time_event.start_time_in_day}`,
-        { zone: props.timezone }
+      const startTime = calculateStartTimeInTimezone(
+        props.entry.time_event,
+        props.timezone
       );
-      const endTime = startTime.plus({
-        minutes: props.entry.time_event.duration_mins,
-      });
+      const endTime = calculateEndTimeInTimezone(
+        props.entry.time_event,
+        props.timezone
+      );
       const minutesSinceStartOfDay = startTime
         .diff(props.startOfDay)
         .as("minutes");
@@ -1558,8 +1564,81 @@ function ViewAsCalendarTimeEventInDayCell(
       );
     }
 
-    case TimeEventNamespace.INBOX_TASK:
-      throw new Error("Not implemented");
+    case TimeEventNamespace.INBOX_TASK: {
+      const inboxTaskEntry = props.entry.entry as InboxTaskEntry;
+
+      const startTime = calculateStartTimeInTimezone(
+        props.entry.time_event,
+        props.timezone
+      );
+      const endTime = calculateEndTimeInTimezone(
+        props.entry.time_event,
+        props.timezone
+      );
+
+      const minutesSinceStartOfDay = startTime
+        .diff(props.startOfDay)
+        .as("minutes");
+
+      const clippedName = clipTimeEventInDayNameToWhatFits(
+        startTime,
+        endTime,
+        inboxTaskEntry.inbox_task.name,
+        theme.typography.htmlFontSize,
+        containerWidth,
+        minutesSinceStartOfDay,
+        props.entry.time_event.duration_mins
+      );
+
+      return (
+        <Box
+          ref={containerRef}
+          sx={{
+            fontSize: "12px",
+            position: "absolute",
+            top: calendarTimeEventInDayStartMinutesToRems(
+              minutesSinceStartOfDay
+            ),
+            height: calendarTimeEventInDayDurationToRems(
+              minutesSinceStartOfDay,
+              props.entry.time_event.duration_mins
+            ),
+            backgroundColor: scheduleStreamColorHex(
+              INBOX_TASK_TIME_EVENT_COLOR
+            ),
+            borderRadius: "0.25rem",
+            border: `1px solid ${theme.palette.background.paper}`,
+            minWidth: `calc(7rem - ${props.offset * 0.8}rem)`,
+            width: `calc(100% - ${props.offset * 0.8}rem)`,
+            marginLeft: `${props.offset * 0.8}rem`,
+            zIndex: props.offset,
+          }}
+        >
+          <EntityLink
+            key={`time-event-in-day-block-${props.entry.time_event.ref_id}`}
+            to={`/workspace/calendar/time-event/in-day-block/${props.entry.time_event.ref_id}?${query}`}
+          >
+            <Box
+              sx={{
+                position: "absolute",
+                width: "100%",
+                height: "100%",
+                top: "0.25rem",
+                left: "0.25rem",
+                overflow: "hidden",
+              }}
+            >
+              <EntityNameComponent
+                name={clippedName}
+                color={scheduleStreamColorContrastingHex(
+                  INBOX_TASK_TIME_EVENT_COLOR
+                )}
+              />
+            </Box>
+          </EntityLink>
+        </Box>
+      );
+    }
 
     default:
       throw new Error("Unkown namespace");
@@ -2044,16 +2123,17 @@ function ViewAsScheduleTimeEventInDaysRows(
   const [query] = useSearchParams();
   const isBigScreen = useBigScreen();
 
-  const startTime = DateTime.fromISO(
-    `${props.entry.time_event.start_date}T${props.entry.time_event.start_time_in_day}`,
-    { zone: props.timezone }
+  const startTime = calculateStartTimeInTimezone(
+    props.entry.time_event,
+    props.timezone
   );
-  const endTime = startTime.plus({
-    minutes: props.entry.time_event.duration_mins,
-  });
+  const endTime = calculateEndTimeInTimezone(
+    props.entry.time_event,
+    props.timezone
+  );
 
   switch (props.entry.time_event.namespace) {
-    case TimeEventNamespace.SCHEDULE_EVENT_IN_DAY:
+    case TimeEventNamespace.SCHEDULE_EVENT_IN_DAY: {
       const scheduleEntry = props.entry.entry as ScheduleInDayEventEntry;
       return (
         <React.Fragment>
@@ -2083,9 +2163,39 @@ function ViewAsScheduleTimeEventInDaysRows(
           </ViewAsScheduleEventCell>
         </React.Fragment>
       );
+    }
 
-    case TimeEventNamespace.INBOX_TASK:
-      throw new Error("Not implemented");
+    case TimeEventNamespace.INBOX_TASK: {
+      const inboxTaskEntry = props.entry.entry as InboxTaskEntry;
+      return (
+        <React.Fragment>
+          <ViewAsScheduleTimeCell isbigscreen={isBigScreen.toString()}>
+            [{startTime.toFormat("HH:mm")} - {endTime.toFormat("HH:mm")}]
+          </ViewAsScheduleTimeCell>
+
+          <ViewAsScheduleEventCell
+            color={scheduleStreamColorHex(INBOX_TASK_TIME_EVENT_COLOR)}
+            isbigscreen={isBigScreen.toString()}
+            height={scheduleTimeEventInDayDurationToRems(
+              props.entry.time_event.duration_mins
+            )}
+          >
+            <EntityLink
+              light
+              key={`time-event-in-day-block-${props.entry.time_event.ref_id}`}
+              to={`/workspace/calendar/time-event/in-day-block/${props.entry.time_event.ref_id}?${query}`}
+            >
+              <EntityNameComponent
+                name={inboxTaskEntry.inbox_task.name}
+                color={scheduleStreamColorContrastingHex(
+                  INBOX_TASK_TIME_EVENT_COLOR
+                )}
+              />
+            </EntityLink>
+          </ViewAsScheduleEventCell>
+        </React.Fragment>
+      );
+    }
 
     default:
       throw new Error("Unkown namespace");
@@ -2181,30 +2291,6 @@ function ViewAsStatsPerSubperiod(props: ViewAsStatsPerSubperiodProps) {
       </Box>
     </EntityLink>
   );
-}
-
-function calculateStartTimeInTimezone(
-  timeEvent: TimeEventInDayBlock,
-  timezone: Timezone
-): DateTime {
-  return DateTime.fromISO(
-    `${timeEvent.start_date}T${timeEvent.start_time_in_day}`,
-    { zone: timezone }
-  );
-}
-
-function calculateEndTimeInTimezone(
-  timeEvent: TimeEventInDayBlock,
-  timezone: Timezone
-): DateTime {
-  const startTime = DateTime.fromISO(
-    `${timeEvent.start_date}T${timeEvent.start_time_in_day}`,
-    { zone: timezone }
-  );
-
-  const endTime = startTime.plus({ minutes: timeEvent.duration_mins });
-
-  return endTime;
 }
 
 function computeTimeEventInDayDurationInQuarters(
@@ -2484,22 +2570,12 @@ function sortTimeEventInDayByStartTimeAndEndTime(
   entries: Array<CombinedTimeEventInDayEntry>
 ) {
   return entries.sort((a, b) => {
-    const aStartTime = DateTime.fromISO(
-      `${a.time_event.start_date}T${a.time_event.start_time_in_day}`,
-      { zone: "UTC" }
-    );
-    const bStartTime = DateTime.fromISO(
-      `${b.time_event.start_date}T${b.time_event.start_time_in_day}`,
-      { zone: "UTC" }
-    );
+    const aStartTime = calculateStartTimeInTimezone(a.time_event, "UTC");
+    const bStartTime = calculateStartTimeInTimezone(b.time_event, "UTC");
 
     if (aStartTime === bStartTime) {
-      const aEndTime = aStartTime.plus({
-        minutes: a.time_event.duration_mins,
-      });
-      const bEndTime = bStartTime.plus({
-        minutes: b.time_event.duration_mins,
-      });
+      const aEndTime = calculateEndTimeInTimezone(a.time_event, "UTC");
+      const bEndTime = calculateEndTimeInTimezone(b.time_event, "UTC");
       return aEndTime < bEndTime ? -1 : 1;
     }
     return aStartTime < bStartTime ? -1 : 1;

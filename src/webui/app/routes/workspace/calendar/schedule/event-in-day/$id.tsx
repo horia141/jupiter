@@ -311,7 +311,7 @@ export default function ScheduleEventInDayViewOne() {
           </FormControl>
 
           <Stack spacing={2} direction="row">
-            <ButtonGroup variant="outlined">
+            <ButtonGroup variant="outlined" disabled={!inputsEnabled}>
               <Button
                 disabled={!inputsEnabled}
                 variant={durationMins === 15 ? "contained" : "outlined"}

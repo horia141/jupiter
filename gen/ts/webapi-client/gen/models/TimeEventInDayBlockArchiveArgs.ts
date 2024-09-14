@@ -5,10 +5,9 @@
 import type { EntityId } from './EntityId';
 
 /**
- * FullDaysBlockLoadArgs.
+ * Args.
  */
-export type FullDaysBlockLoadArgs = {
+export type TimeEventInDayBlockArchiveArgs = {
     ref_id: EntityId;
-    allow_archived: boolean;
 };
 

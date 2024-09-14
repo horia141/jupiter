@@ -133,6 +133,7 @@ export async function loader({ request }: LoaderArgs) {
     {
       allow_archived: false,
       include_notes: false,
+      include_time_event_blocks: false,
     }
   );
   return json({

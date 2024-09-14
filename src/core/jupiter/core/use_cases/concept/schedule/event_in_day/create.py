@@ -10,7 +10,6 @@ from jupiter.core.domain.core.time_events.time_event_domain import TimeEventDoma
 from jupiter.core.domain.core.time_events.time_event_in_day_block import (
     TimeEventInDayBlock,
 )
-from jupiter.core.domain.core.time_events.time_event_namespace import TimeEventNamespace
 from jupiter.core.domain.core.time_in_day import TimeInDay
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.infra.generic_creator import generic_creator
@@ -87,15 +86,16 @@ class ScheduleEventInDayCreateUseCase(
             uow, progress_reporter, new_schedule_event_in_day
         )
 
-        new_time_event_in_day_block = TimeEventInDayBlock.new_time_event(
-            context.domain_context,
-            time_event_domain_ref_id=time_event_domain.ref_id,
-            namespace=TimeEventNamespace.SCHEDULE_EVENT_IN_DAY,
-            source_entity_ref_id=new_schedule_event_in_day.ref_id,
-            start_date=args.start_date,
-            start_time_in_day=args.start_time_in_day,
-            duration_mins=args.duration_mins,
-            timezone=user.timezone,
+        new_time_event_in_day_block = (
+            TimeEventInDayBlock.new_time_event_for_schedule_event(
+                context.domain_context,
+                time_event_domain_ref_id=time_event_domain.ref_id,
+                schedule_event_ref_id=new_schedule_event_in_day.ref_id,
+                start_date=args.start_date,
+                start_time_in_day=args.start_time_in_day,
+                duration_mins=args.duration_mins,
+                timezone=user.timezone,
+            )
         )
         new_time_event_in_day_block = await uow.get_for(TimeEventInDayBlock).create(
             new_time_event_in_day_block

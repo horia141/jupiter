@@ -10,7 +10,7 @@ import type { Vacation } from './Vacation';
 /**
  * FullDaysBlockLoadResult.
  */
-export type FullDaysBlockLoadResult = {
+export type TimeEventFullDaysBlockLoadResult = {
     full_days_block: TimeEventFullDaysBlock;
     schedule_event?: (ScheduleEventFullDays | null);
     person?: (Person | null);

@@ -20,7 +20,7 @@ export function TimeEventSourceLink(props: TimeEventSourceLinkProps) {
           variant="outlined"
           size="small"
           component={Link}
-          to={`/workspace/calendar/schedule/full-days/${props.timeEvent.source_entity_ref_id}`}
+          to={`/workspace/calendar/schedule/event-full-days/${props.timeEvent.source_entity_ref_id}`}
         >
           Link
         </Button>
@@ -34,7 +34,7 @@ export function TimeEventSourceLink(props: TimeEventSourceLinkProps) {
           variant="outlined"
           size="small"
           component={Link}
-          to={`/workspace/calendar/schedule/in-day/${props.timeEvent.source_entity_ref_id}`}
+          to={`/workspace/calendar/schedule/event-in-day/${props.timeEvent.source_entity_ref_id}`}
         >
           Link
         </Button>

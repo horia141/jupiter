@@ -59,6 +59,7 @@ import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { MetricTag } from "~/components/metric-tag";
 import { PersonTag } from "~/components/person-tag";
 import { SlackTaskTag } from "~/components/slack-task-tag";
+import { TimeEventInDayBlockStack } from "~/components/time-event-in-day-block-stack";
 import { WorkingMemTag } from "~/components/working-mem-tag";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
@@ -71,6 +72,7 @@ import {
   isInboxTaskCoreFieldEditable,
 } from "~/logic/domain/inbox-task";
 import { inboxTaskStatusName } from "~/logic/domain/inbox-task-status";
+import { sortInboxTaskTimeEventsNaturally } from "~/logic/domain/time-event";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { getIntent } from "~/logic/intent";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -384,6 +386,16 @@ export default function InboxTask() {
 
     setSelectedProject(loaderData.info.project.ref_id);
   }, [loaderData]);
+
+  const timeEventEntries = loaderData.info.time_event_blocks.map((block) => ({
+    time_event: block,
+    entry: {
+      inbox_task: loaderData.info.inbox_task,
+      time_events: [block],
+    },
+  }));
+  const sortedTimeEventEntries =
+    sortInboxTaskTimeEventsNaturally(timeEventEntries);
 
   return (
     <LeafPanel
@@ -723,6 +735,14 @@ export default function InboxTask() {
           </>
         )}
       </Card>
+
+      <TimeEventInDayBlockStack
+        topLevelInfo={topLevelInfo}
+        inputsEnabled={inputsEnabled}
+        title="Time Events"
+        createLocation={`/workspace/calendar/time-event/in-day-block/new-for-inbox-task?inboxTaskRefId=${loaderData.info.inbox_task.ref_id}`}
+        entries={sortedTimeEventEntries}
+      />
     </LeafPanel>
   );
 }

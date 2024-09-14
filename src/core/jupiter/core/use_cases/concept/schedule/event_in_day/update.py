@@ -64,11 +64,9 @@ class ScheduleEventInDayUpdateUseCase(
         )
         time_event = time_event.update(
             context.domain_context,
-            start_date=args.start_date.or_else(time_event.start_date),
-            start_time_in_day=args.start_time_in_day.or_else(
-                time_event.start_time_in_day
-            ),
-            duration_mins=args.duration_mins.or_else(time_event.duration_mins),
+            start_date=args.start_date,
+            start_time_in_day=args.start_time_in_day,
+            duration_mins=args.duration_mins,
             timezone=time_event.timezone,
         )
         await uow.get(TimeEventInDayBlockRepository).save(time_event)

@@ -24,7 +24,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 
 
 @use_case_args
-class FullDaysBlockLoadArgs(UseCaseArgsBase):
+class TimeEventFullDaysBlockLoadArgs(UseCaseArgsBase):
     """FullDaysBlockLoadArgs."""
 
     ref_id: EntityId
@@ -32,7 +32,7 @@ class FullDaysBlockLoadArgs(UseCaseArgsBase):
 
 
 @use_case_result
-class FullDaysBlockLoadResult(UseCaseResultBase):
+class TimeEventFullDaysBlockLoadResult(UseCaseResultBase):
     """FullDaysBlockLoadResult."""
 
     full_days_block: TimeEventFullDaysBlock
@@ -42,9 +42,9 @@ class FullDaysBlockLoadResult(UseCaseResultBase):
 
 
 @readonly_use_case()
-class FullDaysBlockLoadUseCase(
+class TimeEventFullDaysBlockLoadUseCase(
     AppTransactionalLoggedInReadOnlyUseCase[
-        FullDaysBlockLoadArgs, FullDaysBlockLoadResult
+        TimeEventFullDaysBlockLoadArgs, TimeEventFullDaysBlockLoadResult
     ]
 ):
     """Load a full day block and associated data."""
@@ -53,8 +53,8 @@ class FullDaysBlockLoadUseCase(
         self,
         uow: DomainUnitOfWork,
         context: AppLoggedInReadonlyUseCaseContext,
-        args: FullDaysBlockLoadArgs,
-    ) -> FullDaysBlockLoadResult:
+        args: TimeEventFullDaysBlockLoadArgs,
+    ) -> TimeEventFullDaysBlockLoadResult:
         """Load a full day block and associated data."""
         full_days_block = await uow.get_for(TimeEventFullDaysBlock).load_by_id(
             args.ref_id,
@@ -82,7 +82,7 @@ class FullDaysBlockLoadUseCase(
                 allow_archived=args.allow_archived,
             )
 
-        return FullDaysBlockLoadResult(
+        return TimeEventFullDaysBlockLoadResult(
             full_days_block=full_days_block,
             schedule_event=schedule_event,
             person=person,

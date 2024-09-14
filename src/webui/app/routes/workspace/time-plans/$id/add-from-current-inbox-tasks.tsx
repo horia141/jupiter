@@ -112,6 +112,7 @@ export async function loader({ request, params }: LoaderArgs) {
     ).inboxTasks.inboxTaskFind({
       allow_archived: false,
       include_notes: false,
+      include_time_event_blocks: false,
       filter_just_workable: true,
       filter_big_plan_ref_ids:
         query.bigPlanRefId !== undefined ? [query.bigPlanRefId] : undefined,

@@ -113,8 +113,6 @@ from .entity_summary import EntitySummary
 from .env import Env
 from .event_source import EventSource
 from .feature_control import FeatureControl
-from .full_days_block_load_args import FullDaysBlockLoadArgs
-from .full_days_block_load_result import FullDaysBlockLoadResult
 from .gc_do_all_args import GCDoAllArgs
 from .gc_do_args import GCDoArgs
 from .gc_load_runs_args import GCLoadRunsArgs
@@ -451,11 +449,23 @@ from .table_block import TableBlock
 from .table_block_kind import TableBlockKind
 from .time_event_domain import TimeEventDomain
 from .time_event_full_days_block import TimeEventFullDaysBlock
+from .time_event_full_days_block_load_args import TimeEventFullDaysBlockLoadArgs
+from .time_event_full_days_block_load_result import TimeEventFullDaysBlockLoadResult
 from .time_event_full_days_block_stats import TimeEventFullDaysBlockStats
 from .time_event_full_days_block_stats_per_group import TimeEventFullDaysBlockStatsPerGroup
 from .time_event_in_day_block import TimeEventInDayBlock
+from .time_event_in_day_block_archive_args import TimeEventInDayBlockArchiveArgs
+from .time_event_in_day_block_create_for_inbox_task_args import TimeEventInDayBlockCreateForInboxTaskArgs
+from .time_event_in_day_block_create_for_inbox_task_result import TimeEventInDayBlockCreateForInboxTaskResult
+from .time_event_in_day_block_load_args import TimeEventInDayBlockLoadArgs
+from .time_event_in_day_block_load_result import TimeEventInDayBlockLoadResult
+from .time_event_in_day_block_remove_args import TimeEventInDayBlockRemoveArgs
 from .time_event_in_day_block_stats import TimeEventInDayBlockStats
 from .time_event_in_day_block_stats_per_group import TimeEventInDayBlockStatsPerGroup
+from .time_event_in_day_block_update_args import TimeEventInDayBlockUpdateArgs
+from .time_event_in_day_block_update_args_duration_mins import TimeEventInDayBlockUpdateArgsDurationMins
+from .time_event_in_day_block_update_args_start_date import TimeEventInDayBlockUpdateArgsStartDate
+from .time_event_in_day_block_update_args_start_time_in_day import TimeEventInDayBlockUpdateArgsStartTimeInDay
 from .time_event_namespace import TimeEventNamespace
 from .time_plan import TimePlan
 from .time_plan_activity import TimePlanActivity
@@ -666,8 +676,6 @@ __all__ = (
     "Env",
     "EventSource",
     "FeatureControl",
-    "FullDaysBlockLoadArgs",
-    "FullDaysBlockLoadResult",
     "GCDoAllArgs",
     "GCDoArgs",
     "GCLoadRunsArgs",
@@ -1002,11 +1010,23 @@ __all__ = (
     "TableBlockKind",
     "TimeEventDomain",
     "TimeEventFullDaysBlock",
+    "TimeEventFullDaysBlockLoadArgs",
+    "TimeEventFullDaysBlockLoadResult",
     "TimeEventFullDaysBlockStats",
     "TimeEventFullDaysBlockStatsPerGroup",
     "TimeEventInDayBlock",
+    "TimeEventInDayBlockArchiveArgs",
+    "TimeEventInDayBlockCreateForInboxTaskArgs",
+    "TimeEventInDayBlockCreateForInboxTaskResult",
+    "TimeEventInDayBlockLoadArgs",
+    "TimeEventInDayBlockLoadResult",
+    "TimeEventInDayBlockRemoveArgs",
     "TimeEventInDayBlockStats",
     "TimeEventInDayBlockStatsPerGroup",
+    "TimeEventInDayBlockUpdateArgs",
+    "TimeEventInDayBlockUpdateArgsDurationMins",
+    "TimeEventInDayBlockUpdateArgsStartDate",
+    "TimeEventInDayBlockUpdateArgsStartTimeInDay",
     "TimeEventNamespace",
     "TimePlan",
     "TimePlanActivity",

@@ -3,11 +3,11 @@ from typing import Any, Dict, List, Type, TypeVar
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-T = TypeVar("T", bound="FullDaysBlockLoadArgs")
+T = TypeVar("T", bound="TimeEventFullDaysBlockLoadArgs")
 
 
 @_attrs_define
-class FullDaysBlockLoadArgs:
+class TimeEventFullDaysBlockLoadArgs:
     """FullDaysBlockLoadArgs.
 
     Attributes:
@@ -42,13 +42,13 @@ class FullDaysBlockLoadArgs:
 
         allow_archived = d.pop("allow_archived")
 
-        full_days_block_load_args = cls(
+        time_event_full_days_block_load_args = cls(
             ref_id=ref_id,
             allow_archived=allow_archived,
         )
 
-        full_days_block_load_args.additional_properties = d
-        return full_days_block_load_args
+        time_event_full_days_block_load_args.additional_properties = d
+        return time_event_full_days_block_load_args
 
     @property
     def additional_keys(self) -> List[str]:

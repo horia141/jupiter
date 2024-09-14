@@ -12,6 +12,11 @@ from jupiter.core.domain.concept.push_integrations.slack.slack_task import Slack
 from jupiter.core.domain.concept.working_mem.working_mem import WorkingMem
 from jupiter.core.domain.core.notes.note import Note, NoteRepository
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
+from jupiter.core.domain.core.time_events.time_event_domain import TimeEventDomain
+from jupiter.core.domain.core.time_events.time_event_in_day_block import (
+    TimeEventInDayBlock,
+)
+from jupiter.core.domain.core.time_events.time_event_namespace import TimeEventNamespace
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -51,6 +56,7 @@ class InboxTaskLoadResult(UseCaseResultBase):
     slack_task: SlackTask | None
     email_task: EmailTask | None
     note: Note | None
+    time_event_blocks: list[TimeEventInDayBlock]
 
 
 @readonly_use_case(WorkspaceFeature.INBOX_TASKS)
@@ -66,6 +72,10 @@ class InboxTaskLoadUseCase(
         args: InboxTaskLoadArgs,
     ) -> InboxTaskLoadResult:
         """Execute the command's action."""
+        workspace = context.workspace
+        time_event_domain = await uow.get_for(TimeEventDomain).load_by_parent(
+            workspace.ref_id
+        )
         inbox_task = await uow.get_for(InboxTask).load_by_id(
             args.ref_id, allow_archived=args.allow_archived
         )
@@ -132,6 +142,12 @@ class InboxTaskLoadUseCase(
             inbox_task.ref_id,
             allow_archived=args.allow_archived,
         )
+        time_event_blocks = await uow.get_for(TimeEventInDayBlock).find_all_generic(
+            parent_ref_id=time_event_domain.ref_id,
+            allow_archived=False,
+            namespace=TimeEventNamespace.INBOX_TASK,
+            source_entity_ref_id=[inbox_task.ref_id],
+        )
 
         return InboxTaskLoadResult(
             inbox_task=inbox_task,
@@ -145,4 +161,5 @@ class InboxTaskLoadUseCase(
             slack_task=slack_task,
             email_task=email_task,
             note=note,
+            time_event_blocks=time_event_blocks,
         )
