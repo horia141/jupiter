@@ -9,6 +9,7 @@ from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.infra.generic_creator import generic_creator
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.errors import InputValidationError
+from jupiter.core.framework.realm import RealmDecodingError
 from jupiter.core.framework.use_case import ProgressReporter
 from jupiter.core.framework.use_case_io import UseCaseArgsBase, UseCaseResultBase, use_case_args, use_case_result
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInMutationUseCaseContext, AppTransactionalLoggedInMutationUseCase, mutation_use_case
@@ -54,13 +55,17 @@ class ScheduleStreamCreateForExternalIcalUseCase(
         if calendar_ical_response.status_code != 200:
             raise InputValidationError(f"Failed to fetch iCal from {args.source_ical_url} (error {calendar_ical_response.status_code})")
         calendar_ical = calendar_ical_response.text
-        calendar = Calendar.from_ical(calendar_ical)
 
-        # TODO: error handling here!
+        try:
+            calendar = Calendar.from_ical(calendar_ical)
+        except Exception as err:
+            raise InputValidationError(f"Failed to parse iCal from {args.source_ical_url} ({err})")
 
-        name = ScheduleStreamName(calendar.get("X-WR-CALNAME"))
-        # color = calendar.get("X-APPLE-CALENDAR-COLOR")
-        color = ScheduleStreamColor.RED
+        name = self._realm_codec_registry.db_decode(ScheduleStreamName, calendar.get("X-WR-CALNAME"))
+        try:
+            color = self._realm_codec_registry.db_decode(ScheduleStreamColor, calendar.get("COLOR"))
+        except RealmDecodingError:
+            color = ScheduleStreamColor.YELLOW
 
         schedule_stream = ScheduleStream.new_schedule_stream_from_external_ical(
             context.domain_context,
