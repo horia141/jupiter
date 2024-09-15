@@ -1,5 +1,4 @@
 """A GC log attched to a workspace."""
-
 from jupiter.core.domain.application.gc.gc_log_entry import GCLogEntry
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext

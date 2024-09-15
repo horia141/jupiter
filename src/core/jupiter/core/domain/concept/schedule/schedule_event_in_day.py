@@ -1,6 +1,8 @@
 """An event in a schedule."""
 from jupiter.core.domain.concept.schedule.schedule_event_name import ScheduleEventName
-from jupiter.core.domain.concept.schedule.schedule_external_uid import ScheduleExternalUid
+from jupiter.core.domain.concept.schedule.schedule_external_uid import (
+    ScheduleExternalUid,
+)
 from jupiter.core.domain.concept.schedule.schedule_source import ScheduleSource
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
@@ -60,7 +62,7 @@ class ScheduleEventInDay(LeafEntity):
             name=name,
             external_uid=None,
         )
-    
+
     @staticmethod
     @create_entity_action
     def new_schedule_event_in_day_from_external_ical(
@@ -88,7 +90,9 @@ class ScheduleEventInDay(LeafEntity):
     ) -> "ScheduleEventInDay":
         """Change the schedule stream."""
         if self.source == ScheduleSource.EXTERNAL_ICAL:
-            raise Exception("Cannot change the schedule stream of an external iCal event.")
+            raise Exception(
+                "Cannot change the schedule stream of an external iCal event."
+            )
         return self._new_version(
             ctx,
             schedule_stream_ref_id=schedule_stream_ref_id,
@@ -110,4 +114,3 @@ class ScheduleEventInDay(LeafEntity):
     def can_be_modified_independently(self) -> bool:
         """Return whether the event can be modified independently."""
         return self.source == ScheduleSource.USER
-    

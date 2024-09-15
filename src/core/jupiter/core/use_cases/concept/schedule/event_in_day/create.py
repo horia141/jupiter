@@ -76,11 +76,13 @@ class ScheduleEventInDayCreateUseCase(
             workspace.ref_id
         )
 
-        new_schedule_event_in_day = ScheduleEventInDay.new_schedule_event_in_day_for_user(
-            context.domain_context,
-            schedule_domain_ref_id=schedule_domain.ref_id,
-            schedule_stream_ref_id=schedule_stream.ref_id,
-            name=args.name,
+        new_schedule_event_in_day = (
+            ScheduleEventInDay.new_schedule_event_in_day_for_user(
+                context.domain_context,
+                schedule_domain_ref_id=schedule_domain.ref_id,
+                schedule_stream_ref_id=schedule_stream.ref_id,
+                name=args.name,
+            )
         )
         new_schedule_event_in_day = await generic_creator(
             uow, progress_reporter, new_schedule_event_in_day

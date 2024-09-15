@@ -37,7 +37,9 @@ class ScheduleEventInDayArchiveUseCase(
         args: ScheduleEventInDayArchiveArgs,
     ) -> None:
         """Execute the command's action."""
-        schedule_event_in_day = await uow.get_for(ScheduleEventInDay).load_by_id(args.ref_id)
+        schedule_event_in_day = await uow.get_for(ScheduleEventInDay).load_by_id(
+            args.ref_id
+        )
         if not schedule_event_in_day.can_be_modified_independently:
             raise InputValidationError("Cannot archive a non-user schedule event")
         await generic_archiver(

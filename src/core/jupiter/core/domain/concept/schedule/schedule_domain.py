@@ -6,10 +6,12 @@ from jupiter.core.domain.concept.schedule.schedule_event_in_day import (
     ScheduleEventInDay,
 )
 from jupiter.core.domain.concept.schedule.schedule_stream import ScheduleStream
+from jupiter.core.domain.concept.schedule.schedule_sync_log import ScheduleSyncLog
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     ContainsMany,
+    ContainsOne,
     IsRefId,
     ParentLink,
     TrunkEntity,
@@ -24,7 +26,9 @@ class ScheduleDomain(TrunkEntity):
 
     workspace: ParentLink
 
-    schedules = ContainsMany(ScheduleStream, schedule_domain_ref_id=IsRefId())
+    sync_log = ContainsOne(ScheduleSyncLog, schedule_domain_ref_id=IsRefId())
+
+    streams = ContainsMany(ScheduleStream, schedule_domain_ref_id=IsRefId())
     in_day_events = ContainsMany(ScheduleEventInDay, schedule_domain_ref_id=IsRefId())
     full_days_events = ContainsMany(
         ScheduleEventFullDays, schedule_domain_ref_id=IsRefId()

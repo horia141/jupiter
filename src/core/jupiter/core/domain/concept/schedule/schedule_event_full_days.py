@@ -1,6 +1,8 @@
 """A full day block in a schedule."""
 from jupiter.core.domain.concept.schedule.schedule_event_name import ScheduleEventName
-from jupiter.core.domain.concept.schedule.schedule_external_uid import ScheduleExternalUid
+from jupiter.core.domain.concept.schedule.schedule_external_uid import (
+    ScheduleExternalUid,
+)
 from jupiter.core.domain.concept.schedule.schedule_source import ScheduleSource
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
@@ -60,7 +62,7 @@ class ScheduleEventFullDays(LeafEntity):
             name=name,
             external_uid=None,
         )
-    
+
     @staticmethod
     @create_entity_action
     def new_schedule_full_days_block_from_external_ical(
@@ -110,4 +112,3 @@ class ScheduleEventFullDays(LeafEntity):
     def can_be_modified_independently(self) -> bool:
         """Return whether the event can be modified independently."""
         return self.source == ScheduleSource.USER
-    

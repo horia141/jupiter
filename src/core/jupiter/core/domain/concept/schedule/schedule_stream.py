@@ -5,13 +5,13 @@ from jupiter.core.domain.concept.schedule.schedule_event_full_days import (
 from jupiter.core.domain.concept.schedule.schedule_event_in_day import (
     ScheduleEventInDay,
 )
+from jupiter.core.domain.concept.schedule.schedule_source import (
+    ScheduleSource,
+)
 from jupiter.core.domain.concept.schedule.schedule_stream_color import (
     ScheduleStreamColor,
 )
 from jupiter.core.domain.concept.schedule.schedule_stream_name import ScheduleStreamName
-from jupiter.core.domain.concept.schedule.schedule_source import (
-    ScheduleSource,
-)
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.core.url import URL
@@ -68,7 +68,7 @@ class ScheduleStream(LeafEntity):
             color=color,
             source_ical_url=None,
         )
-    
+
     @staticmethod
     @create_entity_action
     def new_schedule_stream_from_external_ical(
@@ -96,8 +96,6 @@ class ScheduleStream(LeafEntity):
         color: UpdateAction[ScheduleStreamColor],
     ) -> "ScheduleStream":
         """Update the schedule."""
-        if self.source == ScheduleSource.EXTERNAL_ICAL:
-            raise CannotModifyScheduleStreamError("Cannot modify an external schedule.")
         return self._new_version(
             ctx,
             name=name.or_else(self.name),

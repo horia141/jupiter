@@ -108,7 +108,12 @@ class AppGuestMutationUseCase(
         search_storage_engine: SearchStorageEngine,
     ) -> None:
         """Constructor."""
-        super().__init__(time_provider, realm_codec_registry, invocation_recorder, progress_reporter_factory)
+        super().__init__(
+            time_provider,
+            realm_codec_registry,
+            invocation_recorder,
+            progress_reporter_factory,
+        )
         self._global_properties = global_properties
         self._auth_token_stamper = auth_token_stamper
         self._domain_storage_engine = domain_storage_engine
@@ -273,7 +278,12 @@ class AppLoggedInMutationUseCase(
         use_case_storage_engine: UseCaseStorageEngine,
     ) -> None:
         """Constructor."""
-        super().__init__(time_provider, realm_codec_registry, invocation_recorder, progress_reporter_factory)
+        super().__init__(
+            time_provider,
+            realm_codec_registry,
+            invocation_recorder,
+            progress_reporter_factory,
+        )
         self._global_properties = global_properties
         self._auth_token_stamper = auth_token_stamper
         self._domain_storage_engine = domain_storage_engine

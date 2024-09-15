@@ -10,39 +10,35 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'b91f4501b574'
-down_revision = '6c4757c48546'
+revision = "b91f4501b574"
+down_revision = "6c4757c48546"
 branch_labels = None
 depends_on = None
 
 
 def upgrade() -> None:
-    with op.batch_alter_table('schedule_event_full_days') as batch_op:
-        batch_op.add_column(
-            sa.Column('source', sa.String(), nullable=True)
-        )
-        batch_op.add_column(
-            sa.Column('external_uid', sa.String(), nullable=True)
-        )
+    with op.batch_alter_table("schedule_event_full_days") as batch_op:
+        batch_op.add_column(sa.Column("source", sa.String(), nullable=True))
+        batch_op.add_column(sa.Column("external_uid", sa.String(), nullable=True))
 
-    with op.batch_alter_table('schedule_event_in_day') as batch_op:
-        batch_op.add_column(
-            sa.Column('source', sa.String(), nullable=True)
-        )
-        batch_op.add_column(
-            sa.Column('external_uid', sa.String(), nullable=True)
-        )
+    with op.batch_alter_table("schedule_event_in_day") as batch_op:
+        batch_op.add_column(sa.Column("source", sa.String(), nullable=True))
+        batch_op.add_column(sa.Column("external_uid", sa.String(), nullable=True))
 
-    op.execute(""" 
+    op.execute(
+        """ 
         update schedule_event_full_days
         set source = 'user'
         where source is null;
-    """)
-    op.execute(""" 
+    """
+    )
+    op.execute(
+        """ 
         update schedule_event_in_day
         set source = 'user'
         where source is null;
-    """)
+    """
+    )
 
 
 def downgrade() -> None:

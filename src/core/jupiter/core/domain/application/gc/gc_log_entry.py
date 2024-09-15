@@ -1,5 +1,4 @@
 """A particular entry in the GC log."""
-
 import abc
 
 from jupiter.core.domain.application.gen.gen_log_entry import GenLogEntry

@@ -1,9 +1,9 @@
 """Use case for archiving a schedule stream."""
 from jupiter.core.domain.concept.schedule.schedule_domain import ScheduleDomain
-from jupiter.core.domain.concept.schedule.schedule_stream import ScheduleStream
 from jupiter.core.domain.concept.schedule.schedule_source import (
     ScheduleSource,
 )
+from jupiter.core.domain.concept.schedule.schedule_stream import ScheduleStream
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.infra.generic_archiver import generic_archiver
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
