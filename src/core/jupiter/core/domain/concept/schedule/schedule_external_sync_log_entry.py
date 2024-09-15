@@ -17,7 +17,7 @@ from jupiter.core.framework.value import CompositeValue, value
 
 
 @value
-class ScheduleSyncLogPerStreamResult(CompositeValue):
+class ScheduleExternalSyncLogPerStreamResult(CompositeValue):
     """The result of syncing a stream."""
 
     schedule_stream_ref_id: EntityId
@@ -26,27 +26,30 @@ class ScheduleSyncLogPerStreamResult(CompositeValue):
 
 
 @entity
-class ScheduleSyncLogEntry(LeafEntity):
+class ScheduleExternalSyncLogEntry(LeafEntity):
     """An entry in a sync log."""
 
-    schedule_sync_log: ParentLink
+    schedule_external_sync_log: ParentLink
     source: EventSource
+    filter_schedule_stream_ref_id: list[EntityId] | None
     opened: bool
-    per_stream_results: list[ScheduleSyncLogPerStreamResult]
+    per_stream_results: list[ScheduleExternalSyncLogPerStreamResult]
     entity_records: list[EntitySummary]
 
     @staticmethod
     @create_entity_action
     def new_log_entry(
         ctx: DomainContext,
-        schedule_sync_log_ref_id: EntityId,
-    ) -> "ScheduleSyncLogEntry":
+        schedule_external_sync_log_ref_id: EntityId,
+        filter_schedule_stream_ref_id: list[EntityId] | None,
+    ) -> "ScheduleExternalSyncLogEntry":
         """Create a new log entry."""
-        return ScheduleSyncLogEntry._create(
+        return ScheduleExternalSyncLogEntry._create(
             ctx,
-            name=ScheduleSyncLogEntry.build_name(ctx.action_timestamp),
-            schedule_sync_log=ParentLink(schedule_sync_log_ref_id),
+            name=ScheduleExternalSyncLogEntry.build_name(ctx.action_timestamp),
+            schedule_external_sync_log=ParentLink(schedule_external_sync_log_ref_id),
             source=ctx.event_source,
+            filter_schedule_stream_ref_id=filter_schedule_stream_ref_id,
             opened=True,
             per_stream_results=[],
             entity_records=[],
@@ -57,7 +60,7 @@ class ScheduleSyncLogEntry(LeafEntity):
         self,
         ctx: DomainContext,
         schedule_stream_ref_id: EntityId,
-    ) -> "ScheduleSyncLogEntry":
+    ) -> "ScheduleExternalSyncLogEntry":
         """Mark a stream as successfully synced."""
         if not self.opened:
             raise Exception("Can't add an entity to a closed GC log entry.")
@@ -65,7 +68,7 @@ class ScheduleSyncLogEntry(LeafEntity):
             ctx,
             per_stream_results=[
                 *self.per_stream_results,
-                ScheduleSyncLogPerStreamResult(
+                ScheduleExternalSyncLogPerStreamResult(
                     schedule_stream_ref_id=schedule_stream_ref_id,
                     success=True,
                     error_msg=None,
@@ -79,7 +82,7 @@ class ScheduleSyncLogEntry(LeafEntity):
         ctx: DomainContext,
         schedule_stream_ref_id: EntityId,
         error_msg: str,
-    ) -> "ScheduleSyncLogEntry":
+    ) -> "ScheduleExternalSyncLogEntry":
         """Mark a stream as failed to sync."""
         if not self.opened:
             raise Exception("Can't add an entity to a closed GC log entry.")
@@ -87,7 +90,7 @@ class ScheduleSyncLogEntry(LeafEntity):
             ctx,
             per_stream_results=[
                 *self.per_stream_results,
-                ScheduleSyncLogPerStreamResult(
+                ScheduleExternalSyncLogPerStreamResult(
                     schedule_stream_ref_id=schedule_stream_ref_id,
                     success=False,
                     error_msg=error_msg,
@@ -100,7 +103,7 @@ class ScheduleSyncLogEntry(LeafEntity):
         self,
         ctx: DomainContext,
         entity: CrownEntity,
-    ) -> "ScheduleSyncLogEntry":
+    ) -> "ScheduleExternalSyncLogEntry":
         """Add an entity to the GC log entry."""
         if not self.opened:
             raise Exception("Can't add an entity to a closed GC log entry.")
@@ -110,7 +113,7 @@ class ScheduleSyncLogEntry(LeafEntity):
         )
 
     @update_entity_action
-    def close(self, ctx: DomainContext) -> "ScheduleSyncLogEntry":
+    def close(self, ctx: DomainContext) -> "ScheduleExternalSyncLogEntry":
         """Close the log entry."""
         return self._new_version(
             ctx,

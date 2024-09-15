@@ -63,12 +63,17 @@ class ScheduleStreamCreateForExternalIcalUseCase(
             workspace.ref_id
         )
 
-        calendar_ical_response = requests.get(args.source_ical_url.the_url)
-        if calendar_ical_response.status_code != 200:
+        try:
+            calendar_ical_response = requests.get(args.source_ical_url.the_url)
+            if calendar_ical_response.status_code != 200:
+                raise InputValidationError(
+                    f"Failed to fetch iCal from {args.source_ical_url} (error {calendar_ical_response.status_code})"
+                )
+            calendar_ical = calendar_ical_response.text
+        except requests.RequestException as err:
             raise InputValidationError(
-                f"Failed to fetch iCal from {args.source_ical_url} (error {calendar_ical_response.status_code})"
-            )
-        calendar_ical = calendar_ical_response.text
+                f"Failed to fetch iCal from {args.source_ical_url} ({err})"
+            ) from err
 
         try:
             calendar = Calendar.from_ical(calendar_ical)
