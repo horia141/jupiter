@@ -89,6 +89,7 @@ async def main() -> None:
     load_top_level_info_use_case = LoadTopLevelInfoUseCase(
         global_properties=global_properties,
         time_provider=time_provider,
+        realm_codec_registry=realm_codec_registry,
         auth_token_stamper=auth_token_stamper,
         domain_storage_engine=domain_storage_engine,
         search_storage_engine=search_storage_engine,
