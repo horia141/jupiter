@@ -1,8 +1,8 @@
 """Use case for removing a schedule stream."""
 from jupiter.core.domain.concept.schedule.schedule_domain import ScheduleDomain
 from jupiter.core.domain.concept.schedule.schedule_stream import ScheduleStream
-from jupiter.core.domain.concept.schedule.schedule_stream_source import (
-    ScheduleStreamSource,
+from jupiter.core.domain.concept.schedule.schedule_source import (
+    ScheduleSource,
 )
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.infra.generic_crown_remover import generic_crown_remover
@@ -45,7 +45,7 @@ class ScheduleStreamRemoveUseCase(
         )
         if (
             not schedule_stream.archived
-            and schedule_stream.source == ScheduleStreamSource.USER
+            and schedule_stream.source == ScheduleSource.USER
         ):
             schedule_domain = await uow.get_for(ScheduleDomain).load_by_parent(
                 workspace.ref_id
@@ -54,7 +54,7 @@ class ScheduleStreamRemoveUseCase(
                 ScheduleStream
             ).find_all_generic(
                 parent_ref_id=schedule_domain.ref_id,
-                source=ScheduleStreamSource.USER,
+                source=ScheduleSource.USER,
                 allow_archived=False,
             )
 

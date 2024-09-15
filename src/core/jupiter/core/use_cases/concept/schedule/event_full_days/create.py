@@ -74,7 +74,7 @@ class ScheduleEventFullDaysCreateUseCase(
         )
 
         new_schedule_event_full_days = (
-            ScheduleEventFullDays.new_schedule_full_days_block(
+            ScheduleEventFullDays.new_schedule_full_days_block_for_user(
                 context.domain_context,
                 schedule_domain_ref_id=schedule_domain.ref_id,
                 schedule_stream_ref_id=schedule_stream.ref_id,

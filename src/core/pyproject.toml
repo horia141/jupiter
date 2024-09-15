@@ -32,6 +32,7 @@ inflection = "^0.5.1"
 typing-extensions = "^4.11.0"
 pydantic = "^2.7"
 cryptography = "^42.0.5"
+icalendar = "^5.0.13"
 
 [tool.poetry.dev-dependencies]
 types-requests = "2.27.16"

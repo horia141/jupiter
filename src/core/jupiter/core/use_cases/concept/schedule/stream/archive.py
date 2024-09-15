@@ -1,8 +1,8 @@
 """Use case for archiving a schedule stream."""
 from jupiter.core.domain.concept.schedule.schedule_domain import ScheduleDomain
 from jupiter.core.domain.concept.schedule.schedule_stream import ScheduleStream
-from jupiter.core.domain.concept.schedule.schedule_stream_source import (
-    ScheduleStreamSource,
+from jupiter.core.domain.concept.schedule.schedule_source import (
+    ScheduleSource,
 )
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.infra.generic_archiver import generic_archiver
@@ -41,13 +41,13 @@ class ScheduleStreamArchiveUseCase(
         """Execute the command's action."""
         workspace = context.workspace
         schedule_stream = await uow.get_for(ScheduleStream).load_by_id(args.ref_id)
-        if schedule_stream.source == ScheduleStreamSource.USER:
+        if schedule_stream.source == ScheduleSource.USER:
             schedule_domain = await uow.get_for(ScheduleDomain).load_by_parent(
                 workspace.ref_id
             )
             all_user_schedules = await uow.get_for(ScheduleStream).find_all_generic(
                 parent_ref_id=schedule_domain.ref_id,
-                source=ScheduleStreamSource.USER,
+                source=ScheduleSource.USER,
                 allow_archived=False,
             )
 

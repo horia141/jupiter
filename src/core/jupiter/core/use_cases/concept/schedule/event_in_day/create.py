@@ -76,7 +76,7 @@ class ScheduleEventInDayCreateUseCase(
             workspace.ref_id
         )
 
-        new_schedule_event_in_day = ScheduleEventInDay.new_schedule_event_in_day(
+        new_schedule_event_in_day = ScheduleEventInDay.new_schedule_event_in_day_for_user(
             context.domain_context,
             schedule_domain_ref_id=schedule_domain.ref_id,
             schedule_stream_ref_id=schedule_stream.ref_id,

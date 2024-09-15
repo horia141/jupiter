@@ -1,5 +1,7 @@
 """A full day block in a schedule."""
 from jupiter.core.domain.concept.schedule.schedule_event_name import ScheduleEventName
+from jupiter.core.domain.concept.schedule.schedule_external_uid import ScheduleExternalUid
+from jupiter.core.domain.concept.schedule.schedule_source import ScheduleSource
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.core.time_events.time_event_full_days_block import (
@@ -28,7 +30,9 @@ class ScheduleEventFullDays(LeafEntity):
     schedule_domain: ParentLink
 
     schedule_stream_ref_id: EntityId
+    source: ScheduleSource
     name: ScheduleEventName
+    external_uid: ScheduleExternalUid | None
 
     time_event_full_days_block = OwnsOne(
         TimeEventFullDaysBlock,
@@ -41,7 +45,7 @@ class ScheduleEventFullDays(LeafEntity):
 
     @staticmethod
     @create_entity_action
-    def new_schedule_full_days_block(
+    def new_schedule_full_days_block_for_user(
         ctx: DomainContext,
         schedule_domain_ref_id: EntityId,
         schedule_stream_ref_id: EntityId,
@@ -52,7 +56,28 @@ class ScheduleEventFullDays(LeafEntity):
             ctx,
             schedule_domain=ParentLink(schedule_domain_ref_id),
             schedule_stream_ref_id=schedule_stream_ref_id,
+            source=ScheduleSource.USER,
             name=name,
+            external_uid=None,
+        )
+    
+    @staticmethod
+    @create_entity_action
+    def new_schedule_full_days_block_from_external_ical(
+        ctx: DomainContext,
+        schedule_domain_ref_id: EntityId,
+        schedule_stream_ref_id: EntityId,
+        name: ScheduleEventName,
+        external_uid: ScheduleExternalUid,
+    ) -> "ScheduleEventFullDays":
+        """Create a schedule event from an external iCal."""
+        return ScheduleEventFullDays._create(
+            ctx,
+            schedule_domain=ParentLink(schedule_domain_ref_id),
+            schedule_stream_ref_id=schedule_stream_ref_id,
+            source=ScheduleSource.EXTERNAL_ICAL,
+            name=name,
+            external_uid=external_uid,
         )
 
     @update_entity_action
@@ -62,6 +87,8 @@ class ScheduleEventFullDays(LeafEntity):
         schedule_stream_ref_id: EntityId,
     ) -> "ScheduleEventFullDays":
         """Change the schedule stream."""
+        if self.source == ScheduleSource.EXTERNAL_ICAL:
+            raise Exception("Cannot change schedule stream for external iCal event.")
         return self._new_version(
             ctx,
             schedule_stream_ref_id=schedule_stream_ref_id,
@@ -78,3 +105,9 @@ class ScheduleEventFullDays(LeafEntity):
             ctx,
             name=name.or_else(self.name),
         )
+
+    @property
+    def can_be_modified_independently(self) -> bool:
+        """Return whether the event can be modified independently."""
+        return self.source == ScheduleSource.USER
+    
