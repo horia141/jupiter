@@ -1,7 +1,7 @@
 """An external UID for a schedule."""
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.value import AtomicValue, value
-from jupiter.core.use_cases.infra.realms import PrimitiveAtomicValueDatabaseDecoder
+from jupiter.core.use_cases.infra.realms import PrimitiveAtomicValueDatabaseDecoder, PrimitiveAtomicValueDatabaseEncoder
 
 @value
 class ScheduleExternalUid(AtomicValue[str]):
@@ -15,6 +15,13 @@ class ScheduleExternalUid(AtomicValue[str]):
         if not value:
             raise InputValidationError("External UID cannot be empty")
         return ScheduleExternalUid(value)
+
+class ScheduleExternalUidDatabaseEncoder(PrimitiveAtomicValueDatabaseEncoder[ScheduleExternalUid]):
+    """Encode to a database primitive."""
+
+    def to_primitive(self, value: ScheduleExternalUid) -> str:
+        """Encode to a raw string."""
+        return value.the_uid
 
 
 class ScheduleExternalUidDatabaseDecoder(PrimitiveAtomicValueDatabaseDecoder[ScheduleExternalUid]):

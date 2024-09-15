@@ -103,3 +103,8 @@ class ScheduleStream(LeafEntity):
             name=name.or_else(self.name),
             color=color.or_else(self.color),
         )
+
+    @property
+    def can_be_modified_independently(self) -> bool:
+        """Return whether the schedule can be modified independently."""
+        return self.source == ScheduleSource.USER

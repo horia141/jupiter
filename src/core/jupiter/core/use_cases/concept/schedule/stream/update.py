@@ -1,5 +1,5 @@
 """Use case for updating a schedule stream."""
-from jupiter.core.domain.concept.schedule.schedule_stream import ScheduleStream
+from jupiter.core.domain.concept.schedule.schedule_stream import CannotModifyScheduleStreamError, ScheduleStream
 from jupiter.core.domain.concept.schedule.schedule_stream_color import (
     ScheduleStreamColor,
 )
@@ -7,6 +7,7 @@ from jupiter.core.domain.concept.schedule.schedule_stream_name import ScheduleSt
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import ProgressReporter
 from jupiter.core.framework.use_case_io import UseCaseArgsBase, use_case_args
@@ -40,13 +41,16 @@ class ScheduleStreamUpdateUseCase(
         args: ScheduleStreamUpdateArgs,
     ) -> None:
         """Execute the command's action."""
-        schedule_stream = await uow.get_for(ScheduleStream).load_by_id(args.ref_id)
+        try:
+            schedule_stream = await uow.get_for(ScheduleStream).load_by_id(args.ref_id)
 
-        schedule_stream = schedule_stream.update(
-            context.domain_context,
-            name=args.name,
-            color=args.color,
-        )
+            schedule_stream = schedule_stream.update(
+                context.domain_context,
+                name=args.name,
+                color=args.color,
+            )
 
-        await uow.get_for(ScheduleStream).save(schedule_stream)
-        await progress_reporter.mark_updated(schedule_stream)
+            await uow.get_for(ScheduleStream).save(schedule_stream)
+            await progress_reporter.mark_updated(schedule_stream)
+        except CannotModifyScheduleStreamError as err:
+            raise InputValidationError(str(err)) from err
