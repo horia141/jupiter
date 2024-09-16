@@ -107,6 +107,8 @@ class ScheduleExternalSyncLogEntry(LeafEntity):
         """Add an entity to the GC log entry."""
         if not self.opened:
             raise Exception("Can't add an entity to a closed GC log entry.")
+        if len(self.entity_records) >= 100:
+            return self
         return self._new_version(
             ctx,
             entity_records=[*self.entity_records, EntitySummary.from_entity(entity)],
