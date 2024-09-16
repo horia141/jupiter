@@ -15,6 +15,7 @@ from jupiter.core.framework.entity import (
 )
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.repository import LeafEntityRepository
+from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.value import CompositeValue, value
 
 
@@ -101,17 +102,19 @@ class TimeEventFullDaysBlock(LeafSupportEntity):
     def update_for_schedule_event(
         self,
         ctx: DomainContext,
-        start_date: ADate,
-        duration_days: int,
+        start_date: UpdateAction[ADate],
+        duration_days: UpdateAction[int],
     ) -> "TimeEventFullDaysBlock":
         """Update the time event."""
-        if duration_days < 1:
+        if duration_days.test(lambda t: t < 1):
             raise InputValidationError("Duration must be at least 1 day.")
         return self._new_version(
             ctx,
-            start_date=start_date,
-            duration_days=duration_days,
-            end_date=start_date.add_days(duration_days),
+            start_date=start_date.or_else(self.start_date),
+            duration_days=duration_days.or_else(self.duration_days),
+            end_date=start_date.or_else(self.start_date).add_days(
+                duration_days.or_else(self.duration_days)
+            ),
         )
 
     @update_entity_action

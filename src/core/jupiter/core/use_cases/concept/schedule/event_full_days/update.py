@@ -67,7 +67,7 @@ class ScheduleEventFullDaysUpdateUseCase(
         )
         time_event = time_event.update_for_schedule_event(
             context.domain_context,
-            start_date=args.start_date.or_else(time_event.start_date),
-            duration_days=args.duration_days.or_else(time_event.duration_days),
+            start_date=args.start_date,
+            duration_days=args.duration_days,
         )
         await uow.get_for(TimeEventFullDaysBlock).save(time_event)
