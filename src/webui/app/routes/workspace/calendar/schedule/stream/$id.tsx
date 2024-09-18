@@ -39,6 +39,7 @@ import {
 import { SectionCardNew } from "~/components/infra/section-card-new";
 import { ScheduleStreamColorInput } from "~/components/schedule-stream-color-input";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
+import { isCorePropertyEditable } from "~/logic/domain/schedule-stream";
 import { basicShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -166,6 +167,7 @@ export default function ScheduleStreamViewOne() {
 
   const inputsEnabled =
     transition.state === "idle" && !loaderData.scheduleStream.archived;
+  const corePropertyEditable = isCorePropertyEditable(loaderData.scheduleStream);
 
   return (
     <LeafPanel
@@ -199,7 +201,7 @@ export default function ScheduleStreamViewOne() {
             <OutlinedInput
               label="name"
               name="name"
-              readOnly={!inputsEnabled}
+              readOnly={!inputsEnabled || !corePropertyEditable}
               defaultValue={loaderData.scheduleStream.name}
             />
             <FieldError actionResult={actionData} fieldName="/name" />

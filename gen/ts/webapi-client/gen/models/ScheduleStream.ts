@@ -3,9 +3,9 @@
 /* eslint-disable */
 
 import type { EntityId } from './EntityId';
+import type { ScheduleSource } from './ScheduleSource';
 import type { ScheduleStreamColor } from './ScheduleStreamColor';
 import type { ScheduleStreamName } from './ScheduleStreamName';
-import type { ScheduleStreamSource } from './ScheduleStreamSource';
 import type { Timestamp } from './Timestamp';
 import type { URL } from './URL';
 
@@ -21,7 +21,7 @@ export type ScheduleStream = {
     archived_time?: (Timestamp | null);
     name: ScheduleStreamName;
     schedule_domain_ref_id: string;
-    source: ScheduleStreamSource;
+    source: ScheduleSource;
     color: ScheduleStreamColor;
     source_ical_url?: (URL | null);
 };

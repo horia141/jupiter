@@ -32,6 +32,7 @@ class ScheduleStreamCreateForExternalIcalArgs(UseCaseArgsBase):
     """Args."""
 
     source_ical_url: URL
+    color: ScheduleStreamColor
 
 
 @use_case_result
@@ -85,18 +86,12 @@ class ScheduleStreamCreateForExternalIcalUseCase(
         name = self._realm_codec_registry.db_decode(
             ScheduleStreamName, calendar.get("X-WR-CALNAME")
         )
-        try:
-            color = self._realm_codec_registry.db_decode(
-                ScheduleStreamColor, calendar.get("COLOR")
-            )
-        except RealmDecodingError:
-            color = ScheduleStreamColor.YELLOW
 
         schedule_stream = ScheduleStream.new_schedule_stream_from_external_ical(
             context.domain_context,
             schedule_domain_ref_id=schedule_domain.ref_id,
             name=name,
-            color=color,
+            color=args.color,
             source_ical_url=args.source_ical_url,
         )
         schedule_stream = await generic_creator(uow, progress_reporter, schedule_stream)

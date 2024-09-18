@@ -3,15 +3,14 @@ from typing import Any, Dict, List, Type, TypeVar, Union, cast
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-from ..models.schedule_source import ScheduleSource
 from ..types import UNSET, Unset
 
-T = TypeVar("T", bound="ScheduleEventFullDays")
+T = TypeVar("T", bound="ScheduleExternalSyncLog")
 
 
 @_attrs_define
-class ScheduleEventFullDays:
-    """A full day block in a schedule.
+class ScheduleExternalSyncLog:
+    """A sync log attached to a schedule domain.
 
     Attributes:
         ref_id (str): A generic entity id.
@@ -19,12 +18,9 @@ class ScheduleEventFullDays:
         archived (bool):
         created_time (str): A timestamp in the application.
         last_modified_time (str): A timestamp in the application.
-        name (str): The name of a schedule event.
+        name (str): The name for an entity which acts as both name and unique identifier.
         schedule_domain_ref_id (str):
-        schedule_stream_ref_id (str): A generic entity id.
-        source (ScheduleSource): The source of a schedule.
         archived_time (Union[None, Unset, str]):
-        external_uid (Union[None, Unset, str]):
     """
 
     ref_id: str
@@ -34,10 +30,7 @@ class ScheduleEventFullDays:
     last_modified_time: str
     name: str
     schedule_domain_ref_id: str
-    schedule_stream_ref_id: str
-    source: ScheduleSource
     archived_time: Union[None, Unset, str] = UNSET
-    external_uid: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -55,21 +48,11 @@ class ScheduleEventFullDays:
 
         schedule_domain_ref_id = self.schedule_domain_ref_id
 
-        schedule_stream_ref_id = self.schedule_stream_ref_id
-
-        source = self.source.value
-
         archived_time: Union[None, Unset, str]
         if isinstance(self.archived_time, Unset):
             archived_time = UNSET
         else:
             archived_time = self.archived_time
-
-        external_uid: Union[None, Unset, str]
-        if isinstance(self.external_uid, Unset):
-            external_uid = UNSET
-        else:
-            external_uid = self.external_uid
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -82,14 +65,10 @@ class ScheduleEventFullDays:
                 "last_modified_time": last_modified_time,
                 "name": name,
                 "schedule_domain_ref_id": schedule_domain_ref_id,
-                "schedule_stream_ref_id": schedule_stream_ref_id,
-                "source": source,
             }
         )
         if archived_time is not UNSET:
             field_dict["archived_time"] = archived_time
-        if external_uid is not UNSET:
-            field_dict["external_uid"] = external_uid
 
         return field_dict
 
@@ -110,10 +89,6 @@ class ScheduleEventFullDays:
 
         schedule_domain_ref_id = d.pop("schedule_domain_ref_id")
 
-        schedule_stream_ref_id = d.pop("schedule_stream_ref_id")
-
-        source = ScheduleSource(d.pop("source"))
-
         def _parse_archived_time(data: object) -> Union[None, Unset, str]:
             if data is None:
                 return data
@@ -123,16 +98,7 @@ class ScheduleEventFullDays:
 
         archived_time = _parse_archived_time(d.pop("archived_time", UNSET))
 
-        def _parse_external_uid(data: object) -> Union[None, Unset, str]:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(Union[None, Unset, str], data)
-
-        external_uid = _parse_external_uid(d.pop("external_uid", UNSET))
-
-        schedule_event_full_days = cls(
+        schedule_external_sync_log = cls(
             ref_id=ref_id,
             version=version,
             archived=archived,
@@ -140,14 +106,11 @@ class ScheduleEventFullDays:
             last_modified_time=last_modified_time,
             name=name,
             schedule_domain_ref_id=schedule_domain_ref_id,
-            schedule_stream_ref_id=schedule_stream_ref_id,
-            source=source,
             archived_time=archived_time,
-            external_uid=external_uid,
         )
 
-        schedule_event_full_days.additional_properties = d
-        return schedule_event_full_days
+        schedule_external_sync_log.additional_properties = d
+        return schedule_external_sync_log
 
     @property
     def additional_keys(self) -> List[str]:

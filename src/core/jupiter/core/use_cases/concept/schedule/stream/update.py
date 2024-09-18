@@ -44,16 +44,18 @@ class ScheduleStreamUpdateUseCase(
         args: ScheduleStreamUpdateArgs,
     ) -> None:
         """Execute the command's action."""
-        try:
-            schedule_stream = await uow.get_for(ScheduleStream).load_by_id(args.ref_id)
+        schedule_stream = await uow.get_for(ScheduleStream).load_by_id(args.ref_id)
 
-            schedule_stream = schedule_stream.update(
-                context.domain_context,
-                name=args.name,
-                color=args.color,
+        if args.name.should_change and args.name.just_the_value != schedule_stream.name and not schedule_stream.can_be_modified_independently:
+            raise InputValidationError(
+                "The name of this schedule stream cannot be changed."
             )
 
-            await uow.get_for(ScheduleStream).save(schedule_stream)
-            await progress_reporter.mark_updated(schedule_stream)
-        except CannotModifyScheduleStreamError as err:
-            raise InputValidationError(str(err)) from err
+        schedule_stream = schedule_stream.update(
+            context.domain_context,
+            name=args.name,
+            color=args.color,
+        )
+
+        await uow.get_for(ScheduleStream).save(schedule_stream)
+        await progress_reporter.mark_updated(schedule_stream)

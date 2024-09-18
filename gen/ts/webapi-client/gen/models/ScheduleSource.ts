@@ -5,7 +5,7 @@
 /**
  * The source of a schedule.
  */
-export enum ScheduleStreamSource {
+export enum ScheduleSource {
     USER = 'user',
     EXTERNAL_ICAL = 'external-ical',
 }

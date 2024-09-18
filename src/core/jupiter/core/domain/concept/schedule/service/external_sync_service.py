@@ -204,17 +204,11 @@ class ScheduleExternalSyncService:
             name = self._realm_codec_registry.db_decode(
                 ScheduleStreamName, calendar.get("X-WR-CALNAME")
             )
-            try:
-                color = self._realm_codec_registry.db_decode(
-                    ScheduleStreamColor, calendar.get("COLOR")
-                )
-            except RealmDecodingError:
-                color = schedule_stream.color
 
             schedule_stream = schedule_stream.update(
                 ctx,
                 name=UpdateAction.change_to(name),
-                color=UpdateAction.change_to(color),
+                color=UpdateAction.do_nothing(),
             )
             async with self._domain_storage_engine.get_unit_of_work() as uow:
                 await uow.get_for(ScheduleStream).save(schedule_stream)
@@ -299,6 +293,7 @@ class ScheduleExternalSyncService:
 
                             all_full_days_events.append(event)
                             all_full_days_events_by_external_uid[uid] = event
+                            all_time_event_full_days_blocks_by_source_entity_ref_id[event.ref_id] = time_event_block
                             sync_log_entry = sync_log_entry.add_entity(ctx, event)
                     else:
                         async with self._domain_storage_engine.get_unit_of_work() as uow:
@@ -378,6 +373,7 @@ class ScheduleExternalSyncService:
 
                             all_in_day_events.append(event)
                             all_in_day_events_by_external_uid[uid] = event
+                            all_time_event_in_day_blocks_by_source_entity_ref_id[event.ref_id] = time_event_block
                             sync_log_entry = sync_log_entry.add_entity(ctx, event)
                     else:
                         async with self._domain_storage_engine.get_unit_of_work() as uow:

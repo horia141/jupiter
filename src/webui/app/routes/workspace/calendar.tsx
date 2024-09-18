@@ -198,6 +198,10 @@ export default function CalendarView() {
                   link: `/workspace/calendar/schedule/stream/new?${query}`,
                 }),
                 NavSingle({
+                  text: "New External Calendar Stream",
+                  link: `/workspace/calendar/schedule/stream/new-external?${query}`,
+                }),
+                NavSingle({
                   text: "View Calendar Streams",
                   link: `/workspace/calendar/schedule/stream?${query}`,
                 }),
