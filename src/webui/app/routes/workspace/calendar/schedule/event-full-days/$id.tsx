@@ -37,6 +37,7 @@ import {
 import { SectionCardNew } from "~/components/infra/section-card-new";
 import { ScheduleStreamSelect } from "~/components/schedule-stream-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
+import { isCorePropertyEditable } from "~/logic/domain/schedule-event-full-days";
 import { basicShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -137,6 +138,7 @@ export async function action({ request, params }: ActionArgs) {
           `/workspace/calendar/schedule/event-full-days/${id}?${url.searchParams}`
         );
       }
+
       case "change-schedule-stream": {
         await getLoggedInApiClient(
           session
@@ -148,6 +150,7 @@ export async function action({ request, params }: ActionArgs) {
           `/workspace/calendar/schedule/event-full-days/${id}?${url.searchParams}`
         );
       }
+
       case "create-note": {
         await getLoggedInApiClient(session).notes.noteCreate({
           domain: NoteDomain.SCHEDULE_EVENT_FULL_DAYS,
@@ -158,6 +161,7 @@ export async function action({ request, params }: ActionArgs) {
           `/workspace/calendar/schedule/event-full-days/${id}?${url.searchParams}`
         );
       }
+
       case "archive": {
         await getLoggedInApiClient(
           session
@@ -195,6 +199,7 @@ export default function ScheduleEventFullDaysViewOne() {
 
   const inputsEnabled =
     transition.state === "idle" && !loaderData.scheduleEventFullDays.archived;
+  const corePropertyEditable = isCorePropertyEditable(loaderData.scheduleEventFullDays);
 
   const [durationDays, setDurationDays] = useState(
     loaderData.timeEventFullDaysBlock.duration_days
@@ -210,7 +215,7 @@ export default function ScheduleEventFullDaysViewOne() {
   return (
     <LeafPanel
       key={`schedule-event-full-days-${loaderData.scheduleEventFullDays.ref_id}`}
-      showArchiveButton
+      showArchiveButton={inputsEnabled && corePropertyEditable}
       enableArchiveButton={inputsEnabled}
       returnLocation={`/workspace/calendar?${query}`}
     >
@@ -230,10 +235,12 @@ export default function ScheduleEventFullDaysViewOne() {
                     text: "Save",
                     value: "update",
                     highlight: true,
+                    disabled: !corePropertyEditable
                   }),
                   ActionSingle({
                     text: "Change Stream",
                     value: "change-schedule-stream",
+                    disabled: !corePropertyEditable
                   }),
                 ],
               }),
@@ -248,7 +255,7 @@ export default function ScheduleEventFullDaysViewOne() {
               labelId="scheduleStreamRefId"
               label="Schedule Stream"
               name="scheduleStreamRefId"
-              readOnly={!inputsEnabled}
+              readOnly={!inputsEnabled || !corePropertyEditable}
               allScheduleStreams={loaderData.allScheduleStreams}
               defaultValue={
                 allScheduleStreamsByRefId.get(
@@ -266,7 +273,7 @@ export default function ScheduleEventFullDaysViewOne() {
             <OutlinedInput
               label="name"
               name="name"
-              readOnly={!inputsEnabled}
+              readOnly={!inputsEnabled || !corePropertyEditable}
               defaultValue={loaderData.scheduleEventFullDays.name}
             />
             <FieldError actionResult={actionData} fieldName="/name" />
@@ -280,7 +287,7 @@ export default function ScheduleEventFullDaysViewOne() {
               type="date"
               label="startDate"
               name="startDate"
-              readOnly={!inputsEnabled}
+              readOnly={!inputsEnabled || !corePropertyEditable}
               defaultValue={loaderData.timeEventFullDaysBlock.start_date}
             />
 
@@ -288,23 +295,23 @@ export default function ScheduleEventFullDaysViewOne() {
           </FormControl>
 
           <Stack spacing={2} direction="row">
-            <ButtonGroup variant="outlined">
+            <ButtonGroup variant="outlined" disabled={!inputsEnabled || !corePropertyEditable}>
               <Button
-                disabled={!inputsEnabled}
+                disabled={!inputsEnabled || !corePropertyEditable}
                 variant={durationDays === 1 ? "contained" : "outlined"}
                 onClick={() => setDurationDays(1)}
               >
                 1D
               </Button>
               <Button
-                disabled={!inputsEnabled}
+                disabled={!inputsEnabled || !corePropertyEditable}
                 variant={durationDays === 3 ? "contained" : "outlined"}
                 onClick={() => setDurationDays(3)}
               >
                 3d
               </Button>
               <Button
-                disabled={!inputsEnabled}
+                disabled={!inputsEnabled || !corePropertyEditable}
                 variant={durationDays === 7 ? "contained" : "outlined"}
                 onClick={() => setDurationDays(7)}
               >
@@ -320,7 +327,7 @@ export default function ScheduleEventFullDaysViewOne() {
                 type="number"
                 label="Duration (Days)"
                 name="durationDays"
-                readOnly={!inputsEnabled}
+                readOnly={!inputsEnabled || !corePropertyEditable}
                 value={durationDays}
                 onChange={(e) => setDurationDays(parseInt(e.target.value, 10))}
               />
@@ -340,7 +347,7 @@ export default function ScheduleEventFullDaysViewOne() {
             <ButtonGroup>
               <Button
                 variant="contained"
-                disabled={!inputsEnabled}
+                disabled={!inputsEnabled || !corePropertyEditable}
                 type="submit"
                 name="intent"
                 value="create-note"

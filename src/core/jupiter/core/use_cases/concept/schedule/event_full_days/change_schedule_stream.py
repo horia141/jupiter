@@ -40,12 +40,16 @@ class ScheduleEventFullDaysChangeScheduleStreamUseCase(
         args: ScheduleEventFullDaysChangeScheduleStreamArgs,
     ) -> None:
         """Execute the command's action."""
-        _ = await uow.get_for(ScheduleStream).load_by_id(args.schedule_stream_ref_id)
+        schedule_stream = await uow.get_for(ScheduleStream).load_by_id(args.schedule_stream_ref_id)
+        if not schedule_stream.can_be_modified_independently:
+            raise InputValidationError("Cannot change to a non-user schedule stream")
+        
         schedule_event_full_days = await uow.get_for(ScheduleEventFullDays).load_by_id(
             args.ref_id
         )
         if not schedule_event_full_days.can_be_modified_independently:
             raise InputValidationError("Cannot change a non-user schedule event")
+        
         schedule_event_full_days = schedule_event_full_days.change_schedule_stream(
             context.domain_context,
             schedule_stream_ref_id=args.schedule_stream_ref_id,
@@ -53,4 +57,5 @@ class ScheduleEventFullDaysChangeScheduleStreamUseCase(
         schedule_event_full_days = await uow.get_for(ScheduleEventFullDays).save(
             schedule_event_full_days
         )
+        
         await progress_reporter.mark_updated(schedule_event_full_days)

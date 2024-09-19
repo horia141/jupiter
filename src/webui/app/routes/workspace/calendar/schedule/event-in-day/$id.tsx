@@ -37,6 +37,7 @@ import {
 import { SectionCardNew } from "~/components/infra/section-card-new";
 import { ScheduleStreamSelect } from "~/components/schedule-stream-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
+import { isCorePropertyEditable } from "~/logic/domain/schedule-event-in-day";
 import { basicShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -142,6 +143,7 @@ export async function action({ request, params }: ActionArgs) {
           `/workspace/calendar/schedule/event-in-day/${id}?${url.searchParams}`
         );
       }
+
       case "change-schedule-stream": {
         await getLoggedInApiClient(
           session
@@ -153,6 +155,7 @@ export async function action({ request, params }: ActionArgs) {
           `/workspace/calendar/schedule/event-in-day/${id}?${url.searchParams}`
         );
       }
+
       case "create-note": {
         await getLoggedInApiClient(session).notes.noteCreate({
           domain: NoteDomain.SCHEDULE_EVENT_IN_DAY,
@@ -163,6 +166,7 @@ export async function action({ request, params }: ActionArgs) {
           `/workspace/calendar/schedule/event-in-day/${id}?${url.searchParams}`
         );
       }
+
       case "archive": {
         await getLoggedInApiClient(
           session
@@ -200,6 +204,7 @@ export default function ScheduleEventInDayViewOne() {
 
   const inputsEnabled =
     transition.state === "idle" && !loaderData.scheduleEventInDay.archived;
+  const corePropertyEditable = isCorePropertyEditable(loaderData.scheduleEventInDay);
 
   const [durationMins, setDurationMins] = useState(
     loaderData.timeEventInDayBlock.duration_mins
@@ -216,7 +221,7 @@ export default function ScheduleEventInDayViewOne() {
     <LeafPanel
       key={`schedule-event-in-day-${loaderData.scheduleEventInDay.ref_id}`}
       showArchiveButton
-      enableArchiveButton={inputsEnabled}
+      enableArchiveButton={inputsEnabled && corePropertyEditable}
       returnLocation={`/workspace/calendar?${query}`}
     >
       <GlobalError actionResult={actionData} />
@@ -235,10 +240,12 @@ export default function ScheduleEventInDayViewOne() {
                     text: "Save",
                     value: "update",
                     highlight: true,
+                    disabled: !corePropertyEditable
                   }),
                   ActionSingle({
                     text: "Change Stream",
                     value: "change-schedule-stream",
+                    disabled: !corePropertyEditable,
                   }),
                 ],
               }),
@@ -253,7 +260,7 @@ export default function ScheduleEventInDayViewOne() {
               labelId="scheduleStreamRefId"
               label="Schedule Stream"
               name="scheduleStreamRefId"
-              readOnly={!inputsEnabled}
+              readOnly={!inputsEnabled || !corePropertyEditable}
               allScheduleStreams={loaderData.allScheduleStreams}
               defaultValue={
                 allScheduleStreamsByRefId.get(
@@ -271,7 +278,7 @@ export default function ScheduleEventInDayViewOne() {
             <OutlinedInput
               label="name"
               name="name"
-              readOnly={!inputsEnabled}
+              readOnly={!inputsEnabled || !corePropertyEditable}
               defaultValue={loaderData.scheduleEventInDay.name}
             />
             <FieldError actionResult={actionData} fieldName="/name" />
@@ -285,7 +292,7 @@ export default function ScheduleEventInDayViewOne() {
               type="date"
               label="startDate"
               name="startDate"
-              readOnly={!inputsEnabled}
+              readOnly={!inputsEnabled || !corePropertyEditable}
               defaultValue={loaderData.timeEventInDayBlock.start_date}
             />
 
@@ -300,7 +307,7 @@ export default function ScheduleEventInDayViewOne() {
               type="time"
               label="startTimeInDay"
               name="startTimeInDay"
-              readOnly={!inputsEnabled}
+              readOnly={!inputsEnabled || !corePropertyEditable}
               defaultValue={loaderData.timeEventInDayBlock.start_time_in_day}
             />
 
@@ -311,23 +318,23 @@ export default function ScheduleEventInDayViewOne() {
           </FormControl>
 
           <Stack spacing={2} direction="row">
-            <ButtonGroup variant="outlined" disabled={!inputsEnabled}>
+            <ButtonGroup variant="outlined" disabled={!inputsEnabled || !corePropertyEditable}>
               <Button
-                disabled={!inputsEnabled}
+                disabled={!inputsEnabled || !corePropertyEditable}
                 variant={durationMins === 15 ? "contained" : "outlined"}
                 onClick={() => setDurationMins(15)}
               >
                 15m
               </Button>
               <Button
-                disabled={!inputsEnabled}
+                disabled={!inputsEnabled || !corePropertyEditable}
                 variant={durationMins === 30 ? "contained" : "outlined"}
                 onClick={() => setDurationMins(30)}
               >
                 30m
               </Button>
               <Button
-                disabled={!inputsEnabled}
+                disabled={!inputsEnabled || !corePropertyEditable}
                 variant={durationMins === 60 ? "contained" : "outlined"}
                 onClick={() => setDurationMins(60)}
               >
@@ -343,7 +350,7 @@ export default function ScheduleEventInDayViewOne() {
                 type="number"
                 label="Duration (Mins)"
                 name="durationMins"
-                readOnly={!inputsEnabled}
+                readOnly={!inputsEnabled || !corePropertyEditable}
                 value={durationMins}
                 onChange={(e) => {
                   if (Number.isNaN(parseInt(e.target.value, 10))) {
@@ -371,7 +378,7 @@ export default function ScheduleEventInDayViewOne() {
             <ButtonGroup>
               <Button
                 variant="contained"
-                disabled={!inputsEnabled}
+                disabled={!inputsEnabled || !corePropertyEditable}
                 type="submit"
                 name="intent"
                 value="create-note"

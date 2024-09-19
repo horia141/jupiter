@@ -35,6 +35,7 @@ interface NavSingleDesc {
   link: string;
   highlight?: boolean;
   gatedOn?: WorkspaceFeature;
+  disabled?: boolean;
 }
 
 interface NavMultipleDesc {
@@ -50,6 +51,7 @@ interface ActionSingleDesc {
   value: string;
   highlight?: boolean;
   gatedOn?: WorkspaceFeature;
+  disabled?: boolean;
 }
 
 interface ActionMultipleDesc {
@@ -355,7 +357,7 @@ function NavSingleView(props: NavSingleViewProps) {
     <Button
       variant="outlined"
       component={Link}
-      disabled={!props.inputsEnabled}
+      disabled={!props.inputsEnabled || props.action.disabled}
       startIcon={props.action.icon}
       to={props.action.link}
     >
@@ -402,7 +404,7 @@ function NavMultipleSpreadView(props: NavMultipleViewProps) {
             key={`nav-multiple-${index}`}
             variant={nav.highlight ? "contained" : "outlined"}
             component={Link}
-            disabled={!props.inputsEnabled}
+            disabled={!props.inputsEnabled || nav.disabled}
             startIcon={nav.icon}
             to={nav.link}
           >
@@ -462,7 +464,7 @@ function NavMultipleCompactView(props: NavMultipleViewProps) {
       <ButtonGroup ref={anchorRef}>
         <Button
           sx={{ flexGrow: 10 }}
-          disabled={!props.inputsEnabled}
+          disabled={!props.inputsEnabled || realActions[selectedIndex].disabled}
           component={Link}
           startIcon={realActions[selectedIndex].icon}
           to={realActions[selectedIndex].link}
@@ -497,6 +499,7 @@ function NavMultipleCompactView(props: NavMultipleViewProps) {
                   selected={index === selectedIndex}
                   component={Link}
                   to={option.link}
+                  disabled={!props.inputsEnabled || option.disabled}
                   onClick={handleMenuItemClick}
                 >
                   {option.text}
@@ -531,7 +534,7 @@ function ActionSingleView(props: ActionSingleViewProps) {
   return (
     <Button
       variant={props.action.highlight ? "contained" : "outlined"}
-      disabled={!props.inputsEnabled}
+      disabled={!props.inputsEnabled || props.action.disabled}
       startIcon={props.action.icon}
       type="submit"
       name="intent"
@@ -579,7 +582,7 @@ function ActionMultipleSpreadView(props: ActionMultipleViewProps) {
           <Button
             key={`action-multiple-${index}`}
             variant={action.highlight ? "contained" : "outlined"}
-            disabled={!props.inputsEnabled}
+            disabled={!props.inputsEnabled || action.disabled}
             startIcon={action.icon}
             type="submit"
             name="intent"
@@ -638,7 +641,7 @@ function ActionMultipleCompactView(props: ActionMultipleViewProps) {
     <>
       <ButtonGroup ref={anchorRef}>
         <Button
-          disabled={!props.inputsEnabled}
+          disabled={!props.inputsEnabled || realActions[selectedIndex].disabled}
           startIcon={realActions[selectedIndex].icon}
           type="submit"
           name="intent"
@@ -679,6 +682,7 @@ function ActionMultipleCompactView(props: ActionMultipleViewProps) {
                     <MenuItem
                       key={`action-multiple-${index}`}
                       selected={index === selectedIndex}
+                      disabled={!props.inputsEnabled || option.disabled}
                       onClick={(event) => handleMenuItemClick(event, index)}
                     >
                       {option.text}

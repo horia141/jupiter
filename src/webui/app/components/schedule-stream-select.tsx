@@ -1,6 +1,7 @@
-import type { ScheduleStreamSummary } from "@jupiter/webapi-client";
+import { ScheduleSource, type ScheduleStreamSummary } from "@jupiter/webapi-client";
 import { Box, MenuItem, Select } from "@mui/material";
 import { ScheduleStreamColorTag } from "./schedule-stream-color-tag";
+import { isCorePropertyEditable } from "~/logic/domain/schedule-stream";
 
 interface ScheduleStreamSelectProps {
   labelId: string;
@@ -22,7 +23,7 @@ export function ScheduleStreamSelect(props: ScheduleStreamSelectProps) {
       defaultValue={props.defaultValue.ref_id}
     >
       {props.allScheduleStreams.map((st) => (
-        <MenuItem key={st.ref_id} value={st.ref_id}>
+        <MenuItem key={st.ref_id} value={st.ref_id} disabled={!isCorePropertyEditable(st)}>
           <Box sx={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
             {st.name}
             <ScheduleStreamColorTag color={st.color} />

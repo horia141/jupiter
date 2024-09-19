@@ -8,6 +8,7 @@ from jupiter.core.domain.concept.inbox_tasks.inbox_task_name import InboxTaskNam
 from jupiter.core.domain.concept.metrics.metric_name import MetricName
 from jupiter.core.domain.concept.persons.person_name import PersonName
 from jupiter.core.domain.concept.projects.project_name import ProjectName
+from jupiter.core.domain.concept.schedule.schedule_source import ScheduleSource
 from jupiter.core.domain.concept.schedule.schedule_stream_color import (
     ScheduleStreamColor,
 )
@@ -33,6 +34,7 @@ class ScheduleStreamSummary(CompositeValue):
     """Summary information about a schedule stream."""
 
     ref_id: EntityId
+    source: ScheduleSource
     name: ScheduleStreamName
     color: ScheduleStreamColor
 

@@ -40,12 +40,16 @@ class ScheduleEventInDayChangeScheduleStreamUseCase(
         args: ScheduleEventInDayChangeScheduleStreamArgs,
     ) -> None:
         """Execute the command's action."""
-        _ = await uow.get_for(ScheduleStream).load_by_id(args.schedule_stream_ref_id)
+        schedule_stream = await uow.get_for(ScheduleStream).load_by_id(args.schedule_stream_ref_id)
+        if not schedule_stream.can_be_modified_independently:
+            raise InputValidationError("Cannot change to a non-user schedule stream")
+                                       
         schedule_event_in_day = await uow.get_for(ScheduleEventInDay).load_by_id(
             args.ref_id
         )
         if not schedule_event_in_day.can_be_modified_independently:
             raise InputValidationError("Cannot change a non-user schedule event")
+
         schedule_event_in_day = schedule_event_in_day.change_schedule_stream(
             context.domain_context,
             schedule_stream_ref_id=args.schedule_stream_ref_id,

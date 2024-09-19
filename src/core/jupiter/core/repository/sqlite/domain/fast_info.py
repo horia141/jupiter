@@ -9,6 +9,7 @@ from jupiter.core.domain.concept.inbox_tasks.inbox_task_name import InboxTaskNam
 from jupiter.core.domain.concept.metrics.metric_name import MetricName
 from jupiter.core.domain.concept.persons.person_name import PersonName
 from jupiter.core.domain.concept.projects.project_name import ProjectName
+from jupiter.core.domain.concept.schedule.schedule_source import ScheduleSource
 from jupiter.core.domain.concept.schedule.schedule_stream_color import (
     ScheduleStreamColor,
 )
@@ -79,7 +80,7 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
         allow_archived: bool,
     ) -> list[ScheduleStreamSummary]:
         """Find all summaries about schedule streams."""
-        query = """select ref_id, name, color from schedule_stream where schedule_domain_ref_id = :parent_ref_id"""
+        query = """select ref_id, source, name, color from schedule_stream where schedule_domain_ref_id = :parent_ref_id"""
         if not allow_archived:
             query += " and archived=0"
         result = (
@@ -90,6 +91,7 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
         return [
             ScheduleStreamSummary(
                 ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
+                source=self._realm_codec_registry.db_decode(ScheduleSource, row["source"]),
                 name=_SCHEDULE_STREAM_NAME_DECODER.decode(row["name"]),
                 color=self._realm_codec_registry.db_decode(
                     ScheduleStreamColor, row["color"]

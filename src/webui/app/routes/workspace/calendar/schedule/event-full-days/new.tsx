@@ -178,7 +178,7 @@ export default function ScheduleEventFullDaysNew() {
           </FormControl>
 
           <Stack spacing={2} direction="row">
-            <ButtonGroup variant="outlined">
+            <ButtonGroup variant="outlined" disabled={!inputsEnabled}>
               <Button
                 disabled={!inputsEnabled}
                 variant={durationDays === 1 ? "contained" : "outlined"}
