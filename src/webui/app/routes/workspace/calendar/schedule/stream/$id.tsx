@@ -1,6 +1,7 @@
 import {
   ApiError,
   NoteDomain,
+  ScheduleSource,
   ScheduleStreamColor,
 } from "@jupiter/webapi-client";
 import {
@@ -196,6 +197,13 @@ export default function ScheduleStreamViewOne() {
         }
       >
         <Stack spacing={2} useFlexGap>
+          {loaderData.scheduleStream.source === ScheduleSource.EXTERNAL_ICAL && (
+             <FormControl fullWidth>
+             <InputLabel id="sourceIcalUrl">Source iCal URL</InputLabel>
+             <OutlinedInput label="sourceIcalUrl" name="sourceIcalUrl" defaultValue={loaderData.scheduleStream.source_ical_url!} readOnly={true} />
+           </FormControl>
+          )}
+
           <FormControl fullWidth>
             <InputLabel id="name">Name</InputLabel>
             <OutlinedInput
