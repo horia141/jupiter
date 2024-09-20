@@ -187,6 +187,9 @@ class ScheduleExternalSyncService:
 
                 sync_log_entry = sync_log_entry.add_entity(ctx, schedule_stream)
 
+            newly_created_schedule_full_days: set[EntityId] = set()
+            newly_created_schedule_in_day: set[EntityId] = set()
+
             # Step 3: Process the events
             async with progress_reporter.section("Adding and updating events"):
                 async with self._domain_storage_engine.get_unit_of_work() as uow:
@@ -252,6 +255,7 @@ class ScheduleExternalSyncService:
                                     event
                                 )
                                 await progress_reporter.mark_created(event)
+                                newly_created_schedule_full_days.add(event.ref_id)
 
                                 time_event_full_days_block = TimeEventFullDaysBlock.new_time_event_for_schedule_event(
                                     ctx,
@@ -294,7 +298,10 @@ class ScheduleExternalSyncService:
                                     time_event_full_days_block
                                 )
 
-                                sync_log_entry = sync_log_entry.add_entity(ctx, event)
+                                if event.ref_id not in newly_created_schedule_full_days:
+                                    sync_log_entry = sync_log_entry.add_entity(
+                                        ctx, event
+                                    )
 
                         processed_events_external_uids.add(uid)
                     elif (
@@ -332,6 +339,7 @@ class ScheduleExternalSyncService:
                                     event
                                 )
                                 await progress_reporter.mark_created(event)
+                                newly_created_schedule_in_day.add(event.ref_id)
 
                                 time_event_in_day_block = TimeEventInDayBlock.new_time_event_for_schedule_event(
                                     ctx,
@@ -389,7 +397,10 @@ class ScheduleExternalSyncService:
                                     time_event_in_day_block
                                 )
 
-                                sync_log_entry = sync_log_entry.add_entity(ctx, event)
+                                if event.ref_id not in newly_created_schedule_in_day:
+                                    sync_log_entry = sync_log_entry.add_entity(
+                                        ctx, event
+                                    )
 
                         processed_events_external_uids.add(uid)
                     else:
