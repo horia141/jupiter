@@ -204,7 +204,9 @@ export default function ScheduleEventInDayViewOne() {
 
   const inputsEnabled =
     transition.state === "idle" && !loaderData.scheduleEventInDay.archived;
-  const corePropertyEditable = isCorePropertyEditable(loaderData.scheduleEventInDay);
+  const corePropertyEditable = isCorePropertyEditable(
+    loaderData.scheduleEventInDay
+  );
 
   const [durationMins, setDurationMins] = useState(
     loaderData.timeEventInDayBlock.duration_mins
@@ -240,7 +242,7 @@ export default function ScheduleEventInDayViewOne() {
                     text: "Save",
                     value: "update",
                     highlight: true,
-                    disabled: !corePropertyEditable
+                    disabled: !corePropertyEditable,
                   }),
                   ActionSingle({
                     text: "Change Stream",
@@ -318,7 +320,10 @@ export default function ScheduleEventInDayViewOne() {
           </FormControl>
 
           <Stack spacing={2} direction="row">
-            <ButtonGroup variant="outlined" disabled={!inputsEnabled || !corePropertyEditable}>
+            <ButtonGroup
+              variant="outlined"
+              disabled={!inputsEnabled || !corePropertyEditable}
+            >
               <Button
                 disabled={!inputsEnabled || !corePropertyEditable}
                 variant={durationMins === 15 ? "contained" : "outlined"}

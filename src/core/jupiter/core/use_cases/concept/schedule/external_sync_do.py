@@ -2,6 +2,7 @@
 from jupiter.core.domain.concept.schedule.service.external_sync_service import (
     ScheduleExternalSyncService,
 )
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import ProgressReporter
@@ -21,7 +22,7 @@ class ScheduleExternalSyncDoArgs(UseCaseArgsBase):
     filter_schedule_stream_ref_id: list[EntityId] | None
 
 
-@mutation_use_case()
+@mutation_use_case(WorkspaceFeature.SCHEDULE)
 class ScheduleExternalSyncDoUseCase(
     AppLoggedInMutationUseCase[ScheduleExternalSyncDoArgs, None]
 ):

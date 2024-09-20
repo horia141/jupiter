@@ -46,7 +46,7 @@ export async function action({ request }: ActionArgs) {
     const response = await getLoggedInApiClient(
       session
     ).stream.scheduleStreamCreateForExternalIcal({
-        source_ical_url: form.sourceIcalUrl,
+      source_ical_url: form.sourceIcalUrl,
       color: form.color,
     });
 
@@ -103,8 +103,15 @@ export default function ScheduleStreamNew() {
         <Stack spacing={2} useFlexGap>
           <FormControl fullWidth>
             <InputLabel id="sourceIcalUrl">Source iCal URL</InputLabel>
-            <OutlinedInput label="sourceIcalUrl" name="sourceIcalUrl" readOnly={!inputsEnabled} />
-            <FieldError actionResult={actionData} fieldName="/source_ical_url" />
+            <OutlinedInput
+              label="sourceIcalUrl"
+              name="sourceIcalUrl"
+              readOnly={!inputsEnabled}
+            />
+            <FieldError
+              actionResult={actionData}
+              fieldName="/source_ical_url"
+            />
           </FormControl>
 
           <FormControl fullWidth>

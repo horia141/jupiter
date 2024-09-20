@@ -1,6 +1,5 @@
 """Use case for updating a schedule stream."""
 from jupiter.core.domain.concept.schedule.schedule_stream import (
-    CannotModifyScheduleStreamError,
     ScheduleStream,
 )
 from jupiter.core.domain.concept.schedule.schedule_stream_color import (
@@ -46,7 +45,11 @@ class ScheduleStreamUpdateUseCase(
         """Execute the command's action."""
         schedule_stream = await uow.get_for(ScheduleStream).load_by_id(args.ref_id)
 
-        if args.name.should_change and args.name.just_the_value != schedule_stream.name and not schedule_stream.can_be_modified_independently:
+        if (
+            args.name.should_change
+            and args.name.just_the_value != schedule_stream.name
+            and not schedule_stream.can_be_modified_independently
+        ):
             raise InputValidationError(
                 "The name of this schedule stream cannot be changed."
             )

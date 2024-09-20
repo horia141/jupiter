@@ -199,7 +199,9 @@ export default function ScheduleEventFullDaysViewOne() {
 
   const inputsEnabled =
     transition.state === "idle" && !loaderData.scheduleEventFullDays.archived;
-  const corePropertyEditable = isCorePropertyEditable(loaderData.scheduleEventFullDays);
+  const corePropertyEditable = isCorePropertyEditable(
+    loaderData.scheduleEventFullDays
+  );
 
   const [durationDays, setDurationDays] = useState(
     loaderData.timeEventFullDaysBlock.duration_days
@@ -235,12 +237,12 @@ export default function ScheduleEventFullDaysViewOne() {
                     text: "Save",
                     value: "update",
                     highlight: true,
-                    disabled: !corePropertyEditable
+                    disabled: !corePropertyEditable,
                   }),
                   ActionSingle({
                     text: "Change Stream",
                     value: "change-schedule-stream",
-                    disabled: !corePropertyEditable
+                    disabled: !corePropertyEditable,
                   }),
                 ],
               }),
@@ -295,7 +297,10 @@ export default function ScheduleEventFullDaysViewOne() {
           </FormControl>
 
           <Stack spacing={2} direction="row">
-            <ButtonGroup variant="outlined" disabled={!inputsEnabled || !corePropertyEditable}>
+            <ButtonGroup
+              variant="outlined"
+              disabled={!inputsEnabled || !corePropertyEditable}
+            >
               <Button
                 disabled={!inputsEnabled || !corePropertyEditable}
                 variant={durationDays === 1 ? "contained" : "outlined"}

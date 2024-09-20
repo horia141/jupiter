@@ -91,7 +91,9 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
         return [
             ScheduleStreamSummary(
                 ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
-                source=self._realm_codec_registry.db_decode(ScheduleSource, row["source"]),
+                source=self._realm_codec_registry.db_decode(
+                    ScheduleSource, row["source"]
+                ),
                 name=_SCHEDULE_STREAM_NAME_DECODER.decode(row["name"]),
                 color=self._realm_codec_registry.db_decode(
                     ScheduleStreamColor, row["color"]

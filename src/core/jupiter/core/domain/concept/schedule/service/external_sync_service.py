@@ -1,9 +1,9 @@
 """The service which syncs external calendars with Jupiter."""
 from typing import Final, cast
 
-from jupiter.core.domain.infra.generic_archiver import generic_archiver
 import requests
 from icalendar import Calendar
+from icalendar.cal import Component
 from jupiter.core.domain.concept.schedule.schedule_domain import ScheduleDomain
 from jupiter.core.domain.concept.schedule.schedule_event_full_days import (
     ScheduleEventFullDays,
@@ -23,9 +23,6 @@ from jupiter.core.domain.concept.schedule.schedule_external_uid import (
 )
 from jupiter.core.domain.concept.schedule.schedule_source import ScheduleSource
 from jupiter.core.domain.concept.schedule.schedule_stream import ScheduleStream
-from jupiter.core.domain.concept.schedule.schedule_stream_color import (
-    ScheduleStreamColor,
-)
 from jupiter.core.domain.concept.schedule.schedule_stream_name import ScheduleStreamName
 from jupiter.core.domain.concept.workspaces.workspace import Workspace
 from jupiter.core.domain.core.adate import ADate
@@ -41,12 +38,13 @@ from jupiter.core.domain.core.time_events.time_event_namespace import TimeEventN
 from jupiter.core.domain.core.time_in_day import TimeInDay
 from jupiter.core.domain.core.timezone import UTC
 from jupiter.core.domain.core.url import URL
+from jupiter.core.domain.infra.generic_archiver import generic_archiver
 from jupiter.core.domain.storage_engine import DomainStorageEngine
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import NoFilter
-from jupiter.core.framework.realm import RealmCodecRegistry, RealmDecodingError
+from jupiter.core.framework.realm import RealmCodecRegistry
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import ProgressReporter
 from jupiter.core.utils.time_provider import TimeProvider
@@ -169,193 +167,173 @@ class ScheduleExternalSyncService:
     ) -> ScheduleExternalSyncLogEntry:
         """Process a schedule stream."""
         # Step 1: Fetch the iCal
-        async with progress_reporter.section("Processing stream"):
-            try:
-                calendar_ical_response = requests.get(
-                    cast(URL, schedule_stream.source_ical_url).the_url
+        try:
+            async with progress_reporter.section("Processing stream"):
+                calendar = self._retrieve_calendar_ical(schedule_stream)
+
+                # Step 2: Update the schedule stream
+                name = self._realm_codec_registry.db_decode(
+                    ScheduleStreamName, calendar.get("X-WR-CALNAME")
                 )
-                if calendar_ical_response.status_code != 200:
-                    # Early exit mark some error in sync log entry
-                    return sync_log_entry.mark_stream_error(
-                        ctx,
+
+                schedule_stream = schedule_stream.update(
+                    ctx,
+                    name=UpdateAction.change_to(name),
+                    color=UpdateAction.do_nothing(),
+                )
+                async with self._domain_storage_engine.get_unit_of_work() as uow:
+                    await uow.get_for(ScheduleStream).save(schedule_stream)
+                    await progress_reporter.mark_updated(schedule_stream)
+
+                sync_log_entry = sync_log_entry.add_entity(ctx, schedule_stream)
+
+            # Step 3: Process the events
+            async with progress_reporter.section("Adding and updating events"):
+                async with self._domain_storage_engine.get_unit_of_work() as uow:
+                    all_full_days_events = await uow.get_for(
+                        ScheduleEventFullDays
+                    ).find_all_generic(
+                        parent_ref_id=schedule_domain.ref_id,
+                        allow_archived=False,
                         schedule_stream_ref_id=schedule_stream.ref_id,
-                        error_msg=f"Failed to fetch iCal from {schedule_stream.source_ical_url} (error {calendar_ical_response.status_code})",
                     )
-                calendar_ical = calendar_ical_response.text
-            except requests.RequestException as err:
-                # Early exit in sync log entry
-                return sync_log_entry.mark_stream_error(
-                    ctx,
-                    schedule_stream_ref_id=schedule_stream.ref_id,
-                    error_msg=f"Failed to fetch iCal from {schedule_stream.source_ical_url} ({err})",
-                )
-
-            try:
-                calendar = Calendar.from_ical(calendar_ical)
-            except ValueError as err:
-                # Early exit in sync log entry
-                return sync_log_entry.mark_stream_error(
-                    ctx,
-                    schedule_stream_ref_id=schedule_stream.ref_id,
-                    error_msg=f"Failed to parse iCal from {schedule_stream.source_ical_url} ({err})",
-                )
-
-            # Step 2: Update the schedule stream
-            name = self._realm_codec_registry.db_decode(
-                ScheduleStreamName, calendar.get("X-WR-CALNAME")
-            )
-
-            schedule_stream = schedule_stream.update(
-                ctx,
-                name=UpdateAction.change_to(name),
-                color=UpdateAction.do_nothing(),
-            )
-            async with self._domain_storage_engine.get_unit_of_work() as uow:
-                await uow.get_for(ScheduleStream).save(schedule_stream)
-                await progress_reporter.mark_updated(schedule_stream)
-
-            sync_log_entry = sync_log_entry.add_entity(ctx, schedule_stream)
-
-        # Step 3: Process the events
-        async with progress_reporter.section("Adding and updating events"):
-            async with self._domain_storage_engine.get_unit_of_work() as uow:
-                all_in_day_events = await uow.get_for(ScheduleEventInDay).find_all_generic(
-                    parent_ref_id=schedule_domain.ref_id,
-                    allow_archived=False,
-                    schedule_stream_ref_id=schedule_stream.ref_id,
-                )
-                all_full_days_events = await uow.get_for(
-                    ScheduleEventFullDays
-                ).find_all_generic(
-                    parent_ref_id=schedule_domain.ref_id,
-                    allow_archived=False,
-                    schedule_stream_ref_id=schedule_stream.ref_id,
-                )
-
-            all_full_days_events_by_external_uid = {
-                event.external_uid: event for event in all_full_days_events
-            }
-            all_in_day_events_by_external_uid = {
-                event.external_uid: event for event in all_in_day_events
-            }
-
-            # TODO(horia141): Handle modified via timestamp
-            # TODO(horia141): Handle timezone issues
-
-            processed_events_external_uids = set()
-
-            for event in calendar.walk("VEVENT"):
-                if (
-                    "value" in event["DTSTART"].params
-                    and event["DTSTART"].params["value"] == "DATE"
-                    and "value" in event["DTEND"].params
-                    and event["DTEND"].params["value"] == "DATE"
-                ):
-                    # Full day event
-                    name = self._realm_codec_registry.db_decode(
-                        ScheduleEventName, event["SUMMARY"]
-                    )
-                    uid = self._realm_codec_registry.db_decode(
-                        ScheduleExternalUid, event["UID"].to_ical().decode()
-                    )
-                    start_date = self._realm_codec_registry.db_decode(
-                        ADate, event["DTSTART"].dt
-                    )
-                    end_date = self._realm_codec_registry.db_decode(
-                        ADate, event["DTEND"].dt
+                    all_in_day_events = await uow.get_for(
+                        ScheduleEventInDay
+                    ).find_all_generic(
+                        parent_ref_id=schedule_domain.ref_id,
+                        allow_archived=False,
+                        schedule_stream_ref_id=schedule_stream.ref_id,
                     )
 
-                    if uid not in all_full_days_events_by_external_uid:
-                        async with self._domain_storage_engine.get_unit_of_work() as uow:
-                            event = ScheduleEventFullDays.new_schedule_full_days_block_from_external_ical(
-                                ctx,
-                                schedule_domain_ref_id=schedule_domain.ref_id,
-                                schedule_stream_ref_id=schedule_stream.ref_id,
-                                name=name,
-                                external_uid=uid,
-                            )
+                all_full_days_events_by_external_uid = {
+                    event.external_uid: event for event in all_full_days_events
+                }
+                all_in_day_events_by_external_uid = {
+                    event.external_uid: event for event in all_in_day_events
+                }
 
-                            event = await uow.get_for(ScheduleEventFullDays).create(event)
-                            await progress_reporter.mark_created(event)
+                # TODO(horia141): Handle modified via timestamp
+                # TODO(horia141): Handle timezone issues
 
-                            time_event_block = (
-                                TimeEventFullDaysBlock.new_time_event_for_schedule_event(
+                processed_events_external_uids = set()
+
+                for event in calendar.walk("VEVENT"):
+                    if (
+                        "value" in event["DTSTART"].params
+                        and event["DTSTART"].params["value"] == "DATE"
+                        and "value" in event["DTEND"].params
+                        and event["DTEND"].params["value"] == "DATE"
+                    ):
+                        # Full day event
+                        event_name = self._realm_codec_registry.db_decode(
+                            ScheduleEventName, event["SUMMARY"]
+                        )
+                        uid = self._realm_codec_registry.db_decode(
+                            ScheduleExternalUid, event["UID"].to_ical().decode()
+                        )
+                        start_date = self._realm_codec_registry.db_decode(
+                            ADate, event["DTSTART"].dt
+                        )
+                        end_date = self._realm_codec_registry.db_decode(
+                            ADate, event["DTEND"].dt
+                        )
+
+                        if uid not in all_full_days_events_by_external_uid:
+                            async with self._domain_storage_engine.get_unit_of_work() as uow:
+                                event = ScheduleEventFullDays.new_schedule_full_days_block_from_external_ical(
+                                    ctx,
+                                    schedule_domain_ref_id=schedule_domain.ref_id,
+                                    schedule_stream_ref_id=schedule_stream.ref_id,
+                                    name=event_name,
+                                    external_uid=uid,
+                                )
+
+                                event = await uow.get_for(ScheduleEventFullDays).create(
+                                    event
+                                )
+                                await progress_reporter.mark_created(event)
+
+                                time_event_full_days_block = TimeEventFullDaysBlock.new_time_event_for_schedule_event(
                                     ctx,
                                     time_event_domain_ref_id=time_event_domain.ref_id,
                                     schedule_event_ref_id=event.ref_id,
                                     start_date=start_date,
                                     duration_days=end_date.days_since(start_date),
                                 )
-                            )
-                            time_event_block = await uow.get_for(
-                                TimeEventFullDaysBlock
-                            ).create(time_event_block)
+                                time_event_full_days_block = await uow.get_for(
+                                    TimeEventFullDaysBlock
+                                ).create(time_event_full_days_block)
 
-                            all_full_days_events.append(event)
-                            all_full_days_events_by_external_uid[uid] = event
-                            all_time_event_full_days_blocks_by_source_entity_ref_id[event.ref_id] = time_event_block
-                            sync_log_entry = sync_log_entry.add_entity(ctx, event)
-                    else:
-                        async with self._domain_storage_engine.get_unit_of_work() as uow:
-                            event = all_full_days_events_by_external_uid[uid]
-                            event = event.update(
-                                ctx,
-                                name=UpdateAction.change_to(name),
-                            )
-                            await uow.get_for(ScheduleEventFullDays).save(event)
-                            await progress_reporter.mark_updated(event)
-
-                            time_event_block = (
+                                all_full_days_events.append(event)
+                                all_full_days_events_by_external_uid[uid] = event
                                 all_time_event_full_days_blocks_by_source_entity_ref_id[
                                     event.ref_id
+                                ] = time_event_full_days_block
+                                sync_log_entry = sync_log_entry.add_entity(ctx, event)
+                        else:
+                            async with self._domain_storage_engine.get_unit_of_work() as uow:
+                                event = all_full_days_events_by_external_uid[uid]
+                                event = event.update(
+                                    ctx,
+                                    name=UpdateAction.change_to(event_name),
+                                )
+                                await uow.get_for(ScheduleEventFullDays).save(event)
+                                await progress_reporter.mark_updated(event)
+
+                                time_event_full_days_block = all_time_event_full_days_blocks_by_source_entity_ref_id[
+                                    event.ref_id
                                 ]
-                            )
-                            time_event_block = time_event_block.update_for_schedule_event(
-                                ctx,
-                                start_date=UpdateAction.change_to(start_date),
-                                duration_days=UpdateAction.change_to(
-                                    end_date.days_since(start_date)
-                                ),
-                            )
-                            await uow.get_for(TimeEventFullDaysBlock).save(time_event_block)
+                                time_event_full_days_block = time_event_full_days_block.update_for_schedule_event(
+                                    ctx,
+                                    start_date=UpdateAction.change_to(start_date),
+                                    duration_days=UpdateAction.change_to(
+                                        end_date.days_since(start_date)
+                                    ),
+                                )
+                                await uow.get_for(TimeEventFullDaysBlock).save(
+                                    time_event_full_days_block
+                                )
 
-                            sync_log_entry = sync_log_entry.add_entity(ctx, event)
+                                sync_log_entry = sync_log_entry.add_entity(ctx, event)
 
-                    processed_events_external_uids.add(uid)
-                elif (
-                    "value" not in event["DTSTART"].params
-                    and "value" not in event["DTEND"].params
-                ):
-                    # In-day event
-                    name = self._realm_codec_registry.db_decode(
-                        ScheduleEventName, event["SUMMARY"]
-                    )
-                    uid = self._realm_codec_registry.db_decode(
-                        ScheduleExternalUid, event["UID"].to_ical().decode()
-                    )
-                    start_time = self._realm_codec_registry.db_decode(
-                        Timestamp, event["DTSTART"].dt
-                    )
-                    end_time = self._realm_codec_registry.db_decode(
-                        Timestamp, event["DTEND"].dt
-                    )
+                        processed_events_external_uids.add(uid)
+                    elif (
+                        "value" not in event["DTSTART"].params
+                        and "value" not in event["DTEND"].params
+                    ):
+                        # In-day event
+                        event_name = self._realm_codec_registry.db_decode(
+                            ScheduleEventName, event["SUMMARY"]
+                        )
+                        uid = self._realm_codec_registry.db_decode(
+                            ScheduleExternalUid, event["UID"].to_ical().decode()
+                        )
+                        start_time = self._realm_codec_registry.db_decode(
+                            Timestamp, event["DTSTART"].dt
+                        )
+                        end_time = self._realm_codec_registry.db_decode(
+                            Timestamp, event["DTEND"].dt
+                        )
 
-                    total_duration = min(MAX_DURATION_MINS, end_time.mins_since(start_time))
+                        total_duration = min(
+                            MAX_DURATION_MINS, end_time.mins_since(start_time)
+                        )
 
-                    if uid not in all_in_day_events_by_external_uid:
-                        async with self._domain_storage_engine.get_unit_of_work() as uow:
-                            event = ScheduleEventInDay.new_schedule_event_in_day_from_external_ical(
-                                ctx,
-                                schedule_domain_ref_id=schedule_domain.ref_id,
-                                schedule_stream_ref_id=schedule_stream.ref_id,
-                                name=name,
-                                external_uid=uid,
-                            )
-                            event = await uow.get_for(ScheduleEventInDay).create(event)
-                            await progress_reporter.mark_created(event)
+                        if uid not in all_in_day_events_by_external_uid:
+                            async with self._domain_storage_engine.get_unit_of_work() as uow:
+                                event = ScheduleEventInDay.new_schedule_event_in_day_from_external_ical(
+                                    ctx,
+                                    schedule_domain_ref_id=schedule_domain.ref_id,
+                                    schedule_stream_ref_id=schedule_stream.ref_id,
+                                    name=event_name,
+                                    external_uid=uid,
+                                )
+                                event = await uow.get_for(ScheduleEventInDay).create(
+                                    event
+                                )
+                                await progress_reporter.mark_created(event)
 
-                            time_event_block = (
-                                TimeEventInDayBlock.new_time_event_for_schedule_event(
+                                time_event_in_day_block = TimeEventInDayBlock.new_time_event_for_schedule_event(
                                     ctx,
                                     time_event_domain_ref_id=time_event_domain.ref_id,
                                     schedule_event_ref_id=event.ref_id,
@@ -366,75 +344,127 @@ class ScheduleExternalSyncService:
                                     duration_mins=total_duration,
                                     timezone=UTC,
                                 )
-                            )
-                            time_event_block = await uow.get_for(
-                                TimeEventInDayBlock
-                            ).create(time_event_block)
+                                time_event_in_day_block = await uow.get_for(
+                                    TimeEventInDayBlock
+                                ).create(time_event_in_day_block)
 
-                            all_in_day_events.append(event)
-                            all_in_day_events_by_external_uid[uid] = event
-                            all_time_event_in_day_blocks_by_source_entity_ref_id[event.ref_id] = time_event_block
-                            sync_log_entry = sync_log_entry.add_entity(ctx, event)
-                    else:
-                        async with self._domain_storage_engine.get_unit_of_work() as uow:
-                            event = all_in_day_events_by_external_uid[uid]
-                            event = event.update(
-                                ctx,
-                                name=UpdateAction.change_to(name),
-                            )
-                            await uow.get_for(ScheduleEventInDay).save(event)
-                            await progress_reporter.mark_updated(event)
-
-                            time_event_block = (
+                                all_in_day_events.append(event)
+                                all_in_day_events_by_external_uid[uid] = event
                                 all_time_event_in_day_blocks_by_source_entity_ref_id[
                                     event.ref_id
+                                ] = time_event_in_day_block
+                                sync_log_entry = sync_log_entry.add_entity(ctx, event)
+                        else:
+                            async with self._domain_storage_engine.get_unit_of_work() as uow:
+                                event = all_in_day_events_by_external_uid[uid]
+                                event = event.update(
+                                    ctx,
+                                    name=UpdateAction.change_to(event_name),
+                                )
+                                await uow.get_for(ScheduleEventInDay).save(event)
+                                await progress_reporter.mark_updated(event)
+
+                                time_event_in_day_block = all_time_event_in_day_blocks_by_source_entity_ref_id[
+                                    event.ref_id
                                 ]
-                            )
-                            time_event_block = time_event_block.update(
-                                ctx,
-                                start_date=UpdateAction.change_to(
-                                    ADate.from_date(start_time.as_date())
-                                ),
-                                start_time_in_day=UpdateAction.change_to(
-                                    TimeInDay.from_parts(
-                                        start_time.value.hour, start_time.value.minute
+                                time_event_in_day_block = (
+                                    time_event_in_day_block.update(
+                                        ctx,
+                                        start_date=UpdateAction.change_to(
+                                            ADate.from_date(start_time.as_date())
+                                        ),
+                                        start_time_in_day=UpdateAction.change_to(
+                                            TimeInDay.from_parts(
+                                                start_time.value.hour,
+                                                start_time.value.minute,
+                                            )
+                                        ),
+                                        duration_mins=UpdateAction.change_to(
+                                            total_duration
+                                        ),
+                                        timezone=UTC,
                                     )
-                                ),
-                                duration_mins=UpdateAction.change_to(total_duration),
-                                timezone=UTC,
-                            )
-                            await uow.get_for(TimeEventInDayBlock).save(time_event_block)
+                                )
+                                await uow.get_for(TimeEventInDayBlock).save(
+                                    time_event_in_day_block
+                                )
 
-                            sync_log_entry = sync_log_entry.add_entity(ctx, event)
-                    
-                    processed_events_external_uids.add(uid)
-                else:
-                    return sync_log_entry.mark_stream_error(
-                        ctx,
-                        schedule_stream_ref_id=schedule_stream.ref_id,
-                        error_msg=f"Unexpected event type {event}",
-                    )
+                                sync_log_entry = sync_log_entry.add_entity(ctx, event)
 
-        # Step 4: Archive old events not present in the stream anymore
-        async with progress_reporter.section("Archiving old events"):
-            for event in all_full_days_events:
-                if event.external_uid in processed_events_external_uids:
-                    continue
+                        processed_events_external_uids.add(uid)
+                    else:
+                        return sync_log_entry.mark_stream_error(
+                            ctx,
+                            schedule_stream_ref_id=schedule_stream.ref_id,
+                            error_msg=f"Unexpected event type {event}",
+                        )
 
-                async with self._domain_storage_engine.get_unit_of_work() as uow:
-                    await generic_archiver(ctx, uow, progress_reporter, ScheduleEventFullDays, event.ref_id)
-                    sync_log_entry = sync_log_entry.add_entity(ctx, event)
+            # Step 4: Archive old events not present in the stream anymore
+            async with progress_reporter.section("Archiving old events"):
+                for event in all_full_days_events:
+                    if event.external_uid in processed_events_external_uids:
+                        continue
 
-            for event in all_in_day_events:
-                if event.external_uid in processed_events_external_uids:
-                    continue
+                    async with self._domain_storage_engine.get_unit_of_work() as uow:
+                        await generic_archiver(
+                            ctx,
+                            uow,
+                            progress_reporter,
+                            ScheduleEventFullDays,
+                            event.ref_id,
+                        )
+                        sync_log_entry = sync_log_entry.add_entity(ctx, event)
 
-                async with self._domain_storage_engine.get_unit_of_work() as uow:
-                    await generic_archiver(ctx, uow, progress_reporter, ScheduleEventInDay, event.ref_id)
-                    sync_log_entry = sync_log_entry.add_entity(ctx, event)
+                for event in all_in_day_events:
+                    if event.external_uid in processed_events_external_uids:
+                        continue
 
-        # Step 5: done!
+                    async with self._domain_storage_engine.get_unit_of_work() as uow:
+                        await generic_archiver(
+                            ctx,
+                            uow,
+                            progress_reporter,
+                            ScheduleEventInDay,
+                            event.ref_id,
+                        )
+                        sync_log_entry = sync_log_entry.add_entity(ctx, event)
 
-        return sync_log_entry.mark_stream_success(
-            ctx, schedule_stream_ref_id=schedule_stream.ref_id
-        )
+            # Step 5: done!
+
+            return sync_log_entry.mark_stream_success(
+                ctx, schedule_stream_ref_id=schedule_stream.ref_id
+            )
+        except ValueError as err:
+            return sync_log_entry.mark_stream_error(
+                ctx,
+                schedule_stream_ref_id=schedule_stream.ref_id,
+                error_msg=f"{err}",
+            )
+
+    def _retrieve_calendar_ical(self, schedule_stream: ScheduleStream) -> Component:
+        """Retrieve the iCal for a schedule stream."""
+        try:
+            calendar_ical_response = requests.get(
+                cast(URL, schedule_stream.source_ical_url).the_url
+            )
+            if calendar_ical_response.status_code != 200:
+                # Early exit mark some error in sync log entry
+                raise ValueError(
+                    f"Failed to fetch iCal from {schedule_stream.source_ical_url} (error {calendar_ical_response.status_code})"
+                )
+            calendar_ical = calendar_ical_response.text
+        except requests.RequestException as err:
+            # Early exit in sync log entry
+            raise ValueError(
+                f"Failed to fetch iCal from {schedule_stream.source_ical_url} ({err})"
+            ) from err
+
+        try:
+            calendar = Calendar.from_ical(calendar_ical)
+        except ValueError as err:
+            # Early exit in sync log entry
+            raise ValueError(
+                f"Failed to parse iCal from {schedule_stream.source_ical_url} ({err})"
+            ) from err
+
+        return calendar

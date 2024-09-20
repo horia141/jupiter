@@ -1,8 +1,10 @@
 """Load previous runs of Gen."""
 
-from jupiter.core.domain.application.gc.gc_log_entry import GenLogEntryRepository
 from jupiter.core.domain.application.gen.gen_log import GenLog
-from jupiter.core.domain.application.gen.gen_log_entry import GenLogEntry
+from jupiter.core.domain.application.gen.gen_log_entry import (
+    GenLogEntry,
+    GenLogEntryRepository,
+)
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,

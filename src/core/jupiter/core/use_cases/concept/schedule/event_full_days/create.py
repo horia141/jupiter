@@ -75,7 +75,7 @@ class ScheduleEventFullDaysCreateUseCase(
             raise InputValidationError(
                 "Cannot create an event for a schedule stream that can't be modified."
             )
-        
+
         time_event_domain = await uow.get_for(TimeEventDomain).load_by_parent(
             workspace.ref_id
         )

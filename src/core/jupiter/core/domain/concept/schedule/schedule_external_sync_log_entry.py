@@ -1,4 +1,6 @@
 """An entry in a sync log."""
+import abc
+
 from jupiter.core.domain.entity_summary import EntitySummary
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.entity_name import EntityName
@@ -13,6 +15,7 @@ from jupiter.core.framework.entity import (
     update_entity_action,
 )
 from jupiter.core.framework.event import EventSource
+from jupiter.core.framework.repository import LeafEntityRepository
 from jupiter.core.framework.value import CompositeValue, value
 
 
@@ -35,6 +38,7 @@ class ScheduleExternalSyncLogEntry(LeafEntity):
     opened: bool
     per_stream_results: list[ScheduleExternalSyncLogPerStreamResult]
     entity_records: list[EntitySummary]
+    even_more_entity_records: bool
 
     @staticmethod
     @create_entity_action
@@ -53,6 +57,7 @@ class ScheduleExternalSyncLogEntry(LeafEntity):
             opened=True,
             per_stream_results=[],
             entity_records=[],
+            even_more_entity_records=False,
         )
 
     @update_entity_action
@@ -108,7 +113,10 @@ class ScheduleExternalSyncLogEntry(LeafEntity):
         if not self.opened:
             raise Exception("Can't add an entity to a closed GC log entry.")
         if len(self.entity_records) >= 100:
-            return self
+            return self._new_version(
+                ctx,
+                even_more_entity_records=True,
+            )
         return self._new_version(
             ctx,
             entity_records=[*self.entity_records, EntitySummary.from_entity(entity)],
@@ -125,3 +133,17 @@ class ScheduleExternalSyncLogEntry(LeafEntity):
     @staticmethod
     def build_name(created_time: Timestamp) -> EntityName:
         return EntityName(f"Sync log entry {created_time}")
+
+
+class ScheduleExternalSyncLogEntryRepository(
+    LeafEntityRepository[ScheduleExternalSyncLogEntry], abc.ABC
+):
+    """Repository for ScheduleExternalSyncLogEntry."""
+
+    @abc.abstractmethod
+    async def find_last(
+        self,
+        parent_ref_id: EntityId,
+        limit: int,
+    ) -> list[ScheduleExternalSyncLogEntry]:
+        """Find the last N log entry."""

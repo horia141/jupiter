@@ -168,7 +168,9 @@ export default function ScheduleStreamViewOne() {
 
   const inputsEnabled =
     transition.state === "idle" && !loaderData.scheduleStream.archived;
-  const corePropertyEditable = isCorePropertyEditable(loaderData.scheduleStream);
+  const corePropertyEditable = isCorePropertyEditable(
+    loaderData.scheduleStream
+  );
 
   return (
     <LeafPanel
@@ -197,11 +199,17 @@ export default function ScheduleStreamViewOne() {
         }
       >
         <Stack spacing={2} useFlexGap>
-          {loaderData.scheduleStream.source === ScheduleSource.EXTERNAL_ICAL && (
-             <FormControl fullWidth>
-             <InputLabel id="sourceIcalUrl">Source iCal URL</InputLabel>
-             <OutlinedInput label="sourceIcalUrl" name="sourceIcalUrl" defaultValue={loaderData.scheduleStream.source_ical_url!} readOnly={true} />
-           </FormControl>
+          {loaderData.scheduleStream.source ===
+            ScheduleSource.EXTERNAL_ICAL && (
+            <FormControl fullWidth>
+              <InputLabel id="sourceIcalUrl">Source iCal URL</InputLabel>
+              <OutlinedInput
+                label="sourceIcalUrl"
+                name="sourceIcalUrl"
+                defaultValue={loaderData.scheduleStream.source_ical_url!}
+                readOnly={true}
+              />
+            </FormControl>
           )}
 
           <FormControl fullWidth>

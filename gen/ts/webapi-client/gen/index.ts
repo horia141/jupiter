@@ -304,6 +304,8 @@ export type { ScheduleEventInDayRemoveArgs } from './models/ScheduleEventInDayRe
 export type { ScheduleEventInDayUpdateArgs } from './models/ScheduleEventInDayUpdateArgs';
 export type { ScheduleEventName } from './models/ScheduleEventName';
 export type { ScheduleExternalSyncDoArgs } from './models/ScheduleExternalSyncDoArgs';
+export type { ScheduleExternalSyncLoadRunsArgs } from './models/ScheduleExternalSyncLoadRunsArgs';
+export type { ScheduleExternalSyncLoadRunsResult } from './models/ScheduleExternalSyncLoadRunsResult';
 export type { ScheduleExternalSyncLog } from './models/ScheduleExternalSyncLog';
 export type { ScheduleExternalSyncLogEntry } from './models/ScheduleExternalSyncLogEntry';
 export type { ScheduleExternalSyncLogPerStreamResult } from './models/ScheduleExternalSyncLogPerStreamResult';

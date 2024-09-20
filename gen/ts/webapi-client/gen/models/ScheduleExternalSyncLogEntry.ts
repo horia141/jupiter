@@ -26,5 +26,6 @@ export type ScheduleExternalSyncLogEntry = {
     opened: boolean;
     per_stream_results: Array<ScheduleExternalSyncLogPerStreamResult>;
     entity_records: Array<EntitySummary>;
+    even_more_entity_records: boolean;
 };
 

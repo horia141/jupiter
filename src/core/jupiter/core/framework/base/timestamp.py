@@ -43,7 +43,7 @@ class Timestamp(AtomicValue[datetime.datetime]):
 
     def mins_since(self, other: "Timestamp") -> int:
         """Get the minutes since another timestamp."""
-        return self.the_ts.diff(other.the_ts).in_minutes()
+        return cast(int, self.the_ts.diff(other.the_ts).in_minutes())  # type: ignore
 
     @property
     def value(self) -> DateTime:

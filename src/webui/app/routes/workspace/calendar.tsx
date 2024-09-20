@@ -17,6 +17,7 @@ import {
 } from "@jupiter/webapi-client";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import TuneIcon from "@mui/icons-material/Tune";
 import {
   Box,
   Button,
@@ -255,7 +256,7 @@ export default function CalendarView() {
                 }),
               ],
             }),
-            NavMultipleSpread({
+            NavMultipleCompact({
               navs: [
                 NavSingle({
                   text: "Calendar",
@@ -268,6 +269,11 @@ export default function CalendarView() {
                   highlight: loaderData.view === View.SCHEDULE,
                 }),
               ],
+            }),
+            NavSingle({
+              text: "Settings",
+              link: `/workspace/calendar/settings`,
+              icon: <TuneIcon />,
             }),
           ]}
         />

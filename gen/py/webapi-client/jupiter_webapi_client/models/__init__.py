@@ -360,6 +360,8 @@ from .schedule_event_in_day_update_args_name import ScheduleEventInDayUpdateArgs
 from .schedule_event_in_day_update_args_start_date import ScheduleEventInDayUpdateArgsStartDate
 from .schedule_event_in_day_update_args_start_time_in_day import ScheduleEventInDayUpdateArgsStartTimeInDay
 from .schedule_external_sync_do_args import ScheduleExternalSyncDoArgs
+from .schedule_external_sync_load_runs_args import ScheduleExternalSyncLoadRunsArgs
+from .schedule_external_sync_load_runs_result import ScheduleExternalSyncLoadRunsResult
 from .schedule_external_sync_log import ScheduleExternalSyncLog
 from .schedule_external_sync_log_entry import ScheduleExternalSyncLogEntry
 from .schedule_external_sync_log_per_stream_result import ScheduleExternalSyncLogPerStreamResult
@@ -927,6 +929,8 @@ __all__ = (
     "ScheduleEventInDayUpdateArgsStartDate",
     "ScheduleEventInDayUpdateArgsStartTimeInDay",
     "ScheduleExternalSyncDoArgs",
+    "ScheduleExternalSyncLoadRunsArgs",
+    "ScheduleExternalSyncLoadRunsResult",
     "ScheduleExternalSyncLog",
     "ScheduleExternalSyncLogEntry",
     "ScheduleExternalSyncLogPerStreamResult",

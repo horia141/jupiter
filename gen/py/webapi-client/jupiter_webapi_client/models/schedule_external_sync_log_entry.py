@@ -30,6 +30,7 @@ class ScheduleExternalSyncLogEntry:
         opened (bool):
         per_stream_results (List['ScheduleExternalSyncLogPerStreamResult']):
         entity_records (List['EntitySummary']):
+        even_more_entity_records (bool):
         archived_time (Union[None, Unset, str]):
         filter_schedule_stream_ref_id (Union[List[str], None, Unset]):
     """
@@ -45,6 +46,7 @@ class ScheduleExternalSyncLogEntry:
     opened: bool
     per_stream_results: List["ScheduleExternalSyncLogPerStreamResult"]
     entity_records: List["EntitySummary"]
+    even_more_entity_records: bool
     archived_time: Union[None, Unset, str] = UNSET
     filter_schedule_stream_ref_id: Union[List[str], None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -78,6 +80,8 @@ class ScheduleExternalSyncLogEntry:
             entity_records_item = entity_records_item_data.to_dict()
             entity_records.append(entity_records_item)
 
+        even_more_entity_records = self.even_more_entity_records
+
         archived_time: Union[None, Unset, str]
         if isinstance(self.archived_time, Unset):
             archived_time = UNSET
@@ -108,6 +112,7 @@ class ScheduleExternalSyncLogEntry:
                 "opened": opened,
                 "per_stream_results": per_stream_results,
                 "entity_records": entity_records,
+                "even_more_entity_records": even_more_entity_records,
             }
         )
         if archived_time is not UNSET:
@@ -155,6 +160,8 @@ class ScheduleExternalSyncLogEntry:
 
             entity_records.append(entity_records_item)
 
+        even_more_entity_records = d.pop("even_more_entity_records")
+
         def _parse_archived_time(data: object) -> Union[None, Unset, str]:
             if data is None:
                 return data
@@ -195,6 +202,7 @@ class ScheduleExternalSyncLogEntry:
             opened=opened,
             per_stream_results=per_stream_results,
             entity_records=entity_records,
+            even_more_entity_records=even_more_entity_records,
             archived_time=archived_time,
             filter_schedule_stream_ref_id=filter_schedule_stream_ref_id,
         )
