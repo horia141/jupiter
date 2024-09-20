@@ -11,6 +11,7 @@ from jupiter.core.domain.core.time_events.time_event_in_day_block import (
 )
 from jupiter.core.domain.core.time_events.time_event_namespace import TimeEventNamespace
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     IsRefId,
@@ -35,6 +36,7 @@ class ScheduleEventInDay(LeafEntity):
     source: ScheduleSource
     name: ScheduleEventName
     external_uid: ScheduleExternalUid | None
+    external_last_synced_at: Timestamp | None
 
     time_event_in_day_block = OwnsOne(
         TimeEventInDayBlock,
@@ -61,6 +63,7 @@ class ScheduleEventInDay(LeafEntity):
             source=ScheduleSource.USER,
             name=name,
             external_uid=None,
+            external_last_synced_at=None,
         )
 
     @staticmethod
@@ -80,6 +83,7 @@ class ScheduleEventInDay(LeafEntity):
             source=ScheduleSource.EXTERNAL_ICAL,
             name=name,
             external_uid=external_uid,
+            external_last_synced_at=ctx.action_timestamp,
         )
 
     @update_entity_action
@@ -105,9 +109,13 @@ class ScheduleEventInDay(LeafEntity):
         name: UpdateAction[ScheduleEventName],
     ) -> "ScheduleEventInDay":
         """Update the schedule event."""
+        extra_attrs = {}
+        if self.source == ScheduleSource.EXTERNAL_ICAL:
+            extra_attrs["external_last_synced_at"] = ctx.action_timestamp
         return self._new_version(
             ctx,
             name=name.or_else(self.name),
+            **extra_attrs,
         )
 
     @property

@@ -1,7 +1,7 @@
 """The commnad for syncing a schedule once."""
-from jupiter.core.domain.concept.schedule.service.external_sync_service import ScheduleExternalSyncService
-from jupiter.core.domain.concept.user.user import User
-from jupiter.core.domain.concept.user_workspace_link.user_workspace_link import UserWorkspaceLink
+from jupiter.core.domain.concept.schedule.service.external_sync_service import (
+    ScheduleExternalSyncService,
+)
 from jupiter.core.domain.concept.workspaces.workspace import Workspace
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.event import EventSource
@@ -14,16 +14,22 @@ from jupiter.core.use_cases.infra.use_cases import AppBackgroundMutationUseCase
 class ScheduleExternalSyncDoAllArgs(UseCaseArgsBase):
     """ScheduleExternalSyncDoArgs."""
 
-class ScheduleExternalSyncDoAllUseCase(AppBackgroundMutationUseCase[ScheduleExternalSyncDoAllArgs, None]):
+
+class ScheduleExternalSyncDoAllUseCase(
+    AppBackgroundMutationUseCase[ScheduleExternalSyncDoAllArgs, None]
+):
     """The command for doing a sync."""
 
-    async def _execute(self, context: EmptyContext, args: ScheduleExternalSyncDoAllArgs) -> None:
+    async def _execute(
+        self, context: EmptyContext, args: ScheduleExternalSyncDoAllArgs
+    ) -> None:
         """Execute the command's action."""
         async with self._domain_storage_engine.get_unit_of_work() as uow:
             workspaces = await uow.get_for(Workspace).find_all(allow_archived=False)
 
         ctx = DomainContext(
-            EventSource.SCHEDULE_EXTERNAL_SYNC_CRON, self._time_provider.get_current_time()
+            EventSource.SCHEDULE_EXTERNAL_SYNC_CRON,
+            self._time_provider.get_current_time(),
         )
 
         sync_service = ScheduleExternalSyncService(
@@ -43,10 +49,16 @@ class ScheduleExternalSyncDoAllUseCase(AppBackgroundMutationUseCase[ScheduleExte
 
             async with self._search_storage_engine.get_unit_of_work() as search_uow:
                 for created_entity in progress_reporter.created_entities:
-                    await search_uow.search_repository.upsert(workspace.ref_id, created_entity)
+                    await search_uow.search_repository.upsert(
+                        workspace.ref_id, created_entity
+                    )
 
                 for updated_entity in progress_reporter.updated_entities:
-                    await search_uow.search_repository.upsert(workspace.ref_id, updated_entity)
+                    await search_uow.search_repository.upsert(
+                        workspace.ref_id, updated_entity
+                    )
 
                 for deleted_entity in progress_reporter.removed_entities:
-                    await search_uow.search_repository.remove(workspace.ref_id, deleted_entity)
+                    await search_uow.search_repository.remove(
+                        workspace.ref_id, deleted_entity
+                    )

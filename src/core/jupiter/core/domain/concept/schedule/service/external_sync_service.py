@@ -215,7 +215,6 @@ class ScheduleExternalSyncService:
                     event.external_uid: event for event in all_in_day_events
                 }
 
-                # TODO(horia141): Handle modified via timestamp
                 # TODO(horia141): Handle timezone issues
 
                 processed_events_external_uids = set()
@@ -239,6 +238,9 @@ class ScheduleExternalSyncService:
                         )
                         end_date = self._realm_codec_registry.db_decode(
                             ADate, event["DTEND"].dt
+                        )
+                        last_modified = self._realm_codec_registry.db_decode(
+                            Timestamp, event["LAST-MODIFIED"].dt
                         )
 
                         if uid not in all_full_days_events_by_external_uid:
@@ -274,7 +276,16 @@ class ScheduleExternalSyncService:
                                     event.ref_id
                                 ] = time_event_full_days_block
                                 sync_log_entry = sync_log_entry.add_entity(ctx, event)
-                        else:
+                        elif (
+                            all_full_days_events_by_external_uid[
+                                uid
+                            ].external_last_synced_at
+                            is None
+                            or last_modified
+                            > all_full_days_events_by_external_uid[
+                                uid
+                            ].external_last_synced_at
+                        ):
                             async with self._domain_storage_engine.get_unit_of_work() as uow:
                                 event = all_full_days_events_by_external_uid[uid]
                                 event = event.update(
@@ -321,6 +332,9 @@ class ScheduleExternalSyncService:
                         end_time = self._realm_codec_registry.db_decode(
                             Timestamp, event["DTEND"].dt
                         )
+                        last_modified = self._realm_codec_registry.db_decode(
+                            Timestamp, event["LAST-MODIFIED"].dt
+                        )
 
                         total_duration = min(
                             MAX_DURATION_MINS, end_time.mins_since(start_time)
@@ -362,7 +376,16 @@ class ScheduleExternalSyncService:
                                     event.ref_id
                                 ] = time_event_in_day_block
                                 sync_log_entry = sync_log_entry.add_entity(ctx, event)
-                        else:
+                        elif (
+                            all_in_day_events_by_external_uid[
+                                uid
+                            ].external_last_synced_at
+                            is None
+                            or last_modified
+                            > all_in_day_events_by_external_uid[
+                                uid
+                            ].external_last_synced_at
+                        ):
                             async with self._domain_storage_engine.get_unit_of_work() as uow:
                                 event = all_in_day_events_by_external_uid[uid]
                                 event = event.update(
