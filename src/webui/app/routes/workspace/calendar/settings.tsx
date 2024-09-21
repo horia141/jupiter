@@ -192,7 +192,6 @@ export default function CalendarSettings() {
                     <EntityCard
                       key={`entities-${entry.ref_id}-${record.ref_id}`}
                     >
-                      {`entities-${entry.ref_id}-${record.ref_id}`}
                       <EntitySummaryLink summary={record} />
                     </EntityCard>
                   ))}

@@ -251,8 +251,6 @@ class ScheduleExternalSyncService:
                 }
 
                 # TODO(horia141): Handle timezone issues
-                # TODO(horia141): Handle notes
-                # TODO(horia141): rely on last_modified for updates :()
 
                 processed_events_external_uids = set()
 
@@ -349,14 +347,10 @@ class ScheduleExternalSyncService:
                                     ctx, schedule_event_full_days
                                 )
                         elif (
-                            all_full_days_events_by_external_uid[
-                                uid
-                            ].external_last_synced_at
-                            is None
-                            or last_modified
+                            last_modified
                             > all_full_days_events_by_external_uid[
                                 uid
-                            ].external_last_synced_at
+                            ].last_modified_time
                         ):
                             async with self._domain_storage_engine.get_unit_of_work() as uow:
                                 schedule_event_full_days = (
@@ -550,14 +544,8 @@ class ScheduleExternalSyncService:
                                     ctx, schedule_event_in_day
                                 )
                         elif (
-                            all_in_day_events_by_external_uid[
-                                uid
-                            ].external_last_synced_at
-                            is None
-                            or last_modified
-                            > all_in_day_events_by_external_uid[
-                                uid
-                            ].external_last_synced_at
+                            last_modified
+                            > all_in_day_events_by_external_uid[uid].last_modified_time
                         ):
                             async with self._domain_storage_engine.get_unit_of_work() as uow:
                                 schedule_event_in_day = (
