@@ -8,7 +8,6 @@ import type { EntityName } from './EntityName';
 import type { TimeEventNamespace } from './TimeEventNamespace';
 import type { TimeInDay } from './TimeInDay';
 import type { Timestamp } from './Timestamp';
-import type { Timezone } from './Timezone';
 
 /**
  * Time event.
@@ -27,6 +26,5 @@ export type TimeEventInDayBlock = {
     start_date: ADate;
     start_time_in_day: TimeInDay;
     duration_mins: number;
-    timezone: Timezone;
 };
 

@@ -1,4 +1,5 @@
 import type {
+  ADate,
   InboxTaskEntry,
   Person,
   PersonEntry,
@@ -6,6 +7,7 @@ import type {
   ScheduleInDayEventEntry,
   TimeEventFullDaysBlock,
   TimeEventInDayBlock,
+  TimeInDay,
   Timezone,
   VacationEntry,
 } from "@jupiter/webapi-client";
@@ -42,12 +44,12 @@ export function sortInboxTaskTimeEventsNaturally(
   return [...timeEvents].sort((j1, j2) => {
     return (
       calculateStartTimeInTimezone(
-        j1.time_event,
-        j1.time_event.timezone
+        j1.time_event_in_tz,
+        "UTC"
       ).toMillis() -
       calculateStartTimeInTimezone(
-        j2.time_event,
-        j2.time_event.timezone
+        j2.time_event_in_tz,
+        "UTC"
       ).toMillis()
     );
   });
@@ -59,7 +61,7 @@ export interface CombinedTimeEventFullDaysEntry {
 }
 
 export interface CombinedTimeEventInDayEntry {
-  time_event: TimeEventInDayBlock;
+  time_event_in_tz: TimeEventInDayBlock;
   entry: ScheduleInDayEventEntry | InboxTaskEntry;
 }
 
@@ -105,4 +107,55 @@ export function calculateEndTimeInTimezone(
   const endTime = startTime.plus({ minutes: timeEvent.duration_mins });
 
   return endTime;
+}
+
+
+export function timeEventInDayBlockToTimezone(timeEvent: TimeEventInDayBlock, timezone: Timezone): TimeEventInDayBlock {
+  const {startDate, startTimeInDay} = timeEventInDayBlockParamsToTimezone({
+    startDate: timeEvent.start_date,
+    startTimeInDay: timeEvent.start_time_in_day,
+  }, timezone);
+
+  return {
+    ...timeEvent,
+    start_date: startDate,
+    start_time_in_day: startTimeInDay!,
+  };
+}
+
+
+interface TimeEventInDayBlockParams {
+  startDate: ADate;
+  startTimeInDay?: TimeInDay;
+}
+
+
+export function timeEventInDayBlockParamsToUtc(params: TimeEventInDayBlockParams, timezone: Timezone): TimeEventInDayBlockParams {
+  if (!params.startTimeInDay) {
+    // This works around some issues in the uI where the control for
+    // time in day can be null which needs to trigger a validation error
+    // from the backend.
+    return params;
+  }
+  const startTime = DateTime.fromISO(`${params.startDate}T${params.startTimeInDay}`, { zone: timezone });
+  const utcStartTime = startTime.toUTC();
+  return {
+    startDate: utcStartTime.toISODate(),
+    startTimeInDay: utcStartTime.toFormat("HH:mm"),
+  };
+}
+
+export function timeEventInDayBlockParamsToTimezone(params: TimeEventInDayBlockParams, timezone: Timezone): TimeEventInDayBlockParams {
+  if (!params.startTimeInDay) {
+    // This works around some issues in the uI where the control for
+    // time in day can be null which needs to trigger a validation error
+    // from the backend.
+    return params;
+  }
+  const startTime = DateTime.fromISO(`${params.startDate}T${params.startTimeInDay}`, { zone: "UTC" });
+  const localStartTime = startTime.setZone(timezone);
+  return {
+    startDate: localStartTime.toISODate(),
+    startTimeInDay: localStartTime.toFormat("HH:mm"),
+  };
 }

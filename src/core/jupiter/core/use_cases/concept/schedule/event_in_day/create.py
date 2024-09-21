@@ -65,7 +65,6 @@ class ScheduleEventInDayCreateUseCase(
         args: ScheduleEventInDayCreateArgs,
     ) -> ScheduleEventInDayCreateResult:
         """Execute the command's action."""
-        user = context.user
         workspace = context.workspace
         schedule_domain = await uow.get_for(ScheduleDomain).load_by_parent(
             workspace.ref_id
@@ -103,7 +102,6 @@ class ScheduleEventInDayCreateUseCase(
                 start_date=args.start_date,
                 start_time_in_day=args.start_time_in_day,
                 duration_mins=args.duration_mins,
-                timezone=user.timezone,
             )
         )
         new_time_event_in_day_block = await uow.get_for(TimeEventInDayBlock).create(

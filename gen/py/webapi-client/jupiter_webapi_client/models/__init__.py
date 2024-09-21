@@ -359,6 +359,7 @@ from .schedule_event_in_day_update_args_duration_mins import ScheduleEventInDayU
 from .schedule_event_in_day_update_args_name import ScheduleEventInDayUpdateArgsName
 from .schedule_event_in_day_update_args_start_date import ScheduleEventInDayUpdateArgsStartDate
 from .schedule_event_in_day_update_args_start_time_in_day import ScheduleEventInDayUpdateArgsStartTimeInDay
+from .schedule_external_sync_do_all_args import ScheduleExternalSyncDoAllArgs
 from .schedule_external_sync_do_args import ScheduleExternalSyncDoArgs
 from .schedule_external_sync_load_runs_args import ScheduleExternalSyncLoadRunsArgs
 from .schedule_external_sync_load_runs_result import ScheduleExternalSyncLoadRunsResult
@@ -928,6 +929,7 @@ __all__ = (
     "ScheduleEventInDayUpdateArgsName",
     "ScheduleEventInDayUpdateArgsStartDate",
     "ScheduleEventInDayUpdateArgsStartTimeInDay",
+    "ScheduleExternalSyncDoAllArgs",
     "ScheduleExternalSyncDoArgs",
     "ScheduleExternalSyncLoadRunsArgs",
     "ScheduleExternalSyncLoadRunsResult",

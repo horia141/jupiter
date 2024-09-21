@@ -32,6 +32,7 @@ import {
 import { SectionCardNew } from "~/components/infra/section-card-new";
 import { ScheduleStreamSelect } from "~/components/schedule-stream-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
+import { timeEventInDayBlockParamsToUtc } from "~/logic/domain/time-event";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -47,6 +48,7 @@ const QuerySchema = {
 
 const CreateFormSchema = {
   scheduleStreamRefId: z.string(),
+  userTimezone: z.string(),
   name: z.string(),
   startDate: z.string(),
   startTimeInDay: z.string().optional(),
@@ -80,13 +82,14 @@ export async function action({ request }: ActionArgs) {
   const url = new URL(request.url);
 
   try {
+    const {startDate, startTimeInDay} = timeEventInDayBlockParamsToUtc(form, form.userTimezone);
     const response = await getLoggedInApiClient(
       session
     ).eventInDay.scheduleEventInDayCreate({
       schedule_stream_ref_id: form.scheduleStreamRefId,
       name: form.name,
-      start_date: form.startDate,
-      start_time_in_day: form.startTimeInDay ?? "",
+      start_date: startDate,
+      start_time_in_day: startTimeInDay ?? "",
       duration_mins: form.durationMins,
     });
 
@@ -146,6 +149,7 @@ export default function ScheduleEventInDayNew() {
         }
       >
         <Stack spacing={2} useFlexGap>
+          <input type="hidden" name="userTimezone" value={topLevelInfo.user.timezone} />
           <FormControl fullWidth>
             <InputLabel id="scheduleStreamRefId">Schedule Stream</InputLabel>
             <ScheduleStreamSelect

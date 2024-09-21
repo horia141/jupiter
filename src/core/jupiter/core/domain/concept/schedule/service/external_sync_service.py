@@ -44,7 +44,6 @@ from jupiter.core.domain.core.time_events.time_event_in_day_block import (
 )
 from jupiter.core.domain.core.time_events.time_event_namespace import TimeEventNamespace
 from jupiter.core.domain.core.time_in_day import TimeInDay
-from jupiter.core.domain.core.timezone import UTC
 from jupiter.core.domain.core.url import URL
 from jupiter.core.domain.infra.generic_archiver import generic_archiver
 from jupiter.core.domain.storage_engine import DomainStorageEngine
@@ -463,6 +462,7 @@ class ScheduleExternalSyncService:
                         uid = self._realm_codec_registry.db_decode(
                             ScheduleExternalUid, event["UID"].to_ical().decode()
                         )
+                        # icalendar makes everything UTC so we don't need to.
                         start_time = self._realm_codec_registry.db_decode(
                             Timestamp, event["DTSTART"].dt
                         )
@@ -510,7 +510,6 @@ class ScheduleExternalSyncService:
                                         start_time.value.hour, start_time.value.minute
                                     ),
                                     duration_mins=total_duration,
-                                    timezone=UTC,
                                 )
                                 time_event_in_day_block = await uow.get_for(
                                     TimeEventInDayBlock
@@ -580,7 +579,6 @@ class ScheduleExternalSyncService:
                                         duration_mins=UpdateAction.change_to(
                                             total_duration
                                         ),
-                                        timezone=UTC,
                                     )
                                 )
                                 await uow.get_for(TimeEventInDayBlock).save(

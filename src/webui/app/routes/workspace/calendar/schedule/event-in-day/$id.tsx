@@ -1,5 +1,6 @@
 import type { ScheduleStreamSummary } from "@jupiter/webapi-client";
 import { ApiError, NoteDomain } from "@jupiter/webapi-client";
+import { StayCurrentLandscapeTwoTone } from "@mui/icons-material";
 import {
   Button,
   ButtonGroup,
@@ -38,6 +39,7 @@ import { SectionCardNew } from "~/components/infra/section-card-new";
 import { ScheduleStreamSelect } from "~/components/schedule-stream-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { isCorePropertyEditable } from "~/logic/domain/schedule-event-in-day";
+import { timeEventInDayBlockParamsToTimezone, timeEventInDayBlockParamsToUtc } from "~/logic/domain/time-event";
 import { basicShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -51,6 +53,7 @@ const ParamsSchema = {
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
     intent: z.literal("update"),
+    userTimezone: z.string(),
     name: z.string(),
     startDate: z.string(),
     startTimeInDay: z.string().optional(),
@@ -118,6 +121,7 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (form.intent) {
       case "update": {
+        const {startDate, startTimeInDay} = timeEventInDayBlockParamsToUtc(form, form.userTimezone);
         await getLoggedInApiClient(session).eventInDay.scheduleEventInDayUpdate(
           {
             ref_id: id,
@@ -127,11 +131,11 @@ export async function action({ request, params }: ActionArgs) {
             },
             start_date: {
               should_change: true,
-              value: form.startDate,
+              value: startDate,
             },
             start_time_in_day: {
               should_change: true,
-              value: form.startTimeInDay,
+              value: startTimeInDay ?? "",
             },
             duration_mins: {
               should_change: true,
@@ -219,6 +223,11 @@ export default function ScheduleEventInDayViewOne() {
     loaderData.allScheduleStreams.map((st) => [st.ref_id, st])
   );
 
+  const {startDate, startTimeInDay} = timeEventInDayBlockParamsToTimezone({
+    startDate: loaderData.timeEventInDayBlock.start_date,
+    startTimeInDay: loaderData.timeEventInDayBlock.start_time_in_day,
+  }, topLevelInfo.user.timezone);
+
   return (
     <LeafPanel
       key={`schedule-event-in-day-${loaderData.scheduleEventInDay.ref_id}`}
@@ -256,6 +265,7 @@ export default function ScheduleEventInDayViewOne() {
         }
       >
         <Stack spacing={2} useFlexGap>
+          <input type="hidden" name="userTimezone" value={topLevelInfo.user.timezone} />
           <FormControl fullWidth>
             <InputLabel id="scheduleStreamRefId">Schedule Stream</InputLabel>
             <ScheduleStreamSelect
@@ -295,7 +305,7 @@ export default function ScheduleEventInDayViewOne() {
               label="startDate"
               name="startDate"
               readOnly={!inputsEnabled || !corePropertyEditable}
-              defaultValue={loaderData.timeEventInDayBlock.start_date}
+              defaultValue={startDate}
             />
 
             <FieldError actionResult={actionData} fieldName="/start_date" />
@@ -310,7 +320,7 @@ export default function ScheduleEventInDayViewOne() {
               label="startTimeInDay"
               name="startTimeInDay"
               readOnly={!inputsEnabled || !corePropertyEditable}
-              defaultValue={loaderData.timeEventInDayBlock.start_time_in_day}
+              defaultValue={startTimeInDay}
             />
 
             <FieldError

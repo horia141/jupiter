@@ -1,16 +1,22 @@
-import type { ScheduleInDayEventEntry } from "@jupiter/webapi-client";
+import type { ScheduleInDayEventEntry, Timezone } from "@jupiter/webapi-client";
 import { TimeEventNamespace } from "@jupiter/webapi-client";
-import type { CombinedTimeEventInDayEntry } from "~/logic/domain/time-event";
+import { timeEventInDayBlockParamsToTimezone, type CombinedTimeEventInDayEntry } from "~/logic/domain/time-event";
 import { EntityNameComponent } from "./entity-name";
 import { EntityCard, EntityLink } from "./infra/entity-card";
 
 interface TimeEventInDayBlockCardProps {
   entry: CombinedTimeEventInDayEntry;
+  userTimezone: Timezone;
 }
 
 export function TimeEventInDayBlockCard(props: TimeEventInDayBlockCardProps) {
+  const {startDate, startTimeInDay} = timeEventInDayBlockParamsToTimezone({
+    startDate: props.entry.time_event_in_tz.start_date,
+    startTimeInDay: props.entry.time_event_in_tz.start_time_in_day,
+  }, props.userTimezone);
+
   let name = null;
-  switch (props.entry.time_event.namespace) {
+  switch (props.entry.time_event_in_tz.namespace) {
     case TimeEventNamespace.SCHEDULE_EVENT_IN_DAY: {
       const entry = props.entry.entry as ScheduleInDayEventEntry;
       name = entry.event.name;
@@ -18,7 +24,7 @@ export function TimeEventInDayBlockCard(props: TimeEventInDayBlockCardProps) {
     }
 
     case TimeEventNamespace.INBOX_TASK: {
-      name = `On ${props.entry.time_event.start_date} at ${props.entry.time_event.start_time_in_day}`;
+      name = `On ${startDate} at ${startTimeInDay}`;
       break;
     }
 
@@ -28,11 +34,11 @@ export function TimeEventInDayBlockCard(props: TimeEventInDayBlockCardProps) {
 
   return (
     <EntityCard
-      entityId={`time-event-in-day-block-${props.entry.time_event.ref_id}`}
-      showAsArchived={props.entry.time_event.archived}
+      entityId={`time-event-in-day-block-${props.entry.time_event_in_tz.ref_id}`}
+      showAsArchived={props.entry.time_event_in_tz.archived}
     >
       <EntityLink
-        to={`/workspace/calendar/time-event/in-day-block/${props.entry.time_event.ref_id}`}
+        to={`/workspace/calendar/time-event/in-day-block/${props.entry.time_event_in_tz.ref_id}`}
       >
         <EntityNameComponent name={name} />
       </EntityLink>

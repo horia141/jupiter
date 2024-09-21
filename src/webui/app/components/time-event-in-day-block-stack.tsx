@@ -39,8 +39,9 @@ export function TimeEventInDayBlockStack(props: TimeEventInDayBlockStackProps) {
     >
       {props.entries.map((entry) => (
         <TimeEventInDayBlockCard
-          key={`time-event-in-days-block-${entry.time_event.ref_id}`}
+          key={`time-event-in-days-block-${entry.time_event_in_tz.ref_id}`}
           entry={entry}
+          userTimezone={props.topLevelInfo.user.timezone}
         />
       ))}
     </SectionCardNew>

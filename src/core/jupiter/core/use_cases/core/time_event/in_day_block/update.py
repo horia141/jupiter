@@ -41,7 +41,6 @@ class TimeEventInDayBlockUpdateUseCase(
         args: TimeEventInDayBlockUpdateArgs,
     ) -> None:
         """Execute the command's action."""
-        user = context.user
         time_event_block = await uow.get_for(TimeEventInDayBlock).load_by_id(
             args.ref_id
         )
@@ -52,6 +51,5 @@ class TimeEventInDayBlockUpdateUseCase(
             start_date=args.start_date,
             start_time_in_day=args.start_time_in_day,
             duration_mins=args.duration_mins,
-            timezone=user.timezone,
         )
         time_event_block = await uow.get_for(TimeEventInDayBlock).save(time_event_block)

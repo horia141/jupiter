@@ -80,6 +80,8 @@ import {
   compareNamespaceForSortingFullDaysTimeEvents,
   INBOX_TASK_TIME_EVENT_COLOR,
   VACATION_TIME_EVENT_COLOR,
+  timeEventInDayBlockParamsToTimezone,
+  timeEventInDayBlockToTimezone,
 } from "~/logic/domain/time-event";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useBigScreen } from "~/rendering/use-big-screen";
@@ -445,14 +447,14 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
   const combinedTimeEventInDay: Array<CombinedTimeEventInDayEntry> = [];
   for (const entry of props.entries.schedule_event_in_day_entries) {
     combinedTimeEventInDay.push({
-      time_event: entry.time_event,
-      entry: entry,
+      time_event_in_tz: timeEventInDayBlockToTimezone(entry.time_event, props.timezone),
+      entry: entry
     });
   }
   for (const entry of props.entries.inbox_task_entries) {
     for (const timeEvent of entry.time_events) {
       combinedTimeEventInDay.push({
-        time_event: timeEvent,
+        time_event_in_tz: timeEventInDayBlockToTimezone(timeEvent, props.timezone),
         entry: entry,
       });
     }
@@ -470,11 +472,7 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
   const thePartitionInDay =
     partitionedCombinedTimeEventInDay[props.periodStartDate] || [];
 
-  const startOfDay = DateTime.fromISO(`${props.periodStartDate}T00:00:00`, {
-    zone: props.timezone,
-  });
-
-  const rightNow = DateTime.now().setZone(props.timezone);
+  const rightNow = DateTime.now().setZone("UTC", { keepLocalTime: true });
 
   return (
     <Box
@@ -527,7 +525,7 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
       </ViewAsCalendarDaysAndFullDaysContiner>
 
       <ViewAsCalendarInDayContainer>
-        <ViewAsCalendarLeftColumn startOfDay={startOfDay} />
+        <ViewAsCalendarLeftColumn startOfDay={periodStartDate} />
         <ViewAsCalendarTimeEventInDayColumn
           today={props.today}
           rightNow={rightNow}
@@ -575,14 +573,14 @@ function ViewAsCalendarWeekly(props: ViewAsProps) {
   const combinedTimeEventInDay: Array<CombinedTimeEventInDayEntry> = [];
   for (const entry of props.entries.schedule_event_in_day_entries) {
     combinedTimeEventInDay.push({
-      time_event: entry.time_event,
+      time_event_in_tz: timeEventInDayBlockToTimezone(entry.time_event, props.timezone),
       entry: entry,
     });
   }
   for (const entry of props.entries.inbox_task_entries) {
     for (const timeEvent of entry.time_events) {
       combinedTimeEventInDay.push({
-        time_event: timeEvent,
+        time_event_in_tz: timeEventInDayBlockToTimezone(timeEvent, props.timezone),
         entry: entry,
       });
     }
@@ -602,8 +600,8 @@ function ViewAsCalendarWeekly(props: ViewAsProps) {
     )
   );
 
-  const startOfDay = DateTime.now().setZone(props.timezone).startOf("day");
-  const rightNow = DateTime.now().setZone(props.timezone);
+  const startOfDay = DateTime.now().setZone("UTC").startOf("day");
+  const rightNow = DateTime.now().setZone("UTC", { keepLocalTime: true });
   const allDays = allDaysBetween(props.periodStartDate, props.periodEndDate);
 
   return (
@@ -1417,7 +1415,7 @@ function ViewAsCalendarTimeEventInDayColumn(
   const theme = useTheme();
 
   const startOfDay = DateTime.fromISO(`${props.date}T00:00:00`, {
-    zone: props.timezone,
+    zone: "UTC",
   });
 
   const hours = Array.from({ length: 24 }, (_, i) =>
@@ -1471,7 +1469,7 @@ function ViewAsCalendarTimeEventInDayColumn(
       {props.timeEventsInDay.map((entry, index) => (
         <ViewAsCalendarTimeEventInDayCell
           key={index}
-          offset={timeBlockOffsetsMap.get(entry.time_event.ref_id) || 0}
+          offset={timeBlockOffsetsMap.get(entry.time_event_in_tz.ref_id) || 0}
           startOfDay={startOfDay}
           timezone={props.timezone}
           entry={entry}
@@ -1500,17 +1498,17 @@ function ViewAsCalendarTimeEventInDayCell(
     setContainerWidth(containerRef.current?.clientWidth || 120);
   }, [containerRef]);
 
-  switch (props.entry.time_event.namespace) {
+  switch (props.entry.time_event_in_tz.namespace) {
     case TimeEventNamespace.SCHEDULE_EVENT_IN_DAY: {
       const scheduleEntry = props.entry.entry as ScheduleInDayEventEntry;
 
       const startTime = calculateStartTimeInTimezone(
-        props.entry.time_event,
-        props.timezone
+        props.entry.time_event_in_tz,
+        "UTC"
       );
       const endTime = calculateEndTimeInTimezone(
-        props.entry.time_event,
-        props.timezone
+        props.entry.time_event_in_tz,
+        "UTC"
       );
       const minutesSinceStartOfDay = startTime
         .diff(props.startOfDay)
@@ -1578,12 +1576,12 @@ function ViewAsCalendarTimeEventInDayCell(
       const inboxTaskEntry = props.entry.entry as InboxTaskEntry;
 
       const startTime = calculateStartTimeInTimezone(
-        props.entry.time_event,
-        props.timezone
+        props.entry.time_event_in_tz,
+        "UTc"
       );
       const endTime = calculateEndTimeInTimezone(
-        props.entry.time_event,
-        props.timezone
+        props.entry.time_event_in_tz,
+        "UTC"
       );
 
       const minutesSinceStartOfDay = startTime
@@ -1597,7 +1595,7 @@ function ViewAsCalendarTimeEventInDayCell(
         theme.typography.htmlFontSize,
         containerWidth,
         minutesSinceStartOfDay,
-        props.entry.time_event.duration_mins
+        props.entry.time_event_in_tz.duration_mins
       );
 
       return (
@@ -1611,7 +1609,7 @@ function ViewAsCalendarTimeEventInDayCell(
             ),
             height: calendarTimeEventInDayDurationToRems(
               minutesSinceStartOfDay,
-              props.entry.time_event.duration_mins
+              props.entry.time_event_in_tz.duration_mins
             ),
             backgroundColor: scheduleStreamColorHex(
               INBOX_TASK_TIME_EVENT_COLOR
@@ -1625,8 +1623,8 @@ function ViewAsCalendarTimeEventInDayCell(
           }}
         >
           <EntityLink
-            key={`time-event-in-day-block-${props.entry.time_event.ref_id}`}
-            to={`/workspace/calendar/time-event/in-day-block/${props.entry.time_event.ref_id}?${query}`}
+            key={`time-event-in-day-block-${props.entry.time_event_in_tz.ref_id}`}
+            to={`/workspace/calendar/time-event/in-day-block/${props.entry.time_event_in_tz.ref_id}?${query}`}
           >
             <Box
               sx={{
@@ -1816,14 +1814,14 @@ function ViewAsScheduleDailyAndWeekly(props: ViewAsProps) {
   const combinedTimeEventInDay: Array<CombinedTimeEventInDayEntry> = [];
   for (const entry of props.entries.schedule_event_in_day_entries) {
     combinedTimeEventInDay.push({
-      time_event: entry.time_event,
+      time_event_in_tz: timeEventInDayBlockToTimezone(entry.time_event, props.timezone),
       entry: entry,
     });
   }
   for (const entry of props.entries.inbox_task_entries) {
     for (const timeEvent of entry.time_events) {
       combinedTimeEventInDay.push({
-        time_event: timeEvent,
+        time_event_in_tz: timeEventInDayBlockToTimezone(timeEvent, props.timezone),
         entry: entry,
       });
     }
@@ -2134,15 +2132,15 @@ function ViewAsScheduleTimeEventInDaysRows(
   const isBigScreen = useBigScreen();
 
   const startTime = calculateStartTimeInTimezone(
-    props.entry.time_event,
-    props.timezone
+    props.entry.time_event_in_tz,
+    "UTC"
   );
   const endTime = calculateEndTimeInTimezone(
-    props.entry.time_event,
-    props.timezone
+    props.entry.time_event_in_tz,
+    "UTC"
   );
 
-  switch (props.entry.time_event.namespace) {
+  switch (props.entry.time_event_in_tz.namespace) {
     case TimeEventNamespace.SCHEDULE_EVENT_IN_DAY: {
       const scheduleEntry = props.entry.entry as ScheduleInDayEventEntry;
       return (
@@ -2155,7 +2153,7 @@ function ViewAsScheduleTimeEventInDaysRows(
             color={scheduleStreamColorHex(scheduleEntry.stream.color)}
             isbigscreen={isBigScreen.toString()}
             height={scheduleTimeEventInDayDurationToRems(
-              scheduleEntry.time_event.duration_mins
+              props.entry.time_event_in_tz.duration_mins
             )}
           >
             <EntityLink
@@ -2187,13 +2185,13 @@ function ViewAsScheduleTimeEventInDaysRows(
             color={scheduleStreamColorHex(INBOX_TASK_TIME_EVENT_COLOR)}
             isbigscreen={isBigScreen.toString()}
             height={scheduleTimeEventInDayDurationToRems(
-              props.entry.time_event.duration_mins
+              props.entry.time_event_in_tz.duration_mins
             )}
           >
             <EntityLink
               light
-              key={`time-event-in-day-block-${props.entry.time_event.ref_id}`}
-              to={`/workspace/calendar/time-event/in-day-block/${props.entry.time_event.ref_id}?${query}`}
+              key={`time-event-in-day-block-${props.entry.time_event_in_tz.ref_id}`}
+              to={`/workspace/calendar/time-event/in-day-block/${props.entry.time_event_in_tz.ref_id}?${query}`}
             >
               <EntityNameComponent
                 name={inboxTaskEntry.inbox_task.name}
@@ -2439,8 +2437,8 @@ function splitTimeEventInDayEntryIntoPerDayEntries(
   day2?: CombinedTimeEventInDayEntry;
   day3?: CombinedTimeEventInDayEntry;
 } {
-  const startTime = calculateStartTimeInTimezone(entry.time_event, timezone);
-  const endTime = calculateEndTimeInTimezone(entry.time_event, timezone);
+  const startTime = calculateStartTimeInTimezone(entry.time_event_in_tz, "UTC");
+  const endTime = calculateEndTimeInTimezone(entry.time_event_in_tz, "UTC");
 
   if (startTime.day === endTime.day) {
     // Here we have only one day.
@@ -2450,13 +2448,13 @@ function splitTimeEventInDayEntryIntoPerDayEntries(
   } else if (startTime.day + 1 === endTime.day) {
     // Here we have two days.
     const day1TimeEvent = {
-      ...entry.time_event,
+      ...entry.time_event_in_tz,
       duration_mins:
         -1 *
         startTime.diff(startTime.set({ hour: 23, minute: 59 })).as("minutes"),
     };
     const day2TimeEvent = {
-      ...entry.time_event,
+      ...entry.time_event_in_tz,
       start_date: endTime.toISODate(),
       start_time_in_day: "00:00",
       duration_mins: endTime
@@ -2466,14 +2464,14 @@ function splitTimeEventInDayEntryIntoPerDayEntries(
 
     return {
       day1: {
-        time_event: day1TimeEvent,
+        time_event_in_tz: day1TimeEvent,
         entry: {
           ...entry.entry,
           time_event: day1TimeEvent,
         },
       },
       day2: {
-        time_event: day2TimeEvent,
+        time_event_in_tz: day2TimeEvent,
         entry: {
           ...entry.entry,
           time_event: day2TimeEvent,
@@ -2483,19 +2481,19 @@ function splitTimeEventInDayEntryIntoPerDayEntries(
   } else if (startTime.day + 2 === endTime.day) {
     // Here we have three days.
     const day1TimeEvent = {
-      ...entry.time_event,
+      ...entry.time_event_in_tz,
       duration_mins:
         -1 *
         startTime.diff(startTime.set({ hour: 23, minute: 59 })).as("minutes"),
     };
     const day2TimeEvent = {
-      ...entry.time_event,
+      ...entry.time_event_in_tz,
       start_date: startTime.plus({ days: 1 }).toISODate(),
       start_time_in_day: "00:00",
       duration_mins: 24 * 60,
     };
     const day3TimeEvent = {
-      ...entry.time_event,
+      ...entry.time_event_in_tz,
       start_date: endTime.toISODate(),
       start_time_in_day: "00:00",
       duration_mins: endTime
@@ -2505,21 +2503,21 @@ function splitTimeEventInDayEntryIntoPerDayEntries(
 
     return {
       day1: {
-        time_event: day1TimeEvent,
+        time_event_in_tz: day1TimeEvent,
         entry: {
           ...entry.entry,
           time_event: day1TimeEvent,
         },
       },
       day2: {
-        time_event: day2TimeEvent,
+        time_event_in_tz: day2TimeEvent,
         entry: {
           ...entry.entry,
           time_event: day2TimeEvent,
         },
       },
       day3: {
-        time_event: day3TimeEvent,
+        time_event_in_tz: day3TimeEvent,
         entry: {
           ...entry.entry,
           time_event: day3TimeEvent,
@@ -2540,17 +2538,17 @@ function combinedTimeEventInDayEntryPartionByDay(
   for (const entry of entries) {
     const splitEntries = splitTimeEventInDayEntryIntoPerDayEntries(
       entry,
-      timezone
+      "UTC"
     );
 
-    const dateStr = splitEntries.day1.time_event.start_date;
+    const dateStr = splitEntries.day1.time_event_in_tz.start_date;
     if (partition[dateStr] === undefined) {
       partition[dateStr] = [];
     }
     partition[dateStr].push(splitEntries.day1);
 
     if (splitEntries.day2) {
-      const dateStr = splitEntries.day2.time_event.start_date;
+      const dateStr = splitEntries.day2.time_event_in_tz.start_date;
       if (partition[dateStr] === undefined) {
         partition[dateStr] = [];
       }
@@ -2558,7 +2556,7 @@ function combinedTimeEventInDayEntryPartionByDay(
     }
 
     if (splitEntries.day3) {
-      const dateStr = splitEntries.day3.time_event.start_date;
+      const dateStr = splitEntries.day3.time_event_in_tz.start_date;
       if (partition[dateStr] === undefined) {
         partition[dateStr] = [];
       }
@@ -2580,12 +2578,12 @@ function sortTimeEventInDayByStartTimeAndEndTime(
   entries: Array<CombinedTimeEventInDayEntry>
 ) {
   return entries.sort((a, b) => {
-    const aStartTime = calculateStartTimeInTimezone(a.time_event, "UTC");
-    const bStartTime = calculateStartTimeInTimezone(b.time_event, "UTC");
+    const aStartTime = calculateStartTimeInTimezone(a.time_event_in_tz, "UTC");
+    const bStartTime = calculateStartTimeInTimezone(b.time_event_in_tz, "UTC");
 
     if (aStartTime === bStartTime) {
-      const aEndTime = calculateEndTimeInTimezone(a.time_event, "UTC");
-      const bEndTime = calculateEndTimeInTimezone(b.time_event, "UTC");
+      const aEndTime = calculateEndTimeInTimezone(a.time_event_in_tz, "UTC");
+      const bEndTime = calculateEndTimeInTimezone(b.time_event_in_tz, "UTC");
       return aEndTime < bEndTime ? -1 : 1;
     }
     return aStartTime < bStartTime ? -1 : 1;
@@ -2612,62 +2610,62 @@ function buildTimeBlockOffsetsMap(
   }
 
   for (const entry of entries) {
-    const startTime = calculateStartTimeInTimezone(entry.time_event, timezone);
+    const startTime = calculateStartTimeInTimezone(entry.time_event_in_tz, "UTC");
     const minutesSinceStartOfDay = startTime.diff(startOfDay).as("minutes");
 
     const firstCellIdx = Math.floor(minutesSinceStartOfDay / 15);
     const offsetCell = freeOffsetsMap[firstCellIdx];
 
     if (offsetCell.offset0 === false) {
-      offsets.set(entry.time_event.ref_id, 0);
+      offsets.set(entry.time_event_in_tz.ref_id, 0);
       offsetCell.offset0 = true;
       for (
         let idx = minutesSinceStartOfDay;
-        idx < minutesSinceStartOfDay + entry.time_event.duration_mins;
+        idx < minutesSinceStartOfDay + entry.time_event_in_tz.duration_mins;
         idx += 15
       ) {
         freeOffsetsMap[Math.floor(idx / 15)].offset0 = true;
       }
       continue;
     } else if (offsetCell.offset1 === false) {
-      offsets.set(entry.time_event.ref_id, 1);
+      offsets.set(entry.time_event_in_tz.ref_id, 1);
       offsetCell.offset1 = true;
       for (
         let idx = minutesSinceStartOfDay;
-        idx < minutesSinceStartOfDay + entry.time_event.duration_mins;
+        idx < minutesSinceStartOfDay + entry.time_event_in_tz.duration_mins;
         idx += 15
       ) {
         freeOffsetsMap[Math.floor(idx / 15)].offset1 = true;
       }
       continue;
     } else if (offsetCell.offset2 === false) {
-      offsets.set(entry.time_event.ref_id, 2);
+      offsets.set(entry.time_event_in_tz.ref_id, 2);
       offsetCell.offset2 = true;
       for (
         let idx = minutesSinceStartOfDay;
-        idx < minutesSinceStartOfDay + entry.time_event.duration_mins;
+        idx < minutesSinceStartOfDay + entry.time_event_in_tz.duration_mins;
         idx += 15
       ) {
         freeOffsetsMap[Math.floor(idx / 15)].offset2 = true;
       }
       continue;
     } else if (offsetCell.offset3 === false) {
-      offsets.set(entry.time_event.ref_id, 3);
+      offsets.set(entry.time_event_in_tz.ref_id, 3);
       offsetCell.offset3 = true;
       for (
         let idx = minutesSinceStartOfDay;
-        idx < minutesSinceStartOfDay + entry.time_event.duration_mins;
+        idx < minutesSinceStartOfDay + entry.time_event_in_tz.duration_mins;
         idx += 15
       ) {
         freeOffsetsMap[Math.floor(idx / 15)].offset3 = true;
       }
       continue;
     } else {
-      offsets.set(entry.time_event.ref_id, 4);
+      offsets.set(entry.time_event_in_tz.ref_id, 4);
       offsetCell.offset4 = true;
       for (
         let idx = minutesSinceStartOfDay;
-        idx < minutesSinceStartOfDay + entry.time_event.duration_mins;
+        idx < minutesSinceStartOfDay + entry.time_event_in_tz.duration_mins;
         idx += 15
       ) {
         freeOffsetsMap[Math.floor(idx / 15)].offset4 = true;

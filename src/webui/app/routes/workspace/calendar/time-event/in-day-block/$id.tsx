@@ -34,7 +34,7 @@ import {
 import { SectionCardNew } from "~/components/infra/section-card-new";
 import { TimeEventSourceLink } from "~/components/time-event-source-link";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
-import { isTimeEventInDayBlockEditable } from "~/logic/domain/time-event";
+import { isTimeEventInDayBlockEditable, timeEventInDayBlockParamsToTimezone, timeEventInDayBlockParamsToUtc } from "~/logic/domain/time-event";
 import { basicShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -48,6 +48,7 @@ const ParamsSchema = {
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
     intent: z.literal("update"),
+    userTimezone: z.string(),
     startDate: z.string(),
     startTimeInDay: z.string().optional(),
     durationMins: z.string().transform((v) => parseInt(v, 10)),
@@ -99,17 +100,18 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (form.intent) {
       case "update": {
+        const { startDate, startTimeInDay } = timeEventInDayBlockParamsToUtc(form, form.userTimezone);
         await getLoggedInApiClient(
           session
         ).inDayBlock.timeEventInDayBlockUpdate({
           ref_id: id,
           start_date: {
             should_change: true,
-            value: form.startDate,
+            value: startDate,
           },
           start_time_in_day: {
             should_change: true,
-            value: form.startTimeInDay,
+            value: startTimeInDay ?? "",
           },
           duration_mins: {
             should_change: true,
@@ -183,6 +185,11 @@ export default function TimeEventInDayBlockViewOne() {
       throw new Error("Unknown namespace");
   }
 
+  const { startDate, startTimeInDay } = timeEventInDayBlockParamsToTimezone({
+    startDate: loaderData.inDayBlock.start_date,
+    startTimeInDay: loaderData.inDayBlock.start_time_in_day,
+  }, topLevelInfo.user.timezone);
+
   return (
     <LeafPanel
       key={`time-event-in-day-block-${loaderData.inDayBlock.ref_id}`}
@@ -215,6 +222,7 @@ export default function TimeEventInDayBlockViewOne() {
       >
         <Stack spacing={2} useFlexGap>
           <Box sx={{ display: "flex", flexDirection: "row", gap: "0.25rem" }}>
+            <input type="hidden" name="userTimezone" value={topLevelInfo.user.timezone} />
             <FormControl fullWidth>
               <InputLabel id="name">Name</InputLabel>
               <OutlinedInput
@@ -238,7 +246,7 @@ export default function TimeEventInDayBlockViewOne() {
               label="startDate"
               name="startDate"
               readOnly={!(inputsEnabled && corePropertyEditable)}
-              defaultValue={loaderData.inDayBlock.start_date}
+              defaultValue={startDate}
             />
 
             <FieldError actionResult={actionData} fieldName="/start_date" />
@@ -253,7 +261,7 @@ export default function TimeEventInDayBlockViewOne() {
               label="startTimeInDay"
               name="startTimeInDay"
               readOnly={!(inputsEnabled && corePropertyEditable)}
-              defaultValue={loaderData.inDayBlock.start_time_in_day}
+              defaultValue={startTimeInDay}
             />
 
             <FieldError
