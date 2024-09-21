@@ -378,7 +378,7 @@ export default function ScheduleEventInDayViewOne() {
       </SectionCardNew>
 
       <Card>
-        {!loaderData.note && (
+        {!(loaderData.note && !loaderData.note.archived) && (
           <CardActions>
             <ButtonGroup>
               <Button
@@ -394,11 +394,11 @@ export default function ScheduleEventInDayViewOne() {
           </CardActions>
         )}
 
-        {loaderData.note && (
+        {loaderData.note && !loaderData.note.archived && (
           <>
             <EntityNoteEditor
               initialNote={loaderData.note}
-              inputsEnabled={inputsEnabled}
+              inputsEnabled={inputsEnabled && corePropertyEditable}
             />
           </>
         )}

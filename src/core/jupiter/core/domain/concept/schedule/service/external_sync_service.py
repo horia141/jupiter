@@ -26,6 +26,14 @@ from jupiter.core.domain.concept.schedule.schedule_stream import ScheduleStream
 from jupiter.core.domain.concept.schedule.schedule_stream_name import ScheduleStreamName
 from jupiter.core.domain.concept.workspaces.workspace import Workspace
 from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.core.notes.note import Note
+from jupiter.core.domain.core.notes.note_collection import NoteCollection
+from jupiter.core.domain.core.notes.note_content_block import (
+    CorrelationId,
+    OneOfNoteContentBlock,
+    ParagraphBlock,
+)
+from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.core.time_events.time_event_domain import TimeEventDomain
 from jupiter.core.domain.core.time_events.time_event_full_days_block import (
     TimeEventFullDaysBlock,
@@ -83,6 +91,9 @@ class ScheduleExternalSyncService:
             time_event_domain = await uow.get_for(TimeEventDomain).load_by_parent(
                 workspace.ref_id
             )
+            note_collection = await uow.get_for(NoteCollection).load_by_parent(
+                workspace.ref_id
+            )
 
             # This loading is a bit of a hack. No load_by_parent for branches yet.
             sync_logs = await uow.get_for(ScheduleExternalSyncLog).find_all(
@@ -132,14 +143,35 @@ class ScheduleExternalSyncService:
                 for block in all_time_event_in_day_blocks
             }
 
+            all_notes_for_dull_days = await uow.get_for(Note).find_all_generic(
+                parent_ref_id=note_collection.ref_id,
+                allow_archived=False,
+                domain=NoteDomain.SCHEDULE_EVENT_FULL_DAYS,
+            )
+            all_notes_for_dull_days_by_source_entity_ref_id = {
+                note.source_entity_ref_id: note for note in all_notes_for_dull_days
+            }
+
+            all_notes_for_in_day = await uow.get_for(Note).find_all_generic(
+                parent_ref_id=note_collection.ref_id,
+                allow_archived=False,
+                domain=NoteDomain.SCHEDULE_EVENT_IN_DAY,
+            )
+            all_notes_for_in_day_by_source_entity_ref_id = {
+                note.source_entity_ref_id: note for note in all_notes_for_in_day
+            }
+
         for schedule_stream in schedule_streams:
             sync_log_entry = await self._process_schedule_stream(
                 ctx,
                 progress_reporter,
                 schedule_domain,
                 time_event_domain,
+                note_collection,
                 all_time_event_full_days_blocks_by_source_entity_ref_id,
                 all_time_event_in_day_blocks_by_source_entity_ref_id,
+                all_notes_for_dull_days_by_source_entity_ref_id,
+                all_notes_for_in_day_by_source_entity_ref_id,
                 schedule_stream,
                 sync_log_entry,
             )
@@ -156,12 +188,15 @@ class ScheduleExternalSyncService:
         progress_reporter: ProgressReporter,
         schedule_domain: ScheduleDomain,
         time_event_domain: TimeEventDomain,
+        note_collection: NoteCollection,
         all_time_event_full_days_blocks_by_source_entity_ref_id: dict[
             EntityId, TimeEventFullDaysBlock
         ],
         all_time_event_in_day_blocks_by_source_entity_ref_id: dict[
             EntityId, TimeEventInDayBlock
         ],
+        all_notes_for_dull_days_by_source_entity_ref_id: dict[EntityId, Note],
+        all_notes_for_in_day_by_source_entity_ref_id: dict[EntityId, Note],
         schedule_stream: ScheduleStream,
         sync_log_entry: ScheduleExternalSyncLogEntry,
     ) -> ScheduleExternalSyncLogEntry:
@@ -216,6 +251,8 @@ class ScheduleExternalSyncService:
                 }
 
                 # TODO(horia141): Handle timezone issues
+                # TODO(horia141): Handle notes
+                # TODO(horia141): rely on last_modified for updates :()
 
                 processed_events_external_uids = set()
 
@@ -242,10 +279,15 @@ class ScheduleExternalSyncService:
                         last_modified = self._realm_codec_registry.db_decode(
                             Timestamp, event["LAST-MODIFIED"].dt
                         )
+                        description = (
+                            str(event["DESCRIPTION"])
+                            if "DESCRIPTION" in event
+                            else None
+                        )
 
                         if uid not in all_full_days_events_by_external_uid:
                             async with self._domain_storage_engine.get_unit_of_work() as uow:
-                                event = ScheduleEventFullDays.new_schedule_full_days_block_from_external_ical(
+                                schedule_event_full_days = ScheduleEventFullDays.new_schedule_full_days_block_from_external_ical(
                                     ctx,
                                     schedule_domain_ref_id=schedule_domain.ref_id,
                                     schedule_stream_ref_id=schedule_stream.ref_id,
@@ -253,16 +295,20 @@ class ScheduleExternalSyncService:
                                     external_uid=uid,
                                 )
 
-                                event = await uow.get_for(ScheduleEventFullDays).create(
-                                    event
+                                schedule_event_full_days = await uow.get_for(
+                                    ScheduleEventFullDays
+                                ).create(schedule_event_full_days)
+                                await progress_reporter.mark_created(
+                                    schedule_event_full_days
                                 )
-                                await progress_reporter.mark_created(event)
-                                newly_created_schedule_full_days.add(event.ref_id)
+                                newly_created_schedule_full_days.add(
+                                    schedule_event_full_days.ref_id
+                                )
 
                                 time_event_full_days_block = TimeEventFullDaysBlock.new_time_event_for_schedule_event(
                                     ctx,
                                     time_event_domain_ref_id=time_event_domain.ref_id,
-                                    schedule_event_ref_id=event.ref_id,
+                                    schedule_event_ref_id=schedule_event_full_days.ref_id,
                                     start_date=start_date,
                                     duration_days=end_date.days_since(start_date),
                                 )
@@ -270,12 +316,38 @@ class ScheduleExternalSyncService:
                                     TimeEventFullDaysBlock
                                 ).create(time_event_full_days_block)
 
-                                all_full_days_events.append(event)
-                                all_full_days_events_by_external_uid[uid] = event
+                                if description is not None:
+                                    note_content: list[OneOfNoteContentBlock] = [
+                                        ParagraphBlock(
+                                            kind="paragraph",
+                                            correlation_id=CorrelationId("0"),
+                                            text=description,
+                                        )
+                                    ]
+                                    note: Note | None = Note.new_note(
+                                        ctx,
+                                        note_collection_ref_id=note_collection.ref_id,
+                                        domain=NoteDomain.SCHEDULE_EVENT_FULL_DAYS,
+                                        source_entity_ref_id=schedule_event_full_days.ref_id,
+                                        content=note_content,
+                                    )
+                                    note = await uow.get_for(Note).create(
+                                        cast(Note, note)
+                                    )
+                                    all_notes_for_dull_days_by_source_entity_ref_id[
+                                        schedule_event_full_days.ref_id
+                                    ] = note
+
+                                all_full_days_events.append(schedule_event_full_days)
+                                all_full_days_events_by_external_uid[
+                                    uid
+                                ] = schedule_event_full_days
                                 all_time_event_full_days_blocks_by_source_entity_ref_id[
-                                    event.ref_id
+                                    schedule_event_full_days.ref_id
                                 ] = time_event_full_days_block
-                                sync_log_entry = sync_log_entry.add_entity(ctx, event)
+                                sync_log_entry = sync_log_entry.add_entity(
+                                    ctx, schedule_event_full_days
+                                )
                         elif (
                             all_full_days_events_by_external_uid[
                                 uid
@@ -287,16 +359,24 @@ class ScheduleExternalSyncService:
                             ].external_last_synced_at
                         ):
                             async with self._domain_storage_engine.get_unit_of_work() as uow:
-                                event = all_full_days_events_by_external_uid[uid]
-                                event = event.update(
-                                    ctx,
-                                    name=UpdateAction.change_to(event_name),
+                                schedule_event_full_days = (
+                                    all_full_days_events_by_external_uid[uid]
                                 )
-                                await uow.get_for(ScheduleEventFullDays).save(event)
-                                await progress_reporter.mark_updated(event)
+                                schedule_event_full_days = (
+                                    schedule_event_full_days.update(
+                                        ctx,
+                                        name=UpdateAction.change_to(event_name),
+                                    )
+                                )
+                                await uow.get_for(ScheduleEventFullDays).save(
+                                    schedule_event_full_days
+                                )
+                                await progress_reporter.mark_updated(
+                                    schedule_event_full_days
+                                )
 
                                 time_event_full_days_block = all_time_event_full_days_blocks_by_source_entity_ref_id[
-                                    event.ref_id
+                                    schedule_event_full_days.ref_id
                                 ]
                                 time_event_full_days_block = time_event_full_days_block.update_for_schedule_event(
                                     ctx,
@@ -309,9 +389,72 @@ class ScheduleExternalSyncService:
                                     time_event_full_days_block
                                 )
 
-                                if event.ref_id not in newly_created_schedule_full_days:
+                                if description is not None:
+                                    note = all_notes_for_dull_days_by_source_entity_ref_id.get(
+                                        schedule_event_full_days.ref_id, None
+                                    )
+                                    if note is None:
+                                        note_content = [
+                                            ParagraphBlock(
+                                                kind="paragraph",
+                                                correlation_id=CorrelationId("0"),
+                                                text=description,
+                                            )
+                                        ]
+                                        note = Note.new_note(
+                                            ctx,
+                                            note_collection_ref_id=note_collection.ref_id,
+                                            domain=NoteDomain.SCHEDULE_EVENT_FULL_DAYS,
+                                            source_entity_ref_id=schedule_event_full_days.ref_id,
+                                            content=note_content,
+                                        )
+                                        note = await uow.get_for(Note).create(note)
+                                        all_notes_for_dull_days_by_source_entity_ref_id[
+                                            schedule_event_full_days.ref_id
+                                        ] = note
+                                    else:
+                                        note_content = [
+                                            ParagraphBlock(
+                                                kind="paragraph",
+                                                correlation_id=CorrelationId("0"),
+                                                text=description,
+                                            )
+                                        ]
+                                        note = note.update(
+                                            ctx,
+                                            content=UpdateAction.change_to(
+                                                note_content
+                                            ),
+                                        )
+                                        await uow.get_for(Note).save(note)
+                                else:
+                                    note = all_notes_for_dull_days_by_source_entity_ref_id.get(
+                                        schedule_event_full_days.ref_id, None
+                                    )
+                                    if note is not None:
+                                        # We don't archive right now, but just blank the content. We don't have a
+                                        # good story on archival and de-archival right now.
+                                        note_content = [
+                                            ParagraphBlock(
+                                                kind="paragraph",
+                                                correlation_id=CorrelationId("0"),
+                                                text="",
+                                            )
+                                        ]
+                                        note = note.update(
+                                            ctx,
+                                            content=UpdateAction.change_to(
+                                                note_content
+                                            ),
+                                        )
+                                        await uow.get_for(Note).save(note)
+
+                                if (
+                                    schedule_event_full_days.ref_id
+                                    not in newly_created_schedule_full_days
+                                ):
                                     sync_log_entry = sync_log_entry.add_entity(
-                                        ctx, event
+                                        ctx, schedule_event_full_days
                                     )
 
                         processed_events_external_uids.add(uid)
@@ -335,6 +478,11 @@ class ScheduleExternalSyncService:
                         last_modified = self._realm_codec_registry.db_decode(
                             Timestamp, event["LAST-MODIFIED"].dt
                         )
+                        description = (
+                            str(event["DESCRIPTION"])
+                            if "DESCRIPTION" in event
+                            else None
+                        )
 
                         total_duration = min(
                             MAX_DURATION_MINS, end_time.mins_since(start_time)
@@ -342,23 +490,27 @@ class ScheduleExternalSyncService:
 
                         if uid not in all_in_day_events_by_external_uid:
                             async with self._domain_storage_engine.get_unit_of_work() as uow:
-                                event = ScheduleEventInDay.new_schedule_event_in_day_from_external_ical(
+                                schedule_event_in_day = ScheduleEventInDay.new_schedule_event_in_day_from_external_ical(
                                     ctx,
                                     schedule_domain_ref_id=schedule_domain.ref_id,
                                     schedule_stream_ref_id=schedule_stream.ref_id,
                                     name=event_name,
                                     external_uid=uid,
                                 )
-                                event = await uow.get_for(ScheduleEventInDay).create(
-                                    event
+                                schedule_event_in_day = await uow.get_for(
+                                    ScheduleEventInDay
+                                ).create(schedule_event_in_day)
+                                await progress_reporter.mark_created(
+                                    schedule_event_in_day
                                 )
-                                await progress_reporter.mark_created(event)
-                                newly_created_schedule_in_day.add(event.ref_id)
+                                newly_created_schedule_in_day.add(
+                                    schedule_event_in_day.ref_id
+                                )
 
                                 time_event_in_day_block = TimeEventInDayBlock.new_time_event_for_schedule_event(
                                     ctx,
                                     time_event_domain_ref_id=time_event_domain.ref_id,
-                                    schedule_event_ref_id=event.ref_id,
+                                    schedule_event_ref_id=schedule_event_in_day.ref_id,
                                     start_date=ADate.from_date(start_time.as_date()),
                                     start_time_in_day=TimeInDay.from_parts(
                                         start_time.value.hour, start_time.value.minute
@@ -370,12 +522,33 @@ class ScheduleExternalSyncService:
                                     TimeEventInDayBlock
                                 ).create(time_event_in_day_block)
 
-                                all_in_day_events.append(event)
-                                all_in_day_events_by_external_uid[uid] = event
+                                if description is not None:
+                                    note_content = [
+                                        ParagraphBlock(
+                                            kind="paragraph",
+                                            correlation_id=CorrelationId("0"),
+                                            text=description,
+                                        )
+                                    ]
+                                    note = Note.new_note(
+                                        ctx,
+                                        note_collection_ref_id=note_collection.ref_id,
+                                        domain=NoteDomain.SCHEDULE_EVENT_IN_DAY,
+                                        source_entity_ref_id=schedule_event_in_day.ref_id,
+                                        content=note_content,
+                                    )
+                                    note = await uow.get_for(Note).create(note)
+
+                                all_in_day_events.append(schedule_event_in_day)
+                                all_in_day_events_by_external_uid[
+                                    uid
+                                ] = schedule_event_in_day
                                 all_time_event_in_day_blocks_by_source_entity_ref_id[
-                                    event.ref_id
+                                    schedule_event_in_day.ref_id
                                 ] = time_event_in_day_block
-                                sync_log_entry = sync_log_entry.add_entity(ctx, event)
+                                sync_log_entry = sync_log_entry.add_entity(
+                                    ctx, schedule_event_in_day
+                                )
                         elif (
                             all_in_day_events_by_external_uid[
                                 uid
@@ -387,16 +560,22 @@ class ScheduleExternalSyncService:
                             ].external_last_synced_at
                         ):
                             async with self._domain_storage_engine.get_unit_of_work() as uow:
-                                event = all_in_day_events_by_external_uid[uid]
-                                event = event.update(
+                                schedule_event_in_day = (
+                                    all_in_day_events_by_external_uid[uid]
+                                )
+                                schedule_event_in_day = schedule_event_in_day.update(
                                     ctx,
                                     name=UpdateAction.change_to(event_name),
                                 )
-                                await uow.get_for(ScheduleEventInDay).save(event)
-                                await progress_reporter.mark_updated(event)
+                                await uow.get_for(ScheduleEventInDay).save(
+                                    schedule_event_in_day
+                                )
+                                await progress_reporter.mark_updated(
+                                    schedule_event_in_day
+                                )
 
                                 time_event_in_day_block = all_time_event_in_day_blocks_by_source_entity_ref_id[
-                                    event.ref_id
+                                    schedule_event_in_day.ref_id
                                 ]
                                 time_event_in_day_block = (
                                     time_event_in_day_block.update(
@@ -420,9 +599,72 @@ class ScheduleExternalSyncService:
                                     time_event_in_day_block
                                 )
 
-                                if event.ref_id not in newly_created_schedule_in_day:
+                                if description is not None:
+                                    note = all_notes_for_in_day_by_source_entity_ref_id.get(
+                                        schedule_event_in_day.ref_id, None
+                                    )
+                                    if note is None:
+                                        note_content = [
+                                            ParagraphBlock(
+                                                kind="paragraph",
+                                                correlation_id=CorrelationId("0"),
+                                                text=description,
+                                            )
+                                        ]
+                                        note = Note.new_note(
+                                            ctx,
+                                            note_collection_ref_id=note_collection.ref_id,
+                                            domain=NoteDomain.SCHEDULE_EVENT_IN_DAY,
+                                            source_entity_ref_id=schedule_event_in_day.ref_id,
+                                            content=note_content,
+                                        )
+                                        note = await uow.get_for(Note).create(note)
+                                        all_notes_for_in_day_by_source_entity_ref_id[
+                                            schedule_event_in_day.ref_id
+                                        ] = note
+                                    else:
+                                        note_content = [
+                                            ParagraphBlock(
+                                                kind="paragraph",
+                                                correlation_id=CorrelationId("0"),
+                                                text=description,
+                                            )
+                                        ]
+                                        note = note.update(
+                                            ctx,
+                                            content=UpdateAction.change_to(
+                                                note_content
+                                            ),
+                                        )
+                                        await uow.get_for(Note).save(note)
+                                else:
+                                    note = all_notes_for_in_day_by_source_entity_ref_id.get(
+                                        schedule_event_in_day.ref_id, None
+                                    )
+                                    if note is not None:
+                                        # We don't archive right now, but just blank the content. We don't have a
+                                        # good story on archival and de-archival right now.
+                                        note_content = [
+                                            ParagraphBlock(
+                                                kind="paragraph",
+                                                correlation_id=CorrelationId("0"),
+                                                text="",
+                                            )
+                                        ]
+                                        note = note.update(
+                                            ctx,
+                                            content=UpdateAction.change_to(
+                                                note_content
+                                            ),
+                                        )
+                                        await uow.get_for(Note).save(note)
+
+                                if (
+                                    schedule_event_in_day.ref_id
+                                    not in newly_created_schedule_in_day
+                                ):
                                     sync_log_entry = sync_log_entry.add_entity(
-                                        ctx, event
+                                        ctx, schedule_event_in_day
                                     )
 
                         processed_events_external_uids.add(uid)
@@ -435,8 +677,11 @@ class ScheduleExternalSyncService:
 
             # Step 4: Archive old events not present in the stream anymore
             async with progress_reporter.section("Archiving old events"):
-                for event in all_full_days_events:
-                    if event.external_uid in processed_events_external_uids:
+                for schedule_event_full_days in all_full_days_events:
+                    if (
+                        schedule_event_full_days.external_uid
+                        in processed_events_external_uids
+                    ):
                         continue
 
                     async with self._domain_storage_engine.get_unit_of_work() as uow:
@@ -445,12 +690,17 @@ class ScheduleExternalSyncService:
                             uow,
                             progress_reporter,
                             ScheduleEventFullDays,
-                            event.ref_id,
+                            schedule_event_full_days.ref_id,
                         )
-                        sync_log_entry = sync_log_entry.add_entity(ctx, event)
+                        sync_log_entry = sync_log_entry.add_entity(
+                            ctx, schedule_event_full_days
+                        )
 
-                for event in all_in_day_events:
-                    if event.external_uid in processed_events_external_uids:
+                for schedule_event_in_day in all_in_day_events:
+                    if (
+                        schedule_event_in_day.external_uid
+                        in processed_events_external_uids
+                    ):
                         continue
 
                     async with self._domain_storage_engine.get_unit_of_work() as uow:
@@ -459,9 +709,11 @@ class ScheduleExternalSyncService:
                             uow,
                             progress_reporter,
                             ScheduleEventInDay,
-                            event.ref_id,
+                            schedule_event_in_day.ref_id,
                         )
-                        sync_log_entry = sync_log_entry.add_entity(ctx, event)
+                        sync_log_entry = sync_log_entry.add_entity(
+                            ctx, schedule_event_in_day
+                        )
 
             # Step 5: done!
 
