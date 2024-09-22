@@ -1,4 +1,4 @@
-import { ApiError, NoteDomain } from "@jupiter/webapi-client";
+import { ApiError, NoteDomain, WorkspaceFeature } from "@jupiter/webapi-client";
 import {
   Button,
   ButtonGroup,
@@ -27,6 +27,7 @@ import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { TimeEventFullDaysBlockStack } from "~/components/time-event-full-days-block-stack";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
+import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -252,12 +253,17 @@ export default function Vacation() {
         )}
       </Card>
 
-      <TimeEventFullDaysBlockStack
-        topLevelInfo={topLevelInfo}
-        inputsEnabled={inputsEnabled}
-        title="Time Events"
-        entries={[timeEventBlockEntry]}
-      />
+      {isWorkspaceFeatureAvailable(
+        topLevelInfo.workspace,
+        WorkspaceFeature.SCHEDULE
+      ) && (
+        <TimeEventFullDaysBlockStack
+          topLevelInfo={topLevelInfo}
+          inputsEnabled={inputsEnabled}
+          title="Time Events"
+          entries={[timeEventBlockEntry]}
+        />
+      )}
     </LeafPanel>
   );
 }

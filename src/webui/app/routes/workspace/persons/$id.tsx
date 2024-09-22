@@ -7,6 +7,7 @@ import {
   NoteDomain,
   PersonRelationship,
   RecurringTaskPeriod,
+  WorkspaceFeature,
 } from "@jupiter/webapi-client";
 import type { SelectChangeEvent } from "@mui/material";
 import {
@@ -55,6 +56,7 @@ import {
 } from "~/logic/domain/person-birthday";
 import { personRelationshipName } from "~/logic/domain/person-relationship";
 import { sortBirthdayTimeEventsNaturally } from "~/logic/domain/time-event";
+import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { getIntent } from "~/logic/intent";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -675,14 +677,18 @@ export default function Person() {
         />
       )}
 
-      {sortedBirthdayTimeEventEntries.length > 0 && (
-        <TimeEventFullDaysBlockStack
-          topLevelInfo={topLevelInfo}
-          inputsEnabled={inputsEnabled}
-          title="Birthday Time Events"
-          entries={sortedBirthdayTimeEventEntries}
-        />
-      )}
+      {isWorkspaceFeatureAvailable(
+        topLevelInfo.workspace,
+        WorkspaceFeature.SCHEDULE
+      ) &&
+        sortedBirthdayTimeEventEntries.length > 0 && (
+          <TimeEventFullDaysBlockStack
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            title="Birthday Time Events"
+            entries={sortedBirthdayTimeEventEntries}
+          />
+        )}
     </LeafPanel>
   );
 }

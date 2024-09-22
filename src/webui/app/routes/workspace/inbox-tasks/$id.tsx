@@ -742,13 +742,18 @@ export default function InboxTask() {
         )}
       </Card>
 
-      <TimeEventInDayBlockStack
-        topLevelInfo={topLevelInfo}
-        inputsEnabled={inputsEnabled}
-        title="Time Events"
-        createLocation={`/workspace/calendar/time-event/in-day-block/new-for-inbox-task?inboxTaskRefId=${loaderData.info.inbox_task.ref_id}`}
-        entries={sortedTimeEventEntries}
-      />
+      {isWorkspaceFeatureAvailable(
+        topLevelInfo.workspace,
+        WorkspaceFeature.SCHEDULE
+      ) && (
+        <TimeEventInDayBlockStack
+          topLevelInfo={topLevelInfo}
+          inputsEnabled={inputsEnabled}
+          title="Time Events"
+          createLocation={`/workspace/calendar/time-event/in-day-block/new-for-inbox-task?inboxTaskRefId=${loaderData.info.inbox_task.ref_id}`}
+          entries={sortedTimeEventEntries}
+        />
+      )}
     </LeafPanel>
   );
 }

@@ -8,7 +8,7 @@ import {
   Stack,
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
+import { json, redirect, Response } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   useActionData,
@@ -39,6 +39,9 @@ import { TopLevelInfoContext } from "~/top-level-context";
 
 const QuerySchema = {
   inboxTaskRefId: z.string(),
+  timePlanReason: z.literal("for-time-plan").optional(),
+  timePlanRefId: z.string().optional(),
+  timePlanActivityRefId: z.string().optional(),
   date: z
     .string()
     .regex(/[0-9][0-9][0-9][0-9][-][0-9][0-9][-][0-9][0-9]/)
@@ -67,6 +70,17 @@ export async function loader({ request }: LoaderArgs) {
     allow_archived: true,
   });
 
+  const timePlanReason = query.timePlanReason || "standard";
+
+  if (timePlanReason === "for-time-plan") {
+    if (!query.timePlanRefId) {
+      throw new Response("Missing Time Plan Ref Id", { status: 500 });
+    }
+    if (!query.timePlanActivityRefId) {
+      throw new Response("Missning Time Plan Activity Ref Id", { status: 500 });
+    }
+  }
+
   return json({
     date: query.date,
     inboxTask: summaryResponse.inbox_task,
@@ -79,6 +93,19 @@ export async function action({ request }: ActionArgs) {
   const form = await parseForm(request, CreateFormSchema);
 
   try {
+    const timePlanReason = query.timePlanReason || "standard";
+
+    if (timePlanReason === "for-time-plan") {
+      if (!query.timePlanRefId) {
+        throw new Response("Missing Time Plan Ref Id", { status: 500 });
+      }
+      if (!query.timePlanActivityRefId) {
+        throw new Response("Missning Time Plan Activity Ref Id", {
+          status: 500,
+        });
+      }
+    }
+
     const { startDate, startTimeInDay } = timeEventInDayBlockParamsToUtc(
       form,
       form.userTimezone
@@ -93,7 +120,14 @@ export async function action({ request }: ActionArgs) {
       duration_mins: form.durationMins,
     });
 
-    return redirect(`/workspace/inbox-tasks/${query.inboxTaskRefId}`);
+    switch (timePlanReason) {
+      case "for-time-plan":
+        return redirect(
+          `/workspace/time-plans/${query.timePlanRefId}/${query.timePlanActivityRefId}`
+        );
+      case "standard":
+        return redirect(`/workspace/inbox-tasks/${query.inboxTaskRefId}`);
+    }
   } catch (error) {
     if (
       error instanceof ApiError &&

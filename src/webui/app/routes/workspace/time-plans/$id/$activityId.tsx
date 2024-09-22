@@ -40,7 +40,12 @@ import {
   SectionActions,
 } from "~/components/infra/section-actions";
 import { SectionCardNew } from "~/components/infra/section-card-new";
+import { TimeEventInDayBlockStack } from "~/components/time-event-in-day-block-stack";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
+import {
+  sortInboxTaskTimeEventsNaturally,
+  timeEventInDayBlockToTimezone,
+} from "~/logic/domain/time-event";
 import { timePlanActivityFeasabilityName } from "~/logic/domain/time-plan-activity-feasability";
 import { timePlanActivityKindName } from "~/logic/domain/time-plan-activity-kind";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
@@ -78,9 +83,20 @@ export async function loader({ request, params }: LoaderArgs) {
       allow_archived: true,
     });
 
+    let inboxTaskResult = null;
+    if (result.target_inbox_task) {
+      inboxTaskResult = await getLoggedInApiClient(
+        session
+      ).inboxTasks.inboxTaskLoad({
+        ref_id: result.target_inbox_task.ref_id,
+        allow_archived: true,
+      });
+    }
+
     return json({
       timePlanActivity: result.time_plan_activity,
       targetInboxTask: result.target_inbox_task,
+      targetInboxTaskTimeEventBlocks: inboxTaskResult?.time_event_blocks,
       targetBigPlan: result.target_big_plan,
     });
   } catch (error) {
@@ -191,6 +207,22 @@ export default function TimePlanActivity() {
     );
   }
 
+  const inboxTaskTimeEventEntries = (
+    loaderData.targetInboxTaskTimeEventBlocks || []
+  ).map((block) => ({
+    time_event_in_tz: timeEventInDayBlockToTimezone(
+      block,
+      topLevelInfo.user.timezone
+    ),
+    entry: {
+      inbox_task: loaderData.targetInboxTask!,
+      time_events: [block],
+    },
+  }));
+  const sortedInboxTaskTimeEventEntries = sortInboxTaskTimeEventsNaturally(
+    inboxTaskTimeEventEntries
+  );
+
   return (
     <LeafPanel
       key={`time-plan-${id}/activity-${activityId}`}
@@ -289,20 +321,37 @@ export default function TimePlanActivity() {
       </SectionCardNew>
 
       {loaderData.targetInboxTask && (
-        <SectionCardNew id="target" title="Target Inbox Task">
-          <InboxTaskStack
-            topLevelInfo={topLevelInfo}
-            showOptions={{
-              showStatus: true,
-              showDueDate: true,
-              showHandleMarkDone: true,
-              showHandleMarkNotDone: true,
-            }}
-            inboxTasks={[loaderData.targetInboxTask]}
-            onCardMarkDone={handleInboxTaskMarkDone}
-            onCardMarkNotDone={handleInboxTaskMarkNotDone}
-          />
-        </SectionCardNew>
+        <>
+          <SectionCardNew id="target" title="Target Inbox Task">
+            <InboxTaskStack
+              topLevelInfo={topLevelInfo}
+              showOptions={{
+                showStatus: true,
+                showDueDate: true,
+                showHandleMarkDone: true,
+                showHandleMarkNotDone: true,
+              }}
+              inboxTasks={[loaderData.targetInboxTask]}
+              onCardMarkDone={handleInboxTaskMarkDone}
+              onCardMarkNotDone={handleInboxTaskMarkNotDone}
+            />
+          </SectionCardNew>
+
+          {isWorkspaceFeatureAvailable(
+            topLevelInfo.workspace,
+            WorkspaceFeature.SCHEDULE
+          ) && (
+            <TimeEventInDayBlockStack
+              topLevelInfo={topLevelInfo}
+              inputsEnabled={inputsEnabled}
+              title="Time Events"
+              createLocation={`/workspace/calendar/time-event/in-day-block/new-for-inbox-task?inboxTaskRefId=${
+                loaderData.targetInboxTask!.ref_id
+              }&timePlanReason=for-time-plan&timePlanRefId=${id}&timePlanActivityRefId=${activityId}`}
+              entries={sortedInboxTaskTimeEventEntries}
+            />
+          )}
+        </>
       )}
 
       {isWorkspaceFeatureAvailable(

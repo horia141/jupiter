@@ -63,6 +63,7 @@ import {
   allDaysBetween,
   compareADate,
 } from "~/logic/domain/adate";
+import { newURLParams } from "~/logic/domain/navigation";
 import { periodName } from "~/logic/domain/period";
 import {
   scheduleStreamColorContrastingHex,
@@ -213,17 +214,29 @@ export default function CalendarView() {
               navs: [
                 NavSingle({
                   text: "Today",
-                  link: `/workspace/calendar${calendarLocation}?date=${theRealToday}&period=${loaderData.period}&view=${loaderData.view}`,
+                  link: `/workspace/calendar${calendarLocation}?${newURLParams(
+                    query,
+                    "date",
+                    theRealToday
+                  )}`,
                 }),
                 NavSingle({
                   text: "Prev",
                   icon: <ArrowBackIcon />,
-                  link: `/workspace/calendar${calendarLocation}?date=${loaderData.prevPeriodStartDate}&period=${loaderData.period}&view=${loaderData.view}`,
+                  link: `/workspace/calendar${calendarLocation}?${newURLParams(
+                    query,
+                    "date",
+                    loaderData.prevPeriodStartDate
+                  )}`,
                 }),
                 NavSingle({
                   text: "Next",
                   icon: <ArrowForwardIcon />,
-                  link: `/workspace/calendar${calendarLocation}?date=${loaderData.nextPeriodStartDate}&period=${loaderData.period}&view=${loaderData.view}`,
+                  link: `/workspace/calendar${calendarLocation}?${newURLParams(
+                    query,
+                    "date",
+                    loaderData.nextPeriodStartDate
+                  )}`,
                 }),
               ],
             }),
@@ -232,28 +245,48 @@ export default function CalendarView() {
                 NavSingle({
                   text: periodName(RecurringTaskPeriod.DAILY),
                   highlight: loaderData.period === RecurringTaskPeriod.DAILY,
-                  link: `/workspace/calendar${calendarLocation}?date=${loaderData.date}&period=${RecurringTaskPeriod.DAILY}&view=${loaderData.view}`,
+                  link: `/workspace/calendar${calendarLocation}?${newURLParams(
+                    query,
+                    "period",
+                    RecurringTaskPeriod.DAILY
+                  )}`,
                 }),
                 NavSingle({
                   text: periodName(RecurringTaskPeriod.WEEKLY),
                   highlight: loaderData.period === RecurringTaskPeriod.WEEKLY,
-                  link: `/workspace/calendar${calendarLocation}?date=${loaderData.date}&period=${RecurringTaskPeriod.WEEKLY}&view=${loaderData.view}`,
+                  link: `/workspace/calendar${calendarLocation}?${newURLParams(
+                    query,
+                    "period",
+                    RecurringTaskPeriod.WEEKLY
+                  )}`,
                 }),
                 NavSingle({
                   text: periodName(RecurringTaskPeriod.MONTHLY),
                   highlight: loaderData.period === RecurringTaskPeriod.MONTHLY,
-                  link: `/workspace/calendar${calendarLocation}?date=${loaderData.date}&period=${RecurringTaskPeriod.MONTHLY}&view=${loaderData.view}`,
+                  link: `/workspace/calendar${calendarLocation}?${newURLParams(
+                    query,
+                    "period",
+                    RecurringTaskPeriod.MONTHLY
+                  )}`,
                 }),
                 NavSingle({
                   text: periodName(RecurringTaskPeriod.QUARTERLY),
                   highlight:
                     loaderData.period === RecurringTaskPeriod.QUARTERLY,
-                  link: `/workspace/calendar${calendarLocation}?date=${loaderData.date}&period=${RecurringTaskPeriod.QUARTERLY}&view=${loaderData.view}`,
+                  link: `/workspace/calendar${calendarLocation}?${newURLParams(
+                    query,
+                    "period",
+                    RecurringTaskPeriod.QUARTERLY
+                  )}`,
                 }),
                 NavSingle({
                   text: periodName(RecurringTaskPeriod.YEARLY),
                   highlight: loaderData.period === RecurringTaskPeriod.YEARLY,
-                  link: `/workspace/calendar${calendarLocation}?date=${loaderData.date}&period=${RecurringTaskPeriod.YEARLY}&view=${loaderData.view}`,
+                  link: `/workspace/calendar${calendarLocation}?${newURLParams(
+                    query,
+                    "period",
+                    RecurringTaskPeriod.YEARLY
+                  )}`,
                 }),
               ],
             }),
@@ -261,12 +294,20 @@ export default function CalendarView() {
               navs: [
                 NavSingle({
                   text: "Calendar",
-                  link: `/workspace/calendar${calendarLocation}?date=${loaderData.date}&period=${loaderData.period}&view=${View.CALENDAR}`,
+                  link: `/workspace/calendar${calendarLocation}?${newURLParams(
+                    query,
+                    "view",
+                    View.CALENDAR
+                  )}`,
                   highlight: loaderData.view === View.CALENDAR,
                 }),
                 NavSingle({
                   text: "Schedule",
-                  link: `/workspace/calendar${calendarLocation}?date=${loaderData.date}&period=${loaderData.period}&&view=${View.SCHEDULE}`,
+                  link: `/workspace/calendar${calendarLocation}?${newURLParams(
+                    query,
+                    "view",
+                    View.SCHEDULE
+                  )}`,
                   highlight: loaderData.view === View.SCHEDULE,
                 }),
               ],
