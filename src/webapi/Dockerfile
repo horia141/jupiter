@@ -30,6 +30,7 @@ COPY src/webapi/jupiter src/webapi/jupiter
 
 WORKDIR /jupiter/src/webapi
 
+RUN cd ../core && poetry install --only main --no-interaction --no-ansi
 RUN poetry install --only main --no-interaction --no-ansi
 
 ARG PORT=10000
