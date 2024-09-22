@@ -32,6 +32,7 @@ from jupiter.core.framework import use_case as uc
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.event import EventSource
+from jupiter.core.framework.realm import RealmCodecRegistry
 from jupiter.core.framework.use_case import (
     EmptyContext,
     EmptySession,
@@ -96,6 +97,7 @@ class AppGuestMutationUseCase(
     def __init__(
         self,
         time_provider: TimeProvider,
+        realm_codec_registry: RealmCodecRegistry,
         invocation_recorder: MutationUseCaseInvocationRecorder,
         progress_reporter_factory: ProgressReporterFactory[
             AppGuestMutationUseCaseContext
@@ -106,7 +108,12 @@ class AppGuestMutationUseCase(
         search_storage_engine: SearchStorageEngine,
     ) -> None:
         """Constructor."""
-        super().__init__(time_provider, invocation_recorder, progress_reporter_factory)
+        super().__init__(
+            time_provider,
+            realm_codec_registry,
+            invocation_recorder,
+            progress_reporter_factory,
+        )
         self._global_properties = global_properties
         self._auth_token_stamper = auth_token_stamper
         self._domain_storage_engine = domain_storage_engine
@@ -161,12 +168,13 @@ class AppGuestReadonlyUseCase(
         self,
         global_properties: GlobalProperties,
         time_provider: TimeProvider,
+        realm_codec_registry: RealmCodecRegistry,
         auth_token_stamper: AuthTokenStamper,
         domain_storage_engine: DomainStorageEngine,
         search_storage_engine: SearchStorageEngine,
     ) -> None:
         """Constructor."""
-        super().__init__()
+        super().__init__(realm_codec_registry)
         self._global_properties = global_properties
         self._time_provider = time_provider
         self._auth_token_stamper = auth_token_stamper
@@ -258,6 +266,7 @@ class AppLoggedInMutationUseCase(
     def __init__(
         self,
         time_provider: TimeProvider,
+        realm_codec_registry: RealmCodecRegistry,
         invocation_recorder: MutationUseCaseInvocationRecorder,
         progress_reporter_factory: ProgressReporterFactory[
             AppLoggedInMutationUseCaseContext
@@ -269,7 +278,12 @@ class AppLoggedInMutationUseCase(
         use_case_storage_engine: UseCaseStorageEngine,
     ) -> None:
         """Constructor."""
-        super().__init__(time_provider, invocation_recorder, progress_reporter_factory)
+        super().__init__(
+            time_provider,
+            realm_codec_registry,
+            invocation_recorder,
+            progress_reporter_factory,
+        )
         self._global_properties = global_properties
         self._auth_token_stamper = auth_token_stamper
         self._domain_storage_engine = domain_storage_engine
@@ -426,12 +440,13 @@ class AppLoggedInReadonlyUseCase(
         self,
         global_properties: GlobalProperties,
         time_provider: TimeProvider,
+        realm_codec_registry: RealmCodecRegistry,
         auth_token_stamper: AuthTokenStamper,
         domain_storage_engine: DomainStorageEngine,
         search_storage_engine: SearchStorageEngine,
     ) -> None:
         """Constructor."""
-        super().__init__()
+        super().__init__(realm_codec_registry)
         self._global_properties = global_properties
         self._time_provider = time_provider
         self._auth_token_stamper = auth_token_stamper
@@ -507,6 +522,7 @@ class AppBackgroundMutationUseCase(
     """A command which does some sort of mutation for the app in the background."""
 
     _time_provider: Final[TimeProvider]
+    _realm_codec_registry: Final[RealmCodecRegistry]
     _progress_reporter_factory: ProgressReporterFactory[EmptyContext]
     _domain_storage_engine: Final[DomainStorageEngine]
     _search_storage_engine: Final[SearchStorageEngine]
@@ -514,12 +530,14 @@ class AppBackgroundMutationUseCase(
     def __init__(
         self,
         time_provider: TimeProvider,
+        realm_codec_registry: RealmCodecRegistry,
         progress_reporter_factory: ProgressReporterFactory[EmptyContext],
         domain_storage_engine: DomainStorageEngine,
         search_storage_engine: SearchStorageEngine,
     ) -> None:
         """Constructor."""
         self._time_provider = time_provider
+        self._realm_codec_registry = realm_codec_registry
         self._progress_reporter_factory = progress_reporter_factory
         self._domain_storage_engine = domain_storage_engine
         self._search_storage_engine = search_storage_engine

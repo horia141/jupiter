@@ -16,6 +16,7 @@ from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.entity import CrownEntity
 from jupiter.core.framework.errors import InputValidationError
+from jupiter.core.framework.realm import RealmCodecRegistry
 from jupiter.core.framework.use_case_io import UseCaseArgsBase, UseCaseResultBase
 from jupiter.core.utils.time_provider import TimeProvider
 
@@ -206,17 +207,20 @@ class MutationUseCase(
     """A command which does some sort of mutation."""
 
     _time_provider: Final[TimeProvider]
+    _realm_codec_registry: Final[RealmCodecRegistry]
     _invocation_recorder: Final[MutationUseCaseInvocationRecorder]
     _progress_reporter_factory: ProgressReporterFactory[UseCaseContext]
 
     def __init__(
         self,
         time_provider: TimeProvider,
+        realm_codec_registry: RealmCodecRegistry,
         invocation_recorder: MutationUseCaseInvocationRecorder,
         progress_reporter_factory: ProgressReporterFactory[UseCaseContext],
     ) -> None:
         """Constructor."""
         self._time_provider = time_provider
+        self._realm_codec_registry = realm_codec_registry
         self._invocation_recorder = invocation_recorder
         self._progress_reporter_factory = progress_reporter_factory
 
@@ -288,6 +292,15 @@ class ReadonlyUseCase(
     abc.ABC,
 ):
     """A command which only does reads."""
+
+    _realm_codec_registry: Final[RealmCodecRegistry]
+
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+    ) -> None:
+        """Constructor."""
+        self._realm_codec_registry = realm_codec_registry
 
     async def execute(
         self,

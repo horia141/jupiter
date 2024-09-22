@@ -3,7 +3,7 @@ from jupiter.core.framework.value import EnumValue, enum_value
 
 
 @enum_value
-class ScheduleStreamSource(EnumValue):
+class ScheduleSource(EnumValue):
     """The source of a schedule."""
 
     USER = "user"

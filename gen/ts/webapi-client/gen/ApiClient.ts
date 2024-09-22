@@ -32,6 +32,7 @@ import { MetricsService } from './services/MetricsService';
 import { NotesService } from './services/NotesService';
 import { PersonsService } from './services/PersonsService';
 import { ProjectsService } from './services/ProjectsService';
+import { ScheduleService } from './services/ScheduleService';
 import { SlackService } from './services/SlackService';
 import { SmartListsService } from './services/SmartListsService';
 import { StreamService } from './services/StreamService';
@@ -74,6 +75,7 @@ export class ApiClient {
     public readonly notes: NotesService;
     public readonly persons: PersonsService;
     public readonly projects: ProjectsService;
+    public readonly schedule: ScheduleService;
     public readonly slack: SlackService;
     public readonly smartLists: SmartListsService;
     public readonly stream: StreamService;
@@ -127,6 +129,7 @@ export class ApiClient {
         this.notes = new NotesService(this.request);
         this.persons = new PersonsService(this.request);
         this.projects = new ProjectsService(this.request);
+        this.schedule = new ScheduleService(this.request);
         this.slack = new SlackService(this.request);
         this.smartLists = new SmartListsService(this.request);
         this.stream = new StreamService(this.request);

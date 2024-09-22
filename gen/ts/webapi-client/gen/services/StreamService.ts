@@ -2,6 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { ScheduleStreamArchiveArgs } from '../models/ScheduleStreamArchiveArgs';
+import type { ScheduleStreamCreateForExternalIcalArgs } from '../models/ScheduleStreamCreateForExternalIcalArgs';
+import type { ScheduleStreamCreateForExternalIcalResult } from '../models/ScheduleStreamCreateForExternalIcalResult';
 import type { ScheduleStreamCreateForUserArgs } from '../models/ScheduleStreamCreateForUserArgs';
 import type { ScheduleStreamCreateForUserResult } from '../models/ScheduleStreamCreateForUserResult';
 import type { ScheduleStreamFindArgs } from '../models/ScheduleStreamFindArgs';
@@ -31,6 +33,29 @@ export class StreamService {
         return this.httpRequest.request({
             method: 'POST',
             url: '/schedule-stream-archive',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Use case for creating a schedule stream from an external iCal.
+     * Use case for creating a schedule stream from an external iCal.
+     * @param requestBody The input data
+     * @returns ScheduleStreamCreateForExternalIcalResult Successful response
+     * @throws ApiError
+     */
+    public scheduleStreamCreateForExternalIcal(
+        requestBody?: ScheduleStreamCreateForExternalIcalArgs,
+    ): CancelablePromise<ScheduleStreamCreateForExternalIcalResult> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/schedule-stream-create-for-external-ical',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

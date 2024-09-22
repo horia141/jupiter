@@ -453,6 +453,21 @@ docs = ["Sphinx", "docutils (<0.18)"]
 test = ["objgraph", "psutil"]
 
 [[package]]
+name = "icalendar"
+version = "5.0.13"
+description = "iCalendar parser/generator"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "icalendar-5.0.13-py3-none-any.whl", hash = "sha256:5ded5415e2e1edef5ab230024a75878a7a81d518a3b1ae4f34bf20b173c84dc2"},
+    {file = "icalendar-5.0.13.tar.gz", hash = "sha256:92799fde8cce0b61daa8383593836d1e19136e504fa1671f471f98be9b029706"},
+]
+
+[package.dependencies]
+python-dateutil = "*"
+pytz = "*"
+
+[[package]]
 name = "idna"
 version = "3.7"
 description = "Internationalized Domain Names in Applications (IDNA)"
@@ -919,6 +934,31 @@ pymysql = ["pymysql", "pymysql (<1)"]
 sqlcipher = ["sqlcipher3-binary"]
 
 [[package]]
+name = "types-icalendar"
+version = "5.0.0.20240806"
+description = "Typing stubs for icalendar"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "types-icalendar-5.0.0.20240806.tar.gz", hash = "sha256:eadbd91ca02f5a4615f9e2f2105b072a4a262f37f52e1dc94160f4aac1dcbb63"},
+    {file = "types_icalendar-5.0.0.20240806-py3-none-any.whl", hash = "sha256:a132a2dd3a04193d808cc7dc1546c53f5c603d8bf34c513bffe6784e35104fb2"},
+]
+
+[package.dependencies]
+types-pytz = "*"
+
+[[package]]
+name = "types-pytz"
+version = "2024.2.0.20240913"
+description = "Typing stubs for pytz"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "types-pytz-2024.2.0.20240913.tar.gz", hash = "sha256:4433b5df4a6fc587bbed41716d86a5ba5d832b4378e506f40d34bc9c81df2c24"},
+    {file = "types_pytz-2024.2.0.20240913-py3-none-any.whl", hash = "sha256:a1eebf57ebc6e127a99d2fa2ba0a88d2b173784ef9b3defcc2004ab6855a44df"},
+]
+
+[[package]]
 name = "types-requests"
 version = "2.27.16"
 description = "Typing stubs for requests"
@@ -989,4 +1029,4 @@ test = ["flake8 (>=2.4.0)", "isort (>=4.2.2)", "pytest (>=2.2.3)"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10, <3.11"
-content-hash = "64606c533eeafb1e1849507aed7a905bb7f202d450d21838265535153ec68436"
+content-hash = "885cce0ab6781eb7ddb3b5f4e0c12abb1a50d211b1fe2823534abc159ce68d58"

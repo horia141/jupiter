@@ -1,6 +1,7 @@
 import {
   ApiError,
   NoteDomain,
+  ScheduleSource,
   ScheduleStreamColor,
 } from "@jupiter/webapi-client";
 import {
@@ -39,6 +40,7 @@ import {
 import { SectionCardNew } from "~/components/infra/section-card-new";
 import { ScheduleStreamColorInput } from "~/components/schedule-stream-color-input";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
+import { isCorePropertyEditable } from "~/logic/domain/schedule-stream";
 import { basicShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -166,6 +168,9 @@ export default function ScheduleStreamViewOne() {
 
   const inputsEnabled =
     transition.state === "idle" && !loaderData.scheduleStream.archived;
+  const corePropertyEditable = isCorePropertyEditable(
+    loaderData.scheduleStream
+  );
 
   return (
     <LeafPanel
@@ -194,12 +199,25 @@ export default function ScheduleStreamViewOne() {
         }
       >
         <Stack spacing={2} useFlexGap>
+          {loaderData.scheduleStream.source ===
+            ScheduleSource.EXTERNAL_ICAL && (
+            <FormControl fullWidth>
+              <InputLabel id="sourceIcalUrl">Source iCal URL</InputLabel>
+              <OutlinedInput
+                label="sourceIcalUrl"
+                name="sourceIcalUrl"
+                defaultValue={loaderData.scheduleStream.source_ical_url!}
+                readOnly={true}
+              />
+            </FormControl>
+          )}
+
           <FormControl fullWidth>
             <InputLabel id="name">Name</InputLabel>
             <OutlinedInput
               label="name"
               name="name"
-              readOnly={!inputsEnabled}
+              readOnly={!inputsEnabled || !corePropertyEditable}
               defaultValue={loaderData.scheduleStream.name}
             />
             <FieldError actionResult={actionData} fieldName="/name" />

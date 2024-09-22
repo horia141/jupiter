@@ -26,7 +26,6 @@ class TimeEventInDayBlock:
         start_date (str): A date or possibly a datetime for the application.
         start_time_in_day (str): The time in hh:mm format.
         duration_mins (int):
-        timezone (str): A timezone in this domain.
         archived_time (Union[None, Unset, str]):
     """
 
@@ -42,7 +41,6 @@ class TimeEventInDayBlock:
     start_date: str
     start_time_in_day: str
     duration_mins: int
-    timezone: str
     archived_time: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -71,8 +69,6 @@ class TimeEventInDayBlock:
 
         duration_mins = self.duration_mins
 
-        timezone = self.timezone
-
         archived_time: Union[None, Unset, str]
         if isinstance(self.archived_time, Unset):
             archived_time = UNSET
@@ -95,7 +91,6 @@ class TimeEventInDayBlock:
                 "start_date": start_date,
                 "start_time_in_day": start_time_in_day,
                 "duration_mins": duration_mins,
-                "timezone": timezone,
             }
         )
         if archived_time is not UNSET:
@@ -130,8 +125,6 @@ class TimeEventInDayBlock:
 
         duration_mins = d.pop("duration_mins")
 
-        timezone = d.pop("timezone")
-
         def _parse_archived_time(data: object) -> Union[None, Unset, str]:
             if data is None:
                 return data
@@ -154,7 +147,6 @@ class TimeEventInDayBlock:
             start_date=start_date,
             start_time_in_day=start_time_in_day,
             duration_mins=duration_mins,
-            timezone=timezone,
             archived_time=archived_time,
         )
 

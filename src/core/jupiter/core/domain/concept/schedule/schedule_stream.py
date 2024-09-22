@@ -5,13 +5,13 @@ from jupiter.core.domain.concept.schedule.schedule_event_full_days import (
 from jupiter.core.domain.concept.schedule.schedule_event_in_day import (
     ScheduleEventInDay,
 )
+from jupiter.core.domain.concept.schedule.schedule_source import (
+    ScheduleSource,
+)
 from jupiter.core.domain.concept.schedule.schedule_stream_color import (
     ScheduleStreamColor,
 )
 from jupiter.core.domain.concept.schedule.schedule_stream_name import ScheduleStreamName
-from jupiter.core.domain.concept.schedule.schedule_stream_source import (
-    ScheduleStreamSource,
-)
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.core.url import URL
@@ -40,7 +40,7 @@ class ScheduleStream(LeafEntity):
 
     schedule_domain: ParentLink
 
-    source: ScheduleStreamSource
+    source: ScheduleSource
     name: ScheduleStreamName
     color: ScheduleStreamColor
     source_ical_url: URL | None
@@ -63,10 +63,29 @@ class ScheduleStream(LeafEntity):
         return ScheduleStream._create(
             ctx,
             schedule_domain=ParentLink(schedule_domain_ref_id),
-            source=ScheduleStreamSource.USER,
+            source=ScheduleSource.USER,
             name=name,
             color=color,
             source_ical_url=None,
+        )
+
+    @staticmethod
+    @create_entity_action
+    def new_schedule_stream_from_external_ical(
+        ctx: DomainContext,
+        schedule_domain_ref_id: EntityId,
+        name: ScheduleStreamName,
+        color: ScheduleStreamColor,
+        source_ical_url: URL,
+    ) -> "ScheduleStream":
+        """Create a new schedule from an external ical."""
+        return ScheduleStream._create(
+            ctx,
+            schedule_domain=ParentLink(schedule_domain_ref_id),
+            source=ScheduleSource.EXTERNAL_ICAL,
+            name=name,
+            color=color,
+            source_ical_url=source_ical_url,
         )
 
     @update_entity_action
@@ -77,10 +96,13 @@ class ScheduleStream(LeafEntity):
         color: UpdateAction[ScheduleStreamColor],
     ) -> "ScheduleStream":
         """Update the schedule."""
-        if self.source == ScheduleStreamSource.EXTERNAL_ICAL:
-            raise CannotModifyScheduleStreamError("Cannot modify an external schedule.")
         return self._new_version(
             ctx,
             name=name.or_else(self.name),
             color=color.or_else(self.color),
         )
+
+    @property
+    def can_be_modified_independently(self) -> bool:
+        """Return whether the schedule can be modified independently."""
+        return self.source == ScheduleSource.USER

@@ -1,8 +1,6 @@
 """A particular entry in the GC log."""
-
 import abc
 
-from jupiter.core.domain.application.gen.gen_log_entry import GenLogEntry
 from jupiter.core.domain.entity_summary import EntitySummary
 from jupiter.core.domain.sync_target import SyncTarget
 from jupiter.core.framework.base.entity_id import EntityId
@@ -89,15 +87,3 @@ class GCLogEntryRepository(LeafEntityRepository[GCLogEntry], abc.ABC):
         limit: int,
     ) -> list[GCLogEntry]:
         """Find the last N GC log entries."""
-
-
-class GenLogEntryRepository(LeafEntityRepository[GenLogEntry], abc.ABC):
-    """A repository of task generation log entries."""
-
-    @abc.abstractmethod
-    async def find_last(
-        self,
-        parent_ref_id: EntityId,
-        limit: int,
-    ) -> list[GenLogEntry]:
-        """Find the last N task generation log entries."""

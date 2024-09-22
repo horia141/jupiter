@@ -4,7 +4,6 @@ import abc
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.time_events.time_event_namespace import TimeEventNamespace
 from jupiter.core.domain.core.time_in_day import TimeInDay
-from jupiter.core.domain.core.timezone import Timezone
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.entity_name import NOT_USED_NAME
 from jupiter.core.framework.context import DomainContext
@@ -36,7 +35,6 @@ class TimeEventInDayBlock(LeafSupportEntity):
     start_date: ADate
     start_time_in_day: TimeInDay
     duration_mins: int
-    timezone: Timezone
 
     @staticmethod
     @create_entity_action
@@ -47,7 +45,6 @@ class TimeEventInDayBlock(LeafSupportEntity):
         start_date: ADate,
         start_time_in_day: TimeInDay,
         duration_mins: int,
-        timezone: Timezone,
     ) -> "TimeEventInDayBlock":
         """Create a new time event."""
         if duration_mins < MIN_DURATION_MINS:
@@ -67,7 +64,6 @@ class TimeEventInDayBlock(LeafSupportEntity):
             start_date=start_date,
             start_time_in_day=start_time_in_day,
             duration_mins=duration_mins,
-            timezone=timezone,
         )
 
     @staticmethod
@@ -79,7 +75,6 @@ class TimeEventInDayBlock(LeafSupportEntity):
         start_date: ADate,
         start_time_in_day: TimeInDay,
         duration_mins: int,
-        timezone: Timezone,
     ) -> "TimeEventInDayBlock":
         """Create a new time event."""
         if duration_mins < MIN_DURATION_MINS:
@@ -99,7 +94,6 @@ class TimeEventInDayBlock(LeafSupportEntity):
             start_date=start_date,
             start_time_in_day=start_time_in_day,
             duration_mins=duration_mins,
-            timezone=timezone,
         )
 
     @update_entity_action
@@ -109,7 +103,6 @@ class TimeEventInDayBlock(LeafSupportEntity):
         start_date: UpdateAction[ADate],
         start_time_in_day: UpdateAction[TimeInDay],
         duration_mins: UpdateAction[int],
-        timezone: Timezone,
     ) -> "TimeEventInDayBlock":
         """Update the time event."""
         if duration_mins.test(lambda t: t < MIN_DURATION_MINS):
@@ -125,7 +118,6 @@ class TimeEventInDayBlock(LeafSupportEntity):
             start_date=start_date.or_else(self.start_date),
             start_time_in_day=start_time_in_day.or_else(self.start_time_in_day),
             duration_mins=duration_mins.or_else(self.duration_mins),
-            timezone=timezone,
         )
 
     @property

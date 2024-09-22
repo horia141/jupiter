@@ -359,11 +359,21 @@ from .schedule_event_in_day_update_args_duration_mins import ScheduleEventInDayU
 from .schedule_event_in_day_update_args_name import ScheduleEventInDayUpdateArgsName
 from .schedule_event_in_day_update_args_start_date import ScheduleEventInDayUpdateArgsStartDate
 from .schedule_event_in_day_update_args_start_time_in_day import ScheduleEventInDayUpdateArgsStartTimeInDay
+from .schedule_external_sync_do_all_args import ScheduleExternalSyncDoAllArgs
+from .schedule_external_sync_do_args import ScheduleExternalSyncDoArgs
+from .schedule_external_sync_load_runs_args import ScheduleExternalSyncLoadRunsArgs
+from .schedule_external_sync_load_runs_result import ScheduleExternalSyncLoadRunsResult
+from .schedule_external_sync_log import ScheduleExternalSyncLog
+from .schedule_external_sync_log_entry import ScheduleExternalSyncLogEntry
+from .schedule_external_sync_log_per_stream_result import ScheduleExternalSyncLogPerStreamResult
 from .schedule_full_days_event_entry import ScheduleFullDaysEventEntry
 from .schedule_in_day_event_entry import ScheduleInDayEventEntry
+from .schedule_source import ScheduleSource
 from .schedule_stream import ScheduleStream
 from .schedule_stream_archive_args import ScheduleStreamArchiveArgs
 from .schedule_stream_color import ScheduleStreamColor
+from .schedule_stream_create_for_external_ical_args import ScheduleStreamCreateForExternalIcalArgs
+from .schedule_stream_create_for_external_ical_result import ScheduleStreamCreateForExternalIcalResult
 from .schedule_stream_create_for_user_args import ScheduleStreamCreateForUserArgs
 from .schedule_stream_create_for_user_result import ScheduleStreamCreateForUserResult
 from .schedule_stream_find_args import ScheduleStreamFindArgs
@@ -372,7 +382,6 @@ from .schedule_stream_find_result_entry import ScheduleStreamFindResultEntry
 from .schedule_stream_load_args import ScheduleStreamLoadArgs
 from .schedule_stream_load_result import ScheduleStreamLoadResult
 from .schedule_stream_remove_args import ScheduleStreamRemoveArgs
-from .schedule_stream_source import ScheduleStreamSource
 from .schedule_stream_summary import ScheduleStreamSummary
 from .schedule_stream_update_args import ScheduleStreamUpdateArgs
 from .schedule_stream_update_args_color import ScheduleStreamUpdateArgsColor
@@ -920,11 +929,21 @@ __all__ = (
     "ScheduleEventInDayUpdateArgsName",
     "ScheduleEventInDayUpdateArgsStartDate",
     "ScheduleEventInDayUpdateArgsStartTimeInDay",
+    "ScheduleExternalSyncDoAllArgs",
+    "ScheduleExternalSyncDoArgs",
+    "ScheduleExternalSyncLoadRunsArgs",
+    "ScheduleExternalSyncLoadRunsResult",
+    "ScheduleExternalSyncLog",
+    "ScheduleExternalSyncLogEntry",
+    "ScheduleExternalSyncLogPerStreamResult",
     "ScheduleFullDaysEventEntry",
     "ScheduleInDayEventEntry",
+    "ScheduleSource",
     "ScheduleStream",
     "ScheduleStreamArchiveArgs",
     "ScheduleStreamColor",
+    "ScheduleStreamCreateForExternalIcalArgs",
+    "ScheduleStreamCreateForExternalIcalResult",
     "ScheduleStreamCreateForUserArgs",
     "ScheduleStreamCreateForUserResult",
     "ScheduleStreamFindArgs",
@@ -933,7 +952,6 @@ __all__ = (
     "ScheduleStreamLoadArgs",
     "ScheduleStreamLoadResult",
     "ScheduleStreamRemoveArgs",
-    "ScheduleStreamSource",
     "ScheduleStreamSummary",
     "ScheduleStreamUpdateArgs",
     "ScheduleStreamUpdateArgsColor",

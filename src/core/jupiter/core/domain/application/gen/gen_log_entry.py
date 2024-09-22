@@ -1,5 +1,7 @@
 """A particular entry in the task generation log."""
 
+import abc
+
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.entity_summary import EntitySummary
@@ -17,6 +19,7 @@ from jupiter.core.framework.entity import (
     update_entity_action,
 )
 from jupiter.core.framework.event import EventSource
+from jupiter.core.framework.repository import LeafEntityRepository
 
 
 @entity
@@ -148,3 +151,15 @@ class GenLogEntry(LeafEntity):
             ctx,
             opened=False,
         )
+
+
+class GenLogEntryRepository(LeafEntityRepository[GenLogEntry], abc.ABC):
+    """A repository of task generation log entries."""
+
+    @abc.abstractmethod
+    async def find_last(
+        self,
+        parent_ref_id: EntityId,
+        limit: int,
+    ) -> list[GenLogEntry]:
+        """Find the last N task generation log entries."""

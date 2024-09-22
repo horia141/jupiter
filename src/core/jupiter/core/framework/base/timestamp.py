@@ -41,6 +41,10 @@ class Timestamp(AtomicValue[datetime.datetime]):
         """The raw date of the timestamp."""
         return cast(Date, self.the_ts.date())  # type: ignore
 
+    def mins_since(self, other: "Timestamp") -> int:
+        """Get the minutes since another timestamp."""
+        return cast(int, self.the_ts.diff(other.the_ts).in_minutes())  # type: ignore
+
     @property
     def value(self) -> DateTime:
         """The value as a time."""

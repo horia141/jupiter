@@ -1,5 +1,4 @@
 """The command for doing task generation for all workspaces."""
-
 from jupiter.core.domain.application.gen.service.gen_service import GenService
 from jupiter.core.domain.concept.user.user import User
 from jupiter.core.domain.concept.user_workspace_link.user_workspace_link import (

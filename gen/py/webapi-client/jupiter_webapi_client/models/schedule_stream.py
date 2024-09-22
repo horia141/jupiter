@@ -3,8 +3,8 @@ from typing import Any, Dict, List, Type, TypeVar, Union, cast
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
+from ..models.schedule_source import ScheduleSource
 from ..models.schedule_stream_color import ScheduleStreamColor
-from ..models.schedule_stream_source import ScheduleStreamSource
 from ..types import UNSET, Unset
 
 T = TypeVar("T", bound="ScheduleStream")
@@ -22,7 +22,7 @@ class ScheduleStream:
         last_modified_time (str): A timestamp in the application.
         name (str): The name of a schedule stream.
         schedule_domain_ref_id (str):
-        source (ScheduleStreamSource): The source of a schedule.
+        source (ScheduleSource): The source of a schedule.
         color (ScheduleStreamColor): The color of a particular schedule stream.
         archived_time (Union[None, Unset, str]):
         source_ical_url (Union[None, Unset, str]):
@@ -35,7 +35,7 @@ class ScheduleStream:
     last_modified_time: str
     name: str
     schedule_domain_ref_id: str
-    source: ScheduleStreamSource
+    source: ScheduleSource
     color: ScheduleStreamColor
     archived_time: Union[None, Unset, str] = UNSET
     source_ical_url: Union[None, Unset, str] = UNSET
@@ -111,7 +111,7 @@ class ScheduleStream:
 
         schedule_domain_ref_id = d.pop("schedule_domain_ref_id")
 
-        source = ScheduleStreamSource(d.pop("source"))
+        source = ScheduleSource(d.pop("source"))
 
         color = ScheduleStreamColor(d.pop("color"))
 

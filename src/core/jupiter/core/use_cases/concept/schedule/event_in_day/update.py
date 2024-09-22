@@ -12,6 +12,7 @@ from jupiter.core.domain.core.time_in_day import TimeInDay
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import ProgressReporter
 from jupiter.core.framework.use_case_io import UseCaseArgsBase, use_case_args
@@ -50,6 +51,8 @@ class ScheduleEventInDayUpdateUseCase(
         schedule_event_in_day = await uow.get_for(ScheduleEventInDay).load_by_id(
             args.ref_id
         )
+        if not schedule_event_in_day.can_be_modified_independently:
+            raise InputValidationError("Cannot update a non-user schedule event")
         schedule_event_in_day = schedule_event_in_day.update(
             context.domain_context,
             name=args.name,
@@ -67,6 +70,5 @@ class ScheduleEventInDayUpdateUseCase(
             start_date=args.start_date,
             start_time_in_day=args.start_time_in_day,
             duration_mins=args.duration_mins,
-            timezone=time_event.timezone,
         )
         await uow.get(TimeEventInDayBlockRepository).save(time_event)

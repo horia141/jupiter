@@ -1242,6 +1242,7 @@ class CliApp:
                 session_storage=self._session_storage,
                 use_case=use_case_type(  # type: ignore
                     time_provider=self._time_provider,
+                    realm_codec_registry=self._realm_codec_registry,
                     invocation_recorder=self._invocation_recorder,
                     progress_reporter_factory=NoOpProgressReporterFactory(),
                     global_properties=self._global_properties,
@@ -1257,6 +1258,7 @@ class CliApp:
                 use_case=use_case_type(  # type: ignore
                     global_properties=self._global_properties,
                     time_provider=self._time_provider,
+                    realm_codec_registry=self._realm_codec_registry,
                     auth_token_stamper=self._auth_token_stamper,
                     domain_storage_engine=self._domain_storage_engine,
                     search_storage_engine=self._search_storage_engine,
@@ -1268,6 +1270,7 @@ class CliApp:
                 session_storage=self._session_storage,
                 use_case=use_case_type(  # type: ignore
                     time_provider=self._time_provider,
+                    realm_codec_registry=self._realm_codec_registry,
                     invocation_recorder=self._invocation_recorder,
                     progress_reporter_factory=self._progress_reporter_factory,
                     global_properties=self._global_properties,
@@ -1284,6 +1287,7 @@ class CliApp:
                 use_case=use_case_type(  # type: ignore
                     global_properties=self._global_properties,
                     time_provider=self._time_provider,
+                    realm_codec_registry=self._realm_codec_registry,
                     auth_token_stamper=self._auth_token_stamper,
                     domain_storage_engine=self._domain_storage_engine,
                     search_storage_engine=self._search_storage_engine,
@@ -1318,6 +1322,7 @@ class CliApp:
                 use_case=use_case_type(  # type: ignore
                     time_provider=self._time_provider,
                     invocation_recorder=self._invocation_recorder,
+                    realm_codec_registry=self._realm_codec_registry,
                     progress_reporter_factory=NoOpProgressReporterFactory(),
                     global_properties=self._global_properties,
                     auth_token_stamper=self._auth_token_stamper,
@@ -1332,6 +1337,7 @@ class CliApp:
                 use_case=use_case_type(  # type: ignore
                     global_properties=self._global_properties,
                     time_provider=self._time_provider,
+                    realm_codec_registry=self._realm_codec_registry,
                     auth_token_stamper=self._auth_token_stamper,
                     domain_storage_engine=self._domain_storage_engine,
                     search_storage_engine=self._search_storage_engine,
@@ -1344,6 +1350,7 @@ class CliApp:
                 use_case=use_case_type(  # type: ignore
                     global_properties=self._global_properties,
                     time_provider=self._time_provider,
+                    realm_codec_registry=self._realm_codec_registry,
                     invocation_recorder=self._invocation_recorder,
                     progress_reporter_factory=self._progress_reporter_factory,
                     auth_token_stamper=self._auth_token_stamper,
@@ -1359,6 +1366,7 @@ class CliApp:
                 use_case=use_case_type(  # type: ignore
                     global_properties=self._global_properties,
                     time_provider=self._time_provider,
+                    realm_codec_registry=self._realm_codec_registry,
                     auth_token_stamper=self._auth_token_stamper,
                     domain_storage_engine=self._domain_storage_engine,
                     search_storage_engine=self._search_storage_engine,

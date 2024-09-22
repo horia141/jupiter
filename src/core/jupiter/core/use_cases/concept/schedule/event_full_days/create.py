@@ -14,6 +14,7 @@ from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.infra.generic_creator import generic_creator
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.use_case import ProgressReporter
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
@@ -69,12 +70,18 @@ class ScheduleEventFullDaysCreateUseCase(
         schedule_stream = await uow.get_for(ScheduleStream).load_by_id(
             args.schedule_stream_ref_id
         )
+
+        if not schedule_stream.can_be_modified_independently:
+            raise InputValidationError(
+                "Cannot create an event for a schedule stream that can't be modified."
+            )
+
         time_event_domain = await uow.get_for(TimeEventDomain).load_by_parent(
             workspace.ref_id
         )
 
         new_schedule_event_full_days = (
-            ScheduleEventFullDays.new_schedule_full_days_block(
+            ScheduleEventFullDays.new_schedule_full_days_block_for_user(
                 context.domain_context,
                 schedule_domain_ref_id=schedule_domain.ref_id,
                 schedule_stream_ref_id=schedule_stream.ref_id,

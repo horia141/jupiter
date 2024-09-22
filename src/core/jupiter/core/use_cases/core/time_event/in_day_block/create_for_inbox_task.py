@@ -57,7 +57,6 @@ class TimeEventInDayBlockCreateForInboxTaskUseCase(
     ) -> TimeEventInDayBlockCreateForInboxTaskResult:
         """Execute the command's action."""
         workspace = context.workspace
-        user = context.user
         time_event_domain = await uow.get_for(TimeEventDomain).load_by_parent(
             workspace.ref_id
         )
@@ -71,7 +70,6 @@ class TimeEventInDayBlockCreateForInboxTaskUseCase(
             start_date=args.start_date,
             start_time_in_day=args.start_time_in_day,
             duration_mins=args.duration_mins,
-            timezone=user.timezone,
         )
         new_time_event = await uow.get_for(TimeEventInDayBlock).create(new_time_event)
 
