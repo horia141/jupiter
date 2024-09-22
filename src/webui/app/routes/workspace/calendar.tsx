@@ -37,6 +37,7 @@ import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   Outlet,
   useLocation,
+  useNavigate,
   useSearchParams,
   useTransition,
 } from "@remix-run/react";
@@ -58,6 +59,7 @@ import {
   NavSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
+import { TimeEventParamsNewPlaceholder } from "~/components/time-event-params-new-placeholder";
 import {
   aDateToDate,
   allDaysBetween,
@@ -78,8 +80,12 @@ import {
   BIRTHDAY_TIME_EVENT_COLOR,
   calculateEndTimeForTimeEvent,
   calculateStartTimeForTimeEvent,
+  calendarPxHeightToMinutes,
+  calendarTimeEventInDayDurationToRems,
+  calendarTimeEventInDayStartMinutesToRems,
   compareNamespaceForSortingFullDaysTimeEvents,
   INBOX_TASK_TIME_EVENT_COLOR,
+  scheduleTimeEventInDayDurationToRems,
   timeEventInDayBlockToTimezone,
   VACATION_TIME_EVENT_COLOR,
 } from "~/logic/domain/time-event";
@@ -179,7 +185,6 @@ export default function CalendarView() {
     <TrunkPanel
       key="calendar"
       createLocation={`/workspace/calendar/schedule/event-in-day/new?${query}`}
-      fixedScrollRestaurationTo={320} // About 5am
       actions={
         <SectionActions
           id="calendar"
@@ -1231,7 +1236,7 @@ function ViewAsCalendarLeftColumn(props: ViewAsCalendarLeftColumnProps) {
         left: "0px",
         top: "0px",
         backgroundColor: theme.palette.background.paper,
-        zIndex: theme.zIndex.appBar + 100,
+        zIndex: theme.zIndex.appBar + 10,
         borderRight: "1px solid darkgray",
       }}
     >
@@ -1445,6 +1450,9 @@ function ViewAsCalendarTimeEventInDayColumn(
   props: ViewAsCalendarTimeEventInDayColumnProps
 ) {
   const theme = useTheme();
+  const location = useLocation();
+  const [query] = useSearchParams();
+  const navigate = useNavigate();
 
   const startOfDay = DateTime.fromISO(`${props.date}T00:00:00`, {
     zone: "UTC",
@@ -1463,6 +1471,50 @@ function ViewAsCalendarTimeEventInDayColumn(
     .diff(DateTime.fromISO(`${props.today}T00:00`, { zone: props.timezone }))
     .as("minutes");
 
+  function createNewFromDoubleClick(event: React.MouseEvent) {
+    const minutes = calendarPxHeightToMinutes(
+      event.nativeEvent.offsetY,
+      theme.typography.htmlFontSize
+    );
+    const time = startOfDay.plus({ minutes });
+    const newQuery = new URLSearchParams(query);
+    newQuery.set("sourceStartDate", time.toFormat("yyyy-MM-dd"));
+    newQuery.set("sourceStartTimeInDay", time.toFormat("HH:mm"));
+    if (location.pathname === `/workspace/calendar/schedule/event-in-day/new`) {
+      navigate(`/workspace/calendar/schedule/event-in-day/new?${newQuery}`, {
+        replace: true,
+      });
+    } else if (
+      location.pathname.startsWith(`/workspace/calendar/schedule/event-in-day/`)
+    ) {
+      navigate(`${location.pathname}?${newQuery}`, {
+        replace: true,
+      });
+    } else if (
+      location.pathname ===
+      `/workspace/calendar/time-event/in-day-block/new-for-inbox-task`
+    ) {
+      navigate(
+        `/workspace/calendar/time-event/in-day-block/new-for-inbox-task?${newQuery}`,
+        {
+          replace: true,
+        }
+      );
+    } else if (
+      location.pathname.startsWith(
+        `/workspace/calendar/time-event/in-day-block/`
+      )
+    ) {
+      navigate(`${location.pathname}?${newQuery}`, {
+        replace: true,
+      });
+    } else {
+      navigate(`/workspace/calendar/schedule/event-in-day/new?${newQuery}`, {
+        replace: true,
+      });
+    }
+  }
+
   return (
     <Box
       sx={{
@@ -1471,6 +1523,7 @@ function ViewAsCalendarTimeEventInDayColumn(
         height: "96rem",
         minWidth: "7rem",
       }}
+      onDoubleClick={createNewFromDoubleClick}
     >
       {props.today === props.date && (
         <Box
@@ -1498,6 +1551,8 @@ function ViewAsCalendarTimeEventInDayColumn(
           }}
         ></Box>
       ))}
+
+      <TimeEventParamsNewPlaceholder date={props.date} />
 
       {props.timeEventsInDay.map((entry, index) => (
         <ViewAsCalendarTimeEventInDayCell
@@ -1715,7 +1770,7 @@ function ViewAsCalendarDaysAndFullDaysContiner(props: PropsWithChildren) {
         minWidth: isBigScreen ? undefined : "fit-content",
         top: isBigScreen ? "-0.5rem" : "0px",
         backgroundColor: theme.palette.background.paper,
-        zIndex: theme.zIndex.appBar + 200,
+        zIndex: theme.zIndex.appBar + 20,
         borderBottom: "1px solid darkgray",
       }}
     >
@@ -2318,7 +2373,7 @@ function ViewAsStatsPerSubperiod(props: ViewAsStatsPerSubperiodProps) {
   );
 }
 
-function computeTimeEventInDayDurationInQuarters(
+export function computeTimeEventInDayDurationInQuarters(
   minutesSinceStartOfDay: number,
   durationMins: number
 ): number {
@@ -2382,28 +2437,6 @@ function clipTimeEventInDayNameToWhatFits(
       maxChars
     )} ...`;
   }
-}
-
-function calendarTimeEventInDayStartMinutesToRems(startMins: number): string {
-  // Each 15 minutes is 1 rem. Display has 96=4*24 rem height.
-  const startHours = Math.max(0, startMins / 15);
-  return `${startHours}rem`;
-}
-
-function calendarTimeEventInDayDurationToRems(
-  minutesSinceStartOfDay: number,
-  durationMins: number
-): string {
-  const durationInQuarters = computeTimeEventInDayDurationInQuarters(
-    minutesSinceStartOfDay,
-    durationMins
-  );
-  return `${durationInQuarters}rem`;
-}
-
-function scheduleTimeEventInDayDurationToRems(durationMins: number): string {
-  const durationInHalfs = 0.5 + Math.floor(durationMins / 30);
-  return `${durationInHalfs}rem`;
 }
 
 function combinedTimeEventFullDayEntryPartionByDay(

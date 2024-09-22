@@ -32,6 +32,7 @@ import {
   SectionActions,
 } from "~/components/infra/section-actions";
 import { SectionCardNew } from "~/components/infra/section-card-new";
+import { TimeEventParamsSource } from "~/components/time-event-params-source";
 import { TimeEventSourceLink } from "~/components/time-event-source-link";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import {
@@ -171,13 +172,6 @@ export default function TimeEventInDayBlockViewOne() {
     loaderData.inDayBlock.namespace
   );
 
-  const [durationMins, setDurationMins] = useState(
-    loaderData.inDayBlock.duration_mins
-  );
-  useEffect(() => {
-    setDurationMins(loaderData.inDayBlock.duration_mins);
-  }, [loaderData.inDayBlock.duration_mins]);
-
   let name = null;
   switch (loaderData.inDayBlock.namespace) {
     case TimeEventNamespace.SCHEDULE_EVENT_IN_DAY:
@@ -192,13 +186,44 @@ export default function TimeEventInDayBlockViewOne() {
       throw new Error("Unknown namespace");
   }
 
-  const { startDate, startTimeInDay } = timeEventInDayBlockParamsToTimezone(
+  const blockParamsInTz = timeEventInDayBlockParamsToTimezone(
     {
       startDate: loaderData.inDayBlock.start_date,
       startTimeInDay: loaderData.inDayBlock.start_time_in_day,
     },
     topLevelInfo.user.timezone
   );
+  const [startDate, setStartDate] = useState(blockParamsInTz.startDate);
+  const [startTimeInDay, setStartTimeInDay] = useState(
+    blockParamsInTz.startTimeInDay!
+  );
+  const [durationMins, setDurationMins] = useState(
+    loaderData.inDayBlock.duration_mins
+  );
+  useEffect(() => {
+    const blockParamsInTz = timeEventInDayBlockParamsToTimezone(
+      {
+        startDate: loaderData.inDayBlock.start_date,
+        startTimeInDay: loaderData.inDayBlock.start_time_in_day,
+      },
+      topLevelInfo.user.timezone
+    );
+    setStartDate(blockParamsInTz.startDate);
+    setStartTimeInDay(blockParamsInTz.startTimeInDay!);
+    setDurationMins(loaderData.inDayBlock.duration_mins);
+  }, [loaderData.inDayBlock, topLevelInfo.user.timezone]);
+
+  const [debounceForeign, setDeoubceForeign] = useState(false);
+  setTimeout(() => setDeoubceForeign(true), 100);
+  useEffect(() => {
+    if (!debounceForeign) {
+      return;
+    }
+    if (query.get("sourceStartDate") && query.get("sourceStartTimeInDay")) {
+      setStartDate(query.get("sourceStartDate")!);
+      setStartTimeInDay(query.get("sourceStartTimeInDay")!);
+    }
+  }, [query, debounceForeign]);
 
   return (
     <LeafPanel
@@ -207,6 +232,11 @@ export default function TimeEventInDayBlockViewOne() {
       enableArchiveButton={inputsEnabled && corePropertyEditable}
       returnLocation={`/workspace/calendar?${query}`}
     >
+      <TimeEventParamsSource
+        startDate={startDate}
+        startTimeInDay={startTimeInDay}
+        durationMins={durationMins}
+      />
       <GlobalError actionResult={actionData} />
       <SectionCardNew
         id="time-event-in-day-block-properties"
@@ -260,7 +290,8 @@ export default function TimeEventInDayBlockViewOne() {
               label="startDate"
               name="startDate"
               readOnly={!(inputsEnabled && corePropertyEditable)}
-              defaultValue={startDate}
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
             />
 
             <FieldError actionResult={actionData} fieldName="/start_date" />
@@ -275,7 +306,8 @@ export default function TimeEventInDayBlockViewOne() {
               label="startTimeInDay"
               name="startTimeInDay"
               readOnly={!(inputsEnabled && corePropertyEditable)}
-              defaultValue={startTimeInDay}
+              value={startTimeInDay}
+              onChange={(e) => setStartTimeInDay(e.target.value)}
             />
 
             <FieldError

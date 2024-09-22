@@ -18,7 +18,7 @@ import {
 } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseQuery } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
@@ -31,6 +31,7 @@ import {
 } from "~/components/infra/section-actions";
 import { SectionCardNew } from "~/components/infra/section-card-new";
 import { ScheduleStreamSelect } from "~/components/schedule-stream-select";
+import { TimeEventParamsSource } from "~/components/time-event-params-source";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { timeEventInDayBlockParamsToUtc } from "~/logic/domain/time-event";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -44,6 +45,11 @@ const QuerySchema = {
     .string()
     .regex(/[0-9][0-9][0-9][0-9][-][0-9][0-9][-][0-9][0-9]/)
     .optional(),
+  initialStartDate: z
+    .string()
+    .regex(/[0-9][0-9][0-9][0-9][-][0-9][0-9][-][0-9][0-9]/)
+    .optional(),
+  initialStartTimeInDay: z.string().optional(),
 };
 
 const CreateFormSchema = {
@@ -125,13 +131,29 @@ export default function ScheduleEventInDayNew() {
 
   const rightNow = DateTime.now();
 
+  const [startDate, setStartDate] = useState(rightNow.toFormat("yyyy-MM-dd"));
+  const [startTimeInDay, setStartTimeInDay] = useState(
+    rightNow.toFormat("HH:mm")
+  );
   const [durationMins, setDurationMins] = useState(30);
+
+  useEffect(() => {
+    if (query.get("sourceStartDate") && query.get("sourceStartTimeInDay")) {
+      setStartDate(query.get("sourceStartDate")!);
+      setStartTimeInDay(query.get("sourceStartTimeInDay")!);
+    }
+  }, [query]);
 
   return (
     <LeafPanel
       key="schedule-event-in-day/new"
       returnLocation={`/workspace/calendar?${query}`}
     >
+      <TimeEventParamsSource
+        startDate={startDate}
+        startTimeInDay={startTimeInDay}
+        durationMins={durationMins}
+      />
       <GlobalError actionResult={actionData} />
       <SectionCardNew
         id="schedule-event-in-day-properties"
@@ -187,7 +209,8 @@ export default function ScheduleEventInDayNew() {
               label="startDate"
               name="startDate"
               readOnly={!inputsEnabled}
-              defaultValue={loaderData.date}
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
             />
 
             <FieldError actionResult={actionData} fieldName="/start_date" />
@@ -202,7 +225,8 @@ export default function ScheduleEventInDayNew() {
               label="startTimeInDay"
               name="startTimeInDay"
               readOnly={!inputsEnabled}
-              defaultValue={rightNow.toFormat("HH:mm")}
+              value={startTimeInDay}
+              onChange={(e) => setStartTimeInDay(e.target.value)}
             />
 
             <FieldError

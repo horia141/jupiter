@@ -17,7 +17,7 @@ import {
 } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseQuery } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
@@ -29,6 +29,7 @@ import {
   SectionActions,
 } from "~/components/infra/section-actions";
 import { SectionCardNew } from "~/components/infra/section-card-new";
+import { TimeEventParamsSource } from "~/components/time-event-params-source";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { timeEventInDayBlockParamsToUtc } from "~/logic/domain/time-event";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -155,13 +156,29 @@ export default function TimeEventInDayBlockCreateForInboxTask() {
 
   const rightNow = DateTime.now();
 
+  const [startDate, setStartDate] = useState(rightNow.toFormat("yyyy-MM-dd"));
+  const [startTimeInDay, setStartTimeInDay] = useState(
+    rightNow.toFormat("HH:mm")
+  );
   const [durationMins, setDurationMins] = useState(30);
+
+  useEffect(() => {
+    if (query.get("sourceStartDate") && query.get("sourceStartTimeInDay")) {
+      setStartDate(query.get("sourceStartDate")!);
+      setStartTimeInDay(query.get("sourceStartTimeInDay")!);
+    }
+  }, [query]);
 
   return (
     <LeafPanel
       key="time-event-in-day-block/new"
       returnLocation={`/workspace/calendar?${query}`}
     >
+      <TimeEventParamsSource
+        startDate={startDate}
+        startTimeInDay={startTimeInDay}
+        durationMins={durationMins}
+      />
       <GlobalError actionResult={actionData} />
       <SectionCardNew
         id="time-event-in-day-block-properties"
@@ -207,7 +224,8 @@ export default function TimeEventInDayBlockCreateForInboxTask() {
               label="startDate"
               name="startDate"
               readOnly={!inputsEnabled}
-              defaultValue={loaderData.date}
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
             />
 
             <FieldError actionResult={actionData} fieldName="/start_date" />
@@ -222,7 +240,8 @@ export default function TimeEventInDayBlockCreateForInboxTask() {
               label="startTimeInDay"
               name="startTimeInDay"
               readOnly={!inputsEnabled}
-              defaultValue={rightNow.toFormat("HH:mm")}
+              value={startTimeInDay}
+              onChange={(e) => setStartTimeInDay(e.target.value)}
             />
 
             <FieldError

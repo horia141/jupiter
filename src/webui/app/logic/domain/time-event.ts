@@ -16,6 +16,7 @@ import {
   TimeEventNamespace,
 } from "@jupiter/webapi-client";
 import { DateTime } from "luxon";
+import { computeTimeEventInDayDurationInQuarters } from "~/routes/workspace/calendar";
 import { aDateToDate, compareADate } from "./adate";
 
 export function birthdayTimeEventName(
@@ -83,6 +84,28 @@ export function isTimeEventInDayBlockEditable(namespace: TimeEventNamespace) {
   return false;
 }
 
+interface TimeEventInDayBlockParams {
+  startDate: ADate;
+  startTimeInDay?: TimeInDay;
+}
+
+export function calculateStartTimeFromBlockParams(
+  blockParams: TimeEventInDayBlockParams
+): DateTime {
+  return DateTime.fromISO(
+    `${blockParams.startDate}T${blockParams.startTimeInDay}`,
+    { zone: "UTC" }
+  );
+}
+
+export function calculateEndTimeFromBlockParams(
+  blockParams: TimeEventInDayBlockParams,
+  durationMins: number
+): DateTime {
+  const startTime = calculateStartTimeFromBlockParams(blockParams);
+  return startTime.plus({ minutes: durationMins });
+}
+
 export function calculateStartTimeForTimeEvent(
   timeEvent: TimeEventInDayBlock
 ): DateTime {
@@ -118,11 +141,6 @@ export function timeEventInDayBlockToTimezone(
     start_date: startDate,
     start_time_in_day: startTimeInDay!,
   };
-}
-
-interface TimeEventInDayBlockParams {
-  startDate: ADate;
-  startTimeInDay?: TimeInDay;
 }
 
 export function timeEventInDayBlockParamsToUtc(
@@ -165,4 +183,37 @@ export function timeEventInDayBlockParamsToTimezone(
     startDate: localStartTime.toISODate(),
     startTimeInDay: localStartTime.toFormat("HH:mm"),
   };
+}
+
+export function calendarTimeEventInDayStartMinutesToRems(
+  startMins: number
+): string {
+  // Each 15 minutes is 1 rem. Display has 96=4*24 rem height.
+  const startHours = Math.max(0, startMins / 15);
+  return `${startHours}rem`;
+}
+
+export function calendarPxHeightToMinutes(
+  pxHeight: number,
+  remHeight: number
+): number {
+  return Math.floor(pxHeight / remHeight) * 15;
+}
+
+export function calendarTimeEventInDayDurationToRems(
+  minutesSinceStartOfDay: number,
+  durationMins: number
+): string {
+  const durationInQuarters = computeTimeEventInDayDurationInQuarters(
+    minutesSinceStartOfDay,
+    durationMins
+  );
+  return `${durationInQuarters}rem`;
+}
+
+export function scheduleTimeEventInDayDurationToRems(
+  durationMins: number
+): string {
+  const durationInHalfs = 0.5 + Math.floor(durationMins / 30);
+  return `${durationInHalfs}rem`;
 }

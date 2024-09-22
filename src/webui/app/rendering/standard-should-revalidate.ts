@@ -12,6 +12,17 @@ export const basicShouldRevalidate: ShouldRevalidateFunction = ({
   nextParams,
   nextUrl,
 }) => {
+  if (
+    currentUrl.pathname === nextUrl.pathname &&
+    onlyDifferenceIsInTimeEventParamsSource(
+      formMethod || "GET",
+      currentUrl,
+      nextUrl
+    )
+  ) {
+    return false;
+  }
+
   return defaultShouldRevalidate;
 };
 
@@ -39,5 +50,63 @@ export const standardShouldRevalidate: ShouldRevalidateFunction = ({
     return false;
   }
 
+  if (
+    currentUrl.pathname === nextUrl.pathname &&
+    onlyDifferenceIsInTimeEventParamsSource(
+      formMethod || "GET",
+      currentUrl,
+      nextUrl
+    )
+  ) {
+    return false;
+  }
+
   return defaultShouldRevalidate;
 };
+
+function onlyDifferenceIsInTimeEventParamsSource(
+  formMethod: string,
+  currentUrl: URL,
+  nextUrl: URL
+): boolean {
+  if (formMethod !== "GET") {
+    return false;
+  }
+
+  const currentKeys = Array.from(currentUrl.searchParams.keys());
+  const nextKeys = Array.from(nextUrl.searchParams.keys());
+
+  if (currentKeys.length === 0 && nextKeys.length === 0) {
+    return false;
+  }
+
+  for (const key of currentKeys) {
+    if (
+      key === "sourceStartDate" ||
+      key === "sourceStartTimeInDay" ||
+      key === "sourceDurationMins"
+    ) {
+      continue;
+    }
+
+    if (currentUrl.searchParams.get(key) !== nextUrl.searchParams.get(key)) {
+      return false;
+    }
+  }
+
+  for (const key of nextKeys) {
+    if (
+      key === "sourceStartDate" ||
+      key === "sourceStartTimeInDay" ||
+      key === "sourceDurationMins"
+    ) {
+      continue;
+    }
+
+    if (currentUrl.searchParams.get(key) !== nextUrl.searchParams.get(key)) {
+      return false;
+    }
+  }
+
+  return true;
+}
