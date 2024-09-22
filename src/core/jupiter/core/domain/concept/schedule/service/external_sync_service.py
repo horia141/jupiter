@@ -249,11 +249,19 @@ class ScheduleExternalSyncService:
                     event.external_uid: event for event in all_in_day_events
                 }
 
-                # TODO(horia141): Handle timezone issues
-
                 processed_events_external_uids = set()
 
                 for event in calendar.walk("VEVENT"):
+                    if (
+                        "SUMMARY" not in event
+                        or "UID" not in event
+                        or "DTSTART" not in event
+                        or "DTEND" not in event
+                        or "LAST-MODIFIED" not in event
+                    ):
+                        # Skipping events that are malformed
+                        continue
+
                     if (
                         "value" in event["DTSTART"].params
                         and event["DTSTART"].params["value"] == "DATE"

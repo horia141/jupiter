@@ -72,7 +72,10 @@ import {
   isInboxTaskCoreFieldEditable,
 } from "~/logic/domain/inbox-task";
 import { inboxTaskStatusName } from "~/logic/domain/inbox-task-status";
-import { sortInboxTaskTimeEventsNaturally } from "~/logic/domain/time-event";
+import {
+  sortInboxTaskTimeEventsNaturally,
+  timeEventInDayBlockToTimezone,
+} from "~/logic/domain/time-event";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { getIntent } from "~/logic/intent";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -388,7 +391,10 @@ export default function InboxTask() {
   }, [loaderData]);
 
   const timeEventEntries = loaderData.info.time_event_blocks.map((block) => ({
-    time_event: block,
+    time_event_in_tz: timeEventInDayBlockToTimezone(
+      block,
+      topLevelInfo.user.timezone
+    ),
     entry: {
       inbox_task: loaderData.info.inbox_task,
       time_events: [block],

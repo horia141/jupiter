@@ -82,7 +82,10 @@ export async function action({ request }: ActionArgs) {
   const url = new URL(request.url);
 
   try {
-    const {startDate, startTimeInDay} = timeEventInDayBlockParamsToUtc(form, form.userTimezone);
+    const { startDate, startTimeInDay } = timeEventInDayBlockParamsToUtc(
+      form,
+      form.userTimezone
+    );
     const response = await getLoggedInApiClient(
       session
     ).eventInDay.scheduleEventInDayCreate({
@@ -149,7 +152,11 @@ export default function ScheduleEventInDayNew() {
         }
       >
         <Stack spacing={2} useFlexGap>
-          <input type="hidden" name="userTimezone" value={topLevelInfo.user.timezone} />
+          <input
+            type="hidden"
+            name="userTimezone"
+            value={topLevelInfo.user.timezone}
+          />
           <FormControl fullWidth>
             <InputLabel id="scheduleStreamRefId">Schedule Stream</InputLabel>
             <ScheduleStreamSelect

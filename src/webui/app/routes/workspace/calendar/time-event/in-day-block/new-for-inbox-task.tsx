@@ -30,7 +30,7 @@ import {
 } from "~/components/infra/section-actions";
 import { SectionCardNew } from "~/components/infra/section-card-new";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
-import { timeEventInDayBlockParamsToTimezone, timeEventInDayBlockParamsToUtc } from "~/logic/domain/time-event";
+import { timeEventInDayBlockParamsToUtc } from "~/logic/domain/time-event";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -79,7 +79,10 @@ export async function action({ request }: ActionArgs) {
   const form = await parseForm(request, CreateFormSchema);
 
   try {
-    const {startDate, startTimeInDay} = timeEventInDayBlockParamsToUtc(form, form.userTimezone);
+    const { startDate, startTimeInDay } = timeEventInDayBlockParamsToUtc(
+      form,
+      form.userTimezone
+    );
 
     await getLoggedInApiClient(
       session
@@ -145,8 +148,12 @@ export default function TimeEventInDayBlockCreateForInboxTask() {
         }
       >
         <Stack spacing={2} useFlexGap>
-          <input type="hidden" name="userTimezone" value={topLevelInfo.user.timezone} />
-          
+          <input
+            type="hidden"
+            name="userTimezone"
+            value={topLevelInfo.user.timezone}
+          />
+
           <FormControl fullWidth>
             <InputLabel id="name">Name</InputLabel>
             <OutlinedInput

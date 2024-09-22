@@ -1,6 +1,6 @@
 import type { ScheduleInDayEventEntry, Timezone } from "@jupiter/webapi-client";
 import { TimeEventNamespace } from "@jupiter/webapi-client";
-import { timeEventInDayBlockParamsToTimezone, type CombinedTimeEventInDayEntry } from "~/logic/domain/time-event";
+import { type CombinedTimeEventInDayEntry } from "~/logic/domain/time-event";
 import { EntityNameComponent } from "./entity-name";
 import { EntityCard, EntityLink } from "./infra/entity-card";
 
@@ -10,11 +10,6 @@ interface TimeEventInDayBlockCardProps {
 }
 
 export function TimeEventInDayBlockCard(props: TimeEventInDayBlockCardProps) {
-  const {startDate, startTimeInDay} = timeEventInDayBlockParamsToTimezone({
-    startDate: props.entry.time_event_in_tz.start_date,
-    startTimeInDay: props.entry.time_event_in_tz.start_time_in_day,
-  }, props.userTimezone);
-
   let name = null;
   switch (props.entry.time_event_in_tz.namespace) {
     case TimeEventNamespace.SCHEDULE_EVENT_IN_DAY: {
@@ -24,7 +19,7 @@ export function TimeEventInDayBlockCard(props: TimeEventInDayBlockCardProps) {
     }
 
     case TimeEventNamespace.INBOX_TASK: {
-      name = `On ${startDate} at ${startTimeInDay}`;
+      name = `On ${props.entry.time_event_in_tz.start_date} at ${props.entry.time_event_in_tz.start_time_in_day}`;
       break;
     }
 

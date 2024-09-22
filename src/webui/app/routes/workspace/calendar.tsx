@@ -75,13 +75,12 @@ import type {
 import {
   birthdayTimeEventName,
   BIRTHDAY_TIME_EVENT_COLOR,
-  calculateEndTimeInTimezone,
-  calculateStartTimeInTimezone,
+  calculateEndTimeForTimeEvent,
+  calculateStartTimeForTimeEvent,
   compareNamespaceForSortingFullDaysTimeEvents,
   INBOX_TASK_TIME_EVENT_COLOR,
-  VACATION_TIME_EVENT_COLOR,
-  timeEventInDayBlockParamsToTimezone,
   timeEventInDayBlockToTimezone,
+  VACATION_TIME_EVENT_COLOR,
 } from "~/logic/domain/time-event";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useBigScreen } from "~/rendering/use-big-screen";
@@ -447,14 +446,20 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
   const combinedTimeEventInDay: Array<CombinedTimeEventInDayEntry> = [];
   for (const entry of props.entries.schedule_event_in_day_entries) {
     combinedTimeEventInDay.push({
-      time_event_in_tz: timeEventInDayBlockToTimezone(entry.time_event, props.timezone),
-      entry: entry
+      time_event_in_tz: timeEventInDayBlockToTimezone(
+        entry.time_event,
+        props.timezone
+      ),
+      entry: entry,
     });
   }
   for (const entry of props.entries.inbox_task_entries) {
     for (const timeEvent of entry.time_events) {
       combinedTimeEventInDay.push({
-        time_event_in_tz: timeEventInDayBlockToTimezone(timeEvent, props.timezone),
+        time_event_in_tz: timeEventInDayBlockToTimezone(
+          timeEvent,
+          props.timezone
+        ),
         entry: entry,
       });
     }
@@ -465,14 +470,9 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
   const thePartititionFullDays =
     partitionedCombinedTimeEventFullDays[props.periodStartDate] || [];
   const partitionedCombinedTimeEventInDay =
-    combinedTimeEventInDayEntryPartionByDay(
-      combinedTimeEventInDay,
-      props.timezone
-    );
+    combinedTimeEventInDayEntryPartionByDay(combinedTimeEventInDay);
   const thePartitionInDay =
     partitionedCombinedTimeEventInDay[props.periodStartDate] || [];
-
-  const rightNow = DateTime.now().setZone("UTC", { keepLocalTime: true });
 
   return (
     <Box
@@ -514,7 +514,6 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
           <ViewAsCalendarTimeEventFullDaysColumn
             today={props.today}
             date={props.periodStartDate}
-            timezone={props.timezone}
             showAll={showAllTimeEventFullDays}
             maxFullDaysEntriesCnt={thePartititionFullDays.length}
             timeEventFullDays={thePartititionFullDays}
@@ -528,9 +527,8 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
         <ViewAsCalendarLeftColumn startOfDay={periodStartDate} />
         <ViewAsCalendarTimeEventInDayColumn
           today={props.today}
-          rightNow={rightNow}
-          date={props.periodStartDate}
           timezone={props.timezone}
+          date={props.periodStartDate}
           timeEventsInDay={thePartitionInDay}
         />
         <ViewAsCalendarRightColumn />
@@ -573,14 +571,20 @@ function ViewAsCalendarWeekly(props: ViewAsProps) {
   const combinedTimeEventInDay: Array<CombinedTimeEventInDayEntry> = [];
   for (const entry of props.entries.schedule_event_in_day_entries) {
     combinedTimeEventInDay.push({
-      time_event_in_tz: timeEventInDayBlockToTimezone(entry.time_event, props.timezone),
+      time_event_in_tz: timeEventInDayBlockToTimezone(
+        entry.time_event,
+        props.timezone
+      ),
       entry: entry,
     });
   }
   for (const entry of props.entries.inbox_task_entries) {
     for (const timeEvent of entry.time_events) {
       combinedTimeEventInDay.push({
-        time_event_in_tz: timeEventInDayBlockToTimezone(timeEvent, props.timezone),
+        time_event_in_tz: timeEventInDayBlockToTimezone(
+          timeEvent,
+          props.timezone
+        ),
         entry: entry,
       });
     }
@@ -589,10 +593,7 @@ function ViewAsCalendarWeekly(props: ViewAsProps) {
   const partitionedCombinedTimeEventFullDays =
     combinedTimeEventFullDayEntryPartionByDay(combinedTimeEventFullDays);
   const partitionedCombinedTimeEventInDay =
-    combinedTimeEventInDayEntryPartionByDay(
-      combinedTimeEventInDay,
-      props.timezone
-    );
+    combinedTimeEventInDayEntryPartionByDay(combinedTimeEventInDay);
 
   const maxFullDaysEntriesCnt = Math.max(
     ...Object.values(partitionedCombinedTimeEventFullDays).map(
@@ -601,7 +602,6 @@ function ViewAsCalendarWeekly(props: ViewAsProps) {
   );
 
   const startOfDay = DateTime.now().setZone("UTC").startOf("day");
-  const rightNow = DateTime.now().setZone("UTC", { keepLocalTime: true });
   const allDays = allDaysBetween(props.periodStartDate, props.periodEndDate);
 
   return (
@@ -649,7 +649,6 @@ function ViewAsCalendarWeekly(props: ViewAsProps) {
               key={idx}
               today={props.today}
               date={date}
-              timezone={props.timezone}
               showAll={showAllTimeEventFullDays}
               maxFullDaysEntriesCnt={maxFullDaysEntriesCnt}
               timeEventFullDays={
@@ -669,9 +668,8 @@ function ViewAsCalendarWeekly(props: ViewAsProps) {
           <ViewAsCalendarTimeEventInDayColumn
             key={idx}
             today={props.today}
-            rightNow={rightNow}
-            date={date}
             timezone={props.timezone}
+            date={date}
             timeEventsInDay={partitionedCombinedTimeEventInDay[date] || []}
           />
         ))}
@@ -1228,7 +1226,6 @@ function ViewAsCalendarRightColumn() {
 interface ViewAsCalendarTimeEventFullDaysColumnProps {
   today: ADate;
   date: ADate;
-  timezone: Timezone;
   showAll: boolean;
   maxFullDaysEntriesCnt: number;
   timeEventFullDays: Array<CombinedTimeEventFullDaysEntry>;
@@ -1245,11 +1242,7 @@ function ViewAsCalendarTimeEventFullDaysColumn(
         }
 
         return (
-          <ViewAsCalendarTimeEventFullDaysCell
-            key={index}
-            timezone={props.timezone}
-            entry={entry}
-          />
+          <ViewAsCalendarTimeEventFullDaysCell key={index} entry={entry} />
         );
       })}
     </Box>
@@ -1257,7 +1250,6 @@ function ViewAsCalendarTimeEventFullDaysColumn(
 }
 
 interface ViewAsCalendarTimeEventFullDaysCellProps {
-  timezone: Timezone;
   entry: CombinedTimeEventFullDaysEntry;
 }
 
@@ -1403,9 +1395,8 @@ function ViewAsCalendarTimeEventFullDaysCell(
 
 interface ViewAsCalendarTimeEventInDayColumnProps {
   today: ADate;
-  rightNow: DateTime;
-  date: ADate;
   timezone: Timezone;
+  date: ADate;
   timeEventsInDay: Array<CombinedTimeEventInDayEntry>;
 }
 
@@ -1424,9 +1415,12 @@ function ViewAsCalendarTimeEventInDayColumn(
 
   const timeBlockOffsetsMap = buildTimeBlockOffsetsMap(
     props.timeEventsInDay,
-    startOfDay,
-    props.timezone
+    startOfDay
   );
+
+  const theMinutes = DateTime.now()
+    .diff(DateTime.fromISO(`${props.today}T00:00`, { zone: props.timezone }))
+    .as("minutes");
 
   return (
     <Box
@@ -1441,9 +1435,7 @@ function ViewAsCalendarTimeEventInDayColumn(
         <Box
           sx={{
             position: "absolute",
-            top: calendarTimeEventInDayStartMinutesToRems(
-              props.rightNow.diff(startOfDay).as("minutes")
-            ),
+            top: calendarTimeEventInDayStartMinutesToRems(theMinutes),
             height: "0.15rem",
             width: "100%",
             backgroundColor: theme.palette.info.dark,
@@ -1471,7 +1463,6 @@ function ViewAsCalendarTimeEventInDayColumn(
           key={index}
           offset={timeBlockOffsetsMap.get(entry.time_event_in_tz.ref_id) || 0}
           startOfDay={startOfDay}
-          timezone={props.timezone}
           entry={entry}
         />
       ))}
@@ -1482,7 +1473,6 @@ function ViewAsCalendarTimeEventInDayColumn(
 interface ViewAsCalendarTimeEventInDayCellProps {
   offset: number;
   startOfDay: DateTime;
-  timezone: Timezone;
   entry: CombinedTimeEventInDayEntry;
 }
 
@@ -1502,13 +1492,11 @@ function ViewAsCalendarTimeEventInDayCell(
     case TimeEventNamespace.SCHEDULE_EVENT_IN_DAY: {
       const scheduleEntry = props.entry.entry as ScheduleInDayEventEntry;
 
-      const startTime = calculateStartTimeInTimezone(
-        props.entry.time_event_in_tz,
-        "UTC"
+      const startTime = calculateStartTimeForTimeEvent(
+        props.entry.time_event_in_tz
       );
-      const endTime = calculateEndTimeInTimezone(
-        props.entry.time_event_in_tz,
-        "UTC"
+      const endTime = calculateEndTimeForTimeEvent(
+        props.entry.time_event_in_tz
       );
       const minutesSinceStartOfDay = startTime
         .diff(props.startOfDay)
@@ -1575,13 +1563,11 @@ function ViewAsCalendarTimeEventInDayCell(
     case TimeEventNamespace.INBOX_TASK: {
       const inboxTaskEntry = props.entry.entry as InboxTaskEntry;
 
-      const startTime = calculateStartTimeInTimezone(
-        props.entry.time_event_in_tz,
-        "UTc"
+      const startTime = calculateStartTimeForTimeEvent(
+        props.entry.time_event_in_tz
       );
-      const endTime = calculateEndTimeInTimezone(
-        props.entry.time_event_in_tz,
-        "UTC"
+      const endTime = calculateEndTimeForTimeEvent(
+        props.entry.time_event_in_tz
       );
 
       const minutesSinceStartOfDay = startTime
@@ -1814,14 +1800,20 @@ function ViewAsScheduleDailyAndWeekly(props: ViewAsProps) {
   const combinedTimeEventInDay: Array<CombinedTimeEventInDayEntry> = [];
   for (const entry of props.entries.schedule_event_in_day_entries) {
     combinedTimeEventInDay.push({
-      time_event_in_tz: timeEventInDayBlockToTimezone(entry.time_event, props.timezone),
+      time_event_in_tz: timeEventInDayBlockToTimezone(
+        entry.time_event,
+        props.timezone
+      ),
       entry: entry,
     });
   }
   for (const entry of props.entries.inbox_task_entries) {
     for (const timeEvent of entry.time_events) {
       combinedTimeEventInDay.push({
-        time_event_in_tz: timeEventInDayBlockToTimezone(timeEvent, props.timezone),
+        time_event_in_tz: timeEventInDayBlockToTimezone(
+          timeEvent,
+          props.timezone
+        ),
         entry: entry,
       });
     }
@@ -1836,10 +1828,7 @@ function ViewAsScheduleDailyAndWeekly(props: ViewAsProps) {
   const partitionedCombinedTimeEventFullDays =
     combinedTimeEventFullDayEntryPartionByDay(combinedTimeEventFullDays);
   const partitionedCombinedTimeEventInDay =
-    combinedTimeEventInDayEntryPartionByDay(
-      combinedTimeEventInDay,
-      props.timezone
-    );
+    combinedTimeEventInDayEntryPartionByDay(combinedTimeEventInDay);
 
   return (
     <>
@@ -1906,17 +1895,13 @@ function ViewAsScheduleDailyAndWeekly(props: ViewAsProps) {
                         <TableRow>
                           <ViewAsScheduleTimeEventInDaysRows
                             entry={firstRowInDay}
-                            timezone={props.timezone}
                           />
                         </TableRow>
                       )}
 
                       {otherRowsInDay.map((entry, index) => (
                         <TableRow key={index}>
-                          <ViewAsScheduleTimeEventInDaysRows
-                            entry={entry}
-                            timezone={props.timezone}
-                          />
+                          <ViewAsScheduleTimeEventInDaysRows entry={entry} />
                         </TableRow>
                       ))}
                     </>
@@ -1934,16 +1919,12 @@ function ViewAsScheduleDailyAndWeekly(props: ViewAsProps) {
 
                         <ViewAsScheduleTimeEventInDaysRows
                           entry={firstRowInDay}
-                          timezone={props.timezone}
                         />
                       </TableRow>
 
                       {otherRowsInDay.map((entry, index) => (
                         <TableRow key={index}>
-                          <ViewAsScheduleTimeEventInDaysRows
-                            entry={entry}
-                            timezone={props.timezone}
-                          />
+                          <ViewAsScheduleTimeEventInDaysRows entry={entry} />
                         </TableRow>
                       ))}
                     </>
@@ -2122,7 +2103,6 @@ function ViewAsScheduleTimeEventFullDaysRows(
 
 interface ViewAsScheduleTimeEventInDaysRowsProps {
   entry: CombinedTimeEventInDayEntry;
-  timezone: Timezone;
 }
 
 function ViewAsScheduleTimeEventInDaysRows(
@@ -2131,14 +2111,10 @@ function ViewAsScheduleTimeEventInDaysRows(
   const [query] = useSearchParams();
   const isBigScreen = useBigScreen();
 
-  const startTime = calculateStartTimeInTimezone(
-    props.entry.time_event_in_tz,
-    "UTC"
+  const startTime = calculateStartTimeForTimeEvent(
+    props.entry.time_event_in_tz
   );
-  const endTime = calculateEndTimeInTimezone(
-    props.entry.time_event_in_tz,
-    "UTC"
-  );
+  const endTime = calculateEndTimeForTimeEvent(props.entry.time_event_in_tz);
 
   switch (props.entry.time_event_in_tz.namespace) {
     case TimeEventNamespace.SCHEDULE_EVENT_IN_DAY: {
@@ -2430,15 +2406,14 @@ function sortTimeEventFullDaysByType(
 }
 
 function splitTimeEventInDayEntryIntoPerDayEntries(
-  entry: CombinedTimeEventInDayEntry,
-  timezone: Timezone
+  entry: CombinedTimeEventInDayEntry
 ): {
   day1: CombinedTimeEventInDayEntry;
   day2?: CombinedTimeEventInDayEntry;
   day3?: CombinedTimeEventInDayEntry;
 } {
-  const startTime = calculateStartTimeInTimezone(entry.time_event_in_tz, "UTC");
-  const endTime = calculateEndTimeInTimezone(entry.time_event_in_tz, "UTC");
+  const startTime = calculateStartTimeForTimeEvent(entry.time_event_in_tz);
+  const endTime = calculateEndTimeForTimeEvent(entry.time_event_in_tz);
 
   if (startTime.day === endTime.day) {
     // Here we have only one day.
@@ -2530,16 +2505,12 @@ function splitTimeEventInDayEntryIntoPerDayEntries(
 }
 
 function combinedTimeEventInDayEntryPartionByDay(
-  entries: Array<CombinedTimeEventInDayEntry>,
-  timezone: Timezone
+  entries: Array<CombinedTimeEventInDayEntry>
 ): Record<string, Array<CombinedTimeEventInDayEntry>> {
   const partition: Record<string, Array<CombinedTimeEventInDayEntry>> = {};
 
   for (const entry of entries) {
-    const splitEntries = splitTimeEventInDayEntryIntoPerDayEntries(
-      entry,
-      "UTC"
-    );
+    const splitEntries = splitTimeEventInDayEntryIntoPerDayEntries(entry);
 
     const dateStr = splitEntries.day1.time_event_in_tz.start_date;
     if (partition[dateStr] === undefined) {
@@ -2578,12 +2549,12 @@ function sortTimeEventInDayByStartTimeAndEndTime(
   entries: Array<CombinedTimeEventInDayEntry>
 ) {
   return entries.sort((a, b) => {
-    const aStartTime = calculateStartTimeInTimezone(a.time_event_in_tz, "UTC");
-    const bStartTime = calculateStartTimeInTimezone(b.time_event_in_tz, "UTC");
+    const aStartTime = calculateStartTimeForTimeEvent(a.time_event_in_tz);
+    const bStartTime = calculateStartTimeForTimeEvent(b.time_event_in_tz);
 
     if (aStartTime === bStartTime) {
-      const aEndTime = calculateEndTimeInTimezone(a.time_event_in_tz, "UTC");
-      const bEndTime = calculateEndTimeInTimezone(b.time_event_in_tz, "UTC");
+      const aEndTime = calculateEndTimeForTimeEvent(a.time_event_in_tz);
+      const bEndTime = calculateEndTimeForTimeEvent(b.time_event_in_tz);
       return aEndTime < bEndTime ? -1 : 1;
     }
     return aStartTime < bStartTime ? -1 : 1;
@@ -2592,8 +2563,7 @@ function sortTimeEventInDayByStartTimeAndEndTime(
 
 function buildTimeBlockOffsetsMap(
   entries: Array<CombinedTimeEventInDayEntry>,
-  startOfDay: DateTime,
-  timezone: Timezone
+  startOfDay: DateTime
 ): Map<EntityId, number> {
   const offsets = new Map<EntityId, number>();
 
@@ -2610,7 +2580,7 @@ function buildTimeBlockOffsetsMap(
   }
 
   for (const entry of entries) {
-    const startTime = calculateStartTimeInTimezone(entry.time_event_in_tz, "UTC");
+    const startTime = calculateStartTimeForTimeEvent(entry.time_event_in_tz);
     const minutesSinceStartOfDay = startTime.diff(startOfDay).as("minutes");
 
     const firstCellIdx = Math.floor(minutesSinceStartOfDay / 15);

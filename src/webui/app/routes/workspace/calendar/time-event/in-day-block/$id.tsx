@@ -34,7 +34,11 @@ import {
 import { SectionCardNew } from "~/components/infra/section-card-new";
 import { TimeEventSourceLink } from "~/components/time-event-source-link";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
-import { isTimeEventInDayBlockEditable, timeEventInDayBlockParamsToTimezone, timeEventInDayBlockParamsToUtc } from "~/logic/domain/time-event";
+import {
+  isTimeEventInDayBlockEditable,
+  timeEventInDayBlockParamsToTimezone,
+  timeEventInDayBlockParamsToUtc,
+} from "~/logic/domain/time-event";
 import { basicShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -100,7 +104,10 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (form.intent) {
       case "update": {
-        const { startDate, startTimeInDay } = timeEventInDayBlockParamsToUtc(form, form.userTimezone);
+        const { startDate, startTimeInDay } = timeEventInDayBlockParamsToUtc(
+          form,
+          form.userTimezone
+        );
         await getLoggedInApiClient(
           session
         ).inDayBlock.timeEventInDayBlockUpdate({
@@ -185,10 +192,13 @@ export default function TimeEventInDayBlockViewOne() {
       throw new Error("Unknown namespace");
   }
 
-  const { startDate, startTimeInDay } = timeEventInDayBlockParamsToTimezone({
-    startDate: loaderData.inDayBlock.start_date,
-    startTimeInDay: loaderData.inDayBlock.start_time_in_day,
-  }, topLevelInfo.user.timezone);
+  const { startDate, startTimeInDay } = timeEventInDayBlockParamsToTimezone(
+    {
+      startDate: loaderData.inDayBlock.start_date,
+      startTimeInDay: loaderData.inDayBlock.start_time_in_day,
+    },
+    topLevelInfo.user.timezone
+  );
 
   return (
     <LeafPanel
@@ -222,7 +232,11 @@ export default function TimeEventInDayBlockViewOne() {
       >
         <Stack spacing={2} useFlexGap>
           <Box sx={{ display: "flex", flexDirection: "row", gap: "0.25rem" }}>
-            <input type="hidden" name="userTimezone" value={topLevelInfo.user.timezone} />
+            <input
+              type="hidden"
+              name="userTimezone"
+              value={topLevelInfo.user.timezone}
+            />
             <FormControl fullWidth>
               <InputLabel id="name">Name</InputLabel>
               <OutlinedInput
