@@ -15,15 +15,19 @@ class ScheduleExternalSyncDoArgs:
 
     Attributes:
         source (EventSource): The source of the modification which this event records.
+        sync_even_if_not_modified (bool):
         filter_schedule_stream_ref_id (Union[List[str], None, Unset]):
     """
 
     source: EventSource
+    sync_even_if_not_modified: bool
     filter_schedule_stream_ref_id: Union[List[str], None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         source = self.source.value
+
+        sync_even_if_not_modified = self.sync_even_if_not_modified
 
         filter_schedule_stream_ref_id: Union[List[str], None, Unset]
         if isinstance(self.filter_schedule_stream_ref_id, Unset):
@@ -39,6 +43,7 @@ class ScheduleExternalSyncDoArgs:
         field_dict.update(
             {
                 "source": source,
+                "sync_even_if_not_modified": sync_even_if_not_modified,
             }
         )
         if filter_schedule_stream_ref_id is not UNSET:
@@ -50,6 +55,8 @@ class ScheduleExternalSyncDoArgs:
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         d = src_dict.copy()
         source = EventSource(d.pop("source"))
+
+        sync_even_if_not_modified = d.pop("sync_even_if_not_modified")
 
         def _parse_filter_schedule_stream_ref_id(data: object) -> Union[List[str], None, Unset]:
             if data is None:
@@ -72,6 +79,7 @@ class ScheduleExternalSyncDoArgs:
 
         schedule_external_sync_do_args = cls(
             source=source,
+            sync_even_if_not_modified=sync_even_if_not_modified,
             filter_schedule_stream_ref_id=filter_schedule_stream_ref_id,
         )
 

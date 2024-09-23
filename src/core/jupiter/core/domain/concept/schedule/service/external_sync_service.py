@@ -80,6 +80,7 @@ class ScheduleExternalSyncService:
         ctx: DomainContext,
         progress_reporter: ProgressReporter,
         workspace: Workspace,
+        sync_even_if_not_modified: bool,
         filter_schedule_stream_ref_id: list[EntityId] | None,
     ) -> None:
         """Execute the sync action."""
@@ -163,6 +164,7 @@ class ScheduleExternalSyncService:
         for schedule_stream in schedule_streams:
             sync_log_entry = await self._process_schedule_stream(
                 ctx,
+                sync_even_if_not_modified,
                 progress_reporter,
                 schedule_domain,
                 time_event_domain,
@@ -184,6 +186,7 @@ class ScheduleExternalSyncService:
     async def _process_schedule_stream(
         self,
         ctx: DomainContext,
+        sync_even_if_not_modified: bool,
         progress_reporter: ProgressReporter,
         schedule_domain: ScheduleDomain,
         time_event_domain: TimeEventDomain,
@@ -257,7 +260,6 @@ class ScheduleExternalSyncService:
                         or "UID" not in event
                         or "DTSTART" not in event
                         or "DTEND" not in event
-                        or "LAST-MODIFIED" not in event
                     ):
                         # Skipping events that are malformed
                         continue
@@ -275,15 +277,24 @@ class ScheduleExternalSyncService:
                         uid = self._realm_codec_registry.db_decode(
                             ScheduleExternalUid, event["UID"].to_ical().decode()
                         )
+                        if "RECURRENCE-ID" in event:
+                            recurrence_id = self._realm_codec_registry.db_decode(
+                                Timestamp, event["RECURRENCE-ID"].dt
+                            )
+                            uid = ScheduleExternalUid.from_string(
+                                f"{uid.the_uid}:{recurrence_id}"
+                            )
                         start_date = self._realm_codec_registry.db_decode(
                             ADate, event["DTSTART"].dt
                         )
                         end_date = self._realm_codec_registry.db_decode(
                             ADate, event["DTEND"].dt
                         )
-                        last_modified = self._realm_codec_registry.db_decode(
-                            Timestamp, event["LAST-MODIFIED"].dt
-                        )
+                        last_modified = None
+                        if "LAST-MODIFIED" in event:
+                            last_modified = self._realm_codec_registry.db_decode(
+                                Timestamp, event["LAST-MODIFIED"].dt
+                            )
                         description = (
                             str(event["DESCRIPTION"])
                             if "DESCRIPTION" in event
@@ -354,10 +365,14 @@ class ScheduleExternalSyncService:
                                     ctx, schedule_event_full_days
                                 )
                         elif (
-                            last_modified
-                            > all_full_days_events_by_external_uid[
-                                uid
-                            ].last_modified_time
+                            sync_even_if_not_modified
+                            or (last_modified is None)
+                            or (
+                                last_modified
+                                > all_full_days_events_by_external_uid[
+                                    uid
+                                ].last_modified_time
+                            )
                         ):
                             async with self._domain_storage_engine.get_unit_of_work() as uow:
                                 schedule_event_full_days = (
@@ -470,6 +485,13 @@ class ScheduleExternalSyncService:
                         uid = self._realm_codec_registry.db_decode(
                             ScheduleExternalUid, event["UID"].to_ical().decode()
                         )
+                        if "RECURRENCE-ID" in event:
+                            recurrence_id = self._realm_codec_registry.db_decode(
+                                Timestamp, event["RECURRENCE-ID"].dt
+                            )
+                            uid = ScheduleExternalUid.from_string(
+                                f"{uid.the_uid}:{recurrence_id}"
+                            )
                         # icalendar makes everything UTC so we don't need to.
                         start_time = self._realm_codec_registry.db_decode(
                             Timestamp, event["DTSTART"].dt
@@ -477,9 +499,11 @@ class ScheduleExternalSyncService:
                         end_time = self._realm_codec_registry.db_decode(
                             Timestamp, event["DTEND"].dt
                         )
-                        last_modified = self._realm_codec_registry.db_decode(
-                            Timestamp, event["LAST-MODIFIED"].dt
-                        )
+                        last_modified = None
+                        if "LAST-MODIFIED" in event:
+                            last_modified = self._realm_codec_registry.db_decode(
+                                Timestamp, event["LAST-MODIFIED"].dt
+                            )
                         description = (
                             str(event["DESCRIPTION"])
                             if "DESCRIPTION" in event
@@ -551,8 +575,14 @@ class ScheduleExternalSyncService:
                                     ctx, schedule_event_in_day
                                 )
                         elif (
-                            last_modified
-                            > all_in_day_events_by_external_uid[uid].last_modified_time
+                            sync_even_if_not_modified
+                            or (last_modified is None)
+                            or (
+                                last_modified
+                                > all_in_day_events_by_external_uid[
+                                    uid
+                                ].last_modified_time
+                            )
                         ):
                             async with self._domain_storage_engine.get_unit_of_work() as uow:
                                 schedule_event_in_day = (

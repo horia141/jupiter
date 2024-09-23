@@ -19,6 +19,7 @@ class ScheduleExternalSyncDoArgs(UseCaseArgsBase):
     """ScheduleExternalSyncDoArgs."""
 
     source: EventSource
+    sync_even_if_not_modified: bool
     filter_schedule_stream_ref_id: list[EntityId] | None
 
 
@@ -45,5 +46,6 @@ class ScheduleExternalSyncDoUseCase(
             context.domain_context,
             progress_reporter,
             workspace,
+            args.sync_even_if_not_modified,
             args.filter_schedule_stream_ref_id,
         )

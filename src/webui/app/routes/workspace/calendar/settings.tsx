@@ -12,8 +12,10 @@ import {
   CardContent,
   Divider,
   FormControl,
+  FormControlLabel,
   InputLabel,
   styled,
+  Switch,
   Typography,
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
@@ -22,7 +24,7 @@ import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Form, useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
-import { parseForm } from "zodix";
+import { CheckboxAsString, parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
 import { EntitySummaryLink } from "~/components/entity-summary-link";
 import { EventSourceTag } from "~/components/event-source-tag";
@@ -43,6 +45,7 @@ import { getSession } from "~/sessions";
 
 const ScheduleExternalSyncFormSchema = {
   scheduleStreamRefIds: selectZod(z.string()),
+  syncEvenIfNotModified: CheckboxAsString,
 };
 
 export const handle = {
@@ -73,6 +76,7 @@ export async function action({ request }: ActionArgs) {
   try {
     await getLoggedInApiClient(session).schedule.scheduleExternalSyncDo({
       source: EventSource.WEB,
+      sync_even_if_not_modified: form.syncEvenIfNotModified,
       filter_schedule_stream_ref_id: form.scheduleStreamRefIds,
     });
 
@@ -123,6 +127,24 @@ export default function CalendarSettings() {
                 actionResult={actionData}
                 fieldName="/filter_schedule_stream_ref_id"
               />
+
+              <FormControl fullWidth>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      name="syncEvenIfNotModified"
+                      readOnly={!inputsEnabled}
+                      disabled={!inputsEnabled}
+                      defaultChecked={false}
+                    />
+                  }
+                  label="Sync Even If Not Modified"
+                />
+                <FieldError
+                  actionResult={actionData}
+                  fieldName="/sync_even_if_not_modified"
+                />
+              </FormControl>
             </FormControl>
           </CardContent>
 
@@ -154,7 +176,10 @@ export default function CalendarSettings() {
                 Run from <EventSourceTag source={entry.source} />
                 with {entry.entity_records.length}
                 {entry.even_more_entity_records ? "+" : ""} entities synced
-                on {entry.created_time}
+                <TimeDiffTag
+                  labelPrefix="from"
+                  collectionTime={entry.created_time}
+                />
               </AccordionHeader>
             </AccordionSummary>
 

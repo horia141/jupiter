@@ -139,6 +139,7 @@ export async function action({ request, params }: ActionArgs) {
       case "sync": {
         await getLoggedInApiClient(session).schedule.scheduleExternalSyncDo({
           source: EventSource.SCHEDULE_EXTERNAL_SYNC_CRON,
+          sync_even_if_not_modified: true,
           filter_schedule_stream_ref_id: [id],
         });
 
@@ -212,8 +213,10 @@ export default function ScheduleStreamViewOne() {
               ActionSingle({
                 text: "Sync",
                 value: "sync",
-                disabled: loaderData.scheduleStream.source !== ScheduleSource.EXTERNAL_ICAL,
-              })
+                disabled:
+                  loaderData.scheduleStream.source !==
+                  ScheduleSource.EXTERNAL_ICAL,
+              }),
             ]}
           />
         }
