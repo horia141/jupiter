@@ -154,10 +154,7 @@ export default function CalendarSettings() {
                 Run from <EventSourceTag source={entry.source} />
                 with {entry.entity_records.length}
                 {entry.even_more_entity_records ? "+" : ""} entities synced
-                <TimeDiffTag
-                  labelPrefix="from"
-                  collectionTime={entry.created_time}
-                />
+                on {entry.created_time}
               </AccordionHeader>
             </AccordionSummary>
 
