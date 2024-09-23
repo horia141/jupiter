@@ -1,5 +1,6 @@
 import {
   ApiError,
+  EventSource,
   NoteDomain,
   ScheduleSource,
   ScheduleStreamColor,
@@ -59,6 +60,9 @@ const UpdateFormSchema = z.discriminatedUnion("intent", [
   }),
   z.object({
     intent: z.literal("create-note"),
+  }),
+  z.object({
+    intent: z.literal("sync"),
   }),
   z.object({
     intent: z.literal("archive"),
@@ -132,6 +136,17 @@ export async function action({ request, params }: ActionArgs) {
         );
       }
 
+      case "sync": {
+        await getLoggedInApiClient(session).schedule.scheduleExternalSyncDo({
+          source: EventSource.SCHEDULE_EXTERNAL_SYNC_CRON,
+          filter_schedule_stream_ref_id: [id],
+        });
+
+        return redirect(
+          `/workspace/calendar/schedule/stream/${id}?${url.searchParams}`
+        );
+      }
+
       case "archive": {
         await getLoggedInApiClient(session).stream.scheduleStreamArchive({
           ref_id: id,
@@ -194,6 +209,11 @@ export default function ScheduleStreamViewOne() {
                 value: "update",
                 highlight: true,
               }),
+              ActionSingle({
+                text: "Sync",
+                value: "sync",
+                disabled: loaderData.scheduleStream.source !== ScheduleSource.EXTERNAL_ICAL,
+              })
             ]}
           />
         }
