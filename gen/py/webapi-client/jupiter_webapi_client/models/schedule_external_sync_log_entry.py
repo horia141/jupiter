@@ -27,6 +27,10 @@ class ScheduleExternalSyncLogEntry:
         name (str): The name for an entity which acts as both name and unique identifier.
         schedule_external_sync_log_ref_id (str):
         source (EventSource): The source of the modification which this event records.
+        today (str): A date or possibly a datetime for the application.
+        start_of_window (str): A date or possibly a datetime for the application.
+        end_of_window (str): A date or possibly a datetime for the application.
+        sync_even_if_not_modified (bool):
         opened (bool):
         per_stream_results (List['ScheduleExternalSyncLogPerStreamResult']):
         entity_records (List['EntitySummary']):
@@ -43,6 +47,10 @@ class ScheduleExternalSyncLogEntry:
     name: str
     schedule_external_sync_log_ref_id: str
     source: EventSource
+    today: str
+    start_of_window: str
+    end_of_window: str
+    sync_even_if_not_modified: bool
     opened: bool
     per_stream_results: List["ScheduleExternalSyncLogPerStreamResult"]
     entity_records: List["EntitySummary"]
@@ -67,6 +75,14 @@ class ScheduleExternalSyncLogEntry:
         schedule_external_sync_log_ref_id = self.schedule_external_sync_log_ref_id
 
         source = self.source.value
+
+        today = self.today
+
+        start_of_window = self.start_of_window
+
+        end_of_window = self.end_of_window
+
+        sync_even_if_not_modified = self.sync_even_if_not_modified
 
         opened = self.opened
 
@@ -109,6 +125,10 @@ class ScheduleExternalSyncLogEntry:
                 "name": name,
                 "schedule_external_sync_log_ref_id": schedule_external_sync_log_ref_id,
                 "source": source,
+                "today": today,
+                "start_of_window": start_of_window,
+                "end_of_window": end_of_window,
+                "sync_even_if_not_modified": sync_even_if_not_modified,
                 "opened": opened,
                 "per_stream_results": per_stream_results,
                 "entity_records": entity_records,
@@ -143,6 +163,14 @@ class ScheduleExternalSyncLogEntry:
         schedule_external_sync_log_ref_id = d.pop("schedule_external_sync_log_ref_id")
 
         source = EventSource(d.pop("source"))
+
+        today = d.pop("today")
+
+        start_of_window = d.pop("start_of_window")
+
+        end_of_window = d.pop("end_of_window")
+
+        sync_even_if_not_modified = d.pop("sync_even_if_not_modified")
 
         opened = d.pop("opened")
 
@@ -199,6 +227,10 @@ class ScheduleExternalSyncLogEntry:
             name=name,
             schedule_external_sync_log_ref_id=schedule_external_sync_log_ref_id,
             source=source,
+            today=today,
+            start_of_window=start_of_window,
+            end_of_window=end_of_window,
+            sync_even_if_not_modified=sync_even_if_not_modified,
             opened=opened,
             per_stream_results=per_stream_results,
             entity_records=entity_records,

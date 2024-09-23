@@ -1,6 +1,7 @@
 """The service which syncs external calendars with Jupiter."""
 from typing import Final, cast
 
+import recurring_ical_events
 import requests
 from icalendar import Calendar
 from icalendar.cal import Component
@@ -55,6 +56,7 @@ from jupiter.core.framework.realm import RealmCodecRegistry
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import ProgressReporter
 from jupiter.core.utils.time_provider import TimeProvider
+from pendulum import Date
 
 
 class ScheduleExternalSyncService:
@@ -80,6 +82,7 @@ class ScheduleExternalSyncService:
         ctx: DomainContext,
         progress_reporter: ProgressReporter,
         workspace: Workspace,
+        today: ADate,
         sync_even_if_not_modified: bool,
         filter_schedule_stream_ref_id: list[EntityId] | None,
     ) -> None:
@@ -103,9 +106,15 @@ class ScheduleExternalSyncService:
             if len(sync_logs) != 1:
                 raise Exception("Expected exactly one sync log for the schedule domain")
             sync_log = sync_logs[0]
+
+            start_of_window, end_of_window = self._build_processing_window(today)
             sync_log_entry = ScheduleExternalSyncLogEntry.new_log_entry(
                 ctx,
                 schedule_external_sync_log_ref_id=sync_log.ref_id,
+                today=today,
+                start_of_window=start_of_window,
+                end_of_window=end_of_window,
+                sync_even_if_not_modified=sync_even_if_not_modified,
                 filter_schedule_stream_ref_id=filter_schedule_stream_ref_id,
             )
             sync_log_entry = await uow.get_for(ScheduleExternalSyncLogEntry).create(
@@ -164,6 +173,9 @@ class ScheduleExternalSyncService:
         for schedule_stream in schedule_streams:
             sync_log_entry = await self._process_schedule_stream(
                 ctx,
+                today,
+                start_of_window,
+                end_of_window,
                 sync_even_if_not_modified,
                 progress_reporter,
                 schedule_domain,
@@ -186,6 +198,9 @@ class ScheduleExternalSyncService:
     async def _process_schedule_stream(
         self,
         ctx: DomainContext,
+        today: ADate,
+        start_of_window: ADate,
+        end_of_window: ADate,
         sync_even_if_not_modified: bool,
         progress_reporter: ProgressReporter,
         schedule_domain: ScheduleDomain,
@@ -254,7 +269,15 @@ class ScheduleExternalSyncService:
 
                 processed_events_external_uids = set()
 
-                for event in calendar.walk("VEVENT"):
+                from rich import print
+
+                print(today, start_of_window, end_of_window)
+
+                all_events = recurring_ical_events.of(calendar).between(
+                    start_of_window.the_date, end_of_window.the_date
+                )
+
+                for event in all_events:
                     if (
                         "SUMMARY" not in event
                         or "UID" not in event
@@ -274,8 +297,17 @@ class ScheduleExternalSyncService:
                         event_name = self._realm_codec_registry.db_decode(
                             ScheduleEventName, event["SUMMARY"]
                         )
-                        uid = self._realm_codec_registry.db_decode(
+                        uid_base = self._realm_codec_registry.db_decode(
                             ScheduleExternalUid, event["UID"].to_ical().decode()
+                        )
+                        start_date = self._realm_codec_registry.db_decode(
+                            ADate, event["DTSTART"].dt
+                        )
+                        uid = ScheduleExternalUid.from_string(
+                            f"{uid_base.the_uid}:{start_date}"
+                        )
+                        end_date = self._realm_codec_registry.db_decode(
+                            ADate, event["DTEND"].dt
                         )
                         if "RECURRENCE-ID" in event:
                             recurrence_id = self._realm_codec_registry.db_decode(
@@ -284,12 +316,6 @@ class ScheduleExternalSyncService:
                             uid = ScheduleExternalUid.from_string(
                                 f"{uid.the_uid}:{recurrence_id}"
                             )
-                        start_date = self._realm_codec_registry.db_decode(
-                            ADate, event["DTSTART"].dt
-                        )
-                        end_date = self._realm_codec_registry.db_decode(
-                            ADate, event["DTEND"].dt
-                        )
                         last_modified = None
                         if "LAST-MODIFIED" in event:
                             last_modified = self._realm_codec_registry.db_decode(
@@ -482,8 +508,18 @@ class ScheduleExternalSyncService:
                         event_name = self._realm_codec_registry.db_decode(
                             ScheduleEventName, event["SUMMARY"]
                         )
-                        uid = self._realm_codec_registry.db_decode(
+                        uid_base = self._realm_codec_registry.db_decode(
                             ScheduleExternalUid, event["UID"].to_ical().decode()
+                        )
+                        # icalendar makes everything UTC so we don't need to.
+                        start_time = self._realm_codec_registry.db_decode(
+                            Timestamp, event["DTSTART"].dt
+                        )
+                        uid = ScheduleExternalUid.from_string(
+                            f"{uid_base.the_uid}:{start_time}"
+                        )
+                        end_time = self._realm_codec_registry.db_decode(
+                            Timestamp, event["DTEND"].dt
                         )
                         if "RECURRENCE-ID" in event:
                             recurrence_id = self._realm_codec_registry.db_decode(
@@ -492,13 +528,6 @@ class ScheduleExternalSyncService:
                             uid = ScheduleExternalUid.from_string(
                                 f"{uid.the_uid}:{recurrence_id}"
                             )
-                        # icalendar makes everything UTC so we don't need to.
-                        start_time = self._realm_codec_registry.db_decode(
-                            Timestamp, event["DTSTART"].dt
-                        )
-                        end_time = self._realm_codec_registry.db_decode(
-                            Timestamp, event["DTEND"].dt
-                        )
                         last_modified = None
                         if "LAST-MODIFIED" in event:
                             last_modified = self._realm_codec_registry.db_decode(
@@ -708,6 +737,14 @@ class ScheduleExternalSyncService:
                     ):
                         continue
 
+                    time_event_full_days_block = (
+                        all_time_event_full_days_blocks_by_source_entity_ref_id[
+                            schedule_event_full_days.ref_id
+                        ]
+                    )
+                    if time_event_full_days_block.start_date < start_of_window:
+                        continue
+
                     async with self._domain_storage_engine.get_unit_of_work() as uow:
                         await generic_archiver(
                             ctx,
@@ -725,6 +762,14 @@ class ScheduleExternalSyncService:
                         schedule_event_in_day.external_uid
                         in processed_events_external_uids
                     ):
+                        continue
+
+                    time_event_in_day_block = (
+                        all_time_event_in_day_blocks_by_source_entity_ref_id[
+                            schedule_event_in_day.ref_id
+                        ]
+                    )
+                    if time_event_in_day_block.start_date < start_of_window:
                         continue
 
                     async with self._domain_storage_engine.get_unit_of_work() as uow:
@@ -778,3 +823,10 @@ class ScheduleExternalSyncService:
             ) from err
 
         return calendar
+
+    def _build_processing_window(self, today: ADate) -> tuple[ADate, ADate]:
+        """Build the processing window."""
+        today_date = today.the_date
+        start_of_window = cast(Date, today_date.start_of("year").add(years=-1))  # type: ignore
+        end_of_window = cast(Date, today_date.add(days=30).end_of("year"))  # type: ignore
+        return (ADate.from_date(start_of_window), ADate.from_date(end_of_window))

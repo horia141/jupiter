@@ -51,8 +51,8 @@ export function TimeEventParamsNewPlaceholder(
         opacity: 0.5,
         borderRadius: "0.25rem",
         border: "1px solid black",
-        minWidth: "7rem",
-        width: "100%",
+        minWidth: "calc(7rem - 0.5rem)",
+        width: "calc(100% - 0.5rem)",
         zIndex: 10,
       }}
     ></Box>

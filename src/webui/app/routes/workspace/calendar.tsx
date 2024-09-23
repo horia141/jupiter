@@ -1325,7 +1325,7 @@ function ViewAsCalendarTimeEventFullDaysCell(
           ref={containerRef}
           sx={{
             minWidth: "7rem",
-            fontSize: "12px",
+            fontSize: "10px",
             backgroundColor: scheduleStreamColorHex(fullDaysEntry.stream.color),
             borderRadius: "0.25rem",
             padding: "0.25rem",
@@ -1368,7 +1368,7 @@ function ViewAsCalendarTimeEventFullDaysCell(
           ref={containerRef}
           sx={{
             minWidth: "7rem",
-            fontSize: "12px",
+            fontSize: "10px",
             backgroundColor: scheduleStreamColorHex(BIRTHDAY_TIME_EVENT_COLOR),
             borderRadius: "0.25rem",
             padding: "0.25rem",
@@ -1408,7 +1408,7 @@ function ViewAsCalendarTimeEventFullDaysCell(
           ref={containerRef}
           sx={{
             minWidth: "7rem",
-            fontSize: "12px",
+            fontSize: "10px",
             backgroundColor: scheduleStreamColorHex(VACATION_TIME_EVENT_COLOR),
             borderRadius: "0.25rem",
             padding: "0.25rem",
@@ -1453,6 +1453,7 @@ function ViewAsCalendarTimeEventInDayColumn(
   const location = useLocation();
   const [query] = useSearchParams();
   const navigate = useNavigate();
+  const wholeColumnRef = useRef<HTMLDivElement>(null);
 
   const startOfDay = DateTime.fromISO(`${props.date}T00:00:00`, {
     zone: "UTC",
@@ -1472,6 +1473,13 @@ function ViewAsCalendarTimeEventInDayColumn(
     .as("minutes");
 
   function createNewFromDoubleClick(event: React.MouseEvent) {
+    if (wholeColumnRef.current === null) {
+      return;
+    }
+    if (wholeColumnRef.current !== event.target) {
+      return;
+    }
+
     const minutes = calendarPxHeightToMinutes(
       event.nativeEvent.offsetY,
       theme.typography.htmlFontSize
@@ -1523,6 +1531,7 @@ function ViewAsCalendarTimeEventInDayColumn(
         height: "96rem",
         minWidth: "7rem",
       }}
+      ref={wholeColumnRef}
       onDoubleClick={createNewFromDoubleClick}
     >
       {props.today === props.date && (
@@ -1612,7 +1621,7 @@ function ViewAsCalendarTimeEventInDayCell(
         <Box
           ref={containerRef}
           sx={{
-            fontSize: "12px",
+            fontSize: "10px",
             position: "absolute",
             top: calendarTimeEventInDayStartMinutesToRems(
               minutesSinceStartOfDay
@@ -1624,8 +1633,8 @@ function ViewAsCalendarTimeEventInDayCell(
             backgroundColor: scheduleStreamColorHex(scheduleEntry.stream.color),
             borderRadius: "0.25rem",
             border: `1px solid ${theme.palette.background.paper}`,
-            minWidth: `calc(7rem - ${props.offset * 0.8}rem)`,
-            width: `calc(100% - ${props.offset * 0.8}rem)`,
+            minWidth: `calc(7rem - ${props.offset * 0.8}rem - 0.5rem)`,
+            width: `calc(100% - ${props.offset * 0.8}rem - 0.5rem)`,
             marginLeft: `${props.offset * 0.8}rem`,
             zIndex: props.offset,
           }}
@@ -1639,8 +1648,8 @@ function ViewAsCalendarTimeEventInDayCell(
                 position: "absolute",
                 width: "100%",
                 height: "100%",
-                top: "0.25rem",
-                left: "0.25rem",
+                top: "0rem",
+                left: "0.1rem",
                 overflow: "hidden",
               }}
             >
@@ -1684,7 +1693,7 @@ function ViewAsCalendarTimeEventInDayCell(
         <Box
           ref={containerRef}
           sx={{
-            fontSize: "12px",
+            fontSize: "10px",
             position: "absolute",
             top: calendarTimeEventInDayStartMinutesToRems(
               minutesSinceStartOfDay
@@ -1698,8 +1707,8 @@ function ViewAsCalendarTimeEventInDayCell(
             ),
             borderRadius: "0.25rem",
             border: `1px solid ${theme.palette.background.paper}`,
-            minWidth: `calc(7rem - ${props.offset * 0.8}rem)`,
-            width: `calc(100% - ${props.offset * 0.8}rem)`,
+            minWidth: `calc(7rem - ${props.offset * 0.8}rem  - 0.5rem)`,
+            width: `calc(100% - ${props.offset * 0.8}rem - 0.5rem)`,
             marginLeft: `${props.offset * 0.8}rem`,
             zIndex: props.offset,
           }}
@@ -1713,8 +1722,8 @@ function ViewAsCalendarTimeEventInDayCell(
                 position: "absolute",
                 width: "100%",
                 height: "100%",
-                top: "0.25rem",
-                left: "0.25rem",
+                top: "0rem",
+                left: "0.1rem",
                 overflow: "hidden",
               }}
             >
@@ -2384,7 +2393,7 @@ export function computeTimeEventInDayDurationInQuarters(
   if (finalOffsetInMinutes > 24 * 60) {
     finalDurationInMins = Math.max(15, 24 * 60 - minutesSinceStartOfDay);
   }
-  return Math.max(2, finalDurationInMins / 15);
+  return Math.max(1, finalDurationInMins / 15);
 }
 
 function clipTimeEventFullDaysNameToWhatFits(

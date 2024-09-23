@@ -44,6 +44,7 @@ class ScheduleExternalSyncDoAllUseCase(
                 ctx=ctx,
                 progress_reporter=progress_reporter,
                 workspace=workspace,
+                today=self._time_provider.get_current_date(),
                 sync_even_if_not_modified=False,
                 filter_schedule_stream_ref_id=None,
             )

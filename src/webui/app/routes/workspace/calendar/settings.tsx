@@ -174,6 +174,8 @@ export default function CalendarSettings() {
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <AccordionHeader>
                 Run from <EventSourceTag source={entry.source} />
+                on {entry.today} from {entry.start_of_window} to {entry.end_of_window}
+                {" "}{entry.sync_even_if_not_modified ? "and sync forced " : " "}
                 with {entry.entity_records.length}
                 {entry.even_more_entity_records ? "+" : ""} entities synced
                 <TimeDiffTag

@@ -815,6 +815,23 @@ files = [
 ]
 
 [[package]]
+name = "recurring-ical-events"
+version = "3.3.0"
+description = "Calculate recurrence times of events, todos and journals based on icalendar RFC5545."
+optional = false
+python-versions = "*"
+files = [
+    {file = "recurring_ical_events-3.3.0-py3-none-any.whl", hash = "sha256:07e787e58effbf322520bb35376ccc97a15d72d0fffb2fcc42cc919fc1b61c4a"},
+    {file = "recurring_ical_events-3.3.0.tar.gz", hash = "sha256:2bd0e9fdeb3d6219cb4cc445f0dee5ac7e44923525fe1d95e4c3c5e0a94f97aa"},
+]
+
+[package.dependencies]
+icalendar = ">=5.0.0,<7.0.0"
+python-dateutil = ">=2.8.1,<3.0.0"
+tzdata = {version = "*", markers = "python_version >= \"3.7\""}
+x-wr-timezone = "==0.*"
+
+[[package]]
 name = "requests"
 version = "2.27.1"
 description = "Python HTTP for Humans."
@@ -995,6 +1012,17 @@ files = [
 ]
 
 [[package]]
+name = "tzdata"
+version = "2024.1"
+description = "Provider of IANA time zone data"
+optional = false
+python-versions = ">=2"
+files = [
+    {file = "tzdata-2024.1-py2.py3-none-any.whl", hash = "sha256:9068bc196136463f5245e51efda838afa15aaeca9903f49050dfa2679db4d252"},
+    {file = "tzdata-2024.1.tar.gz", hash = "sha256:2674120f8d891909751c38abcdfd386ac0a5a1127954fbc332af6b5ceae07efd"},
+]
+
+[[package]]
 name = "urllib3"
 version = "1.26.18"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
@@ -1026,7 +1054,22 @@ decorator = ">=3.4.0"
 [package.extras]
 test = ["flake8 (>=2.4.0)", "isort (>=4.2.2)", "pytest (>=2.2.3)"]
 
+[[package]]
+name = "x-wr-timezone"
+version = "0.0.7"
+description = "A Python module and program to convert calendars using X-WR-TIMEZONE to standard ones."
+optional = false
+python-versions = "*"
+files = [
+    {file = "x_wr_timezone-0.0.7-py3-none-any.whl", hash = "sha256:0b5e16f677c8f51ce41087a0b3d4f786c5fdcf78af4f8a75d4d960107dcb6d3a"},
+    {file = "x_wr_timezone-0.0.7.tar.gz", hash = "sha256:ccbaae164a52086535fd2eb1dced164a5250acc83a672fbb044d11e81a268965"},
+]
+
+[package.dependencies]
+icalendar = "*"
+pytz = "*"
+
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10, <3.11"
-content-hash = "885cce0ab6781eb7ddb3b5f4e0c12abb1a50d211b1fe2823534abc159ce68d58"
+content-hash = "5fcb0da1c99f3d8e97bae15b556bd9cc2878639dfa26b8602c95176345a75bf0"

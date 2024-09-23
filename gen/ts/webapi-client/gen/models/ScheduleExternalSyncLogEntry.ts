@@ -2,6 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { ADate } from './ADate';
 import type { EntityId } from './EntityId';
 import type { EntityName } from './EntityName';
 import type { EntitySummary } from './EntitySummary';
@@ -22,6 +23,10 @@ export type ScheduleExternalSyncLogEntry = {
     name: EntityName;
     schedule_external_sync_log_ref_id: string;
     source: EventSource;
+    today: ADate;
+    start_of_window: ADate;
+    end_of_window: ADate;
+    sync_even_if_not_modified: boolean;
     filter_schedule_stream_ref_id?: (Array<EntityId> | null);
     opened: boolean;
     per_stream_results: Array<ScheduleExternalSyncLogPerStreamResult>;

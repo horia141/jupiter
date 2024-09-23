@@ -49,6 +49,9 @@ allow_untyped_calls = True
 [mypy-pendulum.*]
 implicit_reexport = True
 
+[mypy-recurring_ical_events.*]
+ignore_missing_imports = True
+
 [mypy-avinit.*]
 ignore_missing_imports = True
 

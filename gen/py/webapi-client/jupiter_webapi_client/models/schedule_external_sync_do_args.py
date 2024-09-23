@@ -16,11 +16,13 @@ class ScheduleExternalSyncDoArgs:
     Attributes:
         source (EventSource): The source of the modification which this event records.
         sync_even_if_not_modified (bool):
+        today (Union[None, Unset, str]):
         filter_schedule_stream_ref_id (Union[List[str], None, Unset]):
     """
 
     source: EventSource
     sync_even_if_not_modified: bool
+    today: Union[None, Unset, str] = UNSET
     filter_schedule_stream_ref_id: Union[List[str], None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -28,6 +30,12 @@ class ScheduleExternalSyncDoArgs:
         source = self.source.value
 
         sync_even_if_not_modified = self.sync_even_if_not_modified
+
+        today: Union[None, Unset, str]
+        if isinstance(self.today, Unset):
+            today = UNSET
+        else:
+            today = self.today
 
         filter_schedule_stream_ref_id: Union[List[str], None, Unset]
         if isinstance(self.filter_schedule_stream_ref_id, Unset):
@@ -46,6 +54,8 @@ class ScheduleExternalSyncDoArgs:
                 "sync_even_if_not_modified": sync_even_if_not_modified,
             }
         )
+        if today is not UNSET:
+            field_dict["today"] = today
         if filter_schedule_stream_ref_id is not UNSET:
             field_dict["filter_schedule_stream_ref_id"] = filter_schedule_stream_ref_id
 
@@ -57,6 +67,15 @@ class ScheduleExternalSyncDoArgs:
         source = EventSource(d.pop("source"))
 
         sync_even_if_not_modified = d.pop("sync_even_if_not_modified")
+
+        def _parse_today(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        today = _parse_today(d.pop("today", UNSET))
 
         def _parse_filter_schedule_stream_ref_id(data: object) -> Union[List[str], None, Unset]:
             if data is None:
@@ -80,6 +99,7 @@ class ScheduleExternalSyncDoArgs:
         schedule_external_sync_do_args = cls(
             source=source,
             sync_even_if_not_modified=sync_even_if_not_modified,
+            today=today,
             filter_schedule_stream_ref_id=filter_schedule_stream_ref_id,
         )
 

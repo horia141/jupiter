@@ -1,6 +1,7 @@
 """An entry in a sync log."""
 import abc
 
+from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.entity_summary import EntitySummary
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.entity_name import EntityName
@@ -14,6 +15,7 @@ from jupiter.core.framework.entity import (
     entity,
     update_entity_action,
 )
+from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.repository import LeafEntityRepository
 from jupiter.core.framework.value import CompositeValue, value
@@ -34,6 +36,10 @@ class ScheduleExternalSyncLogEntry(LeafEntity):
 
     schedule_external_sync_log: ParentLink
     source: EventSource
+    today: ADate
+    start_of_window: ADate
+    end_of_window: ADate
+    sync_even_if_not_modified: bool
     filter_schedule_stream_ref_id: list[EntityId] | None
     opened: bool
     per_stream_results: list[ScheduleExternalSyncLogPerStreamResult]
@@ -45,14 +51,26 @@ class ScheduleExternalSyncLogEntry(LeafEntity):
     def new_log_entry(
         ctx: DomainContext,
         schedule_external_sync_log_ref_id: EntityId,
+        today: ADate,
+        start_of_window: ADate,
+        end_of_window: ADate,
+        sync_even_if_not_modified: bool,
         filter_schedule_stream_ref_id: list[EntityId] | None,
     ) -> "ScheduleExternalSyncLogEntry":
+        if start_of_window > end_of_window:
+            raise InputValidationError("Start of window must be before end of window.")
+        if today < start_of_window or today > end_of_window:
+            raise InputValidationError("Today must be within the window.")
         """Create a new log entry."""
         return ScheduleExternalSyncLogEntry._create(
             ctx,
             name=ScheduleExternalSyncLogEntry.build_name(ctx.action_timestamp),
             schedule_external_sync_log=ParentLink(schedule_external_sync_log_ref_id),
             source=ctx.event_source,
+            today=today,
+            start_of_window=start_of_window,
+            end_of_window=end_of_window,
+            sync_even_if_not_modified=sync_even_if_not_modified,
             filter_schedule_stream_ref_id=filter_schedule_stream_ref_id,
             opened=True,
             per_stream_results=[],
