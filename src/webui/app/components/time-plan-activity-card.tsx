@@ -5,6 +5,8 @@ import type {
   TimePlanActivity,
 } from "@jupiter/webapi-client";
 import {
+  BigPlanStatus,
+  InboxTaskStatus,
   TimePlanActivityTarget,
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
@@ -46,6 +48,9 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
             ? () => props.onClick && props.onClick(props.activity)
             : undefined
         }
+        backgroundHint={
+          props.activityDoneness[props.activity.ref_id] ? 
+            (inboxTask?.status === InboxTaskStatus.NOT_DONE ? "failure" : "success") : "neutral"}
       >
         <EntityLink
           to={`/workspace/time-plans/${props.timePlan.ref_id}/${props.activity.ref_id}`}
@@ -90,6 +95,9 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
             ? () => props.onClick && props.onClick(props.activity)
             : undefined
         }
+        backgroundHint={
+          props.activityDoneness[props.activity.ref_id] ? 
+            (bigPlan?.status === BigPlanStatus.NOT_DONE ? "failure" : "success") : "neutral"}
       >
         <EntityLink
           to={`/workspace/time-plans/${props.timePlan.ref_id}/${props.activity.ref_id}`}

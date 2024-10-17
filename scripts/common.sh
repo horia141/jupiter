@@ -30,9 +30,9 @@ run_jupiter() {
     mkdir -p "$RUN_ROOT/$NAMESPACE"
 
     if [[ "$in_ci" == "dev" ]]; then
-        envsubst < scripts/pm2.config.dev.template.js > "$RUN_ROOT/$NAMESPACE/pm2.config.js"
+        _envsubst < scripts/pm2.config.dev.template.js > "$RUN_ROOT/$NAMESPACE/pm2.config.js"
     else
-        envsubst < scripts/pm2.config.ci.template.js > "$RUN_ROOT/$NAMESPACE/pm2.config.js"
+        _envsubst < scripts/pm2.config.ci.template.js > "$RUN_ROOT/$NAMESPACE/pm2.config.js"
     fi
 
     trap "npx pm2 delete $RUN_ROOT/$NAMESPACE/pm2.config.js" EXIT
@@ -57,6 +57,10 @@ run_jupiter() {
     if [[ ${should_monit} == "monit" ]]; then
         npx pm2 monit
     fi
+}
+
+_envsubst() {
+  python -c 'import os,sys;[sys.stdout.write(os.path.expandvars(l)) for l in sys.stdin]'
 }
 
 stop_jupiter() {
@@ -84,7 +88,7 @@ get_namespace() {
 get_free_port() {
     local port=
     while
-        port=$(shuf -n 1 -i 49152-65535)
+        port=$(jot -r 1 49152 65535)
         netstat -atun | grep -q "$port"
     do
         continue

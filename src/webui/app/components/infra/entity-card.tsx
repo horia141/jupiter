@@ -20,6 +20,7 @@ const SWIPE_COMPLETE_THRESHOLD = 150;
 interface EntityCardProps {
   entityId?: string;
   showAsArchived?: boolean;
+  backgroundHint?: "neutral" | "success" | "failure"
   extraControls?: JSX.Element;
   allowSwipe?: boolean;
   allowSelect?: boolean;
@@ -35,6 +36,7 @@ interface EntityCardProps {
 
 export function EntityCard(props: PropsWithChildren<EntityCardProps>) {
   const isBigScreen = useBigScreen();
+  const backgroundHint = props.backgroundHint || "neutral";
 
   const theme = useTheme();
 
@@ -104,9 +106,9 @@ export function EntityCard(props: PropsWithChildren<EntityCardProps>) {
           touchAction: "pan-y",
           position: "relative",
           backgroundColor:
-            (props.allowSelect && props.selected) || props.showAsArchived
+          backgroundHint == "neutral" ? ((props.allowSelect && props.selected) || props.showAsArchived
               ? theme.palette.action.hover
-              : "transparent",
+              : "transparent") : (backgroundHint === "success" ? `${theme.palette.success.light}22` : `${theme.palette.error.light}22`),
         }}
         onClick={props.onClick}
       >
@@ -179,7 +181,7 @@ const StyledLink = styled(Link)<StyledLinkProps>(({ theme, light }) => ({
   display: "flex",
   gap: "0.5rem",
   flexWrap: "wrap",
-  alignItems: "center",
+  alignItems: "center"
 }));
 
 interface EntityFakeLinkProps {
