@@ -59,6 +59,7 @@ const QuerySchema = {
   timePlanRefId: z.string().optional(),
   bigPlanReason: z.literal("for-big-plan").optional(),
   bigPlanRefId: z.string().optional(),
+  parentTimePlanActivityRefId: z.string().optional(),
 };
 
 const CreateFormSchema = {
@@ -201,9 +202,17 @@ export async function action({ request }: ActionArgs) {
 
     switch (timePlanReason) {
       case "for-time-plan":
-        return redirect(
-          `/workspace/time-plans/${result.new_time_plan_activity?.time_plan_ref_id}/${result.new_time_plan_activity?.ref_id}`
-        );
+        switch (bigPlanReason) {
+          case "for-big-plan":
+            return redirect(
+              `/workspace/time-plans/${query.timePlanRefId}/${query.parentTimePlanActivityRefId}`
+            );
+          case "standard":
+            return redirect(
+              `/workspace/time-plans/${result.new_time_plan_activity?.time_plan_ref_id}/${result.new_time_plan_activity?.ref_id}`
+            );
+        }
+        break;
 
       case "standard":
         switch (bigPlanReason) {
@@ -217,6 +226,7 @@ export async function action({ request }: ActionArgs) {
               `/workspace/inbox-tasks/${result.new_inbox_task.ref_id}`
             );
         }
+        break;
     }
   } catch (error) {
     if (

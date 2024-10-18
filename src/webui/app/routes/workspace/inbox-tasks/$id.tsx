@@ -8,6 +8,7 @@ import type {
   ProjectSummary,
   SlackTask,
   WorkingMem,
+  Workspace,
 } from "@jupiter/webapi-client";
 import {
   ApiError,
@@ -16,6 +17,7 @@ import {
   InboxTaskSource,
   InboxTaskStatus,
   NoteDomain,
+  TimePlanActivityTarget,
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
 import type { SelectChangeEvent } from "@mui/material";
@@ -56,10 +58,12 @@ import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import { SectionCardNew } from "~/components/infra/section-card-new";
 import { MetricTag } from "~/components/metric-tag";
 import { PersonTag } from "~/components/person-tag";
 import { SlackTaskTag } from "~/components/slack-task-tag";
 import { TimeEventInDayBlockStack } from "~/components/time-event-in-day-block-stack";
+import { TimePlanActivityList } from "~/components/time-plan-activity-list";
 import { WorkingMemTag } from "~/components/working-mem-tag";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
@@ -113,6 +117,7 @@ export async function loader({ request, params }: LoaderArgs) {
     session
   ).getSummaries.getSummaries({
     allow_archived: false,
+    include_workspace: true,
     include_projects: true,
     include_big_plans: true,
   });
@@ -125,8 +130,22 @@ export async function loader({ request, params }: LoaderArgs) {
       }
     );
 
+    const workspace = summaryResponse.workspace as Workspace;
+    let timePlanActivities = undefined;
+    if (isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.TIME_PLANS)) {
+      const timePlanActivitiesResult = await getLoggedInApiClient(
+        session
+      ).activity.timePlanActivityFindForTarget({
+        allow_archived: true,
+        target: TimePlanActivityTarget.INBOX_TASK,
+        target_ref_id: id,
+      });
+      timePlanActivities = timePlanActivitiesResult.activities;
+    }
+
     return json({
       info: result,
+      timePlanActivities: timePlanActivities,
       rootProject: summaryResponse.root_project as ProjectSummary,
       allProjects: summaryResponse.projects as Array<ProjectSummary>,
       allBigPlans: summaryResponse.big_plans as Array<BigPlan>,
@@ -312,6 +331,12 @@ export default function InboxTask() {
   const corePropertyEditable = isInboxTaskCoreFieldEditable(inboxTask.source);
   const canChangeProject = doesInboxTaskAllowChangingProject(inboxTask.source);
   const canChangeBigPlan = doesInboxTaskAllowChangingBigPlan(inboxTask.source);
+
+  const inboxTasksByRefId = new Map();
+  inboxTasksByRefId.set(
+    loaderData.info.inbox_task.ref_id,
+    loaderData.info.inbox_task
+  );
 
   const allProjectsById: { [k: string]: ProjectSummary } = {};
   if (
@@ -754,6 +779,26 @@ export default function InboxTask() {
           entries={sortedTimeEventEntries}
         />
       )}
+
+      {isWorkspaceFeatureAvailable(
+        topLevelInfo.workspace,
+        WorkspaceFeature.TIME_PLANS
+      ) &&
+        loaderData.timePlanActivities && (
+          <SectionCardNew
+            id="inbox-task-time-plan-activities"
+            title="Time Plan Activities"
+          >
+            <TimePlanActivityList
+              topLevelInfo={topLevelInfo}
+              activities={loaderData.timePlanActivities}
+              inboxTasksByRefId={inboxTasksByRefId}
+              bigPlansByRefId={new Map()}
+              activityDoneness={{}}
+              fullInfo={false}
+            />
+          </SectionCardNew>
+        )}
     </LeafPanel>
   );
 }

@@ -467,19 +467,23 @@ def test_time_plan_create_new_inbox_task_from_big_plan_activity(
 
     page.wait_for_url(re.compile(r"/workspace/inbox-tasks/new"))
 
-    page.locator('input[name="name"]').fill("New Inbox Task")
+    page.locator('input[name="name"]').fill("The New Inbox Task")
     page.locator("#inbox-task-create").click()
 
     expect(page.locator("input[id='bigPlan']")).to_have_value("The Big Plan")
 
     page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan.ref_id}/\d+"))
 
+    expect(page.locator("#time-plan-activities")).to_contain_text("The New Inbox Task")
+
+    page.locator("#time-plan-activities").locator(
+        "a", has_text="The New Inbox Task"
+    ).click()
+
+    page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan.ref_id}/\d+"))
+
     expect(page.locator("input[name='kind']")).to_have_value("finish")
     expect(page.locator("input[name='feasability']")).to_have_value("must-do")
-
-    page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
-
-    expect(page.locator("#time-plan-activities")).to_contain_text("New Inbox Task")
 
 
 def test_time_plan_create_activities_from_inbox_tasks_of_an_associated_big_plan(

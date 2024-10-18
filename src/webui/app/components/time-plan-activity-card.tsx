@@ -1,7 +1,6 @@
 import type {
   BigPlan,
   InboxTask,
-  TimePlan,
   TimePlanActivity,
 } from "@jupiter/webapi-client";
 import {
@@ -22,11 +21,11 @@ import { ADateTag } from "./adate-tag";
 
 interface TimePlanActivityCardProps {
   topLevelInfo: TopLevelInfo;
-  timePlan: TimePlan;
   activity: TimePlanActivity;
   inboxTasksByRefId: Map<string, InboxTask>;
   bigPlansByRefId: Map<string, BigPlan>;
   activityDoneness: Record<string, boolean>;
+  fullInfo: boolean;
   allowSelect?: boolean;
   selected?: boolean;
   indent?: number;
@@ -39,7 +38,8 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
 
     return (
       <EntityCard
-        entityId={`time-plan-activity-${props.timePlan.ref_id}`}
+        entityId={`time-plan-activity-${props.activity.ref_id}`}
+        showAsArchived={props.activity.archived}
         allowSelect={props.allowSelect}
         selected={props.selected}
         indent={props.indent}
@@ -57,7 +57,7 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
         }
       >
         <EntityLink
-          to={`/workspace/time-plans/${props.timePlan.ref_id}/${props.activity.ref_id}`}
+          to={`/workspace/time-plans/${props.activity.time_plan_ref_id}/${props.activity.ref_id}`}
           block={props.onClick !== undefined}
         >
           <Typography
@@ -71,10 +71,15 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
           >
             {inboxTask ? inboxTask.name : "Archived Task"}
           </Typography>
-          {inboxTask && <InboxTaskStatusTag status={inboxTask.status} />}
-          {inboxTask?.due_date && (
-            <ADateTag label="Due At" date={inboxTask.due_date} />
+          {props.fullInfo && (
+            <>
+              {inboxTask && <InboxTaskStatusTag status={inboxTask.status} />}
+              {inboxTask?.due_date && (
+                <ADateTag label="Due At" date={inboxTask.due_date} />
+              )}
+            </>
           )}
+
           <TimePlanActivityKindTag kind={props.activity.kind} />
           <TimePlanActivityFeasabilityTag
             feasability={props.activity.feasability}
@@ -91,7 +96,7 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
     const bigPlan = props.bigPlansByRefId.get(props.activity.target_ref_id);
     return (
       <EntityCard
-        entityId={`time-plan-activity-${props.timePlan.ref_id}`}
+        entityId={`time-plan-activity-${props.activity.ref_id}`}
         allowSelect={props.allowSelect}
         selected={props.selected}
         onClick={
@@ -108,7 +113,7 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
         }
       >
         <EntityLink
-          to={`/workspace/time-plans/${props.timePlan.ref_id}/${props.activity.ref_id}`}
+          to={`/workspace/time-plans/${props.activity.time_plan_ref_id}/${props.activity.ref_id}`}
           block={props.onClick !== undefined}
         >
           <Typography
@@ -122,10 +127,16 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
           >
             {bigPlan ? bigPlan.name : "Archived Big Plan"}
           </Typography>
-          {bigPlan && <BigPlanStatusTag status={bigPlan.status} />}
-          {bigPlan?.due_date && (
-            <ADateTag label="Due At" date={bigPlan.due_date} />
+
+          {props.fullInfo && (
+            <>
+              {bigPlan && <BigPlanStatusTag status={bigPlan.status} />}
+              {bigPlan?.due_date && (
+                <ADateTag label="Due At" date={bigPlan.due_date} />
+              )}
+            </>
           )}
+
           <TimePlanActivityKindTag kind={props.activity.kind} />
           <TimePlanActivityFeasabilityTag
             feasability={props.activity.feasability}

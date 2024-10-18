@@ -1,9 +1,14 @@
-import type { InboxTask, ProjectSummary } from "@jupiter/webapi-client";
+import type {
+  InboxTask,
+  ProjectSummary,
+  Workspace,
+} from "@jupiter/webapi-client";
 import {
   ApiError,
   BigPlanStatus,
   InboxTaskStatus,
   NoteDomain,
+  TimePlanActivityTarget,
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
 import type { SelectChangeEvent } from "@mui/material";
@@ -42,6 +47,8 @@ import { EntityActionHeader } from "~/components/infra/entity-actions-header";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import { SectionCardNew } from "~/components/infra/section-card-new";
+import { TimePlanActivityList } from "~/components/time-plan-activity-list";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
 import { bigPlanStatusName } from "~/logic/domain/big-plan-status";
@@ -80,6 +87,7 @@ export async function loader({ request, params }: LoaderArgs) {
   const summaryResponse = await getLoggedInApiClient(
     session
   ).getSummaries.getSummaries({
+    include_workspace: true,
     include_projects: true,
   });
 
@@ -89,12 +97,26 @@ export async function loader({ request, params }: LoaderArgs) {
       allow_archived: true,
     });
 
+    const workspace = summaryResponse.workspace as Workspace;
+    let timePlanActivities = undefined;
+    if (isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.TIME_PLANS)) {
+      const timePlanActivitiesResult = await getLoggedInApiClient(
+        session
+      ).activity.timePlanActivityFindForTarget({
+        allow_archived: true,
+        target: TimePlanActivityTarget.BIG_PLAN,
+        target_ref_id: id,
+      });
+      timePlanActivities = timePlanActivitiesResult.activities;
+    }
+
     return json({
       bigPlan: result.big_plan,
       project: result.project,
       inboxTasks: result.inbox_tasks,
-      allProjects: summaryResponse.projects as Array<ProjectSummary>,
       note: result.note,
+      timePlanActivities: timePlanActivities,
+      allProjects: summaryResponse.projects as Array<ProjectSummary>,
     });
   } catch (error) {
     if (error instanceof ApiError && error.status === StatusCodes.NOT_FOUND) {
@@ -210,6 +232,9 @@ export default function BigPlan() {
 
   const inputsEnabled =
     transition.state === "idle" && !loaderData.bigPlan.archived;
+
+  const bigPlansByRefId = new Map();
+  bigPlansByRefId.set(loaderData.bigPlan.ref_id, loaderData.bigPlan);
 
   const [selectedProject, setSelectedProject] = useState(
     loaderData.project.ref_id
@@ -459,6 +484,26 @@ export default function BigPlan() {
           onCardMarkNotDone={handleCardMarkNotDone}
         />
       )}
+
+      {isWorkspaceFeatureAvailable(
+        topLevelInfo.workspace,
+        WorkspaceFeature.TIME_PLANS
+      ) &&
+        loaderData.timePlanActivities && (
+          <SectionCardNew
+            id="big-plan-time-plan-activities"
+            title="Time Plan Activities"
+          >
+            <TimePlanActivityList
+              topLevelInfo={topLevelInfo}
+              activities={loaderData.timePlanActivities}
+              inboxTasksByRefId={new Map()}
+              bigPlansByRefId={bigPlansByRefId}
+              activityDoneness={{}}
+              fullInfo={false}
+            />
+          </SectionCardNew>
+        )}
     </LeafPanel>
   );
 }

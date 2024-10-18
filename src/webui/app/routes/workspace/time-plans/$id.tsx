@@ -2,7 +2,6 @@ import type {
   BigPlan,
   InboxTask,
   TimePlan,
-  TimePlanActivity,
   Workspace,
 } from "@jupiter/webapi-client";
 import {
@@ -47,7 +46,6 @@ import { BigPlanStack } from "~/components/big-plan-stack";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
-import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { BranchPanel } from "~/components/infra/layout/branch-panel";
@@ -61,7 +59,7 @@ import {
 } from "~/components/infra/section-actions";
 import { SectionCard } from "~/components/infra/section-card";
 import { SectionCardNew } from "~/components/infra/section-card-new";
-import { TimePlanActivityCard } from "~/components/time-plan-activity-card";
+import { TimePlanActivityList } from "~/components/time-plan-activity-list";
 import { TimePlanStack } from "~/components/time-plan-stack";
 import {
   aGlobalError,
@@ -73,7 +71,6 @@ import {
   sortProjectsByTreeOrder,
 } from "~/logic/domain/project";
 import { sortTimePlansNaturally } from "~/logic/domain/time-plan";
-import { sortTimePlanActivitiesNaturally } from "~/logic/domain/time-plan-activity";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { basicShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -82,7 +79,6 @@ import {
   useBranchNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
-import type { TopLevelInfo } from "~/top-level-context";
 import { TopLevelInfoContext } from "~/top-level-context";
 
 enum View {
@@ -419,13 +415,13 @@ export default function TimePlanView() {
             }
           >
             {selectedView === View.MERGED && (
-              <ActivityList
+              <TimePlanActivityList
                 topLevelInfo={topLevelInfo}
-                timePlan={loaderData.timePlan}
                 activities={loaderData.activities}
                 inboxTasksByRefId={targetInboxTasksByRefId}
                 bigPlansByRefId={targetBigPlansByRefId}
                 activityDoneness={loaderData.activityDoneness}
+                fullInfo
                 filterKind={selectedKinds}
                 filterFeasability={selectedFeasabilities}
                 filterDoneness={selectedDoneness}
@@ -467,13 +463,13 @@ export default function TimePlanView() {
                         <Typography variant="h6">{fullProjectName}</Typography>
                       </Divider>
 
-                      <ActivityList
+                      <TimePlanActivityList
                         topLevelInfo={topLevelInfo}
-                        timePlan={loaderData.timePlan}
                         activities={theActivities}
                         inboxTasksByRefId={targetInboxTasksByRefId}
                         bigPlansByRefId={targetBigPlansByRefId}
                         activityDoneness={loaderData.activityDoneness}
+                        fullInfo
                         filterKind={selectedKinds}
                         filterFeasability={selectedFeasabilities}
                         filterDoneness={selectedDoneness}
@@ -567,71 +563,6 @@ export const ErrorBoundary = makeErrorBoundary(
   () =>
     `There was an error loading time plan #${useParams().id}. Please try again!`
 );
-
-interface ActivityListProps {
-  topLevelInfo: TopLevelInfo;
-  timePlan: TimePlan;
-  activities: Array<TimePlanActivity>;
-  inboxTasksByRefId: Map<string, InboxTask>;
-  bigPlansByRefId: Map<string, BigPlan>;
-  activityDoneness: Record<string, boolean>;
-  filterKind: TimePlanActivityKind[];
-  filterFeasability: TimePlanActivityFeasability[];
-  filterDoneness: boolean[];
-}
-
-function ActivityList(props: ActivityListProps) {
-  const sortedActivities = sortTimePlanActivitiesNaturally(
-    props.activities,
-    props.inboxTasksByRefId,
-    props.bigPlansByRefId
-  );
-
-  return (
-    <EntityStack>
-      {sortedActivities.map((entry) => {
-        if (
-          props.filterKind.length > 0 &&
-          !props.filterKind.includes(entry.kind)
-        ) {
-          return null;
-        }
-
-        if (
-          props.filterFeasability.length > 0 &&
-          !props.filterFeasability.includes(entry.feasability)
-        ) {
-          return null;
-        }
-
-        if (
-          props.filterDoneness.length > 0 &&
-          !props.filterDoneness.includes(props.activityDoneness[entry.ref_id])
-        ) {
-          return null;
-        }
-
-        return (
-          <TimePlanActivityCard
-            key={`time-plan-activity-${entry.ref_id}`}
-            topLevelInfo={props.topLevelInfo}
-            timePlan={props.timePlan}
-            activity={entry}
-            indent={
-              entry.target === TimePlanActivityTarget.INBOX_TASK &&
-              props.inboxTasksByRefId.get(entry.target_ref_id)?.big_plan_ref_id
-                ? 2
-                : 0
-            }
-            inboxTasksByRefId={props.inboxTasksByRefId}
-            bigPlansByRefId={props.bigPlansByRefId}
-            activityDoneness={props.activityDoneness}
-          />
-        );
-      })}
-    </EntityStack>
-  );
-}
 
 function inferDefaultSelectedView(workspace: Workspace, timePlan: TimePlan) {
   if (!isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.PROJECTS)) {

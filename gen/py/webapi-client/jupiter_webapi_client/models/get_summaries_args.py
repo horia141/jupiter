@@ -14,6 +14,7 @@ class GetSummariesArgs:
 
     Attributes:
         allow_archived (Union[None, Unset, bool]):
+        include_workspace (Union[None, Unset, bool]):
         include_schedule_streams (Union[None, Unset, bool]):
         include_vacations (Union[None, Unset, bool]):
         include_projects (Union[None, Unset, bool]):
@@ -27,6 +28,7 @@ class GetSummariesArgs:
     """
 
     allow_archived: Union[None, Unset, bool] = UNSET
+    include_workspace: Union[None, Unset, bool] = UNSET
     include_schedule_streams: Union[None, Unset, bool] = UNSET
     include_vacations: Union[None, Unset, bool] = UNSET
     include_projects: Union[None, Unset, bool] = UNSET
@@ -45,6 +47,12 @@ class GetSummariesArgs:
             allow_archived = UNSET
         else:
             allow_archived = self.allow_archived
+
+        include_workspace: Union[None, Unset, bool]
+        if isinstance(self.include_workspace, Unset):
+            include_workspace = UNSET
+        else:
+            include_workspace = self.include_workspace
 
         include_schedule_streams: Union[None, Unset, bool]
         if isinstance(self.include_schedule_streams, Unset):
@@ -111,6 +119,8 @@ class GetSummariesArgs:
         field_dict.update({})
         if allow_archived is not UNSET:
             field_dict["allow_archived"] = allow_archived
+        if include_workspace is not UNSET:
+            field_dict["include_workspace"] = include_workspace
         if include_schedule_streams is not UNSET:
             field_dict["include_schedule_streams"] = include_schedule_streams
         if include_vacations is not UNSET:
@@ -146,6 +156,15 @@ class GetSummariesArgs:
             return cast(Union[None, Unset, bool], data)
 
         allow_archived = _parse_allow_archived(d.pop("allow_archived", UNSET))
+
+        def _parse_include_workspace(data: object) -> Union[None, Unset, bool]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, bool], data)
+
+        include_workspace = _parse_include_workspace(d.pop("include_workspace", UNSET))
 
         def _parse_include_schedule_streams(data: object) -> Union[None, Unset, bool]:
             if data is None:
@@ -239,6 +258,7 @@ class GetSummariesArgs:
 
         get_summaries_args = cls(
             allow_archived=allow_archived,
+            include_workspace=include_workspace,
             include_schedule_streams=include_schedule_streams,
             include_vacations=include_vacations,
             include_projects=include_projects,

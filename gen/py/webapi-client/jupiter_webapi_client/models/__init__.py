@@ -480,6 +480,8 @@ from .time_plan import TimePlan
 from .time_plan_activity import TimePlanActivity
 from .time_plan_activity_archive_args import TimePlanActivityArchiveArgs
 from .time_plan_activity_feasability import TimePlanActivityFeasability
+from .time_plan_activity_find_for_target_args import TimePlanActivityFindForTargetArgs
+from .time_plan_activity_find_for_target_result import TimePlanActivityFindForTargetResult
 from .time_plan_activity_kind import TimePlanActivityKind
 from .time_plan_activity_load_args import TimePlanActivityLoadArgs
 from .time_plan_activity_load_result import TimePlanActivityLoadResult
@@ -1050,6 +1052,8 @@ __all__ = (
     "TimePlanActivity",
     "TimePlanActivityArchiveArgs",
     "TimePlanActivityFeasability",
+    "TimePlanActivityFindForTargetArgs",
+    "TimePlanActivityFindForTargetResult",
     "TimePlanActivityKind",
     "TimePlanActivityLoadArgs",
     "TimePlanActivityLoadResult",

@@ -412,6 +412,8 @@ export type { TimePlan } from './models/TimePlan';
 export type { TimePlanActivity } from './models/TimePlanActivity';
 export type { TimePlanActivityArchiveArgs } from './models/TimePlanActivityArchiveArgs';
 export { TimePlanActivityFeasability } from './models/TimePlanActivityFeasability';
+export type { TimePlanActivityFindForTargetArgs } from './models/TimePlanActivityFindForTargetArgs';
+export type { TimePlanActivityFindForTargetResult } from './models/TimePlanActivityFindForTargetResult';
 export { TimePlanActivityKind } from './models/TimePlanActivityKind';
 export type { TimePlanActivityLoadArgs } from './models/TimePlanActivityLoadArgs';
 export type { TimePlanActivityLoadResult } from './models/TimePlanActivityLoadResult';

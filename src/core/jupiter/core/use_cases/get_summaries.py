@@ -15,6 +15,7 @@ from jupiter.core.domain.concept.smart_lists.smart_list_collection import (
     SmartListCollection,
 )
 from jupiter.core.domain.concept.vacations.vacation_collection import VacationCollection
+from jupiter.core.domain.concept.workspaces.workspace import Workspace
 from jupiter.core.domain.fast_info_repository import (
     BigPlanSummary,
     ChoreSummary,
@@ -48,6 +49,7 @@ class GetSummariesArgs(UseCaseArgsBase):
     """Get summaries args."""
 
     allow_archived: bool | None
+    include_workspace: bool | None
     include_schedule_streams: bool | None
     include_vacations: bool | None
     include_projects: bool | None
@@ -64,6 +66,7 @@ class GetSummariesArgs(UseCaseArgsBase):
 class GetSummariesResult(UseCaseResultBase):
     """Get summaries result."""
 
+    workspace: Workspace | None
     vacations: list[VacationSummary] | None
     schedule_streams: list[ScheduleStreamSummary] | None
     root_project: ProjectSummary | None
@@ -234,6 +237,7 @@ class GetSummariesUseCase(
 
         return GetSummariesResult(
             vacations=vacations,
+            workspace=workspace if args.include_workspace else None,
             schedule_streams=schedule_streams,
             root_project=root_project,
             projects=projects,

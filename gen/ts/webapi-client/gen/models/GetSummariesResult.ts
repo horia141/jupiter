@@ -12,11 +12,13 @@ import type { ProjectSummary } from './ProjectSummary';
 import type { ScheduleStreamSummary } from './ScheduleStreamSummary';
 import type { SmartListSummary } from './SmartListSummary';
 import type { VacationSummary } from './VacationSummary';
+import type { Workspace } from './Workspace';
 
 /**
  * Get summaries result.
  */
 export type GetSummariesResult = {
+    workspace?: (Workspace | null);
     vacations?: (Array<VacationSummary> | null);
     schedule_streams?: (Array<ScheduleStreamSummary> | null);
     root_project?: (ProjectSummary | null);

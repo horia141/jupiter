@@ -2,6 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { TimePlanActivityArchiveArgs } from '../models/TimePlanActivityArchiveArgs';
+import type { TimePlanActivityFindForTargetArgs } from '../models/TimePlanActivityFindForTargetArgs';
+import type { TimePlanActivityFindForTargetResult } from '../models/TimePlanActivityFindForTargetResult';
 import type { TimePlanActivityLoadArgs } from '../models/TimePlanActivityLoadArgs';
 import type { TimePlanActivityLoadResult } from '../models/TimePlanActivityLoadResult';
 import type { TimePlanActivityRemoveArgs } from '../models/TimePlanActivityRemoveArgs';
@@ -27,6 +29,29 @@ export class ActivityService {
         return this.httpRequest.request({
             method: 'POST',
             url: '/time-plan-activity-archive',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * The command for finding time plan activities for a particular target.
+     * The command for finding time plan activities for a particular target.
+     * @param requestBody The input data
+     * @returns TimePlanActivityFindForTargetResult Successful response
+     * @throws ApiError
+     */
+    public timePlanActivityFindForTarget(
+        requestBody?: TimePlanActivityFindForTargetArgs,
+    ): CancelablePromise<TimePlanActivityFindForTargetResult> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/time-plan-activity-find-for-target',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
