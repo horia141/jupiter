@@ -14,6 +14,7 @@ from jupiter.core.domain.concept.time_plans.time_plan_activity_kind import (
     TimePlanActivityKind,
 )
 from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import (
     FeatureUnavailableError,
     WorkspaceFeature,
@@ -120,7 +121,9 @@ class BigPlanCreateUseCase(
                 context.domain_context,
                 time_plan_ref_id=time_plan.ref_id,
                 big_plan_ref_id=new_big_plan.ref_id,
-                kind=TimePlanActivityKind.FINISH,
+                kind=TimePlanActivityKind.FINISH
+                if time_plan.period >= RecurringTaskPeriod.MONTHLY
+                else TimePlanActivityKind.MAKE_PROGRESS,
                 feasability=TimePlanActivityFeasability.MUST_DO,
             )
             new_time_plan_activity = await generic_creator(

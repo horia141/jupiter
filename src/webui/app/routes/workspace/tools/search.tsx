@@ -81,10 +81,13 @@ export async function loader({ request }: LoaderArgs) {
         ),
         filter_created_time_after: query.filterCreatedTimeAfter || undefined,
         filter_created_time_before: query.filterCreatedTimeBefore || undefined,
-        filter_last_modified_time_after: query.filterLastModifiedTimeAfter || undefined,
-        filter_last_modified_time_before: query.filterLastModifiedTimeBefore || undefined,
+        filter_last_modified_time_after:
+          query.filterLastModifiedTimeAfter || undefined,
+        filter_last_modified_time_before:
+          query.filterLastModifiedTimeBefore || undefined,
         filter_archived_time_after: query.filterArchivedTimeAfter || undefined,
-        filter_archived_time_before: query.filterArchivedTimeBefore || undefined,
+        filter_archived_time_before:
+          query.filterArchivedTimeBefore || undefined,
       });
     }
 

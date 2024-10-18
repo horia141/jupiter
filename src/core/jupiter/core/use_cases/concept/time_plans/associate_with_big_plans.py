@@ -9,6 +9,7 @@ from jupiter.core.domain.concept.time_plans.time_plan_activity_feasability impor
 from jupiter.core.domain.concept.time_plans.time_plan_activity_kind import (
     TimePlanActivityKind,
 )
+from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.infra.generic_creator import generic_creator
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -85,7 +86,9 @@ class TimePlanAssociateWithBigPlansUseCase(
                 context.domain_context,
                 time_plan_ref_id=args.ref_id,
                 big_plan_ref_id=big_plan.ref_id,
-                kind=TimePlanActivityKind.FINISH,
+                kind=TimePlanActivityKind.FINISH
+                if time_plan.period >= RecurringTaskPeriod.MONTHLY
+                else TimePlanActivityKind.MAKE_PROGRESS,
                 feasability=TimePlanActivityFeasability.MUST_DO,
             )
             new_time_plan_activity = await generic_creator(
