@@ -1,6 +1,7 @@
 import type {
   BigPlan,
   InboxTask,
+  TimePlan,
   TimePlanActivity,
 } from "@jupiter/webapi-client";
 import {
@@ -18,10 +19,12 @@ import { TimePlanActivityKindTag } from "~/components/time-plan-activity-kind-ta
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import type { TopLevelInfo } from "~/top-level-context";
 import { ADateTag } from "./adate-tag";
+import { TimePlanTag } from "./time-plan-tag";
 
 interface TimePlanActivityCardProps {
   topLevelInfo: TopLevelInfo;
   activity: TimePlanActivity;
+  timePlansByRefId: Map<string, TimePlan>;
   inboxTasksByRefId: Map<string, InboxTask>;
   bigPlansByRefId: Map<string, BigPlan>;
   activityDoneness: Record<string, boolean>;
@@ -33,6 +36,10 @@ interface TimePlanActivityCardProps {
 }
 
 export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
+  const timePlan = props.timePlansByRefId.get(
+    props.activity.time_plan_ref_id.toString()
+  );
+
   if (props.activity.target === TimePlanActivityTarget.INBOX_TASK) {
     const inboxTask = props.inboxTasksByRefId.get(props.activity.target_ref_id);
 
@@ -84,6 +91,8 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
           <TimePlanActivityFeasabilityTag
             feasability={props.activity.feasability}
           />
+
+          {timePlan && <TimePlanTag timePlan={timePlan} />}
         </EntityLink>
       </EntityCard>
     );
@@ -141,6 +150,8 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
           <TimePlanActivityFeasabilityTag
             feasability={props.activity.feasability}
           />
+
+          {timePlan && <TimePlanTag timePlan={timePlan} />}
         </EntityLink>
       </EntityCard>
     );

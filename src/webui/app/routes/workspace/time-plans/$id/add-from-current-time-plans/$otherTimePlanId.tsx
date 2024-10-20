@@ -248,7 +248,6 @@ export default function TimePlanAddFromCurrentTimePlans() {
             <TimePlanActivityCard
               key={`time-plan-activity-${activity.ref_id}`}
               topLevelInfo={topLevelInfo}
-              timePlan={loaderData.otherTimePlan}
               activity={activity}
               allowSelect
               selected={
@@ -271,6 +270,8 @@ export default function TimePlanAddFromCurrentTimePlans() {
                   toggleActivitiesRefIds(at, activity.ref_id)
                 );
               }}
+              fullInfo={true}
+              timePlansByRefId={new Map()}
               inboxTasksByRefId={otherTargetInboxTasksByRefId}
               bigPlansByRefId={otherTargetBigPlansByRefId}
               activityDoneness={loaderData.otherActivityDoneness}

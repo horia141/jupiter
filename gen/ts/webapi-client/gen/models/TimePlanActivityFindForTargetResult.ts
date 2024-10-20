@@ -2,12 +2,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { TimePlanActivity } from './TimePlanActivity';
+import type { TimePlanActivityFindForTargetResultEntry } from './TimePlanActivityFindForTargetResultEntry';
 
 /**
  * Result.
  */
 export type TimePlanActivityFindForTargetResult = {
-    activities: Array<TimePlanActivity>;
+    entries: Array<TimePlanActivityFindForTargetResultEntry>;
 };
 

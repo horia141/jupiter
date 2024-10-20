@@ -1,6 +1,7 @@
 import type {
   BigPlan,
   InboxTask,
+  TimePlan,
   TimePlanActivity,
   TimePlanActivityFeasability,
   TimePlanActivityKind,
@@ -14,6 +15,7 @@ import { TimePlanActivityCard } from "./time-plan-activity-card";
 interface TimePlanActivityListProps {
   topLevelInfo: TopLevelInfo;
   activities: Array<TimePlanActivity>;
+  timePlansByRefId: Map<string, TimePlan>;
   inboxTasksByRefId: Map<string, InboxTask>;
   bigPlansByRefId: Map<string, BigPlan>;
   activityDoneness: Record<string, boolean>;
@@ -72,6 +74,7 @@ export function TimePlanActivityList(props: TimePlanActivityListProps) {
                 : 0
             }
             fullInfo={props.fullInfo}
+            timePlansByRefId={props.timePlansByRefId}
             inboxTasksByRefId={props.inboxTasksByRefId}
             bigPlansByRefId={props.bigPlansByRefId}
             activityDoneness={props.activityDoneness}

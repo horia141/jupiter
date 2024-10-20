@@ -4,7 +4,7 @@ from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
 if TYPE_CHECKING:
-    from ..models.time_plan_activity import TimePlanActivity
+    from ..models.time_plan_activity_find_for_target_result_entry import TimePlanActivityFindForTargetResultEntry
 
 
 T = TypeVar("T", bound="TimePlanActivityFindForTargetResult")
@@ -15,23 +15,23 @@ class TimePlanActivityFindForTargetResult:
     """Result.
 
     Attributes:
-        activities (List['TimePlanActivity']):
+        entries (List['TimePlanActivityFindForTargetResultEntry']):
     """
 
-    activities: List["TimePlanActivity"]
+    entries: List["TimePlanActivityFindForTargetResultEntry"]
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
-        activities = []
-        for activities_item_data in self.activities:
-            activities_item = activities_item_data.to_dict()
-            activities.append(activities_item)
+        entries = []
+        for entries_item_data in self.entries:
+            entries_item = entries_item_data.to_dict()
+            entries.append(entries_item)
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
-                "activities": activities,
+                "entries": entries,
             }
         )
 
@@ -39,18 +39,18 @@ class TimePlanActivityFindForTargetResult:
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
-        from ..models.time_plan_activity import TimePlanActivity
+        from ..models.time_plan_activity_find_for_target_result_entry import TimePlanActivityFindForTargetResultEntry
 
         d = src_dict.copy()
-        activities = []
-        _activities = d.pop("activities")
-        for activities_item_data in _activities:
-            activities_item = TimePlanActivity.from_dict(activities_item_data)
+        entries = []
+        _entries = d.pop("entries")
+        for entries_item_data in _entries:
+            entries_item = TimePlanActivityFindForTargetResultEntry.from_dict(entries_item_data)
 
-            activities.append(activities_item)
+            entries.append(entries_item)
 
         time_plan_activity_find_for_target_result = cls(
-            activities=activities,
+            entries=entries,
         )
 
         time_plan_activity_find_for_target_result.additional_properties = d

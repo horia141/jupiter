@@ -419,6 +419,7 @@ export default function TimePlanView() {
                 topLevelInfo={topLevelInfo}
                 activities={loaderData.activities}
                 inboxTasksByRefId={targetInboxTasksByRefId}
+                timePlansByRefId={new Map()}
                 bigPlansByRefId={targetBigPlansByRefId}
                 activityDoneness={loaderData.activityDoneness}
                 fullInfo
@@ -467,6 +468,7 @@ export default function TimePlanView() {
                         topLevelInfo={topLevelInfo}
                         activities={theActivities}
                         inboxTasksByRefId={targetInboxTasksByRefId}
+                        timePlansByRefId={new Map()}
                         bigPlansByRefId={targetBigPlansByRefId}
                         activityDoneness={loaderData.activityDoneness}
                         fullInfo

@@ -98,7 +98,7 @@ export async function loader({ request, params }: LoaderArgs) {
     });
 
     const workspace = summaryResponse.workspace as Workspace;
-    let timePlanActivities = undefined;
+    let timePlanEntries = undefined;
     if (isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.TIME_PLANS)) {
       const timePlanActivitiesResult = await getLoggedInApiClient(
         session
@@ -107,7 +107,7 @@ export async function loader({ request, params }: LoaderArgs) {
         target: TimePlanActivityTarget.BIG_PLAN,
         target_ref_id: id,
       });
-      timePlanActivities = timePlanActivitiesResult.activities;
+      timePlanEntries = timePlanActivitiesResult.entries;
     }
 
     return json({
@@ -115,7 +115,7 @@ export async function loader({ request, params }: LoaderArgs) {
       project: result.project,
       inboxTasks: result.inbox_tasks,
       note: result.note,
-      timePlanActivities: timePlanActivities,
+      timePlanEntries: timePlanEntries,
       allProjects: summaryResponse.projects as Array<ProjectSummary>,
     });
   } catch (error) {
@@ -235,6 +235,16 @@ export default function BigPlan() {
 
   const bigPlansByRefId = new Map();
   bigPlansByRefId.set(loaderData.bigPlan.ref_id, loaderData.bigPlan);
+
+  const timePlanActivities = loaderData.timePlanEntries?.map(
+    (entry) => entry.time_plan_activity
+  );
+  const timePlansByRefId = new Map();
+  if (loaderData.timePlanEntries) {
+    for (const entry of loaderData.timePlanEntries) {
+      timePlansByRefId.set(entry.time_plan.ref_id, entry.time_plan);
+    }
+  }
 
   const [selectedProject, setSelectedProject] = useState(
     loaderData.project.ref_id
@@ -489,14 +499,15 @@ export default function BigPlan() {
         topLevelInfo.workspace,
         WorkspaceFeature.TIME_PLANS
       ) &&
-        loaderData.timePlanActivities && (
+        timePlanActivities && (
           <SectionCardNew
             id="big-plan-time-plan-activities"
             title="Time Plan Activities"
           >
             <TimePlanActivityList
               topLevelInfo={topLevelInfo}
-              activities={loaderData.timePlanActivities}
+              activities={timePlanActivities}
+              timePlansByRefId={timePlansByRefId}
               inboxTasksByRefId={new Map()}
               bigPlansByRefId={bigPlansByRefId}
               activityDoneness={{}}

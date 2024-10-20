@@ -131,7 +131,7 @@ export async function loader({ request, params }: LoaderArgs) {
     );
 
     const workspace = summaryResponse.workspace as Workspace;
-    let timePlanActivities = undefined;
+    let timePlanEntries = undefined;
     if (isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.TIME_PLANS)) {
       const timePlanActivitiesResult = await getLoggedInApiClient(
         session
@@ -140,12 +140,12 @@ export async function loader({ request, params }: LoaderArgs) {
         target: TimePlanActivityTarget.INBOX_TASK,
         target_ref_id: id,
       });
-      timePlanActivities = timePlanActivitiesResult.activities;
+      timePlanEntries = timePlanActivitiesResult.entries;
     }
 
     return json({
       info: result,
-      timePlanActivities: timePlanActivities,
+      timePlanEntries: timePlanEntries,
       rootProject: summaryResponse.root_project as ProjectSummary,
       allProjects: summaryResponse.projects as Array<ProjectSummary>,
       allBigPlans: summaryResponse.big_plans as Array<BigPlan>,
@@ -337,6 +337,16 @@ export default function InboxTask() {
     loaderData.info.inbox_task.ref_id,
     loaderData.info.inbox_task
   );
+
+  const timePlanActivities = loaderData.timePlanEntries?.map(
+    (entry) => entry.time_plan_activity
+  );
+  const timePlansByRefId = new Map();
+  if (loaderData.timePlanEntries) {
+    for (const entry of loaderData.timePlanEntries) {
+      timePlansByRefId.set(entry.time_plan.ref_id, entry.time_plan);
+    }
+  }
 
   const allProjectsById: { [k: string]: ProjectSummary } = {};
   if (
@@ -784,14 +794,15 @@ export default function InboxTask() {
         topLevelInfo.workspace,
         WorkspaceFeature.TIME_PLANS
       ) &&
-        loaderData.timePlanActivities && (
+        timePlanActivities && (
           <SectionCardNew
             id="inbox-task-time-plan-activities"
             title="Time Plan Activities"
           >
             <TimePlanActivityList
               topLevelInfo={topLevelInfo}
-              activities={loaderData.timePlanActivities}
+              activities={timePlanActivities}
+              timePlansByRefId={timePlansByRefId}
               inboxTasksByRefId={inboxTasksByRefId}
               bigPlansByRefId={new Map()}
               activityDoneness={{}}
