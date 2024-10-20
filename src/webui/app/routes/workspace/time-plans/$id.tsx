@@ -112,10 +112,13 @@ export async function loader({ request, params }: LoaderArgs) {
   const summaryResponse = await getLoggedInApiClient(
     session
   ).getSummaries.getSummaries({
+    include_workspace: true,
     include_projects: true,
   });
 
   try {
+    const workspace = summaryResponse.workspace!;
+
     const result = await getLoggedInApiClient(session).timePlans.timePlanLoad({
       ref_id: id,
       allow_archived: true,
@@ -123,6 +126,16 @@ export async function loader({ request, params }: LoaderArgs) {
       include_completed_nontarget: true,
       include_other_time_plans: true,
     });
+
+    let timeEventResult = undefined;
+    if (isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.SCHEDULE)) {
+      timeEventResult = await getLoggedInApiClient(
+        session
+      ).calendar.calendarLoadForDateAndPeriod({
+        right_now: result.time_plan.right_now,
+        period: result.time_plan.period,
+      });
+    }
 
     return json({
       allProjects: summaryResponse.projects || undefined,
@@ -138,6 +151,9 @@ export async function loader({ request, params }: LoaderArgs) {
       subPeriodTimePlans: result.sub_period_time_plans as Array<TimePlan>,
       higherTimePlan: result.higher_time_plan as TimePlan,
       previousTimePlan: result.previous_time_plan as TimePlan,
+      timeEventForInboxTasks:
+        timeEventResult?.entries?.inbox_task_entries || [],
+      timeEventForBigPlans: [],
     });
   } catch (error) {
     if (error instanceof ApiError && error.status === StatusCodes.NOT_FOUND) {
@@ -221,6 +237,14 @@ export default function TimePlanView() {
       ? loaderData.targetBigPlans.map((bp) => [bp.ref_id, bp])
       : []
   );
+  const timeEventsByRefId = new Map();
+  for (const e of loaderData.timeEventForInboxTasks) {
+    timeEventsByRefId.set(`it:${e.inbox_task.ref_id}`, e.time_events);
+  }
+  // TODO(horia141): re-enable this when we have time events for big plans.
+  // for (const e of loaderData.timeEventForBigPlans) {
+  //   timeEventsByRefId.set(`bp:${e.big_plan.ref_id}`, e.time_events);
+  // }
 
   const sortedSubTimePlans = sortTimePlansNaturally(
     loaderData.subPeriodTimePlans
@@ -426,6 +450,7 @@ export default function TimePlanView() {
                 filterKind={selectedKinds}
                 filterFeasability={selectedFeasabilities}
                 filterDoneness={selectedDoneness}
+                timeEventsByRefId={timeEventsByRefId}
               />
             )}
 
@@ -475,6 +500,7 @@ export default function TimePlanView() {
                         filterKind={selectedKinds}
                         filterFeasability={selectedFeasabilities}
                         filterDoneness={selectedDoneness}
+                        timeEventsByRefId={timeEventsByRefId}
                       />
                     </Box>
                   );

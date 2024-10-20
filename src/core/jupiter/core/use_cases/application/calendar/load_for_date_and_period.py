@@ -156,20 +156,15 @@ class CalendarLoadForDateAndPeriodUseCase(
         args: CalendarLoadForDateAndPeriodArgs,
     ) -> CalendarLoadForDateAndPeriodResult:
         """Execute the action."""
-        if (
-            args.period is RecurringTaskPeriod.DAILY
-            and args.stats_subperiod is not None
-        ):
-            raise InputValidationError(
-                "Stats subperiod is not allowed for daily period."
-            )
-        elif (
-            args.period is not RecurringTaskPeriod.DAILY
-            and args.stats_subperiod not in args.period.all_smaller_periods
-        ):
-            raise InputValidationError(
-                f"Stats subperiod {args.stats_subperiod} is not smaller than period {args.period}."
-            )
+        if args.stats_subperiod is not None:
+            if args.period is RecurringTaskPeriod.DAILY:
+                raise InputValidationError(
+                    "Stats subperiod is not allowed for daily period."
+                )
+            elif args.stats_subperiod not in args.period.all_smaller_periods:
+                raise InputValidationError(
+                    f"Stats subperiod {args.stats_subperiod} is not smaller than period {args.period}."
+                )
 
         workspace = context.workspace
         schedule = schedules.get_schedule(

@@ -1,6 +1,7 @@
 import type {
   BigPlan,
   InboxTask,
+  TimeEventInDayBlock,
   TimePlan,
   TimePlanActivity,
 } from "@jupiter/webapi-client";
@@ -28,6 +29,7 @@ interface TimePlanActivityCardProps {
   inboxTasksByRefId: Map<string, InboxTask>;
   bigPlansByRefId: Map<string, BigPlan>;
   activityDoneness: Record<string, boolean>;
+  timeEventsByRefId: Map<string, Array<TimeEventInDayBlock>>;
   fullInfo: boolean;
   allowSelect?: boolean;
   selected?: boolean;
@@ -41,7 +43,11 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
   );
 
   if (props.activity.target === TimePlanActivityTarget.INBOX_TASK) {
-    const inboxTask = props.inboxTasksByRefId.get(props.activity.target_ref_id);
+    const inboxTask = props.inboxTasksByRefId.get(
+      props.activity.target_ref_id
+    )!;
+    const timeEvents =
+      props.timeEventsByRefId.get(`it:${inboxTask.ref_id}`) ?? [];
 
     return (
       <EntityCard
@@ -84,6 +90,13 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
               {inboxTask?.due_date && (
                 <ADateTag label="Due At" date={inboxTask.due_date} />
               )}
+
+              {timeEvents.length > 0 && (
+                <>
+                  📅 {timeEvents.length} scheduled event
+                  {timeEvents.length > 1 ? "s" : ""}
+                </>
+              )}
             </>
           )}
 
@@ -102,7 +115,9 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
       WorkspaceFeature.BIG_PLANS
     )
   ) {
-    const bigPlan = props.bigPlansByRefId.get(props.activity.target_ref_id);
+    const bigPlan = props.bigPlansByRefId.get(props.activity.target_ref_id)!;
+    const timeEvents =
+      props.timeEventsByRefId.get(`bp:${bigPlan.ref_id}`) ?? [];
     return (
       <EntityCard
         entityId={`time-plan-activity-${props.activity.ref_id}`}
@@ -142,6 +157,13 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
               {bigPlan && <BigPlanStatusTag status={bigPlan.status} />}
               {bigPlan?.due_date && (
                 <ADateTag label="Due At" date={bigPlan.due_date} />
+              )}
+
+              {timeEvents.length > 0 && (
+                <>
+                  📅 {timeEvents.length} scheduled event
+                  {timeEvents.length > 1 ? "s" : ""}
+                </>
               )}
             </>
           )}

@@ -246,6 +246,8 @@ export default function BigPlan() {
     }
   }
 
+  const timeEventsByRefId = new Map();
+
   const [selectedProject, setSelectedProject] = useState(
     loaderData.project.ref_id
   );
@@ -511,6 +513,7 @@ export default function BigPlan() {
               inboxTasksByRefId={new Map()}
               bigPlansByRefId={bigPlansByRefId}
               activityDoneness={{}}
+              timeEventsByRefId={timeEventsByRefId}
               fullInfo={false}
             />
           </SectionCardNew>

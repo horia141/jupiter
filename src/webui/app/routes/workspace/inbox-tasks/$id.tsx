@@ -348,6 +348,12 @@ export default function InboxTask() {
     }
   }
 
+  const timeEventsByRefId = new Map();
+  timeEventsByRefId.set(
+    `it:${loaderData.info.inbox_task.ref_id}`,
+    loaderData.info.time_event_blocks
+  );
+
   const allProjectsById: { [k: string]: ProjectSummary } = {};
   if (
     isWorkspaceFeatureAvailable(
@@ -806,6 +812,7 @@ export default function InboxTask() {
               inboxTasksByRefId={inboxTasksByRefId}
               bigPlansByRefId={new Map()}
               activityDoneness={{}}
+              timeEventsByRefId={timeEventsByRefId}
               fullInfo={false}
             />
           </SectionCardNew>

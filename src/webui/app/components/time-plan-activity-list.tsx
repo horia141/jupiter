@@ -1,6 +1,7 @@
 import type {
   BigPlan,
   InboxTask,
+  TimeEventInDayBlock,
   TimePlan,
   TimePlanActivity,
   TimePlanActivityFeasability,
@@ -19,6 +20,7 @@ interface TimePlanActivityListProps {
   inboxTasksByRefId: Map<string, InboxTask>;
   bigPlansByRefId: Map<string, BigPlan>;
   activityDoneness: Record<string, boolean>;
+  timeEventsByRefId: Map<string, Array<TimeEventInDayBlock>>;
   fullInfo: boolean;
   filterKind?: TimePlanActivityKind[];
   filterFeasability?: TimePlanActivityFeasability[];
@@ -78,6 +80,7 @@ export function TimePlanActivityList(props: TimePlanActivityListProps) {
             inboxTasksByRefId={props.inboxTasksByRefId}
             bigPlansByRefId={props.bigPlansByRefId}
             activityDoneness={props.activityDoneness}
+            timeEventsByRefId={props.timeEventsByRefId}
           />
         );
       })}

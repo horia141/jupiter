@@ -1,5 +1,9 @@
 import type { BigPlan, InboxTask, TimePlan } from "@jupiter/webapi-client";
-import { ApiError, TimePlanActivityTarget } from "@jupiter/webapi-client";
+import {
+  ApiError,
+  TimePlanActivityTarget,
+  WorkspaceFeature,
+} from "@jupiter/webapi-client";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -28,6 +32,7 @@ import {
   filterActivitiesByTargetStatus,
   sortTimePlanActivitiesNaturally,
 } from "~/logic/domain/time-plan-activity";
+import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { LeafPanelExpansionState } from "~/rendering/leaf-panel-expansion";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -55,7 +60,15 @@ export async function loader({ request, params }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const { id, otherTimePlanId } = parseParams(params, ParamsSchema);
 
+  const summaryResponse = await getLoggedInApiClient(
+    session
+  ).getSummaries.getSummaries({
+    include_workspace: true,
+  });
+
   try {
+    const workspace = summaryResponse.workspace!;
+
     const mainResult = await getLoggedInApiClient(
       session
     ).timePlans.timePlanLoad({
@@ -86,6 +99,16 @@ export async function loader({ request, params }: LoaderArgs) {
         })
       : null;
 
+    let otherTimeEventResult = undefined;
+    if (isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.SCHEDULE)) {
+      otherTimeEventResult = await getLoggedInApiClient(
+        session
+      ).calendar.calendarLoadForDateAndPeriod({
+        right_now: otherResult.time_plan.right_now,
+        period: otherResult.time_plan.period,
+      });
+    }
+
     return json({
       mainTimePlan: mainResult.time_plan,
       mainActivities: mainResult.activities,
@@ -97,6 +120,9 @@ export async function loader({ request, params }: LoaderArgs) {
         string,
         boolean
       >,
+      otherTimeEventForInboxTasks:
+        otherTimeEventResult?.entries?.inbox_task_entries || [],
+      otherTimeEventForBigPlans: [],
       otherHigherTimePlan: otherResult.higher_time_plan as TimePlan,
       otherPreviousTimePlan: otherResult.previous_time_plan as TimePlan,
       otherHigherTimePlanSubTimePlans:
@@ -197,6 +223,14 @@ export default function TimePlanAddFromCurrentTimePlans() {
       ? loaderData.otherTargetBigPlans.map((bp) => [bp.ref_id, bp])
       : []
   );
+  const otherTimeEventsByRefId = new Map();
+  for (const e of loaderData.otherTimeEventForInboxTasks) {
+    otherTimeEventsByRefId.set(`it:${e.inbox_task.ref_id}`, e.time_events);
+  }
+  // TODO(horia141): re-enable this when we have time events for big plans.
+  // for (const e of loaderData.otherTimeEventForInboxTasks) {
+  //   otherTimeEventsByRefId.set(`bp:${e.big_plan.ref_id}`, e.time_events);
+  // }
 
   const filteredOtherActivities = filterActivitiesByTargetStatus(
     loaderData.otherActivities,
@@ -275,6 +309,7 @@ export default function TimePlanAddFromCurrentTimePlans() {
               inboxTasksByRefId={otherTargetInboxTasksByRefId}
               bigPlansByRefId={otherTargetBigPlansByRefId}
               activityDoneness={loaderData.otherActivityDoneness}
+              timeEventsByRefId={otherTimeEventsByRefId}
             />
           ))}
         </EntityStack>
