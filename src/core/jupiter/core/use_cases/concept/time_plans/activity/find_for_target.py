@@ -70,11 +70,14 @@ class TimePlanActivityFindForTargetUseCase(
             target=args.target,
             target_ref_id=args.target_ref_id,
         )
-        time_plans = await uow.get_for(TimePlan).find_all_generic(
-            parent_ref_id=time_plan_domain.ref_id,
-            allow_archived=args.allow_archived,
-            ref_id=[activity.time_plan.ref_id for activity in time_plan_activities],
-        )
+        if len(time_plan_activities) > 0:
+            time_plans = await uow.get_for(TimePlan).find_all_generic(
+                parent_ref_id=time_plan_domain.ref_id,
+                allow_archived=args.allow_archived,
+                ref_id=[activity.time_plan.ref_id for activity in time_plan_activities],
+            )
+        else:
+            time_plans = []
         time_plans_by_ref_id = {time_plan.ref_id: time_plan for time_plan in time_plans}
 
         return TimePlanActivityFindForTargetResult(
