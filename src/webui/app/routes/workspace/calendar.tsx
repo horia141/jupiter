@@ -2497,20 +2497,14 @@ function splitTimeEventInDayEntryIntoPerDayEntries(
 } {
   const startTime = calculateStartTimeForTimeEvent(entry.time_event_in_tz);
   const endTime = calculateEndTimeForTimeEvent(entry.time_event_in_tz);
-  const epochDate = aDateToDate("1970-01-01");
-  const startDaysSinceEpoch = Math.floor(
-    startTime.diff(epochDate, "days").as("days")
-  );
-  const endDaysSinceEpoch = Math.floor(
-    endTime.diff(epochDate, "days").as("days")
-  );
+  const diffInDays = endTime.startOf('day').diff(startTime.startOf('day'), 'days').days;
 
-  if (startDaysSinceEpoch === endDaysSinceEpoch) {
+  if (diffInDays === 0) {
     // Here we have only one day.
     return {
       day1: entry,
     };
-  } else if (startDaysSinceEpoch + 1 === endDaysSinceEpoch) {
+  } else if (diffInDays === 1) {
     // Here we have two days.
     const day1TimeEvent = {
       ...entry.time_event_in_tz,
@@ -2543,7 +2537,7 @@ function splitTimeEventInDayEntryIntoPerDayEntries(
         },
       },
     };
-  } else if (startDaysSinceEpoch + 2 === endDaysSinceEpoch) {
+  } else if (diffInDays === 2) {
     // Here we have three days.
     const day1TimeEvent = {
       ...entry.time_event_in_tz,
