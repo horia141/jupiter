@@ -1,4 +1,4 @@
-"""Jupiter specific use cases classes."""
+"""jupiter specific use cases classes."""
 import abc
 from collections.abc import Callable
 from dataclasses import dataclass

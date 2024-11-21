@@ -2,15 +2,15 @@
 
 ## Access
 
-First, go to the [Jupiter](https://jupiter-webui.onrender.com). This is the _hosted_ version
-of Jupiter, which is the recommended way to start. If you're looking for a _local_ install,
+First, go to the [Thrive](https://jupiter-webui.onrender.com). This is the _hosted_ version
+of Thrive, which is the recommended way to start. If you're looking for a _local_ install,
 then checkout [installation instructions](how-tos/install.md). Everything below should work the same.
 
 ## Create A Workspace
 
-The _workspace_ is where all your work in Jupiter happens. You'll first need to create one.
+The _workspace_ is where all your work in Thrive happens. You'll first need to create one.
 
-On accessing Jupiter you should just see a basic button which you _need to click_.
+On accessing Thrive you should just see a basic button which you _need to click_.
 
 ![Go To Workspace](assets/tutorial-go-to-workspace.png)
 
@@ -45,10 +45,10 @@ look like this now:
 
 ## Congrats
 
-Congrats! You created your workspace and performed your first task on Jupiter. It's a big achievement!
+Congrats! You created your workspace and performed your first task on Thrive. It's a big achievement!
 
 You are now equiped with this fundamental knowledge. Now you can play around, or read the various parts
 of this guide to get yourself familiarized with the possibilities. Checkout [concepts](concepts/overview.md)
 and [how-tos](how-tos) for this more in depth information.
 
-Welcome to Jupiter and happy planning!
+Welcome to Thrive and happy planning!

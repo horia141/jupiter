@@ -3,7 +3,7 @@
 /* eslint-disable */
 
 /**
- * A particular feature of a Jupiter workspace.
+ * A particular feature of a jupiter workspace.
  */
 export enum WorkspaceFeature {
     INBOX_TASKS = 'inbox-tasks',

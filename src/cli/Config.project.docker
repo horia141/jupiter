@@ -1,7 +1,7 @@
 ENV=staging
 HOSTING=local
 BASENAME=jupiter-cli
-DESCRIPTION="The CLI client for Jupiter"
+DESCRIPTION="The CLI client for Thrive"
 DOCS_URL=https://jupiter-goals.readthedocs.io
 DOCS_INIT_WORKSPACE_URL=${DOCS_URL}/en/stable/how-tos/workspaces/init-a-workspace/
 SESSION_INFO_PATH=/data/session-info

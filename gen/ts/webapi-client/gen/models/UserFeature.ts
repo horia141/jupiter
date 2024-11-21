@@ -3,7 +3,7 @@
 /* eslint-disable */
 
 /**
- * A particular feature of a Jupiter user.
+ * A particular feature of a jupiter user.
  */
 export enum UserFeature {
     GAMIFICATION = 'gamification',

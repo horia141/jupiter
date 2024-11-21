@@ -1,6 +1,6 @@
 # Working Mem
 
-Jupiter has a feature for
+Thrive has a feature for
 [workingmem.txt](https://calnewport.com/
 deep-habits-workingmemory-txt-the-most-important-productivity-tool-youve-never-heard-of/) files.
 

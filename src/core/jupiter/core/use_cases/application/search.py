@@ -1,4 +1,4 @@
-"""Use case for free form searching through Jupiter."""
+"""Use case for free form searching through jupiter."""
 
 from jupiter.core.domain.application.search.infra.search_repository import SearchMatch
 from jupiter.core.domain.application.search.search_limit import SearchLimit
@@ -45,7 +45,7 @@ class SearchResult(UseCaseResultBase):
 
 @readonly_use_case()
 class SearchUseCase(AppLoggedInReadonlyUseCase[SearchArgs, SearchResult]):
-    """Use case for free form searching through Jupiter."""
+    """Use case for free form searching through jupiter."""
 
     async def _execute(
         self, context: AppLoggedInReadonlyUseCaseContext, args: SearchArgs

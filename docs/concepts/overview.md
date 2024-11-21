@@ -2,8 +2,8 @@
 
 ## Intro
 
-Jupiter is a tool for _life planning_. It is _opinionated_ in how it approaches
-this problem. The goal of this page is to document Jupiter's conceptual model
+Thrive is a tool for _life planning_. It is _opinionated_ in how it approaches
+this problem. The goal of this page is to document Thrive's conceptual model
 and how life planning is mapped to it.
 
 There will be references made to the current implementation. But the concepts
@@ -13,7 +13,7 @@ are _separate_ from it, and could just as easily be implemented via pen & paper.
 
 As a quick reference, here is the list of the more important concepts:
 
-* _Workspace_: the _place_ where all the work in Jupiter happens.
+* _Workspace_: the _place_ where all the work in Thrive happens.
 * _Task_: an atomic unit of work. This is normally something like "Congratulate
   Jeff on the speech", or "Buy new socks".
 * _Habit_: a regular activity, usually one that is centered on _you_. Think
@@ -33,12 +33,12 @@ As a quick reference, here is the list of the more important concepts:
 * _Person_: a family member, friend, acquaintance, etc you wish to keep in touch with, or
   otherwise know about in a more formal way.
 * _Push Integrations_: lightweight integrations with external tools such as Slack, GMail,
-  Outlook, generic email, etc. Done in a one-way fashion via these tools pushing work into Jupiter.
+  Outlook, generic email, etc. Done in a one-way fashion via these tools pushing work into Thrive.
 
 The rest of the document will cover each of these in greater detail.
 
 ## The Tool
 
-Jupiter is _the tool_ that allows you to run your life by using the concepts above in certain ways.
+Thrive is _the tool_ that allows you to run your life by using the concepts above in certain ways.
 
 You can interact with it via one of the [clients](clients.md) and in either [hosted or local mode](hosted-vs-local-mode.md)

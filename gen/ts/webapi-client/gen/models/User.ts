@@ -10,7 +10,7 @@ import type { Timezone } from './Timezone';
 import type { UserName } from './UserName';
 
 /**
- * A user of Jupiter.
+ * A user of jupiter.
  */
 export type User = {
     ref_id: EntityId;

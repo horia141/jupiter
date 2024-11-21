@@ -64,7 +64,7 @@ class FeatureControl(EnumValue):
 
 @enum_value
 class UserFeature(EnumValue):
-    """A particular feature of a Jupiter user."""
+    """A particular feature of a jupiter user."""
 
     GAMIFICATION = "gamification"
 
@@ -105,7 +105,7 @@ class UserFeatureFlagsControls(CompositeValue):
 
 @enum_value
 class WorkspaceFeature(EnumValue):
-    """A particular feature of a Jupiter workspace."""
+    """A particular feature of a jupiter workspace."""
 
     INBOX_TASKS = "inbox-tasks"
     WORKING_MEM = "working-mem"

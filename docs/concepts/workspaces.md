@@ -1,7 +1,7 @@
 # Workspace
 
 All the work for life planning takes place in a _workspace_. When you create a new
-account in the web app or call `jupiter init` in the CLI app you are creating
+account in the web app or call `thrive init` in the CLI app you are creating
 a new workspace.
 
 Right now, a single account can have just one workspace, that is private to the user.
@@ -30,7 +30,7 @@ In the Web app you can access workspace settings in the right-hand menu.
 
 In the CLI app you can:
 
-* Create a workspace when creating an account in the web app of via `jupiter init`
+* Create a workspace when creating an account in the web app of via `thrive init`
 * Set the name via `workspace-update` or editing the name in the web app.
 * Change the default project from the `Settings` section of the right-hand side menu or
   via `workspace-change-default-project` in the CLI.

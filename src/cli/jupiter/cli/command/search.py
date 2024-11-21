@@ -1,4 +1,4 @@
-"""Command for free form searching across all of Jupiter."""
+"""Command for free form searching across all of jupiter."""
 from typing import cast
 
 from jupiter.cli.command.command import LoggedInReadonlyCommand
@@ -16,7 +16,7 @@ from rich.tree import Tree
 
 
 class Search(LoggedInReadonlyCommand[SearchUseCase, SearchResult]):
-    """Command for free form searching across all of Jupiter."""
+    """Command for free form searching across all of jupiter."""
 
     def _render_result(
         self,

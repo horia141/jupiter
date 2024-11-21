@@ -1,4 +1,4 @@
-"""The service which syncs external calendars with Jupiter."""
+"""The service which syncs external calendars with jupiter."""
 from typing import Final, cast
 
 import recurring_ical_events
@@ -60,7 +60,7 @@ from pendulum import Date
 
 
 class ScheduleExternalSyncService:
-    """The service which syncs external calendars with Jupiter."""
+    """The service which syncs external calendars with jupiter."""
 
     _time_provider: Final[TimeProvider]
     _realm_codec_registry: Final[RealmCodecRegistry]

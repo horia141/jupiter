@@ -3,7 +3,7 @@
   "sideEffects": false,
   "name": "@jupiter/desktop",
   "version": "0.1.0",
-  "description": "The Jupiter Desktop application",
+  "description": "The Thrive Desktop application",
   "main": "main.js",
   "readme": "README.md",
   "scripts": {

@@ -1,4 +1,4 @@
 ENV=local
 HOSTING=local
 BASENAME=jupiter-desktop
-DESCRIPTION="The Jupiter Desktop application"
+DESCRIPTION="The Thrive Desktop application"

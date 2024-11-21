@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "jupiter-webapi"
 version = "0.1.0"
-description = "A Web RPC-ish API for Jupiter."
+description = "A Web RPC-ish API for Thrive."
 authors = ["Horia Coman <horia141@gmail.com>"]
 license = "MIT"
 homepage = "https://jupiter-goals.readthedocs.io/"

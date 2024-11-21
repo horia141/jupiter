@@ -1,4 +1,4 @@
-"""The CLI entry-point for Jupiter."""
+"""The CLI entry-point for jupiter."""
 import asyncio
 import logging
 import sys

@@ -1,4 +1,4 @@
-"""A user of Jupiter."""
+"""A user of jupiter."""
 import abc
 
 from jupiter.core.domain.application.gamification.score_log import ScoreLog
@@ -31,7 +31,7 @@ from jupiter.core.framework.update_action import UpdateAction
 
 @entity
 class User(RootEntity):
-    """A user of Jupiter."""
+    """A user of jupiter."""
 
     email_address: EmailAddress
     name: UserName

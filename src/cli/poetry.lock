@@ -491,7 +491,7 @@ files = [
 [[package]]
 name = "jupiter-core"
 version = "0.1.0"
-description = "The core business logic for Jupiter."
+description = "The core business logic for Thrive."
 optional = false
 python-versions = ">=3.10, <3.11"
 files = []

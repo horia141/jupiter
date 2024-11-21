@@ -1,6 +1,6 @@
 # Accounts
 
-The account is the way you indentify yourelf relative to Jupiter. The _unique identifier_
+The account is the way you indentify yourelf relative to Thrive. The _unique identifier_
 is your email address.
 
 Your account is uniquely linked to your [workspace](./workspaces.md) and this is private
@@ -10,9 +10,9 @@ You can create an account (and associated workspace) as [shown here](../how-tos/
 
 ## Properties
 
-An account has an email. This is your unique identifier you are known by in Jupiter.
+An account has an email. This is your unique identifier you are known by in Thrive.
 
-An account has a name. This is simply the name that you want to be known by in Jupiter,
+An account has a name. This is simply the name that you want to be known by in Thrive,
 but it doesn't carry any other constraints other than being non-empty.
 
 An account also has a timezone. This is the preferred timezone in which you wish to see

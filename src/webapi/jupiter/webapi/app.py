@@ -966,9 +966,9 @@ class WebServiceApp:
         if self._fast_app.openapi_schema:
             return self._fast_app.openapi_schema
         openapi_schema = get_openapi(
-            title="Jupiter Webapi",
+            title="Thrive Webapi",
             version=self._global_properties.version,
-            description="Jupiter Webapi",
+            description="Thrive Webapi",
             routes=self._fast_app.routes,
         )
 

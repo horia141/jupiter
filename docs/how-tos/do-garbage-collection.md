@@ -22,5 +22,5 @@ item and click "Garbage Collect".
 The same thing can be achieved with the  `gc` command of the CLI, like so:
 
 ```bash
-$ jupiter gc
+$ thrive gc
 ```

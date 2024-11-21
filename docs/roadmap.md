@@ -1,6 +1,6 @@
 # Roadmap
 
-Jupiter is now at `v1.0.0`. This means it has some notion of stability and is also shareable and usable by
+Thrive is now at `v1.0.0`. This means it has some notion of stability and is also shareable and usable by
 folks besides me - its creator. Nevertheless, it is a labour of love and a side-project. It has some way
 to go before doing all the things I'd like it to. This doc is a rough roadmap. But there's _no commitment_ to
 dates or order of delivery.

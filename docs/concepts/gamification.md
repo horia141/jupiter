@@ -1,6 +1,6 @@
 # Gamification
 
-Jupiter has a simple notion of [gamification](https://en.wikipedia.org/wiki/Gamification) built in.
+Thrive has a simple notion of [gamification](https://en.wikipedia.org/wiki/Gamification) built in.
 It is optional though, see below.
 
 The focus is on completing [inbox tasks](inbox-tasks.md) and [big plans](big-plans.md). Every piece of
@@ -19,7 +19,7 @@ There's also a random "lucky puppy" bonus you get from time to time on successfu
 one point.
 
 The points you score add up over time. There's a daily, weekly, monthly, quarterly, yearly and lifetime
-total scores that Jupiter tracks.
+total scores that Thrive tracks.
 
 You can view the daily and weekly score summary in the Web UI:
 

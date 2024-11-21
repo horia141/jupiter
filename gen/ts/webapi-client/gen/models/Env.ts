@@ -3,7 +3,7 @@
 /* eslint-disable */
 
 /**
- * An environment for a Jupiter application.
+ * An environment for a jupiter application.
  */
 export enum Env {
     PRODUCTION = 'production',

@@ -1,3 +1,3 @@
 # CLI Client
 
-The CLI client for Jupiter.
+The CLI client for Thrive.

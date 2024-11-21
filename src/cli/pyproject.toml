@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "jupiter-cli"
 version = "0.1.0"
-description = "A CLI client for Jupiter."
+description = "A CLI client for Thrive."
 authors = ["Horia Coman <horia141@gmail.com>"]
 license = "MIT"
 homepage = "https://jupiter-goals.readthedocs.io/"

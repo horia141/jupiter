@@ -45,7 +45,7 @@ export function UserFeatureFlagsEditor(props: UserFeatureFlagsEditorProps) {
             )}`;
             break;
           case FeatureControl.ALWAYS_OFF_TECH:
-            extraLabel = "Cannot enable, due to Jupiter technical issues";
+            extraLabel = "Cannot enable, due to Thrive technical issues";
             break;
           case FeatureControl.USER:
             break;
@@ -125,7 +125,7 @@ export function WorkspaceFeatureFlagsEditor(
             )}`;
             break;
           case FeatureControl.ALWAYS_OFF_TECH:
-            extraLabel = "Cannot enable, due to Jupiter technical issues";
+            extraLabel = "Cannot enable, due to Thrive technical issues";
             break;
           case FeatureControl.USER:
             break;

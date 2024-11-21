@@ -3,6 +3,6 @@
 /* eslint-disable */
 
 /**
- * The user name for a user of Jupiter.
+ * The user name for a user of jupiter.
  */
 export type UserName = string;

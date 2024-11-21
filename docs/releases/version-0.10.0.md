@@ -3,7 +3,7 @@
 Launched on 2022/02/25
 
 Like [version 0.9.0](version-0.9.0.md), this launch includes a numbr of big changes.
-They have to do with UX this time and how one interacts with Jupiter via Notion.
+They have to do with UX this time and how one interacts with Thrive via Notion.
 
 This version introduces:
 

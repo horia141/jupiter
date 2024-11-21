@@ -70,7 +70,7 @@ export default function Pomodoro() {
       return;
     }
 
-    new Notification("Jupiter Pomodoro Timer", {
+    new Notification("Thrive Pomodoro Timer", {
       icon: "/favicon.ico",
       body: `Your ${actualDuration.toFormat(
         "m"

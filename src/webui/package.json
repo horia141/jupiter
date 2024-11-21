@@ -4,7 +4,7 @@
   "name": "@jupiter/webui",
   "access": "public",
   "version": "0.1.0",
-  "description": "The Jupiter Web application",
+  "description": "The Thrive Web application",
   "author": "Horia Coman <horia141@gmail.com>",
   "license": "MIT",
   "readme": "README.md",

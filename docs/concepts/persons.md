@@ -4,7 +4,7 @@ The personal relationship manager (PRM) is a database of people with which you w
 special contact. It's like a _customer relationship management_ system, but for the people in
 your life.
 
-It's first role is simply as a database of the persons you know. But via other Jupiter mechanisms
+It's first role is simply as a database of the persons you know. But via other Thrive mechanisms
 it can make sure you don't forget about birthdays, or remember to catch up regularly, or even
 call for specific holidays.
 

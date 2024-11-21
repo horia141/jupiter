@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "jupiter-core"
 version = "0.1.0"
-description = "The core business logic for Jupiter."
+description = "The core business logic for Thrive."
 authors = ["Horia Coman <horia141@gmail.com>"]
 license = "MIT"
 homepage = "https://jupiter-goals.readthedocs.io/"

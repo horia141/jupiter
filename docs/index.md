@@ -1,8 +1,8 @@
-# Jupiter
+# Thrive
 
 ## About
 
-Jupiter is a tool for _life planning_. It provides goals management, task tracking, work planning,
+Thrive is a tool for _life planning_. It provides goals management, task tracking, work planning,
 habit building, a journal, chores management, lists, metrics, a personal relationship manager, and
 much more all in a unified package.
 
@@ -30,4 +30,4 @@ And here's one for the "big plans timeline" view:
 
 ## Further Reading
 
-Follow the [tutorial](tutorial.md) or [concepts](concepts/overview.md) to get a feeling for what Jupiter can do.
+Follow the [tutorial](tutorial.md) or [concepts](concepts/overview.md) to get a feeling for what Thrive can do.

@@ -1,6 +1,6 @@
 # Search
 
-Jupiter has a generic search functionality. You can use it to quickly jump to
+Thrive has a generic search functionality. You can use it to quickly jump to
 a given entity.
 
 The webui has a special search page accessible under `Tools`:
@@ -11,7 +11,7 @@ But you can also invoke quick search at any time:
 
 ![Quick Search](../assets/search-quick.png)
 
-A CLI command also exists invoked via `jupiter search`.
+A CLI command also exists invoked via `thrive search`.
 
 Both forms offer equivalent functionality, which is:
 

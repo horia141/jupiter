@@ -62,8 +62,8 @@ export class ApplicationService {
     }
 
     /**
-     * Use case for free form searching through Jupiter.
-     * Use case for free form searching through Jupiter.
+     * Use case for free form searching through jupiter.
+     * Use case for free form searching through jupiter.
      * @param requestBody The input data
      * @returns SearchResult Successful response
      * @throws ApiError
