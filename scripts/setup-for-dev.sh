@@ -7,6 +7,10 @@ set -ex
 # Assume brew, python 3.10+, poetry, node, gem, npm, npx, bundler, and docker are already present
 # Will modify globals nonetheless.
 
+mkdir -p .build-cache
+python3 -m venv .build-cache/venv
+source .build-cache/venv/bin/activate
+
 # brew install shellcheck
 brew install cloc
 brew install create-dmg
