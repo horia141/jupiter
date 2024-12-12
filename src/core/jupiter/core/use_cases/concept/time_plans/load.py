@@ -189,12 +189,18 @@ class TimePlanLoadUseCase(
                 if activity.kind == TimePlanActivityKind.FINISH:
                     activity_doneness[activity.ref_id] = inbox_task.is_completed
                 elif activity.kind == TimePlanActivityKind.MAKE_PROGRESS:
+                    # A tricky business logic decision.
+                    # It's quite often the case that we setup a time plan with an inbox
+                    # task where we wish to make progress. But the progress we do is just
+                    # a bit after the time plan is created. So we'd still wish to show
+                    # this as "done" in whatever view we have. So we add a buffer of a
+                    # month afterwards to capture this.
                     modified_in_time_plan = (
                         inbox_task.is_working_or_more
                         and time_plan.start_date.to_timestamp_at_start_of_day()
                         <= inbox_task.last_modified_time
                         and inbox_task.last_modified_time
-                        <= time_plan.end_date.to_timestamp_at_end_of_day()
+                        <= time_plan.end_date.add_days(30).to_timestamp_at_end_of_day()
                     )
                     activity_doneness[activity.ref_id] = (
                         inbox_task.is_completed or modified_in_time_plan
@@ -218,12 +224,18 @@ class TimePlanLoadUseCase(
                 if activity.kind == TimePlanActivityKind.FINISH:
                     activity_doneness[activity.ref_id] = big_plan.is_completed
                 elif activity.kind == TimePlanActivityKind.MAKE_PROGRESS:
+                    # A tricky business logic decision.
+                    # It's quite often the case that we setup a time plan with an inbox
+                    # task where we wish to make progress. But the progress we do is just
+                    # a bit after the time plan is created. So we'd still wish to show
+                    # this as "done" in whatever view we have. So we add a buffer of a
+                    # month afterwards to capture this.
                     modified_in_time_plan = (
                         big_plan.is_working_or_more
                         and time_plan.start_date.to_timestamp_at_start_of_day()
                         <= big_plan.last_modified_time
                         and big_plan.last_modified_time
-                        <= time_plan.end_date.to_timestamp_at_end_of_day()
+                        <= time_plan.end_date.add_days(60).to_timestamp_at_end_of_day()
                     )
                     all_subactivities_are_done = (
                         all(
