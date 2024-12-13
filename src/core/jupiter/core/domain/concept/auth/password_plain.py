@@ -1,6 +1,4 @@
 """A password in plain text, as received from a user."""
-import re
-from re import Pattern
 
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.realm import (
@@ -13,9 +11,6 @@ from jupiter.core.framework.realm import (
     only_in_realm,
 )
 from jupiter.core.framework.value import SecretValue, secret_value
-
-_PASSWORD_PLAIN_RE: Pattern[str] = re.compile(r"^\S+$")
-_PASSWORD_MIN_LENGTH: int = 10
 
 
 @secret_value
@@ -36,16 +31,6 @@ class PasswordPlainCliDecoder(RealmDecoder[PasswordPlain, CliRealm]):
                 f"Expected password newplain to be a string, got {value}"
             )
 
-        if not _PASSWORD_PLAIN_RE.match(value):
-            raise InputValidationError(
-                "Expected password to not contain any white-space"
-            )
-
-        if len(value) < _PASSWORD_MIN_LENGTH:
-            raise InputValidationError(
-                f"Expected password to be longer than {_PASSWORD_MIN_LENGTH} characters"
-            )
-
         return PasswordPlain(value)
 
 
@@ -57,16 +42,6 @@ class PasswordPlainWebDecoder(RealmDecoder[PasswordPlain, WebRealm]):
         if not isinstance(value, str):
             raise InputValidationError(
                 f"Expected password newplain to be a string, got {value}"
-            )
-
-        if not _PASSWORD_PLAIN_RE.match(value):
-            raise InputValidationError(
-                "Expected password to not contain any white-space"
-            )
-
-        if len(value) < _PASSWORD_MIN_LENGTH:
-            raise InputValidationError(
-                f"Expected password to be longer than {_PASSWORD_MIN_LENGTH} characters"
             )
 
         return PasswordPlain(value)

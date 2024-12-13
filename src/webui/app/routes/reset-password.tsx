@@ -163,6 +163,7 @@ export default function ResetPassword() {
           <CardActions>
             <ButtonGroup>
               <Button
+                id="reset-password"
                 type="submit"
                 variant="contained"
                 disabled={!inputsEnabled}

@@ -67,6 +67,64 @@ features and bugfixes, ocassionally tagged with releases. To enforce these, ther
 straight coding on the `main` branch, and the helper scripts help you setup things
 in the right way.
 
+## Environments
+
+The Jupiter infrastructure has a rather crips notion of environments. They operate
+on two levels: system and feature.
+
+System environments are the names we give for the code in various distances relative
+to users and developers. Code can look at the `Env` enum to understand what environment
+they are in.
+
+* There is the `production` environment of which there is only one, and which consists
+  of the totality of machines, cloud resources, SaaS services, etc. which handle
+  the user data, the user interactions, etc. Crucially this also includes the distributed
+  clients that are the `cli` app, the `MacOS` app, the `iOS` and `Android` apps, and
+  the code running in all the browsers where the app is running like that. So it's both
+  machines we own, and ones our customers own! The code running here corresponds
+  to the code at `main:latest` or `main:vX.Y` depending on the distribution model.
+  This is considered a `live` environment because it is accessible for users.
+* There is the `staging` environmenet of which there can be many, and which are used
+  by developers to showcase their work. Every time you create a PR, you also create
+  a `staging` environment that runs the code in your particular branch. You can build
+  and distribute client apps based on this version too. This is also considered a
+  `live` environment because it is accessible to users.
+* There is the `dev` enviroment of which there can be many, and which are the ones
+  developers create when they're running their work on their dev machines. Every
+  time you run `./scripts/run-dev.sh` you're creating/using such an environment.
+  This is not considered `local` environment because it is not accessible to users.
+
+Feature environments are a subset of `dev` and `staging` environments. When you specificy a particular name in `./scripts/run-dev.sh <your-name>` you create such an env for example, or reuse if you created it before. When you open a PR, the same happens but in a `live`
+setting. These environments are separate between each other, and start in a blank but valid state.
+
+## Running Tests
+
+The full test suite is run via `make check`. This runs linters, type checkers, and
+various test batteriess on all the sources, config files, etc. 
+
+There is `./scripts/fast-lint.sh` that runs just the linters and type checkers and 
+is used for quicker feedback on the changes that you're doing. Most of the info
+here is given by various IDE tooling (which in the case of VS Code is configured
+to use the same configs as the CLI tooling). But the one produced by `fast-lint`
+is both complete and authoritative.
+
+We aim to keep this under 30 seconds.
+
+### Integration Tests
+
+Jupiter has a large battery of integration tests that look at all aspects of the
+application and its functionality, typically on the happy paths.
+
+To run these specifically you can use `./scripts/run-itests.sh`. A typical invocation
+might be:
+
+`./scripts/run-itests.sh dev -k my_test_prefix`
+
+This starts a distinct dev feature environment and opens a browser intstrumented for
+testing. You'll see a typical test result from this one.
+
+Tests are written in `Python` with `pytest` and `playwright`.
+
 ## Releases
 
 Coming soon.

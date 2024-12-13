@@ -152,6 +152,7 @@ export default function Security() {
             <CardActions>
               <ButtonGroup>
                 <Button
+                  id="change-password"
                   variant="contained"
                   disabled={!inputsEnabled}
                   type="submit"

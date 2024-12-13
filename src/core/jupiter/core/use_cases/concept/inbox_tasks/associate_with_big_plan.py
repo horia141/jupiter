@@ -101,7 +101,6 @@ class InboxTaskAssociateWithBigPlanUseCase(
                             )
                             from rich import print
 
-                            print(big_plan)
                             if (
                                 big_plan.actionable_date is None
                                 or big_plan.due_date is None

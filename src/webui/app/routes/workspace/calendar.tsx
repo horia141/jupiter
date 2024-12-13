@@ -2497,7 +2497,9 @@ function splitTimeEventInDayEntryIntoPerDayEntries(
 } {
   const startTime = calculateStartTimeForTimeEvent(entry.time_event_in_tz);
   const endTime = calculateEndTimeForTimeEvent(entry.time_event_in_tz);
-  const diffInDays = endTime.startOf('day').diff(startTime.startOf('day'), 'days').days;
+  const diffInDays = endTime
+    .startOf("day")
+    .diff(startTime.startOf("day"), "days").days;
 
   if (diffInDays === 0) {
     // Here we have only one day.

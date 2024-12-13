@@ -144,6 +144,7 @@ export default function Login() {
 
       <EntityActionHeader>
         <Button
+          id="new-workspace"
           variant="outlined"
           disabled={!inputsEnabled}
           to={`/init`}
@@ -152,6 +153,7 @@ export default function Login() {
           New Workspace
         </Button>
         <Button
+          id="reset-password"
           variant="outlined"
           disabled={!inputsEnabled}
           to={`/reset-password`}

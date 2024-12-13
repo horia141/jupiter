@@ -269,10 +269,6 @@ class ScheduleExternalSyncService:
 
                 processed_events_external_uids = set()
 
-                from rich import print
-
-                print(today, start_of_window, end_of_window)
-
                 all_events = recurring_ical_events.of(calendar).between(
                     start_of_window.the_date, end_of_window.the_date
                 )
