@@ -60,7 +60,6 @@ services:
 - type: web
   name: jupiter-docs
   runtime: static
-  region: frankfurt
   plan: starter
   previewPlan: starter
   buildCommand: ./scripts/build-docs.sh
