@@ -12,15 +12,15 @@ CLI application.
 
 Here's a picture from the "inbox" view:
 
-![Inbox](docs/assets/index-inbox.png)
+![Inbox](src/docs/assets/index-inbox.png)
 
 And another mobile friendly view:
 
-![Inbox Mobile](docs/assets/index-inbox-mobile.png)
+![Inbox Mobile](src/docs/assets/index-inbox-mobile.png)
 
 And here's one for the "big plans timeline" view:
 
-![Big Plans Timeline](docs/assets/index-big-plans-timeline.png)
+![Big Plans Timeline](src/docs/assets/index-big-plans-timeline.png)
 
-Follow the [tutorial](docs/tutorial.md) or go on to read the full [docs](https://jupiter-goals.readthedocs.io) to
+Follow the [tutorial](src/docs/tutorial.md) or go on to read the full [docs](https://jupiter-goals.readthedocs.io) to
 get a feeling for what the application can fully do!

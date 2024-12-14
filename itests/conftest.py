@@ -1,8 +1,11 @@
 """Fixtures for integration tests."""
+import os
+import re
 import uuid
 from dataclasses import dataclass
 
 import pytest
+import validators
 
 
 @dataclass
@@ -29,3 +32,15 @@ class TestUser:
 def new_random_user() -> TestUser:
     """Create a new random test user."""
     return TestUser.new_random()
+
+
+@pytest.fixture(autouse=True, scope="package")
+def webapi_server_url() -> str:
+    """The URL of the local Web API server."""
+    local_webapi_server_url = os.getenv("LOCAL_WEBAPI_SERVER_URL")
+    if re.match(r"^http://0[.]0[.]0[.]0:\d+$", local_webapi_server_url):
+        return local_webapi_server_url
+    validation_result = validators.url(local_webapi_server_url)
+    if validation_result is not True:
+        raise Exception(f"Invalid Web API URL '{local_webapi_server_url}'")
+    return local_webapi_server_url

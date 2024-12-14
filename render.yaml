@@ -1,10 +1,11 @@
-previewsEnabled: true
-previewsExpireAfterDays: 1
+previews:
+  generation: automatic
+  expireAfterDays: 1
 
 services:
 - type: web
   name: jupiter-webui
-  env: docker
+  runtime: docker
   dockerfilePath: ./src/webui/Dockerfile
   dockerContext: .
   region: frankfurt
@@ -34,7 +35,7 @@ services:
         property: port
 - type: web
   name: jupiter-webapi
-  env: docker
+  runtime: docker
   dockerfilePath: ./src/webapi/Dockerfile
   dockerContext: .
   region: frankfurt
@@ -52,6 +53,18 @@ services:
       name: jupiter-data
       mountPath: /data
       sizeGB: 5
+  envVars:
+    - key: ENV
+      value: production
+      previewValue: staging
+- type: web
+  name: jupiter-docs
+  runtime: static
+  region: frankfurt
+  plan: starter
+  previewPlan: starter
+  buildCommand: ./scripts/build-docs.sh
+  staticPublishPath: .build-cache/docs
   envVars:
     - key: ENV
       value: production

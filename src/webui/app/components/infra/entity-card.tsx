@@ -172,6 +172,7 @@ interface StyledLinkProps {
 
 const StyledLink = styled(Link)<StyledLinkProps>(({ theme, light }) => ({
   textDecoration: "none",
+  width: "100%",
   color:
     light === "true"
       ? theme.palette.info.contrastText

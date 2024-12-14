@@ -149,6 +149,7 @@ export default function Workspace() {
         >
           <Toolbar>
             <IconButton
+              id="show-sidebar"
               size="large"
               edge="start"
               color="inherit"
@@ -173,6 +174,7 @@ export default function Workspace() {
             <DocsHelp size="medium" subject={DocsHelpSubject.ROOT} />
 
             <IconButton
+              id="account-menu"
               onClick={handleAccountMenuClick}
               size="large"
               color="inherit"
@@ -230,6 +232,7 @@ export default function Workspace() {
                 </MenuItem>
               )}
               <MenuItem
+                id="account"
                 to="/workspace/account"
                 component={Link}
                 onClick={handleAccountMenuClose}
@@ -240,6 +243,7 @@ export default function Workspace() {
                 <ListItemText>Account</ListItemText>
               </MenuItem>
               <MenuItem
+                id="security"
                 to="/workspace/security"
                 component={Link}
                 onClick={handleAccountMenuClose}
@@ -250,6 +254,7 @@ export default function Workspace() {
                 <ListItemText>Security</ListItemText>
               </MenuItem>
               <MenuItem
+                id="settings"
                 to="/workspace/settings"
                 component={Link}
                 onClick={handleAccountMenuClose}
@@ -259,7 +264,8 @@ export default function Workspace() {
                 </ListItemIcon>
                 <ListItemText>Settings</ListItemText>
               </MenuItem>
-              <MenuItem
+              {/* <MenuItem
+                id="subscription"
                 to="/workspace/subscription"
                 component={Link}
                 onClick={handleAccountMenuClose}
@@ -268,10 +274,10 @@ export default function Workspace() {
                   <CardMembershipIcon />
                 </ListItemIcon>
                 <ListItemText>Subscription</ListItemText>
-              </MenuItem>
+              </MenuItem> */}
               <Divider />
               <Form method="post" action="/logout">
-                <MenuItem type="submit" component="button">
+                <MenuItem id="logout" type="submit" component="button">
                   <ListItemIcon>
                     <Logout />
                   </ListItemIcon>

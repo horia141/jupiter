@@ -236,19 +236,15 @@ class PersonUpdateUseCase(
                 await progress_reporter.mark_updated(inbox_task)
 
         # Change the birthday inbox tasks
-        from rich import print
-
         if person.birthday is None:
             # Situation 1: we need to get rid of any existing catch ups persons because there's no collection catch ups.
             inbox_task_archive_service = InboxTaskArchiveService()
             for inbox_task in person_birthday_tasks:
-                print("Archiving it", inbox_task.ref_id)
                 await inbox_task_archive_service.do_it(
                     context.domain_context, uow, progress_reporter, inbox_task
                 )
 
             for time_event_block in birthday_time_event_blocks:
-                print("Archiving time block", time_event_block.ref_id)
                 time_event_block = time_event_block.mark_archived(
                     context.domain_context
                 )
@@ -256,7 +252,6 @@ class PersonUpdateUseCase(
         else:
             # Situation 2: we need to update the existing persons.
             for inbox_task in person_birthday_tasks:
-                print("Updating it", inbox_task.ref_id)
                 schedule = schedules.get_schedule(
                     RecurringTaskPeriod.YEARLY,
                     person.name,
@@ -287,7 +282,6 @@ class PersonUpdateUseCase(
                 await progress_reporter.mark_updated(inbox_task)
 
             for birthday_time_event_block in birthday_time_event_blocks:
-                print("Updating time block", birthday_time_event_block.ref_id)
                 birthday_time_event_block = (
                     birthday_time_event_block.update_for_person_birthday(
                         ctx=context.domain_context,
