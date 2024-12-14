@@ -60,8 +60,6 @@ services:
 - type: web
   name: jupiter-docs
   runtime: static
-  plan: starter
-  previewPlan: starter
   buildCommand: ./scripts/build-docs.sh
   staticPublishPath: .build-cache/docs
   envVars:
