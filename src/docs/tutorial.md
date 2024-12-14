@@ -49,6 +49,6 @@ Congrats! You created your workspace and performed your first task on Thrive. It
 
 You are now equiped with this fundamental knowledge. Now you can play around, or read the various parts
 of this guide to get yourself familiarized with the possibilities. Checkout [concepts](concepts/overview.md)
-and [how-tos](how-tos) for this more in depth information.
+and [how-tos](how-tos/install.md) for this more in depth information.
 
 Welcome to Thrive and happy planning!

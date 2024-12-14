@@ -11,7 +11,7 @@ I wanted to get done actually got done, while juggling the standard complexities
 
 Inspiration comes from [Getting Things Done](https://gettingthingsdone.com/what-is-gtd/),
 [The Deep Life Stack](https://www.thedeeplife.com/podcasts/episodes/ep-252-the-deep-life-stack/),
-existentialist philosophy, [Notion](notion.so), and many others.
+existentialist philosophy, [Notion](https://notion.so), and many others.
 
 The current version is both a [webapp](https://jupiter-webui.onrender.com/) and a
 [CLI application](how-tos/install.md).

@@ -54,6 +54,8 @@ nav:
           - 'Version 1.0.6': 'releases/version-1.0.6.md'
           - 'Version 1.0.3': 'releases/version-1.0.3.md'
           - Older:
+                - 'Version 1.0.5': 'releases/version-1.0.5.md'
+                - 'Version 1.0.4': 'releases/version-1.0.4.md'
                 - 'Version 0.10.1': 'releases/version-0.10.1.md'
                 - 'Version 0.10.0': 'releases/version-0.10.0.md'
                 - 'Version 0.9.0': 'releases/version-0.9.0.md'
