@@ -264,7 +264,7 @@ export default function Workspace() {
                 </ListItemIcon>
                 <ListItemText>Settings</ListItemText>
               </MenuItem>
-              <MenuItem
+              {/* <MenuItem
                 id="subscription"
                 to="/workspace/subscription"
                 component={Link}
@@ -274,7 +274,7 @@ export default function Workspace() {
                   <CardMembershipIcon />
                 </ListItemIcon>
                 <ListItemText>Subscription</ListItemText>
-              </MenuItem>
+              </MenuItem> */}
               <Divider />
               <Form method="post" action="/logout">
                 <MenuItem id="logout" type="submit" component="button">
