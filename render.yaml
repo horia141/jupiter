@@ -14,10 +14,6 @@ services:
   rootDir: .
   numInstances: 1
   healthCheckPath: /healthz
-  buildFilter:
-    paths:
-    - gen/**
-    - src/webui/**
   previews:
     generation: automatic
     plan: starter
@@ -51,10 +47,6 @@ services:
   rootDir: .
   numInstances: 1
   healthCheckPath: /healthz
-  buildFilter:
-    paths:
-    - src/core/**
-    - src/webapi/**
   previews:
     generation: automatic
     plan: starter

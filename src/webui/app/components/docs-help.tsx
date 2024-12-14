@@ -56,38 +56,38 @@ function subjectToUrl(subject: DocsHelpSubject) {
     case DocsHelpSubject.ROOT:
       return "/";
     case DocsHelpSubject.GAMIFICATION:
-      return "concepts/gamification/";
+      return "concepts/gamification";
     case DocsHelpSubject.INBOX_TASKS:
-      return "concepts/inbox-tasks/";
+      return "concepts/inbox-tasks";
     case DocsHelpSubject.WORKING_MEM:
-      return "concepts/working-mem/";
+      return "concepts/working-mem";
     case DocsHelpSubject.TIME_PLANS:
-      return "concepts/time-plans/";
+      return "concepts/time-plans";
     case DocsHelpSubject.SCHEDULE:
-      return "concepts/schedule/";
+      return "concepts/schedule";
     case DocsHelpSubject.HABITS:
-      return "concepts/habits/";
+      return "concepts/habits";
     case DocsHelpSubject.CHORES:
-      return "concepts/chores/";
+      return "concepts/chores";
     case DocsHelpSubject.DOCS:
-      return "concepts/docs/";
+      return "concepts/docs";
     case DocsHelpSubject.BIG_PLANS:
-      return "concepts/big-plans/";
+      return "concepts/big-plans";
     case DocsHelpSubject.JOURNALS:
-      return "concepts/journals/";
+      return "concepts/journals";
     case DocsHelpSubject.VACATIONS:
-      return "concepts/vacations/";
+      return "concepts/vacations";
     case DocsHelpSubject.PROJECTS:
-      return "concepts/projects/";
+      return "concepts/projects";
     case DocsHelpSubject.SMART_LISTS:
-      return "concepts/smart-lists/";
+      return "concepts/smart-lists";
     case DocsHelpSubject.METRICS:
-      return "concepts/metrics/";
+      return "concepts/metrics";
     case DocsHelpSubject.PERSONS:
-      return "concepts/persons/";
+      return "concepts/persons";
     case DocsHelpSubject.SLACK_TASKS:
-      return "concepts/slack-tasks/";
+      return "concepts/slack-tasks";
     case DocsHelpSubject.EMAIL_TASKS:
-      return "concepts/email-tasks/";
+      return "concepts/email-tasks";
   }
 }
