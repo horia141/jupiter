@@ -6,6 +6,8 @@ copyright: "(c) 2024 Horia Coman"
 repo_url: https://github.com/horia141/jupiter
 repo_name: GitHub
 
+use_directory_urls: false
+
 docs_dir: src/docs
 
 theme:
