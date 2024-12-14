@@ -5,7 +5,7 @@
   "description": "Thrive is a small tool for _life planning_.",
   "author": "Horia Coman <horia141@gmail.com>",
   "license": "MIT",
-  "homepage": "https://jupiter-goals.readthedocs.io/",
+  "homepage": "https://jupiter-docs.onrender.com",
   "readme": "README.md",
   "repository": "https://github.com/horia141/jupiter",
   "workspaces": [

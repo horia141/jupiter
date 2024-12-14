@@ -1,6 +1,6 @@
 # Thrive
 
-## About
+## About - Staging
 
 Thrive is a tool for _life planning_. It provides goals management, task tracking, work planning,
 habit building, a journal, chores management, lists, metrics, a personal relationship manager, and
