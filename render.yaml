@@ -31,11 +31,11 @@ services:
         name: jupiter-webapi
         type: web
         property: port
-    # - key: DOCS_URL
-    #   fromService:
-    #     name: jupiter-docs
-    #     type: web
-    #     property: hostport
+    - key: DOCS_URL
+      fromService:
+        name: jupiter-docs
+        type: web
+        property: hostport
 - type: web
   name: jupiter-webapi
   runtime: docker
