@@ -22,7 +22,6 @@ cloc \
   .eslintignore \
   .prettierignore \
   .gitignore \
-  .readthedocs.yml \
   .github/ \
   LICENSE \
   Makefile \

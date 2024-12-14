@@ -10,7 +10,6 @@ services:
   dockerContext: .
   region: frankfurt
   plan: starter
-  previewPlan: starter
   autoDeploy: true
   rootDir: .
   numInstances: 1
@@ -19,6 +18,9 @@ services:
     paths:
     - gen/**
     - src/webui/**
+  previews:
+    generation: automatic
+    plan: starter
   envVars:
     - key: ENV
       value: production
@@ -33,6 +35,11 @@ services:
         name: jupiter-webapi
         type: web
         property: port
+    - key: DOCS_URL
+      fromService:
+        name: jupiter-docs
+        type: web
+        property: hostport
 - type: web
   name: jupiter-webapi
   runtime: docker
@@ -40,7 +47,6 @@ services:
   dockerContext: .
   region: frankfurt
   plan: starter
-  previewPlan: starter
   autoDeploy: true
   rootDir: .
   numInstances: 1
@@ -49,6 +55,9 @@ services:
     paths:
     - src/core/**
     - src/webapi/**
+  previews:
+    generation: automatic
+    plan: starter
   disk:
       name: jupiter-data
       mountPath: /data
@@ -62,6 +71,8 @@ services:
   runtime: static
   buildCommand: ./scripts/build-docs.sh
   staticPublishPath: .build-cache/docs
+  previews:
+    generation: automatic
   envVars:
     - key: ENV
       value: production
