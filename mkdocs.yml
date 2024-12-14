@@ -10,7 +10,7 @@ docs_dir: src/docs
 
 theme:
     name: mkdocs
-    logo: assets/jupiter.png
+    logo: assets/jupiter.ico
     highlightjs: true
     hljs_style: obsidian
 
