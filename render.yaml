@@ -14,6 +14,8 @@ services:
   rootDir: .
   numInstances: 1
   healthCheckPath: /healthz
+  domains:
+    - app.get-thriving.com
   previews:
     generation: automatic
     plan: starter
@@ -47,6 +49,8 @@ services:
   rootDir: .
   numInstances: 1
   healthCheckPath: /healthz
+  domains:
+    - api.infra.get-thriving.com
   previews:
     generation: automatic
     plan: starter
@@ -63,6 +67,8 @@ services:
   runtime: static
   buildCommand: ./scripts/build-docs.sh
   staticPublishPath: .build-cache/docs
+  domains:
+    - docs.get-thriving.com
   previews:
     generation: automatic
   envVars:
