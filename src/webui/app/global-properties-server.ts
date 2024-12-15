@@ -34,7 +34,7 @@ function loadGlobalPropertiesOnServer(): GlobalPropertiesServer {
   );
 
   const hostedGlobalWebApiServerUrl = `http://${hostedGlobalWebApiServerHost}:${hostedGlobalWebApiServerPort}`;
-  const hostedGlobalWebApiProgressReporterUrl = `wss://${hostedGlobalWebApiServerHost}.onrender.com/progress-reporter`;
+  const hostedGlobalWebApiProgressReporterUrl = `wss://${hostedGlobalWebApiServerHost}:${hostedGlobalWebApiServerPort}/progress-reporter`;
 
   const globalProperties = {
     env: process.env.ENV as Env,

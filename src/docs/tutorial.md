@@ -2,7 +2,7 @@
 
 ## Access
 
-First, go to the [Thrive](https://jupiter-webui.onrender.com). This is the _hosted_ version
+First, go to the [Thrive](https://app.get-thriving.com). This is the _hosted_ version
 of Thrive, which is the recommended way to start. If you're looking for a _local_ install,
 then checkout [installation instructions](how-tos/install.md). Everything below should work the same.
 

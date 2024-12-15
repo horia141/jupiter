@@ -4,10 +4,10 @@ version = "0.1.0"
 description = "The core business logic for Thrive."
 authors = ["Horia Coman <horia141@gmail.com>"]
 license = "MIT"
-homepage = "https://jupiter-docs.onrender.com/"
+homepage = "https://get-thriving.com"
 readme = "README.md"
 repository = "https://github.com/horia141/jupiter"
-documentation = "https://jupiter-docs.onrender.com/"
+documentation = "https://docs.get-thriving.com"
 packages = [{ include = "jupiter" }]
 
 [tool.poetry.dependencies]

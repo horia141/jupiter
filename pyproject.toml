@@ -4,10 +4,10 @@ version = "0.1.0"
 description = "Thrive is a small tool for _life planning_."
 authors = ["Horia Coman <horia141@gmail.com>"]
 license = "MIT"
-homepage = "https://jupiter-docs.onrender.com/"
+homepage = "https://get-thriving.com/"
 readme = "README.md"
 repository = "https://github.com/horia141/jupiter"
-documentation = "https://jupiter-docs.onrender.com/"
+documentation = "https://docs.get-thriving.com/"
 
 [tool.poetry.dependencies]
 python = ">=3.10, <3.11"

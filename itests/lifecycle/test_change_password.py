@@ -1,17 +1,20 @@
-import os
-import time
-from playwright.sync_api import Page, expect
-
-from itests.conftest import TestUser
 from jupiter_webapi_client.api.auth.change_password import (
     sync_detailed as change_password,
 )
 from jupiter_webapi_client.client import AuthenticatedClient
 from jupiter_webapi_client.models.change_password_args import ChangePasswordArgs
 from jupiter_webapi_client.models.init_result import InitResult
+from playwright.sync_api import Page, expect
+
+from itests.conftest import TestUser
 
 
-def test_change_password(page: Page, webapi_server_url: str, new_user: TestUser, new_user_and_workspace: InitResult):
+def test_change_password(
+    page: Page,
+    webapi_server_url: str,
+    new_user: TestUser,
+    new_user_and_workspace: InitResult,
+):
     page.goto("/workspace")
 
     expect(page.locator("body")).to_contain_text("Login")

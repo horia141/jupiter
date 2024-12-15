@@ -10,6 +10,9 @@
     "start": "electron ."
   },
   "author": "Horia Coman <horia141@gmail.com>",
+  "homepage": "https://get-thriving.com",
+  "repository": "https://github.com/horia141/jupiter",
+  "documentation": "https://docs.get-thriving.com",
   "license": "MIT",
   "devDependencies": {
     "electron": "^22.0.3"

@@ -4,7 +4,7 @@ Launched on 2020/09/02
 
 This version introduces:
 
-* Brand new and expanded [docs](https://jupiter-docs.onrender.com/).
+* Brand new and expanded [docs](https://docs.get-thriving.com/).
 * Massive rethink of the way storage is handled - new format is simpler and more robust.
 * Added the ability to build [reports](../concepts/reporting.md) for past activity.
 * Made a unified `sync` command instead of the various per-entity ones.

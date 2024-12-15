@@ -99,7 +99,6 @@ class InboxTaskAssociateWithBigPlanUseCase(
                             _ = await generic_creator(
                                 uow, progress_reporter, big_plan_activity
                             )
-                            from rich import print
 
                             if (
                                 big_plan.actionable_date is None

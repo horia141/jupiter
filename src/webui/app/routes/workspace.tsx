@@ -26,7 +26,6 @@ import Sidebar from "~/components/sidebar";
 
 import { UserFeature } from "@jupiter/webapi-client";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import CardMembershipIcon from "@mui/icons-material/CardMembership";
 import SecurityIcon from "@mui/icons-material/Security";
 import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
 import { AnimatePresence, useAnimate } from "framer-motion";

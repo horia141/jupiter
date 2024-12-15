@@ -2,7 +2,7 @@
 
 ## Web Application
 
-The simplest way to use Thrive is by using the [web application](https://app.get-thriving.com).
+The simplest way to use Thrive is by using the [web application](https://get-thriving.com/).
 If this is the first time you're visiting you'll be prompted to create an account.
 
 By using the web application you will be running in [hosted mode](../concepts/hosted-vs-local-mode.md).
@@ -63,7 +63,6 @@ Alternatively, you can use the scripts locally, like so:
 
 ```bash
 $ cd thrive
-$ mkdir .build-cache
 $ ./scripts/setup-for-dev.sh # Hopefully this is simple!
 ```
 
@@ -71,6 +70,7 @@ Now, instead of running the Docker image, you can directly run the scripts, like
 
 ```bash
 $ mkdir ~/my-jupier-work-dir
+$ ./scripts/new-dev-session.sh
 $ ./scripts/run-dev.sh
 ```
 

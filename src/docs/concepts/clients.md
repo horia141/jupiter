@@ -4,7 +4,7 @@ There are multiple ways for interacting with Thrive.
 
 ## The Web App
 
-There is a Thrive web app that you can [access online](https://jupiter-webui.onrender.com).
+There is a Thrive web app that you can [access online](https://app.get-thriving.com).
 It only works in [hosted mode](hosted-vs-local-mode.md) and will store all the account's and
 workspace's data on infrastructure run by the Thrive organisation. This is the preffered
 way to use the system, both for ergonomic and ease of access reasons.

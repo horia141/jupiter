@@ -13,7 +13,7 @@ Inspiration comes from [Getting Things Done](https://gettingthingsdone.com/what-
 [The Deep Life Stack](https://www.thedeeplife.com/podcasts/episodes/ep-252-the-deep-life-stack/),
 existentialist philosophy, [Notion](https://notion.so), and many others.
 
-The current version is both a [webapp](https://jupiter-webui.onrender.com/) and a
+The current version is both a [webapp](https://get-thriving.com) and a
 [CLI application](how-tos/install.md).
 
 Here's a picture from the "inbox" view:

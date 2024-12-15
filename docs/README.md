@@ -110,6 +110,10 @@ is both complete and authoritative.
 
 We aim to keep this under 30 seconds.
 
+## Fixing Issues
+
+Run `make fix-style` to fix many linting issues.
+
 ### Integration Tests
 
 Jupiter has a large battery of integration tests that look at all aspects of the
