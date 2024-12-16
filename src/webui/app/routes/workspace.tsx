@@ -18,6 +18,7 @@ import {
   Toolbar,
   Typography,
 } from "@mui/material";
+import PolicyIcon from '@mui/icons-material/Policy';
 import type { LinksFunction, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -274,6 +275,25 @@ export default function Workspace() {
                 </ListItemIcon>
                 <ListItemText>Subscription</ListItemText>
               </MenuItem> */}
+              <Divider />
+              <MenuItem
+                component={"a"}
+                href={globalProperties.termsOfServiceUrl}
+                target="_blank">
+                <ListItemIcon>
+                  <PolicyIcon />
+                </ListItemIcon>
+                <ListItemText>Terms of Service</ListItemText>
+              </MenuItem>
+              <MenuItem
+                component={"a"}
+                href={globalProperties.privacyPolicyUrl}
+                target="_blank">
+                <ListItemIcon>
+                  <PolicyIcon />
+                </ListItemIcon>
+                <ListItemText>Privacy Policy</ListItemText>
+              </MenuItem>
               <Divider />
               <Form method="post" action="/logout">
                 <MenuItem id="logout" type="submit" component="button">

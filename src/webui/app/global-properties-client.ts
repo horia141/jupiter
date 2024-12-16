@@ -10,6 +10,8 @@ export interface GlobalPropertiesClient {
   description: string;
   webApiProgressReporterUrl: string;
   docsUrl: string;
+  termsOfServiceUrl: string;
+  privacyPolicyUrl: string;
   scoreActionCookieName: string;
   inboxTasksToAskForGC: number;
   overdueInfoDays: number;
@@ -25,6 +27,8 @@ export const GlobalPropertiesContext = createContext<GlobalPropertiesClient>({
   description: "FAKE-FAKE",
   webApiProgressReporterUrl: "FAKE-FAKE",
   docsUrl: "FAKE-FAKE",
+  termsOfServiceUrl: "FAKE-FAKE",
+  privacyPolicyUrl: "FAKE-FAKE",
   scoreActionCookieName: "FAKE-FAKE",
   inboxTasksToAskForGC: 20,
   overdueInfoDays: 1,
@@ -46,6 +50,8 @@ export function serverToClientGlobalProperties(
         ? globalPropertiesServer.localWebApiProgressReporterUrl
         : globalPropertiesServer.hostedGlobalWebApiProgressReporterUrl,
     docsUrl: globalPropertiesServer.docsUrl,
+    termsOfServiceUrl: globalPropertiesServer.termsOfServiceUrl,
+    privacyPolicyUrl: globalPropertiesServer.privacyPolicyUrl,
     scoreActionCookieName: globalPropertiesServer.scoreActionCookieName,
     inboxTasksToAskForGC: globalPropertiesServer.inboxTasksToAskForGC,
     overdueInfoDays: globalPropertiesServer.overdueInfoDays,
