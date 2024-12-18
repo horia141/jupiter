@@ -16,6 +16,7 @@ from jupiter.core.domain.concept.user_workspace_link.user_workspace_link import 
     UserWorkspaceLinkRepository,
 )
 from jupiter.core.domain.concept.workspaces.workspace import Workspace
+from jupiter.core.domain.crm import CRM
 from jupiter.core.domain.env import Env
 from jupiter.core.domain.features import (
     FeatureScope,
@@ -93,6 +94,7 @@ class AppGuestMutationUseCase(
     _auth_token_stamper: Final[AuthTokenStamper]
     _domain_storage_engine: Final[DomainStorageEngine]
     _search_storage_engine: Final[SearchStorageEngine]
+    _crm: Final[CRM]
 
     def __init__(
         self,
@@ -106,6 +108,7 @@ class AppGuestMutationUseCase(
         auth_token_stamper: AuthTokenStamper,
         domain_storage_engine: DomainStorageEngine,
         search_storage_engine: SearchStorageEngine,
+        crm: CRM,
     ) -> None:
         """Constructor."""
         super().__init__(
@@ -118,6 +121,7 @@ class AppGuestMutationUseCase(
         self._auth_token_stamper = auth_token_stamper
         self._domain_storage_engine = domain_storage_engine
         self._search_storage_engine = search_storage_engine
+        self._crm = crm
 
     async def _build_context(
         self, session: AppGuestUseCaseSession
@@ -247,6 +251,7 @@ class AppLoggedInMutationUseCase(
     _domain_storage_engine: Final[DomainStorageEngine]
     _search_storage_engine: Final[SearchStorageEngine]
     _use_case_storage_engine: Final[UseCaseStorageEngine]
+    _crm: Final[CRM]
 
     @staticmethod
     def get_scoped_to_feature() -> FeatureScope:
@@ -276,6 +281,7 @@ class AppLoggedInMutationUseCase(
         domain_storage_engine: DomainStorageEngine,
         search_storage_engine: SearchStorageEngine,
         use_case_storage_engine: UseCaseStorageEngine,
+        crm: CRM,
     ) -> None:
         """Constructor."""
         super().__init__(
@@ -289,6 +295,7 @@ class AppLoggedInMutationUseCase(
         self._domain_storage_engine = domain_storage_engine
         self._search_storage_engine = search_storage_engine
         self._use_case_storage_engine = use_case_storage_engine
+        self._crm = crm
 
     async def _build_context(
         self, session: AppLoggedInUseCaseSession
@@ -526,6 +533,7 @@ class AppBackgroundMutationUseCase(
     _progress_reporter_factory: ProgressReporterFactory[EmptyContext]
     _domain_storage_engine: Final[DomainStorageEngine]
     _search_storage_engine: Final[SearchStorageEngine]
+    _crm: Final[CRM]
 
     def __init__(
         self,
@@ -534,6 +542,7 @@ class AppBackgroundMutationUseCase(
         progress_reporter_factory: ProgressReporterFactory[EmptyContext],
         domain_storage_engine: DomainStorageEngine,
         search_storage_engine: SearchStorageEngine,
+        crm: CRM,
     ) -> None:
         """Constructor."""
         self._time_provider = time_provider
@@ -541,6 +550,7 @@ class AppBackgroundMutationUseCase(
         self._progress_reporter_factory = progress_reporter_factory
         self._domain_storage_engine = domain_storage_engine
         self._search_storage_engine = search_storage_engine
+        self._crm = crm
 
     async def _build_context(self, session: EmptySession) -> EmptyContext:
         """Construct the context for the use case."""

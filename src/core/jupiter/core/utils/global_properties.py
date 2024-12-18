@@ -26,6 +26,9 @@ class GlobalProperties:
     alembic_ini_path: Path
     alembic_migrations_path: Path
     auth_token_secret: str
+    wix_api_key: str
+    wix_account_id: str
+    wix_site_id: str
 
     @property
     def sync_sqlite_db_url(self) -> str:
@@ -68,6 +71,9 @@ def build_global_properties() -> GlobalProperties:
     alembic_ini_path = Path(cast(str, os.getenv("ALEMBIC_INI_PATH")))
     alembic_migrations_path = Path(cast(str, os.getenv("ALEMBIC_MIGRATIONS_PATH")))
     auth_token_secret = cast(str, os.getenv("AUTH_TOKEN_SECRET"))
+    wix_api_key = cast(str, os.getenv("WIX_API_KEY"))
+    wix_account_id = cast(str, os.getenv("WIX_ACCOUNT_ID"))
+    wix_site_id = cast(str, os.getenv("WIX_SITE_ID"))
 
     if not alembic_ini_path.is_absolute():
         alembic_ini_path = find_up_the_dir_tree(alembic_ini_path)
@@ -87,4 +93,7 @@ def build_global_properties() -> GlobalProperties:
         alembic_ini_path=alembic_ini_path,
         alembic_migrations_path=alembic_migrations_path,
         auth_token_secret=auth_token_secret,
+        wix_api_key=wix_api_key,
+        wix_account_id=wix_account_id,
+        wix_site_id=wix_site_id,
     )

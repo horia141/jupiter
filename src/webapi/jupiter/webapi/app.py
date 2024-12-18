@@ -33,6 +33,7 @@ from jupiter.core.domain.concept.auth.auth_token_ext import (
 from jupiter.core.domain.concept.auth.auth_token_stamper import AuthTokenStamper
 from jupiter.core.domain.concept.auth.password_plain import PasswordPlain
 from jupiter.core.domain.core.email_address import EmailAddress
+from jupiter.core.domain.crm import CRM
 from jupiter.core.domain.storage_engine import DomainStorageEngine, SearchStorageEngine
 from jupiter.core.framework.entity import Entity, ParentLink
 from jupiter.core.framework.event import EventSource
@@ -436,6 +437,7 @@ class WebServiceApp:
     _domain_storage_engine: Final[DomainStorageEngine]
     _search_storage_engine: Final[SearchStorageEngine]
     _use_case_storage_engine: Final[UseCaseStorageEngine]
+    _crm: Final[CRM]
     _use_case_commands: Final[
         dict[
             type[
@@ -466,6 +468,7 @@ class WebServiceApp:
         domain_storage_engine: DomainStorageEngine,
         search_storage_engine: SearchStorageEngine,
         use_case_storage_engine: UseCaseStorageEngine,
+        crm: CRM,
     ) -> None:
         """Constructor."""
         self._global_properties = global_properties
@@ -478,6 +481,7 @@ class WebServiceApp:
         self._domain_storage_engine = domain_storage_engine
         self._search_storage_engine = search_storage_engine
         self._use_case_storage_engine = use_case_storage_engine
+        self._crm = crm
         self._use_case_commands = {}
         self._commands = {}
         self._exception_handlers = {}
@@ -504,6 +508,7 @@ class WebServiceApp:
         domain_storage_engine: DomainStorageEngine,
         search_storage_engine: SearchStorageEngine,
         use_case_storage_engine: UseCaseStorageEngine,
+        crm: CRM,
         *module_root: types.ModuleType,
     ) -> "WebServiceApp":
         """Build the app from the module root."""
@@ -582,6 +587,7 @@ class WebServiceApp:
             domain_storage_engine,
             search_storage_engine,
             use_case_storage_engine,
+            crm=crm,
         )
 
         login_use_case = LoginUseCase(
@@ -707,6 +713,7 @@ class WebServiceApp:
                     auth_token_stamper=self._auth_token_stamper,
                     domain_storage_engine=self._domain_storage_engine,
                     search_storage_engine=self._search_storage_engine,
+                    crm=self._crm,
                 ),
                 root_module=root_module,
             )
@@ -743,6 +750,7 @@ class WebServiceApp:
                             domain_storage_engine=self._domain_storage_engine,
                             search_storage_engine=self._search_storage_engine,
                             use_case_storage_engine=self._use_case_storage_engine,
+                            crm=self._crm,
                         ),
                         root_module=root_module,
                     )
@@ -775,6 +783,7 @@ class WebServiceApp:
                     progress_reporter_factory=EmptyProgressReporterFactory(),
                     domain_storage_engine=self._domain_storage_engine,
                     search_storage_engine=self._search_storage_engine,
+                    crm=self._crm,
                 ),
                 root_module=root_module,
             )

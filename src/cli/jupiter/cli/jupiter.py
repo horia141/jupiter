@@ -5,19 +5,20 @@ import sys
 
 import jupiter.cli.command
 import jupiter.core.domain
-import jupiter.core.repository.sqlite.domain
+import jupiter.core.impl.repository.sqlite.domain
 import jupiter.core.use_cases
 from jupiter.cli.command.command import CliApp
 from jupiter.cli.command.rendering import RichConsoleProgressReporterFactory
 from jupiter.cli.session_storage import SessionStorage
 from jupiter.cli.top_level_context import TopLevelContext
 from jupiter.core.domain.concept.auth.auth_token_stamper import AuthTokenStamper
-from jupiter.core.repository.sqlite.connection import SqliteConnection
-from jupiter.core.repository.sqlite.domain.storage_engine import (
+from jupiter.core.impl.crm.noop import NoOpCRM
+from jupiter.core.impl.repository.sqlite.connection import SqliteConnection
+from jupiter.core.impl.repository.sqlite.domain.storage_engine import (
     SqliteDomainStorageEngine,
     SqliteSearchStorageEngine,
 )
-from jupiter.core.repository.sqlite.use_case.storage_engine import (
+from jupiter.core.impl.repository.sqlite.use_case.storage_engine import (
     SqliteUseCaseStorageEngine,
 )
 from jupiter.core.use_cases.infra.persistent_mutation_use_case_recoder import (
@@ -59,7 +60,7 @@ async def main() -> None:
     domain_storage_engine = SqliteDomainStorageEngine.build_from_module_root(
         realm_codec_registry,
         sqlite_connection,
-        jupiter.core.repository.sqlite.domain,
+        jupiter.core.impl.repository.sqlite.domain,
         jupiter.core.domain,
     )
     search_storage_engine = SqliteSearchStorageEngine(
@@ -68,6 +69,8 @@ async def main() -> None:
     usecase_storage_engine = SqliteUseCaseStorageEngine(
         realm_codec_registry, sqlite_connection
     )
+
+    crm = NoOpCRM()
 
     session_storage = SessionStorage(
         global_properties.session_info_path, realm_codec_registry
@@ -125,6 +128,7 @@ async def main() -> None:
         domain_storage_engine,
         search_storage_engine,
         usecase_storage_engine,
+        crm,
         jupiter.core.use_cases,
         jupiter.cli.command,
     )

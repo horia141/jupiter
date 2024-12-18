@@ -1,6 +1,7 @@
 import { Settings } from "@mui/icons-material";
 import Logout from "@mui/icons-material/Logout";
 import MenuIcon from "@mui/icons-material/Menu";
+import PolicyIcon from "@mui/icons-material/Policy";
 import {
   Alert,
   AlertTitle,
@@ -18,7 +19,6 @@ import {
   Toolbar,
   Typography,
 } from "@mui/material";
-import PolicyIcon from '@mui/icons-material/Policy';
 import type { LinksFunction, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -279,7 +279,8 @@ export default function Workspace() {
               <MenuItem
                 component={"a"}
                 href={globalProperties.termsOfServiceUrl}
-                target="_blank">
+                target="_blank"
+              >
                 <ListItemIcon>
                   <PolicyIcon />
                 </ListItemIcon>
@@ -288,7 +289,8 @@ export default function Workspace() {
               <MenuItem
                 component={"a"}
                 href={globalProperties.privacyPolicyUrl}
-                target="_blank">
+                target="_blank"
+              >
                 <ListItemIcon>
                   <PolicyIcon />
                 </ListItemIcon>

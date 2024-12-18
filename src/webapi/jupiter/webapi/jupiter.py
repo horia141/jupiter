@@ -4,16 +4,21 @@ import logging
 
 import aiohttp
 import jupiter.core.domain
-import jupiter.core.repository.sqlite.domain
+import jupiter.core.impl.repository.sqlite.domain
 import jupiter.core.use_cases
 import jupiter.webapi.exceptions
 from jupiter.core.domain.concept.auth.auth_token_stamper import AuthTokenStamper
-from jupiter.core.repository.sqlite.connection import SqliteConnection
-from jupiter.core.repository.sqlite.domain.storage_engine import (
+from jupiter.core.domain.crm import CRM
+from jupiter.core.domain.env import Env
+from jupiter.core.domain.hosting import Hosting
+from jupiter.core.impl.crm.noop import NoOpCRM
+from jupiter.core.impl.crm.wix import WixCRM
+from jupiter.core.impl.repository.sqlite.connection import SqliteConnection
+from jupiter.core.impl.repository.sqlite.domain.storage_engine import (
     SqliteDomainStorageEngine,
     SqliteSearchStorageEngine,
 )
-from jupiter.core.repository.sqlite.use_case.storage_engine import (
+from jupiter.core.impl.repository.sqlite.use_case.storage_engine import (
     SqliteUseCaseStorageEngine,
 )
 from jupiter.core.use_cases.infra.persistent_mutation_use_case_recoder import (
@@ -64,12 +69,14 @@ async def main() -> None:
         ),
     )
 
+    aio_session = aiohttp.ClientSession()
+
     global_properties = build_global_properties()
 
     domain_storage_engine = SqliteDomainStorageEngine.build_from_module_root(
         realm_codec_registry,
         sqlite_connection,
-        jupiter.core.repository.sqlite.domain,
+        jupiter.core.impl.repository.sqlite.domain,
         jupiter.core.domain,
     )
     search_storage_engine = SqliteSearchStorageEngine(
@@ -79,12 +86,24 @@ async def main() -> None:
         realm_codec_registry, sqlite_connection
     )
 
+    crm: CRM
+    if (
+        global_properties.env == Env.PRODUCTION
+        and global_properties.hosting == Hosting.HOSTED_GLOBAL
+    ):
+        crm = WixCRM(
+            api_key=global_properties.wix_api_key,
+            account_id=global_properties.wix_account_id,
+            site_id=global_properties.wix_site_id,
+            session=aio_session,
+        )
+    else:
+        crm = NoOpCRM()
+
     auth_token_stamper = AuthTokenStamper(
         auth_token_secret=global_properties.auth_token_secret,
         time_provider=request_time_provider,
     )
-
-    aio_session = aiohttp.ClientSession()
 
     progress_reporter_factory = WebsocketProgressReporterFactory()
 
@@ -103,6 +122,7 @@ async def main() -> None:
         domain_storage_engine,
         search_storage_engine,
         usecase_storage_engine,
+        crm,
         jupiter.core.use_cases,
         jupiter.webapi.exceptions,
     )

@@ -33,13 +33,13 @@ Please notify us immediately if you suspect unauthorized use of your account.
 
 **4. Intellectual Property**
 
-All content within the app, including text, graphics, and software, is the property of [Your App Name] or its licensors and is protected by intellectual property laws. You may not reproduce, modify, or distribute any part of the app without our prior written consent.
+All content within the app, including text, graphics, and software, is the property of Thrive or its licensors and is protected by intellectual property laws. You may not reproduce, modify, or distribute any part of the app without our prior written consent.
 
 ---
 
 **5. Limitation of Liability**
 
-To the extent permitted by law, [Your App Name] is not liable for any indirect, incidental, or consequential damages arising from your use of the app.
+To the extent permitted by law, Thrive is not liable for any indirect, incidental, or consequential damages arising from your use of the app.
 
 ---
 

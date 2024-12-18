@@ -18,6 +18,7 @@ from jupiter.cli.top_level_context import TopLevelContext
 from jupiter.core.domain.concept.auth.auth_token_stamper import AuthTokenStamper
 from jupiter.core.domain.concept.user.user import User
 from jupiter.core.domain.concept.workspaces.workspace import Workspace
+from jupiter.core.domain.crm import CRM
 from jupiter.core.domain.env import Env
 from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainStorageEngine, SearchStorageEngine
@@ -995,6 +996,7 @@ class CliApp:
     _domain_storage_engine: Final[DomainStorageEngine]
     _search_storage_engine: Final[SearchStorageEngine]
     _use_case_storage_engine: Final[UseCaseStorageEngine]
+    _crm: Final[CRM]
     _use_case_commands: dict[
         type[
             UseCase[
@@ -1023,6 +1025,7 @@ class CliApp:
         domain_storage_engine: DomainStorageEngine,
         search_storage_engine: SearchStorageEngine,
         use_case_storage_engine: UseCaseStorageEngine,
+        crm: CRM,
     ) -> None:
         """Constructor."""
         self._global_properties = global_properties
@@ -1037,6 +1040,7 @@ class CliApp:
         self._domain_storage_engine = domain_storage_engine
         self._search_storage_engine = search_storage_engine
         self._use_case_storage_engine = use_case_storage_engine
+        self._crm = crm
         self._use_case_commands = {}
         self._commands = {}
         self._exception_handlers = {}
@@ -1055,6 +1059,7 @@ class CliApp:
         domain_storage_engine: DomainStorageEngine,
         search_storage_engine: SearchStorageEngine,
         use_case_storage_engine: UseCaseStorageEngine,
+        crm: CRM,
         *module_root: types.ModuleType,
     ) -> "CliApp":
         """Build a CLI app from the module root."""
@@ -1203,6 +1208,7 @@ class CliApp:
             domain_storage_engine=domain_storage_engine,
             search_storage_engine=search_storage_engine,
             use_case_storage_engine=use_case_storage_engine,
+            crm=crm,
         )
 
         for m in find_all_modules(*module_root):
@@ -1249,6 +1255,7 @@ class CliApp:
                     auth_token_stamper=self._auth_token_stamper,
                     domain_storage_engine=self._domain_storage_engine,
                     search_storage_engine=self._search_storage_engine,
+                    crm=self._crm,
                 ),
             )
         elif issubclass(use_case_type, AppGuestReadonlyUseCase):
@@ -1278,6 +1285,7 @@ class CliApp:
                     domain_storage_engine=self._domain_storage_engine,
                     search_storage_engine=self._search_storage_engine,
                     use_case_storage_engine=self._use_case_storage_engine,
+                    crm=self._crm,
                 ),
             )
         elif issubclass(use_case_type, AppLoggedInReadonlyUseCase):
@@ -1328,6 +1336,7 @@ class CliApp:
                     auth_token_stamper=self._auth_token_stamper,
                     domain_storage_engine=self._domain_storage_engine,
                     search_storage_engine=self._search_storage_engine,
+                    crm=self._crm,
                 ),
             )
         elif issubclass(use_case_type, AppGuestReadonlyUseCase):
@@ -1357,6 +1366,7 @@ class CliApp:
                     domain_storage_engine=self._domain_storage_engine,
                     search_storage_engine=self._search_storage_engine,
                     use_case_storage_engine=self._use_case_storage_engine,
+                    crm=self._crm,
                 ),
             )
         elif issubclass(use_case_type, AppLoggedInReadonlyUseCase):

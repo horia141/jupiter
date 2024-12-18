@@ -384,6 +384,8 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
 
         auth_token = self._auth_token_stamper.stamp_for_general(new_user)
 
+        await self._crm.upsert_as_user(new_user)
+
         return InitResult(
             new_user=new_user,
             new_workspace=new_workspace,
