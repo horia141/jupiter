@@ -1,6 +1,6 @@
+import { ApiClient, Hosting } from "@jupiter/webapi-client";
 import type { Session } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
-import { ApiClient } from "jupiter-gen";
 import { GLOBAL_PROPERTIES } from "./global-properties-server";
 
 const _API_CLIENTS_BY_SESSION = new Map<undefined | string, ApiClient>();
@@ -9,7 +9,7 @@ const _API_CLIENTS_BY_SESSION = new Map<undefined | string, ApiClient>();
 export function getGuestApiClient(session?: Session): ApiClient {
   let token = undefined;
   if (session !== undefined && session.has("authTokenExt")) {
-    token = session.get("authTokenExt").auth_token_str;
+    token = session.get("authTokenExt");
   }
 
   if (_API_CLIENTS_BY_SESSION.has(token)) {
@@ -17,12 +17,12 @@ export function getGuestApiClient(session?: Session): ApiClient {
   }
 
   let base = "";
-  if (GLOBAL_PROPERTIES.hosting === "LOCAL") {
+  if (GLOBAL_PROPERTIES.hosting === Hosting.LOCAL) {
     base = GLOBAL_PROPERTIES.localWebApiServerUrl;
-  } else if (GLOBAL_PROPERTIES.hosting === "HOSTED-GLOBAL") {
+  } else if (GLOBAL_PROPERTIES.hosting === Hosting.HOSTED_GLOBAL) {
     base = GLOBAL_PROPERTIES.hostedGlobalWebApiServerUrl;
   } else {
-    throw new Error("Unknown use case: " + GLOBAL_PROPERTIES.hosting);
+    throw new Error("Unknown hosting: " + GLOBAL_PROPERTIES.hosting);
   }
 
   const newApiClient = new ApiClient({
@@ -41,16 +41,16 @@ export function getLoggedInApiClient(session: Session): ApiClient {
     throw redirect("/login");
   }
 
-  const authTokenExtStr = session.get("authTokenExt").auth_token_str;
+  const authTokenExtStr = session.get("authTokenExt");
 
   if (_API_CLIENTS_BY_SESSION.has(authTokenExtStr)) {
     return _API_CLIENTS_BY_SESSION.get(authTokenExtStr) as ApiClient;
   }
 
   let base = "";
-  if (GLOBAL_PROPERTIES.hosting === "LOCAL") {
+  if (GLOBAL_PROPERTIES.hosting === Hosting.LOCAL) {
     base = GLOBAL_PROPERTIES.localWebApiServerUrl;
-  } else if (GLOBAL_PROPERTIES.hosting === "HOSTED-GLOBAL") {
+  } else if (GLOBAL_PROPERTIES.hosting === Hosting.HOSTED_GLOBAL) {
     base = GLOBAL_PROPERTIES.hostedGlobalWebApiServerUrl;
   } else {
     throw new Error("Unknown hosting option: " + GLOBAL_PROPERTIES.hosting);

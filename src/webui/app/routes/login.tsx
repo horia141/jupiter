@@ -1,3 +1,4 @@
+import { ApiError } from "@jupiter/webapi-client";
 import {
   Button,
   ButtonGroup,
@@ -14,14 +15,13 @@ import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, Link, useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { ApiError } from "jupiter-gen";
 import { z } from "zod";
 import { parseForm } from "zodix";
 import { getGuestApiClient } from "~/api-clients";
 import { EntityActionHeader } from "~/components/infra/entity-actions-header";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { StandaloneCard } from "~/components/infra/standalone-card";
+import { StandaloneContainer } from "~/components/infra/layout/standalone-container";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { commitSession, getSession } from "~/sessions";
@@ -41,21 +41,13 @@ export async function loader({ request }: LoaderArgs) {
 
   if (session.has("authTokenExt")) {
     const apiClient = getGuestApiClient(session);
-    const result = await apiClient.loadUserAndWorkspace.loadUserAndWorkspace(
-      {}
-    );
+    const result = await apiClient.loadTopLevelInfo.loadTopLevelInfo({});
     if (result.user || result.workspace) {
       return redirect("/workspace");
     }
   }
 
-  const data = { error: session.get("error") };
-
-  return json(data, {
-    headers: {
-      "Set-Cookie": await commitSession(session),
-    },
-  });
+  return json({});
 }
 
 // @secureFn
@@ -65,12 +57,8 @@ export async function action({ request }: ActionArgs) {
 
   try {
     const result = await getGuestApiClient(session).login.login({
-      email_address: {
-        the_address: form.emailAddress,
-      },
-      password: {
-        password_raw: form.password,
-      },
+      email_address: form.emailAddress,
+      password: form.password,
     });
 
     session.set("authTokenExt", result.auth_token_ext);
@@ -101,10 +89,10 @@ export default function Login() {
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <StandaloneCard>
+    <StandaloneContainer>
       <Form method="post">
-        <GlobalError actionResult={actionData} />
         <Card>
+          <GlobalError actionResult={actionData} />
           <CardHeader title="Login" />
           <CardContent>
             <Stack spacing={2} useFlexGap>
@@ -142,6 +130,7 @@ export default function Login() {
           <CardActions>
             <ButtonGroup>
               <Button
+                id="login"
                 variant="contained"
                 disabled={!inputsEnabled}
                 type="submit"
@@ -155,6 +144,7 @@ export default function Login() {
 
       <EntityActionHeader>
         <Button
+          id="new-workspace"
           variant="outlined"
           disabled={!inputsEnabled}
           to={`/init`}
@@ -163,6 +153,7 @@ export default function Login() {
           New Workspace
         </Button>
         <Button
+          id="reset-password"
           variant="outlined"
           disabled={!inputsEnabled}
           to={`/reset-password`}
@@ -171,7 +162,7 @@ export default function Login() {
           Reset Password
         </Button>
       </EntityActionHeader>
-    </StandaloneCard>
+    </StandaloneContainer>
   );
 }
 

@@ -1,5 +1,6 @@
 import SearchIcon from "@mui/icons-material/Search";
 import { alpha, InputBase, styled } from "@mui/material";
+import { Form } from "@remix-run/react";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -44,13 +45,16 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 export default function SearchBox() {
   return (
     <Search>
-      <SearchIconWrapper>
-        <SearchIcon />
-      </SearchIconWrapper>
-      <StyledInputBase
-        placeholder="Search…"
-        inputProps={{ "aria-label": "search" }}
-      />
+      <Form method="get" action="/workspace/tools/search">
+        <SearchIconWrapper>
+          <SearchIcon />
+        </SearchIconWrapper>
+        <StyledInputBase
+          placeholder="Search…"
+          inputProps={{ "aria-label": "search" }}
+          name="query"
+        />
+      </Form>
     </Search>
   );
 }

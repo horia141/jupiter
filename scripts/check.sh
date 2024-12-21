@@ -3,5 +3,6 @@
 set -ex
 
 ./scripts/lint.sh
-./scripts/run-tests.sh
 ./scripts/check-all-is-formatted.sh
+./scripts/run-tests.sh
+./scripts/run-itests.sh ci

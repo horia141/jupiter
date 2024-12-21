@@ -1,4 +1,4 @@
-import type { Person } from "jupiter-gen";
+import type { Person } from "@jupiter/webapi-client";
 import { LinkTag } from "./infra/link-tag";
 
 interface Props {
@@ -8,8 +8,8 @@ interface Props {
 export function PersonTag(props: Props) {
   return (
     <LinkTag
-      to={`/workspace/persons/${props.person.ref_id.the_id}`}
-      label={props.person.name.the_name}
+      to={`/workspace/persons/${props.person.ref_id}`}
+      label={props.person.name}
       color="primary"
     />
   );

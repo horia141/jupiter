@@ -1,17 +1,14 @@
-import type { ADate } from "jupiter-gen";
+import type { ADate } from "@jupiter/webapi-client";
 import { DateTime } from "luxon";
 
 export function aDateToDate(aDate: ADate): DateTime {
-  if (aDate.the_date) {
-    return DateTime.fromISO(aDate.the_date);
-  } else if (aDate.the_datetime) {
-    return DateTime.fromISO(aDate.the_datetime);
-  } else {
-    throw Error("Invalid ADate object with no date nor datetime");
-  }
+  return DateTime.fromISO(aDate);
 }
 
-export function compareADate(adate1?: ADate, adate2?: ADate): number {
+export function compareADate(
+  adate1?: ADate | null,
+  adate2?: ADate | null
+): number {
   if (
     (adate1 === undefined || adate1 === null) &&
     (adate2 === undefined || adate2 === null)
@@ -29,4 +26,14 @@ export function compareADate(adate1?: ADate, adate2?: ADate): number {
     }
     return iso1 > iso2 ? 1 : -1;
   }
+}
+
+export function allDaysBetween(start: ADate, end: ADate): ADate[] {
+  const startDate = aDateToDate(start);
+  const endDate = aDateToDate(end);
+  const days = [];
+  for (let date = startDate; date <= endDate; date = date.plus({ days: 1 })) {
+    days.push(date.toISODate());
+  }
+  return days;
 }

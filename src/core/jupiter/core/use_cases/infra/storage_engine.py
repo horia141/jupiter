@@ -1,6 +1,6 @@
 """Use case specific storage interactions."""
 import abc
-from typing import AsyncContextManager
+from contextlib import AbstractAsyncContextManager
 
 from jupiter.core.use_cases.infra.mutation_use_case_invocation_record_repository import (
     MutationUseCaseInvocationRecordRepository,
@@ -22,5 +22,5 @@ class UseCaseStorageEngine(abc.ABC):
     """A storage engine of some form."""
 
     @abc.abstractmethod
-    def get_unit_of_work(self) -> AsyncContextManager[UseCaseUnitOfWork]:
+    def get_unit_of_work(self) -> AbstractAsyncContextManager[UseCaseUnitOfWork]:
         """Build a unit of work."""

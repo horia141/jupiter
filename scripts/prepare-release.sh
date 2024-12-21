@@ -26,7 +26,7 @@ then
     exit 1
 fi
 
-RELEASE_NOTES_PATH="docs/releases/version-${RELEASE_VERSION}.md"
+RELEASE_NOTES_PATH="src/docs/material/releases/version-${RELEASE_VERSION}.md"
 RELEASE_DATE=$(date +"%Y/%m/%d")
 
 git pull

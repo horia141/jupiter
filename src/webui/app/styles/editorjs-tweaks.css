@@ -1,0 +1,13 @@
+.ce-block__content {
+  max-width: 100%;
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
+}
+
+.ce-toolbar__actions {
+  right: -5px !important;
+}
+
+#entity-block-editor .codex-editor__redactor {
+  padding-bottom: 4rem !important;
+}

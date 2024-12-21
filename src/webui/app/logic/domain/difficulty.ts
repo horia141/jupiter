@@ -1,4 +1,4 @@
-import { Difficulty } from "jupiter-gen";
+import { Difficulty } from "@jupiter/webapi-client";
 
 export function difficultyName(difficulty: Difficulty): string {
   switch (difficulty) {
@@ -18,16 +18,8 @@ const DIFFICULTY_MAP = {
 };
 
 export function compareDifficulty(
-  difficulty1?: Difficulty,
-  difficulty2?: Difficulty
+  difficulty1: Difficulty,
+  difficulty2: Difficulty
 ): number {
-  if (difficulty1 === undefined && difficulty2 === undefined) {
-    return 0;
-  } else if (difficulty1 === undefined) {
-    return -1;
-  } else if (difficulty2 === undefined) {
-    return 1;
-  } else {
-    return DIFFICULTY_MAP[difficulty1] - DIFFICULTY_MAP[difficulty2];
-  }
+  return DIFFICULTY_MAP[difficulty1] - DIFFICULTY_MAP[difficulty2];
 }

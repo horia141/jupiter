@@ -1,39 +1,45 @@
 """The command for loading a progress reporter specific token."""
-from dataclasses import dataclass
-
-from jupiter.core.domain.auth.auth_token_ext import AuthTokenExt
-from jupiter.core.framework.use_case import (
+from jupiter.core.domain.concept.auth.auth_token_ext import AuthTokenExt
+from jupiter.core.domain.storage_engine import DomainUnitOfWork
+from jupiter.core.framework.secure import secure_class
+from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,
+    use_case_args,
+    use_case_result,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInReadonlyUseCase,
-    AppLoggedInUseCaseContext,
+    AppLoggedInReadonlyUseCaseContext,
+    AppTransactionalLoggedInReadOnlyUseCase,
+    readonly_use_case,
 )
 
 
-@dataclass
+@use_case_args
 class LoadProgressReporterTokenArgs(UseCaseArgsBase):
     """Load progress reporter token args."""
 
 
-@dataclass
+@use_case_result
 class LoadProgressReporterTokenResult(UseCaseResultBase):
     """Get progress reporter token result."""
 
     progress_reporter_token_ext: AuthTokenExt
 
 
+@secure_class
+@readonly_use_case()
 class LoadProgressReporterTokenUseCase(
-    AppLoggedInReadonlyUseCase[
+    AppTransactionalLoggedInReadOnlyUseCase[
         LoadProgressReporterTokenArgs, LoadProgressReporterTokenResult
     ]
 ):
     """The use case for retrieving summaries about entities."""
 
-    async def _execute(
+    async def _perform_transactional_read(
         self,
-        context: AppLoggedInUseCaseContext,
+        uow: DomainUnitOfWork,
+        context: AppLoggedInReadonlyUseCaseContext,
         args: LoadProgressReporterTokenArgs,
     ) -> LoadProgressReporterTokenResult:
         """Execute the command."""

@@ -1,3 +1,3 @@
 # Core
 
-The core business logic for Jupiter.
+The core business logic for Thrive.

@@ -1,3 +1,4 @@
+import { ApiError, NoteDomain } from "@jupiter/webapi-client";
 import {
   Button,
   ButtonGroup,
@@ -11,19 +12,21 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useParams, useTransition } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { ApiError } from "jupiter-gen";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
+import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { IconSelector } from "~/components/icon-selector";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { LeafCard } from "~/components/infra/leaf-card";
+import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { getIntent } from "~/logic/intent";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
@@ -49,13 +52,14 @@ export async function loader({ request, params }: LoaderArgs) {
   try {
     const response = await getLoggedInApiClient(
       session
-    ).smartList.loadSmartList({
-      ref_id: { the_id: id },
+    ).smartLists.smartListLoad({
+      ref_id: id,
       allow_archived: true,
     });
 
     return json({
       smartList: response.smart_list,
+      note: response.note,
     });
   } catch (error) {
     if (error instanceof ApiError && error.status === StatusCodes.NOT_FOUND) {
@@ -79,24 +83,34 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (intent) {
       case "update": {
-        await getLoggedInApiClient(session).smartList.updateSmartList({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).smartLists.smartListUpdate({
+          ref_id: id,
           name: {
             should_change: true,
-            value: { the_name: form.name },
+            value: form.name,
           },
           icon: {
             should_change: true,
-            value: form.icon ? { the_icon: form.icon } : undefined,
+            value: form.icon,
           },
         });
 
         return redirect(`/workspace/smart-lists/${id}/items/details`);
       }
 
+      case "create-note": {
+        await getLoggedInApiClient(session).notes.noteCreate({
+          domain: NoteDomain.SMART_LIST,
+          source_entity_ref_id: id,
+          content: [],
+        });
+
+        return redirect(`/workspace/smart-lists/${id}/items/details`);
+      }
+
       case "archive": {
-        await getLoggedInApiClient(session).smartList.archiveSmartList({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).smartLists.smartListArchive({
+          ref_id: id,
         });
 
         return redirect(`/workspace/smart-lists/${id}/items/details`);
@@ -117,6 +131,9 @@ export async function action({ request, params }: ActionArgs) {
   }
 }
 
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
+
 export default function SmartListDetails() {
   const { id } = useParams();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
@@ -127,14 +144,14 @@ export default function SmartListDetails() {
     transition.state === "idle" && !loaderData.smartList.archived;
 
   return (
-    <LeafCard
-      key={loaderData.smartList.ref_id.the_id}
+    <LeafPanel
+      key={`smart-list-${id}/details`}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation={`/workspace/smart-lists/${id}/items`}
     >
-      <GlobalError actionResult={actionData} />
-      <Card>
+      <Card sx={{ marginBottom: "1rem" }}>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>
@@ -143,7 +160,7 @@ export default function SmartListDetails() {
                 label="Name"
                 name="name"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.smartList.name.the_name}
+                defaultValue={loaderData.smartList.name}
               />
               <FieldError actionResult={actionData} fieldName="/name" />
             </FormControl>
@@ -152,7 +169,7 @@ export default function SmartListDetails() {
               <InputLabel id="icon">Icon</InputLabel>
               <IconSelector
                 readOnly={!inputsEnabled}
-                defaultIcon={loaderData.smartList.icon?.the_icon}
+                defaultIcon={loaderData.smartList.icon}
               />
               <FieldError actionResult={actionData} fieldName="/icon" />
             </FormControl>
@@ -172,17 +189,44 @@ export default function SmartListDetails() {
           </ButtonGroup>
         </CardActions>
       </Card>
-    </LeafCard>
+
+      <Card>
+        {!loaderData.note && (
+          <CardActions>
+            <ButtonGroup>
+              <Button
+                variant="contained"
+                disabled={!inputsEnabled}
+                type="submit"
+                name="intent"
+                value="create-note"
+              >
+                Create Note
+              </Button>
+            </ButtonGroup>
+          </CardActions>
+        )}
+
+        {loaderData.note && (
+          <>
+            <EntityNoteEditor
+              initialNote={loaderData.note}
+              inputsEnabled={inputsEnabled}
+            />
+          </>
+        )}
+      </Card>
+    </LeafPanel>
   );
 }
 
 export const CatchBoundary = makeCatchBoundary(
-  () => `Could not find smart list #${useParams().key}!`
+  () => `Could not find smart list #${useParams().id}!`
 );
 
 export const ErrorBoundary = makeErrorBoundary(
   () =>
     `There was an error loading smart list #${
-      useParams().key
+      useParams().id
     }! Please try again!`
 );

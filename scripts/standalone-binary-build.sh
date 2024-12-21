@@ -16,7 +16,7 @@ ARCH=$(arch)
 
 pyinstaller \
   --noconfirm \
-  --name Jupiter-Cli \
+  --name Thrive-Cli \
   --add-data src/cli/README.md:. \
   --add-data LICENSE:. \
   --add-data src/Config.global:. \
@@ -35,17 +35,17 @@ then
   rm -f rw.*.dmg
   rm -f "${DMG_IMAGE_NAME}"
   create-dmg \
-    --volname "Jupiter-Cli" \
+    --volname "Thrive-Cli" \
     --volicon "assets/jupiter.icns" \
     --window-size 600 600 \
-    --icon "Jupiter-Cli.app" 40 40 \
-    --hide-extension "Jupiter-Cli.app" \
+    --icon "Thrive-Cli.app" 40 40 \
+    --hide-extension "Thrive-Cli.app" \
     --app-drop-link 200 160 \
     --eula LICENSE \
     --skip-jenkins \
     "${DMG_IMAGE_NAME}" \
-    .build-cache/standalone-binary/dist/Jupiter-Cli.app
+    .build-cache/standalone-binary/dist/Thrive-Cli.app
 
-  mv Jupiter-Cli.spec ".build-cache/standalone-binary/Jupiter-Cli.spec"
+  mv Thrive-Cli.spec ".build-cache/standalone-binary/Thrive-Cli.spec"
   mv "${DMG_IMAGE_NAME}" ".build-cache/standalone-binary/${DMG_IMAGE_NAME}"
 fi

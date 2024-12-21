@@ -1,3 +1,12 @@
+import type { InboxTask } from "@jupiter/webapi-client";
+import {
+  ApiError,
+  Difficulty,
+  Eisen,
+  InboxTaskStatus,
+  NoteDomain,
+  RecurringTaskPeriod,
+} from "@jupiter/webapi-client";
 import type { SelectChangeEvent } from "@mui/material";
 import {
   Button,
@@ -15,6 +24,7 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   useActionData,
   useFetcher,
@@ -22,33 +32,28 @@ import {
   useTransition,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import type { InboxTask } from "jupiter-gen";
-import {
-  ApiError,
-  Difficulty,
-  Eisen,
-  InboxTaskStatus,
-  RecurringTaskPeriod,
-} from "jupiter-gen";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
+import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { IconSelector } from "~/components/icon-selector";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { LeafCard } from "~/components/infra/leaf-card";
+import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { difficultyName } from "~/logic/domain/difficulty";
 import { eisenName } from "~/logic/domain/eisen";
 import { sortInboxTasksNaturally } from "~/logic/domain/inbox-task";
 import { periodName } from "~/logic/domain/period";
 import { getIntent } from "~/logic/intent";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = {
   id: z.string(),
@@ -69,7 +74,6 @@ const UpdateFormSchema = {
     .optional(),
   collectionActionableFromDay: z.string().optional(),
   collectionActionableFromMonth: z.string().optional(),
-  collectionDueAtTime: z.string().optional(),
   collectionDueAtDay: z.string().optional(),
   collectionDueAtMonth: z.string().optional(),
 };
@@ -83,13 +87,14 @@ export async function loader({ request, params }: LoaderArgs) {
   const { id } = parseParams(params, ParamsSchema);
 
   try {
-    const response = await getLoggedInApiClient(session).metric.loadMetric({
-      ref_id: { the_id: id },
+    const response = await getLoggedInApiClient(session).metrics.metricLoad({
+      ref_id: id,
       allow_archived: true,
     });
 
     return json({
       metric: response.metric,
+      note: response.note,
       collectionInboxTasks: response.metric_collection_inbox_tasks,
     });
   } catch (error) {
@@ -114,15 +119,15 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (intent) {
       case "update": {
-        await getLoggedInApiClient(session).metric.updateMetric({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).metrics.metricUpdate({
+          ref_id: id,
           name: {
             should_change: true,
-            value: { the_name: form.name },
+            value: form.name,
           },
           icon: {
             should_change: true,
-            value: form.icon ? { the_icon: form.icon } : undefined,
+            value: form.icon,
           },
           collection_period: {
             should_change: true,
@@ -157,7 +162,7 @@ export async function action({ request, params }: ActionArgs) {
                 : form.collectionActionableFromDay === undefined ||
                   form.collectionActionableFromDay === ""
                 ? undefined
-                : { the_day: parseInt(form.collectionActionableFromDay) },
+                : parseInt(form.collectionActionableFromDay),
           },
           collection_actionable_from_month: {
             should_change: true,
@@ -167,17 +172,7 @@ export async function action({ request, params }: ActionArgs) {
                 : form.collectionActionableFromMonth === undefined ||
                   form.collectionActionableFromMonth === ""
                 ? undefined
-                : { the_month: parseInt(form.collectionActionableFromMonth) },
-          },
-          collection_due_at_time: {
-            should_change: true,
-            value:
-              form.collectionPeriod === "none"
-                ? undefined
-                : form.collectionDueAtTime === undefined ||
-                  form.collectionDueAtTime === ""
-                ? undefined
-                : { the_time: form.collectionDueAtTime },
+                : parseInt(form.collectionActionableFromMonth),
           },
           collection_due_at_day: {
             should_change: true,
@@ -187,7 +182,7 @@ export async function action({ request, params }: ActionArgs) {
                 : form.collectionDueAtDay === undefined ||
                   form.collectionDueAtDay === ""
                 ? undefined
-                : { the_day: parseInt(form.collectionDueAtDay) },
+                : parseInt(form.collectionDueAtDay),
           },
           collection_due_at_month: {
             should_change: true,
@@ -197,7 +192,7 @@ export async function action({ request, params }: ActionArgs) {
                 : form.collectionDueAtMonth === undefined ||
                   form.collectionDueAtMonth === ""
                 ? undefined
-                : { the_month: parseInt(form.collectionDueAtMonth) },
+                : parseInt(form.collectionDueAtMonth),
           },
         });
 
@@ -205,8 +200,18 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).metric.archiveMetric({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).metrics.metricArchive({
+          ref_id: id,
+        });
+
+        return redirect(`/workspace/metrics/${id}/details`);
+      }
+
+      case "create-note": {
+        await getLoggedInApiClient(session).notes.noteCreate({
+          domain: NoteDomain.METRIC,
+          source_entity_ref_id: id,
+          content: [],
         });
 
         return redirect(`/workspace/metrics/${id}/details`);
@@ -227,11 +232,15 @@ export async function action({ request, params }: ActionArgs) {
   }
 }
 
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
+
 export default function MetricDetails() {
   const { id } = useParams();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
+  const topLevelInfo = useContext(TopLevelInfoContext);
 
   const inputsEnabled =
     transition.state === "idle" && !loaderData.metric.archived;
@@ -263,7 +272,7 @@ export default function MetricDetails() {
   function handleCardMarkDone(it: InboxTask) {
     cardActionFetcher.submit(
       {
-        id: it.ref_id.the_id,
+        id: it.ref_id,
         status: InboxTaskStatus.DONE,
       },
       {
@@ -276,7 +285,7 @@ export default function MetricDetails() {
   function handleCardMarkNotDone(it: InboxTask) {
     cardActionFetcher.submit(
       {
-        id: it.ref_id.the_id,
+        id: it.ref_id,
         status: InboxTaskStatus.NOT_DONE,
       },
       {
@@ -287,14 +296,14 @@ export default function MetricDetails() {
   }
 
   return (
-    <LeafCard
-      key={loaderData.metric.ref_id.the_id}
+    <LeafPanel
+      key={`metric-${id}/details`}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation={`/workspace/metrics/${id}`}
     >
-      <GlobalError actionResult={actionData} />
-      <Card>
+      <Card sx={{ marginBottom: "1rem" }}>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>
@@ -303,7 +312,7 @@ export default function MetricDetails() {
                 label="Name"
                 name="name"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.metric.name.the_name}
+                defaultValue={loaderData.metric.name}
               />
               <FieldError actionResult={actionData} fieldName="/name" />
             </FormControl>
@@ -312,7 +321,7 @@ export default function MetricDetails() {
               <InputLabel id="icon">Icon</InputLabel>
               <IconSelector
                 readOnly={!inputsEnabled}
-                defaultIcon={loaderData.metric.icon?.the_icon}
+                defaultIcon={loaderData.metric.icon}
               />
               <FieldError actionResult={actionData} fieldName="/icon" />
             </FormControl>
@@ -405,8 +414,8 @@ export default function MetricDetails() {
                     name="collectionActionableFromDay"
                     readOnly={!inputsEnabled}
                     defaultValue={
-                      loaderData.metric.collection_params?.actionable_from_day
-                        ?.the_day || ""
+                      loaderData.metric.collection_params
+                        ?.actionable_from_day || ""
                     }
                   />
                   <FieldError
@@ -425,31 +434,13 @@ export default function MetricDetails() {
                     name="collectionActionableFromMonth"
                     readOnly={!inputsEnabled}
                     defaultValue={
-                      loaderData.metric.collection_params?.actionable_from_month
-                        ?.the_month || ""
+                      loaderData.metric.collection_params
+                        ?.actionable_from_month || ""
                     }
                   />
                   <FieldError
                     actionResult={actionData}
                     fieldName="/collection_actionable_from_month"
-                  />
-                </FormControl>
-
-                <FormControl fullWidth>
-                  <InputLabel id="collectionDueAtTime">Due At Time</InputLabel>
-                  <OutlinedInput
-                    type="time"
-                    label="Due At Time"
-                    name="collectionDueAtTime"
-                    readOnly={!inputsEnabled}
-                    defaultValue={
-                      loaderData.metric.collection_params?.due_at_time
-                        ?.the_time || ""
-                    }
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/collection_due_at_time"
                   />
                 </FormControl>
 
@@ -461,8 +452,7 @@ export default function MetricDetails() {
                     name="collectionDueAtDay"
                     readOnly={!inputsEnabled}
                     defaultValue={
-                      loaderData.metric.collection_params?.due_at_day
-                        ?.the_day || ""
+                      loaderData.metric.collection_params?.due_at_day || ""
                     }
                   />
                   <FieldError
@@ -481,8 +471,7 @@ export default function MetricDetails() {
                     name="collectionDueAtMonth"
                     readOnly={!inputsEnabled}
                     defaultValue={
-                      loaderData.metric.collection_params?.due_at_month
-                        ?.the_month || ""
+                      loaderData.metric.collection_params?.due_at_month || ""
                     }
                   />
                   <FieldError
@@ -510,8 +499,36 @@ export default function MetricDetails() {
         </CardActions>
       </Card>
 
+      <Card>
+        {!loaderData.note && (
+          <CardActions>
+            <ButtonGroup>
+              <Button
+                variant="contained"
+                disabled={!inputsEnabled}
+                type="submit"
+                name="intent"
+                value="create-note"
+              >
+                Create Note
+              </Button>
+            </ButtonGroup>
+          </CardActions>
+        )}
+
+        {loaderData.note && (
+          <>
+            <EntityNoteEditor
+              initialNote={loaderData.note}
+              inputsEnabled={inputsEnabled}
+            />
+          </>
+        )}
+      </Card>
+
       {sortedCollectionTasks && (
         <InboxTaskStack
+          topLevelInfo={topLevelInfo}
           showLabel
           showOptions={{
             showStatus: true,
@@ -525,15 +542,15 @@ export default function MetricDetails() {
           onCardMarkNotDone={handleCardMarkNotDone}
         />
       )}
-    </LeafCard>
+    </LeafPanel>
   );
 }
 
 export const CatchBoundary = makeCatchBoundary(
-  () => `Could not find metric #${useParams().key}!`
+  () => `Could not find metric #${useParams().id}!`
 );
 
 export const ErrorBoundary = makeErrorBoundary(
   () =>
-    `There was an error loading metric #${useParams().key}! Please try again!`
+    `There was an error loading metric #${useParams().id}! Please try again!`
 );

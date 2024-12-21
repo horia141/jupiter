@@ -1,3 +1,4 @@
+import type { AuthTokenExt } from "@jupiter/webapi-client";
 import CallToActionIcon from "@mui/icons-material/CallToAction";
 import CloseIcon from "@mui/icons-material/Close";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -10,7 +11,6 @@ import {
   IconButton,
   styled,
 } from "@mui/material";
-import type { AuthTokenExt } from "jupiter-gen";
 import { useContext, useEffect, useRef, useState } from "react";
 import useWebSocket, { ReadyState } from "react-use-websocket";
 import { ClientOnly } from "remix-utils";
@@ -20,7 +20,7 @@ import { useBigScreen } from "~/rendering/use-big-screen";
 
 enum LogMessageType {
   SECTION = "section",
-  ENTITY_WORK_STATUS = "entity-work-status",
+  ENTITY_LINE = "entity-line",
 }
 
 interface LogMessage {
@@ -34,39 +34,17 @@ interface ProgressUpdateSection {
   "section-name": string;
 }
 
-interface ProgressUpdateStatusCreate {
-  type: "status-create";
+interface ProgressUpdateEntityLine {
+  type: "enttiy-line";
   message: string;
-}
-
-interface ProgressUpdateStatusUpdate {
-  type: "status-update";
-  message: string;
-}
-
-interface ProgressUpdateStatusFinish {
-  type: "status-finish";
-  message: string;
-}
-
-interface ProgressUpdateStatusClear {
-  type: "status-clear";
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-type ProgressUpdate =
-  | ProgressUpdateSection
-  | ProgressUpdateStatusCreate
-  | ProgressUpdateStatusUpdate
-  | ProgressUpdateStatusFinish
-  | ProgressUpdateStatusClear;
+type ProgressUpdate = ProgressUpdateSection | ProgressUpdateEntityLine;
 
 const ProgressUpdateSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("section"), "section-name": z.string() }),
-  z.object({ type: z.literal("status-create"), message: z.string() }),
-  z.object({ type: z.literal("status-update"), message: z.string() }),
-  z.object({ type: z.literal("status-finish"), message: z.string() }),
-  z.object({ type: z.literal("status-clear") }),
+  z.object({ type: z.literal("entity-line"), message: z.string() }),
 ]);
 
 function debounceCallback(delay: number, callback: () => void) {
@@ -112,10 +90,7 @@ function ProgressReporterClientOnly(props: ProgressReporterProps) {
   const webApiProgressReporterUrl = new URL(
     globalProperties.webApiProgressReporterUrl
   );
-  webApiProgressReporterUrl.searchParams.append(
-    "token",
-    props.token.auth_token_str
-  );
+  webApiProgressReporterUrl.searchParams.append("token", props.token);
 
   const { lastJsonMessage, readyState } = useWebSocket(
     webApiProgressReporterUrl.toString()
@@ -142,67 +117,18 @@ function ProgressReporterClientOnly(props: ProgressReporterProps) {
           break;
         }
 
-        case "status-create": {
+        case "entity-line": {
+          if (!showContainer) {
+            setUnseenMessages((unseenMessages) => unseenMessages + 1);
+          }
           setProgressLog((progressLog) => [
             ...progressLog,
             {
               id: progressLog.length,
-              type: LogMessageType.ENTITY_WORK_STATUS,
+              type: LogMessageType.ENTITY_LINE,
               message: [progressUpdate["message"]],
             },
           ]);
-          break;
-        }
-
-        case "status-finish":
-          if (!showContainer) {
-            setUnseenMessages((unseenMessages) => unseenMessages + 1);
-          }
-        // intentional fallthrough
-        case "status-update": {
-          setProgressLog((progressLog) => {
-            const lastLogMessage =
-              progressLog.length > 0
-                ? progressLog[progressLog.length - 1]
-                : null;
-            if (lastLogMessage?.type === LogMessageType.ENTITY_WORK_STATUS) {
-              return progressLog.map((logMessage, idx) => {
-                if (idx === progressLog.length - 1) {
-                  return {
-                    id: idx,
-                    type: LogMessageType.ENTITY_WORK_STATUS,
-                    message: [...logMessage.message, progressUpdate["message"]],
-                  };
-                } else {
-                  return { ...logMessage };
-                }
-              });
-            } else {
-              return [
-                ...progressLog,
-                {
-                  id: progressLog.length,
-                  type: LogMessageType.ENTITY_WORK_STATUS,
-                  message: [progressUpdate["message"]],
-                },
-              ];
-            }
-          });
-          break;
-        }
-
-        case "status-clear": {
-          setProgressLog((progressLog) => {
-            const lastLogMessage =
-              progressLog.length > 0
-                ? progressLog[progressLog.length - 1]
-                : null;
-            if (lastLogMessage?.type === LogMessageType.ENTITY_WORK_STATUS) {
-              return progressLog.slice(0, progressLog.length - 1);
-            }
-
-            return progressLog;
-          });
           break;
         }
       }
@@ -218,7 +144,7 @@ function ProgressReporterClientOnly(props: ProgressReporterProps) {
           </div>
         );
       }
-      case LogMessageType.ENTITY_WORK_STATUS: {
+      case LogMessageType.ENTITY_LINE: {
         return (
           <div className="panel-block" key={idx}>
             {logMessage.message[logMessage.message.length - 1]}

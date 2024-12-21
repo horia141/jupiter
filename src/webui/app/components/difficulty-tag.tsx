@@ -1,6 +1,6 @@
-import { Difficulty } from "jupiter-gen";
+import { Difficulty } from "@jupiter/webapi-client";
 import { difficultyName } from "~/logic/domain/difficulty";
-import { SlimChip } from "./infra/slim-chip";
+import { SlimChip } from "./infra/chips";
 
 interface Props {
   difficulty: Difficulty;

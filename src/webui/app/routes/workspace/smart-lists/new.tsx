@@ -1,3 +1,4 @@
+import { ApiError } from "@jupiter/webapi-client";
 import {
   Button,
   ButtonGroup,
@@ -11,17 +12,18 @@ import {
 } from "@mui/material";
 import type { ActionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { ApiError } from "jupiter-gen";
 import { z } from "zod";
 import { parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
 import { IconSelector } from "~/components/icon-selector";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { LeafCard } from "~/components/infra/leaf-card";
+import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
 
@@ -41,13 +43,13 @@ export async function action({ request }: ActionArgs) {
   try {
     const result = await getLoggedInApiClient(
       session
-    ).smartList.createSmartList({
-      name: { the_name: form.name },
-      icon: form.icon ? { the_icon: form.icon } : undefined,
+    ).smartLists.smartListCreate({
+      name: form.name,
+      icon: form.icon,
     });
 
     return redirect(
-      `/workspace/smart-lists/${result.new_smart_list.ref_id.the_id}/items`
+      `/workspace/smart-lists/${result.new_smart_list.ref_id}/items`
     );
   } catch (error) {
     if (
@@ -61,6 +63,9 @@ export async function action({ request }: ActionArgs) {
   }
 }
 
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
+
 export default function NewSmartList() {
   const transition = useTransition();
   const actionData = useActionData<typeof action>();
@@ -68,9 +73,9 @@ export default function NewSmartList() {
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <LeafCard returnLocation="/workspace/smart-lists">
-      <GlobalError actionResult={actionData} />
+    <LeafPanel key={"smart-lists/new"} returnLocation="/workspace/smart-lists">
       <Card>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>
@@ -93,13 +98,18 @@ export default function NewSmartList() {
 
         <CardActions>
           <ButtonGroup>
-            <Button variant="contained" disabled={!inputsEnabled} type="submit">
+            <Button
+              id="smart-list-create"
+              variant="contained"
+              disabled={!inputsEnabled}
+              type="submit"
+            >
               Create
             </Button>
           </ButtonGroup>
         </CardActions>
       </Card>
-    </LeafCard>
+    </LeafPanel>
   );
 }
 

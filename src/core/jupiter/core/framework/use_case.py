@@ -2,14 +2,22 @@
 import abc
 import enum
 import logging
-from dataclasses import dataclass, fields
-from typing import AsyncContextManager, Final, Generic, Optional, TypeVar, Union
+from collections.abc import Iterable
+from contextlib import AbstractAsyncContextManager
+from dataclasses import dataclass
+from typing import (
+    Final,
+    Generic,
+    TypeVar,
+    Union,
+)
 
 from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
+from jupiter.core.framework.entity import CrownEntity
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.json import JSONDictType, process_primitive_to_json
-from jupiter.core.framework.update_action import UpdateAction
+from jupiter.core.framework.realm import RealmCodecRegistry
+from jupiter.core.framework.use_case_io import UseCaseArgsBase, UseCaseResultBase
 from jupiter.core.utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -20,7 +28,7 @@ class UseCaseSessionBase:
 
 
 class UseCaseContextBase(abc.ABC):
-    """The base class for use case contexts."""
+    """Info about a particular invocation of a use case."""
 
     @property
     @abc.abstractmethod
@@ -31,39 +39,6 @@ class UseCaseContextBase(abc.ABC):
     @abc.abstractmethod
     def workspace_ref_id(self) -> EntityId:
         """The owner workspace id."""
-
-
-@dataclass
-class UseCaseIOBase:
-    """The base class for use case inputs and output types."""
-
-    def to_serializable_dict(self) -> JSONDictType:
-        """Transform this argument set to a JSON compatible representation."""
-        serialized_form = {}
-        for field in fields(self):
-            field_value = getattr(self, field.name)
-            if isinstance(field_value, UpdateAction):
-                if field_value.should_change:
-                    serialized_form[field.name] = process_primitive_to_json(
-                        field_value.just_the_value,
-                        field.name,
-                    )
-            else:
-                serialized_form[field.name] = process_primitive_to_json(
-                    field_value,
-                    field.name,
-                )
-        return serialized_form
-
-
-@dataclass
-class UseCaseArgsBase(UseCaseIOBase):
-    """The base class for use case args types."""
-
-
-@dataclass
-class UseCaseResultBase(UseCaseIOBase):
-    """The base class for use case args results."""
 
 
 UseCaseSession = TypeVar("UseCaseSession", bound=UseCaseSessionBase)
@@ -79,12 +54,8 @@ class MutationUseCaseInvocationResult(enum.Enum):
     SUCCESS = "success"
     FAILURE = "failure"
 
-    def to_db(self) -> str:
-        """A database appropriate form of this enum."""
-        return str(self.value)
 
-
-@dataclass
+@dataclass(frozen=True)
 class MutationUseCaseInvocationRecord(Generic[UseCaseArgs]):
     """The record of a mutation use case invocation."""
 
@@ -94,7 +65,7 @@ class MutationUseCaseInvocationRecord(Generic[UseCaseArgs]):
     name: str
     args: UseCaseArgs
     result: MutationUseCaseInvocationResult
-    error_str: Optional[str]
+    error_str: str | None
 
     @staticmethod
     def build_success(
@@ -147,111 +118,46 @@ class MutationUseCaseInvocationRecorder(abc.ABC):
         """Record the invocation of the use case."""
 
 
-@enum.unique
-class MarkProgressStatus(enum.Enum):
-    """The status of a big plan."""
-
-    PROGRESS = "progress"
-    OK = "ok"
-    FAILED = "failed"
-    NOT_NEEDED = "not-needed"
-
-
-class EntityProgressReporter(abc.ABC):
-    """A reporter for the updates to a particular entity."""
-
-    @abc.abstractmethod
-    async def mark_not_needed(self) -> "EntityProgressReporter":
-        """Mark the fact that a particular modification isn't needed."""
-
-    @abc.abstractmethod
-    async def mark_known_entity_id(
-        self,
-        entity_id: EntityId,
-    ) -> "EntityProgressReporter":
-        """Mark the fact that we now know the entity id for the entity being processed."""
-
-    @abc.abstractmethod
-    async def mark_known_name(self, name: str) -> "EntityProgressReporter":
-        """Mark the fact that we now know the entity name for the entity being processed."""
-
-    @abc.abstractmethod
-    async def mark_local_change(self) -> "EntityProgressReporter":
-        """Mark the fact that the local change has succeeded."""
-
-    @abc.abstractmethod
-    async def mark_remote_change(
-        self,
-        success: MarkProgressStatus = MarkProgressStatus.OK,
-    ) -> "EntityProgressReporter":
-        """Mark the fact that the remote change has completed."""
-
-    @abc.abstractmethod
-    async def mark_other_progress(
-        self,
-        progress: str,
-        success: MarkProgressStatus = MarkProgressStatus.OK,
-    ) -> "EntityProgressReporter":
-        """Mark some other type of progress."""
-
-
-class ContextProgressReporter(abc.ABC):
+class ProgressReporter(abc.ABC):
     """A reporter to the user in real-time on modifications to entities."""
 
     @abc.abstractmethod
-    def section(self, title: str) -> AsyncContextManager[None]:
+    def section(self, title: str) -> AbstractAsyncContextManager[None]:
         """Start a section or subsection."""
 
     @abc.abstractmethod
-    def start_creating_entity(
-        self,
-        entity_type: str,
-        entity_name: str,
-    ) -> AsyncContextManager[EntityProgressReporter]:
-        """Report that a particular entity is being created."""
+    async def mark_created(self, entity: CrownEntity) -> None:
+        """Mark a particular entity as created."""
 
     @abc.abstractmethod
-    def start_updating_entity(
-        self,
-        entity_type: str,
-        entity_id: Optional[EntityId] = None,
-        entity_name: Optional[str] = None,
-    ) -> AsyncContextManager[EntityProgressReporter]:
-        """Report that a particular entity is being updated."""
+    async def mark_updated(self, entity: CrownEntity) -> None:
+        """Mark a particular entity as updated."""
 
     @abc.abstractmethod
-    def start_archiving_entity(
-        self,
-        entity_type: str,
-        entity_id: Optional[EntityId] = None,
-        entity_name: Optional[str] = None,
-    ) -> AsyncContextManager[EntityProgressReporter]:
-        """Report that a particular entity is being archived."""
+    async def mark_removed(self, entity: CrownEntity) -> None:
+        """Mark a particular entity as removed."""
 
+    @property
     @abc.abstractmethod
-    def start_removing_entity(
-        self,
-        entity_type: str,
-        entity_id: Optional[EntityId] = None,
-        entity_name: Optional[str] = None,
-    ) -> AsyncContextManager[EntityProgressReporter]:
-        """Report that a particular entity is being removed."""
+    def created_entities(self) -> Iterable[CrownEntity]:
+        """The set of entities that were created while this progress reporter was active."""
 
+    @property
     @abc.abstractmethod
-    def start_complex_entity_work(
-        self,
-        entity_type: str,
-        entity_id: EntityId,
-        entity_name: str,
-    ) -> AsyncContextManager["ContextProgressReporter"]:
-        """Create a progress reporter with some scoping to operate with subentities of a main entity."""
+    def updated_entities(self) -> Iterable[CrownEntity]:
+        """The set of entities that were updated while this progress reporter was active."""
+
+    @property
+    @abc.abstractmethod
+    def removed_entities(self) -> Iterable[CrownEntity]:
+        """The set of entities that were removed while this progress reporter was active."""
 
 
 class ProgressReporterFactory(Generic[UseCaseContext], abc.ABC):
     """A factory for progress reporters."""
 
     @abc.abstractmethod
-    def new_reporter(self, context: UseCaseContext) -> ContextProgressReporter:
+    def new_reporter(self, context: UseCaseContext) -> ProgressReporter:
         """Build a progress reporter for a given context."""
 
 
@@ -265,7 +171,7 @@ class UseCase(
         self,
         session: UseCaseSession,
         args: UseCaseArgs,
-    ) -> UseCaseResult:
+    ) -> tuple[UseCaseContext, UseCaseResult]:
         """Execute the command's action."""
 
     @abc.abstractmethod
@@ -273,12 +179,12 @@ class UseCase(
         """Construct the context for the use case."""
 
 
-@dataclass
+@dataclass(frozen=True)
 class EmptySession(UseCaseSessionBase):
     """An empty session."""
 
 
-@dataclass
+@dataclass(frozen=True)
 class EmptyContext(UseCaseContextBase):
     """An empty context."""
 
@@ -301,17 +207,20 @@ class MutationUseCase(
     """A command which does some sort of mutation."""
 
     _time_provider: Final[TimeProvider]
+    _realm_codec_registry: Final[RealmCodecRegistry]
     _invocation_recorder: Final[MutationUseCaseInvocationRecorder]
     _progress_reporter_factory: ProgressReporterFactory[UseCaseContext]
 
     def __init__(
         self,
         time_provider: TimeProvider,
+        realm_codec_registry: RealmCodecRegistry,
         invocation_recorder: MutationUseCaseInvocationRecorder,
         progress_reporter_factory: ProgressReporterFactory[UseCaseContext],
     ) -> None:
         """Constructor."""
         self._time_provider = time_provider
+        self._realm_codec_registry = realm_codec_registry
         self._invocation_recorder = invocation_recorder
         self._progress_reporter_factory = progress_reporter_factory
 
@@ -319,10 +228,12 @@ class MutationUseCase(
         self,
         session: UseCaseSession,
         args: UseCaseArgs,
-    ) -> UseCaseResult:
+    ) -> tuple[UseCaseContext, UseCaseResult]:
         """Execute the command's action."""
         LOGGER.info(
-            f"Invoking mutation command {self.__class__.__name__} with args {args}",
+            "Invoking mutation command %s with args %s",
+            self.__class__.__name__,
+            args,
         )
         context = await self._build_context(session)
         progress_reporter = self._progress_reporter_factory.new_reporter(context)
@@ -342,8 +253,8 @@ class MutationUseCase(
             )
             try:
                 await self._invocation_recorder.record(invocation_record)
-            except:  # noqa: E722
-                LOGGER.critical("Error writing invocation record")
+            except Exception as err:  # noqa: BLE001
+                LOGGER.critical("Error writing invocation record", exc_info=err)
             raise
 
         user_ref_id = context.user_ref_id
@@ -363,12 +274,12 @@ class MutationUseCase(
             args=args,
         )
         await self._invocation_recorder.record(invocation_record)
-        return result
+        return context, result
 
     @abc.abstractmethod
     async def _execute(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: UseCaseContext,
         args: UseCaseArgs,
     ) -> UseCaseResult:
@@ -382,17 +293,29 @@ class ReadonlyUseCase(
 ):
     """A command which only does reads."""
 
+    _realm_codec_registry: Final[RealmCodecRegistry]
+
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+    ) -> None:
+        """Constructor."""
+        self._realm_codec_registry = realm_codec_registry
+
     async def execute(
         self,
         session: UseCaseSession,
         args: UseCaseArgs,
-    ) -> UseCaseResult:
+    ) -> tuple[UseCaseContext, UseCaseResult]:
         """Execute the command's action."""
         LOGGER.info(
-            f"Invoking readonly command {self.__class__.__name__} with args {args}",
+            "Invoking readonly command %s with args %s",
+            self.__class__.__name__,
+            args,
         )
         context = await self._build_context(session)
-        return await self._execute(context, args)
+        result = await self._execute(context, args)
+        return context, result
 
     @abc.abstractmethod
     async def _execute(

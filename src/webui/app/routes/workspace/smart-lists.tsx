@@ -1,18 +1,18 @@
-import { Button, ButtonGroup } from "@mui/material";
+import type { SmartList } from "@jupiter/webapi-client";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Link, useFetcher, useOutlet } from "@remix-run/react";
-import type { SmartList } from "jupiter-gen";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { Outlet, useFetcher } from "@remix-run/react";
+import { AnimatePresence } from "framer-motion";
 import { getLoggedInApiClient } from "~/api-clients";
 import EntityIconComponent from "~/components/entity-icon";
 import { EntityNameComponent } from "~/components/entity-name";
-import { ActionHeader } from "~/components/infra/actions-header";
-import { BranchPanel } from "~/components/infra/branch-panel";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
-import { LeafPanel } from "~/components/infra/leaf-panel";
-import { TrunkCard } from "~/components/infra/trunk-card";
+import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
+import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
@@ -29,10 +29,12 @@ export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const smartListResponse = await getLoggedInApiClient(
     session
-  ).smartList.findSmartList({
+  ).smartLists.smartListFind({
     allow_archived: false,
+    include_notes: false,
     include_tags: false,
     include_items: false,
+    include_item_notes: false,
   });
 
   return json({
@@ -40,8 +42,10 @@ export async function loader({ request }: LoaderArgs) {
   });
 }
 
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
+
 export default function SmartLists() {
-  const outlet = useOutlet();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
 
   const shouldShowABranch = useTrunkNeedsToShowBranch();
@@ -57,51 +61,47 @@ export default function SmartLists() {
       },
       {
         method: "post",
-        action: `/workspace/smart-lists/${smartList.ref_id.the_id}/items/details`,
+        action: `/workspace/smart-lists/${smartList.ref_id}/items/details`,
       }
     );
   }
 
   return (
-    <TrunkCard>
-      <ActionHeader returnLocation="/workspace">
-        <ButtonGroup>
-          <Button
-            variant="contained"
-            to={`/workspace/smart-lists/new`}
-            component={Link}
-          >
-            Create
-          </Button>
-        </ButtonGroup>
-      </ActionHeader>
-
-      <EntityStack>
-        {loaderData.entries.map((entry) => (
-          <EntityCard
-            key={entry.smart_list.ref_id.the_id}
-            allowSwipe
-            allowMarkNotDone
-            onMarkNotDone={() => archiveSmartList(entry.smart_list)}
-          >
-            <EntityLink
-              to={`/workspace/smart-lists/${entry.smart_list.ref_id.the_id}/items`}
+    <TrunkPanel
+      key={"smart-lists"}
+      createLocation="/workspace/smart-lists/new"
+      returnLocation="/workspace"
+    >
+      <NestingAwareBlock
+        branchForceHide={shouldShowABranch}
+        shouldHide={shouldShowABranch || shouldShowALeafToo}
+      >
+        <EntityStack>
+          {loaderData.entries.map((entry) => (
+            <EntityCard
+              key={`smart-list-${entry.smart_list.ref_id}`}
+              entityId={`smart-list-${entry.smart_list.ref_id}`}
+              allowSwipe
+              allowMarkNotDone
+              onMarkNotDone={() => archiveSmartList(entry.smart_list)}
             >
-              {entry.smart_list.icon && (
-                <EntityIconComponent icon={entry.smart_list.icon} />
-              )}
-              <EntityNameComponent name={entry.smart_list.name} />
-            </EntityLink>
-          </EntityCard>
-        ))}
-      </EntityStack>
+              <EntityLink
+                to={`/workspace/smart-lists/${entry.smart_list.ref_id}/items`}
+              >
+                {entry.smart_list.icon && (
+                  <EntityIconComponent icon={entry.smart_list.icon} />
+                )}
+                <EntityNameComponent name={entry.smart_list.name} />
+              </EntityLink>
+            </EntityCard>
+          ))}
+        </EntityStack>
+      </NestingAwareBlock>
 
-      <BranchPanel show={shouldShowABranch}>{outlet}</BranchPanel>
-
-      <LeafPanel show={!shouldShowABranch && shouldShowALeafToo}>
-        {outlet}
-      </LeafPanel>
-    </TrunkCard>
+      <AnimatePresence mode="wait" initial={false}>
+        <Outlet />
+      </AnimatePresence>
+    </TrunkPanel>
   );
 }
 

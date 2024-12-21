@@ -1,8 +1,9 @@
 ENV=staging
+HOSTING=local
 BASENAME=jupiter-cli
-DESCRIPTION="The CLI client for Jupiter"
-DOCS_URL=https://jupiter-goals.readthedocs.io
-DOCS_INIT_WORKSPACE_URL=${DOCS_URL}/en/stable/how-tos/workspaces/init-a-workspace/
+DESCRIPTION="The CLI client for Thrive"
+DOCS_URL=https://docs.get-thriving.com
+DOCS_INIT_WORKSPACE_URL=${DOCS_URL}/tutorial
 SESSION_INFO_PATH=/data/session-info
 SQLITE_DB_URL=sqlite+aiosqlite:////data/jupiter.sqlite
 ALEMBIC_INI_PATH=/jupiter/src/core/migrations/alembic.ini

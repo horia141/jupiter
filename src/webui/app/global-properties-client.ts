@@ -1,13 +1,18 @@
-import { Env } from "jupiter-gen";
+import { Env, Hosting } from "@jupiter/webapi-client";
 import { createContext } from "react";
 import type { GlobalPropertiesServer } from "./global-properties-server";
 
 export interface GlobalPropertiesClient {
   env: Env;
+  hosting: Hosting;
   baseName: string;
+  title: string;
   description: string;
   webApiProgressReporterUrl: string;
   docsUrl: string;
+  termsOfServiceUrl: string;
+  privacyPolicyUrl: string;
+  scoreActionCookieName: string;
   inboxTasksToAskForGC: number;
   overdueInfoDays: number;
   overdueWarningDays: number;
@@ -16,10 +21,15 @@ export interface GlobalPropertiesClient {
 
 export const GlobalPropertiesContext = createContext<GlobalPropertiesClient>({
   env: Env.LOCAL,
+  hosting: Hosting.LOCAL,
   baseName: "FAKE-FAKE",
+  title: "FAKE-FAKE",
   description: "FAKE-FAKE",
   webApiProgressReporterUrl: "FAKE-FAKE",
   docsUrl: "FAKE-FAKE",
+  termsOfServiceUrl: "FAKE-FAKE",
+  privacyPolicyUrl: "FAKE-FAKE",
+  scoreActionCookieName: "FAKE-FAKE",
   inboxTasksToAskForGC: 20,
   overdueInfoDays: 1,
   overdueWarningDays: 2,
@@ -31,13 +41,18 @@ export function serverToClientGlobalProperties(
 ): GlobalPropertiesClient {
   return {
     env: globalPropertiesServer.env,
+    hosting: globalPropertiesServer.hosting,
     baseName: globalPropertiesServer.baseName,
+    title: globalPropertiesServer.title,
     description: globalPropertiesServer.description,
     webApiProgressReporterUrl:
-      globalPropertiesServer.hosting === "LOCAL"
+      globalPropertiesServer.hosting === Hosting.LOCAL
         ? globalPropertiesServer.localWebApiProgressReporterUrl
         : globalPropertiesServer.hostedGlobalWebApiProgressReporterUrl,
     docsUrl: globalPropertiesServer.docsUrl,
+    termsOfServiceUrl: globalPropertiesServer.termsOfServiceUrl,
+    privacyPolicyUrl: globalPropertiesServer.privacyPolicyUrl,
+    scoreActionCookieName: globalPropertiesServer.scoreActionCookieName,
     inboxTasksToAskForGC: globalPropertiesServer.inboxTasksToAskForGC,
     overdueInfoDays: globalPropertiesServer.overdueInfoDays,
     overdueWarningDays: globalPropertiesServer.overdueWarningDays,

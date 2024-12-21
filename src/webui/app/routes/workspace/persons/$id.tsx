@@ -1,3 +1,14 @@
+import type { InboxTask } from "@jupiter/webapi-client";
+import {
+  ApiError,
+  Difficulty,
+  Eisen,
+  InboxTaskStatus,
+  NoteDomain,
+  PersonRelationship,
+  RecurringTaskPeriod,
+  WorkspaceFeature,
+} from "@jupiter/webapi-client";
 import type { SelectChangeEvent } from "@mui/material";
 import {
   Button,
@@ -15,6 +26,7 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect, Response } from "@remix-run/node";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   useActionData,
   useFetcher,
@@ -22,34 +34,35 @@ import {
   useTransition,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import type { InboxTask } from "jupiter-gen";
-import {
-  ApiError,
-  Difficulty,
-  Eisen,
-  InboxTaskStatus,
-  PersonRelationship,
-  RecurringTaskPeriod,
-} from "jupiter-gen";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
+import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { LeafCard } from "~/components/infra/leaf-card";
+import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import { TimeEventFullDaysBlockStack } from "~/components/time-event-full-days-block-stack";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { difficultyName } from "~/logic/domain/difficulty";
 import { eisenName } from "~/logic/domain/eisen";
 import { sortInboxTasksNaturally } from "~/logic/domain/inbox-task";
 import { periodName } from "~/logic/domain/period";
+import {
+  birthdayFromParts,
+  extractBirthday,
+} from "~/logic/domain/person-birthday";
 import { personRelationshipName } from "~/logic/domain/person-relationship";
+import { sortBirthdayTimeEventsNaturally } from "~/logic/domain/time-event";
+import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { getIntent } from "~/logic/intent";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = {
   id: z.string(),
@@ -70,7 +83,6 @@ const UpdateFormSchema = {
     .optional(),
   catchUpActionableFromDay: z.string().optional(),
   catchUpActionableFromMonth: z.string().optional(),
-  catchUpDueAtTime: z.string().optional(),
   catchUpDueAtDay: z.string().optional(),
   catchUpDueAtMonth: z.string().optional(),
 };
@@ -84,8 +96,8 @@ export async function loader({ request, params }: LoaderArgs) {
   const { id } = parseParams(params, ParamsSchema);
 
   try {
-    const result = await getLoggedInApiClient(session).person.loadPerson({
-      ref_id: { the_id: id },
+    const result = await getLoggedInApiClient(session).persons.personLoad({
+      ref_id: id,
       allow_archived: true,
     });
 
@@ -93,6 +105,8 @@ export async function loader({ request, params }: LoaderArgs) {
       person: result.person,
       catchUpInboxTasks: result.catch_up_inbox_tasks,
       birthdayInboxTasks: result.birthday_inbox_tasks,
+      note: result.note,
+      birthdayTimeEventBlocks: result.birthday_time_event_blocks,
     });
   } catch (error) {
     if (error instanceof ApiError && error.status === StatusCodes.NOT_FOUND) {
@@ -115,11 +129,11 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (intent) {
       case "update": {
-        await getLoggedInApiClient(session).person.updatePerson({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).persons.personUpdate({
+          ref_id: id,
           name: {
             should_change: true,
-            value: { the_name: form.name },
+            value: form.name,
           },
           relationship: {
             should_change: true,
@@ -158,7 +172,7 @@ export async function action({ request, params }: ActionArgs) {
                 : form.catchUpActionableFromDay === undefined ||
                   form.catchUpActionableFromDay === ""
                 ? undefined
-                : { the_day: parseInt(form.catchUpActionableFromDay) },
+                : parseInt(form.catchUpActionableFromDay),
           },
           catch_up_actionable_from_month: {
             should_change: true,
@@ -168,17 +182,7 @@ export async function action({ request, params }: ActionArgs) {
                 : form.catchUpActionableFromMonth === undefined ||
                   form.catchUpActionableFromMonth === ""
                 ? undefined
-                : { the_month: parseInt(form.catchUpActionableFromMonth) },
-          },
-          catch_up_due_at_time: {
-            should_change: true,
-            value:
-              form.catchUpPeriod === undefined || form.catchUpPeriod === "none"
-                ? undefined
-                : form.catchUpDueAtTime === undefined ||
-                  form.catchUpDueAtTime === ""
-                ? undefined
-                : { the_time: form.catchUpDueAtTime },
+                : parseInt(form.catchUpActionableFromMonth),
           },
           catch_up_due_at_day: {
             should_change: true,
@@ -188,7 +192,7 @@ export async function action({ request, params }: ActionArgs) {
                 : form.catchUpDueAtDay === undefined ||
                   form.catchUpDueAtDay === ""
                 ? undefined
-                : { the_day: parseInt(form.catchUpDueAtDay) },
+                : parseInt(form.catchUpDueAtDay),
           },
           catch_up_due_at_month: {
             should_change: true,
@@ -198,7 +202,7 @@ export async function action({ request, params }: ActionArgs) {
                 : form.catchUpDueAtMonth === undefined ||
                   form.catchUpDueAtMonth === ""
                 ? undefined
-                : { the_month: parseInt(form.catchUpDueAtMonth) },
+                : parseInt(form.catchUpDueAtMonth),
           },
           birthday: {
             should_change: true,
@@ -208,19 +212,29 @@ export async function action({ request, params }: ActionArgs) {
               form.birthdayMonth === undefined ||
               form.birthdayMonth === "N/A"
                 ? undefined
-                : {
-                    day: parseInt(form.birthdayDay),
-                    month: parseInt(form.birthdayMonth),
-                  },
+                : birthdayFromParts(
+                    parseInt(form.birthdayDay, 10),
+                    parseInt(form.birthdayMonth, 10)
+                  ),
           },
         });
 
         return redirect(`/workspace/persons/${id}`);
       }
 
+      case "create-note": {
+        await getLoggedInApiClient(session).notes.noteCreate({
+          domain: NoteDomain.PERSON,
+          source_entity_ref_id: id,
+          content: [],
+        });
+
+        return redirect(`/workspace/persons/${id}`);
+      }
+
       case "archive": {
-        await getLoggedInApiClient(session).person.archivePerson({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).persons.personArchive({
+          ref_id: id,
         });
 
         return redirect(`/workspace/persons/${id}`);
@@ -241,12 +255,19 @@ export async function action({ request, params }: ActionArgs) {
   }
 }
 
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
+
 export default function Person() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
+  const topLevelInfo = useContext(TopLevelInfoContext);
 
   const person = loaderData.person;
+  const personBirthday = person.birthday
+    ? extractBirthday(person.birthday)
+    : undefined;
 
   const [showCatchUpParams, setShowCatchUpParams] = useState(
     person?.catch_up_params !== undefined
@@ -263,6 +284,19 @@ export default function Person() {
     {
       dueDateAscending: false,
     }
+  );
+
+  const birthdayTimeEventEntries = loaderData.birthdayTimeEventBlocks
+    .filter((f) => !f.archived)
+    .map((block) => ({
+      time_event: block,
+      entry: {
+        person: person,
+        birthday_time_event: block,
+      },
+    }));
+  const sortedBirthdayTimeEventEntries = sortBirthdayTimeEventsNaturally(
+    birthdayTimeEventEntries
   );
 
   const inputsEnabled = transition.state === "idle" && !person.archived;
@@ -284,7 +318,7 @@ export default function Person() {
   function handleCardMarkDone(it: InboxTask) {
     cardActionFetcher.submit(
       {
-        id: it.ref_id.the_id,
+        id: it.ref_id,
         status: InboxTaskStatus.DONE,
       },
       {
@@ -297,7 +331,7 @@ export default function Person() {
   function handleCardMarkNotDone(it: InboxTask) {
     cardActionFetcher.submit(
       {
-        id: it.ref_id.the_id,
+        id: it.ref_id,
         status: InboxTaskStatus.NOT_DONE,
       },
       {
@@ -308,14 +342,14 @@ export default function Person() {
   }
 
   return (
-    <LeafCard
-      key={person.ref_id.the_id}
+    <LeafPanel
+      key={`person-${person.ref_id}`}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/persons"
     >
-      <GlobalError actionResult={actionData} />
-      <Card>
+      <Card sx={{ marginBottom: "1rem" }}>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>
@@ -324,7 +358,7 @@ export default function Person() {
                 label="Name"
                 name="name"
                 readOnly={!inputsEnabled}
-                defaultValue={person.name.the_name}
+                defaultValue={person.name}
               />
               <FieldError actionResult={actionData} fieldName="/name" />
             </FormControl>
@@ -354,7 +388,7 @@ export default function Person() {
                   labelId="birthdayDay"
                   name="birthdayDay"
                   readOnly={!inputsEnabled}
-                  defaultValue={person.birthday?.day ?? "N/A"}
+                  defaultValue={personBirthday?.day ?? "N/A"}
                   label="Birthday Day"
                 >
                   <MenuItem value={"N/A"}>N/A</MenuItem>
@@ -389,6 +423,7 @@ export default function Person() {
                   <MenuItem value={29}>29th</MenuItem>
                   <MenuItem value={30}>30th</MenuItem>
                   <MenuItem value={31}>31st</MenuItem>
+                  <MenuItem value={32}>32st</MenuItem>
                 </Select>
 
                 <FieldError actionResult={actionData} fieldName="/birthday" />
@@ -400,7 +435,7 @@ export default function Person() {
                   labelId="birthdayMonth"
                   name="birthdayMonth"
                   readOnly={!inputsEnabled}
-                  defaultValue={person.birthday?.month ?? "N/A"}
+                  defaultValue={personBirthday?.month ?? "N/A"}
                   label="Birthday Month"
                 >
                   <MenuItem value={"N/A"}>N/A</MenuItem>
@@ -533,21 +568,6 @@ export default function Person() {
                 </FormControl>
 
                 <FormControl fullWidth>
-                  <InputLabel id="catchUpDueAtTime">Due At Time</InputLabel>
-                  <OutlinedInput
-                    type="time"
-                    label="Due At Time"
-                    name="catchUpDueAtTime"
-                    readOnly={!inputsEnabled}
-                    defaultValue={person.catch_up_params?.due_at_time ?? ""}
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/catch_up_due_at_time"
-                  />
-                </FormControl>
-
-                <FormControl fullWidth>
                   <InputLabel id="catchUpDueAtDay">Due At Day</InputLabel>
                   <OutlinedInput
                     type="number"
@@ -596,8 +616,36 @@ export default function Person() {
         </CardActions>
       </Card>
 
+      <Card>
+        {!loaderData.note && (
+          <CardActions>
+            <ButtonGroup>
+              <Button
+                variant="contained"
+                disabled={!inputsEnabled}
+                type="submit"
+                name="intent"
+                value="create-note"
+              >
+                Create Note
+              </Button>
+            </ButtonGroup>
+          </CardActions>
+        )}
+
+        {loaderData.note && (
+          <>
+            <EntityNoteEditor
+              initialNote={loaderData.note}
+              inputsEnabled={inputsEnabled}
+            />
+          </>
+        )}
+      </Card>
+
       {sortedBirthdayTasks.length > 0 && (
         <InboxTaskStack
+          topLevelInfo={topLevelInfo}
           showLabel
           showOptions={{
             showStatus: true,
@@ -614,6 +662,7 @@ export default function Person() {
 
       {sortedCatchUpTasks.length > 0 && (
         <InboxTaskStack
+          topLevelInfo={topLevelInfo}
           showLabel
           showOptions={{
             showStatus: true,
@@ -627,7 +676,20 @@ export default function Person() {
           onCardMarkNotDone={handleCardMarkNotDone}
         />
       )}
-    </LeafCard>
+
+      {isWorkspaceFeatureAvailable(
+        topLevelInfo.workspace,
+        WorkspaceFeature.SCHEDULE
+      ) &&
+        sortedBirthdayTimeEventEntries.length > 0 && (
+          <TimeEventFullDaysBlockStack
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            title="Birthday Time Events"
+            entries={sortedBirthdayTimeEventEntries}
+          />
+        )}
+    </LeafPanel>
   );
 }
 

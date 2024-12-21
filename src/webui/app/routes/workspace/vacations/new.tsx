@@ -1,3 +1,4 @@
+import { ApiError } from "@jupiter/webapi-client";
 import {
   Button,
   ButtonGroup,
@@ -11,16 +12,17 @@ import {
 import { Stack } from "@mui/system";
 import type { ActionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { ApiError } from "jupiter-gen";
 import { z } from "zod";
 import { parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { LeafCard } from "~/components/infra/leaf-card";
+import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
 
@@ -39,15 +41,15 @@ export async function action({ request }: ActionArgs) {
   const form = await parseForm(request, CreateFormSchema);
 
   try {
-    const result = await getLoggedInApiClient(session).vacation.createVacation({
-      name: { the_name: form.name },
-      start_date: { the_date: form.startDate, the_datetime: undefined },
-      end_date: { the_date: form.endDate, the_datetime: undefined },
-    });
-
-    return redirect(
-      `/workspace/vacations/${result.new_vacation.ref_id.the_id}`
+    const result = await getLoggedInApiClient(session).vacations.vacationCreate(
+      {
+        name: form.name,
+        start_date: form.startDate,
+        end_date: form.endDate,
+      }
     );
+
+    return redirect(`/workspace/vacations/${result.new_vacation.ref_id}`);
   } catch (error) {
     if (
       error instanceof ApiError &&
@@ -60,6 +62,9 @@ export async function action({ request }: ActionArgs) {
   }
 }
 
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
+
 export default function NewVacation() {
   const transition = useTransition();
   const actionData = useActionData<typeof action>();
@@ -67,9 +72,9 @@ export default function NewVacation() {
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <LeafCard returnLocation="/workspace/vacations">
-      <GlobalError actionResult={actionData} />
+    <LeafPanel key={"vacations/new"} returnLocation="/workspace/vacations">
       <Card>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>
@@ -114,6 +119,7 @@ export default function NewVacation() {
         <CardActions>
           <ButtonGroup>
             <Button
+              id="vacation-create"
               variant="contained"
               disabled={!inputsEnabled}
               type="submit"
@@ -125,7 +131,7 @@ export default function NewVacation() {
           </ButtonGroup>
         </CardActions>
       </Card>
-    </LeafCard>
+    </LeafPanel>
   );
 }
 

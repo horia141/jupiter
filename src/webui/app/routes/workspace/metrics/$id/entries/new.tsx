@@ -1,3 +1,4 @@
+import { ApiError } from "@jupiter/webapi-client";
 import {
   Button,
   ButtonGroup,
@@ -11,17 +12,18 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { useActionData, useTransition } from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { useActionData, useParams, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { ApiError } from "jupiter-gen";
 import { DateTime } from "luxon";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { LeafCard } from "~/components/infra/leaf-card";
+import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
@@ -33,7 +35,6 @@ const ParamsSchema = {
 const CreateFormSchema = {
   collectionTime: z.string(),
   value: z.string().transform(parseFloat),
-  notes: z.string().optional(),
 };
 
 export const handle = {
@@ -44,9 +45,9 @@ export async function loader({ request, params }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const { id } = parseParams(params, ParamsSchema);
 
-  const response = await getLoggedInApiClient(session).metric.loadMetric({
+  const response = await getLoggedInApiClient(session).metrics.metricLoad({
     allow_archived: true,
-    ref_id: { the_id: id },
+    ref_id: id,
   });
 
   return json({
@@ -62,18 +63,14 @@ export async function action({ params, request }: ActionArgs) {
   try {
     const response = await getLoggedInApiClient(
       session
-    ).metric.createMetricEntry({
-      metric_ref_id: { the_id: id },
-      collection_time: {
-        the_date: form.collectionTime,
-        the_datetime: undefined,
-      },
+    ).entry.metricEntryCreate({
+      metric_ref_id: id,
+      collection_time: form.collectionTime,
       value: form.value,
-      notes: form.notes && form.notes !== "" ? form.notes : undefined,
     });
 
     return redirect(
-      `/workspace/metrics/${id}/entries/${response.new_metric_entry.ref_id.the_id}`
+      `/workspace/metrics/${id}/entries/${response.new_metric_entry.ref_id}`
     );
   } catch (error) {
     if (
@@ -87,7 +84,11 @@ export async function action({ params, request }: ActionArgs) {
   }
 }
 
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
+
 export default function NewMetricEntry() {
+  const { id } = useParams();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
@@ -95,12 +96,12 @@ export default function NewMetricEntry() {
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <LeafCard
-      key={loaderData.metric.ref_id.the_id}
-      returnLocation={`/workspace/metrics/${loaderData.metric.ref_id.the_id}`}
+    <LeafPanel
+      key={`metric-${id}/entries/new`}
+      returnLocation={`/workspace/metrics/${loaderData.metric.ref_id}`}
     >
-      <GlobalError actionResult={actionData} />
       <Card>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>
@@ -130,31 +131,23 @@ export default function NewMetricEntry() {
               />
               <FieldError actionResult={actionData} fieldName="/value" />
             </FormControl>
-
-            <FormControl fullWidth>
-              <InputLabel id="notes">Notes</InputLabel>
-              <OutlinedInput
-                multiline
-                minRows={2}
-                maxRows={4}
-                label="Notes"
-                name="notes"
-                readOnly={!inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/notes" />
-            </FormControl>
           </Stack>
         </CardContent>
 
         <CardActions>
           <ButtonGroup>
-            <Button variant="contained" disabled={!inputsEnabled} type="submit">
+            <Button
+              id="metric-entry-create"
+              variant="contained"
+              disabled={!inputsEnabled}
+              type="submit"
+            >
               Create
             </Button>
           </ButtonGroup>
         </CardActions>
       </Card>
-    </LeafCard>
+    </LeafPanel>
   );
 }
 

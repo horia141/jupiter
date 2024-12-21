@@ -1,9 +1,9 @@
-import type { EntityIcon } from "jupiter-gen";
+import type { EntityIcon } from "@jupiter/webapi-client";
 
 interface EntityIconProps {
   icon: EntityIcon;
 }
 
 export default function EntityIconComponent({ icon }: EntityIconProps) {
-  return <span>{icon.the_icon}</span>;
+  return <span>{icon}</span>;
 }

@@ -1,26 +1,29 @@
+import type { MetricEntry } from "@jupiter/webapi-client";
+import { ApiError } from "@jupiter/webapi-client";
 import { ResponsiveLine } from "@nivo/line";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Link, useFetcher, useOutlet, useParams } from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { Link, Outlet, useFetcher, useParams } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import type { MetricEntry } from "jupiter-gen";
-import { ApiError } from "jupiter-gen";
 import { z } from "zod";
 import { parseParams } from "zodix";
 
-import { Button, ButtonGroup, styled } from "@mui/material";
+import TuneIcon from "@mui/icons-material/Tune";
+import { Button, styled } from "@mui/material";
+import { AnimatePresence } from "framer-motion";
 import { getLoggedInApiClient } from "~/api-clients";
-import { CollectionTimeDiffTag } from "~/components/collection-time-diff-tag";
 import { EntityNameComponent } from "~/components/entity-name";
-import { ActionHeader } from "~/components/infra/actions-header";
-import { BranchCard } from "~/components/infra/branch-card";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
-import { LeafPanel } from "~/components/infra/leaf-panel";
+import { BranchPanel } from "~/components/infra/layout/branch-panel";
+import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
+import { TimeDiffTag } from "~/components/time-diff-tag";
 import { aDateToDate, compareADate } from "~/logic/domain/adate";
 import { metricEntryName } from "~/logic/domain/metric-entry";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
@@ -41,8 +44,8 @@ export async function loader({ request, params }: LoaderArgs) {
   const { id } = parseParams(params, ParamsSchema);
 
   try {
-    const response = await getLoggedInApiClient(session).metric.loadMetric({
-      ref_id: { the_id: id },
+    const response = await getLoggedInApiClient(session).metrics.metricLoad({
+      ref_id: id,
       allow_archived: false,
     });
 
@@ -62,10 +65,11 @@ export async function loader({ request, params }: LoaderArgs) {
   }
 }
 
-export default function Metric() {
-  const outlet = useOutlet();
-  const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
 
+export default function Metric() {
+  const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const shouldShowALeaf = useBranchNeedsToShowLeaf();
 
   const sortedEntries = [...loaderData.metricEntries].sort((e1, e2) => {
@@ -83,65 +87,68 @@ export default function Metric() {
       },
       {
         method: "post",
-        action: `/workspace/metrics/${loaderData.metric.ref_id.the_id}/entries/${item.ref_id.the_id}`,
+        action: `/workspace/metrics/${loaderData.metric.ref_id}/entries/${item.ref_id}`,
       }
     );
   }
 
   return (
-    <BranchCard key={loaderData.metric.ref_id.the_id}>
-      <ActionHeader returnLocation="/workspace/metrics">
-        <ButtonGroup>
-          <Button
-            variant="contained"
-            to={`/workspace/metrics/${loaderData.metric.ref_id.the_id}/entries/new`}
-            component={Link}
-          >
-            Create
-          </Button>
+    <BranchPanel
+      key={`metric-${loaderData.metric.ref_id}`}
+      createLocation={`/workspace/metrics/${loaderData.metric.ref_id}/entries/new`}
+      extraControls={[
+        <Button
+          key={loaderData.metric.ref_id}
+          variant="outlined"
+          to={`/workspace/metrics/${loaderData.metric.ref_id}/details`}
+          component={Link}
+          startIcon={<TuneIcon />}
+        >
+          Details
+        </Button>,
+      ]}
+      returnLocation="/workspace/metrics"
+    >
+      <NestingAwareBlock shouldHide={shouldShowALeaf}>
+        <MetricGraph sortedMetricEntries={sortedEntries} />
 
-          <Button
-            variant="outlined"
-            to={`/workspace/metrics/${loaderData.metric.ref_id.the_id}/details`}
-            component={Link}
-          >
-            Details
-          </Button>
-        </ButtonGroup>
-      </ActionHeader>
-
-      <MetricGraph sortedMetricEntries={sortedEntries} />
-
-      <EntityStack>
-        {sortedEntries.map((entry) => (
-          <EntityCard
-            key={entry.ref_id.the_id}
-            allowSwipe
-            allowMarkNotDone
-            onMarkNotDone={() => archiveEntry(entry)}
-          >
-            <EntityLink
-              to={`/workspace/metrics/${loaderData.metric.ref_id.the_id}/entries/${entry.ref_id.the_id}`}
+        <EntityStack>
+          {sortedEntries.map((entry) => (
+            <EntityCard
+              entityId={`metric-entry-${entry.ref_id}`}
+              key={`metric-entry-${entry.ref_id}`}
+              allowSwipe
+              allowMarkNotDone
+              onMarkNotDone={() => archiveEntry(entry)}
             >
-              <EntityNameComponent name={metricEntryName(entry)} />
-              <CollectionTimeDiffTag collectionTime={entry.collection_time} />
-            </EntityLink>
-          </EntityCard>
-        ))}
-      </EntityStack>
+              <EntityLink
+                to={`/workspace/metrics/${loaderData.metric.ref_id}/entries/${entry.ref_id}`}
+              >
+                <EntityNameComponent name={metricEntryName(entry)} />
+                <TimeDiffTag
+                  labelPrefix="Collected"
+                  collectionTime={entry.collection_time}
+                />
+              </EntityLink>
+            </EntityCard>
+          ))}
+        </EntityStack>
+      </NestingAwareBlock>
 
-      <LeafPanel show={shouldShowALeaf}>{outlet}</LeafPanel>
-    </BranchCard>
+      <AnimatePresence mode="wait" initial={false}>
+        <Outlet />
+      </AnimatePresence>
+    </BranchPanel>
   );
 }
 
 export const CatchBoundary = makeCatchBoundary(
-  () => `Could not find metric #${useParams().key}!`
+  () => `Could not find metric #${useParams().id}!`
 );
 
 export const ErrorBoundary = makeErrorBoundary(
   () =>
-    `There was an error loading metric #${useParams().key}! Please try again!`
+    `There was an error loading metric #${useParams().id}! Please try again!`
 );
 
 interface MetricGraphProps {

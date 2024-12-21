@@ -25,32 +25,37 @@ import {
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Link, useFetcher, useOutlet } from "@remix-run/react";
+import { Link, Outlet, useFetcher } from "@remix-run/react";
 
-import type { InboxTask, InboxTaskFindResultEntry } from "jupiter-gen";
+import type {
+  InboxTask,
+  InboxTaskFindResultEntry,
+} from "@jupiter/webapi-client";
 import {
   Eisen,
   InboxTaskSource,
   InboxTaskStatus,
   RecurringTaskPeriod,
-} from "jupiter-gen";
-import { memo, useContext, useState } from "react";
+} from "@jupiter/webapi-client";
+import React, { memo, useContext, useState } from "react";
 import { InboxTaskStatusTag } from "~/components/inbox-task-status-tag";
 
+import FilterAltIcon from "@mui/icons-material/FilterAlt";
+import FlareIcon from "@mui/icons-material/Flare";
+import ViewKanbanIcon from "@mui/icons-material/ViewKanban";
+import ViewListIcon from "@mui/icons-material/ViewList";
 import Grid from "@mui/material/Unstable_Grid2";
 import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";
-import React from "react";
 import { z } from "zod";
 import { getLoggedInApiClient } from "~/api-clients";
 import type { InboxTaskShowOptions } from "~/components/inbox-task-card";
 import { InboxTaskCard } from "~/components/inbox-task-card";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
-import { ActionHeader } from "~/components/infra/actions-header";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { LeafPanel } from "~/components/infra/leaf-panel";
-import { TrunkCard } from "~/components/infra/trunk-card";
+import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
+import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import { NoTasksCard } from "~/components/no-tasks-card";
 import { TabPanel } from "~/components/tab-panel";
 import { GlobalPropertiesContext } from "~/global-properties-client";
@@ -61,7 +66,9 @@ import type {
   InboxTaskParent,
 } from "~/logic/domain/inbox-task";
 import {
+  canInboxTaskBeInStatus,
   filterInboxTasksForDisplay,
+  inboxTaskFindEntryToParent,
   isInboxTaskCoreFieldEditable,
   sortInboxTasksByEisenAndDifficulty,
   sortInboxTasksNaturally,
@@ -74,6 +81,7 @@ import {
   ActionableTime,
   actionableTimeToDateTime,
 } from "~/rendering/actionable-time";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
@@ -81,6 +89,8 @@ import {
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
+import type { TopLevelInfo } from "~/top-level-context";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 enum DragTargetStatus {
   SOURCE_DRAG,
@@ -119,35 +129,23 @@ export const handle = {
 
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
-  const response = await getLoggedInApiClient(session).inboxTask.findInboxTask({
-    allow_archived: false,
-  });
+  const response = await getLoggedInApiClient(session).inboxTasks.inboxTaskFind(
+    {
+      allow_archived: false,
+      include_notes: false,
+      include_time_event_blocks: false,
+    }
+  );
   return json({
     entries: response.entries,
   });
 }
 
-export const shouldRevalidate: ShouldRevalidateFunction = ({
-  actionResult,
-  currentParams,
-  currentUrl,
-  defaultShouldRevalidate,
-  formAction,
-  formData,
-  formEncType,
-  formMethod,
-  nextParams,
-  nextUrl,
-}) => {
-  if (formAction === "/workspace/inbox-tasks/update-status-and-eisen") {
-    return false;
-  }
-
-  return defaultShouldRevalidate;
-};
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
 
 export default function InboxTasks() {
-  const outlet = useOutlet();
+  const topLevelInfo = useContext(TopLevelInfoContext);
   const { entries } = useLoaderDataSafeForAnimation<typeof loader>();
 
   const globalProperties = useContext(GlobalPropertiesContext);
@@ -160,16 +158,11 @@ export default function InboxTasks() {
   );
   const inboxTasksByRefId: { [key: string]: InboxTask } = {};
   for (const entry of entries) {
-    inboxTasksByRefId[entry.inbox_task.ref_id.the_id] = entry.inbox_task;
+    inboxTasksByRefId[entry.inbox_task.ref_id] = entry.inbox_task;
   }
   const entriesByRefId: { [key: string]: InboxTaskParent } = {};
   for (const entry of entries) {
-    entriesByRefId[entry.inbox_task.ref_id.the_id] = {
-      bigPlan: entry.big_plan,
-      slackTask: entry.slack_task,
-      emailTask: entry.email_task,
-      ...entry,
-    };
+    entriesByRefId[entry.inbox_task.ref_id] = inboxTaskFindEntryToParent(entry);
   }
 
   const [selectedView, setSelectedView] = useState(View.SWIFTVIEW);
@@ -235,7 +228,7 @@ export default function InboxTasks() {
       );
     } else {
       kanbanBoardMoveFetcher.submit(
-        { id: result.draggableId, status: status },
+        { id: result.draggableId, eisen: "no-go", status: status },
         {
           method: "post",
           action: "/workspace/inbox-tasks/update-status-and-eisen",
@@ -248,9 +241,9 @@ export default function InboxTasks() {
     setOptimisticUpdates((oldOptimisticUpdates) => {
       return {
         ...oldOptimisticUpdates,
-        [it.ref_id.the_id]: {
+        [it.ref_id]: {
           status: InboxTaskStatus.DONE,
-          eisen: oldOptimisticUpdates[it.ref_id.the_id]?.eisen ?? it.eisen,
+          eisen: oldOptimisticUpdates[it.ref_id]?.eisen ?? it.eisen,
         },
       };
     });
@@ -258,7 +251,7 @@ export default function InboxTasks() {
     setTimeout(() => {
       kanbanBoardMoveFetcher.submit(
         {
-          id: it.ref_id.the_id,
+          id: it.ref_id,
           status: InboxTaskStatus.DONE,
         },
         {
@@ -273,9 +266,9 @@ export default function InboxTasks() {
     setOptimisticUpdates((oldOptimisticUpdates) => {
       return {
         ...oldOptimisticUpdates,
-        [it.ref_id.the_id]: {
+        [it.ref_id]: {
           status: InboxTaskStatus.NOT_DONE,
-          eisen: oldOptimisticUpdates[it.ref_id.the_id]?.eisen ?? it.eisen,
+          eisen: oldOptimisticUpdates[it.ref_id]?.eisen ?? it.eisen,
         },
       };
     });
@@ -283,7 +276,7 @@ export default function InboxTasks() {
     setTimeout(() => {
       kanbanBoardMoveFetcher.submit(
         {
-          id: it.ref_id.the_id,
+          id: it.ref_id,
           status: InboxTaskStatus.NOT_DONE,
         },
         {
@@ -322,321 +315,356 @@ export default function InboxTasks() {
     globalProperties.inboxTasksToAskForGC
   );
 
-  return (
-    <TrunkCard>
-      <ActionHeader returnLocation="/workspace">
-        <ButtonGroup>
-          <Button
-            variant="contained"
-            to="/workspace/inbox-tasks/new"
-            component={Link}
-          >
-            Create
-          </Button>
-        </ButtonGroup>
+  let extraControls = [];
+  if (isBigScreen) {
+    extraControls = [
+      <ButtonGroup key="first">
+        <Button
+          variant={selectedView === View.SWIFTVIEW ? "contained" : "outlined"}
+          startIcon={<FlareIcon />}
+          onClick={() => setSelectedView(View.SWIFTVIEW)}
+        >
+          SwiftView
+        </Button>
+        <Button
+          variant={
+            selectedView === View.KANBAN_BY_EISEN ? "contained" : "outlined"
+          }
+          startIcon={<ViewKanbanIcon />}
+          onClick={() => setSelectedView(View.KANBAN_BY_EISEN)}
+        >
+          Kanban by Eisen
+        </Button>
+        <Button
+          variant={selectedView === View.KANBAN ? "contained" : "outlined"}
+          startIcon={<ViewKanbanIcon />}
+          onClick={() => setSelectedView(View.KANBAN)}
+        >
+          Kanban
+        </Button>
+        <Button
+          variant={selectedView === View.LIST ? "contained" : "outlined"}
+          startIcon={<ViewListIcon />}
+          onClick={() => setSelectedView(View.LIST)}
+        >
+          List
+        </Button>
+      </ButtonGroup>,
+      <Button
+        key="first"
+        variant="outlined"
+        startIcon={<FilterAltIcon />}
+        onClick={() => setShowFilterDialog(true)}
+      >
+        Filters
+      </Button>,
+    ];
+  } else {
+    extraControls = [
+      <Button
+        key="first"
+        variant="outlined"
+        startIcon={<ViewKanbanIcon />}
+        onClick={() => setShowViewsDialog(true)}
+      >
+        Views
+      </Button>,
+      <Button
+        key="first"
+        variant="outlined"
+        startIcon={<FilterAltIcon />}
+        onClick={() => setShowFilterDialog(true)}
+      >
+        Filters
+      </Button>,
+    ];
+  }
 
-        {isBigScreen && (
-          <ButtonGroup>
-            <Button
-              variant={
-                selectedView === View.SWIFTVIEW ? "contained" : "outlined"
-              }
-              onClick={() => setSelectedView(View.SWIFTVIEW)}
-            >
-              SwiftView
-            </Button>
-            <Button
-              variant={
-                selectedView === View.KANBAN_BY_EISEN ? "contained" : "outlined"
-              }
-              onClick={() => setSelectedView(View.KANBAN_BY_EISEN)}
-            >
-              Kanban by Eisen
-            </Button>
-            <Button
-              variant={selectedView === View.KANBAN ? "contained" : "outlined"}
-              onClick={() => setSelectedView(View.KANBAN)}
-            >
-              Kanban
-            </Button>
-            <Button
-              variant={selectedView === View.LIST ? "contained" : "outlined"}
-              onClick={() => setSelectedView(View.LIST)}
-            >
-              List
-            </Button>
-          </ButtonGroup>
+  return (
+    <TrunkPanel
+      key={"inbox-tasks"}
+      createLocation="/workspace/inbox-tasks/new"
+      extraControls={extraControls}
+      returnLocation="/workspace"
+    >
+      <NestingAwareBlock shouldHide={shouldShowALeaf}>
+        {shouldDoAGc && (
+          <GCSection>
+            There are quite a lot of finished inbox tasks. Consider doing a{" "}
+            <Link to="/workspace/tools/gc">GC</Link> to decultter and speed
+            things up.
+          </GCSection>
         )}
 
-        <ButtonGroup>
-          {!isBigScreen && (
-            <Button variant="outlined" onClick={() => setShowViewsDialog(true)}>
-              Views
-            </Button>
-          )}
-          <Button variant="outlined" onClick={() => setShowFilterDialog(true)}>
-            Filters
-          </Button>
-        </ButtonGroup>
-      </ActionHeader>
-
-      {shouldDoAGc && (
-        <GCSection>
-          There are quite a lot of finished inbox tasks. Consider doing a{" "}
-          <Link to="/workspace/tools/gc">GC</Link> to decultter and speed things
-          up.
-        </GCSection>
-      )}
-
-      <>
-        <GlobalError actionResult={kanbanBoardMoveFetcher.data} />
-        <FieldError
-          actionResult={kanbanBoardMoveFetcher.data}
-          fieldName="/status"
-        />
-        <FieldError
-          actionResult={kanbanBoardMoveFetcher.data}
-          fieldName="/eisen"
-        />
-      </>
-
-      <Dialog onClose={() => setShowViewsDialog(false)} open={showViewsDialog}>
-        <DialogTitle>Views</DialogTitle>
-        <DialogContent>
-          <Stack spacing={1} useFlexGap>
-            <ButtonGroup orientation="vertical">
-              <Button
-                variant={
-                  selectedView === View.SWIFTVIEW ? "contained" : "outlined"
-                }
-                onClick={() => setSelectedView(View.SWIFTVIEW)}
-              >
-                SwiftView
-              </Button>
-              <Button
-                variant={
-                  selectedView === View.KANBAN_BY_EISEN
-                    ? "contained"
-                    : "outlined"
-                }
-                onClick={() => setSelectedView(View.KANBAN_BY_EISEN)}
-              >
-                Kanban by Eisen
-              </Button>
-              <Button
-                variant={
-                  selectedView === View.KANBAN ? "contained" : "outlined"
-                }
-                onClick={() => setSelectedView(View.KANBAN)}
-              >
-                Kanban
-              </Button>
-              <Button
-                variant={selectedView === View.LIST ? "contained" : "outlined"}
-                onClick={() => setSelectedView(View.LIST)}
-              >
-                List
-              </Button>
-            </ButtonGroup>
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowViewsDialog(false)}>Close</Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog
-        onClose={() => setShowFilterDialog(false)}
-        open={showFilterDialog}
-      >
-        <DialogTitle>Filters</DialogTitle>
-        <DialogContent>
-          <Stack spacing={1} useFlexGap>
-            <Divider>
-              <Typography variant="h6">Actionable From</Typography>
-            </Divider>
-            <ButtonGroup orientation={isBigScreen ? "horizontal" : "vertical"}>
-              <Button
-                variant={
-                  selectedActionableTime === ActionableTime.NOW
-                    ? "contained"
-                    : "outlined"
-                }
-                onClick={() => setSelectedActionableTime(ActionableTime.NOW)}
-              >
-                From Now
-              </Button>
-              <Button
-                variant={
-                  selectedActionableTime === ActionableTime.ONE_WEEK
-                    ? "contained"
-                    : "outlined"
-                }
-                onClick={() =>
-                  setSelectedActionableTime(ActionableTime.ONE_WEEK)
-                }
-              >
-                From One Week
-              </Button>
-              <Button
-                variant={
-                  selectedActionableTime === ActionableTime.ONE_MONTH
-                    ? "contained"
-                    : "outlined"
-                }
-                onClick={() =>
-                  setSelectedActionableTime(ActionableTime.ONE_MONTH)
-                }
-              >
-                From One Month
-              </Button>
-            </ButtonGroup>
-            {selectedView === View.KANBAN_BY_EISEN && (
-              <>
-                <Divider>
-                  <Typography variant="h6">Show Eisen</Typography>
-                </Divider>
-                <FormGroup>
-                  {EISENS.map((eisen) => (
-                    <FormControlLabel
-                      key={eisen}
-                      label={eisenName(eisen)}
-                      control={
-                        <Checkbox
-                          checked={showEisenBoard[eisen]}
-                          onChange={(e) =>
-                            setShowEisenBoard((c) => ({
-                              ...c,
-                              [eisen]: e.target.checked,
-                            }))
-                          }
-                        />
-                      }
-                    />
-                  ))}
-                </FormGroup>
-              </>
-            )}
-            {(selectedView === View.KANBAN_BY_EISEN ||
-              selectedView === View.KANBAN) && (
-              <>
-                <Divider>
-                  <Typography variant="h6">Collapse Columns</Typography>
-                </Divider>
-                <FormGroup>
-                  {INBOX_TASK_STATUSES.map((status) => (
-                    <FormControlLabel
-                      key={status}
-                      label={inboxTaskStatusName(status)}
-                      control={
-                        <Checkbox
-                          checked={collapseInboxTaskStatusColumn[status]}
-                          onChange={(e) =>
-                            setCollapseInboxTaskStatusColumn((c) => ({
-                              ...c,
-                              [status]: e.target.checked,
-                            }))
-                          }
-                        />
-                      }
-                    />
-                  ))}
-                </FormGroup>
-              </>
-            )}
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowFilterDialog(false)}>Close</Button>
-        </DialogActions>
-      </Dialog>
-
-      {selectedView === View.SWIFTVIEW && (
-        <SwiftView
-          isBigScreen={isBigScreen}
-          inboxTasks={sortedInboxTasks}
-          optimisticUpdates={optimisticUpdates}
-          moreInfoByRefId={entriesByRefId}
-          actionableTime={selectedActionableTime}
-          onCardMarkDone={handleCardMarkDone}
-          onCardMarkNotDone={handleCardMarkNotDone}
-        />
-      )}
-
-      {selectedView === View.KANBAN_BY_EISEN && (
         <>
-          {isBigScreen && (
-            <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
-              <BigScreenKanbanByEisen
+          <GlobalError actionResult={kanbanBoardMoveFetcher.data} />
+          <FieldError
+            actionResult={kanbanBoardMoveFetcher.data}
+            fieldName="/status"
+          />
+          <FieldError
+            actionResult={kanbanBoardMoveFetcher.data}
+            fieldName="/eisen"
+          />
+        </>
+
+        <Dialog
+          onClose={() => setShowViewsDialog(false)}
+          open={showViewsDialog}
+        >
+          <DialogTitle>Views</DialogTitle>
+          <DialogContent>
+            <Stack spacing={1} useFlexGap>
+              <ButtonGroup orientation="vertical">
+                <Button
+                  variant={
+                    selectedView === View.SWIFTVIEW ? "contained" : "outlined"
+                  }
+                  startIcon={<FlareIcon />}
+                  onClick={() => setSelectedView(View.SWIFTVIEW)}
+                >
+                  SwiftView
+                </Button>
+                <Button
+                  variant={
+                    selectedView === View.KANBAN_BY_EISEN
+                      ? "contained"
+                      : "outlined"
+                  }
+                  startIcon={<ViewKanbanIcon />}
+                  onClick={() => setSelectedView(View.KANBAN_BY_EISEN)}
+                >
+                  Kanban by Eisen
+                </Button>
+                <Button
+                  variant={
+                    selectedView === View.KANBAN ? "contained" : "outlined"
+                  }
+                  startIcon={<ViewKanbanIcon />}
+                  onClick={() => setSelectedView(View.KANBAN)}
+                >
+                  Kanban
+                </Button>
+                <Button
+                  variant={
+                    selectedView === View.LIST ? "contained" : "outlined"
+                  }
+                  startIcon={<ViewListIcon />}
+                  onClick={() => setSelectedView(View.LIST)}
+                >
+                  List
+                </Button>
+              </ButtonGroup>
+            </Stack>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setShowViewsDialog(false)}>Close</Button>
+          </DialogActions>
+        </Dialog>
+
+        <Dialog
+          onClose={() => setShowFilterDialog(false)}
+          open={showFilterDialog}
+        >
+          <DialogTitle>Filters</DialogTitle>
+          <DialogContent>
+            <Stack spacing={1} useFlexGap>
+              <Divider>
+                <Typography variant="h6">Actionable From</Typography>
+              </Divider>
+              <ButtonGroup
+                orientation={isBigScreen ? "horizontal" : "vertical"}
+              >
+                <Button
+                  variant={
+                    selectedActionableTime === ActionableTime.NOW
+                      ? "contained"
+                      : "outlined"
+                  }
+                  onClick={() => setSelectedActionableTime(ActionableTime.NOW)}
+                >
+                  From Now
+                </Button>
+                <Button
+                  variant={
+                    selectedActionableTime === ActionableTime.ONE_WEEK
+                      ? "contained"
+                      : "outlined"
+                  }
+                  onClick={() =>
+                    setSelectedActionableTime(ActionableTime.ONE_WEEK)
+                  }
+                >
+                  From One Week
+                </Button>
+                <Button
+                  variant={
+                    selectedActionableTime === ActionableTime.ONE_MONTH
+                      ? "contained"
+                      : "outlined"
+                  }
+                  onClick={() =>
+                    setSelectedActionableTime(ActionableTime.ONE_MONTH)
+                  }
+                >
+                  From One Month
+                </Button>
+              </ButtonGroup>
+              {selectedView === View.KANBAN_BY_EISEN && (
+                <>
+                  <Divider>
+                    <Typography variant="h6">Show Eisen</Typography>
+                  </Divider>
+                  <FormGroup>
+                    {EISENS.map((eisen) => (
+                      <FormControlLabel
+                        key={eisen}
+                        label={eisenName(eisen)}
+                        control={
+                          <Checkbox
+                            checked={showEisenBoard[eisen]}
+                            onChange={(e) =>
+                              setShowEisenBoard((c) => ({
+                                ...c,
+                                [eisen]: e.target.checked,
+                              }))
+                            }
+                          />
+                        }
+                      />
+                    ))}
+                  </FormGroup>
+                </>
+              )}
+              {(selectedView === View.KANBAN_BY_EISEN ||
+                selectedView === View.KANBAN) && (
+                <>
+                  <Divider>
+                    <Typography variant="h6">Collapse Columns</Typography>
+                  </Divider>
+                  <FormGroup>
+                    {INBOX_TASK_STATUSES.map((status) => (
+                      <FormControlLabel
+                        key={status}
+                        label={inboxTaskStatusName(status)}
+                        control={
+                          <Checkbox
+                            checked={collapseInboxTaskStatusColumn[status]}
+                            onChange={(e) =>
+                              setCollapseInboxTaskStatusColumn((c) => ({
+                                ...c,
+                                [status]: e.target.checked,
+                              }))
+                            }
+                          />
+                        }
+                      />
+                    ))}
+                  </FormGroup>
+                </>
+              )}
+            </Stack>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setShowFilterDialog(false)}>Close</Button>
+          </DialogActions>
+        </Dialog>
+
+        {selectedView === View.SWIFTVIEW && (
+          <SwiftView
+            topLevelInfo={topLevelInfo}
+            isBigScreen={isBigScreen}
+            inboxTasks={sortedInboxTasks}
+            optimisticUpdates={optimisticUpdates}
+            moreInfoByRefId={entriesByRefId}
+            actionableTime={selectedActionableTime}
+            onCardMarkDone={handleCardMarkDone}
+            onCardMarkNotDone={handleCardMarkNotDone}
+          />
+        )}
+
+        {selectedView === View.KANBAN_BY_EISEN && (
+          <>
+            {isBigScreen && (
+              <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
+                <BigScreenKanbanByEisen
+                  topLevelInfo={topLevelInfo}
+                  inboxTasks={sortedInboxTasks}
+                  optimisticUpdates={optimisticUpdates}
+                  inboxTasksByRefId={inboxTasksByRefId}
+                  moreInfoByRefId={entriesByRefId}
+                  actionableTime={selectedActionableTime}
+                  draggedInboxTaskId={draggedInboxTaskId}
+                  showEisenBoard={showEisenBoard}
+                  collapseInboxTaskStatusColumn={collapseInboxTaskStatusColumn}
+                />
+              </DragDropContext>
+            )}
+
+            {!isBigScreen && (
+              <SmallScreenKanbanByEisen
+                topLevelInfo={topLevelInfo}
                 inboxTasks={sortedInboxTasks}
                 optimisticUpdates={optimisticUpdates}
-                inboxTasksByRefId={inboxTasksByRefId}
                 moreInfoByRefId={entriesByRefId}
                 actionableTime={selectedActionableTime}
-                draggedInboxTaskId={draggedInboxTaskId}
                 showEisenBoard={showEisenBoard}
                 collapseInboxTaskStatusColumn={collapseInboxTaskStatusColumn}
+                onCardMarkDone={handleCardMarkDone}
+                onCardMarkNotDone={handleCardMarkNotDone}
               />
-            </DragDropContext>
-          )}
+            )}
+          </>
+        )}
 
-          {!isBigScreen && (
-            <SmallScreenKanbanByEisen
-              inboxTasks={sortedInboxTasks}
-              optimisticUpdates={optimisticUpdates}
-              moreInfoByRefId={entriesByRefId}
-              actionableTime={selectedActionableTime}
-              showEisenBoard={showEisenBoard}
-              collapseInboxTaskStatusColumn={collapseInboxTaskStatusColumn}
-              onCardMarkDone={handleCardMarkDone}
-              onCardMarkNotDone={handleCardMarkNotDone}
-            />
-          )}
-        </>
-      )}
+        {selectedView === View.KANBAN && (
+          <>
+            {isBigScreen && (
+              <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
+                <BigScreenKanban
+                  topLevelInfo={topLevelInfo}
+                  inboxTasks={sortedInboxTasks}
+                  optimisticUpdates={optimisticUpdates}
+                  inboxTasksByRefId={inboxTasksByRefId}
+                  moreInfoByRefId={entriesByRefId}
+                  actionableTime={selectedActionableTime}
+                  draggedInboxTaskId={draggedInboxTaskId}
+                  collapseInboxTaskStatusColumn={collapseInboxTaskStatusColumn}
+                />
+              </DragDropContext>
+            )}
 
-      {selectedView === View.KANBAN && (
-        <>
-          {isBigScreen && (
-            <DragDropContext onDragEnd={onDragEnd}>
-              <BigScreenKanban
+            {!isBigScreen && (
+              <SmallScreenKanban
+                topLevelInfo={topLevelInfo}
                 inboxTasks={sortedInboxTasks}
                 optimisticUpdates={optimisticUpdates}
-                inboxTasksByRefId={inboxTasksByRefId}
                 moreInfoByRefId={entriesByRefId}
                 actionableTime={selectedActionableTime}
-                draggedInboxTaskId={draggedInboxTaskId}
                 collapseInboxTaskStatusColumn={collapseInboxTaskStatusColumn}
+                onCardMarkDone={handleCardMarkDone}
+                onCardMarkNotDone={handleCardMarkNotDone}
               />
-            </DragDropContext>
-          )}
+            )}
+          </>
+        )}
 
-          {!isBigScreen && (
-            <SmallScreenKanban
-              inboxTasks={sortedInboxTasks}
-              optimisticUpdates={optimisticUpdates}
-              moreInfoByRefId={entriesByRefId}
-              actionableTime={selectedActionableTime}
-              collapseInboxTaskStatusColumn={collapseInboxTaskStatusColumn}
-              onCardMarkDone={handleCardMarkDone}
-              onCardMarkNotDone={handleCardMarkNotDone}
-            />
-          )}
-        </>
-      )}
+        {selectedView === View.LIST && (
+          <List
+            topLevelInfo={topLevelInfo}
+            inboxTasks={sortedInboxTasks}
+            optimisticUpdates={optimisticUpdates}
+            moreInfoByRefId={entriesByRefId}
+            onCardMarkDone={handleCardMarkDone}
+            onCardMarkNotDone={handleCardMarkNotDone}
+          />
+        )}
+      </NestingAwareBlock>
 
-      {selectedView === View.LIST && (
-        <List
-          inboxTasks={sortedInboxTasks}
-          optimisticUpdates={optimisticUpdates}
-          moreInfoByRefId={entriesByRefId}
-          onCardMarkDone={handleCardMarkDone}
-          onCardMarkNotDone={handleCardMarkNotDone}
-        />
-      )}
-
-      <LeafPanel show={shouldShowALeaf}>{outlet}</LeafPanel>
-    </TrunkCard>
+      <AnimatePresence mode="wait" initial={false}>
+        <Outlet />
+      </AnimatePresence>
+    </TrunkPanel>
   );
 }
 
@@ -651,6 +679,7 @@ const GCSection = styled(Box)(({ theme }) => ({
 }));
 
 interface SwiftViewProps {
+  topLevelInfo: TopLevelInfo;
   isBigScreen: boolean;
   inboxTasks: Array<InboxTask>;
   optimisticUpdates: { [key: string]: InboxTaskOptimisticState };
@@ -869,6 +898,7 @@ function SwiftView(props: SwiftViewProps) {
     {
       allowSources: [
         InboxTaskSource.USER,
+        InboxTaskSource.WORKING_MEM_CLEANUP,
         InboxTaskSource.BIG_PLAN,
         InboxTaskSource.METRIC,
         InboxTaskSource.PERSON_BIRTHDAY,
@@ -884,7 +914,6 @@ function SwiftView(props: SwiftViewProps) {
       ],
       includeIfNoActionableDate: true,
       actionableDateEnd: actionableTime,
-      includeIfNoDueDate: true,
       dueDateEnd: today,
     }
   );
@@ -896,6 +925,7 @@ function SwiftView(props: SwiftViewProps) {
     {
       allowSources: [
         InboxTaskSource.USER,
+        InboxTaskSource.WORKING_MEM_CLEANUP,
         InboxTaskSource.BIG_PLAN,
         InboxTaskSource.METRIC,
         InboxTaskSource.PERSON_BIRTHDAY,
@@ -923,6 +953,7 @@ function SwiftView(props: SwiftViewProps) {
     {
       allowSources: [
         InboxTaskSource.USER,
+        InboxTaskSource.WORKING_MEM_CLEANUP,
         InboxTaskSource.BIG_PLAN,
         InboxTaskSource.METRIC,
         InboxTaskSource.PERSON_BIRTHDAY,
@@ -950,6 +981,7 @@ function SwiftView(props: SwiftViewProps) {
     {
       allowSources: [
         InboxTaskSource.USER,
+        InboxTaskSource.WORKING_MEM_CLEANUP,
         InboxTaskSource.BIG_PLAN,
         InboxTaskSource.METRIC,
         InboxTaskSource.PERSON_BIRTHDAY,
@@ -977,6 +1009,7 @@ function SwiftView(props: SwiftViewProps) {
     {
       allowSources: [
         InboxTaskSource.USER,
+        InboxTaskSource.WORKING_MEM_CLEANUP,
         InboxTaskSource.BIG_PLAN,
         InboxTaskSource.METRIC,
         InboxTaskSource.PERSON_BIRTHDAY,
@@ -1003,6 +1036,7 @@ function SwiftView(props: SwiftViewProps) {
       <AnimatePresence>
         <InboxTaskStack
           key="habit-due-today"
+          topLevelInfo={props.topLevelInfo}
           showLabel
           showOptions={{
             showStatus: true,
@@ -1022,6 +1056,7 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           key="habit-due-this-week"
           showLabel
           showOptions={{
@@ -1042,6 +1077,7 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           key="habit-due-this-month"
           showLabel
           showOptions={{
@@ -1063,6 +1099,7 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           key="habit-due-this-quarter"
           showLabel
           showOptions={{
@@ -1084,6 +1121,7 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           key="habit-due-this-year"
           showLabel
           showOptions={{
@@ -1111,6 +1149,7 @@ function SwiftView(props: SwiftViewProps) {
     <Stack>
       <AnimatePresence>
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           key="chore-due-today"
           showLabel
           showOptions={{
@@ -1131,6 +1170,7 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           key="chore-due-this-week"
           showLabel
           showOptions={{
@@ -1151,6 +1191,7 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           key="chore-due-this-month"
           showLabel
           showOptions={{
@@ -1172,6 +1213,7 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           key="chore-due-this-quarter"
           showLabel
           showOptions={{
@@ -1193,6 +1235,7 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           key="chore-due-this-year"
           showLabel
           showOptions={{
@@ -1220,6 +1263,7 @@ function SwiftView(props: SwiftViewProps) {
     <Stack>
       <AnimatePresence>
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           key="rest-due-today"
           showLabel
           showOptions={{
@@ -1241,6 +1285,7 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           key="rest-due-this-week"
           showLabel
           showOptions={{
@@ -1262,6 +1307,7 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           key="rest-due-this-month"
           showLabel
           showOptions={{
@@ -1284,6 +1330,7 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           key="rest-due-this-quarter"
           showLabel
           showOptions={{
@@ -1306,6 +1353,7 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           key="rest-due-this-year"
           showLabel
           showOptions={{
@@ -1377,12 +1425,12 @@ function SwiftView(props: SwiftViewProps) {
     initialSmallScreenSelectedTab
   );
 
+  if (noNothing) {
+    return <>{noNothingCard}</>;
+  }
+
   return (
-    <Grid
-      container
-      spacing={2}
-      sx={{ paddingTop: props.isBigScreen ? "2rem" : "1rem" }}
-    >
+    <Grid container spacing={2}>
       {props.isBigScreen && !noNothing && (
         <>
           <Grid md={4}>
@@ -1433,13 +1481,12 @@ function SwiftView(props: SwiftViewProps) {
           </TabPanel>
         </Grid>
       )}
-
-      {noNothing && noNothingCard}
     </Grid>
   );
 }
 
 interface BigScreenKanbanByEisenProps {
+  topLevelInfo: TopLevelInfo;
   inboxTasks: Array<InboxTask>;
   optimisticUpdates: { [key: string]: InboxTaskOptimisticState };
   inboxTasksByRefId: { [key: string]: InboxTask };
@@ -1451,6 +1498,7 @@ interface BigScreenKanbanByEisenProps {
 }
 
 function BigScreenKanbanByEisen({
+  topLevelInfo,
   inboxTasks,
   optimisticUpdates,
   inboxTasksByRefId,
@@ -1479,6 +1527,7 @@ function BigScreenKanbanByEisen({
                   </Typography>
                 </Divider>
                 <KanbanBoard
+                  topLevelInfo={topLevelInfo}
                   inboxTasks={inboxTasks}
                   optimisticUpdates={optimisticUpdates}
                   inboxTasksByRefId={inboxTasksByRefId}
@@ -1498,6 +1547,7 @@ function BigScreenKanbanByEisen({
 }
 
 interface BigScreenKanbanProps {
+  topLevelInfo: TopLevelInfo;
   inboxTasks: Array<InboxTask>;
   optimisticUpdates: { [key: string]: InboxTaskOptimisticState };
   inboxTasksByRefId: { [key: string]: InboxTask };
@@ -1509,6 +1559,7 @@ interface BigScreenKanbanProps {
 }
 
 function BigScreenKanban({
+  topLevelInfo,
   inboxTasks,
   optimisticUpdates,
   inboxTasksByRefId,
@@ -1526,21 +1577,25 @@ function BigScreenKanban({
           parentNewLocations="/workspace/inbox-tasks/new"
         />
       )}
-      <KanbanBoard
-        inboxTasks={inboxTasks}
-        optimisticUpdates={optimisticUpdates}
-        inboxTasksByRefId={inboxTasksByRefId}
-        moreInfoByRefId={moreInfoByRefId}
-        actionableTime={actionableTime}
-        allowEisen={allowEisen}
-        draggedInboxTaskId={draggedInboxTaskId}
-        collapseInboxTaskStatusColumn={collapseInboxTaskStatusColumn}
-      />
+      {inboxTasks.length > 0 && (
+        <KanbanBoard
+          topLevelInfo={topLevelInfo}
+          inboxTasks={inboxTasks}
+          optimisticUpdates={optimisticUpdates}
+          inboxTasksByRefId={inboxTasksByRefId}
+          moreInfoByRefId={moreInfoByRefId}
+          actionableTime={actionableTime}
+          allowEisen={allowEisen}
+          draggedInboxTaskId={draggedInboxTaskId}
+          collapseInboxTaskStatusColumn={collapseInboxTaskStatusColumn}
+        />
+      )}
     </>
   );
 }
 
 interface KanbanBoardProps {
+  topLevelInfo: TopLevelInfo;
   inboxTasks: Array<InboxTask>;
   optimisticUpdates: { [key: string]: InboxTaskOptimisticState };
   inboxTasksByRefId: { [key: string]: InboxTask };
@@ -1552,6 +1607,7 @@ interface KanbanBoardProps {
 }
 
 function KanbanBoard({
+  topLevelInfo,
   inboxTasks,
   inboxTasksByRefId,
   moreInfoByRefId,
@@ -1565,6 +1621,7 @@ function KanbanBoard({
     <Grid container spacing={2}>
       <Grid xs={2}>
         <InboxTasksColumn
+          topLevelInfo={topLevelInfo}
           inboxTasks={inboxTasks}
           optimisticUpdates={optimisticUpdates}
           inboxTasksByRefId={inboxTasksByRefId}
@@ -1586,6 +1643,7 @@ function KanbanBoard({
 
       <Grid xs={2}>
         <InboxTasksColumn
+          topLevelInfo={topLevelInfo}
           inboxTasks={inboxTasks}
           optimisticUpdates={optimisticUpdates}
           inboxTasksByRefId={inboxTasksByRefId}
@@ -1607,6 +1665,7 @@ function KanbanBoard({
 
       <Grid xs={2}>
         <InboxTasksColumn
+          topLevelInfo={topLevelInfo}
           inboxTasks={inboxTasks}
           optimisticUpdates={optimisticUpdates}
           inboxTasksByRefId={inboxTasksByRefId}
@@ -1628,6 +1687,7 @@ function KanbanBoard({
 
       <Grid xs={2}>
         <InboxTasksColumn
+          topLevelInfo={topLevelInfo}
           inboxTasks={inboxTasks}
           optimisticUpdates={optimisticUpdates}
           inboxTasksByRefId={inboxTasksByRefId}
@@ -1649,6 +1709,7 @@ function KanbanBoard({
 
       <Grid xs={2}>
         <InboxTasksColumn
+          topLevelInfo={topLevelInfo}
           inboxTasks={inboxTasks}
           optimisticUpdates={optimisticUpdates}
           inboxTasksByRefId={inboxTasksByRefId}
@@ -1670,6 +1731,7 @@ function KanbanBoard({
 
       <Grid xs={2}>
         <InboxTasksColumn
+          topLevelInfo={topLevelInfo}
           inboxTasks={inboxTasks}
           optimisticUpdates={optimisticUpdates}
           inboxTasksByRefId={inboxTasksByRefId}
@@ -1693,6 +1755,7 @@ function KanbanBoard({
 }
 
 interface SmallScreenKanbanByEisenProps {
+  topLevelInfo: TopLevelInfo;
   inboxTasks: Array<InboxTask>;
   optimisticUpdates: { [key: string]: InboxTaskOptimisticState };
   moreInfoByRefId: { [key: string]: InboxTaskParent };
@@ -1795,6 +1858,7 @@ function SmallScreenKanbanByEisen(props: SmallScreenKanbanByEisenProps) {
 
       <TabPanel value={smallScreenSelectedTab} index={0}>
         <SmallScreenKanban
+          topLevelInfo={props.topLevelInfo}
           inboxTasks={importantAndUrgentTasks}
           optimisticUpdates={props.optimisticUpdates}
           moreInfoByRefId={props.moreInfoByRefId}
@@ -1808,6 +1872,7 @@ function SmallScreenKanbanByEisen(props: SmallScreenKanbanByEisenProps) {
 
       <TabPanel value={smallScreenSelectedTab} index={1}>
         <SmallScreenKanban
+          topLevelInfo={props.topLevelInfo}
           inboxTasks={urgentTasks}
           optimisticUpdates={props.optimisticUpdates}
           moreInfoByRefId={props.moreInfoByRefId}
@@ -1821,6 +1886,7 @@ function SmallScreenKanbanByEisen(props: SmallScreenKanbanByEisenProps) {
 
       <TabPanel value={smallScreenSelectedTab} index={2}>
         <SmallScreenKanban
+          topLevelInfo={props.topLevelInfo}
           inboxTasks={importantTasks}
           optimisticUpdates={props.optimisticUpdates}
           moreInfoByRefId={props.moreInfoByRefId}
@@ -1834,6 +1900,7 @@ function SmallScreenKanbanByEisen(props: SmallScreenKanbanByEisenProps) {
 
       <TabPanel value={smallScreenSelectedTab} index={3}>
         <SmallScreenKanban
+          topLevelInfo={props.topLevelInfo}
           inboxTasks={regularTasks}
           optimisticUpdates={props.optimisticUpdates}
           moreInfoByRefId={props.moreInfoByRefId}
@@ -1849,6 +1916,7 @@ function SmallScreenKanbanByEisen(props: SmallScreenKanbanByEisenProps) {
 }
 
 interface SmallScreenKanbanProps {
+  topLevelInfo: TopLevelInfo;
   inboxTasks: Array<InboxTask>;
   optimisticUpdates: { [key: string]: InboxTaskOptimisticState };
   moreInfoByRefId: { [key: string]: InboxTaskParent };
@@ -2012,6 +2080,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
           />
         )}
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           showOptions={{
             showSource: true,
             showProject: true,
@@ -2037,6 +2106,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
           />
         )}
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           showOptions={{
             showSource: true,
             showProject: true,
@@ -2062,6 +2132,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
           />
         )}
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           showOptions={{
             showSource: true,
             showProject: true,
@@ -2087,6 +2158,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
           />
         )}
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           showOptions={{
             showSource: true,
             showProject: true,
@@ -2112,6 +2184,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
           />
         )}
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           showOptions={{
             showSource: true,
             showProject: true,
@@ -2137,6 +2210,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
           />
         )}
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           showOptions={{
             showSource: true,
             showProject: true,
@@ -2158,6 +2232,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
 }
 
 interface ListProps {
+  topLevelInfo: TopLevelInfo;
   inboxTasks: Array<InboxTask>;
   optimisticUpdates: { [key: string]: InboxTaskOptimisticState };
   moreInfoByRefId: { [key: string]: InboxTaskParent };
@@ -2166,6 +2241,7 @@ interface ListProps {
 }
 
 function List({
+  topLevelInfo,
   inboxTasks,
   moreInfoByRefId,
   optimisticUpdates,
@@ -2181,6 +2257,7 @@ function List({
         />
       )}
       <InboxTaskStack
+        topLevelInfo={topLevelInfo}
         showOptions={{
           showStatus: true,
           showSource: true,
@@ -2204,6 +2281,7 @@ function List({
 }
 
 interface InboxTasksColumnProps {
+  topLevelInfo: TopLevelInfo;
   inboxTasks: Array<InboxTask>;
   inboxTasksByRefId: { [key: string]: InboxTask };
   optimisticUpdates: { [key: string]: InboxTaskOptimisticState };
@@ -2227,7 +2305,7 @@ function InboxTasksColumn(props: InboxTasksColumnProps) {
     }
 
     if (props.draggedInboxTaskId !== undefined) {
-      if (allowDraggingOver()) {
+      if (allowDraggingOverStatus() && allowDraggingOverEisen()) {
         return DragTargetStatus.ALLOW_DRAG;
       } else {
         return DragTargetStatus.FORBID_DRAG;
@@ -2237,7 +2315,7 @@ function InboxTasksColumn(props: InboxTasksColumnProps) {
     return DragTargetStatus.FREE;
   }
 
-  function allowDraggingOver() {
+  function allowDraggingOverEisen() {
     if (props.draggedInboxTaskId === undefined) {
       return true;
     }
@@ -2253,6 +2331,16 @@ function InboxTasksColumn(props: InboxTasksColumnProps) {
     }
 
     return inboxTask.eisen === props.allowEisen;
+  }
+
+  function allowDraggingOverStatus() {
+    if (props.draggedInboxTaskId === undefined) {
+      return true;
+    }
+
+    const inboxTask = props.inboxTasksByRefId[props.draggedInboxTaskId];
+
+    return canInboxTaskBeInStatus(inboxTask, props.allowStatus);
   }
 
   const actionableTime = actionableTimeToDateTime(props.actionableTime);
@@ -2284,7 +2372,9 @@ function InboxTasksColumn(props: InboxTasksColumnProps) {
         type="inbox-task"
         droppableId={`inbox-tasks-column:${props.allowEisen}:${props.allowStatus}`}
         direction="vertical"
-        isDropDisabled={!allowDraggingOver()}
+        isDropDisabled={
+          !(allowDraggingOverStatus() && allowDraggingOverEisen())
+        }
       >
         {(provided, snapshot) => (
           <InboxTasksColumnHighDiv
@@ -2294,6 +2384,7 @@ function InboxTasksColumn(props: InboxTasksColumnProps) {
           >
             {!props.collapsed && (
               <InboxTaskColumnTasks
+                topLevelInfo={props.topLevelInfo}
                 inboxTasks={filteredInboxTasks}
                 moreInfoByRefId={props.moreInfoByRefId}
                 showOptions={props.showOptions}
@@ -2314,7 +2405,7 @@ interface InboxTasksColumnHighDivProps {
 
 const InboxTasksColumnHighDiv = styled("div")<InboxTasksColumnHighDivProps>(
   ({ theme, divStatus }) => ({
-    height: "100%",
+    minHeight: "100%",
     backgroundColor:
       divStatus === DragTargetStatus.SOURCE_DRAG
         ? "rgb(191, 204, 229)"
@@ -2329,6 +2420,7 @@ const InboxTasksColumnHighDiv = styled("div")<InboxTasksColumnHighDivProps>(
 );
 
 interface InboxTaskColumnTasksProps {
+  topLevelInfo: TopLevelInfo;
   inboxTasks: Array<InboxTask>;
   moreInfoByRefId: { [key: string]: InboxTaskParent };
   showOptions: InboxTaskShowOptions;
@@ -2340,12 +2432,12 @@ const InboxTaskColumnTasks = memo(function InboxTaskColumnTasks(
   return (
     <Stack spacing={1} useFlexGap>
       {props.inboxTasks.map((inboxTask, index) => {
-        const entry = props.moreInfoByRefId[inboxTask.ref_id.the_id];
+        const entry = props.moreInfoByRefId[inboxTask.ref_id];
 
         return (
           <Draggable
-            key={inboxTask.ref_id.the_id}
-            draggableId={inboxTask.ref_id.the_id}
+            key={inboxTask.ref_id}
+            draggableId={inboxTask.ref_id}
             index={index}
           >
             {(provided, snapshpt) => (
@@ -2355,6 +2447,7 @@ const InboxTaskColumnTasks = memo(function InboxTaskColumnTasks(
                 {...provided.dragHandleProps}
               >
                 <InboxTaskCard
+                  topLevelInfo={props.topLevelInfo}
                   compact
                   showOptions={{
                     ...props.showOptions,
@@ -2387,14 +2480,14 @@ function figureOutIfGcIsRecommended(
   let finishedTasksCnt = 0;
 
   for (const entry of entries) {
-    if (entry.inbox_task.ref_id.the_id in optimisticUpdates) {
+    if (entry.inbox_task.ref_id in optimisticUpdates) {
       if (
-        optimisticUpdates[entry.inbox_task.ref_id.the_id].status ===
+        optimisticUpdates[entry.inbox_task.ref_id].status ===
         InboxTaskStatus.DONE
       ) {
         finishedTasksCnt++;
       } else if (
-        optimisticUpdates[entry.inbox_task.ref_id.the_id].status ===
+        optimisticUpdates[entry.inbox_task.ref_id].status ===
         InboxTaskStatus.NOT_DONE
       ) {
         finishedTasksCnt++;

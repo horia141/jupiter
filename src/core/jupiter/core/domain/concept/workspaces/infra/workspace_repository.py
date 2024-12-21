@@ -1,0 +1,1 @@
+"""A repository for workspaces."""

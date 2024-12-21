@@ -2,6 +2,7 @@
 from contextvars import ContextVar
 
 import pendulum
+from jupiter.core.domain.core.adate import ADate
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.utils.time_provider import TimeProvider
 from pendulum.tz.timezone import UTC
@@ -24,3 +25,15 @@ class PerRequestTimeProvider(TimeProvider):
         if right_now is None:
             raise Exception("Invalid time provider state")
         return right_now
+
+
+class CronRunTimeProvider(TimeProvider):
+    """A source of time, to be used in crons, varies across time."""
+
+    def get_current_time(self) -> Timestamp:
+        """Get the current time."""
+        return Timestamp(pendulum.now(tz=UTC))
+
+    def get_current_date(self) -> ADate:
+        """Get the current date."""
+        return ADate.from_date(pendulum.today())

@@ -1,3 +1,3 @@
-# Jupiter Desktop App
+# Thrive Desktop App
 
-This is the Jupiter Desktop app.
+This is the Thrive Desktop app.

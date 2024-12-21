@@ -1,20 +1,23 @@
 import type {
   BigPlan,
   Chore,
-  Difficulty,
   Eisen,
   EmailTask,
   EntityId,
   Habit,
   InboxTask,
-  InboxTaskStatus,
+  InboxTaskFindResultEntry,
   Metric,
   Person,
   Project,
   RecurringTaskPeriod,
   SlackTask,
-} from "jupiter-gen";
-import { InboxTaskSource } from "jupiter-gen";
+} from "@jupiter/webapi-client";
+import {
+  Difficulty,
+  InboxTaskSource,
+  InboxTaskStatus,
+} from "@jupiter/webapi-client";
 import type { DateTime } from "luxon";
 import { aDateToDate, compareADate } from "./adate";
 import { compareDifficulty } from "./difficulty";
@@ -34,6 +37,21 @@ export interface InboxTaskParent {
   person?: Person;
   slackTask?: SlackTask;
   emailTask?: EmailTask;
+}
+
+export function inboxTaskFindEntryToParent(
+  entry: InboxTaskFindResultEntry
+): InboxTaskParent {
+  return {
+    project: entry.project,
+    bigPlan: entry.big_plan ?? undefined,
+    habit: entry.habit ?? undefined,
+    chore: entry.chore ?? undefined,
+    metric: entry.metric ?? undefined,
+    person: entry.person ?? undefined,
+    slackTask: entry.slack_task ?? undefined,
+    emailTask: entry.email_task ?? undefined,
+  };
 }
 
 interface InboxTaskFilterOptions {
@@ -77,10 +95,10 @@ export function filterInboxTasksForDisplay(
     }
 
     if (options.allowStatuses !== undefined) {
-      if (inboxTask.ref_id.the_id in optimisticUpdates) {
+      if (inboxTask.ref_id in optimisticUpdates) {
         if (
           !options.allowStatuses.includes(
-            optimisticUpdates[inboxTask.ref_id.the_id].status
+            optimisticUpdates[inboxTask.ref_id].status
           )
         ) {
           return false;
@@ -92,12 +110,12 @@ export function filterInboxTasksForDisplay(
 
     if (options.allowEisens !== undefined) {
       if (
-        inboxTask.ref_id.the_id in optimisticUpdates &&
-        optimisticUpdates[inboxTask.ref_id.the_id].eisen !== undefined
+        inboxTask.ref_id in optimisticUpdates &&
+        optimisticUpdates[inboxTask.ref_id].eisen !== undefined
       ) {
         if (
           !options.allowEisens.includes(
-            optimisticUpdates[inboxTask.ref_id.the_id].eisen as Eisen
+            optimisticUpdates[inboxTask.ref_id].eisen as Eisen
           )
         ) {
           return false;
@@ -108,7 +126,7 @@ export function filterInboxTasksForDisplay(
     }
 
     if (options.allowDifficulties !== undefined) {
-      if (inboxTask.difficulty !== undefined) {
+      if (inboxTask.difficulty !== undefined && inboxTask.difficulty !== null) {
         if (!options.allowDifficulties.includes(inboxTask.difficulty)) {
           return false;
         }
@@ -160,7 +178,7 @@ export function filterInboxTasksForDisplay(
     }
 
     if (options.allowPeriodsIfHabit) {
-      const entry = entriesByRefId[inboxTask.ref_id.the_id];
+      const entry = entriesByRefId[inboxTask.ref_id];
       const habit = entry.habit as Habit;
       if (!options.allowPeriodsIfHabit.includes(habit.gen_params.period)) {
         return false;
@@ -168,7 +186,7 @@ export function filterInboxTasksForDisplay(
     }
 
     if (options.allowPeriodsIfChore) {
-      const entry = entriesByRefId[inboxTask.ref_id.the_id];
+      const entry = entriesByRefId[inboxTask.ref_id];
       const chore = entry.chore as Chore;
       if (!options.allowPeriodsIfChore.includes(chore.gen_params.period)) {
         return false;
@@ -207,7 +225,11 @@ export function sortInboxTasksNaturally(
       (cleanOptions.dueDateAscending ? 1 : -1) *
         compareADate(i1.due_date, i2.due_date) ||
       -1 * compareEisen(i1.eisen, i2.eisen) ||
-      -1 * compareDifficulty(i1.difficulty, i2.difficulty)
+      -1 *
+        compareDifficulty(
+          i1.difficulty ?? Difficulty.EASY,
+          i2.difficulty ?? Difficulty.EASY
+        )
     );
   });
 }
@@ -226,7 +248,11 @@ export function sortInboxTasksByEisenAndDifficulty(
   return [...inboxTasks].sort((i1, i2) => {
     return (
       -1 * compareEisen(i1.eisen, i2.eisen) ||
-      -1 * compareDifficulty(i1.difficulty, i2.difficulty) ||
+      -1 *
+        compareDifficulty(
+          i1.difficulty ?? Difficulty.EASY,
+          i2.difficulty ?? Difficulty.EASY
+        ) ||
       (cleanOptions.dueDateAscending ? 1 : -1) *
         compareADate(i1.due_date, i2.due_date)
     );
@@ -235,6 +261,35 @@ export function sortInboxTasksByEisenAndDifficulty(
 
 export function isInboxTaskCoreFieldEditable(source: InboxTaskSource): boolean {
   return source === InboxTaskSource.USER || source === InboxTaskSource.BIG_PLAN;
+}
+
+export function canInboxTaskBeInStatus(
+  inboxTasks: InboxTask,
+  status: InboxTaskStatus
+): boolean {
+  switch (inboxTasks.source) {
+    case InboxTaskSource.USER:
+    case InboxTaskSource.BIG_PLAN:
+      if (status === InboxTaskStatus.RECURRING) {
+        return false;
+      }
+
+      return true;
+    case InboxTaskSource.WORKING_MEM_CLEANUP:
+    case InboxTaskSource.HABIT:
+    case InboxTaskSource.CHORE:
+    case InboxTaskSource.JOURNAL:
+    case InboxTaskSource.METRIC:
+    case InboxTaskSource.PERSON_BIRTHDAY:
+    case InboxTaskSource.PERSON_CATCH_UP:
+    case InboxTaskSource.SLACK_TASK:
+    case InboxTaskSource.EMAIL_TASK:
+      if (status === InboxTaskStatus.ACCEPTED) {
+        return false;
+      }
+
+      return true;
+  }
 }
 
 export function doesInboxTaskAllowChangingProject(

@@ -1,3 +1,9 @@
+import {
+  ApiError,
+  Difficulty,
+  Eisen,
+  RecurringTaskPeriod,
+} from "@jupiter/webapi-client";
 import type { SelectChangeEvent } from "@mui/material";
 import {
   Button,
@@ -15,9 +21,9 @@ import {
 } from "@mui/material";
 import type { ActionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { ApiError, Difficulty, Eisen, RecurringTaskPeriod } from "jupiter-gen";
 import { useState } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
@@ -25,11 +31,12 @@ import { getLoggedInApiClient } from "~/api-clients";
 import { IconSelector } from "~/components/icon-selector";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { LeafCard } from "~/components/infra/leaf-card";
+import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { difficultyName } from "~/logic/domain/difficulty";
 import { eisenName } from "~/logic/domain/eisen";
 import { periodName } from "~/logic/domain/period";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
 
@@ -48,7 +55,6 @@ const CreateFormSchema = {
     .optional(),
   collectionActionableFromDay: z.string().optional(),
   collectionActionableFromMonth: z.string().optional(),
-  collectionDueAtTime: z.string().optional(),
   collectionDueAtDay: z.string().optional(),
   collectionDueAtMonth: z.string().optional(),
 };
@@ -62,9 +68,9 @@ export async function action({ request }: ActionArgs) {
   const form = await parseForm(request, CreateFormSchema);
 
   try {
-    const result = await getLoggedInApiClient(session).metric.createMetric({
-      name: { the_name: form.name },
-      icon: form.icon ? { the_icon: form.icon } : undefined,
+    const result = await getLoggedInApiClient(session).metrics.metricCreate({
+      name: form.name,
+      icon: form.icon,
       collection_period:
         form.collectionPeriod === "none"
           ? undefined
@@ -87,38 +93,31 @@ export async function action({ request }: ActionArgs) {
           : form.collectionActionableFromDay === undefined ||
             form.collectionActionableFromDay === ""
           ? undefined
-          : { the_day: parseInt(form.collectionActionableFromDay) },
+          : parseInt(form.collectionActionableFromDay),
       collection_actionable_from_month:
         form.collectionPeriod === "none"
           ? undefined
           : form.collectionActionableFromMonth === undefined ||
             form.collectionActionableFromMonth === ""
           ? undefined
-          : { the_month: parseInt(form.collectionActionableFromMonth) },
-      collection_due_at_time:
-        form.collectionPeriod === "none"
-          ? undefined
-          : form.collectionDueAtTime === undefined ||
-            form.collectionDueAtTime === ""
-          ? undefined
-          : { the_time: form.collectionDueAtTime },
+          : parseInt(form.collectionActionableFromMonth),
       collection_due_at_day:
         form.collectionPeriod === "none"
           ? undefined
           : form.collectionDueAtDay === undefined ||
             form.collectionDueAtDay === ""
           ? undefined
-          : { the_day: parseInt(form.collectionDueAtDay) },
+          : parseInt(form.collectionDueAtDay),
       collection_due_at_month:
         form.collectionPeriod === "none"
           ? undefined
           : form.collectionDueAtMonth === undefined ||
             form.collectionDueAtMonth === ""
           ? undefined
-          : { the_month: parseInt(form.collectionDueAtMonth) },
+          : parseInt(form.collectionDueAtMonth),
     });
 
-    return redirect(`/workspace/metrics/${result.new_metric.ref_id.the_id}`);
+    return redirect(`/workspace/metrics/${result.new_metric.ref_id}`);
   } catch (error) {
     if (
       error instanceof ApiError &&
@@ -130,6 +129,9 @@ export async function action({ request }: ActionArgs) {
     throw error;
   }
 }
+
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
 
 export default function NewMetric() {
   const transition = useTransition();
@@ -148,7 +150,7 @@ export default function NewMetric() {
   }
 
   return (
-    <LeafCard returnLocation="/workspace/metrics">
+    <LeafPanel key={"metrics/new"} returnLocation="/workspace/metrics">
       <Card>
         <GlobalError actionResult={actionData} />
         <CardContent>
@@ -275,21 +277,6 @@ export default function NewMetric() {
                 </FormControl>
 
                 <FormControl fullWidth>
-                  <InputLabel id="collectionDueAtTime">Due At Time</InputLabel>
-                  <OutlinedInput
-                    type="time"
-                    label="Due At Time"
-                    name="collectionDueAtTime"
-                    readOnly={!inputsEnabled}
-                    defaultValue={""}
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/collection_due_at_time"
-                  />
-                </FormControl>
-
-                <FormControl fullWidth>
                   <InputLabel id="collectionDueAtDay">Due At Day</InputLabel>
                   <OutlinedInput
                     type="number"
@@ -327,13 +314,18 @@ export default function NewMetric() {
 
         <CardActions>
           <ButtonGroup>
-            <Button variant="contained" disabled={!inputsEnabled} type="submit">
+            <Button
+              id="metric-create"
+              variant="contained"
+              disabled={!inputsEnabled}
+              type="submit"
+            >
               Create
             </Button>
           </ButtonGroup>
         </CardActions>
       </Card>
-    </LeafCard>
+    </LeafPanel>
   );
 }
 

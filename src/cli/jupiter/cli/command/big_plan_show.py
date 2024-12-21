@@ -1,5 +1,4 @@
 """UseCase for showing the big plans."""
-from argparse import ArgumentParser, Namespace
 from typing import cast
 
 from jupiter.cli.command.command import LoggedInReadonlyCommand
@@ -11,93 +10,28 @@ from jupiter.cli.command.rendering import (
     inbox_task_summary_to_rich_text,
     project_to_rich_text,
 )
-from jupiter.cli.session_storage import SessionInfo
-from jupiter.core.domain.adate import ADate
-from jupiter.core.domain.projects.project import Project
-from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.use_cases.big_plans.find import BigPlanFindArgs, BigPlanFindUseCase
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
+from jupiter.core.domain.concept.projects.project import Project
+from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.use_cases.concept.big_plans.find import (
+    BigPlanFindResult,
+    BigPlanFindUseCase,
+)
+from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
 from rich.console import Console
 from rich.text import Text
 from rich.tree import Tree
 
 
-class BigPlanShow(LoggedInReadonlyCommand[BigPlanFindUseCase]):
+class BigPlanShow(LoggedInReadonlyCommand[BigPlanFindUseCase, BigPlanFindResult]):
     """UseCase class for showing the big plans."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "big-plan-show"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Show the list of big plans"
-
-    def build_parser(self, parser: ArgumentParser) -> None:
-        """Construct a argparse parser for the command."""
-        parser.add_argument(
-            "--show-archived",
-            dest="show_archived",
-            default=False,
-            action="store_true",
-            help="Whether to show archived vacations or not",
-        )
-        parser.add_argument(
-            "--id",
-            type=str,
-            dest="ref_ids",
-            default=[],
-            action="append",
-            help="The id of the vacations to modify",
-        )
-        parser.add_argument(
-            "--project-id",
-            dest="project_ref_ids",
-            default=[],
-            action="append",
-            help="Allow only tasks from this project",
-        )
-        parser.add_argument(
-            "--show-inbox-tasks",
-            dest="show_inbox_tasks",
-            default=False,
-            action="store_const",
-            const=True,
-            help="Show inbox tasks",
-        )
-
-    async def _run(
+    def _render_result(
         self,
-        session_info: SessionInfo,
-        args: Namespace,
+        console: Console,
+        context: AppLoggedInReadonlyUseCaseContext,
+        result: BigPlanFindResult,
     ) -> None:
-        """Callback to execute when the command is invoked."""
-        show_archived = args.show_archived
-        ref_ids = (
-            [EntityId.from_raw(rid) for rid in args.ref_ids]
-            if len(args.ref_ids) > 0
-            else None
-        )
-        project_ref_ids = (
-            [EntityId.from_raw(pk) for pk in args.project_ref_ids]
-            if len(args.project_ref_ids) > 0
-            else None
-        )
-        show_inbox_tasks = args.show_inbox_tasks
-
-        result = await self._use_case.execute(
-            AppLoggedInUseCaseSession(session_info.auth_token_ext),
-            BigPlanFindArgs(
-                allow_archived=show_archived,
-                include_project=True,
-                include_inbox_tasks=show_inbox_tasks,
-                filter_ref_ids=ref_ids,
-                filter_project_ref_ids=project_ref_ids,
-            ),
-        )
-
         sorted_big_plans = sorted(
             result.entries,
             key=lambda bpe: (
@@ -134,8 +68,11 @@ class BigPlanShow(LoggedInReadonlyCommand[BigPlanFindUseCase]):
                 big_plan_info_text.append(" ")
                 big_plan_info_text.append(due_date_to_rich_text(big_plan.due_date))
 
-            big_plan_info_text.append(" ")
-            big_plan_info_text.append(project_to_rich_text(project.name))
+            if project is not None and context.workspace.is_feature_available(
+                WorkspaceFeature.PROJECTS
+            ):
+                big_plan_info_text.append(" ")
+                big_plan_info_text.append(project_to_rich_text(project.name))
 
             if big_plan.archived:
                 big_plan_text.stylize("gray62")
@@ -147,8 +84,6 @@ class BigPlanShow(LoggedInReadonlyCommand[BigPlanFindUseCase]):
             )
             big_plan_tree.add(big_plan_info_text)
 
-            if not show_inbox_tasks:
-                continue
             if inbox_tasks is None or len(inbox_tasks) == 0:
                 continue
 
@@ -165,5 +100,4 @@ class BigPlanShow(LoggedInReadonlyCommand[BigPlanFindUseCase]):
                 inbox_task_text = inbox_task_summary_to_rich_text(inbox_task)
                 big_plan_tree.add(inbox_task_text)
 
-        console = Console()
         console.print(rich_tree)

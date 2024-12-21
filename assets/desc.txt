@@ -1,0 +1,1 @@
+Thrive is a tool for life planning. It provides goals management, task tracking, habit building, chores management, lists, metrics, a personal relationship manager, and much more all in a unified package.

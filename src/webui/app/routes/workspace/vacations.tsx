@@ -1,27 +1,29 @@
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Link, useFetcher, useNavigate, useOutlet } from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { Outlet, useFetcher, useNavigate } from "@remix-run/react";
 
-import type { Vacation } from "jupiter-gen";
+import type { Vacation, VacationFindResultEntry } from "@jupiter/webapi-client";
 
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import { Button, IconButton, styled } from "@mui/material";
+import { IconButton, styled } from "@mui/material";
 import type { CalendarTooltipProps, TimeRangeDayData } from "@nivo/calendar";
 import { ResponsiveTimeRange } from "@nivo/calendar";
+import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";
 import { useEffect, useMemo, useState } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
 import { ADateTag } from "~/components/adate-tag";
 import { EntityNameComponent } from "~/components/entity-name";
-import { ActionHeader } from "~/components/infra/actions-header";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
-import { LeafPanel } from "~/components/infra/leaf-panel";
-import { TrunkCard } from "~/components/infra/trunk-card";
+import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
+import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import { aDateToDate } from "~/logic/domain/adate";
 import { sortVacationsNaturally } from "~/logic/domain/vacation";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
@@ -36,17 +38,27 @@ export const handle = {
 
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
-  const response = await getLoggedInApiClient(session).vacation.findVacation({
+  const response = await getLoggedInApiClient(session).vacations.vacationFind({
     allow_archived: false,
+    include_notes: false,
+    include_time_event_blocks: false,
   });
-  return json(response.vacations);
+  return json(response.entries);
 }
 
-export default function Vacations({ request }: LoaderArgs) {
-  const vacations = useLoaderDataSafeForAnimation<typeof loader>();
-  const outlet = useOutlet();
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
 
-  const sortedVacations = sortVacationsNaturally(vacations);
+export default function Vacations({ request }: LoaderArgs) {
+  const entries = useLoaderDataSafeForAnimation<typeof loader>();
+
+  const sortedVacations = sortVacationsNaturally(
+    entries.map((e) => e.vacation)
+  );
+  const vacationsByRefId = new Map<string, VacationFindResultEntry>();
+  for (const entry of entries) {
+    vacationsByRefId.set(entry.vacation.ref_id, entry);
+  }
 
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
 
@@ -62,48 +74,49 @@ export default function Vacations({ request }: LoaderArgs) {
       },
       {
         method: "post",
-        action: `/workspace/vacations/${vacation.ref_id.the_id}`,
+        action: `/workspace/vacations/${vacation.ref_id}`,
       }
     );
   }
 
   return (
-    <TrunkCard>
-      <ActionHeader returnLocation="/workspace">
-        <Button
-          variant="contained"
-          to="/workspace/vacations/new"
-          component={Link}
-        >
-          Create
-        </Button>
-      </ActionHeader>
+    <TrunkPanel
+      key={"vacations"}
+      createLocation="/workspace/vacations/new"
+      returnLocation="/workspace"
+    >
+      <NestingAwareBlock shouldHide={shouldShowALeaf}>
+        <VacationCalendar sortedVacations={sortedVacations} />
 
-      <VacationCalendar sortedVacations={sortedVacations} />
+        <EntityStack>
+          {sortedVacations.map((vacation) => {
+            return (
+              <EntityCard
+                entityId={`vacation-${vacation.ref_id}`}
+                key={`vacation-${vacation.ref_id}`}
+                allowSwipe
+                allowMarkNotDone
+                onMarkNotDone={() => archiveVacation(vacation)}
+              >
+                <EntityLink to={`/workspace/vacations/${vacation.ref_id}`}>
+                  <EntityNameComponent name={vacation.name} />
+                  <ADateTag label="Start Date" date={vacation.start_date} />
+                  <ADateTag
+                    label="End Date"
+                    date={vacation.end_date}
+                    color="success"
+                  />
+                </EntityLink>
+              </EntityCard>
+            );
+          })}
+        </EntityStack>
+      </NestingAwareBlock>
 
-      <EntityStack>
-        {sortedVacations.map((vacation) => (
-          <EntityCard
-            key={vacation.ref_id.the_id}
-            allowSwipe
-            allowMarkNotDone
-            onMarkNotDone={() => archiveVacation(vacation)}
-          >
-            <EntityLink to={`/workspace/vacations/${vacation.ref_id.the_id}`}>
-              <EntityNameComponent name={vacation.name} />
-              <ADateTag label="Start Date" date={vacation.start_date} />
-              <ADateTag
-                label="End Date"
-                date={vacation.end_date}
-                color="success"
-              />
-            </EntityLink>
-          </EntityCard>
-        ))}
-      </EntityStack>
-
-      <LeafPanel show={shouldShowALeaf}>{outlet}</LeafPanel>
-    </TrunkCard>
+      <AnimatePresence mode="wait" initial={false}>
+        <Outlet />
+      </AnimatePresence>
+    </TrunkPanel>
   );
 }
 
@@ -130,12 +143,12 @@ function VacationCalendar({ sortedVacations }: VacationCalendarProps) {
       const limit = aDateToDate(vacation.end_date).endOf("day").toISODate();
       while (walker.toISODate() <= limit) {
         const entry = vacationDays.get(walker.toISODate()) || new Set<string>();
-        entry.add(vacation.ref_id.the_id);
+        entry.add(vacation.ref_id);
         vacationDays.set(walker.toISODate(), entry);
         walker = walker.plus({ days: 1 });
       }
 
-      vacationsById.set(vacation.ref_id.the_id, vacation);
+      vacationsById.set(vacation.ref_id, vacation);
     }
 
     const data = [];
@@ -211,7 +224,7 @@ function VacationCalendar({ sortedVacations }: VacationCalendarProps) {
           backgroundColor: "white",
         }}
       >
-        {vacation.name.the_name}
+        {vacation.name}
       </TooltipBox>
     );
   }

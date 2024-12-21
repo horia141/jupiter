@@ -1,65 +1,80 @@
 """A query-like repository for scanning information quickly about entities."""
 import abc
-from dataclasses import dataclass
-from typing import List, Optional
 
-from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
-from jupiter.core.domain.chores.chore_name import ChoreName
-from jupiter.core.domain.entity_icon import EntityIcon
-from jupiter.core.domain.habits.habit_name import HabitName
-from jupiter.core.domain.inbox_tasks.inbox_task_name import InboxTaskName
-from jupiter.core.domain.metrics.metric_name import MetricName
-from jupiter.core.domain.persons.person_name import PersonName
-from jupiter.core.domain.projects.project_name import ProjectName
-from jupiter.core.domain.smart_lists.smart_list_name import SmartListName
-from jupiter.core.domain.vacations.vacation_name import VacationName
+from jupiter.core.domain.concept.big_plans.big_plan_name import BigPlanName
+from jupiter.core.domain.concept.chores.chore_name import ChoreName
+from jupiter.core.domain.concept.habits.habit_name import HabitName
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_name import InboxTaskName
+from jupiter.core.domain.concept.metrics.metric_name import MetricName
+from jupiter.core.domain.concept.persons.person_name import PersonName
+from jupiter.core.domain.concept.projects.project_name import ProjectName
+from jupiter.core.domain.concept.schedule.schedule_source import ScheduleSource
+from jupiter.core.domain.concept.schedule.schedule_stream_color import (
+    ScheduleStreamColor,
+)
+from jupiter.core.domain.concept.schedule.schedule_stream_name import ScheduleStreamName
+from jupiter.core.domain.concept.smart_lists.smart_list_name import SmartListName
+from jupiter.core.domain.concept.vacations.vacation_name import VacationName
+from jupiter.core.domain.core.entity_icon import EntityIcon
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.repository import Repository
-from jupiter.core.framework.value import Value
+from jupiter.core.framework.value import CompositeValue, value
 
 
-@dataclass
-class VacationSummary(Value):
+@value
+class VacationSummary(CompositeValue):
     """Summary information about a vacation."""
 
     ref_id: EntityId
     name: VacationName
 
 
-@dataclass
-class ProjectSummary(Value):
+@value
+class ScheduleStreamSummary(CompositeValue):
+    """Summary information about a schedule stream."""
+
+    ref_id: EntityId
+    source: ScheduleSource
+    name: ScheduleStreamName
+    color: ScheduleStreamColor
+
+
+@value
+class ProjectSummary(CompositeValue):
     """Summary information about a project."""
 
     ref_id: EntityId
+    parent_project_ref_id: EntityId | None
     name: ProjectName
+    order_of_child_projects: list[EntityId]
 
 
-@dataclass
-class InboxTaskSummary(Value):
+@value
+class InboxTaskSummary(CompositeValue):
     """Summary information about an inbox task."""
 
     ref_id: EntityId
     name: InboxTaskName
 
 
-@dataclass
-class HabitSummary(Value):
+@value
+class HabitSummary(CompositeValue):
     """Summary information about a habit."""
 
     ref_id: EntityId
     name: HabitName
 
 
-@dataclass
-class ChoreSummary(Value):
+@value
+class ChoreSummary(CompositeValue):
     """Summary information about a chore."""
 
     ref_id: EntityId
     name: ChoreName
 
 
-@dataclass
-class BigPlanSummary(Value):
+@value
+class BigPlanSummary(CompositeValue):
     """Summary information about a big plan."""
 
     ref_id: EntityId
@@ -67,26 +82,26 @@ class BigPlanSummary(Value):
     project_ref_id: EntityId
 
 
-@dataclass
-class SmartListSummary(Value):
+@value
+class SmartListSummary(CompositeValue):
     """Summary information about a smart list."""
 
     ref_id: EntityId
     name: SmartListName
-    icon: Optional[EntityIcon] = None
+    icon: EntityIcon | None
 
 
-@dataclass
-class MetricSummary(Value):
+@value
+class MetricSummary(CompositeValue):
     """Summary information about a metric."""
 
     ref_id: EntityId
     name: MetricName
-    icon: Optional[EntityIcon] = None
+    icon: EntityIcon | None
 
 
-@dataclass
-class PersonSummary(Value):
+@value
+class PersonSummary(CompositeValue):
     """Summary information about a person."""
 
     ref_id: EntityId
@@ -101,15 +116,23 @@ class FastInfoRepository(Repository, abc.ABC):
         self,
         parent_ref_id: EntityId,
         allow_archived: bool,
-    ) -> List[VacationSummary]:
+    ) -> list[VacationSummary]:
         """Find all summaries about vacations."""
+
+    @abc.abstractmethod
+    async def find_all_schedule_stream_summaries(
+        self,
+        parent_ref_id: EntityId,
+        allow_archived: bool,
+    ) -> list[ScheduleStreamSummary]:
+        """Find all summaries about schedule streams."""
 
     @abc.abstractmethod
     async def find_all_project_summaries(
         self,
         parent_ref_id: EntityId,
         allow_archived: bool,
-    ) -> List[ProjectSummary]:
+    ) -> list[ProjectSummary]:
         """Find all summaries about projects."""
 
     @abc.abstractmethod
@@ -117,7 +140,7 @@ class FastInfoRepository(Repository, abc.ABC):
         self,
         parent_ref_id: EntityId,
         allow_archived: bool,
-    ) -> List[InboxTaskSummary]:
+    ) -> list[InboxTaskSummary]:
         """Find all summaries about inbox tasks."""
 
     @abc.abstractmethod
@@ -125,7 +148,7 @@ class FastInfoRepository(Repository, abc.ABC):
         self,
         parent_ref_id: EntityId,
         allow_archived: bool,
-    ) -> List[HabitSummary]:
+    ) -> list[HabitSummary]:
         """Find all summaries about habits."""
 
     @abc.abstractmethod
@@ -133,7 +156,7 @@ class FastInfoRepository(Repository, abc.ABC):
         self,
         parent_ref_id: EntityId,
         allow_archived: bool,
-    ) -> List[ChoreSummary]:
+    ) -> list[ChoreSummary]:
         """Find all summaries about chores."""
 
     @abc.abstractmethod
@@ -141,7 +164,7 @@ class FastInfoRepository(Repository, abc.ABC):
         self,
         parent_ref_id: EntityId,
         allow_archived: bool,
-    ) -> List[BigPlanSummary]:
+    ) -> list[BigPlanSummary]:
         """Find all summaries about big plans."""
 
     @abc.abstractmethod
@@ -149,7 +172,7 @@ class FastInfoRepository(Repository, abc.ABC):
         self,
         parent_ref_id: EntityId,
         allow_archived: bool,
-    ) -> List[SmartListSummary]:
+    ) -> list[SmartListSummary]:
         """Find all summaries about smart lists."""
 
     @abc.abstractmethod
@@ -157,7 +180,7 @@ class FastInfoRepository(Repository, abc.ABC):
         self,
         parent_ref_id: EntityId,
         allow_archived: bool,
-    ) -> List[MetricSummary]:
+    ) -> list[MetricSummary]:
         """Find all summaries about metrics."""
 
     @abc.abstractmethod
@@ -165,5 +188,5 @@ class FastInfoRepository(Repository, abc.ABC):
         self,
         parent_ref_id: EntityId,
         allow_archived: bool,
-    ) -> List[PersonSummary]:
+    ) -> list[PersonSummary]:
         """Find all summaries about persons."""

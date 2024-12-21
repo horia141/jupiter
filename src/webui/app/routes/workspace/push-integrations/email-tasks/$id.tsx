@@ -1,3 +1,10 @@
+import type { InboxTask } from "@jupiter/webapi-client";
+import {
+  ApiError,
+  Difficulty,
+  Eisen,
+  InboxTaskStatus,
+} from "@jupiter/webapi-client";
 import {
   Button,
   ButtonGroup,
@@ -13,6 +20,7 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   useActionData,
   useFetcher,
@@ -20,8 +28,7 @@ import {
   useTransition,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import type { InboxTask } from "jupiter-gen";
-import { ApiError, Difficulty, Eisen, InboxTaskStatus } from "jupiter-gen";
+import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
@@ -29,16 +36,18 @@ import { InboxTaskStack } from "~/components/inbox-task-stack";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { LeafCard } from "~/components/infra/leaf-card";
+import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
 import { difficultyName } from "~/logic/domain/difficulty";
 import { eisenName } from "~/logic/domain/eisen";
 import { inboxTaskStatusName } from "~/logic/domain/inbox-task-status";
 import { getIntent } from "~/logic/intent";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = {
   id: z.string(),
@@ -72,10 +81,8 @@ export async function loader({ request, params }: LoaderArgs) {
   const { id } = parseParams(params, ParamsSchema);
 
   try {
-    const response = await getLoggedInApiClient(
-      session
-    ).emailTask.loadEmailTask({
-      ref_id: { the_id: id },
+    const response = await getLoggedInApiClient(session).email.emailTaskLoad({
+      ref_id: id,
       allow_archived: true,
     });
 
@@ -105,19 +112,19 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (intent) {
       case "update": {
-        await getLoggedInApiClient(session).emailTask.updateEmailTask({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).email.emailTaskUpdate({
+          ref_id: id,
           from_address: {
             should_change: true,
-            value: { the_address: form.fromAddress },
+            value: form.fromAddress,
           },
           from_name: {
             should_change: true,
-            value: { the_name: form.fromName },
+            value: form.fromName,
           },
           to_address: {
             should_change: true,
-            value: { the_address: form.toAddress },
+            value: form.toAddress,
           },
           subject: {
             should_change: true,
@@ -129,9 +136,7 @@ export async function action({ request, params }: ActionArgs) {
           },
           generation_name: {
             should_change: true,
-            value: form.generationName
-              ? { the_name: form.generationName }
-              : undefined,
+            value: form.generationName ? form.generationName : undefined,
           },
           generation_status: {
             should_change: true,
@@ -157,10 +162,7 @@ export async function action({ request, params }: ActionArgs) {
             value:
               form.generationActionableDate !== undefined &&
               form.generationActionableDate !== ""
-                ? {
-                    the_date: form.generationActionableDate,
-                    the_datetime: undefined,
-                  }
+                ? form.generationActionableDate
                 : undefined,
           },
           generation_due_date: {
@@ -168,7 +170,7 @@ export async function action({ request, params }: ActionArgs) {
             value:
               form.generationDueDate !== undefined &&
               form.generationDueDate !== ""
-                ? { the_date: form.generationDueDate, the_datetime: undefined }
+                ? form.generationDueDate
                 : undefined,
           },
         });
@@ -177,8 +179,8 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).emailTask.archiveEmailTask({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).email.emailTaskArchive({
+          ref_id: id,
         });
 
         return redirect(`/workspace/push-integrations/email-tasks/${id}`);
@@ -199,10 +201,14 @@ export async function action({ request, params }: ActionArgs) {
   }
 }
 
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
+
 export default function EmailTask() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
+  const topLevelInfo = useContext(TopLevelInfoContext);
 
   const inputsEnabled =
     transition.state === "idle" && !loaderData.emailTask.archived;
@@ -212,7 +218,7 @@ export default function EmailTask() {
   function handleCardMarkDone(it: InboxTask) {
     cardActionFetcher.submit(
       {
-        id: it.ref_id.the_id,
+        id: it.ref_id,
         status: InboxTaskStatus.DONE,
       },
       {
@@ -225,7 +231,7 @@ export default function EmailTask() {
   function handleCardMarkNotDone(it: InboxTask) {
     cardActionFetcher.submit(
       {
-        id: it.ref_id.the_id,
+        id: it.ref_id,
         status: InboxTaskStatus.NOT_DONE,
       },
       {
@@ -236,14 +242,14 @@ export default function EmailTask() {
   }
 
   return (
-    <LeafCard
-      key={loaderData.emailTask.ref_id.the_id}
+    <LeafPanel
+      key={`email-tasks-${loaderData.emailTask.ref_id}`}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/push-integrations/email-tasks"
     >
-      <GlobalError actionResult={actionData} />
       <Card>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>
@@ -252,7 +258,7 @@ export default function EmailTask() {
                 label="From Address"
                 name="fromAddress"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.emailTask.from_address.the_address}
+                defaultValue={loaderData.emailTask.from_address}
               />
               <FieldError actionResult={actionData} fieldName="/from_address" />
             </FormControl>
@@ -263,7 +269,7 @@ export default function EmailTask() {
                 label="From Name"
                 name="fromName"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.emailTask.from_name.the_name}
+                defaultValue={loaderData.emailTask.from_name}
               />
               <FieldError actionResult={actionData} fieldName="/from_name" />
             </FormControl>
@@ -274,7 +280,7 @@ export default function EmailTask() {
                 label="To Address"
                 name="toAddress"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.emailTask.to_address.the_address}
+                defaultValue={loaderData.emailTask.to_address}
               />
               <FieldError actionResult={actionData} fieldName="/to_address" />
             </FormControl>
@@ -310,9 +316,7 @@ export default function EmailTask() {
                 label="Generation Name"
                 name="generationName"
                 readOnly={!inputsEnabled}
-                defaultValue={
-                  loaderData.emailTask.generation_extra_info?.name?.the_name
-                }
+                defaultValue={loaderData.emailTask.generation_extra_info?.name}
               />
               <FieldError
                 actionResult={actionData}
@@ -466,6 +470,7 @@ export default function EmailTask() {
 
       {loaderData.inboxTask && (
         <InboxTaskStack
+          topLevelInfo={topLevelInfo}
           showLabel
           showOptions={{
             showStatus: true,
@@ -479,7 +484,7 @@ export default function EmailTask() {
           onCardMarkNotDone={handleCardMarkNotDone}
         />
       )}
-    </LeafCard>
+    </LeafPanel>
   );
 }
 

@@ -5,6 +5,7 @@ export enum DisplayType {
   TRUNK,
   BRANCH,
   LEAF,
+  TOOL,
 }
 
 export function useRootNeedsToShowTrunk() {
@@ -30,7 +31,6 @@ export function useBranchNeedsToShowLeaf() {
       return true;
     }
   }
-
   return false;
 }
 
@@ -50,21 +50,4 @@ export function useTrunkNeedsToShowBranch() {
 
 export function useTrunkNeedsToShowLeaf() {
   return useBranchNeedsToShowLeaf();
-}
-
-export function useOutWhatIsVisibleNext(nestedMatcher: RegExp): DisplayType {
-  const matches = useMatches();
-  const lastMatch = matches[matches.length - 1];
-
-  if (lastMatch.pathname.endsWith("/settings")) {
-    return DisplayType.LEAF;
-  } else if (lastMatch.pathname.endsWith("/details")) {
-    return DisplayType.LEAF;
-  } else if (lastMatch.pathname.endsWith("/new")) {
-    return DisplayType.LEAF;
-  } else if (lastMatch.pathname.match(nestedMatcher) !== null) {
-    return DisplayType.BRANCH;
-  } else {
-    return DisplayType.TRUNK;
-  }
 }

@@ -1,23 +1,29 @@
 [tool.poetry]
 name = "jupiter-webapi"
 version = "0.1.0"
-description = "A Web RPC-ish API for Jupiter."
+description = "A Web RPC-ish API for Thrive."
 authors = ["Horia Coman <horia141@gmail.com>"]
 license = "MIT"
-homepage = "https://jupiter-goals.readthedocs.io/"
+homepage = "https://get-thriving.com"
 readme = "README.md"
 repository = "https://github.com/horia141/jupiter"
-documentation = "https://jupiter-goals.readthedocs.io/"
+documentation = "https://docs.get-thriving.com"
 
 [tool.poetry.dependencies]
 python = ">=3.10, <3.11"
 jupiter-core = {path = "../core", develop = true}
-fastapi = "^0.95.0"
+fastapi = "^0.110.1"
 uvicorn = "^0.20.0"
-pydantic = "^1.10.3"
+pydantic = "^2.7"
 websockets = "^10.4"
 gunicorn = "^20.1.0"
 python-multipart = "^0.0.6"
+apscheduler = "^3.10.4"
+watchfiles = "^0.21.0"
+inflection = "^0.5.1"
+aiohttp = "^3.9.5"
+wsproto = "^1.2.0"
+aiodns = "^3.2.0"
 
 [tool.poetry.dev-dependencies]
 types-requests = "2.27.16"

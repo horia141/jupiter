@@ -1,14 +1,16 @@
+import type { InboxTask } from "@jupiter/webapi-client";
 import { Divider, Stack, Typography } from "@mui/material";
 import { AnimatePresence, motion } from "framer-motion";
-import type { InboxTask } from "jupiter-gen";
 import type {
   InboxTaskOptimisticState,
   InboxTaskParent,
 } from "~/logic/domain/inbox-task";
+import type { TopLevelInfo } from "~/top-level-context";
 import type { InboxTaskShowOptions } from "./inbox-task-card";
 import { InboxTaskCard } from "./inbox-task-card";
 
 interface InboxTaskStackProps {
+  topLevelInfo: TopLevelInfo;
   showLabel?: boolean;
   showOptions: InboxTaskShowOptions;
   label?: string;
@@ -46,7 +48,7 @@ export function InboxTaskStack(props: InboxTaskStackProps) {
           exit={{ opacity: 0, height: "0px" }}
           transition={{ duration: 1 }}
         >
-          <Stack spacing={2} useFlexGap>
+          <Stack spacing={2}>
             {props.showLabel && (
               <Divider style={{ paddingTop: "0.5rem" }}>
                 <Typography variant="h6">{props.label}</Typography>
@@ -56,12 +58,13 @@ export function InboxTaskStack(props: InboxTaskStackProps) {
             <AnimatePresence>
               {props.inboxTasks.map((it) => (
                 <InboxTaskCard
-                  key={it.ref_id.the_id}
+                  topLevelInfo={props.topLevelInfo}
+                  key={it.ref_id}
                   allowSwipe={true}
                   showOptions={props.showOptions}
                   inboxTask={it}
-                  optimisticState={props.optimisticUpdates?.[it.ref_id.the_id]}
-                  parent={props.moreInfoByRefId?.[it.ref_id.the_id]}
+                  optimisticState={props.optimisticUpdates?.[it.ref_id]}
+                  parent={props.moreInfoByRefId?.[it.ref_id]}
                   onMarkDone={handleMarkDone}
                   onMarkNotDone={handleMarkNotDone}
                 />

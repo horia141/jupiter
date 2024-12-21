@@ -1,4 +1,4 @@
-import type { EntityId } from "jupiter-gen";
+import type { EntityId } from "@jupiter/webapi-client";
 import { z } from "zod";
 
 export function selectZod<R extends string>(zodEntity: z.ZodType<R>) {
@@ -58,8 +58,8 @@ export function fixSelectOutputEntityId(
   }
 
   if (!Array.isArray(selectOutput)) {
-    return [{ the_id: selectOutput }];
+    return [selectOutput];
   }
 
-  return selectOutput.map((so) => ({ the_id: so }));
+  return selectOutput;
 }

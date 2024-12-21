@@ -6,6 +6,7 @@ export interface NoErrorNoData {
 
 export interface SomeErrorNoData {
   theType: "some-error-no-data";
+  intent?: string;
   globalError: string | null;
   fieldErrors: { [key: string]: string };
 }
@@ -20,6 +21,12 @@ export type ActionResult<T> =
   | SomeErrorNoData
   | NoErrorSomeData<T>;
 
+export function isNoErrorSomeData<T>(
+  action: ActionResult<T>
+): action is NoErrorSomeData<T> {
+  return action.theType === "no-error-some-data";
+}
+
 export function noErrorNoData(): NoErrorNoData {
   return {
     theType: "no-error-no-data",
@@ -30,6 +37,14 @@ export function noErrorSomeData<T>(data: T): ActionResult<T> {
   return {
     theType: "no-error-some-data",
     data: data,
+  };
+}
+
+export function aGlobalError(globalError: string): SomeErrorNoData {
+  return {
+    theType: "some-error-no-data",
+    globalError: globalError,
+    fieldErrors: {},
   };
 }
 
@@ -53,14 +68,15 @@ export function getFieldError(
 const ValidationErrorSchema = z.object({
   detail: z.array(
     z.object({
-      loc: z.array(z.string()),
+      loc: z.array(z.string().or(z.number())),
       msg: z.string(),
     })
   ),
 });
 
 export function validationErrorToUIErrorInfo(
-  errorBodyRaw: object
+  errorBodyRaw: object,
+  intent?: string
 ): SomeErrorNoData {
   const errorBody = ValidationErrorSchema.parse(errorBodyRaw);
   const detail = errorBody.detail;
@@ -77,5 +93,5 @@ export function validationErrorToUIErrorInfo(
     }
   }
 
-  return { theType: "some-error-no-data", globalError, fieldErrors };
+  return { theType: "some-error-no-data", intent, globalError, fieldErrors };
 }

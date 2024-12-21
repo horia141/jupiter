@@ -1,3 +1,11 @@
+import type { ProjectSummary } from "@jupiter/webapi-client";
+import {
+  ApiError,
+  Difficulty,
+  Eisen,
+  RecurringTaskPeriod,
+  WorkspaceFeature,
+} from "@jupiter/webapi-client";
 import {
   Button,
   ButtonGroup,
@@ -15,33 +23,35 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import type { Project } from "jupiter-gen";
-import { ApiError, Difficulty, Eisen, RecurringTaskPeriod } from "jupiter-gen";
+import { useContext } from "react";
 import { z } from "zod";
 import { CheckboxAsString, parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { LeafCard } from "~/components/infra/leaf-card";
+import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { difficultyName } from "~/logic/domain/difficulty";
 import { eisenName } from "~/logic/domain/eisen";
 import { periodName } from "~/logic/domain/period";
+import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 const CreateFormSchema = {
   name: z.string(),
-  project: z.string(),
+  project: z.string().optional(),
   period: z.nativeEnum(RecurringTaskPeriod),
   eisen: z.nativeEnum(Eisen),
   difficulty: z.union([z.nativeEnum(Difficulty), z.literal("default")]),
   actionableFromDay: z.string().optional(),
   actionableFromMonth: z.string().optional(),
-  dueAtTime: z.string().optional(),
   dueAtDay: z.string().optional(),
   dueAtMonth: z.string().optional(),
   mustDo: CheckboxAsString,
@@ -59,22 +69,12 @@ export async function loader({ request }: LoaderArgs) {
   const summaryResponse = await getLoggedInApiClient(
     session
   ).getSummaries.getSummaries({
-    allow_archived: false,
-    include_default_project: true,
-    include_vacations: false,
     include_projects: true,
-    include_inbox_tasks: false,
-    include_habits: false,
-    include_chores: false,
-    include_big_plans: false,
-    include_smart_lists: false,
-    include_metrics: false,
-    include_persons: false,
   });
 
   return json({
-    defaultProject: summaryResponse.default_project as Project,
-    allProjects: summaryResponse.projects as Array<Project>,
+    rootProject: summaryResponse.root_project as ProjectSummary,
+    allProjects: summaryResponse.projects as Array<ProjectSummary>,
   });
 }
 
@@ -83,35 +83,26 @@ export async function action({ request }: ActionArgs) {
   const form = await parseForm(request, CreateFormSchema);
 
   try {
-    const result = await getLoggedInApiClient(session).chore.createChore({
-      name: { the_name: form.name },
-      project_ref_id: { the_id: form.project },
+    const result = await getLoggedInApiClient(session).chores.choreCreate({
+      name: form.name,
+      project_ref_id: form.project !== undefined ? form.project : undefined,
       period: form.period,
       eisen: form.eisen,
       difficulty: form.difficulty === "default" ? undefined : form.difficulty,
       actionable_from_day: form.actionableFromDay
-        ? { the_day: parseInt(form.actionableFromDay) }
+        ? parseInt(form.actionableFromDay)
         : undefined,
       actionable_from_month: form.actionableFromMonth
-        ? { the_month: parseInt(form.actionableFromMonth) }
+        ? parseInt(form.actionableFromMonth)
         : undefined,
-      due_at_time: form.dueAtTime ? { the_time: form.dueAtTime } : undefined,
-      due_at_day: form.dueAtDay
-        ? { the_day: parseInt(form.dueAtDay) }
-        : undefined,
-      due_at_month: form.dueAtMonth
-        ? { the_month: parseInt(form.dueAtMonth) }
-        : undefined,
+      due_at_day: form.dueAtDay ? parseInt(form.dueAtDay) : undefined,
+      due_at_month: form.dueAtMonth ? parseInt(form.dueAtMonth) : undefined,
       must_do: form.mustDo,
-      start_at_date: form.startAtDate
-        ? { the_date: form.startAtDate, the_datetime: undefined }
-        : undefined,
-      end_at_date: form.endAtDate
-        ? { the_date: form.endAtDate, the_datetime: undefined }
-        : undefined,
+      start_at_date: form.startAtDate ? form.startAtDate : undefined,
+      end_at_date: form.endAtDate ? form.endAtDate : undefined,
     });
 
-    return redirect(`/workspace/chores/${result.new_chore.ref_id.the_id}`);
+    return redirect(`/workspace/chores/${result.new_chore.ref_id}`);
   } catch (error) {
     if (
       error instanceof ApiError &&
@@ -124,17 +115,22 @@ export async function action({ request }: ActionArgs) {
   }
 }
 
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
+
 export default function NewChore() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
 
+  const topLevelInfo = useContext(TopLevelInfoContext);
+
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <LeafCard returnLocation="/workspace/chores">
-      <GlobalError actionResult={actionData} />
+    <LeafPanel key={"chores/new"} returnLocation="/workspace/chores">
       <Card>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>
@@ -166,23 +162,28 @@ export default function NewChore() {
               <FieldError actionResult={actionData} fieldName="/status" />
             </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="project">Project</InputLabel>
-              <Select
-                labelId="project"
-                name="project"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.defaultProject.ref_id.the_id}
-                label="Project"
-              >
-                {loaderData.allProjects.map((p: Project) => (
-                  <MenuItem key={p.ref_id.the_id} value={p.ref_id.the_id}>
-                    {p.name.the_name}
-                  </MenuItem>
-                ))}
-              </Select>
-              <FieldError actionResult={actionData} fieldName="/project" />
-            </FormControl>
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.PROJECTS
+            ) && (
+              <FormControl fullWidth>
+                <InputLabel id="project">Project</InputLabel>
+                <Select
+                  labelId="project"
+                  name="project"
+                  readOnly={!inputsEnabled}
+                  defaultValue={loaderData.rootProject.ref_id}
+                  label="Project"
+                >
+                  {loaderData.allProjects.map((p) => (
+                    <MenuItem key={p.ref_id} value={p.ref_id}>
+                      {p.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+                <FieldError actionResult={actionData} fieldName="/project" />
+              </FormControl>
+            )}
 
             <FormControl fullWidth>
               <InputLabel id="eisen">Eisenhower</InputLabel>
@@ -252,16 +253,6 @@ export default function NewChore() {
             </FormControl>
 
             <FormControl fullWidth>
-              <InputLabel id="dueAtTime">Due At Time</InputLabel>
-              <OutlinedInput
-                label="Due At Time"
-                name="dueAtTime"
-                readOnly={!inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/due_at_time" />
-            </FormControl>
-
-            <FormControl fullWidth>
               <InputLabel id="dueAtDay">Due At Day</InputLabel>
               <OutlinedInput
                 label="Due At Day"
@@ -328,13 +319,18 @@ export default function NewChore() {
 
         <CardActions>
           <ButtonGroup>
-            <Button variant="contained" disabled={!inputsEnabled} type="submit">
+            <Button
+              id="chore-create"
+              variant="contained"
+              disabled={!inputsEnabled}
+              type="submit"
+            >
               Create
             </Button>
           </ButtonGroup>
         </CardActions>
       </Card>
-    </LeafCard>
+    </LeafPanel>
   );
 }
 

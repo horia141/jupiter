@@ -1,3 +1,4 @@
+import { ApiError, NoteDomain, WorkspaceFeature } from "@jupiter/webapi-client";
 import {
   Button,
   ButtonGroup,
@@ -11,21 +12,27 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect, Response } from "@remix-run/node";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useParams, useTransition } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { ApiError } from "jupiter-gen";
+import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
+import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { LeafCard } from "~/components/infra/leaf-card";
+import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import { TimeEventFullDaysBlockStack } from "~/components/time-event-full-days-block-stack";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
+import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = {
   id: z.string(),
@@ -47,12 +54,16 @@ export async function loader({ request, params }: LoaderArgs) {
   const { id } = parseParams(params, ParamsSchema);
 
   try {
-    const result = await getLoggedInApiClient(session).vacation.loadVacation({
-      ref_id: { the_id: id },
+    const result = await getLoggedInApiClient(session).vacations.vacationLoad({
+      ref_id: id,
       allow_archived: true,
     });
 
-    return json(result.vacation);
+    return json({
+      vacation: result.vacation,
+      note: result.note,
+      timeEventBlock: result.time_event_block,
+    });
   } catch (error) {
     if (error instanceof ApiError && error.status === StatusCodes.NOT_FOUND) {
       throw new Response(ReasonPhrases.NOT_FOUND, {
@@ -73,28 +84,38 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (form.intent) {
       case "update": {
-        await getLoggedInApiClient(session).vacation.updateVacation({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).vacations.vacationUpdate({
+          ref_id: id,
           name: {
             should_change: true,
-            value: { the_name: form.name },
+            value: form.name,
           },
           start_date: {
             should_change: true,
-            value: { the_date: form.startDate, the_datetime: undefined },
+            value: form.startDate,
           },
           end_date: {
             should_change: true,
-            value: { the_date: form.endDate, the_datetime: undefined },
+            value: form.endDate,
           },
         });
 
         return redirect(`/workspace/vacations/${id}`);
       }
 
+      case "create-note": {
+        await getLoggedInApiClient(session).notes.noteCreate({
+          domain: NoteDomain.VACATION,
+          source_entity_ref_id: id,
+          content: [],
+        });
+
+        return redirect(`/workspace/vacations/${id}`);
+      }
+
       case "archive": {
-        await getLoggedInApiClient(session).vacation.archiveVacation({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).vacations.vacationArchive({
+          ref_id: id,
         });
         return redirect(`/workspace/vacations/${id}`);
       }
@@ -114,22 +135,35 @@ export async function action({ request, params }: ActionArgs) {
   }
 }
 
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
+
 export default function Vacation() {
-  const vacation = useLoaderDataSafeForAnimation<typeof loader>();
+  const { vacation, note, timeEventBlock } =
+    useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
+  const topLevelInfo = useContext(TopLevelInfoContext);
 
   const inputsEnabled = transition.state === "idle" && !vacation.archived;
 
+  const timeEventBlockEntry = {
+    time_event: timeEventBlock,
+    entry: {
+      vacation: vacation,
+      time_event: timeEventBlock,
+    },
+  };
+
   return (
-    <LeafCard
-      key={vacation.ref_id.the_id}
+    <LeafPanel
+      key={`vacation-${vacation.ref_id}`}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/vacations"
     >
-      <GlobalError actionResult={actionData} />
-      <Card>
+      <Card sx={{ marginBottom: "1rem" }}>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>
@@ -138,7 +172,7 @@ export default function Vacation() {
                 label="name"
                 name="name"
                 readOnly={!inputsEnabled}
-                defaultValue={vacation.name.the_name}
+                defaultValue={vacation.name}
               />
               <FieldError actionResult={actionData} fieldName="/name" />
             </FormControl>
@@ -178,6 +212,7 @@ export default function Vacation() {
         <CardActions>
           <ButtonGroup>
             <Button
+              id="vacation-update"
               variant="contained"
               disabled={!inputsEnabled}
               type="submit"
@@ -189,7 +224,47 @@ export default function Vacation() {
           </ButtonGroup>
         </CardActions>
       </Card>
-    </LeafCard>
+
+      <Card>
+        {!note && (
+          <CardActions>
+            <ButtonGroup>
+              <Button
+                id="vacation-create-note"
+                variant="contained"
+                disabled={!inputsEnabled}
+                type="submit"
+                name="intent"
+                value="create-note"
+              >
+                Create Note
+              </Button>
+            </ButtonGroup>
+          </CardActions>
+        )}
+
+        {note && (
+          <>
+            <EntityNoteEditor
+              initialNote={note}
+              inputsEnabled={inputsEnabled}
+            />
+          </>
+        )}
+      </Card>
+
+      {isWorkspaceFeatureAvailable(
+        topLevelInfo.workspace,
+        WorkspaceFeature.SCHEDULE
+      ) && (
+        <TimeEventFullDaysBlockStack
+          topLevelInfo={topLevelInfo}
+          inputsEnabled={inputsEnabled}
+          title="Time Events"
+          entries={[timeEventBlockEntry]}
+        />
+      )}
+    </LeafPanel>
   );
 }
 

@@ -30,11 +30,12 @@ COPY src/webapi/jupiter src/webapi/jupiter
 
 WORKDIR /jupiter/src/webapi
 
+RUN cd ../core && poetry install --only main --no-interaction --no-ansi
 RUN poetry install --only main --no-interaction --no-ansi
 
-ARG PORT=8010
+ARG PORT=10000
 ENV HOST=0.0.0.0
 ENV PORT=$PORT
 EXPOSE $PORT
 
-ENTRYPOINT [ "dumb-init", "gunicorn", "-k", "uvicorn.workers.UvicornWorker", "jupiter.webapi.jupiter:app" ]
+ENTRYPOINT [ "dumb-init", "python", "-m", "jupiter.webapi.jupiter" ]

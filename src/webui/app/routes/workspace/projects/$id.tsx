@@ -1,4 +1,7 @@
+import type { ProjectSummary } from "@jupiter/webapi-client";
+import { ApiError, NoteDomain } from "@jupiter/webapi-client";
 import {
+  Autocomplete,
   Button,
   ButtonGroup,
   Card,
@@ -8,21 +11,25 @@ import {
   InputLabel,
   OutlinedInput,
   Stack,
+  TextField,
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect, Response } from "@remix-run/node";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useParams, useTransition } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { ApiError } from "jupiter-gen";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
+import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { LeafCard } from "~/components/infra/leaf-card";
+import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
-import { getIntent } from "~/logic/intent";
+import { isRootProject } from "~/logic/domain/project";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation as useLoaderDataForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
@@ -31,10 +38,22 @@ const ParamsSchema = {
   id: z.string(),
 };
 
-const UpdateFormSchema = {
-  intent: z.string(),
-  name: z.string(),
-};
+const UpdateFormSchema = z.discriminatedUnion("intent", [
+  z.object({
+    intent: z.literal("update"),
+    name: z.string(),
+  }),
+  z.object({
+    intent: z.literal("change-parent"),
+    parentProjectRefId: z.string(),
+  }),
+  z.object({
+    intent: z.literal("create-note"),
+  }),
+  z.object({
+    intent: z.literal("archive"),
+  }),
+]);
 
 export const handle = {
   displayType: DisplayType.LEAF,
@@ -44,13 +63,24 @@ export async function loader({ request, params }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const { id } = parseParams(params, ParamsSchema);
 
+  const summaryResponse = await getLoggedInApiClient(
+    session
+  ).getSummaries.getSummaries({
+    include_projects: true,
+  });
+
   try {
-    const response = await getLoggedInApiClient(session).project.loadProject({
-      ref_id: { the_id: id },
+    const response = await getLoggedInApiClient(session).projects.projectLoad({
+      ref_id: id,
       allow_archived: true,
     });
 
-    return json(response.project);
+    return json({
+      rootProject: summaryResponse.root_project as ProjectSummary,
+      allProjects: summaryResponse.projects as Array<ProjectSummary>,
+      project: response.project,
+      note: response.note,
+    });
   } catch (error) {
     if (error instanceof ApiError && error.status === StatusCodes.NOT_FOUND) {
       throw new Response(ReasonPhrases.NOT_FOUND, {
@@ -68,25 +98,42 @@ export async function action({ request, params }: ActionArgs) {
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
 
-  const { intent } = getIntent<undefined>(form.intent);
-
   try {
-    switch (intent) {
+    switch (form.intent) {
       case "update": {
-        await getLoggedInApiClient(session).project.updateProject({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).projects.projectUpdate({
+          ref_id: id,
           name: {
             should_change: true,
-            value: { the_name: form.name },
+            value: form.name,
           },
         });
 
         return redirect(`/workspace/projects/${id}`);
       }
 
+      case "change-parent": {
+        await getLoggedInApiClient(session).projects.projectChangeParent({
+          ref_id: id,
+          parent_project_ref_id: form.parentProjectRefId,
+        });
+
+        return redirect(`/workspace/projects/${id}`);
+      }
+
+      case "create-note": {
+        await getLoggedInApiClient(session).notes.noteCreate({
+          domain: NoteDomain.PROJECT,
+          source_entity_ref_id: id,
+          content: [],
+        });
+
+        return redirect(`/workspace/projects/${id}`);
+      }
+
       case "archive": {
-        await getLoggedInApiClient(session).project.archiveProject({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).projects.projectArchive({
+          ref_id: id,
         });
 
         return redirect(`/workspace/projects/${id}`);
@@ -107,31 +154,94 @@ export async function action({ request, params }: ActionArgs) {
   }
 }
 
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
+
 export default function Project() {
-  const project = useLoaderDataForAnimation<typeof loader>();
+  const loaderData = useLoaderDataForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
 
-  const inputsEnabled = transition.state === "idle" && !project.archived;
+  const inputsEnabled =
+    transition.state === "idle" && !loaderData.project.archived;
+
+  const parentProject = loaderData.allProjects.find(
+    (project) => project.ref_id === loaderData.project.parent_project_ref_id
+  );
+  const [selectedProject, setSelectedProject] = useState(
+    parentProject === undefined
+      ? {
+          project_ref_id: loaderData.rootProject.ref_id,
+          label: loaderData.rootProject.name,
+        }
+      : { project_ref_id: parentProject.ref_id, label: parentProject.name }
+  );
+
+  const allProjectsAsOptions = loaderData.allProjects.map((project) => ({
+    project_ref_id: project.ref_id,
+    label: project.name,
+  }));
+
+  useEffect(() => {
+    const parentProject = loaderData.allProjects.find(
+      (project) => project.ref_id === loaderData.project.parent_project_ref_id
+    );
+    setSelectedProject(
+      parentProject === undefined
+        ? {
+            project_ref_id: loaderData.rootProject.ref_id,
+            label: loaderData.rootProject.name,
+          }
+        : { project_ref_id: parentProject.ref_id, label: parentProject.name }
+    );
+  }, [loaderData]);
 
   return (
-    <LeafCard
-      key={project.ref_id.the_id}
-      showArchiveButton
+    <LeafPanel
+      key={`projects-${loaderData.project.ref_id}`}
+      showArchiveButton={!isRootProject(loaderData.project)}
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/projects"
     >
-      <GlobalError actionResult={actionData} />
-      <Card>
+      <Card sx={{ marginBottom: "1rem" }}>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
+            <FormControl fullWidth>
+              <Autocomplete
+                id="parentProject"
+                options={allProjectsAsOptions}
+                readOnly={!inputsEnabled || isRootProject(loaderData.project)}
+                value={selectedProject}
+                disableClearable={true}
+                onChange={(e, v) => setSelectedProject(v)}
+                isOptionEqualToValue={(o, v) =>
+                  o.project_ref_id === v.project_ref_id
+                }
+                renderInput={(params) => (
+                  <TextField {...params} label="Parent Project" />
+                )}
+              />
+
+              <FieldError
+                actionResult={actionData}
+                fieldName="/parent_project_ref_id"
+              />
+
+              <input
+                type="hidden"
+                name="parentProjectRefId"
+                value={selectedProject.project_ref_id}
+              />
+            </FormControl>
+
             <FormControl fullWidth>
               <InputLabel id="name">Name</InputLabel>
               <OutlinedInput
                 label="name"
                 name="name"
                 readOnly={!inputsEnabled}
-                defaultValue={project.name.the_name}
+                defaultValue={loaderData.project.name}
               />
               <FieldError actionResult={actionData} fieldName="/name" />
             </FormControl>
@@ -149,10 +259,47 @@ export default function Project() {
             >
               Save
             </Button>
+
+            <Button
+              variant="outlined"
+              disabled={!inputsEnabled || isRootProject(loaderData.project)}
+              type="submit"
+              name="intent"
+              value="change-parent"
+            >
+              Change Parent
+            </Button>
           </ButtonGroup>
         </CardActions>
       </Card>
-    </LeafCard>
+
+      <Card>
+        {!loaderData.note && (
+          <CardActions>
+            <ButtonGroup>
+              <Button
+                variant="contained"
+                disabled={!inputsEnabled}
+                type="submit"
+                name="intent"
+                value="create-note"
+              >
+                Create Note
+              </Button>
+            </ButtonGroup>
+          </CardActions>
+        )}
+
+        {loaderData.note && (
+          <>
+            <EntityNoteEditor
+              initialNote={loaderData.note}
+              inputsEnabled={inputsEnabled}
+            />
+          </>
+        )}
+      </Card>
+    </LeafPanel>
   );
 }
 

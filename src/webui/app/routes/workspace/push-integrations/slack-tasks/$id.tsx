@@ -1,3 +1,10 @@
+import type { InboxTask } from "@jupiter/webapi-client";
+import {
+  ApiError,
+  Difficulty,
+  Eisen,
+  InboxTaskStatus,
+} from "@jupiter/webapi-client";
 import {
   Button,
   ButtonGroup,
@@ -13,6 +20,7 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   useActionData,
   useFetcher,
@@ -20,8 +28,7 @@ import {
   useTransition,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import type { InboxTask } from "jupiter-gen";
-import { ApiError, Difficulty, Eisen, InboxTaskStatus } from "jupiter-gen";
+import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
@@ -29,16 +36,18 @@ import { InboxTaskStack } from "~/components/inbox-task-stack";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { LeafCard } from "~/components/infra/leaf-card";
+import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
 import { difficultyName } from "~/logic/domain/difficulty";
 import { eisenName } from "~/logic/domain/eisen";
 import { inboxTaskStatusName } from "~/logic/domain/inbox-task-status";
 import { getIntent } from "~/logic/intent";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = {
   id: z.string(),
@@ -70,10 +79,8 @@ export async function loader({ request, params }: LoaderArgs) {
   const { id } = parseParams(params, ParamsSchema);
 
   try {
-    const response = await getLoggedInApiClient(
-      session
-    ).slackTask.loadSlackTask({
-      ref_id: { the_id: id },
+    const response = await getLoggedInApiClient(session).slack.slackTaskLoad({
+      ref_id: id,
       allow_archived: true,
     });
 
@@ -103,15 +110,15 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (intent) {
       case "update": {
-        await getLoggedInApiClient(session).slackTask.updateSlackTask({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).slack.slackTaskUpdate({
+          ref_id: id,
           user: {
             should_change: true,
-            value: { the_name: form.user },
+            value: form.user,
           },
           channel: {
             should_change: true,
-            value: form.channel ? { the_name: form.channel } : undefined,
+            value: form.channel,
           },
           message: {
             should_change: true,
@@ -119,9 +126,7 @@ export async function action({ request, params }: ActionArgs) {
           },
           generation_name: {
             should_change: true,
-            value: form.generationName
-              ? { the_name: form.generationName }
-              : undefined,
+            value: form.generationName,
           },
           generation_status: {
             should_change: true,
@@ -147,10 +152,7 @@ export async function action({ request, params }: ActionArgs) {
             value:
               form.generationActionableDate !== undefined &&
               form.generationActionableDate !== ""
-                ? {
-                    the_date: form.generationActionableDate,
-                    the_datetime: undefined,
-                  }
+                ? form.generationActionableDate
                 : undefined,
           },
           generation_due_date: {
@@ -158,7 +160,7 @@ export async function action({ request, params }: ActionArgs) {
             value:
               form.generationDueDate !== undefined &&
               form.generationDueDate !== ""
-                ? { the_date: form.generationDueDate, the_datetime: undefined }
+                ? form.generationDueDate
                 : undefined,
           },
         });
@@ -167,8 +169,8 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).slackTask.archiveSlackTask({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).slack.slackTaskArchive({
+          ref_id: id,
         });
 
         return redirect(`/workspace/push-integrations/slack-tasks/${id}`);
@@ -189,10 +191,14 @@ export async function action({ request, params }: ActionArgs) {
   }
 }
 
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
+
 export default function SlackTask() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
+  const topLevelInfo = useContext(TopLevelInfoContext);
 
   const inputsEnabled =
     transition.state === "idle" && !loaderData.slackTask.archived;
@@ -202,7 +208,7 @@ export default function SlackTask() {
   function handleCardMarkDone(it: InboxTask) {
     cardActionFetcher.submit(
       {
-        id: it.ref_id.the_id,
+        id: it.ref_id,
         status: InboxTaskStatus.DONE,
       },
       {
@@ -215,7 +221,7 @@ export default function SlackTask() {
   function handleCardMarkNotDone(it: InboxTask) {
     cardActionFetcher.submit(
       {
-        id: it.ref_id.the_id,
+        id: it.ref_id,
         status: InboxTaskStatus.NOT_DONE,
       },
       {
@@ -226,14 +232,14 @@ export default function SlackTask() {
   }
 
   return (
-    <LeafCard
-      key={loaderData.slackTask.ref_id.the_id}
+    <LeafPanel
+      key={`slack-tasks/${loaderData.slackTask.ref_id}`}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/push-integrations/slack-tasks"
     >
-      <GlobalError actionResult={actionData} />
       <Card>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>
@@ -242,7 +248,7 @@ export default function SlackTask() {
                 label="User"
                 name="user"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.slackTask.user.the_name}
+                defaultValue={loaderData.slackTask.user}
               />
               <FieldError actionResult={actionData} fieldName="/user" />
             </FormControl>
@@ -253,7 +259,7 @@ export default function SlackTask() {
                 label="Channel"
                 name="channel"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.slackTask.channel?.the_name}
+                defaultValue={loaderData.slackTask.channel}
               />
               <FieldError actionResult={actionData} fieldName="/channel" />
             </FormControl>
@@ -275,9 +281,7 @@ export default function SlackTask() {
                 label="Generation Name"
                 name="generationName"
                 readOnly={!inputsEnabled}
-                defaultValue={
-                  loaderData.slackTask.generation_extra_info?.name?.the_name
-                }
+                defaultValue={loaderData.slackTask.generation_extra_info?.name}
               />
               <FieldError
                 actionResult={actionData}
@@ -431,6 +435,7 @@ export default function SlackTask() {
 
       {loaderData.inboxTask && (
         <InboxTaskStack
+          topLevelInfo={topLevelInfo}
           showLabel
           showOptions={{
             showStatus: true,
@@ -444,7 +449,7 @@ export default function SlackTask() {
           onCardMarkNotDone={handleCardMarkNotDone}
         />
       )}
-    </LeafCard>
+    </LeafPanel>
   );
 }
 

@@ -1,72 +1,81 @@
 """UseCase for showing the projects."""
-from argparse import ArgumentParser, Namespace
+from collections import defaultdict
 
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     entity_id_to_rich_text,
     entity_name_to_rich_text,
 )
-from jupiter.cli.session_storage import SessionInfo
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
-from jupiter.core.use_cases.projects.find import ProjectFindArgs, ProjectFindUseCase
+from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.use_cases.concept.projects.find import (
+    ProjectFindResult,
+    ProjectFindResultEntry,
+    ProjectFindUseCase,
+)
+from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
 from rich.console import Console
 from rich.text import Text
 from rich.tree import Tree
 
 
-class ProjectShow(LoggedInReadonlyCommand[ProjectFindUseCase]):
+class ProjectShow(LoggedInReadonlyCommand[ProjectFindUseCase, ProjectFindResult]):
     """UseCase class for showing the projects."""
 
-    @staticmethod
-    def name() -> str:
-        """The name of the command."""
-        return "project-show"
-
-    @staticmethod
-    def description() -> str:
-        """The description of the command."""
-        return "Show the projects"
-
-    def build_parser(self, parser: ArgumentParser) -> None:
-        """Construct a argparse parser for the command."""
-        parser.add_argument(
-            "--show-archived",
-            dest="show_archived",
-            default=False,
-            action="store_true",
-            help="Whether to show archived vacations or not",
-        )
-
-    async def _run(
+    def _render_result(
         self,
-        session_info: SessionInfo,
-        args: Namespace,
+        console: Console,
+        context: AppLoggedInReadonlyUseCaseContext,
+        result: ProjectFindResult,
     ) -> None:
-        """Callback to execute when the command is invoked."""
-        show_archived = args.show_archived
+        project_tree: defaultdict[
+            EntityId | None, list[ProjectFindResultEntry]
+        ] = defaultdict(list)
+        for entry in result.entries:
+            project_tree[entry.project.parent_project_ref_id].append(entry)
 
-        result = await self._use_case.execute(
-            AppLoggedInUseCaseSession(session_info.auth_token_ext),
-            ProjectFindArgs(allow_archived=show_archived, filter_ref_ids=None),
+        root_rich_tree = Tree("💡 Projects", guide_style="bold bright_blue")
+
+        root = project_tree[None]
+        if len(root) != 1:
+            raise Exception("Root project not found.")
+        self._render_project_tree(root[0], project_tree, root_rich_tree)
+
+        console.print(root_rich_tree)
+
+    def _render_project_tree(
+        self,
+        root: ProjectFindResultEntry,
+        project_tree: defaultdict[EntityId | None, list[ProjectFindResultEntry]],
+        tree: Tree,
+    ) -> None:
+        project_text = Text("")
+        project_text.append(entity_id_to_rich_text(root.project.ref_id))
+        project_text.append(" ")
+        project_text.append(entity_name_to_rich_text(root.project.name))
+
+        if root.project.archived:
+            project_text.stylize("gray62")
+
+        child_projects = project_tree[root.project.ref_id]
+        sorted_child_projects = sorted(
+            child_projects,
+            key=lambda pe: (
+                pe.project.archived,
+                _index_in_list_or_none(
+                    root.project.order_of_child_projects, pe.project.ref_id
+                ),
+                pe.project.created_time,
+            ),
         )
 
-        sorted_projects = sorted(
-            result.projects,
-            key=lambda pe: (pe.archived, pe.created_time),
-        )
+        rich_project_tree = tree.add(project_text)
 
-        rich_tree = Tree("💡 Projects", guide_style="bold bright_blue")
+        for child_project in sorted_child_projects:
+            self._render_project_tree(child_project, project_tree, rich_project_tree)
 
-        for project in sorted_projects:
-            project_text = Text("")
-            project_text.append(entity_id_to_rich_text(project.ref_id))
-            project_text.append(" ")
-            project_text.append(entity_name_to_rich_text(project.name))
 
-            if project.archived:
-                project_text.stylize("gray62")
-
-            rich_tree.add(project_text)
-
-        console = Console()
-        console.print(rich_tree)
+def _index_in_list_or_none(list_: list[EntityId], item: EntityId) -> int:
+    try:
+        return list_.index(item)
+    except ValueError:
+        return -1

@@ -2,30 +2,38 @@
 
 set -ex
 
-HOST=0.0.0.0
-PORT=8004
-export SQLITE_DB_URL=sqlite+aiosqlite:///../../.build-cache/apigen/jupiter.sqlite
+source scripts/common.sh
+
+WEBAPI_PORT=$(get_free_port)
+WEBAPI_URL=http://0.0.0.0:${WEBAPI_PORT}
+WEBUI_PORT=$(get_free_port)
+
+run_jupiter apigen "$WEBAPI_PORT" "$WEBUI_PORT" wait:webapi no-monit ci
+
+mkdir -p gen/ts
+mkdir -p gen/py
 
 mkdir -p .build-cache/apigen
-
-cd src/webapi
-uvicorn jupiter.webapi.jupiter:app --host $HOST --port $PORT &
-WEBAPI_PID=$!
-cd ../..
-
-sleep 3
-
 rm -f .build-cache/apigen/openapi.json
-http --timeout 2 get localhost:${PORT}/openapi.json > .build-cache/apigen/openapi.json
+http --timeout 2 get "$WEBAPI_URL/openapi.json" > .build-cache/apigen/openapi.json
 
-kill $WEBAPI_PID
-
-python scripts/process-openapi.py .build-cache/apigen/openapi.json
+stop_jupiter apigen
 
 npx openapi \
     --input .build-cache/apigen/openapi.json \
-    --request gen/request-template.ts \
-    --output gen/gen \
+    --request gen/ts/webapi-client/request-template.ts \
+    --output gen/ts/webapi-client/gen \
     --client fetch \
     --name ApiClient
-(cd gen && npx tsc)
+
+(cd gen/ts/webapi-client && npx tsc)
+
+trap "rm -rf jupiter-webapi-client" EXIT
+if [[ -d gen/py/webapi-client ]]; then
+    mv gen/py/webapi-client jupiter-webapi-client
+    poetry run openapi-python-client update --path .build-cache/apigen/openapi.json
+    mv jupiter-webapi-client gen/py/webapi-client
+else
+    poetry run openapi-python-client generate --path .build-cache/apigen/openapi.json
+    mv jupiter-webapi-client gen/py/webapi-client
+fi

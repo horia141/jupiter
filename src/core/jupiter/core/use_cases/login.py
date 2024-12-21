@@ -1,18 +1,22 @@
 """Use case for logging in as a particular user."""
-from dataclasses import dataclass
-
-from jupiter.core.domain.auth.auth_token_ext import AuthTokenExt
-from jupiter.core.domain.auth.password_plain import PasswordPlain
-from jupiter.core.domain.email_address import EmailAddress
-from jupiter.core.domain.user.infra.user_repository import UserNotFoundError
+from jupiter.core.domain.concept.auth.auth import Auth
+from jupiter.core.domain.concept.auth.auth_token_ext import AuthTokenExt
+from jupiter.core.domain.concept.auth.password_plain import PasswordPlain
+from jupiter.core.domain.concept.user.user import (
+    UserNotFoundError,
+    UserRepository,
+)
+from jupiter.core.domain.core.email_address import EmailAddress
 from jupiter.core.framework.secure import secure_class
-from jupiter.core.framework.use_case import (
+from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,
+    use_case_args,
+    use_case_result,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppGuestReadonlyUseCase,
-    AppGuestUseCaseContext,
+    AppGuestReadonlyUseCaseContext,
 )
 
 
@@ -20,7 +24,7 @@ class InvalidLoginCredentialsError(Exception):
     """Error raised when either an email address or password are not good."""
 
 
-@dataclass
+@use_case_args
 class LoginArgs(UseCaseArgsBase):
     """Login arguments."""
 
@@ -28,7 +32,7 @@ class LoginArgs(UseCaseArgsBase):
     password: PasswordPlain
 
 
-@dataclass
+@use_case_result
 class LoginResult(UseCaseResultBase):
     """Login result."""
 
@@ -41,16 +45,16 @@ class LoginUseCase(AppGuestReadonlyUseCase[LoginArgs, LoginResult]):
 
     async def _execute(
         self,
-        context: AppGuestUseCaseContext,
+        context: AppGuestReadonlyUseCaseContext,
         args: LoginArgs,
     ) -> LoginResult:
         """Execute the command."""
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             try:
-                user = await uow.user_repository.load_by_email_address(
+                user = await uow.get(UserRepository).load_by_email_address(
                     args.email_address
                 )
-                auth = await uow.auth_repository.load_by_parent(user.ref_id)
+                auth = await uow.get_for(Auth).load_by_parent(user.ref_id)
 
                 if not auth.check_password_against(args.password):
                     raise InvalidLoginCredentialsError("User email or password invalid")

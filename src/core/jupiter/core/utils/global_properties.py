@@ -5,25 +5,30 @@ from pathlib import Path
 from typing import Union, cast
 
 import dotenv
-from jupiter.core.domain.timezone import Timezone
-from jupiter.core.framework.env import Env
+from jupiter.core.domain.env import Env
+from jupiter.core.domain.hosting import Hosting
 from jupiter.core.framework.secure import secure_fn
 
 
-@dataclass
+@dataclass(frozen=True)
 class GlobalProperties:
     """UseCase-level properties."""
 
     env: Env
+    hosting: Hosting
     description: str
+    host: str
+    port: int
     version: str
-    timezone: Timezone
     docs_init_workspace_url: str
     session_info_path: Path
     sqlite_db_url: str
     alembic_ini_path: Path
     alembic_migrations_path: Path
     auth_token_secret: str
+    wix_api_key: str
+    wix_account_id: str
+    wix_site_id: str
 
     @property
     def sync_sqlite_db_url(self) -> str:
@@ -55,16 +60,20 @@ def build_global_properties() -> GlobalProperties:
     dotenv.load_dotenv(dotenv_path=project_config_path, verbose=True)
 
     env = Env(cast(str, os.getenv("ENV")))
+    hosting = Hosting(cast(str, os.getenv("HOSTING")))
     description = cast(str, os.getenv("DESCRIPTION"))
+    host = cast(str, os.getenv("HOST"))
+    port = int(cast(str, os.getenv("PORT")))
     version = cast(str, os.getenv("VERSION"))
     docs_init_workspace_url = cast(str, os.getenv("DOCS_INIT_WORKSPACE_URL"))
-    timezone = "Europe/Bucharest"
-    # timezone = datetime.datetime.now().astimezone().tzinfo
     session_info_path = Path(cast(str, os.getenv("SESSION_INFO_PATH")))
     sqlite_db_url = cast(str, os.getenv("SQLITE_DB_URL"))
     alembic_ini_path = Path(cast(str, os.getenv("ALEMBIC_INI_PATH")))
     alembic_migrations_path = Path(cast(str, os.getenv("ALEMBIC_MIGRATIONS_PATH")))
     auth_token_secret = cast(str, os.getenv("AUTH_TOKEN_SECRET"))
+    wix_api_key = cast(str, os.getenv("WIX_API_KEY"))
+    wix_account_id = cast(str, os.getenv("WIX_ACCOUNT_ID"))
+    wix_site_id = cast(str, os.getenv("WIX_SITE_ID"))
 
     if not alembic_ini_path.is_absolute():
         alembic_ini_path = find_up_the_dir_tree(alembic_ini_path)
@@ -73,13 +82,18 @@ def build_global_properties() -> GlobalProperties:
 
     return GlobalProperties(
         env=env,
+        hosting=hosting,
         description=description,
+        host=host,
+        port=port,
         version=version,
-        timezone=Timezone.from_raw(str(timezone)),
         docs_init_workspace_url=docs_init_workspace_url,
         session_info_path=session_info_path,
         sqlite_db_url=sqlite_db_url,
         alembic_ini_path=alembic_ini_path,
         alembic_migrations_path=alembic_migrations_path,
         auth_token_secret=auth_token_secret,
+        wix_api_key=wix_api_key,
+        wix_account_id=wix_account_id,
+        wix_site_id=wix_site_id,
     )

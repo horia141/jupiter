@@ -1,6 +1,22 @@
-import type { BigPlan } from "jupiter-gen";
+import type {
+  BigPlan,
+  BigPlanFindResultEntry,
+  Project,
+} from "@jupiter/webapi-client";
 import { compareADate } from "./adate";
 import { compareBigPlanStatus } from "./big-plan-status";
+
+export interface BigPlanParent {
+  project?: Project;
+}
+
+export function bigPlanFindEntryToParent(
+  entry: BigPlanFindResultEntry
+): BigPlanParent {
+  return {
+    project: entry.project || undefined,
+  };
+}
 
 export function sortBigPlansNaturally(
   bigPlans: Array<BigPlan>

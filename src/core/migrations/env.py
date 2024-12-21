@@ -1,21 +1,7 @@
-import logging
-
 from alembic import context
-from rich.logging import RichHandler
 from sqlalchemy import create_engine
 
 from jupiter.core.utils.global_properties import build_global_properties
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-    handlers=[
-        RichHandler(
-            rich_tracebacks=True, markup=True, log_time_format="%Y-%m-%d %H:%M:%S"
-        )
-    ],
-)
 
 
 def run_migrations_offline() -> None:

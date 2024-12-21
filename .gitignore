@@ -10,10 +10,11 @@ site
 .build-cache/
 buildinfo/current
 secrets.info
-archive
 .cache/
 build/
 public/build/
 .env
-gen/dist/
+gen/ts/webapi-client/dist/
 .sqlite
+session-info
+.ruff_cache/

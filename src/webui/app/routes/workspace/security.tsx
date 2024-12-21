@@ -1,3 +1,4 @@
+import { ApiError } from "@jupiter/webapi-client";
 import {
   Button,
   ButtonGroup,
@@ -12,18 +13,19 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { ApiError } from "jupiter-gen";
 import { z } from "zod";
 import { parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
+import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { ToolCard } from "~/components/infra/tool-card";
-import { ToolPanel } from "~/components/infra/tool-panel";
-import { TrunkCard } from "~/components/infra/trunk-card";
+import { ToolPanel } from "~/components/infra/layout/tool-panel";
+import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { getIntent } from "~/logic/intent";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
 
@@ -35,7 +37,7 @@ const SecurityFormSchema = {
 };
 
 export const handle = {
-  displayType: DisplayType.TRUNK,
+  displayType: DisplayType.TOOL,
 };
 
 export async function loader({ request }: LoaderArgs) {
@@ -54,15 +56,9 @@ export async function action({ request }: ActionArgs) {
     switch (intent) {
       case "change-password": {
         await getLoggedInApiClient(session).auth.changePassword({
-          current_password: {
-            password_raw: form.currentPassword,
-          },
-          new_password: {
-            password_raw: form.newPassword,
-          },
-          new_password_repeat: {
-            password_raw: form.newPasswordRepeat,
-          },
+          current_password: form.currentPassword,
+          new_password: form.newPassword,
+          new_password_repeat: form.newPasswordRepeat,
         });
 
         return redirect(`/workspace/security`);
@@ -83,6 +79,9 @@ export async function action({ request }: ActionArgs) {
   }
 }
 
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
+
 export default function Security() {
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
@@ -90,11 +89,11 @@ export default function Security() {
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <TrunkCard>
-      <ToolPanel show={true}>
-        <ToolCard returnLocation="/workspace">
-          <GlobalError actionResult={actionData} />
+    <TrunkPanel key={"security"} returnLocation="/workspace">
+      <ToolPanel>
+        <Stack useFlexGap gap={2}>
           <Card>
+            <GlobalError actionResult={actionData} />
             <CardHeader title="Security" />
             <CardContent>
               <Stack spacing={2} useFlexGap>
@@ -153,6 +152,7 @@ export default function Security() {
             <CardActions>
               <ButtonGroup>
                 <Button
+                  id="change-password"
                   variant="contained"
                   disabled={!inputsEnabled}
                   type="submit"
@@ -164,8 +164,12 @@ export default function Security() {
               </ButtonGroup>
             </CardActions>
           </Card>
-        </ToolCard>
+        </Stack>
       </ToolPanel>
-    </TrunkCard>
+    </TrunkPanel>
   );
 }
+
+export const ErrorBoundary = makeErrorBoundary(
+  () => `There was an error changing security settings! Please try again!`
+);

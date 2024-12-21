@@ -1,13 +1,13 @@
 import { Settings } from "@mui/icons-material";
-import HelpCenterIcon from "@mui/icons-material/HelpCenter";
 import Logout from "@mui/icons-material/Logout";
 import MenuIcon from "@mui/icons-material/Menu";
+import PolicyIcon from "@mui/icons-material/Policy";
 import {
   Alert,
   AlertTitle,
   AppBar,
   Avatar,
-  Box,
+  Badge,
   Button,
   ButtonGroup,
   Divider,
@@ -19,31 +19,47 @@ import {
   Toolbar,
   Typography,
 } from "@mui/material";
-import type { LoaderArgs } from "@remix-run/node";
+import type { LinksFunction, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Form, Link, useCatch, useOutlet } from "@remix-run/react";
 import Sidebar from "~/components/sidebar";
 
+import { UserFeature } from "@jupiter/webapi-client";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import CardMembershipIcon from "@mui/icons-material/CardMembership";
 import SecurityIcon from "@mui/icons-material/Security";
-import { useContext, useState } from "react";
+import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
+import { AnimatePresence, useAnimate } from "framer-motion";
+import { useContext, useEffect, useState } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
+import { DocsHelp, DocsHelpSubject } from "~/components/docs-help";
+import {
+  ScoreSnackbarManager,
+  useScoreActionSingleton,
+} from "~/components/gamification/score-snackbar-manager";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
-import { TrunkPanel } from "~/components/infra/trunk-panel";
 import ProgressReporter from "~/components/progress-reporter";
 import SearchBox from "~/components/search-box";
-import { GlobalPropertiesContext } from "~/global-properties-client";
+import { isUserFeatureAvailable } from "~/logic/domain/user";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
-import { useRootNeedsToShowTrunk } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
+import { TopLevelInfoContext } from "~/top-level-context";
+
+import { WorkspaceContainer } from "~/components/infra/layout/workspace-container";
+import { GlobalPropertiesContext } from "~/global-properties-client";
+import editorJsTweaks from "~/styles/editorjs-tweaks.css";
+
+export const links: LinksFunction = () => [
+  { rel: "stylesheet", href: editorJsTweaks },
+];
 
 // @secureFn
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const client = getLoggedInApiClient(session);
-  const response = await client.loadUserAndWorkspace.loadUserAndWorkspace({});
+  const response = await client.loadTopLevelInfo.loadTopLevelInfo({});
 
   if (!response.user || !response.workspace) {
     return redirect("/init");
@@ -53,21 +69,26 @@ export async function loader({ request }: LoaderArgs) {
     await client.loadProgressReporterToken.loadProgressReporterToken({});
 
   return json({
+    userFeatureFlagControls: response.user_feature_flag_controls,
+    workspaceFeatureFlagControls: response.workspace_feature_flag_controls,
     user: response.user,
+    userScoreOverview: response.user_score_overview,
     workspace: response.workspace,
     progressReporterToken:
       progressReporterTokenResponse.progress_reporter_token_ext,
   });
 }
 
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
+
 // @secureFn
 export default function Workspace() {
   const outlet = useOutlet();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const isBigScreen = useBigScreen();
-  const shouldShowTrunk = useRootNeedsToShowTrunk();
   const [showSidebar, setShowSidebar] = useState(isBigScreen);
-
+  const scoreAction = useScoreActionSingleton();
   const globalProperties = useContext(GlobalPropertiesContext);
 
   const [accountMenuAnchorEl, setAccountMenuAnchorEl] =
@@ -82,129 +103,228 @@ export default function Workspace() {
     setAccountMenuAnchorEl(null);
   };
 
+  const [badgeRef, animateBadge] = useAnimate();
+
+  useEffect(() => {
+    if (!scoreAction) return;
+    animateBadge(badgeRef.current, { scale: 1.2 }, { duration: 0.15 }).then(
+      () => {
+        animateBadge(badgeRef.current, { scale: 1 }, { duration: 0.15 });
+      }
+    );
+  }, [animateBadge, badgeRef, scoreAction]);
+
+  // Checkout https://css-tricks.com/the-trick-to-viewport-units-on-mobile/
+  // for reasoning.
+  function updateOurOwnVh() {
+    // First we get the viewport height and we multiple it by 1% to get a value for a vh unit
+    const vh = window.innerHeight * 0.01;
+    // Then we set the value in the --vh custom property to the root of the document
+    document.documentElement.style.setProperty("--vh", `${vh}px`);
+  }
+
+  useEffect(() => {
+    updateOurOwnVh();
+    // We listen to the resize event
+    window.addEventListener("resize", updateOurOwnVh);
+    return () => {
+      window.removeEventListener("resize", updateOurOwnVh);
+    };
+  }, []);
+
+  const topLevelInfo = {
+    userFeatureFlagControls: loaderData.userFeatureFlagControls,
+    workspaceFeatureFlagControls: loaderData.workspaceFeatureFlagControls,
+    user: loaderData.user,
+    userScoreOverview: loaderData.userScoreOverview,
+    workspace: loaderData.workspace,
+  };
+
   return (
-    <Box sx={{ display: "flex", flexDirection: "column" }}>
-      <AppBar
-        position="fixed"
-        sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
-      >
-        <Toolbar>
-          <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            onClick={() => setShowSidebar((s) => !s)}
-          >
-            <MenuIcon />
-          </IconButton>
-
-          <Typography
-            noWrap
-            variant="h6"
-            component="div"
-            sx={{ flexGrow: 1, display: { xs: "none", sm: "block" } }}
-          >
-            Jupiter
-          </Typography>
-
-          <SearchBox />
-
-          <ProgressReporter token={loaderData.progressReporterToken} />
-
-          <IconButton
-            component={"a"}
-            size="large"
-            color="inherit"
-            href={globalProperties.docsUrl}
-            target="_blank"
-          >
-            <HelpCenterIcon />
-          </IconButton>
-
-          <IconButton
-            onClick={handleAccountMenuClick}
-            size="large"
-            color="inherit"
-          >
-            <Avatar
-              sx={{ width: "1.75rem", height: "1.75rem" }}
-              alt={loaderData.user.name.the_name}
-              src={loaderData.user.avatar.avatar_as_data_url}
-            />
-          </IconButton>
-
-          <Menu
-            id="basic-menu"
-            anchorEl={accountMenuAnchorEl}
-            open={accountMenuOpen}
-            onClose={handleAccountMenuClose}
-            MenuListProps={{
-              "aria-labelledby": "basic-button",
-            }}
-          >
-            <MenuItem
-              to="/workspace/account"
-              component={Link}
-              onClick={handleAccountMenuClose}
+    <TopLevelInfoContext.Provider value={topLevelInfo}>
+      <WorkspaceContainer>
+        <AppBar
+          position="static"
+          sx={{ zIndex: (theme) => theme.zIndex.drawer + 10 }}
+        >
+          <Toolbar>
+            <IconButton
+              id="show-sidebar"
+              size="large"
+              edge="start"
+              color="inherit"
+              onClick={() => setShowSidebar((s) => !s)}
             >
-              <ListItemIcon>
-                <AccountCircleIcon />
-              </ListItemIcon>
-              <ListItemText>Account</ListItemText>
-            </MenuItem>
-            <MenuItem
-              to="/workspace/security"
-              component={Link}
-              onClick={handleAccountMenuClose}
+              <MenuIcon />
+            </IconButton>
+
+            <Typography
+              noWrap
+              variant="h6"
+              component="div"
+              sx={{ flexGrow: 1, display: { xs: "none", sm: "block" } }}
             >
-              <ListItemIcon>
-                <SecurityIcon />
-              </ListItemIcon>
-              <ListItemText>Security</ListItemText>
-            </MenuItem>
-            <MenuItem
-              to="/workspace/settings"
-              component={Link}
-              onClick={handleAccountMenuClose}
+              {globalProperties.title}
+            </Typography>
+
+            <SearchBox />
+
+            <ProgressReporter token={loaderData.progressReporterToken} />
+
+            <DocsHelp size="medium" subject={DocsHelpSubject.ROOT} />
+
+            <IconButton
+              id="account-menu"
+              onClick={handleAccountMenuClick}
+              size="large"
+              color="inherit"
             >
-              <ListItemIcon>
-                <Settings />
-              </ListItemIcon>
-              <ListItemText>Settings</ListItemText>
-            </MenuItem>
-            <MenuItem
-              to="/workspace/subscription"
-              component={Link}
-              onClick={handleAccountMenuClose}
+              <Badge
+                ref={badgeRef}
+                badgeContent={
+                  scoreAction
+                    ? scoreAction.daily_total_score
+                    : loaderData.userScoreOverview?.daily_score.total_score
+                }
+                color="success"
+              >
+                <Avatar
+                  sx={{ width: "1.75rem", height: "1.75rem" }}
+                  alt={loaderData.user.name}
+                  src={loaderData.user.avatar}
+                />
+              </Badge>
+            </IconButton>
+
+            <Menu
+              id="basic-menu"
+              anchorEl={accountMenuAnchorEl}
+              open={accountMenuOpen}
+              onClose={handleAccountMenuClose}
+              MenuListProps={{
+                "aria-labelledby": "basic-button",
+              }}
             >
-              <ListItemIcon>
-                <CardMembershipIcon />
-              </ListItemIcon>
-              <ListItemText>Subscription</ListItemText>
-            </MenuItem>
-            <Divider />
-            <Form method="post" action="/logout">
-              <MenuItem type="submit" component="button">
+              {isUserFeatureAvailable(
+                loaderData.user,
+                UserFeature.GAMIFICATION
+              ) && (
+                <MenuItem
+                  to="/workspace/gamification"
+                  component={Link}
+                  onClick={handleAccountMenuClose}
+                >
+                  <ListItemIcon>
+                    <SportsEsportsIcon />
+                  </ListItemIcon>
+                  <ListItemText>
+                    Today:{" "}
+                    {scoreAction
+                      ? scoreAction.daily_total_score
+                      : loaderData.userScoreOverview?.daily_score.total_score}
+                    <Divider orientation="vertical" flexItem />
+                    Week:{" "}
+                    {scoreAction
+                      ? scoreAction.weekly_total_score
+                      : loaderData.userScoreOverview?.weekly_score.total_score}
+                  </ListItemText>
+                  <Divider />
+                </MenuItem>
+              )}
+              <MenuItem
+                id="account"
+                to="/workspace/account"
+                component={Link}
+                onClick={handleAccountMenuClose}
+              >
                 <ListItemIcon>
-                  <Logout />
+                  <AccountCircleIcon />
                 </ListItemIcon>
-                <ListItemText>Logout</ListItemText>
+                <ListItemText>Account</ListItemText>
               </MenuItem>
-            </Form>
-          </Menu>
-        </Toolbar>
-      </AppBar>
+              <MenuItem
+                id="security"
+                to="/workspace/security"
+                component={Link}
+                onClick={handleAccountMenuClose}
+              >
+                <ListItemIcon>
+                  <SecurityIcon />
+                </ListItemIcon>
+                <ListItemText>Security</ListItemText>
+              </MenuItem>
+              <MenuItem
+                id="settings"
+                to="/workspace/settings"
+                component={Link}
+                onClick={handleAccountMenuClose}
+              >
+                <ListItemIcon>
+                  <Settings />
+                </ListItemIcon>
+                <ListItemText>Settings</ListItemText>
+              </MenuItem>
+              {/* <MenuItem
+                id="subscription"
+                to="/workspace/subscription"
+                component={Link}
+                onClick={handleAccountMenuClose}
+              >
+                <ListItemIcon>
+                  <CardMembershipIcon />
+                </ListItemIcon>
+                <ListItemText>Subscription</ListItemText>
+              </MenuItem> */}
+              <Divider />
+              <MenuItem
+                component={"a"}
+                href={globalProperties.termsOfServiceUrl}
+                target="_blank"
+              >
+                <ListItemIcon>
+                  <PolicyIcon />
+                </ListItemIcon>
+                <ListItemText>Terms of Service</ListItemText>
+              </MenuItem>
+              <MenuItem
+                component={"a"}
+                href={globalProperties.privacyPolicyUrl}
+                target="_blank"
+              >
+                <ListItemIcon>
+                  <PolicyIcon />
+                </ListItemIcon>
+                <ListItemText>Privacy Policy</ListItemText>
+              </MenuItem>
+              <Divider />
+              <Form method="post" action="/logout">
+                <MenuItem id="logout" type="submit" component="button">
+                  <ListItemIcon>
+                    <Logout />
+                  </ListItemIcon>
+                  <ListItemText>Logout</ListItemText>
+                </MenuItem>
+              </Form>
+            </Menu>
+          </Toolbar>
+        </AppBar>
 
-      <Sidebar
-        showSidebar={showSidebar}
-        onClickForNavigation={() => {
-          if (isBigScreen) return;
-          setShowSidebar(false);
-        }}
-      />
+        <Sidebar
+          showSidebar={showSidebar}
+          topLevelInfo={topLevelInfo}
+          onClickForNavigation={() => {
+            if (isBigScreen) return;
+            setShowSidebar(false);
+          }}
+        />
 
-      <TrunkPanel show={shouldShowTrunk}>{outlet}</TrunkPanel>
-    </Box>
+        <AnimatePresence mode="wait" initial={false}>
+          {outlet}
+        </AnimatePresence>
+
+        <ScoreSnackbarManager scoreAction={scoreAction} />
+      </WorkspaceContainer>
+    </TopLevelInfoContext.Provider>
   );
 }
 

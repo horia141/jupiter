@@ -1,3 +1,16 @@
+import type {
+  ADate,
+  BigPlanSummary,
+  Project,
+  ProjectSummary,
+  TimePlan,
+} from "@jupiter/webapi-client";
+import {
+  ApiError,
+  Difficulty,
+  Eisen,
+  WorkspaceFeature,
+} from "@jupiter/webapi-client";
 import type { SelectChangeEvent } from "@mui/material";
 import {
   Autocomplete,
@@ -16,11 +29,10 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useTransition } from "@remix-run/react";
-import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import type { BigPlan, BigPlanSummary, Project } from "jupiter-gen";
-import { ApiError, Difficulty, Eisen } from "jupiter-gen";
-import { useState } from "react";
+import { StatusCodes } from "http-status-codes";
+import { useContext, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseQuery } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
@@ -30,23 +42,29 @@ import {
   FieldError,
   GlobalError,
 } from "~/components/infra/errors";
-import { LeafCard } from "~/components/infra/leaf-card";
+import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
 import { difficultyName } from "~/logic/domain/difficulty";
 import { eisenName } from "~/logic/domain/eisen";
+import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 const QuerySchema = {
-  reason: z.literal("for-big-plan").optional(),
+  timePlanReason: z.literal("for-time-plan").optional(),
+  timePlanRefId: z.string().optional(),
+  bigPlanReason: z.literal("for-big-plan").optional(),
   bigPlanRefId: z.string().optional(),
+  parentTimePlanActivityRefId: z.string().optional(),
 };
 
 const CreateFormSchema = {
   name: z.string(),
-  project: z.string(),
+  project: z.string().optional(),
   bigPlan: z.string().optional(),
   eisen: z.nativeEnum(Eisen),
   difficulty: z.union([z.nativeEnum(Difficulty), z.literal("default")]),
@@ -67,49 +85,63 @@ export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const query = parseQuery(request, QuerySchema);
 
-  const reason = query.reason || "standard";
+  const timePlanReason = query.timePlanReason || "standard";
+
+  let associatedTimePlan = null;
+  if (timePlanReason === "for-time-plan") {
+    if (!query.timePlanRefId) {
+      throw new Response("Missing Time Plan Id", { status: 500 });
+    }
+
+    const timePlanResult = await getLoggedInApiClient(
+      session
+    ).timePlans.timePlanLoad({
+      allow_archived: false,
+      ref_id: query.timePlanRefId,
+      include_targets: false,
+      include_completed_nontarget: false,
+      include_other_time_plans: false,
+    });
+
+    associatedTimePlan = timePlanResult.time_plan;
+  }
+
+  const bigPlanReason = query.bigPlanReason || "standard";
 
   const summaryResponse = await getLoggedInApiClient(
     session
   ).getSummaries.getSummaries({
-    allow_archived: false,
-    include_default_project: true,
-    include_vacations: false,
     include_projects: true,
-    include_inbox_tasks: false,
-    include_habits: false,
-    include_chores: false,
-    include_big_plans: reason === "standard",
-    include_smart_lists: false,
-    include_metrics: false,
-    include_persons: false,
+    include_big_plans: bigPlanReason === "standard",
   });
 
   let ownerBigPlan = null;
-  if (reason === "for-big-plan" && query.bigPlanRefId) {
-    const bigPlanResult = await getLoggedInApiClient(
-      session
-    ).bigPlan.findBigPlan({
-      allow_archived: false,
-      include_project: false,
-      include_inbox_tasks: false,
-      filter_ref_ids: [{ the_id: query.bigPlanRefId }],
-    });
-
-    if (bigPlanResult.entries.length === 0) {
-      throw new Response(ReasonPhrases.NOT_FOUND, {
-        status: StatusCodes.NOT_FOUND,
-        statusText: ReasonPhrases.NOT_FOUND,
-      });
+  let ownerProject = null;
+  if (bigPlanReason === "for-big-plan") {
+    if (!query.bigPlanRefId) {
+      throw new Response("Missing Big Plan Id", { status: 500 });
     }
 
-    ownerBigPlan = bigPlanResult.entries[0];
+    const bigPlanResult = await getLoggedInApiClient(
+      session
+    ).bigPlans.bigPlanLoad({
+      allow_archived: false,
+      ref_id: query.bigPlanRefId,
+    });
+
+    ownerBigPlan = bigPlanResult.big_plan;
+    ownerProject = bigPlanResult.project;
   }
 
+  const defaultProject =
+    bigPlanReason === "for-big-plan"
+      ? (ownerProject as ProjectSummary)
+      : (summaryResponse.root_project as ProjectSummary);
+
   const defaultBigPlan: BigPlanACOption =
-    reason === "for-big-plan"
+    bigPlanReason === "for-big-plan"
       ? {
-          label: ownerBigPlan?.big_plan.name.the_name as string,
+          label: ownerBigPlan?.name as string,
           big_plan_id: query.bigPlanRefId as string,
         }
       : {
@@ -118,15 +150,17 @@ export async function loader({ request }: LoaderArgs) {
         };
 
   return json({
-    reason: reason,
-    defaultProject: summaryResponse.default_project as Project,
+    timePlanReason: timePlanReason,
+    bigPlanReason: bigPlanReason,
+    associatedTimePlan: associatedTimePlan,
+    defaultProject: defaultProject,
     defaultBigPlan: defaultBigPlan,
     ownerBigPlan: ownerBigPlan,
     allProjects: summaryResponse.projects as Array<Project>,
     allBigPlans:
-      reason === "standard"
-        ? (summaryResponse.big_plans as Array<BigPlan>)
-        : [ownerBigPlan?.big_plan as BigPlanSummary],
+      bigPlanReason === "standard"
+        ? (summaryResponse.big_plans as Array<BigPlanSummary>)
+        : [ownerBigPlan as BigPlanSummary],
   });
 }
 
@@ -136,38 +170,63 @@ export async function action({ request }: ActionArgs) {
   const form = await parseForm(request, CreateFormSchema);
 
   try {
-    const reason = query.reason || "standard";
+    const timePlanReason = query.timePlanReason || "standard";
+    const bigPlanReason = query.bigPlanReason || "standard";
 
     const result = await getLoggedInApiClient(
       session
-    ).inboxTask.createInboxTask({
-      name: { the_name: form.name },
-      project_ref_id: { the_id: form.project },
+    ).inboxTasks.inboxTaskCreate({
+      name: form.name,
+      time_plan_ref_id:
+        timePlanReason === "standard"
+          ? undefined
+          : (query.timePlanRefId as string),
+      project_ref_id: form.project !== undefined ? form.project : undefined,
       big_plan_ref_id:
-        reason === "standard"
+        bigPlanReason === "standard"
           ? form.bigPlan !== undefined && form.bigPlan !== "none"
-            ? { the_id: form.bigPlan }
+            ? form.bigPlan
             : undefined
-          : { the_id: query.bigPlanRefId as string },
+          : (query.bigPlanRefId as string),
       eisen: form.eisen,
       difficulty: form.difficulty !== "default" ? form.difficulty : undefined,
       actionable_date:
         form.actionableDate !== undefined && form.actionableDate !== ""
-          ? { the_date: form.actionableDate, the_datetime: undefined }
+          ? form.actionableDate
           : undefined,
       due_date:
         form.dueDate !== undefined && form.dueDate !== ""
-          ? { the_date: form.dueDate, the_datetime: undefined }
+          ? form.dueDate
           : undefined,
     });
 
-    switch (reason) {
+    switch (timePlanReason) {
+      case "for-time-plan":
+        switch (bigPlanReason) {
+          case "for-big-plan":
+            return redirect(
+              `/workspace/time-plans/${query.timePlanRefId}/${query.parentTimePlanActivityRefId}`
+            );
+          case "standard":
+            return redirect(
+              `/workspace/time-plans/${result.new_time_plan_activity?.time_plan_ref_id}/${result.new_time_plan_activity?.ref_id}`
+            );
+        }
+        break;
+
       case "standard":
-        return redirect(
-          `/workspace/inbox-tasks/${result.new_inbox_task.ref_id.the_id}`
-        );
-      case "for-big-plan":
-        return redirect(`/workspace/big-plans/${query.bigPlanRefId as string}`);
+        switch (bigPlanReason) {
+          case "for-big-plan":
+            return redirect(
+              `/workspace/big-plans/${query.bigPlanRefId as string}`
+            );
+
+          case "standard":
+            return redirect(
+              `/workspace/inbox-tasks/${result.new_inbox_task.ref_id}`
+            );
+        }
+        break;
     }
   } catch (error) {
     if (
@@ -181,68 +240,104 @@ export async function action({ request }: ActionArgs) {
   }
 }
 
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
+
 export default function NewInboxTask() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
+  const topLevelInfo = useContext(TopLevelInfoContext);
 
   const [selectedBigPlan, setSelectedBigPlan] = useState(
     loaderData.defaultBigPlan
   );
   const [selectedProject, setSelectedProject] = useState(
-    loaderData.defaultProject.ref_id.the_id
+    loaderData.defaultProject.ref_id
   );
   const [blockedToSelectProject, setBlockedToSelectProject] = useState(
-    loaderData.reason === "for-big-plan"
+    loaderData.bigPlanReason === "for-big-plan"
   );
 
   const inputsEnabled = transition.state === "idle";
 
   const allProjectsById: { [k: string]: Project } = {};
-  for (const project of loaderData.allProjects) {
-    allProjectsById[project.ref_id.the_id] = project;
-  }
-  const allBigPlansById: { [k: string]: BigPlanSummary } = {};
-  for (const bigPlan of loaderData.allBigPlans) {
-    allBigPlansById[bigPlan.ref_id.the_id] = bigPlan;
+  if (
+    isWorkspaceFeatureAvailable(
+      topLevelInfo.workspace,
+      WorkspaceFeature.PROJECTS
+    )
+  ) {
+    for (const project of loaderData.allProjects) {
+      allProjectsById[project.ref_id] = project;
+    }
   }
 
-  const allBigPlansAsOptions = [
-    {
-      label: "None",
-      big_plan_id: "none",
-    },
-  ].concat(
-    loaderData.allBigPlans.map((bp: BigPlanSummary) => ({
-      label: bp.name.the_name,
-      big_plan_id: bp.ref_id.the_id,
-    }))
-  );
+  const allBigPlansById: { [k: string]: BigPlanSummary } = {};
+  let allBigPlansAsOptions: Array<{ label: string; big_plan_id: string }> = [];
+
+  if (
+    isWorkspaceFeatureAvailable(
+      topLevelInfo.workspace,
+      WorkspaceFeature.BIG_PLANS
+    )
+  ) {
+    for (const bigPlan of loaderData.allBigPlans) {
+      allBigPlansById[bigPlan.ref_id] = bigPlan;
+    }
+
+    allBigPlansAsOptions = [
+      {
+        label: "None",
+        big_plan_id: "none",
+      },
+    ].concat(
+      loaderData.allBigPlans.map((bp: BigPlanSummary) => ({
+        label: bp.name,
+        big_plan_id: bp.ref_id,
+      }))
+    );
+  }
 
   function handleChangeBigPlan(
     e: React.SyntheticEvent,
     { label, big_plan_id }: BigPlanACOption
   ) {
     setSelectedBigPlan({ label, big_plan_id });
-    if (big_plan_id === "none") {
-      setSelectedProject(loaderData.defaultProject.ref_id.the_id);
-      setBlockedToSelectProject(false);
-    } else {
-      const projectId = allBigPlansById[big_plan_id].project_ref_id.the_id;
-      const projectKey = allProjectsById[projectId].ref_id.the_id;
-      setSelectedProject(projectKey);
-      setBlockedToSelectProject(true);
+
+    if (
+      isWorkspaceFeatureAvailable(
+        topLevelInfo.workspace,
+        WorkspaceFeature.PROJECTS
+      )
+    ) {
+      if (big_plan_id === "none") {
+        setSelectedProject(loaderData.defaultProject.ref_id);
+        setBlockedToSelectProject(false);
+      } else {
+        const projectId = allBigPlansById[big_plan_id].project_ref_id;
+        const projectKey = allProjectsById[projectId].ref_id;
+        setSelectedProject(projectKey);
+        setBlockedToSelectProject(true);
+      }
     }
   }
 
   function handleChangeProject(e: SelectChangeEvent) {
-    setSelectedProject(e.target.value);
+    if (
+      isWorkspaceFeatureAvailable(
+        topLevelInfo.workspace,
+        WorkspaceFeature.PROJECTS
+      )
+    ) {
+      setSelectedProject(e.target.value);
+    }
   }
 
   return (
-    <LeafCard returnLocation="/workspace/inbox-tasks">
-      <GlobalError actionResult={actionData} />
+    <LeafPanel key={"inbox-tasks/new"} returnLocation="/workspace/inbox-tasks">
       <Card>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>
@@ -259,51 +354,68 @@ export default function NewInboxTask() {
               <FieldError actionResult={actionData} fieldName="/name" />
             </FormControl>
 
-            <FormControl fullWidth>
-              <Autocomplete
-                disablePortal
-                id="bigPlan"
-                options={allBigPlansAsOptions}
-                readOnly={!inputsEnabled || loaderData.reason !== "standard"}
-                value={selectedBigPlan}
-                disableClearable={true}
-                onChange={handleChangeBigPlan}
-                isOptionEqualToValue={(o, v) => o.big_plan_id === v.big_plan_id}
-                renderInput={(params) => (
-                  <TextField {...params} label="Big Plan" />
-                )}
-              />
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.BIG_PLANS
+            ) && (
+              <FormControl fullWidth>
+                <Autocomplete
+                  disablePortal
+                  id="bigPlan"
+                  options={allBigPlansAsOptions}
+                  readOnly={
+                    !inputsEnabled || loaderData.bigPlanReason !== "standard"
+                  }
+                  value={selectedBigPlan}
+                  disableClearable={true}
+                  onChange={handleChangeBigPlan}
+                  isOptionEqualToValue={(o, v) =>
+                    o.big_plan_id === v.big_plan_id
+                  }
+                  renderInput={(params) => (
+                    <TextField {...params} label="Big Plan" />
+                  )}
+                />
 
-              <FieldError
-                actionResult={actionData}
-                fieldName="/big_plan_ref_id"
-              />
+                <FieldError
+                  actionResult={actionData}
+                  fieldName="/big_plan_ref_id"
+                />
 
-              <input
-                type="hidden"
-                name="bigPlan"
-                value={selectedBigPlan.big_plan_id}
-              />
-            </FormControl>
+                <input
+                  type="hidden"
+                  name="bigPlan"
+                  value={selectedBigPlan.big_plan_id}
+                />
+              </FormControl>
+            )}
 
-            <FormControl fullWidth>
-              <InputLabel id="project">Project</InputLabel>
-              <Select
-                labelId="project"
-                name="project"
-                readOnly={!inputsEnabled || blockedToSelectProject}
-                value={selectedProject}
-                onChange={handleChangeProject}
-                label="Project"
-              >
-                {loaderData.allProjects.map((p: Project) => (
-                  <MenuItem key={p.ref_id.the_id} value={p.ref_id.the_id}>
-                    {p.name.the_name}
-                  </MenuItem>
-                ))}
-              </Select>
-              <FieldError actionResult={actionData} fieldName="/project_key" />
-            </FormControl>
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.PROJECTS
+            ) && (
+              <FormControl fullWidth>
+                <InputLabel id="project">Project</InputLabel>
+                <Select
+                  labelId="project"
+                  name="project"
+                  readOnly={!inputsEnabled || blockedToSelectProject}
+                  value={selectedProject}
+                  onChange={handleChangeProject}
+                  label="Project"
+                >
+                  {loaderData.allProjects.map((p: Project) => (
+                    <MenuItem key={p.ref_id} value={p.ref_id}>
+                      {p.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+                <FieldError
+                  actionResult={actionData}
+                  fieldName="/project_ref_id"
+                />
+              </FormControl>
+            )}
 
             <FormControl fullWidth>
               <InputLabel id="eisen">Eisenhower</InputLabel>
@@ -350,10 +462,15 @@ export default function NewInboxTask() {
                 readOnly={!inputsEnabled}
                 name="actionableDate"
                 defaultValue={
-                  loaderData.reason === "for-big-plan" &&
-                  loaderData.ownerBigPlan?.big_plan.actionable_date
+                  loaderData.timePlanReason === "for-time-plan"
                     ? aDateToDate(
-                        loaderData.ownerBigPlan.big_plan.actionable_date
+                        (loaderData.associatedTimePlan as TimePlan)
+                          .start_date as ADate
+                      ).toFormat("yyyy-MM-dd")
+                    : loaderData.bigPlanReason === "for-big-plan" &&
+                      loaderData.ownerBigPlan?.actionable_date
+                    ? aDateToDate(
+                        loaderData.ownerBigPlan.actionable_date
                       ).toFormat("yyyy-MM-dd")
                     : undefined
                 }
@@ -373,11 +490,16 @@ export default function NewInboxTask() {
                 readOnly={!inputsEnabled}
                 name="dueDate"
                 defaultValue={
-                  loaderData.reason === "for-big-plan" &&
-                  loaderData.ownerBigPlan?.big_plan.due_date
+                  loaderData.timePlanReason === "for-time-plan"
                     ? aDateToDate(
-                        loaderData.ownerBigPlan.big_plan.due_date
+                        (loaderData.associatedTimePlan as TimePlan)
+                          .end_date as ADate
                       ).toFormat("yyyy-MM-dd")
+                    : loaderData.bigPlanReason === "for-big-plan" &&
+                      loaderData.ownerBigPlan?.due_date
+                    ? aDateToDate(loaderData.ownerBigPlan.due_date).toFormat(
+                        "yyyy-MM-dd"
+                      )
                     : undefined
                 }
               />
@@ -388,13 +510,18 @@ export default function NewInboxTask() {
         </CardContent>
         <CardActions>
           <ButtonGroup>
-            <Button variant="contained" disabled={!inputsEnabled} type="submit">
+            <Button
+              id="inbox-task-create"
+              variant="contained"
+              disabled={!inputsEnabled}
+              type="submit"
+            >
               Create
             </Button>
           </ButtonGroup>
         </CardActions>
       </Card>
-    </LeafCard>
+    </LeafPanel>
   );
 }
 

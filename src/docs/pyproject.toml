@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "jupiter-docs"
+version = "0.1.0"
+description = "Docs for Jupiter"
+authors = ["Horia Coman <horia141@gmail.com>"]
+license = "MIT"
+homepage = "https://get-thriving.com"
+readme = "README.md"
+repository = "https://github.com/horia141/jupiter"
+documentation = "https://docs.get-thriving.com"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+mkdocs = "^1.6.1"
+mkdocs-material = "^9.5.49"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

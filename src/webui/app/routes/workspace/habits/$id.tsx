@@ -1,3 +1,13 @@
+import type { InboxTask, Project } from "@jupiter/webapi-client";
+import {
+  ApiError,
+  Difficulty,
+  Eisen,
+  InboxTaskStatus,
+  NoteDomain,
+  RecurringTaskPeriod,
+  WorkspaceFeature,
+} from "@jupiter/webapi-client";
 import type { SelectChangeEvent } from "@mui/material";
 import {
   Button,
@@ -14,6 +24,7 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   useActionData,
   useFetcher,
@@ -21,32 +32,28 @@ import {
   useTransition,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import type { InboxTask, Project } from "jupiter-gen";
-import {
-  ApiError,
-  Difficulty,
-  Eisen,
-  InboxTaskStatus,
-  RecurringTaskPeriod,
-} from "jupiter-gen";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
+import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { LeafCard } from "~/components/infra/leaf-card";
+import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { difficultyName } from "~/logic/domain/difficulty";
 import { eisenName } from "~/logic/domain/eisen";
 import { sortInboxTasksNaturally } from "~/logic/domain/inbox-task";
 import { periodName } from "~/logic/domain/period";
+import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { getIntent } from "~/logic/intent";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = {
   id: z.string(),
@@ -63,7 +70,6 @@ const UpdateFormSchema = {
     .optional(),
   actionableFromDay: z.string().optional(),
   actionableFromMonth: z.string().optional(),
-  dueAtTime: z.string().optional(),
   dueAtDay: z.string().optional(),
   dueAtMonth: z.string().optional(),
   skipRule: z.string().optional(),
@@ -81,27 +87,18 @@ export async function loader({ request, params }: LoaderArgs) {
   const summaryResponse = await getLoggedInApiClient(
     session
   ).getSummaries.getSummaries({
-    allow_archived: false,
-    include_default_project: false,
-    include_vacations: false,
     include_projects: true,
-    include_inbox_tasks: false,
-    include_habits: false,
-    include_chores: false,
-    include_big_plans: false,
-    include_smart_lists: false,
-    include_metrics: false,
-    include_persons: false,
   });
 
   try {
-    const result = await getLoggedInApiClient(session).habit.loadHabit({
-      ref_id: { the_id: id },
+    const result = await getLoggedInApiClient(session).habits.habitLoad({
+      ref_id: id,
       allow_archived: true,
     });
 
     return json({
       habit: result.habit,
+      note: result.note,
       project: result.project,
       inboxTasks: result.inbox_tasks,
       allProjects: summaryResponse.projects as Array<Project>,
@@ -127,11 +124,11 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (intent) {
       case "update": {
-        await getLoggedInApiClient(session).habit.updateHabit({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).habits.habitUpdate({
+          ref_id: id,
           name: {
             should_change: true,
-            value: { the_name: form.name },
+            value: form.name,
           },
           period: {
             should_change: true,
@@ -154,7 +151,7 @@ export async function action({ request, params }: ActionArgs) {
               form.actionableFromDay === undefined ||
               form.actionableFromDay === ""
                 ? undefined
-                : { the_day: parseInt(form.actionableFromDay) },
+                : parseInt(form.actionableFromDay),
           },
           actionable_from_month: {
             should_change: true,
@@ -162,35 +159,28 @@ export async function action({ request, params }: ActionArgs) {
               form.actionableFromMonth === undefined ||
               form.actionableFromMonth === ""
                 ? undefined
-                : { the_month: parseInt(form.actionableFromMonth) },
-          },
-          due_at_time: {
-            should_change: true,
-            value:
-              form.dueAtTime === undefined || form.dueAtTime === ""
-                ? undefined
-                : { the_time: form.dueAtTime },
+                : parseInt(form.actionableFromMonth),
           },
           due_at_day: {
             should_change: true,
             value:
               form.dueAtDay === undefined || form.dueAtDay === ""
                 ? undefined
-                : { the_day: parseInt(form.dueAtDay) },
+                : parseInt(form.dueAtDay),
           },
           due_at_month: {
             should_change: true,
             value:
               form.dueAtMonth === undefined || form.dueAtMonth === ""
                 ? undefined
-                : { the_month: parseInt(form.dueAtMonth) },
+                : parseInt(form.dueAtMonth),
           },
           skip_rule: {
             should_change: true,
             value:
               form.skipRule === undefined || form.skipRule === ""
                 ? undefined
-                : { skip_rule: form.skipRule },
+                : form.skipRule,
           },
           repeats_in_period_count: {
             should_change: true,
@@ -204,17 +194,27 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "change-project": {
-        await getLoggedInApiClient(session).habit.changeHabitProject({
-          ref_id: { the_id: id },
-          project_ref_id: { the_id: form.project },
+        await getLoggedInApiClient(session).habits.habitChangeProject({
+          ref_id: id,
+          project_ref_id: form.project,
+        });
+
+        return redirect(`/workspace/habits/${id}`);
+      }
+
+      case "create-note": {
+        await getLoggedInApiClient(session).notes.noteCreate({
+          domain: NoteDomain.HABIT,
+          source_entity_ref_id: id,
+          content: [],
         });
 
         return redirect(`/workspace/habits/${id}`);
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).habit.archiveHabit({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).habits.habitArchive({
+          ref_id: id,
         });
 
         return redirect(`/workspace/habits/${id}`);
@@ -235,19 +235,24 @@ export async function action({ request, params }: ActionArgs) {
   }
 }
 
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
+
 export default function Habit() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
 
+  const topLevelInfo = useContext(TopLevelInfoContext);
+
   const inputsEnabled =
     transition.state === "idle" && !loaderData.habit.archived;
 
   const [selectedProject, setSelectedProject] = useState(
-    loaderData.project.ref_id.the_id
+    loaderData.project.ref_id
   );
   const selectedProjectIsDifferentFromCurrent =
-    loaderData.project.ref_id.the_id !== selectedProject;
+    loaderData.project.ref_id !== selectedProject;
 
   function handleChangeProject(e: SelectChangeEvent) {
     setSelectedProject(e.target.value);
@@ -262,7 +267,7 @@ export default function Habit() {
   function handleCardMarkDone(it: InboxTask) {
     cardActionFetcher.submit(
       {
-        id: it.ref_id.the_id,
+        id: it.ref_id,
         status: InboxTaskStatus.DONE,
       },
       {
@@ -275,7 +280,7 @@ export default function Habit() {
   function handleCardMarkNotDone(it: InboxTask) {
     cardActionFetcher.submit(
       {
-        id: it.ref_id.the_id,
+        id: it.ref_id,
         status: InboxTaskStatus.NOT_DONE,
       },
       {
@@ -289,18 +294,18 @@ export default function Habit() {
     // Update states based on loader data. This is necessary because these
     // two are not otherwise updated when the loader data changes. Which happens
     // on a navigation event.
-    setSelectedProject(loaderData.project.ref_id.the_id);
+    setSelectedProject(loaderData.project.ref_id);
   }, [loaderData]);
 
   return (
-    <LeafCard
-      key={loaderData.habit.ref_id.the_id}
+    <LeafPanel
+      key={`habit-${loaderData.habit.ref_id}`}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/habits"
     >
-      <GlobalError actionResult={actionData} />
-      <Card>
+      <Card sx={{ marginBottom: "1rem" }}>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>
@@ -309,7 +314,7 @@ export default function Habit() {
                 label="Name"
                 name="name"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.habit.name.the_name}
+                defaultValue={loaderData.habit.name}
               />
               <FieldError actionResult={actionData} fieldName="/name" />
             </FormControl>
@@ -332,24 +337,33 @@ export default function Habit() {
               <FieldError actionResult={actionData} fieldName="/status" />
             </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="project">Project</InputLabel>
-              <Select
-                labelId="project"
-                name="project"
-                readOnly={!inputsEnabled}
-                value={selectedProject}
-                onChange={handleChangeProject}
-                label="Project"
-              >
-                {loaderData.allProjects.map((p: Project) => (
-                  <MenuItem key={p.ref_id.the_id} value={p.ref_id.the_id}>
-                    {p.name.the_name}
-                  </MenuItem>
-                ))}
-              </Select>
-              <FieldError actionResult={actionData} fieldName="/project" />
-            </FormControl>
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.PROJECTS
+            ) && (
+              <FormControl fullWidth>
+                <InputLabel id="project">Project</InputLabel>
+                <Select
+                  labelId="project"
+                  name="project"
+                  readOnly={!inputsEnabled}
+                  value={selectedProject}
+                  onChange={handleChangeProject}
+                  label="Project"
+                >
+                  {loaderData.allProjects.map((p: Project) => (
+                    <MenuItem key={p.ref_id} value={p.ref_id}>
+                      {p.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+                <FieldError actionResult={actionData} fieldName="/project" />
+              </FormControl>
+            )}
+            {!isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.PROJECTS
+            ) && <input type="hidden" name="project" value={selectedProject} />}
 
             <FormControl fullWidth>
               <InputLabel id="eisen">Eisenhower</InputLabel>
@@ -398,9 +412,7 @@ export default function Habit() {
                 label="Actionable From Day"
                 name="actionableFromDay"
                 readOnly={!inputsEnabled}
-                defaultValue={
-                  loaderData.habit.gen_params.actionable_from_day?.the_day
-                }
+                defaultValue={loaderData.habit.gen_params.actionable_from_day}
               />
               <FieldError
                 actionResult={actionData}
@@ -416,9 +428,7 @@ export default function Habit() {
                 label="Actionable From Month"
                 name="actionableFromMonth"
                 readOnly={!inputsEnabled}
-                defaultValue={
-                  loaderData.habit.gen_params.actionable_from_month?.the_month
-                }
+                defaultValue={loaderData.habit.gen_params.actionable_from_month}
               />
               <FieldError
                 actionResult={actionData}
@@ -427,23 +437,12 @@ export default function Habit() {
             </FormControl>
 
             <FormControl fullWidth>
-              <InputLabel id="dueAtTime">Due At Time</InputLabel>
-              <OutlinedInput
-                label="Due At Time"
-                name="dueAtTime"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.habit.gen_params.due_at_time?.the_time}
-              />
-              <FieldError actionResult={actionData} fieldName="/due_at_time" />
-            </FormControl>
-
-            <FormControl fullWidth>
               <InputLabel id="dueAtDay">Due At Day</InputLabel>
               <OutlinedInput
                 label="Due At Day"
                 name="dueAtDay"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.habit.gen_params.due_at_day?.the_day}
+                defaultValue={loaderData.habit.gen_params.due_at_day}
               />
               <FieldError actionResult={actionData} fieldName="/due_at_day" />
             </FormControl>
@@ -454,9 +453,7 @@ export default function Habit() {
                 label="Due At Month"
                 name="dueAtMonth"
                 readOnly={!inputsEnabled}
-                defaultValue={
-                  loaderData.habit.gen_params.due_at_month?.the_month
-                }
+                defaultValue={loaderData.habit.gen_params.due_at_month}
               />
               <FieldError actionResult={actionData} fieldName="/due_at_month" />
             </FormControl>
@@ -467,9 +464,25 @@ export default function Habit() {
                 label="Skip Rule"
                 name="skipRule"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.habit.skip_rule?.skip_rule}
+                defaultValue={loaderData.habit.skip_rule}
               />
               <FieldError actionResult={actionData} fieldName="/skip_rule" />
+            </FormControl>
+
+            <FormControl fullWidth>
+              <InputLabel id="repeatsInPeriodCount">
+                Repeats In Period
+              </InputLabel>
+              <OutlinedInput
+                label="Repeats In Period"
+                name="repeatsInPeriodCount"
+                readOnly={!inputsEnabled}
+                defaultValue={loaderData.habit.repeats_in_period_count}
+              />
+              <FieldError
+                actionResult={actionData}
+                fieldName="/repeats_in_period_count"
+              />
             </FormControl>
           </Stack>
         </CardContent>
@@ -485,23 +498,56 @@ export default function Habit() {
             >
               Save
             </Button>
-            <Button
-              variant="outlined"
-              disabled={
-                !inputsEnabled || !selectedProjectIsDifferentFromCurrent
-              }
-              type="submit"
-              name="intent"
-              value="change-project"
-            >
-              Change Project
-            </Button>
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.PROJECTS
+            ) && (
+              <Button
+                variant="outlined"
+                disabled={
+                  !inputsEnabled || !selectedProjectIsDifferentFromCurrent
+                }
+                type="submit"
+                name="intent"
+                value="change-project"
+              >
+                Change Project
+              </Button>
+            )}
           </ButtonGroup>
         </CardActions>
       </Card>
 
+      <Card>
+        {!loaderData.note && (
+          <CardActions>
+            <ButtonGroup>
+              <Button
+                variant="contained"
+                disabled={!inputsEnabled}
+                type="submit"
+                name="intent"
+                value="create-note"
+              >
+                Create Note
+              </Button>
+            </ButtonGroup>
+          </CardActions>
+        )}
+
+        {loaderData.note && (
+          <>
+            <EntityNoteEditor
+              initialNote={loaderData.note}
+              inputsEnabled={inputsEnabled}
+            />
+          </>
+        )}
+      </Card>
+
       {sortedInboxTasks.length > 0 && (
         <InboxTaskStack
+          topLevelInfo={topLevelInfo}
           showLabel
           showOptions={{
             showStatus: true,
@@ -515,7 +561,7 @@ export default function Habit() {
           onCardMarkNotDone={handleCardMarkNotDone}
         />
       )}
-    </LeafCard>
+    </LeafPanel>
   );
 }
 

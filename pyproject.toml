@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "jupiter"
 version = "0.1.0"
-description = "Jupiter is a small tool for _life planning_."
+description = "Thrive is a small tool for _life planning_."
 authors = ["Horia Coman <horia141@gmail.com>"]
 license = "MIT"
-homepage = "https://jupiter-goals.readthedocs.io/"
+homepage = "https://get-thriving.com/"
 readme = "README.md"
 repository = "https://github.com/horia141/jupiter"
-documentation = "https://jupiter-goals.readthedocs.io/"
+documentation = "https://docs.get-thriving.com/"
 
 [tool.poetry.dependencies]
 python = ">=3.10, <3.11"
@@ -18,15 +18,17 @@ pyflakes = "3.0.1"
 bandit = "1.7.4"
 pydocstyle = "6.1.1"
 vulture = "2.6"
-mkdocs = "1.4.1"   
-mypy = "1.1.1"
+mypy = "1.8.0"
 black = "22.3"
 pytest = "7.1.2"
 pytest-html-reporter = "0.2.9"
 pyinstaller = "5.1"
 httpie = "^3.2.1"
 autoflake = "^2.0.2"
-ruff = "^0.0.259"
+ruff = "^0.3.7"
+watchfiles = "^0.21.0"
+openapi-python-client = "^0.19.1"
+randomname = "^0.2.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

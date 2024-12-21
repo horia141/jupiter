@@ -1,3 +1,4 @@
+import { ApiError } from "@jupiter/webapi-client";
 import {
   Button,
   ButtonGroup,
@@ -11,17 +12,18 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useParams, useTransition } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { ApiError } from "jupiter-gen";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { LeafCard } from "~/components/infra/leaf-card";
+import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
@@ -45,10 +47,8 @@ export async function loader({ request, params }: LoaderArgs) {
   const { tagId } = parseParams(params, ParamsSchema);
 
   try {
-    const result = await getLoggedInApiClient(
-      session
-    ).smartList.loadSmartListTag({
-      ref_id: { the_id: tagId },
+    const result = await getLoggedInApiClient(session).tag.smartListTagLoad({
+      ref_id: tagId,
       allow_archived: true,
     });
 
@@ -75,11 +75,11 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (form.intent) {
       case "update": {
-        await getLoggedInApiClient(session).smartList.updateSmartListTag({
-          ref_id: { the_id: tagId },
+        await getLoggedInApiClient(session).tag.smartListTagUpdate({
+          ref_id: tagId,
           tag_name: {
             should_change: true,
-            value: { the_tag: form.name },
+            value: form.name,
           },
         });
 
@@ -87,8 +87,8 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).smartList.archiveSmartListTag({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).tag.smartListTagArchive({
+          ref_id: id,
         });
 
         return redirect(`/workspace/smart-lists/${id}/tags/${tagId}`);
@@ -109,8 +109,11 @@ export async function action({ request, params }: ActionArgs) {
   }
 }
 
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
+
 export default function SmartListTag() {
-  const { key } = useParams();
+  const { id, tagId } = useParams();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
@@ -119,21 +122,21 @@ export default function SmartListTag() {
     transition.state === "idle" && !loaderData.smartListTag.archived;
 
   return (
-    <LeafCard
-      key={loaderData.smartListTag.ref_id.the_id}
+    <LeafPanel
+      key={`smart-list-${id}/tag-${tagId}`}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
-      returnLocation={`/workspace/smart-lists/${key}/tags`}
+      returnLocation={`/workspace/smart-lists/${id}/tags`}
     >
-      <GlobalError actionResult={actionData} />
       <Card>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>
               <InputLabel id="name">Name</InputLabel>
               <OutlinedInput
                 label="Name"
-                defaultValue={loaderData.smartListTag.tag_name.the_tag}
+                defaultValue={loaderData.smartListTag.tag_name}
                 name="name"
                 readOnly={!inputsEnabled}
               />
@@ -156,17 +159,18 @@ export default function SmartListTag() {
           </ButtonGroup>
         </CardActions>
       </Card>
-    </LeafCard>
+    </LeafPanel>
   );
 }
 
 export const CatchBoundary = makeCatchBoundary(
-  () => `Could not find smart list tag #${useParams().key}:#${useParams().id}!`
+  () =>
+    `Could not find smart list tag #${useParams().id}:#${useParams().tagId}!`
 );
 
 export const ErrorBoundary = makeErrorBoundary(
   () =>
-    `There was an error loading smart list tag #${useParams().key}:#${
-      useParams().id
+    `There was an error loading smart list tag #${useParams().id}:#${
+      useParams().tagId
     }! Please try again!`
 );

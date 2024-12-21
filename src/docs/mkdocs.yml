@@ -1,0 +1,91 @@
+---
+site_name: Thrive
+site_description: "Documentation for Thrive, the life planning tool"
+site_author: "Horia Coman"
+copyright: "(c) 2024 Horia Coman"
+repo_url: https://github.com/horia141/jupiter
+repo_name: GitHub
+
+use_directory_urls: false
+
+site_url: https://docs.get-thriving.com
+docs_dir: material
+
+theme:
+    name: material
+    favicon: assets/jupiter.ico
+    logo: assets/jupiter.png
+    highlightjs: true
+    hljs_style: obsidian
+    palette:
+      primary: custom
+
+extra_css:
+  - assets/stylesheet.css
+
+nav:
+    - Home: 'index.md'
+    - Tutorial: 'tutorial.md'
+    - Concepts:
+          - 'Overview': 'concepts/overview.md'
+          - 'Hosted Vs Local Mode': 'concepts/hosted-vs-local-mode.md'
+          - 'Clients': 'concepts/clients.md'
+          - 'Accounts': 'concepts/accounts.md'
+          - 'Workspace': 'concepts/workspaces.md'
+          - 'Feature Flags': 'concepts/feature-flags.md'
+          - 'Inbox Tasks': 'concepts/inbox-tasks.md'
+          - 'Working Mem': 'concepts/working-mem.md'
+          - 'Calendar': 'concepts/calendar.md'
+          - 'Time Plans': 'concepts/time-plans.md'
+          - 'Habits': 'concepts/habits.md'
+          - 'Chores': 'concepts/chores.md'
+          - 'Big Plans': 'concepts/big-plans.md'
+          - 'Journals': 'concepts/journals.md'
+          - 'Vacations': 'concepts/vacations.md'
+          - 'Projects': 'concepts/projects.md'
+          - 'Smart Lists': 'concepts/smart-lists.md'
+          - 'Metrics': 'concepts/metrics.md'
+          - 'Personal Relationship Manager': 'concepts/persons.md'
+          - 'Gamification': 'concepts/gamification.md'
+          - 'Reporting': 'concepts/reporting.md'
+          - 'Tasks Generation': 'concepts/tasks-generation.md'
+          - 'Garbage Collection': 'concepts/garbage-collection.md'
+    - 'Tools':
+          - 'Pomodoro Timer': 'tools/pomodoro-timer.md'
+          - 'Search': 'tools/search.md'
+    - 'How Tos':
+          - 'Installation': 'how-tos/install.md'
+          - 'Do Garbage Collection': 'how-tos/do-garbage-collection.md'
+          - 'Recover Your Account': 'how-tos/recover-your-account.md'
+    - Roadmap: 'roadmap.md'
+    - Releases:
+          - 'Version 1.1.0': 'releases/version-1.1.0.md'
+          - Older:
+                - 'Version 1.0.6': 'releases/version-1.0.6.md'
+                - 'Version 1.0.3': 'releases/version-1.0.3.md'
+                - 'Version 1.0.5': 'releases/version-1.0.5.md'
+                - 'Version 1.0.4': 'releases/version-1.0.4.md'
+                - 'Version 0.10.1': 'releases/version-0.10.1.md'
+                - 'Version 0.10.0': 'releases/version-0.10.0.md'
+                - 'Version 0.9.0': 'releases/version-0.9.0.md'
+                - 'Version 0.8.0': 'releases/version-0.8.0.md'
+                - 'Version 0.7.0': 'releases/version-0.7.0.md'
+                - 'Version 0.6.1': 'releases/version-0.6.1.md'
+                - 'Version 0.6.0': 'releases/version-0.6.0.md'
+                - 'Version 0.5.1': 'releases/version-0.5.1.md'
+                - 'Version 0.5.0': 'releases/version-0.5.0.md'
+                - 'Version 0.4.2': 'releases/version-0.4.2.md'
+                - 'Version 0.3.0': 'releases/version-0.3.0.md'
+                - 'Version 0.2.0': 'releases/version-0.2.0.md'
+                - 'Version 0.1.6': 'releases/version-0.1.6.md'
+                - 'Version 0.1.5': 'releases/version-0.1.5.md'
+                - 'Version 0.1.4': 'releases/version-0.1.4.md'
+                - 'Version 0.1.3': 'releases/version-0.1.3.md'
+                - 'Version 0.1.2': 'releases/version-0.1.2.md'
+                - 'Version 0.1.1': 'releases/version-0.1.1.md'
+                - 'Version 0.1.0': 'releases/version-0.1.0.md'
+                - 'Version 0.0.5': 'releases/version-0.0.5.md'
+                - 'Version 0.0.4': 'releases/version-0.0.4.md'
+                - 'Version 0.0.3': 'releases/version-0.0.3.md'
+                - 'Version 0.0.2': 'releases/version-0.0.2.md'
+                - 'Version 0.0.1': 'releases/version-0.0.1.md'

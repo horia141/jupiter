@@ -1,3 +1,4 @@
+import { ApiError, NoteDomain } from "@jupiter/webapi-client";
 import {
   Button,
   ButtonGroup,
@@ -11,19 +12,21 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useParams, useTransition } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { ApiError } from "jupiter-gen";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
-import { CollectionTimeDiffTag } from "~/components/collection-time-diff-tag";
+import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { LeafCard } from "~/components/infra/leaf-card";
+import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import { TimeDiffTag } from "~/components/time-diff-tag";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
@@ -37,7 +40,6 @@ const UpdateFormSchema = {
   intent: z.string(),
   collectionTime: z.string(),
   value: z.string().transform(parseFloat),
-  notes: z.string().optional(),
 };
 
 export const handle = {
@@ -49,13 +51,14 @@ export async function loader({ request, params }: LoaderArgs) {
   const { entryId } = parseParams(params, ParamsSchema);
 
   try {
-    const result = await getLoggedInApiClient(session).metric.loadMetricEntry({
-      ref_id: { the_id: entryId },
+    const result = await getLoggedInApiClient(session).entry.metricEntryLoad({
+      ref_id: entryId,
       allow_archived: true,
     });
 
     return json({
       metricEntry: result.metric_entry,
+      note: result.note,
     });
   } catch (error) {
     if (error instanceof ApiError && error.status === StatusCodes.NOT_FOUND) {
@@ -77,28 +80,34 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (form.intent) {
       case "update": {
-        await getLoggedInApiClient(session).metric.updateMetricEntry({
-          ref_id: { the_id: entryId },
+        await getLoggedInApiClient(session).entry.metricEntryUpdate({
+          ref_id: entryId,
           collection_time: {
             should_change: true,
-            value: { the_date: form.collectionTime, the_datetime: undefined },
+            value: form.collectionTime,
           },
           value: {
             should_change: true,
             value: form.value,
-          },
-          notes: {
-            should_change: true,
-            value: form.notes && form.notes !== "" ? form.notes : undefined,
           },
         });
 
         return redirect(`/workspace/metrics/${id}/entries/${entryId}`);
       }
 
+      case "create-note": {
+        await getLoggedInApiClient(session).notes.noteCreate({
+          domain: NoteDomain.METRIC_ENTRY,
+          source_entity_ref_id: entryId,
+          content: [],
+        });
+
+        return redirect(`/workspace/metrics/${id}/entries/${entryId}`);
+      }
+
       case "archive": {
-        await getLoggedInApiClient(session).metric.archiveMetricEntry({
-          ref_id: { the_id: id },
+        await getLoggedInApiClient(session).entry.metricEntryArchive({
+          ref_id: entryId,
         });
 
         return redirect(`/workspace/metrics/${id}/entries/${entryId}`);
@@ -118,8 +127,11 @@ export async function action({ request, params }: ActionArgs) {
   }
 }
 
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
+
 export default function MetricEntry() {
-  const { id } = useParams();
+  const { id, entryId } = useParams();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
@@ -128,17 +140,18 @@ export default function MetricEntry() {
     transition.state === "idle" && !loaderData.metricEntry.archived;
 
   return (
-    <LeafCard
-      key={loaderData.metricEntry.ref_id.the_id}
+    <LeafPanel
+      key={`metric-${id}/entry-${entryId}`}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation={`/workspace/metrics/${id}`}
     >
-      <GlobalError actionResult={actionData} />
-      <Card>
+      <Card sx={{ marginBottom: "1rem" }}>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
-            <CollectionTimeDiffTag
+            <TimeDiffTag
+              labelPrefix="Collected"
               collectionTime={loaderData.metricEntry.collection_time}
             />
             <FormControl fullWidth>
@@ -175,20 +188,6 @@ export default function MetricEntry() {
               />
               <FieldError actionResult={actionData} fieldName="/value" />
             </FormControl>
-
-            <FormControl fullWidth>
-              <InputLabel id="notes">Notes</InputLabel>
-              <OutlinedInput
-                multiline
-                minRows={2}
-                maxRows={4}
-                label="Notes"
-                name="notes"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.metricEntry.notes}
-              />
-              <FieldError actionResult={actionData} fieldName="/notes" />
-            </FormControl>
           </Stack>
         </CardContent>
 
@@ -206,7 +205,34 @@ export default function MetricEntry() {
           </ButtonGroup>
         </CardActions>
       </Card>
-    </LeafCard>
+
+      <Card>
+        {!loaderData.note && (
+          <CardActions>
+            <ButtonGroup>
+              <Button
+                variant="contained"
+                disabled={!inputsEnabled}
+                type="submit"
+                name="intent"
+                value="create-note"
+              >
+                Create Note
+              </Button>
+            </ButtonGroup>
+          </CardActions>
+        )}
+
+        {loaderData.note && (
+          <>
+            <EntityNoteEditor
+              initialNote={loaderData.note}
+              inputsEnabled={inputsEnabled}
+            />
+          </>
+        )}
+      </Card>
+    </LeafPanel>
   );
 }
 

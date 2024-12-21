@@ -17,7 +17,7 @@ depends_on = None
 def upgrade() -> None:
     op.execute(
         """
-CREATE TABLE use_case_mutation_use_case_invocation_record (
+CREATE TABLE IF NOT EXISTS use_case_mutation_use_case_invocation_record (
     owner_ref_id INTEGER NOT NULL, 
     timestamp DATETIME NOT NULL, 
     name VARCHAR NOT NULL, 

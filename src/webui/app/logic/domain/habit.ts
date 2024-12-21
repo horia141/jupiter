@@ -1,4 +1,4 @@
-import type { Habit } from "jupiter-gen";
+import { Difficulty, Eisen, type Habit } from "@jupiter/webapi-client";
 import { compareDifficulty } from "./difficulty";
 import { compareEisen } from "./eisen";
 import { comparePeriods } from "./period";
@@ -13,8 +13,14 @@ export function sortHabitsNaturally(habits: Habit[]): Habit[] {
 
     return (
       comparePeriods(c1.gen_params.period, c2.gen_params.period) ||
-      compareEisen(c1.gen_params.eisen, c2.gen_params.eisen) ||
-      compareDifficulty(c1.gen_params.difficulty, c2.gen_params.difficulty)
+      compareEisen(
+        c1.gen_params.eisen ?? Eisen.REGULAR,
+        c2.gen_params.eisen ?? Eisen.REGULAR
+      ) ||
+      compareDifficulty(
+        c1.gen_params.difficulty ?? Difficulty.EASY,
+        c2.gen_params.difficulty ?? Difficulty.EASY
+      )
     );
   });
 }

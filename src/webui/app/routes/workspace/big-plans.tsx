@@ -1,11 +1,12 @@
+import type { BigPlan } from "@jupiter/webapi-client";
+import { BigPlanStatus, WorkspaceFeature } from "@jupiter/webapi-client";
+import ViewListIcon from "@mui/icons-material/ViewList";
+import ViewTimelineIcon from "@mui/icons-material/ViewTimeline";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Link, useFetcher, useOutlet } from "@remix-run/react";
-import type { BigPlan, BigPlanFindResultEntry, Project } from "jupiter-gen";
-import { BigPlanStatus } from "jupiter-gen";
-import { ADateTag } from "~/components/adate-tag";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { Link, Outlet, useFetcher } from "@remix-run/react";
 import { BigPlanStatusTag } from "~/components/big-plan-status-tag";
-import { ProjectTag } from "~/components/project-tag";
 
 import {
   Box,
@@ -25,21 +26,29 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
+import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
-import {
-  EntityNameComponent,
-  EntityNameOneLineComponent,
-} from "~/components/entity-name";
-import { ActionHeader } from "~/components/infra/actions-header";
-import { EntityCard, EntityLink } from "~/components/infra/entity-card";
+import { BigPlanStack } from "~/components/big-plan-stack";
+import { EntityNameOneLineComponent } from "~/components/entity-name";
+import { EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
-import { LeafPanel } from "~/components/infra/leaf-panel";
-import { TrunkCard } from "~/components/infra/trunk-card";
+import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
+import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import { aDateToDate } from "~/logic/domain/adate";
-import { sortBigPlansNaturally } from "~/logic/domain/big-plan";
+import type { BigPlanParent } from "~/logic/domain/big-plan";
+import {
+  bigPlanFindEntryToParent,
+  sortBigPlansNaturally,
+} from "~/logic/domain/big-plan";
+import {
+  computeProjectHierarchicalNameFromRoot,
+  sortProjectsByTreeOrder,
+} from "~/logic/domain/project";
+import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
@@ -47,6 +56,8 @@ import {
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
+import type { TopLevelInfo } from "~/top-level-context";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 export const handle = {
   displayType: DisplayType.TRUNK,
@@ -57,26 +68,17 @@ export async function loader({ request }: LoaderArgs) {
   const summaryResponse = await getLoggedInApiClient(
     session
   ).getSummaries.getSummaries({
-    allow_archived: false,
-    include_default_project: false,
-    include_vacations: false,
     include_projects: true,
-    include_inbox_tasks: false,
-    include_habits: false,
-    include_chores: false,
-    include_big_plans: false,
-    include_smart_lists: false,
-    include_metrics: false,
-    include_persons: false,
   });
-  const response = await getLoggedInApiClient(session).bigPlan.findBigPlan({
+  const response = await getLoggedInApiClient(session).bigPlans.bigPlanFind({
     allow_archived: false,
     include_project: true,
     include_inbox_tasks: false,
+    include_notes: false,
   });
   return json({
     bigPlans: response.entries,
-    allProjects: summaryResponse.projects as Array<Project>,
+    allProjects: summaryResponse.projects || undefined,
   });
 }
 
@@ -86,8 +88,10 @@ enum View {
   LIST = "list",
 }
 
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
+
 export default function BigPlans() {
-  const outlet = useOutlet();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const isBigScreen = useBigScreen();
 
@@ -96,12 +100,20 @@ export default function BigPlans() {
   const sortedBigPlans = sortBigPlansNaturally(
     loaderData.bigPlans.map((b) => b.big_plan)
   );
-  const entriesByRefId = new Map<string, BigPlanFindResultEntry>();
+  const entriesByRefId = new Map<string, BigPlanParent>();
   for (const entry of loaderData.bigPlans) {
-    entriesByRefId.set(entry.big_plan.ref_id.the_id, entry);
+    entriesByRefId.set(entry.big_plan.ref_id, bigPlanFindEntryToParent(entry));
   }
 
-  const [selectedView, setSelectedView] = useState(View.TIMELINE_BY_PROJECT);
+  const topLevelInfo = useContext(TopLevelInfoContext);
+
+  const initialView = isWorkspaceFeatureAvailable(
+    topLevelInfo.workspace,
+    WorkspaceFeature.PROJECTS
+  )
+    ? View.TIMELINE_BY_PROJECT
+    : View.TIMELINE;
+  const [selectedView, setSelectedView] = useState(initialView);
 
   const archiveBigPlanFetch = useFetcher();
 
@@ -115,153 +127,182 @@ export default function BigPlans() {
       },
       {
         method: "post",
-        action: `/workspace/big-plans/${bigPlan.ref_id.the_id}`,
+        action: `/workspace/big-plans/${bigPlan.ref_id}`,
       }
     );
   }
 
   const [showFilterDialog, setShowFilterDialog] = useState(false);
 
-  return (
-    <TrunkCard>
-      <ActionHeader returnLocation="/workspace">
-        <ButtonGroup>
+  let extraControls = [];
+  if (isBigScreen) {
+    extraControls = [
+      <ButtonGroup key="1">
+        {isWorkspaceFeatureAvailable(
+          topLevelInfo.workspace,
+          WorkspaceFeature.PROJECTS
+        ) && (
           <Button
-            variant="contained"
-            to="/workspace/big-plans/new"
-            component={Link}
+            variant={
+              selectedView === View.TIMELINE_BY_PROJECT
+                ? "contained"
+                : "outlined"
+            }
+            startIcon={<ViewTimelineIcon />}
+            onClick={() => setSelectedView(View.TIMELINE_BY_PROJECT)}
           >
-            Create
+            Timeline by Project
           </Button>
-        </ButtonGroup>
+        )}
+        <Button
+          variant={selectedView === View.TIMELINE ? "contained" : "outlined"}
+          startIcon={<ViewTimelineIcon />}
+          onClick={() => setSelectedView(View.TIMELINE)}
+        >
+          Timeline
+        </Button>
+        <Button
+          variant={selectedView === View.LIST ? "contained" : "outlined"}
+          startIcon={<ViewListIcon />}
+          onClick={() => setSelectedView(View.LIST)}
+        >
+          List
+        </Button>
+      </ButtonGroup>,
+    ];
+  } else {
+    extraControls = [
+      <Button
+        key="1"
+        variant="outlined"
+        startIcon={<ViewTimelineIcon />}
+        onClick={() => setShowFilterDialog(true)}
+      >
+        Views
+      </Button>,
+    ];
+  }
 
-        {isBigScreen && (
-          <ButtonGroup>
-            <Button
-              variant={
-                selectedView === View.TIMELINE_BY_PROJECT
-                  ? "contained"
-                  : "outlined"
-              }
-              onClick={() => setSelectedView(View.TIMELINE_BY_PROJECT)}
-            >
-              Timeline by Project
-            </Button>
+  const sortedProjects = sortProjectsByTreeOrder(loaderData.allProjects || []);
+  const allProjectsByRefId = new Map(
+    loaderData.allProjects?.map((p) => [p.ref_id, p])
+  );
+
+  return (
+    <TrunkPanel
+      key={"big-plans"}
+      createLocation="/workspace/big-plans/new"
+      extraControls={extraControls}
+      returnLocation="/workspace"
+    >
+      <Dialog
+        onClose={() => setShowFilterDialog(false)}
+        open={showFilterDialog}
+      >
+        <DialogTitle>Filters</DialogTitle>
+        <DialogContent>
+          <ButtonGroup orientation="vertical">
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.PROJECTS
+            ) && (
+              <Button
+                variant={
+                  selectedView === View.TIMELINE_BY_PROJECT
+                    ? "contained"
+                    : "outlined"
+                }
+                startIcon={<ViewTimelineIcon />}
+                onClick={() => setSelectedView(View.TIMELINE_BY_PROJECT)}
+              >
+                Timeline by Project
+              </Button>
+            )}
             <Button
               variant={
                 selectedView === View.TIMELINE ? "contained" : "outlined"
               }
+              startIcon={<ViewTimelineIcon />}
               onClick={() => setSelectedView(View.TIMELINE)}
             >
               Timeline
             </Button>
             <Button
               variant={selectedView === View.LIST ? "contained" : "outlined"}
+              startIcon={<ViewListIcon />}
               onClick={() => setSelectedView(View.LIST)}
             >
               List
             </Button>
           </ButtonGroup>
-        )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowFilterDialog(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
 
-        {!isBigScreen && (
+      <NestingAwareBlock shouldHide={shouldShowALeaf}>
+        {isWorkspaceFeatureAvailable(
+          topLevelInfo.workspace,
+          WorkspaceFeature.PROJECTS
+        ) &&
+          selectedView === View.TIMELINE_BY_PROJECT && (
+            <>
+              {sortedProjects.map((p) => {
+                const theBigPlans = sortedBigPlans.filter(
+                  (se) =>
+                    entriesByRefId.get(se.ref_id)?.project?.ref_id === p.ref_id
+                );
+
+                if (theBigPlans.length === 0) {
+                  return null;
+                }
+
+                const fullProjectName = computeProjectHierarchicalNameFromRoot(
+                  p,
+                  allProjectsByRefId
+                );
+
+                return (
+                  <Box key={p.ref_id}>
+                    <Divider>
+                      <Typography variant="h6">{fullProjectName}</Typography>
+                    </Divider>
+                    <>
+                      {isBigScreen && (
+                        <BigScreenTimeline bigPlans={theBigPlans} />
+                      )}
+                      {!isBigScreen && (
+                        <SmallScreenTimeline bigPlans={theBigPlans} />
+                      )}
+                    </>
+                  </Box>
+                );
+              })}
+            </>
+          )}
+
+        {selectedView === View.TIMELINE && (
           <>
-            <ButtonGroup>
-              <Button onClick={() => setShowFilterDialog(true)}>Filters</Button>
-            </ButtonGroup>
-
-            <Dialog
-              onClose={() => setShowFilterDialog(false)}
-              open={showFilterDialog}
-            >
-              <DialogTitle>Filters</DialogTitle>
-              <DialogContent>
-                <ButtonGroup orientation="vertical">
-                  <Button
-                    variant={
-                      selectedView === View.TIMELINE_BY_PROJECT
-                        ? "contained"
-                        : "outlined"
-                    }
-                    onClick={() => setSelectedView(View.TIMELINE_BY_PROJECT)}
-                  >
-                    Timeline by Project
-                  </Button>
-                  <Button
-                    variant={
-                      selectedView === View.TIMELINE ? "contained" : "outlined"
-                    }
-                    onClick={() => setSelectedView(View.TIMELINE)}
-                  >
-                    Timeline
-                  </Button>
-                  <Button
-                    variant={
-                      selectedView === View.LIST ? "contained" : "outlined"
-                    }
-                    onClick={() => setSelectedView(View.LIST)}
-                  >
-                    List
-                  </Button>
-                </ButtonGroup>
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={() => setShowFilterDialog(false)}>
-                  Close
-                </Button>
-              </DialogActions>
-            </Dialog>
+            {isBigScreen && <BigScreenTimeline bigPlans={sortedBigPlans} />}
+            {!isBigScreen && <SmallScreenTimeline bigPlans={sortedBigPlans} />}
           </>
         )}
-      </ActionHeader>
 
-      {selectedView === View.TIMELINE_BY_PROJECT && (
-        <>
-          {loaderData.allProjects.map((p) => {
-            const theProjects = sortedBigPlans.filter(
-              (se) =>
-                entriesByRefId.get(se.ref_id.the_id)?.big_plan.project_ref_id
-                  .the_id === p.ref_id.the_id
-            );
+        {selectedView === View.LIST && (
+          <List
+            topLevelInfo={topLevelInfo}
+            bigPlans={sortedBigPlans}
+            entriesByRefId={entriesByRefId}
+            onArchiveBigPlan={archiveBigPlan}
+          />
+        )}
+      </NestingAwareBlock>
 
-            if (theProjects.length === 0) {
-              return null;
-            }
-
-            return (
-              <Box key={p.ref_id.the_id}>
-                <Divider>
-                  <Typography variant="h6">{p.name.the_name}</Typography>
-                </Divider>
-                <>
-                  {isBigScreen && <BigScreenTimeline bigPlans={theProjects} />}
-                  {!isBigScreen && (
-                    <SmallScreenTimeline bigPlans={theProjects} />
-                  )}
-                </>
-              </Box>
-            );
-          })}
-        </>
-      )}
-
-      {selectedView === View.TIMELINE && (
-        <>
-          {isBigScreen && <BigScreenTimeline bigPlans={sortedBigPlans} />}
-          {!isBigScreen && <SmallScreenTimeline bigPlans={sortedBigPlans} />}
-        </>
-      )}
-
-      {selectedView === View.LIST && (
-        <List
-          bigPlans={sortedBigPlans}
-          entriesByRefId={entriesByRefId}
-          onArchiveBigPlan={archiveBigPlan}
-        />
-      )}
-
-      <LeafPanel show={shouldShowALeaf}>{outlet}</LeafPanel>
-    </TrunkCard>
+      <AnimatePresence mode="wait" initial={false}>
+        <Outlet />
+      </AnimatePresence>
+    </TrunkPanel>
   );
 }
 
@@ -307,11 +348,9 @@ function BigScreenTimeline({ bigPlans }: BigScreenTimelineProps) {
             const { leftMargin, width } = computeBigPlanGnattPosition(entry);
 
             return (
-              <TableRow key={entry.ref_id.the_id}>
+              <TableRow key={entry.ref_id}>
                 <TableCell>
-                  <EntityLink
-                    to={`/workspace/big-plans/${entry.ref_id.the_id}`}
-                  >
+                  <EntityLink to={`/workspace/big-plans/${entry.ref_id}`}>
                     <EntityNameOneLineComponent name={entry.name} />
                   </EntityLink>
                 </TableCell>
@@ -367,7 +406,7 @@ function SmallScreenTimeline({ bigPlans }: SmallScreenTimelineProps) {
             computeBigPlanGnattPosition(bigPlan);
 
           return (
-            <SmallScreenTimelineLine key={bigPlan.ref_id.the_id}>
+            <SmallScreenTimelineLine key={bigPlan.ref_id}>
               <TimelineGnattBlob
                 isunderlay="true"
                 leftmargin={leftMargin}
@@ -378,7 +417,7 @@ function SmallScreenTimeline({ bigPlans }: SmallScreenTimelineProps) {
               <TimelineLink
                 leftmargin={betterLeftMargin}
                 width={betterWidth}
-                to={`/workspace/big-plans/${bigPlan.ref_id.the_id}`}
+                to={`/workspace/big-plans/${bigPlan.ref_id}`}
               >
                 <BigPlanStatusTag status={bigPlan.status} format="icon" />
                 <EntityNameOneLineComponent name={bigPlan.name} />
@@ -449,41 +488,33 @@ const TimelineLink = styled(Link)<TimelineLinkProps>(
 );
 
 interface ListProps {
+  topLevelInfo: TopLevelInfo;
   bigPlans: Array<BigPlan>;
-  entriesByRefId: Map<string, BigPlanFindResultEntry>;
+  entriesByRefId: Map<string, BigPlanParent>;
   onArchiveBigPlan: (bigPlan: BigPlan) => void;
 }
 
-function List({ bigPlans, entriesByRefId, onArchiveBigPlan }: ListProps) {
+function List({
+  topLevelInfo,
+  bigPlans,
+  entriesByRefId,
+  onArchiveBigPlan,
+}: ListProps) {
   return (
-    <EntityStack>
-      {bigPlans.map((entry) => (
-        <EntityCard
-          key={entry.ref_id.the_id}
-          allowSwipe
-          allowMarkNotDone
-          onMarkNotDone={() => onArchiveBigPlan(entry)}
-        >
-          <EntityLink to={`/workspace/big-plans/${entry.ref_id.the_id}`}>
-            <EntityNameComponent name={entry.name} />
-          </EntityLink>
-          <Divider />
-          <BigPlanStatusTag status={entry.status} />
-          <ProjectTag
-            project={
-              entriesByRefId.get(entry.ref_id.the_id)?.project as Project
-            }
-          />
-
-          {entry.actionable_date && (
-            <ADateTag label="Actionable Date" date={entry.actionable_date} />
-          )}
-          {entry.due_date && (
-            <ADateTag label="Due Date" date={entry.due_date} />
-          )}
-        </EntityCard>
-      ))}
-    </EntityStack>
+    <BigPlanStack
+      topLevelInfo={topLevelInfo}
+      bigPlans={bigPlans}
+      entriesByRefId={entriesByRefId}
+      showOptions={{
+        showStatus: true,
+        showParent: true,
+        showActionableDate: true,
+        showDueDate: true,
+        showHandleMarkDone: true,
+        showHandleMarkNotDone: true,
+      }}
+      onCardMarkNotDone={onArchiveBigPlan}
+    />
   );
 }
 
@@ -494,13 +525,13 @@ function computeBigPlanGnattPosition(entry: BigPlan) {
 
   let leftMargin = undefined;
   if (!entry.actionable_date) {
-    leftMargin = 45;
+    leftMargin = 0.45;
   } else {
     const actionableDate = aDateToDate(entry.actionable_date);
     if (actionableDate < startOfYear) {
       leftMargin = 0;
     } else if (actionableDate > endOfYear) {
-      leftMargin = 100;
+      leftMargin = 1;
     } else {
       leftMargin = actionableDate.ordinal / startOfYear.daysInYear;
     }
@@ -508,12 +539,12 @@ function computeBigPlanGnattPosition(entry: BigPlan) {
 
   let width = undefined;
   if (!entry.due_date) {
-    width = 10; // TODO: better here in case there's an actionable_date
+    width = 0.1; // TODO: better here in case there's an actionable_date
   } else {
     const dueDate = aDateToDate(entry.due_date);
 
     if (dueDate > endOfYear) {
-      width = 100 - leftMargin;
+      width = 1 - leftMargin;
     } else if (dueDate < startOfYear) {
       width = 0;
     } else {

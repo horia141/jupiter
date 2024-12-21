@@ -1,25 +1,50 @@
-import { createTheme, CssBaseline, styled, ThemeProvider } from "@mui/material";
+import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
+import type { SerializeFrom } from "@remix-run/node";
 import { json } from "@remix-run/node";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   Links,
   LiveReload,
   Meta,
   Outlet,
   Scripts,
-  ScrollRestoration,
   useLoaderData,
 } from "@remix-run/react";
+import { SnackbarProvider } from "notistack";
 
 import { StrictMode } from "react";
-import ScrollToTop from "react-scroll-to-top";
 import { EnvBanner } from "./components/infra/env-banner";
 import {
   GlobalPropertiesContext,
   serverToClientGlobalProperties,
 } from "./global-properties-client";
 import { GLOBAL_PROPERTIES } from "./global-properties-server";
+import { standardShouldRevalidate } from "./rendering/standard-should-revalidate";
 
-const THEME = createTheme({});
+const THEME = createTheme({
+  palette: {
+    mode: 'light',
+    primary: {
+      main: '#3F51B5',
+      light: '#7986CB',
+      dark: '#303F9F',
+    },
+    secondary: {
+      main: '#FF4081',
+      light: '#FF79B0',
+      dark: '#C60055',
+    },
+    divider: '#E0E0E0',
+    text: {
+      primary: '#212121',
+      secondary: '#757575',
+      disabled: '#BDBDBD',
+    },
+  },
+  typography: {
+    fontFamily: '"Helvetica", "Arial", sans-serif',
+  },
+});
 
 export async function loader() {
   return json({
@@ -27,13 +52,16 @@ export async function loader() {
   });
 }
 
-export function meta() {
+export function meta({ data }: { data: SerializeFrom<typeof loader> }) {
   return {
     charset: "utf-8",
-    title: "Jupiter",
+    title: data.globalProperties.title,
     viewport: "width=device-width,initial-scale=1",
   };
 }
+
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
 
 export default function App() {
   const loaderData = useLoaderData<typeof loader>();
@@ -44,31 +72,21 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <BodyWithNoScroll>
+      <body>
         <StrictMode>
           <GlobalPropertiesContext.Provider value={loaderData.globalProperties}>
             <ThemeProvider theme={THEME}>
-              <CssBaseline />
-              <EnvBanner />
-              <ScrollToTop smooth style={{ width: "4rem", height: "4rem" }} />
-              <Outlet />
+              <SnackbarProvider>
+                <CssBaseline />
+                <EnvBanner />
+                <Outlet />
+              </SnackbarProvider>
             </ThemeProvider>
           </GlobalPropertiesContext.Provider>
         </StrictMode>
-        <ScrollRestoration />
         <Scripts />
         <LiveReload />
-      </BodyWithNoScroll>
+      </body>
     </html>
   );
 }
-
-const BodyWithNoScroll = styled("body")({
-  scrollbarWidth: "none",
-  msOverflowStyle: "none",
-  "::-webkit-scrollbar": {
-    display: "none",
-    width: 0,
-    color: "transparent",
-  },
-});

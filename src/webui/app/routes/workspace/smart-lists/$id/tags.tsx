@@ -1,21 +1,26 @@
+import type { SmartListTag } from "@jupiter/webapi-client";
+import { ApiError } from "@jupiter/webapi-client";
+import ReorderIcon from "@mui/icons-material/Reorder";
+import TagIcon from "@mui/icons-material/Tag";
+import TuneIcon from "@mui/icons-material/Tune";
 import { Button, ButtonGroup } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Link, useFetcher, useOutlet, useParams } from "@remix-run/react";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { Link, Outlet, useFetcher, useParams } from "@remix-run/react";
+import { AnimatePresence } from "framer-motion";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import type { SmartListTag } from "jupiter-gen";
-import { ApiError } from "jupiter-gen";
 import { z } from "zod";
 import { parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
-import { ActionHeader } from "~/components/infra/actions-header";
-import { BranchCard } from "~/components/infra/branch-card";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { EntityCard } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
-import { LeafPanel } from "~/components/infra/leaf-panel";
+import { BranchPanel } from "~/components/infra/layout/branch-panel";
+import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { SmartListTagTag } from "~/components/smart-list-tag-tag";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
@@ -38,8 +43,8 @@ export async function loader({ request, params }: LoaderArgs) {
   try {
     const response = await getLoggedInApiClient(
       session
-    ).smartList.loadSmartList({
-      ref_id: { the_id: id },
+    ).smartLists.smartListLoad({
+      ref_id: id,
       allow_archived: false,
     });
 
@@ -59,15 +64,17 @@ export async function loader({ request, params }: LoaderArgs) {
   }
 }
 
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
+
 export default function SmartListViewTags() {
-  const outlet = useOutlet();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
 
   const shouldShowALeaf = useBranchNeedsToShowLeaf();
 
   const tagsByRefId: { [tag: string]: SmartListTag } = {};
   for (const tag of loaderData.smartListTags) {
-    tagsByRefId[tag.ref_id.the_id] = tag;
+    tagsByRefId[tag.ref_id] = tag;
   }
 
   const archiveTagFetch = useFetcher();
@@ -80,74 +87,77 @@ export default function SmartListViewTags() {
       },
       {
         method: "post",
-        action: `/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/tags/${tag.ref_id.the_id}`,
+        action: `/workspace/smart-lists/${loaderData.smartList.ref_id}/tags/${tag.ref_id}`,
       }
     );
   }
 
   return (
-    <BranchCard key={`${loaderData.smartList.ref_id.the_id}/tags`}>
-      <ActionHeader returnLocation="/workspace">
-        <ButtonGroup>
-          <Button
-            variant="contained"
-            to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/tags/new`}
-            component={Link}
-          >
-            Create
-          </Button>
+    <BranchPanel
+      key={`smart-list-${loaderData.smartList.ref_id}/tags`}
+      createLocation={`/workspace/smart-lists/${loaderData.smartList.ref_id}/tags/new`}
+      extraControls={[
+        <Button
+          key={loaderData.smartList.ref_id}
+          variant="outlined"
+          to={`/workspace/smart-lists/${loaderData.smartList.ref_id}/items/details`}
+          component={Link}
+          startIcon={<TuneIcon />}
+        >
+          "Details"
+        </Button>,
 
-          <Button
-            variant="outlined"
-            to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/items/details`}
-            component={Link}
-          >
-            Details
-          </Button>
-        </ButtonGroup>
-
-        <ButtonGroup>
+        <ButtonGroup key={loaderData.smartList.ref_id}>
           <Button
             variant="outlined"
-            to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/items`}
+            to={`/workspace/smart-lists/${loaderData.smartList.ref_id}/items`}
             component={Link}
+            startIcon={<ReorderIcon />}
           >
-            Items
+            "Items"
           </Button>
-          <Button variant="contained">Tags</Button>
-        </ButtonGroup>
-      </ActionHeader>
 
-      <EntityStack>
-        {loaderData.smartListTags.map((tag) => (
-          <EntityCard
-            key={tag.ref_id.the_id}
-            allowSwipe
-            allowMarkNotDone
-            onMarkNotDone={() => archiveTag(tag)}
-          >
-            <Link
-              to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/tags/${tag.ref_id.the_id}`}
-              prefetch="none"
+          <Button variant="contained" startIcon={<TagIcon />}>
+            "Tags"
+          </Button>
+        </ButtonGroup>,
+      ]}
+      returnLocation="/workspace/smart-lists"
+    >
+      <NestingAwareBlock shouldHide={shouldShowALeaf}>
+        <EntityStack>
+          {loaderData.smartListTags.map((tag) => (
+            <EntityCard
+              key={tag.ref_id}
+              allowSwipe
+              allowMarkNotDone
+              onMarkNotDone={() => archiveTag(tag)}
             >
-              <SmartListTagTag tag={tag} />
-            </Link>
-          </EntityCard>
-        ))}
-      </EntityStack>
+              <Link
+                to={`/workspace/smart-lists/${loaderData.smartList.ref_id}/tags/${tag.ref_id}`}
+                prefetch="none"
+              >
+                <SmartListTagTag tag={tag} />
+              </Link>
+            </EntityCard>
+          ))}
+        </EntityStack>
+      </NestingAwareBlock>
 
-      <LeafPanel show={shouldShowALeaf}>{outlet}</LeafPanel>
-    </BranchCard>
+      <AnimatePresence mode="wait" initial={false}>
+        <Outlet />
+      </AnimatePresence>
+    </BranchPanel>
   );
 }
 
 export const CatchBoundary = makeCatchBoundary(
-  () => `Could not find smart list #${useParams().key}!`
+  () => `Could not find smart list #${useParams().id}!`
 );
 
 export const ErrorBoundary = makeErrorBoundary(
   () =>
     `There was an error loading smart list #${
-      useParams().key
+      useParams().id
     }! Please try again!`
 );
