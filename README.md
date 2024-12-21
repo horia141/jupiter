@@ -9,17 +9,19 @@ I wanted to get done actually got done, while juggling the standard complexities
 
 The current version is both a [webapp](https://get-thriving.com) and a CLI application.
 
+
 Here's a picture from the "inbox" view:
 
-![Inbox](src/docs/assets/index-inbox.png)
+![Inbox Tasks](assets/showcase-inbox-tasks.png)
 
-And another mobile friendly view:
+And the calendar view:
 
-![Inbox Mobile](src/docs/assets/index-inbox-mobile.png)
+![Calendars](assets/showcase-calendar.png)
 
-And here's one for the "big plans timeline" view:
+And a metric feature:
 
-![Big Plans Timeline](src/docs/assets/index-big-plans-timeline.png)
+![Metrics](assets/showcase-metrics.png)
 
-Follow the [tutorial](src/docs/tutorial.md) or go on to read the full 
-[docs](https://docs.get-thriving.com/) to get a feeling for what the application can fully do!
+And finally, a timeplan feature:
+
+![Time Plans](assets/showcase-timeplan.png)
