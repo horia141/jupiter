@@ -117,21 +117,3 @@ is fully contained within a vacation, that task won't be instantiated in the inb
 generation. For example, if you have a vacation from Monday `2020-02-09` to
 Sunday `2020-02-15`, then all daily and weekly tasks for that week won't be created, but
 all monthly, quarterly and yearly ones will.
-
-## Interactions
-
-In the web app you can change the properties of a chore by clicking on it in the view.
-
-![Chores Update](../assets/chores-update.png)
-
-You can also view all the generated inbox tasks, and can quickly swipe left/swipe right to
-interact with them.
-
-In the CLI app you can:
-
-* Create a chore via `chore-create`.
-* Remove a chore via `chore-arhive`.
-* Any of the properties of a chore can be changed via `chore-update`.
-* Change the generation project of a chore via `chore-change-project`.
-* A chore can be suspended via `chore-suspend` and unsuspended via `chore-unsuspend`.
-* Show info about the chore via `chore-show`.

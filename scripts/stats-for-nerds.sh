@@ -16,7 +16,7 @@ mkdir -p "${BUILDINFO_ROOT}"
 
 cloc \
   --report-file="${CLOC_BUILDINFO}" \
-  --exclude-dir="node_modules,.cache,build,.mypy_cache" \
+  --exclude-dir="node_modules,.build-cache,build,public,.mypy_cache" \
   --not-match-f="(package-lock.json|poetry.lock)" \
   .dockerignore \
   .eslintignore \
@@ -27,7 +27,6 @@ cloc \
   Makefile \
   README.md \
   docs/ \
-  mkdocs.yml \
   scripts/ \
   src/ \
   itests/ \

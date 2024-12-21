@@ -21,19 +21,3 @@ about projects. But in context where a project is needed - say when adding a new
 inbox task from a metric - and none is specified, this one will be used instead.
 
 [Feature flags](feature-flags.md) are also associated with a workspace.
-
-## Interactions
-
-In the Web app you can access workspace settings in the right-hand menu.
-
-![Workspace Update](../assets/workspaces-update.png)
-
-In the CLI app you can:
-
-* Create a workspace when creating an account in the web app of via `thrive init`
-* Set the name via `workspace-update` or editing the name in the web app.
-* Change the default project from the `Settings` section of the right-hand side menu or
-  via `workspace-change-default-project` in the CLI.
-* Change the feature flags from the `Settings` section of the right-hand side menu or
-  via `workspace-change-feature-flags` in the CLI.
-* See a summary of the workspace via `workspace-show` in the CLI.

@@ -42,21 +42,8 @@ inbox task is defined yearly for this and also generated.
   * `14` days in advance for friends
   * `2` days in advance for everyone else
 
-## Interactions
+## Person Settings
 
 In the web app you can change the global catch up project via the `Settings` button:
 
 ![Persons Settings](../assets/persons-settings.png)
-
-Similarly you can change the properties of a person by clicking on it in the view.
-
-![Metrics Entry Update](../assets/persons-update.png)
-
-In the CLI app you can:
-
-* Change the catch up project via `person-change-catch-up-project`.
-* Create a person via `person-create`.
-* Remove a person via `person-archive`.
-* Change any number of person attributes via `person-update`.
-* Show the persons database via `person-show`.
-

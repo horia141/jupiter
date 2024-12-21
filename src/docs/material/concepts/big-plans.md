@@ -65,16 +65,3 @@ _swipe right_ to mark it as not done.
 Big plans participate in [gamification](gamification.md) if it is enabled. Every plan
 marked as `Done` brings you number of points. Every task marked as `Not Done` loses you a number
 of points.
-
-## Interactions
-
-In the web app you can change the properties of a inbox task by clicking on it in the view.
-
-![Inbox Tasks Update](../assets/big-plans-update.png)
-
-In the CLI app you can:
-
-* Create a project via `big-plan-create`.
-* Change the name, status, actionable date, due date, eisenhower, difficulty via `big-plan-update`.
-* Change the project via `big-plan-change-project`.
-* See a summary of the projects via `big-plan-show`.

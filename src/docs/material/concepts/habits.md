@@ -104,21 +104,3 @@ Similarly, a habit can have the Eisenhower properties. These will be copied to
 all the instantiated tasks that are created.
 
 Habit inbox tasks are created via [task generation](tasks-generation.md).
-
-## Interactions
-
-In the web app you can change the properties of a habit by clicking on it in the view.
-
-![Habit Update](../assets/habits-update.png)
-
-You can also view all the generated inbox tasks, and can quickly swipe left/swipe right to
-interact with them.
-
-In the CLI app you can:
-
-* Create a habit via `habit-create`.
-* Remove a habit via `habit-arhive`.
-* Any of the properties of a habit can be changed via `habit-update`.
-* Change the generation project of a chore via `habit-change-project`.
-* A habit can be suspended via `habit-suspend` and unsuspended via `habit-unsuspend`.
-* Show info about the habit via `habit-show`.

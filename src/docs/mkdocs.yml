@@ -9,7 +9,7 @@ repo_name: GitHub
 use_directory_urls: false
 
 site_url: https://docs.get-thriving.com
-docs_dir: src/docs
+docs_dir: material
 
 theme:
     name: material
@@ -35,6 +35,7 @@ nav:
           - 'Feature Flags': 'concepts/feature-flags.md'
           - 'Inbox Tasks': 'concepts/inbox-tasks.md'
           - 'Working Mem': 'concepts/working-mem.md'
+          - 'Calendar': 'concepts/calendar.md'
           - 'Time Plans': 'concepts/time-plans.md'
           - 'Habits': 'concepts/habits.md'
           - 'Chores': 'concepts/chores.md'

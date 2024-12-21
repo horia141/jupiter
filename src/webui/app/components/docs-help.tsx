@@ -64,7 +64,7 @@ function subjectToUrl(subject: DocsHelpSubject) {
     case DocsHelpSubject.TIME_PLANS:
       return "concepts/time-plans";
     case DocsHelpSubject.SCHEDULE:
-      return "concepts/schedule";
+      return "concepts/calendar";
     case DocsHelpSubject.HABITS:
       return "concepts/habits";
     case DocsHelpSubject.CHORES:

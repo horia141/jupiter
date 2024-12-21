@@ -39,27 +39,10 @@ They also have a _value_ - the actual value for the metric at that particular ti
 
 Metric entries can also have some notes attached to them, for any extra info you might want to add.
 
-## Interaction Summary
+## Metrics Settings
 
 In the web app you can change the global collection project via the `Settings` button:
 
 ![Metrics Settings](../assets/metrics-settings.png)
 
 And you can change the properties of a metric by clicking on it in the view.
-
-![Metrics Update](../assets/metrics-update.png)
-
-Finally you can change the properties of an entry by clicking on it in the view.
-
-![Metrics Entry Update](../assets/metrics-entry-update.png)
-
-In the CLI app you can:
-
-* Change the collection project via `metric-change-collection-project`.
-* Create a metric via `metric-create`.
-* Remove a metric via `metric-archive`.
-* Change the name, icon, unit, etc via `metric-update`.
-* See a summary of the metrics via `metric-show`.
-* Create a metric entry via `metric-entry-create`.
-* Remove a metric entry via `metric-entry-archive`.
-* Change the collection time, value, or not of a metric entry via `metric-entry-update`.

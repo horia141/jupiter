@@ -61,10 +61,3 @@ but requires looking at the whole thing.
 * Big plans of a _make progress kind_ are considered done if all the inbox tasks
   associated with it in the time plan are considered done, or if there are no
   such tasks if there is some modification done during the time plan's period.
-
-## Interactions
-
-In the web app you can change the properties of the time plan, edit/remove
-activities, add activities from various sources.
-
-There is no CLI support for time plans yet.

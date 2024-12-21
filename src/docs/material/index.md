@@ -18,15 +18,19 @@ The current version is both a [webapp](https://get-thriving.com) and a
 
 Here's a picture from the "inbox" view:
 
-![Inbox](assets/index-inbox.png)
+![Inbox Tasks](assets/showcase/showcase-inbox-tasks.png)
 
-And another mobile friendly view:
+And the calendar view:
 
-![Inbox Mobile](assets/index-inbox-mobile.png)
+![Calendars](assets/showcase/showcase-calendar.png)
 
-And here's one for the "big plans timeline" view:
+And a metric feature:
 
-![Big Plans Timeline](assets/index-big-plans-timeline.png)
+![Metrics](assets/showcase/showcase-metrics.png)
+
+And finally, a timeplan feature:
+
+![Time Plans](assets/showcase/showcase-timeplan.png)
 
 ## Further Reading
 

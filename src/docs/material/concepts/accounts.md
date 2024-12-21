@@ -34,10 +34,3 @@ You can update some properties, but not your email.
 Security info can also be changed.
 
 ![Change Password](../assets/accounts-change-password.png)
-
-In the CLI app you can:
-
-* Change user properties via `user-update`
-* Show user details via `user-show`
-* Change your password via `auth-change-password`
-* Recover your account via `reset-password`

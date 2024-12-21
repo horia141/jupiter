@@ -19,9 +19,6 @@ gen:
 migration-test:
 	./scripts/migration.sh
 
-docs:
-	./scripts/docs.sh
-
 docker-build:
 	./scripts/docker-build.sh
 

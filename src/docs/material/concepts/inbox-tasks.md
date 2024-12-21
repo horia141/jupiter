@@ -87,7 +87,7 @@ There are multiple views for the inbox though right now:
 * _Kanban_: views all tasks in the inbox as a unified Kanban board. Tasks are sorted by due date.
 * _List_: views all tasks in the inbox as a long list of work, with limited sorting.
 
-Here’s a sneak peak at some views:
+Here’s a sneak peek at some views:
 
 ![Swiftview](../assets/inbox-tasks-swiftview.png)
 
@@ -99,17 +99,3 @@ _swipe right_ to mark it as not done.
 Inbox tasks participate in [gamification](gamification.md) if it is enabled. Every task
 marked as `Done` brings you number of points. Every task marked as `Not Done` loses you a number
 of points. There's a random "Puppy Bonus" from time to time to spice things up.
-
-## Interactions
-
-In the web app you can change the properties of a inbox task by clicking on it in the view.
-
-![Inbox Tasks Update](../assets/inbox-tasks-update.png)
-
-In the CLI app you can:
-
-* Create a project via `inbox-task-create`.
-* Change the name, status, actionable date, due date, eisenhower, difficulty via `inbox-task-update`.
-* Change the project via `inbox-task-change-project`.
-* Change the big plan via `inbox-task-associate-with-big-plan`.
-* See a summary of the projects via `inbox-task-show`.

@@ -23,14 +23,3 @@ Journals are mainly a written artifact, so they're essentially one big document.
 But they do have a recording ot the work activity
 that happened during that period (scores achieved, tasks done, etc),
 much like in the [report functionality](reporting.md).
-
-## Interaction
-
-In the web app you can change the properties of the journal by
-clicking on it in the view.
-
-![Journal Update](../assets/journal-update.png)
-
-Editing the document gets saved in real time.
-
-There's no CLI support for journals yet!

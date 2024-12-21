@@ -37,24 +37,3 @@ right now (author, year of publication, etc).
 Smart list items also have an optional url. It can be used to provide extra information about the particular item,
 such as an Amazon link where it can be bought, or the actual link of the actual interesting article you want to
 read.
-
-## Interactions
-
-In the web app you can change the properties of a smart list by clicking on it in the view.
-
-![Smart List Update](../assets/smart-lists-update.png)
-
-Similarly you can change the properties of an item by clicking on it in the view.
-
-![Smart List Item Update](../assets/smart-lists-item-update.png)
-
-In the CLI app you can:
-
-* Create a smart list via `smart-list-create`.
-* Remove a smart list via `smart-list-archive`.
-* Change the name or icon via `smart-list-update`.
-* See a summary of the smart lists via `smart-list-show`.
-* Create a smart list item via `smart-list-item-create`.
-* Remove a smart list item via `smart-list-item-archive`.
-* Change the name, tags, doneness, and url of a smart list item via `smart-list-item-update`.
-* There is a whole suite of `smart-list-tag-*` commands for create/update/archival of tags.

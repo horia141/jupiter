@@ -6,4 +6,4 @@ mkdir -p .build-cache/docs
 
 (cd src/docs && poetry install --only main --no-interaction --no-ansi --no-root)
 
-mkdocs build --config-file mkdocs.yml --site-dir .build-cache/docs --clean
+mkdocs build --config-file src/docs/mkdocs.yml --site-dir .build-cache/docs --clean
