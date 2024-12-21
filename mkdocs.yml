@@ -8,13 +8,20 @@ repo_name: GitHub
 
 use_directory_urls: false
 
+site_url: https://docs.get-thriving.com
 docs_dir: src/docs
 
 theme:
-    name: mkdocs
-    logo: assets/jupiter.ico
+    name: material
+    favicon: assets/jupiter.ico
+    logo: assets/jupiter.png
     highlightjs: true
     hljs_style: obsidian
+    palette:
+      primary: custom
+
+extra_css:
+  - assets/stylesheet.css
 
 nav:
     - Home: 'index.md'
