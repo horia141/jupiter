@@ -1,5 +1,9 @@
 import { Hosting } from "@jupiter/webapi-client";
 
+export function isInGlobalHosting(hosting: Hosting): boolean {
+  return hosting === Hosting.HOSTED_GLOBAL;
+}
+
 export function hostingName(hosting: Hosting): string {
   switch (hosting) {
     case Hosting.LOCAL:
