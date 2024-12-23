@@ -81,7 +81,6 @@ from jupiter.core.utils.feature_flag_controls import infer_feature_flag_controls
 class InitArgs(UseCaseArgsBase):
     """Init use case arguments."""
 
-    for_app_review: bool
     user_email_address: EmailAddress
     user_name: UserName
     user_timezone: Timezone
@@ -139,22 +138,22 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             )
 
         async with self._domain_storage_engine.get_unit_of_work() as uow:
-            if args.for_app_review:
-                new_user = User.new_app_store_review_user(
-                    ctx=context.domain_context,
-                    email_address=args.user_email_address,
-                    name=args.user_name,
-                    feature_flag_controls=user_feature_flags_controls,
-                )
-            else:
-                new_user = User.new_standard_user(
-                    ctx=context.domain_context,
-                    email_address=args.user_email_address,
-                    name=args.user_name,
-                    timezone=args.user_timezone,
-                    feature_flag_controls=user_feature_flags_controls,
-                    feature_flags=user_feature_flags,
-                )
+            # if args.for_app_review:
+            #     new_user = User.new_app_store_review_user(
+            #         ctx=context.domain_context,
+            #         email_address=args.user_email_address,
+            #         name=args.user_name,
+            #         feature_flag_controls=user_feature_flags_controls,
+            #     )
+            # else:
+            new_user = User.new_standard_user(
+                ctx=context.domain_context,
+                email_address=args.user_email_address,
+                name=args.user_name,
+                timezone=args.user_timezone,
+                feature_flag_controls=user_feature_flags_controls,
+                feature_flags=user_feature_flags,
+            )
             new_user = await uow.get_for(User).create(new_user)
 
             new_auth, new_recovery_token = Auth.new_auth(

@@ -16,7 +16,6 @@ import type { WorkspaceName } from './WorkspaceName';
  * Init use case arguments.
  */
 export type InitArgs = {
-    for_app_review: boolean;
     user_email_address: EmailAddress;
     user_name: UserName;
     user_timezone: Timezone;

@@ -14,7 +14,6 @@ class InitArgs:
     """Init use case arguments.
 
     Attributes:
-        for_app_review (bool):
         user_email_address (str): An email address.
         user_name (str): The user name for a user of jupiter.
         user_timezone (str): A timezone in this domain.
@@ -27,7 +26,6 @@ class InitArgs:
         workspace_feature_flags (List[WorkspaceFeature]):
     """
 
-    for_app_review: bool
     user_email_address: str
     user_name: str
     user_timezone: str
@@ -41,8 +39,6 @@ class InitArgs:
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
-        for_app_review = self.for_app_review
-
         user_email_address = self.user_email_address
 
         user_name = self.user_name
@@ -73,7 +69,6 @@ class InitArgs:
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
-                "for_app_review": for_app_review,
                 "user_email_address": user_email_address,
                 "user_name": user_name,
                 "user_timezone": user_timezone,
@@ -92,8 +87,6 @@ class InitArgs:
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         d = src_dict.copy()
-        for_app_review = d.pop("for_app_review")
-
         user_email_address = d.pop("user_email_address")
 
         user_name = d.pop("user_name")
@@ -125,7 +118,6 @@ class InitArgs:
             workspace_feature_flags.append(workspace_feature_flags_item)
 
         init_args = cls(
-            for_app_review=for_app_review,
             user_email_address=user_email_address,
             user_name=user_name,
             user_timezone=user_timezone,

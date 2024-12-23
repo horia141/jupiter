@@ -994,7 +994,7 @@ class WebServiceApp:
             version=self._global_properties.version,
             description="Jupiter Webapi",
             routes=self._fast_app.routes,
-        )   
+        )
 
         # Generate all components
 
