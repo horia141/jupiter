@@ -1,3 +1,4 @@
+"""Fixtures for lifecycle tests."""
 from typing import Iterator
 
 import pytest
@@ -38,6 +39,7 @@ def new_user_and_workspace(
     init_response = init_sync(
         client=guest_client,
         body=InitArgs(
+            for_app_review=False,
             user_email_address=new_user.email,
             user_name=new_user.name,
             user_timezone="UTC",

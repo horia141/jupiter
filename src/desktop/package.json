@@ -6,15 +6,24 @@
   "description": "The Thrive Desktop application",
   "main": "main.js",
   "readme": "README.md",
-  "scripts": {
-    "start": "electron ."
-  },
   "author": "Horia Coman <horia141@gmail.com>",
   "homepage": "https://get-thriving.com",
   "repository": "https://github.com/horia141/jupiter",
   "documentation": "https://docs.get-thriving.com",
   "license": "MIT",
   "devDependencies": {
+    "@electron-forge/cli": "^7.6.0",
+    "@electron-forge/maker-deb": "^7.6.0",
+    "@electron-forge/maker-rpm": "^7.6.0",
+    "@electron-forge/maker-squirrel": "^7.6.0",
+    "@electron-forge/maker-zip": "^7.6.0",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.6.0",
+    "@electron-forge/plugin-fuses": "^7.6.0",
+    "@electron/fuses": "^1.8.0",
     "electron": "^22.0.3"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "electron-squirrel-startup": "^1.0.1"
   }
 }

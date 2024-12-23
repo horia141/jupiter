@@ -57,11 +57,11 @@ class ScheduleExternalSyncLogEntry(LeafEntity):
         sync_even_if_not_modified: bool,
         filter_schedule_stream_ref_id: list[EntityId] | None,
     ) -> "ScheduleExternalSyncLogEntry":
+        """Create a new log entry."""
         if start_of_window > end_of_window:
             raise InputValidationError("Start of window must be before end of window.")
         if today < start_of_window or today > end_of_window:
             raise InputValidationError("Today must be within the window.")
-        """Create a new log entry."""
         return ScheduleExternalSyncLogEntry._create(
             ctx,
             name=ScheduleExternalSyncLogEntry.build_name(ctx.action_timestamp),

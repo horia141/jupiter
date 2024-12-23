@@ -10,7 +10,6 @@
   "repository": "https://github.com/horia141/jupiter",
   "documentation": "https://docs.get-thriving.com",
   "workspaces": [
-    "src/desktop",
     "src/webui",
     "gen/ts/webapi-client"
   ],

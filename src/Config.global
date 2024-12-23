@@ -1,2 +1,4 @@
 VERSION=1.1.0
-DOCKERHUB_USER=horia141
+BUNDLE_ID=io.jupiter.app
+PUBLIC_NAME=Thrive
+COPYRIGHT="2024 Horia Coman"

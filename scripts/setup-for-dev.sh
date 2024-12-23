@@ -4,7 +4,8 @@ set -ex
 
 # Prepare environment
 
-# Assume brew, python 3.10+, poetry, node, gem, npm, npx, bundler, and docker are already present
+# Assume brew, python 3.10+, poetry, node, gem, npm, npx, bundler, gh (the GitHub command line)
+# and docker are already present
 # Will modify globals nonetheless.
 
 mkdir -p .build-cache

@@ -2,3 +2,5 @@ ENV=local
 HOSTING=local
 BASENAME=jupiter-desktop
 DESCRIPTION="The Thrive Desktop application"
+HOSTED_GLOBAL_WEBUI_SERVER_URL=https://app.get-thriving.com/login
+LOCAL_WEBUI_SERVER_URL="http://localhost:10020/login"

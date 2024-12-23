@@ -90,6 +90,7 @@ export async function action({ request }: ActionArgs) {
 
   try {
     const result = await getGuestApiClient(session).application.init({
+      for_app_review: false,
       user_email_address: form.userEmailAddress,
       user_name: form.userName,
       user_timezone: form.userTimezone,

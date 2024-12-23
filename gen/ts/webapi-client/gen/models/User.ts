@@ -7,6 +7,7 @@ import type { EmailAddress } from './EmailAddress';
 import type { EntityId } from './EntityId';
 import type { Timestamp } from './Timestamp';
 import type { Timezone } from './Timezone';
+import type { UserCategory } from './UserCategory';
 import type { UserName } from './UserName';
 
 /**
@@ -19,6 +20,7 @@ export type User = {
     created_time: Timestamp;
     last_modified_time: Timestamp;
     archived_time?: (Timestamp | null);
+    category: UserCategory;
     email_address: EmailAddress;
     name: UserName;
     avatar: Avatar;

@@ -21,6 +21,7 @@ class WixCRM(CRM):
         site_id: str,
         session: aiohttp.ClientSession,
     ) -> None:
+        """Constructor."""
         super().__init__()
         self._api_key = api_key
         self._account_id = account_id

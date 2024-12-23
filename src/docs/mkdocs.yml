@@ -18,10 +18,10 @@ theme:
     highlightjs: true
     hljs_style: obsidian
     palette:
-      primary: custom
+        primary: custom
 
 extra_css:
-  - assets/stylesheet.css
+    - assets/stylesheet.css
 
 nav:
     - Home: 'index.md'

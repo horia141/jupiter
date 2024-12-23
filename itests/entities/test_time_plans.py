@@ -443,7 +443,7 @@ def test_time_plan_create_new_big_plan_activity(
 
     page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan.ref_id}/\d+"))
 
-    expect(page.locator("input[name='kind']")).to_have_value("finish")
+    expect(page.locator("input[name='kind']")).to_have_value("make-progress")
     expect(page.locator("input[name='feasability']")).to_have_value("must-do")
 
     expect(page.locator("#target")).to_contain_text("New Big Plan")

@@ -30,7 +30,7 @@ is installed for the local repository, but there are some installed globally via
 ## A Development Session
 
 When you want to develop a new feature or bugfix you need to activate the new dev
-session from a shell first. Then there's some small ceremony about creating a feature branch for the work (see below). 
+session from a shell first. Then there's some small ceremony about creating a feature branch for the work (see below).
 
 ```bash
 % source ./scripts/new-dev-session.sh
@@ -94,15 +94,17 @@ they are in.
   time you run `./scripts/run-dev.sh` you're creating/using such an environment.
   This is not considered `local` environment because it is not accessible to users.
 
-Feature environments are a subset of `dev` and `staging` environments. When you specificy a particular name in `./scripts/run-dev.sh <your-name>` you create such an env for example, or reuse if you created it before. When you open a PR, the same happens but in a `live`
+Feature environments are a subset of `dev` and `staging` environments. When you specificy a
+particular name in `./scripts/run-dev.sh <your-name>` you create such an env for example,
+or reuse if you created it before. When you open a PR, the same happens but in a `live`
 setting. These environments are separate between each other, and start in a blank but valid state.
 
 ## Running Tests
 
 The full test suite is run via `make check`. This runs linters, type checkers, and
-various test batteriess on all the sources, config files, etc. 
+various test batteriess on all the sources, config files, etc.
 
-There is `./scripts/fast-lint.sh` that runs just the linters and type checkers and 
+There is `./scripts/fast-lint.sh` that runs just the linters and type checkers and
 is used for quicker feedback on the changes that you're doing. Most of the info
 here is given by various IDE tooling (which in the case of VS Code is configured
 to use the same configs as the CLI tooling). But the one produced by `fast-lint`

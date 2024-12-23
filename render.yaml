@@ -65,7 +65,7 @@ services:
 - type: web
   name: jupiter-docs
   runtime: static
-  buildCommand: ./scripts/build-docs.sh
+  buildCommand: ./scripts/build/docs.sh
   staticPublishPath: .build-cache/docs
   domains:
     - docs.get-thriving.com

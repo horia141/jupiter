@@ -513,6 +513,7 @@ from .time_plan_load_result_activity_doneness_type_0 import TimePlanLoadResultAc
 from .time_plan_remove_args import TimePlanRemoveArgs
 from .time_plan_source import TimePlanSource
 from .user import User
+from .user_category import UserCategory
 from .user_change_feature_flags_args import UserChangeFeatureFlagsArgs
 from .user_feature import UserFeature
 from .user_feature_flags import UserFeatureFlags
@@ -1086,6 +1087,7 @@ __all__ = (
     "TimePlanRemoveArgs",
     "TimePlanSource",
     "User",
+    "UserCategory",
     "UserChangeFeatureFlagsArgs",
     "UserFeature",
     "UserFeatureFlags",

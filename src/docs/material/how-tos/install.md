@@ -44,33 +44,18 @@ $ git clone git@github.com:horia141/jupiter.git jupiter
 
 This will get you the `master` version of the code.
 
-After this, you can build a Docker image with Thrive like so:
+You can use the scripts locally, like so:
 
 ```bash
 $ cd thrive
-$ make docker-build
-```
-
-This will chug for a while and produce a local image called `thrive-cli`. You can use this to run commands like so:
-
-```bash
-$ mkdir ~/my-thrive-work-dir # A dir where you manage local Thrive data.
-$ cd ~/my-thrive-work-dir
-$ docker run -it --rm --name thrive-app -v $(pwd):/data thrive-cli init --help
-```
-
-Alternatively, you can use the scripts locally, like so:
-
-```bash
-$ cd thrive
-$ mkdir .build-cache
 $ ./scripts/setup-for-dev.sh # Hopefully this is simple!
 ```
 
-Now, instead of running the Docker image, you can directly run the scripts, like so:
+Now, you can run the thing like so and it will output a port to access it:
 
 ```bash
 $ mkdir ~/my-jupier-work-dir
+$ ./scripts/new-dev-session.sh
 $ ./scripts/run-dev.sh
 ```
 
