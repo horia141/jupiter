@@ -10,7 +10,7 @@
   "homepage": "https://get-thriving.com",
   "repository": "https://github.com/horia141/jupiter",
   "documentation": "https://docs.get-thriving.com",
-  "license": "MIT",
+  "license":  "SEE LICENSE IN LICENSE",
   "devDependencies": {
     "@electron-forge/cli": "^7.6.0",
     "@electron-forge/maker-dmg": "^7.6.0",

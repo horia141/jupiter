@@ -18,6 +18,10 @@ module.exports = {
     icon: "assets/jupiter.icns",
     overwrite: true,
     platform: ["darwin", "mas"],
+    extraResource: [
+        "README.md",
+        "LICENSE"
+    ]
   },
   rebuildConfig: {},
   plugins: [
