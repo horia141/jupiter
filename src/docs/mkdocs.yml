@@ -1,8 +1,8 @@
 ---
-site_name: Thrive
+site_name: !ENV PUBLIC_NAME
 site_description: "Documentation for Thrive, the life planning tool"
-site_author: "Horia Coman"
-copyright: "(c) 2024 Horia Coman"
+site_author: !ENV AUTHOR
+copyright: !ENV COPYRIGHT
 repo_url: https://github.com/horia141/jupiter
 repo_name: GitHub
 
