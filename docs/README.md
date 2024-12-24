@@ -33,9 +33,9 @@ When you want to develop a new feature or bugfix you need to activate the new de
 session from a shell first. Then there's some small ceremony about creating a feature branch for the work (see below).
 
 ```bash
-% source ./scripts/new-dev-session.sh
+% source ./scripts/work/new-dev-session.sh
 # Set everything up in the Python and Node settings
-% ./scripts/new-feature work-on-something
+% ./scripts/work/new-feature work-on-something
 # Creates branch feature/work-on-something and switch to it
 ```
 
@@ -61,7 +61,7 @@ When you're finished you can run:
 
 This will perform all ceremonies, merge the branch correctly into `main` and push to GitHub.
 
-> A note on using `./scripts/new-feature.sh`, `./scripts/new-bugfix.sh`, and other
+> A note on using `./scripts/work/new-feature.sh`, `./scripts/work/new-bugfix.sh`, and other
 counterparts: we want to keep hygene of the `main` branch to have a linear history of
 features and bugfixes, ocassionally tagged with releases. To enforce these, there's no
 straight coding on the `main` branch, and the helper scripts help you setup things

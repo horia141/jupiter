@@ -36,7 +36,7 @@ function loadEnvironment() {
   if (app.isPackaged) {
     // If we're on MacOs
     if (process.platform === "darwin") {
-      dotEnv.config({ path: app.getAppPath() + "/Config.project" });
+      dotEnv.config({ path: app.getAppPath() + "/Config.project.production" });
     } else {
       console.error("Unsupported platform: ", process.platform);
       app.exit(1);
