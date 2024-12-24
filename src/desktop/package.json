@@ -1,8 +1,8 @@
 {
   "private": true,
   "sideEffects": false,
-  "name": "Thrive",
-  "version": "1.1.0",
+  "name": "@jupiter/desktop",
+  "version": "0.1.0",
   "description": "The Thrive desktop application",
   "main": "main.js",
   "readme": "README.md",

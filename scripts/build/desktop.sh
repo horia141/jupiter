@@ -35,5 +35,5 @@ replace_package_json
 
 cp src/desktop/forge.config.mas.js src/desktop/forge.config.js
 (cd src/desktop && npx electron-forge make --platform mas --arch universal)
-# cp src/desktop/forge.config.darwin.js src/desktop/forge.config.js
-# (cd src/desktop && npx electron-forge make --platform darwin --arch universal)
+cp src/desktop/forge.config.darwin.js src/desktop/forge.config.js
+(cd src/desktop && npx electron-forge make --platform darwin --arch universal)

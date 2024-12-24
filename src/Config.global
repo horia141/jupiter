@@ -1,4 +1,4 @@
-VERSION=1.1.0
+VERSION=1.1.1
 BUNDLE_ID=io.jupiter.app
 PUBLIC_NAME=Thrive
 COPYRIGHT="2024 Horia Coman"
