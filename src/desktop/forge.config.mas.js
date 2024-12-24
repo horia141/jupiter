@@ -1,4 +1,9 @@
-const { outDir, packagerConfig, rebuildConfig, plugins } = require("./forge.config.common");
+const {
+  outDir,
+  packagerConfig,
+  rebuildConfig,
+  plugins,
+} = require("./forge.config.common");
 
 module.exports = {
   outDir: outDir,
@@ -10,17 +15,17 @@ module.exports = {
       type: "distribution",
       verbose: true,
       hardenedRuntime: true,
-      continueOnError: false
-    }
+      continueOnError: false,
+    },
   },
   rebuildConfig: rebuildConfig,
   makers: [
     {
-      name: '@electron-forge/maker-pkg',
+      name: "@electron-forge/maker-pkg",
       config: {
-        identity: 'Mac Developer Installer: Horia-Mihai Coman',
-      }
-    }
+        identity: "Mac Developer Installer: Horia-Mihai Coman",
+      },
+    },
   ],
-  plugins: plugins
+  plugins: plugins,
 };

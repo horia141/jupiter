@@ -133,4 +133,50 @@ Tests are written in `Python` with `pytest` and `playwright`.
 
 ## Releases
 
-Coming soon.
+Jupiter has a notion of versions, represented by releases. These mark specific
+code versions, and the associated "release entities" for them (typically packaged apps).
+
+The main Jupiter system has a continuous deployment release model. Every piece
+of work that gets created via `./scripts/work/new-feature|new-bugfix` triggers a
+a release to production - `webui` and `webapi` and `docs` and the others are thus
+handled. Ditto, every PR also is pushed immediately to a staging environment.
+
+Other sorts of artifacts - the `cli` and `desktop` apps (and in the future, the
+`ios`, `android`, `linux`, etc. ones) have a coarser grained release process,
+marked by releases.
+
+Releases are named in semver fashion. We are currently at `v1.x.x` and plan
+on staying on major `1` for a long time.
+
+In terms of representation:
+
+* On Git/GitHub, releases are marked by tags of the form `vx.y.x`.
+* Ditto, the `master` branch is built such that it has one PR for each release.
+  The `develop` branch tracks incremental releases of features and bugfixes.
+* GitHub Releases are used to hold the artefacts produced by each release
+  (source code, app packages).
+* Releases can imply an app store upload too, but not necessarily. The platform
+  apps are built with Electron and are thin shells around the web app. So the
+  need for updating them, even as infrequent as releases isn't as big.
+
+In terms of working:
+
+* To create a release use `./scripts/release/new.sh x.y.z`.
+* You'll need to edit `src/docs/material/releases/release-x.y.z.md` with the
+  release notes. And update `mkdocs.yaml` to include it.
+* Also run a `make stats-for-nerds` to include some per-release info.
+* Then run `./scripts/release/finish.sh` to finish everything about the
+  release on GitHub size.
+* You can run `./scripts/build/desktop.sh` to build the new version of the
+  desktop apps.
+* And then `./scripts/release/gh-release.sh x.y.z` to create a new release
+  on GitHub.
+* Finally, if you so with you can upload to the AppStore via
+  `./scripts/release/appstore-upload.sh x.y.z`. As mentioned above, not
+  always necessary.
+
+We'll work to unify these more in the future, but for now they're manual
+operations that you can chose to do or not do.
+
+For humans, these are useful too. The documentation has links to release notes,
+which are useful for folks.

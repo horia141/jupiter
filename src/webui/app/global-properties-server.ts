@@ -5,6 +5,7 @@ export interface GlobalPropertiesServer {
   env: Env;
   hosting: Hosting;
   baseName: string;
+  version: string;
   title: string;
   description: string;
   localWebApiServerUrl: string;
@@ -13,6 +14,7 @@ export interface GlobalPropertiesServer {
   hostedGlobalWebApiProgressReporterUrl: string;
   docsUrl: string;
   communityUrl: string;
+  appsStorageUrl: string;
   termsOfServiceUrl: string;
   privacyPolicyUrl: string;
   sessionCookieSecret: string;
@@ -43,6 +45,7 @@ function loadGlobalPropertiesOnServer(): GlobalPropertiesServer {
     env: process.env.ENV as Env,
     hosting: process.env.HOSTING as Hosting,
     baseName: process.env.BASENAME as string,
+    version: process.env.VERSION as string,
     title: process.env.TITLE as string,
     description: process.env.DESCRIPTION as string,
     localWebApiServerUrl: process.env.LOCAL_WEBAPI_SERVER_URL as string,
@@ -53,6 +56,7 @@ function loadGlobalPropertiesOnServer(): GlobalPropertiesServer {
       hostedGlobalWebApiProgressReporterUrl,
     docsUrl: process.env.DOCS_URL as string,
     communityUrl: process.env.COMMUNITY_URL as string,
+    appsStorageUrl: process.env.APPS_STORAGE_URL as string,
     termsOfServiceUrl: process.env.TERMS_OF_SERVICE_URL as string,
     privacyPolicyUrl: process.env.PRIVACY_POLICY_URL as string,
     sessionCookieSecret: process.env.SESSION_COOKIE_SECRET as string,
