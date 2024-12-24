@@ -15,7 +15,7 @@ class InitArgs:
 
     Attributes:
         user_email_address (str): An email address.
-        user_name (str): The user name for a user of Jupiter.
+        user_name (str): The user name for a user of jupiter.
         user_timezone (str): A timezone in this domain.
         user_feature_flags (List[UserFeature]):
         auth_password (str): A new password in plain text, as received from a user.

@@ -13,7 +13,7 @@ class UserUpdateArgsName:
     """
     Attributes:
         should_change (bool):
-        value (Union[Unset, str]): The user name for a user of Jupiter.
+        value (Union[Unset, str]): The user name for a user of jupiter.
     """
 
     should_change: bool

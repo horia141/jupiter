@@ -23,22 +23,22 @@ import { standardShouldRevalidate } from "./rendering/standard-should-revalidate
 
 const THEME = createTheme({
   palette: {
-    mode: 'light',
+    mode: "light",
     primary: {
-      main: '#3F51B5',
-      light: '#7986CB',
-      dark: '#303F9F',
+      main: "#3F51B5",
+      light: "#7986CB",
+      dark: "#303F9F",
     },
     secondary: {
-      main: '#FF4081',
-      light: '#FF79B0',
-      dark: '#C60055',
+      main: "#FF4081",
+      light: "#FF79B0",
+      dark: "#C60055",
     },
-    divider: '#E0E0E0',
+    divider: "#E0E0E0",
     text: {
-      primary: '#212121',
-      secondary: '#757575',
-      disabled: '#BDBDBD',
+      primary: "#212121",
+      secondary: "#757575",
+      disabled: "#BDBDBD",
     },
   },
   typography: {

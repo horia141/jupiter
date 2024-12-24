@@ -98,6 +98,10 @@ STANDARD_CONFIG: Mapping[str, Any] = {
     "response_model_exclude_defaults": True,
 }
 
+ENV_HEADER: Final[str] = "X-Jupiter-Env"
+HOSTING_HEADER: Final[str] = "X-Jupiter-Hosting"
+VERSION_HEADER: Final[str] = "X-Jupiter-Version"
+
 AUTH_TOKEN_EXT_DECODER = AuthTokenExtDatabaseDecoder()
 OAUTH2_GUEST_SCHEMA = OAuth2PasswordBearer(tokenUrl="guest-login", auto_error=False)
 OAUTH2_LOGGED_IN_SCHEMA = OAuth2PasswordBearer(tokenUrl="old-skool-login")
@@ -667,6 +671,9 @@ class WebServiceApp:
         self._fast_app.add_middleware(
             BaseHTTPMiddleware, dispatch=self._time_provider_middleware
         )
+        self._fast_app.add_middleware(
+            BaseHTTPMiddleware, dispatch=self._setting_middleware
+        )
 
         config = uvicorn.Config(
             self._fast_app,
@@ -691,6 +698,14 @@ class WebServiceApp:
         """Middleware to provide the time provider."""
         self._request_time_provider.set_request_time()
         return await call_next(request)  # type: ignore
+
+    async def _setting_middleware(self, request: Request, call_next: DecoratedCallable) -> Callable[[DecoratedCallable], DecoratedCallable]:  # type: ignore
+        """Middleware to provide the version."""
+        response = await call_next(request)  # type: ignore
+        response.headers[ENV_HEADER] = self._global_properties.env.value
+        response.headers[HOSTING_HEADER] = self._global_properties.hosting.value
+        response.headers[VERSION_HEADER] = self._global_properties.version
+        return response  # type: ignore
 
     def _add_use_case_type(
         self,
@@ -975,9 +990,9 @@ class WebServiceApp:
         if self._fast_app.openapi_schema:
             return self._fast_app.openapi_schema
         openapi_schema = get_openapi(
-            title="Thrive Webapi",
+            title="Jupiter Webapi",
             version=self._global_properties.version,
-            description="Thrive Webapi",
+            description="Jupiter Webapi",
             routes=self._fast_app.routes,
         )
 

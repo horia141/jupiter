@@ -12,6 +12,7 @@ export interface GlobalPropertiesServer {
   hostedGlobalWebApiServerUrl: string;
   hostedGlobalWebApiProgressReporterUrl: string;
   docsUrl: string;
+  communityUrl: string;
   termsOfServiceUrl: string;
   privacyPolicyUrl: string;
   sessionCookieSecret: string;
@@ -51,6 +52,7 @@ function loadGlobalPropertiesOnServer(): GlobalPropertiesServer {
     hostedGlobalWebApiProgressReporterUrl:
       hostedGlobalWebApiProgressReporterUrl,
     docsUrl: process.env.DOCS_URL as string,
+    communityUrl: process.env.COMMUNITY_URL as string,
     termsOfServiceUrl: process.env.TERMS_OF_SERVICE_URL as string,
     privacyPolicyUrl: process.env.PRIVACY_POLICY_URL as string,
     sessionCookieSecret: process.env.SESSION_COOKIE_SECRET as string,

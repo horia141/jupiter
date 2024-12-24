@@ -138,7 +138,15 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             )
 
         async with self._domain_storage_engine.get_unit_of_work() as uow:
-            new_user = User.new_user(
+            # if args.for_app_review:
+            #     new_user = User.new_app_store_review_user(
+            #         ctx=context.domain_context,
+            #         email_address=args.user_email_address,
+            #         name=args.user_name,
+            #         feature_flag_controls=user_feature_flags_controls,
+            #     )
+            # else:
+            new_user = User.new_standard_user(
                 ctx=context.domain_context,
                 email_address=args.user_email_address,
                 name=args.user_name,
@@ -384,7 +392,8 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
 
         auth_token = self._auth_token_stamper.stamp_for_general(new_user)
 
-        await self._crm.upsert_as_user(new_user)
+        if new_user.should_go_through_onboarding_flow:
+            await self._crm.upsert_as_user(new_user)
 
         return InitResult(
             new_user=new_user,

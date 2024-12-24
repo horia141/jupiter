@@ -68,9 +68,9 @@ def sync_detailed(
     client: AuthenticatedClient,
     body: SearchArgs,
 ) -> Response[Union[Any, SearchResult]]:
-    """Use case for free form searching through Jupiter.
+    """Use case for free form searching through jupiter.
 
-     Use case for free form searching through Jupiter.
+     Use case for free form searching through jupiter.
 
     Args:
         body (SearchArgs): Search args.
@@ -99,9 +99,9 @@ def sync(
     client: AuthenticatedClient,
     body: SearchArgs,
 ) -> Optional[Union[Any, SearchResult]]:
-    """Use case for free form searching through Jupiter.
+    """Use case for free form searching through jupiter.
 
-     Use case for free form searching through Jupiter.
+     Use case for free form searching through jupiter.
 
     Args:
         body (SearchArgs): Search args.
@@ -125,9 +125,9 @@ async def asyncio_detailed(
     client: AuthenticatedClient,
     body: SearchArgs,
 ) -> Response[Union[Any, SearchResult]]:
-    """Use case for free form searching through Jupiter.
+    """Use case for free form searching through jupiter.
 
-     Use case for free form searching through Jupiter.
+     Use case for free form searching through jupiter.
 
     Args:
         body (SearchArgs): Search args.
@@ -154,9 +154,9 @@ async def asyncio(
     client: AuthenticatedClient,
     body: SearchArgs,
 ) -> Optional[Union[Any, SearchResult]]:
-    """Use case for free form searching through Jupiter.
+    """Use case for free form searching through jupiter.
 
-     Use case for free form searching through Jupiter.
+     Use case for free form searching through jupiter.
 
     Args:
         body (SearchArgs): Search args.

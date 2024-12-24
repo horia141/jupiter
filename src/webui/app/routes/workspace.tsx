@@ -47,8 +47,11 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
 
+import { CommunityLink } from "~/components/community-link";
 import { WorkspaceContainer } from "~/components/infra/layout/workspace-container";
 import { GlobalPropertiesContext } from "~/global-properties-client";
+import { isDevelopment } from "~/logic/domain/env";
+import { isInGlobalHosting } from "~/logic/domain/hosting";
 import editorJsTweaks from "~/styles/editorjs-tweaks.css";
 
 export const links: LinksFunction = () => [
@@ -170,6 +173,9 @@ export default function Workspace() {
             <SearchBox />
 
             <ProgressReporter token={loaderData.progressReporterToken} />
+
+            {(isInGlobalHosting(globalProperties.hosting) ||
+              isDevelopment(globalProperties.env)) && <CommunityLink />}
 
             <DocsHelp size="medium" subject={DocsHelpSubject.ROOT} />
 

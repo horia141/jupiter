@@ -1,5 +1,6 @@
 __pycache__/
 node_modules/
+secrets
 .system.lock
 .idea
 .vscode
@@ -9,10 +10,9 @@ site
 .coverage
 .build-cache/
 buildinfo/current
-secrets.info
 .cache/
-build/
-public/build/
+src/webui/build/
+src/webui/public/build/
 .env
 gen/ts/webapi-client/dist/
 .sqlite

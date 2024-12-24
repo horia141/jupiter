@@ -10,11 +10,11 @@
   "repository": "https://github.com/horia141/jupiter",
   "documentation": "https://docs.get-thriving.com",
   "workspaces": [
-    "src/desktop",
     "src/webui",
     "gen/ts/webapi-client"
   ],
   "devDependencies": {
+    "@svgr/cli": "^8.1.0",
     "@types/react-beautiful-dnd": "^13.1.3",
     "@typescript-eslint/eslint-plugin": "^5.47.0",
     "@typescript-eslint/parser": "^5.47.0",

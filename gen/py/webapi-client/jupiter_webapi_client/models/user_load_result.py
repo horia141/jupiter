@@ -19,7 +19,7 @@ class UserLoadResult:
     """User find result.
 
     Attributes:
-        user (User): A user of Jupiter.
+        user (User): A user of jupiter.
         user_score_overview (Union['UserScoreOverview', None, Unset]):
         user_score_history (Union['UserScoreHistory', None, Unset]):
     """

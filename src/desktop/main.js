@@ -1,16 +1,13 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { app, BrowserWindow } = require("electron");
+const dotEnv = require("dotenv");
 
-const createWindow = () => {
-  const win = new BrowserWindow({
-    width: 800,
-    height: 600,
-  });
+loadEnvironment();
 
-  win.loadURL("http://0.0.0.0:10020/workspace");
-
-  // win.webContents.openDevTools({ mode: "detach" });
-};
+const webuiUrl =
+  process.env.ENV == "production" && process.env.HOSTING === "hosted-global"
+    ? process.env.HOSTED_GLOBAL_WEBUI_SERVER_URL
+    : process.env.LOCAL_WEBUI_SERVER_URL;
 
 app.whenReady().then(() => {
   createWindow();
@@ -25,3 +22,26 @@ app.whenReady().then(() => {
 app.on("window-all-closed", () => {
   app.quit();
 });
+
+function createWindow() {
+  const win = new BrowserWindow({
+    width: 1200,
+    height: 900,
+  });
+
+  win.loadURL(webuiUrl);
+}
+
+function loadEnvironment() {
+  if (app.isPackaged) {
+    // If we're on MacOs
+    if (process.platform === "darwin") {
+      dotEnv.config({ path: app.getAppPath() + "/Config.project.production" });
+    } else {
+      console.error("Unsupported platform: ", process.platform);
+      app.exit(1);
+    }
+  } else {
+    dotEnv.config({ path: "Config.project" });
+  }
+}

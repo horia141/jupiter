@@ -13,7 +13,7 @@ class WorkspaceSetFeatureArgs:
     """Arguments for setting a feature in the workspace.
 
     Attributes:
-        feature (WorkspaceFeature): A particular feature of a Jupiter workspace.
+        feature (WorkspaceFeature): A particular feature of a jupiter workspace.
         value (bool):
     """
 

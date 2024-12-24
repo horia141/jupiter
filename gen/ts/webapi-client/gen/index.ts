@@ -443,6 +443,7 @@ export type { Timestamp } from './models/Timestamp';
 export type { Timezone } from './models/Timezone';
 export type { URL } from './models/URL';
 export type { User } from './models/User';
+export { UserCategory } from './models/UserCategory';
 export type { UserChangeFeatureFlagsArgs } from './models/UserChangeFeatureFlagsArgs';
 export { UserFeature } from './models/UserFeature';
 export type { UserFeatureFlagsControls } from './models/UserFeatureFlagsControls';

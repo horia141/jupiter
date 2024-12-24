@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
+from ..models.user_category import UserCategory
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
@@ -14,7 +15,7 @@ T = TypeVar("T", bound="User")
 
 @_attrs_define
 class User:
-    """A user of Jupiter.
+    """A user of jupiter.
 
     Attributes:
         ref_id (str): A generic entity id.
@@ -22,8 +23,9 @@ class User:
         archived (bool):
         created_time (str): A timestamp in the application.
         last_modified_time (str): A timestamp in the application.
+        category (UserCategory): The category of user.
         email_address (str): An email address.
-        name (str): The user name for a user of Jupiter.
+        name (str): The user name for a user of jupiter.
         avatar (str): A user avatar image.
         timezone (str): A timezone in this domain.
         feature_flags (UserFeatureFlags):
@@ -35,6 +37,7 @@ class User:
     archived: bool
     created_time: str
     last_modified_time: str
+    category: UserCategory
     email_address: str
     name: str
     avatar: str
@@ -53,6 +56,8 @@ class User:
         created_time = self.created_time
 
         last_modified_time = self.last_modified_time
+
+        category = self.category.value
 
         email_address = self.email_address
 
@@ -79,6 +84,7 @@ class User:
                 "archived": archived,
                 "created_time": created_time,
                 "last_modified_time": last_modified_time,
+                "category": category,
                 "email_address": email_address,
                 "name": name,
                 "avatar": avatar,
@@ -106,6 +112,8 @@ class User:
 
         last_modified_time = d.pop("last_modified_time")
 
+        category = UserCategory(d.pop("category"))
+
         email_address = d.pop("email_address")
 
         name = d.pop("name")
@@ -131,6 +139,7 @@ class User:
             archived=archived,
             created_time=created_time,
             last_modified_time=last_modified_time,
+            category=category,
             email_address=email_address,
             name=name,
             avatar=avatar,

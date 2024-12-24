@@ -16,7 +16,7 @@ class InitResult:
     """Init use case result.
 
     Attributes:
-        new_user (User): A user of Jupiter.
+        new_user (User): A user of jupiter.
         new_workspace (Workspace): The workspace where everything happens.
         auth_token_ext (str): An externally facing authentication token.
         recovery_token (str): A recovery token for auth systems.

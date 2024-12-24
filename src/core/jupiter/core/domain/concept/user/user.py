@@ -4,9 +4,10 @@ import abc
 from jupiter.core.domain.application.gamification.score_log import ScoreLog
 from jupiter.core.domain.concept.auth.auth import Auth
 from jupiter.core.domain.concept.user.avatar import Avatar
+from jupiter.core.domain.concept.user.user_category import UserCategory
 from jupiter.core.domain.concept.user.user_name import UserName
 from jupiter.core.domain.core.email_address import EmailAddress
-from jupiter.core.domain.core.timezone import Timezone
+from jupiter.core.domain.core.timezone import UTC, Timezone
 from jupiter.core.domain.features import (
     UserFeature,
     UserFeatureFlags,
@@ -33,6 +34,7 @@ from jupiter.core.framework.update_action import UpdateAction
 class User(RootEntity):
     """A user of jupiter."""
 
+    category: UserCategory
     email_address: EmailAddress
     name: UserName
     avatar: Avatar
@@ -44,7 +46,7 @@ class User(RootEntity):
 
     @staticmethod
     @create_entity_action
-    def new_user(
+    def new_standard_user(
         ctx: DomainContext,
         email_address: EmailAddress,
         name: UserName,
@@ -55,12 +57,34 @@ class User(RootEntity):
         """Create a new user."""
         return User._create(
             ctx,
+            category=UserCategory.STANDARD,
             email_address=email_address,
             name=name,
             avatar=Avatar.from_user_name(name),
             timezone=timezone,
             feature_flags=feature_flag_controls.validate_and_complete(
                 feature_flags_delta=feature_flags, current_feature_flags={}
+            ),
+        )
+
+    @staticmethod
+    @create_entity_action
+    def new_app_store_review_user(
+        ctx: DomainContext,
+        email_address: EmailAddress,
+        name: UserName,
+        feature_flag_controls: UserFeatureFlagsControls,
+    ) -> "User":
+        """Create a new user."""
+        return User._create(
+            ctx,
+            category=UserCategory.APP_STORE_REVIEW,
+            email_address=email_address,
+            name=name,
+            avatar=Avatar.from_user_name(name),
+            timezone=UTC,
+            feature_flags=feature_flag_controls.validate_and_complete(
+                feature_flags_delta={}, current_feature_flags={}
             ),
         )
 
@@ -100,6 +124,11 @@ class User(RootEntity):
     def is_feature_available(self, feature: UserFeature) -> bool:
         """Check if a feature is available for this user."""
         return self.feature_flags[feature]
+
+    @property
+    def should_go_through_onboarding_flow(self) -> bool:
+        """Return whether the user should go through the onboarding flow."""
+        return self.category == UserCategory.STANDARD
 
 
 class UserAlreadyExistsError(EntityAlreadyExistsError):

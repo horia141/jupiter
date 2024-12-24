@@ -18,10 +18,10 @@ theme:
     highlightjs: true
     hljs_style: obsidian
     palette:
-      primary: custom
+        primary: custom
 
 extra_css:
-  - assets/stylesheet.css
+    - assets/stylesheet.css
 
 nav:
     - Home: 'index.md'
@@ -59,8 +59,9 @@ nav:
           - 'Recover Your Account': 'how-tos/recover-your-account.md'
     - Roadmap: 'roadmap.md'
     - Releases:
-          - 'Version 1.1.0': 'releases/version-1.1.0.md'
+          - 'Version 1.1.1': 'releases/version-1.1.1.md'
           - Older:
+                - 'Version 1.1.0': 'releases/version-1.1.0.md'
                 - 'Version 1.0.6': 'releases/version-1.0.6.md'
                 - 'Version 1.0.3': 'releases/version-1.0.3.md'
                 - 'Version 1.0.5': 'releases/version-1.0.5.md'

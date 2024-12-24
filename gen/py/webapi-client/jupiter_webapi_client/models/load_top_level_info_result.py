@@ -31,17 +31,17 @@ class LoadTopLevelInfoResult:
     """Load user and workspace result.
 
     Attributes:
-        env (Env): An environment for a Jupiter application.
-        hosting (Hosting): The type of hosting Jupiter is run into.
+        env (Env): An environment for a jupiter application.
+        hosting (Hosting): The type of hosting jupiter is run into.
         user_feature_flag_controls (UserFeatureFlagsControls): Feature settings controls for the user.
         default_user_feature_flags (LoadTopLevelInfoResultDefaultUserFeatureFlags):
-        user_feature_hack (UserFeature): A particular feature of a Jupiter user.
+        user_feature_hack (UserFeature): A particular feature of a jupiter user.
         deafult_workspace_name (str): The workspace name.
         default_first_schedule_stream_name (str): The name of a schedule stream.
         default_root_project_name (str): The project name.
         workspace_feature_flag_controls (WorkspaceFeatureFlagsControls): Feature settings controls for the workspace.
         default_workspace_feature_flags (LoadTopLevelInfoResultDefaultWorkspaceFeatureFlags):
-        workspace_feature_hack (WorkspaceFeature): A particular feature of a Jupiter workspace.
+        workspace_feature_hack (WorkspaceFeature): A particular feature of a jupiter workspace.
         user (Union['User', None, Unset]):
         user_score_overview (Union['UserScoreOverview', None, Unset]):
         workspace (Union['Workspace', None, Unset]):
