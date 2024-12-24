@@ -13,7 +13,7 @@ docs_dir: material
 
 theme:
     name: material
-    favicon: assets/jupiter.ico
+    favicon: assets/favicon.ico
     logo: assets/jupiter.png
     highlightjs: true
     hljs_style: obsidian
