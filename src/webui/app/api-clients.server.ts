@@ -38,7 +38,7 @@ export async function getGuestApiClient(request: Request): Promise<ApiClient> {
     },
   });
 
-  _API_CLIENTS_BY_SESSION.set(token?.auth_token_str, newApiClient);
+  _API_CLIENTS_BY_SESSION.set(token, newApiClient);
 
   return newApiClient;
 }

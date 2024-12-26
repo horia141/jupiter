@@ -41,7 +41,7 @@ EXPOSE 8002
 
 WORKDIR /jupiter/src/webui
 
-RUN npm run build
+RUN npx remix build
 
 # ENTRYPOINT [ "dumb-init", "npx", "remix", "dev" ]
 ENTRYPOINT [ "dumb-init", "npx", "remix-serve", "build" ]

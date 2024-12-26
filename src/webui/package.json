@@ -11,10 +11,6 @@
   "documentation": "https://docs.get-thriving.com",
   "license": "MIT",
   "readme": "README.md",
-  "scripts": {
-    "build": "remix build",
-    "start": "remix-serve build"
-  },
   "dependencies": {
     "@calumk/editorjs-codeflask": "^1.0.9",
     "@editorjs/delimiter": "^1.3.0",
