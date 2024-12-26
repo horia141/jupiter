@@ -19,7 +19,7 @@ module.exports = {
     overwrite: true,
     platform: ["darwin", "mas"],
     extraResource: ["README.md", "LICENSE"],
-    derefSymlinks: false
+    derefSymlinks: false,
   },
   rebuildConfig: {},
   plugins: [

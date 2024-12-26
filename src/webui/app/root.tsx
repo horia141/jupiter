@@ -62,7 +62,7 @@ export function meta({ data }: { data: SerializeFrom<typeof loader> }) {
   return {
     charset: "utf-8",
     title: data.globalProperties.title,
-    viewport: "width=device-width,initial-scale=1",
+    viewport: "width=device-width,initial-scale=1,viewport-fit=cover",
   };
 }
 

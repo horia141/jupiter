@@ -1,5 +1,4 @@
 import {
-  AppBar,
   Button,
   ButtonGroup,
   Card,
@@ -7,7 +6,6 @@ import {
   CardContent,
   CardHeader,
   styled,
-  Toolbar,
   Typography,
 } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
@@ -20,9 +18,9 @@ import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { LifecyclePanel } from "~/components/infra/layout/lifecycle-panel";
 import { StandaloneContainer } from "~/components/infra/layout/standalone-container";
+import { SmartAppBar } from "~/components/infra/smart-appbar";
 import { Logo } from "~/components/logo";
 import { GlobalPropertiesContext } from "~/global-properties-client";
-import { shouldShowLargeAppBar } from "~/shell-client";
 
 const QuerySchema = {
   recoveryToken: z.string(),
@@ -56,24 +54,12 @@ export default function ShowRecoveryToken() {
 
   return (
     <StandaloneContainer>
-      <AppBar
-        position="static"
-        sx={{
-          flexDirection: "row",
-          paddingTop: shouldShowLargeAppBar(globalProperties.appShell)
-            ? "4rem"
-            : undefined,
-          zIndex: (theme) => theme.zIndex.drawer + 10,
-        }}
-      >
+      <SmartAppBar>
         <Logo />
-
-        <Toolbar>
-          <Typography noWrap variant="h6" component="div">
-            {globalProperties.title}
-          </Typography>
-        </Toolbar>
-      </AppBar>
+        <Typography noWrap variant="h6" component="div">
+          {globalProperties.title}
+        </Typography>
+      </SmartAppBar>
 
       <LifecyclePanel>
         <Card>

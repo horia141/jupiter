@@ -1,12 +1,13 @@
-import { AppBar, Button, ButtonGroup, Typography } from "@mui/material";
+import { Button, ButtonGroup, Typography } from "@mui/material";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Link } from "@remix-run/react";
 import { useContext } from "react";
 import { LifecyclePanel } from "~/components/infra/layout/lifecycle-panel";
 import { StandaloneContainer } from "~/components/infra/layout/standalone-container";
+import { SmartAppBar } from "~/components/infra/smart-appbar";
+import { Logo } from "~/components/logo";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
-import { shouldShowLargeAppBar } from "~/shell-client";
 
 export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
@@ -16,15 +17,8 @@ export default function Index() {
 
   return (
     <StandaloneContainer>
-      <AppBar
-        position="static"
-        sx={{
-          paddingTop: shouldShowLargeAppBar(globalProperties.appShell)
-            ? "4rem"
-            : undefined,
-          zIndex: (theme) => theme.zIndex.drawer + 10,
-        }}
-      >
+      <SmartAppBar>
+        <Logo />
         <Typography
           noWrap
           variant="h6"
@@ -33,7 +27,7 @@ export default function Index() {
         >
           {globalProperties.title}
         </Typography>
-      </AppBar>
+      </SmartAppBar>
 
       <LifecyclePanel>
         <ButtonGroup>

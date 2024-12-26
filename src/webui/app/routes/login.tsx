@@ -1,6 +1,5 @@
 import { ApiError } from "@jupiter/webapi-client";
 import {
-  AppBar,
   Button,
   ButtonGroup,
   Card,
@@ -11,7 +10,6 @@ import {
   InputLabel,
   OutlinedInput,
   Stack,
-  Toolbar,
   Typography,
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
@@ -27,13 +25,13 @@ import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LifecyclePanel } from "~/components/infra/layout/lifecycle-panel";
 import { StandaloneContainer } from "~/components/infra/layout/standalone-container";
+import { SmartAppBar } from "~/components/infra/smart-appbar";
 import { Logo } from "~/components/logo";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { AUTH_TOKEN_NAME } from "~/names";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { commitSession, getSession } from "~/sessions";
-import { shouldShowLargeAppBar } from "~/shell-client";
 
 const LoginFormSchema = {
   emailAddress: z.string(),
@@ -102,24 +100,13 @@ export default function Login() {
 
   return (
     <StandaloneContainer>
-      <AppBar
-        position="static"
-        sx={{
-          flexDirection: "row",
-          paddingTop: shouldShowLargeAppBar(globalProperties.appShell)
-            ? "4rem"
-            : undefined,
-          zIndex: (theme) => theme.zIndex.drawer + 10,
-        }}
-      >
+      <SmartAppBar>
         <Logo />
 
-        <Toolbar>
-          <Typography noWrap variant="h6" component="div">
-            {globalProperties.title}
-          </Typography>
-        </Toolbar>
-      </AppBar>
+        <Typography noWrap variant="h6" component="div">
+          {globalProperties.title}
+        </Typography>
+      </SmartAppBar>
 
       <LifecyclePanel>
         <Form method="post">
