@@ -416,7 +416,7 @@ const StyledMotionDrawer = styled(motion.div)<StyledMotionDrawerProps>(
     width: ${isBigScreen ? BIG_SCREEN_WIDTH : SMALL_SCREEN_WIDTH};
     z-index: ${theme.zIndex.drawer};
     height: 100%;
-    padding-top: ${largeAppBar ? "4rem" : "unset"};
+    padding-top: ${largeAppBar ? "2rem" : "unset"};
     overflow-x: auto;
     overflow-y: scroll;
     background-color: ${theme.palette.background.paper};

@@ -149,7 +149,7 @@ export default function Workspace() {
           position="static"
           sx={{
             paddingTop: shouldShowLargeAppBar(globalProperties.appShell)
-              ? "4rem"
+              ? "2rem"
               : undefined,
             zIndex: (theme) => theme.zIndex.drawer + 10,
           }}
