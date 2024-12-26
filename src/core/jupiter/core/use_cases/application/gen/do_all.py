@@ -11,7 +11,9 @@ from jupiter.core.framework.use_case import (
     EmptyContext,
 )
 from jupiter.core.framework.use_case_io import UseCaseArgsBase, use_case_args
-from jupiter.core.use_cases.infra.use_cases import AppBackgroundMutationUseCase
+from jupiter.core.use_cases.infra.use_cases import (
+    SysBackgroundMutationUseCase,
+)
 
 
 @use_case_args
@@ -19,14 +21,10 @@ class GenDoAllArgs(UseCaseArgsBase):
     """GenDoAllArgs."""
 
 
-class GenDoAllUseCase(AppBackgroundMutationUseCase[GenDoAllArgs, None]):
+class GenDoAllUseCase(SysBackgroundMutationUseCase[GenDoAllArgs, None]):
     """The command for doing task generation for all workspaces."""
 
-    async def _execute(
-        self,
-        context: EmptyContext,
-        args: GenDoAllArgs,
-    ) -> None:
+    async def _execute(self, context: EmptyContext, args: GenDoAllArgs) -> None:
         """Execute the command's action."""
         async with self._domain_storage_engine.get_unit_of_work() as uow:
             workspaces = await uow.get_for(Workspace).find_all(allow_archived=False)
@@ -39,7 +37,7 @@ class GenDoAllUseCase(AppBackgroundMutationUseCase[GenDoAllArgs, None]):
                 uwl.workspace_ref_id: uwl.user_ref_id for uwl in user_workspace_links
             }
 
-        ctx = DomainContext(
+        ctx = DomainContext.from_sys(
             EventSource.GEN_CRON, self._time_provider.get_current_time()
         )
 

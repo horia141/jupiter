@@ -31,7 +31,7 @@ import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
@@ -46,7 +46,6 @@ import { getIntent } from "~/logic/intent";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = {
@@ -77,11 +76,11 @@ export const handle = {
 };
 
 export async function loader({ request, params }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
 
   try {
-    const response = await getLoggedInApiClient(session).email.emailTaskLoad({
+    const response = await apiClient.email.emailTaskLoad({
       ref_id: id,
       allow_archived: true,
     });
@@ -103,7 +102,7 @@ export async function loader({ request, params }: LoaderArgs) {
 }
 
 export async function action({ request, params }: ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
 
@@ -112,7 +111,7 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (intent) {
       case "update": {
-        await getLoggedInApiClient(session).email.emailTaskUpdate({
+        await apiClient.email.emailTaskUpdate({
           ref_id: id,
           from_address: {
             should_change: true,
@@ -179,7 +178,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).email.emailTaskArchive({
+        await apiClient.email.emailTaskArchive({
           ref_id: id,
         });
 

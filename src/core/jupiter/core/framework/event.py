@@ -20,10 +20,9 @@ class EventKind(enum.Enum):
 class EventSource(EnumValue):
     """The source of the modification which this event records."""
 
-    CLI = "cli"
-    WEB = "web"
-    SLACK = "slack"
-    EMAIL = "email"
+    _OLD_WEB = "web"
+    _OLD_CLI = "cli"
+    APP = "app"
     GC_CRON = "gc-cron"
     GEN_CRON = "gen-cron"
     SCHEDULE_EXTERNAL_SYNC_CRON = "schedule-external-sync-cron"

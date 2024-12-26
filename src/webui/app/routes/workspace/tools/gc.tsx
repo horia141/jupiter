@@ -1,4 +1,4 @@
-import { ApiError, EventSource, SyncTarget } from "@jupiter/webapi-client";
+import { ApiError, SyncTarget } from "@jupiter/webapi-client";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
   Accordion,
@@ -24,7 +24,7 @@ import { StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntitySummaryLink } from "~/components/entity-summary-link";
 import { EventSourceTag } from "~/components/event-source-tag";
 import { EntityCard } from "~/components/infra/entity-card";
@@ -42,7 +42,6 @@ import { fixSelectOutputToEnum, selectZod } from "~/logic/select";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
 
 const GCFormSchema = {
@@ -54,19 +53,17 @@ export const handle = {
 };
 
 export async function loader({ request }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
-
-  const response = await getLoggedInApiClient(session).gc.gcLoadRuns({});
+  const apiClient = await getLoggedInApiClient(request);
+  const response = await apiClient.gc.gcLoadRuns({});
   return json(response.entries);
 }
 
 export async function action({ request }: ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const form = await parseForm(request, GCFormSchema);
 
   try {
-    await getLoggedInApiClient(session).gc.gcDo({
-      source: EventSource.WEB,
+    await apiClient.gc.gcDo({
       gc_targets: fixSelectOutputToEnum<SyncTarget>(form.gcTargets),
     });
 

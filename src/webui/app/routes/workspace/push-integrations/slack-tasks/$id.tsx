@@ -31,7 +31,7 @@ import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
@@ -46,7 +46,6 @@ import { getIntent } from "~/logic/intent";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = {
@@ -75,11 +74,11 @@ const UpdateFormSchema = {
 };
 
 export async function loader({ request, params }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
 
   try {
-    const response = await getLoggedInApiClient(session).slack.slackTaskLoad({
+    const response = await apiClient.slack.slackTaskLoad({
       ref_id: id,
       allow_archived: true,
     });
@@ -101,7 +100,7 @@ export async function loader({ request, params }: LoaderArgs) {
 }
 
 export async function action({ request, params }: ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
 
@@ -110,7 +109,7 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (intent) {
       case "update": {
-        await getLoggedInApiClient(session).slack.slackTaskUpdate({
+        await apiClient.slack.slackTaskUpdate({
           ref_id: id,
           user: {
             should_change: true,
@@ -169,7 +168,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).slack.slackTaskArchive({
+        await apiClient.slack.slackTaskArchive({
           ref_id: id,
         });
 

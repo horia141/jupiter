@@ -2,6 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { AppCore } from './AppCore';
+import type { AppShell } from './AppShell';
 import type { Env } from './Env';
 import type { Hosting } from './Hosting';
 import type { ProjectName } from './ProjectName';
@@ -23,7 +25,6 @@ export type LoadTopLevelInfoResult = {
     hosting: Hosting;
     user_feature_flag_controls: UserFeatureFlagsControls;
     default_user_feature_flags: Record<string, boolean>;
-    user_feature_hack: UserFeature;
     deafult_workspace_name: WorkspaceName;
     default_first_schedule_stream_name: ScheduleStreamName;
     default_root_project_name: ProjectName;
@@ -33,5 +34,8 @@ export type LoadTopLevelInfoResult = {
     user?: (User | null);
     user_score_overview?: (UserScoreOverview | null);
     workspace?: (Workspace | null);
+    user_feature_hack?: (UserFeature | null);
+    app_core_hack?: (AppCore | null);
+    app_shell_hack?: (AppShell | null);
 };
 

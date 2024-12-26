@@ -12,7 +12,7 @@ import { StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -25,7 +25,6 @@ import { ScheduleStreamColorInput } from "~/components/schedule-stream-color-inp
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
 
 const CreateFormSchema = {
@@ -38,14 +37,12 @@ export const handle = {
 };
 
 export async function action({ request }: ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const form = await parseForm(request, CreateFormSchema);
   const url = new URL(request.url);
 
   try {
-    const response = await getLoggedInApiClient(
-      session
-    ).stream.scheduleStreamCreateForUser({
+    const response = await apiClient.stream.scheduleStreamCreateForUser({
       name: form.name,
       color: form.color,
     });

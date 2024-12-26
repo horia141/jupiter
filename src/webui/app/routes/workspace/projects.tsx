@@ -10,7 +10,7 @@ import { AnimatePresence } from "framer-motion";
 import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNameComponent } from "~/components/entity-name";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
@@ -33,7 +33,6 @@ import {
   DisplayType,
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 
 const UpdateFormSchema = {
   intent: z.string(),
@@ -44,8 +43,8 @@ export const handle = {
 };
 
 export async function loader({ request }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
-  const response = await getLoggedInApiClient(session).projects.projectFind({
+  const apiClient = await getLoggedInApiClient(request);
+  const response = await apiClient.projects.projectFind({
     allow_archived: false,
     include_notes: false,
   });
@@ -53,7 +52,7 @@ export async function loader({ request }: LoaderArgs) {
 }
 
 export async function action({ request, params }: ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const form = await parseForm(request, UpdateFormSchema);
 
   const { intent, args } = getIntent<{
@@ -68,7 +67,7 @@ export async function action({ request, params }: ActionArgs) {
           throw new Error("Missing required arguments!");
         }
 
-        await getLoggedInApiClient(session).projects.projectReorderChildren({
+        await apiClient.projects.projectReorderChildren({
           ref_id: args?.refId,
           new_order_of_child_projects: args?.newOrderOfChildProjects,
         });

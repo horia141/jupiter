@@ -27,7 +27,7 @@ import { StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
 import { CheckboxAsString, parseForm } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -39,7 +39,6 @@ import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
 
 const CreateFormSchema = {
@@ -62,10 +61,8 @@ export const handle = {
 };
 
 export async function loader({ request }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
-  const summaryResponse = await getLoggedInApiClient(
-    session
-  ).getSummaries.getSummaries({
+  const apiClient = await getLoggedInApiClient(request);
+  const summaryResponse = await apiClient.getSummaries.getSummaries({
     include_projects: true,
   });
 
@@ -76,11 +73,11 @@ export async function loader({ request }: LoaderArgs) {
 }
 
 export async function action({ request }: ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const form = await parseForm(request, CreateFormSchema);
 
   try {
-    const result = await getLoggedInApiClient(session).habits.habitCreate({
+    const result = await apiClient.habits.habitCreate({
       name: form.name,
       project_ref_id: form.project !== undefined ? form.project : undefined,
       period: form.period,

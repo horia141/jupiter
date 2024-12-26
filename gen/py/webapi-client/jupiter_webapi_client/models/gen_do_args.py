@@ -3,7 +3,6 @@ from typing import Any, Dict, List, Type, TypeVar, Union, cast
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-from ..models.event_source import EventSource
 from ..models.recurring_task_period import RecurringTaskPeriod
 from ..models.sync_target import SyncTarget
 from ..types import UNSET, Unset
@@ -16,7 +15,6 @@ class GenDoArgs:
     """PersonFindArgs.
 
     Attributes:
-        source (EventSource): The source of the modification which this event records.
         gen_even_if_not_modified (bool):
         today (Union[None, Unset, str]):
         gen_targets (Union[List[SyncTarget], None, Unset]):
@@ -30,7 +28,6 @@ class GenDoArgs:
         filter_email_task_ref_ids (Union[List[str], None, Unset]):
     """
 
-    source: EventSource
     gen_even_if_not_modified: bool
     today: Union[None, Unset, str] = UNSET
     gen_targets: Union[List[SyncTarget], None, Unset] = UNSET
@@ -45,8 +42,6 @@ class GenDoArgs:
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
-        source = self.source.value
-
         gen_even_if_not_modified = self.gen_even_if_not_modified
 
         today: Union[None, Unset, str]
@@ -146,7 +141,6 @@ class GenDoArgs:
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
-                "source": source,
                 "gen_even_if_not_modified": gen_even_if_not_modified,
             }
         )
@@ -176,8 +170,6 @@ class GenDoArgs:
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         d = src_dict.copy()
-        source = EventSource(d.pop("source"))
-
         gen_even_if_not_modified = d.pop("gen_even_if_not_modified")
 
         def _parse_today(data: object) -> Union[None, Unset, str]:
@@ -353,7 +345,6 @@ class GenDoArgs:
         filter_email_task_ref_ids = _parse_filter_email_task_ref_ids(d.pop("filter_email_task_ref_ids", UNSET))
 
         gen_do_args = cls(
-            source=source,
             gen_even_if_not_modified=gen_even_if_not_modified,
             today=today,
             gen_targets=gen_targets,

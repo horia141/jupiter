@@ -21,7 +21,7 @@ import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
@@ -43,7 +43,6 @@ import {
 import { basicShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = {
@@ -68,13 +67,11 @@ export const handle = {
 };
 
 export async function loader({ request, params }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
 
   try {
-    const response = await getLoggedInApiClient(
-      session
-    ).inDayBlock.timeEventInDayBlockLoad({
+    const response = await apiClient.inDayBlock.timeEventInDayBlockLoad({
       ref_id: id,
       allow_archived: true,
     });
@@ -97,7 +94,7 @@ export async function loader({ request, params }: LoaderArgs) {
 }
 
 export async function action({ request, params }: ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
   const url = new URL(request.url);
@@ -109,9 +106,7 @@ export async function action({ request, params }: ActionArgs) {
           form,
           form.userTimezone
         );
-        await getLoggedInApiClient(
-          session
-        ).inDayBlock.timeEventInDayBlockUpdate({
+        await apiClient.inDayBlock.timeEventInDayBlockUpdate({
           ref_id: id,
           start_date: {
             should_change: true,
@@ -132,9 +127,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(
-          session
-        ).inDayBlock.timeEventInDayBlockArchive({
+        await apiClient.inDayBlock.timeEventInDayBlockArchive({
           ref_id: id,
         });
         return redirect(

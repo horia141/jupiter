@@ -21,7 +21,7 @@ import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
@@ -32,7 +32,6 @@ import { isRootProject } from "~/logic/domain/project";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation as useLoaderDataForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 
 const ParamsSchema = {
   id: z.string(),
@@ -60,17 +59,15 @@ export const handle = {
 };
 
 export async function loader({ request, params }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
 
-  const summaryResponse = await getLoggedInApiClient(
-    session
-  ).getSummaries.getSummaries({
+  const summaryResponse = await apiClient.getSummaries.getSummaries({
     include_projects: true,
   });
 
   try {
-    const response = await getLoggedInApiClient(session).projects.projectLoad({
+    const response = await apiClient.projects.projectLoad({
       ref_id: id,
       allow_archived: true,
     });
@@ -94,14 +91,14 @@ export async function loader({ request, params }: LoaderArgs) {
 }
 
 export async function action({ request, params }: ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
 
   try {
     switch (form.intent) {
       case "update": {
-        await getLoggedInApiClient(session).projects.projectUpdate({
+        await apiClient.projects.projectUpdate({
           ref_id: id,
           name: {
             should_change: true,
@@ -113,7 +110,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "change-parent": {
-        await getLoggedInApiClient(session).projects.projectChangeParent({
+        await apiClient.projects.projectChangeParent({
           ref_id: id,
           parent_project_ref_id: form.parentProjectRefId,
         });
@@ -122,7 +119,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "create-note": {
-        await getLoggedInApiClient(session).notes.noteCreate({
+        await apiClient.notes.noteCreate({
           domain: NoteDomain.PROJECT,
           source_entity_ref_id: id,
           content: [],
@@ -132,7 +129,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).projects.projectArchive({
+        await apiClient.projects.projectArchive({
           ref_id: id,
         });
 

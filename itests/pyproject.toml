@@ -14,7 +14,8 @@ documentation = "https://docs.get-thriving.com"
 python = ">=3.10, <3.11"
 jupiter-core = {path = "../src/core", develop = true}
 jupiter-webapi-client = {path = "../gen/py/webapi-client", develop = true}
-pytest-playwright = "^0.4.4"
+pytest-playwright = "^0.6.2"
+playwright = "^1.49.1"
 
 [tool.poetry.dev-dependencies]
 

@@ -21,7 +21,7 @@ import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseParams } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
@@ -49,13 +49,11 @@ export const handle = {
 };
 
 export async function loader({ request, params }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
 
   try {
-    const response = await getLoggedInApiClient(
-      session
-    ).fullDaysBlock.timeEventFullDaysBlockLoad({
+    const response = await apiClient.fullDaysBlock.timeEventFullDaysBlockLoad({
       ref_id: id,
       allow_archived: true,
     });

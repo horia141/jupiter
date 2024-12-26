@@ -29,7 +29,7 @@ import {
 import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";
 import { useContext, useState } from "react";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { BigPlanStack } from "~/components/big-plan-stack";
 import { EntityNameOneLineComponent } from "~/components/entity-name";
 import { EntityLink } from "~/components/infra/entity-card";
@@ -55,7 +55,6 @@ import {
   DisplayType,
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 import type { TopLevelInfo } from "~/top-level-context";
 import { TopLevelInfoContext } from "~/top-level-context";
 
@@ -64,13 +63,11 @@ export const handle = {
 };
 
 export async function loader({ request }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
-  const summaryResponse = await getLoggedInApiClient(
-    session
-  ).getSummaries.getSummaries({
+  const apiClient = await getLoggedInApiClient(request);
+  const summaryResponse = await apiClient.getSummaries.getSummaries({
     include_projects: true,
   });
-  const response = await getLoggedInApiClient(session).bigPlans.bigPlanFind({
+  const response = await apiClient.bigPlans.bigPlanFind({
     allow_archived: false,
     include_project: true,
     include_inbox_tasks: false,
@@ -265,8 +262,17 @@ export default function BigPlans() {
 
                 return (
                   <Box key={p.ref_id}>
-                    <Divider>
-                      <Typography variant="h6">{fullProjectName}</Typography>
+                    <Divider variant="fullWidth">
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          maxWidth: "calc(100vw - 2rem)",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        {fullProjectName}
+                      </Typography>
                     </Divider>
                     <>
                       {isBigScreen && (

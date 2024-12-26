@@ -5,7 +5,6 @@ from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.sync_target import SyncTarget
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
     ProgressReporter,
 )
@@ -21,7 +20,6 @@ from jupiter.core.use_cases.infra.use_cases import (
 class GenDoArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
-    source: EventSource
     gen_even_if_not_modified: bool
     today: ADate | None
     gen_targets: list[SyncTarget] | None

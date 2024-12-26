@@ -48,7 +48,7 @@ import Grid from "@mui/material/Unstable_Grid2";
 import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";
 import { z } from "zod";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import type { InboxTaskShowOptions } from "~/components/inbox-task-card";
 import { InboxTaskCard } from "~/components/inbox-task-card";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
@@ -88,7 +88,6 @@ import {
   DisplayType,
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 import type { TopLevelInfo } from "~/top-level-context";
 import { TopLevelInfoContext } from "~/top-level-context";
 
@@ -128,14 +127,12 @@ export const handle = {
 };
 
 export async function loader({ request }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
-  const response = await getLoggedInApiClient(session).inboxTasks.inboxTaskFind(
-    {
-      allow_archived: false,
-      include_notes: false,
-      include_time_event_blocks: false,
-    }
-  );
+  const apiClient = await getLoggedInApiClient(request);
+  const response = await apiClient.inboxTasks.inboxTaskFind({
+    allow_archived: false,
+    include_notes: false,
+    include_time_event_blocks: false,
+  });
   return json({
     entries: response.entries,
   });

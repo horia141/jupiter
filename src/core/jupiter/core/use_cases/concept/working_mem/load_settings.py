@@ -1,4 +1,5 @@
 """Load settings for working mems use case."""
+from jupiter.core.domain.app import AppCore
 from jupiter.core.domain.concept.projects.project import Project
 from jupiter.core.domain.concept.working_mem.working_mem_collection import (
     WorkingMemCollection,
@@ -6,7 +7,6 @@ from jupiter.core.domain.concept.working_mem.working_mem_collection import (
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,
@@ -33,7 +33,7 @@ class WorkingMemLoadSettingsResult(UseCaseResultBase):
     cleanup_project: Project
 
 
-@readonly_use_case(WorkspaceFeature.WORKING_MEM, exclude_app=[EventSource.CLI])
+@readonly_use_case(WorkspaceFeature.WORKING_MEM, exclude_app=[AppCore.CLI])
 class WorkingMemLoadSettingsUseCase(
     AppTransactionalLoggedInReadOnlyUseCase[
         WorkingMemLoadSettingsArgs, WorkingMemLoadSettingsResult

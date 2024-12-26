@@ -15,6 +15,7 @@ import inflection
 from jupiter.cli.command.rendering import RichConsoleProgressReporterFactory
 from jupiter.cli.session_storage import SessionInfo, SessionStorage
 from jupiter.cli.top_level_context import TopLevelContext
+from jupiter.core.domain.app import AppCore
 from jupiter.core.domain.concept.auth.auth_token_stamper import AuthTokenStamper
 from jupiter.core.domain.concept.user.user import User
 from jupiter.core.domain.concept.workspaces.workspace import Workspace
@@ -22,7 +23,6 @@ from jupiter.core.domain.crm import CRM
 from jupiter.core.domain.env import Env
 from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainStorageEngine, SearchStorageEngine
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.realm import CliRealm, RealmCodecRegistry
 from jupiter.core.framework.thing import Thing
@@ -700,7 +700,7 @@ class GuestMutationCommand(
             self._args_type, CliRealm
         ).decode(vars(args))
         context, result = await self._use_case.execute(
-            AppGuestUseCaseSession(
+            AppGuestUseCaseSession.for_cli(
                 session_info.auth_token_ext if session_info else None
             ),
             parsed_args,
@@ -748,7 +748,7 @@ class GuestReadonlyCommand(
             self._args_type, CliRealm
         ).decode(vars(args))
         context, result = await self._use_case.execute(
-            AppGuestUseCaseSession(
+            AppGuestUseCaseSession.for_cli(
                 session_info.auth_token_ext if session_info else None
             ),
             parsed_args,
@@ -801,7 +801,7 @@ class LoggedInMutationCommand(
             self._args_type, CliRealm
         ).decode(vars(args))
         context, result = await self._use_case.execute(
-            AppLoggedInUseCaseSession(session.auth_token_ext),
+            AppLoggedInUseCaseSession.for_cli(session.auth_token_ext),
             parsed_args,
         )
         self._render_result(console, context, result)
@@ -820,7 +820,7 @@ class LoggedInMutationCommand(
         scoped_to_app = self._use_case.get_scoped_to_app()
         if scoped_to_app is None:
             return True
-        return EventSource.CLI in scoped_to_app
+        return AppCore.CLI in scoped_to_app
 
     def is_allowed_for_environment(self, env: Env) -> bool:
         """Is this command allowed for a particular environment."""
@@ -892,7 +892,7 @@ class LoggedInReadonlyCommand(
             self._args_type, CliRealm
         ).decode(vars(args))
         context, result = await self._use_case.execute(
-            AppLoggedInUseCaseSession(session.auth_token_ext),
+            AppLoggedInUseCaseSession.for_cli(session.auth_token_ext),
             parsed_args,
         )
         self._render_result(console, context, result)
@@ -911,7 +911,7 @@ class LoggedInReadonlyCommand(
         scoped_to_app = self._use_case.get_scoped_to_app()
         if scoped_to_app is None:
             return True
-        return EventSource.CLI in scoped_to_app
+        return AppCore.CLI in scoped_to_app
 
     def is_allowed_for_environment(self, env: Env) -> bool:
         """Is this command allowed for a particular environment."""

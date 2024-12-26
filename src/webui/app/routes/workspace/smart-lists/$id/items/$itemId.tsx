@@ -19,7 +19,7 @@ import { useActionData, useParams, useTransition } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { CheckboxAsString, parseForm, parseParams } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
@@ -30,7 +30,6 @@ import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 
 const ParamsSchema = {
   id: z.string(),
@@ -55,11 +54,11 @@ export const handle = {
 };
 
 export async function loader({ request, params }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const { itemId } = parseParams(params, ParamsSchema);
 
   try {
-    const result = await getLoggedInApiClient(session).item.smartListItemLoad({
+    const result = await apiClient.item.smartListItemLoad({
       ref_id: itemId,
       allow_archived: true,
     });
@@ -85,14 +84,14 @@ export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export async function action({ request, params }: ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const { id, itemId } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
 
   try {
     switch (form.intent) {
       case "update": {
-        await getLoggedInApiClient(session).item.smartListItemUpdate({
+        await apiClient.item.smartListItemUpdate({
           ref_id: itemId,
           name: {
             should_change: true,
@@ -116,7 +115,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "create-note": {
-        await getLoggedInApiClient(session).notes.noteCreate({
+        await apiClient.notes.noteCreate({
           domain: NoteDomain.SMART_LIST_ITEM,
           source_entity_ref_id: itemId,
           content: [],
@@ -126,7 +125,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).item.smartListItemArchive({
+        await apiClient.item.smartListItemArchive({
           ref_id: itemId,
         });
 

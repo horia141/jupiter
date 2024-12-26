@@ -1,4 +1,5 @@
 import {
+  AppBar,
   Button,
   ButtonGroup,
   Card,
@@ -6,18 +7,22 @@ import {
   CardContent,
   CardHeader,
   styled,
+  Toolbar,
   Typography,
 } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { z } from "zod";
 import { parseQuery } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
+import { LifecyclePanel } from "~/components/infra/layout/lifecycle-panel";
 import { StandaloneContainer } from "~/components/infra/layout/standalone-container";
-import { getSession } from "~/sessions";
+import { Logo } from "~/components/logo";
+import { GlobalPropertiesContext } from "~/global-properties-client";
+import { shouldShowLargeAppBar } from "~/shell-client";
 
 const QuerySchema = {
   recoveryToken: z.string(),
@@ -25,10 +30,8 @@ const QuerySchema = {
 
 // @secureFn
 export async function loader({ request }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
-  const response = await getLoggedInApiClient(
-    session
-  ).loadTopLevelInfo.loadTopLevelInfo({});
+  const apiClient = await getLoggedInApiClient(request);
+  const response = await apiClient.loadTopLevelInfo.loadTopLevelInfo({});
 
   if (!response.user || !response.workspace) {
     return redirect("/init");
@@ -42,6 +45,7 @@ export async function loader({ request }: LoaderArgs) {
 // @secureFn
 export default function ShowRecoveryToken() {
   const { recoveryToken } = useLoaderData<typeof loader>();
+  const globalProperties = useContext(GlobalPropertiesContext);
 
   const [hasCopied, setHasCopied] = useState(false);
 
@@ -52,37 +56,58 @@ export default function ShowRecoveryToken() {
 
   return (
     <StandaloneContainer>
-      <Card>
-        <CardHeader title="Your Recovery Token" />
-        <CardContent>
-          <Typography variant="body1">
-            This is your recovery token! It is used to recover your account in
-            the case you forget your password!{" "}
-            <em>Store it in a safe place!</em>
-          </Typography>
-          <RecoveryTokenBox variant="body2">{recoveryToken}</RecoveryTokenBox>
-        </CardContent>
+      <AppBar
+        position="static"
+        sx={{
+          flexDirection: "row",
+          paddingTop: shouldShowLargeAppBar(globalProperties.appShell)
+            ? "4rem"
+            : undefined,
+          zIndex: (theme) => theme.zIndex.drawer + 10,
+        }}
+      >
+        <Logo />
 
-        <CardActions>
-          <ButtonGroup>
-            <Button variant="contained" to="/workspace" component={Link}>
-              To Workspace
-            </Button>
-          </ButtonGroup>
-          <ButtonGroup>
-            <Button
-              variant="contained"
-              disabled={hasCopied}
-              onClick={copyToClipboard}
-            >
-              {hasCopied ? "Copied" : "Copy"}
-            </Button>
-            <Button variant="outlined" disabled={true}>
-              Save
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
+        <Toolbar>
+          <Typography noWrap variant="h6" component="div">
+            {globalProperties.title}
+          </Typography>
+        </Toolbar>
+      </AppBar>
+
+      <LifecyclePanel>
+        <Card>
+          <CardHeader title="Your Recovery Token" />
+          <CardContent>
+            <Typography variant="body1">
+              This is your recovery token! It is used to recover your account in
+              the case you forget your password!{" "}
+              <em>Store it in a safe place!</em>
+            </Typography>
+            <RecoveryTokenBox variant="body2">{recoveryToken}</RecoveryTokenBox>
+          </CardContent>
+
+          <CardActions>
+            <ButtonGroup>
+              <Button variant="contained" to="/workspace" component={Link}>
+                To Workspace
+              </Button>
+            </ButtonGroup>
+            <ButtonGroup>
+              <Button
+                variant="contained"
+                disabled={hasCopied}
+                onClick={copyToClipboard}
+              >
+                {hasCopied ? "Copied" : "Copy"}
+              </Button>
+              <Button variant="outlined" disabled={true}>
+                Save
+              </Button>
+            </ButtonGroup>
+          </CardActions>
+        </Card>
+      </LifecyclePanel>
     </StandaloneContainer>
   );
 }

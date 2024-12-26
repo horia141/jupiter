@@ -24,6 +24,7 @@ GEM
 
 PLATFORMS
   universal-darwin-21
+  x86_64-darwin-20
 
 DEPENDENCIES
   mdl (~> 0.11.0)

@@ -17,7 +17,7 @@ import { useActionData, useParams, useTransition } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { IconSelector } from "~/components/icon-selector";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
@@ -29,7 +29,6 @@ import { getIntent } from "~/logic/intent";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 
 const ParamsSchema = {
   id: z.string(),
@@ -46,13 +45,11 @@ export const handle = {
 };
 
 export async function loader({ request, params }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
 
   try {
-    const response = await getLoggedInApiClient(
-      session
-    ).smartLists.smartListLoad({
+    const response = await apiClient.smartLists.smartListLoad({
       ref_id: id,
       allow_archived: true,
     });
@@ -74,7 +71,7 @@ export async function loader({ request, params }: LoaderArgs) {
 }
 
 export async function action({ request, params }: ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
 
@@ -83,7 +80,7 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (intent) {
       case "update": {
-        await getLoggedInApiClient(session).smartLists.smartListUpdate({
+        await apiClient.smartLists.smartListUpdate({
           ref_id: id,
           name: {
             should_change: true,
@@ -99,7 +96,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "create-note": {
-        await getLoggedInApiClient(session).notes.noteCreate({
+        await apiClient.notes.noteCreate({
           domain: NoteDomain.SMART_LIST,
           source_entity_ref_id: id,
           content: [],
@@ -109,7 +106,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).smartLists.smartListArchive({
+        await apiClient.smartLists.smartListArchive({
           ref_id: id,
         });
 

@@ -4,13 +4,12 @@ import { json } from "@remix-run/node";
 import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import {
   noErrorSomeData,
   validationErrorToUIErrorInfo,
 } from "~/logic/action-result";
 import { NoteContentParser } from "~/logic/domain/notes";
-import { getSession } from "~/sessions";
 
 const CreateFormSchema = {
   name: z.string(),
@@ -21,11 +20,11 @@ const CreateFormSchema = {
 };
 
 export async function action({ request }: ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const form = await parseForm(request, CreateFormSchema);
 
   try {
-    const result = await getLoggedInApiClient(session).docs.docCreate({
+    const result = await apiClient.docs.docCreate({
       name: form.name,
       content: form.content,
     });

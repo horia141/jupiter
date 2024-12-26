@@ -4,6 +4,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any, Final, Generic, TypeVar, Union
 
+from jupiter.core.domain.app import AppCore, AppShell
 from jupiter.core.domain.concept.auth.auth_token import (
     AuthToken,
     ExpiredAuthTokenError,
@@ -32,7 +33,6 @@ from jupiter.core.domain.storage_engine import (
 from jupiter.core.framework import use_case as uc
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.realm import RealmCodecRegistry
 from jupiter.core.framework.use_case import (
     EmptyContext,
@@ -62,6 +62,24 @@ class AppGuestUseCaseSession(EmptySession):
     """The application use case session."""
 
     auth_token_ext: AuthTokenExt | None
+    app_core: AppCore
+    app_shell: AppShell
+
+    @staticmethod
+    def for_cli(auth_token_ext: AuthTokenExt | None) -> "AppGuestUseCaseSession":
+        """Create a CLI session."""
+        return AppGuestUseCaseSession(
+            auth_token_ext=auth_token_ext, app_core=AppCore.CLI, app_shell=AppShell.CLI
+        )
+
+    @staticmethod
+    def for_webui(
+        auth_token_ext: AuthTokenExt | None, app_shell: AppShell
+    ) -> "AppGuestUseCaseSession":
+        """Create a WebUI session."""
+        return AppGuestUseCaseSession(
+            auth_token_ext=auth_token_ext, app_core=AppCore.WEBUI, app_shell=app_shell
+        )
 
 
 @dataclass(frozen=True)
@@ -139,8 +157,10 @@ class AppGuestMutationUseCase(
             auth_token = None
         return AppGuestMutationUseCaseContext(
             auth_token=auth_token,
-            domain_context=DomainContext(
-                EventSource.CLI, self._time_provider.get_current_time()
+            domain_context=DomainContext.from_app(
+                session.app_core,
+                session.app_shell,
+                self._time_provider.get_current_time(),
             ),
         )
 
@@ -207,6 +227,24 @@ class AppLoggedInUseCaseSession(UseCaseSessionBase):
     """The application use case session for logged-in-OK interactions."""
 
     auth_token_ext: AuthTokenExt
+    app_core: AppCore
+    app_shell: AppShell
+
+    @staticmethod
+    def for_cli(auth_token_ext: AuthTokenExt) -> "AppLoggedInUseCaseSession":
+        """Create a CLI session."""
+        return AppLoggedInUseCaseSession(
+            auth_token_ext=auth_token_ext, app_core=AppCore.CLI, app_shell=AppShell.CLI
+        )
+
+    @staticmethod
+    def for_webui(
+        auth_token_ext: AuthTokenExt, app_shell: AppShell
+    ) -> "AppLoggedInUseCaseSession":
+        """Create a WebUI session."""
+        return AppLoggedInUseCaseSession(
+            auth_token_ext=auth_token_ext, app_core=AppCore.WEBUI, app_shell=app_shell
+        )
 
 
 @dataclass(frozen=True)
@@ -259,7 +297,7 @@ class AppLoggedInMutationUseCase(
         return None
 
     @staticmethod
-    def get_scoped_to_app() -> list[EventSource] | None:
+    def get_scoped_to_app() -> list[AppCore] | None:
         """The apps the command is available in."""
         return None
 
@@ -332,8 +370,10 @@ class AppLoggedInMutationUseCase(
             return AppLoggedInMutationUseCaseContext(
                 user=user,
                 workspace=workspace,
-                domain_context=DomainContext(
-                    EventSource.CLI, self._time_provider.get_current_time()
+                domain_context=DomainContext.from_app(
+                    session.app_core,
+                    session.app_shell,
+                    self._time_provider.get_current_time(),
                 ),
             )
 
@@ -434,7 +474,7 @@ class AppLoggedInReadonlyUseCase(
         return None
 
     @staticmethod
-    def get_scoped_to_app() -> list[EventSource] | None:
+    def get_scoped_to_app() -> list[AppCore] | None:
         """The apps the command is available in."""
         return None
 
@@ -521,7 +561,7 @@ class AppTransactionalLoggedInReadOnlyUseCase(
         """Execute the command's action."""
 
 
-class AppBackgroundMutationUseCase(
+class SysBackgroundMutationUseCase(
     Generic[UseCaseArgs, UseCaseResult],
     UseCase[EmptySession, EmptyContext, UseCaseArgs, UseCaseResult],
     abc.ABC,
@@ -584,7 +624,7 @@ _MutationUseCaseT = TypeVar("_MutationUseCaseT", bound=AppLoggedInMutationUseCas
 
 def mutation_use_case(  # type: ignore
     feature_scope: FeatureScope = None,
-    exclude_app: list[EventSource] | None = None,
+    exclude_app: list[AppCore] | None = None,
     exclude_env: list[Env] | None = None,
 ) -> Callable[[type[_MutationUseCaseT]], type[_MutationUseCaseT]]:
     """A decorator for use cases that scopes them to a feature."""
@@ -592,7 +632,7 @@ def mutation_use_case(  # type: ignore
     def decorator(cls: type[_MutationUseCaseT]) -> type[_MutationUseCaseT]:  # type: ignore
         app_scope = [
             s
-            for s in EventSource
+            for s in AppCore
             if (True if exclude_app is None else s not in exclude_app)
         ]
         env_scope = [
@@ -611,7 +651,7 @@ _ReadonlyUseCaseT = TypeVar("_ReadonlyUseCaseT", bound=AppLoggedInReadonlyUseCas
 
 def readonly_use_case(  # type: ignore
     feature_scope: FeatureScope = None,
-    exclude_app: list[EventSource] | None = None,
+    exclude_app: list[AppCore] | None = None,
     exclude_env: list[Env] | None = None,
 ) -> Callable[[type[_ReadonlyUseCaseT]], type[_ReadonlyUseCaseT]]:
     """A decorator for use cases that scopes them to a feature."""
@@ -619,7 +659,7 @@ def readonly_use_case(  # type: ignore
     def decorator(cls: type[_ReadonlyUseCaseT]) -> type[_ReadonlyUseCaseT]:  # type: ignore
         app_scope = [
             s
-            for s in EventSource
+            for s in AppCore
             if (True if exclude_app is None else s not in exclude_app)
         ]
         env_scope = [

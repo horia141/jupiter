@@ -4,13 +4,12 @@ import { json } from "@remix-run/node";
 import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import {
   noErrorNoData,
   validationErrorToUIErrorInfo,
 } from "~/logic/action-result";
 import { saveScoreAction } from "~/logic/domain/gamification/scores.server";
-import { getSession } from "~/sessions";
 
 const UpdateStatusAndEisenFormSchema = {
   id: z.string(),
@@ -19,13 +18,11 @@ const UpdateStatusAndEisenFormSchema = {
 };
 
 export async function action({ request }: ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const form = await parseForm(request, UpdateStatusAndEisenFormSchema);
 
   try {
-    const result = await getLoggedInApiClient(
-      session
-    ).inboxTasks.inboxTaskUpdate({
+    const result = await apiClient.inboxTasks.inboxTaskUpdate({
       ref_id: form.id,
       name: { should_change: false },
       status: { should_change: true, value: form.status },

@@ -26,6 +26,7 @@ from fastapi.responses import JSONResponse, PlainTextResponse
 from fastapi.routing import APIRoute
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.types import DecoratedCallable
+from jupiter.core.domain.app import AppCore, AppShell
 from jupiter.core.domain.concept.auth.auth_token_ext import (
     AuthTokenExt,
     AuthTokenExtDatabaseDecoder,
@@ -36,7 +37,6 @@ from jupiter.core.domain.core.email_address import EmailAddress
 from jupiter.core.domain.crm import CRM
 from jupiter.core.domain.storage_engine import DomainStorageEngine, SearchStorageEngine
 from jupiter.core.framework.entity import Entity, ParentLink
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.optional import normalize_optional
 from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.realm import DomainThing, RealmCodecRegistry, WebRealm
@@ -61,15 +61,16 @@ from jupiter.core.framework.value import (
     EnumValue,
     SecretValue,
 )
+from jupiter.core.use_cases.infra.realms import _StandardEnumValueDatabaseDecoder
 from jupiter.core.use_cases.infra.storage_engine import UseCaseStorageEngine
 from jupiter.core.use_cases.infra.use_cases import (
-    AppBackgroundMutationUseCase,
     AppGuestMutationUseCase,
     AppGuestReadonlyUseCase,
     AppGuestUseCaseSession,
     AppLoggedInMutationUseCase,
     AppLoggedInReadonlyUseCase,
     AppLoggedInUseCaseSession,
+    SysBackgroundMutationUseCase,
 )
 from jupiter.core.use_cases.login import LoginArgs, LoginUseCase
 from jupiter.core.utils.global_properties import GlobalProperties
@@ -101,8 +102,10 @@ STANDARD_CONFIG: Mapping[str, Any] = {
 ENV_HEADER: Final[str] = "X-Jupiter-Env"
 HOSTING_HEADER: Final[str] = "X-Jupiter-Hosting"
 VERSION_HEADER: Final[str] = "X-Jupiter-Version"
+APPSHELL_HEADER: Final[str] = "X-Jupiter-AppShell"
 
 AUTH_TOKEN_EXT_DECODER = AuthTokenExtDatabaseDecoder()
+APPSHELL_DECODER = _StandardEnumValueDatabaseDecoder(AppShell)
 OAUTH2_GUEST_SCHEMA = OAuth2PasswordBearer(tokenUrl="guest-login", auto_error=False)
 OAUTH2_LOGGED_IN_SCHEMA = OAuth2PasswordBearer(tokenUrl="old-skool-login")
 
@@ -122,19 +125,33 @@ def construct_logged_in_auth_token_ext(
 
 
 def construct_guest_session(
+    request: Request,
     auth_token_ext: Annotated[
         AuthTokenExt | None, Depends(construct_guest_auth_token_ext)
-    ]
+    ],
 ) -> AppGuestUseCaseSession:
     """Construct a GuestSession from the AuthTokenExt."""
-    return AppGuestUseCaseSession(auth_token_ext)
+    app_shell_raw = request.headers.get(APPSHELL_HEADER)
+    if app_shell_raw is None:
+        app_shell = AppShell.BROWSER
+    else:
+        app_shell = APPSHELL_DECODER.decode(request.headers.get(APPSHELL_HEADER))
+    return AppGuestUseCaseSession.for_webui(auth_token_ext, app_shell)
 
 
 def construct_logged_in_session(
-    auth_token_ext: Annotated[AuthTokenExt, Depends(construct_logged_in_auth_token_ext)]
+    request: Request,
+    auth_token_ext: Annotated[
+        AuthTokenExt, Depends(construct_logged_in_auth_token_ext)
+    ],
 ) -> AppLoggedInUseCaseSession:
     """Construct a LoggedInSession from the AuthTokenExt."""
-    return AppLoggedInUseCaseSession(auth_token_ext)
+    app_shell_raw = request.headers.get(APPSHELL_HEADER)
+    if app_shell_raw is None:
+        app_shell = AppShell.BROWSER
+    else:
+        app_shell = APPSHELL_DECODER.decode(request.headers.get(APPSHELL_HEADER))
+    return AppLoggedInUseCaseSession.for_webui(auth_token_ext, app_shell)
 
 
 GuestSession = Annotated[AppGuestUseCaseSession, Depends(construct_guest_session)]
@@ -378,7 +395,7 @@ class LoggedInReadonlyCommand(
 
 
 BackgroundMutationUseCase = TypeVar(
-    "BackgroundMutationUseCase", bound=AppBackgroundMutationUseCase[Any, Any]
+    "BackgroundMutationUseCase", bound=SysBackgroundMutationUseCase[Any, Any]
 )
 
 
@@ -621,7 +638,9 @@ class WebServiceApp:
             )
 
             result = await login_use_case.execute(
-                AppGuestUseCaseSession(auth_token_ext=None),
+                AppGuestUseCaseSession.for_webui(
+                    auth_token_ext=None, app_shell=AppShell.BROWSER
+                ),
                 LoginArgs(email_address=email_address, password=password),
             )
 
@@ -748,7 +767,7 @@ class WebServiceApp:
         elif issubclass(use_case_type, AppLoggedInMutationUseCase):
             scoped_to_app = use_case_type.get_scoped_to_app()  # type: ignore
             scoped_to_env = use_case_type.get_scoped_to_env()  # type: ignore
-            if scoped_to_app is None or EventSource.WEB in scoped_to_app:
+            if scoped_to_app is None or AppCore.WEBUI in scoped_to_app:
                 if (
                     scoped_to_env is None
                     or self._global_properties.env in scoped_to_env
@@ -772,7 +791,7 @@ class WebServiceApp:
         elif issubclass(use_case_type, AppLoggedInReadonlyUseCase):
             scoped_to_app = use_case_type.get_scoped_to_app()  # type: ignore
             scoped_to_env = use_case_type.get_scoped_to_env()  # type: ignore
-            if scoped_to_app is None or EventSource.WEB in scoped_to_app:
+            if scoped_to_app is None or AppCore.WEBUI in scoped_to_app:
                 if (
                     scoped_to_env is None
                     or self._global_properties.env in scoped_to_env
@@ -789,7 +808,7 @@ class WebServiceApp:
                         ),
                         root_module=root_module,
                     )
-        elif issubclass(use_case_type, AppBackgroundMutationUseCase):
+        elif issubclass(use_case_type, SysBackgroundMutationUseCase):
             self._use_case_commands[use_case_type] = CronCommand(
                 realm_codec_registry=self._realm_codec_registry,
                 use_case=use_case_type(  # type: ignore

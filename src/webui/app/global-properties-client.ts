@@ -1,10 +1,12 @@
-import { Env, Hosting } from "@jupiter/webapi-client";
+import { AppCore, AppShell, Env, Hosting } from "@jupiter/webapi-client";
 import { createContext } from "react";
 import type { GlobalPropertiesServer } from "./global-properties-server";
 
 export interface GlobalPropertiesClient {
   env: Env;
   hosting: Hosting;
+  appCore: AppCore;
+  appShell: AppShell;
   baseName: string;
   title: string;
   description: string;
@@ -13,7 +15,6 @@ export interface GlobalPropertiesClient {
   communityUrl: string;
   termsOfServiceUrl: string;
   privacyPolicyUrl: string;
-  scoreActionCookieName: string;
   inboxTasksToAskForGC: number;
   overdueInfoDays: number;
   overdueWarningDays: number;
@@ -23,6 +24,8 @@ export interface GlobalPropertiesClient {
 export const GlobalPropertiesContext = createContext<GlobalPropertiesClient>({
   env: Env.LOCAL,
   hosting: Hosting.LOCAL,
+  appCore: AppCore.WEBUI,
+  appShell: AppShell.BROWSER,
   baseName: "FAKE-FAKE",
   title: "FAKE-FAKE",
   description: "FAKE-FAKE",
@@ -31,7 +34,6 @@ export const GlobalPropertiesContext = createContext<GlobalPropertiesClient>({
   communityUrl: "FAKE-FAKE",
   termsOfServiceUrl: "FAKE-FAKE",
   privacyPolicyUrl: "FAKE-FAKE",
-  scoreActionCookieName: "FAKE-FAKE",
   inboxTasksToAskForGC: 20,
   overdueInfoDays: 1,
   overdueWarningDays: 2,
@@ -39,11 +41,14 @@ export const GlobalPropertiesContext = createContext<GlobalPropertiesClient>({
 });
 
 export function serverToClientGlobalProperties(
-  globalPropertiesServer: GlobalPropertiesServer
+  globalPropertiesServer: GlobalPropertiesServer,
+  appShell: AppShell
 ): GlobalPropertiesClient {
   return {
     env: globalPropertiesServer.env,
     hosting: globalPropertiesServer.hosting,
+    appCore: AppCore.WEBUI,
+    appShell: appShell,
     baseName: globalPropertiesServer.baseName,
     title: globalPropertiesServer.title,
     description: globalPropertiesServer.description,
@@ -55,7 +60,6 @@ export function serverToClientGlobalProperties(
     communityUrl: globalPropertiesServer.communityUrl,
     termsOfServiceUrl: globalPropertiesServer.termsOfServiceUrl,
     privacyPolicyUrl: globalPropertiesServer.privacyPolicyUrl,
-    scoreActionCookieName: globalPropertiesServer.scoreActionCookieName,
     inboxTasksToAskForGC: globalPropertiesServer.inboxTasksToAskForGC,
     overdueInfoDays: globalPropertiesServer.overdueInfoDays,
     overdueWarningDays: globalPropertiesServer.overdueWarningDays,

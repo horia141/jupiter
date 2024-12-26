@@ -1,10 +1,11 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const { app, BrowserWindow } = require("electron");
+const { app, BrowserWindow, net, session } = require("electron");
+const { AppShell } = require("@jupiter/webapi-client");
 const dotEnv = require("dotenv");
 
 loadEnvironment();
 
-const webuiUrl =
+const WEBUI_URL =
   process.env.ENV == "production" && process.env.HOSTING === "hosted-global"
     ? process.env.HOSTED_GLOBAL_WEBUI_SERVER_URL
     : process.env.LOCAL_WEBUI_SERVER_URL;
@@ -29,7 +30,7 @@ function createWindow() {
     height: 900,
   });
 
-  win.loadURL(webuiUrl);
+  win.loadURL(WEBUI_URL);
 }
 
 function loadEnvironment() {

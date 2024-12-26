@@ -25,7 +25,7 @@ import { StatusCodes } from "http-status-codes";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { CheckboxAsString, parseQuery } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntitySummaryLink } from "~/components/entity-summary-link";
 import { EntityCard } from "~/components/infra/entity-card";
 import { EntityStack2 } from "~/components/infra/entity-stack";
@@ -43,7 +43,6 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
 
 export const handle = {
@@ -66,13 +65,13 @@ const QuerySchema = {
 const DEFAULT_LIMIT = 30;
 
 export async function loader({ request }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const query = parseQuery(request, QuerySchema);
 
   try {
     let searchResponse = undefined;
     if (query.query !== undefined) {
-      searchResponse = await getLoggedInApiClient(session).application.search({
+      searchResponse = await apiClient.application.search({
         query: query.query,
         limit: query.limit ? parseInt(query.limit) : DEFAULT_LIMIT,
         include_archived: query.includeArchived,

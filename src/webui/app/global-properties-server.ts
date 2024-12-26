@@ -18,8 +18,6 @@ export interface GlobalPropertiesServer {
   termsOfServiceUrl: string;
   privacyPolicyUrl: string;
   sessionCookieSecret: string;
-  sessionCookieName: string;
-  scoreActionCookieName: string;
   inboxTasksToAskForGC: number;
   overdueInfoDays: number;
   overdueWarningDays: number;
@@ -60,8 +58,6 @@ function loadGlobalPropertiesOnServer(): GlobalPropertiesServer {
     termsOfServiceUrl: process.env.TERMS_OF_SERVICE_URL as string,
     privacyPolicyUrl: process.env.PRIVACY_POLICY_URL as string,
     sessionCookieSecret: process.env.SESSION_COOKIE_SECRET as string,
-    sessionCookieName: process.env.SESSION_COOKIE_NAME as string,
-    scoreActionCookieName: process.env.SCORE_ACTION_COOKIE_NAME as string,
     inboxTasksToAskForGC: parseInt(
       process.env.INBOX_TASKS_TO_ASK_FOR_GC as string,
       10

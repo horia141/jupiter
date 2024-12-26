@@ -41,7 +41,7 @@ import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { BigPlanStack } from "~/components/big-plan-stack";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
@@ -78,7 +78,6 @@ import {
   DisplayType,
   useBranchNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
 
 enum View {
@@ -106,12 +105,10 @@ export const handle = {
 };
 
 export async function loader({ request, params }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
 
-  const summaryResponse = await getLoggedInApiClient(
-    session
-  ).getSummaries.getSummaries({
+  const summaryResponse = await apiClient.getSummaries.getSummaries({
     include_workspace: true,
     include_projects: true,
   });
@@ -119,7 +116,7 @@ export async function loader({ request, params }: LoaderArgs) {
   try {
     const workspace = summaryResponse.workspace!;
 
-    const result = await getLoggedInApiClient(session).timePlans.timePlanLoad({
+    const result = await apiClient.timePlans.timePlanLoad({
       ref_id: id,
       allow_archived: true,
       include_targets: true,
@@ -129,9 +126,7 @@ export async function loader({ request, params }: LoaderArgs) {
 
     let timeEventResult = undefined;
     if (isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.SCHEDULE)) {
-      timeEventResult = await getLoggedInApiClient(
-        session
-      ).calendar.calendarLoadForDateAndPeriod({
+      timeEventResult = await apiClient.calendar.calendarLoadForDateAndPeriod({
         right_now: result.time_plan.right_now,
         period: result.time_plan.period,
       });
@@ -168,14 +163,14 @@ export async function loader({ request, params }: LoaderArgs) {
 }
 
 export async function action({ request, params }: ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
 
   try {
     switch (form.intent) {
       case "change-time-config": {
-        await getLoggedInApiClient(session).timePlans.timePlanChangeTimeConfig({
+        await apiClient.timePlans.timePlanChangeTimeConfig({
           ref_id: id,
           right_now: {
             should_change: true,
@@ -190,7 +185,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).timePlans.timePlanArchive({
+        await apiClient.timePlans.timePlanArchive({
           ref_id: id,
         });
         return redirect(`/workspace/time-plans/${id}`);
@@ -485,8 +480,17 @@ export default function TimePlanView() {
 
                   return (
                     <Box key={`project-${p.ref_id}`}>
-                      <Divider>
-                        <Typography variant="h6">{fullProjectName}</Typography>
+                      <Divider variant="fullWidth">
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            maxWidth: "calc(100vw - 2rem)",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                        >
+                          {fullProjectName}
+                        </Typography>
                       </Divider>
 
                       <TimePlanActivityList

@@ -35,7 +35,7 @@ import { StatusCodes } from "http-status-codes";
 import { useContext, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseQuery } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import {
   BetterFieldError,
@@ -51,7 +51,6 @@ import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
 
 const QuerySchema = {
@@ -82,7 +81,7 @@ export const handle = {
 };
 
 export async function loader({ request }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const query = parseQuery(request, QuerySchema);
 
   const timePlanReason = query.timePlanReason || "standard";
@@ -93,9 +92,7 @@ export async function loader({ request }: LoaderArgs) {
       throw new Response("Missing Time Plan Id", { status: 500 });
     }
 
-    const timePlanResult = await getLoggedInApiClient(
-      session
-    ).timePlans.timePlanLoad({
+    const timePlanResult = await apiClient.timePlans.timePlanLoad({
       allow_archived: false,
       ref_id: query.timePlanRefId,
       include_targets: false,
@@ -108,9 +105,7 @@ export async function loader({ request }: LoaderArgs) {
 
   const bigPlanReason = query.bigPlanReason || "standard";
 
-  const summaryResponse = await getLoggedInApiClient(
-    session
-  ).getSummaries.getSummaries({
+  const summaryResponse = await apiClient.getSummaries.getSummaries({
     include_projects: true,
     include_big_plans: bigPlanReason === "standard",
   });
@@ -122,9 +117,7 @@ export async function loader({ request }: LoaderArgs) {
       throw new Response("Missing Big Plan Id", { status: 500 });
     }
 
-    const bigPlanResult = await getLoggedInApiClient(
-      session
-    ).bigPlans.bigPlanLoad({
+    const bigPlanResult = await apiClient.bigPlans.bigPlanLoad({
       allow_archived: false,
       ref_id: query.bigPlanRefId,
     });
@@ -165,7 +158,7 @@ export async function loader({ request }: LoaderArgs) {
 }
 
 export async function action({ request }: ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const query = parseQuery(request, QuerySchema);
   const form = await parseForm(request, CreateFormSchema);
 
@@ -173,9 +166,7 @@ export async function action({ request }: ActionArgs) {
     const timePlanReason = query.timePlanReason || "standard";
     const bigPlanReason = query.bigPlanReason || "standard";
 
-    const result = await getLoggedInApiClient(
-      session
-    ).inboxTasks.inboxTaskCreate({
+    const result = await apiClient.inboxTasks.inboxTaskCreate({
       name: form.name,
       time_plan_ref_id:
         timePlanReason === "standard"

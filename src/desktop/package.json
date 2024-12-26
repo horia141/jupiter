@@ -10,7 +10,7 @@
   "homepage": "https://get-thriving.com",
   "repository": "https://github.com/horia141/jupiter",
   "documentation": "https://docs.get-thriving.com",
-  "license":  "SEE LICENSE IN LICENSE",
+  "license": "SEE LICENSE IN LICENSE",
   "devDependencies": {
     "@electron-forge/cli": "^7.6.0",
     "@electron-forge/maker-dmg": "^7.6.0",
@@ -25,7 +25,8 @@
   },
   "dependencies": {
     "dotenv": "^16.4.7",
-    "electron-squirrel-startup": "^1.0.1"
+    "electron-squirrel-startup": "^1.0.1",
+    "@jupiter/webapi-client": "^0.0.1"
   },
   "overrides": {
     "@electron/osx-sign": "1.3.0"

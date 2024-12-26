@@ -3,7 +3,6 @@ from typing import Any, Dict, List, Type, TypeVar, Union, cast
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-from ..models.event_source import EventSource
 from ..types import UNSET, Unset
 
 T = TypeVar("T", bound="ScheduleExternalSyncDoArgs")
@@ -14,21 +13,17 @@ class ScheduleExternalSyncDoArgs:
     """ScheduleExternalSyncDoArgs.
 
     Attributes:
-        source (EventSource): The source of the modification which this event records.
         sync_even_if_not_modified (bool):
         today (Union[None, Unset, str]):
         filter_schedule_stream_ref_id (Union[List[str], None, Unset]):
     """
 
-    source: EventSource
     sync_even_if_not_modified: bool
     today: Union[None, Unset, str] = UNSET
     filter_schedule_stream_ref_id: Union[List[str], None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
-        source = self.source.value
-
         sync_even_if_not_modified = self.sync_even_if_not_modified
 
         today: Union[None, Unset, str]
@@ -50,7 +45,6 @@ class ScheduleExternalSyncDoArgs:
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
-                "source": source,
                 "sync_even_if_not_modified": sync_even_if_not_modified,
             }
         )
@@ -64,8 +58,6 @@ class ScheduleExternalSyncDoArgs:
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         d = src_dict.copy()
-        source = EventSource(d.pop("source"))
-
         sync_even_if_not_modified = d.pop("sync_even_if_not_modified")
 
         def _parse_today(data: object) -> Union[None, Unset, str]:
@@ -97,7 +89,6 @@ class ScheduleExternalSyncDoArgs:
         )
 
         schedule_external_sync_do_args = cls(
-            source=source,
             sync_even_if_not_modified=sync_even_if_not_modified,
             today=today,
             filter_schedule_stream_ref_id=filter_schedule_stream_ref_id,

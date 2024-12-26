@@ -1,10 +1,10 @@
 """Load settings for persons use case."""
 
+from jupiter.core.domain.app import AppCore
 from jupiter.core.domain.concept.persons.person_collection import PersonCollection
 from jupiter.core.domain.concept.projects.project import Project
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,
@@ -30,7 +30,7 @@ class PersonLoadSettingsResult(UseCaseResultBase):
     catch_up_project: Project
 
 
-@readonly_use_case(WorkspaceFeature.PERSONS, exclude_app=[EventSource.CLI])
+@readonly_use_case(WorkspaceFeature.PERSONS, exclude_app=[AppCore.CLI])
 class PersonLoadSettingsUseCase(
     AppTransactionalLoggedInReadOnlyUseCase[
         PersonLoadSettingsArgs, PersonLoadSettingsResult
