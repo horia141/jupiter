@@ -15,7 +15,7 @@ import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { BigPlanCard } from "~/components/big-plan-card";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
@@ -43,7 +43,6 @@ import { LeafPanelExpansionState } from "~/rendering/leaf-panel-expansion";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 import type { TopLevelInfo } from "~/top-level-context";
 import { TopLevelInfoContext } from "~/top-level-context";
 
@@ -68,19 +67,15 @@ export const handle = {
 };
 
 export async function loader({ request, params }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
 
-  const summaryResponse = await getLoggedInApiClient(
-    session
-  ).getSummaries.getSummaries({
+  const summaryResponse = await apiClient.getSummaries.getSummaries({
     include_projects: true,
   });
 
   try {
-    const timePlanResult = await getLoggedInApiClient(
-      session
-    ).timePlans.timePlanLoad({
+    const timePlanResult = await apiClient.timePlans.timePlanLoad({
       ref_id: id,
       allow_archived: false,
       include_targets: false,
@@ -88,9 +83,7 @@ export async function loader({ request, params }: LoaderArgs) {
       include_other_time_plans: false,
     });
 
-    const bigPlansResult = await getLoggedInApiClient(
-      session
-    ).bigPlans.bigPlanFind({
+    const bigPlansResult = await apiClient.bigPlans.bigPlanFind({
       allow_archived: false,
       include_notes: false,
       filter_just_workable: true,
@@ -120,16 +113,14 @@ export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export async function action({ request, params }: ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
 
   try {
     switch (form.intent) {
       case "add": {
-        await getLoggedInApiClient(
-          session
-        ).timePlans.timePlanAssociateWithBigPlans({
+        await apiClient.timePlans.timePlanAssociateWithBigPlans({
           ref_id: id,
           big_plan_ref_ids: form.targetBigPlanRefIds,
           override_existing_dates: false,
@@ -139,9 +130,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "add-and-override": {
-        await getLoggedInApiClient(
-          session
-        ).timePlans.timePlanAssociateWithBigPlans({
+        await apiClient.timePlans.timePlanAssociateWithBigPlans({
           ref_id: id,
           big_plan_ref_ids: form.targetBigPlanRefIds,
           override_existing_dates: true,
@@ -291,8 +280,17 @@ export default function TimePlanAddFromCurrentBigPlans() {
 
               return (
                 <Box key={`project-${p.ref_id}`}>
-                  <Divider>
-                    <Typography variant="h6">{fullProjectName}</Typography>
+                  <Divider variant="fullWidth">
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        maxWidth: "calc(100vw - 2rem)",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {fullProjectName}
+                    </Typography>
                   </Divider>
 
                   <BigPlanList

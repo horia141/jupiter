@@ -22,6 +22,7 @@ poetry install --no-interaction --no-ansi --no-root
 
 npm ci --ws --include-workspace-root
 (cd src/desktop && npm install --no-ansi)
+(cd src/mobile && npm install --no-ansi)
 
 playwright install
 

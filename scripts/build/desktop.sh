@@ -17,6 +17,7 @@ revert_package_json() {
   mv src/desktop/package.json.bak src/desktop/package.json
   rm -f src/desktop/package.json.1
   rm -f src/desktop/forge.config.js
+  rm -f src/desktop/LICENSE
 }
 
 # If the secrets/Config.secrets file does not exist, bail
@@ -32,6 +33,8 @@ mkdir -p .build-cache/desktop
 
 trap revert_package_json EXIT
 replace_package_json
+
+cp LICENSE src/desktop/LICENSE
 
 cp src/desktop/forge.config.mas.js src/desktop/forge.config.js
 (cd src/desktop && npx electron-forge make --platform mas --arch universal)

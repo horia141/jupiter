@@ -1,6 +1,5 @@
 import {
   ApiError,
-  EventSource,
   RecurringTaskPeriod,
   SyncTarget,
   WorkspaceFeature,
@@ -36,7 +35,7 @@ import { DateTime } from "luxon";
 import React, { useContext, useState } from "react";
 import { z } from "zod";
 import { CheckboxAsString, parseForm } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { ADateTag } from "~/components/adate-tag";
 import { EntitySummaryLink } from "~/components/entity-summary-link";
 import { EventSourceTag } from "~/components/event-source-tag";
@@ -63,7 +62,6 @@ import {
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
 
 interface ProjectOption {
@@ -108,19 +106,15 @@ export const handle = {
 };
 
 export async function loader({ request }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
-  const summariesResponse = await getLoggedInApiClient(
-    session
-  ).getSummaries.getSummaries({
+  const apiClient = await getLoggedInApiClient(request);
+  const summariesResponse = await apiClient.getSummaries.getSummaries({
     include_projects: true,
     include_habits: true,
     include_chores: true,
     include_metrics: true,
     include_persons: true,
   });
-  const loadRunsResponse = await getLoggedInApiClient(session).gen.genLoadRuns(
-    {}
-  );
+  const loadRunsResponse = await apiClient.gen.genLoadRuns({});
 
   return {
     summaries: summariesResponse,
@@ -129,12 +123,11 @@ export async function loader({ request }: LoaderArgs) {
 }
 
 export async function action({ request }: ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const form = await parseForm(request, GenFormSchema);
 
   try {
-    await getLoggedInApiClient(session).gen.genDo({
-      source: EventSource.WEB,
+    await apiClient.gen.genDo({
       gen_even_if_not_modified: form.gen_even_if_not_modified,
       today:
         form.today !== undefined && form.today !== ""

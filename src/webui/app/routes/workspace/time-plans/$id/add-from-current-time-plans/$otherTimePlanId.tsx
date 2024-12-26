@@ -12,7 +12,7 @@ import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
@@ -37,7 +37,6 @@ import { LeafPanelExpansionState } from "~/rendering/leaf-panel-expansion";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = {
@@ -57,21 +56,17 @@ export const handle = {
 };
 
 export async function loader({ request, params }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const { id, otherTimePlanId } = parseParams(params, ParamsSchema);
 
-  const summaryResponse = await getLoggedInApiClient(
-    session
-  ).getSummaries.getSummaries({
+  const summaryResponse = await apiClient.getSummaries.getSummaries({
     include_workspace: true,
   });
 
   try {
     const workspace = summaryResponse.workspace!;
 
-    const mainResult = await getLoggedInApiClient(
-      session
-    ).timePlans.timePlanLoad({
+    const mainResult = await apiClient.timePlans.timePlanLoad({
       ref_id: id,
       allow_archived: false,
       include_targets: false,
@@ -79,9 +74,7 @@ export async function loader({ request, params }: LoaderArgs) {
       include_other_time_plans: false,
     });
 
-    const otherResult = await getLoggedInApiClient(
-      session
-    ).timePlans.timePlanLoad({
+    const otherResult = await apiClient.timePlans.timePlanLoad({
       ref_id: otherTimePlanId,
       allow_archived: true,
       include_targets: true,
@@ -90,7 +83,7 @@ export async function loader({ request, params }: LoaderArgs) {
     });
 
     const otherHigherTimePlanResult = otherResult.higher_time_plan
-      ? await getLoggedInApiClient(session).timePlans.timePlanLoad({
+      ? await apiClient.timePlans.timePlanLoad({
           ref_id: otherResult.higher_time_plan!.ref_id,
           allow_archived: true,
           include_targets: false,
@@ -101,12 +94,11 @@ export async function loader({ request, params }: LoaderArgs) {
 
     let otherTimeEventResult = undefined;
     if (isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.SCHEDULE)) {
-      otherTimeEventResult = await getLoggedInApiClient(
-        session
-      ).calendar.calendarLoadForDateAndPeriod({
-        right_now: otherResult.time_plan.right_now,
-        period: otherResult.time_plan.period,
-      });
+      otherTimeEventResult =
+        await apiClient.calendar.calendarLoadForDateAndPeriod({
+          right_now: otherResult.time_plan.right_now,
+          period: otherResult.time_plan.period,
+        });
     }
 
     return json({
@@ -144,16 +136,14 @@ export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export async function action({ request, params }: ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const { id, otherTimePlanId } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
 
   try {
     switch (form.intent) {
       case "add": {
-        await getLoggedInApiClient(
-          session
-        ).timePlans.timePlanAssociateWithActivities({
+        await apiClient.timePlans.timePlanAssociateWithActivities({
           ref_id: id,
           other_time_plan_ref_id: otherTimePlanId,
           activity_ref_ids: form.targetActivitiesRefIds,
@@ -164,9 +154,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "add-and-override": {
-        await getLoggedInApiClient(
-          session
-        ).timePlans.timePlanAssociateWithActivities({
+        await apiClient.timePlans.timePlanAssociateWithActivities({
           ref_id: id,
           other_time_plan_ref_id: otherTimePlanId,
           activity_ref_ids: form.targetActivitiesRefIds,

@@ -3,7 +3,6 @@ from typing import Any, Dict, List, Type, TypeVar, Union, cast
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-from ..models.event_source import EventSource
 from ..models.sync_target import SyncTarget
 from ..types import UNSET, Unset
 
@@ -15,17 +14,13 @@ class GCDoArgs:
     """GCArgs.
 
     Attributes:
-        source (EventSource): The source of the modification which this event records.
         gc_targets (Union[List[SyncTarget], None, Unset]):
     """
 
-    source: EventSource
     gc_targets: Union[List[SyncTarget], None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
-        source = self.source.value
-
         gc_targets: Union[List[str], None, Unset]
         if isinstance(self.gc_targets, Unset):
             gc_targets = UNSET
@@ -40,11 +35,7 @@ class GCDoArgs:
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update(
-            {
-                "source": source,
-            }
-        )
+        field_dict.update({})
         if gc_targets is not UNSET:
             field_dict["gc_targets"] = gc_targets
 
@@ -53,7 +44,6 @@ class GCDoArgs:
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         d = src_dict.copy()
-        source = EventSource(d.pop("source"))
 
         def _parse_gc_targets(data: object) -> Union[List[SyncTarget], None, Unset]:
             if data is None:
@@ -78,7 +68,6 @@ class GCDoArgs:
         gc_targets = _parse_gc_targets(d.pop("gc_targets", UNSET))
 
         gc_do_args = cls(
-            source=source,
             gc_targets=gc_targets,
         )
 

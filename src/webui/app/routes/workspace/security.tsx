@@ -18,7 +18,7 @@ import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { ToolPanel } from "~/components/infra/layout/tool-panel";
@@ -27,7 +27,6 @@ import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { getIntent } from "~/logic/intent";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 
 const SecurityFormSchema = {
   intent: z.string(),
@@ -41,13 +40,12 @@ export const handle = {
 };
 
 export async function loader({ request }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
-  getLoggedInApiClient(session);
+  await getLoggedInApiClient(request);
   return json({});
 }
 
 export async function action({ request }: ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const form = await parseForm(request, SecurityFormSchema);
 
   const { intent } = getIntent<undefined>(form.intent);
@@ -55,7 +53,7 @@ export async function action({ request }: ActionArgs) {
   try {
     switch (intent) {
       case "change-password": {
-        await getLoggedInApiClient(session).auth.changePassword({
+        await apiClient.auth.changePassword({
           current_password: form.currentPassword,
           new_password: form.newPassword,
           new_password_repeat: form.newPasswordRepeat,

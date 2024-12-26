@@ -3,7 +3,7 @@ import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Outlet, useSearchParams } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNameComponent } from "~/components/entity-name";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
@@ -17,18 +17,14 @@ import {
   DisplayType,
   useBranchNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 
 export const handle = {
   displayType: DisplayType.BRANCH,
 };
 
 export async function loader({ request }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
-
-  const response = await getLoggedInApiClient(
-    session
-  ).stream.scheduleStreamFind({
+  const apiClient = await getLoggedInApiClient(request);
+  const response = await apiClient.stream.scheduleStreamFind({
     allow_archived: false,
     include_notes: false,
   });

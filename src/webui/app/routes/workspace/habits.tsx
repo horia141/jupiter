@@ -14,7 +14,7 @@ import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Outlet, useFetcher } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { useContext } from "react";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { DifficultyTag } from "~/components/difficulty-tag";
 import { EisenTag } from "~/components/eisen-tag";
 import { EntityNameComponent } from "~/components/entity-name";
@@ -33,7 +33,6 @@ import {
   DisplayType,
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
 
 export const handle = {
@@ -41,8 +40,8 @@ export const handle = {
 };
 
 export async function loader({ request }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
-  const response = await getLoggedInApiClient(session).habits.habitFind({
+  const apiClient = await getLoggedInApiClient(request);
+  const response = await apiClient.habits.habitFind({
     allow_archived: false,
     include_notes: false,
     include_project: true,

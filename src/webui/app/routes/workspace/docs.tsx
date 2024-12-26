@@ -4,7 +4,7 @@ import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Outlet, useFetcher } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNameComponent } from "~/components/entity-name";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
@@ -17,16 +17,14 @@ import {
   DisplayType,
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 
 export const handle = {
   displayType: DisplayType.TRUNK,
 };
 
 export async function loader({ request }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
-
-  const body = await getLoggedInApiClient(session).docs.docFind({
+  const apiClient = await getLoggedInApiClient(request);
+  const body = await apiClient.docs.docFind({
     include_notes: false,
     allow_archived: false,
     include_subdocs: false,

@@ -18,7 +18,7 @@ import { StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -26,7 +26,6 @@ import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 
 const ParamsSchema = {
   id: z.string(),
@@ -42,10 +41,10 @@ export const handle = {
 };
 
 export async function loader({ request, params }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
 
-  const response = await getLoggedInApiClient(session).metrics.metricLoad({
+  const response = await apiClient.metrics.metricLoad({
     allow_archived: true,
     ref_id: id,
   });
@@ -56,14 +55,12 @@ export async function loader({ request, params }: LoaderArgs) {
 }
 
 export async function action({ params, request }: ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, CreateFormSchema);
 
   try {
-    const response = await getLoggedInApiClient(
-      session
-    ).entry.metricEntryCreate({
+    const response = await apiClient.entry.metricEntryCreate({
       metric_ref_id: id,
       collection_time: form.collectionTime,
       value: form.value,

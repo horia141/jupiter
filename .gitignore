@@ -4,7 +4,9 @@ secrets
 .system.lock
 .idea
 .vscode
+*.map
 .DS_Store
+.sourcemaps
 .mypy_cache
 site
 .coverage
@@ -18,3 +20,4 @@ gen/ts/webapi-client/dist/
 .sqlite
 session-info
 .ruff_cache/
+dist/

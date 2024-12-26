@@ -1,6 +1,5 @@
 import {
   ApiError,
-  EventSource,
   NoteDomain,
   ScheduleSource,
   ScheduleStreamColor,
@@ -28,7 +27,7 @@ import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
@@ -45,7 +44,6 @@ import { isCorePropertyEditable } from "~/logic/domain/schedule-stream";
 import { basicShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = {
@@ -74,13 +72,14 @@ export const handle = {
 };
 
 export async function loader({ request, params }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
 
   try {
-    const response = await getLoggedInApiClient(
-      session
-    ).stream.scheduleStreamLoad({ ref_id: id, allow_archived: true });
+    const response = await apiClient.stream.scheduleStreamLoad({
+      ref_id: id,
+      allow_archived: true,
+    });
 
     return json({
       scheduleStream: response.schedule_stream,
@@ -99,7 +98,7 @@ export async function loader({ request, params }: LoaderArgs) {
 }
 
 export async function action({ request, params }: ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
   const url = new URL(request.url);
@@ -107,7 +106,7 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (form.intent) {
       case "update": {
-        await getLoggedInApiClient(session).stream.scheduleStreamUpdate({
+        await apiClient.stream.scheduleStreamUpdate({
           ref_id: id,
           name: {
             should_change: true,
@@ -125,7 +124,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "create-note": {
-        await getLoggedInApiClient(session).notes.noteCreate({
+        await apiClient.notes.noteCreate({
           domain: NoteDomain.SCHEDULE_STREAM,
           source_entity_ref_id: id,
           content: [],
@@ -137,8 +136,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "sync": {
-        await getLoggedInApiClient(session).schedule.scheduleExternalSyncDo({
-          source: EventSource.SCHEDULE_EXTERNAL_SYNC_CRON,
+        await apiClient.schedule.scheduleExternalSyncDo({
           sync_even_if_not_modified: true,
           filter_schedule_stream_ref_id: [id],
         });
@@ -149,7 +147,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).stream.scheduleStreamArchive({
+        await apiClient.stream.scheduleStreamArchive({
           ref_id: id,
         });
 

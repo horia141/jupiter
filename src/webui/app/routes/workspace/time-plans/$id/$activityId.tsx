@@ -26,7 +26,7 @@ import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { BigPlanStack } from "~/components/big-plan-stack";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
@@ -53,7 +53,6 @@ import { LeafPanelExpansionState } from "~/rendering/leaf-panel-expansion";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = {
@@ -72,22 +71,18 @@ export const handle = {
 };
 
 export async function loader({ request, params }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const { activityId } = parseParams(params, ParamsSchema);
 
   try {
-    const result = await getLoggedInApiClient(
-      session
-    ).activity.timePlanActivityLoad({
+    const result = await apiClient.activity.timePlanActivityLoad({
       ref_id: activityId,
       allow_archived: true,
     });
 
     let inboxTaskResult = null;
     if (result.target_inbox_task) {
-      inboxTaskResult = await getLoggedInApiClient(
-        session
-      ).inboxTasks.inboxTaskLoad({
+      inboxTaskResult = await apiClient.inboxTasks.inboxTaskLoad({
         ref_id: result.target_inbox_task.ref_id,
         allow_archived: true,
       });
@@ -115,14 +110,14 @@ export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export async function action({ request, params }: ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const { id, activityId } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
 
   try {
     switch (form.intent) {
       case "update": {
-        await getLoggedInApiClient(session).activity.timePlanActivityUpdate({
+        await apiClient.activity.timePlanActivityUpdate({
           ref_id: activityId,
           kind: {
             should_change: true,
@@ -138,7 +133,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).activity.timePlanActivityArchive({
+        await apiClient.activity.timePlanActivityArchive({
           ref_id: activityId,
         });
 

@@ -13,7 +13,7 @@ import { ResponsiveTimeRange } from "@nivo/calendar";
 import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";
 import { useEffect, useMemo, useState } from "react";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { ADateTag } from "~/components/adate-tag";
 import { EntityNameComponent } from "~/components/entity-name";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
@@ -30,15 +30,14 @@ import {
   DisplayType,
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 
 export const handle = {
   displayType: DisplayType.TRUNK,
 };
 
 export async function loader({ request }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
-  const response = await getLoggedInApiClient(session).vacations.vacationFind({
+  const apiClient = await getLoggedInApiClient(request);
+  const response = await apiClient.vacations.vacationFind({
     allow_archived: false,
     include_notes: false,
     include_time_event_blocks: false,

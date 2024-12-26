@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, Stack } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { ScoreHistory } from "~/components/gamification/score-history";
 import { ScoreOverview } from "~/components/gamification/score-overview";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
@@ -11,15 +11,14 @@ import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 
 export const handle = {
   displayType: DisplayType.TOOL,
 };
 
 export async function loader({ request }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
-  const result = await getLoggedInApiClient(session).users.userLoad({});
+  const apiClient = await getLoggedInApiClient(request);
+  const result = await apiClient.users.userLoad({});
 
   return json({
     userScoreOverview: result.user_score_overview,

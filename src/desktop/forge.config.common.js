@@ -1,7 +1,9 @@
 const { FusesPlugin } = require("@electron-forge/plugin-fuses");
 const { FuseV1Options, FuseVersion } = require("@electron/fuses");
 
-require("dotenv").config({ path: ["Config.project", "../Config.global", "../../secrets/Config.secrets"] });
+require("dotenv").config({
+  path: ["Config.project", "../Config.global", "../../secrets/Config.secrets"],
+});
 
 module.exports = {
   outDir: "../../.build-cache/desktop",
@@ -16,6 +18,7 @@ module.exports = {
     icon: "assets/jupiter.icns",
     overwrite: true,
     platform: ["darwin", "mas"],
+    extraResource: ["README.md", "LICENSE"],
   },
   rebuildConfig: {},
   plugins: [

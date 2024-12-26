@@ -1,5 +1,6 @@
 """The command for loading workspaces if they exist."""
 
+from jupiter.core.domain.app import AppCore, AppShell
 from jupiter.core.domain.application.gamification.service.score_overview_service import (
     ScoreOverviewService,
 )
@@ -55,7 +56,6 @@ class LoadTopLevelInfoResult(UseCaseResultBase):
     hosting: Hosting
     user_feature_flag_controls: UserFeatureFlagsControls
     default_user_feature_flags: UserFeatureFlags
-    user_feature_hack: UserFeature
     deafult_workspace_name: WorkspaceName
     default_first_schedule_stream_name: ScheduleStreamName
     default_root_project_name: ProjectName
@@ -65,6 +65,9 @@ class LoadTopLevelInfoResult(UseCaseResultBase):
     user: User | None
     user_score_overview: UserScoreOverview | None
     workspace: Workspace | None
+    user_feature_hack: UserFeature | None
+    app_core_hack: AppCore | None
+    app_shell_hack: AppShell | None
 
 
 class LoadTopLevelInfoUseCase(
@@ -115,7 +118,6 @@ class LoadTopLevelInfoUseCase(
             hosting=self._global_properties.hosting,
             user_feature_flag_controls=user_feature_flags_controls,
             default_user_feature_flags=BASIC_USER_FEATURE_FLAGS,
-            user_feature_hack=UserFeature.GAMIFICATION,
             deafult_workspace_name=WorkspaceName("Work"),
             default_first_schedule_stream_name=ScheduleStreamName("Events"),
             default_root_project_name=ProjectName("Life"),
@@ -125,4 +127,7 @@ class LoadTopLevelInfoUseCase(
             user=user,
             user_score_overview=user_score_overview,
             workspace=workspace,
+            user_feature_hack=UserFeature.GAMIFICATION,
+            app_core_hack=AppCore.WEBUI,
+            app_shell_hack=AppShell.BROWSER,
         )

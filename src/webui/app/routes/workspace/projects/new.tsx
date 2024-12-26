@@ -21,7 +21,7 @@ import { StatusCodes } from "http-status-codes";
 import { useState } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -29,7 +29,6 @@ import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 
 const CreateFormSchema = {
   parentProjectRefId: z.string(),
@@ -41,10 +40,8 @@ export const handle = {
 };
 
 export async function loader({ request }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
-  const summaryResponse = await getLoggedInApiClient(
-    session
-  ).getSummaries.getSummaries({
+  const apiClient = await getLoggedInApiClient(request);
+  const summaryResponse = await apiClient.getSummaries.getSummaries({
     include_projects: true,
   });
 
@@ -55,16 +52,14 @@ export async function loader({ request }: LoaderArgs) {
 }
 
 export async function action({ request }: ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const form = await parseForm(request, CreateFormSchema);
 
   try {
-    const response = await getLoggedInApiClient(session).projects.projectCreate(
-      {
-        parent_project_ref_id: form.parentProjectRefId,
-        name: form.name,
-      }
-    );
+    const response = await apiClient.projects.projectCreate({
+      parent_project_ref_id: form.parentProjectRefId,
+      name: form.name,
+    });
 
     return redirect(`/workspace/projects/${response.new_project.ref_id}`);
   } catch (error) {

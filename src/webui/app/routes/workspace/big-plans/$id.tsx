@@ -39,7 +39,7 @@ import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
@@ -59,7 +59,6 @@ import { getIntent } from "~/logic/intent";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = {
@@ -81,18 +80,16 @@ export const handle = {
 };
 
 export async function loader({ request, params }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
 
-  const summaryResponse = await getLoggedInApiClient(
-    session
-  ).getSummaries.getSummaries({
+  const summaryResponse = await apiClient.getSummaries.getSummaries({
     include_workspace: true,
     include_projects: true,
   });
 
   try {
-    const result = await getLoggedInApiClient(session).bigPlans.bigPlanLoad({
+    const result = await apiClient.bigPlans.bigPlanLoad({
       ref_id: id,
       allow_archived: true,
     });
@@ -100,13 +97,12 @@ export async function loader({ request, params }: LoaderArgs) {
     const workspace = summaryResponse.workspace as Workspace;
     let timePlanEntries = undefined;
     if (isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.TIME_PLANS)) {
-      const timePlanActivitiesResult = await getLoggedInApiClient(
-        session
-      ).activity.timePlanActivityFindForTarget({
-        allow_archived: true,
-        target: TimePlanActivityTarget.BIG_PLAN,
-        target_ref_id: id,
-      });
+      const timePlanActivitiesResult =
+        await apiClient.activity.timePlanActivityFindForTarget({
+          allow_archived: true,
+          target: TimePlanActivityTarget.BIG_PLAN,
+          target_ref_id: id,
+        });
       timePlanEntries = timePlanActivitiesResult.entries;
     }
 
@@ -130,7 +126,7 @@ export async function loader({ request, params }: LoaderArgs) {
 }
 
 export async function action({ request, params }: ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
 
@@ -139,9 +135,7 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (intent) {
       case "update": {
-        const result = await getLoggedInApiClient(
-          session
-        ).bigPlans.bigPlanUpdate({
+        const result = await apiClient.bigPlans.bigPlanUpdate({
           ref_id: id,
           name: {
             should_change: true,
@@ -179,7 +173,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "change-project": {
-        await getLoggedInApiClient(session).bigPlans.bigPlanChangeProject({
+        await apiClient.bigPlans.bigPlanChangeProject({
           ref_id: id,
           project_ref_id: form.project,
         });
@@ -188,7 +182,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "create-note": {
-        await getLoggedInApiClient(session).notes.noteCreate({
+        await apiClient.notes.noteCreate({
           domain: NoteDomain.BIG_PLAN,
           source_entity_ref_id: id,
           content: [],
@@ -198,7 +192,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).bigPlans.bigPlanArchive({
+        await apiClient.bigPlans.bigPlanArchive({
           ref_id: id,
         });
 

@@ -12,4 +12,3 @@ mdl --config="./scripts/lint/mdl-readme" src/webapi/README.md
 mdl --config="./scripts/lint/mdl-readme" src/webui/README.md
 mdl --config="./scripts/lint/mdl-readme" src/desktop/README.md
 mdl --config="./scripts/lint/mdl-readme" itests/README.md
-mdl --config="./scripts/lint/mdl-readme" gen/py/webapi-client/README.md

@@ -1,4 +1,5 @@
 """Use case for archiving a doc."""
+from jupiter.core.domain.app import AppCore
 from jupiter.core.domain.concept.docs.doc import Doc
 from jupiter.core.domain.concept.docs.service.doc_archive_service import (
     DocArchiveService,
@@ -6,7 +7,6 @@ from jupiter.core.domain.concept.docs.service.doc_archive_service import (
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
     ProgressReporter,
 )
@@ -25,7 +25,7 @@ class DocArchiveArgs(UseCaseArgsBase):
     ref_id: EntityId
 
 
-@mutation_use_case(WorkspaceFeature.DOCS, exclude_app=[EventSource.CLI])
+@mutation_use_case(WorkspaceFeature.DOCS, exclude_app=[AppCore.CLI])
 class DocArchiveUseCase(AppTransactionalLoggedInMutationUseCase[DocArchiveArgs, None]):
     """Use case for archiving a doc."""
 

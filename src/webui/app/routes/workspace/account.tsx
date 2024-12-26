@@ -21,7 +21,7 @@ import { StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { UserFeatureFlagsEditor } from "~/components/feature-flags-editor";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
@@ -33,7 +33,6 @@ import { getIntent } from "~/logic/intent";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
 
 const AccountFormSchema = {
@@ -52,8 +51,8 @@ export const handle = {
 };
 
 export async function loader({ request }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
-  const result = await getLoggedInApiClient(session).users.userLoad({});
+  const apiClient = await getLoggedInApiClient(request);
+  const result = await apiClient.users.userLoad({});
 
   return json({
     user: result.user,
@@ -61,7 +60,7 @@ export async function loader({ request }: LoaderArgs) {
 }
 
 export async function action({ request }: ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const form = await parseForm(request, AccountFormSchema);
 
   const { intent } = getIntent<undefined>(form.intent);
@@ -69,7 +68,7 @@ export async function action({ request }: ActionArgs) {
   try {
     switch (intent) {
       case "update": {
-        await getLoggedInApiClient(session).users.userUpdate({
+        await apiClient.users.userUpdate({
           name: {
             should_change: true,
             value: form.name,
@@ -84,7 +83,7 @@ export async function action({ request }: ActionArgs) {
       }
 
       case "change-feature-flags": {
-        await getLoggedInApiClient(session).users.userChangeFeatureFlags({
+        await apiClient.users.userChangeFeatureFlags({
           feature_flags: form.featureFlags,
         });
 

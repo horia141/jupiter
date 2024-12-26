@@ -1,16 +1,13 @@
 import type { RecordScoreResult } from "@jupiter/webapi-client";
 import { createCookie } from "@remix-run/node";
-import { GLOBAL_PROPERTIES } from "~/global-properties-server";
+import { SCORE_ACTION_COOKIE_NAME } from "~/names";
 
 // TODO(horia141): secrets!
-const scoreActionCookie = createCookie(
-  GLOBAL_PROPERTIES.scoreActionCookieName,
-  {
-    maxAge: 60 * 60, // 1 hour
-    path: "/",
-    sameSite: "strict",
-  }
-);
+const scoreActionCookie = createCookie(SCORE_ACTION_COOKIE_NAME, {
+  maxAge: 60 * 60, // 1 hour
+  path: "/",
+  sameSite: "strict",
+});
 
 export async function saveScoreAction(result: RecordScoreResult) {
   return await scoreActionCookie.serialize({

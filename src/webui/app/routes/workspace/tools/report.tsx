@@ -25,7 +25,7 @@ import { z } from "zod";
 import { parseQuery } from "zodix";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { ToolPanel } from "~/components/infra/layout/tool-panel";
 import { ShowReport } from "~/components/show-report";
@@ -43,7 +43,6 @@ import {
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
 
 const QuerySchema = {
@@ -62,7 +61,7 @@ export const handle = {
 };
 
 export async function loader({ request }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const { today, period, breakdownPeriod } = parseQuery(request, QuerySchema);
 
   if (
@@ -73,16 +72,12 @@ export async function loader({ request }: LoaderArgs) {
     return json(noErrorSomeData({ report: undefined }));
   }
 
-  const summaryResponse = await getLoggedInApiClient(
-    session
-  ).getSummaries.getSummaries({
+  const summaryResponse = await apiClient.getSummaries.getSummaries({
     include_projects: true,
   });
 
   try {
-    const reportResponse = await getLoggedInApiClient(
-      session
-    ).application.report({
+    const reportResponse = await apiClient.application.report({
       today: today,
       period: period,
       breakdown_period:

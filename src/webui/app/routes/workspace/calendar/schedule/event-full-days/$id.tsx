@@ -23,7 +23,7 @@ import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
@@ -41,7 +41,6 @@ import { isCorePropertyEditable } from "~/logic/domain/schedule-event-full-days"
 import { basicShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = {
@@ -72,19 +71,15 @@ export const handle = {
 };
 
 export async function loader({ request, params }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
 
-  const summaryResponse = await getLoggedInApiClient(
-    session
-  ).getSummaries.getSummaries({
+  const summaryResponse = await apiClient.getSummaries.getSummaries({
     include_schedule_streams: true,
   });
 
   try {
-    const response = await getLoggedInApiClient(
-      session
-    ).eventFullDays.scheduleEventFullDaysLoad({
+    const response = await apiClient.eventFullDays.scheduleEventFullDaysLoad({
       ref_id: id,
       allow_archived: true,
     });
@@ -109,7 +104,7 @@ export async function loader({ request, params }: LoaderArgs) {
 }
 
 export async function action({ request, params }: ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
   const url = new URL(request.url);
@@ -117,9 +112,7 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (form.intent) {
       case "update": {
-        await getLoggedInApiClient(
-          session
-        ).eventFullDays.scheduleEventFullDaysUpdate({
+        await apiClient.eventFullDays.scheduleEventFullDaysUpdate({
           ref_id: id,
           name: {
             should_change: true,
@@ -140,19 +133,19 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "change-schedule-stream": {
-        await getLoggedInApiClient(
-          session
-        ).eventFullDays.scheduleEventFullDaysChangeScheduleStream({
-          ref_id: id,
-          schedule_stream_ref_id: form.scheduleStreamRefId,
-        });
+        await apiClient.eventFullDays.scheduleEventFullDaysChangeScheduleStream(
+          {
+            ref_id: id,
+            schedule_stream_ref_id: form.scheduleStreamRefId,
+          }
+        );
         return redirect(
           `/workspace/calendar/schedule/event-full-days/${id}?${url.searchParams}`
         );
       }
 
       case "create-note": {
-        await getLoggedInApiClient(session).notes.noteCreate({
+        await apiClient.notes.noteCreate({
           domain: NoteDomain.SCHEDULE_EVENT_FULL_DAYS,
           source_entity_ref_id: id,
           content: [],
@@ -163,9 +156,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(
-          session
-        ).eventFullDays.scheduleEventFullDaysArchive({
+        await apiClient.eventFullDays.scheduleEventFullDaysArchive({
           ref_id: id,
         });
         return redirect(

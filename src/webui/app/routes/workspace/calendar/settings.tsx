@@ -1,4 +1,4 @@
-import { ApiError, EventSource, ScheduleSource } from "@jupiter/webapi-client";
+import { ApiError, ScheduleSource } from "@jupiter/webapi-client";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
   Accordion,
@@ -25,7 +25,7 @@ import { Form, useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { CheckboxAsString, parseForm } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntitySummaryLink } from "~/components/entity-summary-link";
 import { EventSourceTag } from "~/components/event-source-tag";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
@@ -41,7 +41,6 @@ import { selectZod } from "~/logic/select";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 
 const ScheduleExternalSyncFormSchema = {
   scheduleStreamRefIds: selectZod(z.string()),
@@ -53,15 +52,11 @@ export const handle = {
 };
 
 export async function loader({ request }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
-  const summaryResponse = await getLoggedInApiClient(
-    session
-  ).getSummaries.getSummaries({
+  const apiClient = await getLoggedInApiClient(request);
+  const summaryResponse = await apiClient.getSummaries.getSummaries({
     include_schedule_streams: true,
   });
-  const response = await getLoggedInApiClient(
-    session
-  ).schedule.scheduleExternalSyncLoadRuns({});
+  const response = await apiClient.schedule.scheduleExternalSyncLoadRuns({});
 
   return json({
     scheduleStreams: summaryResponse.schedule_streams!,
@@ -70,12 +65,11 @@ export async function loader({ request }: LoaderArgs) {
 }
 
 export async function action({ request }: ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const form = await parseForm(request, ScheduleExternalSyncFormSchema);
 
   try {
-    await getLoggedInApiClient(session).schedule.scheduleExternalSyncDo({
-      source: EventSource.WEB,
+    await apiClient.schedule.scheduleExternalSyncDo({
       sync_even_if_not_modified: form.syncEvenIfNotModified,
       filter_schedule_stream_ref_id: form.scheduleStreamRefIds,
     });

@@ -1,5 +1,7 @@
 """Contains all the data models used in inputs/outputs"""
 
+from .app_core import AppCore
+from .app_shell import AppShell
 from .big_plan import BigPlan
 from .big_plan_archive_args import BigPlanArchiveArgs
 from .big_plan_archive_service_result import BigPlanArchiveServiceResult
@@ -576,6 +578,8 @@ from .workspace_update_args import WorkspaceUpdateArgs
 from .workspace_update_args_name import WorkspaceUpdateArgsName
 
 __all__ = (
+    "AppCore",
+    "AppShell",
     "BigPlan",
     "BigPlanArchiveArgs",
     "BigPlanArchiveServiceResult",

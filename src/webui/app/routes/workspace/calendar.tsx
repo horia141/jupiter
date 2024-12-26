@@ -47,7 +47,7 @@ import type { PropsWithChildren } from "react";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { parseQuery } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNameComponent } from "~/components/entity-name";
 import { EntityLink } from "~/components/infra/entity-card";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
@@ -97,7 +97,6 @@ import {
   useTrunkNeedsToShowBranch,
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
 import { measureText } from "~/utils";
 
@@ -120,7 +119,7 @@ const QuerySchema = {
 };
 
 export async function loader({ request }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const query = parseQuery(request, QuerySchema);
   const url = new URL(request.url);
 
@@ -137,9 +136,7 @@ export async function loader({ request }: LoaderArgs) {
     return redirect(`${url}`);
   }
 
-  const response = await getLoggedInApiClient(
-    session
-  ).calendar.calendarLoadForDateAndPeriod({
+  const response = await apiClient.calendar.calendarLoadForDateAndPeriod({
     right_now: query.date,
     period: query.period,
     stats_subperiod: statsSubperiodForPeriod(query.period),

@@ -1,9 +1,9 @@
 import Cookies from "js-cookie";
 import { useSnackbar } from "notistack";
-import { useContext, useEffect, useState } from "react";
-import { GlobalPropertiesContext } from "~/global-properties-client";
+import { useEffect, useState } from "react";
 import type { ScoreAction } from "~/logic/domain/gamification/scores";
 import { SCORE_ACTION_COOKIE_SCHEMA } from "~/logic/domain/gamification/scores";
+import { SCORE_ACTION_COOKIE_NAME } from "~/names";
 import { useBigScreen } from "~/rendering/use-big-screen";
 
 function formatScoreUpdate(result: ScoreAction, isBigScreen: boolean): string {
@@ -36,13 +36,9 @@ export function useScoreActionSingleton() {
     undefined
   );
 
-  const globalProperties = useContext(GlobalPropertiesContext);
-
   useEffect(() => {
     const interval = setInterval(() => {
-      const scoreActionStr = Cookies.get(
-        globalProperties.scoreActionCookieName
-      );
+      const scoreActionStr = Cookies.get(SCORE_ACTION_COOKIE_NAME);
       if (scoreActionStr === undefined) {
         return;
       }
@@ -50,11 +46,11 @@ export function useScoreActionSingleton() {
         JSON.parse(atob(scoreActionStr))
       );
       setScoreAction(scoreAction);
-      Cookies.remove(globalProperties.scoreActionCookieName);
+      Cookies.remove(SCORE_ACTION_COOKIE_NAME);
     }, 100);
 
     return () => clearInterval(interval);
-  }, [globalProperties.scoreActionCookieName]);
+  }, []);
 
   return scoreAction;
 }

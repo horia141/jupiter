@@ -17,7 +17,7 @@ import { useActionData, useParams, useTransition } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
@@ -29,7 +29,6 @@ import { aDateToDate } from "~/logic/domain/adate";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 
 const ParamsSchema = {
   id: z.string(),
@@ -47,11 +46,11 @@ export const handle = {
 };
 
 export async function loader({ request, params }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const { entryId } = parseParams(params, ParamsSchema);
 
   try {
-    const result = await getLoggedInApiClient(session).entry.metricEntryLoad({
+    const result = await apiClient.entry.metricEntryLoad({
       ref_id: entryId,
       allow_archived: true,
     });
@@ -73,14 +72,14 @@ export async function loader({ request, params }: LoaderArgs) {
 }
 
 export async function action({ request, params }: ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const { id, entryId } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
 
   try {
     switch (form.intent) {
       case "update": {
-        await getLoggedInApiClient(session).entry.metricEntryUpdate({
+        await apiClient.entry.metricEntryUpdate({
           ref_id: entryId,
           collection_time: {
             should_change: true,
@@ -96,7 +95,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "create-note": {
-        await getLoggedInApiClient(session).notes.noteCreate({
+        await apiClient.notes.noteCreate({
           domain: NoteDomain.METRIC_ENTRY,
           source_entity_ref_id: entryId,
           content: [],
@@ -106,7 +105,7 @@ export async function action({ request, params }: ActionArgs) {
       }
 
       case "archive": {
-        await getLoggedInApiClient(session).entry.metricEntryArchive({
+        await apiClient.entry.metricEntryArchive({
           ref_id: entryId,
         });
 

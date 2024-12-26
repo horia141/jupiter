@@ -3,6 +3,8 @@ from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
+from ..models.app_core import AppCore
+from ..models.app_shell import AppShell
 from ..models.env import Env
 from ..models.hosting import Hosting
 from ..models.user_feature import UserFeature
@@ -35,7 +37,6 @@ class LoadTopLevelInfoResult:
         hosting (Hosting): The type of hosting jupiter is run into.
         user_feature_flag_controls (UserFeatureFlagsControls): Feature settings controls for the user.
         default_user_feature_flags (LoadTopLevelInfoResultDefaultUserFeatureFlags):
-        user_feature_hack (UserFeature): A particular feature of a jupiter user.
         deafult_workspace_name (str): The workspace name.
         default_first_schedule_stream_name (str): The name of a schedule stream.
         default_root_project_name (str): The project name.
@@ -45,13 +46,15 @@ class LoadTopLevelInfoResult:
         user (Union['User', None, Unset]):
         user_score_overview (Union['UserScoreOverview', None, Unset]):
         workspace (Union['Workspace', None, Unset]):
+        user_feature_hack (Union[None, Unset, UserFeature]):
+        app_core_hack (Union[AppCore, None, Unset]):
+        app_shell_hack (Union[AppShell, None, Unset]):
     """
 
     env: Env
     hosting: Hosting
     user_feature_flag_controls: "UserFeatureFlagsControls"
     default_user_feature_flags: "LoadTopLevelInfoResultDefaultUserFeatureFlags"
-    user_feature_hack: UserFeature
     deafult_workspace_name: str
     default_first_schedule_stream_name: str
     default_root_project_name: str
@@ -61,6 +64,9 @@ class LoadTopLevelInfoResult:
     user: Union["User", None, Unset] = UNSET
     user_score_overview: Union["UserScoreOverview", None, Unset] = UNSET
     workspace: Union["Workspace", None, Unset] = UNSET
+    user_feature_hack: Union[None, Unset, UserFeature] = UNSET
+    app_core_hack: Union[AppCore, None, Unset] = UNSET
+    app_shell_hack: Union[AppShell, None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -75,8 +81,6 @@ class LoadTopLevelInfoResult:
         user_feature_flag_controls = self.user_feature_flag_controls.to_dict()
 
         default_user_feature_flags = self.default_user_feature_flags.to_dict()
-
-        user_feature_hack = self.user_feature_hack.value
 
         deafult_workspace_name = self.deafult_workspace_name
 
@@ -114,6 +118,30 @@ class LoadTopLevelInfoResult:
         else:
             workspace = self.workspace
 
+        user_feature_hack: Union[None, Unset, str]
+        if isinstance(self.user_feature_hack, Unset):
+            user_feature_hack = UNSET
+        elif isinstance(self.user_feature_hack, UserFeature):
+            user_feature_hack = self.user_feature_hack.value
+        else:
+            user_feature_hack = self.user_feature_hack
+
+        app_core_hack: Union[None, Unset, str]
+        if isinstance(self.app_core_hack, Unset):
+            app_core_hack = UNSET
+        elif isinstance(self.app_core_hack, AppCore):
+            app_core_hack = self.app_core_hack.value
+        else:
+            app_core_hack = self.app_core_hack
+
+        app_shell_hack: Union[None, Unset, str]
+        if isinstance(self.app_shell_hack, Unset):
+            app_shell_hack = UNSET
+        elif isinstance(self.app_shell_hack, AppShell):
+            app_shell_hack = self.app_shell_hack.value
+        else:
+            app_shell_hack = self.app_shell_hack
+
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -122,7 +150,6 @@ class LoadTopLevelInfoResult:
                 "hosting": hosting,
                 "user_feature_flag_controls": user_feature_flag_controls,
                 "default_user_feature_flags": default_user_feature_flags,
-                "user_feature_hack": user_feature_hack,
                 "deafult_workspace_name": deafult_workspace_name,
                 "default_first_schedule_stream_name": default_first_schedule_stream_name,
                 "default_root_project_name": default_root_project_name,
@@ -137,6 +164,12 @@ class LoadTopLevelInfoResult:
             field_dict["user_score_overview"] = user_score_overview
         if workspace is not UNSET:
             field_dict["workspace"] = workspace
+        if user_feature_hack is not UNSET:
+            field_dict["user_feature_hack"] = user_feature_hack
+        if app_core_hack is not UNSET:
+            field_dict["app_core_hack"] = app_core_hack
+        if app_shell_hack is not UNSET:
+            field_dict["app_shell_hack"] = app_shell_hack
 
         return field_dict
 
@@ -164,8 +197,6 @@ class LoadTopLevelInfoResult:
         default_user_feature_flags = LoadTopLevelInfoResultDefaultUserFeatureFlags.from_dict(
             d.pop("default_user_feature_flags")
         )
-
-        user_feature_hack = UserFeature(d.pop("user_feature_hack"))
 
         deafult_workspace_name = d.pop("deafult_workspace_name")
 
@@ -234,12 +265,62 @@ class LoadTopLevelInfoResult:
 
         workspace = _parse_workspace(d.pop("workspace", UNSET))
 
+        def _parse_user_feature_hack(data: object) -> Union[None, Unset, UserFeature]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                user_feature_hack_type_0 = UserFeature(data)
+
+                return user_feature_hack_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[None, Unset, UserFeature], data)
+
+        user_feature_hack = _parse_user_feature_hack(d.pop("user_feature_hack", UNSET))
+
+        def _parse_app_core_hack(data: object) -> Union[AppCore, None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                app_core_hack_type_0 = AppCore(data)
+
+                return app_core_hack_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[AppCore, None, Unset], data)
+
+        app_core_hack = _parse_app_core_hack(d.pop("app_core_hack", UNSET))
+
+        def _parse_app_shell_hack(data: object) -> Union[AppShell, None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                app_shell_hack_type_0 = AppShell(data)
+
+                return app_shell_hack_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[AppShell, None, Unset], data)
+
+        app_shell_hack = _parse_app_shell_hack(d.pop("app_shell_hack", UNSET))
+
         load_top_level_info_result = cls(
             env=env,
             hosting=hosting,
             user_feature_flag_controls=user_feature_flag_controls,
             default_user_feature_flags=default_user_feature_flags,
-            user_feature_hack=user_feature_hack,
             deafult_workspace_name=deafult_workspace_name,
             default_first_schedule_stream_name=default_first_schedule_stream_name,
             default_root_project_name=default_root_project_name,
@@ -249,6 +330,9 @@ class LoadTopLevelInfoResult:
             user=user,
             user_score_overview=user_score_overview,
             workspace=workspace,
+            user_feature_hack=user_feature_hack,
+            app_core_hack=app_core_hack,
+            app_shell_hack=app_shell_hack,
         )
 
         load_top_level_info_result.additional_properties = d

@@ -1,12 +1,12 @@
 """Load a particulr doc."""
 
+from jupiter.core.domain.app import AppCore
 from jupiter.core.domain.concept.docs.doc import Doc
 from jupiter.core.domain.core.notes.note import Note, NoteRepository
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,
@@ -37,7 +37,7 @@ class DocLoadResult(UseCaseResultBase):
     subdocs: list[Doc]
 
 
-@readonly_use_case(WorkspaceFeature.DOCS, exclude_app=[EventSource.CLI])
+@readonly_use_case(WorkspaceFeature.DOCS, exclude_app=[AppCore.CLI])
 class DocLoadUseCase(
     AppTransactionalLoggedInReadOnlyUseCase[DocLoadArgs, DocLoadResult]
 ):

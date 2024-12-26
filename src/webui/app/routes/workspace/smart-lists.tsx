@@ -4,7 +4,7 @@ import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Outlet, useFetcher } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import EntityIconComponent from "~/components/entity-icon";
 import { EntityNameComponent } from "~/components/entity-name";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
@@ -19,17 +19,14 @@ import {
   useTrunkNeedsToShowBranch,
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 
 export const handle = {
   displayType: DisplayType.TRUNK,
 };
 
 export async function loader({ request }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
-  const smartListResponse = await getLoggedInApiClient(
-    session
-  ).smartLists.smartListFind({
+  const apiClient = await getLoggedInApiClient(request);
+  const smartListResponse = await apiClient.smartLists.smartListFind({
     allow_archived: false,
     include_notes: false,
     include_tags: false,

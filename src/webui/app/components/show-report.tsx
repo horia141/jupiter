@@ -218,8 +218,17 @@ export function ShowReport({
 
               return (
                 <Box key={pb.ref_id}>
-                  <Divider>
-                    <Typography variant="h5">{fullProjectName}</Typography>
+                  <Divider variant="fullWidth">
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        maxWidth: "calc(100vw - 2rem)",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {fullProjectName}
+                    </Typography>
                   </Divider>
                   <OverviewReport
                     topLevelInfo={topLevelInfo}

@@ -1,12 +1,12 @@
 """The command for removing a note."""
 
+from jupiter.core.domain.app import AppCore
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.service.note_remove_service import (
     NoteRemoveService,
 )
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
     ProgressReporter,
 )
@@ -25,7 +25,7 @@ class NoteRemoveArgs(UseCaseArgsBase):
     ref_id: EntityId
 
 
-@mutation_use_case(exclude_app=[EventSource.CLI])
+@mutation_use_case(exclude_app=[AppCore.CLI])
 class NoteRemoveUseCase(AppTransactionalLoggedInMutationUseCase[NoteRemoveArgs, None]):
     """The command for removing a note."""
 

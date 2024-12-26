@@ -1,8 +1,8 @@
 ---
-site_name: Thrive
+site_name: !ENV PUBLIC_NAME
 site_description: "Documentation for Thrive, the life planning tool"
-site_author: "Horia Coman"
-copyright: "(c) 2024 Horia Coman"
+site_author: !ENV AUTHOR
+copyright: !ENV COPYRIGHT
 repo_url: https://github.com/horia141/jupiter
 repo_name: GitHub
 
@@ -13,7 +13,7 @@ docs_dir: material
 
 theme:
     name: material
-    favicon: assets/jupiter.ico
+    favicon: assets/favicon.ico
     logo: assets/jupiter.png
     highlightjs: true
     hljs_style: obsidian
@@ -59,8 +59,9 @@ nav:
           - 'Recover Your Account': 'how-tos/recover-your-account.md'
     - Roadmap: 'roadmap.md'
     - Releases:
-          - 'Version 1.1.1': 'releases/version-1.1.1.md'
+          - 'Version 1.1.2': 'releases/version-1.1.2.md'
           - Older:
+                - 'Version 1.1.1': 'releases/version-1.1.1.md'
                 - 'Version 1.1.0': 'releases/version-1.1.0.md'
                 - 'Version 1.0.6': 'releases/version-1.0.6.md'
                 - 'Version 1.0.3': 'releases/version-1.0.3.md'

@@ -1,9 +1,10 @@
-import type {
-  User,
-  UserFeatureFlagsControls,
-  UserScoreOverview,
-  Workspace,
-  WorkspaceFeatureFlagsControls,
+import {
+  UserCategory,
+  type User,
+  type UserFeatureFlagsControls,
+  type UserScoreOverview,
+  type Workspace,
+  type WorkspaceFeatureFlagsControls,
 } from "@jupiter/webapi-client";
 import { createContext } from "react";
 
@@ -29,6 +30,7 @@ export const TopLevelInfoContext = createContext<TopLevelInfo>({
     created_time: "0",
     last_modified_time: "0",
     archived_time: "0",
+    category: UserCategory.STANDARD,
     email_address: "foo",
     name: "food",
     avatar: "this-is-not-a-data-url",

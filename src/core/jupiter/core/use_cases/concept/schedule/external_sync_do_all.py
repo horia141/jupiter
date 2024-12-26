@@ -7,7 +7,9 @@ from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import EmptyContext
 from jupiter.core.framework.use_case_io import UseCaseArgsBase, use_case_args
-from jupiter.core.use_cases.infra.use_cases import AppBackgroundMutationUseCase
+from jupiter.core.use_cases.infra.use_cases import (
+    SysBackgroundMutationUseCase,
+)
 
 
 @use_case_args
@@ -16,7 +18,7 @@ class ScheduleExternalSyncDoAllArgs(UseCaseArgsBase):
 
 
 class ScheduleExternalSyncDoAllUseCase(
-    AppBackgroundMutationUseCase[ScheduleExternalSyncDoAllArgs, None]
+    SysBackgroundMutationUseCase[ScheduleExternalSyncDoAllArgs, None]
 ):
     """The command for doing a sync."""
 
@@ -27,7 +29,7 @@ class ScheduleExternalSyncDoAllUseCase(
         async with self._domain_storage_engine.get_unit_of_work() as uow:
             workspaces = await uow.get_for(Workspace).find_all(allow_archived=False)
 
-        ctx = DomainContext(
+        ctx = DomainContext.from_sys(
             EventSource.SCHEDULE_EXTERNAL_SYNC_CRON,
             self._time_provider.get_current_time(),
         )

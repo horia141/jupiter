@@ -99,6 +99,38 @@ particular name in `./scripts/run-dev.sh <your-name>` you create such an env for
 or reuse if you created it before. When you open a PR, the same happens but in a `live`
 setting. These environments are separate between each other, and start in a blank but valid state.
 
+## Apps
+
+Another important concept is that of _apps_. These are the programs or
+systems through which users actually interact with the system.
+
+Conceptually apps are a combination of two things: a core and a shell.
+The core encapsulates something fundamental about how a user interacts,
+whereas the shell describes the way the core is packaged for interaction,
+typically bound to a certain notion of a platform.
+
+Physically, most code will be in the core. The shell just orchestrates
+this interaction and is aware of the platform specifics.
+
+Presently there are two cores:
+
+* The CLI app - an app users can use from a command line
+* The WebUI app - a typical web based app, with a GUI and available
+  over the network.
+
+There are several cores:
+
+* CLI - which corresponds to the CLI core, wrapped as a typical
+  command line app, where you write commands one at a time.
+* Browser - the WebUI core delivered as a webapp at a well known
+  web address.
+* Desktop Electron - the WebUI delivered as a desktop app for
+  Linux, MacOS, and Windows, via their respective distribution
+  mechanism.
+* Mobile Capacitor - the WebUI delivered as mobile apps for iOS
+  and Android, via their respective distribution mechanism.
+* Mobile PWA - the WebUI delivered as mobile apps via PWA.
+
 ## Running Tests
 
 The full test suite is run via `make check`. This runs linters, type checkers, and
@@ -133,4 +165,67 @@ Tests are written in `Python` with `pytest` and `playwright`.
 
 ## Releases
 
-Coming soon.
+Jupiter has a notion of versions, represented by releases. These mark specific
+code versions, and the associated "release entities" for them (typically packaged apps).
+
+The main Jupiter system has a continuous deployment release model. Every piece
+of work that gets created via `./scripts/work/new-feature|new-bugfix` triggers a
+a release to production - `webui` and `webapi` and `docs` and the others are thus
+handled. Ditto, every PR also is pushed immediately to a staging environment.
+
+Other sorts of artifacts - the `cli` and `desktop` apps (and in the future, the
+`ios`, `android`, `linux`, etc. ones) have a coarser grained release process,
+marked by releases.
+
+Releases are named in semver fashion. We are currently at `v1.x.x` and plan
+on staying on major `1` for a long time.
+
+In terms of representation:
+
+* On Git/GitHub, releases are marked by tags of the form `vx.y.x`.
+* Ditto, the `master` branch is built such that it has one PR for each release.
+  The `develop` branch tracks incremental releases of features and bugfixes.
+* GitHub Releases are used to hold the artefacts produced by each release
+  (source code, app packages).
+* Releases can imply an app store upload too, but not necessarily. The platform
+  apps are built with Electron and are thin shells around the web app. So the
+  need for updating them, even as infrequent as releases isn't as big.
+
+In terms of working:
+
+* To create a release use `./scripts/release/new.sh x.y.z`.
+* You'll need to edit `src/docs/material/releases/release-x.y.z.md` with the
+  release notes. And update `mkdocs.yaml` to include it.
+* Also run a `make stats-for-nerds` to include some per-release info.
+* Then run `./scripts/release/finish.sh` to finish everything about the
+  release on GitHub size.
+* You can run `./scripts/build/desktop.sh` to build the new version of the
+  desktop apps.
+* And then `./scripts/release/gh-release.sh x.y.z` to create a new release
+  on GitHub.
+* Finally, if you so with you can upload to the AppStore via
+  `./scripts/release/appstore-upload.sh x.y.z`. As mentioned above, not
+  always necessary.
+
+We'll work to unify these more in the future, but for now they're manual
+operations that you can chose to do or not do.
+
+For humans, these are useful too. The documentation has links to release notes,
+which are useful for folks.
+
+## Some Tricky Aspects
+
+There's some trickyness that's easy to miss.
+
+* URL handlers: when the app is used via the desktop and mobile shells
+  registers itself to open URLs starting via "jupiter://".
+* The logic of when to open the app:
+  * When in the Browser shell, there's a link to download the platform
+    shells. This looks at the current platform and builds the appropriate
+    link to download the app.
+  * But it also has a "jupiter://" link to open directly if there's
+    something there.
+* Frontdoor is used by shells as the initial entry point. They can pass
+  in shell specific data here, and frondoor stores them in a way that's
+  accessible to the rest of the app. Not entering through the frontdoor
+  means that the assumptions will be made by the system (ie you're a browser).

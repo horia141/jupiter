@@ -11,8 +11,11 @@ import {
 } from "@mui/material";
 import { Link } from "@remix-run/react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useContext } from "react";
+import { GlobalPropertiesContext } from "~/global-properties-client";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { useBigScreen } from "~/rendering/use-big-screen";
+import { shouldShowLargeAppBar } from "~/shell-client";
 import type { TopLevelInfo } from "~/top-level-context";
 
 const BIG_SCREEN_WIDTH = "240px";
@@ -38,6 +41,7 @@ export default function Sidebar(props: SidebarProps) {
   }
 
   const isBigScreen = useBigScreen();
+  const globalProperties = useContext(GlobalPropertiesContext);
 
   return (
     <AnimatePresence>
@@ -60,6 +64,7 @@ export default function Sidebar(props: SidebarProps) {
           }}
           transition={{ type: "spring", bounce: 0.0, duration: 0.2 }}
           isBigScreen={isBigScreen}
+          largeAppBar={shouldShowLargeAppBar(globalProperties.appShell)}
         >
           <Toolbar />
           <List>
@@ -401,15 +406,17 @@ export default function Sidebar(props: SidebarProps) {
 
 interface StyledMotionDrawerProps {
   isBigScreen: boolean;
+  largeAppBar: boolean;
 }
 
 const StyledMotionDrawer = styled(motion.div)<StyledMotionDrawerProps>(
-  ({ theme, isBigScreen }) => `
+  ({ theme, isBigScreen, largeAppBar }) => `
     position: fixed;
     top: 0px;
     width: ${isBigScreen ? BIG_SCREEN_WIDTH : SMALL_SCREEN_WIDTH};
     z-index: ${theme.zIndex.drawer};
     height: 100%;
+    padding-top: ${largeAppBar ? "4rem" : "unset"};
     overflow-x: auto;
     overflow-y: scroll;
     background-color: ${theme.palette.background.paper};

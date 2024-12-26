@@ -12,7 +12,7 @@ import { AnimatePresence } from "framer-motion";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseParams } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import Check from "~/components/check";
 import { EntityNameComponent } from "~/components/entity-name";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
@@ -28,7 +28,6 @@ import {
   DisplayType,
   useBranchNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 
 const ParamsSchema = {
   id: z.string(),
@@ -39,13 +38,11 @@ export const handle = {
 };
 
 export async function loader({ request, params }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
 
   try {
-    const response = await getLoggedInApiClient(
-      session
-    ).smartLists.smartListLoad({
+    const response = await apiClient.smartLists.smartListLoad({
       ref_id: id,
       allow_archived: false,
     });

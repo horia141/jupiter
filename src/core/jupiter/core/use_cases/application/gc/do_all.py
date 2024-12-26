@@ -8,7 +8,9 @@ from jupiter.core.framework.use_case import (
     EmptyContext,
 )
 from jupiter.core.framework.use_case_io import UseCaseArgsBase, use_case_args
-from jupiter.core.use_cases.infra.use_cases import AppBackgroundMutationUseCase
+from jupiter.core.use_cases.infra.use_cases import (
+    SysBackgroundMutationUseCase,
+)
 
 
 @use_case_args
@@ -16,7 +18,7 @@ class GCDoAllArgs(UseCaseArgsBase):
     """GCDoAllArgs."""
 
 
-class GCDoAllUseCase(AppBackgroundMutationUseCase[GCDoAllArgs, None]):
+class GCDoAllUseCase(SysBackgroundMutationUseCase[GCDoAllArgs, None]):
     """The command for doing garbage collection for all workspaces."""
 
     async def _execute(
@@ -28,7 +30,9 @@ class GCDoAllUseCase(AppBackgroundMutationUseCase[GCDoAllArgs, None]):
         async with self._domain_storage_engine.get_unit_of_work() as uow:
             workspaces = await uow.get_for(Workspace).find_all(allow_archived=False)
 
-        ctx = DomainContext(EventSource.GC_CRON, self._time_provider.get_current_time())
+        ctx = DomainContext.from_sys(
+            EventSource.GC_CRON, self._time_provider.get_current_time()
+        )
 
         gc_service = GCService(
             time_provider=self._time_provider,

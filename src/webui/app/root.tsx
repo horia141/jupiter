@@ -1,5 +1,5 @@
 import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
-import type { SerializeFrom } from "@remix-run/node";
+import type { LoaderArgs, SerializeFrom } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
@@ -20,6 +20,7 @@ import {
 } from "./global-properties-client";
 import { GLOBAL_PROPERTIES } from "./global-properties-server";
 import { standardShouldRevalidate } from "./rendering/standard-should-revalidate";
+import { loadAppShell } from "./shell.server";
 
 const THEME = createTheme({
   palette: {
@@ -46,9 +47,14 @@ const THEME = createTheme({
   },
 });
 
-export async function loader() {
+export async function loader({ request }: LoaderArgs) {
+  // This is the only place where we can read this field.
+  const appShell = await loadAppShell(request.headers.get("Cookie"));
   return json({
-    globalProperties: serverToClientGlobalProperties(GLOBAL_PROPERTIES),
+    globalProperties: serverToClientGlobalProperties(
+      GLOBAL_PROPERTIES,
+      appShell
+    ),
   });
 }
 

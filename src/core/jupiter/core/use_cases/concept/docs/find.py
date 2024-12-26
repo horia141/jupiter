@@ -1,6 +1,7 @@
 """The use case for finding docs."""
 from collections import defaultdict
 
+from jupiter.core.domain.app import AppCore
 from jupiter.core.domain.concept.docs.doc import Doc
 from jupiter.core.domain.concept.docs.doc_collection import DocCollection
 from jupiter.core.domain.core.notes.note import Note
@@ -10,7 +11,6 @@ from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.entity import NoFilter
-from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,
@@ -51,7 +51,7 @@ class DocFindResult(UseCaseResultBase):
     entries: list[DocFindResultEntry]
 
 
-@readonly_use_case(WorkspaceFeature.DOCS, exclude_app=[EventSource.CLI])
+@readonly_use_case(WorkspaceFeature.DOCS, exclude_app=[AppCore.CLI])
 class DocFindUseCase(
     AppTransactionalLoggedInReadOnlyUseCase[DocFindArgs, DocFindResult]
 ):

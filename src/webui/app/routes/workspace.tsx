@@ -31,7 +31,7 @@ import SecurityIcon from "@mui/icons-material/Security";
 import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
 import { AnimatePresence, useAnimate } from "framer-motion";
 import { useContext, useEffect, useState } from "react";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { DocsHelp, DocsHelpSubject } from "~/components/docs-help";
 import {
   ScoreSnackbarManager,
@@ -44,7 +44,6 @@ import { isUserFeatureAvailable } from "~/logic/domain/user";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
-import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
 
 import { CommunityLink } from "~/components/community-link";
@@ -52,6 +51,7 @@ import { WorkspaceContainer } from "~/components/infra/layout/workspace-containe
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { isDevelopment } from "~/logic/domain/env";
 import { isInGlobalHosting } from "~/logic/domain/hosting";
+import { shouldShowLargeAppBar } from "~/shell-client";
 import editorJsTweaks from "~/styles/editorjs-tweaks.css";
 
 export const links: LinksFunction = () => [
@@ -60,16 +60,15 @@ export const links: LinksFunction = () => [
 
 // @secureFn
 export async function loader({ request }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
-  const client = getLoggedInApiClient(session);
-  const response = await client.loadTopLevelInfo.loadTopLevelInfo({});
+  const apiClient = await getLoggedInApiClient(request);
+  const response = await apiClient.loadTopLevelInfo.loadTopLevelInfo({});
 
   if (!response.user || !response.workspace) {
     return redirect("/init");
   }
 
   const progressReporterTokenResponse =
-    await client.loadProgressReporterToken.loadProgressReporterToken({});
+    await apiClient.loadProgressReporterToken.loadProgressReporterToken({});
 
   return json({
     userFeatureFlagControls: response.user_feature_flag_controls,
@@ -148,7 +147,12 @@ export default function Workspace() {
       <WorkspaceContainer>
         <AppBar
           position="static"
-          sx={{ zIndex: (theme) => theme.zIndex.drawer + 10 }}
+          sx={{
+            paddingTop: shouldShowLargeAppBar(globalProperties.appShell)
+              ? "4rem"
+              : undefined,
+            zIndex: (theme) => theme.zIndex.drawer + 10,
+          }}
         >
           <Toolbar>
             <IconButton

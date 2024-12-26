@@ -1,4 +1,4 @@
-import { ApiError, EventSource, SyncTarget } from "@jupiter/webapi-client";
+import { ApiError, SyncTarget } from "@jupiter/webapi-client";
 import ArchiveIcon from "@mui/icons-material/Archive";
 import TuneIcon from "@mui/icons-material/Tune";
 import { Button, Card, CardContent } from "@mui/material";
@@ -10,7 +10,7 @@ import { AnimatePresence } from "framer-motion";
 import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
@@ -25,7 +25,6 @@ import {
   useTrunkNeedsToShowBranch,
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 
 const UpdateFormSchema = {
   intent: z.string(),
@@ -36,17 +35,15 @@ export const handle = {
 };
 
 export async function loader({ request }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
-  const response = await getLoggedInApiClient(
-    session
-  ).workingMem.workingMemLoadCurrent({});
+  const apiClient = await getLoggedInApiClient(request);
+  const response = await apiClient.workingMem.workingMemLoadCurrent({});
   return json({
     entry: response.entry,
   });
 }
 
 export async function action({ request }: ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const form = await parseForm(request, UpdateFormSchema);
 
   const { intent } = getIntent<undefined>(form.intent);
@@ -54,8 +51,7 @@ export async function action({ request }: ActionArgs) {
   try {
     switch (intent) {
       case "generate-first-note": {
-        await getLoggedInApiClient(session).gen.genDo({
-          source: EventSource.WEB,
+        await apiClient.gen.genDo({
           gen_even_if_not_modified: false,
           gen_targets: [SyncTarget.WORKING_MEM],
         });

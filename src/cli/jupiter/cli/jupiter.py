@@ -101,7 +101,7 @@ async def main() -> None:
     await sqlite_connection.prepare()
 
     session_info = session_storage.load_optional()
-    guest_session = AppGuestUseCaseSession(
+    guest_session = AppGuestUseCaseSession.for_cli(
         session_info.auth_token_ext if session_info else None
     )
     _, top_level_info = await load_top_level_info_use_case.execute(

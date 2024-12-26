@@ -10,6 +10,8 @@ export { OpenAPI } from './core/OpenAPI';
 export type { OpenAPIConfig } from './core/OpenAPI';
 
 export type { ADate } from './models/ADate';
+export { AppCore } from './models/AppCore';
+export { AppShell } from './models/AppShell';
 export type { AuthTokenExt } from './models/AuthTokenExt';
 export type { Avatar } from './models/Avatar';
 export type { BigPlan } from './models/BigPlan';

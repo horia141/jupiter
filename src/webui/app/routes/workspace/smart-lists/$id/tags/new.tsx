@@ -17,7 +17,7 @@ import { useActionData, useParams, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
@@ -25,7 +25,6 @@ import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
-import { getSession } from "~/sessions";
 
 const ParamsSchema = {
   id: z.string(),
@@ -40,10 +39,10 @@ export const handle = {
 };
 
 export async function loader({ request, params }: LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
 
-  const result = await getLoggedInApiClient(session).smartLists.smartListLoad({
+  const result = await apiClient.smartLists.smartListLoad({
     allow_archived: true,
     ref_id: id,
   });
@@ -54,17 +53,15 @@ export async function loader({ request, params }: LoaderArgs) {
 }
 
 export async function action({ request, params }: ActionArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
+  const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, CreateFormSchema);
 
   try {
-    const response = await getLoggedInApiClient(session).tag.smartListTagCreate(
-      {
-        smart_list_ref_id: id,
-        tag_name: form.name,
-      }
-    );
+    const response = await apiClient.tag.smartListTagCreate({
+      smart_list_ref_id: id,
+      tag_name: form.name,
+    });
 
     return redirect(
       `/workspace/smart-lists/${id}/tags/${response.new_smart_list_tag.ref_id}`
