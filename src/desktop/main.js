@@ -5,10 +5,15 @@ const dotEnv = require("dotenv");
 
 loadEnvironment();
 
+const INITIAL_WIDTH = 1200;
+const INITIAL_HEIGHT = 900;
+
 const WEBUI_URL =
   process.env.ENV == "production" && process.env.HOSTING === "hosted-global"
-    ? process.env.HOSTED_GLOBAL_WEBUI_SERVER_URL
-    : process.env.LOCAL_WEBUI_SERVER_URL;
+    ? new URL(process.env.HOSTED_GLOBAL_WEBUI_SERVER_URL)
+    : new URL(process.env.LOCAL_WEBUI_SERVER_URL);
+
+WEBUI_URL.searchParams.set("initialWindowWidth", INITIAL_WIDTH);
 
 app.whenReady().then(() => {
   createWindow();
@@ -26,11 +31,11 @@ app.on("window-all-closed", () => {
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 1200,
-    height: 900,
+    width: INITIAL_WIDTH,
+    height: INITIAL_HEIGHT,
   });
 
-  win.loadURL(WEBUI_URL);
+  win.loadURL(WEBUI_URL.toString());
 }
 
 function loadEnvironment() {

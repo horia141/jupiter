@@ -1,16 +1,19 @@
 import { ApiClient, Hosting } from "@jupiter/webapi-client";
 import { redirect } from "@remix-run/node";
 import { GLOBAL_PROPERTIES } from "./global-properties-server";
-import { APPSHELL_HEADER, AUTH_TOKEN_NAME } from "./names";
+import { loadFrontDoorInfo } from "./logic/frontdoor.server";
+import { AUTH_TOKEN_NAME, FRONTDOOR_HEADER } from "./names";
 import { getSession } from "./sessions";
-import { loadAppShell } from "./shell.server";
 
 const _API_CLIENTS_BY_SESSION = new Map<undefined | string, ApiClient>();
 
 // @secureFn
 export async function getGuestApiClient(request: Request): Promise<ApiClient> {
   const session = await getSession(request.headers.get("Cookie"));
-  const appShell = await loadAppShell(request.headers.get("Cookie"));
+  const frontDoor = await loadFrontDoorInfo(
+    request.headers.get("Cookie"),
+    request.headers.get("User-Agent")
+  );
 
   let token = undefined;
   if (session !== undefined && session.has(AUTH_TOKEN_NAME)) {
@@ -34,7 +37,7 @@ export async function getGuestApiClient(request: Request): Promise<ApiClient> {
     BASE: base,
     TOKEN: token,
     HEADERS: {
-      [APPSHELL_HEADER]: appShell,
+      [FRONTDOOR_HEADER]: `${frontDoor.appShell}:${frontDoor.appPlatform}`,
     },
   });
 
@@ -48,7 +51,10 @@ export async function getLoggedInApiClient(
   request: Request
 ): Promise<ApiClient> {
   const session = await getSession(request.headers.get("Cookie"));
-  const appShell = await loadAppShell(request.headers.get("Cookie"));
+  const frontDoor = await loadFrontDoorInfo(
+    request.headers.get("Cookie"),
+    request.headers.get("User-Agent")
+  );
 
   if (!session.has(AUTH_TOKEN_NAME)) {
     throw redirect("/login");
@@ -73,7 +79,7 @@ export async function getLoggedInApiClient(
     BASE: base,
     TOKEN: authTokenExtStr,
     HEADERS: {
-      [APPSHELL_HEADER]: appShell,
+      [FRONTDOOR_HEADER]: `${frontDoor.appShell}:${frontDoor.appPlatform}`,
     },
   });
 

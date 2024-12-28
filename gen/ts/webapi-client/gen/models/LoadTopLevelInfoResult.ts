@@ -3,6 +3,7 @@
 /* eslint-disable */
 
 import type { AppCore } from './AppCore';
+import type { AppPlatform } from './AppPlatform';
 import type { AppShell } from './AppShell';
 import type { Env } from './Env';
 import type { Hosting } from './Hosting';
@@ -37,5 +38,6 @@ export type LoadTopLevelInfoResult = {
     user_feature_hack?: (UserFeature | null);
     app_core_hack?: (AppCore | null);
     app_shell_hack?: (AppShell | null);
+    app_platform_hack?: (AppPlatform | null);
 };
 

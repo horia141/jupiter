@@ -15,12 +15,17 @@ import { useContext, useState } from "react";
 import { z } from "zod";
 import { parseQuery } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
+import { CommunityLink } from "~/components/community-link";
+import { DocsHelp, DocsHelpSubject } from "~/components/docs-help";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { LifecyclePanel } from "~/components/infra/layout/lifecycle-panel";
 import { StandaloneContainer } from "~/components/infra/layout/standalone-container";
 import { SmartAppBar } from "~/components/infra/smart-appbar";
 import { Logo } from "~/components/logo";
+import { Title } from "~/components/title";
 import { GlobalPropertiesContext } from "~/global-properties-client";
+import { isDevelopment } from "~/logic/domain/env";
+import { isInGlobalHosting } from "~/logic/domain/hosting";
 
 const QuerySchema = {
   recoveryToken: z.string(),
@@ -56,9 +61,12 @@ export default function ShowRecoveryToken() {
     <StandaloneContainer>
       <SmartAppBar>
         <Logo />
-        <Typography noWrap variant="h6" component="div">
-          {globalProperties.title}
-        </Typography>
+        <Title />
+
+        {(isInGlobalHosting(globalProperties.hosting) ||
+          isDevelopment(globalProperties.env)) && <CommunityLink />}
+
+        <DocsHelp size="medium" subject={DocsHelpSubject.ROOT} />
       </SmartAppBar>
 
       <LifecyclePanel>

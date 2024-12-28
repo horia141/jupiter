@@ -334,7 +334,7 @@ const BranchPanelContent = styled("div")<BranchPanelContentProps>(
       isbigscreen === "true" ? `${theme.breakpoints.values.lg}px` : "100vw",
     margin: "auto",
     padding: isbigscreen === "true" ? "0.5rem" : "0px",
-    height: `calc(var(--vh, 1vh) * 100 - ${
+    height: `calc(var(--vh, 1vh) * 100 - env(safe-area-inset-top) - ${
       isbigscreen === "true" ? "4rem" : "3.5rem"
     } - ${
       isbigscreen === "true" ? "4rem" : hasleaf === "false" ? "4rem" : "0px"

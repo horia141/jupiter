@@ -4,7 +4,7 @@ import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import DeleteIcon from "@mui/icons-material/Delete";
 import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight";
 import SwitchLeftIcon from "@mui/icons-material/SwitchLeft";
-import { ButtonGroup, IconButton, Stack, styled } from "@mui/material";
+import { Box, ButtonGroup, IconButton, Stack, styled } from "@mui/material";
 import { Form, Link, useLocation, useNavigate } from "@remix-run/react";
 import { motion, useIsPresent } from "framer-motion";
 import type { PropsWithChildren } from "react";
@@ -240,6 +240,7 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
           isbigscreen={isBigScreen ? "true" : "false"}
         >
           <Stack spacing={2}>{props.children}</Stack>
+          <Box sx={{ height: "4rem" }}></Box>
         </LeafPanelContent>
       </Form>
     </LeafPanelFrame>
@@ -283,7 +284,7 @@ interface LeafPanelContentProps {
 const LeafPanelContent = styled("div")<LeafPanelContentProps>(
   ({ isbigscreen }) => ({
     padding: "0.5rem",
-    height: `calc(var(--vh, 1vh) * 100 - 4rem - ${
+    height: `calc(var(--vh, 1vh) * 100 - env(safe-area-inset-top) - 4rem - ${
       isbigscreen === "true" ? "4rem" : "3.5rem"
     })`,
     overflowY: "scroll",

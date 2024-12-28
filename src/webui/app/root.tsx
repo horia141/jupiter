@@ -19,8 +19,8 @@ import {
   serverToClientGlobalProperties,
 } from "./global-properties-client";
 import { GLOBAL_PROPERTIES } from "./global-properties-server";
+import { loadFrontDoorInfo } from "./logic/frontdoor.server";
 import { standardShouldRevalidate } from "./rendering/standard-should-revalidate";
-import { loadAppShell } from "./shell.server";
 
 const THEME = createTheme({
   palette: {
@@ -49,11 +49,15 @@ const THEME = createTheme({
 
 export async function loader({ request }: LoaderArgs) {
   // This is the only place where we can read this field.
-  const appShell = await loadAppShell(request.headers.get("Cookie"));
+  const frontDoor = await loadFrontDoorInfo(
+    request.headers.get("Cookie"),
+    request.headers.get("User-Agent")
+  );
+
   return json({
     globalProperties: serverToClientGlobalProperties(
       GLOBAL_PROPERTIES,
-      appShell
+      frontDoor
     ),
   });
 }

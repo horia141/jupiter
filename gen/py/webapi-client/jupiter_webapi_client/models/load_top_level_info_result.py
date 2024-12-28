@@ -4,6 +4,7 @@ from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
 from ..models.app_core import AppCore
+from ..models.app_platform import AppPlatform
 from ..models.app_shell import AppShell
 from ..models.env import Env
 from ..models.hosting import Hosting
@@ -49,6 +50,7 @@ class LoadTopLevelInfoResult:
         user_feature_hack (Union[None, Unset, UserFeature]):
         app_core_hack (Union[AppCore, None, Unset]):
         app_shell_hack (Union[AppShell, None, Unset]):
+        app_platform_hack (Union[AppPlatform, None, Unset]):
     """
 
     env: Env
@@ -67,6 +69,7 @@ class LoadTopLevelInfoResult:
     user_feature_hack: Union[None, Unset, UserFeature] = UNSET
     app_core_hack: Union[AppCore, None, Unset] = UNSET
     app_shell_hack: Union[AppShell, None, Unset] = UNSET
+    app_platform_hack: Union[AppPlatform, None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -142,6 +145,14 @@ class LoadTopLevelInfoResult:
         else:
             app_shell_hack = self.app_shell_hack
 
+        app_platform_hack: Union[None, Unset, str]
+        if isinstance(self.app_platform_hack, Unset):
+            app_platform_hack = UNSET
+        elif isinstance(self.app_platform_hack, AppPlatform):
+            app_platform_hack = self.app_platform_hack.value
+        else:
+            app_platform_hack = self.app_platform_hack
+
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -170,6 +181,8 @@ class LoadTopLevelInfoResult:
             field_dict["app_core_hack"] = app_core_hack
         if app_shell_hack is not UNSET:
             field_dict["app_shell_hack"] = app_shell_hack
+        if app_platform_hack is not UNSET:
+            field_dict["app_platform_hack"] = app_platform_hack
 
         return field_dict
 
@@ -316,6 +329,23 @@ class LoadTopLevelInfoResult:
 
         app_shell_hack = _parse_app_shell_hack(d.pop("app_shell_hack", UNSET))
 
+        def _parse_app_platform_hack(data: object) -> Union[AppPlatform, None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                app_platform_hack_type_0 = AppPlatform(data)
+
+                return app_platform_hack_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[AppPlatform, None, Unset], data)
+
+        app_platform_hack = _parse_app_platform_hack(d.pop("app_platform_hack", UNSET))
+
         load_top_level_info_result = cls(
             env=env,
             hosting=hosting,
@@ -333,6 +363,7 @@ class LoadTopLevelInfoResult:
             user_feature_hack=user_feature_hack,
             app_core_hack=app_core_hack,
             app_shell_hack=app_shell_hack,
+            app_platform_hack=app_platform_hack,
         )
 
         load_top_level_info_result.additional_properties = d

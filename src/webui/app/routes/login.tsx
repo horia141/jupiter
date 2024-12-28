@@ -10,7 +10,6 @@ import {
   InputLabel,
   OutlinedInput,
   Stack,
-  Typography,
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
@@ -20,6 +19,8 @@ import { useContext } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
 import { getGuestApiClient } from "~/api-clients.server";
+import { CommunityLink } from "~/components/community-link";
+import { DocsHelp, DocsHelpSubject } from "~/components/docs-help";
 import { EntityActionHeader } from "~/components/infra/entity-actions-header";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
@@ -27,8 +28,11 @@ import { LifecyclePanel } from "~/components/infra/layout/lifecycle-panel";
 import { StandaloneContainer } from "~/components/infra/layout/standalone-container";
 import { SmartAppBar } from "~/components/infra/smart-appbar";
 import { Logo } from "~/components/logo";
+import { Title } from "~/components/title";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
+import { isDevelopment } from "~/logic/domain/env";
+import { isInGlobalHosting } from "~/logic/domain/hosting";
 import { AUTH_TOKEN_NAME } from "~/names";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { commitSession, getSession } from "~/sessions";
@@ -103,9 +107,12 @@ export default function Login() {
       <SmartAppBar>
         <Logo />
 
-        <Typography noWrap variant="h6" component="div">
-          {globalProperties.title}
-        </Typography>
+        <Title />
+
+        {(isInGlobalHosting(globalProperties.hosting) ||
+          isDevelopment(globalProperties.env)) && <CommunityLink />}
+
+        <DocsHelp size="medium" subject={DocsHelpSubject.ROOT} />
       </SmartAppBar>
 
       <LifecyclePanel>

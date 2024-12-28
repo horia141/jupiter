@@ -15,7 +15,6 @@ import {
   ListItemText,
   Menu,
   MenuItem,
-  Typography,
 } from "@mui/material";
 import type { LinksFunction, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
@@ -46,6 +45,7 @@ import { TopLevelInfoContext } from "~/top-level-context";
 import { CommunityLink } from "~/components/community-link";
 import { WorkspaceContainer } from "~/components/infra/layout/workspace-container";
 import { SmartAppBar } from "~/components/infra/smart-appbar";
+import { Title } from "~/components/title";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { isDevelopment } from "~/logic/domain/env";
 import { isInGlobalHosting } from "~/logic/domain/hosting";
@@ -153,14 +153,7 @@ export default function Workspace() {
             <MenuIcon />
           </IconButton>
 
-          <Typography
-            noWrap
-            variant="h6"
-            component="div"
-            sx={{ flexGrow: 1, display: { xs: "none", sm: "block" } }}
-          >
-            {globalProperties.title}
-          </Typography>
+          <Title />
 
           <SearchBox />
 

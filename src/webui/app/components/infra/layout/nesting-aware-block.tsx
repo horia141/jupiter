@@ -1,4 +1,4 @@
-import { Stack } from "@mui/system";
+import { Box, Stack } from "@mui/material";
 import type { PropsWithChildren } from "react";
 import { useBigScreen } from "~/rendering/use-big-screen";
 
@@ -27,6 +27,7 @@ export function NestingAwareBlock(
       sx={{ paddingLeft: "1rem", paddingRight: "1rem" }}
     >
       {props.children}
+      <Box sx={{ height: "4rem" }}></Box>
     </Stack>
   );
 }

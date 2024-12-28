@@ -336,7 +336,7 @@ const TrunkPanelContent = styled("div")<TrunkPanelContentProps>(
           ? "0.5rem"
           : "0px"
         : "0px",
-    height: `calc(var(--vh, 1vh) * 100 - ${
+    height: `calc(var(--vh, 1vh) * 100 - env(safe-area-inset-top) - ${
       isbigscreen === "true" ? "4rem" : "3.5rem"
     } - ${
       hasbranch === "false"

@@ -1,6 +1,6 @@
 """The command for loading workspaces if they exist."""
 
-from jupiter.core.domain.app import AppCore, AppShell
+from jupiter.core.domain.app import AppCore, AppPlatform, AppShell
 from jupiter.core.domain.application.gamification.service.score_overview_service import (
     ScoreOverviewService,
 )
@@ -68,6 +68,7 @@ class LoadTopLevelInfoResult(UseCaseResultBase):
     user_feature_hack: UserFeature | None
     app_core_hack: AppCore | None
     app_shell_hack: AppShell | None
+    app_platform_hack: AppPlatform | None
 
 
 class LoadTopLevelInfoUseCase(
@@ -130,4 +131,5 @@ class LoadTopLevelInfoUseCase(
             user_feature_hack=UserFeature.GAMIFICATION,
             app_core_hack=AppCore.WEBUI,
             app_shell_hack=AppShell.BROWSER,
+            app_platform_hack=AppPlatform.DESKTOP,
         )
