@@ -15,7 +15,7 @@ COPY package-lock.json package-lock.json
 COPY gen gen
 COPY src/Config.global src/Config.global
 COPY src/webui/README.md src/webui/README.md
-COPY src/webui/Config.project.docker src/webui/Config.project
+COPY src/webui/Config.project.live src/webui/Config.project
 COPY src/webui/package.json src/webui/package.json
 COPY src/webui/tsconfig.json src/webui/tsconfig.json
 COPY src/webui/remix.config.js src/webui/remix.config.js

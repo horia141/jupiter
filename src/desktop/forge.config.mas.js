@@ -9,7 +9,7 @@ module.exports = {
   outDir: outDir,
   packagerConfig: {
     ...packagerConfig,
-    osxSign: {
+    osxSign: process.env.QUICK ? undefined : {
       provisioningProfile: "../../secrets/Thrive_MacOS.provisionprofile",
       identity: "Apple Distribution: Horia-Mihai Coman",
       type: "distribution",

@@ -12,7 +12,7 @@ import {
 } from "@remix-run/react";
 import { SnackbarProvider } from "notistack";
 
-import { StrictMode } from "react";
+import { StrictMode, useEffect } from "react";
 import { EnvBanner } from "./components/infra/env-banner";
 import {
   GlobalPropertiesContext,
@@ -21,6 +21,8 @@ import {
 import { GLOBAL_PROPERTIES } from "./global-properties-server";
 import { loadFrontDoorInfo } from "./logic/frontdoor.server";
 import { standardShouldRevalidate } from "./rendering/standard-should-revalidate";
+import { AppShell } from "@jupiter/webapi-client";
+import { SplashScreen } from '@capacitor/splash-screen';
 
 const THEME = createTheme({
   palette: {
@@ -75,6 +77,12 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 
 export default function App() {
   const loaderData = useLoaderData<typeof loader>();
+
+  useEffect(() => {
+    if (loaderData.globalProperties.frontDoorInfo.appShell === AppShell.MOBILE_CAPACITOR) {
+      SplashScreen.hide();
+    }
+  }, []);
 
   return (
     <html lang="en">

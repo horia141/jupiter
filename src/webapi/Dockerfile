@@ -25,7 +25,7 @@ COPY src/core/migrations src/core/migrations
 COPY src/webapi/README.md src/webapi/README.md
 COPY src/webapi/pyproject.toml src/webapi/pyproject.toml
 COPY src/webapi/poetry.lock src/webapi/poetry.lock
-COPY src/webapi/Config.project.docker src/webapi/Config.project
+COPY src/webapi/Config.project.live src/webapi/Config.project
 COPY src/webapi/jupiter src/webapi/jupiter
 
 WORKDIR /jupiter/src/webapi

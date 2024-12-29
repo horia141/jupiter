@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Thrive</string>
+    <string name="title_activity_main">Thrive</string>
+    <string name="package_name">io.jupiter.app</string>
+    <string name="custom_url_scheme">io.jupiter.app</string>
+</resources>

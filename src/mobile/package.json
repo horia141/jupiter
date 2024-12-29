@@ -1,0 +1,25 @@
+{
+  "private": true,
+  "sideEffects": false,
+  "name": "@jupiter/mobile",
+  "version": "0.1.0",
+  "description": "The Thrive mobile app",
+  "type": "module",
+  "readme": "README.md",
+  "author": "Horia Coman <horia141@gmail.com>",
+  "copyright": "2024 Horia Coman",
+  "license": "MIT",
+  "homepage": "https://get-thriving.com",
+  "repository": "https://github.com/horia141/jupiter",
+  "documentation": "https://docs.get-thriving.com",
+  "dependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/core": "^6.2.0",
+    "@capacitor/ios": "^6.2.0",
+    "@capacitor/splash-screen": "^6.0.3"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^6.2.0"
+  }
+}

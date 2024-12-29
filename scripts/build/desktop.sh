@@ -18,10 +18,23 @@ revert_package_json() {
   rm -f src/desktop/package.json.1
   rm -f src/desktop/forge.config.js
   rm -f src/desktop/LICENSE
+
   # if node_modules/@jupiter/webapi-client is not a link, then we should revert it
-  if [ ! -L node_modules/@jupiter/webapi-client ]; then
+  if [ ! -L rsc/desktop/node_modules/@jupiter/webapi-client ]; then
     rm -rf src/desktop/node_modules/@jupiter/webapi-client
     mv src/desktop/node_modules/@jupiter/webapi-client.bak src/desktop/node_modules/@jupiter/webapi-client
+  fi
+
+  # if src/assets/jupiter.icns is not a link, then we should revert it
+  if [ ! -L src/desktop/assets/jupiter.icns ]; then
+    rm -f src/desktop/assets/jupiter.icns
+    mv .build-cache/jupiter.icns.bak src/desktop/assets/jupiter.icns
+  fi
+
+  # if src/assets/logo.png is not a link, then we should revert it
+  if [ ! -L src/desktop/assets/logo.png ]; then
+    rm -f src/desktop/assets/logo.png
+    mv .build-cache/logo.png.bak src/desktop/assets/logo.png
   fi
 }
 
@@ -46,7 +59,13 @@ cp LICENSE src/desktop/LICENSE
 mv src/desktop/node_modules/@jupiter/webapi-client src/desktop/node_modules/@jupiter/webapi-client.bak
 cp -r gen/ts/webapi-client src/desktop/node_modules/@jupiter/webapi-client
 
-cp src/desktop/forge.config.mas.js src/desktop/forge.config.js
-(cd src/desktop && npx electron-forge make --platform mas --arch universal)
+mv src/desktop/assets/jupiter.icns .build-cache/jupiter.icns.bak
+cp assets/jupiter.icns src/desktop/assets/jupiter.icns
+
+mv src/desktop/assets/logo.png .build-cache/logo.png.bak
+cp assets/jupiter.png src/desktop/assets/logo.png
+
+# cp src/desktop/forge.config.mas.js src/desktop/forge.config.js
+# (cd src/desktop && npx electron-forge make --platform mas --arch universal)
 cp src/desktop/forge.config.darwin.js src/desktop/forge.config.js
-(cd src/desktop && npx electron-forge make --platform darwin --arch universal)
+(cd src/desktop && npx electron-forge make --platform darwin --arch x64)
