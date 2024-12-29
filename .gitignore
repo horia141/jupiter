@@ -47,7 +47,7 @@ out/
 
 # Gradle files
 .gradle/
-build/
+src/mobile/android/app/build/
 
 # Local configuration file (sdk path, etc)
 local.properties

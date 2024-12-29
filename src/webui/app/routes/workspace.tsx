@@ -153,7 +153,7 @@ export default function Workspace() {
             <MenuIcon />
           </IconButton>
 
-          <Title />
+          <Title hideOnSmallScreen />
 
           <SearchBox />
 
