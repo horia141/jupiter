@@ -9,14 +9,16 @@ module.exports = {
   outDir: outDir,
   packagerConfig: {
     ...packagerConfig,
-    osxSign: process.env.QUICK ? undefined : {
-      provisioningProfile: "../../secrets/Thrive_MacOS.provisionprofile",
-      identity: "Apple Distribution: Horia-Mihai Coman",
-      type: "distribution",
-      verbose: true,
-      hardenedRuntime: true,
-      continueOnError: false,
-    },
+    osxSign: process.env.QUICK
+      ? undefined
+      : {
+          provisioningProfile: "../../secrets/Thrive_MacOS.provisionprofile",
+          identity: "Apple Distribution: Horia-Mihai Coman",
+          type: "distribution",
+          verbose: true,
+          hardenedRuntime: true,
+          continueOnError: false,
+        },
   },
   rebuildConfig: rebuildConfig,
   makers: [

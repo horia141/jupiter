@@ -692,7 +692,10 @@ function SwiftView(props: SwiftViewProps) {
   const endOfTheMonth = today.endOf("month").endOf("day");
   const endOfTheQuarter = today.endOf("quarter").endOf("day");
   const endOfTheYear = today.endOf("year").endOf("day");
-  const actionableTime = actionableTimeToDateTime(props.actionableTime);
+  const actionableTime = actionableTimeToDateTime(
+    props.actionableTime,
+    props.topLevelInfo.user.timezone
+  );
 
   const sortedInboxTasks = sortInboxTasksByEisenAndDifficulty(props.inboxTasks);
 
@@ -1764,7 +1767,10 @@ interface SmallScreenKanbanByEisenProps {
 }
 
 function SmallScreenKanbanByEisen(props: SmallScreenKanbanByEisenProps) {
-  const actionableDate = actionableTimeToDateTime(props.actionableTime);
+  const actionableDate = actionableTimeToDateTime(
+    props.actionableTime,
+    props.topLevelInfo.user.timezone
+  );
   const importantAndUrgentTasks = filterInboxTasksForDisplay(
     props.inboxTasks,
     props.moreInfoByRefId,
@@ -1925,7 +1931,10 @@ interface SmallScreenKanbanProps {
 }
 
 function SmallScreenKanban(props: SmallScreenKanbanProps) {
-  const actionableDate = actionableTimeToDateTime(props.actionableTime);
+  const actionableDate = actionableTimeToDateTime(
+    props.actionableTime,
+    props.topLevelInfo.user.timezone
+  );
   const acceptedTasks = filterInboxTasksForDisplay(
     props.inboxTasks,
     props.moreInfoByRefId,
@@ -2340,7 +2349,10 @@ function InboxTasksColumn(props: InboxTasksColumnProps) {
     return canInboxTaskBeInStatus(inboxTask, props.allowStatus);
   }
 
-  const actionableTime = actionableTimeToDateTime(props.actionableTime);
+  const actionableTime = actionableTimeToDateTime(
+    props.actionableTime,
+    props.topLevelInfo.user.timezone
+  );
 
   const filteredInboxTasks = filterInboxTasksForDisplay(
     props.inboxTasks,

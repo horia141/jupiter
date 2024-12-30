@@ -62,7 +62,9 @@ export function inferPlatform(userAgent: string | null): AppPlatform {
   }
 }
 
-export function inferPlatformForMobileShell(userAgent: string | null): AppPlatform {
+export function inferPlatformForMobileShell(
+  userAgent: string | null
+): AppPlatform {
   if (userAgent === null) {
     return AppPlatform.TABLET_IOS;
   }

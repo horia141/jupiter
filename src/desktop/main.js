@@ -36,15 +36,21 @@ function createWindow() {
     show: false,
   });
 
-  const splash = new BrowserWindow({width: INITIAL_WIDTH, height: INITIAL_HEIGHT, frame: false, alwaysOnTop: true, show: false});
+  const splash = new BrowserWindow({
+    width: INITIAL_WIDTH,
+    height: INITIAL_HEIGHT,
+    frame: false,
+    alwaysOnTop: true,
+    show: false,
+  });
   splash.loadURL(`file://${__dirname}/splash.html`);
 
-  splash.once('ready-to-show', () => {
+  splash.once("ready-to-show", () => {
     splash.show();
   });
 
   win.loadURL(WEBUI_URL.toString());
-  win.once('ready-to-show', () => {
+  win.once("ready-to-show", () => {
     setTimeout(() => {
       splash.destroy();
       win.show();

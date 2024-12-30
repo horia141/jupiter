@@ -20,6 +20,7 @@ export function useBigScreen(): boolean {
         case AppPlatform.TABLET_ANDROID:
           return true;
       }
+      break;
     case AppShell.DESKTOP_ELECTRON:
       const mdBreakpointPx = theme.breakpoints.values["md"];
 

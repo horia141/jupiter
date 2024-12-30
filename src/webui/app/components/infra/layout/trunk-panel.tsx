@@ -83,13 +83,14 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
     }
 
     function handleScrollSpecial() {
-      handleScroll(theRef, extractTrunkFromPath(location.pathname), shouldShowABranch || shouldShowALeaf);
+      handleScroll(
+        theRef,
+        extractTrunkFromPath(location.pathname),
+        shouldShowABranch || shouldShowALeaf
+      );
     }
 
-    restoreScrollPosition(
-      theRef,
-      extractTrunkFromPath(location.pathname),
-    );
+    restoreScrollPosition(theRef, extractTrunkFromPath(location.pathname));
     theRef.addEventListener("scroll", handleScrollSpecial);
 
     return () => {

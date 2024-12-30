@@ -14,7 +14,7 @@ class Env(EnumValue):
     def is_development(self) -> bool:
         """Whether this is a development environment."""
         return self != Env.PRODUCTION
-    
+
     @property
     def is_live(self) -> bool:
         """Whether this is a live environment."""

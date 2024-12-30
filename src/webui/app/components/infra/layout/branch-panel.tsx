@@ -85,7 +85,11 @@ export function BranchPanel(props: PropsWithChildren<BranchPanelProps>) {
     }
 
     function handleScrollSpecial() {
-      handleScroll(theRef, extractBranchFromPath(location.pathname), shouldShowALeaf);
+      handleScroll(
+        theRef,
+        extractBranchFromPath(location.pathname),
+        shouldShowALeaf
+      );
     }
 
     restoreScrollPosition(theRef, extractBranchFromPath(location.pathname));
@@ -94,7 +98,14 @@ export function BranchPanel(props: PropsWithChildren<BranchPanelProps>) {
     return () => {
       theRef.removeEventListener("scroll", handleScrollSpecial);
     };
-  }, [containerRef, location, isBigScreen, isPresent, handleScroll, shouldShowALeaf]);
+  }, [
+    containerRef,
+    location,
+    isBigScreen,
+    isPresent,
+    handleScroll,
+    shouldShowALeaf,
+  ]);
 
   function handleScrollTop() {
     containerRef.current?.scrollTo({
