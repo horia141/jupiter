@@ -153,8 +153,12 @@ export default function Report() {
                 defaultValue={
                   isNoErrorSomeData(loaderData)
                     ? loaderData.data.report?.period_result.today ??
-                      DateTime.now().toISODate()
-                    : DateTime.now().toISODate()
+                      DateTime.local({
+                        zone: topLevelInfo.user.timezone,
+                      }).toISODate()
+                    : DateTime.local({
+                        zone: topLevelInfo.user.timezone,
+                      }).toISODate()
                 }
                 readOnly={!inputsEnabled}
               />

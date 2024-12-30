@@ -12,6 +12,8 @@ import { parseParams } from "zodix";
 import TuneIcon from "@mui/icons-material/Tune";
 import { Button, styled } from "@mui/material";
 import { AnimatePresence } from "framer-motion";
+import { DateTime } from "luxon";
+import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNameComponent } from "~/components/entity-name";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
@@ -29,6 +31,7 @@ import {
   DisplayType,
   useBranchNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = {
   id: z.string(),
@@ -70,10 +73,13 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function Metric() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const shouldShowALeaf = useBranchNeedsToShowLeaf();
+  const topLevelInfo = useContext(TopLevelInfoContext);
 
   const sortedEntries = [...loaderData.metricEntries].sort((e1, e2) => {
     return -compareADate(e1.collection_time, e2.collection_time);
   });
+
+  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
 
   const archiveTagFetch = useFetcher();
 
@@ -125,6 +131,7 @@ export default function Metric() {
               >
                 <EntityNameComponent name={metricEntryName(entry)} />
                 <TimeDiffTag
+                  today={today}
                   labelPrefix="Collected"
                   collectionTime={entry.collection_time}
                 />

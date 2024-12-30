@@ -12,6 +12,7 @@ import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useParams, useTransition } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
+import { DateTime } from "luxon";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams, parseQuery } from "zodix";
@@ -224,6 +225,8 @@ export default function TimePlanAddFromCurrentInboxTasks() {
     inferDefaultSelectedView(topLevelInfo.workspace)
   );
 
+  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
+
   useEffect(() => {
     setSelectedView(inferDefaultSelectedView(topLevelInfo.workspace));
   }, [topLevelInfo]);
@@ -280,6 +283,7 @@ export default function TimePlanAddFromCurrentInboxTasks() {
       >
         {selectedView === View.MERGED && (
           <InboxTaskList
+            today={today}
             topLevelInfo={topLevelInfo}
             inboxTasks={sortedInboxTasks}
             alreadyIncludedInboxTaskRefIds={alreadyIncludedInboxTaskRefIds}
@@ -325,6 +329,7 @@ export default function TimePlanAddFromCurrentInboxTasks() {
                   </Divider>
 
                   <InboxTaskList
+                    today={today}
                     topLevelInfo={topLevelInfo}
                     inboxTasks={theInboxTasks}
                     alreadyIncludedInboxTaskRefIds={
@@ -366,6 +371,7 @@ export const ErrorBoundary = makeErrorBoundary(
 );
 
 interface InboxTaskListProps {
+  today: DateTime;
   topLevelInfo: TopLevelInfo;
   inboxTasks: Array<InboxTask>;
   alreadyIncludedInboxTaskRefIds: Set<string>;
@@ -380,6 +386,7 @@ function InboxTaskList(props: InboxTaskListProps) {
       {props.inboxTasks.map((inboxTask) => (
         <InboxTaskCard
           key={`inbox-task-${inboxTask.ref_id}`}
+          today={props.today}
           topLevelInfo={props.topLevelInfo}
           inboxTask={inboxTask}
           compact

@@ -1,6 +1,7 @@
 import type { InboxTask } from "@jupiter/webapi-client";
 import { Divider, Stack, Typography } from "@mui/material";
 import { AnimatePresence, motion } from "framer-motion";
+import type { DateTime } from "luxon";
 import type {
   InboxTaskOptimisticState,
   InboxTaskParent,
@@ -10,6 +11,7 @@ import type { InboxTaskShowOptions } from "./inbox-task-card";
 import { InboxTaskCard } from "./inbox-task-card";
 
 interface InboxTaskStackProps {
+  today: DateTime;
   topLevelInfo: TopLevelInfo;
   showLabel?: boolean;
   showOptions: InboxTaskShowOptions;
@@ -58,6 +60,7 @@ export function InboxTaskStack(props: InboxTaskStackProps) {
             <AnimatePresence>
               {props.inboxTasks.map((it) => (
                 <InboxTaskCard
+                  today={props.today}
                   topLevelInfo={props.topLevelInfo}
                   key={it.ref_id}
                   allowSwipe={true}

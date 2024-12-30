@@ -15,6 +15,8 @@ import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useParams, useTransition } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
+import { DateTime } from "luxon";
+import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
@@ -29,6 +31,7 @@ import { aDateToDate } from "~/logic/domain/adate";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = {
   id: z.string(),
@@ -134,9 +137,12 @@ export default function MetricEntry() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
+  const topLevelInfo = useContext(TopLevelInfoContext);
 
   const inputsEnabled =
     transition.state === "idle" && !loaderData.metricEntry.archived;
+
+  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
 
   return (
     <LeafPanel
@@ -150,6 +156,7 @@ export default function MetricEntry() {
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <TimeDiffTag
+              today={today}
               labelPrefix="Collected"
               collectionTime={loaderData.metricEntry.collection_time}
             />

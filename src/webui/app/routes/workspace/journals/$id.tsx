@@ -28,6 +28,7 @@ import {
   useTransition,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
+import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
@@ -200,6 +201,8 @@ export default function Journal() {
 
   const sortedSubJournals = sortJournalsNaturally(loaderData.subPeriodJournals);
 
+  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
+
   return (
     <LeafPanel
       key={`journal-${loaderData.journal.ref_id}`}
@@ -293,6 +296,7 @@ export default function Journal() {
 
       {loaderData.writingTask && (
         <InboxTaskStack
+          today={today}
           topLevelInfo={topLevelInfo}
           showLabel
           showOptions={{

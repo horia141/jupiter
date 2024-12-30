@@ -34,6 +34,7 @@ import {
   useTransition,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
+import { DateTime } from "luxon";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
@@ -340,6 +341,8 @@ export default function Person() {
     );
   }
 
+  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
+
   return (
     <LeafPanel
       key={`person-${person.ref_id}`}
@@ -644,6 +647,7 @@ export default function Person() {
 
       {sortedBirthdayTasks.length > 0 && (
         <InboxTaskStack
+          today={today}
           topLevelInfo={topLevelInfo}
           showLabel
           showOptions={{
@@ -661,6 +665,7 @@ export default function Person() {
 
       {sortedCatchUpTasks.length > 0 && (
         <InboxTaskStack
+          today={today}
           topLevelInfo={topLevelInfo}
           showLabel
           showOptions={{

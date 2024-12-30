@@ -32,6 +32,7 @@ import {
   useTransition,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
+import { DateTime } from "luxon";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
@@ -294,6 +295,8 @@ export default function MetricDetails() {
     );
   }
 
+  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
+
   return (
     <LeafPanel
       key={`metric-${id}/details`}
@@ -527,6 +530,7 @@ export default function MetricDetails() {
 
       {sortedCollectionTasks && (
         <InboxTaskStack
+          today={today}
           topLevelInfo={topLevelInfo}
           showLabel
           showOptions={{

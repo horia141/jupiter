@@ -28,6 +28,7 @@ import {
   useTransition,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
+import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
@@ -208,6 +209,8 @@ export default function EmailTask() {
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
   const topLevelInfo = useContext(TopLevelInfoContext);
+
+  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
 
   const inputsEnabled =
     transition.state === "idle" && !loaderData.emailTask.archived;
@@ -469,6 +472,7 @@ export default function EmailTask() {
 
       {loaderData.inboxTask && (
         <InboxTaskStack
+          today={today}
           topLevelInfo={topLevelInfo}
           showLabel
           showOptions={{

@@ -32,6 +32,7 @@ import {
   useTransition,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
+import { DateTime } from "luxon";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
@@ -294,6 +295,8 @@ export default function Habit() {
     setSelectedProject(loaderData.project.ref_id);
   }, [loaderData]);
 
+  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
+
   return (
     <LeafPanel
       key={`habit-${loaderData.habit.ref_id}`}
@@ -544,6 +547,7 @@ export default function Habit() {
 
       {sortedInboxTasks.length > 0 && (
         <InboxTaskStack
+          today={today}
           topLevelInfo={topLevelInfo}
           showLabel
           showOptions={{

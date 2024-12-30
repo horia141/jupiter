@@ -38,6 +38,7 @@ import {
 } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
+import { DateTime } from "luxon";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
@@ -269,6 +270,8 @@ export default function TimePlanView() {
   const allProjectsByRefId = new Map(
     loaderData.allProjects?.map((p) => [p.ref_id, p])
   );
+
+  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
 
   return (
     <BranchPanel
@@ -519,6 +522,7 @@ export default function TimePlanView() {
               title="Completed & Untracked Inbox Tasks"
             >
               <InboxTaskStack
+                today={today}
                 topLevelInfo={topLevelInfo}
                 showOptions={{
                   showStatus: true,

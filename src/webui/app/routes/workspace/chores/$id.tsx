@@ -34,6 +34,7 @@ import {
   useTransition,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
+import { DateTime } from "luxon";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { CheckboxAsString, parseForm, parseParams } from "zodix";
@@ -310,6 +311,8 @@ export default function Chore() {
     // on a navigation event.
     setSelectedProject(loaderData.project.ref_id);
   }, [loaderData]);
+
+  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
 
   return (
     <LeafPanel
@@ -600,6 +603,7 @@ export default function Chore() {
 
       {sortedInboxTasks.length > 0 && (
         <InboxTaskStack
+          today={today}
           topLevelInfo={topLevelInfo}
           showLabel
           showOptions={{

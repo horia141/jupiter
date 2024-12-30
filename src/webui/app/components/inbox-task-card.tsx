@@ -1,16 +1,17 @@
-import {
-  WorkspaceFeature,
-  type ADate,
-  type BigPlan,
-  type Chore,
-  type EmailTask,
-  type Habit,
-  type InboxTask,
-  type InboxTaskStatus,
-  type Metric,
-  type Person,
-  type SlackTask,
+import type {
+  Timezone,
+  ADate,
+  BigPlan,
+  Chore,
+  EmailTask,
+  Habit,
+  InboxTask,
+  InboxTaskStatus,
+  Metric,
+  Person,
+  SlackTask,
 } from "@jupiter/webapi-client";
+import { WorkspaceFeature } from "@jupiter/webapi-client";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import DeleteIcon from "@mui/icons-material/Delete";
 import type { ChipProps } from "@mui/material";
@@ -27,7 +28,7 @@ import {
 } from "@mui/material";
 import type { PanInfo } from "framer-motion";
 import { motion, useMotionValue, useTransform } from "framer-motion";
-import { DateTime } from "luxon";
+import type { DateTime } from "luxon";
 import { useContext, useState } from "react";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { aDateToDate } from "~/logic/domain/adate";
@@ -69,6 +70,7 @@ export interface InboxTaskShowOptions {
 }
 
 export interface InboxTaskCardProps {
+  today: DateTime;
   topLevelInfo: TopLevelInfo;
   compact?: boolean;
   allowSwipe?: boolean;
@@ -168,6 +170,8 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
         onClick={(e) => props.onClick && props.onClick(props.inboxTask)}
       >
         <OverdueWarning
+          today={props.today}
+          userTimezone={props.topLevelInfo.user.timezone}
           status={props.inboxTask.status}
           dueDate={props.inboxTask.due_date}
         />
@@ -343,11 +347,18 @@ const TagsContained = styled(Box)({
 });
 
 interface OverdueWarningProps {
+  today: DateTime;
+  userTimezone: Timezone;
   status: InboxTaskStatus;
   dueDate?: ADate | null;
 }
 
-function OverdueWarning({ status, dueDate }: OverdueWarningProps) {
+function OverdueWarning({
+  today,
+  userTimezone,
+  status,
+  dueDate,
+}: OverdueWarningProps) {
   const globalProperties = useContext(GlobalPropertiesContext);
 
   if (isCompleted(status)) {
@@ -358,17 +369,19 @@ function OverdueWarning({ status, dueDate }: OverdueWarningProps) {
     return null;
   }
 
-  const today = DateTime.now();
+  const theToday = today.startOf("day");
   const theDueDate = aDateToDate(dueDate);
 
-  if (theDueDate <= today.minus({ days: globalProperties.overdueDangerDays })) {
+  if (
+    theDueDate <= theToday.minus({ days: globalProperties.overdueDangerDays })
+  ) {
     return <OverdueWarningChip label="Overdue" color="error" />;
   } else if (
-    theDueDate <= today.minus({ days: globalProperties.overdueWarningDays })
+    theDueDate <= theToday.minus({ days: globalProperties.overdueWarningDays })
   ) {
     return <OverdueWarningChip label="Overdue" color="warning" />;
   } else if (
-    theDueDate <= today.minus({ days: globalProperties.overdueInfoDays })
+    theDueDate <= theToday.minus({ days: globalProperties.overdueInfoDays })
   ) {
     return <OverdueWarningChip label="Overdue" color="info" />;
   }

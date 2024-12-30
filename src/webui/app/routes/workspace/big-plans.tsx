@@ -180,6 +180,9 @@ export default function BigPlans() {
     ];
   }
 
+  const thisYear = DateTime.local({ zone: topLevelInfo.user.timezone }).startOf(
+    "year"
+  );
   const sortedProjects = sortProjectsByTreeOrder(loaderData.allProjects || []);
   const allProjectsByRefId = new Map(
     loaderData.allProjects?.map((p) => [p.ref_id, p])
@@ -276,10 +279,16 @@ export default function BigPlans() {
                     </Divider>
                     <>
                       {isBigScreen && (
-                        <BigScreenTimeline bigPlans={theBigPlans} />
+                        <BigScreenTimeline
+                          thisYear={thisYear}
+                          bigPlans={theBigPlans}
+                        />
                       )}
                       {!isBigScreen && (
-                        <SmallScreenTimeline bigPlans={theBigPlans} />
+                        <SmallScreenTimeline
+                          thisYear={thisYear}
+                          bigPlans={theBigPlans}
+                        />
                       )}
                     </>
                   </Box>
@@ -290,8 +299,18 @@ export default function BigPlans() {
 
         {selectedView === View.TIMELINE && (
           <>
-            {isBigScreen && <BigScreenTimeline bigPlans={sortedBigPlans} />}
-            {!isBigScreen && <SmallScreenTimeline bigPlans={sortedBigPlans} />}
+            {isBigScreen && (
+              <BigScreenTimeline
+                thisYear={thisYear}
+                bigPlans={sortedBigPlans}
+              />
+            )}
+            {!isBigScreen && (
+              <SmallScreenTimeline
+                thisYear={thisYear}
+                bigPlans={sortedBigPlans}
+              />
+            )}
           </>
         )}
 
@@ -317,10 +336,11 @@ export const ErrorBoundary = makeErrorBoundary(
 );
 
 interface BigScreenTimelineProps {
+  thisYear: DateTime;
   bigPlans: Array<BigPlan>;
 }
 
-function BigScreenTimeline({ bigPlans }: BigScreenTimelineProps) {
+function BigScreenTimeline({ thisYear, bigPlans }: BigScreenTimelineProps) {
   return (
     <TableContainer component={Box}>
       <Table sx={{ tableLayout: "fixed" }}>
@@ -351,7 +371,10 @@ function BigScreenTimeline({ bigPlans }: BigScreenTimelineProps) {
         </TableHead>
         <TableBody>
           {bigPlans.map((entry) => {
-            const { leftMargin, width } = computeBigPlanGnattPosition(entry);
+            const { leftMargin, width } = computeBigPlanGnattPosition(
+              thisYear,
+              entry
+            );
 
             return (
               <TableRow key={entry.ref_id}>
@@ -385,10 +408,11 @@ const BigScreenTimelineHeaderCell = styled(TableCell)(({ theme }) => ({
 }));
 
 interface SmallScreenTimelineProps {
+  thisYear: DateTime;
   bigPlans: Array<BigPlan>;
 }
 
-function SmallScreenTimeline({ bigPlans }: SmallScreenTimelineProps) {
+function SmallScreenTimeline({ thisYear, bigPlans }: SmallScreenTimelineProps) {
   return (
     <EntityStack>
       <SmallScreenTimelineList>
@@ -409,7 +433,7 @@ function SmallScreenTimeline({ bigPlans }: SmallScreenTimelineProps) {
 
         {bigPlans.map((bigPlan) => {
           const { leftMargin, width, betterWidth, betterLeftMargin } =
-            computeBigPlanGnattPosition(bigPlan);
+            computeBigPlanGnattPosition(thisYear, bigPlan);
 
           return (
             <SmallScreenTimelineLine key={bigPlan.ref_id}>
@@ -524,8 +548,8 @@ function List({
   );
 }
 
-function computeBigPlanGnattPosition(entry: BigPlan) {
-  const startOfYear = DateTime.now().startOf("year");
+function computeBigPlanGnattPosition(thisYear: DateTime, entry: BigPlan) {
+  const startOfYear = thisYear.startOf("year");
   // Avoids a really tricky bug on NYE.
   const endOfYear = startOfYear.endOf("year");
 

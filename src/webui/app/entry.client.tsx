@@ -32,7 +32,11 @@ document
   });
 
 window.onerror = (event: Event | string, url, line) => {
-  if (typeof event === "string" && event.indexOf("Hydration failed")) {
+  if (
+    typeof event === "string" &&
+    (event.indexOf("Hydration failed") !== -1 ||
+      event.indexOf("Minified React error") !== -1)
+  ) {
     // We're handling some sort of React hydration error because of
     // mismatches in SSR and client-side rendering. These mostly occur
     // because of the many time manipulations we do client-side. Which

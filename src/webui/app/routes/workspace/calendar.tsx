@@ -176,7 +176,8 @@ export default function CalendarView() {
   const shouldShowABranch = useTrunkNeedsToShowBranch();
   const shouldShowALeafToo = useTrunkNeedsToShowLeaf();
 
-  const theRealToday = DateTime.now().toISODate() as ADate;
+  const rightNow = DateTime.local({zone : topLevelInfo.user.timezone});
+  const theRealToday = rightNow.toISODate() as ADate;
 
   return (
     <TrunkPanel
@@ -331,6 +332,7 @@ export default function CalendarView() {
         {loaderData.view === View.CALENDAR &&
           loaderData.period === RecurringTaskPeriod.DAILY && (
             <ViewAsCalendarDaily
+              rightNow={rightNow}
               timezone={topLevelInfo.user.timezone}
               today={theRealToday}
               period={loaderData.period}
@@ -346,6 +348,7 @@ export default function CalendarView() {
           loaderData.period === RecurringTaskPeriod.WEEKLY && (
             <ViewAsCalendarWeekly
               timezone={topLevelInfo.user.timezone}
+              rightNow={rightNow}
               today={theRealToday}
               period={loaderData.period}
               periodStartDate={loaderData.periodStartDate}
@@ -360,6 +363,7 @@ export default function CalendarView() {
           loaderData.period === RecurringTaskPeriod.MONTHLY && (
             <ViewAsCalendarMonthly
               timezone={topLevelInfo.user.timezone}
+              rightNow={rightNow}
               today={theRealToday}
               period={loaderData.period}
               periodStartDate={loaderData.periodStartDate}
@@ -374,6 +378,7 @@ export default function CalendarView() {
           loaderData.period === RecurringTaskPeriod.QUARTERLY && (
             <ViewAsCalendarQuarterly
               timezone={topLevelInfo.user.timezone}
+              rightNow={rightNow}
               today={theRealToday}
               period={loaderData.period}
               periodStartDate={loaderData.periodStartDate}
@@ -388,6 +393,7 @@ export default function CalendarView() {
           loaderData.period === RecurringTaskPeriod.YEARLY && (
             <ViewAsCalendarYearly
               timezone={topLevelInfo.user.timezone}
+              rightNow={rightNow}
               today={theRealToday}
               period={loaderData.period}
               periodStartDate={loaderData.periodStartDate}
@@ -403,6 +409,7 @@ export default function CalendarView() {
             loaderData.period === RecurringTaskPeriod.WEEKLY) && (
             <ViewAsScheduleDailyAndWeekly
               timezone={topLevelInfo.user.timezone}
+              rightNow={rightNow}
               today={theRealToday}
               period={loaderData.period}
               periodStartDate={loaderData.periodStartDate}
@@ -419,6 +426,7 @@ export default function CalendarView() {
             loaderData.period === RecurringTaskPeriod.YEARLY) && (
             <ViewAsScheduleMonthlyQuarterlyAndYearly
               timezone={topLevelInfo.user.timezone}
+              rightNow={rightNow}
               today={theRealToday}
               period={loaderData.period}
               periodStartDate={loaderData.periodStartDate}
@@ -444,6 +452,7 @@ export const ErrorBoundary = makeErrorBoundary(
 const MAX_VISIBLE_TIME_EVENT_FULL_DAYS = 3;
 
 interface ViewAsProps {
+  rightNow: DateTime;
   today: ADate;
   timezone: Timezone;
   period: RecurringTaskPeriod;
@@ -567,8 +576,9 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
       </ViewAsCalendarDaysAndFullDaysContiner>
 
       <ViewAsCalendarInDayContainer>
-        <ViewAsCalendarLeftColumn startOfDay={periodStartDate} />
+        <ViewAsCalendarLeftColumn />
         <ViewAsCalendarTimeEventInDayColumn
+          rightNow={props.rightNow}
           today={props.today}
           timezone={props.timezone}
           date={props.periodStartDate}
@@ -644,7 +654,6 @@ function ViewAsCalendarWeekly(props: ViewAsProps) {
     )
   );
 
-  const startOfDay = DateTime.now().setZone("UTC").startOf("day");
   const allDays = allDaysBetween(props.periodStartDate, props.periodEndDate);
 
   return (
@@ -705,11 +714,12 @@ function ViewAsCalendarWeekly(props: ViewAsProps) {
       </ViewAsCalendarDaysAndFullDaysContiner>
 
       <ViewAsCalendarInDayContainer>
-        <ViewAsCalendarLeftColumn startOfDay={startOfDay} />
+        <ViewAsCalendarLeftColumn />
 
         {allDays.map((date, idx) => (
           <ViewAsCalendarTimeEventInDayColumn
             key={idx}
+            rightNow={props.rightNow}
             today={props.today}
             timezone={props.timezone}
             date={date}
@@ -1215,13 +1225,12 @@ function ViewAsCalendarDateHeader(props: ViewAsCalendarDateHeaderProps) {
 }
 
 interface ViewAsCalendarLeftColumnProps {
-  startOfDay: DateTime;
 }
 
 function ViewAsCalendarLeftColumn(props: ViewAsCalendarLeftColumnProps) {
   const theme = useTheme();
   const hours = Array.from({ length: 24 }, (_, i) =>
-    props.startOfDay.plus({ hours: i })
+    DateTime.utc(1987, 9, 18, i, 0, 0)
   );
 
   return (
@@ -1437,6 +1446,7 @@ function ViewAsCalendarTimeEventFullDaysCell(
 }
 
 interface ViewAsCalendarTimeEventInDayColumnProps {
+  rightNow: DateTime;
   today: ADate;
   timezone: Timezone;
   date: ADate;
@@ -1465,7 +1475,7 @@ function ViewAsCalendarTimeEventInDayColumn(
     startOfDay
   );
 
-  const theMinutes = DateTime.now()
+  const theMinutes = props.rightNow
     .diff(DateTime.fromISO(`${props.today}T00:00`, { zone: props.timezone }))
     .as("minutes");
 

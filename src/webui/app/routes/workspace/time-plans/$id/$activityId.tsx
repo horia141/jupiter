@@ -23,6 +23,7 @@ import {
   useTransition,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
+import { DateTime } from "luxon";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
@@ -218,6 +219,8 @@ export default function TimePlanActivity() {
     inboxTaskTimeEventEntries
   );
 
+  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
+
   return (
     <LeafPanel
       key={`time-plan-${id}/activity-${activityId}`}
@@ -319,6 +322,7 @@ export default function TimePlanActivity() {
         <>
           <SectionCardNew id="target" title="Target Inbox Task">
             <InboxTaskStack
+              today={today}
               topLevelInfo={topLevelInfo}
               showOptions={{
                 showStatus: true,

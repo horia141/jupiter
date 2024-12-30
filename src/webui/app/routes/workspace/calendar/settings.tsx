@@ -23,6 +23,8 @@ import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Form, useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
+import { DateTime } from "luxon";
+import { useContext } from "react";
 import { z } from "zod";
 import { CheckboxAsString, parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
@@ -41,6 +43,7 @@ import { selectZod } from "~/logic/select";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 const ScheduleExternalSyncFormSchema = {
   scheduleStreamRefIds: selectZod(z.string()),
@@ -94,8 +97,11 @@ export default function CalendarSettings() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
+  const topLevelInfo = useContext(TopLevelInfoContext);
 
   const inputsEnabled = transition.state === "idle";
+
+  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
 
   const scheduleStreamsByRefId = new Map(
     loaderData.scheduleStreams.map((stream) => [stream.ref_id, stream])
@@ -174,6 +180,7 @@ export default function CalendarSettings() {
                 with {entry.entity_records.length}
                 {entry.even_more_entity_records ? "+" : ""} entities synced
                 <TimeDiffTag
+                  today={today}
                   labelPrefix="from"
                   collectionTime={entry.created_time}
                 />
@@ -211,7 +218,7 @@ export default function CalendarSettings() {
                     <EntityCard
                       key={`entities-${entry.ref_id}-${record.ref_id}`}
                     >
-                      <EntitySummaryLink summary={record} />
+                      <EntitySummaryLink today={today} summary={record} />
                     </EntityCard>
                   ))}
                 </>
