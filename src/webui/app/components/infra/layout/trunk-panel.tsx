@@ -28,7 +28,6 @@ interface TrunkPanelProps {
   extraControls?: JSX.Element[];
   actions?: JSX.Element;
   returnLocation: string;
-  fixedScrollRestaurationTo?: number;
 }
 
 export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
@@ -59,13 +58,17 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
   }
 
   const handleScroll = useCallback(
-    (ref: HTMLDivElement, pathname: string) => {
+    (ref: HTMLDivElement, pathname: string, showChildren: boolean) => {
       if (!isPresent) {
         return;
       }
+      if (!isBigScreen && showChildren) {
+        return;
+      }
+
       saveScrollPosition(ref, pathname);
     },
-    [isPresent]
+    [isPresent, isBigScreen]
   );
 
   useEffect(() => {
@@ -80,26 +83,26 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
     }
 
     function handleScrollSpecial() {
-      handleScroll(theRef, extractTrunkFromPath(location.pathname));
+      handleScroll(theRef, extractTrunkFromPath(location.pathname), shouldShowABranch || shouldShowALeaf);
     }
 
     restoreScrollPosition(
       theRef,
       extractTrunkFromPath(location.pathname),
-      props.fixedScrollRestaurationTo
     );
-    theRef.addEventListener("scrollend", handleScrollSpecial);
+    theRef.addEventListener("scroll", handleScrollSpecial);
 
     return () => {
-      theRef.removeEventListener("scrollend", handleScrollSpecial);
+      theRef.removeEventListener("scroll", handleScrollSpecial);
     };
   }, [
     containerRef,
     location,
     isBigScreen,
     isPresent,
-    props.fixedScrollRestaurationTo,
     handleScroll,
+    shouldShowABranch,
+    shouldShowALeaf,
   ]);
 
   function handleScrollTop() {

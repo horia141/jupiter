@@ -79,10 +79,10 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
     }
 
     restoreScrollPosition(theRef, location.pathname);
-    theRef.addEventListener("scrollend", handleScrollSpecial);
+    theRef.addEventListener("scroll", handleScrollSpecial);
 
     return () => {
-      theRef.removeEventListener("scrollend", handleScrollSpecial);
+      theRef.removeEventListener("scroll", handleScrollSpecial);
     };
   }, [containerRef, handleScroll, isPresent, location]);
 
