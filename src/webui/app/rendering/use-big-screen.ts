@@ -42,9 +42,9 @@ export function useBigScreen(): boolean {
           return false;
         case AppPlatform.TABLET_IOS:
         case AppPlatform.TABLET_ANDROID:
-          return true;
+          return mediaQuery;
         case AppPlatform.DESKTOP:
-          return true;
+          return mediaQuery;
       }
       break;
     case AppShell.MOBILE_PWA:
