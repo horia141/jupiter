@@ -30,5 +30,6 @@ gh release create ${RELEASE_TAG} --draft --verify-tag --title "v${RELEASE_VERSIO
 
 gh release upload ${RELEASE_TAG} --clobber .build-cache/desktop/make/Thrive-${RELEASE_VERSION}-universal.pkg
 gh release upload ${RELEASE_TAG} --clobber .build-cache/desktop/make/Thrive-${RELEASE_VERSION}-universal.dmg
+gh release upload ${RELEASE_TAG} --clobber .build-cache/mobile/ios/v${RELEASE_VERSION}/build/App.ipa
 
 gh release edit ${RELEASE_TAG} --draft=false
