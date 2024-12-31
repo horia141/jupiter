@@ -55,6 +55,7 @@ import { MetricTag } from "./metric-tag";
 import { PersonTag } from "./person-tag";
 import { ProjectTag } from "./project-tag";
 import { SlackTaskTag } from "./slack-task-tag";
+import { ClientOnly } from "remix-utils";
 
 export interface InboxTaskShowOptions {
   showStatus?: boolean;
@@ -372,21 +373,24 @@ function OverdueWarning({
   const theToday = today.startOf("day");
   const theDueDate = aDateToDate(dueDate);
 
-  if (
-    theDueDate <= theToday.minus({ days: globalProperties.overdueDangerDays })
-  ) {
-    return <OverdueWarningChip label="Overdue" color="error" />;
-  } else if (
-    theDueDate <= theToday.minus({ days: globalProperties.overdueWarningDays })
-  ) {
-    return <OverdueWarningChip label="Overdue" color="warning" />;
-  } else if (
-    theDueDate <= theToday.minus({ days: globalProperties.overdueInfoDays })
-  ) {
-    return <OverdueWarningChip label="Overdue" color="info" />;
-  }
-
-  return null;
+  return <ClientOnly fallback={<></>}>
+    {() => {
+      if (
+        theDueDate <= theToday.minus({ days: globalProperties.overdueDangerDays })
+      ) {
+        return <OverdueWarningChip label="Overdue" color="error" />;
+      } else if (
+        theDueDate <= theToday.minus({ days: globalProperties.overdueWarningDays })
+      ) {
+        return <OverdueWarningChip label="Overdue" color="warning" />;
+      } else if (
+        theDueDate <= theToday.minus({ days: globalProperties.overdueInfoDays })
+      ) {
+        return <OverdueWarningChip label="Overdue" color="info" />;
+      }
+      return null;
+    }}
+  </ClientOnly>;
 }
 
 const OverdueWarningChip = styled(Chip)<ChipProps>(({ theme }) => ({
