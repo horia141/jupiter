@@ -65,7 +65,7 @@ cp assets/jupiter.icns src/desktop/assets/jupiter.icns
 mv src/desktop/assets/logo.png .build-cache/logo.png.bak
 cp assets/jupiter.png src/desktop/assets/logo.png
 
-# cp src/desktop/forge.config.mas.js src/desktop/forge.config.js
-# (cd src/desktop && npx electron-forge make --platform mas --arch universal)
+cp src/desktop/forge.config.mas.js src/desktop/forge.config.js
+(cd src/desktop && npx electron-forge make --platform mas --arch universal)
 cp src/desktop/forge.config.darwin.js src/desktop/forge.config.js
-(cd src/desktop && npx electron-forge make --platform darwin --arch x64)
+(cd src/desktop && npx electron-forge make --platform darwin --arch universal)

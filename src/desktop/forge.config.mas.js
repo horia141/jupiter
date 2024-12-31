@@ -1,6 +1,7 @@
 const {
   outDir,
   packagerConfig,
+  hooks,
   rebuildConfig,
   plugins,
 } = require("./forge.config.common");
@@ -20,6 +21,7 @@ module.exports = {
           continueOnError: false,
         },
   },
+  hooks: hooks,
   rebuildConfig: rebuildConfig,
   makers: [
     {
