@@ -2,6 +2,7 @@ import type { ADate, Timestamp } from "@jupiter/webapi-client";
 import type { DateTime } from "luxon";
 import { timestampToDate } from "~/logic/domain/timestamp";
 import { FatChip } from "./infra/chips";
+import { ClientOnly } from "remix-utils";
 
 interface TimeDiffTagProps {
   today: DateTime;
@@ -55,5 +56,7 @@ export function TimeDiffTag(props: TimeDiffTagProps) {
     diffStr += " ago";
   }
 
-  return <FatChip label={`${props.labelPrefix} ${diffStr}`} color="info" />;
+  return <ClientOnly fallback={<></>}>
+    {() => <FatChip label={`${props.labelPrefix} ${diffStr}`} color="info" />}
+  </ClientOnly>;
 }
