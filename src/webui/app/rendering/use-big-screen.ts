@@ -36,17 +36,7 @@ export function useBigScreen(): boolean {
 
       return true;
     case AppShell.MOBILE_CAPACITOR:
-      switch (globalProperties.frontDoorInfo.appPlatform) {
-        case AppPlatform.MOBILE_IOS:
-        case AppPlatform.MOBILE_ANDROID:
-          return false;
-        case AppPlatform.TABLET_IOS:
-        case AppPlatform.TABLET_ANDROID:
-          return mediaQuery;
-        case AppPlatform.DESKTOP:
-          return mediaQuery;
-      }
-      break;
+      return false;
     case AppShell.MOBILE_PWA:
       return false;
     default:
