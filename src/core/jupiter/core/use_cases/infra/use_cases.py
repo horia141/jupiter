@@ -4,7 +4,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any, Final, Generic, TypeVar, Union
 
-from jupiter.core.domain.app import AppCore, AppShell
+from jupiter.core.domain.app import AppCore, AppPlatform, AppShell
 from jupiter.core.domain.concept.auth.auth_token import (
     AuthToken,
     ExpiredAuthTokenError,
@@ -64,21 +64,30 @@ class AppGuestUseCaseSession(EmptySession):
     auth_token_ext: AuthTokenExt | None
     app_core: AppCore
     app_shell: AppShell
+    app_platform: AppPlatform
 
     @staticmethod
     def for_cli(auth_token_ext: AuthTokenExt | None) -> "AppGuestUseCaseSession":
         """Create a CLI session."""
         return AppGuestUseCaseSession(
-            auth_token_ext=auth_token_ext, app_core=AppCore.CLI, app_shell=AppShell.CLI
+            auth_token_ext=auth_token_ext,
+            app_core=AppCore.CLI,
+            app_shell=AppShell.CLI,
+            app_platform=AppPlatform.DESKTOP,
         )
 
     @staticmethod
     def for_webui(
-        auth_token_ext: AuthTokenExt | None, app_shell: AppShell
+        auth_token_ext: AuthTokenExt | None,
+        app_shell: AppShell,
+        app_platform: AppPlatform,
     ) -> "AppGuestUseCaseSession":
         """Create a WebUI session."""
         return AppGuestUseCaseSession(
-            auth_token_ext=auth_token_ext, app_core=AppCore.WEBUI, app_shell=app_shell
+            auth_token_ext=auth_token_ext,
+            app_core=AppCore.WEBUI,
+            app_shell=app_shell,
+            app_platform=app_platform,
         )
 
 
@@ -160,6 +169,7 @@ class AppGuestMutationUseCase(
             domain_context=DomainContext.from_app(
                 session.app_core,
                 session.app_shell,
+                session.app_platform,
                 self._time_provider.get_current_time(),
             ),
         )
@@ -229,21 +239,28 @@ class AppLoggedInUseCaseSession(UseCaseSessionBase):
     auth_token_ext: AuthTokenExt
     app_core: AppCore
     app_shell: AppShell
+    app_platform: AppPlatform
 
     @staticmethod
     def for_cli(auth_token_ext: AuthTokenExt) -> "AppLoggedInUseCaseSession":
         """Create a CLI session."""
         return AppLoggedInUseCaseSession(
-            auth_token_ext=auth_token_ext, app_core=AppCore.CLI, app_shell=AppShell.CLI
+            auth_token_ext=auth_token_ext,
+            app_core=AppCore.CLI,
+            app_shell=AppShell.CLI,
+            app_platform=AppPlatform.DESKTOP,
         )
 
     @staticmethod
     def for_webui(
-        auth_token_ext: AuthTokenExt, app_shell: AppShell
+        auth_token_ext: AuthTokenExt, app_shell: AppShell, app_platform: AppPlatform
     ) -> "AppLoggedInUseCaseSession":
         """Create a WebUI session."""
         return AppLoggedInUseCaseSession(
-            auth_token_ext=auth_token_ext, app_core=AppCore.WEBUI, app_shell=app_shell
+            auth_token_ext=auth_token_ext,
+            app_core=AppCore.WEBUI,
+            app_shell=app_shell,
+            app_platform=app_platform,
         )
 
 
@@ -373,6 +390,7 @@ class AppLoggedInMutationUseCase(
                 domain_context=DomainContext.from_app(
                     session.app_core,
                     session.app_shell,
+                    session.app_platform,
                     self._time_provider.get_current_time(),
                 ),
             )

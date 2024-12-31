@@ -36,6 +36,7 @@ import {
   useTransition,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
+import { DateTime } from "luxon";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
@@ -291,6 +292,8 @@ export default function BigPlan() {
     setSelectedProject(loaderData.project.ref_id);
   }, [loaderData]);
 
+  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
+
   return (
     <LeafPanel
       key={`big-plan-${loaderData.bigPlan.ref_id}`}
@@ -473,6 +476,7 @@ export default function BigPlan() {
 
       {sortedInboxTasks.length > 0 && (
         <InboxTaskStack
+          today={today}
           topLevelInfo={topLevelInfo}
           showLabel
           showOptions={{

@@ -5,7 +5,7 @@ export function Logo() {
       alt="Logo"
       style={{
         alignSelf: "center",
-        marginLeft: "1rem",
+        marginRight: "0.5rem",
         height: "2rem",
       }}
     />

@@ -377,6 +377,10 @@ export default function InboxTasks() {
     ];
   }
 
+  const today = DateTime.local({ zone: topLevelInfo.user.timezone }).endOf(
+    "day"
+  );
+
   return (
     <TrunkPanel
       key={"inbox-tasks"}
@@ -569,6 +573,7 @@ export default function InboxTasks() {
 
         {selectedView === View.SWIFTVIEW && (
           <SwiftView
+            today={today}
             topLevelInfo={topLevelInfo}
             isBigScreen={isBigScreen}
             inboxTasks={sortedInboxTasks}
@@ -585,6 +590,7 @@ export default function InboxTasks() {
             {isBigScreen && (
               <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
                 <BigScreenKanbanByEisen
+                  today={today}
                   topLevelInfo={topLevelInfo}
                   inboxTasks={sortedInboxTasks}
                   optimisticUpdates={optimisticUpdates}
@@ -600,6 +606,7 @@ export default function InboxTasks() {
 
             {!isBigScreen && (
               <SmallScreenKanbanByEisen
+                today={today}
                 topLevelInfo={topLevelInfo}
                 inboxTasks={sortedInboxTasks}
                 optimisticUpdates={optimisticUpdates}
@@ -619,6 +626,7 @@ export default function InboxTasks() {
             {isBigScreen && (
               <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
                 <BigScreenKanban
+                  today={today}
                   topLevelInfo={topLevelInfo}
                   inboxTasks={sortedInboxTasks}
                   optimisticUpdates={optimisticUpdates}
@@ -633,6 +641,7 @@ export default function InboxTasks() {
 
             {!isBigScreen && (
               <SmallScreenKanban
+                today={today}
                 topLevelInfo={topLevelInfo}
                 inboxTasks={sortedInboxTasks}
                 optimisticUpdates={optimisticUpdates}
@@ -648,6 +657,7 @@ export default function InboxTasks() {
 
         {selectedView === View.LIST && (
           <List
+            today={today}
             topLevelInfo={topLevelInfo}
             inboxTasks={sortedInboxTasks}
             optimisticUpdates={optimisticUpdates}
@@ -676,6 +686,7 @@ const GCSection = styled(Box)(({ theme }) => ({
 }));
 
 interface SwiftViewProps {
+  today: DateTime;
   topLevelInfo: TopLevelInfo;
   isBigScreen: boolean;
   inboxTasks: Array<InboxTask>;
@@ -687,12 +698,14 @@ interface SwiftViewProps {
 }
 
 function SwiftView(props: SwiftViewProps) {
-  const today = DateTime.now().endOf("day");
-  const endOfTheWeek = today.endOf("week").endOf("day");
-  const endOfTheMonth = today.endOf("month").endOf("day");
-  const endOfTheQuarter = today.endOf("quarter").endOf("day");
-  const endOfTheYear = today.endOf("year").endOf("day");
-  const actionableTime = actionableTimeToDateTime(props.actionableTime);
+  const endOfTheWeek = props.today.endOf("week").endOf("day");
+  const endOfTheMonth = props.today.endOf("month").endOf("day");
+  const endOfTheQuarter = props.today.endOf("quarter").endOf("day");
+  const endOfTheYear = props.today.endOf("year").endOf("day");
+  const actionableTime = actionableTimeToDateTime(
+    props.actionableTime,
+    props.topLevelInfo.user.timezone
+  );
 
   const sortedInboxTasks = sortInboxTasksByEisenAndDifficulty(props.inboxTasks);
 
@@ -710,7 +723,7 @@ function SwiftView(props: SwiftViewProps) {
       ],
       includeIfNoActionableDate: true,
       actionableDateEnd: actionableTime,
-      dueDateEnd: today,
+      dueDateEnd: props.today,
       allowPeriodsIfHabit: [RecurringTaskPeriod.DAILY],
     }
   );
@@ -806,7 +819,7 @@ function SwiftView(props: SwiftViewProps) {
       ],
       includeIfNoActionableDate: true,
       actionableDateEnd: actionableTime,
-      dueDateEnd: today,
+      dueDateEnd: props.today,
       allowPeriodsIfChore: [RecurringTaskPeriod.DAILY],
     }
   );
@@ -911,7 +924,7 @@ function SwiftView(props: SwiftViewProps) {
       ],
       includeIfNoActionableDate: true,
       actionableDateEnd: actionableTime,
-      dueDateEnd: today,
+      dueDateEnd: props.today,
     }
   );
 
@@ -938,7 +951,7 @@ function SwiftView(props: SwiftViewProps) {
       ],
       includeIfNoActionableDate: true,
       actionableDateEnd: actionableTime,
-      dueDateStart: today,
+      dueDateStart: props.today,
       dueDateEnd: endOfTheWeek,
     }
   );
@@ -1033,6 +1046,7 @@ function SwiftView(props: SwiftViewProps) {
       <AnimatePresence>
         <InboxTaskStack
           key="habit-due-today"
+          today={props.today}
           topLevelInfo={props.topLevelInfo}
           showLabel
           showOptions={{
@@ -1053,6 +1067,7 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
+          today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="habit-due-this-week"
           showLabel
@@ -1074,6 +1089,7 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
+          today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="habit-due-this-month"
           showLabel
@@ -1096,6 +1112,7 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
+          today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="habit-due-this-quarter"
           showLabel
@@ -1118,6 +1135,7 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
+          today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="habit-due-this-year"
           showLabel
@@ -1146,6 +1164,7 @@ function SwiftView(props: SwiftViewProps) {
     <Stack>
       <AnimatePresence>
         <InboxTaskStack
+          today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="chore-due-today"
           showLabel
@@ -1167,6 +1186,7 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
+          today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="chore-due-this-week"
           showLabel
@@ -1188,6 +1208,7 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
+          today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="chore-due-this-month"
           showLabel
@@ -1210,6 +1231,7 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
+          today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="chore-due-this-quarter"
           showLabel
@@ -1232,6 +1254,7 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
+          today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="chore-due-this-year"
           showLabel
@@ -1260,6 +1283,7 @@ function SwiftView(props: SwiftViewProps) {
     <Stack>
       <AnimatePresence>
         <InboxTaskStack
+          today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="rest-due-today"
           showLabel
@@ -1282,6 +1306,7 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
+          today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="rest-due-this-week"
           showLabel
@@ -1304,6 +1329,7 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
+          today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="rest-due-this-month"
           showLabel
@@ -1327,6 +1353,7 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
+          today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="rest-due-this-quarter"
           showLabel
@@ -1350,6 +1377,7 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
+          today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="rest-due-this-year"
           showLabel
@@ -1483,6 +1511,7 @@ function SwiftView(props: SwiftViewProps) {
 }
 
 interface BigScreenKanbanByEisenProps {
+  today: DateTime;
   topLevelInfo: TopLevelInfo;
   inboxTasks: Array<InboxTask>;
   optimisticUpdates: { [key: string]: InboxTaskOptimisticState };
@@ -1495,6 +1524,7 @@ interface BigScreenKanbanByEisenProps {
 }
 
 function BigScreenKanbanByEisen({
+  today,
   topLevelInfo,
   inboxTasks,
   optimisticUpdates,
@@ -1524,6 +1554,7 @@ function BigScreenKanbanByEisen({
                   </Typography>
                 </Divider>
                 <KanbanBoard
+                  today={today}
                   topLevelInfo={topLevelInfo}
                   inboxTasks={inboxTasks}
                   optimisticUpdates={optimisticUpdates}
@@ -1544,6 +1575,7 @@ function BigScreenKanbanByEisen({
 }
 
 interface BigScreenKanbanProps {
+  today: DateTime;
   topLevelInfo: TopLevelInfo;
   inboxTasks: Array<InboxTask>;
   optimisticUpdates: { [key: string]: InboxTaskOptimisticState };
@@ -1556,6 +1588,7 @@ interface BigScreenKanbanProps {
 }
 
 function BigScreenKanban({
+  today,
   topLevelInfo,
   inboxTasks,
   optimisticUpdates,
@@ -1576,6 +1609,7 @@ function BigScreenKanban({
       )}
       {inboxTasks.length > 0 && (
         <KanbanBoard
+          today={today}
           topLevelInfo={topLevelInfo}
           inboxTasks={inboxTasks}
           optimisticUpdates={optimisticUpdates}
@@ -1592,6 +1626,7 @@ function BigScreenKanban({
 }
 
 interface KanbanBoardProps {
+  today: DateTime;
   topLevelInfo: TopLevelInfo;
   inboxTasks: Array<InboxTask>;
   optimisticUpdates: { [key: string]: InboxTaskOptimisticState };
@@ -1604,6 +1639,7 @@ interface KanbanBoardProps {
 }
 
 function KanbanBoard({
+  today,
   topLevelInfo,
   inboxTasks,
   inboxTasksByRefId,
@@ -1618,6 +1654,7 @@ function KanbanBoard({
     <Grid container spacing={2}>
       <Grid xs={2}>
         <InboxTasksColumn
+          today={today}
           topLevelInfo={topLevelInfo}
           inboxTasks={inboxTasks}
           optimisticUpdates={optimisticUpdates}
@@ -1640,6 +1677,7 @@ function KanbanBoard({
 
       <Grid xs={2}>
         <InboxTasksColumn
+          today={today}
           topLevelInfo={topLevelInfo}
           inboxTasks={inboxTasks}
           optimisticUpdates={optimisticUpdates}
@@ -1662,6 +1700,7 @@ function KanbanBoard({
 
       <Grid xs={2}>
         <InboxTasksColumn
+          today={today}
           topLevelInfo={topLevelInfo}
           inboxTasks={inboxTasks}
           optimisticUpdates={optimisticUpdates}
@@ -1684,6 +1723,7 @@ function KanbanBoard({
 
       <Grid xs={2}>
         <InboxTasksColumn
+          today={today}
           topLevelInfo={topLevelInfo}
           inboxTasks={inboxTasks}
           optimisticUpdates={optimisticUpdates}
@@ -1706,6 +1746,7 @@ function KanbanBoard({
 
       <Grid xs={2}>
         <InboxTasksColumn
+          today={today}
           topLevelInfo={topLevelInfo}
           inboxTasks={inboxTasks}
           optimisticUpdates={optimisticUpdates}
@@ -1728,6 +1769,7 @@ function KanbanBoard({
 
       <Grid xs={2}>
         <InboxTasksColumn
+          today={today}
           topLevelInfo={topLevelInfo}
           inboxTasks={inboxTasks}
           optimisticUpdates={optimisticUpdates}
@@ -1752,6 +1794,7 @@ function KanbanBoard({
 }
 
 interface SmallScreenKanbanByEisenProps {
+  today: DateTime;
   topLevelInfo: TopLevelInfo;
   inboxTasks: Array<InboxTask>;
   optimisticUpdates: { [key: string]: InboxTaskOptimisticState };
@@ -1764,7 +1807,10 @@ interface SmallScreenKanbanByEisenProps {
 }
 
 function SmallScreenKanbanByEisen(props: SmallScreenKanbanByEisenProps) {
-  const actionableDate = actionableTimeToDateTime(props.actionableTime);
+  const actionableDate = actionableTimeToDateTime(
+    props.actionableTime,
+    props.topLevelInfo.user.timezone
+  );
   const importantAndUrgentTasks = filterInboxTasksForDisplay(
     props.inboxTasks,
     props.moreInfoByRefId,
@@ -1855,6 +1901,7 @@ function SmallScreenKanbanByEisen(props: SmallScreenKanbanByEisenProps) {
 
       <TabPanel value={smallScreenSelectedTab} index={0}>
         <SmallScreenKanban
+          today={props.today}
           topLevelInfo={props.topLevelInfo}
           inboxTasks={importantAndUrgentTasks}
           optimisticUpdates={props.optimisticUpdates}
@@ -1869,6 +1916,7 @@ function SmallScreenKanbanByEisen(props: SmallScreenKanbanByEisenProps) {
 
       <TabPanel value={smallScreenSelectedTab} index={1}>
         <SmallScreenKanban
+          today={props.today}
           topLevelInfo={props.topLevelInfo}
           inboxTasks={urgentTasks}
           optimisticUpdates={props.optimisticUpdates}
@@ -1883,6 +1931,7 @@ function SmallScreenKanbanByEisen(props: SmallScreenKanbanByEisenProps) {
 
       <TabPanel value={smallScreenSelectedTab} index={2}>
         <SmallScreenKanban
+          today={props.today}
           topLevelInfo={props.topLevelInfo}
           inboxTasks={importantTasks}
           optimisticUpdates={props.optimisticUpdates}
@@ -1897,6 +1946,7 @@ function SmallScreenKanbanByEisen(props: SmallScreenKanbanByEisenProps) {
 
       <TabPanel value={smallScreenSelectedTab} index={3}>
         <SmallScreenKanban
+          today={props.today}
           topLevelInfo={props.topLevelInfo}
           inboxTasks={regularTasks}
           optimisticUpdates={props.optimisticUpdates}
@@ -1913,6 +1963,7 @@ function SmallScreenKanbanByEisen(props: SmallScreenKanbanByEisenProps) {
 }
 
 interface SmallScreenKanbanProps {
+  today: DateTime;
   topLevelInfo: TopLevelInfo;
   inboxTasks: Array<InboxTask>;
   optimisticUpdates: { [key: string]: InboxTaskOptimisticState };
@@ -1925,7 +1976,10 @@ interface SmallScreenKanbanProps {
 }
 
 function SmallScreenKanban(props: SmallScreenKanbanProps) {
-  const actionableDate = actionableTimeToDateTime(props.actionableTime);
+  const actionableDate = actionableTimeToDateTime(
+    props.actionableTime,
+    props.topLevelInfo.user.timezone
+  );
   const acceptedTasks = filterInboxTasksForDisplay(
     props.inboxTasks,
     props.moreInfoByRefId,
@@ -2077,6 +2131,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
           />
         )}
         <InboxTaskStack
+          today={props.today}
           topLevelInfo={props.topLevelInfo}
           showOptions={{
             showSource: true,
@@ -2103,6 +2158,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
           />
         )}
         <InboxTaskStack
+          today={props.today}
           topLevelInfo={props.topLevelInfo}
           showOptions={{
             showSource: true,
@@ -2129,6 +2185,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
           />
         )}
         <InboxTaskStack
+          today={props.today}
           topLevelInfo={props.topLevelInfo}
           showOptions={{
             showSource: true,
@@ -2155,6 +2212,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
           />
         )}
         <InboxTaskStack
+          today={props.today}
           topLevelInfo={props.topLevelInfo}
           showOptions={{
             showSource: true,
@@ -2181,6 +2239,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
           />
         )}
         <InboxTaskStack
+          today={props.today}
           topLevelInfo={props.topLevelInfo}
           showOptions={{
             showSource: true,
@@ -2207,6 +2266,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
           />
         )}
         <InboxTaskStack
+          today={props.today}
           topLevelInfo={props.topLevelInfo}
           showOptions={{
             showSource: true,
@@ -2229,6 +2289,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
 }
 
 interface ListProps {
+  today: DateTime;
   topLevelInfo: TopLevelInfo;
   inboxTasks: Array<InboxTask>;
   optimisticUpdates: { [key: string]: InboxTaskOptimisticState };
@@ -2238,6 +2299,7 @@ interface ListProps {
 }
 
 function List({
+  today,
   topLevelInfo,
   inboxTasks,
   moreInfoByRefId,
@@ -2254,6 +2316,7 @@ function List({
         />
       )}
       <InboxTaskStack
+        today={today}
         topLevelInfo={topLevelInfo}
         showOptions={{
           showStatus: true,
@@ -2278,6 +2341,7 @@ function List({
 }
 
 interface InboxTasksColumnProps {
+  today: DateTime;
   topLevelInfo: TopLevelInfo;
   inboxTasks: Array<InboxTask>;
   inboxTasksByRefId: { [key: string]: InboxTask };
@@ -2340,7 +2404,10 @@ function InboxTasksColumn(props: InboxTasksColumnProps) {
     return canInboxTaskBeInStatus(inboxTask, props.allowStatus);
   }
 
-  const actionableTime = actionableTimeToDateTime(props.actionableTime);
+  const actionableTime = actionableTimeToDateTime(
+    props.actionableTime,
+    props.topLevelInfo.user.timezone
+  );
 
   const filteredInboxTasks = filterInboxTasksForDisplay(
     props.inboxTasks,
@@ -2381,6 +2448,7 @@ function InboxTasksColumn(props: InboxTasksColumnProps) {
           >
             {!props.collapsed && (
               <InboxTaskColumnTasks
+                today={props.today}
                 topLevelInfo={props.topLevelInfo}
                 inboxTasks={filteredInboxTasks}
                 moreInfoByRefId={props.moreInfoByRefId}
@@ -2417,6 +2485,7 @@ const InboxTasksColumnHighDiv = styled("div")<InboxTasksColumnHighDivProps>(
 );
 
 interface InboxTaskColumnTasksProps {
+  today: DateTime;
   topLevelInfo: TopLevelInfo;
   inboxTasks: Array<InboxTask>;
   moreInfoByRefId: { [key: string]: InboxTaskParent };
@@ -2444,6 +2513,7 @@ const InboxTaskColumnTasks = memo(function InboxTaskColumnTasks(
                 {...provided.dragHandleProps}
               >
                 <InboxTaskCard
+                  today={props.today}
                   topLevelInfo={props.topLevelInfo}
                   compact
                   showOptions={{

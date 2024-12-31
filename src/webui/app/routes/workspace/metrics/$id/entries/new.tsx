@@ -16,6 +16,7 @@ import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useParams, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
+import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
@@ -26,6 +27,7 @@ import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = {
   id: z.string(),
@@ -88,6 +90,7 @@ export default function NewMetricEntry() {
   const { id } = useParams();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
+  const topLevelInfo = useContext(TopLevelInfoContext);
   const transition = useTransition();
 
   const inputsEnabled = transition.state === "idle";
@@ -106,7 +109,9 @@ export default function NewMetricEntry() {
               <OutlinedInput
                 type="date"
                 label="collectionTime"
-                defaultValue={DateTime.now().toFormat("yyyy-MM-dd")}
+                defaultValue={DateTime.local({
+                  zone: topLevelInfo.user.timezone,
+                }).toFormat("yyyy-MM-dd")}
                 name="collectionTime"
                 readOnly={!inputsEnabled}
               />

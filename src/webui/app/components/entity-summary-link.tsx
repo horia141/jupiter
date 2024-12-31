@@ -1,15 +1,18 @@
 import type { EntitySummary } from "@jupiter/webapi-client";
 import { NamedEntityTag } from "@jupiter/webapi-client";
+import type { DateTime } from "luxon";
 import { SlimChip } from "./infra/chips";
 import { EntityFakeLink, EntityLink } from "./infra/entity-card";
 import { TimeDiffTag } from "./time-diff-tag";
 
 interface EntitySummaryLinkProps {
+  today: DateTime;
   summary: EntitySummary;
   removed?: boolean;
 }
 
 export function EntitySummaryLink({
+  today,
   summary,
   removed,
 }: EntitySummaryLinkProps) {
@@ -18,12 +21,14 @@ export function EntitySummaryLink({
       <MatchSnippet snippet={summary.snippet} />
       {summary.archived && summary.archived_time && (
         <TimeDiffTag
+          today={today}
           labelPrefix="Archived"
           collectionTime={summary.archived_time}
         />
       )}
       {!summary.archived && (
         <TimeDiffTag
+          today={today}
           labelPrefix="Modified"
           collectionTime={summary.last_modified_time}
         />

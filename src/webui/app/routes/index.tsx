@@ -1,12 +1,18 @@
-import { AppBar, Button, ButtonGroup, Typography } from "@mui/material";
+import { Button, ButtonGroup } from "@mui/material";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Link } from "@remix-run/react";
 import { useContext } from "react";
+import { CommunityLink } from "~/components/community-link";
+import { DocsHelp, DocsHelpSubject } from "~/components/docs-help";
 import { LifecyclePanel } from "~/components/infra/layout/lifecycle-panel";
 import { StandaloneContainer } from "~/components/infra/layout/standalone-container";
+import { SmartAppBar } from "~/components/infra/smart-appbar";
+import { Logo } from "~/components/logo";
+import { Title } from "~/components/title";
 import { GlobalPropertiesContext } from "~/global-properties-client";
+import { isDevelopment } from "~/logic/domain/env";
+import { isInGlobalHosting } from "~/logic/domain/hosting";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
-import { shouldShowLargeAppBar } from "~/shell-client";
 
 export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
@@ -16,24 +22,15 @@ export default function Index() {
 
   return (
     <StandaloneContainer>
-      <AppBar
-        position="static"
-        sx={{
-          paddingTop: shouldShowLargeAppBar(globalProperties.appShell)
-            ? "4rem"
-            : undefined,
-          zIndex: (theme) => theme.zIndex.drawer + 10,
-        }}
-      >
-        <Typography
-          noWrap
-          variant="h6"
-          component="div"
-          sx={{ flexGrow: 1, display: { xs: "none", sm: "block" } }}
-        >
-          {globalProperties.title}
-        </Typography>
-      </AppBar>
+      <SmartAppBar>
+        <Logo />
+        <Title />
+
+        {(isInGlobalHosting(globalProperties.hosting) ||
+          isDevelopment(globalProperties.env)) && <CommunityLink />}
+
+        <DocsHelp size="medium" subject={DocsHelpSubject.ROOT} />
+      </SmartAppBar>
 
       <LifecyclePanel>
         <ButtonGroup>

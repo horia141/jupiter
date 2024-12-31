@@ -15,7 +15,7 @@ COPY package-lock.json package-lock.json
 COPY gen gen
 COPY src/Config.global src/Config.global
 COPY src/webui/README.md src/webui/README.md
-COPY src/webui/Config.project.docker src/webui/Config.project
+COPY src/webui/Config.project.live src/webui/Config.project
 COPY src/webui/package.json src/webui/package.json
 COPY src/webui/tsconfig.json src/webui/tsconfig.json
 COPY src/webui/remix.config.js src/webui/remix.config.js
@@ -28,6 +28,7 @@ RUN cd gen/ts/webapi-client && npx tsc
 
 COPY src/webui/app src/webui/app
 COPY src/webui/public/favicon.ico src/webui/public/favicon.ico
+COPY src/webui/public/logo.png src/webui/public/logo.png
 COPY src/webui/public/pomodoro-notification.mp3 src/webui/public/pomodoro-notification.mp3
 
 ARG PORT=10020
@@ -40,7 +41,7 @@ EXPOSE 8002
 
 WORKDIR /jupiter/src/webui
 
-RUN npm run build
+RUN npx remix build
 
 # ENTRYPOINT [ "dumb-init", "npx", "remix", "dev" ]
 ENTRYPOINT [ "dumb-init", "npx", "remix-serve", "build" ]

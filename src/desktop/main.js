@@ -5,10 +5,15 @@ const dotEnv = require("dotenv");
 
 loadEnvironment();
 
+const INITIAL_WIDTH = 1400;
+const INITIAL_HEIGHT = 900;
+
 const WEBUI_URL =
   process.env.ENV == "production" && process.env.HOSTING === "hosted-global"
-    ? process.env.HOSTED_GLOBAL_WEBUI_SERVER_URL
-    : process.env.LOCAL_WEBUI_SERVER_URL;
+    ? new URL(process.env.HOSTED_GLOBAL_WEBUI_SERVER_URL)
+    : new URL(process.env.LOCAL_WEBUI_SERVER_URL);
+
+WEBUI_URL.searchParams.set("initialWindowWidth", INITIAL_WIDTH);
 
 app.whenReady().then(() => {
   createWindow();
@@ -26,18 +31,38 @@ app.on("window-all-closed", () => {
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 1200,
-    height: 900,
+    width: INITIAL_WIDTH,
+    height: INITIAL_HEIGHT,
+    show: false,
   });
 
-  win.loadURL(WEBUI_URL);
+  const splash = new BrowserWindow({
+    width: INITIAL_WIDTH,
+    height: INITIAL_HEIGHT,
+    frame: false,
+    alwaysOnTop: true,
+    show: false,
+  });
+  splash.loadURL(`file://${__dirname}/splash.html`);
+
+  splash.once("ready-to-show", () => {
+    splash.show();
+  });
+
+  win.loadURL(WEBUI_URL.toString());
+  win.once("ready-to-show", () => {
+    setTimeout(() => {
+      splash.destroy();
+      win.show();
+    }, 1000);
+  });
 }
 
 function loadEnvironment() {
   if (app.isPackaged) {
     // If we're on MacOs
     if (process.platform === "darwin") {
-      dotEnv.config({ path: app.getAppPath() + "/Config.project.production" });
+      dotEnv.config({ path: app.getAppPath() + "/Config.project.live" });
     } else {
       console.error("Unsupported platform: ", process.platform);
       app.exit(1);

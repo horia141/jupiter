@@ -155,7 +155,7 @@ export default function WorkingMem() {
     );
   }
 
-  const today = DateTime.now();
+  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
 
   return (
     <LeafPanel
@@ -218,6 +218,7 @@ export default function WorkingMem() {
 
       {loaderData.cleanupTask && (
         <InboxTaskStack
+          today={today}
           topLevelInfo={topLevelInfo}
           showLabel
           showOptions={{

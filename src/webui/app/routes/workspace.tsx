@@ -5,7 +5,6 @@ import PolicyIcon from "@mui/icons-material/Policy";
 import {
   Alert,
   AlertTitle,
-  AppBar,
   Avatar,
   Badge,
   Button,
@@ -16,8 +15,6 @@ import {
   ListItemText,
   Menu,
   MenuItem,
-  Toolbar,
-  Typography,
 } from "@mui/material";
 import type { LinksFunction, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
@@ -38,7 +35,6 @@ import {
   useScoreActionSingleton,
 } from "~/components/gamification/score-snackbar-manager";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
-import ProgressReporter from "~/components/progress-reporter";
 import SearchBox from "~/components/search-box";
 import { isUserFeatureAvailable } from "~/logic/domain/user";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -48,10 +44,11 @@ import { TopLevelInfoContext } from "~/top-level-context";
 
 import { CommunityLink } from "~/components/community-link";
 import { WorkspaceContainer } from "~/components/infra/layout/workspace-container";
+import { SmartAppBar } from "~/components/infra/smart-appbar";
+import { Title } from "~/components/title";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { isDevelopment } from "~/logic/domain/env";
 import { isInGlobalHosting } from "~/logic/domain/hosting";
-import { shouldShowLargeAppBar } from "~/shell-client";
 import editorJsTweaks from "~/styles/editorjs-tweaks.css";
 
 export const links: LinksFunction = () => [
@@ -145,136 +142,120 @@ export default function Workspace() {
   return (
     <TopLevelInfoContext.Provider value={topLevelInfo}>
       <WorkspaceContainer>
-        <AppBar
-          position="static"
-          sx={{
-            paddingTop: shouldShowLargeAppBar(globalProperties.appShell)
-              ? "4rem"
-              : undefined,
-            zIndex: (theme) => theme.zIndex.drawer + 10,
-          }}
-        >
-          <Toolbar>
-            <IconButton
-              id="show-sidebar"
-              size="large"
-              edge="start"
-              color="inherit"
-              onClick={() => setShowSidebar((s) => !s)}
+        <SmartAppBar>
+          <IconButton
+            id="show-sidebar"
+            size="large"
+            edge="start"
+            color="inherit"
+            onClick={() => setShowSidebar((s) => !s)}
+          >
+            <MenuIcon />
+          </IconButton>
+
+          <Title hideOnSmallScreen />
+
+          <SearchBox />
+
+          {/* <ProgressReporter token={loaderData.progressReporterToken} /> */}
+
+          {(isInGlobalHosting(globalProperties.hosting) ||
+            isDevelopment(globalProperties.env)) && <CommunityLink />}
+
+          <DocsHelp size="medium" subject={DocsHelpSubject.ROOT} />
+
+          <IconButton
+            id="account-menu"
+            onClick={handleAccountMenuClick}
+            size="large"
+            color="inherit"
+          >
+            <Badge
+              ref={badgeRef}
+              badgeContent={
+                scoreAction
+                  ? scoreAction.daily_total_score
+                  : loaderData.userScoreOverview?.daily_score.total_score
+              }
+              color="success"
             >
-              <MenuIcon />
-            </IconButton>
+              <Avatar
+                sx={{ width: "1.75rem", height: "1.75rem" }}
+                alt={loaderData.user.name}
+                src={loaderData.user.avatar}
+              />
+            </Badge>
+          </IconButton>
 
-            <Typography
-              noWrap
-              variant="h6"
-              component="div"
-              sx={{ flexGrow: 1, display: { xs: "none", sm: "block" } }}
-            >
-              {globalProperties.title}
-            </Typography>
-
-            <SearchBox />
-
-            <ProgressReporter token={loaderData.progressReporterToken} />
-
-            {(isInGlobalHosting(globalProperties.hosting) ||
-              isDevelopment(globalProperties.env)) && <CommunityLink />}
-
-            <DocsHelp size="medium" subject={DocsHelpSubject.ROOT} />
-
-            <IconButton
-              id="account-menu"
-              onClick={handleAccountMenuClick}
-              size="large"
-              color="inherit"
-            >
-              <Badge
-                ref={badgeRef}
-                badgeContent={
-                  scoreAction
+          <Menu
+            id="basic-menu"
+            anchorEl={accountMenuAnchorEl}
+            open={accountMenuOpen}
+            onClose={handleAccountMenuClose}
+            MenuListProps={{
+              "aria-labelledby": "basic-button",
+            }}
+          >
+            {isUserFeatureAvailable(
+              loaderData.user,
+              UserFeature.GAMIFICATION
+            ) && (
+              <MenuItem
+                to="/workspace/gamification"
+                component={Link}
+                onClick={handleAccountMenuClose}
+              >
+                <ListItemIcon>
+                  <SportsEsportsIcon />
+                </ListItemIcon>
+                <ListItemText>
+                  Today:{" "}
+                  {scoreAction
                     ? scoreAction.daily_total_score
-                    : loaderData.userScoreOverview?.daily_score.total_score
-                }
-                color="success"
-              >
-                <Avatar
-                  sx={{ width: "1.75rem", height: "1.75rem" }}
-                  alt={loaderData.user.name}
-                  src={loaderData.user.avatar}
-                />
-              </Badge>
-            </IconButton>
-
-            <Menu
-              id="basic-menu"
-              anchorEl={accountMenuAnchorEl}
-              open={accountMenuOpen}
-              onClose={handleAccountMenuClose}
-              MenuListProps={{
-                "aria-labelledby": "basic-button",
-              }}
+                    : loaderData.userScoreOverview?.daily_score.total_score}
+                  <Divider orientation="vertical" flexItem />
+                  Week:{" "}
+                  {scoreAction
+                    ? scoreAction.weekly_total_score
+                    : loaderData.userScoreOverview?.weekly_score.total_score}
+                </ListItemText>
+                <Divider />
+              </MenuItem>
+            )}
+            <MenuItem
+              id="account"
+              to="/workspace/account"
+              component={Link}
+              onClick={handleAccountMenuClose}
             >
-              {isUserFeatureAvailable(
-                loaderData.user,
-                UserFeature.GAMIFICATION
-              ) && (
-                <MenuItem
-                  to="/workspace/gamification"
-                  component={Link}
-                  onClick={handleAccountMenuClose}
-                >
-                  <ListItemIcon>
-                    <SportsEsportsIcon />
-                  </ListItemIcon>
-                  <ListItemText>
-                    Today:{" "}
-                    {scoreAction
-                      ? scoreAction.daily_total_score
-                      : loaderData.userScoreOverview?.daily_score.total_score}
-                    <Divider orientation="vertical" flexItem />
-                    Week:{" "}
-                    {scoreAction
-                      ? scoreAction.weekly_total_score
-                      : loaderData.userScoreOverview?.weekly_score.total_score}
-                  </ListItemText>
-                  <Divider />
-                </MenuItem>
-              )}
-              <MenuItem
-                id="account"
-                to="/workspace/account"
-                component={Link}
-                onClick={handleAccountMenuClose}
-              >
-                <ListItemIcon>
-                  <AccountCircleIcon />
-                </ListItemIcon>
-                <ListItemText>Account</ListItemText>
-              </MenuItem>
-              <MenuItem
-                id="security"
-                to="/workspace/security"
-                component={Link}
-                onClick={handleAccountMenuClose}
-              >
-                <ListItemIcon>
-                  <SecurityIcon />
-                </ListItemIcon>
-                <ListItemText>Security</ListItemText>
-              </MenuItem>
-              <MenuItem
-                id="settings"
-                to="/workspace/settings"
-                component={Link}
-                onClick={handleAccountMenuClose}
-              >
-                <ListItemIcon>
-                  <Settings />
-                </ListItemIcon>
-                <ListItemText>Settings</ListItemText>
-              </MenuItem>
-              {/* <MenuItem
+              <ListItemIcon>
+                <AccountCircleIcon />
+              </ListItemIcon>
+              <ListItemText>Account</ListItemText>
+            </MenuItem>
+            <MenuItem
+              id="security"
+              to="/workspace/security"
+              component={Link}
+              onClick={handleAccountMenuClose}
+            >
+              <ListItemIcon>
+                <SecurityIcon />
+              </ListItemIcon>
+              <ListItemText>Security</ListItemText>
+            </MenuItem>
+            <MenuItem
+              id="settings"
+              to="/workspace/settings"
+              component={Link}
+              onClick={handleAccountMenuClose}
+            >
+              <ListItemIcon>
+                <Settings />
+              </ListItemIcon>
+              <ListItemText>Settings</ListItemText>
+            </MenuItem>
+            {/* <MenuItem
                 id="subscription"
                 to="/workspace/subscription"
                 component={Link}
@@ -285,39 +266,38 @@ export default function Workspace() {
                 </ListItemIcon>
                 <ListItemText>Subscription</ListItemText>
               </MenuItem> */}
-              <Divider />
-              <MenuItem
-                component={"a"}
-                href={globalProperties.termsOfServiceUrl}
-                target="_blank"
-              >
+            <Divider />
+            <MenuItem
+              component={"a"}
+              href={globalProperties.termsOfServiceUrl}
+              target="_blank"
+            >
+              <ListItemIcon>
+                <PolicyIcon />
+              </ListItemIcon>
+              <ListItemText>Terms of Service</ListItemText>
+            </MenuItem>
+            <MenuItem
+              component={"a"}
+              href={globalProperties.privacyPolicyUrl}
+              target="_blank"
+            >
+              <ListItemIcon>
+                <PolicyIcon />
+              </ListItemIcon>
+              <ListItemText>Privacy Policy</ListItemText>
+            </MenuItem>
+            <Divider />
+            <Form method="post" action="/logout">
+              <MenuItem id="logout" type="submit" component="button">
                 <ListItemIcon>
-                  <PolicyIcon />
+                  <Logout />
                 </ListItemIcon>
-                <ListItemText>Terms of Service</ListItemText>
+                <ListItemText>Logout</ListItemText>
               </MenuItem>
-              <MenuItem
-                component={"a"}
-                href={globalProperties.privacyPolicyUrl}
-                target="_blank"
-              >
-                <ListItemIcon>
-                  <PolicyIcon />
-                </ListItemIcon>
-                <ListItemText>Privacy Policy</ListItemText>
-              </MenuItem>
-              <Divider />
-              <Form method="post" action="/logout">
-                <MenuItem id="logout" type="submit" component="button">
-                  <ListItemIcon>
-                    <Logout />
-                  </ListItemIcon>
-                  <ListItemText>Logout</ListItemText>
-                </MenuItem>
-              </Form>
-            </Menu>
-          </Toolbar>
-        </AppBar>
+            </Form>
+          </Menu>
+        </SmartAppBar>
 
         <Sidebar
           showSidebar={showSidebar}

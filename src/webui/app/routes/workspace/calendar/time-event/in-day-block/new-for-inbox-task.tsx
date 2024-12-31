@@ -149,7 +149,7 @@ export default function TimeEventInDayBlockCreateForInboxTask() {
   const inputsEnabled =
     transition.state === "idle" && !loaderData.inboxTask.archived;
 
-  const rightNow = DateTime.now();
+  const rightNow = DateTime.local({ zone: topLevelInfo.user.timezone });
 
   const [startDate, setStartDate] = useState(rightNow.toFormat("yyyy-MM-dd"));
   const [startTimeInDay, setStartTimeInDay] = useState(

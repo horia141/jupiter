@@ -19,3 +19,14 @@ class AppShell(EnumValue):
     DESKTOP_ELECTRON = "desktop-electron"
     MOBILE_CAPACITOR = "mobile-capacitor"
     MOBILE_PWA = "mobile-pwa"
+
+
+@enum_value
+class AppPlatform(EnumValue):
+    """The platform on which the app is running."""
+
+    DESKTOP = "desktop"
+    MOBILE_IOS = "mobile-ios"
+    MOBILE_ANDROID = "mobile-android"
+    TABLET_IOS = "tablet-ios"
+    TABLET_ANDROID = "tablet-android"

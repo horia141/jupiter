@@ -12,7 +12,7 @@ import type { CalendarTooltipProps, TimeRangeDayData } from "@nivo/calendar";
 import { ResponsiveTimeRange } from "@nivo/calendar";
 import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";
-import { useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { ADateTag } from "~/components/adate-tag";
 import { EntityNameComponent } from "~/components/entity-name";
@@ -30,6 +30,7 @@ import {
   DisplayType,
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 export const handle = {
   displayType: DisplayType.TRUNK,
@@ -50,6 +51,7 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 
 export default function Vacations({ request }: LoaderArgs) {
   const entries = useLoaderDataSafeForAnimation<typeof loader>();
+  const topLevelInfo = useContext(TopLevelInfoContext);
 
   const sortedVacations = sortVacationsNaturally(
     entries.map((e) => e.vacation)
@@ -62,6 +64,10 @@ export default function Vacations({ request }: LoaderArgs) {
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
 
   const archiveVacationFetch = useFetcher();
+
+  const today = DateTime.local({ zone: topLevelInfo.user.timezone }).startOf(
+    "day"
+  );
 
   function archiveVacation(vacation: Vacation) {
     archiveVacationFetch.submit(
@@ -85,7 +91,7 @@ export default function Vacations({ request }: LoaderArgs) {
       returnLocation="/workspace"
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
-        <VacationCalendar sortedVacations={sortedVacations} />
+        <VacationCalendar today={today} sortedVacations={sortedVacations} />
 
         <EntityStack>
           {sortedVacations.map((vacation) => {
@@ -120,14 +126,15 @@ export default function Vacations({ request }: LoaderArgs) {
 }
 
 interface VacationCalendarProps {
+  today: DateTime;
   sortedVacations: Array<Vacation>;
 }
 
-function VacationCalendar({ sortedVacations }: VacationCalendarProps) {
+function VacationCalendar({ today, sortedVacations }: VacationCalendarProps) {
   const earliestDate =
     sortedVacations.length > 0
       ? aDateToDate(sortedVacations[sortedVacations.length - 1].start_date)
-      : DateTime.now();
+      : today;
   const latestDate =
     sortedVacations.length > 0
       ? aDateToDate(sortedVacations[0].end_date)

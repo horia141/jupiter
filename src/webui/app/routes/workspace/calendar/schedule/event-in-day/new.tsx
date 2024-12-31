@@ -124,7 +124,7 @@ export default function ScheduleEventInDayNew() {
 
   const inputsEnabled = transition.state === "idle";
 
-  const rightNow = DateTime.now();
+  const rightNow = DateTime.local({ zone: topLevelInfo.user.timezone });
 
   const [startDate, setStartDate] = useState(rightNow.toFormat("yyyy-MM-dd"));
   const [startTimeInDay, setStartTimeInDay] = useState(

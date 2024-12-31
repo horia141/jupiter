@@ -26,7 +26,7 @@ from fastapi.responses import JSONResponse, PlainTextResponse
 from fastapi.routing import APIRoute
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.types import DecoratedCallable
-from jupiter.core.domain.app import AppCore, AppShell
+from jupiter.core.domain.app import AppCore, AppPlatform, AppShell
 from jupiter.core.domain.concept.auth.auth_token_ext import (
     AuthTokenExt,
     AuthTokenExtDatabaseDecoder,
@@ -60,6 +60,7 @@ from jupiter.core.framework.value import (
     CompositeValue,
     EnumValue,
     SecretValue,
+    value,
 )
 from jupiter.core.use_cases.infra.realms import _StandardEnumValueDatabaseDecoder
 from jupiter.core.use_cases.infra.storage_engine import UseCaseStorageEngine
@@ -85,6 +86,15 @@ from pendulum.datetime import DateTime
 from starlette import status
 from starlette.middleware.base import BaseHTTPMiddleware
 
+
+@value
+class FrontDoorInfo(CompositeValue):
+    """FrontDoorInfo."""
+
+    app_shell: AppShell
+    app_platform: AppPlatform
+
+
 STANDARD_RESPONSES: dict[int | str, dict[str, Any]] = {
     410: {
         "description": "Workspace Or User Not Found",
@@ -102,10 +112,11 @@ STANDARD_CONFIG: Mapping[str, Any] = {
 ENV_HEADER: Final[str] = "X-Jupiter-Env"
 HOSTING_HEADER: Final[str] = "X-Jupiter-Hosting"
 VERSION_HEADER: Final[str] = "X-Jupiter-Version"
-APPSHELL_HEADER: Final[str] = "X-Jupiter-AppShell"
+FRONTDOOR_HEADER: Final[str] = "X-Jupiter-FrontDoor"
 
 AUTH_TOKEN_EXT_DECODER = AuthTokenExtDatabaseDecoder()
 APPSHELL_DECODER = _StandardEnumValueDatabaseDecoder(AppShell)
+APPPLATFORM_DECODER = _StandardEnumValueDatabaseDecoder(AppPlatform)
 OAUTH2_GUEST_SCHEMA = OAuth2PasswordBearer(tokenUrl="guest-login", auto_error=False)
 OAUTH2_LOGGED_IN_SCHEMA = OAuth2PasswordBearer(tokenUrl="old-skool-login")
 
@@ -131,12 +142,15 @@ def construct_guest_session(
     ],
 ) -> AppGuestUseCaseSession:
     """Construct a GuestSession from the AuthTokenExt."""
-    app_shell_raw = request.headers.get(APPSHELL_HEADER)
-    if app_shell_raw is None:
-        app_shell = AppShell.BROWSER
-    else:
-        app_shell = APPSHELL_DECODER.decode(request.headers.get(APPSHELL_HEADER))
-    return AppGuestUseCaseSession.for_webui(auth_token_ext, app_shell)
+    frontdoor_raw = request.headers.get(FRONTDOOR_HEADER)
+    app_shell = AppShell.BROWSER
+    app_platform = AppPlatform.DESKTOP
+    if frontdoor_raw is not None:
+        bits = frontdoor_raw.split(":")
+        if len(bits) == 2:
+            app_shell = APPSHELL_DECODER.decode(bits[0])
+            app_platform = APPPLATFORM_DECODER.decode(bits[1])
+    return AppGuestUseCaseSession.for_webui(auth_token_ext, app_shell, app_platform)
 
 
 def construct_logged_in_session(
@@ -146,12 +160,15 @@ def construct_logged_in_session(
     ],
 ) -> AppLoggedInUseCaseSession:
     """Construct a LoggedInSession from the AuthTokenExt."""
-    app_shell_raw = request.headers.get(APPSHELL_HEADER)
-    if app_shell_raw is None:
-        app_shell = AppShell.BROWSER
-    else:
-        app_shell = APPSHELL_DECODER.decode(request.headers.get(APPSHELL_HEADER))
-    return AppLoggedInUseCaseSession.for_webui(auth_token_ext, app_shell)
+    frontdoor_raw = request.headers.get(FRONTDOOR_HEADER)
+    app_shell = AppShell.BROWSER
+    app_platform = AppPlatform.DESKTOP
+    if frontdoor_raw is not None:
+        bits = frontdoor_raw.split(":")
+        if len(bits) == 2:
+            app_shell = APPSHELL_DECODER.decode(bits[0])
+            app_platform = APPPLATFORM_DECODER.decode(bits[1])
+    return AppLoggedInUseCaseSession.for_webui(auth_token_ext, app_shell, app_platform)
 
 
 GuestSession = Annotated[AppGuestUseCaseSession, Depends(construct_guest_session)]
@@ -639,7 +656,9 @@ class WebServiceApp:
 
             result = await login_use_case.execute(
                 AppGuestUseCaseSession.for_webui(
-                    auth_token_ext=None, app_shell=AppShell.BROWSER
+                    auth_token_ext=None,
+                    app_shell=AppShell.BROWSER,
+                    app_platform=AppPlatform.DESKTOP,
                 ),
                 LoginArgs(email_address=email_address, password=password),
             )

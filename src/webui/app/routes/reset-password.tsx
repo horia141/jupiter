@@ -1,6 +1,5 @@
 import { ApiError } from "@jupiter/webapi-client";
 import {
-  AppBar,
   Button,
   ButtonGroup,
   Card,
@@ -11,8 +10,6 @@ import {
   InputLabel,
   OutlinedInput,
   Stack,
-  Toolbar,
-  Typography,
 } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
@@ -22,16 +19,21 @@ import { useContext } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
 import { getGuestApiClient } from "~/api-clients.server";
+import { CommunityLink } from "~/components/community-link";
+import { DocsHelp, DocsHelpSubject } from "~/components/docs-help";
 import { EntityActionHeader } from "~/components/infra/entity-actions-header";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LifecyclePanel } from "~/components/infra/layout/lifecycle-panel";
 import { StandaloneContainer } from "~/components/infra/layout/standalone-container";
+import { SmartAppBar } from "~/components/infra/smart-appbar";
 import { Logo } from "~/components/logo";
+import { Title } from "~/components/title";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
+import { isDevelopment } from "~/logic/domain/env";
+import { isInGlobalHosting } from "~/logic/domain/hosting";
 import { AUTH_TOKEN_NAME } from "~/names";
 import { commitSession, getSession } from "~/sessions";
-import { shouldShowLargeAppBar } from "~/shell-client";
 
 const RecoverAccountFormSchema = {
   emailAddress: z.string(),
@@ -96,24 +98,15 @@ export default function ResetPassword() {
 
   return (
     <StandaloneContainer>
-      <AppBar
-        position="static"
-        sx={{
-          flexDirection: "row",
-          paddingTop: shouldShowLargeAppBar(globalProperties.appShell)
-            ? "4rem"
-            : undefined,
-          zIndex: (theme) => theme.zIndex.drawer + 10,
-        }}
-      >
+      <SmartAppBar>
         <Logo />
+        <Title />
 
-        <Toolbar>
-          <Typography noWrap variant="h6" component="div">
-            {globalProperties.title}
-          </Typography>
-        </Toolbar>
-      </AppBar>
+        {(isInGlobalHosting(globalProperties.hosting) ||
+          isDevelopment(globalProperties.env)) && <CommunityLink />}
+
+        <DocsHelp size="medium" subject={DocsHelpSubject.ROOT} />
+      </SmartAppBar>
 
       <LifecyclePanel>
         <Form method="post">

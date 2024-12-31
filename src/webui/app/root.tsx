@@ -12,15 +12,17 @@ import {
 } from "@remix-run/react";
 import { SnackbarProvider } from "notistack";
 
-import { StrictMode } from "react";
+import { SplashScreen } from "@capacitor/splash-screen";
+import { AppShell } from "@jupiter/webapi-client";
+import { StrictMode, useEffect } from "react";
 import { EnvBanner } from "./components/infra/env-banner";
 import {
   GlobalPropertiesContext,
   serverToClientGlobalProperties,
 } from "./global-properties-client";
 import { GLOBAL_PROPERTIES } from "./global-properties-server";
+import { loadFrontDoorInfo } from "./logic/frontdoor.server";
 import { standardShouldRevalidate } from "./rendering/standard-should-revalidate";
-import { loadAppShell } from "./shell.server";
 
 const THEME = createTheme({
   palette: {
@@ -49,11 +51,15 @@ const THEME = createTheme({
 
 export async function loader({ request }: LoaderArgs) {
   // This is the only place where we can read this field.
-  const appShell = await loadAppShell(request.headers.get("Cookie"));
+  const frontDoor = await loadFrontDoorInfo(
+    request.headers.get("Cookie"),
+    request.headers.get("User-Agent")
+  );
+
   return json({
     globalProperties: serverToClientGlobalProperties(
       GLOBAL_PROPERTIES,
-      appShell
+      frontDoor
     ),
   });
 }
@@ -62,7 +68,7 @@ export function meta({ data }: { data: SerializeFrom<typeof loader> }) {
   return {
     charset: "utf-8",
     title: data.globalProperties.title,
-    viewport: "width=device-width,initial-scale=1",
+    viewport: "width=device-width,initial-scale=1,viewport-fit=cover",
   };
 }
 
@@ -71,6 +77,15 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 
 export default function App() {
   const loaderData = useLoaderData<typeof loader>();
+
+  useEffect(() => {
+    if (
+      loaderData.globalProperties.frontDoorInfo.appShell ===
+      AppShell.MOBILE_CAPACITOR
+    ) {
+      SplashScreen.hide();
+    }
+  }, [loaderData.globalProperties.frontDoorInfo.appShell]);
 
   return (
     <html lang="en">

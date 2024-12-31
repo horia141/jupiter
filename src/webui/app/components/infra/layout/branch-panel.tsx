@@ -61,13 +61,16 @@ export function BranchPanel(props: PropsWithChildren<BranchPanelProps>) {
   }
 
   const handleScroll = useCallback(
-    (ref: HTMLDivElement, pathname: string) => {
+    (ref: HTMLDivElement, pathname: string, showChildren: boolean) => {
       if (!isPresent) {
+        return;
+      }
+      if (!isBigScreen && showChildren) {
         return;
       }
       saveScrollPosition(ref, pathname);
     },
-    [isPresent]
+    [isPresent, isBigScreen]
   );
 
   useEffect(() => {
@@ -82,16 +85,27 @@ export function BranchPanel(props: PropsWithChildren<BranchPanelProps>) {
     }
 
     function handleScrollSpecial() {
-      handleScroll(theRef, extractBranchFromPath(location.pathname));
+      handleScroll(
+        theRef,
+        extractBranchFromPath(location.pathname),
+        shouldShowALeaf
+      );
     }
 
     restoreScrollPosition(theRef, extractBranchFromPath(location.pathname));
-    theRef.addEventListener("scrollend", handleScrollSpecial);
+    theRef.addEventListener("scroll", handleScrollSpecial);
 
     return () => {
-      theRef.removeEventListener("scrollend", handleScrollSpecial);
+      theRef.removeEventListener("scroll", handleScrollSpecial);
     };
-  }, [containerRef, location, isBigScreen, isPresent, handleScroll]);
+  }, [
+    containerRef,
+    location,
+    isBigScreen,
+    isPresent,
+    handleScroll,
+    shouldShowALeaf,
+  ]);
 
   function handleScrollTop() {
     containerRef.current?.scrollTo({
@@ -334,7 +348,7 @@ const BranchPanelContent = styled("div")<BranchPanelContentProps>(
       isbigscreen === "true" ? `${theme.breakpoints.values.lg}px` : "100vw",
     margin: "auto",
     padding: isbigscreen === "true" ? "0.5rem" : "0px",
-    height: `calc(var(--vh, 1vh) * 100 - ${
+    height: `calc(var(--vh, 1vh) * 100 - env(safe-area-inset-top) - ${
       isbigscreen === "true" ? "4rem" : "3.5rem"
     } - ${
       isbigscreen === "true" ? "4rem" : hasleaf === "false" ? "4rem" : "0px"

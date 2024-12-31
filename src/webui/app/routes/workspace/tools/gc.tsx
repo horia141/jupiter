@@ -21,6 +21,7 @@ import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
+import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
@@ -90,6 +91,7 @@ export default function GC() {
   const topLevelInfo = useContext(TopLevelInfoContext);
 
   const inputsEnabled = transition.state === "idle";
+  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
 
   return (
     <ToolPanel>
@@ -136,6 +138,7 @@ export default function GC() {
                 Run from <EventSourceTag source={entry.source} />
                 with {entry.entity_records.length} entities archived
                 <TimeDiffTag
+                  today={today}
                   labelPrefix="from"
                   collectionTime={entry.created_time}
                 />
@@ -152,7 +155,7 @@ export default function GC() {
 
               {entry.entity_records.map((record) => (
                 <EntityCard key={record.ref_id}>
-                  <EntitySummaryLink summary={record} />
+                  <EntitySummaryLink today={today} summary={record} />
                 </EntityCard>
               ))}
             </AccordionDetails>

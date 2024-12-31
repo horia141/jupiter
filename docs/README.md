@@ -229,3 +229,12 @@ There's some trickyness that's easy to miss.
   in shell specific data here, and frondoor stores them in a way that's
   accessible to the rest of the app. Not entering through the frontdoor
   means that the assumptions will be made by the system (ie you're a browser).
+* `render-fix` is a special view in `webui`. We're handling some sort of React
+  hydration error because of mismatches in SSR and client-side rendering.
+  These mostly occur because of the many time manipulations we do client-side.
+  Which might differ from what's happening server-side, if we're not careful
+  or even if there's noticeable clock skew between the client's machine
+  and the server. If this happens, Remix tends to crash hard - styles are
+  messed up. To prevent this we force a client-side reload to a
+  very safe page. Which then does a Remix reload to the final page.
+  We're gonna log this at some point.

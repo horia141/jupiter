@@ -18,6 +18,7 @@ import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
+import { useContext } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
@@ -31,6 +32,7 @@ import {
 import { periodName } from "~/logic/domain/period";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 const CreateFormSchema = {
   rightNow: z.string(),
@@ -74,6 +76,7 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function NewJournal() {
   const transition = useTransition();
   const actionData = useActionData<typeof action>();
+  const topLevelInfo = useContext(TopLevelInfoContext);
 
   const inputsEnabled = transition.state === "idle";
 
@@ -92,7 +95,9 @@ export default function NewJournal() {
                 label="rightNow"
                 name="rightNow"
                 readOnly={!inputsEnabled}
-                defaultValue={DateTime.now().toISODate()}
+                defaultValue={DateTime.local({
+                  zone: topLevelInfo.user.timezone,
+                }).toISODate()}
               />
 
               <FieldError actionResult={actionData} fieldName="/right_now" />

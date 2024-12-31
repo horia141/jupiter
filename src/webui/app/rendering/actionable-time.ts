@@ -1,3 +1,4 @@
+import type { Timezone } from "@jupiter/webapi-client";
 import { DateTime } from "luxon";
 
 export enum ActionableTime {
@@ -6,13 +7,16 @@ export enum ActionableTime {
   ONE_MONTH = "one-month",
 }
 
-export function actionableTimeToDateTime(actionableTime: ActionableTime) {
+export function actionableTimeToDateTime(
+  actionableTime: ActionableTime,
+  timezone: Timezone
+): DateTime {
   switch (actionableTime) {
     case ActionableTime.NOW:
-      return DateTime.now();
+      return DateTime.local({ zone: timezone });
     case ActionableTime.ONE_WEEK:
-      return DateTime.now().plus({ weeks: 1 });
+      return DateTime.local({ zone: timezone }).plus({ weeks: 1 });
     case ActionableTime.ONE_MONTH:
-      return DateTime.now().plus({ months: 1 });
+      return DateTime.local({ zone: timezone }).plus({ months: 1 });
   }
 }

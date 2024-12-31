@@ -1,15 +1,16 @@
 import type { ADate, Timestamp } from "@jupiter/webapi-client";
-import { DateTime } from "luxon";
+import type { DateTime } from "luxon";
 import { timestampToDate } from "~/logic/domain/timestamp";
 import { FatChip } from "./infra/chips";
 
 interface TimeDiffTagProps {
+  today: DateTime;
   labelPrefix: string;
   collectionTime: ADate | Timestamp;
 }
 
 export function TimeDiffTag(props: TimeDiffTagProps) {
-  const today = DateTime.now().startOf("day");
+  const today = props.today.startOf("day");
   const collectionTime = timestampToDate(props.collectionTime);
   const diff = today.diff(collectionTime, ["years", "months", "days"]);
 
