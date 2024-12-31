@@ -133,7 +133,7 @@ export async function loader({ request }: LoaderArgs) {
     url.searchParams.set("period", query.period || RecurringTaskPeriod.WEEKLY);
     url.searchParams.set("view", query.view || View.CALENDAR);
 
-    return redirect(`${url}`);
+    return redirect(url.pathname + url.search);
   }
 
   const response = await apiClient.calendar.calendarLoadForDateAndPeriod({
@@ -176,7 +176,7 @@ export default function CalendarView() {
   const shouldShowABranch = useTrunkNeedsToShowBranch();
   const shouldShowALeafToo = useTrunkNeedsToShowLeaf();
 
-  const rightNow = DateTime.local({zone : topLevelInfo.user.timezone});
+  const rightNow = DateTime.local({ zone: topLevelInfo.user.timezone });
   const theRealToday = rightNow.toISODate() as ADate;
 
   return (
@@ -1224,8 +1224,7 @@ function ViewAsCalendarDateHeader(props: ViewAsCalendarDateHeaderProps) {
   );
 }
 
-interface ViewAsCalendarLeftColumnProps {
-}
+interface ViewAsCalendarLeftColumnProps {}
 
 function ViewAsCalendarLeftColumn(props: ViewAsCalendarLeftColumnProps) {
   const theme = useTheme();

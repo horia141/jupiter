@@ -1,5 +1,4 @@
 import type {
-  Timezone,
   ADate,
   BigPlan,
   Chore,
@@ -10,6 +9,7 @@ import type {
   Metric,
   Person,
   SlackTask,
+  Timezone,
 } from "@jupiter/webapi-client";
 import { WorkspaceFeature } from "@jupiter/webapi-client";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
