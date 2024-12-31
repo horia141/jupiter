@@ -27,7 +27,6 @@ module.exports = {
   rebuildConfig: {},
   hooks: {
     packageAfterCopy: async (config, buildPath, electronVersion, platform, arch) => {
-        console.log("DOWN HERE: ", config, buildPath, electronVersion, platform, arch)
         if (platform !== 'darwin' && platform !== 'mas') {
             return; // Only modify Info.plist on macOS
           }
