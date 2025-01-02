@@ -37,7 +37,7 @@ export const handle = {
 export async function loader({ request }: LoaderArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const response = await apiClient.workingMem.workingMemFind({
-    allow_archived: false,
+    allow_archived: true,
     include_notes: false,
     include_cleanup_tasks: false,
   });
