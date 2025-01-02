@@ -30,6 +30,7 @@ import type { PanInfo } from "framer-motion";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import type { DateTime } from "luxon";
 import { useContext, useState } from "react";
+import { ClientOnly } from "remix-utils";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { aDateToDate } from "~/logic/domain/adate";
 import type {
@@ -55,7 +56,6 @@ import { MetricTag } from "./metric-tag";
 import { PersonTag } from "./person-tag";
 import { ProjectTag } from "./project-tag";
 import { SlackTaskTag } from "./slack-task-tag";
-import { ClientOnly } from "remix-utils";
 
 export interface InboxTaskShowOptions {
   showStatus?: boolean;
@@ -373,24 +373,29 @@ function OverdueWarning({
   const theToday = today.startOf("day");
   const theDueDate = aDateToDate(dueDate);
 
-  return <ClientOnly fallback={<></>}>
-    {() => {
-      if (
-        theDueDate <= theToday.minus({ days: globalProperties.overdueDangerDays })
-      ) {
-        return <OverdueWarningChip label="Overdue" color="error" />;
-      } else if (
-        theDueDate <= theToday.minus({ days: globalProperties.overdueWarningDays })
-      ) {
-        return <OverdueWarningChip label="Overdue" color="warning" />;
-      } else if (
-        theDueDate <= theToday.minus({ days: globalProperties.overdueInfoDays })
-      ) {
-        return <OverdueWarningChip label="Overdue" color="info" />;
-      }
-      return null;
-    }}
-  </ClientOnly>;
+  return (
+    <ClientOnly fallback={<></>}>
+      {() => {
+        if (
+          theDueDate <=
+          theToday.minus({ days: globalProperties.overdueDangerDays })
+        ) {
+          return <OverdueWarningChip label="Overdue" color="error" />;
+        } else if (
+          theDueDate <=
+          theToday.minus({ days: globalProperties.overdueWarningDays })
+        ) {
+          return <OverdueWarningChip label="Overdue" color="warning" />;
+        } else if (
+          theDueDate <=
+          theToday.minus({ days: globalProperties.overdueInfoDays })
+        ) {
+          return <OverdueWarningChip label="Overdue" color="info" />;
+        }
+        return null;
+      }}
+    </ClientOnly>
+  );
 }
 
 const OverdueWarningChip = styled(Chip)<ChipProps>(({ theme }) => ({

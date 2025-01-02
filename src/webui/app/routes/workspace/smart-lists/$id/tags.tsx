@@ -21,6 +21,7 @@ import { BranchPanel } from "~/components/infra/layout/branch-panel";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { SmartListTagTag } from "~/components/smart-list-tag-tag";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
+import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
@@ -75,6 +76,7 @@ export default function SmartListViewTags() {
   }
 
   const archiveTagFetch = useFetcher();
+  const isBigScreen = useBigScreen();
 
   function archiveTag(tag: SmartListTag) {
     archiveTagFetch.submit(
@@ -101,7 +103,7 @@ export default function SmartListViewTags() {
           component={Link}
           startIcon={<TuneIcon />}
         >
-          "Details"
+          {isBigScreen ? "Details" : ""}
         </Button>,
 
         <ButtonGroup key={loaderData.smartList.ref_id}>

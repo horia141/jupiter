@@ -12,6 +12,7 @@ import type {
   VacationEntry,
 } from "@jupiter/webapi-client";
 import {
+  AppPlatform,
   RecurringTaskPeriod,
   TimeEventNamespace,
 } from "@jupiter/webapi-client";
@@ -89,6 +90,7 @@ import {
   timeEventInDayBlockToTimezone,
   VACATION_TIME_EVENT_COLOR,
 } from "~/logic/domain/time-event";
+import { inferPlatform } from "~/logic/frontdoor.server";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -123,6 +125,8 @@ export async function loader({ request }: LoaderArgs) {
   const query = parseQuery(request, QuerySchema);
   const url = new URL(request.url);
 
+  const platform = inferPlatform(request.headers.get("User-Agent"));
+
   if (
     query.date === undefined ||
     query.period === undefined ||
@@ -130,7 +134,14 @@ export async function loader({ request }: LoaderArgs) {
   ) {
     // We do it like this so we keep the query params that are already there.
     url.searchParams.set("date", query.date || DateTime.now().toISODate());
-    url.searchParams.set("period", query.period || RecurringTaskPeriod.WEEKLY);
+    url.searchParams.set(
+      "period",
+      query.period ||
+        (platform === AppPlatform.MOBILE_IOS ||
+        platform === AppPlatform.MOBILE_ANDROID
+          ? RecurringTaskPeriod.DAILY
+          : RecurringTaskPeriod.WEEKLY)
+    );
     url.searchParams.set("view", query.view || View.CALENDAR);
 
     return redirect(url.pathname + url.search);

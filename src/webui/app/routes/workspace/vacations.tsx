@@ -7,7 +7,7 @@ import type { Vacation, VacationFindResultEntry } from "@jupiter/webapi-client";
 
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import { IconButton, styled } from "@mui/material";
+import { Box, IconButton, styled, Typography } from "@mui/material";
 import type { CalendarTooltipProps, TimeRangeDayData } from "@nivo/calendar";
 import { ResponsiveTimeRange } from "@nivo/calendar";
 import { AnimatePresence } from "framer-motion";
@@ -245,21 +245,31 @@ function VacationCalendar({ today, sortedVacations }: VacationCalendarProps) {
       >
         <ArrowBackIosNewIcon fontSize="inherit" />
       </IconButton>
-      <ResponsiveTimeRange
-        data={data}
-        from={currentInterval.toFormat("yyyy-MM-dd")}
-        to={currentInterval.endOf(intervalStep).toFormat("yyyy-MM-dd")}
-        //weekdayLegendOffset={0}
-        weekdayTicks={[0, 1, 2, 3, 4, 5, 6]}
-        //firstWeekday={"monday"}
-        onClick={handleDayClick}
-        tooltip={handleTooltip}
-        minValue={0}
-        maxValue={100}
-        emptyColor="#eeeeee"
-        colors={["#eeeeee", "#61cdbb"]}
-        margin={{ top: 40, right: 40, bottom: 40, left: 40 }}
-      />
+      <Box sx={{ minWidth: isBigScreen ? "900px" : "200px" }}>
+        <Typography sx={{ textAlign: "center" }}>
+          Year {currentInterval.toFormat("yyyy")}
+        </Typography>
+        <ResponsiveTimeRange
+          data={data}
+          from={currentInterval.toFormat("yyyy-MM-dd")}
+          to={currentInterval.endOf(intervalStep).toFormat("yyyy-MM-dd")}
+          weekdayLegendOffset={60}
+          weekdayTicks={[0, 1, 2, 3, 4, 5, 6]}
+          onClick={handleDayClick}
+          tooltip={handleTooltip}
+          minValue={0}
+          maxValue={100}
+          emptyColor="#eeeeee"
+          colors={["#eeeeee", "#61cdbb"]}
+          align="center"
+          margin={{
+            top: 40,
+            right: isBigScreen ? 100 : 60,
+            bottom: 20,
+            left: isBigScreen ? 40 : 0,
+          }}
+        />
+      </Box>
       <IconButton
         disabled={currentInterval
           .endOf(intervalStep)
@@ -286,7 +296,8 @@ const TooltipBox = styled("div")`
 `;
 
 const StyledDiv = styled("div")`
-  height: 200px;
+  height: 180px;
   display: flex;
+  justify-content: space-between;
   flex-direction: row;
 `;
