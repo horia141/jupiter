@@ -1999,7 +1999,7 @@ function ViewAsScheduleDailyAndWeekly(props: ViewAsProps) {
                           }
                           isbigscreen={isBigScreen.toString()}
                         >
-                          {date}
+                          {DateTime.fromISO(date).toFormat("MMM-dd")}
                         </ViewAsScheduleDateCell>
 
                         <ViewAsScheduleTimeEventFullDaysRows
@@ -2092,7 +2092,7 @@ function ViewAsScheduleMonthlyQuarterlyAndYearly(props: ViewAsProps) {
               return (
                 <TableRow key={index}>
                   <ViewAsScheduleDateCell isbigscreen={isBigScreen.toString()}>
-                    {stats.period_start_date}
+                    {DateTime.fromISO(stats.period_start_date).toFormat(props.period === RecurringTaskPeriod.YEARLY ? "MMM" : "MMM-dd")}
                   </ViewAsScheduleDateCell>
 
                   <ViewAsScheduleContentCell>

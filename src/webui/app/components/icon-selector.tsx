@@ -52,6 +52,8 @@ export function IconSelector({ defaultIcon, readOnly }: Props) {
           {() => (
             <EmojiPicker
               width="auto"
+              autoFocusSearch={false}
+              allowExpandReactions={false}
               emojiStyle={EmojiStyle.NATIVE}
               onEmojiClick={handleSelect}
             />
