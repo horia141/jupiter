@@ -16,7 +16,7 @@ interface LinkTagProps {
 
 export function LinkTag(props: LinkTagProps) {
   return (
-    <EntityLink to={props.to}>
+    <EntityLink to={props.to} inline>
       <SlimChip label={props.label} color={props.color} size="small" />
     </EntityLink>
   );

@@ -49,12 +49,15 @@ function createWindow() {
     splash.show();
   });
 
+  setTimeout(() => {
+    splash.destroy();
+    win.show();
+  }, 5000);
+
   win.loadURL(WEBUI_URL.toString());
   win.once("ready-to-show", () => {
-    setTimeout(() => {
-      splash.destroy();
-      win.show();
-    }, 1000);
+    splash.destroy();
+    win.show();
   });
 }
 
