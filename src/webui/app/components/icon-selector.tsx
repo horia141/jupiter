@@ -35,7 +35,9 @@ export function IconSelector({ defaultIcon, readOnly }: Props) {
         value={selectedIcon}
         endAdornment={
           <ButtonGroup>
-            <Button disabled={readOnly} onClick={handleClear}>Clear</Button>
+            <Button disabled={readOnly} onClick={handleClear}>
+              Clear
+            </Button>
             <Button
               disabled={readOnly}
               variant={showIconSelector ? "contained" : "outlined"}

@@ -1,4 +1,4 @@
-import { AppPlatform, AppShell } from "@jupiter/webapi-client";
+import { AppDistribution, AppPlatform, AppShell } from "@jupiter/webapi-client";
 import { createCookie } from "@remix-run/node";
 import uap from "ua-parser-js";
 import { FRONTDOOR_COOKIE_NAME } from "../names";
@@ -20,9 +20,11 @@ export async function loadFrontDoorInfo(
   userAgent: string | null
 ): Promise<FrontDoorInfo> {
   if (cookie === null) {
+    const { platform, distribution } = inferPlatformAndDistribution(userAgent);
     return {
       appShell: AppShell.BROWSER,
-      appPlatform: inferPlatform(userAgent),
+      appPlatform: platform,
+      appDistribution: distribution,
       initialWindowWidth: undefined,
     };
   }
@@ -32,9 +34,11 @@ export async function loadFrontDoorInfo(
   const maybeFrontDoor = FRONT_DOOR_INFO_SCHEMA.safeParse(frontDoorInfoRaw);
 
   if (!maybeFrontDoor.success) {
+    const { platform, distribution } = inferPlatformAndDistribution(userAgent);
     return {
       appShell: AppShell.BROWSER,
-      appPlatform: inferPlatform(userAgent),
+      appPlatform: platform,
+      appDistribution: distribution,
       initialWindowWidth: undefined,
     };
   }
@@ -42,44 +46,77 @@ export async function loadFrontDoorInfo(
   return maybeFrontDoor.data;
 }
 
-export function inferPlatform(userAgent: string | null): AppPlatform {
+export function inferPlatformAndDistribution(userAgent: string | null): {
+  platform: AppPlatform;
+  distribution: AppDistribution;
+} {
   if (userAgent === null) {
-    return AppPlatform.DESKTOP;
+    return { platform: AppPlatform.DESKTOP, distribution: AppDistribution.WEB };
   }
 
   const ua = uap.UAParser(userAgent);
 
   if (ua.device.type === "mobile" && ua.os.name === "iOS") {
-    return AppPlatform.MOBILE_IOS;
+    return {
+      platform: AppPlatform.MOBILE_IOS,
+      distribution: AppDistribution.APP_STORE,
+    };
   } else if (ua.device.type === "mobile" && ua.os.name === "Android") {
-    return AppPlatform.MOBILE_ANDROID;
+    return {
+      platform: AppPlatform.MOBILE_ANDROID,
+      distribution: AppDistribution.GOOGLE_PLAY_STORE,
+    };
   } else if (ua.device.type === "tablet" && ua.os.name === "iOS") {
-    return AppPlatform.TABLET_IOS;
+    return {
+      platform: AppPlatform.TABLET_IOS,
+      distribution: AppDistribution.APP_STORE,
+    };
   } else if (ua.device.type === "tablet" && ua.os.name === "Android") {
-    return AppPlatform.TABLET_ANDROID;
+    return {
+      platform: AppPlatform.TABLET_ANDROID,
+      distribution: AppDistribution.GOOGLE_PLAY_STORE,
+    };
   } else {
-    return AppPlatform.DESKTOP;
+    return { platform: AppPlatform.DESKTOP, distribution: AppDistribution.WEB };
   }
 }
 
-export function inferPlatformForMobileShell(
+export function inferPlatformAndDistributionForMobileShell(
   userAgent: string | null
-): AppPlatform {
+): { platform: AppPlatform; distribution: AppDistribution } {
   if (userAgent === null) {
-    return AppPlatform.TABLET_IOS;
+    return {
+      platform: AppPlatform.MOBILE_IOS,
+      distribution: AppDistribution.APP_STORE,
+    };
   }
 
   const ua = uap.UAParser(userAgent);
 
   if (ua.device.type === "mobile" && ua.os.name === "iOS") {
-    return AppPlatform.MOBILE_IOS;
+    return {
+      platform: AppPlatform.MOBILE_IOS,
+      distribution: AppDistribution.APP_STORE,
+    };
   } else if (ua.device.type === "mobile" && ua.os.name === "Android") {
-    return AppPlatform.MOBILE_ANDROID;
+    return {
+      platform: AppPlatform.MOBILE_ANDROID,
+      distribution: AppDistribution.GOOGLE_PLAY_STORE,
+    };
   } else if (ua.device.type === "tablet" && ua.os.name === "iOS") {
-    return AppPlatform.TABLET_IOS;
+    return {
+      platform: AppPlatform.TABLET_IOS,
+      distribution: AppDistribution.APP_STORE,
+    };
   } else if (ua.device.type === "tablet" && ua.os.name === "Android") {
-    return AppPlatform.TABLET_ANDROID;
+    return {
+      platform: AppPlatform.TABLET_ANDROID,
+      distribution: AppDistribution.GOOGLE_PLAY_STORE,
+    };
   } else {
-    return AppPlatform.TABLET_IOS;
+    return {
+      platform: AppPlatform.MOBILE_IOS,
+      distribution: AppDistribution.APP_STORE,
+    };
   }
 }

@@ -1,7 +1,7 @@
 """A domain-level context for calls that are made."""
 from dataclasses import dataclass
 
-from jupiter.core.domain.app import AppCore, AppPlatform, AppShell
+from jupiter.core.domain.app import AppCore, AppDistribution, AppPlatform, AppShell
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.event import EventSource
 
@@ -14,6 +14,7 @@ class DomainContext:
     app_core: AppCore | None
     app_shell: AppShell | None
     app_platform: AppPlatform | None
+    app_distribution: AppDistribution | None
     action_timestamp: Timestamp
 
     @staticmethod
@@ -21,6 +22,7 @@ class DomainContext:
         app_core: AppCore,
         app_shell: AppShell,
         app_platform: AppPlatform,
+        app_distribution: AppDistribution,
         action_timestamp: Timestamp,
     ) -> "DomainContext":
         """Create a domain context from an app."""
@@ -29,6 +31,7 @@ class DomainContext:
             app_core=app_core,
             app_shell=app_shell,
             app_platform=app_platform,
+            app_distribution=app_distribution,
             action_timestamp=action_timestamp,
         )
 
@@ -43,5 +46,6 @@ class DomainContext:
             app_core=None,
             app_shell=None,
             app_platform=None,
+            app_distribution=None,
             action_timestamp=action_timestamp,
         )

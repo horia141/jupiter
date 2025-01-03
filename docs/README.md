@@ -118,7 +118,7 @@ Presently there are two cores:
 * The WebUI app - a typical web based app, with a GUI and available
   over the network.
 
-There are several cores:
+There are several shells:
 
 * CLI - which corresponds to the CLI core, wrapped as a typical
   command line app, where you write commands one at a time.
@@ -130,6 +130,31 @@ There are several cores:
 * Mobile Capacitor - the WebUI delivered as mobile apps for iOS
   and Android, via their respective distribution mechanism.
 * Mobile PWA - the WebUI delivered as mobile apps via PWA.
+
+Another piece of associated information is platform. Presently there are:
+
+* Desktop - the default platform really. Can be any shell.
+* Mobile iOS - a mobile device running iOS. Can only be Mobile Capacitor
+  or Mobie PWA shells.
+* Tablet iOS - a tablet device running iOS. Can only be Mobile Capacitor
+  or Mobie PWA shells.
+* Mobile Android - a mobile device running Android. Can only be Mobile Capacitor
+  or Mobie PWA shells.
+* Tablet Android - a tablet device running Android. Can only be Mobile Capacitor
+  or Mobie PWA shells.
+
+On top of this there are also distributions (rather like channels):
+
+* Web - the app is presented over the web. For Browsers only.
+* Mac Web - the app is downloaded as a `dmg` archive from a website
+  (presently GitHub releases). Installs from a 3rd party. For Desktop Electron
+  only on Desktop platform.
+* Mac Store - the app is downloaded from the Mac Store. For Desktop Electron
+  only on Desktop platform.
+* App Store - the app is downloaded from the App Store. For Mobile Capacitor
+  only on Mobile iOS and Tablet iOS platforms.
+* Google Play Store - the app is downloaded from the Google App Store. 
+  For Mobile Capacitor only on Mobile Android and Tablet Android platforms.
 
 ## Running Tests
 
@@ -212,6 +237,17 @@ operations that you can chose to do or not do.
 
 For humans, these are useful too. The documentation has links to release notes,
 which are useful for folks.
+
+## Release Management
+
+There is a new release banner. Helps you reload the app if there's a new
+named version, or even download it if there's no app stores releases.
+
+It depends on scripts in `./scripts/release` to prepare the right
+release manifest (a `release-manifest.json` file) on GitHub releases.
+This means we're depending "live" on this system.
+
+It has some tricky logic to it.
 
 ## Some Tricky Aspects
 

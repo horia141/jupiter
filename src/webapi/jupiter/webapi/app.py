@@ -26,7 +26,7 @@ from fastapi.responses import JSONResponse, PlainTextResponse
 from fastapi.routing import APIRoute
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.types import DecoratedCallable
-from jupiter.core.domain.app import AppCore, AppPlatform, AppShell
+from jupiter.core.domain.app import AppCore, AppDistribution, AppPlatform, AppShell
 from jupiter.core.domain.concept.auth.auth_token_ext import (
     AuthTokenExt,
     AuthTokenExtDatabaseDecoder,
@@ -115,8 +115,9 @@ VERSION_HEADER: Final[str] = "X-Jupiter-Version"
 FRONTDOOR_HEADER: Final[str] = "X-Jupiter-FrontDoor"
 
 AUTH_TOKEN_EXT_DECODER = AuthTokenExtDatabaseDecoder()
-APPSHELL_DECODER = _StandardEnumValueDatabaseDecoder(AppShell)
-APPPLATFORM_DECODER = _StandardEnumValueDatabaseDecoder(AppPlatform)
+APP_SHELL_DECODER = _StandardEnumValueDatabaseDecoder(AppShell)
+APP_PLATFORM_DECODER = _StandardEnumValueDatabaseDecoder(AppPlatform)
+APP_DISTRIBUTION_DECODER = _StandardEnumValueDatabaseDecoder(AppDistribution)
 OAUTH2_GUEST_SCHEMA = OAuth2PasswordBearer(tokenUrl="guest-login", auto_error=False)
 OAUTH2_LOGGED_IN_SCHEMA = OAuth2PasswordBearer(tokenUrl="old-skool-login")
 
@@ -145,12 +146,16 @@ def construct_guest_session(
     frontdoor_raw = request.headers.get(FRONTDOOR_HEADER)
     app_shell = AppShell.BROWSER
     app_platform = AppPlatform.DESKTOP
+    app_distribution = AppDistribution.WEB
     if frontdoor_raw is not None:
         bits = frontdoor_raw.split(":")
-        if len(bits) == 2:
-            app_shell = APPSHELL_DECODER.decode(bits[0])
-            app_platform = APPPLATFORM_DECODER.decode(bits[1])
-    return AppGuestUseCaseSession.for_webui(auth_token_ext, app_shell, app_platform)
+        if len(bits) == 3:
+            app_shell = APP_SHELL_DECODER.decode(bits[0])
+            app_platform = APP_PLATFORM_DECODER.decode(bits[1])
+            app_distribution = APP_DISTRIBUTION_DECODER.decode(bits[2])
+    return AppGuestUseCaseSession.for_webui(
+        auth_token_ext, app_shell, app_platform, app_distribution
+    )
 
 
 def construct_logged_in_session(
@@ -163,12 +168,16 @@ def construct_logged_in_session(
     frontdoor_raw = request.headers.get(FRONTDOOR_HEADER)
     app_shell = AppShell.BROWSER
     app_platform = AppPlatform.DESKTOP
+    app_distribution = AppDistribution.WEB
     if frontdoor_raw is not None:
         bits = frontdoor_raw.split(":")
-        if len(bits) == 2:
-            app_shell = APPSHELL_DECODER.decode(bits[0])
-            app_platform = APPPLATFORM_DECODER.decode(bits[1])
-    return AppLoggedInUseCaseSession.for_webui(auth_token_ext, app_shell, app_platform)
+        if len(bits) == 3:
+            app_shell = APP_SHELL_DECODER.decode(bits[0])
+            app_platform = APP_PLATFORM_DECODER.decode(bits[1])
+            app_distribution = APP_DISTRIBUTION_DECODER.decode(bits[2])
+    return AppLoggedInUseCaseSession.for_webui(
+        auth_token_ext, app_shell, app_platform, app_distribution
+    )
 
 
 GuestSession = Annotated[AppGuestUseCaseSession, Depends(construct_guest_session)]
@@ -659,6 +668,7 @@ class WebServiceApp:
                     auth_token_ext=None,
                     app_shell=AppShell.BROWSER,
                     app_platform=AppPlatform.DESKTOP,
+                    app_distribution=AppDistribution.WEB,
                 ),
                 LoginArgs(email_address=email_address, password=password),
             )

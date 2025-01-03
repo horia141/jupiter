@@ -4,6 +4,8 @@ from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
 from ..models.app_core import AppCore
+from ..models.app_distribution import AppDistribution
+from ..models.app_distribution_state import AppDistributionState
 from ..models.app_platform import AppPlatform
 from ..models.app_shell import AppShell
 from ..models.env import Env
@@ -51,6 +53,8 @@ class LoadTopLevelInfoResult:
         app_core_hack (Union[AppCore, None, Unset]):
         app_shell_hack (Union[AppShell, None, Unset]):
         app_platform_hack (Union[AppPlatform, None, Unset]):
+        app_distribution_hack (Union[AppDistribution, None, Unset]):
+        app_distribution_state_hack (Union[AppDistributionState, None, Unset]):
     """
 
     env: Env
@@ -70,6 +74,8 @@ class LoadTopLevelInfoResult:
     app_core_hack: Union[AppCore, None, Unset] = UNSET
     app_shell_hack: Union[AppShell, None, Unset] = UNSET
     app_platform_hack: Union[AppPlatform, None, Unset] = UNSET
+    app_distribution_hack: Union[AppDistribution, None, Unset] = UNSET
+    app_distribution_state_hack: Union[AppDistributionState, None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -153,6 +159,22 @@ class LoadTopLevelInfoResult:
         else:
             app_platform_hack = self.app_platform_hack
 
+        app_distribution_hack: Union[None, Unset, str]
+        if isinstance(self.app_distribution_hack, Unset):
+            app_distribution_hack = UNSET
+        elif isinstance(self.app_distribution_hack, AppDistribution):
+            app_distribution_hack = self.app_distribution_hack.value
+        else:
+            app_distribution_hack = self.app_distribution_hack
+
+        app_distribution_state_hack: Union[None, Unset, str]
+        if isinstance(self.app_distribution_state_hack, Unset):
+            app_distribution_state_hack = UNSET
+        elif isinstance(self.app_distribution_state_hack, AppDistributionState):
+            app_distribution_state_hack = self.app_distribution_state_hack.value
+        else:
+            app_distribution_state_hack = self.app_distribution_state_hack
+
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -183,6 +205,10 @@ class LoadTopLevelInfoResult:
             field_dict["app_shell_hack"] = app_shell_hack
         if app_platform_hack is not UNSET:
             field_dict["app_platform_hack"] = app_platform_hack
+        if app_distribution_hack is not UNSET:
+            field_dict["app_distribution_hack"] = app_distribution_hack
+        if app_distribution_state_hack is not UNSET:
+            field_dict["app_distribution_state_hack"] = app_distribution_state_hack
 
         return field_dict
 
@@ -346,6 +372,40 @@ class LoadTopLevelInfoResult:
 
         app_platform_hack = _parse_app_platform_hack(d.pop("app_platform_hack", UNSET))
 
+        def _parse_app_distribution_hack(data: object) -> Union[AppDistribution, None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                app_distribution_hack_type_0 = AppDistribution(data)
+
+                return app_distribution_hack_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[AppDistribution, None, Unset], data)
+
+        app_distribution_hack = _parse_app_distribution_hack(d.pop("app_distribution_hack", UNSET))
+
+        def _parse_app_distribution_state_hack(data: object) -> Union[AppDistributionState, None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                app_distribution_state_hack_type_0 = AppDistributionState(data)
+
+                return app_distribution_state_hack_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[AppDistributionState, None, Unset], data)
+
+        app_distribution_state_hack = _parse_app_distribution_state_hack(d.pop("app_distribution_state_hack", UNSET))
+
         load_top_level_info_result = cls(
             env=env,
             hosting=hosting,
@@ -364,6 +424,8 @@ class LoadTopLevelInfoResult:
             app_core_hack=app_core_hack,
             app_shell_hack=app_shell_hack,
             app_platform_hack=app_platform_hack,
+            app_distribution_hack=app_distribution_hack,
+            app_distribution_state_hack=app_distribution_state_hack,
         )
 
         load_top_level_info_result.additional_properties = d

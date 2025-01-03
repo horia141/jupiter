@@ -15,6 +15,9 @@ export interface GlobalPropertiesServer {
   docsUrl: string;
   communityUrl: string;
   appsStorageUrl: string;
+  macStoreUrl: string;
+  appStoreUrl: string;
+  googlePlayStoreUrl: string;
   termsOfServiceUrl: string;
   privacyPolicyUrl: string;
   sessionCookieSecret: string;
@@ -55,6 +58,9 @@ function loadGlobalPropertiesOnServer(): GlobalPropertiesServer {
     docsUrl: process.env.DOCS_URL as string,
     communityUrl: process.env.COMMUNITY_URL as string,
     appsStorageUrl: process.env.APPS_STORAGE_URL as string,
+    macStoreUrl: process.env.MAC_STORE_URL as string,
+    appStoreUrl: process.env.APP_STORE_URL as string,
+    googlePlayStoreUrl: process.env.GOOGLE_PLAY_STORE_URL as string,
     termsOfServiceUrl: process.env.TERMS_OF_SERVICE_URL as string,
     privacyPolicyUrl: process.env.PRIVACY_POLICY_URL as string,
     sessionCookieSecret: process.env.SESSION_COOKIE_SECRET as string,

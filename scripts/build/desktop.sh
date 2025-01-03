@@ -18,6 +18,7 @@ revert_package_json() {
   rm -f src/desktop/package.json.1
   rm -f src/desktop/forge.config.js
   rm -f src/desktop/LICENSE
+  rm -f src/desktop/Config.project.live
 
   # if node_modules/@jupiter/webapi-client is not a link, then we should revert it
   if [ ! -L rsc/desktop/node_modules/@jupiter/webapi-client ]; then
@@ -65,7 +66,9 @@ cp assets/jupiter.icns src/desktop/assets/jupiter.icns
 mv src/desktop/assets/logo.png .build-cache/logo.png.bak
 cp assets/jupiter.png src/desktop/assets/logo.png
 
-cp src/desktop/forge.config.mas.js src/desktop/forge.config.js
+cp src/desktop/forge.config.mac-store.js src/desktop/forge.config.js
+cp src/desktop/Config.project.live.mac-store  src/desktop/Config.project.live
 (cd src/desktop && npx electron-forge make --platform mas --arch universal)
-cp src/desktop/forge.config.darwin.js src/desktop/forge.config.js
+cp src/desktop/forge.config.mac-web.js src/desktop/forge.config.js
+cp src/desktop/Config.project.live.mac-web  src/desktop/Config.project.live
 (cd src/desktop && npx electron-forge make --platform darwin --arch universal)

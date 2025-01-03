@@ -12,6 +12,9 @@ _HOSTED_GLOBAL_WEBAPI_SERVER_PORT=WILL-BE-FILLED-BY-RENDER
 DOCS_URL=https://docs.get-thriving.com
 COMMUNITY_URL=https://discord.gg/Y6PS7ZZ976
 APPS_STORAGE_URL=https://github.com/horia141/jupiter/releases/download/
+MAC_STORE_URL=https://apps.apple.com/ro/app/bestcat-the-game/id6738962220?mt=12
+APP_STORE_URL=https://apps.apple.com/ro/app/bestcat-the-game/id6738962220?mt=12
+GOOGLE_PLAY_STORE_URL=https://apps.apple.com/ro/app/bestcat-the-game/id6738962220?mt=12
 TERMS_OF_SERVICE_URL=https://www.get-thriving.com/terms-conditions
 PRIVACY_POLICY_URL=https://www.get-thriving.com/privacy-policy
 SESSION_COOKIE_SECRET=FAKEFAKEFAKEFAKEFAKEFAKEFAKEFAKEFAKEFAKEFAKEFAKEFAKEFAKEFAKEFAKE

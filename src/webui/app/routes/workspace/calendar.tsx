@@ -90,7 +90,7 @@ import {
   timeEventInDayBlockToTimezone,
   VACATION_TIME_EVENT_COLOR,
 } from "~/logic/domain/time-event";
-import { inferPlatform } from "~/logic/frontdoor.server";
+import { inferPlatformAndDistribution } from "~/logic/frontdoor.server";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -125,7 +125,9 @@ export async function loader({ request }: LoaderArgs) {
   const query = parseQuery(request, QuerySchema);
   const url = new URL(request.url);
 
-  const platform = inferPlatform(request.headers.get("User-Agent"));
+  const { platform } = inferPlatformAndDistribution(
+    request.headers.get("User-Agent")
+  );
 
   if (
     query.date === undefined ||
@@ -2092,7 +2094,11 @@ function ViewAsScheduleMonthlyQuarterlyAndYearly(props: ViewAsProps) {
               return (
                 <TableRow key={index}>
                   <ViewAsScheduleDateCell isbigscreen={isBigScreen.toString()}>
-                    {DateTime.fromISO(stats.period_start_date).toFormat(props.period === RecurringTaskPeriod.YEARLY ? "MMM" : "MMM-dd")}
+                    {DateTime.fromISO(stats.period_start_date).toFormat(
+                      props.period === RecurringTaskPeriod.YEARLY
+                        ? "MMM"
+                        : "MMM-dd"
+                    )}
                   </ViewAsScheduleDateCell>
 
                   <ViewAsScheduleContentCell>

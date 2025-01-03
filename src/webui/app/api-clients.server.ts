@@ -37,7 +37,7 @@ export async function getGuestApiClient(request: Request): Promise<ApiClient> {
     BASE: base,
     TOKEN: token,
     HEADERS: {
-      [FRONTDOOR_HEADER]: `${frontDoor.appShell}:${frontDoor.appPlatform}`,
+      [FRONTDOOR_HEADER]: `${frontDoor.appShell}:${frontDoor.appPlatform}:${frontDoor.appDistribution}`,
     },
   });
 
@@ -79,7 +79,7 @@ export async function getLoggedInApiClient(
     BASE: base,
     TOKEN: authTokenExtStr,
     HEADERS: {
-      [FRONTDOOR_HEADER]: `${frontDoor.appShell}:${frontDoor.appPlatform}`,
+      [FRONTDOOR_HEADER]: `${frontDoor.appShell}:${frontDoor.appPlatform}:${frontDoor.appDistribution}`,
     },
   });
 

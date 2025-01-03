@@ -4,7 +4,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any, Final, Generic, TypeVar, Union
 
-from jupiter.core.domain.app import AppCore, AppPlatform, AppShell
+from jupiter.core.domain.app import AppCore, AppDistribution, AppPlatform, AppShell
 from jupiter.core.domain.concept.auth.auth_token import (
     AuthToken,
     ExpiredAuthTokenError,
@@ -65,6 +65,7 @@ class AppGuestUseCaseSession(EmptySession):
     app_core: AppCore
     app_shell: AppShell
     app_platform: AppPlatform
+    app_distribution: AppDistribution
 
     @staticmethod
     def for_cli(auth_token_ext: AuthTokenExt | None) -> "AppGuestUseCaseSession":
@@ -74,6 +75,7 @@ class AppGuestUseCaseSession(EmptySession):
             app_core=AppCore.CLI,
             app_shell=AppShell.CLI,
             app_platform=AppPlatform.DESKTOP,
+            app_distribution=AppDistribution.MAC_WEB,
         )
 
     @staticmethod
@@ -81,6 +83,7 @@ class AppGuestUseCaseSession(EmptySession):
         auth_token_ext: AuthTokenExt | None,
         app_shell: AppShell,
         app_platform: AppPlatform,
+        app_distribution: AppDistribution,
     ) -> "AppGuestUseCaseSession":
         """Create a WebUI session."""
         return AppGuestUseCaseSession(
@@ -88,6 +91,7 @@ class AppGuestUseCaseSession(EmptySession):
             app_core=AppCore.WEBUI,
             app_shell=app_shell,
             app_platform=app_platform,
+            app_distribution=app_distribution,
         )
 
 
@@ -170,6 +174,7 @@ class AppGuestMutationUseCase(
                 session.app_core,
                 session.app_shell,
                 session.app_platform,
+                session.app_distribution,
                 self._time_provider.get_current_time(),
             ),
         )
@@ -240,6 +245,7 @@ class AppLoggedInUseCaseSession(UseCaseSessionBase):
     app_core: AppCore
     app_shell: AppShell
     app_platform: AppPlatform
+    app_distribution: AppDistribution
 
     @staticmethod
     def for_cli(auth_token_ext: AuthTokenExt) -> "AppLoggedInUseCaseSession":
@@ -249,11 +255,15 @@ class AppLoggedInUseCaseSession(UseCaseSessionBase):
             app_core=AppCore.CLI,
             app_shell=AppShell.CLI,
             app_platform=AppPlatform.DESKTOP,
+            app_distribution=AppDistribution.MAC_WEB,
         )
 
     @staticmethod
     def for_webui(
-        auth_token_ext: AuthTokenExt, app_shell: AppShell, app_platform: AppPlatform
+        auth_token_ext: AuthTokenExt,
+        app_shell: AppShell,
+        app_platform: AppPlatform,
+        app_distribution: AppDistribution,
     ) -> "AppLoggedInUseCaseSession":
         """Create a WebUI session."""
         return AppLoggedInUseCaseSession(
@@ -261,6 +271,7 @@ class AppLoggedInUseCaseSession(UseCaseSessionBase):
             app_core=AppCore.WEBUI,
             app_shell=app_shell,
             app_platform=app_platform,
+            app_distribution=app_distribution,
         )
 
 
@@ -391,6 +402,7 @@ class AppLoggedInMutationUseCase(
                     session.app_core,
                     session.app_shell,
                     session.app_platform,
+                    session.app_distribution,
                     self._time_provider.get_current_time(),
                 ),
             )

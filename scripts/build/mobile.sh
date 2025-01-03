@@ -47,3 +47,5 @@ xcodebuild -exportArchive \
     -archivePath "$ARCHIVE_PATH" \
     -exportOptionsPlist "$EXPORT_OPTIONS_PLIST" \
     -exportPath "$IPA_PATH"
+
+mv $IPA_PATH/App.ipa $IPA_PATH/App-${RELEASE_VERSION}.ipa

@@ -1,5 +1,5 @@
-ENV=local
-HOSTING=local
+ENV=production
+HOSTING=hosted-global
 BASENAME=jupiter-desktop
 DESCRIPTION="The Thrive Desktop application"
 HOSTED_GLOBAL_WEBUI_SERVER_URL=https://app.get-thriving.com/frontdoor?appShell=desktop-electron&appPlatform=desktop&appDistribution=mac-store

@@ -1,19 +1,29 @@
 from http import HTTPStatus
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union, cast
 
 import httpx
 
-from ... import errors
 from ...client import AuthenticatedClient, Client
+from ...types import Response, UNSET
+from ... import errors
+
 from ...models.gen_do_args import GenDoArgs
-from ...types import Response
+from typing import cast
+from typing import Dict
+
 
 
 def _get_kwargs(
     *,
     body: GenDoArgs,
+
 ) -> Dict[str, Any]:
     headers: Dict[str, Any] = {}
+
+
+    
+
+    
 
     _kwargs: Dict[str, Any] = {
         "method": "post",
@@ -21,6 +31,7 @@ def _get_kwargs(
     }
 
     _body = body.to_dict()
+
 
     _kwargs["json"] = _body
     headers["Content-Type"] = "application/json"
@@ -57,8 +68,9 @@ def sync_detailed(
     *,
     client: AuthenticatedClient,
     body: GenDoArgs,
+
 ) -> Response[Any]:
-    """The command for generating new tasks.
+    """ The command for generating new tasks.
 
      The command for generating new tasks.
 
@@ -71,10 +83,12 @@ def sync_detailed(
 
     Returns:
         Response[Any]
-    """
+     """
+
 
     kwargs = _get_kwargs(
         body=body,
+
     )
 
     response = client.get_httpx_client().request(
@@ -88,8 +102,9 @@ async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
     body: GenDoArgs,
+
 ) -> Response[Any]:
-    """The command for generating new tasks.
+    """ The command for generating new tasks.
 
      The command for generating new tasks.
 
@@ -102,12 +117,17 @@ async def asyncio_detailed(
 
     Returns:
         Response[Any]
-    """
+     """
+
 
     kwargs = _get_kwargs(
         body=body,
+
     )
 
-    response = await client.get_async_httpx_client().request(**kwargs)
+    response = await client.get_async_httpx_client().request(
+        **kwargs
+    )
 
     return _build_response(client=client, response=response)
+

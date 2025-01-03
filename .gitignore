@@ -11,7 +11,6 @@ secrets
 site
 .coverage
 .build-cache/
-buildinfo/current
 .cache/
 src/webui/build/
 src/webui/public/build/

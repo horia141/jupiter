@@ -3,6 +3,8 @@
 /* eslint-disable */
 
 import type { AppCore } from './AppCore';
+import type { AppDistribution } from './AppDistribution';
+import type { AppDistributionState } from './AppDistributionState';
 import type { AppPlatform } from './AppPlatform';
 import type { AppShell } from './AppShell';
 import type { Env } from './Env';
@@ -39,5 +41,7 @@ export type LoadTopLevelInfoResult = {
     app_core_hack?: (AppCore | null);
     app_shell_hack?: (AppShell | null);
     app_platform_hack?: (AppPlatform | null);
+    app_distribution_hack?: (AppDistribution | null);
+    app_distribution_state_hack?: (AppDistributionState | null);
 };
 
