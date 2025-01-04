@@ -4,6 +4,7 @@ set -ex
 
 mkdir -p .build-cache/docs
 
+ls -lah src
 source src/Config.global
 
 export PUBLIC_NAME
