@@ -2,7 +2,7 @@
 
 set -ex
 
-if ! poetry run autoflake --check --config=scripts/lint/autoflake src/core src/cli src/webapi itests
+if ! poetry run autoflake --check --config=scripts/check/lint/autoflake src/core src/cli src/webapi itests
 then
   echo "Styling inconsistency! Please run 'make fix-style' to auto-address style issues!"
   exit 1

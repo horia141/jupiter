@@ -46,6 +46,7 @@ out/
 # Gradle files
 .gradle/
 src/mobile/android/app/build/
+src/mobile/android/app/src/main/assets
 
 # Local configuration file (sdk path, etc)
 local.properties

@@ -4,7 +4,6 @@ import { parseQuery } from "zodix";
 import { getGuestApiClient } from "~/api-clients.server";
 import { FRONT_DOOR_INFO_SCHEMA } from "~/logic/frontdoor";
 import {
-  inferPlatformAndDistributionForMobileShell,
   saveFrontDoorInfo,
 } from "~/logic/frontdoor.server";
 import { AUTH_TOKEN_NAME } from "~/names";
@@ -24,15 +23,6 @@ export const handle = {
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const params = parseQuery(request, FRONT_DOOR_INFO_SCHEMA);
-
-  if (params.appShell === AppShell.MOBILE_CAPACITOR) {
-    const { platform, distribution } =
-      inferPlatformAndDistributionForMobileShell(
-        request.headers.get("User-Agent")
-      );
-    params.appPlatform = platform;
-    params.appDistribution = distribution;
-  }
 
   if (session.has(AUTH_TOKEN_NAME)) {
     const apiClient = await getGuestApiClient(request);

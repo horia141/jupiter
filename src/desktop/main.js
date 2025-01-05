@@ -1,7 +1,8 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const { app, BrowserWindow, net, session } = require("electron");
-const { AppShell } = require("@jupiter/webapi-client");
-const dotEnv = require("dotenv");
+import { app, BrowserWindow, ipcMain } from "electron";
+import dotEnv from "dotenv";
+import path from "node:path";
+import { fileURLToPath } from 'url';
 
 loadEnvironment();
 
@@ -17,6 +18,8 @@ WEBUI_URL.searchParams.set("initialWindowWidth", INITIAL_WIDTH);
 
 app.whenReady().then(() => {
   createWindow();
+  ipcMain.handle("getWebUiServerUrl", () => WEBUI_URL.toString());
+  ipcMain.handle("exit", () => app.quit());
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -34,6 +37,9 @@ function createWindow() {
     width: INITIAL_WIDTH,
     height: INITIAL_HEIGHT,
     show: false,
+    webPreferences: {
+      preload: path.join(path.dirname(fileURLToPath(import.meta.url)), "src", "preload.js"),
+    },
   });
 
   const splash = new BrowserWindow({
@@ -43,7 +49,7 @@ function createWindow() {
     alwaysOnTop: true,
     show: false,
   });
-  splash.loadURL(`file://${__dirname}/splash.html`);
+  splash.loadFile("dist/splash.html");
 
   splash.once("ready-to-show", () => {
     splash.show();
@@ -51,10 +57,21 @@ function createWindow() {
 
   setTimeout(() => {
     splash.destroy();
+    if (win.isVisible) {
+      return;
+    }
     win.show();
   }, 5000);
 
   win.loadURL(WEBUI_URL.toString());
+  win.webContents.on("did-fail-load", (event, errorCode, errorDescription) => {
+    win.loadFile("dist/error.html");
+    console.log(
+      "An error occurred loading the webui: ",
+      errorCode,
+      errorDescription
+    );
+  });
   win.once("ready-to-show", () => {
     splash.destroy();
     win.show();

@@ -302,7 +302,7 @@ def test_time_plan_link_untracked_inbox_tasks(
     create_time_plan,
     create_inbox_task,
 ) -> None:
-    time_plan = create_time_plan("2024-06-18", RecurringTaskPeriod.YEARLY)
+    time_plan = create_time_plan("2025-06-18", RecurringTaskPeriod.YEARLY)
     inbox_task = create_inbox_task("Untracked Inbox Task")
     _mark_inbox_task_done(logged_in_client, inbox_task)
 
@@ -317,7 +317,7 @@ def test_time_plan_link_untracked_inbox_tasks(
 def test_time_plan_link_untracked_big_plans(
     logged_in_client: AuthenticatedClient, page: Page, create_time_plan, create_big_plan
 ) -> None:
-    time_plan = create_time_plan("2024-06-18", RecurringTaskPeriod.YEARLY)
+    time_plan = create_time_plan("2025-06-18", RecurringTaskPeriod.YEARLY)
     big_plan = create_big_plan("Untracked Big Plan")
     _mark_big_plan_done(logged_in_client, big_plan)
 

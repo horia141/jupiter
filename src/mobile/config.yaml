@@ -17,3 +17,6 @@ platforms:
         bundleId: $BUNDLE_ID
         displayName: $PUBLIC_NAME
         productName: App
+        copy:
+        - src: ../../PrivacyInfo.xcprivacy
+          dest: PrivacyInfo.xcprivacy

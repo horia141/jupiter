@@ -4,7 +4,7 @@ const {
   hooks,
   rebuildConfig,
   plugins,
-} = require("./forge.config.common");
+} = require("./forge.config.common.cjs");
 
 module.exports = {
   outDir: outDir,

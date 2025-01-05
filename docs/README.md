@@ -153,7 +153,7 @@ On top of this there are also distributions (rather like channels):
   only on Desktop platform.
 * App Store - the app is downloaded from the App Store. For Mobile Capacitor
   only on Mobile iOS and Tablet iOS platforms.
-* Google Play Store - the app is downloaded from the Google App Store. 
+* Google Play Store - the app is downloaded from the Google App Store.
   For Mobile Capacitor only on Mobile Android and Tablet Android platforms.
 
 ## Running Tests
