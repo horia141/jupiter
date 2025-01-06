@@ -22,6 +22,7 @@ import { PersonBirthdayTag } from "~/components/person-birthday-tag";
 import { PersonRelationshipTag } from "~/components/person-relationship-tag";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
+import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
@@ -58,6 +59,7 @@ export default function Persons() {
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
 
   const archivePersonFetch = useFetcher();
+  const isBigScreen = useBigScreen();
 
   function archivePerson(person: Person) {
     archivePersonFetch.submit(
@@ -90,7 +92,7 @@ export default function Persons() {
                 component={Link}
                 startIcon={<TuneIcon />}
               >
-                Settings
+                {isBigScreen ? "Settings" : ""}
               </Button>
             </>
           )}

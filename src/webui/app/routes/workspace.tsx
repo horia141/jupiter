@@ -45,6 +45,7 @@ import { TopLevelInfoContext } from "~/top-level-context";
 import { CommunityLink } from "~/components/community-link";
 import { WorkspaceContainer } from "~/components/infra/layout/workspace-container";
 import { SmartAppBar } from "~/components/infra/smart-appbar";
+import { ReleaseUpdateWidget } from "~/components/release-update-widget";
 import { Title } from "~/components/title";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { isDevelopment } from "~/logic/domain/env";
@@ -313,6 +314,7 @@ export default function Workspace() {
         </AnimatePresence>
 
         <ScoreSnackbarManager scoreAction={scoreAction} />
+        <ReleaseUpdateWidget />
       </WorkspaceContainer>
     </TopLevelInfoContext.Provider>
   );

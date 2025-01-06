@@ -118,7 +118,7 @@ Presently there are two cores:
 * The WebUI app - a typical web based app, with a GUI and available
   over the network.
 
-There are several cores:
+There are several shells:
 
 * CLI - which corresponds to the CLI core, wrapped as a typical
   command line app, where you write commands one at a time.
@@ -130,6 +130,50 @@ There are several cores:
 * Mobile Capacitor - the WebUI delivered as mobile apps for iOS
   and Android, via their respective distribution mechanism.
 * Mobile PWA - the WebUI delivered as mobile apps via PWA.
+
+Another piece of associated information is platform. Presently there are:
+
+* Desktop - the default platform really. Can be any shell.
+* Mobile iOS - a mobile device running iOS. Can only be Mobile Capacitor
+  or Mobie PWA shells.
+* Tablet iOS - a tablet device running iOS. Can only be Mobile Capacitor
+  or Mobie PWA shells.
+* Mobile Android - a mobile device running Android. Can only be Mobile Capacitor
+  or Mobie PWA shells.
+* Tablet Android - a tablet device running Android. Can only be Mobile Capacitor
+  or Mobie PWA shells.
+
+On top of this there are also distributions (rather like channels):
+
+* Web - the app is presented over the web. For Browsers only.
+* Mac Web - the app is downloaded as a `dmg` archive from a website
+  (presently GitHub releases). Installs from a 3rd party. For Desktop Electron
+  only on Desktop platform.
+* Mac Store - the app is downloaded from the Mac Store. For Desktop Electron
+  only on Desktop platform.
+* App Store - the app is downloaded from the App Store. For Mobile Capacitor
+  only on Mobile iOS and Tablet iOS platforms.
+* Google Play Store - the app is downloaded from the Google App Store.
+  For Mobile Capacitor only on Mobile Android and Tablet Android platforms.
+
+### Going Deeper On App Shells
+
+The client app consists of the app core and the shell. Looking at the web side,
+where this thing is more clear, there is something that the shell does.
+
+* The mobile shell actually consists of a small number of webpages that are baked
+  into the app and that are the things that the capacitor webview is going to load
+  initially. THere's an `index.html` and an `error.html` page. These serve two
+  purposes.
+  * First: they take the environment configuration and pass it to the core, in a way
+    that capacitor currently doesn't.
+  * Second: the `index.html` shows a splash screen type-thing and simply reloads to
+    the remote server address. But if there's an error, there's a redirect to `error.html`
+    that allows a user to see an error has occurred and retry.
+  Together these give some control to the local app without having to rely on the
+  remote thing to exist (and ditto a network connection to exist, etc.).
+* On desktop the logic is the same, but Electron can do a bit more setup in the
+  native side, and can pass more "ready made" data to the client.
 
 ## Running Tests
 
@@ -204,7 +248,7 @@ In terms of working:
 * And then `./scripts/release/gh-release.sh x.y.z` to create a new release
   on GitHub.
 * Finally, if you so with you can upload to the AppStore via
-  `./scripts/release/appstore-upload.sh x.y.z`. As mentioned above, not
+  `./scripts/release/appstore-upload-(ios|macos).sh x.y.z`. As mentioned above, not
   always necessary.
 
 We'll work to unify these more in the future, but for now they're manual
@@ -212,6 +256,17 @@ operations that you can chose to do or not do.
 
 For humans, these are useful too. The documentation has links to release notes,
 which are useful for folks.
+
+## Release Management
+
+There is a new release banner. Helps you reload the app if there's a new
+named version, or even download it if there's no app stores releases.
+
+It depends on scripts in `./scripts/release` to prepare the right
+release manifest (a `release-manifest.json` file) on GitHub releases.
+This means we're depending "live" on this system.
+
+It has some tricky logic to it.
 
 ## Some Tricky Aspects
 

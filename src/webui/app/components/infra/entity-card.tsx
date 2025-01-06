@@ -150,12 +150,17 @@ interface EntityLinkProps {
   to: string;
   block?: boolean;
   light?: boolean;
+  inline?: boolean;
 }
 
 export function EntityLink(props: PropsWithChildren<EntityLinkProps>) {
   if (!(props.block === true)) {
     return (
-      <StyledLink to={props.to} light={props.light ? "true" : "false"}>
+      <StyledLink
+        to={props.to}
+        inline={props.inline ? "true" : "false"}
+        light={props.light ? "true" : "false"}
+      >
         {props.children}
       </StyledLink>
     );
@@ -168,26 +173,29 @@ export function EntityLink(props: PropsWithChildren<EntityLinkProps>) {
 
 interface StyledLinkProps {
   light: string;
+  inline: string;
 }
 
-const StyledLink = styled(Link)<StyledLinkProps>(({ theme, light }) => ({
-  textDecoration: "none",
-  width: "100%",
-  color:
-    light === "true"
-      ? theme.palette.info.contrastText
-      : theme.palette.info.dark,
-  ":visited": {
+const StyledLink = styled(Link)<StyledLinkProps>(
+  ({ theme, light, inline }) => ({
+    textDecoration: "none",
+    width: inline === "true" ? undefined : "100%",
     color:
       light === "true"
         ? theme.palette.info.contrastText
         : theme.palette.info.dark,
-  },
-  display: "flex",
-  gap: "0.5rem",
-  flexWrap: "wrap",
-  alignItems: "center",
-}));
+    ":visited": {
+      color:
+        light === "true"
+          ? theme.palette.info.contrastText
+          : theme.palette.info.dark,
+    },
+    display: "flex",
+    gap: "0.5rem",
+    flexWrap: "wrap",
+    alignItems: "center",
+  })
+);
 
 interface EntityFakeLinkProps {
   light?: boolean;
@@ -195,7 +203,7 @@ interface EntityFakeLinkProps {
 
 export function EntityFakeLink(props: PropsWithChildren<EntityFakeLinkProps>) {
   return (
-    <StyledFakeLink light={props.light ? "true" : "false"}>
+    <StyledFakeLink inline={"false"} light={props.light ? "true" : "false"}>
       {props.children}
     </StyledFakeLink>
   );

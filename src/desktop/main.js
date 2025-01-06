@@ -1,22 +1,17 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const { app, BrowserWindow, net, session } = require("electron");
-const { AppShell } = require("@jupiter/webapi-client");
-const dotEnv = require("dotenv");
+import { config } from "dotenv";
+import { app, BrowserWindow, ipcMain } from "electron";
+import path from "node:path";
+import { fileURLToPath } from "url";
 
 loadEnvironment();
 
-const INITIAL_WIDTH = 1400;
-const INITIAL_HEIGHT = 900;
-
-const WEBUI_URL =
-  process.env.ENV == "production" && process.env.HOSTING === "hosted-global"
-    ? new URL(process.env.HOSTED_GLOBAL_WEBUI_SERVER_URL)
-    : new URL(process.env.LOCAL_WEBUI_SERVER_URL);
-
-WEBUI_URL.searchParams.set("initialWindowWidth", INITIAL_WIDTH);
+const INITIAL_WIDTH = parseInt(process.env.INITIAL_WINDOW_WIDTH, 10);
+const INITIAL_HEIGHT = parseInt(process.env.INITIAL_WINDOW_HEIGHT, 10);
 
 app.whenReady().then(() => {
   createWindow();
+  ipcMain.handle("exit", () => app.quit());
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -34,27 +29,26 @@ function createWindow() {
     width: INITIAL_WIDTH,
     height: INITIAL_HEIGHT,
     show: false,
+    webPreferences: {
+      preload: path.join(
+        path.dirname(fileURLToPath(import.meta.url)),
+        "src",
+        "preload.js"
+      ),
+    },
   });
 
-  const splash = new BrowserWindow({
-    width: INITIAL_WIDTH,
-    height: INITIAL_HEIGHT,
-    frame: false,
-    alwaysOnTop: true,
-    show: false,
+  win.loadFile("dist/index.html");
+  win.webContents.on("did-fail-load", (event, errorCode, errorDescription) => {
+    win.loadFile("dist/error.html");
+    console.log(
+      "An error occurred loading the webui: ",
+      errorCode,
+      errorDescription
+    );
   });
-  splash.loadURL(`file://${__dirname}/splash.html`);
-
-  splash.once("ready-to-show", () => {
-    splash.show();
-  });
-
-  win.loadURL(WEBUI_URL.toString());
   win.once("ready-to-show", () => {
-    setTimeout(() => {
-      splash.destroy();
-      win.show();
-    }, 1000);
+    win.show();
   });
 }
 
@@ -62,12 +56,17 @@ function loadEnvironment() {
   if (app.isPackaged) {
     // If we're on MacOs
     if (process.platform === "darwin") {
-      dotEnv.config({ path: app.getAppPath() + "/Config.project.live" });
+      config({
+        path: [
+          app.getAppPath() + "/Config.project.live",
+          app.getAppPath() + "/Config.global",
+        ],
+      });
     } else {
       console.error("Unsupported platform: ", process.platform);
       app.exit(1);
     }
   } else {
-    dotEnv.config({ path: "Config.project" });
+    config({ path: ["Config.project", "../Config.global"] });
   }
 }

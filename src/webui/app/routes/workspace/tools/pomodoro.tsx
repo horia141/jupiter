@@ -70,13 +70,13 @@ export default function Pomodoro() {
       return;
     }
 
-    new Notification("Thrive Pomodoro Timer", {
+    new Notification(`${globalProperties.title}} Pomodoro Timer`, {
       icon: "/favicon.ico",
       body: `Your ${actualDuration.toFormat(
         "m"
       )} minutes Pomodor interval is finished!`,
     });
-  }, [actualDuration]);
+  }, [actualDuration, globalProperties]);
 
   function notifyAudio() {
     const notificationAudio = new Audio("/pomodoro-notification.mp3");

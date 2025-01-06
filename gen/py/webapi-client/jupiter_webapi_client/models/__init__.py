@@ -1,6 +1,8 @@
 """Contains all the data models used in inputs/outputs"""
 
 from .app_core import AppCore
+from .app_distribution import AppDistribution
+from .app_distribution_state import AppDistributionState
 from .app_platform import AppPlatform
 from .app_shell import AppShell
 from .big_plan import BigPlan
@@ -580,6 +582,8 @@ from .workspace_update_args_name import WorkspaceUpdateArgsName
 
 __all__ = (
     "AppCore",
+    "AppDistribution",
+    "AppDistributionState",
     "AppPlatform",
     "AppShell",
     "BigPlan",

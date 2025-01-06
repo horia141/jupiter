@@ -26,6 +26,7 @@ import { TimeDiffTag } from "~/components/time-diff-tag";
 import { aDateToDate, compareADate } from "~/logic/domain/adate";
 import { metricEntryName } from "~/logic/domain/metric-entry";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
+import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
@@ -82,6 +83,7 @@ export default function Metric() {
   const today = DateTime.local({ zone: topLevelInfo.user.timezone });
 
   const archiveTagFetch = useFetcher();
+  const isBigScreen = useBigScreen();
 
   function archiveEntry(item: MetricEntry) {
     archiveTagFetch.submit(
@@ -109,7 +111,7 @@ export default function Metric() {
           component={Link}
           startIcon={<TuneIcon />}
         >
-          Details
+          {isBigScreen ? "Details" : ""}
         </Button>,
       ]}
       returnLocation="/workspace/metrics"

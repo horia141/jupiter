@@ -35,7 +35,9 @@ export function IconSelector({ defaultIcon, readOnly }: Props) {
         value={selectedIcon}
         endAdornment={
           <ButtonGroup>
-            <Button onClick={handleClear}>Clear</Button>
+            <Button disabled={readOnly} onClick={handleClear}>
+              Clear
+            </Button>
             <Button
               disabled={readOnly}
               variant={showIconSelector ? "contained" : "outlined"}
@@ -52,6 +54,8 @@ export function IconSelector({ defaultIcon, readOnly }: Props) {
           {() => (
             <EmojiPicker
               width="auto"
+              autoFocusSearch={false}
+              allowExpandReactions={false}
               emojiStyle={EmojiStyle.NATIVE}
               onEmojiClick={handleSelect}
             />

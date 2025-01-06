@@ -17,6 +17,7 @@ import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
+import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
@@ -56,6 +57,8 @@ export default function Metrics() {
 
   const archiveMetricFetch = useFetcher();
 
+  const isBigScreen = useBigScreen();
+
   function archiveMetric(smartList: Metric) {
     archiveMetricFetch.submit(
       {
@@ -86,7 +89,7 @@ export default function Metrics() {
                 component={Link}
                 startIcon={<TuneIcon />}
               >
-                Settings
+                {isBigScreen ? "Settings" : ""}
               </Button>
             </>
           )}

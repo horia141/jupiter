@@ -1,11 +1,12 @@
 import { CapacitorConfig } from '@capacitor/cli';
+import { Env, Hosting } from '../../gen/ts/webapi-client/dist';
 
 require("dotenv").config({
     path: ["Config.project", "../Config.global", "../../secrets/Config.secrets"],
 });
 
 const WEBUI_URL =
-  process.env.ENV == "production" && process.env.HOSTING === "hosted-global"
+  process.env.ENV == Env.PRODUCTION && process.env.HOSTING === Hosting.HOSTED_GLOBAL
     ? process.env.HOSTED_GLOBAL_WEBUI_SERVER_URL
     : process.env.LOCAL_WEBUI_SERVER_URL;
 
@@ -14,9 +15,12 @@ const config: CapacitorConfig = {
   appName: process.env.PUBLIC_NAME,
   webDir: 'dist',
   server: {
-    url: WEBUI_URL,
-    cleartext: true,
-    allowNavigation: [new URL(WEBUI_URL as string).hostname]
+    cleartext: process.env.ENV === Env.LOCAL ? true : false,
+    allowNavigation: [new URL(WEBUI_URL as string).hostname],
+    errorPath: "error.html"
+  },
+  ios: {
+    allowsLinkPreview: false,
   },
   plugins: {
     SplashScreen: {

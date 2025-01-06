@@ -102,7 +102,8 @@ async def main() -> None:
 
     session_info = session_storage.load_optional()
     guest_session = AppGuestUseCaseSession.for_cli(
-        session_info.auth_token_ext if session_info else None
+        app_client_version=global_properties.version,
+        auth_token_ext=session_info.auth_token_ext if session_info else None,
     )
     _, top_level_info = await load_top_level_info_use_case.execute(
         guest_session, LoadTopLevelInfoArgs()

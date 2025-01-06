@@ -26,7 +26,14 @@ from fastapi.responses import JSONResponse, PlainTextResponse
 from fastapi.routing import APIRoute
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.types import DecoratedCallable
-from jupiter.core.domain.app import AppCore, AppPlatform, AppShell
+from jupiter.core.domain.app import (
+    AppCore,
+    AppDistribution,
+    AppPlatform,
+    AppShell,
+    AppVersion,
+)
+from jupiter.core.domain.app_version_decoder import AppVersionDatabaseDecoder
 from jupiter.core.domain.concept.auth.auth_token_ext import (
     AuthTokenExt,
     AuthTokenExtDatabaseDecoder,
@@ -60,9 +67,10 @@ from jupiter.core.framework.value import (
     CompositeValue,
     EnumValue,
     SecretValue,
-    value,
 )
-from jupiter.core.use_cases.infra.realms import _StandardEnumValueDatabaseDecoder
+from jupiter.core.use_cases.infra.realms import (
+    _StandardEnumValueDatabaseDecoder,
+)
 from jupiter.core.use_cases.infra.storage_engine import UseCaseStorageEngine
 from jupiter.core.use_cases.infra.use_cases import (
     AppGuestMutationUseCase,
@@ -86,15 +94,6 @@ from pendulum.datetime import DateTime
 from starlette import status
 from starlette.middleware.base import BaseHTTPMiddleware
 
-
-@value
-class FrontDoorInfo(CompositeValue):
-    """FrontDoorInfo."""
-
-    app_shell: AppShell
-    app_platform: AppPlatform
-
-
 STANDARD_RESPONSES: dict[int | str, dict[str, Any]] = {
     410: {
         "description": "Workspace Or User Not Found",
@@ -115,8 +114,10 @@ VERSION_HEADER: Final[str] = "X-Jupiter-Version"
 FRONTDOOR_HEADER: Final[str] = "X-Jupiter-FrontDoor"
 
 AUTH_TOKEN_EXT_DECODER = AuthTokenExtDatabaseDecoder()
-APPSHELL_DECODER = _StandardEnumValueDatabaseDecoder(AppShell)
-APPPLATFORM_DECODER = _StandardEnumValueDatabaseDecoder(AppPlatform)
+APP_VERSION_DECODER = AppVersionDatabaseDecoder()
+APP_SHELL_DECODER = _StandardEnumValueDatabaseDecoder(AppShell)
+APP_PLATFORM_DECODER = _StandardEnumValueDatabaseDecoder(AppPlatform)
+APP_DISTRIBUTION_DECODER = _StandardEnumValueDatabaseDecoder(AppDistribution)
 OAUTH2_GUEST_SCHEMA = OAuth2PasswordBearer(tokenUrl="guest-login", auto_error=False)
 OAUTH2_LOGGED_IN_SCHEMA = OAuth2PasswordBearer(tokenUrl="old-skool-login")
 
@@ -143,14 +144,20 @@ def construct_guest_session(
 ) -> AppGuestUseCaseSession:
     """Construct a GuestSession from the AuthTokenExt."""
     frontdoor_raw = request.headers.get(FRONTDOOR_HEADER)
+    app_client_version = AppVersion("0.0.1")
     app_shell = AppShell.BROWSER
     app_platform = AppPlatform.DESKTOP
+    app_distribution = AppDistribution.WEB
     if frontdoor_raw is not None:
         bits = frontdoor_raw.split(":")
-        if len(bits) == 2:
-            app_shell = APPSHELL_DECODER.decode(bits[0])
-            app_platform = APPPLATFORM_DECODER.decode(bits[1])
-    return AppGuestUseCaseSession.for_webui(auth_token_ext, app_shell, app_platform)
+        if len(bits) == 4:
+            app_client_version = APP_VERSION_DECODER.decode(bits[0])
+            app_shell = APP_SHELL_DECODER.decode(bits[1])
+            app_platform = APP_PLATFORM_DECODER.decode(bits[2])
+            app_distribution = APP_DISTRIBUTION_DECODER.decode(bits[3])
+    return AppGuestUseCaseSession.for_webui(
+        auth_token_ext, app_client_version, app_shell, app_platform, app_distribution
+    )
 
 
 def construct_logged_in_session(
@@ -161,14 +168,21 @@ def construct_logged_in_session(
 ) -> AppLoggedInUseCaseSession:
     """Construct a LoggedInSession from the AuthTokenExt."""
     frontdoor_raw = request.headers.get(FRONTDOOR_HEADER)
+    app_client_version = AppVersion("0.0.1")
     app_shell = AppShell.BROWSER
     app_platform = AppPlatform.DESKTOP
+    app_distribution = AppDistribution.WEB
     if frontdoor_raw is not None:
         bits = frontdoor_raw.split(":")
-        if len(bits) == 2:
-            app_shell = APPSHELL_DECODER.decode(bits[0])
-            app_platform = APPPLATFORM_DECODER.decode(bits[1])
-    return AppLoggedInUseCaseSession.for_webui(auth_token_ext, app_shell, app_platform)
+        if len(bits) == 4:
+            app_client_version = APP_VERSION_DECODER.decode(bits[0])
+            app_shell = APP_SHELL_DECODER.decode(bits[1])
+            app_platform = APP_PLATFORM_DECODER.decode(bits[2])
+            app_distribution = APP_DISTRIBUTION_DECODER.decode(bits[3])
+
+    return AppLoggedInUseCaseSession.for_webui(
+        auth_token_ext, app_client_version, app_shell, app_platform, app_distribution
+    )
 
 
 GuestSession = Annotated[AppGuestUseCaseSession, Depends(construct_guest_session)]
@@ -657,8 +671,10 @@ class WebServiceApp:
             result = await login_use_case.execute(
                 AppGuestUseCaseSession.for_webui(
                     auth_token_ext=None,
+                    app_client_version=global_properties.version,
                     app_shell=AppShell.BROWSER,
                     app_platform=AppPlatform.DESKTOP,
+                    app_distribution=AppDistribution.WEB,
                 ),
                 LoginArgs(email_address=email_address, password=password),
             )
@@ -742,7 +758,7 @@ class WebServiceApp:
         response = await call_next(request)  # type: ignore
         response.headers[ENV_HEADER] = self._global_properties.env.value
         response.headers[HOSTING_HEADER] = self._global_properties.hosting.value
-        response.headers[VERSION_HEADER] = self._global_properties.version
+        response.headers[VERSION_HEADER] = str(self._global_properties.version)
         return response  # type: ignore
 
     def _add_use_case_type(
@@ -1029,7 +1045,7 @@ class WebServiceApp:
             return self._fast_app.openapi_schema
         openapi_schema = get_openapi(
             title="Jupiter Webapi",
-            version=self._global_properties.version,
+            version=str(self._global_properties.version),
             description="Jupiter Webapi",
             routes=self._fast_app.routes,
         )

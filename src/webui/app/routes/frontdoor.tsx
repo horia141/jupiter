@@ -3,15 +3,10 @@ import { redirect } from "@remix-run/node";
 import { parseQuery } from "zodix";
 import { getGuestApiClient } from "~/api-clients.server";
 import { FRONT_DOOR_INFO_SCHEMA } from "~/logic/frontdoor";
-import {
-  inferPlatformForMobileShell,
-  saveFrontDoorInfo,
-} from "~/logic/frontdoor.server";
+import { saveFrontDoorInfo } from "~/logic/frontdoor.server";
 import { AUTH_TOKEN_NAME } from "~/names";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
-
-import { AppShell } from "@jupiter/webapi-client";
 
 export const handle = {
   displayType: DisplayType.ROOT,
@@ -25,16 +20,8 @@ export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const params = parseQuery(request, FRONT_DOOR_INFO_SCHEMA);
 
-  if (params.appShell === AppShell.MOBILE_CAPACITOR) {
-    params.appPlatform = inferPlatformForMobileShell(
-      request.headers.get("User-Agent") as string
-    );
-  }
-
-  console.log("Frontdoor params", params);
-
   if (session.has(AUTH_TOKEN_NAME)) {
-    const apiClient = await getGuestApiClient(request);
+    const apiClient = await getGuestApiClient(request, params);
     const result = await apiClient.loadTopLevelInfo.loadTopLevelInfo({});
 
     if (result.user || result.workspace) {

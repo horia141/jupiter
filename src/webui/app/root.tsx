@@ -52,6 +52,7 @@ const THEME = createTheme({
 export async function loader({ request }: LoaderArgs) {
   // This is the only place where we can read this field.
   const frontDoor = await loadFrontDoorInfo(
+    GLOBAL_PROPERTIES.version,
     request.headers.get("Cookie"),
     request.headers.get("User-Agent")
   );
@@ -68,7 +69,8 @@ export function meta({ data }: { data: SerializeFrom<typeof loader> }) {
   return {
     charset: "utf-8",
     title: data.globalProperties.title,
-    viewport: "width=device-width,initial-scale=1,viewport-fit=cover",
+    viewport:
+      "width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no",
   };
 }
 

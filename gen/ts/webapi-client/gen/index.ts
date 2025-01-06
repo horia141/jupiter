@@ -11,8 +11,11 @@ export type { OpenAPIConfig } from './core/OpenAPI';
 
 export type { ADate } from './models/ADate';
 export { AppCore } from './models/AppCore';
+export { AppDistribution } from './models/AppDistribution';
+export { AppDistributionState } from './models/AppDistributionState';
 export { AppPlatform } from './models/AppPlatform';
 export { AppShell } from './models/AppShell';
+export type { AppVersion } from './models/AppVersion';
 export type { AuthTokenExt } from './models/AuthTokenExt';
 export type { Avatar } from './models/Avatar';
 export type { BigPlan } from './models/BigPlan';

@@ -1,0 +1,40 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>{{title}} - Error</title>
+    <style>
+      body {
+        font-family: "Helvetica", "Arial", sans-serif;
+        font-size: 20px;
+      }
+
+      .container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <p>There was an error with the application.</p>
+
+      <p>Check network connectivity.</p>
+
+      <p>
+        <span>You can</span>
+        <a href="index.html"><button>Retry</button></a>
+        <span>or</span>
+        <button id="exit" onClick="exit()">Exit</button>
+      </p>
+    </div>
+  </body>
+
+  <script>
+    async function exit() {
+      await preload.exit();
+    }
+  </script>
+</html>

@@ -1,5 +1,6 @@
 import {
   AppCore,
+  AppDistribution,
   AppPlatform,
   AppShell,
   Env,
@@ -12,6 +13,7 @@ import type { FrontDoorInfo } from "./logic/frontdoor";
 export interface GlobalPropertiesClient {
   env: Env;
   hosting: Hosting;
+  version: string;
   appCore: AppCore;
   frontDoorInfo: FrontDoorInfo;
   baseName: string;
@@ -31,10 +33,13 @@ export interface GlobalPropertiesClient {
 export const GlobalPropertiesContext = createContext<GlobalPropertiesClient>({
   env: Env.LOCAL,
   hosting: Hosting.LOCAL,
+  version: "FAKE-FAKE",
   appCore: AppCore.WEBUI,
   frontDoorInfo: {
+    clientVersion: "FAKE-FAKE",
     appShell: AppShell.BROWSER,
     appPlatform: AppPlatform.DESKTOP,
+    appDistribution: AppDistribution.WEB,
     initialWindowWidth: undefined,
   },
   baseName: "FAKE-FAKE",
@@ -58,6 +63,7 @@ export function serverToClientGlobalProperties(
   return {
     env: globalPropertiesServer.env,
     hosting: globalPropertiesServer.hosting,
+    version: globalPropertiesServer.version,
     appCore: AppCore.WEBUI,
     frontDoorInfo: frontDoorInfo,
     baseName: globalPropertiesServer.baseName,

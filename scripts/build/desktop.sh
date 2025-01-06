@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 set -ex
 
@@ -16,8 +16,10 @@ replace_package_json() {
 revert_package_json() {
   mv src/desktop/package.json.bak src/desktop/package.json
   rm -f src/desktop/package.json.1
-  rm -f src/desktop/forge.config.js
+  rm -f src/desktop/forge.config.cjs
   rm -f src/desktop/LICENSE
+  rm -f src/desktop/Config.project.live
+  rm -f src/desktop/Config.global
 
   # if node_modules/@jupiter/webapi-client is not a link, then we should revert it
   if [ ! -L rsc/desktop/node_modules/@jupiter/webapi-client ]; then
@@ -54,6 +56,8 @@ replace_package_json
 
 cp LICENSE src/desktop/LICENSE
 
+(cd src/desktop && ENV=production HOSTING=hosted-global npx vite build --mode production --config vite.config.ts)
+
 # Electron forge is exceedinly stupid wrt symlinks going out of it. So
 # before the build we fix this.
 mv src/desktop/node_modules/@jupiter/webapi-client src/desktop/node_modules/@jupiter/webapi-client.bak
@@ -65,7 +69,11 @@ cp assets/jupiter.icns src/desktop/assets/jupiter.icns
 mv src/desktop/assets/logo.png .build-cache/logo.png.bak
 cp assets/jupiter.png src/desktop/assets/logo.png
 
-cp src/desktop/forge.config.mas.js src/desktop/forge.config.js
+cp src/desktop/forge.config.mac-store.cjs src/desktop/forge.config.cjs
+cp src/Config.global src/desktop/Config.global
+cp src/desktop/Config.project.live.mac-store  src/desktop/Config.project.live
 (cd src/desktop && npx electron-forge make --platform mas --arch universal)
-cp src/desktop/forge.config.darwin.js src/desktop/forge.config.js
+cp src/desktop/forge.config.mac-web.cjs src/desktop/forge.config.cjs
+cp src/Config.global src/desktop/Config.global
+cp src/desktop/Config.project.live.mac-web  src/desktop/Config.project.live
 (cd src/desktop && npx electron-forge make --platform darwin --arch universal)
