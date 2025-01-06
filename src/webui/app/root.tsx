@@ -57,8 +57,6 @@ export async function loader({ request }: LoaderArgs) {
     request.headers.get("User-Agent")
   );
 
-  console.log("Front door info", frontDoor);
-
   return json({
     globalProperties: serverToClientGlobalProperties(
       GLOBAL_PROPERTIES,

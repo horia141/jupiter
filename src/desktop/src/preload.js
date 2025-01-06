@@ -1,6 +1,5 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
-contextBridge.exposeInMainWorld("globalProperties", {
-  webUiServerUrl: () => ipcRenderer.invoke("getWebUiServerUrl"),
+contextBridge.exposeInMainWorld("preload", {
   exit: () => ipcRenderer.invoke("exit"),
 });

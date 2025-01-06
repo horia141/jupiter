@@ -2,4 +2,6 @@
 
 set -ex
 
-cd src/desktop && npx electron-forge start
+cd src/desktop
+npx vite build
+npx electron-forge start

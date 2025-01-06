@@ -19,6 +19,9 @@ const config: CapacitorConfig = {
     allowNavigation: [new URL(WEBUI_URL as string).hostname],
     errorPath: "error.html"
   },
+  ios: {
+    allowsLinkPreview: false,
+  },
   plugins: {
     SplashScreen: {
         launchAutoHide: false

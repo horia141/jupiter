@@ -25,7 +25,7 @@
 
       <p>
         <span>You can</span>
-        <button id="retry" onClick="init()">Retry</button>
+        <a href="index.html"><button>Retry</button></a>
         <span>or</span>
         <button id="exit" onClick="exit()">Exit</button>
       </p>
@@ -33,14 +33,8 @@
   </body>
 
   <script>
-    async function init() {
-      const webuiServerUrl = await globalProperties.webUiServerUrl();
-      window.location.href = webuiServerUrl;
-      document.getElementById("retry").disabled = true;
-    }
-
     async function exit() {
-      await globalProperties.exit();
+      await preload.exit();
     }
   </script>
 </html>

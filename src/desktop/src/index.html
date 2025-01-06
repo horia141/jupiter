@@ -1,11 +1,11 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>{{title}} - Splash</title>
+    <title>{{title}} - Loading</title>
     <style>
       body {
         font-family: "Helvetica", "Arial", sans-serif;
-        font-size: 20px;
+        font-size: 28px;
       }
 
       .container {
@@ -29,4 +29,10 @@
       <p>{{title}} is loading! Hold on!</p>
     </div>
   </body>
+  <script type="module" src="./index.js"></script>
+  <script>
+    window.CLIENT_VERSION = "{{clientVersion}}";
+    window.INITIAL_WINDOW_WIDTH = parseInt("{{initialWindowWidth}}", 10);
+    window.WEBUI_URL = "{{{webUiUrl}}}";
+  </script>
 </html>

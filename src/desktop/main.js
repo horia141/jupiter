@@ -6,20 +6,11 @@ import { fileURLToPath } from "url";
 
 loadEnvironment();
 
-const INITIAL_WIDTH = 1400;
-const INITIAL_HEIGHT = 900;
-
-const WEBUI_URL =
-  process.env.ENV == "production" && process.env.HOSTING === "hosted-global"
-    ? new URL(process.env.HOSTED_GLOBAL_WEBUI_SERVER_URL)
-    : new URL(process.env.LOCAL_WEBUI_SERVER_URL);
-
-WEBUI_URL.searchParams.set("clientVersion", process.env.VERSION);
-WEBUI_URL.searchParams.set("initialWindowWidth", INITIAL_WIDTH);
+const INITIAL_WIDTH = parseInt(process.env.INITIAL_WINDOW_WIDTH, 10);
+const INITIAL_HEIGHT = parseInt(process.env.INITIAL_WINDOW_HEIGHT, 10);
 
 app.whenReady().then(() => {
   createWindow();
-  ipcMain.handle("getWebUiServerUrl", () => WEBUI_URL.toString());
   ipcMain.handle("exit", () => app.quit());
 
   app.on("activate", () => {
@@ -47,28 +38,7 @@ function createWindow() {
     },
   });
 
-  const splash = new BrowserWindow({
-    width: INITIAL_WIDTH,
-    height: INITIAL_HEIGHT,
-    frame: false,
-    alwaysOnTop: true,
-    show: false,
-  });
-  splash.loadFile("dist/splash.html");
-
-  splash.once("ready-to-show", () => {
-    splash.show();
-  });
-
-  setTimeout(() => {
-    splash.destroy();
-    if (win.isVisible) {
-      return;
-    }
-    win.show();
-  }, 5000);
-
-  win.loadURL(WEBUI_URL.toString());
+  win.loadFile("dist/index.html");
   win.webContents.on("did-fail-load", (event, errorCode, errorDescription) => {
     win.loadFile("dist/error.html");
     console.log(
@@ -78,7 +48,6 @@ function createWindow() {
     );
   });
   win.once("ready-to-show", () => {
-    splash.destroy();
     win.show();
   });
 }

@@ -20,7 +20,7 @@ export default defineConfig({
     outDir: "../dist", // Output folder
     emptyOutDir: true, // Clean the output folder before building
     rollupOptions: {
-      input: ["./src/splash.html", "./src/error.html"],
+      input: ["./src/index.html", "./src/error.html"],
       preserveEntrySignatures: "strict",
     },
   },
@@ -28,8 +28,9 @@ export default defineConfig({
     handlebars({
       context: {
         title: process.env.PUBLIC_NAME,
+        clientVersion: process.env.VERSION,
+        initialWindowWidth: process.env.INITIAL_WINDOW_WIDTH,
         webUiUrl: WEBUI_URL,
-        appShellVersion: process.env.VERSION,
       },
     }),
   ],
