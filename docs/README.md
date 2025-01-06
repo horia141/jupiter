@@ -156,6 +156,25 @@ On top of this there are also distributions (rather like channels):
 * Google Play Store - the app is downloaded from the Google App Store.
   For Mobile Capacitor only on Mobile Android and Tablet Android platforms.
 
+### Going Deeper On App Shells
+
+The client app consists of the app core and the shell. Looking at the web side,
+where this thing is more clear, there is something that the shell does.
+
+* The mobile shell actually consists of a small number of webpages that are baked
+  into the app and that are the things that the capacitor webview is going to load
+  initially. THere's an `index.html` and an `error.html` page. These serve two
+  purposes.
+  * First: they take the environment configuration and pass it to the core, in a way
+    that capacitor currently doesn't.
+  * Second: the `index.html` shows a splash screen type-thing and simply reloads to
+    the remote server address. But if there's an error, there's a redirect to `error.html`
+    that allows a user to see an error has occurred and retry.
+  Together these give some control to the local app without having to rely on the
+  remote thing to exist (and ditto a network connection to exist, etc.).
+* On desktop the logic is the same, but Electron can do a bit more setup in the
+  native side, and can pass more "ready made" data to the client.
+
 ## Running Tests
 
 The full test suite is run via `make check`. This runs linters, type checkers, and
@@ -229,7 +248,7 @@ In terms of working:
 * And then `./scripts/release/gh-release.sh x.y.z` to create a new release
   on GitHub.
 * Finally, if you so with you can upload to the AppStore via
-  `./scripts/release/appstore-upload.sh x.y.z`. As mentioned above, not
+  `./scripts/release/appstore-upload-(ios|macos).sh x.y.z`. As mentioned above, not
   always necessary.
 
 We'll work to unify these more in the future, but for now they're manual

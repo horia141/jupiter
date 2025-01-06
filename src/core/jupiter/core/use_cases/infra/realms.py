@@ -1535,6 +1535,8 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
             EventSource, DatabaseRealm, _StandardEnumValueDatabaseDecoder(EventSource)
         )
 
+        # First look at all the concept encoders and decoders that are
+        # explicitly defined.
         for m in find_all_modules(*module_roots):
             for concept_type, realm_type, encoder_type in extract_concept_encoders(m):
                 registry._add_encoder(
@@ -1546,6 +1548,8 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                     concept_type, realm_type, registry._build_decoder(decoder_type)
                 )
 
+        # Then for those that aren't, we'll try to figure out the encoders and decoders
+        for m in find_all_modules(*module_roots):
             for atomic_value_type in extract_atomic_values(m):
                 if not allowed_in_realm(atomic_value_type, DatabaseRealm):
                     continue

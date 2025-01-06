@@ -99,7 +99,7 @@ if [ -z "$CURRENT_MANIFEST_URL" ]
 then
     cp scripts/release/release-manifest.template.json .build-cache/release/${RELEASE_VERSION}/current-release-manifest.json
 else
-    http get $CURRENT_MANIFEST_URL --follow > .build-cache/release/${RELEASE_VERSION}/current-release-manifest.json 
+    curl -L $CURRENT_MANIFEST_URL > .build-cache/release/${RELEASE_VERSION}/current-release-manifest.json
 fi
 
 jq --arg mac_web_status "$MAC_WEB_STATUS" \

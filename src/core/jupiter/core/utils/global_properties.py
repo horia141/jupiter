@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Union, cast
 
 import dotenv
+from jupiter.core.domain.app import AppVersion
 from jupiter.core.domain.env import Env
 from jupiter.core.domain.hosting import Hosting
 from jupiter.core.framework.secure import secure_fn
@@ -19,7 +20,7 @@ class GlobalProperties:
     description: str
     host: str
     port: int
-    version: str
+    version: AppVersion
     docs_init_workspace_url: str
     session_info_path: Path
     sqlite_db_url: str
@@ -64,7 +65,7 @@ def build_global_properties() -> GlobalProperties:
     description = cast(str, os.getenv("DESCRIPTION"))
     host = cast(str, os.getenv("HOST"))
     port = int(cast(str, os.getenv("PORT")))
-    version = cast(str, os.getenv("VERSION"))
+    version = AppVersion(cast(str, os.getenv("VERSION")))
     docs_init_workspace_url = cast(str, os.getenv("DOCS_INIT_WORKSPACE_URL"))
     session_info_path = Path(cast(str, os.getenv("SESSION_INFO_PATH")))
     sqlite_db_url = cast(str, os.getenv("SQLITE_DB_URL"))

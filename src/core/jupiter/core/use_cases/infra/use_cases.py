@@ -4,7 +4,13 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any, Final, Generic, TypeVar, Union
 
-from jupiter.core.domain.app import AppCore, AppDistribution, AppPlatform, AppShell
+from jupiter.core.domain.app import (
+    AppCore,
+    AppDistribution,
+    AppPlatform,
+    AppShell,
+    AppVersion,
+)
 from jupiter.core.domain.concept.auth.auth_token import (
     AuthToken,
     ExpiredAuthTokenError,
@@ -62,16 +68,20 @@ class AppGuestUseCaseSession(EmptySession):
     """The application use case session."""
 
     auth_token_ext: AuthTokenExt | None
+    app_client_version: AppVersion
     app_core: AppCore
     app_shell: AppShell
     app_platform: AppPlatform
     app_distribution: AppDistribution
 
     @staticmethod
-    def for_cli(auth_token_ext: AuthTokenExt | None) -> "AppGuestUseCaseSession":
+    def for_cli(
+        app_client_version: AppVersion, auth_token_ext: AuthTokenExt | None
+    ) -> "AppGuestUseCaseSession":
         """Create a CLI session."""
         return AppGuestUseCaseSession(
             auth_token_ext=auth_token_ext,
+            app_client_version=app_client_version,
             app_core=AppCore.CLI,
             app_shell=AppShell.CLI,
             app_platform=AppPlatform.DESKTOP,
@@ -81,6 +91,7 @@ class AppGuestUseCaseSession(EmptySession):
     @staticmethod
     def for_webui(
         auth_token_ext: AuthTokenExt | None,
+        app_client_version: AppVersion,
         app_shell: AppShell,
         app_platform: AppPlatform,
         app_distribution: AppDistribution,
@@ -88,6 +99,7 @@ class AppGuestUseCaseSession(EmptySession):
         """Create a WebUI session."""
         return AppGuestUseCaseSession(
             auth_token_ext=auth_token_ext,
+            app_client_version=app_client_version,
             app_core=AppCore.WEBUI,
             app_shell=app_shell,
             app_platform=app_platform,
@@ -171,6 +183,7 @@ class AppGuestMutationUseCase(
         return AppGuestMutationUseCaseContext(
             auth_token=auth_token,
             domain_context=DomainContext.from_app(
+                session.app_client_version,
                 session.app_core,
                 session.app_shell,
                 session.app_platform,
@@ -242,16 +255,20 @@ class AppLoggedInUseCaseSession(UseCaseSessionBase):
     """The application use case session for logged-in-OK interactions."""
 
     auth_token_ext: AuthTokenExt
+    app_client_version: AppVersion
     app_core: AppCore
     app_shell: AppShell
     app_platform: AppPlatform
     app_distribution: AppDistribution
 
     @staticmethod
-    def for_cli(auth_token_ext: AuthTokenExt) -> "AppLoggedInUseCaseSession":
+    def for_cli(
+        app_client_version: AppVersion, auth_token_ext: AuthTokenExt
+    ) -> "AppLoggedInUseCaseSession":
         """Create a CLI session."""
         return AppLoggedInUseCaseSession(
             auth_token_ext=auth_token_ext,
+            app_client_version=app_client_version,
             app_core=AppCore.CLI,
             app_shell=AppShell.CLI,
             app_platform=AppPlatform.DESKTOP,
@@ -261,6 +278,7 @@ class AppLoggedInUseCaseSession(UseCaseSessionBase):
     @staticmethod
     def for_webui(
         auth_token_ext: AuthTokenExt,
+        app_client_version: AppVersion,
         app_shell: AppShell,
         app_platform: AppPlatform,
         app_distribution: AppDistribution,
@@ -268,6 +286,7 @@ class AppLoggedInUseCaseSession(UseCaseSessionBase):
         """Create a WebUI session."""
         return AppLoggedInUseCaseSession(
             auth_token_ext=auth_token_ext,
+            app_client_version=app_client_version,
             app_core=AppCore.WEBUI,
             app_shell=app_shell,
             app_platform=app_platform,
@@ -399,6 +418,7 @@ class AppLoggedInMutationUseCase(
                 user=user,
                 workspace=workspace,
                 domain_context=DomainContext.from_app(
+                    session.app_client_version,
                     session.app_core,
                     session.app_shell,
                     session.app_platform,

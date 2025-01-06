@@ -26,6 +26,7 @@ export default defineConfig({
         handlebars({
             context: {
                 title: process.env.PUBLIC_NAME,
+                clientVersion: process.env.VERSION,
                 webUiUrl: WEBUI_URL,
             }
         }),

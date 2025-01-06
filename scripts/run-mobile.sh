@@ -20,4 +20,7 @@ then
     exit 1
 fi
 
-cd src/mobile && npx cap run $PLATFORM
+cd src/mobile
+
+npx vite build
+npx cap run $PLATFORM

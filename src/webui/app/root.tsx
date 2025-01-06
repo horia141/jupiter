@@ -52,9 +52,12 @@ const THEME = createTheme({
 export async function loader({ request }: LoaderArgs) {
   // This is the only place where we can read this field.
   const frontDoor = await loadFrontDoorInfo(
+    GLOBAL_PROPERTIES.version,
     request.headers.get("Cookie"),
     request.headers.get("User-Agent")
   );
+
+  console.log("Front door info", frontDoor);
 
   return json({
     globalProperties: serverToClientGlobalProperties(

@@ -36,6 +36,7 @@ export const GlobalPropertiesContext = createContext<GlobalPropertiesClient>({
   version: "FAKE-FAKE",
   appCore: AppCore.WEBUI,
   frontDoorInfo: {
+    clientVersion: "FAKE-FAKE",
     appShell: AppShell.BROWSER,
     appPlatform: AppPlatform.DESKTOP,
     appDistribution: AppDistribution.WEB,

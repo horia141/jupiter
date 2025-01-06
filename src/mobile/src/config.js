@@ -9,6 +9,8 @@ export async function getWebUiUrl() {
 
     const deviceType = await checkDeviceType();
     
+    asUrl.searchParams.set("clientVersion", window.CLIENT_VERSION);
+    
     if (Capacitor.getPlatform() === "ios") {
         if (deviceType === 'tablet') {
             asUrl.searchParams.set("appPlatform", AppPlatform.TABLET_IOS);

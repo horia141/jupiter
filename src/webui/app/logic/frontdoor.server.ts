@@ -16,12 +16,14 @@ export async function saveFrontDoorInfo(info: FrontDoorInfo) {
 }
 
 export async function loadFrontDoorInfo(
+  serverVersion: string,
   cookie: string | null,
   userAgent: string | null
 ): Promise<FrontDoorInfo> {
   if (cookie === null) {
     const { platform, distribution } = inferPlatformAndDistribution(userAgent);
     return {
+      clientVersion: serverVersion,
       appShell: AppShell.BROWSER,
       appPlatform: platform,
       appDistribution: distribution,
@@ -36,6 +38,7 @@ export async function loadFrontDoorInfo(
   if (!maybeFrontDoor.success) {
     const { platform, distribution } = inferPlatformAndDistribution(userAgent);
     return {
+      clientVersion: serverVersion,
       appShell: AppShell.BROWSER,
       appPlatform: platform,
       appDistribution: distribution,

@@ -18,7 +18,7 @@ import { useContext, useEffect, useState } from "react";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import type { ReleaseManifestResult } from "~/logic/release";
 
-const REFRESH_INTERVAL_MS = 5 * 1000;
+const REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 
 export function ReleaseUpdateWidget() {
   const releaseManifestFetcher = useFetcher<ReleaseManifestResult>();
@@ -44,123 +44,138 @@ export function ReleaseUpdateWidget() {
   const releaseManifestResult: ReleaseManifestResult =
     releaseManifestFetcher.data;
 
-  if (releaseManifestResult.latestServerVersion === globalProperties.version) {
-    return <></>;
+  // First thing we check is if the latest server version is different from the client version.
+  //   * Typically, we release a new version of the app much rarer than we do a new release of webui.
+  //     The app shells have versions baked in them, and they know this as the client version. Which
+  //     is typically the same or behind the main version.
+  //   * If there's a new app shell version, we should show the download button.
+  // So if this is the case, we then check if there's a ready distribution.
+  // If there is, we will show the download button.
+  // If there isn't, we continue the analysis.
+  if (
+    releaseManifestResult.latestServerVersion !==
+    globalProperties.frontDoorInfo.clientVersion
+  ) {
+    let action = false;
+
+    switch (globalProperties.frontDoorInfo.appShell) {
+      case AppShell.BROWSER:
+      case AppShell.MOBILE_PWA:
+        break;
+
+      case AppShell.DESKTOP_ELECTRON:
+        switch (globalProperties.frontDoorInfo.appDistribution) {
+          case AppDistribution.MAC_WEB:
+            if (
+              releaseManifestResult.manifest[AppDistribution.MAC_WEB] ===
+              AppDistributionState.READY
+            ) {
+              action = true;
+            }
+            break;
+          case AppDistribution.MAC_STORE:
+            if (
+              releaseManifestResult.manifest[AppDistribution.MAC_STORE] ===
+              AppDistributionState.READY
+            ) {
+              action = true;
+            }
+            break;
+        }
+        break;
+      case AppShell.MOBILE_CAPACITOR:
+        switch (globalProperties.frontDoorInfo.appPlatform) {
+          case AppPlatform.MOBILE_IOS:
+          case AppPlatform.TABLET_IOS:
+            if (
+              releaseManifestResult.manifest[AppDistribution.APP_STORE] ===
+              AppDistributionState.READY
+            ) {
+              action = true;
+            }
+            break;
+          case AppPlatform.MOBILE_ANDROID:
+          case AppPlatform.TABLET_ANDROID:
+            if (
+              releaseManifestResult.manifest[
+                AppDistribution.GOOGLE_PLAY_STORE
+              ] === AppDistributionState.READY
+            ) {
+              action = true;
+            }
+            break;
+        }
+        break;
+    }
+
+    if (action) {
+      return (
+        <StyledFloatingBox>
+          <Card>
+            <CardContent>
+              <Typography variant="body1">
+                There is a new app version available. Press update to download
+                it!
+              </Typography>
+            </CardContent>
+            <CardActions>
+              <Button
+                variant="contained"
+                color="primary"
+                component={"a"}
+                target="_blank"
+                href={`/apps-latest-versions?distribution=${globalProperties.frontDoorInfo.appDistribution}`}
+              >
+                Download
+              </Button>
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={() => setDismiss(true)}
+              >
+                Dismiss
+              </Button>
+            </CardActions>
+          </Card>
+        </StyledFloatingBox>
+      );
+    }
   }
 
-  const reloadButton = (
-    <Button
-      variant="contained"
-      color="primary"
-      onClick={() => window.location.reload()}
-    >
-      Update
-    </Button>
-  );
-  const downloadButton = (
-    <Button
-      variant="contained"
-      color="primary"
-      component={"a"}
-      target="_blank"
-      href={`/apps-latest-versions?distribution=${globalProperties.frontDoorInfo.appDistribution}`}
-    >
-      Update
-    </Button>
-  );
-  const cantUpdateButton = (
-    <Button variant="contained" color="primary" disabled>
-      Can't Update
-    </Button>
-  );
-
-  let action = null;
-
-  switch (globalProperties.frontDoorInfo.appShell) {
-    case AppShell.BROWSER:
-    case AppShell.MOBILE_PWA:
-      action = reloadButton;
-      break;
-    case AppShell.DESKTOP_ELECTRON:
-      switch (globalProperties.frontDoorInfo.appDistribution) {
-        case AppDistribution.MAC_WEB:
-          if (
-            releaseManifestResult.manifest[AppDistribution.MAC_WEB] ===
-            AppDistributionState.READY
-          ) {
-            action = downloadButton;
-          } else {
-            action = reloadButton;
-          }
-          break;
-        case AppDistribution.MAC_STORE:
-          if (
-            releaseManifestResult.manifest[AppDistribution.MAC_STORE] ===
-            AppDistributionState.READY
-          ) {
-            action = downloadButton;
-          } else {
-            action = reloadButton;
-          }
-          break;
-        default:
-          action = cantUpdateButton;
-      }
-      break;
-    case AppShell.MOBILE_CAPACITOR:
-      switch (globalProperties.frontDoorInfo.appPlatform) {
-        case AppPlatform.MOBILE_IOS:
-        case AppPlatform.TABLET_IOS:
-          if (
-            releaseManifestResult.manifest[AppDistribution.APP_STORE] ===
-            AppDistributionState.READY
-          ) {
-            action = downloadButton;
-          } else {
-            action = reloadButton;
-          }
-          break;
-        case AppPlatform.MOBILE_ANDROID:
-        case AppPlatform.TABLET_ANDROID:
-          if (
-            releaseManifestResult.manifest[
-              AppDistribution.GOOGLE_PLAY_STORE
-            ] === AppDistributionState.READY
-          ) {
-            action = downloadButton;
-          } else {
-            action = reloadButton;
-          }
-          break;
-        default:
-          action = cantUpdateButton;
-      }
-      break;
-    default:
-      action = cantUpdateButton;
+  // If we don't have any new app to download, perhaps there's a new webui version.
+  // This means that the core that's running locally inside the app shell needs a reload.
+  if (releaseManifestResult.latestServerVersion !== globalProperties.version) {
+    return (
+      <StyledFloatingBox>
+        <Card>
+          <CardContent>
+            <Typography variant="body1">
+              There is an update available. Press update to trigger it!
+            </Typography>
+          </CardContent>
+          <CardActions>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => window.location.reload()}
+            >
+              Update
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() => setDismiss(true)}
+            >
+              Dismiss
+            </Button>
+          </CardActions>
+        </Card>
+      </StyledFloatingBox>
+    );
   }
 
-  return (
-    <StyledFloatingBox>
-      <Card>
-        <CardContent>
-          <Typography variant="body1">
-            There is an update available. Press update to trigger it!
-          </Typography>
-        </CardContent>
-        <CardActions>
-          {action}
-          <Button
-            variant="outlined"
-            color="secondary"
-            onClick={() => setDismiss(true)}
-          >
-            Dismiss
-          </Button>
-        </CardActions>
-      </Card>
-    </StyledFloatingBox>
-  );
+  // Nothing to update!
+  return <></>;
 }
 
 const StyledFloatingBox = styled(Box)({

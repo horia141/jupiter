@@ -1,5 +1,16 @@
 """A client facing application."""
-from jupiter.core.framework.value import EnumValue, enum_value
+from jupiter.core.framework.value import AtomicValue, EnumValue, enum_value, value
+
+
+@value
+class AppVersion(AtomicValue[str]):
+    """The version of the app."""
+
+    the_version: str
+
+    def __str__(self) -> str:
+        """Transform this to a string version."""
+        return self.the_version
 
 
 @enum_value

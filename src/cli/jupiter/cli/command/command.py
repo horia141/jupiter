@@ -141,18 +141,21 @@ UseCaseResultT = TypeVar("UseCaseResultT", bound=UseCaseResultBase | None)
 class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
     """Base class for commands based on use cases."""
 
+    _global_properties: Final[GlobalProperties]
     _realm_codec_registry: Final[RealmCodecRegistry]
     _args_type: Final[type[UseCaseArgsBase]]
     _use_case: UseCaseT
 
     def __init__(
         self,
+        global_properties: GlobalProperties,
         realm_codec_registry: RealmCodecRegistry,
         session_storage: SessionStorage,
         use_case: UseCaseT,
     ) -> None:
         """Constructor."""
         super().__init__(session_storage)
+        self._global_properties = global_properties
         self._realm_codec_registry = realm_codec_registry
         self._args_type = self._infer_args_class(use_case)
         self._use_case = use_case
@@ -701,7 +704,8 @@ class GuestMutationCommand(
         ).decode(vars(args))
         context, result = await self._use_case.execute(
             AppGuestUseCaseSession.for_cli(
-                session_info.auth_token_ext if session_info else None
+                self._global_properties.version,
+                session_info.auth_token_ext if session_info else None,
             ),
             parsed_args,
         )
@@ -749,7 +753,8 @@ class GuestReadonlyCommand(
         ).decode(vars(args))
         context, result = await self._use_case.execute(
             AppGuestUseCaseSession.for_cli(
-                session_info.auth_token_ext if session_info else None
+                self._global_properties.version,
+                session_info.auth_token_ext if session_info else None,
             ),
             parsed_args,
         )
@@ -801,7 +806,9 @@ class LoggedInMutationCommand(
             self._args_type, CliRealm
         ).decode(vars(args))
         context, result = await self._use_case.execute(
-            AppLoggedInUseCaseSession.for_cli(session.auth_token_ext),
+            AppLoggedInUseCaseSession.for_cli(
+                self._global_properties.version, session.auth_token_ext
+            ),
             parsed_args,
         )
         self._render_result(console, context, result)
@@ -892,7 +899,9 @@ class LoggedInReadonlyCommand(
             self._args_type, CliRealm
         ).decode(vars(args))
         context, result = await self._use_case.execute(
-            AppLoggedInUseCaseSession.for_cli(session.auth_token_ext),
+            AppLoggedInUseCaseSession.for_cli(
+                self._global_properties.version, session.auth_token_ext
+            ),
             parsed_args,
         )
         self._render_result(console, context, result)
@@ -1244,6 +1253,7 @@ class CliApp:
             )
         if issubclass(use_case_type, AppGuestMutationUseCase):
             self._use_case_commands[use_case_type] = use_case_command_type(
+                global_properties=self._global_properties,
                 realm_codec_registry=self._realm_codec_registry,
                 session_storage=self._session_storage,
                 use_case=use_case_type(  # type: ignore
@@ -1260,6 +1270,7 @@ class CliApp:
             )
         elif issubclass(use_case_type, AppGuestReadonlyUseCase):
             self._use_case_commands[use_case_type] = use_case_command_type(
+                global_properties=self._global_properties,
                 realm_codec_registry=self._realm_codec_registry,
                 session_storage=self._session_storage,
                 use_case=use_case_type(  # type: ignore
@@ -1273,6 +1284,7 @@ class CliApp:
             )
         elif issubclass(use_case_type, AppLoggedInMutationUseCase):
             self._use_case_commands[use_case_type] = use_case_command_type(
+                global_properties=self._global_properties,
                 realm_codec_registry=self._realm_codec_registry,
                 session_storage=self._session_storage,
                 use_case=use_case_type(  # type: ignore
@@ -1290,6 +1302,7 @@ class CliApp:
             )
         elif issubclass(use_case_type, AppLoggedInReadonlyUseCase):
             self._use_case_commands[use_case_type] = use_case_command_type(
+                global_properties=self._global_properties,
                 realm_codec_registry=self._realm_codec_registry,
                 session_storage=self._session_storage,
                 use_case=use_case_type(  # type: ignore
@@ -1325,6 +1338,7 @@ class CliApp:
             raise Exception(f"Use case type {use_case_type} already added")
         if issubclass(use_case_type, AppGuestMutationUseCase):
             self._use_case_commands[use_case_type] = GuestMutationCommand(
+                global_properties=self._global_properties,
                 realm_codec_registry=self._realm_codec_registry,
                 session_storage=self._session_storage,
                 use_case=use_case_type(  # type: ignore
@@ -1341,6 +1355,7 @@ class CliApp:
             )
         elif issubclass(use_case_type, AppGuestReadonlyUseCase):
             self._use_case_commands[use_case_type] = GuestReadonlyCommand(
+                global_properties=self._global_properties,
                 realm_codec_registry=self._realm_codec_registry,
                 session_storage=self._session_storage,
                 use_case=use_case_type(  # type: ignore
@@ -1354,6 +1369,7 @@ class CliApp:
             )
         elif issubclass(use_case_type, AppLoggedInMutationUseCase):
             self._use_case_commands[use_case_type] = LoggedInMutationCommand(
+                global_properties=self._global_properties,
                 realm_codec_registry=self._realm_codec_registry,
                 session_storage=self._session_storage,
                 use_case=use_case_type(  # type: ignore
@@ -1371,6 +1387,7 @@ class CliApp:
             )
         elif issubclass(use_case_type, AppLoggedInReadonlyUseCase):
             self._use_case_commands[use_case_type] = LoggedInReadonlyCommand(
+                global_properties=self._global_properties,
                 realm_codec_registry=self._realm_codec_registry,
                 session_storage=self._session_storage,
                 use_case=use_case_type(  # type: ignore

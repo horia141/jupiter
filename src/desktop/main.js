@@ -1,8 +1,8 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
+import { config } from "dotenv";
 import { app, BrowserWindow, ipcMain } from "electron";
-import dotEnv from "dotenv";
 import path from "node:path";
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from "url";
 
 loadEnvironment();
 
@@ -14,6 +14,7 @@ const WEBUI_URL =
     ? new URL(process.env.HOSTED_GLOBAL_WEBUI_SERVER_URL)
     : new URL(process.env.LOCAL_WEBUI_SERVER_URL);
 
+WEBUI_URL.searchParams.set("clientVersion", process.env.VERSION);
 WEBUI_URL.searchParams.set("initialWindowWidth", INITIAL_WIDTH);
 
 app.whenReady().then(() => {
@@ -38,7 +39,11 @@ function createWindow() {
     height: INITIAL_HEIGHT,
     show: false,
     webPreferences: {
-      preload: path.join(path.dirname(fileURLToPath(import.meta.url)), "src", "preload.js"),
+      preload: path.join(
+        path.dirname(fileURLToPath(import.meta.url)),
+        "src",
+        "preload.js"
+      ),
     },
   });
 
@@ -82,12 +87,17 @@ function loadEnvironment() {
   if (app.isPackaged) {
     // If we're on MacOs
     if (process.platform === "darwin") {
-      dotEnv.config({ path: app.getAppPath() + "/Config.project.live" });
+      config({
+        path: [
+          app.getAppPath() + "/Config.project.live",
+          app.getAppPath() + "/Config.global",
+        ],
+      });
     } else {
       console.error("Unsupported platform: ", process.platform);
       app.exit(1);
     }
   } else {
-    dotEnv.config({ path: "Config.project" });
+    config({ path: ["Config.project", "../Config.global"] });
   }
 }
