@@ -1,7 +1,7 @@
 """Use case for archiving a journal."""
 from jupiter.core.domain.concept.journals.journal import Journal
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.infra.generic_archiver import generic_archiver
+from jupiter.core.domain.infra.generic_crown_archiver import generic_crown_archiver
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
@@ -36,6 +36,6 @@ class JournalArchiveUseCase(
         args: JournalArchiveArgs,
     ) -> None:
         """Execute the command's action."""
-        await generic_archiver(
+        await generic_crown_archiver(
             context.domain_context, uow, progress_reporter, Journal, args.ref_id
         )

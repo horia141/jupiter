@@ -67,6 +67,7 @@ from .chore_update_args_period import ChoreUpdateArgsPeriod
 from .chore_update_args_skip_rule import ChoreUpdateArgsSkipRule
 from .chore_update_args_start_at_date import ChoreUpdateArgsStartAtDate
 from .clear_all_args import ClearAllArgs
+from .close_account_args import CloseAccountArgs
 from .code_block import CodeBlock
 from .code_block_kind import CodeBlockKind
 from .difficulty import Difficulty
@@ -648,6 +649,7 @@ __all__ = (
     "ChoreUpdateArgsSkipRule",
     "ChoreUpdateArgsStartAtDate",
     "ClearAllArgs",
+    "CloseAccountArgs",
     "CodeBlock",
     "CodeBlockKind",
     "Difficulty",

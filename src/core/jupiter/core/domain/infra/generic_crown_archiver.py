@@ -12,7 +12,7 @@ from jupiter.core.framework.entity import (
 from jupiter.core.framework.use_case import ProgressReporter
 
 
-async def generic_archiver(
+async def generic_crown_archiver(
     ctx: DomainContext,
     uow: DomainUnitOfWork,
     progress_reporter: ProgressReporter,

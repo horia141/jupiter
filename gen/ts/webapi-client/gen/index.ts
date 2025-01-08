@@ -64,6 +64,7 @@ export type { ChoreSuspendArgs } from './models/ChoreSuspendArgs';
 export type { ChoreUnsuspendArgs } from './models/ChoreUnsuspendArgs';
 export type { ChoreUpdateArgs } from './models/ChoreUpdateArgs';
 export type { ClearAllArgs } from './models/ClearAllArgs';
+export type { CloseAccountArgs } from './models/CloseAccountArgs';
 export { CodeBlock } from './models/CodeBlock';
 export type { CorrelationId } from './models/CorrelationId';
 export { Difficulty } from './models/Difficulty';

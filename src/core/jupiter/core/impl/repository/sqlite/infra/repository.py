@@ -475,11 +475,15 @@ class SqliteRootEntityRepository(
 ):
     """A repository for root entities backed by SQLite, meant to be used as a mixin."""
 
-    async def load_by_id(self, entity_id: EntityId) -> _RootEntityT:
+    async def load_by_id(
+        self, entity_id: EntityId, allow_archived: bool = False
+    ) -> _RootEntityT:
         """Loads the root entity."""
         query_stmt = select(self._table).where(
             self._table.c.ref_id == entity_id.as_int(),
         )
+        if not allow_archived:
+            query_stmt = query_stmt.where(self._table.c.archived.is_(False))
         result = (await self._connection.execute(query_stmt)).first()
         if result is None:
             raise self._not_found_err_cls(

@@ -92,7 +92,9 @@ class RootEntityRepository(EntityRepository[RootEntityT], abc.ABC):
     """A repository for root entities."""
 
     @abc.abstractmethod
-    async def load_by_id(self, entity_id: EntityId) -> RootEntityT:
+    async def load_by_id(
+        self, entity_id: EntityId, allow_archived: bool = False
+    ) -> RootEntityT:
         """Loads the root entity."""
 
     @abc.abstractmethod

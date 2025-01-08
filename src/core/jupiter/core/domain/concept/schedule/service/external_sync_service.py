@@ -46,7 +46,7 @@ from jupiter.core.domain.core.time_events.time_event_in_day_block import (
 from jupiter.core.domain.core.time_events.time_event_namespace import TimeEventNamespace
 from jupiter.core.domain.core.time_in_day import TimeInDay
 from jupiter.core.domain.core.url import URL
-from jupiter.core.domain.infra.generic_archiver import generic_archiver
+from jupiter.core.domain.infra.generic_crown_archiver import generic_crown_archiver
 from jupiter.core.domain.storage_engine import DomainStorageEngine
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
@@ -742,7 +742,7 @@ class ScheduleExternalSyncService:
                         continue
 
                     async with self._domain_storage_engine.get_unit_of_work() as uow:
-                        await generic_archiver(
+                        await generic_crown_archiver(
                             ctx,
                             uow,
                             progress_reporter,
@@ -769,7 +769,7 @@ class ScheduleExternalSyncService:
                         continue
 
                     async with self._domain_storage_engine.get_unit_of_work() as uow:
-                        await generic_archiver(
+                        await generic_crown_archiver(
                             ctx,
                             uow,
                             progress_reporter,

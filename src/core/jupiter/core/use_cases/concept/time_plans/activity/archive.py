@@ -9,7 +9,7 @@ from jupiter.core.domain.concept.time_plans.time_plan_activity_target import (
     TimePlanActivityTarget,
 )
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.infra.generic_archiver import generic_archiver
+from jupiter.core.domain.infra.generic_crown_archiver import generic_crown_archiver
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
@@ -67,7 +67,7 @@ class TimePlanActivityArchiveUseCase(
                     target_ref_id=[it.ref_id for it in inbox_tasks],
                 )
                 for inbox_task_activity in inbox_task_activities:
-                    await generic_archiver(
+                    await generic_crown_archiver(
                         context.domain_context,
                         uow,
                         progress_reporter,
@@ -75,7 +75,7 @@ class TimePlanActivityArchiveUseCase(
                         inbox_task_activity.ref_id,
                     )
 
-        await generic_archiver(
+        await generic_crown_archiver(
             context.domain_context,
             uow,
             progress_reporter,

@@ -37,7 +37,7 @@ from jupiter.core.domain.concept.push_integrations.slack.slack_task_collection i
 from jupiter.core.domain.concept.working_mem.working_mem import WorkingMem
 from jupiter.core.domain.concept.workspaces.workspace import Workspace
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.infra.generic_archiver import generic_archiver
+from jupiter.core.domain.infra.generic_crown_archiver import generic_crown_archiver
 from jupiter.core.domain.storage_engine import (
     DomainStorageEngine,
     DomainUnitOfWork,
@@ -247,7 +247,7 @@ class GCService:
             ):
                 continue
             async with self._domain_storage_engine.get_unit_of_work() as uow:
-                await generic_archiver(
+                await generic_crown_archiver(
                     ctx, uow, progress_reporter, WorkingMem, working_mem.ref_id
                 )
             gc_log_entry = gc_log_entry.add_entity(ctx, working_mem)

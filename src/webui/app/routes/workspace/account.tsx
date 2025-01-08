@@ -7,18 +7,23 @@ import {
   CardActions,
   CardContent,
   CardHeader,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   FormControl,
   InputLabel,
   OutlinedInput,
   Stack,
   TextField,
+  Typography,
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
@@ -29,22 +34,25 @@ import { ToolPanel } from "~/components/infra/layout/tool-panel";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
-import { getIntent } from "~/logic/intent";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const AccountFormSchema = {
-  intent: z.string(),
-  name: z.string(),
-  timezone: z.string(),
-  featureFlags: z
-    .nativeEnum(UserFeature)
-    .transform((s) => [s])
-    .optional()
-    .transform((_) => []),
-};
+const AccountFormSchema = z.discriminatedUnion("intent", [
+  z.object({
+    intent: z.literal("update"),
+    name: z.string(),
+    timezone: z.string(),
+  }),
+  z.object({
+    intent: z.literal("change-feature-flags"),
+    featureFlags: z.array(z.nativeEnum(UserFeature)),
+  }),
+  z.object({
+    intent: z.literal("close-account"),
+  }),
+]);
 
 export const handle = {
   displayType: DisplayType.TOOL,
@@ -63,10 +71,8 @@ export async function action({ request }: ActionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const form = await parseForm(request, AccountFormSchema);
 
-  const { intent } = getIntent<undefined>(form.intent);
-
   try {
-    switch (intent) {
+    switch (form.intent) {
       case "update": {
         await apiClient.users.userUpdate({
           name: {
@@ -88,6 +94,12 @@ export async function action({ request }: ActionArgs) {
         });
 
         return redirect(`/workspace/account`);
+      }
+
+      case "close-account": {
+        await apiClient.application.closeAccount({});
+
+        return redirect(`/init`);
       }
 
       default:
@@ -117,6 +129,8 @@ export default function Account() {
   const topLevelInfo = useContext(TopLevelInfoContext);
 
   const inputsEnabled = transition.state === "idle";
+
+  const [showCloseAccountDialog, setShowCloseAccountDialog] = useState(false);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const allTimezonesAsOptions = (Intl as any).supportedValuesOf("timeZone");
@@ -216,6 +230,53 @@ export default function Account() {
                   value="change-feature-flags"
                 >
                   Change Feature Flags
+                </Button>
+              </ButtonGroup>
+            </CardActions>
+          </Card>
+
+          <Card>
+            <GlobalError intent="close-account" actionResult={actionData} />
+
+            <CardHeader title="Dangerous" />
+
+            <Dialog
+              onClose={() => setShowCloseAccountDialog(false)}
+              open={showCloseAccountDialog}
+              disablePortal
+            >
+              <DialogTitle>Are You Sure?</DialogTitle>
+              <DialogContent>
+                <Typography variant="body1">
+                  Are you sure you want to close your account? This action is
+                  irreversible.
+                </Typography>
+              </DialogContent>
+              <DialogActions>
+                <Button
+                  id="close-account"
+                  variant="contained"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="close-account"
+                  color="error"
+                >
+                  Close Account
+                </Button>
+              </DialogActions>
+            </Dialog>
+
+            <CardActions>
+              <ButtonGroup>
+                <Button
+                  id="close-account-initialize"
+                  variant="contained"
+                  disabled={!inputsEnabled}
+                  onClick={() => setShowCloseAccountDialog(true)}
+                  color="error"
+                >
+                  Close Account
                 </Button>
               </ButtonGroup>
             </CardActions>

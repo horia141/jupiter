@@ -1,4 +1,5 @@
 import { WorkspaceFeature } from "@jupiter/webapi-client";
+import { Settings } from "@mui/icons-material";
 import {
   Divider,
   List,
@@ -393,6 +394,21 @@ export default function Sidebar(props: SidebarProps) {
               </ListItemButton>
             </ListItem>
           </List>
+
+          <Divider textAlign="left">Explore</Divider>
+
+          <ListItem disablePadding>
+            <ListItemButton
+              to="/workspace/settings"
+              component={Link}
+              onClick={onClickNavigation}
+            >
+              <ListItemIcon>
+                <Settings />
+              </ListItemIcon>
+              <ListItemText primary="More Features" />
+            </ListItemButton>
+          </ListItem>
         </StyledMotionDrawer>
       )}
     </AnimatePresence>

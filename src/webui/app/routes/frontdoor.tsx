@@ -34,7 +34,7 @@ export async function loader({ request }: LoaderArgs) {
     }
   }
 
-  return redirect("/login", {
+  return redirect("/init", {
     headers: {
       "Set-Cookie": await saveFrontDoorInfo(params),
     },
