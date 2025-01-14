@@ -8,7 +8,6 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
-  Autocomplete,
   Button,
   ButtonGroup,
   Card,
@@ -19,7 +18,6 @@ import {
   InputLabel,
   OutlinedInput,
   Stack,
-  TextField,
   Typography,
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
@@ -49,6 +47,7 @@ import { LifecyclePanel } from "~/components/infra/layout/lifecycle-panel";
 import { StandaloneContainer } from "~/components/infra/layout/standalone-container";
 import { SmartAppBar } from "~/components/infra/smart-appbar";
 import { Logo } from "~/components/logo";
+import { TimezoneSelect } from "~/components/timezone-select";
 import { Title } from "~/components/title";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
@@ -140,10 +139,6 @@ export default function WorkspaceInit() {
   const transition = useTransition();
 
   const inputsEnabled = transition.state === "idle";
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const allTimezonesAsOptions = (Intl as any).supportedValuesOf("timeZone");
-
   const globalProperties = useContext(GlobalPropertiesContext);
 
   return (
@@ -199,20 +194,10 @@ export default function WorkspaceInit() {
                 </FormControl>
 
                 <FormControl fullWidth>
-                  <Autocomplete
+                  <TimezoneSelect
                     id="userTimezone"
-                    options={allTimezonesAsOptions}
-                    readOnly={!inputsEnabled}
-                    defaultValue={"Europe/London"}
-                    disableClearable={true}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        name="userTimezone"
-                        autoComplete="off"
-                        label="Your Timezone"
-                      />
-                    )}
+                    name="userTimezone"
+                    inputsEnabled={inputsEnabled}
                   />
 
                   <FieldError

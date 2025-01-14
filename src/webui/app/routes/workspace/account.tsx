@@ -1,6 +1,5 @@
 import { ApiError, UserFeature } from "@jupiter/webapi-client";
 import {
-  Autocomplete,
   Button,
   ButtonGroup,
   Card,
@@ -32,6 +31,7 @@ import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { ToolPanel } from "~/components/infra/layout/tool-panel";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
+import { TimezoneSelect } from "~/components/timezone-select";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -132,9 +132,6 @@ export default function Account() {
 
   const [showCloseAccountDialog, setShowCloseAccountDialog] = useState(false);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const allTimezonesAsOptions = (Intl as any).supportedValuesOf("timeZone");
-
   return (
     <TrunkPanel key={"account"} returnLocation="/workspace">
       <ToolPanel>
@@ -167,19 +164,11 @@ export default function Account() {
                   <FieldError actionResult={actionData} fieldName="/name" />
                 </FormControl>
                 <FormControl fullWidth>
-                  <Autocomplete
+                  <TimezoneSelect
                     id="timezone"
-                    options={allTimezonesAsOptions}
-                    readOnly={!inputsEnabled}
-                    defaultValue={loaderData.user.timezone}
-                    disableClearable={true}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        name="timezone"
-                        label="Your Timezone"
-                      />
-                    )}
+                    name="timezone"
+                    inputsEnabled={inputsEnabled}
+                    initialValue={loaderData.user.timezone}
                   />
 
                   <FieldError actionResult={actionData} fieldName="/timezone" />
