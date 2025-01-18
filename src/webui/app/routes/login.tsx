@@ -28,6 +28,7 @@ import { LifecyclePanel } from "~/components/infra/layout/lifecycle-panel";
 import { StandaloneContainer } from "~/components/infra/layout/standalone-container";
 import { SmartAppBar } from "~/components/infra/smart-appbar";
 import { Logo } from "~/components/logo";
+import { Password } from "~/components/password";
 import { Title } from "~/components/title";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
@@ -140,13 +141,11 @@ export default function Login() {
 
                 <FormControl fullWidth>
                   <InputLabel id="password">Password</InputLabel>
-                  <OutlinedInput
+                  <Password
                     label="Password"
-                    type="password"
-                    autoComplete="current-password"
                     name="password"
-                    readOnly={!inputsEnabled}
-                    defaultValue={""}
+                    autoComplete="current-password"
+                    inputsEnabled={inputsEnabled}
                   />
                   <FieldError actionResult={actionData} fieldName="/password" />
                 </FormControl>

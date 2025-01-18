@@ -47,6 +47,7 @@ import { LifecyclePanel } from "~/components/infra/layout/lifecycle-panel";
 import { StandaloneContainer } from "~/components/infra/layout/standalone-container";
 import { SmartAppBar } from "~/components/infra/smart-appbar";
 import { Logo } from "~/components/logo";
+import { Password } from "~/components/password";
 import { TimezoneSelect } from "~/components/timezone-select";
 import { Title } from "~/components/title";
 import { GlobalPropertiesContext } from "~/global-properties-client";
@@ -208,13 +209,11 @@ export default function WorkspaceInit() {
 
                 <FormControl fullWidth>
                   <InputLabel id="authPassword">Password</InputLabel>
-                  <OutlinedInput
+                  <Password
                     label="Password"
-                    type="password"
-                    autoComplete="new-password"
                     name="authPassword"
-                    readOnly={!inputsEnabled}
-                    defaultValue={""}
+                    autoComplete="new-password"
+                    inputsEnabled={inputsEnabled}
                   />
                   <FieldError
                     actionResult={actionData}
@@ -226,12 +225,10 @@ export default function WorkspaceInit() {
                   <InputLabel id="authPasswordRepeat">
                     Password Repeat
                   </InputLabel>
-                  <OutlinedInput
+                  <Password
                     label="Password Repeat"
-                    type="password"
                     name="authPasswordRepeat"
-                    readOnly={!inputsEnabled}
-                    defaultValue={""}
+                    inputsEnabled={inputsEnabled}
                   />
                   <FieldError
                     actionResult={actionData}

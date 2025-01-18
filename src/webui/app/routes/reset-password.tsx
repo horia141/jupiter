@@ -27,6 +27,7 @@ import { LifecyclePanel } from "~/components/infra/layout/lifecycle-panel";
 import { StandaloneContainer } from "~/components/infra/layout/standalone-container";
 import { SmartAppBar } from "~/components/infra/smart-appbar";
 import { Logo } from "~/components/logo";
+import { Password } from "~/components/password";
 import { Title } from "~/components/title";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
@@ -151,13 +152,11 @@ export default function ResetPassword() {
 
                 <FormControl fullWidth>
                   <InputLabel htmlFor="newPassword">New Password</InputLabel>
-                  <OutlinedInput
+                  <Password
                     label="New Password"
                     name="newPassword"
-                    type="password"
                     autoComplete="new-password"
-                    readOnly={!inputsEnabled}
-                    defaultValue={""}
+                    inputsEnabled={inputsEnabled}
                   />
                   <FieldError
                     actionResult={actionData}
@@ -169,13 +168,10 @@ export default function ResetPassword() {
                   <InputLabel htmlFor="newPasswordRepeat">
                     Repeat New Password
                   </InputLabel>
-                  <OutlinedInput
+                  <Password
                     label="Repeat New Password"
                     name="newPasswordRepeat"
-                    type="password"
-                    autoComplete="new-password"
-                    readOnly={!inputsEnabled}
-                    defaultValue={""}
+                    inputsEnabled={inputsEnabled}
                   />
                   <FieldError
                     actionResult={actionData}

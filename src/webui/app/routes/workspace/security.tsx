@@ -8,7 +8,6 @@ import {
   CardHeader,
   FormControl,
   InputLabel,
-  OutlinedInput,
   Stack,
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
@@ -23,6 +22,7 @@ import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { ToolPanel } from "~/components/infra/layout/tool-panel";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
+import { Password } from "~/components/password";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { getIntent } from "~/logic/intent";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -97,13 +97,11 @@ export default function Security() {
               <Stack spacing={2} useFlexGap>
                 <FormControl fullWidth>
                   <InputLabel id="currentPassword">Current Password</InputLabel>
-                  <OutlinedInput
+                  <Password
                     label="Current Password"
-                    type="password"
-                    autoComplete="current-password"
                     name="currentPassword"
-                    readOnly={!inputsEnabled}
-                    defaultValue={""}
+                    autoComplete="current-password"
+                    inputsEnabled={!inputsEnabled}
                   />
                   <FieldError
                     actionResult={actionData}
@@ -113,13 +111,11 @@ export default function Security() {
 
                 <FormControl fullWidth>
                   <InputLabel id="newPassword">New Password</InputLabel>
-                  <OutlinedInput
-                    label="New Password"
-                    type="password"
-                    autoComplete="new-password"
+                  <Password
+                    label="newPassword"
                     name="newPassword"
-                    readOnly={!inputsEnabled}
-                    defaultValue={""}
+                    autoComplete="new-password"
+                    inputsEnabled={!inputsEnabled}
                   />
                   <FieldError
                     actionResult={actionData}
@@ -131,13 +127,11 @@ export default function Security() {
                   <InputLabel id="newPasswordRepeat">
                     New Password Repeat
                   </InputLabel>
-                  <OutlinedInput
+                  <Password
                     label="New Password Repeat"
-                    type="password"
-                    autoComplete="off"
                     name="newPasswordRepeat"
-                    readOnly={!inputsEnabled}
-                    defaultValue={""}
+                    autoComplete="new-password"
+                    inputsEnabled={!inputsEnabled}
                   />
                   <FieldError
                     actionResult={actionData}
