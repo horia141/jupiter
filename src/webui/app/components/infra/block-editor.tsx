@@ -26,6 +26,7 @@ import { useEffect, useRef } from "react";
 import type { OneOfNoteContentBlock } from "~/logic/domain/notes";
 
 export interface BlockEditorProps {
+  autofocus: boolean;
   initialContent: Array<OneOfNoteContentBlock>;
   inputsEnabled: boolean;
   onChange?: (content: Array<OneOfNoteContentBlock>) => void;
@@ -38,7 +39,7 @@ export default function BlockEditor(props: BlockEditorProps) {
     const editor = new EditorJS({
       holder: "editorjs",
       placeholder: "Start writing...",
-      autofocus: true,
+      autofocus: props.autofocus,
       readOnly: !props.inputsEnabled,
       data: props.initialContent
         ? transformContentBlocksToEditorJs(props.initialContent)

@@ -136,6 +136,7 @@ export function DocEditor({
         {() => (
           <Suspense fallback={<div>Loading...</div>}>
             <BlockEditor
+              autofocus={true}
               initialContent={noteContent}
               inputsEnabled={inputsEnabled}
               onChange={(c) => {

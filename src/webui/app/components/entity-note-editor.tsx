@@ -87,6 +87,7 @@ export function EntityNoteEditor({
           <Suspense fallback={<div>Loading...</div>}>
             <Box id="entity-block-editor">
               <BlockEditor
+                autofocus={false}
                 initialContent={noteContent}
                 inputsEnabled={inputsEnabled && !initialNote.archived}
                 onChange={(c) => {
