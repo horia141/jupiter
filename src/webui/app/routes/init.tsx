@@ -195,19 +195,6 @@ export default function WorkspaceInit() {
                 </FormControl>
 
                 <FormControl fullWidth>
-                  <TimezoneSelect
-                    id="userTimezone"
-                    name="userTimezone"
-                    inputsEnabled={inputsEnabled}
-                  />
-
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/user_timezone"
-                  />
-                </FormControl>
-
-                <FormControl fullWidth>
                   <InputLabel id="authPassword">Password</InputLabel>
                   <Password
                     label="Password"
@@ -243,6 +230,19 @@ export default function WorkspaceInit() {
 
                   <AccordionDetails>
                     <Stack spacing={2} useFlexGap>
+                      <FormControl fullWidth>
+                        <TimezoneSelect
+                          id="userTimezone"
+                          name="userTimezone"
+                          inputsEnabled={inputsEnabled}
+                        />
+
+                        <FieldError
+                          actionResult={actionData}
+                          fieldName="/user_timezone"
+                        />
+                      </FormControl>
+
                       <FormControl fullWidth>
                         <InputLabel id="workspaceName">
                           Workspace Name

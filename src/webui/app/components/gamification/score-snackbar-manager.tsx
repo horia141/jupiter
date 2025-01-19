@@ -68,6 +68,7 @@ export function ScoreSnackbarManager({
   useEffect(() => {
     if (scoreAction !== undefined) {
       enqueueSnackbar(formatScoreUpdate(scoreAction, isBigScreen), {
+        key: "gamification",
         autoHideDuration: 3000,
         hideIconVariant: true,
         variant: scoreAction.latest_task_score > 0 ? "success" : "warning",
