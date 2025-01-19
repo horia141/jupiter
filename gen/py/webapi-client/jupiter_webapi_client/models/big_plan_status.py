@@ -2,7 +2,6 @@ from enum import Enum
 
 
 class BigPlanStatus(str, Enum):
-    ACCEPTED = "accepted"
     BLOCKED = "blocked"
     DONE = "done"
     IN_PROGRESS = "in-progress"

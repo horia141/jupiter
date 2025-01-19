@@ -334,13 +334,13 @@ export default function EmailTask() {
                 readOnly={!inputsEnabled}
                 defaultValue={
                   loaderData.emailTask.generation_extra_info?.status ||
-                  InboxTaskStatus.ACCEPTED
+                  InboxTaskStatus.NOT_STARTED
                 }
                 label="Status"
               >
                 {Object.values(InboxTaskStatus)
                   .filter((s) => {
-                    return s !== InboxTaskStatus.RECURRING;
+                    return s !== InboxTaskStatus.NOT_STARTED_GEN;
                   })
                   .map((s) => (
                     <MenuItem key={s} value={s}>

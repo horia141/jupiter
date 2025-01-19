@@ -272,7 +272,7 @@ export default function NewChore() {
             <FormControl fullWidth>
               <FormControlLabel
                 control={<Switch name="mustDo" readOnly={!inputsEnabled} />}
-                label="Must Do"
+                label="Must Do In Vacation"
               />
               <FieldError actionResult={actionData} fieldName="/must_do" />
             </FormControl>

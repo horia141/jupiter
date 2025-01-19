@@ -317,10 +317,8 @@ def inbox_task_status_to_rich_text(
             return Text("🔲")
 
     if status == InboxTaskStatus.NOT_STARTED:
-        return Text("🧭")
-    elif status == InboxTaskStatus.ACCEPTED:
         return Text("🔧")
-    elif status == InboxTaskStatus.RECURRING:
+    elif status == InboxTaskStatus.NOT_STARTED_GEN:
         return Text("🔧")
     elif status == InboxTaskStatus.IN_PROGRESS:
         return Text("🚧")
@@ -343,8 +341,6 @@ def big_plan_status_to_rich_text(status: BigPlanStatus, archived: bool) -> Text:
             return Text("🔲")
 
     if status == BigPlanStatus.NOT_STARTED:
-        return Text("🧭")
-    elif status == BigPlanStatus.ACCEPTED:
         return Text("🔧")
     elif status == BigPlanStatus.IN_PROGRESS:
         return Text("🚧")

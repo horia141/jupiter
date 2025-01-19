@@ -109,7 +109,7 @@ class BigPlanCreateUseCase(
             big_plan_collection_ref_id=big_plan_collection.ref_id,
             project_ref_id=project_ref_id,
             name=args.name,
-            status=BigPlanStatus.ACCEPTED,
+            status=BigPlanStatus.NOT_STARTED,
             actionable_date=args.actionable_date,
             due_date=args.due_date,
         )

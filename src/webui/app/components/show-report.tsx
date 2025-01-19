@@ -278,7 +278,7 @@ export function ShowReport({
                             📥 {isBigScreen && "Created"}
                           </SmallTableCell>
                           <SmallTableCell width="10%">
-                            🔧 {isBigScreen && "Accepted"}
+                            🔧 {isBigScreen && "Not Started"}
                           </SmallTableCell>
                           <SmallTableCell width="10%">
                             🚧 {isBigScreen && "Working"}
@@ -314,7 +314,7 @@ export function ShowReport({
                               {phb.summary.created_cnt}
                             </SmallTableCell>
                             <SmallTableCell>
-                              {phb.summary.accepted_cnt}
+                              {phb.summary.not_started_cnt}
                             </SmallTableCell>
                             <SmallTableCell>
                               {phb.summary.working_cnt}
@@ -366,7 +366,7 @@ export function ShowReport({
                             📥 {isBigScreen && "Created"}
                           </SmallTableCell>
                           <SmallTableCell width="10%">
-                            🔧 {isBigScreen && "Accepted"}
+                            🔧 {isBigScreen && "Not Started"}
                           </SmallTableCell>
                           <SmallTableCell width="10%">
                             🚧 {isBigScreen && "Working"}
@@ -394,7 +394,7 @@ export function ShowReport({
                               {pcb.summary.created_cnt}
                             </SmallTableCell>
                             <SmallTableCell>
-                              {pcb.summary.accepted_cnt}
+                              {pcb.summary.not_started_cnt}
                             </SmallTableCell>
                             <SmallTableCell>
                               {pcb.summary.working_cnt}
@@ -431,7 +431,7 @@ export function ShowReport({
                     📥 {isBigScreen && "Created"}
                   </SmallTableCell>
                   <SmallTableCell width="10%">
-                    🔧 {isBigScreen && "Accepted"}
+                    🔧 {isBigScreen && "Not Started"}
                   </SmallTableCell>
                   <SmallTableCell width="10%">
                     🚧 {isBigScreen && "Working"}
@@ -454,7 +454,9 @@ export function ShowReport({
                       </EntityLink>
                     </SmallTableCell>
                     <SmallTableCell>{pbb.summary.created_cnt}</SmallTableCell>
-                    <SmallTableCell>{pbb.summary.accepted_cnt}</SmallTableCell>
+                    <SmallTableCell>
+                      {pbb.summary.not_started_cnt}
+                    </SmallTableCell>
                     <SmallTableCell>{pbb.summary.working_cnt}</SmallTableCell>
                     <SmallTableCell>{pbb.summary.not_done_cnt}</SmallTableCell>
                     <SmallTableCell>{pbb.summary.done_cnt}</SmallTableCell>
@@ -496,7 +498,7 @@ function OverviewReport(props: OverviewReportProps) {
                 📥 {isBigScreen && "Created"}
               </SmallTableCell>
               <SmallTableCell width="10%">
-                🔧 {isBigScreen && "Accepted"}
+                🔧 {isBigScreen && "Not Started"}
               </SmallTableCell>
               <SmallTableCell width="10%">
                 🚧 {isBigScreen && "Working"}
@@ -517,7 +519,7 @@ function OverviewReport(props: OverviewReportProps) {
                 {props.inboxTasksSummary.created.total_cnt}
               </SmallTableCell>
               <SmallTableCell>
-                {props.inboxTasksSummary.accepted.total_cnt}
+                {props.inboxTasksSummary.not_started.total_cnt}
               </SmallTableCell>
               <SmallTableCell>
                 {props.inboxTasksSummary.working.total_cnt}
@@ -538,7 +540,7 @@ function OverviewReport(props: OverviewReportProps) {
                   )?.count || 0}
                 </SmallTableCell>
                 <SmallTableCell>
-                  {props.inboxTasksSummary.accepted.per_source_cnt.find(
+                  {props.inboxTasksSummary.not_started.per_source_cnt.find(
                     (s) => s.source === source
                   )?.count || 0}
                 </SmallTableCell>
@@ -582,7 +584,7 @@ function OverviewReport(props: OverviewReportProps) {
             </ListItem>
             <ListItem>
               <ListItemText
-                primary={`🔧 Accepted: ${props.bigPlansSummary.accepted_cnt}`}
+                primary={`🔧 Not Started: ${props.bigPlansSummary.not_started_cnt}`}
               />
             </ListItem>
             <ListItem>

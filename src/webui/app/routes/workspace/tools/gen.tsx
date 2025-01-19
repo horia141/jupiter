@@ -217,24 +217,6 @@ export default function Gen() {
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>
-              <FormControlLabel
-                control={
-                  <Switch
-                    name="gen_even_if_not_modified"
-                    readOnly={!inputsEnabled}
-                    disabled={!inputsEnabled}
-                    defaultChecked={false}
-                  />
-                }
-                label="Generate Even If Not Modified"
-              />
-              <FieldError
-                actionResult={actionData}
-                fieldName="/gen_even_if_not_modified"
-              />
-            </FormControl>
-
-            <FormControl fullWidth>
               <InputLabel id="today">Generation Date</InputLabel>
               <OutlinedInput
                 type="date"
@@ -248,198 +230,229 @@ export default function Gen() {
               <FieldError actionResult={actionData} fieldName="/today" />
             </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="gen_targets">Generation Targets</InputLabel>
-              <SyncTargetSelect
-                topLevelInfo={topLevelInfo}
-                labelId="gen_targets"
-                label="Generation Targets"
-                name="gen_targets"
-                readOnly={!inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/gen_targets" />
-            </FormControl>
+            <Accordion>
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <AccordionHeader>Advanced Options & Filtering</AccordionHeader>
+              </AccordionSummary>
 
-            <FormControl fullWidth>
-              <InputLabel id="period">Generation Period</InputLabel>
-              <PeriodSelect
-                labelId="period"
-                label="Generation Period"
-                name="period"
-                readOnly={!inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/period" />
-            </FormControl>
-
-            {isWorkspaceFeatureAvailable(
-              topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS
-            ) && (
-              <FormControl fullWidth>
-                <Autocomplete
-                  disablePortal
-                  id="filter_project_ref_ids"
-                  options={projectOptions}
-                  readOnly={!inputsEnabled}
-                  disabled={!inputsEnabled}
-                  multiple
-                  onChange={(e, vol) => setSelectedProjects(vol)}
-                  isOptionEqualToValue={(o, v) => o.refId === v.refId}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      name="filter_project_ref_ids"
-                      label="Generate Only For Projects"
+              <AccordionDetails>
+                <Stack spacing={2} useFlexGap>
+                  <FormControl fullWidth>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          name="gen_even_if_not_modified"
+                          readOnly={!inputsEnabled}
+                          disabled={!inputsEnabled}
+                          defaultChecked={false}
+                        />
+                      }
+                      label="Generate Even If Not Modified"
                     />
-                  )}
-                />
-                <input
-                  type="hidden"
-                  name="filter_project_ref_ids"
-                  value={selectedProjects.map((p) => p.refId).join(",")}
-                />
-                <FieldError
-                  actionResult={actionData}
-                  fieldName="/filter_project_ref_ids"
-                />
-              </FormControl>
-            )}
-
-            {isWorkspaceFeatureAvailable(
-              topLevelInfo.workspace,
-              WorkspaceFeature.HABITS
-            ) && (
-              <FormControl fullWidth>
-                <Autocomplete
-                  disablePortal
-                  id="filter_habit_ref_ids"
-                  options={habitOptions}
-                  readOnly={!inputsEnabled}
-                  disabled={!inputsEnabled}
-                  multiple
-                  onChange={(e, vol) => setSelectedHabits(vol)}
-                  isOptionEqualToValue={(o, v) => o.refId === v.refId}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      name="filter_habit_ref_ids"
-                      label="Generate Only For Habits"
+                    <FieldError
+                      actionResult={actionData}
+                      fieldName="/gen_even_if_not_modified"
                     />
-                  )}
-                />
-                <input
-                  type="hidden"
-                  name="filter_habit_ref_ids"
-                  value={selectedHabits.map((p) => p.refId).join(",")}
-                />
-                <FieldError
-                  actionResult={actionData}
-                  fieldName="/filter_habit_ref_ids"
-                />
-              </FormControl>
-            )}
+                  </FormControl>
 
-            {isWorkspaceFeatureAvailable(
-              topLevelInfo.workspace,
-              WorkspaceFeature.CHORES
-            ) && (
-              <FormControl fullWidth>
-                <Autocomplete
-                  disablePortal
-                  id="filter_chore_ref_ids"
-                  options={choreOptions}
-                  readOnly={!inputsEnabled}
-                  disabled={!inputsEnabled}
-                  multiple
-                  onChange={(e, vol) => setSelectedChores(vol)}
-                  isOptionEqualToValue={(o, v) => o.refId === v.refId}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      name="filter_chore_ref_ids"
-                      label="Generate Only For Chores"
+                  <FormControl fullWidth>
+                    <InputLabel id="gen_targets">Generation Targets</InputLabel>
+                    <SyncTargetSelect
+                      topLevelInfo={topLevelInfo}
+                      labelId="gen_targets"
+                      label="Generation Targets"
+                      name="gen_targets"
+                      readOnly={!inputsEnabled}
                     />
-                  )}
-                />
-                <input
-                  type="hidden"
-                  name="filter_chore_ref_ids"
-                  value={selectedChores.map((p) => p.refId).join(",")}
-                />
-                <FieldError
-                  actionResult={actionData}
-                  fieldName="/filter_chore_ref_ids"
-                />
-              </FormControl>
-            )}
+                    <FieldError
+                      actionResult={actionData}
+                      fieldName="/gen_targets"
+                    />
+                  </FormControl>
 
-            {isWorkspaceFeatureAvailable(
-              topLevelInfo.workspace,
-              WorkspaceFeature.METRICS
-            ) && (
-              <FormControl fullWidth>
-                <Autocomplete
-                  disablePortal
-                  id="filter_metric_ref_ids"
-                  options={metricOptions}
-                  readOnly={!inputsEnabled}
-                  disabled={!inputsEnabled}
-                  multiple
-                  onChange={(e, vol) => setSelectedMetrics(vol)}
-                  isOptionEqualToValue={(o, v) => o.refId === v.refId}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      name="filter_metric_ref_ids"
-                      label="Generate Only For Metrics"
+                  <FormControl fullWidth>
+                    <InputLabel id="period">Generation Period</InputLabel>
+                    <PeriodSelect
+                      labelId="period"
+                      label="Generation Period"
+                      name="period"
+                      readOnly={!inputsEnabled}
                     />
-                  )}
-                />
-                <input
-                  type="hidden"
-                  name="filter_metric_ref_ids"
-                  value={selectedMetrics.map((p) => p.refId).join(",")}
-                />
-                <FieldError
-                  actionResult={actionData}
-                  fieldName="/filter_metric_ref_ids"
-                />
-              </FormControl>
-            )}
+                    <FieldError actionResult={actionData} fieldName="/period" />
+                  </FormControl>
 
-            {isWorkspaceFeatureAvailable(
-              topLevelInfo.workspace,
-              WorkspaceFeature.PERSONS
-            ) && (
-              <FormControl fullWidth>
-                <Autocomplete
-                  disablePortal
-                  id="filter_person_ref_ids"
-                  options={personOptions}
-                  disabled={!inputsEnabled}
-                  readOnly={!inputsEnabled}
-                  multiple
-                  onChange={(e, vol) => setSelectedPersons(vol)}
-                  isOptionEqualToValue={(o, v) => o.refId === v.refId}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      name="filter_person_ref_ids"
-                      label="Generate Only For Persons"
-                    />
+                  {isWorkspaceFeatureAvailable(
+                    topLevelInfo.workspace,
+                    WorkspaceFeature.PROJECTS
+                  ) && (
+                    <FormControl fullWidth>
+                      <Autocomplete
+                        disablePortal
+                        id="filter_project_ref_ids"
+                        options={projectOptions}
+                        readOnly={!inputsEnabled}
+                        disabled={!inputsEnabled}
+                        multiple
+                        onChange={(e, vol) => setSelectedProjects(vol)}
+                        isOptionEqualToValue={(o, v) => o.refId === v.refId}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            name="filter_project_ref_ids"
+                            label="Generate Only For Projects"
+                          />
+                        )}
+                      />
+                      <input
+                        type="hidden"
+                        name="filter_project_ref_ids"
+                        value={selectedProjects.map((p) => p.refId).join(",")}
+                      />
+                      <FieldError
+                        actionResult={actionData}
+                        fieldName="/filter_project_ref_ids"
+                      />
+                    </FormControl>
                   )}
-                />
-                <input
-                  type="hidden"
-                  name="filter_person_ref_ids"
-                  value={selectedPersons.map((p) => p.refId).join(",")}
-                />
-                <FieldError
-                  actionResult={actionData}
-                  fieldName="/filter_person_ref_ids"
-                />
-              </FormControl>
-            )}
+
+                  {isWorkspaceFeatureAvailable(
+                    topLevelInfo.workspace,
+                    WorkspaceFeature.HABITS
+                  ) && (
+                    <FormControl fullWidth>
+                      <Autocomplete
+                        disablePortal
+                        id="filter_habit_ref_ids"
+                        options={habitOptions}
+                        readOnly={!inputsEnabled}
+                        disabled={!inputsEnabled}
+                        multiple
+                        onChange={(e, vol) => setSelectedHabits(vol)}
+                        isOptionEqualToValue={(o, v) => o.refId === v.refId}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            name="filter_habit_ref_ids"
+                            label="Generate Only For Habits"
+                          />
+                        )}
+                      />
+                      <input
+                        type="hidden"
+                        name="filter_habit_ref_ids"
+                        value={selectedHabits.map((p) => p.refId).join(",")}
+                      />
+                      <FieldError
+                        actionResult={actionData}
+                        fieldName="/filter_habit_ref_ids"
+                      />
+                    </FormControl>
+                  )}
+
+                  {isWorkspaceFeatureAvailable(
+                    topLevelInfo.workspace,
+                    WorkspaceFeature.CHORES
+                  ) && (
+                    <FormControl fullWidth>
+                      <Autocomplete
+                        disablePortal
+                        id="filter_chore_ref_ids"
+                        options={choreOptions}
+                        readOnly={!inputsEnabled}
+                        disabled={!inputsEnabled}
+                        multiple
+                        onChange={(e, vol) => setSelectedChores(vol)}
+                        isOptionEqualToValue={(o, v) => o.refId === v.refId}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            name="filter_chore_ref_ids"
+                            label="Generate Only For Chores"
+                          />
+                        )}
+                      />
+                      <input
+                        type="hidden"
+                        name="filter_chore_ref_ids"
+                        value={selectedChores.map((p) => p.refId).join(",")}
+                      />
+                      <FieldError
+                        actionResult={actionData}
+                        fieldName="/filter_chore_ref_ids"
+                      />
+                    </FormControl>
+                  )}
+
+                  {isWorkspaceFeatureAvailable(
+                    topLevelInfo.workspace,
+                    WorkspaceFeature.METRICS
+                  ) && (
+                    <FormControl fullWidth>
+                      <Autocomplete
+                        disablePortal
+                        id="filter_metric_ref_ids"
+                        options={metricOptions}
+                        readOnly={!inputsEnabled}
+                        disabled={!inputsEnabled}
+                        multiple
+                        onChange={(e, vol) => setSelectedMetrics(vol)}
+                        isOptionEqualToValue={(o, v) => o.refId === v.refId}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            name="filter_metric_ref_ids"
+                            label="Generate Only For Metrics"
+                          />
+                        )}
+                      />
+                      <input
+                        type="hidden"
+                        name="filter_metric_ref_ids"
+                        value={selectedMetrics.map((p) => p.refId).join(",")}
+                      />
+                      <FieldError
+                        actionResult={actionData}
+                        fieldName="/filter_metric_ref_ids"
+                      />
+                    </FormControl>
+                  )}
+
+                  {isWorkspaceFeatureAvailable(
+                    topLevelInfo.workspace,
+                    WorkspaceFeature.PERSONS
+                  ) && (
+                    <FormControl fullWidth>
+                      <Autocomplete
+                        disablePortal
+                        id="filter_person_ref_ids"
+                        options={personOptions}
+                        disabled={!inputsEnabled}
+                        readOnly={!inputsEnabled}
+                        multiple
+                        onChange={(e, vol) => setSelectedPersons(vol)}
+                        isOptionEqualToValue={(o, v) => o.refId === v.refId}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            name="filter_person_ref_ids"
+                            label="Generate Only For Persons"
+                          />
+                        )}
+                      />
+                      <input
+                        type="hidden"
+                        name="filter_person_ref_ids"
+                        value={selectedPersons.map((p) => p.refId).join(",")}
+                      />
+                      <FieldError
+                        actionResult={actionData}
+                        fieldName="/filter_person_ref_ids"
+                      />
+                    </FormControl>
+                  )}
+                </Stack>
+              </AccordionDetails>
+            </Accordion>
           </Stack>
         </CardContent>
 

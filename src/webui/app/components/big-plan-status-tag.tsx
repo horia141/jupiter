@@ -26,11 +26,9 @@ export function BigPlanStatusTag(props: Props) {
 
 function statusToClass(
   status: BigPlanStatus
-): "default" | "info" | "warning" | "success" | "error" {
+): "info" | "warning" | "success" | "error" {
   switch (status) {
     case BigPlanStatus.NOT_STARTED:
-      return "default";
-    case BigPlanStatus.ACCEPTED:
       return "info";
     case BigPlanStatus.IN_PROGRESS:
       return "warning";

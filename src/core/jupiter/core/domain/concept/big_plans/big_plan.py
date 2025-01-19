@@ -1,5 +1,4 @@
 """A big plan."""
-
 import abc
 from typing import Iterable
 
@@ -38,7 +37,6 @@ class BigPlan(LeafEntity):
     status: BigPlanStatus
     actionable_date: ADate | None
     due_date: ADate | None
-    accepted_time: Timestamp | None
     working_time: Timestamp | None
     completed_time: Timestamp | None
 
@@ -62,7 +60,6 @@ class BigPlan(LeafEntity):
     ) -> "BigPlan":
         """Create a big plan."""
         BigPlan._check_actionable_and_due_dates(actionable_date, due_date)
-        accepted_time = ctx.action_timestamp if status.is_accepted_or_more else None
         working_time = ctx.action_timestamp if status.is_working_or_more else None
         completed_time = ctx.action_timestamp if status.is_completed else None
 
@@ -74,7 +71,6 @@ class BigPlan(LeafEntity):
             status=status,
             actionable_date=actionable_date,
             due_date=due_date,
-            accepted_time=accepted_time,
             working_time=working_time,
             completed_time=completed_time,
         )
@@ -109,21 +105,9 @@ class BigPlan(LeafEntity):
         )
         new_name = name.or_else(self.name)
 
-        new_accepted_time = self.accepted_time
         new_working_time = self.working_time
         new_completed_time = self.completed_time
         if status.should_change:
-            if (
-                not self.status.is_accepted_or_more
-                and status.just_the_value.is_accepted_or_more
-            ):
-                new_accepted_time = ctx.action_timestamp
-            elif (
-                self.status.is_accepted_or_more
-                and not status.just_the_value.is_accepted_or_more
-            ):
-                new_accepted_time = None
-
             if (
                 not self.status.is_working_or_more
                 and status.just_the_value.is_working_or_more
@@ -150,7 +134,6 @@ class BigPlan(LeafEntity):
             ctx,
             name=new_name,
             status=new_status,
-            accepted_time=new_accepted_time,
             working_time=new_working_time,
             completed_time=new_completed_time,
             actionable_date=new_actionable_date,

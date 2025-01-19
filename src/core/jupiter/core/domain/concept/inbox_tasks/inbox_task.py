@@ -79,7 +79,6 @@ class InboxTask(LeafEntity):
     recurring_timeline: str | None
     recurring_repeat_index: int | None
     recurring_gen_right_now: Timestamp | None  # Time for which this inbox task was generated
-    accepted_time: Timestamp | None
     working_time: Timestamp | None
     completed_time: Timestamp | None
 
@@ -136,7 +135,6 @@ class InboxTask(LeafEntity):
             recurring_timeline=None,
             recurring_repeat_index=None,
             recurring_gen_right_now=None,
-            accepted_time=ctx.action_timestamp if status.is_accepted_or_more else None,
             working_time=ctx.action_timestamp if status.is_working_or_more else None,
             completed_time=ctx.action_timestamp if status.is_completed else None,
         )
@@ -159,7 +157,7 @@ class InboxTask(LeafEntity):
             inbox_task_collection=ParentLink(inbox_task_collection_ref_id),
             source=InboxTaskSource.WORKING_MEM_CLEANUP,
             name=name,
-            status=InboxTaskStatus.RECURRING,
+            status=InboxTaskStatus.NOT_STARTED_GEN,
             eisen=Eisen.IMPORTANT,
             difficulty=Difficulty.EASY,
             actionable_date=None,
@@ -178,7 +176,6 @@ class InboxTask(LeafEntity):
             recurring_timeline=recurring_task_timeline,
             recurring_repeat_index=None,
             recurring_gen_right_now=recurring_task_gen_right_now,
-            accepted_time=ctx.action_timestamp,
             working_time=None,
             completed_time=None,
         )
@@ -205,7 +202,7 @@ class InboxTask(LeafEntity):
             inbox_task_collection=ParentLink(inbox_task_collection_ref_id),
             source=InboxTaskSource.HABIT,
             name=InboxTask._build_name_for_habit(name, recurring_task_repeat_index),
-            status=InboxTaskStatus.RECURRING,
+            status=InboxTaskStatus.NOT_STARTED_GEN,
             eisen=eisen if eisen else Eisen.REGULAR,
             difficulty=difficulty,
             actionable_date=actionable_date,
@@ -224,7 +221,6 @@ class InboxTask(LeafEntity):
             recurring_timeline=recurring_task_timeline,
             recurring_repeat_index=recurring_task_repeat_index,
             recurring_gen_right_now=recurring_task_gen_right_now,
-            accepted_time=ctx.action_timestamp,
             working_time=None,
             completed_time=None,
         )
@@ -250,7 +246,7 @@ class InboxTask(LeafEntity):
             inbox_task_collection=ParentLink(inbox_task_collection_ref_id),
             source=InboxTaskSource.CHORE,
             name=name,
-            status=InboxTaskStatus.RECURRING,
+            status=InboxTaskStatus.NOT_STARTED_GEN,
             eisen=eisen if eisen else Eisen.REGULAR,
             difficulty=difficulty,
             actionable_date=actionable_date,
@@ -269,7 +265,6 @@ class InboxTask(LeafEntity):
             recurring_timeline=recurring_task_timeline,
             recurring_repeat_index=None,
             recurring_gen_right_now=recurring_task_gen_right_now,
-            accepted_time=ctx.action_timestamp,
             working_time=None,
             completed_time=None,
         )
@@ -294,7 +289,7 @@ class InboxTask(LeafEntity):
             inbox_task_collection=ParentLink(inbox_task_collection_ref_id),
             source=InboxTaskSource.JOURNAL,
             name=InboxTask._build_name_for_writing_journal(period, right_now),
-            status=InboxTaskStatus.RECURRING,
+            status=InboxTaskStatus.NOT_STARTED_GEN,
             eisen=eisen or Eisen.REGULAR,
             difficulty=difficulty,
             actionable_date=actionable_date,
@@ -313,7 +308,6 @@ class InboxTask(LeafEntity):
             recurring_timeline=None,
             recurring_repeat_index=None,
             recurring_gen_right_now=None,
-            accepted_time=ctx.action_timestamp,
             working_time=None,
             completed_time=None,
         )
@@ -339,7 +333,7 @@ class InboxTask(LeafEntity):
             inbox_task_collection=ParentLink(inbox_task_collection_ref_id),
             source=InboxTaskSource.METRIC,
             name=InboxTask._build_name_for_collection_task(name),
-            status=InboxTaskStatus.RECURRING,
+            status=InboxTaskStatus.NOT_STARTED_GEN,
             eisen=eisen if eisen else Eisen.REGULAR,
             difficulty=difficulty,
             actionable_date=actionable_date,
@@ -358,7 +352,6 @@ class InboxTask(LeafEntity):
             recurring_timeline=recurring_task_timeline,
             recurring_repeat_index=None,
             recurring_gen_right_now=recurring_task_gen_right_now,
-            accepted_time=ctx.action_timestamp,
             working_time=None,
             completed_time=None,
         )
@@ -384,7 +377,7 @@ class InboxTask(LeafEntity):
             inbox_task_collection=ParentLink(inbox_task_collection_ref_id),
             source=InboxTaskSource.PERSON_CATCH_UP,
             name=InboxTask._build_name_for_catch_up_task(name),
-            status=InboxTaskStatus.RECURRING,
+            status=InboxTaskStatus.NOT_STARTED_GEN,
             eisen=eisen if eisen else Eisen.REGULAR,
             difficulty=difficulty,
             actionable_date=actionable_date,
@@ -403,7 +396,6 @@ class InboxTask(LeafEntity):
             recurring_timeline=recurring_task_timeline,
             recurring_repeat_index=None,
             recurring_gen_right_now=recurring_task_gen_right_now,
-            accepted_time=ctx.action_timestamp,
             working_time=None,
             completed_time=None,
         )
@@ -427,7 +419,7 @@ class InboxTask(LeafEntity):
             inbox_task_collection=ParentLink(inbox_task_collection_ref_id),
             source=InboxTaskSource.PERSON_BIRTHDAY,
             name=InboxTask._build_name_for_birthday_task(name),
-            status=InboxTaskStatus.RECURRING,
+            status=InboxTaskStatus.NOT_STARTED_GEN,
             eisen=Eisen.IMPORTANT,
             difficulty=Difficulty.EASY,
             actionable_date=due_date.subtract_days(preparation_days_cnt),
@@ -446,7 +438,6 @@ class InboxTask(LeafEntity):
             recurring_timeline=recurring_task_timeline,
             recurring_repeat_index=None,
             recurring_gen_right_now=recurring_task_gen_right_now,
-            accepted_time=ctx.action_timestamp,
             working_time=None,
             completed_time=None,
         )
@@ -473,7 +464,7 @@ class InboxTask(LeafEntity):
                 channel,
                 generation_extra_info,
             ),
-            status=generation_extra_info.status or InboxTaskStatus.ACCEPTED,
+            status=generation_extra_info.status or InboxTaskStatus.NOT_STARTED,
             eisen=generation_extra_info.eisen or Eisen.REGULAR,
             difficulty=generation_extra_info.difficulty,
             actionable_date=generation_extra_info.actionable_date,
@@ -492,7 +483,6 @@ class InboxTask(LeafEntity):
             recurring_timeline=None,
             recurring_repeat_index=None,
             recurring_gen_right_now=None,
-            accepted_time=ctx.action_timestamp,
             working_time=None,
             completed_time=None,
         )
@@ -522,7 +512,7 @@ class InboxTask(LeafEntity):
                 to_address,
                 generation_extra_info,
             ),
-            status=generation_extra_info.status or InboxTaskStatus.ACCEPTED,
+            status=generation_extra_info.status or InboxTaskStatus.NOT_STARTED,
             eisen=generation_extra_info.eisen or Eisen.REGULAR,
             difficulty=generation_extra_info.difficulty,
             actionable_date=generation_extra_info.actionable_date,
@@ -547,7 +537,6 @@ class InboxTask(LeafEntity):
             recurring_timeline=None,
             recurring_repeat_index=None,
             recurring_gen_right_now=None,
-            accepted_time=ctx.action_timestamp,
             working_time=None,
             completed_time=None,
         )
@@ -866,35 +855,23 @@ class InboxTask(LeafEntity):
             the_name = self.name
 
         the_status = self.status
-        the_accepted_time = self.accepted_time
         the_working_time = self.working_time
         the_completed_time = self.completed_time
         if status.should_change:
             if (
                 self.source.allow_user_changes
-                and status.just_the_value == InboxTaskStatus.RECURRING
+                and status.just_the_value == InboxTaskStatus.NOT_STARTED_GEN
             ):
                 raise InputValidationError(
                     "Trying to change a user created task to a generated-only status",
                 )
             if (
                 not self.source.allow_user_changes
-                and status.just_the_value == InboxTaskStatus.ACCEPTED
+                and status.just_the_value == InboxTaskStatus.NOT_STARTED
             ):
                 raise InputValidationError(
                     "Trying to change a generated task to a user-only status",
                 )
-
-            if (
-                not self.status.is_accepted_or_more
-                and status.just_the_value.is_accepted_or_more
-            ):
-                the_accepted_time = ctx.action_timestamp
-            elif (
-                self.status.is_accepted_or_more
-                and not status.just_the_value.is_accepted_or_more
-            ):
-                the_accepted_time = None
 
             if (
                 not self.status.is_working_or_more
@@ -942,7 +919,6 @@ class InboxTask(LeafEntity):
             status=the_status,
             actionable_date=the_actionable_date,
             due_date=the_due_date,
-            accepted_time=the_accepted_time,
             working_time=the_working_time,
             completed_time=the_completed_time,
             eisen=the_eisen,

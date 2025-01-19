@@ -4,8 +4,6 @@ export function bigPlanStatusName(status: BigPlanStatus): string {
   switch (status) {
     case BigPlanStatus.NOT_STARTED:
       return "Not Started";
-    case BigPlanStatus.ACCEPTED:
-      return "Accepted";
     case BigPlanStatus.IN_PROGRESS:
       return "In Progress";
     case BigPlanStatus.BLOCKED:
@@ -20,8 +18,6 @@ export function bigPlanStatusName(status: BigPlanStatus): string {
 export function bigPlanStatusIcon(status: BigPlanStatus): string {
   switch (status) {
     case BigPlanStatus.NOT_STARTED:
-      return "📥";
-    case BigPlanStatus.ACCEPTED:
       return "🔧";
     case BigPlanStatus.IN_PROGRESS:
       return "🚧";
@@ -36,11 +32,10 @@ export function bigPlanStatusIcon(status: BigPlanStatus): string {
 
 const BIG_PLAN_STATUS_MAP = {
   [BigPlanStatus.NOT_STARTED]: 0,
-  [BigPlanStatus.ACCEPTED]: 1,
-  [BigPlanStatus.IN_PROGRESS]: 2,
-  [BigPlanStatus.BLOCKED]: 3,
-  [BigPlanStatus.NOT_DONE]: 4,
-  [BigPlanStatus.DONE]: 5,
+  [BigPlanStatus.IN_PROGRESS]: 1,
+  [BigPlanStatus.BLOCKED]: 2,
+  [BigPlanStatus.NOT_DONE]: 3,
+  [BigPlanStatus.DONE]: 4,
 };
 
 export function compareBigPlanStatus(

@@ -114,8 +114,8 @@ const EISENS = [
 ];
 
 const INBOX_TASK_STATUSES = [
-  InboxTaskStatus.ACCEPTED,
-  InboxTaskStatus.RECURRING,
+  InboxTaskStatus.NOT_STARTED,
+  InboxTaskStatus.NOT_STARTED_GEN,
   InboxTaskStatus.IN_PROGRESS,
   InboxTaskStatus.BLOCKED,
   InboxTaskStatus.NOT_DONE,
@@ -297,9 +297,8 @@ export default function InboxTasks() {
   });
   const [collapseInboxTaskStatusColumn, setCollapseInboxTaskStatusColumn] =
     useState({
-      [InboxTaskStatus.NOT_STARTED]: true,
-      [InboxTaskStatus.ACCEPTED]: false,
-      [InboxTaskStatus.RECURRING]: false,
+      [InboxTaskStatus.NOT_STARTED]: false,
+      [InboxTaskStatus.NOT_STARTED_GEN]: false,
       [InboxTaskStatus.IN_PROGRESS]: false,
       [InboxTaskStatus.BLOCKED]: false,
       [InboxTaskStatus.NOT_DONE]: false,
@@ -716,8 +715,8 @@ function SwiftView(props: SwiftViewProps) {
     {
       allowSources: [InboxTaskSource.HABIT],
       allowStatuses: [
-        InboxTaskStatus.ACCEPTED,
-        InboxTaskStatus.RECURRING,
+        InboxTaskStatus.NOT_STARTED,
+        InboxTaskStatus.NOT_STARTED_GEN,
         InboxTaskStatus.IN_PROGRESS,
         InboxTaskStatus.BLOCKED,
       ],
@@ -735,8 +734,8 @@ function SwiftView(props: SwiftViewProps) {
     {
       allowSources: [InboxTaskSource.HABIT],
       allowStatuses: [
-        InboxTaskStatus.ACCEPTED,
-        InboxTaskStatus.RECURRING,
+        InboxTaskStatus.NOT_STARTED,
+        InboxTaskStatus.NOT_STARTED_GEN,
         InboxTaskStatus.IN_PROGRESS,
         InboxTaskStatus.BLOCKED,
       ],
@@ -754,8 +753,8 @@ function SwiftView(props: SwiftViewProps) {
     {
       allowSources: [InboxTaskSource.HABIT],
       allowStatuses: [
-        InboxTaskStatus.ACCEPTED,
-        InboxTaskStatus.RECURRING,
+        InboxTaskStatus.NOT_STARTED,
+        InboxTaskStatus.NOT_STARTED_GEN,
         InboxTaskStatus.IN_PROGRESS,
         InboxTaskStatus.BLOCKED,
       ],
@@ -773,8 +772,8 @@ function SwiftView(props: SwiftViewProps) {
     {
       allowSources: [InboxTaskSource.HABIT],
       allowStatuses: [
-        InboxTaskStatus.ACCEPTED,
-        InboxTaskStatus.RECURRING,
+        InboxTaskStatus.NOT_STARTED,
+        InboxTaskStatus.NOT_STARTED_GEN,
         InboxTaskStatus.IN_PROGRESS,
         InboxTaskStatus.BLOCKED,
       ],
@@ -792,8 +791,8 @@ function SwiftView(props: SwiftViewProps) {
     {
       allowSources: [InboxTaskSource.HABIT],
       allowStatuses: [
-        InboxTaskStatus.ACCEPTED,
-        InboxTaskStatus.RECURRING,
+        InboxTaskStatus.NOT_STARTED,
+        InboxTaskStatus.NOT_STARTED_GEN,
         InboxTaskStatus.IN_PROGRESS,
         InboxTaskStatus.BLOCKED,
       ],
@@ -812,8 +811,8 @@ function SwiftView(props: SwiftViewProps) {
     {
       allowSources: [InboxTaskSource.CHORE],
       allowStatuses: [
-        InboxTaskStatus.ACCEPTED,
-        InboxTaskStatus.RECURRING,
+        InboxTaskStatus.NOT_STARTED,
+        InboxTaskStatus.NOT_STARTED_GEN,
         InboxTaskStatus.IN_PROGRESS,
         InboxTaskStatus.BLOCKED,
       ],
@@ -831,8 +830,8 @@ function SwiftView(props: SwiftViewProps) {
     {
       allowSources: [InboxTaskSource.CHORE],
       allowStatuses: [
-        InboxTaskStatus.ACCEPTED,
-        InboxTaskStatus.RECURRING,
+        InboxTaskStatus.NOT_STARTED,
+        InboxTaskStatus.NOT_STARTED_GEN,
         InboxTaskStatus.IN_PROGRESS,
         InboxTaskStatus.BLOCKED,
       ],
@@ -850,8 +849,8 @@ function SwiftView(props: SwiftViewProps) {
     {
       allowSources: [InboxTaskSource.CHORE],
       allowStatuses: [
-        InboxTaskStatus.ACCEPTED,
-        InboxTaskStatus.RECURRING,
+        InboxTaskStatus.NOT_STARTED,
+        InboxTaskStatus.NOT_STARTED_GEN,
         InboxTaskStatus.IN_PROGRESS,
         InboxTaskStatus.BLOCKED,
       ],
@@ -869,8 +868,8 @@ function SwiftView(props: SwiftViewProps) {
     {
       allowSources: [InboxTaskSource.CHORE],
       allowStatuses: [
-        InboxTaskStatus.ACCEPTED,
-        InboxTaskStatus.RECURRING,
+        InboxTaskStatus.NOT_STARTED,
+        InboxTaskStatus.NOT_STARTED_GEN,
         InboxTaskStatus.IN_PROGRESS,
         InboxTaskStatus.BLOCKED,
       ],
@@ -888,8 +887,8 @@ function SwiftView(props: SwiftViewProps) {
     {
       allowSources: [InboxTaskSource.CHORE],
       allowStatuses: [
-        InboxTaskStatus.ACCEPTED,
-        InboxTaskStatus.RECURRING,
+        InboxTaskStatus.NOT_STARTED,
+        InboxTaskStatus.NOT_STARTED_GEN,
         InboxTaskStatus.IN_PROGRESS,
         InboxTaskStatus.BLOCKED,
       ],
@@ -917,8 +916,8 @@ function SwiftView(props: SwiftViewProps) {
         InboxTaskSource.EMAIL_TASK,
       ],
       allowStatuses: [
-        InboxTaskStatus.ACCEPTED,
-        InboxTaskStatus.RECURRING,
+        InboxTaskStatus.NOT_STARTED,
+        InboxTaskStatus.NOT_STARTED_GEN,
         InboxTaskStatus.IN_PROGRESS,
         InboxTaskStatus.BLOCKED,
       ],
@@ -944,8 +943,8 @@ function SwiftView(props: SwiftViewProps) {
         InboxTaskSource.EMAIL_TASK,
       ],
       allowStatuses: [
-        InboxTaskStatus.ACCEPTED,
-        InboxTaskStatus.RECURRING,
+        InboxTaskStatus.NOT_STARTED,
+        InboxTaskStatus.NOT_STARTED_GEN,
         InboxTaskStatus.IN_PROGRESS,
         InboxTaskStatus.BLOCKED,
       ],
@@ -972,8 +971,8 @@ function SwiftView(props: SwiftViewProps) {
         InboxTaskSource.EMAIL_TASK,
       ],
       allowStatuses: [
-        InboxTaskStatus.ACCEPTED,
-        InboxTaskStatus.RECURRING,
+        InboxTaskStatus.NOT_STARTED,
+        InboxTaskStatus.NOT_STARTED_GEN,
         InboxTaskStatus.IN_PROGRESS,
         InboxTaskStatus.BLOCKED,
       ],
@@ -1000,8 +999,8 @@ function SwiftView(props: SwiftViewProps) {
         InboxTaskSource.EMAIL_TASK,
       ],
       allowStatuses: [
-        InboxTaskStatus.ACCEPTED,
-        InboxTaskStatus.RECURRING,
+        InboxTaskStatus.NOT_STARTED,
+        InboxTaskStatus.NOT_STARTED_GEN,
         InboxTaskStatus.IN_PROGRESS,
         InboxTaskStatus.BLOCKED,
       ],
@@ -1028,8 +1027,8 @@ function SwiftView(props: SwiftViewProps) {
         InboxTaskSource.EMAIL_TASK,
       ],
       allowStatuses: [
-        InboxTaskStatus.ACCEPTED,
-        InboxTaskStatus.RECURRING,
+        InboxTaskStatus.NOT_STARTED,
+        InboxTaskStatus.NOT_STARTED_GEN,
         InboxTaskStatus.IN_PROGRESS,
         InboxTaskStatus.BLOCKED,
       ],
@@ -1661,8 +1660,8 @@ function KanbanBoard({
           inboxTasksByRefId={inboxTasksByRefId}
           moreInfoByRefId={moreInfoByRefId}
           actionableTime={actionableTime}
-          collapsed={collapseInboxTaskStatusColumn[InboxTaskStatus.ACCEPTED]}
-          allowStatus={InboxTaskStatus.ACCEPTED}
+          collapsed={collapseInboxTaskStatusColumn[InboxTaskStatus.NOT_STARTED]}
+          allowStatus={InboxTaskStatus.NOT_STARTED}
           allowEisen={allowEisen}
           showOptions={{
             showSource: true,
@@ -1684,8 +1683,10 @@ function KanbanBoard({
           inboxTasksByRefId={inboxTasksByRefId}
           moreInfoByRefId={moreInfoByRefId}
           actionableTime={actionableTime}
-          collapsed={collapseInboxTaskStatusColumn[InboxTaskStatus.RECURRING]}
-          allowStatus={InboxTaskStatus.RECURRING}
+          collapsed={
+            collapseInboxTaskStatusColumn[InboxTaskStatus.NOT_STARTED_GEN]
+          }
+          allowStatus={InboxTaskStatus.NOT_STARTED_GEN}
           allowEisen={allowEisen}
           showOptions={{
             showSource: true,
@@ -1980,13 +1981,13 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
     props.actionableTime,
     props.topLevelInfo.user.timezone
   );
-  const acceptedTasks = filterInboxTasksForDisplay(
+  const notStartedTasks = filterInboxTasksForDisplay(
     props.inboxTasks,
     props.moreInfoByRefId,
     props.optimisticUpdates,
     {
       allowArchived: false,
-      allowStatuses: [InboxTaskStatus.ACCEPTED],
+      allowStatuses: [InboxTaskStatus.NOT_STARTED],
       includeIfNoActionableDate: true,
       includeIfNoDueDate: true,
       actionableDateEnd: actionableDate,
@@ -1998,7 +1999,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
     props.optimisticUpdates,
     {
       allowArchived: false,
-      allowStatuses: [InboxTaskStatus.RECURRING],
+      allowStatuses: [InboxTaskStatus.NOT_STARTED_GEN],
       includeIfNoActionableDate: true,
       includeIfNoDueDate: true,
       actionableDateEnd: actionableDate,
@@ -2054,7 +2055,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
   );
 
   let initialSmallScreenSelectedTab = 0;
-  if (acceptedTasks.length > 0) {
+  if (notStartedTasks.length > 0) {
     initialSmallScreenSelectedTab = 0;
   } else if (recurringTasks.length > 0) {
     initialSmallScreenSelectedTab = 1;
@@ -2079,18 +2080,20 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
         variant="scrollable"
         onChange={(_, newValue) => setSmallScreenSelectedTab(newValue)}
       >
-        {!props.collapseInboxTaskStatusColumn[InboxTaskStatus.ACCEPTED] && (
+        {!props.collapseInboxTaskStatusColumn[InboxTaskStatus.NOT_STARTED] && (
           <Tab
-            icon={<p>{inboxTaskStatusIcon(InboxTaskStatus.ACCEPTED)}</p>}
+            icon={<p>{inboxTaskStatusIcon(InboxTaskStatus.NOT_STARTED)}</p>}
             iconPosition="top"
-            label={inboxTaskStatusName(InboxTaskStatus.ACCEPTED)}
+            label={inboxTaskStatusName(InboxTaskStatus.NOT_STARTED)}
           />
         )}
-        {!props.collapseInboxTaskStatusColumn[InboxTaskStatus.RECURRING] && (
+        {!props.collapseInboxTaskStatusColumn[
+          InboxTaskStatus.NOT_STARTED_GEN
+        ] && (
           <Tab
-            icon={<p>{inboxTaskStatusIcon(InboxTaskStatus.RECURRING)}</p>}
+            icon={<p>{inboxTaskStatusIcon(InboxTaskStatus.NOT_STARTED_GEN)}</p>}
             iconPosition="top"
-            label={inboxTaskStatusName(InboxTaskStatus.RECURRING)}
+            label={inboxTaskStatusName(InboxTaskStatus.NOT_STARTED_GEN)}
           />
         )}
         {!props.collapseInboxTaskStatusColumn[InboxTaskStatus.IN_PROGRESS] && (
@@ -2124,7 +2127,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
       </Tabs>
 
       <TabPanel value={smallScreenSelectedTab} index={0}>
-        {acceptedTasks.length === 0 && (
+        {notStartedTasks.length === 0 && (
           <NoTasksCard
             parent="inbox task"
             parentNewLocations="/workspace/inbox-tasks/new"
@@ -2142,7 +2145,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
             showDueDate: true,
             showParent: true,
           }}
-          inboxTasks={acceptedTasks}
+          inboxTasks={notStartedTasks}
           optimisticUpdates={props.optimisticUpdates}
           moreInfoByRefId={props.moreInfoByRefId}
           onCardMarkDone={props.onCardMarkDone}

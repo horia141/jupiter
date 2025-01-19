@@ -24,7 +24,6 @@ export type BigPlan = {
     status: BigPlanStatus;
     actionable_date?: (ADate | null);
     due_date?: (ADate | null);
-    accepted_time?: (Timestamp | null);
     working_time?: (Timestamp | null);
     completed_time?: (Timestamp | null);
 };

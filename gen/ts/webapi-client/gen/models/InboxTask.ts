@@ -43,7 +43,6 @@ export type InboxTask = {
     recurring_timeline?: (string | null);
     recurring_repeat_index?: (number | null);
     recurring_gen_right_now?: (Timestamp | null);
-    accepted_time?: (Timestamp | null);
     working_time?: (Timestamp | null);
     completed_time?: (Timestamp | null);
 };

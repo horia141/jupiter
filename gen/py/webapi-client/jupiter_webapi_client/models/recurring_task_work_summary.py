@@ -12,7 +12,7 @@ class RecurringTaskWorkSummary:
 
     Attributes:
         created_cnt (int):
-        accepted_cnt (int):
+        not_started_cnt (int):
         working_cnt (int):
         not_done_cnt (int):
         not_done_ratio (float):
@@ -22,7 +22,7 @@ class RecurringTaskWorkSummary:
     """
 
     created_cnt: int
-    accepted_cnt: int
+    not_started_cnt: int
     working_cnt: int
     not_done_cnt: int
     not_done_ratio: float
@@ -34,7 +34,7 @@ class RecurringTaskWorkSummary:
     def to_dict(self) -> Dict[str, Any]:
         created_cnt = self.created_cnt
 
-        accepted_cnt = self.accepted_cnt
+        not_started_cnt = self.not_started_cnt
 
         working_cnt = self.working_cnt
 
@@ -53,7 +53,7 @@ class RecurringTaskWorkSummary:
         field_dict.update(
             {
                 "created_cnt": created_cnt,
-                "accepted_cnt": accepted_cnt,
+                "not_started_cnt": not_started_cnt,
                 "working_cnt": working_cnt,
                 "not_done_cnt": not_done_cnt,
                 "not_done_ratio": not_done_ratio,
@@ -70,7 +70,7 @@ class RecurringTaskWorkSummary:
         d = src_dict.copy()
         created_cnt = d.pop("created_cnt")
 
-        accepted_cnt = d.pop("accepted_cnt")
+        not_started_cnt = d.pop("not_started_cnt")
 
         working_cnt = d.pop("working_cnt")
 
@@ -86,7 +86,7 @@ class RecurringTaskWorkSummary:
 
         recurring_task_work_summary = cls(
             created_cnt=created_cnt,
-            accepted_cnt=accepted_cnt,
+            not_started_cnt=not_started_cnt,
             working_cnt=working_cnt,
             not_done_cnt=not_done_cnt,
             not_done_ratio=not_done_ratio,

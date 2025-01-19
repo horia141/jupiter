@@ -484,7 +484,7 @@ export default function Chore() {
                     defaultChecked={loaderData.chore.must_do}
                   />
                 }
-                label="Must Do"
+                label="Must Do In Vacation"
               />
               <FieldError actionResult={actionData} fieldName="/must_do" />
             </FormControl>

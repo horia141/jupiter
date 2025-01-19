@@ -130,7 +130,7 @@ class InboxTaskCreateUseCase(
             ctx=context.domain_context,
             inbox_task_collection_ref_id=inbox_task_collection.ref_id,
             name=args.name,
-            status=InboxTaskStatus.ACCEPTED,
+            status=InboxTaskStatus.NOT_STARTED,
             project_ref_id=project_ref_id,
             eisen=args.eisen,
             difficulty=args.difficulty,

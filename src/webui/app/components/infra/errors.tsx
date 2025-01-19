@@ -32,7 +32,7 @@ export function GlobalError(props: GlobalErrorProps) {
     enqueueSnackbar("The values supplied were invalid", {
       key: "errors",
       preventDuplicate: true,
-      autoHideDuration: 10000,
+      autoHideDuration: 6000,
       variant: "error",
     });
   }, [enqueueSnackbar, props.actionResult, props.intent]);
@@ -81,7 +81,7 @@ export function FieldError(props: FieldErrorProps) {
     enqueueSnackbar("The values supplied were invalid", {
       key: "errors",
       preventDuplicate: true,
-      autoHideDuration: 10000,
+      autoHideDuration: 6000,
       variant: "error",
     });
   }, [enqueueSnackbar, props.actionResult, props.fieldName]);

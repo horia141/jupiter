@@ -270,7 +270,7 @@ export function canInboxTaskBeInStatus(
   switch (inboxTasks.source) {
     case InboxTaskSource.USER:
     case InboxTaskSource.BIG_PLAN:
-      if (status === InboxTaskStatus.RECURRING) {
+      if (status === InboxTaskStatus.NOT_STARTED_GEN) {
         return false;
       }
 
@@ -284,7 +284,7 @@ export function canInboxTaskBeInStatus(
     case InboxTaskSource.PERSON_CATCH_UP:
     case InboxTaskSource.SLACK_TASK:
     case InboxTaskSource.EMAIL_TASK:
-      if (status === InboxTaskStatus.ACCEPTED) {
+      if (status === InboxTaskStatus.NOT_STARTED) {
         return false;
       }
 

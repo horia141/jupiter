@@ -9,7 +9,7 @@ import type { NestedResult } from './NestedResult';
  */
 export type InboxTasksSummary = {
     created: NestedResult;
-    accepted: NestedResult;
+    not_started: NestedResult;
     working: NestedResult;
     not_done: NestedResult;
     done: NestedResult;

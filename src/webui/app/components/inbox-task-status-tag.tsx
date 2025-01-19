@@ -14,13 +14,11 @@ export function InboxTaskStatusTag(props: Props) {
 
 function statusToClass(
   status: InboxTaskStatus
-): "default" | "primary" | "info" | "warning" | "success" | "error" {
+): "primary" | "info" | "warning" | "success" | "error" {
   switch (status) {
     case InboxTaskStatus.NOT_STARTED:
-      return "default";
-    case InboxTaskStatus.ACCEPTED:
       return "primary";
-    case InboxTaskStatus.RECURRING:
+    case InboxTaskStatus.NOT_STARTED_GEN:
       return "primary";
     case InboxTaskStatus.IN_PROGRESS:
       return "info";

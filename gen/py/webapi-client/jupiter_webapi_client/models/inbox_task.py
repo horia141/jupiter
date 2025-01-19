@@ -45,7 +45,6 @@ class InboxTask:
         recurring_timeline (Union[None, Unset, str]):
         recurring_repeat_index (Union[None, Unset, int]):
         recurring_gen_right_now (Union[None, Unset, str]):
-        accepted_time (Union[None, Unset, str]):
         working_time (Union[None, Unset, str]):
         completed_time (Union[None, Unset, str]):
     """
@@ -78,7 +77,6 @@ class InboxTask:
     recurring_timeline: Union[None, Unset, str] = UNSET
     recurring_repeat_index: Union[None, Unset, int] = UNSET
     recurring_gen_right_now: Union[None, Unset, str] = UNSET
-    accepted_time: Union[None, Unset, str] = UNSET
     working_time: Union[None, Unset, str] = UNSET
     completed_time: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -210,12 +208,6 @@ class InboxTask:
         else:
             recurring_gen_right_now = self.recurring_gen_right_now
 
-        accepted_time: Union[None, Unset, str]
-        if isinstance(self.accepted_time, Unset):
-            accepted_time = UNSET
-        else:
-            accepted_time = self.accepted_time
-
         working_time: Union[None, Unset, str]
         if isinstance(self.working_time, Unset):
             working_time = UNSET
@@ -279,8 +271,6 @@ class InboxTask:
             field_dict["recurring_repeat_index"] = recurring_repeat_index
         if recurring_gen_right_now is not UNSET:
             field_dict["recurring_gen_right_now"] = recurring_gen_right_now
-        if accepted_time is not UNSET:
-            field_dict["accepted_time"] = accepted_time
         if working_time is not UNSET:
             field_dict["working_time"] = working_time
         if completed_time is not UNSET:
@@ -474,15 +464,6 @@ class InboxTask:
 
         recurring_gen_right_now = _parse_recurring_gen_right_now(d.pop("recurring_gen_right_now", UNSET))
 
-        def _parse_accepted_time(data: object) -> Union[None, Unset, str]:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(Union[None, Unset, str], data)
-
-        accepted_time = _parse_accepted_time(d.pop("accepted_time", UNSET))
-
         def _parse_working_time(data: object) -> Union[None, Unset, str]:
             if data is None:
                 return data
@@ -530,7 +511,6 @@ class InboxTask:
             recurring_timeline=recurring_timeline,
             recurring_repeat_index=recurring_repeat_index,
             recurring_gen_right_now=recurring_gen_right_now,
-            accepted_time=accepted_time,
             working_time=working_time,
             completed_time=completed_time,
         )

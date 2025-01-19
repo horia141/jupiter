@@ -7,7 +7,6 @@
  */
 export enum BigPlanStatus {
     NOT_STARTED = 'not-started',
-    ACCEPTED = 'accepted',
     IN_PROGRESS = 'in-progress',
     BLOCKED = 'blocked',
     NOT_DONE = 'not-done',

@@ -120,7 +120,7 @@ export default function BigPlans() {
         intent: "archive",
         name: "NOT USED - FOR ARCHIVE ONLY",
         project: "NOT USED - FOR ARCHIVE ONLY",
-        status: BigPlanStatus.ACCEPTED,
+        status: BigPlanStatus.NOT_STARTED,
       },
       {
         method: "post",

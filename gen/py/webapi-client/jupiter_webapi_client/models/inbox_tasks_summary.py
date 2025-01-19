@@ -16,14 +16,14 @@ class InboxTasksSummary:
 
     Attributes:
         created (NestedResult): A result broken down by the various sources of inbox tasks.
-        accepted (NestedResult): A result broken down by the various sources of inbox tasks.
+        not_started (NestedResult): A result broken down by the various sources of inbox tasks.
         working (NestedResult): A result broken down by the various sources of inbox tasks.
         not_done (NestedResult): A result broken down by the various sources of inbox tasks.
         done (NestedResult): A result broken down by the various sources of inbox tasks.
     """
 
     created: "NestedResult"
-    accepted: "NestedResult"
+    not_started: "NestedResult"
     working: "NestedResult"
     not_done: "NestedResult"
     done: "NestedResult"
@@ -32,7 +32,7 @@ class InboxTasksSummary:
     def to_dict(self) -> Dict[str, Any]:
         created = self.created.to_dict()
 
-        accepted = self.accepted.to_dict()
+        not_started = self.not_started.to_dict()
 
         working = self.working.to_dict()
 
@@ -45,7 +45,7 @@ class InboxTasksSummary:
         field_dict.update(
             {
                 "created": created,
-                "accepted": accepted,
+                "not_started": not_started,
                 "working": working,
                 "not_done": not_done,
                 "done": done,
@@ -61,7 +61,7 @@ class InboxTasksSummary:
         d = src_dict.copy()
         created = NestedResult.from_dict(d.pop("created"))
 
-        accepted = NestedResult.from_dict(d.pop("accepted"))
+        not_started = NestedResult.from_dict(d.pop("not_started"))
 
         working = NestedResult.from_dict(d.pop("working"))
 
@@ -71,7 +71,7 @@ class InboxTasksSummary:
 
         inbox_tasks_summary = cls(
             created=created,
-            accepted=accepted,
+            not_started=not_started,
             working=working,
             not_done=not_done,
             done=done,

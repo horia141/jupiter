@@ -475,9 +475,9 @@ export default function InboxTask() {
                       inboxTask.source === InboxTaskSource.SLACK_TASK ||
                       inboxTask.source === InboxTaskSource.EMAIL_TASK
                     ) {
-                      return s !== InboxTaskStatus.RECURRING;
+                      return s !== InboxTaskStatus.NOT_STARTED_GEN;
                     } else {
-                      return s !== InboxTaskStatus.ACCEPTED;
+                      return s !== InboxTaskStatus.NOT_STARTED;
                     }
                   })
                   .map((s) => (
