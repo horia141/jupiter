@@ -1,5 +1,6 @@
 """The command for updating a email task."""
 
+from jupiter.core.domain.application.gen.service.gen_service import GenService
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
     InboxTaskCollection,
@@ -20,6 +21,7 @@ from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.core.email_address import EmailAddress
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
+from jupiter.core.domain.sync_target import SyncTarget
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
@@ -142,3 +144,23 @@ class EmailTaskUpdateUseCase(
 
         await uow.get_for(EmailTask).save(email_task)
         await progress_reporter.mark_updated(email_task)
+
+    async def _perform_post_mutation_work(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppLoggedInMutationUseCaseContext,
+        args: EmailTaskUpdateArgs,
+        result: None,
+    ) -> None:
+        """Execute the command's post-mutation work."""
+        await GenService(self._domain_storage_engine).do_it(
+            context.domain_context,
+            progress_reporter=progress_reporter,
+            user=context.user,
+            workspace=context.workspace,
+            gen_even_if_not_modified=False,
+            today=self._time_provider.get_current_date(),
+            gen_targets=[SyncTarget.EMAIL_TASKS],
+            period=None,
+            filter_email_task_ref_ids=[args.ref_id],
+        )

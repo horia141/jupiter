@@ -1,5 +1,6 @@
 """The command for creating a metric."""
 
+from jupiter.core.domain.application.gen.service.gen_service import GenService
 from jupiter.core.domain.concept.metrics.metric import Metric
 from jupiter.core.domain.concept.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.concept.metrics.metric_name import MetricName
@@ -13,6 +14,7 @@ from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenP
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
+from jupiter.core.domain.sync_target import SyncTarget
 from jupiter.core.framework.use_case import (
     ProgressReporter,
 )
@@ -96,3 +98,25 @@ class MetricCreateUseCase(
         await progress_reporter.mark_created(new_metric)
 
         return MetricCreateResult(new_metric=new_metric)
+
+    async def _perform_post_mutation_work(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppLoggedInMutationUseCaseContext,
+        args: MetricCreateArgs,
+        result: MetricCreateResult,
+    ) -> None:
+        """Execute the command's post-mutation work."""
+        if args.collection_period is None:
+            return
+        await GenService(self._domain_storage_engine).do_it(
+            context.domain_context,
+            progress_reporter=progress_reporter,
+            user=context.user,
+            workspace=context.workspace,
+            gen_even_if_not_modified=False,
+            today=self._time_provider.get_current_date(),
+            gen_targets=[SyncTarget.METRICS],
+            period=[args.collection_period],
+            filter_metric_ref_ids=[result.new_metric.ref_id],
+        )

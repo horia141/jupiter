@@ -10,6 +10,7 @@ import { Link } from "@remix-run/react";
 
 interface NoTasksCardProps {
   parent: string;
+  parentLabel: string;
   parentNewLocations: string;
 }
 
@@ -28,17 +29,9 @@ export function NoTasksCard(props: NoTasksCardProps) {
           variant="contained"
           size="small"
           component={Link}
-          to="/workspace/tools/gen"
-        >
-          Generate
-        </Button>
-        <Button
-          variant="contained"
-          size="small"
-          component={Link}
           to={props.parentNewLocations}
         >
-          Create
+          {props.parentLabel}
         </Button>
       </CardActions>
     </Card>

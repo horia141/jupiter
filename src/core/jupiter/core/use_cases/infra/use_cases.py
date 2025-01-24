@@ -480,9 +480,11 @@ class AppTransactionalLoggedInMutationUseCase(
     ) -> UseCaseResult:
         """Execute the command's action."""
         async with self._domain_storage_engine.get_unit_of_work() as uow:
-            return await self._perform_transactional_mutation(
+            result = await self._perform_transactional_mutation(
                 uow, progress_reporter, context, args
             )
+        await self._perform_post_mutation_work(progress_reporter, context, args, result)
+        return result
 
     @abc.abstractmethod
     async def _perform_transactional_mutation(
@@ -492,6 +494,15 @@ class AppTransactionalLoggedInMutationUseCase(
         context: AppLoggedInMutationUseCaseContext,
         args: UseCaseArgs,
     ) -> UseCaseResult:
+        """Execute the command's action."""
+
+    async def _perform_post_mutation_work(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppLoggedInMutationUseCaseContext,
+        args: UseCaseArgs,
+        results: UseCaseResult,
+    ) -> None:
         """Execute the command's action."""
 
 

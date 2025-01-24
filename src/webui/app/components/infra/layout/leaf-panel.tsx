@@ -74,6 +74,10 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
       return;
     }
 
+    if (location.pathname.endsWith("/new")) {
+      return;
+    }
+
     function handleScrollSpecial() {
       handleScroll(theRef, location.pathname);
     }

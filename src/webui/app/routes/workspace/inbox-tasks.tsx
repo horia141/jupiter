@@ -56,6 +56,7 @@ import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
+import { NoNothingCard } from "~/components/no-nothing-card";
 import { NoTasksCard } from "~/components/no-tasks-card";
 import { TabPanel } from "~/components/tab-panel";
 import { GlobalPropertiesContext } from "~/global-properties-client";
@@ -1423,18 +1424,27 @@ function SwiftView(props: SwiftViewProps) {
   const noNothing = noHabits && noChores && noRests;
 
   const noHabitsCard = (
-    <NoTasksCard parent="habit" parentNewLocations="/workspace/habits/new" />
+    <NoTasksCard
+      parent="habit"
+      parentLabel="New Habit"
+      parentNewLocations="/workspace/habits/new"
+    />
   );
   const noChoresCard = (
-    <NoTasksCard parent="chore" parentNewLocations="/workspace/chores/new" />
+    <NoTasksCard
+      parent="chore"
+      parentLabel="New Chore"
+      parentNewLocations="/workspace/chores/new"
+    />
   );
   const noRestsCard = (
     <NoTasksCard
       parent="inbox task"
+      parentLabel="New Task"
       parentNewLocations="/workspace/inbox-tasks/new"
     />
   );
-  const noNothingCard = noRestsCard;
+  const noNothingCard = <NoNothingCard />;
 
   let initialSmallScreenSelectedTab = 0;
   if (!noHabits) {
@@ -1539,6 +1549,7 @@ function BigScreenKanbanByEisen({
       {inboxTasks.length === 0 && (
         <NoTasksCard
           parent="inbox task"
+          parentLabel="New Task"
           parentNewLocations="/workspace/inbox-tasks/new"
         />
       )}
@@ -1603,6 +1614,7 @@ function BigScreenKanban({
       {inboxTasks.length === 0 && (
         <NoTasksCard
           parent="inbox task"
+          parentLabel="New Task"
           parentNewLocations="/workspace/inbox-tasks/new"
         />
       )}
@@ -2130,6 +2142,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
         {notStartedTasks.length === 0 && (
           <NoTasksCard
             parent="inbox task"
+            parentLabel="New Task"
             parentNewLocations="/workspace/inbox-tasks/new"
           />
         )}
@@ -2157,6 +2170,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
         {recurringTasks.length === 0 && (
           <NoTasksCard
             parent="inbox task"
+            parentLabel="New Task"
             parentNewLocations="/workspace/inbox-tasks/new"
           />
         )}
@@ -2184,6 +2198,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
         {inProgressTasks.length === 0 && (
           <NoTasksCard
             parent="inbox task"
+            parentLabel="New Task"
             parentNewLocations="/workspace/inbox-tasks/new"
           />
         )}
@@ -2211,6 +2226,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
         {blockedTasks.length === 0 && (
           <NoTasksCard
             parent="inbox task"
+            parentLabel="New Task"
             parentNewLocations="/workspace/inbox-tasks/new"
           />
         )}
@@ -2238,6 +2254,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
         {notDoneTasks.length === 0 && (
           <NoTasksCard
             parent="inbox task"
+            parentLabel="New Task"
             parentNewLocations="/workspace/inbox-tasks/new"
           />
         )}
@@ -2265,6 +2282,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
         {doneTasks.length === 0 && (
           <NoTasksCard
             parent="inbox task"
+            parentLabel="New Task"
             parentNewLocations="/workspace/inbox-tasks/new"
           />
         )}
@@ -2315,6 +2333,7 @@ function List({
       {inboxTasks.length === 0 && (
         <NoTasksCard
           parent="inbox task"
+          parentLabel="New Task"
           parentNewLocations="/workspace/inbox-tasks/new"
         />
       )}

@@ -1,5 +1,6 @@
 """The command for creating a chore."""
 
+from jupiter.core.domain.application.gen.service.gen_service import GenService
 from jupiter.core.domain.concept.chores.chore import Chore
 from jupiter.core.domain.concept.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.concept.chores.chore_name import ChoreName
@@ -18,6 +19,7 @@ from jupiter.core.domain.features import (
     WorkspaceFeature,
 )
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
+from jupiter.core.domain.sync_target import SyncTarget
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     ProgressReporter,
@@ -123,3 +125,23 @@ class ChoreCreateUseCase(
         await progress_reporter.mark_created(new_chore)
 
         return ChoreCreateResult(new_chore=new_chore)
+
+    async def _perform_post_mutation_work(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppLoggedInMutationUseCaseContext,
+        args: ChoreCreateArgs,
+        result: ChoreCreateResult,
+    ) -> None:
+        """Execute the command's post-mutation work."""
+        await GenService(self._domain_storage_engine).do_it(
+            context.domain_context,
+            progress_reporter=progress_reporter,
+            user=context.user,
+            workspace=context.workspace,
+            gen_even_if_not_modified=False,
+            today=self._time_provider.get_current_date(),
+            gen_targets=[SyncTarget.CHORES],
+            period=[args.period],
+            filter_chore_ref_ids=[result.new_chore.ref_id],
+        )

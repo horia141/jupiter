@@ -90,13 +90,13 @@ class GenService:
         today: ADate,
         gen_targets: list[SyncTarget],
         period: list[RecurringTaskPeriod] | None,
-        filter_project_ref_ids: list[EntityId] | None,
-        filter_habit_ref_ids: list[EntityId] | None,
-        filter_chore_ref_ids: list[EntityId] | None,
-        filter_metric_ref_ids: list[EntityId] | None,
-        filter_person_ref_ids: list[EntityId] | None,
-        filter_slack_task_ref_ids: list[EntityId] | None,
-        filter_email_task_ref_ids: list[EntityId] | None,
+        filter_project_ref_ids: list[EntityId] | None = None,
+        filter_habit_ref_ids: list[EntityId] | None = None,
+        filter_chore_ref_ids: list[EntityId] | None = None,
+        filter_metric_ref_ids: list[EntityId] | None = None,
+        filter_person_ref_ids: list[EntityId] | None = None,
+        filter_slack_task_ref_ids: list[EntityId] | None = None,
+        filter_email_task_ref_ids: list[EntityId] | None = None,
     ) -> None:
         """Execute the service's action."""
         big_diff = list(
