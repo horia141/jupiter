@@ -7,11 +7,5 @@ interface Props {
 }
 
 export function SlackTaskTag(props: Props) {
-  return (
-    <LinkTag
-      to={`/workspace/slack-tasks/${props.slackTask.ref_id}`}
-      label={slackTaskNiceName(props.slackTask)}
-      color="primary"
-    />
-  );
+  return <LinkTag label={slackTaskNiceName(props.slackTask)} color="primary" />;
 }

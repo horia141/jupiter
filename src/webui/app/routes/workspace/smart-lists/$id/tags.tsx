@@ -14,7 +14,7 @@ import { z } from "zod";
 import { parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
-import { EntityCard } from "~/components/infra/entity-card";
+import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { BranchPanel } from "~/components/infra/layout/branch-panel";
@@ -132,12 +132,11 @@ export default function SmartListViewTags() {
               allowMarkNotDone
               onMarkNotDone={() => archiveTag(tag)}
             >
-              <Link
+              <EntityLink
                 to={`/workspace/smart-lists/${loaderData.smartList.ref_id}/tags/${tag.ref_id}`}
-                prefetch="none"
               >
                 <SmartListTagTag tag={tag} />
-              </Link>
+              </EntityLink>
             </EntityCard>
           ))}
         </EntityStack>

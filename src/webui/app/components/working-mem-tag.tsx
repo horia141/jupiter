@@ -6,11 +6,5 @@ interface Props {
 }
 
 export function WorkingMemTag(props: Props) {
-  return (
-    <LinkTag
-      to={`/workspace/working-mem/archive/${props.workingMem.ref_id}`}
-      label={props.workingMem.name}
-      color="primary"
-    />
-  );
+  return <LinkTag label={props.workingMem.name} color="primary" />;
 }

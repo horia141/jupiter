@@ -1,13 +1,6 @@
 import type {
   BigPlan,
-  Chore,
-  EmailTask,
-  Habit,
-  Metric,
-  Person,
   ProjectSummary,
-  SlackTask,
-  WorkingMem,
   Workspace,
 } from "@jupiter/webapi-client";
 import {
@@ -23,6 +16,7 @@ import {
 import type { SelectChangeEvent } from "@mui/material";
 import {
   Autocomplete,
+  Box,
   Button,
   ButtonGroup,
   Card,
@@ -49,22 +43,15 @@ import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { BigPlanTag } from "~/components/big-plan-tag";
-import { ChoreTag } from "~/components/chore-tag";
-import { EmailTaskTag } from "~/components/email-task-tag";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
-import { HabitTag } from "~/components/habit-tag";
+import { InboxTaskSourceLink } from "~/components/inbox-task-source-link";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { SectionCardNew } from "~/components/infra/section-card-new";
-import { MetricTag } from "~/components/metric-tag";
-import { PersonTag } from "~/components/person-tag";
-import { SlackTaskTag } from "~/components/slack-task-tag";
 import { TimeEventInDayBlockStack } from "~/components/time-event-in-day-block-stack";
 import { TimePlanActivityList } from "~/components/time-plan-activity-list";
-import { WorkingMemTag } from "~/components/working-mem-tag";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
 import { difficultyName } from "~/logic/domain/difficulty";
@@ -445,18 +432,20 @@ export default function InboxTask() {
         <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <InputLabel id="name">Name</InputLabel>
-              <OutlinedInput
-                label="Name"
-                name="name"
-                readOnly={!inputsEnabled || !corePropertyEditable}
-                defaultValue={inboxTask.name}
-              />
-              <FieldError actionResult={actionData} fieldName="/name" />
-            </FormControl>
-
-            <input type="hidden" name="source" value={inboxTask.source} />
+            <Box sx={{ display: "flex", flexDirection: "row", gap: "0.25rem" }}>
+              <FormControl fullWidth>
+                <InputLabel id="name">Name</InputLabel>
+                <OutlinedInput
+                  label="Name"
+                  name="name"
+                  readOnly={!inputsEnabled || !corePropertyEditable}
+                  defaultValue={inboxTask.name}
+                />
+                <FieldError actionResult={actionData} fieldName="/name" />
+                <input type="hidden" name="source" value={inboxTask.source} />
+              </FormControl>
+              <InboxTaskSourceLink inboxTaskResult={info} />
+            </Box>
 
             <FormControl fullWidth>
               <InputLabel id="status">Status</InputLabel>
@@ -488,14 +477,6 @@ export default function InboxTask() {
               </Select>
               <FieldError actionResult={actionData} fieldName="/status" />
             </FormControl>
-
-            {isWorkspaceFeatureAvailable(
-              topLevelInfo.workspace,
-              WorkspaceFeature.WORKING_MEM
-            ) &&
-              inboxTask.source === InboxTaskSource.WORKING_MEM_CLEANUP && (
-                <WorkingMemTag workingMem={info.working_mem as WorkingMem} />
-              )}
 
             {isWorkspaceFeatureAvailable(
               topLevelInfo.workspace,
@@ -532,57 +513,7 @@ export default function InboxTask() {
                       value={selectedBigPlan.big_plan_id}
                     />
                   </FormControl>
-                  {info.big_plan && <BigPlanTag bigPlan={info.big_plan} />}
                 </>
-              )}
-
-            {isWorkspaceFeatureAvailable(
-              topLevelInfo.workspace,
-              WorkspaceFeature.HABITS
-            ) &&
-              inboxTask.source === InboxTaskSource.HABIT && (
-                <HabitTag habit={info.habit as Habit} />
-              )}
-
-            {isWorkspaceFeatureAvailable(
-              topLevelInfo.workspace,
-              WorkspaceFeature.CHORES
-            ) &&
-              inboxTask.source === InboxTaskSource.CHORE && (
-                <ChoreTag chore={info.chore as Chore} />
-              )}
-
-            {isWorkspaceFeatureAvailable(
-              topLevelInfo.workspace,
-              WorkspaceFeature.PERSONS
-            ) &&
-              (inboxTask.source === InboxTaskSource.PERSON_CATCH_UP ||
-                inboxTask.source === InboxTaskSource.PERSON_BIRTHDAY) && (
-                <PersonTag person={info.person as Person} />
-              )}
-
-            {isWorkspaceFeatureAvailable(
-              topLevelInfo.workspace,
-              WorkspaceFeature.METRICS
-            ) &&
-              inboxTask.source === InboxTaskSource.METRIC && (
-                <MetricTag metric={info.metric as Metric} />
-              )}
-
-            {isWorkspaceFeatureAvailable(
-              topLevelInfo.workspace,
-              WorkspaceFeature.SLACK_TASKS
-            ) &&
-              inboxTask.source === InboxTaskSource.SLACK_TASK && (
-                <SlackTaskTag slackTask={info.slack_task as SlackTask} />
-              )}
-
-            {isWorkspaceFeatureAvailable(
-              topLevelInfo.workspace,
-              WorkspaceFeature.EMAIL_TASKS
-            ) &&
-              inboxTask.source === InboxTaskSource.EMAIL_TASK && (
-                <EmailTaskTag emailTask={info.email_task as EmailTask} />
               )}
 
             {isWorkspaceFeatureAvailable(

@@ -7,11 +7,5 @@ interface Props {
 }
 
 export function EmailTaskTag(props: Props) {
-  return (
-    <LinkTag
-      to={`/workspace/email-tasks/${props.emailTask.ref_id}`}
-      label={emailTaskNiceName(props.emailTask)}
-      color="primary"
-    />
-  );
+  return <LinkTag label={emailTaskNiceName(props.emailTask)} color="primary" />;
 }

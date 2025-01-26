@@ -378,7 +378,7 @@ function BigScreenTimeline({ thisYear, bigPlans }: BigScreenTimelineProps) {
 
             return (
               <TableRow key={entry.ref_id}>
-                <TableCell>
+                <TableCell sx={{ padding: "0px" }}>
                   <EntityLink to={`/workspace/big-plans/${entry.ref_id}`}>
                     <EntityNameOneLineComponent name={entry.name} />
                   </EntityLink>

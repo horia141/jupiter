@@ -67,30 +67,30 @@ export function BigPlanCard(props: BigPlanCardProps) {
           compact={props.compact}
           name={props.bigPlan.name}
         />
-      </EntityLink>
-      <Divider />
-      {props.showOptions.showStatus && (
-        <BigPlanStatusTag status={props.bigPlan.status} />
-      )}
-      {props.showOptions.showParent &&
-        isWorkspaceFeatureAvailable(
-          props.topLevelInfo.workspace,
-          WorkspaceFeature.PROJECTS
-        ) &&
-        props.parent && (
-          <ProjectTag project={props.parent.project as Project} />
+        <Divider />
+        {props.showOptions.showStatus && (
+          <BigPlanStatusTag status={props.bigPlan.status} />
         )}
+        {props.showOptions.showParent &&
+          isWorkspaceFeatureAvailable(
+            props.topLevelInfo.workspace,
+            WorkspaceFeature.PROJECTS
+          ) &&
+          props.parent && (
+            <ProjectTag project={props.parent.project as Project} />
+          )}
 
-      {props.showOptions.showActionableDate &&
-        props.bigPlan.actionable_date && (
-          <ADateTag
-            label="Actionable Date"
-            date={props.bigPlan.actionable_date}
-          />
+        {props.showOptions.showActionableDate &&
+          props.bigPlan.actionable_date && (
+            <ADateTag
+              label="Actionable Date"
+              date={props.bigPlan.actionable_date}
+            />
+          )}
+        {props.showOptions.showDueDate && props.bigPlan.due_date && (
+          <ADateTag label="Due Date" date={props.bigPlan.due_date} />
         )}
-      {props.showOptions.showDueDate && props.bigPlan.due_date && (
-        <ADateTag label="Due Date" date={props.bigPlan.due_date} />
-      )}
+      </EntityLink>
     </EntityCard>
   );
 }

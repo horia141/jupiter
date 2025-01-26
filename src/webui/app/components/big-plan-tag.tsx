@@ -6,11 +6,5 @@ interface Props {
 }
 
 export function BigPlanTag(props: Props) {
-  return (
-    <LinkTag
-      to={`/workspace/big-plans/${props.bigPlan.ref_id}`}
-      label={props.bigPlan.name}
-      color="primary"
-    />
-  );
+  return <LinkTag label={props.bigPlan.name} color="primary" />;
 }

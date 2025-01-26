@@ -116,7 +116,9 @@ export function EntityCard(props: PropsWithChildren<EntityCardProps>) {
         }}
         onClick={props.onClick}
       >
-        <CardContent>{props.children}</CardContent>
+        <CardContent sx={{ flexGrow: "1", padding: "0px" }}>
+          {props.children}
+        </CardContent>
 
         <CardActions
           sx={{
@@ -157,9 +159,10 @@ export function EntityLink(props: PropsWithChildren<EntityLinkProps>) {
   if (!(props.block === true)) {
     return (
       <StyledLink
+        onMouseDown={(e) => e.preventDefault()}
         to={props.to}
-        inline={props.inline ? "true" : "false"}
-        light={props.light ? "true" : "false"}
+        inline={props.inline === true ? "true" : "false"}
+        light={props.light === true ? "true" : "false"}
       >
         {props.children}
       </StyledLink>
@@ -192,7 +195,9 @@ const StyledLink = styled(Link)<StyledLinkProps>(
     },
     display: "flex",
     gap: "0.5rem",
+    flexGrow: "1",
     flexWrap: "wrap",
+    padding: inline === "true" ? undefined : "16px",
     alignItems: "center",
   })
 );

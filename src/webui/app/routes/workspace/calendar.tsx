@@ -1357,6 +1357,7 @@ function ViewAsCalendarTimeEventFullDaysCell(
           <EntityLink
             key={`schedule-event-full-days-${fullDaysEntry.event.ref_id}`}
             to={`/workspace/calendar/schedule/event-full-days/${fullDaysEntry.event.ref_id}?${query}`}
+            inline
           >
             <EntityNameComponent
               name={clippedName}
@@ -1400,6 +1401,7 @@ function ViewAsCalendarTimeEventFullDaysCell(
           <EntityLink
             key={`person-birthday-event-${fullDaysEntry.person.ref_id}`}
             to={`/workspace/calendar/time-event/full-days-block/${fullDaysEntry.birthday_time_event.ref_id}?${query}`}
+            inline
           >
             <EntityNameComponent
               name={clippedName}
