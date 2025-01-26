@@ -15,11 +15,9 @@ import {
   CardContent,
   CardHeader,
   FormControl,
-  FormControlLabel,
   InputLabel,
   OutlinedInput,
   Stack,
-  Switch,
   Typography,
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
@@ -34,7 +32,7 @@ import {
 import { StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
-import { CheckboxAsString, parseForm } from "zodix";
+import { parseForm } from "zodix";
 import { getGuestApiClient } from "~/api-clients.server";
 import { CommunityLink } from "~/components/community-link";
 import { DocsHelp, DocsHelpSubject } from "~/components/docs-help";
@@ -72,7 +70,7 @@ const WorkspaceInitFormSchema = {
   workspaceRootProjectName: z.string(),
   workspaceFirstScheduleStreamName: z.string(),
   workspaceFeatureFlags: z.array(z.nativeEnum(WorkspaceFeature)),
-  forAppReview: CheckboxAsString,
+  // forAppReview: CheckboxAsString,
 };
 
 // @secureFn
@@ -113,7 +111,8 @@ export async function action({ request }: ActionArgs) {
       workspace_first_schedule_stream_name:
         form.workspaceFirstScheduleStreamName,
       workspace_feature_flags: form.workspaceFeatureFlags,
-      for_app_review: form.forAppReview,
+      // for_app_review: form.forAppReview,
+      for_app_review: false,
     });
 
     session.set(AUTH_TOKEN_NAME, result.auth_token_ext);
@@ -295,12 +294,12 @@ export default function WorkspaceInit() {
                         />
                       </FormControl>
 
-                      <FormControl fullWidth>
+                      {/* <FormControl fullWidth>
                         <FormControlLabel
                           control={<Switch name="forAppReview" />}
                           label="For App Review"
                         />
-                      </FormControl>
+                      </FormControl> */}
                     </Stack>
                   </AccordionDetails>
                 </Accordion>
