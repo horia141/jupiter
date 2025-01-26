@@ -1,5 +1,12 @@
 import { ApiError, ScheduleStreamColor } from "@jupiter/webapi-client";
-import { FormControl, InputLabel, OutlinedInput, Stack } from "@mui/material";
+import {
+  Divider,
+  FormControl,
+  InputLabel,
+  OutlinedInput,
+  Stack,
+  Typography,
+} from "@mui/material";
 import type { ActionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -100,6 +107,10 @@ export default function ScheduleStreamNew() {
         }
       >
         <Stack spacing={2} useFlexGap>
+          <Typography variant="body1">
+            In Google Calendar be sure to use the secret address in iCal format.
+          </Typography>
+          <Divider />
           <FormControl fullWidth>
             <InputLabel id="sourceIcalUrl">Source iCal URL</InputLabel>
             <OutlinedInput

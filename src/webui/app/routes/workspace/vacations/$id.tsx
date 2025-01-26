@@ -99,7 +99,7 @@ export async function action({ request, params }: ActionArgs) {
           },
         });
 
-        return redirect(`/workspace/vacations/${id}`);
+        return redirect(`/workspace/vacations`);
       }
 
       case "create-note": {
@@ -116,7 +116,7 @@ export async function action({ request, params }: ActionArgs) {
         await apiClient.vacations.vacationArchive({
           ref_id: id,
         });
-        return redirect(`/workspace/vacations/${id}`);
+        return redirect(`/workspace/vacations`);
       }
 
       default:

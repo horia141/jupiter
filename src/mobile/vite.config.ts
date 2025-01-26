@@ -25,6 +25,8 @@ export default defineConfig({
     plugins: [
         handlebars({
             context: {
+                android: process.env.BUILD_TARGET === 'android',
+                ios: process.env.BUILD_TARGET === 'ios',
                 title: process.env.PUBLIC_NAME,
                 clientVersion: process.env.VERSION,
                 webUiUrl: WEBUI_URL,

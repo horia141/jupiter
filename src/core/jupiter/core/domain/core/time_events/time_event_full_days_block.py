@@ -84,7 +84,7 @@ class TimeEventFullDaysBlock(LeafSupportEntity):
         end_date: ADate,
     ) -> "TimeEventFullDaysBlock":
         """Create a new time event."""
-        duration_days = end_date.days_since(start_date)
+        duration_days = end_date.days_since(start_date) + 1
         if duration_days < 1:
             raise InputValidationError("Duration must be at least 1 day.")
         return TimeEventFullDaysBlock._create(
@@ -139,7 +139,7 @@ class TimeEventFullDaysBlock(LeafSupportEntity):
         end_date: ADate,
     ) -> "TimeEventFullDaysBlock":
         """Update the time event."""
-        duration_days = end_date.days_since(start_date)
+        duration_days = end_date.days_since(start_date) + 1
         if duration_days < 1:
             raise InputValidationError("Duration must be at least 1 day.")
         return self._new_version(

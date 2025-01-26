@@ -22,13 +22,13 @@ ARCHIVE_PATH=../../.build-cache/mobile/ios/v${VERSION}/build.xcarchive
 EXPORT_OPTIONS_PLIST=ios/App/archive.plist
 IPA_PATH=../../.build-cache/mobile/ios/v${VERSION}/build
 
-mkdir -p .build-cache/desktop
+mkdir -p .build-cache/mobile
 
 cd src/mobile
 
 npx @capacitor/assets generate --iconBackgroundColor '#eeeeee' --iconBackgroundColorDark '#222222' --splashBackgroundColor '#eeeeee' --splashBackgroundColorDark '#111111'  --ios --android
 npx trapeze run config.yaml --diff
-ENV=production HOSTING=hosted-global npx vite build --mode production --config vite.config.ts
+ENV=production HOSTING=hosted-global BUILD_TARGET=ios npx vite build --mode production --config vite.config.ts
 ENV=production HOSTING=hosted-global npx cap copy
 
 xcodebuild clean \

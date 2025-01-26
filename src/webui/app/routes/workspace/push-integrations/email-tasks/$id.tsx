@@ -175,7 +175,7 @@ export async function action({ request, params }: ActionArgs) {
           },
         });
 
-        return redirect(`/workspace/push-integrations/email-tasks/${id}`);
+        return redirect(`/workspace/push-integrations/email-tasks`);
       }
 
       case "archive": {
@@ -183,7 +183,7 @@ export async function action({ request, params }: ActionArgs) {
           ref_id: id,
         });
 
-        return redirect(`/workspace/push-integrations/email-tasks/${id}`);
+        return redirect(`/workspace/push-integrations/email-tasks`);
       }
 
       default:

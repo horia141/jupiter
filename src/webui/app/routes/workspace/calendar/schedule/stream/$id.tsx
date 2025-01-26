@@ -119,7 +119,7 @@ export async function action({ request, params }: ActionArgs) {
         });
 
         return redirect(
-          `/workspace/calendar/schedule/stream/${id}?${url.searchParams}`
+          `/workspace/calendar/schedule/stream?${url.searchParams}`
         );
       }
 
@@ -152,7 +152,7 @@ export async function action({ request, params }: ActionArgs) {
         });
 
         return redirect(
-          `/workspace/calendar/schedule/stream/${id}?${url.searchParams}`
+          `/workspace/calendar/schedule/stream?${url.searchParams}`
         );
       }
 

@@ -22,5 +22,5 @@ fi
 
 cd src/mobile
 
-npx vite build
+BUILD_TARGET=$PLATFORM npx vite build
 npx cap run $PLATFORM

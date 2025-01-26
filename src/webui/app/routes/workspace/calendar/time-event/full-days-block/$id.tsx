@@ -78,12 +78,10 @@ export async function loader({ request, params }: LoaderArgs) {
 
 export async function action({ request, params }: ActionArgs) {
   await getSession(request.headers.get("Cookie"));
-  const { id } = parseParams(params, ParamsSchema);
+  parseParams(params, ParamsSchema);
   const url = new URL(request.url);
 
-  return redirect(
-    `/workspace/calendar/time-event/full-days-block/${id}?${url.searchParams}`
-  );
+  return redirect(`/workspace/calendar?${url.searchParams}`);
 }
 
 export const shouldRevalidate: ShouldRevalidateFunction = basicShouldRevalidate;

@@ -142,9 +142,7 @@ export async function action({ request, params }: ActionArgs) {
             value: form.durationMins,
           },
         });
-        return redirect(
-          `/workspace/calendar/schedule/event-in-day/${id}?${url.searchParams}`
-        );
+        return redirect(`/workspace/calendar?${url.searchParams}`);
       }
 
       case "change-schedule-stream": {
@@ -172,9 +170,7 @@ export async function action({ request, params }: ActionArgs) {
         await apiClient.eventInDay.scheduleEventInDayArchive({
           ref_id: id,
         });
-        return redirect(
-          `/workspace/calendar/schedule/event-in-day/${id}?${url.searchParams}`
-        );
+        return redirect(`/workspace/calendar?${url.searchParams}`);
       }
 
       default:

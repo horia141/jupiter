@@ -127,7 +127,7 @@ if [ "${MOBILE_ANDROID}" = true ]; then
         exit 1
     fi
 
-    gh release upload ${RELEASE_TAG} --clobber .build-cache/mobile/android/v${RELEASE_VERSION}/build/Thrive-${RELEASE_VERSION}.apk
+    gh release upload ${RELEASE_TAG} --clobber .build-cache/mobile/android/v${RELEASE_VERSION}/build/app-${RELEASE_VERSION}.aab
 fi
 
 gh release edit ${RELEASE_TAG} --draft=false

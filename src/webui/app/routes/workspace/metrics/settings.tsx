@@ -63,7 +63,7 @@ export async function action({ request }: ActionArgs) {
       collection_project_ref_id: form.project,
     });
 
-    return redirect(`/workspace/metrics/settings`);
+    return redirect(`/workspace/metrics`);
   } catch (error) {
     if (
       error instanceof ApiError &&

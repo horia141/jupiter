@@ -121,18 +121,14 @@ export async function action({ request, params }: ActionArgs) {
             value: form.durationMins,
           },
         });
-        return redirect(
-          `/workspace/calendar/time-event/in-day-block/${id}?${url.searchParams}`
-        );
+        return redirect(`/workspace/calendar${url.searchParams}`);
       }
 
       case "archive": {
         await apiClient.inDayBlock.timeEventInDayBlockArchive({
           ref_id: id,
         });
-        return redirect(
-          `/workspace/calendar/time-event/in-day-block/${id}?${url.searchParams}`
-        );
+        return redirect(`/workspace/calendar?${url.searchParams}`);
       }
 
       default:

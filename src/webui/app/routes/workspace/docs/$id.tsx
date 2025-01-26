@@ -69,7 +69,7 @@ export async function action({ request, params }: ActionArgs) {
         await apiClient.docs.docArchive({
           ref_id: id,
         });
-        return redirect(`/workspace/docs/${id}`);
+        return redirect(`/workspace/docs`);
       }
 
       default:

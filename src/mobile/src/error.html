@@ -5,7 +5,12 @@
     <style>
       body {
         font-family: "Helvetica", "Arial", sans-serif;
-        font-size: 28px;
+        {{#if android}}
+        font-size: 20px;
+        {{/if}}
+        {{#if ios}}
+        font-size: 40px;
+        {{/if}}
       }
       
       .container {
@@ -14,6 +19,17 @@
         justify-content: center;
         align-items: center;
         height: 100vh;
+      }
+
+      button {
+        {{#if android}}
+        font-size: 30px;
+        {{/if}}
+        {{#if ios}}
+        font-size: 50px;
+        {{/if}}
+        padding: 10px 20px;
+        margin: 10px;
       }
     </style>
   </head>

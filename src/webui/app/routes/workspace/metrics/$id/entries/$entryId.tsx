@@ -94,7 +94,7 @@ export async function action({ request, params }: ActionArgs) {
           },
         });
 
-        return redirect(`/workspace/metrics/${id}/entries/${entryId}`);
+        return redirect(`/workspace/metrics/${id}`);
       }
 
       case "create-note": {
@@ -112,7 +112,7 @@ export async function action({ request, params }: ActionArgs) {
           ref_id: entryId,
         });
 
-        return redirect(`/workspace/metrics/${id}/entries/${entryId}`);
+        return redirect(`/workspace/metrics/${id}`);
       }
       default:
         throw new Response("Bad Intent", { status: 500 });

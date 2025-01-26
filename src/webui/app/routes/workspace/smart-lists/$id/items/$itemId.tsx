@@ -111,7 +111,7 @@ export async function action({ request, params }: ActionArgs) {
           },
         });
 
-        return redirect(`/workspace/smart-lists/${id}/items/${itemId}`);
+        return redirect(`/workspace/smart-lists/${id}/items`);
       }
 
       case "create-note": {
@@ -129,7 +129,7 @@ export async function action({ request, params }: ActionArgs) {
           ref_id: itemId,
         });
 
-        return redirect(`/workspace/smart-lists/${id}/items/${itemId}`);
+        return redirect(`/workspace/smart-lists/${id}/items`);
       }
       default:
         throw new Response("Bad Intent", { status: 500 });

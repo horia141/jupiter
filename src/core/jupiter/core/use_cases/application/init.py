@@ -29,6 +29,9 @@ from jupiter.core.domain.concept.push_integrations.slack.slack_task_collection i
     SlackTaskCollection,
 )
 from jupiter.core.domain.concept.schedule.schedule_domain import ScheduleDomain
+from jupiter.core.domain.concept.schedule.schedule_external_sync_log import (
+    ScheduleExternalSyncLog,
+)
 from jupiter.core.domain.concept.schedule.schedule_stream import ScheduleStream
 from jupiter.core.domain.concept.schedule.schedule_stream_color import (
     ScheduleStreamColor,
@@ -239,6 +242,16 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             new_schedule_domain = await uow.get_for(ScheduleDomain).create(
                 new_schedule_domain,
             )
+
+            new_schedule_external_sync_log = (
+                ScheduleExternalSyncLog.new_schedule_external_sync_log(
+                    ctx=context.domain_context,
+                    schedule_domain_ref_id=new_schedule_domain.ref_id,
+                )
+            )
+            new_schedule_external_sync_log = await uow.get_for(
+                ScheduleExternalSyncLog
+            ).create(new_schedule_external_sync_log)
 
             new_first_schedule_stream = ScheduleStream.new_schedule_stream_for_user(
                 ctx=context.domain_context,

@@ -106,7 +106,7 @@ export async function action({ request, params }: ActionArgs) {
           },
         });
 
-        return redirect(`/workspace/projects/${id}`);
+        return redirect(`/workspace/projects`);
       }
 
       case "change-parent": {
@@ -115,7 +115,7 @@ export async function action({ request, params }: ActionArgs) {
           parent_project_ref_id: form.parentProjectRefId,
         });
 
-        return redirect(`/workspace/projects/${id}`);
+        return redirect(`/workspace/projects`);
       }
 
       case "create-note": {
@@ -133,7 +133,7 @@ export async function action({ request, params }: ActionArgs) {
           ref_id: id,
         });
 
-        return redirect(`/workspace/projects/${id}`);
+        return redirect(`/workspace/projects`);
       }
 
       default:

@@ -196,7 +196,7 @@ export async function action({ request, params }: ActionArgs) {
           },
         });
 
-        return redirect(`/workspace/metrics/${id}/details`);
+        return redirect(`/workspace/metrics/${id}`);
       }
 
       case "archive": {
@@ -204,7 +204,7 @@ export async function action({ request, params }: ActionArgs) {
           ref_id: id,
         });
 
-        return redirect(`/workspace/metrics/${id}/details`);
+        return redirect(`/workspace/metrics/${id}`);
       }
 
       case "create-note": {
@@ -214,7 +214,7 @@ export async function action({ request, params }: ActionArgs) {
           content: [],
         });
 
-        return redirect(`/workspace/metrics/${id}/details`);
+        return redirect(`/workspace/metrics/${id}/archive`);
       }
 
       default:

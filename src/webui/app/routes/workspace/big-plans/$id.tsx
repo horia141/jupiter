@@ -170,7 +170,7 @@ export async function action({ request, params }: ActionArgs) {
           });
         }
 
-        return redirect(`/workspace/big-plans/${id}`);
+        return redirect(`/workspace/big-plans`);
       }
 
       case "change-project": {
@@ -197,7 +197,7 @@ export async function action({ request, params }: ActionArgs) {
           ref_id: id,
         });
 
-        return redirect(`/workspace/big-plans/${id}`);
+        return redirect(`/workspace/big-plans`);
       }
 
       default:

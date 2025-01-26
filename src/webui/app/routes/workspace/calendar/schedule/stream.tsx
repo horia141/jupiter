@@ -1,7 +1,8 @@
+import { Button } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Outlet, useSearchParams } from "@remix-run/react";
+import { Link, Outlet, useSearchParams } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNameComponent } from "~/components/entity-name";
@@ -47,6 +48,16 @@ export default function ScheduleStreamViewAll() {
       key="calendar-schedule-stream"
       createLocation={`/workspace/calendar/schedule/stream/new?${query}`}
       returnLocation={`/workspace/calendar?${query}`}
+      extraControls={[
+        <Button
+          key="mock"
+          variant="outlined"
+          to={`/workspace/calendar/schedule/stream/new-external?${query}`}
+          component={Link}
+        >
+          New External
+        </Button>,
+      ]}
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
         <EntityStack>

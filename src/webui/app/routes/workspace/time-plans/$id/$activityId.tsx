@@ -130,7 +130,7 @@ export async function action({ request, params }: ActionArgs) {
           },
         });
 
-        return redirect(`/workspace/time-plans/${id}/${activityId}`);
+        return redirect(`/workspace/time-plans/${id}`);
       }
 
       case "archive": {
@@ -138,7 +138,7 @@ export async function action({ request, params }: ActionArgs) {
           ref_id: activityId,
         });
 
-        return redirect(`/workspace/time-plans/${id}/${activityId}`);
+        return redirect(`/workspace/time-plans/${id}`);
       }
       default:
         throw new Response("Bad Intent", { status: 500 });

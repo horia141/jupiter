@@ -219,7 +219,7 @@ export async function action({ request, params }: ActionArgs) {
           },
         });
 
-        return redirect(`/workspace/persons/${id}`);
+        return redirect(`/workspace/persons`);
       }
 
       case "create-note": {
@@ -237,7 +237,7 @@ export async function action({ request, params }: ActionArgs) {
           ref_id: id,
         });
 
-        return redirect(`/workspace/persons/${id}`);
+        return redirect(`/workspace/persons`);
       }
 
       default:

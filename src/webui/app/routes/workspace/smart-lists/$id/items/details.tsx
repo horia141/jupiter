@@ -92,7 +92,7 @@ export async function action({ request, params }: ActionArgs) {
           },
         });
 
-        return redirect(`/workspace/smart-lists/${id}/items/details`);
+        return redirect(`/workspace/smart-lists/${id}/items`);
       }
 
       case "create-note": {
@@ -110,7 +110,7 @@ export async function action({ request, params }: ActionArgs) {
           ref_id: id,
         });
 
-        return redirect(`/workspace/smart-lists/${id}/items/details`);
+        return redirect(`/workspace/smart-lists/${id}/items`);
       }
 
       default:

@@ -205,7 +205,7 @@ export async function action({ request, params }: ActionArgs) {
           },
         });
 
-        return redirect(`/workspace/chores/${id}`);
+        return redirect(`/workspace/chores`);
       }
 
       case "change-project": {
@@ -232,7 +232,7 @@ export async function action({ request, params }: ActionArgs) {
           ref_id: id,
         });
 
-        return redirect(`/workspace/chores/${id}`);
+        return redirect(`/workspace/chores`);
       }
 
       default:

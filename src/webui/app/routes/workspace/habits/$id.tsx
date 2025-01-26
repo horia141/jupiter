@@ -188,7 +188,7 @@ export async function action({ request, params }: ActionArgs) {
           },
         });
 
-        return redirect(`/workspace/habits/${id}`);
+        return redirect(`/workspace/habits`);
       }
 
       case "change-project": {
@@ -215,7 +215,7 @@ export async function action({ request, params }: ActionArgs) {
           ref_id: id,
         });
 
-        return redirect(`/workspace/habits/${id}`);
+        return redirect(`/workspace/habits`);
       }
 
       default:

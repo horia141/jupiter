@@ -4,9 +4,9 @@ set -ex
 
 # Prepare environment
 
-# Assume brew, python 3.10+, ruby 3.3.x+, JDK, poetry, node, gem, npm, npx, 
-# bundler, gh (the GitHub command line), cocoapods, Android Studio, XCode, and
-# Docker are already present.
+# Assume brew, python 3.10+, ruby 3.3.x+, JDK, gcloud cli, poetry, node, gem,
+# npm, npx, bundler, gh (the GitHub command line), cocoapods, Android Studio,
+# XCode, and Docker are already present.
 # Will modify globals nonetheless.
 
 mkdir -p .build-cache

@@ -82,7 +82,7 @@ export async function action({ request, params }: ActionArgs) {
           },
         });
 
-        return redirect(`/workspace/smart-lists/${id}/tags/${tagId}`);
+        return redirect(`/workspace/smart-lists/${id}/tags`);
       }
 
       case "archive": {
@@ -90,7 +90,7 @@ export async function action({ request, params }: ActionArgs) {
           ref_id: id,
         });
 
-        return redirect(`/workspace/smart-lists/${id}/tags/${tagId}`);
+        return redirect(`/workspace/smart-lists/${id}/tags`);
       }
 
       default:

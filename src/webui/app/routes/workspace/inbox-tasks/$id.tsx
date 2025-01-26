@@ -210,14 +210,14 @@ export async function action({ request, params }: ActionArgs) {
         });
 
         if (result.record_score_result) {
-          return redirect(`/workspace/inbox-tasks/${id}`, {
+          return redirect(`/workspace/inbox-tasks`, {
             headers: {
               "Set-Cookie": await saveScoreAction(result.record_score_result),
             },
           });
         }
 
-        return redirect(`/workspace/inbox-tasks/${id}`);
+        return redirect(`/workspace/inbox-tasks`);
       }
 
       case "change-project": {
@@ -259,7 +259,7 @@ export async function action({ request, params }: ActionArgs) {
           ref_id: id,
         });
 
-        return redirect(`/workspace/inbox-tasks/${id}`);
+        return redirect(`/workspace/inbox-tasks`);
       }
 
       default:
