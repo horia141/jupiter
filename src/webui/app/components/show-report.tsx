@@ -490,7 +490,7 @@ function OverviewReport(props: OverviewReportProps) {
         <Typography variant="h6">📥 Inbox Tasks</Typography>
       </Divider>
       <TableContainer>
-        <Table sx={{ tableLayout: "fixed " }}>
+        <Table sx={{ tableLayout: "fixed", width: "97%" }}>
           <TableHead>
             <TableRow>
               <SmallTableCell width="50%">Name</SmallTableCell>
