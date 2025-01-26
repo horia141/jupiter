@@ -24,6 +24,7 @@ class InitArgs:
         workspace_first_schedule_stream_name (str): The name of a schedule stream.
         workspace_root_project_name (str): The project name.
         workspace_feature_flags (List[WorkspaceFeature]):
+        for_app_review (bool):
     """
 
     user_email_address: str
@@ -36,6 +37,7 @@ class InitArgs:
     workspace_first_schedule_stream_name: str
     workspace_root_project_name: str
     workspace_feature_flags: List[WorkspaceFeature]
+    for_app_review: bool
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -65,6 +67,8 @@ class InitArgs:
             workspace_feature_flags_item = workspace_feature_flags_item_data.value
             workspace_feature_flags.append(workspace_feature_flags_item)
 
+        for_app_review = self.for_app_review
+
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -79,6 +83,7 @@ class InitArgs:
                 "workspace_first_schedule_stream_name": workspace_first_schedule_stream_name,
                 "workspace_root_project_name": workspace_root_project_name,
                 "workspace_feature_flags": workspace_feature_flags,
+                "for_app_review": for_app_review,
             }
         )
 
@@ -117,6 +122,8 @@ class InitArgs:
 
             workspace_feature_flags.append(workspace_feature_flags_item)
 
+        for_app_review = d.pop("for_app_review")
+
         init_args = cls(
             user_email_address=user_email_address,
             user_name=user_name,
@@ -128,6 +135,7 @@ class InitArgs:
             workspace_first_schedule_stream_name=workspace_first_schedule_stream_name,
             workspace_root_project_name=workspace_root_project_name,
             workspace_feature_flags=workspace_feature_flags,
+            for_app_review=for_app_review,
         )
 
         init_args.additional_properties = d
