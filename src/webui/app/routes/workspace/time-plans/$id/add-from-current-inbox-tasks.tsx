@@ -389,7 +389,6 @@ function InboxTaskList(props: InboxTaskListProps) {
           today={props.today}
           topLevelInfo={props.topLevelInfo}
           inboxTask={inboxTask}
-          compact
           allowSelect
           selected={
             props.alreadyIncludedInboxTaskRefIds.has(inboxTask.ref_id) ||

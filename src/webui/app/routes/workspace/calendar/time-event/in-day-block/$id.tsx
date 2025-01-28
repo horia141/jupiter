@@ -121,7 +121,7 @@ export async function action({ request, params }: ActionArgs) {
             value: form.durationMins,
           },
         });
-        return redirect(`/workspace/calendar${url.searchParams}`);
+        return redirect(`/workspace/calendar?${url.searchParams}`);
       }
 
       case "archive": {

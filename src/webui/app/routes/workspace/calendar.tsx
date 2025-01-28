@@ -1442,6 +1442,7 @@ function ViewAsCalendarTimeEventFullDaysCell(
           <EntityLink
             key={`vacation-event-${fullDaysEntry.time_event.ref_id}`}
             to={`/workspace/calendar/time-event/full-days-block/${fullDaysEntry.time_event.ref_id}?${query}`}
+            inline
           >
             <EntityNameComponent
               name={clippedName}
@@ -1663,6 +1664,7 @@ function ViewAsCalendarTimeEventInDayCell(
           <EntityLink
             key={`schedule-event-in-day-${scheduleEntry.event.ref_id}`}
             to={`/workspace/calendar/schedule/event-in-day/${scheduleEntry.event.ref_id}?${query}`}
+            inline
           >
             <Box
               sx={{
@@ -1737,6 +1739,7 @@ function ViewAsCalendarTimeEventInDayCell(
           <EntityLink
             key={`time-event-in-day-block-${props.entry.time_event_in_tz.ref_id}`}
             to={`/workspace/calendar/time-event/in-day-block/${props.entry.time_event_in_tz.ref_id}?${query}`}
+            inline
           >
             <Box
               sx={{
@@ -2150,6 +2153,7 @@ function ViewAsScheduleTimeEventFullDaysRows(
               light
               key={`schedule-event-full-days-${fullDaysEntry.event.ref_id}`}
               to={`/workspace/calendar/schedule/event-full-days/${fullDaysEntry.event.ref_id}?${query}`}
+              inline
             >
               <EntityNameComponent
                 name={fullDaysEntry.event.name}
@@ -2180,6 +2184,7 @@ function ViewAsScheduleTimeEventFullDaysRows(
               light
               key={`schedule-event-full-days-${fullDaysEntry.birthday_time_event.ref_id}`}
               to={`/workspace/calendar/time-event/full-days-block/${fullDaysEntry.birthday_time_event.ref_id}?${query}`}
+              inline
             >
               <EntityNameComponent
                 name={`👨 ${birthdayTimeEventName(
@@ -2213,6 +2218,7 @@ function ViewAsScheduleTimeEventFullDaysRows(
               light
               key={`schedule-event-full-days-${fullDaysEntry.time_event.ref_id}`}
               to={`/workspace/calendar/time-event/full-days-block/${fullDaysEntry.time_event.ref_id}?${query}`}
+              inline
             >
               <EntityNameComponent
                 name={`🌴 ${fullDaysEntry.vacation.name}`}
@@ -2266,6 +2272,7 @@ function ViewAsScheduleTimeEventInDaysRows(
               light
               key={`schedule-event-in-day-${scheduleEntry.event.ref_id}`}
               to={`/workspace/calendar/schedule/event-in-day/${scheduleEntry.event.ref_id}?${query}`}
+              inline
             >
               <EntityNameComponent
                 name={scheduleEntry.event.name}
@@ -2298,6 +2305,7 @@ function ViewAsScheduleTimeEventInDaysRows(
               light
               key={`time-event-in-day-block-${props.entry.time_event_in_tz.ref_id}`}
               to={`/workspace/calendar/time-event/in-day-block/${props.entry.time_event_in_tz.ref_id}?${query}`}
+              inline
             >
               <EntityNameComponent
                 name={inboxTaskEntry.inbox_task.name}

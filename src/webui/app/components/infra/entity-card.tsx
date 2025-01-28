@@ -169,7 +169,7 @@ export function EntityLink(props: PropsWithChildren<EntityLinkProps>) {
     );
   } else {
     return (
-      <EntityFakeLink light={props.light}>{props.children}</EntityFakeLink>
+      <EntityFakeLink inline={props.inline} light={props.light}>{props.children}</EntityFakeLink>
     );
   }
 }
@@ -203,18 +203,19 @@ const StyledLink = styled(Link)<StyledLinkProps>(
 );
 
 interface EntityFakeLinkProps {
+  inline?: boolean;
   light?: boolean;
 }
 
 export function EntityFakeLink(props: PropsWithChildren<EntityFakeLinkProps>) {
   return (
-    <StyledFakeLink inline={"false"} light={props.light ? "true" : "false"}>
+    <StyledFakeLink inline={props.inline ? "true" : "false"} light={props.light ? "true" : "false"}>
       {props.children}
     </StyledFakeLink>
   );
 }
 
-const StyledFakeLink = styled("span")<StyledLinkProps>(({ theme, light }) => ({
+const StyledFakeLink = styled("span")<StyledLinkProps>(({ theme, inline, light }) => ({
   textDecoration: "none",
   width: "100%",
   color:
@@ -230,5 +231,6 @@ const StyledFakeLink = styled("span")<StyledLinkProps>(({ theme, light }) => ({
   display: "flex",
   gap: "0.5rem",
   flexWrap: "wrap",
+  padding: inline === "true" ? undefined : "16px",
   alignItems: "center",
 }));

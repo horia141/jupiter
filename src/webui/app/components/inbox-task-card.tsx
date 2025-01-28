@@ -176,7 +176,7 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
           status={props.inboxTask.status}
           dueDate={props.inboxTask.due_date}
         />
-        <CardContent sx={{ padding: "0px" }}>
+        <CardContent sx={{ padding: "0px!important" }}>
           <EntityLink
             to={`/workspace/inbox-tasks/${props.inboxTask.ref_id}`}
             block={props.onClick !== undefined}
