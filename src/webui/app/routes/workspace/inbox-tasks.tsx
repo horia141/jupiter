@@ -36,6 +36,7 @@ import {
   InboxTaskSource,
   InboxTaskStatus,
   RecurringTaskPeriod,
+  WorkspaceFeature,
 } from "@jupiter/webapi-client";
 import React, { memo, useContext, useState } from "react";
 import { InboxTaskStatusTag } from "~/components/inbox-task-status-tag";
@@ -78,6 +79,7 @@ import {
   inboxTaskStatusIcon,
   inboxTaskStatusName,
 } from "~/logic/domain/inbox-task-status";
+import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import {
   ActionableTime,
   actionableTimeToDateTime,
@@ -1444,7 +1446,7 @@ function SwiftView(props: SwiftViewProps) {
       parentNewLocations="/workspace/inbox-tasks/new"
     />
   );
-  const noNothingCard = <NoNothingCard />;
+  const noNothingCard = <NoNothingCard topLevelInfo={props.topLevelInfo} />;
 
   let initialSmallScreenSelectedTab = 0;
   if (!noHabits) {
@@ -1467,20 +1469,30 @@ function SwiftView(props: SwiftViewProps) {
     <Grid container spacing={2}>
       {props.isBigScreen && !noNothing && (
         <>
-          <Grid md={4}>
-            <Typography variant="h5">💪 Habits</Typography>
-            {!noHabits && habitsStack}
-            {noHabits && noHabitsCard}
-          </Grid>
+          {isWorkspaceFeatureAvailable(
+            props.topLevelInfo.workspace,
+            WorkspaceFeature.HABITS
+          ) && (
+            <Grid md>
+              <Typography variant="h5">💪 Habits</Typography>
+              {!noHabits && habitsStack}
+              {noHabits && noHabitsCard}
+            </Grid>
+          )}
 
-          <Grid md={4}>
-            <Typography variant="h5">♻️ Chores</Typography>
-            {!noChores && choresStack}
-            {noChores && noChoresCard}
-          </Grid>
+          {isWorkspaceFeatureAvailable(
+            props.topLevelInfo.workspace,
+            WorkspaceFeature.CHORES
+          ) && (
+            <Grid md>
+              <Typography variant="h5">♻️ Chores</Typography>
+              {!noChores && choresStack}
+              {noChores && noChoresCard}
+            </Grid>
+          )}
 
-          <Grid md={4}>
-            <Typography variant="h5">🌍 Rest</Typography>
+          <Grid md>
+            <Typography variant="h5">🌍 Other Tasks</Typography>
             {!noRests && restStack}
             {noRests && noRestsCard}
           </Grid>

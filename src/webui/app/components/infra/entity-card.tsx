@@ -169,7 +169,9 @@ export function EntityLink(props: PropsWithChildren<EntityLinkProps>) {
     );
   } else {
     return (
-      <EntityFakeLink inline={props.inline} light={props.light}>{props.children}</EntityFakeLink>
+      <EntityFakeLink inline={props.inline} light={props.light}>
+        {props.children}
+      </EntityFakeLink>
     );
   }
 }
@@ -209,28 +211,33 @@ interface EntityFakeLinkProps {
 
 export function EntityFakeLink(props: PropsWithChildren<EntityFakeLinkProps>) {
   return (
-    <StyledFakeLink inline={props.inline ? "true" : "false"} light={props.light ? "true" : "false"}>
+    <StyledFakeLink
+      inline={props.inline ? "true" : "false"}
+      light={props.light ? "true" : "false"}
+    >
       {props.children}
     </StyledFakeLink>
   );
 }
 
-const StyledFakeLink = styled("span")<StyledLinkProps>(({ theme, inline, light }) => ({
-  textDecoration: "none",
-  width: "100%",
-  color:
-    light === "true"
-      ? theme.palette.info.contrastText
-      : theme.palette.info.dark,
-  ":visited": {
+const StyledFakeLink = styled("span")<StyledLinkProps>(
+  ({ theme, inline, light }) => ({
+    textDecoration: "none",
+    width: "100%",
     color:
       light === "true"
         ? theme.palette.info.contrastText
         : theme.palette.info.dark,
-  },
-  display: "flex",
-  gap: "0.5rem",
-  flexWrap: "wrap",
-  padding: inline === "true" ? undefined : "16px",
-  alignItems: "center",
-}));
+    ":visited": {
+      color:
+        light === "true"
+          ? theme.palette.info.contrastText
+          : theme.palette.info.dark,
+    },
+    display: "flex",
+    gap: "0.5rem",
+    flexWrap: "wrap",
+    padding: inline === "true" ? undefined : "16px",
+    alignItems: "center",
+  })
+);

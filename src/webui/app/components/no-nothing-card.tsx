@@ -1,3 +1,4 @@
+import { WorkspaceFeature } from "@jupiter/webapi-client";
 import {
   Button,
   Card,
@@ -7,34 +8,69 @@ import {
   Typography,
 } from "@mui/material";
 import { Link } from "@remix-run/react";
+import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
+import type { TopLevelInfo } from "~/top-level-context";
 
-export function NoNothingCard() {
+interface NoNothingCardProps {
+  topLevelInfo: TopLevelInfo;
+}
+
+export function NoNothingCard(props: NoNothingCardProps) {
+  let initialText = "There are no inbox tasks to show. ";
+  const { workspace } = props.topLevelInfo;
+
+  const habitsAvailable = isWorkspaceFeatureAvailable(
+    workspace,
+    WorkspaceFeature.HABITS
+  );
+  const choresAvailable = isWorkspaceFeatureAvailable(
+    workspace,
+    WorkspaceFeature.CHORES
+  );
+
+  if (habitsAvailable && choresAvailable) {
+    initialText += "You can create a new habit, chore, or inbox task.";
+  } else if (habitsAvailable) {
+    initialText += "You can create a new habit or inbox task.";
+  } else if (choresAvailable) {
+    initialText += "You can create a new chore or inbox task.";
+  } else {
+    initialText += "You can create a new inbox task.";
+  }
+
   return (
     <Card>
       <CardHeader title="No Inbox Tasks" />
       <CardContent>
-        <Typography variant="body1">
-          There are no inbox tasks to show. You can create a new habit, chore,
-          or inbox task.
-        </Typography>
+        <Typography variant="body1">{initialText}</Typography>
       </CardContent>
       <CardActions>
-        <Button
-          variant="contained"
-          size="small"
-          component={Link}
-          to="/workspace/habits/new"
-        >
-          New Habit
-        </Button>
-        <Button
-          variant="contained"
-          size="small"
-          component={Link}
-          to="/workspace/chores/new"
-        >
-          New Chore
-        </Button>
+        {isWorkspaceFeatureAvailable(
+          props.topLevelInfo.workspace,
+          WorkspaceFeature.HABITS
+        ) && (
+          <Button
+            variant="contained"
+            size="small"
+            component={Link}
+            to="/workspace/habits/new"
+          >
+            New Habit
+          </Button>
+        )}
+        {isWorkspaceFeatureAvailable(
+          props.topLevelInfo.workspace,
+          WorkspaceFeature.CHORES
+        ) && (
+          <Button
+            variant="contained"
+            size="small"
+            component={Link}
+            to="/workspace/chores/new"
+          >
+            New Chore
+          </Button>
+        )}
         <Button
           variant="contained"
           size="small"
