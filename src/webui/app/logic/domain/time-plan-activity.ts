@@ -1,9 +1,10 @@
-import {
-  TimePlanActivityTarget,
-  type BigPlan,
-  type InboxTask,
-  type TimePlanActivity,
+import type {
+  BigPlan,
+  InboxTask,
+  TimePlanActivity,
+  TimePlanActivityFeasability,
 } from "@jupiter/webapi-client";
+import { TimePlanActivityTarget } from "@jupiter/webapi-client";
 import { compareTimePlanActivityFeasability } from "./time-plan-activity-feasability";
 import { compareTimePlanActivityKind } from "./time-plan-activity-kind";
 
@@ -11,6 +12,30 @@ const TIME_PLAN_ACTIVITY_TARGET_MAP = {
   [TimePlanActivityTarget.BIG_PLAN]: 0,
   [TimePlanActivityTarget.INBOX_TASK]: 1,
 };
+
+export function filterActivityByFeasabilityWithParents(
+  timePlanActivities: TimePlanActivity[],
+  activitiesByBigPlanRefId: Map<string, TimePlanActivity>,
+  targetInboxTasks: Map<string, InboxTask>,
+  targetBigPlans: Map<string, BigPlan>,
+  feasability: TimePlanActivityFeasability
+): TimePlanActivity[] {
+  return timePlanActivities.filter((a) => {
+    if (a.target === TimePlanActivityTarget.BIG_PLAN) {
+      return a.feasability === feasability;
+    } else {
+      const inboxTask = targetInboxTasks.get(a.target_ref_id)!;
+      if (!inboxTask.big_plan_ref_id) {
+        return a.feasability === feasability;
+      }
+
+      const bigPlan = targetBigPlans.get(inboxTask.big_plan_ref_id!)!;
+      const bigPlanActivity = activitiesByBigPlanRefId.get(bigPlan.ref_id)!;
+
+      return bigPlanActivity.feasability === feasability;
+    }
+  });
+}
 
 export function filterActivitiesByTargetStatus(
   timePlanActivities: TimePlanActivity[],

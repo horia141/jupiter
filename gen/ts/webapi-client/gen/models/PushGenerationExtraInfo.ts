@@ -16,8 +16,8 @@ export type PushGenerationExtraInfo = {
     timezone: Timezone;
     name?: (InboxTaskName | null);
     status?: (InboxTaskStatus | null);
-    eisen?: (Eisen | null);
-    difficulty?: (Difficulty | null);
+    eisen: Eisen;
+    difficulty: Difficulty;
     actionable_date?: (ADate | null);
     due_date?: (ADate | null);
 };

@@ -76,10 +76,12 @@ class MetricCreateUseCase(
         )
 
         if args.collection_period is not None:
+            collection_eisen = args.collection_eisen or Eisen.REGULAR
+            collection_difficulty = args.collection_difficulty or Difficulty.EASY
             collection_params = RecurringTaskGenParams(
                 period=args.collection_period,
-                eisen=args.collection_eisen,
-                difficulty=args.collection_difficulty,
+                eisen=collection_eisen,
+                difficulty=collection_difficulty,
                 actionable_from_day=args.collection_actionable_from_day,
                 actionable_from_month=args.collection_actionable_from_month,
                 due_at_day=args.collection_due_at_day,

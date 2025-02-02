@@ -1,12 +1,21 @@
 import type { InboxTask, Workspace } from "@jupiter/webapi-client";
 import {
   ApiError,
+  TimePlanActivityFeasability,
+  TimePlanActivityKind,
   TimePlanActivityTarget,
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
 import FlareIcon from "@mui/icons-material/Flare";
 import ViewListIcon from "@mui/icons-material/ViewList";
-import { Box, Divider, Stack, Typography } from "@mui/material";
+import {
+  Box,
+  Divider,
+  FormControl,
+  FormLabel,
+  Stack,
+  Typography,
+} from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -20,7 +29,7 @@ import { getLoggedInApiClient } from "~/api-clients.server";
 import { InboxTaskCard } from "~/components/inbox-task-card";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
-import { GlobalError } from "~/components/infra/errors";
+import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import {
   ActionMultipleSpread,
@@ -29,6 +38,8 @@ import {
   SectionActions,
 } from "~/components/infra/section-actions";
 import { SectionCardNew } from "~/components/infra/section-card-new";
+import { TimePlanActivityFeasabilitySelect } from "~/components/time-plan-activity-feasability-select";
+import { TimePlanActivitKindSelect } from "~/components/time-plan-activity-kind-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import type { InboxTaskParent } from "~/logic/domain/inbox-task";
 import {
@@ -67,6 +78,8 @@ const UpdateFormSchema = {
   targetInboxTaskRefIds: z
     .string()
     .transform((s) => (s === "" ? [] : s.split(","))),
+  kind: z.nativeEnum(TimePlanActivityKind),
+  feasability: z.nativeEnum(TimePlanActivityFeasability),
 };
 
 export const handle = {
@@ -148,6 +161,8 @@ export async function action({ request, params }: ActionArgs) {
           ref_id: id,
           inbox_task_ref_ids: form.targetInboxTaskRefIds,
           override_existing_dates: false,
+          kind: form.kind,
+          feasability: form.feasability,
         });
         break;
       }
@@ -157,6 +172,8 @@ export async function action({ request, params }: ActionArgs) {
           ref_id: id,
           inbox_task_ref_ids: form.targetInboxTaskRefIds,
           override_existing_dates: true,
+          kind: form.kind,
+          feasability: form.feasability,
         });
         break;
       }
@@ -281,6 +298,28 @@ export default function TimePlanAddFromCurrentInboxTasks() {
           />
         }
       >
+        <Stack spacing={2} useFlexGap>
+          <FormControl fullWidth>
+            <FormLabel id="kind">Kind</FormLabel>
+            <TimePlanActivitKindSelect
+              name="kind"
+              defaultValue={TimePlanActivityKind.FINISH}
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/kind" />
+          </FormControl>
+
+          <FormControl fullWidth>
+            <FormLabel id="feasability">Feasability</FormLabel>
+            <TimePlanActivityFeasabilitySelect
+              name="feasability"
+              defaultValue={TimePlanActivityFeasability.NICE_TO_HAVE}
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/feasability" />
+          </FormControl>
+        </Stack>
+
         {selectedView === View.MERGED && (
           <InboxTaskList
             today={today}

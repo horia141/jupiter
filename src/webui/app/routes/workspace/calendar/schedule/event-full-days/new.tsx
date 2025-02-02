@@ -163,6 +163,7 @@ export default function ScheduleEventFullDaysNew() {
             </InputLabel>
             <OutlinedInput
               type="date"
+              notched
               label="startDate"
               name="startDate"
               readOnly={!inputsEnabled}

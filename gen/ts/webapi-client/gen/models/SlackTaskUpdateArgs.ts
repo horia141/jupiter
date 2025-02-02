@@ -38,11 +38,11 @@ export type SlackTaskUpdateArgs = {
     };
     generation_eisen: {
         should_change: boolean;
-        value?: (Eisen | null);
+        value?: Eisen;
     };
     generation_difficulty: {
         should_change: boolean;
-        value?: (Difficulty | null);
+        value?: Difficulty;
     };
     generation_actionable_date: {
         should_change: boolean;

@@ -92,6 +92,7 @@ export default function NewJournal() {
               </InputLabel>
               <OutlinedInput
                 type="date"
+                notched
                 label="rightNow"
                 name="rightNow"
                 readOnly={!inputsEnabled}

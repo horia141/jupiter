@@ -107,7 +107,7 @@ export default function NewSmartListTag() {
                 readOnly={!inputsEnabled}
               />
 
-              <FieldError actionResult={actionData} fieldName="/name" />
+              <FieldError actionResult={actionData} fieldName="/tag_name" />
             </FormControl>
           </Stack>
         </CardContent>

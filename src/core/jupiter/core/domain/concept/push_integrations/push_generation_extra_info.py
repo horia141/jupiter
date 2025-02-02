@@ -27,8 +27,8 @@ class PushGenerationExtraInfo(CompositeValue):
     timezone: Timezone
     name: InboxTaskName | None
     status: InboxTaskStatus | None
-    eisen: Eisen | None
-    difficulty: Difficulty | None
+    eisen: Eisen
+    difficulty: Difficulty
     actionable_date: ADate | None
     due_date: ADate | None
 
@@ -79,8 +79,8 @@ class PushGenerationExtraInfoDatabaseDecoder(
                 timezone=UTC,
                 name=None,
                 status=None,
-                eisen=None,
-                difficulty=None,
+                eisen=Eisen.REGULAR,
+                difficulty=Difficulty.EASY,
                 actionable_date=None,
                 due_date=None,
             )
@@ -142,12 +142,12 @@ class PushGenerationExtraInfoDatabaseDecoder(
                     Eisen, DatabaseRealm
                 ).decode(args.eisen)
                 if args.eisen
-                else None,
+                else Eisen.REGULAR,
                 difficulty=self._realm_codec_registry.get_decoder(
                     Difficulty, DatabaseRealm
                 ).decode(args.difficulty)
                 if args.difficulty
-                else None,
+                else Difficulty.EASY,
                 actionable_date=self._realm_codec_registry.get_decoder(
                     ADate, DatabaseRealm
                 ).decode(args.actionable_date)

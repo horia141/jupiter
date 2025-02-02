@@ -26,11 +26,11 @@ export type HabitUpdateArgs = {
     };
     eisen: {
         should_change: boolean;
-        value?: (Eisen | null);
+        value?: Eisen;
     };
     difficulty: {
         should_change: boolean;
-        value?: (Difficulty | null);
+        value?: Difficulty;
     };
     actionable_from_day: {
         should_change: boolean;

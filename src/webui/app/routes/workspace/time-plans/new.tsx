@@ -103,6 +103,7 @@ export default function NewTimePlan() {
             </InputLabel>
             <OutlinedInput
               type="date"
+              notched
               label="rightNow"
               name="rightNow"
               readOnly={!inputsEnabled}

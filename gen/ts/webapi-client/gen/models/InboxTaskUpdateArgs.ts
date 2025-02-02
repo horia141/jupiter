@@ -28,7 +28,7 @@ export type InboxTaskUpdateArgs = {
     };
     difficulty: {
         should_change: boolean;
-        value?: (Difficulty | null);
+        value?: Difficulty;
     };
     actionable_date: {
         should_change: boolean;

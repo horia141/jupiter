@@ -105,9 +105,12 @@ export default function NewMetricEntry() {
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>
-              <InputLabel id="collectionTime">Collection Time</InputLabel>
+              <InputLabel id="collectionTime" shrink>
+                Collection Time
+              </InputLabel>
               <OutlinedInput
                 type="date"
+                notched
                 label="collectionTime"
                 defaultValue={DateTime.local({
                   zone: topLevelInfo.user.timezone,

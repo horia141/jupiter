@@ -5,6 +5,8 @@ from attrs import field as _attrs_field
 
 from ..models.difficulty import Difficulty
 from ..models.eisen import Eisen
+from ..models.time_plan_activity_feasability import TimePlanActivityFeasability
+from ..models.time_plan_activity_kind import TimePlanActivityKind
 from ..types import UNSET, Unset
 
 T = TypeVar("T", bound="InboxTaskCreateArgs")
@@ -16,21 +18,25 @@ class InboxTaskCreateArgs:
 
     Attributes:
         name (str): The name of an inbox task.
+        eisen (Eisen): The Eisenhower status of a particular task.
+        difficulty (Difficulty): The difficulty of a particular task.
         time_plan_ref_id (Union[None, Unset, str]):
+        time_plan_activity_kind (Union[None, TimePlanActivityKind, Unset]):
+        time_plan_activity_feasability (Union[None, TimePlanActivityFeasability, Unset]):
         project_ref_id (Union[None, Unset, str]):
         big_plan_ref_id (Union[None, Unset, str]):
-        eisen (Union[Eisen, None, Unset]):
-        difficulty (Union[Difficulty, None, Unset]):
         actionable_date (Union[None, Unset, str]):
         due_date (Union[None, Unset, str]):
     """
 
     name: str
+    eisen: Eisen
+    difficulty: Difficulty
     time_plan_ref_id: Union[None, Unset, str] = UNSET
+    time_plan_activity_kind: Union[None, TimePlanActivityKind, Unset] = UNSET
+    time_plan_activity_feasability: Union[None, TimePlanActivityFeasability, Unset] = UNSET
     project_ref_id: Union[None, Unset, str] = UNSET
     big_plan_ref_id: Union[None, Unset, str] = UNSET
-    eisen: Union[Eisen, None, Unset] = UNSET
-    difficulty: Union[Difficulty, None, Unset] = UNSET
     actionable_date: Union[None, Unset, str] = UNSET
     due_date: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -38,11 +44,31 @@ class InboxTaskCreateArgs:
     def to_dict(self) -> Dict[str, Any]:
         name = self.name
 
+        eisen = self.eisen.value
+
+        difficulty = self.difficulty.value
+
         time_plan_ref_id: Union[None, Unset, str]
         if isinstance(self.time_plan_ref_id, Unset):
             time_plan_ref_id = UNSET
         else:
             time_plan_ref_id = self.time_plan_ref_id
+
+        time_plan_activity_kind: Union[None, Unset, str]
+        if isinstance(self.time_plan_activity_kind, Unset):
+            time_plan_activity_kind = UNSET
+        elif isinstance(self.time_plan_activity_kind, TimePlanActivityKind):
+            time_plan_activity_kind = self.time_plan_activity_kind.value
+        else:
+            time_plan_activity_kind = self.time_plan_activity_kind
+
+        time_plan_activity_feasability: Union[None, Unset, str]
+        if isinstance(self.time_plan_activity_feasability, Unset):
+            time_plan_activity_feasability = UNSET
+        elif isinstance(self.time_plan_activity_feasability, TimePlanActivityFeasability):
+            time_plan_activity_feasability = self.time_plan_activity_feasability.value
+        else:
+            time_plan_activity_feasability = self.time_plan_activity_feasability
 
         project_ref_id: Union[None, Unset, str]
         if isinstance(self.project_ref_id, Unset):
@@ -55,22 +81,6 @@ class InboxTaskCreateArgs:
             big_plan_ref_id = UNSET
         else:
             big_plan_ref_id = self.big_plan_ref_id
-
-        eisen: Union[None, Unset, str]
-        if isinstance(self.eisen, Unset):
-            eisen = UNSET
-        elif isinstance(self.eisen, Eisen):
-            eisen = self.eisen.value
-        else:
-            eisen = self.eisen
-
-        difficulty: Union[None, Unset, str]
-        if isinstance(self.difficulty, Unset):
-            difficulty = UNSET
-        elif isinstance(self.difficulty, Difficulty):
-            difficulty = self.difficulty.value
-        else:
-            difficulty = self.difficulty
 
         actionable_date: Union[None, Unset, str]
         if isinstance(self.actionable_date, Unset):
@@ -89,18 +99,20 @@ class InboxTaskCreateArgs:
         field_dict.update(
             {
                 "name": name,
+                "eisen": eisen,
+                "difficulty": difficulty,
             }
         )
         if time_plan_ref_id is not UNSET:
             field_dict["time_plan_ref_id"] = time_plan_ref_id
+        if time_plan_activity_kind is not UNSET:
+            field_dict["time_plan_activity_kind"] = time_plan_activity_kind
+        if time_plan_activity_feasability is not UNSET:
+            field_dict["time_plan_activity_feasability"] = time_plan_activity_feasability
         if project_ref_id is not UNSET:
             field_dict["project_ref_id"] = project_ref_id
         if big_plan_ref_id is not UNSET:
             field_dict["big_plan_ref_id"] = big_plan_ref_id
-        if eisen is not UNSET:
-            field_dict["eisen"] = eisen
-        if difficulty is not UNSET:
-            field_dict["difficulty"] = difficulty
         if actionable_date is not UNSET:
             field_dict["actionable_date"] = actionable_date
         if due_date is not UNSET:
@@ -113,6 +125,10 @@ class InboxTaskCreateArgs:
         d = src_dict.copy()
         name = d.pop("name")
 
+        eisen = Eisen(d.pop("eisen"))
+
+        difficulty = Difficulty(d.pop("difficulty"))
+
         def _parse_time_plan_ref_id(data: object) -> Union[None, Unset, str]:
             if data is None:
                 return data
@@ -121,6 +137,42 @@ class InboxTaskCreateArgs:
             return cast(Union[None, Unset, str], data)
 
         time_plan_ref_id = _parse_time_plan_ref_id(d.pop("time_plan_ref_id", UNSET))
+
+        def _parse_time_plan_activity_kind(data: object) -> Union[None, TimePlanActivityKind, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                time_plan_activity_kind_type_0 = TimePlanActivityKind(data)
+
+                return time_plan_activity_kind_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[None, TimePlanActivityKind, Unset], data)
+
+        time_plan_activity_kind = _parse_time_plan_activity_kind(d.pop("time_plan_activity_kind", UNSET))
+
+        def _parse_time_plan_activity_feasability(data: object) -> Union[None, TimePlanActivityFeasability, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                time_plan_activity_feasability_type_0 = TimePlanActivityFeasability(data)
+
+                return time_plan_activity_feasability_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[None, TimePlanActivityFeasability, Unset], data)
+
+        time_plan_activity_feasability = _parse_time_plan_activity_feasability(
+            d.pop("time_plan_activity_feasability", UNSET)
+        )
 
         def _parse_project_ref_id(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -139,40 +191,6 @@ class InboxTaskCreateArgs:
             return cast(Union[None, Unset, str], data)
 
         big_plan_ref_id = _parse_big_plan_ref_id(d.pop("big_plan_ref_id", UNSET))
-
-        def _parse_eisen(data: object) -> Union[Eisen, None, Unset]:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            try:
-                if not isinstance(data, str):
-                    raise TypeError()
-                eisen_type_0 = Eisen(data)
-
-                return eisen_type_0
-            except:  # noqa: E722
-                pass
-            return cast(Union[Eisen, None, Unset], data)
-
-        eisen = _parse_eisen(d.pop("eisen", UNSET))
-
-        def _parse_difficulty(data: object) -> Union[Difficulty, None, Unset]:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            try:
-                if not isinstance(data, str):
-                    raise TypeError()
-                difficulty_type_0 = Difficulty(data)
-
-                return difficulty_type_0
-            except:  # noqa: E722
-                pass
-            return cast(Union[Difficulty, None, Unset], data)
-
-        difficulty = _parse_difficulty(d.pop("difficulty", UNSET))
 
         def _parse_actionable_date(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -194,11 +212,13 @@ class InboxTaskCreateArgs:
 
         inbox_task_create_args = cls(
             name=name,
-            time_plan_ref_id=time_plan_ref_id,
-            project_ref_id=project_ref_id,
-            big_plan_ref_id=big_plan_ref_id,
             eisen=eisen,
             difficulty=difficulty,
+            time_plan_ref_id=time_plan_ref_id,
+            time_plan_activity_kind=time_plan_activity_kind,
+            time_plan_activity_feasability=time_plan_activity_feasability,
+            project_ref_id=project_ref_id,
+            big_plan_ref_id=big_plan_ref_id,
             actionable_date=actionable_date,
             due_date=due_date,
         )

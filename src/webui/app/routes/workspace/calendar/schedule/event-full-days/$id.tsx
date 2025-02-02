@@ -274,6 +274,7 @@ export default function ScheduleEventFullDaysViewOne() {
             </InputLabel>
             <OutlinedInput
               type="date"
+              notched
               label="startDate"
               name="startDate"
               readOnly={!inputsEnabled || !corePropertyEditable}

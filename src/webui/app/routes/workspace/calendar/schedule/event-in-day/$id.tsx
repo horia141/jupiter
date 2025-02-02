@@ -330,6 +330,7 @@ export default function ScheduleEventInDayViewOne() {
             </InputLabel>
             <OutlinedInput
               type="date"
+              notched
               label="startDate"
               name="startDate"
               readOnly={!inputsEnabled || !corePropertyEditable}

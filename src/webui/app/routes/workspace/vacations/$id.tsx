@@ -177,9 +177,12 @@ export default function Vacation() {
             </FormControl>
 
             <FormControl fullWidth>
-              <InputLabel id="startDate">Start Date</InputLabel>
+              <InputLabel id="startDate" shrink>
+                Start Date
+              </InputLabel>
               <OutlinedInput
                 type="date"
+                notched
                 label="startDate"
                 defaultValue={aDateToDate(vacation.start_date).toFormat(
                   "yyyy-MM-dd"
@@ -192,9 +195,12 @@ export default function Vacation() {
             </FormControl>
 
             <FormControl fullWidth>
-              <InputLabel id="endDate">End Date</InputLabel>
+              <InputLabel id="endDate" shrink>
+                End Date
+              </InputLabel>
               <OutlinedInput
                 type="date"
+                notched
                 label="endDate"
                 defaultValue={aDateToDate(vacation.end_date).toFormat(
                   "yyyy-MM-dd"

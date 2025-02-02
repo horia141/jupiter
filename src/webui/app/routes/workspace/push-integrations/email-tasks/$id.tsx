@@ -12,6 +12,7 @@ import {
   CardActions,
   CardContent,
   FormControl,
+  FormLabel,
   InputLabel,
   MenuItem,
   OutlinedInput,
@@ -33,6 +34,8 @@ import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
+import { DifficultySelect } from "~/components/difficulty-select";
+import { EisenhowerSelect } from "~/components/eisenhower-select";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
@@ -40,8 +43,6 @@ import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
-import { difficultyName } from "~/logic/domain/difficulty";
-import { eisenName } from "~/logic/domain/eisen";
 import { inboxTaskStatusName } from "~/logic/domain/inbox-task-status";
 import { getIntent } from "~/logic/intent";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -62,12 +63,8 @@ const UpdateFormSchema = {
   body: z.string(),
   generationName: z.string().optional(),
   generationStatus: z.nativeEnum(InboxTaskStatus).optional(),
-  generationEisen: z
-    .union([z.nativeEnum(Eisen), z.literal("default")])
-    .optional(),
-  generationDifficulty: z
-    .union([z.nativeEnum(Difficulty), z.literal("default")])
-    .optional(),
+  generationEisen: z.nativeEnum(Eisen),
+  generationDifficulty: z.nativeEnum(Difficulty),
   generationActionableDate: z.string().optional(),
   generationDueDate: z.string().optional(),
 };
@@ -144,18 +141,11 @@ export async function action({ request, params }: ActionArgs) {
           },
           generation_eisen: {
             should_change: true,
-            value:
-              form.generationEisen && form.generationEisen !== "default"
-                ? form.generationEisen
-                : undefined,
+            value: form.generationEisen,
           },
           generation_difficulty: {
             should_change: true,
-            value:
-              form.generationDifficulty &&
-              form.generationDifficulty !== "default"
-                ? form.generationDifficulty
-                : undefined,
+            value: form.generationDifficulty,
           },
           generation_actionable_date: {
             should_change: true,
@@ -355,25 +345,15 @@ export default function EmailTask() {
             </FormControl>
 
             <FormControl fullWidth>
-              <InputLabel id="generationEisen">
-                Generation Eisenhower
-              </InputLabel>
-              <Select
-                labelId="generationEisen"
+              <FormLabel id="generationEisen">Generation Eisenhower</FormLabel>
+              <EisenhowerSelect
                 name="generationEisen"
-                readOnly={!inputsEnabled}
+                inputsEnabled={inputsEnabled}
                 defaultValue={
-                  loaderData.emailTask.generation_extra_info?.eisen || "default"
+                  loaderData.emailTask.generation_extra_info?.eisen ||
+                  Eisen.REGULAR
                 }
-                label="Generation Eisenhower"
-              >
-                <MenuItem value={"default"}>Default</MenuItem>
-                {Object.values(Eisen).map((e) => (
-                  <MenuItem key={e} value={e}>
-                    {eisenName(e)}
-                  </MenuItem>
-                ))}
-              </Select>
+              />
               <FieldError
                 actionResult={actionData}
                 fieldName="/generation_eisen"
@@ -381,26 +361,17 @@ export default function EmailTask() {
             </FormControl>
 
             <FormControl fullWidth>
-              <InputLabel id="generationDifficulty">
+              <FormLabel id="generationDifficulty">
                 Generation Difficulty
-              </InputLabel>
-              <Select
-                labelId="generationDifficulty"
+              </FormLabel>
+              <DifficultySelect
                 name="generationDifficulty"
-                readOnly={!inputsEnabled}
+                inputsEnabled={inputsEnabled}
                 defaultValue={
                   loaderData.emailTask.generation_extra_info?.difficulty ||
-                  "default"
+                  Difficulty.EASY
                 }
-                label="Generation Difficulty"
-              >
-                <MenuItem value="default">Default</MenuItem>
-                {Object.values(Difficulty).map((e) => (
-                  <MenuItem key={e} value={e}>
-                    {difficultyName(e)}
-                  </MenuItem>
-                ))}
-              </Select>
+              />
               <FieldError
                 actionResult={actionData}
                 fieldName="/generation_difficulty"
@@ -408,11 +379,12 @@ export default function EmailTask() {
             </FormControl>
 
             <FormControl fullWidth>
-              <InputLabel id="generationActionableDate">
+              <InputLabel id="generationActionableDate" shrink>
                 Generation Actionable From
               </InputLabel>
               <OutlinedInput
                 type="date"
+                notched
                 label="generationActionableDate"
                 readOnly={!inputsEnabled}
                 defaultValue={
@@ -433,9 +405,12 @@ export default function EmailTask() {
             </FormControl>
 
             <FormControl fullWidth>
-              <InputLabel id="generationDueDate">Generation Due At</InputLabel>
+              <InputLabel id="generationDueDate" shrink>
+                Generation Due At
+              </InputLabel>
               <OutlinedInput
                 type="date"
+                notched
                 label="generationDueDate"
                 readOnly={!inputsEnabled}
                 defaultValue={

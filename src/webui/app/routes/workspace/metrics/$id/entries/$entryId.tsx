@@ -161,9 +161,12 @@ export default function MetricEntry() {
               collectionTime={loaderData.metricEntry.collection_time}
             />
             <FormControl fullWidth>
-              <InputLabel id="collectionTime">Collection Time</InputLabel>
+              <InputLabel id="collectionTime" shrink>
+                Collection Time
+              </InputLabel>
               <OutlinedInput
                 type="date"
+                notched
                 label="collectionTime"
                 defaultValue={
                   loaderData.metricEntry.collection_time

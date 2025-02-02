@@ -177,6 +177,7 @@ export default function TimeEventFullDaysBlockViewOne() {
             </InputLabel>
             <OutlinedInput
               type="date"
+              notched
               label="startDate"
               name="startDate"
               readOnly={!inputsEnabled || !corePropertyEditable}

@@ -2,6 +2,7 @@ import type {
   BigPlan,
   InboxTask,
   TimePlan,
+  TimePlanActivity,
   Workspace,
 } from "@jupiter/webapi-client";
 import {
@@ -72,6 +73,7 @@ import {
   sortProjectsByTreeOrder,
 } from "~/logic/domain/project";
 import { sortTimePlansNaturally } from "~/logic/domain/time-plan";
+import { filterActivityByFeasabilityWithParents } from "~/logic/domain/time-plan-activity";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { basicShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -228,6 +230,11 @@ export default function TimePlanView() {
   const targetInboxTasksByRefId = new Map<string, InboxTask>(
     loaderData.targetInboxTasks.map((it) => [it.ref_id, it])
   );
+  const actitiviesByBigPlanRefId = new Map<string, TimePlanActivity>(
+    loaderData.activities
+      .filter((a) => a.target === TimePlanActivityTarget.BIG_PLAN)
+      .map((a) => [a.target_ref_id, a])
+  );
   const targetBigPlansByRefId = new Map<string, BigPlan>(
     loaderData.targetBigPlans
       ? loaderData.targetBigPlans.map((bp) => [bp.ref_id, bp])
@@ -256,6 +263,29 @@ export default function TimePlanView() {
     TimePlanActivityFeasability[]
   >([]);
   const [selectedDoneness, setSelectedDoneness] = useState<boolean[]>([]);
+
+  const mustDoActivities = filterActivityByFeasabilityWithParents(
+    loaderData.activities,
+    actitiviesByBigPlanRefId,
+    targetInboxTasksByRefId,
+    targetBigPlansByRefId,
+    TimePlanActivityFeasability.MUST_DO
+  );
+  const niceToHaveActivities = filterActivityByFeasabilityWithParents(
+    loaderData.activities,
+    actitiviesByBigPlanRefId,
+    targetInboxTasksByRefId,
+    targetBigPlansByRefId,
+    TimePlanActivityFeasability.NICE_TO_HAVE
+  );
+  const stretchActivities = filterActivityByFeasabilityWithParents(
+    loaderData.activities,
+    actitiviesByBigPlanRefId,
+    targetInboxTasksByRefId,
+    targetBigPlansByRefId,
+    TimePlanActivityFeasability.STRETCH
+  );
+  const otherActivities = niceToHaveActivities.concat(stretchActivities);
 
   useEffect(() => {
     setSelectedView(
@@ -306,6 +336,7 @@ export default function TimePlanView() {
                 </InputLabel>
                 <OutlinedInput
                   type="date"
+                  notched
                   label="rightNow"
                   name="rightNow"
                   readOnly={!inputsEnabled}
@@ -437,25 +468,137 @@ export default function TimePlanView() {
             }
           >
             {selectedView === View.MERGED && (
-              <TimePlanActivityList
-                topLevelInfo={topLevelInfo}
-                activities={loaderData.activities}
-                inboxTasksByRefId={targetInboxTasksByRefId}
-                timePlansByRefId={new Map()}
-                bigPlansByRefId={targetBigPlansByRefId}
-                activityDoneness={loaderData.activityDoneness}
-                fullInfo
-                filterKind={selectedKinds}
-                filterFeasability={selectedFeasabilities}
-                filterDoneness={selectedDoneness}
-                timeEventsByRefId={timeEventsByRefId}
-              />
+              <>
+                {mustDoActivities.length > 0 && (
+                  <>
+                    <Divider variant="fullWidth">
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          maxWidth: "calc(100vw - 2rem)",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        Must Do
+                      </Typography>
+                    </Divider>
+
+                    <TimePlanActivityList
+                      topLevelInfo={topLevelInfo}
+                      activities={mustDoActivities}
+                      inboxTasksByRefId={targetInboxTasksByRefId}
+                      timePlansByRefId={new Map()}
+                      bigPlansByRefId={targetBigPlansByRefId}
+                      activityDoneness={loaderData.activityDoneness}
+                      fullInfo
+                      filterKind={selectedKinds}
+                      filterFeasability={selectedFeasabilities}
+                      filterDoneness={selectedDoneness}
+                      timeEventsByRefId={timeEventsByRefId}
+                    />
+                  </>
+                )}
+
+                {niceToHaveActivities.length > 0 && (
+                  <>
+                    <Divider variant="fullWidth">
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          maxWidth: "calc(100vw - 2rem)",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        Nice To Have
+                      </Typography>
+                    </Divider>
+
+                    <TimePlanActivityList
+                      topLevelInfo={topLevelInfo}
+                      activities={niceToHaveActivities}
+                      inboxTasksByRefId={targetInboxTasksByRefId}
+                      timePlansByRefId={new Map()}
+                      bigPlansByRefId={targetBigPlansByRefId}
+                      activityDoneness={loaderData.activityDoneness}
+                      fullInfo
+                      filterKind={selectedKinds}
+                      filterFeasability={selectedFeasabilities}
+                      filterDoneness={selectedDoneness}
+                      timeEventsByRefId={timeEventsByRefId}
+                    />
+                  </>
+                )}
+
+                {stretchActivities.length > 0 && (
+                  <>
+                    <Divider variant="fullWidth">
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          maxWidth: "calc(100vw - 2rem)",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        Stretch
+                      </Typography>
+                    </Divider>
+
+                    <TimePlanActivityList
+                      topLevelInfo={topLevelInfo}
+                      activities={stretchActivities}
+                      inboxTasksByRefId={targetInboxTasksByRefId}
+                      timePlansByRefId={new Map()}
+                      bigPlansByRefId={targetBigPlansByRefId}
+                      activityDoneness={loaderData.activityDoneness}
+                      fullInfo
+                      filterKind={selectedKinds}
+                      filterFeasability={selectedFeasabilities}
+                      filterDoneness={selectedDoneness}
+                      timeEventsByRefId={timeEventsByRefId}
+                    />
+                  </>
+                )}
+              </>
             )}
 
             {selectedView === View.BY_PROJECT && (
               <>
+                {mustDoActivities.length > 0 && (
+                  <>
+                    <Divider variant="fullWidth">
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          maxWidth: "calc(100vw - 2rem)",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        Must Do
+                      </Typography>
+                    </Divider>
+
+                    <TimePlanActivityList
+                      topLevelInfo={topLevelInfo}
+                      activities={mustDoActivities}
+                      inboxTasksByRefId={targetInboxTasksByRefId}
+                      timePlansByRefId={new Map()}
+                      bigPlansByRefId={targetBigPlansByRefId}
+                      activityDoneness={loaderData.activityDoneness}
+                      fullInfo
+                      filterKind={selectedKinds}
+                      filterFeasability={selectedFeasabilities}
+                      filterDoneness={selectedDoneness}
+                      timeEventsByRefId={timeEventsByRefId}
+                    />
+                  </>
+                )}
+
                 {sortedProjects.map((p) => {
-                  const theActivities = loaderData.activities.filter((ac) => {
+                  const theActivities = otherActivities.filter((ac) => {
                     switch (ac.target) {
                       case TimePlanActivityTarget.INBOX_TASK:
                         return (

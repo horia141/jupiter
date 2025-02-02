@@ -4,6 +4,7 @@ import type {
   CalendarEventsStats,
   CalendarEventsStatsPerSubperiod,
   EntityId,
+  InboxTask,
   InboxTaskEntry,
   PersonEntry,
   ScheduleFullDaysEventEntry,
@@ -13,6 +14,7 @@ import type {
 } from "@jupiter/webapi-client";
 import {
   AppPlatform,
+  InboxTaskStatus,
   RecurringTaskPeriod,
   TimeEventNamespace,
 } from "@jupiter/webapi-client";
@@ -181,6 +183,7 @@ export default function CalendarView() {
     /\/workspace\/calendar/,
     ""
   );
+  const isAdding = location.pathname.endsWith("/new");
 
   const topLevelInfo = useContext(TopLevelInfoContext);
 
@@ -354,6 +357,7 @@ export default function CalendarView() {
               entries={loaderData.entries}
               stats={loaderData.stats}
               calendarLocation={calendarLocation}
+              isAdding={isAdding}
             />
           )}
 
@@ -369,6 +373,7 @@ export default function CalendarView() {
               entries={loaderData.entries}
               stats={loaderData.stats}
               calendarLocation={calendarLocation}
+              isAdding={isAdding}
             />
           )}
 
@@ -384,6 +389,7 @@ export default function CalendarView() {
               entries={loaderData.entries}
               stats={loaderData.stats}
               calendarLocation={calendarLocation}
+              isAdding={isAdding}
             />
           )}
 
@@ -399,6 +405,7 @@ export default function CalendarView() {
               entries={loaderData.entries}
               stats={loaderData.stats}
               calendarLocation={calendarLocation}
+              isAdding={isAdding}
             />
           )}
 
@@ -414,6 +421,7 @@ export default function CalendarView() {
               entries={loaderData.entries}
               stats={loaderData.stats}
               calendarLocation={calendarLocation}
+              isAdding={isAdding}
             />
           )}
 
@@ -430,6 +438,7 @@ export default function CalendarView() {
               entries={loaderData.entries}
               stats={loaderData.stats}
               calendarLocation={calendarLocation}
+              isAdding={isAdding}
             />
           )}
 
@@ -447,6 +456,7 @@ export default function CalendarView() {
               entries={loaderData.entries}
               stats={loaderData.stats}
               calendarLocation={calendarLocation}
+              isAdding={isAdding}
             />
           )}
       </NestingAwareBlock>
@@ -474,6 +484,7 @@ interface ViewAsProps {
   entries?: CalendarEventsEntries;
   stats?: CalendarEventsStats;
   calendarLocation: string;
+  isAdding: boolean;
 }
 
 function ViewAsCalendarDaily(props: ViewAsProps) {
@@ -582,6 +593,7 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
             showAll={showAllTimeEventFullDays}
             maxFullDaysEntriesCnt={thePartititionFullDays.length}
             timeEventFullDays={thePartititionFullDays}
+            isAdding={props.isAdding}
           />
 
           <ViewAsCalendarEmptyCell />
@@ -596,6 +608,7 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
           timezone={props.timezone}
           date={props.periodStartDate}
           timeEventsInDay={thePartitionInDay}
+          isAdding={props.isAdding}
         />
         <ViewAsCalendarRightColumn />
       </ViewAsCalendarInDayContainer>
@@ -719,6 +732,7 @@ function ViewAsCalendarWeekly(props: ViewAsProps) {
               timeEventFullDays={
                 partitionedCombinedTimeEventFullDays[date] || []
               }
+              isAdding={props.isAdding}
             />
           ))}
 
@@ -737,6 +751,7 @@ function ViewAsCalendarWeekly(props: ViewAsProps) {
             timezone={props.timezone}
             date={date}
             timeEventsInDay={partitionedCombinedTimeEventInDay[date] || []}
+            isAdding={props.isAdding}
           />
         ))}
 
@@ -1293,6 +1308,7 @@ interface ViewAsCalendarTimeEventFullDaysColumnProps {
   showAll: boolean;
   maxFullDaysEntriesCnt: number;
   timeEventFullDays: Array<CombinedTimeEventFullDaysEntry>;
+  isAdding: boolean;
 }
 
 function ViewAsCalendarTimeEventFullDaysColumn(
@@ -1306,7 +1322,11 @@ function ViewAsCalendarTimeEventFullDaysColumn(
         }
 
         return (
-          <ViewAsCalendarTimeEventFullDaysCell key={index} entry={entry} />
+          <ViewAsCalendarTimeEventFullDaysCell
+            key={index}
+            entry={entry}
+            isAdding={props.isAdding}
+          />
         );
       })}
     </Box>
@@ -1315,6 +1335,7 @@ function ViewAsCalendarTimeEventFullDaysColumn(
 
 interface ViewAsCalendarTimeEventFullDaysCellProps {
   entry: CombinedTimeEventFullDaysEntry;
+  isAdding: boolean;
 }
 
 function ViewAsCalendarTimeEventFullDaysCell(
@@ -1358,6 +1379,7 @@ function ViewAsCalendarTimeEventFullDaysCell(
             key={`schedule-event-full-days-${fullDaysEntry.event.ref_id}`}
             to={`/workspace/calendar/schedule/event-full-days/${fullDaysEntry.event.ref_id}?${query}`}
             inline
+            block={props.isAdding}
           >
             <EntityNameComponent
               name={clippedName}
@@ -1402,6 +1424,7 @@ function ViewAsCalendarTimeEventFullDaysCell(
             key={`person-birthday-event-${fullDaysEntry.person.ref_id}`}
             to={`/workspace/calendar/time-event/full-days-block/${fullDaysEntry.birthday_time_event.ref_id}?${query}`}
             inline
+            block={props.isAdding}
           >
             <EntityNameComponent
               name={clippedName}
@@ -1443,6 +1466,7 @@ function ViewAsCalendarTimeEventFullDaysCell(
             key={`vacation-event-${fullDaysEntry.time_event.ref_id}`}
             to={`/workspace/calendar/time-event/full-days-block/${fullDaysEntry.time_event.ref_id}?${query}`}
             inline
+            block={props.isAdding}
           >
             <EntityNameComponent
               name={clippedName}
@@ -1466,6 +1490,7 @@ interface ViewAsCalendarTimeEventInDayColumnProps {
   timezone: Timezone;
   date: ADate;
   timeEventsInDay: Array<CombinedTimeEventInDayEntry>;
+  isAdding: boolean;
 }
 
 function ViewAsCalendarTimeEventInDayColumn(
@@ -1498,12 +1523,11 @@ function ViewAsCalendarTimeEventInDayColumn(
     if (wholeColumnRef.current === null) {
       return;
     }
-    if (wholeColumnRef.current !== event.target) {
-      return;
-    }
 
+    const columnRect = wholeColumnRef.current.getBoundingClientRect();
+    const offsetY = event.clientY - columnRect.top;
     const minutes = calendarPxHeightToMinutes(
-      event.nativeEvent.offsetY,
+      offsetY,
       theme.typography.htmlFontSize
     );
     const time = startOfDay.plus({ minutes });
@@ -1591,6 +1615,7 @@ function ViewAsCalendarTimeEventInDayColumn(
           offset={timeBlockOffsetsMap.get(entry.time_event_in_tz.ref_id) || 0}
           startOfDay={startOfDay}
           entry={entry}
+          isAdding={props.isAdding}
         />
       ))}
     </Box>
@@ -1601,6 +1626,7 @@ interface ViewAsCalendarTimeEventInDayCellProps {
   offset: number;
   startOfDay: DateTime;
   entry: CombinedTimeEventInDayEntry;
+  isAdding: boolean;
 }
 
 function ViewAsCalendarTimeEventInDayCell(
@@ -1665,6 +1691,7 @@ function ViewAsCalendarTimeEventInDayCell(
             key={`schedule-event-in-day-${scheduleEntry.event.ref_id}`}
             to={`/workspace/calendar/schedule/event-in-day/${scheduleEntry.event.ref_id}?${query}`}
             inline
+            block={props.isAdding}
           >
             <Box
               sx={{
@@ -1702,10 +1729,12 @@ function ViewAsCalendarTimeEventInDayCell(
         .diff(props.startOfDay)
         .as("minutes");
 
+      const nameWithStatus = inboxTaskNameForEvent(inboxTaskEntry.inbox_task);
+
       const clippedName = clipTimeEventInDayNameToWhatFits(
         startTime,
         endTime,
-        inboxTaskEntry.inbox_task.name,
+        nameWithStatus,
         theme.typography.htmlFontSize,
         containerWidth,
         minutesSinceStartOfDay,
@@ -1726,7 +1755,12 @@ function ViewAsCalendarTimeEventInDayCell(
               props.entry.time_event_in_tz.duration_mins
             ),
             backgroundColor: scheduleStreamColorHex(
-              INBOX_TASK_TIME_EVENT_COLOR
+              INBOX_TASK_TIME_EVENT_COLOR,
+              inboxTaskEntry.inbox_task.status === InboxTaskStatus.DONE
+                ? "lighter"
+                : inboxTaskEntry.inbox_task.status === InboxTaskStatus.NOT_DONE
+                ? "darker"
+                : "normal"
             ),
             borderRadius: "0.25rem",
             border: `1px solid ${theme.palette.background.paper}`,
@@ -1740,6 +1774,7 @@ function ViewAsCalendarTimeEventInDayCell(
             key={`time-event-in-day-block-${props.entry.time_event_in_tz.ref_id}`}
             to={`/workspace/calendar/time-event/in-day-block/${props.entry.time_event_in_tz.ref_id}?${query}`}
             inline
+            block={props.isAdding}
           >
             <Box
               sx={{
@@ -2011,12 +2046,16 @@ function ViewAsScheduleDailyAndWeekly(props: ViewAsProps) {
 
                         <ViewAsScheduleTimeEventFullDaysRows
                           entry={firstRowFullDays}
+                          isAdding={props.isAdding}
                         />
                       </TableRow>
 
                       {otherRowsFullDays.map((entry, index) => (
                         <TableRow key={index}>
-                          <ViewAsScheduleTimeEventFullDaysRows entry={entry} />
+                          <ViewAsScheduleTimeEventFullDaysRows
+                            entry={entry}
+                            isAdding={props.isAdding}
+                          />
                         </TableRow>
                       ))}
 
@@ -2024,13 +2063,17 @@ function ViewAsScheduleDailyAndWeekly(props: ViewAsProps) {
                         <TableRow>
                           <ViewAsScheduleTimeEventInDaysRows
                             entry={firstRowInDay}
+                            isAdding={props.isAdding}
                           />
                         </TableRow>
                       )}
 
                       {otherRowsInDay.map((entry, index) => (
                         <TableRow key={index}>
-                          <ViewAsScheduleTimeEventInDaysRows entry={entry} />
+                          <ViewAsScheduleTimeEventInDaysRows
+                            entry={entry}
+                            isAdding={props.isAdding}
+                          />
                         </TableRow>
                       ))}
                     </>
@@ -2048,12 +2091,16 @@ function ViewAsScheduleDailyAndWeekly(props: ViewAsProps) {
 
                         <ViewAsScheduleTimeEventInDaysRows
                           entry={firstRowInDay}
+                          isAdding={props.isAdding}
                         />
                       </TableRow>
 
                       {otherRowsInDay.map((entry, index) => (
                         <TableRow key={index}>
-                          <ViewAsScheduleTimeEventInDaysRows entry={entry} />
+                          <ViewAsScheduleTimeEventInDaysRows
+                            entry={entry}
+                            isAdding={props.isAdding}
+                          />
                         </TableRow>
                       ))}
                     </>
@@ -2127,6 +2174,7 @@ function ViewAsScheduleMonthlyQuarterlyAndYearly(props: ViewAsProps) {
 
 interface ViewAsScheduleTimeEventFullDaysRowsProps {
   entry: CombinedTimeEventFullDaysEntry;
+  isAdding: boolean;
 }
 
 function ViewAsScheduleTimeEventFullDaysRows(
@@ -2154,6 +2202,7 @@ function ViewAsScheduleTimeEventFullDaysRows(
               key={`schedule-event-full-days-${fullDaysEntry.event.ref_id}`}
               to={`/workspace/calendar/schedule/event-full-days/${fullDaysEntry.event.ref_id}?${query}`}
               inline
+              block={props.isAdding}
             >
               <EntityNameComponent
                 name={fullDaysEntry.event.name}
@@ -2185,6 +2234,7 @@ function ViewAsScheduleTimeEventFullDaysRows(
               key={`schedule-event-full-days-${fullDaysEntry.birthday_time_event.ref_id}`}
               to={`/workspace/calendar/time-event/full-days-block/${fullDaysEntry.birthday_time_event.ref_id}?${query}`}
               inline
+              block={props.isAdding}
             >
               <EntityNameComponent
                 name={`👨 ${birthdayTimeEventName(
@@ -2219,6 +2269,7 @@ function ViewAsScheduleTimeEventFullDaysRows(
               key={`schedule-event-full-days-${fullDaysEntry.time_event.ref_id}`}
               to={`/workspace/calendar/time-event/full-days-block/${fullDaysEntry.time_event.ref_id}?${query}`}
               inline
+              block={props.isAdding}
             >
               <EntityNameComponent
                 name={`🌴 ${fullDaysEntry.vacation.name}`}
@@ -2239,6 +2290,7 @@ function ViewAsScheduleTimeEventFullDaysRows(
 
 interface ViewAsScheduleTimeEventInDaysRowsProps {
   entry: CombinedTimeEventInDayEntry;
+  isAdding: boolean;
 }
 
 function ViewAsScheduleTimeEventInDaysRows(
@@ -2273,6 +2325,7 @@ function ViewAsScheduleTimeEventInDaysRows(
               key={`schedule-event-in-day-${scheduleEntry.event.ref_id}`}
               to={`/workspace/calendar/schedule/event-in-day/${scheduleEntry.event.ref_id}?${query}`}
               inline
+              block={props.isAdding}
             >
               <EntityNameComponent
                 name={scheduleEntry.event.name}
@@ -2295,7 +2348,14 @@ function ViewAsScheduleTimeEventInDaysRows(
           </ViewAsScheduleTimeCell>
 
           <ViewAsScheduleEventCell
-            color={scheduleStreamColorHex(INBOX_TASK_TIME_EVENT_COLOR)}
+            color={scheduleStreamColorHex(
+              INBOX_TASK_TIME_EVENT_COLOR,
+              inboxTaskEntry.inbox_task.status === InboxTaskStatus.DONE
+                ? "lighter"
+                : inboxTaskEntry.inbox_task.status === InboxTaskStatus.NOT_DONE
+                ? "darker"
+                : "normal"
+            )}
             isbigscreen={isBigScreen.toString()}
             height={scheduleTimeEventInDayDurationToRems(
               props.entry.time_event_in_tz.duration_mins
@@ -2306,9 +2366,10 @@ function ViewAsScheduleTimeEventInDaysRows(
               key={`time-event-in-day-block-${props.entry.time_event_in_tz.ref_id}`}
               to={`/workspace/calendar/time-event/in-day-block/${props.entry.time_event_in_tz.ref_id}?${query}`}
               inline
+              block={props.isAdding}
             >
               <EntityNameComponent
-                name={inboxTaskEntry.inbox_task.name}
+                name={inboxTaskNameForEvent(inboxTaskEntry.inbox_task)}
                 color={scheduleStreamColorContrastingHex(
                   INBOX_TASK_TIME_EVENT_COLOR
                 )}
@@ -2803,5 +2864,15 @@ function monthToQuarter(month: number): string {
       return "Q4";
     default:
       throw new Error("Unexpected month");
+  }
+}
+
+function inboxTaskNameForEvent(inboxTask: InboxTask): string {
+  if (inboxTask.status === InboxTaskStatus.DONE) {
+    return `✅ ${inboxTask.name}`;
+  } else if (inboxTask.status === InboxTaskStatus.NOT_DONE) {
+    return `❌ ${inboxTask.name}`;
+  } else {
+    return `${inboxTask.name}`;
   }
 }

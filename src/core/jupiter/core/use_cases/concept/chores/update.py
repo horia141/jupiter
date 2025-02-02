@@ -40,8 +40,8 @@ class ChoreUpdateArgs(UseCaseArgsBase):
     ref_id: EntityId
     name: UpdateAction[ChoreName]
     period: UpdateAction[RecurringTaskPeriod]
-    eisen: UpdateAction[Eisen | None]
-    difficulty: UpdateAction[Difficulty | None]
+    eisen: UpdateAction[Eisen]
+    difficulty: UpdateAction[Difficulty]
     actionable_from_day: UpdateAction[RecurringTaskDueAtDay | None]
     actionable_from_month: UpdateAction[RecurringTaskDueAtMonth | None]
     due_at_day: UpdateAction[RecurringTaskDueAtDay | None]

@@ -43,8 +43,8 @@ class HabitCreateArgs(UseCaseArgsBase):
     name: HabitName
     period: RecurringTaskPeriod
     project_ref_id: EntityId | None
-    eisen: Eisen | None
-    difficulty: Difficulty | None
+    eisen: Eisen
+    difficulty: Difficulty
     actionable_from_day: RecurringTaskDueAtDay | None
     actionable_from_month: RecurringTaskDueAtMonth | None
     due_at_day: RecurringTaskDueAtDay | None

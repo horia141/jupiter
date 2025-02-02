@@ -63,7 +63,7 @@ class InboxTask(LeafEntity):
     name: InboxTaskName
     status: InboxTaskStatus
     eisen: Eisen
-    difficulty: Difficulty | None
+    difficulty: Difficulty
     actionable_date: ADate | None
     due_date: ADate | None
     notes: str | None
@@ -93,7 +93,8 @@ class InboxTask(LeafEntity):
         inbox_task_collection_ref_id: EntityId,
         name: InboxTaskName,
         status: InboxTaskStatus,
-        difficulty: Difficulty | None,
+        eisen: Eisen,
+        difficulty: Difficulty,
         actionable_date: ADate | None,
         due_date: ADate | None,
         project_ref_id: EntityId,
@@ -101,7 +102,6 @@ class InboxTask(LeafEntity):
         big_plan_project_ref_id: EntityId | None,
         big_plan_actionable_date: ADate | None,
         big_plan_due_date: ADate | None,
-        eisen: Eisen | None,
     ) -> "InboxTask":
         """Created an inbox task."""
         InboxTask._check_actionable_and_due_dates(actionable_date, due_date)
@@ -114,7 +114,7 @@ class InboxTask(LeafEntity):
             else InboxTaskSource.BIG_PLAN,
             name=name,
             status=status,
-            eisen=eisen if eisen else Eisen.REGULAR,
+            eisen=eisen,
             difficulty=difficulty,
             actionable_date=actionable_date
             or (big_plan_actionable_date if big_plan_ref_id else None),
@@ -186,8 +186,8 @@ class InboxTask(LeafEntity):
         ctx: DomainContext,
         inbox_task_collection_ref_id: EntityId,
         name: InboxTaskName,
-        eisen: Eisen | None,
-        difficulty: Difficulty | None,
+        eisen: Eisen,
+        difficulty: Difficulty,
         actionable_date: ADate | None,
         due_date: ADate | None,
         project_ref_id: EntityId,
@@ -203,7 +203,7 @@ class InboxTask(LeafEntity):
             source=InboxTaskSource.HABIT,
             name=InboxTask._build_name_for_habit(name, recurring_task_repeat_index),
             status=InboxTaskStatus.NOT_STARTED_GEN,
-            eisen=eisen if eisen else Eisen.REGULAR,
+            eisen=eisen,
             difficulty=difficulty,
             actionable_date=actionable_date,
             due_date=due_date,
@@ -231,8 +231,8 @@ class InboxTask(LeafEntity):
         ctx: DomainContext,
         inbox_task_collection_ref_id: EntityId,
         name: InboxTaskName,
-        eisen: Eisen | None,
-        difficulty: Difficulty | None,
+        eisen: Eisen,
+        difficulty: Difficulty,
         actionable_date: ADate | None,
         due_date: ADate | None,
         project_ref_id: EntityId,
@@ -247,7 +247,7 @@ class InboxTask(LeafEntity):
             source=InboxTaskSource.CHORE,
             name=name,
             status=InboxTaskStatus.NOT_STARTED_GEN,
-            eisen=eisen if eisen else Eisen.REGULAR,
+            eisen=eisen,
             difficulty=difficulty,
             actionable_date=actionable_date,
             due_date=due_date,
@@ -278,8 +278,8 @@ class InboxTask(LeafEntity):
         right_now: ADate,
         project_ref_id: EntityId,
         journal_ref_id: EntityId,
-        eisen: Eisen | None,
-        difficulty: Difficulty | None,
+        eisen: Eisen,
+        difficulty: Difficulty,
         actionable_date: ADate | None,
         due_date: ADate | None,
     ) -> "InboxTask":
@@ -290,7 +290,7 @@ class InboxTask(LeafEntity):
             source=InboxTaskSource.JOURNAL,
             name=InboxTask._build_name_for_writing_journal(period, right_now),
             status=InboxTaskStatus.NOT_STARTED_GEN,
-            eisen=eisen or Eisen.REGULAR,
+            eisen=eisen,
             difficulty=difficulty,
             actionable_date=actionable_date,
             due_date=due_date,
@@ -318,8 +318,8 @@ class InboxTask(LeafEntity):
         ctx: DomainContext,
         inbox_task_collection_ref_id: EntityId,
         name: InboxTaskName,
-        eisen: Eisen | None,
-        difficulty: Difficulty | None,
+        eisen: Eisen,
+        difficulty: Difficulty,
         actionable_date: ADate | None,
         due_date: ADate | None,
         project_ref_id: EntityId,
@@ -334,7 +334,7 @@ class InboxTask(LeafEntity):
             source=InboxTaskSource.METRIC,
             name=InboxTask._build_name_for_collection_task(name),
             status=InboxTaskStatus.NOT_STARTED_GEN,
-            eisen=eisen if eisen else Eisen.REGULAR,
+            eisen=eisen,
             difficulty=difficulty,
             actionable_date=actionable_date,
             due_date=due_date,
@@ -362,8 +362,8 @@ class InboxTask(LeafEntity):
         ctx: DomainContext,
         inbox_task_collection_ref_id: EntityId,
         name: InboxTaskName,
-        eisen: Eisen | None,
-        difficulty: Difficulty | None,
+        eisen: Eisen,
+        difficulty: Difficulty,
         recurring_task_gen_right_now: Timestamp,
         actionable_date: ADate | None,
         due_date: ADate | None,
@@ -378,7 +378,7 @@ class InboxTask(LeafEntity):
             source=InboxTaskSource.PERSON_CATCH_UP,
             name=InboxTask._build_name_for_catch_up_task(name),
             status=InboxTaskStatus.NOT_STARTED_GEN,
-            eisen=eisen if eisen else Eisen.REGULAR,
+            eisen=eisen,
             difficulty=difficulty,
             actionable_date=actionable_date,
             due_date=due_date,
@@ -642,8 +642,8 @@ class InboxTask(LeafEntity):
         repeat_index: int | None,
         actionable_date: ADate | None,
         due_date: ADate,
-        eisen: Eisen | None,
-        difficulty: Difficulty | None,
+        eisen: Eisen,
+        difficulty: Difficulty,
     ) -> "InboxTask":
         """Update all the info associated with a habit."""
         if self.source is not InboxTaskSource.HABIT:
@@ -656,7 +656,7 @@ class InboxTask(LeafEntity):
             name=InboxTask._build_name_for_habit(name, repeat_index),
             actionable_date=actionable_date,
             due_date=due_date,
-            eisen=eisen if eisen else Eisen.REGULAR,
+            eisen=eisen,
             difficulty=difficulty,
             recurring_timeline=timeline,
             recurring_repeat_index=repeat_index,
@@ -671,8 +671,8 @@ class InboxTask(LeafEntity):
         timeline: str,
         actionable_date: ADate | None,
         due_date: ADate,
-        eisen: Eisen | None,
-        difficulty: Difficulty | None,
+        eisen: Eisen,
+        difficulty: Difficulty,
     ) -> "InboxTask":
         """Update all the info associated with a chore."""
         if self.source is not InboxTaskSource.CHORE:
@@ -685,7 +685,7 @@ class InboxTask(LeafEntity):
             name=name,
             actionable_date=actionable_date,
             due_date=due_date,
-            eisen=eisen if eisen else Eisen.REGULAR,
+            eisen=eisen,
             difficulty=difficulty,
             recurring_timeline=timeline,
         )
@@ -697,8 +697,8 @@ class InboxTask(LeafEntity):
         project_ref_id: EntityId,
         name: InboxTaskName,
         recurring_timeline: str,
-        eisen: Eisen | None,
-        difficulty: Difficulty | None,
+        eisen: Eisen,
+        difficulty: Difficulty,
         actionable_date: ADate | None,
         due_time: ADate,
     ) -> "InboxTask":
@@ -713,7 +713,7 @@ class InboxTask(LeafEntity):
             name=self._build_name_for_collection_task(name),
             actionable_date=actionable_date,
             due_date=due_time,
-            eisen=eisen if eisen else Eisen.REGULAR,
+            eisen=eisen,
             difficulty=difficulty,
             recurring_timeline=recurring_timeline,
         )
@@ -725,8 +725,8 @@ class InboxTask(LeafEntity):
         project_ref_id: EntityId,
         name: InboxTaskName,
         recurring_timeline: str,
-        eisen: Eisen | None,
-        difficulty: Difficulty | None,
+        eisen: Eisen,
+        difficulty: Difficulty,
         actionable_date: ADate | None,
         due_time: ADate,
     ) -> "InboxTask":
@@ -741,7 +741,7 @@ class InboxTask(LeafEntity):
             name=self._build_name_for_catch_up_task(name),
             actionable_date=actionable_date,
             due_date=due_time,
-            eisen=eisen if eisen else Eisen.REGULAR,
+            eisen=eisen,
             difficulty=difficulty,
             recurring_timeline=recurring_timeline,
         )
@@ -789,7 +789,7 @@ class InboxTask(LeafEntity):
             ctx,
             project_ref_id=project_ref_id,
             name=self._build_name_for_slack_task(user, channel, generation_extra_info),
-            eisen=generation_extra_info.eisen or Eisen.REGULAR,
+            eisen=generation_extra_info.eisen,
             difficulty=generation_extra_info.difficulty,
             actionable_date=generation_extra_info.actionable_date,
             due_date=generation_extra_info.due_date,
@@ -822,7 +822,7 @@ class InboxTask(LeafEntity):
                 to_address,
                 generation_extra_info,
             ),
-            eisen=generation_extra_info.eisen or Eisen.REGULAR,
+            eisen=generation_extra_info.eisen,
             difficulty=generation_extra_info.difficulty,
             actionable_date=generation_extra_info.actionable_date,
             due_date=generation_extra_info.due_date,
@@ -844,7 +844,7 @@ class InboxTask(LeafEntity):
         actionable_date: UpdateAction[ADate | None],
         due_date: UpdateAction[ADate | None],
         eisen: UpdateAction[Eisen],
-        difficulty: UpdateAction[Difficulty | None],
+        difficulty: UpdateAction[Difficulty],
     ) -> "InboxTask":
         """Update the inbox task."""
         if name.should_change:

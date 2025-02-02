@@ -19,8 +19,8 @@ export type ChoreCreateArgs = {
     name: ChoreName;
     period: RecurringTaskPeriod;
     project_ref_id?: (EntityId | null);
-    eisen?: (Eisen | null);
-    difficulty?: (Difficulty | null);
+    eisen: Eisen;
+    difficulty: Difficulty;
     actionable_from_day?: (RecurringTaskDueAtDay | null);
     actionable_from_month?: (RecurringTaskDueAtMonth | null);
     due_at_day?: (RecurringTaskDueAtDay | null);

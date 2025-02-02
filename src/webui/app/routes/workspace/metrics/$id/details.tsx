@@ -16,6 +16,7 @@ import {
   CardContent,
   Divider,
   FormControl,
+  FormLabel,
   InputLabel,
   MenuItem,
   OutlinedInput,
@@ -37,6 +38,8 @@ import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
+import { DifficultySelect } from "~/components/difficulty-select";
+import { EisenhowerSelect } from "~/components/eisenhower-select";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { IconSelector } from "~/components/icon-selector";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
@@ -45,8 +48,6 @@ import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
-import { difficultyName } from "~/logic/domain/difficulty";
-import { eisenName } from "~/logic/domain/eisen";
 import { sortInboxTasksNaturally } from "~/logic/domain/inbox-task";
 import { periodName } from "~/logic/domain/period";
 import { getIntent } from "~/logic/intent";
@@ -66,12 +67,8 @@ const UpdateFormSchema = {
   collectionPeriod: z
     .union([z.nativeEnum(RecurringTaskPeriod), z.literal("none")])
     .optional(),
-  collectionEisen: z
-    .union([z.nativeEnum(Eisen), z.literal("default")])
-    .optional(),
-  collectionDifficulty: z
-    .union([z.nativeEnum(Difficulty), z.literal("default")])
-    .optional(),
+  collectionEisen: z.nativeEnum(Eisen).optional(),
+  collectionDifficulty: z.nativeEnum(Difficulty).optional(),
   collectionActionableFromDay: z.string().optional(),
   collectionActionableFromMonth: z.string().optional(),
   collectionDueAtDay: z.string().optional(),
@@ -141,16 +138,12 @@ export async function action({ request, params }: ActionArgs) {
             value:
               form.collectionPeriod === "none"
                 ? undefined
-                : form.collectionEisen === "default"
-                ? undefined
                 : (form.collectionEisen as Eisen),
           },
           collection_difficulty: {
             should_change: true,
             value:
               form.collectionPeriod === "none"
-                ? undefined
-                : form.collectionDifficulty === "default"
                 ? undefined
                 : (form.collectionDifficulty as Difficulty),
           },
@@ -246,7 +239,8 @@ export default function MetricDetails() {
     transition.state === "idle" && !loaderData.metric.archived;
 
   const [showCollectionParams, setShowCollectionParams] = useState(
-    loaderData.metric.collection_params !== undefined
+    loaderData.metric.collection_params !== undefined &&
+      loaderData.metric.collection_params !== null
   );
 
   const sortedCollectionTasks = loaderData.collectionInboxTasks
@@ -256,7 +250,10 @@ export default function MetricDetails() {
     : undefined;
 
   useEffect(() => {
-    setShowCollectionParams(loaderData.metric.collection_params !== undefined);
+    setShowCollectionParams(
+      loaderData.metric.collection_params !== undefined &&
+        loaderData.metric.collection_params !== null
+    );
   }, [loaderData]);
 
   function handleChangeCollectionPeriod(event: SelectChangeEvent) {
@@ -358,23 +355,15 @@ export default function MetricDetails() {
             {showCollectionParams && (
               <>
                 <FormControl fullWidth>
-                  <InputLabel id="collectionEisen">Eisenhower</InputLabel>
-                  <Select
-                    labelId="collectionEisen"
+                  <FormLabel id="collectionEisen">Eisenhower</FormLabel>
+                  <EisenhowerSelect
                     name="collectionEisen"
-                    readOnly={!inputsEnabled}
                     defaultValue={
-                      loaderData.metric.collection_params?.eisen || "default"
+                      loaderData.metric.collection_params?.eisen ??
+                      Eisen.REGULAR
                     }
-                    label="Eisenhower"
-                  >
-                    <MenuItem value="default">Default</MenuItem>
-                    {Object.values(Eisen).map((e) => (
-                      <MenuItem key={e} value={e}>
-                        {eisenName(e)}
-                      </MenuItem>
-                    ))}
-                  </Select>
+                    inputsEnabled={inputsEnabled}
+                  />
                   <FieldError
                     actionResult={actionData}
                     fieldName="/collection_eisen"
@@ -382,24 +371,15 @@ export default function MetricDetails() {
                 </FormControl>
 
                 <FormControl fullWidth>
-                  <InputLabel id="collectionDifficulty">Difficulty</InputLabel>
-                  <Select
-                    labelId="collectionDifficulty"
+                  <FormLabel id="collectionDifficulty">Difficulty</FormLabel>
+                  <DifficultySelect
                     name="collectionDifficulty"
-                    readOnly={!inputsEnabled}
                     defaultValue={
-                      loaderData.metric.collection_params?.difficulty ||
-                      "default"
+                      loaderData.metric.collection_params?.difficulty ??
+                      Difficulty.EASY
                     }
-                    label="Difficulty"
-                  >
-                    <MenuItem value="default">Default</MenuItem>
-                    {Object.values(Difficulty).map((e) => (
-                      <MenuItem key={e} value={e}>
-                        {difficultyName(e)}
-                      </MenuItem>
-                    ))}
-                  </Select>
+                    inputsEnabled={inputsEnabled}
+                  />
                   <FieldError
                     actionResult={actionData}
                     fieldName="/collection_difficulty"
@@ -408,7 +388,7 @@ export default function MetricDetails() {
 
                 <FormControl fullWidth>
                   <InputLabel id="collectionActionableFromDay">
-                    Actionable From Day
+                    Actionable From Day [Optional]
                   </InputLabel>
                   <OutlinedInput
                     type="number"
@@ -428,7 +408,7 @@ export default function MetricDetails() {
 
                 <FormControl fullWidth>
                   <InputLabel id="collectionActionableFromMonth">
-                    Actionable From Month
+                    Actionable From Month [Optional]
                   </InputLabel>
                   <OutlinedInput
                     type="number"
@@ -447,7 +427,9 @@ export default function MetricDetails() {
                 </FormControl>
 
                 <FormControl fullWidth>
-                  <InputLabel id="collectionDueAtDay">Due At Day</InputLabel>
+                  <InputLabel id="collectionDueAtDay">
+                    Due At Day [Optional]
+                  </InputLabel>
                   <OutlinedInput
                     type="number"
                     label="Due At Day"
@@ -465,7 +447,7 @@ export default function MetricDetails() {
 
                 <FormControl fullWidth>
                   <InputLabel id="collectionDueAtMonth">
-                    Due At Month
+                    Due At Month [Optional]
                   </InputLabel>
                   <OutlinedInput
                     type="number"

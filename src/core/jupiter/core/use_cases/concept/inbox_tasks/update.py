@@ -42,7 +42,7 @@ class InboxTaskUpdateArgs(UseCaseArgsBase):
     name: UpdateAction[InboxTaskName]
     status: UpdateAction[InboxTaskStatus]
     eisen: UpdateAction[Eisen]
-    difficulty: UpdateAction[Difficulty | None]
+    difficulty: UpdateAction[Difficulty]
     actionable_date: UpdateAction[ADate | None]
     due_date: UpdateAction[ADate | None]
 

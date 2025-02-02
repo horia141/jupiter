@@ -22,7 +22,7 @@ export type ScoreLogEntry = {
     score_log_ref_id: string;
     source: ScoreSource;
     task_ref_id: EntityId;
-    difficulty?: (Difficulty | null);
+    difficulty: Difficulty;
     success: boolean;
     has_lucky_puppy_bonus?: (boolean | null);
     score: number;

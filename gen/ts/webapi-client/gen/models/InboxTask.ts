@@ -27,7 +27,7 @@ export type InboxTask = {
     project_ref_id: EntityId;
     status: InboxTaskStatus;
     eisen: Eisen;
-    difficulty?: (Difficulty | null);
+    difficulty: Difficulty;
     actionable_date?: (ADate | null);
     due_date?: (ADate | null);
     notes?: (string | null);

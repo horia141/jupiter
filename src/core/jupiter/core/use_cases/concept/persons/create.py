@@ -76,10 +76,12 @@ class PersonCreateUseCase(
 
         catch_up_params = None
         if args.catch_up_period is not None:
+            catch_up_eisen = args.catch_up_eisen or Eisen.REGULAR
+            catch_up_difficulty = args.catch_up_difficulty or Difficulty.EASY
             catch_up_params = RecurringTaskGenParams(
                 period=args.catch_up_period,
-                eisen=args.catch_up_eisen,
-                difficulty=args.catch_up_difficulty,
+                eisen=catch_up_eisen,
+                difficulty=catch_up_difficulty,
                 actionable_from_day=args.catch_up_actionable_from_day,
                 actionable_from_month=args.catch_up_actionable_from_month,
                 due_at_day=args.catch_up_due_at_day,

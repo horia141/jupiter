@@ -1,5 +1,15 @@
 import { InboxTaskSource } from "@jupiter/webapi-client";
 
+export function allowUserChanges(source: InboxTaskSource): boolean {
+  // Keep synced with python:inbox_task_source.py
+  return (
+    source === InboxTaskSource.USER ||
+    source === InboxTaskSource.BIG_PLAN ||
+    source === InboxTaskSource.SLACK_TASK ||
+    source === InboxTaskSource.EMAIL_TASK
+  );
+}
+
 export function inboxTaskSourceName(source: InboxTaskSource): string {
   switch (source) {
     case InboxTaskSource.USER:

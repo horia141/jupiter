@@ -96,16 +96,18 @@ class MetricUpdateUseCase(
                 new_collection_period = metric.collection_params.period
 
             if new_collection_period is not None:
-                new_collection_eisen = None
+                new_collection_eisen = Eisen.REGULAR
                 if args.collection_eisen.should_change:
-                    new_collection_eisen = args.collection_eisen.just_the_value
+                    new_collection_eisen = (
+                        args.collection_eisen.just_the_value or Eisen.REGULAR
+                    )
                 elif metric.collection_params is not None:
                     new_collection_eisen = metric.collection_params.eisen
 
-                new_collection_difficulty = None
+                new_collection_difficulty = Difficulty.EASY
                 if args.collection_difficulty.should_change:
                     new_collection_difficulty = (
-                        args.collection_difficulty.just_the_value
+                        args.collection_difficulty.just_the_value or Difficulty.EASY
                     )
                 elif metric.collection_params is not None:
                     new_collection_difficulty = metric.collection_params.difficulty

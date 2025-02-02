@@ -1,18 +1,13 @@
-import type { InboxTask } from "@jupiter/webapi-client";
+import type { InboxTask, TimePlan } from "@jupiter/webapi-client";
 import {
   ApiError,
   InboxTaskStatus,
+  RecurringTaskPeriod,
   TimePlanActivityFeasability,
   TimePlanActivityKind,
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
-import {
-  FormControl,
-  FormLabel,
-  Stack,
-  ToggleButton,
-  ToggleButtonGroup,
-} from "@mui/material";
+import { FormControl, FormLabel, Stack } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -20,11 +15,12 @@ import {
   useActionData,
   useFetcher,
   useParams,
+  useRouteLoaderData,
   useTransition,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
-import { useContext, useEffect, useState } from "react";
+import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
@@ -42,13 +38,13 @@ import {
 } from "~/components/infra/section-actions";
 import { SectionCardNew } from "~/components/infra/section-card-new";
 import { TimeEventInDayBlockStack } from "~/components/time-event-in-day-block-stack";
+import { TimePlanActivityFeasabilitySelect } from "~/components/time-plan-activity-feasability-select";
+import { TimePlanActivitKindSelect } from "~/components/time-plan-activity-kind-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import {
   sortInboxTaskTimeEventsNaturally,
   timeEventInDayBlockToTimezone,
 } from "~/logic/domain/time-event";
-import { timePlanActivityFeasabilityName } from "~/logic/domain/time-plan-activity-feasability";
-import { timePlanActivityKindName } from "~/logic/domain/time-plan-activity-kind";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { LeafPanelExpansionState } from "~/rendering/leaf-panel-expansion";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -158,22 +154,14 @@ export async function action({ request, params }: ActionArgs) {
 export default function TimePlanActivity() {
   const { id, activityId } = useParams();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
+  const timePlan = useRouteLoaderData("routes/workspace/time-plans/$id")
+    .timePlan as TimePlan;
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
   const topLevelInfo = useContext(TopLevelInfoContext);
 
   const inputsEnabled =
     transition.state === "idle" && !loaderData.timePlanActivity.archived;
-
-  const [kind, setKind] = useState(loaderData.timePlanActivity.kind);
-  const [feasability, setFeasability] = useState(
-    loaderData.timePlanActivity.feasability
-  );
-
-  useEffect(() => {
-    setKind(loaderData.timePlanActivity.kind);
-    setFeasability(loaderData.timePlanActivity.feasability);
-  }, [loaderData]);
 
   const cardActionFetcher = useFetcher();
 
@@ -221,6 +209,26 @@ export default function TimePlanActivity() {
 
   const today = DateTime.local({ zone: topLevelInfo.user.timezone });
 
+  let newInboxTaskTimeEventLocation = undefined;
+
+  if (
+    loaderData.targetInboxTask &&
+    (timePlan.period === RecurringTaskPeriod.DAILY ||
+      timePlan.period === RecurringTaskPeriod.WEEKLY)
+  ) {
+    const params = new URLSearchParams({
+      date: timePlan.start_date,
+      period: timePlan.period,
+      view: "calendar",
+      inboxTaskRefId: loaderData.targetInboxTask!.ref_id,
+      timePlanReason: "for-time-plan",
+      timePlanRefId: id as string,
+      timePlanActivityRefId: activityId as string,
+    });
+
+    newInboxTaskTimeEventLocation = `/workspace/calendar/time-event/in-day-block/new-for-inbox-task?${params.toString()}`;
+  }
+
   return (
     <LeafPanel
       key={`time-plan-${id}/activity-${activityId}`}
@@ -251,68 +259,21 @@ export default function TimePlanActivity() {
         <Stack spacing={2} useFlexGap>
           <FormControl fullWidth>
             <FormLabel id="kind">Kind</FormLabel>
-            <ToggleButtonGroup
-              value={kind}
-              exclusive
-              onChange={(_, newKind) => newKind !== null && setKind(newKind)}
-            >
-              <ToggleButton
-                id="time-plan-activity-kind-finish"
-                disabled={!inputsEnabled}
-                value={TimePlanActivityKind.FINISH}
-              >
-                {timePlanActivityKindName(TimePlanActivityKind.FINISH)}
-              </ToggleButton>
-              <ToggleButton
-                id="time-plan-activity-kind-make-progress"
-                disabled={!inputsEnabled}
-                value={TimePlanActivityKind.MAKE_PROGRESS}
-              >
-                {timePlanActivityKindName(TimePlanActivityKind.MAKE_PROGRESS)}
-              </ToggleButton>
-            </ToggleButtonGroup>
-            <input name="kind" type="hidden" value={kind} />
+            <TimePlanActivitKindSelect
+              name="kind"
+              defaultValue={loaderData.timePlanActivity.kind}
+              inputsEnabled={inputsEnabled}
+            />
             <FieldError actionResult={actionData} fieldName="/kind" />
           </FormControl>
 
           <FormControl fullWidth>
             <FormLabel id="feasability">Feasability</FormLabel>
-            <ToggleButtonGroup
-              value={feasability}
-              exclusive
-              onChange={(_, newFeasability) =>
-                newFeasability !== null && setFeasability(newFeasability)
-              }
-            >
-              <ToggleButton
-                id="time-plan-activity-feasability-must-do"
-                disabled={!inputsEnabled}
-                value={TimePlanActivityFeasability.MUST_DO}
-              >
-                {timePlanActivityFeasabilityName(
-                  TimePlanActivityFeasability.MUST_DO
-                )}
-              </ToggleButton>
-              <ToggleButton
-                id="time-plan-activity-feasability-should-do"
-                disabled={!inputsEnabled}
-                value={TimePlanActivityFeasability.NICE_TO_HAVE}
-              >
-                {timePlanActivityFeasabilityName(
-                  TimePlanActivityFeasability.NICE_TO_HAVE
-                )}
-              </ToggleButton>
-              <ToggleButton
-                id="time-plan-activity-feasability-stretch"
-                disabled={!inputsEnabled}
-                value={TimePlanActivityFeasability.STRETCH}
-              >
-                {timePlanActivityFeasabilityName(
-                  TimePlanActivityFeasability.STRETCH
-                )}
-              </ToggleButton>
-            </ToggleButtonGroup>
-            <input name="feasability" type="hidden" value={feasability} />
+            <TimePlanActivityFeasabilitySelect
+              name="feasability"
+              defaultValue={loaderData.timePlanActivity.feasability}
+              inputsEnabled={inputsEnabled}
+            />
             <FieldError actionResult={actionData} fieldName="/feasability" />
           </FormControl>
         </Stack>
@@ -344,9 +305,7 @@ export default function TimePlanActivity() {
               topLevelInfo={topLevelInfo}
               inputsEnabled={inputsEnabled}
               title="Time Events"
-              createLocation={`/workspace/calendar/time-event/in-day-block/new-for-inbox-task?inboxTaskRefId=${
-                loaderData.targetInboxTask!.ref_id
-              }&timePlanReason=for-time-plan&timePlanRefId=${id}&timePlanActivityRefId=${activityId}`}
+              createLocation={newInboxTaskTimeEventLocation}
               entries={sortedInboxTaskTimeEventEntries}
             />
           )}

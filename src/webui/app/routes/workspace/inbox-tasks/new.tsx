@@ -9,6 +9,8 @@ import {
   ApiError,
   Difficulty,
   Eisen,
+  TimePlanActivityFeasability,
+  TimePlanActivityKind,
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
 import type { SelectChangeEvent } from "@mui/material";
@@ -20,6 +22,7 @@ import {
   CardActions,
   CardContent,
   FormControl,
+  FormLabel,
   InputLabel,
   MenuItem,
   OutlinedInput,
@@ -36,6 +39,8 @@ import { useContext, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseQuery } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
+import { DifficultySelect } from "~/components/difficulty-select";
+import { EisenhowerSelect } from "~/components/eisenhower-select";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import {
   BetterFieldError,
@@ -43,10 +48,10 @@ import {
   GlobalError,
 } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import { TimePlanActivityFeasabilitySelect } from "~/components/time-plan-activity-feasability-select";
+import { TimePlanActivitKindSelect } from "~/components/time-plan-activity-kind-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
-import { difficultyName } from "~/logic/domain/difficulty";
-import { eisenName } from "~/logic/domain/eisen";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -66,9 +71,13 @@ const CreateFormSchema = {
   project: z.string().optional(),
   bigPlan: z.string().optional(),
   eisen: z.nativeEnum(Eisen),
-  difficulty: z.union([z.nativeEnum(Difficulty), z.literal("default")]),
+  difficulty: z.nativeEnum(Difficulty),
   actionableDate: z.string().optional(),
   dueDate: z.string().optional(),
+  timePlanActivityKind: z.nativeEnum(TimePlanActivityKind).optional(),
+  timePlanActivityFeasability: z
+    .nativeEnum(TimePlanActivityFeasability)
+    .optional(),
 };
 
 type BigPlanACOption = {
@@ -172,6 +181,8 @@ export async function action({ request }: ActionArgs) {
         timePlanReason === "standard"
           ? undefined
           : (query.timePlanRefId as string),
+      time_plan_activity_kind: form.timePlanActivityKind,
+      time_plan_activity_feasability: form.timePlanActivityFeasability,
       project_ref_id: form.project !== undefined ? form.project : undefined,
       big_plan_ref_id:
         bigPlanReason === "standard"
@@ -180,7 +191,7 @@ export async function action({ request }: ActionArgs) {
             : undefined
           : (query.bigPlanRefId as string),
       eisen: form.eisen,
-      difficulty: form.difficulty !== "default" ? form.difficulty : undefined,
+      difficulty: form.difficulty,
       actionable_date:
         form.actionableDate !== undefined && form.actionableDate !== ""
           ? form.actionableDate
@@ -409,49 +420,35 @@ export default function NewInboxTask() {
             )}
 
             <FormControl fullWidth>
-              <InputLabel id="eisen">Eisenhower</InputLabel>
-              <Select
-                labelId="eisen"
+              <FormLabel id="eisen">Eisenhower</FormLabel>
+              <EisenhowerSelect
                 name="eisen"
-                readOnly={!inputsEnabled}
                 defaultValue={Eisen.REGULAR}
-                label="Eisen"
-              >
-                {Object.values(Eisen).map((e) => (
-                  <MenuItem key={e} value={e}>
-                    {eisenName(e)}
-                  </MenuItem>
-                ))}
-              </Select>
+                inputsEnabled={inputsEnabled}
+              />
               <FieldError actionResult={actionData} fieldName="/eisen" />
             </FormControl>
 
             <FormControl fullWidth>
-              <InputLabel id="difficulty">Difficulty</InputLabel>
-              <Select
-                labelId="difficulty"
+              <FormLabel id="difficulty">Difficulty</FormLabel>
+              <DifficultySelect
                 name="difficulty"
-                readOnly={!inputsEnabled}
-                defaultValue={"default"}
-                label="Difficulty"
-              >
-                <MenuItem value="default">Default</MenuItem>
-                {Object.values(Difficulty).map((e) => (
-                  <MenuItem key={e} value={e}>
-                    {difficultyName(e)}
-                  </MenuItem>
-                ))}
-              </Select>
+                defaultValue={Difficulty.EASY}
+                inputsEnabled={inputsEnabled}
+              />
               <FieldError actionResult={actionData} fieldName="/difficulty" />
             </FormControl>
 
             <FormControl fullWidth>
-              <InputLabel id="actionableDate">Actionable From</InputLabel>
+              <InputLabel id="actionableDate" shrink>
+                Actionable From [Optional]
+              </InputLabel>
               <OutlinedInput
                 type="date"
                 label="actionableDate"
                 readOnly={!inputsEnabled}
                 name="actionableDate"
+                notched
                 defaultValue={
                   loaderData.timePlanReason === "for-time-plan"
                     ? aDateToDate(
@@ -474,11 +471,14 @@ export default function NewInboxTask() {
             </FormControl>
 
             <FormControl fullWidth>
-              <InputLabel id="dueDate">Due At</InputLabel>
+              <InputLabel id="dueDate" shrink>
+                Due At [Optional]
+              </InputLabel>
               <OutlinedInput
                 type="date"
                 label="dueDate"
                 readOnly={!inputsEnabled}
+                notched
                 name="dueDate"
                 defaultValue={
                   loaderData.timePlanReason === "for-time-plan"
@@ -491,12 +491,48 @@ export default function NewInboxTask() {
                     ? aDateToDate(loaderData.ownerBigPlan.due_date).toFormat(
                         "yyyy-MM-dd"
                       )
-                    : undefined
+                    : ""
                 }
               />
 
               <FieldError actionResult={actionData} fieldName="/due_date" />
             </FormControl>
+
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.TIME_PLANS
+            ) &&
+              loaderData.timePlanReason === "for-time-plan" && (
+                <>
+                  <FormControl fullWidth>
+                    <FormLabel id="timePlanActivityKind">Kind</FormLabel>
+                    <TimePlanActivitKindSelect
+                      name="timePlanActivityKind"
+                      defaultValue={TimePlanActivityKind.FINISH}
+                      inputsEnabled={inputsEnabled}
+                    />
+                    <FieldError
+                      actionResult={actionData}
+                      fieldName="/time_plan_activity_kind"
+                    />
+                  </FormControl>
+
+                  <FormControl fullWidth>
+                    <FormLabel id="timePlanActivityFeasability">
+                      Feasability
+                    </FormLabel>
+                    <TimePlanActivityFeasabilitySelect
+                      name="timePlanActivityFeasability"
+                      defaultValue={TimePlanActivityFeasability.NICE_TO_HAVE}
+                      inputsEnabled={inputsEnabled}
+                    />
+                    <FieldError
+                      actionResult={actionData}
+                      fieldName="/time_plan_activity_feasability"
+                    />
+                  </FormControl>
+                </>
+              )}
           </Stack>
         </CardContent>
         <CardActions>

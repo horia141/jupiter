@@ -18,6 +18,7 @@ import {
   CardContent,
   Divider,
   FormControl,
+  FormLabel,
   InputLabel,
   MenuItem,
   OutlinedInput,
@@ -39,6 +40,8 @@ import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
+import { DifficultySelect } from "~/components/difficulty-select";
+import { EisenhowerSelect } from "~/components/eisenhower-select";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
@@ -47,8 +50,6 @@ import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { TimeEventFullDaysBlockStack } from "~/components/time-event-full-days-block-stack";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
-import { difficultyName } from "~/logic/domain/difficulty";
-import { eisenName } from "~/logic/domain/eisen";
 import { sortInboxTasksNaturally } from "~/logic/domain/inbox-task";
 import { periodName } from "~/logic/domain/period";
 import {
@@ -77,10 +78,8 @@ const UpdateFormSchema = {
   catchUpPeriod: z
     .union([z.nativeEnum(RecurringTaskPeriod), z.literal("none")])
     .optional(),
-  catchUpEisen: z.union([z.nativeEnum(Eisen), z.literal("default")]).optional(),
-  catchUpDifficulty: z
-    .union([z.nativeEnum(Difficulty), z.literal("default")])
-    .optional(),
+  catchUpEisen: z.nativeEnum(Eisen).optional(),
+  catchUpDifficulty: z.nativeEnum(Difficulty).optional(),
   catchUpActionableFromDay: z.string().optional(),
   catchUpActionableFromMonth: z.string().optional(),
   catchUpDueAtDay: z.string().optional(),
@@ -151,16 +150,12 @@ export async function action({ request, params }: ActionArgs) {
             value:
               form.catchUpPeriod === undefined || form.catchUpPeriod === "none"
                 ? undefined
-                : form.catchUpEisen === "default"
-                ? undefined
                 : (form.catchUpEisen as Eisen),
           },
           catch_up_difficulty: {
             should_change: true,
             value:
               form.catchUpPeriod === undefined || form.catchUpPeriod === "none"
-                ? undefined
-                : form.catchUpDifficulty === "default"
                 ? undefined
                 : (form.catchUpDifficulty as Difficulty),
           },
@@ -270,7 +265,7 @@ export default function Person() {
     : undefined;
 
   const [showCatchUpParams, setShowCatchUpParams] = useState(
-    person?.catch_up_params !== undefined
+    person?.catch_up_params !== undefined && person?.catch_up_params !== null
   );
 
   const sortedBirthdayTasks = sortInboxTasksNaturally(
@@ -302,7 +297,9 @@ export default function Person() {
   const inputsEnabled = transition.state === "idle" && !person.archived;
 
   useEffect(() => {
-    setShowCatchUpParams(person?.catch_up_params !== undefined);
+    setShowCatchUpParams(
+      person?.catch_up_params !== undefined && person?.catch_up_params !== null
+    );
   }, [loaderData, person.catch_up_params]);
 
   function handleChangeCatchUpPeriod(event: SelectChangeEvent) {
@@ -385,7 +382,9 @@ export default function Person() {
 
             <Stack spacing={2} useFlexGap direction="row">
               <FormControl fullWidth>
-                <InputLabel id="birthdayDay">Birthday Day</InputLabel>
+                <InputLabel id="birthdayDay">
+                  Birthday Day [Optional]
+                </InputLabel>
                 <Select
                   labelId="birthdayDay"
                   name="birthdayDay"
@@ -432,7 +431,9 @@ export default function Person() {
               </FormControl>
 
               <FormControl fullWidth>
-                <InputLabel id="birthdayMonth">Birthday Month</InputLabel>
+                <InputLabel id="birthdayMonth">
+                  Birthday Month [Optional]
+                </InputLabel>
                 <Select
                   labelId="birthdayMonth"
                   name="birthdayMonth"
@@ -486,21 +487,14 @@ export default function Person() {
             {showCatchUpParams && (
               <>
                 <FormControl fullWidth>
-                  <InputLabel id="catchUpEisen">Eisenhower</InputLabel>
-                  <Select
-                    labelId="catchUpEisen"
+                  <FormLabel id="catchUpEisen">Eisenhower</FormLabel>
+                  <EisenhowerSelect
                     name="catchUpEisen"
-                    readOnly={!inputsEnabled}
-                    defaultValue={person.catch_up_params?.eisen || "default"}
-                    label="Eisenhower"
-                  >
-                    <MenuItem value="default">Default</MenuItem>
-                    {Object.values(Eisen).map((e) => (
-                      <MenuItem key={e} value={e}>
-                        {eisenName(e)}
-                      </MenuItem>
-                    ))}
-                  </Select>
+                    defaultValue={
+                      loaderData.person.catch_up_params?.eisen ?? Eisen.REGULAR
+                    }
+                    inputsEnabled={inputsEnabled}
+                  />
                   <FieldError
                     actionResult={actionData}
                     fieldName="/catch_up_eisen"
@@ -508,23 +502,15 @@ export default function Person() {
                 </FormControl>
 
                 <FormControl fullWidth>
-                  <InputLabel id="catchUpDifficulty">Difficulty</InputLabel>
-                  <Select
-                    labelId="catchUpDifficulty"
+                  <FormLabel id="catchUpDifficulty">Difficulty</FormLabel>
+                  <DifficultySelect
                     name="catchUpDifficulty"
-                    readOnly={!inputsEnabled}
                     defaultValue={
-                      person.catch_up_params?.difficulty || "default"
+                      loaderData.person.catch_up_params?.difficulty ??
+                      Difficulty.EASY
                     }
-                    label="Difficulty"
-                  >
-                    <MenuItem value="default">Default</MenuItem>
-                    {Object.values(Difficulty).map((e) => (
-                      <MenuItem key={e} value={e}>
-                        {difficultyName(e)}
-                      </MenuItem>
-                    ))}
-                  </Select>
+                    inputsEnabled={inputsEnabled}
+                  />
                   <FieldError
                     actionResult={actionData}
                     fieldName="/catch_up_difficulty"
@@ -533,7 +519,7 @@ export default function Person() {
 
                 <FormControl fullWidth>
                   <InputLabel id="catchUpActionableFromDay">
-                    Actionable From Day
+                    Actionable From Day [Optional]
                   </InputLabel>
                   <OutlinedInput
                     type="number"
@@ -552,7 +538,7 @@ export default function Person() {
 
                 <FormControl fullWidth>
                   <InputLabel id="catchUpActionableFromMonth">
-                    Actionable From Month
+                    Actionable From Month [Optional]
                   </InputLabel>
                   <OutlinedInput
                     type="number"
@@ -570,7 +556,9 @@ export default function Person() {
                 </FormControl>
 
                 <FormControl fullWidth>
-                  <InputLabel id="catchUpDueAtDay">Due At Day</InputLabel>
+                  <InputLabel id="catchUpDueAtDay">
+                    Due At Day [Optional]
+                  </InputLabel>
                   <OutlinedInput
                     type="number"
                     label="Due At Day"
@@ -585,7 +573,9 @@ export default function Person() {
                 </FormControl>
 
                 <FormControl fullWidth>
-                  <InputLabel id="catchUpDueAtMonth">Due At Month</InputLabel>
+                  <InputLabel id="catchUpDueAtMonth">
+                    Due At Month [Optional]
+                  </InputLabel>
                   <OutlinedInput
                     type="number"
                     label="Due At Month"

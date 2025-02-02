@@ -3,6 +3,9 @@ from typing import Any, Dict, List, Type, TypeVar, cast
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
+from ..models.time_plan_activity_feasability import TimePlanActivityFeasability
+from ..models.time_plan_activity_kind import TimePlanActivityKind
+
 T = TypeVar("T", bound="TimePlanAssociateWithBigPlansArgs")
 
 
@@ -14,11 +17,15 @@ class TimePlanAssociateWithBigPlansArgs:
         ref_id (str): A generic entity id.
         big_plan_ref_ids (List[str]):
         override_existing_dates (bool):
+        kind (TimePlanActivityKind): The kind of a time plan activity.
+        feasability (TimePlanActivityFeasability): The feasability of a particular activity within a plan.
     """
 
     ref_id: str
     big_plan_ref_ids: List[str]
     override_existing_dates: bool
+    kind: TimePlanActivityKind
+    feasability: TimePlanActivityFeasability
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -28,6 +35,10 @@ class TimePlanAssociateWithBigPlansArgs:
 
         override_existing_dates = self.override_existing_dates
 
+        kind = self.kind.value
+
+        feasability = self.feasability.value
+
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -35,6 +46,8 @@ class TimePlanAssociateWithBigPlansArgs:
                 "ref_id": ref_id,
                 "big_plan_ref_ids": big_plan_ref_ids,
                 "override_existing_dates": override_existing_dates,
+                "kind": kind,
+                "feasability": feasability,
             }
         )
 
@@ -49,10 +62,16 @@ class TimePlanAssociateWithBigPlansArgs:
 
         override_existing_dates = d.pop("override_existing_dates")
 
+        kind = TimePlanActivityKind(d.pop("kind"))
+
+        feasability = TimePlanActivityFeasability(d.pop("feasability"))
+
         time_plan_associate_with_big_plans_args = cls(
             ref_id=ref_id,
             big_plan_ref_ids=big_plan_ref_ids,
             override_existing_dates=override_existing_dates,
+            kind=kind,
+            feasability=feasability,
         )
 
         time_plan_associate_with_big_plans_args.additional_properties = d

@@ -326,11 +326,12 @@ export default function Search() {
                   >
                     <Stack spacing={2} useFlexGap sx={{ flexGrow: 1 }}>
                       <FormControl fullWidth>
-                        <InputLabel id="filterCreatedTimeAfter">
+                        <InputLabel id="filterCreatedTimeAfter" shrink>
                           Created After
                         </InputLabel>
                         <OutlinedInput
                           type="date"
+                          notched
                           label="Created After"
                           value={searchFilterCreatedTimeAfter}
                           onChange={(e) =>
@@ -347,11 +348,12 @@ export default function Search() {
                       </FormControl>
 
                       <FormControl fullWidth>
-                        <InputLabel id="filterCreatedTimeBefore">
+                        <InputLabel id="filterCreatedTimeBefore" shrink>
                           Created Before
                         </InputLabel>
                         <OutlinedInput
                           type="date"
+                          notched
                           label="Created Before"
                           value={searchFilterCreatedTimeBefore}
                           onChange={(e) =>
@@ -370,11 +372,12 @@ export default function Search() {
 
                     <Stack spacing={2} useFlexGap sx={{ flexGrow: 1 }}>
                       <FormControl fullWidth>
-                        <InputLabel id="filterLastModifiedTimeAfter">
+                        <InputLabel id="filterLastModifiedTimeAfter" shrink>
                           Last Modified After
                         </InputLabel>
                         <OutlinedInput
                           type="date"
+                          notched
                           label="Last Modified After"
                           value={searchFilterLastModifiedTimeAfter}
                           onChange={(e) =>
@@ -391,11 +394,12 @@ export default function Search() {
                       </FormControl>
 
                       <FormControl fullWidth>
-                        <InputLabel id="filterLastModifiedTimeBefore">
+                        <InputLabel id="filterLastModifiedTimeBefore" shrink>
                           Last Modified Before
                         </InputLabel>
                         <OutlinedInput
                           type="date"
+                          notched
                           label="Last Modified Before"
                           value={searchFilterLastModifiedTimeBefore}
                           onChange={(e) =>
@@ -416,11 +420,12 @@ export default function Search() {
 
                     <Stack spacing={2} useFlexGap sx={{ flexGrow: 1 }}>
                       <FormControl fullWidth>
-                        <InputLabel id="filterArchivedTimeAfter">
+                        <InputLabel id="filterArchivedTimeAfter" shrink>
                           Archived After
                         </InputLabel>
                         <OutlinedInput
                           type="date"
+                          notched
                           label="Archived After"
                           value={searchFilterArchivedTimeAfter}
                           onChange={(e) =>
@@ -437,11 +442,12 @@ export default function Search() {
                       </FormControl>
 
                       <FormControl fullWidth>
-                        <InputLabel id="filterArchivedTimeBefore">
+                        <InputLabel id="filterArchivedTimeBefore" shrink>
                           Archived Before
                         </InputLabel>
                         <OutlinedInput
                           type="date"
+                          notched
                           label="Archived Before"
                           value={searchFilterArchivedTimeBefore}
                           onChange={(e) =>

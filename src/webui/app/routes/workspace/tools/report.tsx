@@ -145,9 +145,12 @@ export default function Report() {
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>
-              <InputLabel id="today">Today</InputLabel>
+              <InputLabel id="today" shrink>
+                Today
+              </InputLabel>
               <OutlinedInput
                 type="date"
+                notched
                 label="Today"
                 name="today"
                 defaultValue={

@@ -24,10 +24,10 @@ class ScoreLogEntry:
         score_log_ref_id (str):
         source (ScoreSource): The source of a score.
         task_ref_id (str): A generic entity id.
+        difficulty (Difficulty): The difficulty of a particular task.
         success (bool):
         score (int):
         archived_time (Union[None, Unset, str]):
-        difficulty (Union[Difficulty, None, Unset]):
         has_lucky_puppy_bonus (Union[None, Unset, bool]):
     """
 
@@ -40,10 +40,10 @@ class ScoreLogEntry:
     score_log_ref_id: str
     source: ScoreSource
     task_ref_id: str
+    difficulty: Difficulty
     success: bool
     score: int
     archived_time: Union[None, Unset, str] = UNSET
-    difficulty: Union[Difficulty, None, Unset] = UNSET
     has_lucky_puppy_bonus: Union[None, Unset, bool] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -66,6 +66,8 @@ class ScoreLogEntry:
 
         task_ref_id = self.task_ref_id
 
+        difficulty = self.difficulty.value
+
         success = self.success
 
         score = self.score
@@ -75,14 +77,6 @@ class ScoreLogEntry:
             archived_time = UNSET
         else:
             archived_time = self.archived_time
-
-        difficulty: Union[None, Unset, str]
-        if isinstance(self.difficulty, Unset):
-            difficulty = UNSET
-        elif isinstance(self.difficulty, Difficulty):
-            difficulty = self.difficulty.value
-        else:
-            difficulty = self.difficulty
 
         has_lucky_puppy_bonus: Union[None, Unset, bool]
         if isinstance(self.has_lucky_puppy_bonus, Unset):
@@ -103,14 +97,13 @@ class ScoreLogEntry:
                 "score_log_ref_id": score_log_ref_id,
                 "source": source,
                 "task_ref_id": task_ref_id,
+                "difficulty": difficulty,
                 "success": success,
                 "score": score,
             }
         )
         if archived_time is not UNSET:
             field_dict["archived_time"] = archived_time
-        if difficulty is not UNSET:
-            field_dict["difficulty"] = difficulty
         if has_lucky_puppy_bonus is not UNSET:
             field_dict["has_lucky_puppy_bonus"] = has_lucky_puppy_bonus
 
@@ -137,6 +130,8 @@ class ScoreLogEntry:
 
         task_ref_id = d.pop("task_ref_id")
 
+        difficulty = Difficulty(d.pop("difficulty"))
+
         success = d.pop("success")
 
         score = d.pop("score")
@@ -149,23 +144,6 @@ class ScoreLogEntry:
             return cast(Union[None, Unset, str], data)
 
         archived_time = _parse_archived_time(d.pop("archived_time", UNSET))
-
-        def _parse_difficulty(data: object) -> Union[Difficulty, None, Unset]:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            try:
-                if not isinstance(data, str):
-                    raise TypeError()
-                difficulty_type_0 = Difficulty(data)
-
-                return difficulty_type_0
-            except:  # noqa: E722
-                pass
-            return cast(Union[Difficulty, None, Unset], data)
-
-        difficulty = _parse_difficulty(d.pop("difficulty", UNSET))
 
         def _parse_has_lucky_puppy_bonus(data: object) -> Union[None, Unset, bool]:
             if data is None:
@@ -186,10 +164,10 @@ class ScoreLogEntry:
             score_log_ref_id=score_log_ref_id,
             source=source,
             task_ref_id=task_ref_id,
+            difficulty=difficulty,
             success=success,
             score=score,
             archived_time=archived_time,
-            difficulty=difficulty,
             has_lucky_puppy_bonus=has_lucky_puppy_bonus,
         )
 

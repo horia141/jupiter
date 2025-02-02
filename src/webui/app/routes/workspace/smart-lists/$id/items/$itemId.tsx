@@ -203,7 +203,7 @@ export default function SmartListItem() {
             </FormControl>
 
             <FormControl fullWidth>
-              <InputLabel id="url">Url</InputLabel>
+              <InputLabel id="url">Url [Optional]</InputLabel>
               <OutlinedInput
                 label="Url"
                 name="url"

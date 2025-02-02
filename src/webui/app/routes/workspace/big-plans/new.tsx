@@ -1,5 +1,10 @@
 import type { ADate, ProjectSummary, TimePlan } from "@jupiter/webapi-client";
-import { ApiError, WorkspaceFeature } from "@jupiter/webapi-client";
+import {
+  ApiError,
+  TimePlanActivityFeasability,
+  TimePlanActivityKind,
+  WorkspaceFeature,
+} from "@jupiter/webapi-client";
 import {
   Button,
   ButtonGroup,
@@ -7,6 +12,7 @@ import {
   CardActions,
   CardContent,
   FormControl,
+  FormLabel,
   InputLabel,
   MenuItem,
   OutlinedInput,
@@ -25,6 +31,8 @@ import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import { TimePlanActivityFeasabilitySelect } from "~/components/time-plan-activity-feasability-select";
+import { TimePlanActivitKindSelect } from "~/components/time-plan-activity-kind-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
@@ -43,6 +51,10 @@ const CreateFormSchema = {
   project: z.string().optional(),
   actionableDate: z.string().optional(),
   dueDate: z.string().optional(),
+  timePlanActivityKind: z.nativeEnum(TimePlanActivityKind).optional(),
+  timePlanActivityFeasability: z
+    .nativeEnum(TimePlanActivityFeasability)
+    .optional(),
 };
 
 export const handle = {
@@ -98,6 +110,8 @@ export async function action({ request }: ActionArgs) {
         timePlanReason === "standard"
           ? undefined
           : (query.timePlanRefId as string),
+      time_plan_activity_kind: form.timePlanActivityKind,
+      time_plan_activity_feasability: form.timePlanActivityFeasability,
       project_ref_id: form.project !== undefined ? form.project : undefined,
       actionable_date:
         form.actionableDate !== undefined && form.actionableDate !== ""
@@ -183,11 +197,12 @@ export default function NewBigPlan() {
 
             <FormControl fullWidth>
               <InputLabel id="actionableDate" shrink margin="dense">
-                Actionable From
+                Actionable From [Optional]
               </InputLabel>
               <OutlinedInput
                 type="date"
                 label="actionableDate"
+                notched
                 name="actionableDate"
                 readOnly={!inputsEnabled}
                 defaultValue={
@@ -208,10 +223,11 @@ export default function NewBigPlan() {
 
             <FormControl fullWidth>
               <InputLabel id="dueDate" shrink margin="dense">
-                Due At
+                Due At [Optional]
               </InputLabel>
               <OutlinedInput
                 type="date"
+                notched
                 label="dueDate"
                 name="dueDate"
                 readOnly={!inputsEnabled}
@@ -227,6 +243,42 @@ export default function NewBigPlan() {
 
               <FieldError actionResult={actionData} fieldName="/due_date" />
             </FormControl>
+
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.TIME_PLANS
+            ) &&
+              loaderData.timePlanReason === "for-time-plan" && (
+                <>
+                  <FormControl fullWidth>
+                    <FormLabel id="timePlanActivityKind">Kind</FormLabel>
+                    <TimePlanActivitKindSelect
+                      name="timePlanActivityKind"
+                      defaultValue={TimePlanActivityKind.FINISH}
+                      inputsEnabled={inputsEnabled}
+                    />
+                    <FieldError
+                      actionResult={actionData}
+                      fieldName="/time_plan_activity_kind"
+                    />
+                  </FormControl>
+
+                  <FormControl fullWidth>
+                    <FormLabel id="timePlanActivityFeasability">
+                      Feasability
+                    </FormLabel>
+                    <TimePlanActivityFeasabilitySelect
+                      name="timePlanActivityFeasability"
+                      defaultValue={TimePlanActivityFeasability.NICE_TO_HAVE}
+                      inputsEnabled={inputsEnabled}
+                    />
+                    <FieldError
+                      actionResult={actionData}
+                      fieldName="/time_plan_activity_feasability"
+                    />
+                  </FormControl>
+                </>
+              )}
           </Stack>
         </CardContent>
 

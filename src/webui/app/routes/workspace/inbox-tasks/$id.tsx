@@ -23,6 +23,7 @@ import {
   CardActions,
   CardContent,
   FormControl,
+  FormLabel,
   InputLabel,
   MenuItem,
   OutlinedInput,
@@ -43,8 +44,11 @@ import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
+import { DifficultySelect } from "~/components/difficulty-select";
+import { EisenhowerSelect } from "~/components/eisenhower-select";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { InboxTaskSourceLink } from "~/components/inbox-task-source-link";
+import { InboxTaskStatusBigTag } from "~/components/inbox-task-status-big-tag";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
@@ -54,15 +58,13 @@ import { TimeEventInDayBlockStack } from "~/components/time-event-in-day-block-s
 import { TimePlanActivityList } from "~/components/time-plan-activity-list";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
-import { difficultyName } from "~/logic/domain/difficulty";
-import { eisenName } from "~/logic/domain/eisen";
 import { saveScoreAction } from "~/logic/domain/gamification/scores.server";
 import {
   doesInboxTaskAllowChangingBigPlan,
   doesInboxTaskAllowChangingProject,
   isInboxTaskCoreFieldEditable,
 } from "~/logic/domain/inbox-task";
-import { inboxTaskStatusName } from "~/logic/domain/inbox-task-status";
+import { allowUserChanges } from "~/logic/domain/inbox-task-source";
 import {
   sortInboxTaskTimeEventsNaturally,
   timeEventInDayBlockToTimezone,
@@ -86,7 +88,7 @@ const UpdateFormSchema = {
   bigPlan: z.string().optional(),
   status: z.nativeEnum(InboxTaskStatus),
   eisen: z.nativeEnum(Eisen),
-  difficulty: z.union([z.nativeEnum(Difficulty), z.literal("default")]),
+  difficulty: z.nativeEnum(Difficulty),
   actionableDate: z.string().optional(),
   dueDate: z.string().optional(),
 };
@@ -154,7 +156,35 @@ export async function action({ request, params }: ActionArgs) {
 
   try {
     switch (intent) {
+      case "mark-done":
+      case "mark-not-done":
+      case "start":
+      case "restart":
+      case "block":
+      case "stop":
+      case "reactivate":
       case "update": {
+        let status = form.status;
+        if (intent === "mark-done") {
+          status = InboxTaskStatus.DONE;
+        } else if (intent === "mark-not-done") {
+          status = InboxTaskStatus.NOT_DONE;
+        } else if (intent === "start") {
+          status = InboxTaskStatus.IN_PROGRESS;
+        } else if (intent === "restart") {
+          status = InboxTaskStatus.IN_PROGRESS;
+        } else if (intent === "block") {
+          status = InboxTaskStatus.BLOCKED;
+        } else if (intent === "stop") {
+          status = allowUserChanges(form.source)
+            ? InboxTaskStatus.NOT_STARTED
+            : InboxTaskStatus.NOT_STARTED_GEN;
+        } else if (intent === "reactivate") {
+          status = allowUserChanges(form.source)
+            ? InboxTaskStatus.NOT_STARTED
+            : InboxTaskStatus.NOT_STARTED_GEN;
+        }
+
         const result = await apiClient.inboxTasks.inboxTaskUpdate({
           ref_id: id,
           name: corePropertyEditable
@@ -165,7 +195,7 @@ export async function action({ request, params }: ActionArgs) {
             : { should_change: false },
           status: {
             should_change: true,
-            value: form.status,
+            value: status,
           },
           eisen: corePropertyEditable
             ? {
@@ -176,8 +206,7 @@ export async function action({ request, params }: ActionArgs) {
           difficulty: corePropertyEditable
             ? {
                 should_change: true,
-                value:
-                  form.difficulty === "default" ? undefined : form.difficulty,
+                value: form.difficulty,
               }
             : { should_change: false },
           actionable_date: {
@@ -433,7 +462,7 @@ export default function InboxTask() {
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <Box sx={{ display: "flex", flexDirection: "row", gap: "0.25rem" }}>
-              <FormControl fullWidth>
+              <FormControl sx={{ flexGrow: 3 }}>
                 <InputLabel id="name">Name</InputLabel>
                 <OutlinedInput
                   label="Name"
@@ -444,39 +473,13 @@ export default function InboxTask() {
                 <FieldError actionResult={actionData} fieldName="/name" />
                 <input type="hidden" name="source" value={inboxTask.source} />
               </FormControl>
+              <FormControl sx={{ flexGrow: 1 }}>
+                <InboxTaskStatusBigTag status={inboxTask.status} />
+                <input type="hidden" name="status" value={inboxTask.status} />
+                <FieldError actionResult={actionData} fieldName="/status" />
+              </FormControl>
               <InboxTaskSourceLink inboxTaskResult={info} />
             </Box>
-
-            <FormControl fullWidth>
-              <InputLabel id="status">Status</InputLabel>
-              <Select
-                labelId="status"
-                name="status"
-                readOnly={!inputsEnabled}
-                defaultValue={inboxTask.status}
-                label="Status"
-              >
-                {Object.values(InboxTaskStatus)
-                  .filter((s) => {
-                    if (
-                      inboxTask.source === InboxTaskSource.USER ||
-                      inboxTask.source === InboxTaskSource.BIG_PLAN ||
-                      inboxTask.source === InboxTaskSource.SLACK_TASK ||
-                      inboxTask.source === InboxTaskSource.EMAIL_TASK
-                    ) {
-                      return s !== InboxTaskStatus.NOT_STARTED_GEN;
-                    } else {
-                      return s !== InboxTaskStatus.NOT_STARTED;
-                    }
-                  })
-                  .map((s) => (
-                    <MenuItem key={s} value={s}>
-                      {inboxTaskStatusName(s)}
-                    </MenuItem>
-                  ))}
-              </Select>
-              <FieldError actionResult={actionData} fieldName="/status" />
-            </FormControl>
 
             {isWorkspaceFeatureAvailable(
               topLevelInfo.workspace,
@@ -549,46 +552,32 @@ export default function InboxTask() {
             )}
 
             <FormControl fullWidth>
-              <InputLabel id="eisen">Eisenhower</InputLabel>
-              <Select
-                labelId="eisen"
+              <FormLabel id="eisen">Eisenhower</FormLabel>
+              <EisenhowerSelect
                 name="eisen"
-                readOnly={!inputsEnabled || !corePropertyEditable}
+                inputsEnabled={inputsEnabled && corePropertyEditable}
                 defaultValue={inboxTask.eisen}
-                label="Eisen"
-              >
-                {Object.values(Eisen).map((e) => (
-                  <MenuItem key={e} value={e}>
-                    {eisenName(e)}
-                  </MenuItem>
-                ))}
-              </Select>
+              />
               <FieldError actionResult={actionData} fieldName="/eisen" />
             </FormControl>
 
             <FormControl fullWidth>
-              <InputLabel id="difficulty">Difficulty</InputLabel>
-              <Select
-                labelId="difficulty"
+              <FormLabel id="difficulty">Difficulty</FormLabel>
+              <DifficultySelect
                 name="difficulty"
-                readOnly={!inputsEnabled || !corePropertyEditable}
-                defaultValue={inboxTask.difficulty || "default"}
-                label="Difficulty"
-              >
-                <MenuItem value="default">Default</MenuItem>
-                {Object.values(Difficulty).map((e) => (
-                  <MenuItem key={e} value={e}>
-                    {difficultyName(e)}
-                  </MenuItem>
-                ))}
-              </Select>
+                inputsEnabled={inputsEnabled && corePropertyEditable}
+                defaultValue={inboxTask.difficulty}
+              />
               <FieldError actionResult={actionData} fieldName="/difficulty" />
             </FormControl>
 
             <FormControl fullWidth>
-              <InputLabel id="actionableDate">Actionable From</InputLabel>
+              <InputLabel id="actionableDate" shrink>
+                Actionable From {corePropertyEditable ? "[Optional]" : ""}
+              </InputLabel>
               <OutlinedInput
                 type="date"
+                notched
                 label="actionableDate"
                 readOnly={!inputsEnabled || !corePropertyEditable}
                 defaultValue={
@@ -608,9 +597,12 @@ export default function InboxTask() {
             </FormControl>
 
             <FormControl fullWidth>
-              <InputLabel id="dueDate">Due At</InputLabel>
+              <InputLabel id="dueDate" shrink margin="dense">
+                Due At {corePropertyEditable ? "[Optional]" : ""}
+              </InputLabel>
               <OutlinedInput
                 type="date"
+                notched
                 label="dueDate"
                 readOnly={!inputsEnabled || !corePropertyEditable}
                 defaultValue={
@@ -627,53 +619,210 @@ export default function InboxTask() {
         </CardContent>
 
         <CardActions>
-          <ButtonGroup>
-            <Button
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="update"
-            >
-              Save
-            </Button>
-            {isWorkspaceFeatureAvailable(
-              topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS
-            ) && (
+          <Stack direction="column" spacing={2} sx={{ width: "100%" }}>
+            {(inboxTask.status === InboxTaskStatus.NOT_STARTED ||
+              inboxTask.status === InboxTaskStatus.NOT_STARTED_GEN) && (
+              <ButtonGroup fullWidth>
+                <Button
+                  size="small"
+                  variant="contained"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="mark-done"
+                >
+                  Mark Done
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="mark-not-done"
+                >
+                  Mark Not Done
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="start"
+                >
+                  Start
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="block"
+                >
+                  Block
+                </Button>
+              </ButtonGroup>
+            )}
+
+            {inboxTask.status === InboxTaskStatus.IN_PROGRESS && (
+              <ButtonGroup fullWidth>
+                <Button
+                  size="small"
+                  variant="contained"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="mark-done"
+                >
+                  Mark Done
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="mark-not-done"
+                >
+                  Mark Not Done
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="block"
+                >
+                  Block
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="stop"
+                >
+                  Stop
+                </Button>
+              </ButtonGroup>
+            )}
+
+            {inboxTask.status === InboxTaskStatus.BLOCKED && (
+              <ButtonGroup fullWidth>
+                <Button
+                  size="small"
+                  variant="contained"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="mark-done"
+                >
+                  Mark Done
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="mark-not-done"
+                >
+                  Mark Not Done
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="restart"
+                >
+                  Restart
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="stop"
+                >
+                  Stop
+                </Button>
+              </ButtonGroup>
+            )}
+
+            {(inboxTask.status === InboxTaskStatus.DONE ||
+              inboxTask.status === InboxTaskStatus.NOT_DONE) && (
+              <ButtonGroup fullWidth>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="reactivate"
+                >
+                  Reactivate
+                </Button>
+              </ButtonGroup>
+            )}
+
+            <ButtonGroup fullWidth sx={{ marginLeft: "0px" }}>
               <Button
-                variant="outlined"
-                disabled={
-                  !inputsEnabled ||
-                  !canChangeProject ||
-                  !selectedProjectIsDifferentFromCurrent
-                }
+                size="small"
+                variant="contained"
+                disabled={!inputsEnabled}
                 type="submit"
                 name="intent"
-                value="change-project"
+                value="update"
               >
-                Change Project
+                Save
               </Button>
-            )}
-            {isWorkspaceFeatureAvailable(
-              topLevelInfo.workspace,
-              WorkspaceFeature.BIG_PLANS
-            ) && (
-              <Button
-                variant="outlined"
-                disabled={
-                  !inputsEnabled ||
-                  !canChangeBigPlan ||
-                  !selectedBigPlanIsDifferentFromCurrent
-                }
-                type="submit"
-                name="intent"
-                value="associate-with-big-plan"
-              >
-                Assoc. Big Plan
-              </Button>
-            )}
-          </ButtonGroup>
+              {isWorkspaceFeatureAvailable(
+                topLevelInfo.workspace,
+                WorkspaceFeature.PROJECTS
+              ) && (
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={
+                    !inputsEnabled ||
+                    !canChangeProject ||
+                    !selectedProjectIsDifferentFromCurrent
+                  }
+                  type="submit"
+                  name="intent"
+                  value="change-project"
+                >
+                  Change Project
+                </Button>
+              )}
+              {isWorkspaceFeatureAvailable(
+                topLevelInfo.workspace,
+                WorkspaceFeature.BIG_PLANS
+              ) && (
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={
+                    !inputsEnabled ||
+                    !canChangeBigPlan ||
+                    !selectedBigPlanIsDifferentFromCurrent
+                  }
+                  type="submit"
+                  name="intent"
+                  value="associate-with-big-plan"
+                >
+                  Assoc. Big Plan
+                </Button>
+              )}
+            </ButtonGroup>
+          </Stack>
         </CardActions>
       </Card>
 

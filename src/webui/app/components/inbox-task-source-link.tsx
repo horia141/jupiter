@@ -18,6 +18,7 @@ export function InboxTaskSourceLink(props: InboxTaskSourceLinkProps) {
           size="small"
           component={Link}
           to={`/workspace/working-mem/archive/${props.inboxTaskResult.working_mem?.ref_id}`}
+          sx={{ flexGrow: 1 }}
         >
           Working Mem
         </Button>
@@ -32,6 +33,7 @@ export function InboxTaskSourceLink(props: InboxTaskSourceLinkProps) {
           size="small"
           component={Link}
           to={`/workspace/habits/${props.inboxTaskResult.habit?.ref_id}`}
+          sx={{ flexGrow: 1 }}
         >
           Habit
         </Button>
@@ -46,6 +48,7 @@ export function InboxTaskSourceLink(props: InboxTaskSourceLinkProps) {
           size="small"
           component={Link}
           to={`/workspace/chores/${props.inboxTaskResult.chore?.ref_id}`}
+          sx={{ flexGrow: 1 }}
         >
           Chore
         </Button>
@@ -60,6 +63,7 @@ export function InboxTaskSourceLink(props: InboxTaskSourceLinkProps) {
           size="small"
           component={Link}
           to={`/workspace/big-plans/${props.inboxTaskResult.big_plan?.ref_id}`}
+          sx={{ flexGrow: 1 }}
         >
           Big Plan
         </Button>
@@ -74,6 +78,7 @@ export function InboxTaskSourceLink(props: InboxTaskSourceLinkProps) {
           size="small"
           component={Link}
           to={`/workspace/metrics/${props.inboxTaskResult.metric?.ref_id}/details`}
+          sx={{ flexGrow: 1 }}
         >
           Metric
         </Button>
@@ -88,6 +93,7 @@ export function InboxTaskSourceLink(props: InboxTaskSourceLinkProps) {
           size="small"
           component={Link}
           to={`/workspace/persons/${props.inboxTaskResult.person?.ref_id}`}
+          sx={{ flexGrow: 1 }}
         >
           Person
         </Button>
@@ -102,6 +108,7 @@ export function InboxTaskSourceLink(props: InboxTaskSourceLinkProps) {
           size="small"
           component={Link}
           to={`/workspace/persons/${props.inboxTaskResult.person?.ref_id}`}
+          sx={{ flexGrow: 1 }}
         >
           Person
         </Button>
@@ -116,6 +123,7 @@ export function InboxTaskSourceLink(props: InboxTaskSourceLinkProps) {
           size="small"
           component={Link}
           to={`/workspace/push-integration/slack-tasks/${props.inboxTaskResult.slack_task?.ref_id}`}
+          sx={{ flexGrow: 1 }}
         >
           Slack Task
         </Button>
@@ -130,6 +138,7 @@ export function InboxTaskSourceLink(props: InboxTaskSourceLinkProps) {
           size="small"
           component={Link}
           to={`/workspace/push-integration/email-tasks/${props.inboxTaskResult.email_task?.ref_id}`}
+          sx={{ flexGrow: 1 }}
         >
           Email Task
         </Button>

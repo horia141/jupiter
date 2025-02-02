@@ -100,15 +100,19 @@ class PersonUpdateUseCase(
                 new_catch_up_period = person.catch_up_params.period
 
             if new_catch_up_period is not None:
-                new_catch_up_eisen = None
+                new_catch_up_eisen = Eisen.REGULAR
                 if args.catch_up_eisen.should_change:
-                    new_catch_up_eisen = args.catch_up_eisen.just_the_value
+                    new_catch_up_eisen = (
+                        args.catch_up_eisen.just_the_value or Eisen.REGULAR
+                    )
                 elif person.catch_up_params is not None:
                     new_catch_up_eisen = person.catch_up_params.eisen
 
-                new_catch_up_difficulty = None
+                new_catch_up_difficulty = Difficulty.EASY
                 if args.catch_up_difficulty.should_change:
-                    new_catch_up_difficulty = args.catch_up_difficulty.just_the_value
+                    new_catch_up_difficulty = (
+                        args.catch_up_difficulty.just_the_value or Difficulty.EASY
+                    )
                 elif person.catch_up_params is not None:
                     new_catch_up_difficulty = person.catch_up_params.difficulty
 

@@ -17,8 +17,8 @@ class RecurringTaskGenParams:
 
     Attributes:
         period (RecurringTaskPeriod): A period for a particular task.
-        eisen (Union[Eisen, None, Unset]):
-        difficulty (Union[Difficulty, None, Unset]):
+        eisen (Eisen): The Eisenhower status of a particular task.
+        difficulty (Difficulty): The difficulty of a particular task.
         actionable_from_day (Union[None, Unset, int]):
         actionable_from_month (Union[None, Unset, int]):
         due_at_day (Union[None, Unset, int]):
@@ -26,8 +26,8 @@ class RecurringTaskGenParams:
     """
 
     period: RecurringTaskPeriod
-    eisen: Union[Eisen, None, Unset] = UNSET
-    difficulty: Union[Difficulty, None, Unset] = UNSET
+    eisen: Eisen
+    difficulty: Difficulty
     actionable_from_day: Union[None, Unset, int] = UNSET
     actionable_from_month: Union[None, Unset, int] = UNSET
     due_at_day: Union[None, Unset, int] = UNSET
@@ -37,21 +37,9 @@ class RecurringTaskGenParams:
     def to_dict(self) -> Dict[str, Any]:
         period = self.period.value
 
-        eisen: Union[None, Unset, str]
-        if isinstance(self.eisen, Unset):
-            eisen = UNSET
-        elif isinstance(self.eisen, Eisen):
-            eisen = self.eisen.value
-        else:
-            eisen = self.eisen
+        eisen = self.eisen.value
 
-        difficulty: Union[None, Unset, str]
-        if isinstance(self.difficulty, Unset):
-            difficulty = UNSET
-        elif isinstance(self.difficulty, Difficulty):
-            difficulty = self.difficulty.value
-        else:
-            difficulty = self.difficulty
+        difficulty = self.difficulty.value
 
         actionable_from_day: Union[None, Unset, int]
         if isinstance(self.actionable_from_day, Unset):
@@ -82,12 +70,10 @@ class RecurringTaskGenParams:
         field_dict.update(
             {
                 "period": period,
+                "eisen": eisen,
+                "difficulty": difficulty,
             }
         )
-        if eisen is not UNSET:
-            field_dict["eisen"] = eisen
-        if difficulty is not UNSET:
-            field_dict["difficulty"] = difficulty
         if actionable_from_day is not UNSET:
             field_dict["actionable_from_day"] = actionable_from_day
         if actionable_from_month is not UNSET:
@@ -104,39 +90,9 @@ class RecurringTaskGenParams:
         d = src_dict.copy()
         period = RecurringTaskPeriod(d.pop("period"))
 
-        def _parse_eisen(data: object) -> Union[Eisen, None, Unset]:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            try:
-                if not isinstance(data, str):
-                    raise TypeError()
-                eisen_type_0 = Eisen(data)
+        eisen = Eisen(d.pop("eisen"))
 
-                return eisen_type_0
-            except:  # noqa: E722
-                pass
-            return cast(Union[Eisen, None, Unset], data)
-
-        eisen = _parse_eisen(d.pop("eisen", UNSET))
-
-        def _parse_difficulty(data: object) -> Union[Difficulty, None, Unset]:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            try:
-                if not isinstance(data, str):
-                    raise TypeError()
-                difficulty_type_0 = Difficulty(data)
-
-                return difficulty_type_0
-            except:  # noqa: E722
-                pass
-            return cast(Union[Difficulty, None, Unset], data)
-
-        difficulty = _parse_difficulty(d.pop("difficulty", UNSET))
+        difficulty = Difficulty(d.pop("difficulty"))
 
         def _parse_actionable_from_day(data: object) -> Union[None, Unset, int]:
             if data is None:

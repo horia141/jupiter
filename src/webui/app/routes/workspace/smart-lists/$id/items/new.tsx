@@ -144,7 +144,7 @@ export default function NewSmartListItem() {
             </FormControl>
 
             <FormControl fullWidth>
-              <InputLabel id="url">Url</InputLabel>
+              <InputLabel id="url">Url [Optional]</InputLabel>
               <OutlinedInput label="Url" name="url" readOnly={!inputsEnabled} />
               <FieldError actionResult={actionData} fieldName="/url" />
             </FormControl>

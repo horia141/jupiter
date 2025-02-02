@@ -47,8 +47,8 @@ class SlackTaskUpdateArgs(UseCaseArgsBase):
     message: UpdateAction[str]
     generation_name: UpdateAction[InboxTaskName | None]
     generation_status: UpdateAction[InboxTaskStatus | None]
-    generation_eisen: UpdateAction[Eisen | None]
-    generation_difficulty: UpdateAction[Difficulty | None]
+    generation_eisen: UpdateAction[Eisen]
+    generation_difficulty: UpdateAction[Difficulty]
     generation_actionable_date: UpdateAction[ADate | None]
     generation_due_date: UpdateAction[ADate | None]
 

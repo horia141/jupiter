@@ -216,6 +216,7 @@ export default function TimeEventInDayBlockCreateForInboxTask() {
             </InputLabel>
             <OutlinedInput
               type="date"
+              notched
               label="startDate"
               name="startDate"
               readOnly={!inputsEnabled}

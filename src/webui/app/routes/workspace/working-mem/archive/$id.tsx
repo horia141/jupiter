@@ -181,6 +181,7 @@ export default function WorkingMem() {
               </InputLabel>
               <OutlinedInput
                 type="date"
+                notched
                 label="rightNow"
                 name="rightNow"
                 readOnly={true}

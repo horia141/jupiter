@@ -217,9 +217,12 @@ export default function Gen() {
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>
-              <InputLabel id="today">Generation Date</InputLabel>
+              <InputLabel id="today" shrink>
+                Generation Date
+              </InputLabel>
               <OutlinedInput
                 type="date"
+                notched
                 label="Generation Date"
                 readOnly={!inputsEnabled}
                 disabled={!inputsEnabled}

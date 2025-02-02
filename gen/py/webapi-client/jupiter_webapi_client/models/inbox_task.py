@@ -28,8 +28,8 @@ class InboxTask:
         project_ref_id (str): A generic entity id.
         status (InboxTaskStatus): The status of an inbox task.
         eisen (Eisen): The Eisenhower status of a particular task.
+        difficulty (Difficulty): The difficulty of a particular task.
         archived_time (Union[None, Unset, str]):
-        difficulty (Union[Difficulty, None, Unset]):
         actionable_date (Union[None, Unset, str]):
         due_date (Union[None, Unset, str]):
         notes (Union[None, Unset, str]):
@@ -60,8 +60,8 @@ class InboxTask:
     project_ref_id: str
     status: InboxTaskStatus
     eisen: Eisen
+    difficulty: Difficulty
     archived_time: Union[None, Unset, str] = UNSET
-    difficulty: Union[Difficulty, None, Unset] = UNSET
     actionable_date: Union[None, Unset, str] = UNSET
     due_date: Union[None, Unset, str] = UNSET
     notes: Union[None, Unset, str] = UNSET
@@ -104,19 +104,13 @@ class InboxTask:
 
         eisen = self.eisen.value
 
+        difficulty = self.difficulty.value
+
         archived_time: Union[None, Unset, str]
         if isinstance(self.archived_time, Unset):
             archived_time = UNSET
         else:
             archived_time = self.archived_time
-
-        difficulty: Union[None, Unset, str]
-        if isinstance(self.difficulty, Unset):
-            difficulty = UNSET
-        elif isinstance(self.difficulty, Difficulty):
-            difficulty = self.difficulty.value
-        else:
-            difficulty = self.difficulty
 
         actionable_date: Union[None, Unset, str]
         if isinstance(self.actionable_date, Unset):
@@ -235,12 +229,11 @@ class InboxTask:
                 "project_ref_id": project_ref_id,
                 "status": status,
                 "eisen": eisen,
+                "difficulty": difficulty,
             }
         )
         if archived_time is not UNSET:
             field_dict["archived_time"] = archived_time
-        if difficulty is not UNSET:
-            field_dict["difficulty"] = difficulty
         if actionable_date is not UNSET:
             field_dict["actionable_date"] = actionable_date
         if due_date is not UNSET:
@@ -303,6 +296,8 @@ class InboxTask:
 
         eisen = Eisen(d.pop("eisen"))
 
+        difficulty = Difficulty(d.pop("difficulty"))
+
         def _parse_archived_time(data: object) -> Union[None, Unset, str]:
             if data is None:
                 return data
@@ -311,23 +306,6 @@ class InboxTask:
             return cast(Union[None, Unset, str], data)
 
         archived_time = _parse_archived_time(d.pop("archived_time", UNSET))
-
-        def _parse_difficulty(data: object) -> Union[Difficulty, None, Unset]:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            try:
-                if not isinstance(data, str):
-                    raise TypeError()
-                difficulty_type_0 = Difficulty(data)
-
-                return difficulty_type_0
-            except:  # noqa: E722
-                pass
-            return cast(Union[Difficulty, None, Unset], data)
-
-        difficulty = _parse_difficulty(d.pop("difficulty", UNSET))
 
         def _parse_actionable_date(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -494,8 +472,8 @@ class InboxTask:
             project_ref_id=project_ref_id,
             status=status,
             eisen=eisen,
-            archived_time=archived_time,
             difficulty=difficulty,
+            archived_time=archived_time,
             actionable_date=actionable_date,
             due_date=due_date,
             notes=notes,

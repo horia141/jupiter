@@ -90,6 +90,7 @@ export default function NewVacation() {
               </InputLabel>
               <OutlinedInput
                 type="date"
+                notched
                 label="startDate"
                 name="startDate"
                 readOnly={!inputsEnabled}
@@ -104,6 +105,7 @@ export default function NewVacation() {
               </InputLabel>
               <OutlinedInput
                 type="date"
+                notched
                 label="endDate"
                 name="endDate"
                 readOnly={!inputsEnabled}

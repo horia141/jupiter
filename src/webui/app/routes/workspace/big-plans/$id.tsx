@@ -13,6 +13,7 @@ import {
 } from "@jupiter/webapi-client";
 import type { SelectChangeEvent } from "@mui/material";
 import {
+  Box,
   Button,
   ButtonGroup,
   Card,
@@ -41,6 +42,7 @@ import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
+import { BigPlanStatusBigTag } from "~/components/big-plan-status-big-tag";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
@@ -52,7 +54,6 @@ import { SectionCardNew } from "~/components/infra/section-card-new";
 import { TimePlanActivityList } from "~/components/time-plan-activity-list";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
-import { bigPlanStatusName } from "~/logic/domain/big-plan-status";
 import { saveScoreAction } from "~/logic/domain/gamification/scores.server";
 import { sortInboxTasksNaturally } from "~/logic/domain/inbox-task";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
@@ -135,7 +136,31 @@ export async function action({ request, params }: ActionArgs) {
 
   try {
     switch (intent) {
+      case "mark-done":
+      case "mark-not-done":
+      case "start":
+      case "restart":
+      case "block":
+      case "stop":
+      case "reactivate":
       case "update": {
+        let status = form.status;
+        if (intent === "mark-done") {
+          status = BigPlanStatus.DONE;
+        } else if (intent === "mark-not-done") {
+          status = BigPlanStatus.NOT_DONE;
+        } else if (intent === "start") {
+          status = BigPlanStatus.IN_PROGRESS;
+        } else if (intent === "restart") {
+          status = BigPlanStatus.IN_PROGRESS;
+        } else if (intent === "block") {
+          status = BigPlanStatus.BLOCKED;
+        } else if (intent === "stop") {
+          status = BigPlanStatus.NOT_STARTED;
+        } else if (intent === "reactivate") {
+          status = BigPlanStatus.NOT_STARTED;
+        }
+
         const result = await apiClient.bigPlans.bigPlanUpdate({
           ref_id: id,
           name: {
@@ -144,7 +169,7 @@ export async function action({ request, params }: ActionArgs) {
           },
           status: {
             should_change: true,
-            value: form.status,
+            value: status,
           },
           actionable_date: {
             should_change: true,
@@ -305,34 +330,27 @@ export default function BigPlan() {
         <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <InputLabel id="name">Name</InputLabel>
-              <OutlinedInput
-                label="Name"
-                name="name"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.bigPlan.name}
-              />
-              <FieldError actionResult={actionData} fieldName="/name" />
-            </FormControl>
-
-            <FormControl fullWidth>
-              <InputLabel id="status">Status</InputLabel>
-              <Select
-                labelId="status"
-                name="status"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.bigPlan.status}
-                label="Status"
-              >
-                {Object.values(BigPlanStatus).map((s) => (
-                  <MenuItem key={s} value={s}>
-                    {bigPlanStatusName(s)}
-                  </MenuItem>
-                ))}
-              </Select>
-              <FieldError actionResult={actionData} fieldName="/status" />
-            </FormControl>
+            <Box sx={{ display: "flex", flexDirection: "row", gap: "0.25rem" }}>
+              <FormControl sx={{ flexGrow: 3 }}>
+                <InputLabel id="name">Name</InputLabel>
+                <OutlinedInput
+                  label="Name"
+                  name="name"
+                  readOnly={!inputsEnabled}
+                  defaultValue={loaderData.bigPlan.name}
+                />
+                <FieldError actionResult={actionData} fieldName="/name" />
+              </FormControl>
+              <FormControl sx={{ flexGrow: 1 }}>
+                <BigPlanStatusBigTag status={loaderData.bigPlan.status} />
+                <input
+                  type="hidden"
+                  name="status"
+                  value={loaderData.bigPlan.status}
+                />
+                <FieldError actionResult={actionData} fieldName="/status" />
+              </FormControl>
+            </Box>
 
             {isWorkspaceFeatureAvailable(
               topLevelInfo.workspace,
@@ -363,10 +381,13 @@ export default function BigPlan() {
             ) && <input type="hidden" name="project" value={selectedProject} />}
 
             <FormControl fullWidth>
-              <InputLabel id="actionableDate">Actionable From</InputLabel>
+              <InputLabel id="actionableDate" shrink>
+                Actionable From [Optional]
+              </InputLabel>
               <OutlinedInput
                 type="date"
                 label="actionableDate"
+                notched
                 defaultValue={
                   loaderData.bigPlan.actionable_date
                     ? aDateToDate(loaderData.bigPlan.actionable_date).toFormat(
@@ -385,9 +406,12 @@ export default function BigPlan() {
             </FormControl>
 
             <FormControl fullWidth>
-              <InputLabel id="dueDate">Due At</InputLabel>
+              <InputLabel id="dueDate" shrink>
+                Due At [Optional]
+              </InputLabel>
               <OutlinedInput
                 type="date"
+                notched
                 label="dueDate"
                 defaultValue={
                   loaderData.bigPlan.due_date
@@ -406,33 +430,186 @@ export default function BigPlan() {
         </CardContent>
 
         <CardActions>
-          <ButtonGroup>
-            <Button
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="update"
-            >
-              Save
-            </Button>
-            {isWorkspaceFeatureAvailable(
-              topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS
-            ) && (
+          <Stack direction="column" spacing={2} sx={{ width: "100%" }}>
+            {loaderData.bigPlan.status === BigPlanStatus.NOT_STARTED && (
+              <ButtonGroup fullWidth>
+                <Button
+                  size="small"
+                  variant="contained"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="mark-done"
+                >
+                  Mark Done
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="mark-not-done"
+                >
+                  Mark Not Done
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="start"
+                >
+                  Start
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="block"
+                >
+                  Block
+                </Button>
+              </ButtonGroup>
+            )}
+
+            {loaderData.bigPlan.status === BigPlanStatus.IN_PROGRESS && (
+              <ButtonGroup fullWidth>
+                <Button
+                  size="small"
+                  variant="contained"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="mark-done"
+                >
+                  Mark Done
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="mark-not-done"
+                >
+                  Mark Not Done
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="block"
+                >
+                  Block
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="stop"
+                >
+                  Stop
+                </Button>
+              </ButtonGroup>
+            )}
+
+            {loaderData.bigPlan.status === BigPlanStatus.BLOCKED && (
+              <ButtonGroup fullWidth>
+                <Button
+                  size="small"
+                  variant="contained"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="mark-done"
+                >
+                  Mark Done
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="mark-not-done"
+                >
+                  Mark Not Done
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="restart"
+                >
+                  Restart
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="stop"
+                >
+                  Stop
+                </Button>
+              </ButtonGroup>
+            )}
+
+            {(loaderData.bigPlan.status === BigPlanStatus.DONE ||
+              loaderData.bigPlan.status === BigPlanStatus.NOT_DONE) && (
+              <ButtonGroup fullWidth>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="reactivate"
+                >
+                  Reactivate
+                </Button>
+              </ButtonGroup>
+            )}
+
+            <ButtonGroup>
               <Button
-                variant="outlined"
-                disabled={
-                  !inputsEnabled || !selectedProjectIsDifferentFromCurrent
-                }
+                variant="contained"
+                disabled={!inputsEnabled}
                 type="submit"
                 name="intent"
-                value="change-project"
+                value="update"
               >
-                Change Project
+                Save
               </Button>
-            )}
-          </ButtonGroup>
+              {isWorkspaceFeatureAvailable(
+                topLevelInfo.workspace,
+                WorkspaceFeature.PROJECTS
+              ) && (
+                <Button
+                  variant="outlined"
+                  disabled={
+                    !inputsEnabled || !selectedProjectIsDifferentFromCurrent
+                  }
+                  type="submit"
+                  name="intent"
+                  value="change-project"
+                >
+                  Change Project
+                </Button>
+              )}
+            </ButtonGroup>
+          </Stack>
         </CardActions>
       </Card>
 

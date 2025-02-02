@@ -71,8 +71,6 @@ export async function action({ request }: ActionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const form = await parseForm(request, AccountFormSchema);
 
-  console.log(form);
-
   try {
     switch (form.intent) {
       case "update": {

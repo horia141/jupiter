@@ -13,6 +13,7 @@ import {
   CardActions,
   CardContent,
   FormControl,
+  FormLabel,
   InputLabel,
   MenuItem,
   OutlinedInput,
@@ -28,12 +29,12 @@ import { useContext } from "react";
 import { z } from "zod";
 import { CheckboxAsString, parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
+import { DifficultySelect } from "~/components/difficulty-select";
+import { EisenhowerSelect } from "~/components/eisenhower-select";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
-import { difficultyName } from "~/logic/domain/difficulty";
-import { eisenName } from "~/logic/domain/eisen";
 import { periodName } from "~/logic/domain/period";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -46,7 +47,7 @@ const CreateFormSchema = {
   project: z.string().optional(),
   period: z.nativeEnum(RecurringTaskPeriod),
   eisen: z.nativeEnum(Eisen),
-  difficulty: z.union([z.nativeEnum(Difficulty), z.literal("default")]),
+  difficulty: z.nativeEnum(Difficulty),
   actionableFromDay: z.string().optional(),
   actionableFromMonth: z.string().optional(),
   dueAtDay: z.string().optional(),
@@ -82,7 +83,7 @@ export async function action({ request }: ActionArgs) {
       project_ref_id: form.project !== undefined ? form.project : undefined,
       period: form.period,
       eisen: form.eisen,
-      difficulty: form.difficulty === "default" ? undefined : form.difficulty,
+      difficulty: form.difficulty,
       actionable_from_day: form.actionableFromDay
         ? parseInt(form.actionableFromDay)
         : undefined,
@@ -181,45 +182,28 @@ export default function NewHabit() {
             )}
 
             <FormControl fullWidth>
-              <InputLabel id="eisen">Eisenhower</InputLabel>
-              <Select
-                labelId="eisen"
+              <FormLabel id="eisen">Eisenhower</FormLabel>
+              <EisenhowerSelect
                 name="eisen"
-                readOnly={!inputsEnabled}
                 defaultValue={Eisen.REGULAR}
-                label="Eisen"
-              >
-                {Object.values(Eisen).map((e) => (
-                  <MenuItem key={e} value={e}>
-                    {eisenName(e)}
-                  </MenuItem>
-                ))}
-              </Select>
+                inputsEnabled={inputsEnabled}
+              />
               <FieldError actionResult={actionData} fieldName="/eisen" />
             </FormControl>
 
             <FormControl fullWidth>
-              <InputLabel id="difficulty">Difficulty</InputLabel>
-              <Select
-                labelId="difficulty"
+              <FormLabel id="difficulty">Difficulty</FormLabel>
+              <DifficultySelect
                 name="difficulty"
-                readOnly={!inputsEnabled}
-                defaultValue={"default"}
-                label="Difficulty"
-              >
-                <MenuItem value="default">Default</MenuItem>
-                {Object.values(Difficulty).map((e) => (
-                  <MenuItem key={e} value={e}>
-                    {difficultyName(e)}
-                  </MenuItem>
-                ))}
-              </Select>
+                defaultValue={Difficulty.EASY}
+                inputsEnabled={inputsEnabled}
+              />
               <FieldError actionResult={actionData} fieldName="/difficulty" />
             </FormControl>
 
             <FormControl fullWidth>
               <InputLabel id="actionableFromDay">
-                Actionable From Day
+                Actionable From Day [Optional]
               </InputLabel>
               <OutlinedInput
                 label="Actionable From Day"
@@ -234,7 +218,7 @@ export default function NewHabit() {
 
             <FormControl fullWidth>
               <InputLabel id="actionableFromMonth">
-                Actionable From Month
+                Actionable From Month [Optional]
               </InputLabel>
               <OutlinedInput
                 label="Actionable From Month"
@@ -248,7 +232,7 @@ export default function NewHabit() {
             </FormControl>
 
             <FormControl fullWidth>
-              <InputLabel id="dueAtDay">Due At Day</InputLabel>
+              <InputLabel id="dueAtDay">Due At Day [Optional]</InputLabel>
               <OutlinedInput
                 label="Due At Day"
                 name="dueAtDay"
@@ -258,7 +242,7 @@ export default function NewHabit() {
             </FormControl>
 
             <FormControl fullWidth>
-              <InputLabel id="dueAtMonth">Due At Month</InputLabel>
+              <InputLabel id="dueAtMonth">Due At Month [Optional]</InputLabel>
               <OutlinedInput
                 label="Due At Month"
                 name="dueAtMonth"
@@ -269,7 +253,7 @@ export default function NewHabit() {
 
             <FormControl fullWidth>
               <InputLabel id="repeatsInPeriodCount">
-                Repeats In Period
+                Repeats In Period [Optional]
               </InputLabel>
               <OutlinedInput
                 label="Repeats In Period"

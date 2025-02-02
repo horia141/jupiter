@@ -13,16 +13,19 @@ export function eisenIcon(eisen: Eisen): string {
   }
 }
 
-export function eisenName(eisen: Eisen): string {
+export function eisenName(eisen: Eisen, isSmallScreen?: boolean): string {
   switch (eisen) {
     case Eisen.REGULAR:
       return "Regular";
     case Eisen.IMPORTANT:
+      if (isSmallScreen) {
+        return "Imp.";
+      }
       return "Important";
     case Eisen.URGENT:
       return "Urgent";
     case Eisen.IMPORTANT_AND_URGENT:
-      return "Important And Urgent";
+      return "Imp. & Urgent";
   }
 }
 
