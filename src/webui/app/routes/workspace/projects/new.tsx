@@ -1,7 +1,6 @@
 import type { ProjectSummary } from "@jupiter/webapi-client";
 import { ApiError } from "@jupiter/webapi-client";
 import {
-  Autocomplete,
   Button,
   ButtonGroup,
   Card,
@@ -11,20 +10,19 @@ import {
   InputLabel,
   OutlinedInput,
   Stack,
-  TextField,
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { useState } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import { ProjectSelect } from "~/components/project-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -84,16 +82,6 @@ export default function NewProject() {
 
   const inputsEnabled = transition.state === "idle";
 
-  const [selectedProject, setSelectedProject] = useState({
-    project_ref_id: loaderData.rootProject.ref_id,
-    label: loaderData.rootProject.name,
-  });
-
-  const allProjectsAsOptions = loaderData.allProjects.map((project) => ({
-    project_ref_id: project.ref_id,
-    label: project.name,
-  }));
-
   return (
     <LeafPanel key={"projects/new"} returnLocation="/workspace/projects">
       <Card>
@@ -101,30 +89,17 @@ export default function NewProject() {
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>
-              <Autocomplete
-                id="parentProject"
-                options={allProjectsAsOptions}
-                readOnly={!inputsEnabled}
-                value={selectedProject}
-                disableClearable={true}
-                onChange={(e, v) => setSelectedProject(v)}
-                isOptionEqualToValue={(o, v) =>
-                  o.project_ref_id === v.project_ref_id
-                }
-                renderInput={(params) => (
-                  <TextField {...params} label="Parent Project" />
-                )}
+              <ProjectSelect
+                name="parentProjectRefId"
+                label="Parent Project"
+                inputsEnabled={inputsEnabled}
+                disabled={false}
+                allProjects={loaderData.allProjects}
+                defaultValue={loaderData.rootProject.ref_id}
               />
-
               <FieldError
                 actionResult={actionData}
                 fieldName="/parent_project_ref_id"
-              />
-
-              <input
-                type="hidden"
-                name="parentProjectRefId"
-                value={selectedProject.project_ref_id}
               />
             </FormControl>
 

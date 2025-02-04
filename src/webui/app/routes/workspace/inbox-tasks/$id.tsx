@@ -13,7 +13,6 @@ import {
   TimePlanActivityTarget,
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
-import type { SelectChangeEvent } from "@mui/material";
 import {
   Autocomplete,
   Box,
@@ -25,9 +24,7 @@ import {
   FormControl,
   FormLabel,
   InputLabel,
-  MenuItem,
   OutlinedInput,
-  Select,
   Stack,
   TextField,
 } from "@mui/material";
@@ -54,6 +51,7 @@ import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { SectionCardNew } from "~/components/infra/section-card-new";
+import { ProjectSelect } from "~/components/project-select";
 import { TimeEventInDayBlockStack } from "~/components/time-event-in-day-block-stack";
 import { TimePlanActivityList } from "~/components/time-plan-activity-list";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
@@ -414,10 +412,6 @@ export default function InboxTask() {
     }
   }
 
-  function handleChangeProject(e: SelectChangeEvent) {
-    setSelectedProject(e.target.value);
-  }
-
   useEffect(() => {
     // Update states based on loader data. This is necessary because these
     // two are not otherwise updated when the loader data changes. Which happens
@@ -491,6 +485,7 @@ export default function InboxTask() {
                   <FormControl fullWidth>
                     <Autocomplete
                       disablePortal
+                      autoHighlight
                       id="bigPlan"
                       options={allBigPlansAsOptions}
                       readOnly={!inputsEnabled}
@@ -524,26 +519,19 @@ export default function InboxTask() {
               WorkspaceFeature.PROJECTS
             ) && (
               <FormControl fullWidth>
-                <InputLabel id="project">Project</InputLabel>
-                <Select
-                  labelId="project"
+                <ProjectSelect
                   name="project"
-                  readOnly={!inputsEnabled}
+                  label="Project"
+                  inputsEnabled={inputsEnabled && corePropertyEditable}
                   disabled={
                     !corePropertyEditable ||
                     blockedToSelectProject ||
                     inboxTask.source === InboxTaskSource.BIG_PLAN
                   }
+                  allProjects={loaderData.allProjects}
                   value={selectedProject}
-                  onChange={handleChangeProject}
-                  label="Project"
-                >
-                  {loaderData.allProjects.map((p) => (
-                    <MenuItem key={p.ref_id} value={p.ref_id}>
-                      {p.name}
-                    </MenuItem>
-                  ))}
-                </Select>
+                  onChange={setSelectedProject}
+                />
                 <FieldError
                   actionResult={actionData}
                   fieldName="/project_ref_id"

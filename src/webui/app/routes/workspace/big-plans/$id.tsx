@@ -11,7 +11,6 @@ import {
   TimePlanActivityTarget,
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
-import type { SelectChangeEvent } from "@mui/material";
 import {
   Box,
   Button,
@@ -21,9 +20,7 @@ import {
   CardContent,
   FormControl,
   InputLabel,
-  MenuItem,
   OutlinedInput,
-  Select,
   Stack,
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
@@ -51,6 +48,7 @@ import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { SectionCardNew } from "~/components/infra/section-card-new";
+import { ProjectSelect } from "~/components/project-select";
 import { TimePlanActivityList } from "~/components/time-plan-activity-list";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
@@ -274,10 +272,6 @@ export default function BigPlan() {
   const selectedProjectIsDifferentFromCurrent =
     loaderData.project.ref_id !== selectedProject;
 
-  function handleChangeProject(e: SelectChangeEvent) {
-    setSelectedProject(e.target.value);
-  }
-
   const sortedInboxTasks = sortInboxTasksNaturally(loaderData.inboxTasks, {
     dueDateAscending: false,
   });
@@ -357,21 +351,15 @@ export default function BigPlan() {
               WorkspaceFeature.PROJECTS
             ) && (
               <FormControl fullWidth>
-                <InputLabel id="project">Project</InputLabel>
-                <Select
-                  labelId="project"
+                <ProjectSelect
                   name="project"
-                  readOnly={!inputsEnabled}
-                  value={selectedProject}
-                  onChange={handleChangeProject}
                   label="Project"
-                >
-                  {loaderData.allProjects.map((p: ProjectSummary) => (
-                    <MenuItem key={p.ref_id} value={p.ref_id}>
-                      {p.name}
-                    </MenuItem>
-                  ))}
-                </Select>
+                  inputsEnabled={inputsEnabled}
+                  disabled={false}
+                  allProjects={loaderData.allProjects}
+                  value={selectedProject}
+                  onChange={setSelectedProject}
+                />
                 <FieldError actionResult={actionData} fieldName="/project" />
               </FormControl>
             )}

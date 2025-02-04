@@ -8,9 +8,6 @@ import {
   CardContent,
   CardHeader,
   FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
   Stack,
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
@@ -25,6 +22,7 @@ import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import { ProjectSelect } from "~/components/project-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -104,20 +102,14 @@ export default function PersonsSettings() {
           <CardContent>
             <Stack spacing={2} useFlexGap>
               <FormControl fullWidth>
-                <InputLabel id="project">Project</InputLabel>
-                <Select
-                  labelId="project"
+                <ProjectSelect
                   name="project"
-                  readOnly={!inputsEnabled}
+                  label="Catch Up Project"
+                  inputsEnabled={inputsEnabled}
+                  disabled={false}
+                  allProjects={loaderData.allProjects}
                   defaultValue={loaderData.catchUpProject.ref_id}
-                  label="Project"
-                >
-                  {loaderData.allProjects.map((p) => (
-                    <MenuItem key={p.ref_id} value={p.ref_id}>
-                      {p.name}
-                    </MenuItem>
-                  ))}
-                </Select>
+                />
                 <FieldError
                   actionResult={actionData}
                   fieldName="/catch_up_project_key"

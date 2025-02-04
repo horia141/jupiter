@@ -34,6 +34,7 @@ import { EisenhowerSelect } from "~/components/eisenhower-select";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import { ProjectSelect } from "~/components/project-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { periodName } from "~/logic/domain/period";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
@@ -163,20 +164,14 @@ export default function NewHabit() {
               WorkspaceFeature.PROJECTS
             ) && (
               <FormControl fullWidth>
-                <InputLabel id="project">Project</InputLabel>
-                <Select
-                  labelId="project"
+                <ProjectSelect
                   name="project"
-                  readOnly={!inputsEnabled}
-                  defaultValue={loaderData.rootProject.ref_id}
                   label="Project"
-                >
-                  {loaderData.allProjects.map((p) => (
-                    <MenuItem key={p.ref_id} value={p.ref_id}>
-                      {p.name}
-                    </MenuItem>
-                  ))}
-                </Select>
+                  inputsEnabled={inputsEnabled}
+                  disabled={false}
+                  allProjects={loaderData.allProjects}
+                  defaultValue={loaderData.rootProject.ref_id}
+                />
                 <FieldError actionResult={actionData} fieldName="/project" />
               </FormControl>
             )}

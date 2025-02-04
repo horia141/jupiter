@@ -8,7 +8,6 @@ import {
   RecurringTaskPeriod,
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
-import type { SelectChangeEvent } from "@mui/material";
 import {
   Button,
   ButtonGroup,
@@ -48,6 +47,7 @@ import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import { ProjectSelect } from "~/components/project-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
 import { sortInboxTasksNaturally } from "~/logic/domain/inbox-task";
@@ -265,10 +265,6 @@ export default function Chore() {
   const selectedProjectIsDifferentFromCurrent =
     loaderData.project.ref_id !== selectedProject;
 
-  function handleChangeProject(e: SelectChangeEvent) {
-    setSelectedProject(e.target.value);
-  }
-
   const sortedInboxTasks = sortInboxTasksNaturally(loaderData.inboxTasks, {
     dueDateAscending: false,
   });
@@ -355,21 +351,15 @@ export default function Chore() {
               WorkspaceFeature.PROJECTS
             ) && (
               <FormControl fullWidth>
-                <InputLabel id="project">Project</InputLabel>
-                <Select
-                  labelId="project"
+                <ProjectSelect
                   name="project"
-                  readOnly={!inputsEnabled}
-                  value={selectedProject}
-                  onChange={handleChangeProject}
                   label="Project"
-                >
-                  {loaderData.allProjects.map((p: Project) => (
-                    <MenuItem key={p.ref_id} value={p.ref_id}>
-                      {p.name}
-                    </MenuItem>
-                  ))}
-                </Select>
+                  inputsEnabled={inputsEnabled}
+                  disabled={false}
+                  allProjects={loaderData.allProjects}
+                  value={selectedProject}
+                  onChange={setSelectedProject}
+                />
                 <FieldError actionResult={actionData} fieldName="/project" />
               </FormControl>
             )}

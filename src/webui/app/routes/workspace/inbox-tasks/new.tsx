@@ -13,7 +13,6 @@ import {
   TimePlanActivityKind,
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
-import type { SelectChangeEvent } from "@mui/material";
 import {
   Autocomplete,
   Button,
@@ -24,9 +23,7 @@ import {
   FormControl,
   FormLabel,
   InputLabel,
-  MenuItem,
   OutlinedInput,
-  Select,
   Stack,
   TextField,
 } from "@mui/material";
@@ -48,6 +45,7 @@ import {
   GlobalError,
 } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import { ProjectSelect } from "~/components/project-select";
 import { TimePlanActivityFeasabilitySelect } from "~/components/time-plan-activity-feasability-select";
 import { TimePlanActivitKindSelect } from "~/components/time-plan-activity-kind-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
@@ -325,17 +323,6 @@ export default function NewInboxTask() {
     }
   }
 
-  function handleChangeProject(e: SelectChangeEvent) {
-    if (
-      isWorkspaceFeatureAvailable(
-        topLevelInfo.workspace,
-        WorkspaceFeature.PROJECTS
-      )
-    ) {
-      setSelectedProject(e.target.value);
-    }
-  }
-
   return (
     <LeafPanel key={"inbox-tasks/new"} returnLocation="/workspace/inbox-tasks">
       <Card>
@@ -397,21 +384,15 @@ export default function NewInboxTask() {
               WorkspaceFeature.PROJECTS
             ) && (
               <FormControl fullWidth>
-                <InputLabel id="project">Project</InputLabel>
-                <Select
-                  labelId="project"
+                <ProjectSelect
                   name="project"
-                  readOnly={!inputsEnabled || blockedToSelectProject}
-                  value={selectedProject}
-                  onChange={handleChangeProject}
                   label="Project"
-                >
-                  {loaderData.allProjects.map((p: Project) => (
-                    <MenuItem key={p.ref_id} value={p.ref_id}>
-                      {p.name}
-                    </MenuItem>
-                  ))}
-                </Select>
+                  inputsEnabled={inputsEnabled && !blockedToSelectProject}
+                  disabled={false}
+                  allProjects={loaderData.allProjects}
+                  value={selectedProject}
+                  onChange={setSelectedProject}
+                />
                 <FieldError
                   actionResult={actionData}
                   fieldName="/project_ref_id"

@@ -1,7 +1,6 @@
 import type { ProjectSummary } from "@jupiter/webapi-client";
 import { ApiError, NoteDomain } from "@jupiter/webapi-client";
 import {
-  Autocomplete,
   Button,
   ButtonGroup,
   Card,
@@ -11,7 +10,6 @@ import {
   InputLabel,
   OutlinedInput,
   Stack,
-  TextField,
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect, Response } from "@remix-run/node";
@@ -27,6 +25,7 @@ import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import { ProjectSelect } from "~/components/project-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { isRootProject } from "~/logic/domain/project";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -167,17 +166,9 @@ export default function Project() {
   );
   const [selectedProject, setSelectedProject] = useState(
     parentProject === undefined
-      ? {
-          project_ref_id: loaderData.rootProject.ref_id,
-          label: loaderData.rootProject.name,
-        }
-      : { project_ref_id: parentProject.ref_id, label: parentProject.name }
+      ? loaderData.rootProject.ref_id
+      : parentProject.ref_id
   );
-
-  const allProjectsAsOptions = loaderData.allProjects.map((project) => ({
-    project_ref_id: project.ref_id,
-    label: project.name,
-  }));
 
   useEffect(() => {
     const parentProject = loaderData.allProjects.find(
@@ -185,11 +176,8 @@ export default function Project() {
     );
     setSelectedProject(
       parentProject === undefined
-        ? {
-            project_ref_id: loaderData.rootProject.ref_id,
-            label: loaderData.rootProject.name,
-          }
-        : { project_ref_id: parentProject.ref_id, label: parentProject.name }
+        ? loaderData.rootProject.ref_id
+        : parentProject.ref_id
     );
   }, [loaderData]);
 
@@ -205,30 +193,21 @@ export default function Project() {
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>
-              <Autocomplete
-                id="parentProject"
-                options={allProjectsAsOptions}
-                readOnly={!inputsEnabled || isRootProject(loaderData.project)}
-                value={selectedProject}
-                disableClearable={true}
-                onChange={(e, v) => setSelectedProject(v)}
-                isOptionEqualToValue={(o, v) =>
-                  o.project_ref_id === v.project_ref_id
+              <ProjectSelect
+                name="parentProjectRefId"
+                label="Parent Project"
+                inputsEnabled={
+                  inputsEnabled && !isRootProject(loaderData.project)
                 }
-                renderInput={(params) => (
-                  <TextField {...params} label="Parent Project" />
-                )}
+                disabled={false}
+                allProjects={loaderData.allProjects}
+                value={selectedProject}
+                onChange={setSelectedProject}
               />
 
               <FieldError
                 actionResult={actionData}
                 fieldName="/parent_project_ref_id"
-              />
-
-              <input
-                type="hidden"
-                name="parentProjectRefId"
-                value={selectedProject.project_ref_id}
               />
             </FormControl>
 
