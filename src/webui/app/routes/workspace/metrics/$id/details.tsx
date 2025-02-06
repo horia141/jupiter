@@ -7,7 +7,6 @@ import {
   NoteDomain,
   RecurringTaskPeriod,
 } from "@jupiter/webapi-client";
-import type { SelectChangeEvent } from "@mui/material";
 import {
   Button,
   ButtonGroup,
@@ -16,11 +15,8 @@ import {
   CardContent,
   Divider,
   FormControl,
-  FormLabel,
   InputLabel,
-  MenuItem,
   OutlinedInput,
-  Select,
   Stack,
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
@@ -34,12 +30,10 @@ import {
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
-import { useContext, useEffect, useState } from "react";
+import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { DifficultySelect } from "~/components/difficulty-select";
-import { EisenhowerSelect } from "~/components/eisenhower-select";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { IconSelector } from "~/components/icon-selector";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
@@ -47,9 +41,9 @@ import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import { RecurringTaskGenParamsBlock } from "~/components/recurring-task-gen-params-block";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { sortInboxTasksNaturally } from "~/logic/domain/inbox-task";
-import { periodName } from "~/logic/domain/period";
 import { getIntent } from "~/logic/intent";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -238,31 +232,11 @@ export default function MetricDetails() {
   const inputsEnabled =
     transition.state === "idle" && !loaderData.metric.archived;
 
-  const [showCollectionParams, setShowCollectionParams] = useState(
-    loaderData.metric.collection_params !== undefined &&
-      loaderData.metric.collection_params !== null
-  );
-
   const sortedCollectionTasks = loaderData.collectionInboxTasks
     ? sortInboxTasksNaturally(loaderData.collectionInboxTasks, {
         dueDateAscending: false,
       })
     : undefined;
-
-  useEffect(() => {
-    setShowCollectionParams(
-      loaderData.metric.collection_params !== undefined &&
-        loaderData.metric.collection_params !== null
-    );
-  }, [loaderData]);
-
-  function handleChangeCollectionPeriod(event: SelectChangeEvent) {
-    if (event.target.value === "none") {
-      setShowCollectionParams(false);
-    } else {
-      setShowCollectionParams(true);
-    }
-  }
 
   const cardActionFetcher = useFetcher();
 
@@ -327,144 +301,24 @@ export default function MetricDetails() {
 
             <Divider>Collection</Divider>
 
-            <FormControl fullWidth>
-              <InputLabel id="collectionPeriod">Collection Period</InputLabel>
-              <Select
-                labelId="collectionPeriod"
-                name="collectionPeriod"
-                readOnly={!inputsEnabled}
-                onChange={handleChangeCollectionPeriod}
-                defaultValue={
-                  loaderData.metric.collection_params?.period || "none"
-                }
-                label="Collection Period"
-              >
-                <MenuItem value={"none"}>None</MenuItem>
-                {Object.values(RecurringTaskPeriod).map((period) => (
-                  <MenuItem key={period} value={period}>
-                    {periodName(period)}
-                  </MenuItem>
-                ))}
-              </Select>
-              <FieldError
-                actionResult={actionData}
-                fieldName="/collection_period"
-              />
-            </FormControl>
-
-            {showCollectionParams && (
-              <>
-                <FormControl fullWidth>
-                  <FormLabel id="collectionEisen">Eisenhower</FormLabel>
-                  <EisenhowerSelect
-                    name="collectionEisen"
-                    defaultValue={
-                      loaderData.metric.collection_params?.eisen ??
-                      Eisen.REGULAR
-                    }
-                    inputsEnabled={inputsEnabled}
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/collection_eisen"
-                  />
-                </FormControl>
-
-                <FormControl fullWidth>
-                  <FormLabel id="collectionDifficulty">Difficulty</FormLabel>
-                  <DifficultySelect
-                    name="collectionDifficulty"
-                    defaultValue={
-                      loaderData.metric.collection_params?.difficulty ??
-                      Difficulty.EASY
-                    }
-                    inputsEnabled={inputsEnabled}
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/collection_difficulty"
-                  />
-                </FormControl>
-
-                <FormControl fullWidth>
-                  <InputLabel id="collectionActionableFromDay">
-                    Actionable From Day [Optional]
-                  </InputLabel>
-                  <OutlinedInput
-                    type="number"
-                    label="Actionable From Day"
-                    name="collectionActionableFromDay"
-                    readOnly={!inputsEnabled}
-                    defaultValue={
-                      loaderData.metric.collection_params
-                        ?.actionable_from_day || ""
-                    }
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/collection_actionable_from_day"
-                  />
-                </FormControl>
-
-                <FormControl fullWidth>
-                  <InputLabel id="collectionActionableFromMonth">
-                    Actionable From Month [Optional]
-                  </InputLabel>
-                  <OutlinedInput
-                    type="number"
-                    label="Actionable From Month"
-                    name="collectionActionableFromMonth"
-                    readOnly={!inputsEnabled}
-                    defaultValue={
-                      loaderData.metric.collection_params
-                        ?.actionable_from_month || ""
-                    }
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/collection_actionable_from_month"
-                  />
-                </FormControl>
-
-                <FormControl fullWidth>
-                  <InputLabel id="collectionDueAtDay">
-                    Due At Day [Optional]
-                  </InputLabel>
-                  <OutlinedInput
-                    type="number"
-                    label="Due At Day"
-                    name="collectionDueAtDay"
-                    readOnly={!inputsEnabled}
-                    defaultValue={
-                      loaderData.metric.collection_params?.due_at_day || ""
-                    }
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/collection_due_at_day"
-                  />
-                </FormControl>
-
-                <FormControl fullWidth>
-                  <InputLabel id="collectionDueAtMonth">
-                    Due At Month [Optional]
-                  </InputLabel>
-                  <OutlinedInput
-                    type="number"
-                    label="Due At Month"
-                    name="collectionDueAtMonth"
-                    readOnly={!inputsEnabled}
-                    defaultValue={
-                      loaderData.metric.collection_params?.due_at_month || ""
-                    }
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/collection_due_at_month"
-                  />
-                </FormControl>
-              </>
-            )}
+            <RecurringTaskGenParamsBlock
+              namePrefix="collection"
+              fieldsPrefix="collection"
+              allowNonePeriod
+              period={loaderData.metric.collection_params?.period || "none"}
+              eisen={loaderData.metric.collection_params?.eisen}
+              difficulty={loaderData.metric.collection_params?.difficulty}
+              actionableFromDay={
+                loaderData.metric.collection_params?.actionable_from_day
+              }
+              actionableFromMonth={
+                loaderData.metric.collection_params?.actionable_from_month
+              }
+              dueAtDay={loaderData.metric.collection_params?.due_at_day}
+              dueAtMonth={loaderData.metric.collection_params?.due_at_month}
+              inputsEnabled={inputsEnabled}
+              actionData={actionData}
+            />
           </Stack>
         </CardContent>
 

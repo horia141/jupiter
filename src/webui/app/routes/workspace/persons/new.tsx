@@ -1,11 +1,10 @@
+import type { RecurringTaskPeriod } from "@jupiter/webapi-client";
 import {
   ApiError,
   Difficulty,
   Eisen,
   PersonRelationship,
-  RecurringTaskPeriod,
 } from "@jupiter/webapi-client";
-import type { SelectChangeEvent } from "@mui/material";
 import {
   Button,
   ButtonGroup,
@@ -14,7 +13,6 @@ import {
   CardContent,
   Divider,
   FormControl,
-  FormLabel,
   InputLabel,
   MenuItem,
   OutlinedInput,
@@ -26,17 +24,14 @@ import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { useState } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { DifficultySelect } from "~/components/difficulty-select";
-import { EisenhowerSelect } from "~/components/eisenhower-select";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import { RecurringTaskGenParamsBlock } from "~/components/recurring-task-gen-params-block";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
-import { periodName } from "~/logic/domain/period";
 import { birthdayFromParts } from "~/logic/domain/person-birthday";
 import { personRelationshipName } from "~/logic/domain/person-relationship";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -137,16 +132,6 @@ export default function NewPerson() {
   const actionData = useActionData<typeof action>();
 
   const inputsEnabled = transition.state === "idle";
-
-  const [showCatchUpParams, setShowCatchUpParams] = useState(false);
-
-  function handleChangeCatchUpPeriod(event: SelectChangeEvent) {
-    if (event.target.value === "none") {
-      setShowCatchUpParams(false);
-    } else {
-      setShowCatchUpParams(true);
-    }
-  }
 
   return (
     <LeafPanel key={"persons/new"} returnLocation="/workspace/persons">
@@ -262,126 +247,20 @@ export default function NewPerson() {
 
             <Divider>Catch Up</Divider>
 
-            <FormControl fullWidth>
-              <InputLabel id="catchUpPeriod">Catch Up Period</InputLabel>
-              <Select
-                labelId="catchUpPeriod"
-                name="catchUpPeriod"
-                readOnly={!inputsEnabled}
-                onChange={handleChangeCatchUpPeriod}
-                defaultValue={"none"}
-                label="Catch Up Period"
-              >
-                <MenuItem value={"none"}>None</MenuItem>
-                {Object.values(RecurringTaskPeriod).map((period) => (
-                  <MenuItem key={period} value={period}>
-                    {periodName(period)}
-                  </MenuItem>
-                ))}
-              </Select>
-              <FieldError
-                actionResult={actionData}
-                fieldName="/catch_up_period"
-              />
-            </FormControl>
-
-            {showCatchUpParams && (
-              <>
-                <FormControl fullWidth>
-                  <FormLabel id="catchUpEisen">Eisenhower</FormLabel>
-                  <EisenhowerSelect
-                    name="catchUpEisen"
-                    defaultValue={Eisen.REGULAR}
-                    inputsEnabled={inputsEnabled}
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/catch_up_eisen"
-                  />
-                </FormControl>
-
-                <FormControl fullWidth>
-                  <FormLabel id="catchUpDifficulty">Difficulty</FormLabel>
-                  <DifficultySelect
-                    name="catchUpDifficulty"
-                    defaultValue={Difficulty.EASY}
-                    inputsEnabled={inputsEnabled}
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/catch_up_difficulty"
-                  />
-                </FormControl>
-
-                <FormControl fullWidth>
-                  <InputLabel id="catchUpActionableFromDay">
-                    Actionable From Day [Optional]
-                  </InputLabel>
-                  <OutlinedInput
-                    type="number"
-                    label="Actionable From Day"
-                    name="catchUpActionableFromDay"
-                    readOnly={!inputsEnabled}
-                    defaultValue={""}
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/catch_up_actionable_from_day"
-                  />
-                </FormControl>
-
-                <FormControl fullWidth>
-                  <InputLabel id="catchUpActionableFromMonth">
-                    Actionable From Month [Optional]
-                  </InputLabel>
-                  <OutlinedInput
-                    type="number"
-                    label="Actionable From Month"
-                    name="catchUpActionableFromMonth"
-                    readOnly={!inputsEnabled}
-                    defaultValue={""}
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/catch_up_actionable_from_month"
-                  />
-                </FormControl>
-
-                <FormControl fullWidth>
-                  <InputLabel id="catchUpDueAtDay">
-                    Due At Day [Optional]
-                  </InputLabel>
-                  <OutlinedInput
-                    type="number"
-                    label="Due At Day"
-                    name="catchUpDueAtDay"
-                    readOnly={!inputsEnabled}
-                    defaultValue={""}
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/catch_up_due_at_day"
-                  />
-                </FormControl>
-
-                <FormControl fullWidth>
-                  <InputLabel id="catchUpDueAtMonth">
-                    Due At Month [Optional]
-                  </InputLabel>
-                  <OutlinedInput
-                    type="number"
-                    label="Due At Month"
-                    name="catchUpDueAtMonth"
-                    readOnly={!inputsEnabled}
-                    defaultValue={""}
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/catch_up_due_at_month"
-                  />
-                </FormControl>
-              </>
-            )}
+            <RecurringTaskGenParamsBlock
+              namePrefix="catchUp"
+              fieldsPrefix="catch_up"
+              allowNonePeriod
+              period={"none"}
+              eisen={null}
+              difficulty={null}
+              actionableFromDay={null}
+              actionableFromMonth={null}
+              dueAtDay={null}
+              dueAtMonth={null}
+              inputsEnabled={inputsEnabled}
+              actionData={actionData}
+            />
           </Stack>
         </CardContent>
 

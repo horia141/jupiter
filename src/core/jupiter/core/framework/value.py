@@ -50,6 +50,13 @@ class AtomicValue(
 class CompositeValue(Value):
     """An composite value object in the domain."""
 
+    def validate(self) -> None:
+        """Validate this value."""
+
+    def __post_init__(self) -> None:
+        """Post init hook."""
+        self.validate()
+
 
 @enum.unique
 class EnumValue(Value, enum.Enum):

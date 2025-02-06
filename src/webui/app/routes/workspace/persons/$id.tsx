@@ -9,7 +9,6 @@ import {
   RecurringTaskPeriod,
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
-import type { SelectChangeEvent } from "@mui/material";
 import {
   Button,
   ButtonGroup,
@@ -18,7 +17,6 @@ import {
   CardContent,
   Divider,
   FormControl,
-  FormLabel,
   InputLabel,
   MenuItem,
   OutlinedInput,
@@ -36,22 +34,20 @@ import {
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
-import { useContext, useEffect, useState } from "react";
+import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { DifficultySelect } from "~/components/difficulty-select";
-import { EisenhowerSelect } from "~/components/eisenhower-select";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import { RecurringTaskGenParamsBlock } from "~/components/recurring-task-gen-params-block";
 import { TimeEventFullDaysBlockStack } from "~/components/time-event-full-days-block-stack";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { sortInboxTasksNaturally } from "~/logic/domain/inbox-task";
-import { periodName } from "~/logic/domain/period";
 import {
   birthdayFromParts,
   extractBirthday,
@@ -264,10 +260,6 @@ export default function Person() {
     ? extractBirthday(person.birthday)
     : undefined;
 
-  const [showCatchUpParams, setShowCatchUpParams] = useState(
-    person?.catch_up_params !== undefined && person?.catch_up_params !== null
-  );
-
   const sortedBirthdayTasks = sortInboxTasksNaturally(
     loaderData.birthdayInboxTasks,
     {
@@ -295,20 +287,6 @@ export default function Person() {
   );
 
   const inputsEnabled = transition.state === "idle" && !person.archived;
-
-  useEffect(() => {
-    setShowCatchUpParams(
-      person?.catch_up_params !== undefined && person?.catch_up_params !== null
-    );
-  }, [loaderData, person.catch_up_params]);
-
-  function handleChangeCatchUpPeriod(event: SelectChangeEvent) {
-    if (event.target.value === "none") {
-      setShowCatchUpParams(false);
-    } else {
-      setShowCatchUpParams(true);
-    }
-  }
 
   const cardActionFetcher = useFetcher();
 
@@ -461,135 +439,22 @@ export default function Person() {
 
             <Divider>Catch Up</Divider>
 
-            <FormControl fullWidth>
-              <InputLabel id="catchUpPeriod">Catch Up Period</InputLabel>
-              <Select
-                labelId="catchUpPeriod"
-                name="catchUpPeriod"
-                readOnly={!inputsEnabled}
-                onChange={handleChangeCatchUpPeriod}
-                defaultValue={person.catch_up_params?.period ?? "none"}
-                label="Catch Up Period"
-              >
-                <MenuItem value={"none"}>None</MenuItem>
-                {Object.values(RecurringTaskPeriod).map((period) => (
-                  <MenuItem key={period} value={period}>
-                    {periodName(period)}
-                  </MenuItem>
-                ))}
-              </Select>
-              <FieldError
-                actionResult={actionData}
-                fieldName="/catch_up_period"
-              />
-            </FormControl>
-
-            {showCatchUpParams && (
-              <>
-                <FormControl fullWidth>
-                  <FormLabel id="catchUpEisen">Eisenhower</FormLabel>
-                  <EisenhowerSelect
-                    name="catchUpEisen"
-                    defaultValue={
-                      loaderData.person.catch_up_params?.eisen ?? Eisen.REGULAR
-                    }
-                    inputsEnabled={inputsEnabled}
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/catch_up_eisen"
-                  />
-                </FormControl>
-
-                <FormControl fullWidth>
-                  <FormLabel id="catchUpDifficulty">Difficulty</FormLabel>
-                  <DifficultySelect
-                    name="catchUpDifficulty"
-                    defaultValue={
-                      loaderData.person.catch_up_params?.difficulty ??
-                      Difficulty.EASY
-                    }
-                    inputsEnabled={inputsEnabled}
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/catch_up_difficulty"
-                  />
-                </FormControl>
-
-                <FormControl fullWidth>
-                  <InputLabel id="catchUpActionableFromDay">
-                    Actionable From Day [Optional]
-                  </InputLabel>
-                  <OutlinedInput
-                    type="number"
-                    label="Actionable From Day"
-                    name="catchUpActionableFromDay"
-                    readOnly={!inputsEnabled}
-                    defaultValue={
-                      person.catch_up_params?.actionable_from_day ?? ""
-                    }
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/catch_up_actionable_from_day"
-                  />
-                </FormControl>
-
-                <FormControl fullWidth>
-                  <InputLabel id="catchUpActionableFromMonth">
-                    Actionable From Month [Optional]
-                  </InputLabel>
-                  <OutlinedInput
-                    type="number"
-                    label="Actionable From Month"
-                    name="catchUpActionableFromMonth"
-                    readOnly={!inputsEnabled}
-                    defaultValue={
-                      person.catch_up_params?.actionable_from_month ?? ""
-                    }
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/catch_up_actionable_from_month"
-                  />
-                </FormControl>
-
-                <FormControl fullWidth>
-                  <InputLabel id="catchUpDueAtDay">
-                    Due At Day [Optional]
-                  </InputLabel>
-                  <OutlinedInput
-                    type="number"
-                    label="Due At Day"
-                    name="catchUpDueAtDay"
-                    readOnly={!inputsEnabled}
-                    defaultValue={person.catch_up_params?.due_at_day ?? ""}
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/catch_up_due_at_day"
-                  />
-                </FormControl>
-
-                <FormControl fullWidth>
-                  <InputLabel id="catchUpDueAtMonth">
-                    Due At Month [Optional]
-                  </InputLabel>
-                  <OutlinedInput
-                    type="number"
-                    label="Due At Month"
-                    name="catchUpDueAtMonth"
-                    readOnly={!inputsEnabled}
-                    defaultValue={person.catch_up_params?.due_at_month ?? ""}
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/catch_up_due_at_month"
-                  />
-                </FormControl>
-              </>
-            )}
+            <RecurringTaskGenParamsBlock
+              namePrefix="catchUp"
+              fieldsPrefix="catch_up"
+              allowNonePeriod
+              period={person.catch_up_params?.period ?? "none"}
+              eisen={person.catch_up_params?.eisen}
+              difficulty={person.catch_up_params?.difficulty}
+              actionableFromDay={person.catch_up_params?.actionable_from_day}
+              actionableFromMonth={
+                person.catch_up_params?.actionable_from_month
+              }
+              dueAtDay={person.catch_up_params?.due_at_day}
+              dueAtMonth={person.catch_up_params?.due_at_month}
+              inputsEnabled={inputsEnabled}
+              actionData={actionData}
+            />
           </Stack>
         </CardContent>
 

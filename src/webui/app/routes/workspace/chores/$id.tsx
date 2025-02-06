@@ -16,11 +16,8 @@ import {
   CardContent,
   FormControl,
   FormControlLabel,
-  FormLabel,
   InputLabel,
-  MenuItem,
   OutlinedInput,
-  Select,
   Stack,
   Switch,
 } from "@mui/material";
@@ -39,8 +36,6 @@ import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { CheckboxAsString, parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { DifficultySelect } from "~/components/difficulty-select";
-import { EisenhowerSelect } from "~/components/eisenhower-select";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
@@ -48,10 +43,10 @@ import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { ProjectSelect } from "~/components/project-select";
+import { RecurringTaskGenParamsBlock } from "~/components/recurring-task-gen-params-block";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
 import { sortInboxTasksNaturally } from "~/logic/domain/inbox-task";
-import { periodName } from "~/logic/domain/period";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { getIntent } from "~/logic/intent";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -328,24 +323,6 @@ export default function Chore() {
               <FieldError actionResult={actionData} fieldName="/name" />
             </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="period">Period</InputLabel>
-              <Select
-                labelId="status"
-                name="period"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.chore.gen_params.period}
-                label="Period"
-              >
-                {Object.values(RecurringTaskPeriod).map((s) => (
-                  <MenuItem key={s} value={s}>
-                    {periodName(s)}
-                  </MenuItem>
-                ))}
-              </Select>
-              <FieldError actionResult={actionData} fieldName="/status" />
-            </FormControl>
-
             {isWorkspaceFeatureAvailable(
               topLevelInfo.workspace,
               WorkspaceFeature.PROJECTS
@@ -363,84 +340,24 @@ export default function Chore() {
                 <FieldError actionResult={actionData} fieldName="/project" />
               </FormControl>
             )}
-            {!isWorkspaceFeatureAvailable(
-              topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS
-            ) && <input type="hidden" name="project" value={selectedProject} />}
 
-            <FormControl fullWidth>
-              <FormLabel id="eisen">Eisenhower</FormLabel>
-              <EisenhowerSelect
-                name="eisen"
-                defaultValue={loaderData.chore.gen_params.eisen}
-                inputsEnabled={inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/eisen" />
-            </FormControl>
-
-            <FormControl fullWidth>
-              <FormLabel id="difficulty">Difficulty</FormLabel>
-              <DifficultySelect
-                name="difficulty"
-                defaultValue={loaderData.chore.gen_params.difficulty}
-                inputsEnabled={inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/difficulty" />
-            </FormControl>
-
-            <FormControl fullWidth>
-              <InputLabel id="actionableFromDay">
-                Actionable From Day [Optional]
-              </InputLabel>
-              <OutlinedInput
-                label="Actionable From Day"
-                name="actionableFromDay"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.chore.gen_params.actionable_from_day}
-              />
-              <FieldError
-                actionResult={actionData}
-                fieldName="/actionable_from_day"
-              />
-            </FormControl>
-
-            <FormControl fullWidth>
-              <InputLabel id="actionableFromMonth">
-                Actionable From Month [Optional]
-              </InputLabel>
-              <OutlinedInput
-                label="Actionable From Month"
-                name="actionableFromMonth"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.chore.gen_params.actionable_from_month}
-              />
-              <FieldError
-                actionResult={actionData}
-                fieldName="/actionable_from_month"
-              />
-            </FormControl>
-
-            <FormControl fullWidth>
-              <InputLabel id="dueAtDay">Due At Day [Optional]</InputLabel>
-              <OutlinedInput
-                label="Due At Day"
-                name="dueAtDay"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.chore.gen_params.due_at_day}
-              />
-              <FieldError actionResult={actionData} fieldName="/due_at_day" />
-            </FormControl>
-
-            <FormControl fullWidth>
-              <InputLabel id="dueAtMonth">Due At Month [Optional]</InputLabel>
-              <OutlinedInput
-                label="Due At Month"
-                name="dueAtMonth"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.chore.gen_params.due_at_month}
-              />
-              <FieldError actionResult={actionData} fieldName="/due_at_month" />
-            </FormControl>
+            <RecurringTaskGenParamsBlock
+              namePrefix=""
+              fieldsPrefix=""
+              period={loaderData.chore.gen_params.period}
+              eisen={loaderData.chore.gen_params.eisen}
+              difficulty={loaderData.chore.gen_params.difficulty}
+              actionableFromDay={
+                loaderData.chore.gen_params.actionable_from_day
+              }
+              actionableFromMonth={
+                loaderData.chore.gen_params.actionable_from_month
+              }
+              dueAtDay={loaderData.chore.gen_params.due_at_day}
+              dueAtMonth={loaderData.chore.gen_params.due_at_month}
+              inputsEnabled={inputsEnabled}
+              actionData={actionData}
+            />
 
             <FormControl fullWidth>
               <FormControlLabel

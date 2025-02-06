@@ -14,11 +14,8 @@ import {
   CardContent,
   FormControl,
   FormControlLabel,
-  FormLabel,
   InputLabel,
-  MenuItem,
   OutlinedInput,
-  Select,
   Stack,
   Switch,
 } from "@mui/material";
@@ -31,14 +28,12 @@ import { useContext } from "react";
 import { z } from "zod";
 import { CheckboxAsString, parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { DifficultySelect } from "~/components/difficulty-select";
-import { EisenhowerSelect } from "~/components/eisenhower-select";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { ProjectSelect } from "~/components/project-select";
+import { RecurringTaskGenParamsBlock } from "~/components/recurring-task-gen-params-block";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
-import { periodName } from "~/logic/domain/period";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -143,24 +138,6 @@ export default function NewChore() {
               <FieldError actionResult={actionData} fieldName="/name" />
             </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="period">Period</InputLabel>
-              <Select
-                labelId="status"
-                name="period"
-                readOnly={!inputsEnabled}
-                defaultValue={RecurringTaskPeriod.DAILY}
-                label="Period"
-              >
-                {Object.values(RecurringTaskPeriod).map((s) => (
-                  <MenuItem key={s} value={s}>
-                    {periodName(s)}
-                  </MenuItem>
-                ))}
-              </Select>
-              <FieldError actionResult={actionData} fieldName="/status" />
-            </FormControl>
-
             {isWorkspaceFeatureAvailable(
               topLevelInfo.workspace,
               WorkspaceFeature.PROJECTS
@@ -178,75 +155,17 @@ export default function NewChore() {
               </FormControl>
             )}
 
-            <FormControl fullWidth>
-              <FormLabel id="eisen">Eisenhower</FormLabel>
-              <EisenhowerSelect
-                name="eisen"
-                defaultValue={Eisen.REGULAR}
-                inputsEnabled={inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/eisen" />
-            </FormControl>
-
-            <FormControl fullWidth>
-              <FormLabel id="difficulty">Difficulty</FormLabel>
-              <DifficultySelect
-                name="difficulty"
-                defaultValue={Difficulty.EASY}
-                inputsEnabled={inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/difficulty" />
-            </FormControl>
-
-            <FormControl fullWidth>
-              <InputLabel id="actionableFromDay">
-                Actionable From Day [Optional]
-              </InputLabel>
-              <OutlinedInput
-                label="Actionable From Day"
-                name="actionableFromDay"
-                readOnly={!inputsEnabled}
-              />
-              <FieldError
-                actionResult={actionData}
-                fieldName="/actionable_from_day"
-              />
-            </FormControl>
-
-            <FormControl fullWidth>
-              <InputLabel id="actionableFromMonth">
-                Actionable From Month [Optional]
-              </InputLabel>
-              <OutlinedInput
-                label="Actionable From Month"
-                name="actionableFromMonth"
-                readOnly={!inputsEnabled}
-              />
-              <FieldError
-                actionResult={actionData}
-                fieldName="/actionable_from_month"
-              />
-            </FormControl>
-
-            <FormControl fullWidth>
-              <InputLabel id="dueAtDay">Due At Day [Optional]</InputLabel>
-              <OutlinedInput
-                label="Due At Day"
-                name="dueAtDay"
-                readOnly={!inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/due_at_day" />
-            </FormControl>
-
-            <FormControl fullWidth>
-              <InputLabel id="dueAtMonth">Due At Month [Optional]</InputLabel>
-              <OutlinedInput
-                label="Due At Month"
-                name="dueAtMonth"
-                readOnly={!inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/due_at_month" />
-            </FormControl>
+            <RecurringTaskGenParamsBlock
+              period={RecurringTaskPeriod.DAILY}
+              eisen={Eisen.REGULAR}
+              difficulty={Difficulty.EASY}
+              actionableFromDay={null}
+              actionableFromMonth={null}
+              dueAtDay={null}
+              dueAtMonth={null}
+              inputsEnabled={inputsEnabled}
+              actionData={actionData}
+            />
 
             <FormControl fullWidth>
               <FormControlLabel

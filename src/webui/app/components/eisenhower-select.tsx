@@ -28,19 +28,11 @@ export function EisenhowerSelect(props: EisenhowerSelectProps) {
       >
         <ToggleButton
           size="small"
-          id="eisen-important-and-urgent"
+          id="eisen-regular"
           disabled={!props.inputsEnabled}
-          value={Eisen.IMPORTANT_AND_URGENT}
+          value={Eisen.REGULAR}
         >
-          {eisenName(Eisen.IMPORTANT_AND_URGENT, !isBigScreen)}
-        </ToggleButton>
-        <ToggleButton
-          size="small"
-          id="eisen-urgent"
-          disabled={!props.inputsEnabled}
-          value={Eisen.URGENT}
-        >
-          {eisenName(Eisen.URGENT, !isBigScreen)}
+          {eisenName(Eisen.REGULAR, !isBigScreen)}
         </ToggleButton>
         <ToggleButton
           size="small"
@@ -52,11 +44,19 @@ export function EisenhowerSelect(props: EisenhowerSelectProps) {
         </ToggleButton>
         <ToggleButton
           size="small"
-          id="eisen-regular"
+          id="eisen-urgent"
           disabled={!props.inputsEnabled}
-          value={Eisen.REGULAR}
+          value={Eisen.URGENT}
         >
-          {eisenName(Eisen.REGULAR, !isBigScreen)}
+          {eisenName(Eisen.URGENT, !isBigScreen)}
+        </ToggleButton>
+        <ToggleButton
+          size="small"
+          id="eisen-important-and-urgent"
+          disabled={!props.inputsEnabled}
+          value={Eisen.IMPORTANT_AND_URGENT}
+        >
+          {eisenName(Eisen.IMPORTANT_AND_URGENT, !isBigScreen)}
         </ToggleButton>
       </ToggleButtonGroup>
       <input name={props.name} type="hidden" value={eisen} />

@@ -7,11 +7,11 @@ export function periodName(status: RecurringTaskPeriod): string {
     case RecurringTaskPeriod.WEEKLY:
       return "Weekly";
     case RecurringTaskPeriod.MONTHLY:
-      return "Monthly";
+      return "Month";
     case RecurringTaskPeriod.QUARTERLY:
-      return "Quarterly";
+      return "Quarter";
     case RecurringTaskPeriod.YEARLY:
-      return "Yearly";
+      return "Year";
   }
 }
 

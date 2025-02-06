@@ -5,8 +5,6 @@ from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
-from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
-from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.core.recurring_task_skip_rule import RecurringTaskSkipRule
@@ -56,13 +54,6 @@ class Habit(LeafEntity):
         suspended: bool,
     ) -> "Habit":
         """Create a habit."""
-        Habit._check_actionable_and_due_date_configs(
-            gen_params.period,
-            gen_params.actionable_from_day,
-            gen_params.actionable_from_month,
-            gen_params.due_at_day,
-            gen_params.due_at_month,
-        )
         if repeats_in_period_count is not None:
             if gen_params.period == RecurringTaskPeriod.DAILY:
                 raise InputValidationError("Repeats for daily habits are not allowed")
@@ -107,13 +98,6 @@ class Habit(LeafEntity):
     ) -> "Habit":
         """Update the habit."""
         if gen_params.should_change:
-            Habit._check_actionable_and_due_date_configs(
-                gen_params.just_the_value.period,
-                gen_params.just_the_value.actionable_from_day,
-                gen_params.just_the_value.actionable_from_month,
-                gen_params.just_the_value.due_at_day,
-                gen_params.just_the_value.due_at_month,
-            )
             the_gen_params = gen_params.just_the_value
         else:
             the_gen_params = self.gen_params
@@ -158,31 +142,3 @@ class Habit(LeafEntity):
             ctx,
             suspended=False,
         )
-
-    @staticmethod
-    def _check_actionable_and_due_date_configs(
-        period: RecurringTaskPeriod,
-        actionable_from_day: RecurringTaskDueAtDay | None,
-        actionable_from_month: RecurringTaskDueAtMonth | None,
-        due_at_day: RecurringTaskDueAtDay | None,
-        due_at_month: RecurringTaskDueAtMonth | None,
-    ) -> None:
-        actionable_from_day = actionable_from_day or RecurringTaskDueAtDay.first_of(
-            period
-        )
-        actionable_from_month = (
-            actionable_from_month or RecurringTaskDueAtMonth.first_of(period)
-        )
-        due_at_day = due_at_day or RecurringTaskDueAtDay.end_of(period)
-        due_at_month = due_at_month or RecurringTaskDueAtMonth.end_of(period)
-        if actionable_from_month.as_int() > due_at_month.as_int():
-            raise InputValidationError(
-                f"Actionable month {actionable_from_month} should be before due month {due_at_month}",
-            )
-        if (
-            actionable_from_month == due_at_month
-            and actionable_from_day.as_int() > due_at_day.as_int()
-        ):
-            raise InputValidationError(
-                f"Actionable day {actionable_from_day} should be before due day {due_at_day}",
-            )
