@@ -129,8 +129,11 @@ export function RecurringTaskSkipRuleBlock(
 
   function handleNewSkipRule(
     event: React.MouseEvent<HTMLElement>,
-    newSkipRuleType: SkipRuleType
+    newSkipRuleType: SkipRuleType | null
   ) {
+    if (newSkipRuleType === null) {
+        return;
+    }
     setEditingInfo((oldEditingInfo: EditingInfo) => ({
       ...oldEditingInfo,
       theType: newSkipRuleType,

@@ -58,8 +58,11 @@ export function RecurringTaskGenParamsBlock(
 
   function handleChangePeriod(
     event: React.MouseEvent<HTMLElement>,
-    newPeriod: RecurringTaskPeriod | "none"
+    newPeriod: RecurringTaskPeriod | "none" | null
   ) {
+    if (newPeriod === null) {
+      return;
+    }
     if (newPeriod === "none") {
       setShowParams(false);
     } else {
