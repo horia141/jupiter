@@ -10,7 +10,6 @@ from jupiter.core.use_cases.infra.realms import (
     PrimitiveAtomicValueDatabaseDecoder,
     PrimitiveAtomicValueDatabaseEncoder,
 )
-from pendulum.tz.exceptions import InvalidTimezone
 
 
 @value
@@ -50,7 +49,7 @@ class TimezoneDatabaseDecoder(PrimitiveAtomicValueDatabaseDecoder[Timezone]):
 
         try:
             return Timezone(cast(str, pendulum.timezone(timezone_str).name))
-        except InvalidTimezone as err:
+        except ValueError as err:
             raise InputValidationError(f"Invalid timezone '{value}'") from err
 
 

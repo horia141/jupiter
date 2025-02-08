@@ -20,6 +20,7 @@ import { EisenhowerSelect } from "./eisenhower-select";
 import { FieldError } from "./infra/errors";
 
 import { useEffect, useState } from "react";
+import { useBigScreen } from "~/rendering/use-big-screen";
 import { RecurringTaskSkipRuleBlock } from "./recurring-task-skip-rule-block";
 
 interface RecurringTaskGenParamsBlockProps {
@@ -42,6 +43,7 @@ interface RecurringTaskGenParamsBlockProps {
 export function RecurringTaskGenParamsBlock(
   props: RecurringTaskGenParamsBlockProps
 ) {
+  const isBigScreen = useBigScreen();
   const [period, setPeriod] = useState(props.period);
   useEffect(() => {
     setPeriod(props.period);
@@ -83,7 +85,7 @@ export function RecurringTaskGenParamsBlock(
           )}
           {Object.values(RecurringTaskPeriod).map((s) => (
             <ToggleButton key={s} value={s} disabled={!props.inputsEnabled}>
-              {periodName(s)}
+              {periodName(s, isBigScreen)}
             </ToggleButton>
           ))}
         </ToggleButtonGroup>

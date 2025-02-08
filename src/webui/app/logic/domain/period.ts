@@ -1,17 +1,20 @@
 import { RecurringTaskPeriod } from "@jupiter/webapi-client";
 
-export function periodName(status: RecurringTaskPeriod): string {
+export function periodName(
+  status: RecurringTaskPeriod,
+  isBigScreen: boolean = true
+): string {
   switch (status) {
     case RecurringTaskPeriod.DAILY:
-      return "Daily";
+      return isBigScreen ? "Daily" : "Day";
     case RecurringTaskPeriod.WEEKLY:
-      return "Weekly";
+      return isBigScreen ? "Weekly" : "Wk";
     case RecurringTaskPeriod.MONTHLY:
-      return "Month";
+      return isBigScreen ? "Monthly" : "Mnth";
     case RecurringTaskPeriod.QUARTERLY:
-      return "Quarter";
+      return isBigScreen ? "Quarterly" : "Qrt";
     case RecurringTaskPeriod.YEARLY:
-      return "Year";
+      return isBigScreen ? "Year" : "Yr";
   }
 }
 

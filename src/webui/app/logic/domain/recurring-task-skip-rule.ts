@@ -69,10 +69,13 @@ export type SkipRule =
   | SkipRuleCustomMonthlyRelYearly
   | SkipRuleCustomQuarterlyRelYearly;
 
-export function skipRuleTypeName(skipRuleType: SkipRuleType): string {
+export function skipRuleTypeName(
+  skipRuleType: SkipRuleType,
+  isBigScreen: boolean = true
+): string {
   switch (skipRuleType) {
     case SkipRuleType.NONE:
-      return "None";
+      return isBigScreen ? "None" : "🚫";
     case SkipRuleType.EVEN:
       return "Even";
     case SkipRuleType.ODD:
@@ -80,11 +83,11 @@ export function skipRuleTypeName(skipRuleType: SkipRuleType): string {
     case SkipRuleType.EVERY:
       return `Every`;
     case SkipRuleType.CUSTOM_DAILY_REL_WEEKLY:
-      return `In Week`;
+      return isBigScreen ? `In Week` : "Wk";
     case SkipRuleType.CUSTOM_DAILY_REL_MONTHLY:
-      return `In Month`;
+      return isBigScreen ? `In Month` : "Mnth";
     case SkipRuleType.CUSTOM_WEEKLY_REL_YEARLY:
-      return `In Year`;
+      return isBigScreen ? `In Year` : "Yr";
     case SkipRuleType.CUSTOM_MONTHLY_REL_YEARLY:
       return `Custom`;
     case SkipRuleType.CUSTOM_QUARTERLY_REL_YEARLY:

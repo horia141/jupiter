@@ -424,42 +424,48 @@ export function RecurringTaskSkipRuleBlock(
               value={SkipRuleType.NONE}
               disabled={!props.inputsEnabled}
             >
-              {skipRuleTypeName(SkipRuleType.NONE)}
+              {skipRuleTypeName(SkipRuleType.NONE, isBigScreen)}
             </ToggleButton>
             <ToggleButton
               size="small"
               value={SkipRuleType.EVEN}
               disabled={!props.inputsEnabled}
             >
-              {skipRuleTypeName(SkipRuleType.EVEN)}
+              {skipRuleTypeName(SkipRuleType.EVEN, isBigScreen)}
             </ToggleButton>
             <ToggleButton
               size="small"
               value={SkipRuleType.ODD}
               disabled={!props.inputsEnabled}
             >
-              {skipRuleTypeName(SkipRuleType.ODD)}
+              {skipRuleTypeName(SkipRuleType.ODD, isBigScreen)}
             </ToggleButton>
             <ToggleButton
               size="small"
               value={SkipRuleType.EVERY}
               disabled={!props.inputsEnabled}
             >
-              {skipRuleTypeName(SkipRuleType.EVERY)}
+              {skipRuleTypeName(SkipRuleType.EVERY, isBigScreen)}
             </ToggleButton>
             <ToggleButton
               size="small"
               value={SkipRuleType.CUSTOM_DAILY_REL_WEEKLY}
               disabled={!props.inputsEnabled}
             >
-              {skipRuleTypeName(SkipRuleType.CUSTOM_DAILY_REL_WEEKLY)}
+              {skipRuleTypeName(
+                SkipRuleType.CUSTOM_DAILY_REL_WEEKLY,
+                isBigScreen
+              )}
             </ToggleButton>
             <ToggleButton
               size="small"
               value={SkipRuleType.CUSTOM_DAILY_REL_MONTHLY}
               disabled={!props.inputsEnabled}
             >
-              {skipRuleTypeName(SkipRuleType.CUSTOM_DAILY_REL_MONTHLY)}
+              {skipRuleTypeName(
+                SkipRuleType.CUSTOM_DAILY_REL_MONTHLY,
+                isBigScreen
+              )}
             </ToggleButton>
           </ToggleButtonGroup>
           {everyBlock}
@@ -487,35 +493,38 @@ export function RecurringTaskSkipRuleBlock(
               value={SkipRuleType.NONE}
               disabled={!props.inputsEnabled}
             >
-              {skipRuleTypeName(SkipRuleType.NONE)}
+              {skipRuleTypeName(SkipRuleType.NONE, isBigScreen)}
             </ToggleButton>
             <ToggleButton
               size="small"
               value={SkipRuleType.EVEN}
               disabled={!props.inputsEnabled}
             >
-              {skipRuleTypeName(SkipRuleType.EVEN)}
+              {skipRuleTypeName(SkipRuleType.EVEN, isBigScreen)}
             </ToggleButton>
             <ToggleButton
               size="small"
               value={SkipRuleType.ODD}
               disabled={!props.inputsEnabled}
             >
-              {skipRuleTypeName(SkipRuleType.ODD)}
+              {skipRuleTypeName(SkipRuleType.ODD, isBigScreen)}
             </ToggleButton>
             <ToggleButton
               size="small"
               value={SkipRuleType.EVERY}
               disabled={!props.inputsEnabled}
             >
-              {skipRuleTypeName(SkipRuleType.EVERY)}
+              {skipRuleTypeName(SkipRuleType.EVERY, isBigScreen)}
             </ToggleButton>
             <ToggleButton
               size="small"
               value={SkipRuleType.CUSTOM_WEEKLY_REL_YEARLY}
               disabled={!props.inputsEnabled}
             >
-              {skipRuleTypeName(SkipRuleType.CUSTOM_WEEKLY_REL_YEARLY)}
+              {skipRuleTypeName(
+                SkipRuleType.CUSTOM_WEEKLY_REL_YEARLY,
+                isBigScreen
+              )}
             </ToggleButton>
           </ToggleButtonGroup>
           {everyBlock}
@@ -542,35 +551,38 @@ export function RecurringTaskSkipRuleBlock(
               value={SkipRuleType.NONE}
               disabled={!props.inputsEnabled}
             >
-              {skipRuleTypeName(SkipRuleType.NONE)}
+              {skipRuleTypeName(SkipRuleType.NONE, isBigScreen)}
             </ToggleButton>
             <ToggleButton
               size="small"
               value={SkipRuleType.EVEN}
               disabled={!props.inputsEnabled}
             >
-              {skipRuleTypeName(SkipRuleType.EVEN)}
+              {skipRuleTypeName(SkipRuleType.EVEN, isBigScreen)}
             </ToggleButton>
             <ToggleButton
               size="small"
               value={SkipRuleType.ODD}
               disabled={!props.inputsEnabled}
             >
-              {skipRuleTypeName(SkipRuleType.ODD)}
+              {skipRuleTypeName(SkipRuleType.ODD, isBigScreen)}
             </ToggleButton>
             <ToggleButton
               size="small"
               value={SkipRuleType.EVERY}
               disabled={!props.inputsEnabled}
             >
-              {skipRuleTypeName(SkipRuleType.EVERY)}
+              {skipRuleTypeName(SkipRuleType.EVERY, isBigScreen)}
             </ToggleButton>
             <ToggleButton
               size="small"
               value={SkipRuleType.CUSTOM_MONTHLY_REL_YEARLY}
               disabled={!props.inputsEnabled}
             >
-              {skipRuleTypeName(SkipRuleType.CUSTOM_MONTHLY_REL_YEARLY)}
+              {skipRuleTypeName(
+                SkipRuleType.CUSTOM_MONTHLY_REL_YEARLY,
+                isBigScreen
+              )}
             </ToggleButton>
           </ToggleButtonGroup>
           {everyBlock}
@@ -597,35 +609,38 @@ export function RecurringTaskSkipRuleBlock(
               value={SkipRuleType.NONE}
               disabled={!props.inputsEnabled}
             >
-              {skipRuleTypeName(SkipRuleType.NONE)}
+              {skipRuleTypeName(SkipRuleType.NONE, isBigScreen)}
             </ToggleButton>
             <ToggleButton
               size="small"
               value={SkipRuleType.EVEN}
               disabled={!props.inputsEnabled}
             >
-              {skipRuleTypeName(SkipRuleType.EVEN)}
+              {skipRuleTypeName(SkipRuleType.EVEN, isBigScreen)}
             </ToggleButton>
             <ToggleButton
               size="small"
               value={SkipRuleType.ODD}
               disabled={!props.inputsEnabled}
             >
-              {skipRuleTypeName(SkipRuleType.ODD)}
+              {skipRuleTypeName(SkipRuleType.ODD, isBigScreen)}
             </ToggleButton>
             <ToggleButton
               size="small"
               value={SkipRuleType.EVERY}
               disabled={!props.inputsEnabled}
             >
-              {skipRuleTypeName(SkipRuleType.EVERY)}
+              {skipRuleTypeName(SkipRuleType.EVERY, isBigScreen)}
             </ToggleButton>
             <ToggleButton
               size="small"
               value={SkipRuleType.CUSTOM_QUARTERLY_REL_YEARLY}
               disabled={!props.inputsEnabled}
             >
-              {skipRuleTypeName(SkipRuleType.CUSTOM_QUARTERLY_REL_YEARLY)}
+              {skipRuleTypeName(
+                SkipRuleType.CUSTOM_QUARTERLY_REL_YEARLY,
+                isBigScreen
+              )}
             </ToggleButton>
           </ToggleButtonGroup>
           {everyBlock}
@@ -652,28 +667,28 @@ export function RecurringTaskSkipRuleBlock(
               value={SkipRuleType.NONE}
               disabled={!props.inputsEnabled}
             >
-              {skipRuleTypeName(SkipRuleType.NONE)}
+              {skipRuleTypeName(SkipRuleType.NONE, isBigScreen)}
             </ToggleButton>
             <ToggleButton
               size="small"
               value={SkipRuleType.EVEN}
               disabled={!props.inputsEnabled}
             >
-              {skipRuleTypeName(SkipRuleType.EVEN)}
+              {skipRuleTypeName(SkipRuleType.EVEN, isBigScreen)}
             </ToggleButton>
             <ToggleButton
               size="small"
               value={SkipRuleType.ODD}
               disabled={!props.inputsEnabled}
             >
-              {skipRuleTypeName(SkipRuleType.ODD)}
+              {skipRuleTypeName(SkipRuleType.ODD, isBigScreen)}
             </ToggleButton>
             <ToggleButton
               size="small"
               value={SkipRuleType.EVERY}
               disabled={!props.inputsEnabled}
             >
-              {skipRuleTypeName(SkipRuleType.EVERY)}
+              {skipRuleTypeName(SkipRuleType.EVERY, isBigScreen)}
             </ToggleButton>
           </ToggleButtonGroup>
           {everyBlock}
