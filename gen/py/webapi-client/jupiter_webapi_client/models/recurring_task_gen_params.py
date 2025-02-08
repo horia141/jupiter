@@ -23,6 +23,7 @@ class RecurringTaskGenParams:
         actionable_from_month (Union[None, Unset, int]):
         due_at_day (Union[None, Unset, int]):
         due_at_month (Union[None, Unset, int]):
+        skip_rule (Union[None, Unset, str]):
     """
 
     period: RecurringTaskPeriod
@@ -32,6 +33,7 @@ class RecurringTaskGenParams:
     actionable_from_month: Union[None, Unset, int] = UNSET
     due_at_day: Union[None, Unset, int] = UNSET
     due_at_month: Union[None, Unset, int] = UNSET
+    skip_rule: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -65,6 +67,12 @@ class RecurringTaskGenParams:
         else:
             due_at_month = self.due_at_month
 
+        skip_rule: Union[None, Unset, str]
+        if isinstance(self.skip_rule, Unset):
+            skip_rule = UNSET
+        else:
+            skip_rule = self.skip_rule
+
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -82,6 +90,8 @@ class RecurringTaskGenParams:
             field_dict["due_at_day"] = due_at_day
         if due_at_month is not UNSET:
             field_dict["due_at_month"] = due_at_month
+        if skip_rule is not UNSET:
+            field_dict["skip_rule"] = skip_rule
 
         return field_dict
 
@@ -130,6 +140,15 @@ class RecurringTaskGenParams:
 
         due_at_month = _parse_due_at_month(d.pop("due_at_month", UNSET))
 
+        def _parse_skip_rule(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        skip_rule = _parse_skip_rule(d.pop("skip_rule", UNSET))
+
         recurring_task_gen_params = cls(
             period=period,
             eisen=eisen,
@@ -138,6 +157,7 @@ class RecurringTaskGenParams:
             actionable_from_month=actionable_from_month,
             due_at_day=due_at_day,
             due_at_month=due_at_month,
+            skip_rule=skip_rule,
         )
 
         recurring_task_gen_params.additional_properties = d

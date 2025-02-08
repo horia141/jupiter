@@ -1,5 +1,4 @@
 """A habit."""
-
 from jupiter.core.domain.concept.habits.habit_name import HabitName
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
@@ -7,7 +6,6 @@ from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
-from jupiter.core.domain.core.recurring_task_skip_rule import RecurringTaskSkipRule
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
@@ -32,7 +30,6 @@ class Habit(LeafEntity):
     project_ref_id: EntityId
     name: HabitName
     gen_params: RecurringTaskGenParams
-    skip_rule: RecurringTaskSkipRule | None
     suspended: bool
     repeats_in_period_count: int | None
 
@@ -49,7 +46,6 @@ class Habit(LeafEntity):
         project_ref_id: EntityId,
         name: HabitName,
         gen_params: RecurringTaskGenParams,
-        skip_rule: RecurringTaskSkipRule | None,
         repeats_in_period_count: int | None,
         suspended: bool,
     ) -> "Habit":
@@ -68,7 +64,6 @@ class Habit(LeafEntity):
             project_ref_id=project_ref_id,
             name=name,
             gen_params=gen_params,
-            skip_rule=skip_rule,
             repeats_in_period_count=repeats_in_period_count,
             suspended=suspended,
         )
@@ -93,7 +88,6 @@ class Habit(LeafEntity):
         ctx: DomainContext,
         name: UpdateAction[HabitName],
         gen_params: UpdateAction[RecurringTaskGenParams],
-        skip_rule: UpdateAction[RecurringTaskSkipRule | None],
         repeats_in_period_count: UpdateAction[int | None],
     ) -> "Habit":
         """Update the habit."""
@@ -117,7 +111,6 @@ class Habit(LeafEntity):
             ctx,
             name=name.or_else(self.name),
             gen_params=the_gen_params,
-            skip_rule=skip_rule.or_else(self.skip_rule),
             repeats_in_period_count=repeats_in_period_count.or_else(
                 self.repeats_in_period_count,
             ),

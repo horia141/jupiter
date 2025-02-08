@@ -73,9 +73,11 @@ class ChoreShow(LoggedInReadonlyCommand[ChoreFindUseCase, ChoreFindResult]):
                     difficulty_to_rich_text(chore.gen_params.difficulty),
                 )
 
-            if chore.skip_rule and str(chore.skip_rule) != "none":
+            if chore.gen_params.skip_rule:
                 chore_info_text.append(" ")
-                chore_info_text.append(skip_rule_to_rich_text(chore.skip_rule))
+                chore_info_text.append(
+                    skip_rule_to_rich_text(chore.gen_params.skip_rule)
+                )
 
             if chore.gen_params.actionable_from_day:
                 chore_info_text.append(" ")

@@ -86,6 +86,7 @@ class PersonCreateUseCase(
                 actionable_from_month=args.catch_up_actionable_from_month,
                 due_at_day=args.catch_up_due_at_day,
                 due_at_month=args.catch_up_due_at_month,
+                skip_rule=None,
             )
 
         new_person = Person.new_person(

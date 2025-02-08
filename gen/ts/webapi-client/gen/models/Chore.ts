@@ -6,7 +6,6 @@ import type { ADate } from './ADate';
 import type { ChoreName } from './ChoreName';
 import type { EntityId } from './EntityId';
 import type { RecurringTaskGenParams } from './RecurringTaskGenParams';
-import type { RecurringTaskSkipRule } from './RecurringTaskSkipRule';
 import type { Timestamp } from './Timestamp';
 
 /**
@@ -27,6 +26,5 @@ export type Chore = {
     must_do: boolean;
     start_at_date: ADate;
     end_at_date?: (ADate | null);
-    skip_rule?: (RecurringTaskSkipRule | null);
 };
 

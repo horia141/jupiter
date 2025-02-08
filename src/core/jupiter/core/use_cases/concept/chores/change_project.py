@@ -65,7 +65,7 @@ class ChoreChangeProjectUseCase(
                 chore.gen_params.period,
                 chore.name,
                 cast(Timestamp, inbox_task.recurring_gen_right_now),
-                chore.skip_rule,
+                chore.gen_params.skip_rule,
                 chore.gen_params.actionable_from_day,
                 chore.gen_params.actionable_from_month,
                 chore.gen_params.due_at_day,

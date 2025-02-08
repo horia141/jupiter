@@ -4,6 +4,7 @@ from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
+from jupiter.core.domain.core.recurring_task_skip_rule import RecurringTaskSkipRule
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.value import CompositeValue, value
 
@@ -19,8 +20,9 @@ class RecurringTaskGenParams(CompositeValue):
     actionable_from_month: RecurringTaskDueAtMonth | None
     due_at_day: RecurringTaskDueAtDay | None
     due_at_month: RecurringTaskDueAtMonth | None
+    skip_rule: RecurringTaskSkipRule | None
 
-    def validate(self) -> None:
+    def _validate(self) -> None:
         the_actionable_from_day = (
             self.actionable_from_day or RecurringTaskDueAtDay.first_of(self.period)
         )
@@ -51,3 +53,9 @@ class RecurringTaskGenParams(CompositeValue):
             raise InputValidationError(
                 f"Actionable day {the_actionable_from_day} should be before due day {the_due_at_day}",
             )
+
+        if self.skip_rule is not None:
+            if not self.skip_rule.is_compatible_with(self.period):
+                raise InputValidationError(
+                    f"Skip rule {self.skip_rule} is not compatible with period {self.period}",
+                )

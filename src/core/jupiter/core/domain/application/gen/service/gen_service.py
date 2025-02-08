@@ -855,14 +855,14 @@ class GenService:
             habit.gen_params.period,
             habit.name,
             today.to_timestamp_at_end_of_day(),
-            habit.skip_rule,
+            habit.gen_params.skip_rule,
             habit.gen_params.actionable_from_day,
             habit.gen_params.actionable_from_month,
             habit.gen_params.due_at_day,
             habit.gen_params.due_at_month,
         )
 
-        if schedule.should_skip:
+        if not schedule.should_keep:
             return gen_log_entry
 
         all_found_tasks_by_repeat_index: dict[int | None, InboxTask] = {
@@ -978,7 +978,7 @@ class GenService:
             chore.gen_params.period,
             chore.name,
             today.to_timestamp_at_end_of_day(),
-            chore.skip_rule,
+            chore.gen_params.skip_rule,
             chore.gen_params.actionable_from_day,
             chore.gen_params.actionable_from_month,
             chore.gen_params.due_at_day,
@@ -994,7 +994,7 @@ class GenService:
         if not chore.is_in_active_interval(schedule.first_day, schedule.end_day):
             return gen_log_entry
 
-        if schedule.should_skip:
+        if not schedule.should_keep:
             return gen_log_entry
 
         found_task = all_inbox_tasks_by_chore_ref_id_and_timeline.get(

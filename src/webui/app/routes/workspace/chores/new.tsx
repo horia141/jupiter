@@ -156,6 +156,8 @@ export default function NewChore() {
             )}
 
             <RecurringTaskGenParamsBlock
+              inputsEnabled={inputsEnabled}
+              allowSkipRule
               period={RecurringTaskPeriod.DAILY}
               eisen={Eisen.REGULAR}
               difficulty={Difficulty.EASY}
@@ -163,7 +165,7 @@ export default function NewChore() {
               actionableFromMonth={null}
               dueAtDay={null}
               dueAtMonth={null}
-              inputsEnabled={inputsEnabled}
+              skipRule={null}
               actionData={actionData}
             />
 
@@ -173,16 +175,6 @@ export default function NewChore() {
                 label="Must Do In Vacation"
               />
               <FieldError actionResult={actionData} fieldName="/must_do" />
-            </FormControl>
-
-            <FormControl fullWidth>
-              <InputLabel id="skipRule">Skip Rule [Optional]</InputLabel>
-              <OutlinedInput
-                label="Skip Rule"
-                name="skipRule"
-                readOnly={!inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/skip_rule" />
             </FormControl>
 
             <FormControl fullWidth>

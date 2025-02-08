@@ -114,10 +114,10 @@ class ChoreCreateUseCase(
                 actionable_from_month=args.actionable_from_month,
                 due_at_day=args.due_at_day,
                 due_at_month=args.due_at_month,
+                skip_rule=args.skip_rule,
             ),
             start_at_date=args.start_at_date,
             end_at_date=args.end_at_date,
-            skip_rule=args.skip_rule,
             suspended=False,
             must_do=args.must_do,
         )

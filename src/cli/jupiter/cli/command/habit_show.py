@@ -71,9 +71,11 @@ class HabitShow(LoggedInReadonlyCommand[HabitFindUseCase, HabitFindResult]):
                     difficulty_to_rich_text(habit.gen_params.difficulty),
                 )
 
-            if habit.skip_rule and str(habit.skip_rule) != "none":
+            if habit.gen_params.skip_rule:
                 habit_info_text.append(" ")
-                habit_info_text.append(skip_rule_to_rich_text(habit.skip_rule))
+                habit_info_text.append(
+                    skip_rule_to_rich_text(habit.gen_params.skip_rule)
+                )
 
             if habit.gen_params.actionable_from_day:
                 habit_info_text.append(" ")

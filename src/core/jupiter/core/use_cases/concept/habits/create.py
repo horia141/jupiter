@@ -111,8 +111,8 @@ class HabitCreateUseCase(
                 actionable_from_month=args.actionable_from_month,
                 due_at_day=args.due_at_day,
                 due_at_month=args.due_at_month,
+                skip_rule=args.skip_rule,
             ),
-            skip_rule=args.skip_rule,
             suspended=False,
             repeats_in_period_count=args.repeats_in_period_count,
         )

@@ -19,7 +19,7 @@ from pendulum.tz.timezone import UTC
 class Schedule(abc.ABC):
     """The base class for the schedule descriptors class."""
 
-    _should_skip: bool
+    _should_keep: bool
     _actionable_date: Date | None
     _date: Date
     _due_date: Date
@@ -144,9 +144,9 @@ class Schedule(abc.ABC):
         return month_to_month[date.month]
 
     @property
-    def should_skip(self) -> bool:
+    def should_keep(self) -> bool:
         """Whether the date should be skipped according to the planning rules."""
-        return self._should_skip
+        return self._should_keep
 
     @property
     def actionable_date(self) -> ADate | None:
@@ -167,17 +167,6 @@ class Schedule(abc.ABC):
     def timeline(self) -> str:
         """The timeline of an event."""
         return self._timeline
-
-    @staticmethod
-    def _skip_helper(skip_rule: RecurringTaskSkipRule, param: int) -> bool:
-        skip_rule_str = str(skip_rule)
-        if skip_rule_str == "even":
-            return param % 2 == 0
-        elif skip_rule_str == "odd":
-            return param % 2 != 0
-        else:
-            # Why don't you write better programs, bro?
-            return skip_rule_str.find(str(param)) != -1
 
     @property
     @abc.abstractmethod
@@ -208,11 +197,8 @@ class Schedule(abc.ABC):
             self.end_day.day,
             tzinfo=UTC,
         ).end_of("day")
-        timestamp = timestamp.value.end_of("day")
-        return cast(bool, first_day_dt <= timestamp) and cast(
-            bool,
-            timestamp <= end_day_dt,
-        )
+        ts = timestamp.value.end_of("day")
+        return first_day_dt <= ts and ts <= end_day_dt
 
 
 class DailySchedule(Schedule):
@@ -232,8 +218,8 @@ class DailySchedule(Schedule):
             f"{name} {self.year_two_digits(right_now)}:{self.month_to_month(right_now)}{right_now.value.day}",
         )
         self._timeline = infer_timeline(RecurringTaskPeriod.DAILY, right_now)
-        self._should_skip = (
-            self._skip_helper(skip_rule, self._due_date.day_of_week)
+        self._should_keep = (
+            skip_rule.should_keep(RecurringTaskPeriod.DAILY, self._due_date)
             if skip_rule
             else False
         )
@@ -286,8 +272,8 @@ class WeeklySchedule(Schedule):
             f"{name} {self.year_two_digits(right_now)}:W{start_of_week.week_of_year}",
         )
         self._timeline = infer_timeline(RecurringTaskPeriod.WEEKLY, right_now)
-        self._should_skip = (
-            self._skip_helper(skip_rule, self._due_date.week_of_year)
+        self._should_keep = (
+            skip_rule.should_keep(RecurringTaskPeriod.WEEKLY, self._due_date)
             if skip_rule
             else False
         )
@@ -340,8 +326,10 @@ class MonthlySchedule(Schedule):
             f"{name} {self.year_two_digits(right_now)}:{self.month_to_month(right_now)}",
         )
         self._timeline = infer_timeline(RecurringTaskPeriod.MONTHLY, right_now)
-        self._should_skip = (
-            self._skip_helper(skip_rule, self._due_date.month) if skip_rule else False
+        self._should_keep = (
+            skip_rule.should_keep(RecurringTaskPeriod.MONTHLY, self._due_date)
+            if skip_rule
+            else False
         )
 
     @property
@@ -466,8 +454,8 @@ class QuarterlySchedule(Schedule):
             f"{name} {self.year_two_digits(right_now)}:{self.month_to_quarter(right_now)}",
         )
         self._timeline = infer_timeline(RecurringTaskPeriod.QUARTERLY, right_now)
-        self._should_skip = (
-            self._skip_helper(skip_rule, self.month_to_quarter_num(self._due_date))
+        self._should_keep = (
+            skip_rule.should_keep(RecurringTaskPeriod.QUARTERLY, self._due_date)
             if skip_rule
             else False
         )
@@ -507,6 +495,7 @@ class YearlySchedule(Schedule):
         self,
         name: EntityName,
         right_now: Timestamp,
+        skip_rule: RecurringTaskSkipRule | None,
         actionable_from_day: RecurringTaskDueAtDay | None,
         actionable_from_month: RecurringTaskDueAtMonth | None,
         due_at_day: RecurringTaskDueAtDay | None,
@@ -565,7 +554,11 @@ class YearlySchedule(Schedule):
             self._due_date = right_now.value.end_of("year").end_of("day")
         self._full_name = InboxTaskName(f"{name} {self.year_two_digits(right_now)}")
         self._timeline = infer_timeline(RecurringTaskPeriod.YEARLY, right_now)
-        self._should_skip = False
+        self._should_keep = (
+            skip_rule.should_keep(RecurringTaskPeriod.YEARLY, self._due_date)
+            if skip_rule
+            else False
+        )
 
     @property
     def period(self) -> RecurringTaskPeriod:
@@ -626,6 +619,7 @@ def get_schedule(
         return YearlySchedule(
             name,
             right_now,
+            skip_rule,
             actionable_from_day,
             actionable_from_month,
             due_at_day,

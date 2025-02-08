@@ -7,6 +7,7 @@ import type { Eisen } from './Eisen';
 import type { RecurringTaskDueAtDay } from './RecurringTaskDueAtDay';
 import type { RecurringTaskDueAtMonth } from './RecurringTaskDueAtMonth';
 import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
+import type { RecurringTaskSkipRule } from './RecurringTaskSkipRule';
 
 /**
  * Parameters for metric collection.
@@ -19,5 +20,6 @@ export type RecurringTaskGenParams = {
     actionable_from_month?: (RecurringTaskDueAtMonth | null);
     due_at_day?: (RecurringTaskDueAtDay | null);
     due_at_month?: (RecurringTaskDueAtMonth | null);
+    skip_rule?: (RecurringTaskSkipRule | null);
 };
 

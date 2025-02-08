@@ -56,6 +56,7 @@ class JournalCollection(TrunkEntity):
                 actionable_from_month=None,
                 due_at_day=None,
                 due_at_month=None,
+                skip_rule=None,
             ),
         )
 
@@ -95,6 +96,7 @@ class JournalCollection(TrunkEntity):
                 actionable_from_month=None,
                 due_at_day=None,
                 due_at_month=None,
+                skip_rule=None,
             )
             if writing_task_eisen.should_change or writing_task_difficulty.should_change
             else self.writing_task_gen_params,

@@ -69,6 +69,8 @@ class HabitUpdateUseCase(
 
         project = await uow.get_for(Project).load_by_id(habit.project_ref_id)
 
+        print("The skip rule", args.skip_rule._value.__class__)
+
         need_to_change_inbox_tasks = (
             args.name.should_change
             or args.period.should_change
@@ -89,6 +91,7 @@ class HabitUpdateUseCase(
             or args.actionable_from_month.should_change
             or args.due_at_day.should_change
             or args.due_at_month.should_change
+            or args.skip_rule.should_change
         ):
             need_to_change_inbox_tasks = True
             habit_gen_params = UpdateAction.change_to(
@@ -104,6 +107,7 @@ class HabitUpdateUseCase(
                     ),
                     args.due_at_day.or_else(habit.gen_params.due_at_day),
                     args.due_at_month.or_else(habit.gen_params.due_at_month),
+                    args.skip_rule.or_else(habit.gen_params.skip_rule),
                 ),
             )
         else:
@@ -113,7 +117,6 @@ class HabitUpdateUseCase(
             ctx=context.domain_context,
             name=args.name,
             gen_params=habit_gen_params,
-            skip_rule=args.skip_rule,
             repeats_in_period_count=args.repeats_in_period_count,
         )
 
@@ -137,7 +140,7 @@ class HabitUpdateUseCase(
                     habit.gen_params.period,
                     habit.name,
                     cast(Timestamp, inbox_task.recurring_gen_right_now),
-                    habit.skip_rule,
+                    habit.gen_params.skip_rule,
                     habit.gen_params.actionable_from_day,
                     habit.gen_params.actionable_from_month,
                     habit.gen_params.due_at_day,

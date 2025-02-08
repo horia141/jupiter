@@ -1,5 +1,4 @@
 """A chore."""
-
 from jupiter.core.domain.concept.chores.chore_name import ChoreName
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
@@ -7,7 +6,6 @@ from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
-from jupiter.core.domain.core.recurring_task_skip_rule import RecurringTaskSkipRule
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
@@ -36,7 +34,6 @@ class Chore(LeafEntity):
     must_do: bool
     start_at_date: ADate
     end_at_date: ADate | None
-    skip_rule: RecurringTaskSkipRule | None
 
     inbox_tasks = OwnsMany(
         InboxTask, source=InboxTaskSource.CHORE, chore_ref_id=IsRefId()
@@ -53,7 +50,6 @@ class Chore(LeafEntity):
         gen_params: RecurringTaskGenParams,
         start_at_date: ADate | None,
         end_at_date: ADate | None,
-        skip_rule: RecurringTaskSkipRule | None,
         suspended: bool,
         must_do: bool,
     ) -> "Chore":
@@ -79,7 +75,6 @@ class Chore(LeafEntity):
             gen_params=gen_params,
             suspended=suspended,
             must_do=must_do,
-            skip_rule=skip_rule,
             start_at_date=start_at_date if start_at_date else today,
             end_at_date=end_at_date,
         )
@@ -107,7 +102,6 @@ class Chore(LeafEntity):
         must_do: UpdateAction[bool],
         start_at_date: UpdateAction[ADate],
         end_at_date: UpdateAction[ADate | None],
-        skip_rule: UpdateAction[RecurringTaskSkipRule | None],
     ) -> "Chore":
         """Update the chore."""
         if gen_params.should_change:
@@ -133,7 +127,6 @@ class Chore(LeafEntity):
             must_do=must_do.or_else(self.must_do),
             start_at_date=the_start_at_date,
             end_at_date=the_end_at_date,
-            skip_rule=skip_rule.or_else(self.skip_rule),
         )
 
     @update_entity_action

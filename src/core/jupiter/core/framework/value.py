@@ -45,17 +45,24 @@ class AtomicValue(
         """Get the base type of this value."""
         return cast(type[_PrimitiveT_co], get_args(cls.__orig_bases__[0])[0])  # type: ignore[attr-defined]
 
+    def _validate(self) -> None:
+        """Validate this value."""
+
+    def __post_init__(self) -> None:
+        """Post init hook."""
+        self._validate()
+
 
 @dataclass(frozen=True)
 class CompositeValue(Value):
     """An composite value object in the domain."""
 
-    def validate(self) -> None:
+    def _validate(self) -> None:
         """Validate this value."""
 
     def __post_init__(self) -> None:
         """Post init hook."""
-        self.validate()
+        self._validate()
 
 
 @enum.unique

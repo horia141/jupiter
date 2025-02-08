@@ -31,7 +31,6 @@ class Chore:
         start_at_date (str): A date or possibly a datetime for the application.
         archived_time (Union[None, Unset, str]):
         end_at_date (Union[None, Unset, str]):
-        skip_rule (Union[None, Unset, str]):
     """
 
     ref_id: str
@@ -48,7 +47,6 @@ class Chore:
     start_at_date: str
     archived_time: Union[None, Unset, str] = UNSET
     end_at_date: Union[None, Unset, str] = UNSET
-    skip_rule: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -88,12 +86,6 @@ class Chore:
         else:
             end_at_date = self.end_at_date
 
-        skip_rule: Union[None, Unset, str]
-        if isinstance(self.skip_rule, Unset):
-            skip_rule = UNSET
-        else:
-            skip_rule = self.skip_rule
-
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -116,8 +108,6 @@ class Chore:
             field_dict["archived_time"] = archived_time
         if end_at_date is not UNSET:
             field_dict["end_at_date"] = end_at_date
-        if skip_rule is not UNSET:
-            field_dict["skip_rule"] = skip_rule
 
         return field_dict
 
@@ -168,15 +158,6 @@ class Chore:
 
         end_at_date = _parse_end_at_date(d.pop("end_at_date", UNSET))
 
-        def _parse_skip_rule(data: object) -> Union[None, Unset, str]:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(Union[None, Unset, str], data)
-
-        skip_rule = _parse_skip_rule(d.pop("skip_rule", UNSET))
-
         chore = cls(
             ref_id=ref_id,
             version=version,
@@ -192,7 +173,6 @@ class Chore:
             start_at_date=start_at_date,
             archived_time=archived_time,
             end_at_date=end_at_date,
-            skip_rule=skip_rule,
         )
 
         chore.additional_properties = d

@@ -91,6 +91,7 @@ class ChoreUpdateUseCase(
             or args.actionable_from_month.should_change
             or args.due_at_day.should_change
             or args.due_at_month.should_change
+            or args.skip_rule.should_change
         ):
             need_to_change_inbox_tasks = True
             chore_gen_params = UpdateAction.change_to(
@@ -106,6 +107,7 @@ class ChoreUpdateUseCase(
                     ),
                     args.due_at_day.or_else(chore.gen_params.due_at_day),
                     args.due_at_month.or_else(chore.gen_params.due_at_month),
+                    args.skip_rule.or_else(chore.gen_params.skip_rule),
                 ),
             )
         else:
@@ -118,7 +120,6 @@ class ChoreUpdateUseCase(
             must_do=args.must_do,
             start_at_date=args.start_at_date,
             end_at_date=args.end_at_date,
-            skip_rule=args.skip_rule,
         )
 
         await uow.get_for(Chore).save(chore)
@@ -141,7 +142,7 @@ class ChoreUpdateUseCase(
                     chore.gen_params.period,
                     chore.name,
                     cast(Timestamp, inbox_task.recurring_gen_right_now),
-                    chore.skip_rule,
+                    chore.gen_params.skip_rule,
                     chore.gen_params.actionable_from_day,
                     chore.gen_params.actionable_from_month,
                     chore.gen_params.due_at_day,

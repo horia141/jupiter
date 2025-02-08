@@ -342,8 +342,8 @@ export default function Chore() {
             )}
 
             <RecurringTaskGenParamsBlock
-              namePrefix=""
-              fieldsPrefix=""
+              inputsEnabled={inputsEnabled}
+              allowSkipRule
               period={loaderData.chore.gen_params.period}
               eisen={loaderData.chore.gen_params.eisen}
               difficulty={loaderData.chore.gen_params.difficulty}
@@ -355,7 +355,7 @@ export default function Chore() {
               }
               dueAtDay={loaderData.chore.gen_params.due_at_day}
               dueAtMonth={loaderData.chore.gen_params.due_at_month}
-              inputsEnabled={inputsEnabled}
+              skipRule={loaderData.chore.gen_params.skip_rule}
               actionData={actionData}
             />
 
@@ -371,17 +371,6 @@ export default function Chore() {
                 label="Must Do In Vacation"
               />
               <FieldError actionResult={actionData} fieldName="/must_do" />
-            </FormControl>
-
-            <FormControl fullWidth>
-              <InputLabel id="skipRule">Skip Rule [Optional]</InputLabel>
-              <OutlinedInput
-                label="Skip Rule"
-                name="skipRule"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.chore.skip_rule}
-              />
-              <FieldError actionResult={actionData} fieldName="/skip_rule" />
             </FormControl>
 
             <FormControl fullWidth>

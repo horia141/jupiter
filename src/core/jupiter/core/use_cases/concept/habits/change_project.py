@@ -74,7 +74,7 @@ class HabitChangeProjectUseCase(
                 habit.gen_params.period,
                 habit.name,
                 cast(Timestamp, inbox_task.recurring_gen_right_now),
-                habit.skip_rule,
+                habit.gen_params.skip_rule,
                 habit.gen_params.actionable_from_day,
                 habit.gen_params.actionable_from_month,
                 habit.gen_params.due_at_day,

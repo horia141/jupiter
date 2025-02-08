@@ -1,4 +1,7 @@
-import type { RecurringTaskDueAtDay } from "@jupiter/webapi-client";
+import type {
+  RecurringTaskDueAtDay,
+  RecurringTaskSkipRule,
+} from "@jupiter/webapi-client";
 import { Difficulty, Eisen, RecurringTaskPeriod } from "@jupiter/webapi-client";
 import {
   FormControl,
@@ -17,12 +20,14 @@ import { EisenhowerSelect } from "./eisenhower-select";
 import { FieldError } from "./infra/errors";
 
 import { useEffect, useState } from "react";
+import { RecurringTaskSkipRuleBlock } from "./recurring-task-skip-rule-block";
 
 interface RecurringTaskGenParamsBlockProps {
   inputsEnabled: boolean;
   namePrefix?: string;
   fieldsPrefix?: string;
   allowNonePeriod?: boolean;
+  allowSkipRule?: boolean;
   period: RecurringTaskPeriod | "none";
   eisen?: Eisen | null;
   difficulty?: Difficulty | null;
@@ -30,6 +35,7 @@ interface RecurringTaskGenParamsBlockProps {
   actionableFromMonth?: RecurringTaskDueAtDay | null;
   dueAtDay?: RecurringTaskDueAtDay | null;
   dueAtMonth?: RecurringTaskDueAtDay | null;
+  skipRule?: RecurringTaskSkipRule | null;
   actionData?: SomeErrorNoData;
 }
 
@@ -498,6 +504,26 @@ export function RecurringTaskGenParamsBlock(
                   />
                 </FormControl>
               </Stack>
+            </>
+          )}
+
+          {props.allowSkipRule && (
+            <>
+              <FormControl fullWidth>
+                <RecurringTaskSkipRuleBlock
+                  inputsEnabled={props.inputsEnabled}
+                  name={constructFieldName(props.namePrefix, "skipRule")}
+                  period={period as RecurringTaskPeriod}
+                  skipRule={props.skipRule}
+                />
+                <FieldError
+                  actionResult={props.actionData}
+                  fieldName={constructFieldErrorName(
+                    props.fieldsPrefix,
+                    "skip_rule"
+                  )}
+                />
+              </FormControl>
             </>
           )}
         </>

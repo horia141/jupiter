@@ -303,10 +303,13 @@ class _UnionDecoder(Generic[_RealmT], RealmDecoder[DomainThing, _RealmT]):
         """Decode a realm from a string."""
         for attempt_type in self._the_types:
             try:
-                return self._realm_codec_registry.get_decoder(
+                the_decoder = self._realm_codec_registry.get_decoder(
                     attempt_type, self._realm, self._root_type
-                ).decode(value)
-            except (InputValidationError, RealmDecodingError):
+                )
+                the_val = the_decoder.decode(value)
+
+                return the_val
+            except RealmDecodingError:
                 pass
 
         raise RealmDecodingError(

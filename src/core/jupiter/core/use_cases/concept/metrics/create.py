@@ -86,6 +86,7 @@ class MetricCreateUseCase(
                 actionable_from_month=args.collection_actionable_from_month,
                 due_at_day=args.collection_due_at_day,
                 due_at_month=args.collection_due_at_month,
+                skip_rule=None,
             )
 
         new_metric = Metric.new_metric(

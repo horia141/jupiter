@@ -325,6 +325,7 @@ export default function Habit() {
             )}
 
             <RecurringTaskGenParamsBlock
+              allowSkipRule
               inputsEnabled={inputsEnabled}
               period={loaderData.habit.gen_params.period}
               eisen={loaderData.habit.gen_params.eisen}
@@ -337,19 +338,9 @@ export default function Habit() {
               }
               dueAtDay={loaderData.habit.gen_params.due_at_day}
               dueAtMonth={loaderData.habit.gen_params.due_at_month}
+              skipRule={loaderData.habit.gen_params.skip_rule}
               actionData={actionData}
             />
-
-            <FormControl fullWidth>
-              <InputLabel id="skipRule">Skip Rule [Optional]</InputLabel>
-              <OutlinedInput
-                label="Skip Rule"
-                name="skipRule"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.habit.skip_rule}
-              />
-              <FieldError actionResult={actionData} fieldName="/skip_rule" />
-            </FormControl>
 
             <FormControl fullWidth>
               <InputLabel id="repeatsInPeriodCount">

@@ -28,7 +28,6 @@ class Habit:
         gen_params (RecurringTaskGenParams): Parameters for metric collection.
         suspended (bool):
         archived_time (Union[None, Unset, str]):
-        skip_rule (Union[None, Unset, str]):
         repeats_in_period_count (Union[None, Unset, int]):
     """
 
@@ -43,7 +42,6 @@ class Habit:
     gen_params: "RecurringTaskGenParams"
     suspended: bool
     archived_time: Union[None, Unset, str] = UNSET
-    skip_rule: Union[None, Unset, str] = UNSET
     repeats_in_period_count: Union[None, Unset, int] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -74,12 +72,6 @@ class Habit:
         else:
             archived_time = self.archived_time
 
-        skip_rule: Union[None, Unset, str]
-        if isinstance(self.skip_rule, Unset):
-            skip_rule = UNSET
-        else:
-            skip_rule = self.skip_rule
-
         repeats_in_period_count: Union[None, Unset, int]
         if isinstance(self.repeats_in_period_count, Unset):
             repeats_in_period_count = UNSET
@@ -104,8 +96,6 @@ class Habit:
         )
         if archived_time is not UNSET:
             field_dict["archived_time"] = archived_time
-        if skip_rule is not UNSET:
-            field_dict["skip_rule"] = skip_rule
         if repeats_in_period_count is not UNSET:
             field_dict["repeats_in_period_count"] = repeats_in_period_count
 
@@ -145,15 +135,6 @@ class Habit:
 
         archived_time = _parse_archived_time(d.pop("archived_time", UNSET))
 
-        def _parse_skip_rule(data: object) -> Union[None, Unset, str]:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(Union[None, Unset, str], data)
-
-        skip_rule = _parse_skip_rule(d.pop("skip_rule", UNSET))
-
         def _parse_repeats_in_period_count(data: object) -> Union[None, Unset, int]:
             if data is None:
                 return data
@@ -175,7 +156,6 @@ class Habit:
             gen_params=gen_params,
             suspended=suspended,
             archived_time=archived_time,
-            skip_rule=skip_rule,
             repeats_in_period_count=repeats_in_period_count,
         )
 

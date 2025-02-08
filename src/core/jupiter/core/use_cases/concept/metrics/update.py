@@ -157,6 +157,7 @@ class MetricUpdateUseCase(
                         actionable_from_month=new_collection_actionable_from_month,
                         due_at_day=new_collection_due_at_day,
                         due_at_month=new_collection_due_at_month,
+                        skip_rule=None,
                     ),
                 )
             else:

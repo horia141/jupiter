@@ -43,21 +43,21 @@ def test_get_schedule_daily_with_skip_rule(right_now: Timestamp) -> None:
         period=RecurringTaskPeriod.DAILY,
         name=EntityName("A task"),
         right_now=right_now,
-        skip_rule=RecurringTaskSkipRule("even"),
+        skip_rule=RecurringTaskSkipRule.do_even(),
     )
 
     assert isinstance(schedule_even, Schedule)
-    assert schedule_even.should_skip is True
+    assert schedule_even.should_keep is True
 
     schedule_odd = get_schedule(
         period=RecurringTaskPeriod.DAILY,
         name=EntityName("A task"),
         right_now=right_now,
-        skip_rule=RecurringTaskSkipRule("odd"),
+        skip_rule=RecurringTaskSkipRule.do_odd(),
     )
 
     assert isinstance(schedule_odd, Schedule)
-    assert schedule_odd.should_skip is False
+    assert schedule_odd.should_keep is False
 
 
 def test_get_schedule_weekly_simple(right_now: Timestamp) -> None:
@@ -85,21 +85,21 @@ def test_get_schedule_weekly_with_skip_rule(right_now: Timestamp) -> None:
         period=RecurringTaskPeriod.WEEKLY,
         name=EntityName("A task"),
         right_now=right_now,
-        skip_rule=RecurringTaskSkipRule("even"),
+        skip_rule=RecurringTaskSkipRule.do_even(),
     )
 
     assert isinstance(schedule_even, Schedule)
-    assert schedule_even.should_skip is False
+    assert schedule_even.should_keep is False
 
     schedule_odd = get_schedule(
         period=RecurringTaskPeriod.WEEKLY,
         name=EntityName("A task"),
         right_now=right_now,
-        skip_rule=RecurringTaskSkipRule("odd"),
+        skip_rule=RecurringTaskSkipRule.do_odd(),
     )
 
     assert isinstance(schedule_odd, Schedule)
-    assert schedule_odd.should_skip is True
+    assert schedule_odd.should_keep is True
 
 
 def test_get_schedule_weekly_set_actionable_from_day(right_now: Timestamp) -> None:
@@ -193,21 +193,21 @@ def test_get_sechdule_monthly_with_skip_rule(right_now: Timestamp) -> None:
         period=RecurringTaskPeriod.MONTHLY,
         name=EntityName("A task"),
         right_now=right_now,
-        skip_rule=RecurringTaskSkipRule("even"),
+        skip_rule=RecurringTaskSkipRule.do_even(),
     )
 
     assert isinstance(schedule_even, Schedule)
-    assert schedule_even.should_skip is True
+    assert schedule_even.should_keep is True
 
     schedule_odd = get_schedule(
         period=RecurringTaskPeriod.MONTHLY,
         name=EntityName("A task"),
         right_now=right_now,
-        skip_rule=RecurringTaskSkipRule("odd"),
+        skip_rule=RecurringTaskSkipRule.do_odd(),
     )
 
     assert isinstance(schedule_odd, Schedule)
-    assert schedule_odd.should_skip is False
+    assert schedule_odd.should_keep is False
 
 
 def test_get_schedule_monthly_set_actionable_from_day(right_now: Timestamp) -> None:
@@ -305,21 +305,21 @@ def test_get_schedule_quarterly_with_skip_rule(right_now: Timestamp) -> None:
         period=RecurringTaskPeriod.QUARTERLY,
         name=EntityName("A task"),
         right_now=right_now,
-        skip_rule=RecurringTaskSkipRule("even"),
+        skip_rule=RecurringTaskSkipRule.do_even(),
     )
 
     assert isinstance(schedule_even, Schedule)
-    assert schedule_even.should_skip is True
+    assert schedule_even.should_keep is True
 
     schedule_odd = get_schedule(
         period=RecurringTaskPeriod.QUARTERLY,
         name=EntityName("A task"),
         right_now=right_now,
-        skip_rule=RecurringTaskSkipRule("odd"),
+        skip_rule=RecurringTaskSkipRule.do_odd(),
     )
 
     assert isinstance(schedule_odd, Schedule)
-    assert schedule_odd.should_skip is False
+    assert schedule_odd.should_keep is False
 
 
 def test_get_schedule_quarterly_set_actionable_from_day(right_now: Timestamp) -> None:
@@ -510,28 +510,28 @@ def test_get_schedule_yearly_simple(right_now: Timestamp) -> None:
     assert schedule.full_name == InboxTaskName("A task 23")
 
 
-def test_get_schedule_yearly_with_skip_rule_does_not_matter(
+def test_get_schedule_yearly_with_skip_rule(
     right_now: Timestamp,
 ) -> None:
     schedule_even = get_schedule(
         period=RecurringTaskPeriod.YEARLY,
         name=EntityName("A task"),
         right_now=right_now,
-        skip_rule=RecurringTaskSkipRule("even"),
+        skip_rule=RecurringTaskSkipRule.do_even(),
     )
 
     assert isinstance(schedule_even, Schedule)
-    assert schedule_even.should_skip is False
+    assert schedule_even.should_keep is False
 
     schedule_odd = get_schedule(
         period=RecurringTaskPeriod.YEARLY,
         name=EntityName("A task"),
         right_now=right_now,
-        skip_rule=RecurringTaskSkipRule("odd"),
+        skip_rule=RecurringTaskSkipRule.do_odd(),
     )
 
     assert isinstance(schedule_odd, Schedule)
-    assert schedule_odd.should_skip is False
+    assert schedule_odd.should_keep is True
 
 
 def test_get_schedule_yearly_set_actionable_from_day(right_now: Timestamp) -> None:

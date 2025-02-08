@@ -155,6 +155,7 @@ export default function NewHabit() {
 
             <RecurringTaskGenParamsBlock
               inputsEnabled={inputsEnabled}
+              allowSkipRule
               period={RecurringTaskPeriod.DAILY}
               eisen={Eisen.REGULAR}
               difficulty={Difficulty.EASY}
@@ -162,6 +163,7 @@ export default function NewHabit() {
               actionableFromMonth={null}
               dueAtDay={null}
               dueAtMonth={null}
+              skipRule={null}
               actionData={actionData}
             />
 

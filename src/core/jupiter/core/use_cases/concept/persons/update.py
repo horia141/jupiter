@@ -159,6 +159,7 @@ class PersonUpdateUseCase(
                         actionable_from_month=new_catch_up_actionable_from_month,
                         due_at_day=new_catch_up_due_at_day,
                         due_at_month=new_catch_up_due_at_month,
+                        skip_rule=None,
                     ),
                 )
             else:
