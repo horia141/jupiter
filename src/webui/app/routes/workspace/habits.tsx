@@ -1,17 +1,9 @@
-import type {
-  Habit,
-  HabitFindResultEntry,
-  Project,
-} from "@jupiter/webapi-client";
-import {
-  Eisen,
-  RecurringTaskPeriod,
-  WorkspaceFeature,
-} from "@jupiter/webapi-client";
+import type { HabitFindResultEntry, Project } from "@jupiter/webapi-client";
+import { WorkspaceFeature } from "@jupiter/webapi-client";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Outlet, useFetcher } from "@remix-run/react";
+import { Outlet } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients.server";
@@ -66,24 +58,6 @@ export default function Habits() {
     entriesByRefId.set(entry.habit.ref_id, entry);
   }
 
-  const archiveHabitFetch = useFetcher();
-
-  function archiveHabit(habit: Habit) {
-    archiveHabitFetch.submit(
-      {
-        intent: "archive",
-        name: "NOT USED - FOR ARCHIVE ONLY",
-        project: "NOT USED - FOR ARCHIVE ONLY",
-        period: RecurringTaskPeriod.DAILY,
-        eisen: Eisen.REGULAR,
-      },
-      {
-        method: "post",
-        action: `/workspace/habits/${habit.ref_id}`,
-      }
-    );
-  }
-
   return (
     <TrunkPanel
       key={"habits"}
@@ -100,9 +74,6 @@ export default function Habits() {
               <EntityCard
                 key={`habit-${habit.ref_id}`}
                 entityId={`habit-${habit.ref_id}`}
-                allowSwipe
-                allowMarkNotDone
-                onMarkNotDone={() => archiveHabit(habit)}
               >
                 <EntityLink to={`/workspace/habits/${habit.ref_id}`}>
                   <EntityNameComponent name={habit.name} />

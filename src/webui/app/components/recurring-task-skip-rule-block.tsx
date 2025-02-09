@@ -132,7 +132,7 @@ export function RecurringTaskSkipRuleBlock(
     newSkipRuleType: SkipRuleType | null
   ) {
     if (newSkipRuleType === null) {
-        return;
+      return;
     }
     setEditingInfo((oldEditingInfo: EditingInfo) => ({
       ...oldEditingInfo,

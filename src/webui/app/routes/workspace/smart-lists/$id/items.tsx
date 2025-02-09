@@ -1,17 +1,17 @@
-import type { SmartListItem, SmartListTag } from "@jupiter/webapi-client";
+import type { SmartListTag } from "@jupiter/webapi-client";
 import { ApiError } from "@jupiter/webapi-client";
 import ReorderIcon from "@mui/icons-material/Reorder";
 import TagIcon from "@mui/icons-material/Tag";
 import TuneIcon from "@mui/icons-material/Tune";
 import { Button, ButtonGroup } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Link, Outlet, useFetcher, useParams } from "@remix-run/react";
+import { Link, Outlet, useParams, useTransition } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { z } from "zod";
-import { parseParams } from "zodix";
+import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import Check from "~/components/check";
 import { EntityNameComponent } from "~/components/entity-name";
@@ -33,6 +33,12 @@ import {
 const ParamsSchema = {
   id: z.string(),
 };
+
+const UpdateSchema = z.discriminatedUnion("intent", [
+  z.object({
+    intent: z.literal("archive"),
+  }),
+]);
 
 export const handle = {
   displayType: DisplayType.BRANCH,
@@ -65,11 +71,31 @@ export async function loader({ request, params }: LoaderArgs) {
   }
 }
 
+export async function action({ request, params }: LoaderArgs) {
+  const apiClient = await getLoggedInApiClient(request);
+  const { id } = parseParams(params, ParamsSchema);
+  const form = await parseForm(request, UpdateSchema);
+
+  switch (form.intent) {
+    case "archive": {
+      await apiClient.smartLists.smartListArchive({
+        ref_id: id,
+      });
+
+      return redirect("/workspace/smart-lists");
+    }
+  }
+}
+
 export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export default function SmartListViewItems() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
+  const transition = useTransition();
+
+  const inputsEnabled =
+    transition.state === "idle" && !loaderData.smartList.archived;
 
   const shouldShowALeaf = useBranchNeedsToShowLeaf();
 
@@ -78,28 +104,13 @@ export default function SmartListViewItems() {
     tagsByRefId[tag.ref_id] = tag;
   }
 
-  const archiveTagFetch = useFetcher();
   const isBigScreen = useBigScreen();
-
-  function archiveItem(item: SmartListItem) {
-    archiveTagFetch.submit(
-      {
-        intent: "archive",
-        name: "NOT USED - FOR ARCHIVE ONLY",
-        isDone: "on",
-        tags: "",
-        url: "",
-      },
-      {
-        method: "post",
-        action: `/workspace/smart-lists/${loaderData.smartList.ref_id}/items/${item.ref_id}`,
-      }
-    );
-  }
 
   return (
     <BranchPanel
       key={`smart-list-${loaderData.smartList.ref_id}/items`}
+      showArchiveButton
+      enableArchiveButton={inputsEnabled}
       createLocation={`/workspace/smart-lists/${loaderData.smartList.ref_id}/items/new`}
       extraControls={[
         <Button
@@ -134,9 +145,6 @@ export default function SmartListViewItems() {
             <EntityCard
               key={`smart-list-item-${item.ref_id}`}
               entityId={`smart-list-item-${item.ref_id}`}
-              allowSwipe
-              allowMarkNotDone
-              onMarkNotDone={() => archiveItem(item)}
             >
               <EntityLink
                 to={`/workspace/smart-lists/${loaderData.smartList.ref_id}/items/${item.ref_id}`}

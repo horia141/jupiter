@@ -4,7 +4,18 @@ import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import DeleteIcon from "@mui/icons-material/Delete";
 import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight";
 import SwitchLeftIcon from "@mui/icons-material/SwitchLeft";
-import { Box, ButtonGroup, IconButton, Stack, styled } from "@mui/material";
+import {
+  Box,
+  Button,
+  ButtonGroup,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Stack,
+  styled,
+} from "@mui/material";
 import { Form, Link, useLocation, useNavigate } from "@remix-run/react";
 import { motion, useIsPresent } from "framer-motion";
 import type { PropsWithChildren } from "react";
@@ -52,6 +63,7 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
   const [expansionFullWidth, setExpansionFullWidth] = useState(
     BIG_SCREEN_WIDTH_FULL_INT
   );
+  const [showArchiveDialog, setShowArchiveDialog] = useState(false);
 
   const handleScroll = useCallback(
     (ref: HTMLDivElement, pathname: string) => {
@@ -225,16 +237,42 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
           </ButtonGroup>
 
           {props.showArchiveButton && (
-            <IconButton
-              id="leaf-entity-archive"
-              sx={{ marginLeft: "auto" }}
-              disabled={!props.enableArchiveButton}
-              type="submit"
-              name="intent"
-              value="archive"
-            >
-              <DeleteIcon />
-            </IconButton>
+            <>
+              <IconButton
+                id="leaf-entity-archive"
+                sx={{ marginLeft: "auto" }}
+                disabled={!props.enableArchiveButton}
+                type="button"
+                onClick={() => setShowArchiveDialog(true)}
+              >
+                <DeleteIcon />
+              </IconButton>
+              <Dialog
+                onClose={() => setShowArchiveDialog(false)}
+                open={showArchiveDialog}
+                disablePortal
+              >
+                <DialogTitle>Careful!</DialogTitle>
+                <DialogContent>
+                  Are you sure you want to archive this entity?
+                </DialogContent>
+                <DialogActions>
+                  <Button
+                    id="leaf-entity-archive"
+                    sx={{ marginLeft: "auto" }}
+                    disabled={!props.enableArchiveButton}
+                    type="submit"
+                    name="intent"
+                    value="archive"
+                  >
+                    Yes
+                  </Button>
+                  <Button onClick={() => setShowArchiveDialog(false)}>
+                    No
+                  </Button>
+                </DialogActions>
+              </Dialog>
+            </>
           )}
         </LeafPanelControls>
 

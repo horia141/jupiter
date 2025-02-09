@@ -1,8 +1,8 @@
-import type { Journal, JournalFindResultEntry } from "@jupiter/webapi-client";
+import type { JournalFindResultEntry } from "@jupiter/webapi-client";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Outlet, useFetcher } from "@remix-run/react";
+import { Outlet } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients.server";
@@ -49,20 +49,6 @@ export default function Journals() {
     entriesByRefId.set(entry.journal.ref_id, entry);
   }
 
-  const archiveJournalFetch = useFetcher();
-
-  function archiveJournal(journal: Journal) {
-    archiveJournalFetch.submit(
-      {
-        intent: "archive",
-      },
-      {
-        method: "post",
-        action: `/workspace/journals/${journal.ref_id}`,
-      }
-    );
-  }
-
   return (
     <TrunkPanel
       key={"journals"}
@@ -70,13 +56,7 @@ export default function Journals() {
       returnLocation="/workspace"
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
-        <JournalStack
-          topLevelInfo={topLevelInfo}
-          journals={sortedJournals}
-          allowSwipe
-          allowMarkNotDone
-          onMarkNotDone={(journal) => archiveJournal(journal)}
-        />
+        <JournalStack topLevelInfo={topLevelInfo} journals={sortedJournals} />
       </NestingAwareBlock>
 
       <AnimatePresence mode="wait" initial={false}>

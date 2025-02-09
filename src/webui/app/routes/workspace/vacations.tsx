@@ -1,7 +1,7 @@
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Outlet, useFetcher, useNavigate } from "@remix-run/react";
+import { Outlet, useNavigate } from "@remix-run/react";
 
 import type { Vacation, VacationFindResultEntry } from "@jupiter/webapi-client";
 
@@ -63,26 +63,9 @@ export default function Vacations({ request }: LoaderArgs) {
 
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
 
-  const archiveVacationFetch = useFetcher();
-
   const today = DateTime.local({ zone: topLevelInfo.user.timezone }).startOf(
     "day"
   );
-
-  function archiveVacation(vacation: Vacation) {
-    archiveVacationFetch.submit(
-      {
-        intent: "archive",
-        name: "NOT USED - FOR ARCHIVE ONLY",
-        startDate: "2023-01-10",
-        endDate: "2023-01-20",
-      },
-      {
-        method: "post",
-        action: `/workspace/vacations/${vacation.ref_id}`,
-      }
-    );
-  }
 
   return (
     <TrunkPanel
@@ -99,9 +82,6 @@ export default function Vacations({ request }: LoaderArgs) {
               <EntityCard
                 entityId={`vacation-${vacation.ref_id}`}
                 key={`vacation-${vacation.ref_id}`}
-                allowSwipe
-                allowMarkNotDone
-                onMarkNotDone={() => archiveVacation(vacation)}
               >
                 <EntityLink to={`/workspace/vacations/${vacation.ref_id}`}>
                   <EntityNameComponent name={vacation.name} />

@@ -1,10 +1,10 @@
-import { WorkspaceFeature, type Metric } from "@jupiter/webapi-client";
+import { WorkspaceFeature } from "@jupiter/webapi-client";
 import TuneIcon from "@mui/icons-material/Tune";
 import { Button } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Link, Outlet, useFetcher } from "@remix-run/react";
+import { Link, Outlet } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients.server";
@@ -55,22 +55,7 @@ export default function Metrics() {
   const shouldShowABranch = useTrunkNeedsToShowBranch();
   const shouldShowALeafToo = useTrunkNeedsToShowLeaf();
 
-  const archiveMetricFetch = useFetcher();
-
   const isBigScreen = useBigScreen();
-
-  function archiveMetric(smartList: Metric) {
-    archiveMetricFetch.submit(
-      {
-        intent: "archive",
-        name: "NOT USED - FOR ARCHIVE ONLY",
-      },
-      {
-        method: "post",
-        action: `/workspace/metric/${smartList.ref_id}/details`,
-      }
-    );
-  }
 
   return (
     <TrunkPanel
@@ -103,12 +88,7 @@ export default function Metrics() {
       >
         <EntityStack>
           {loaderData.entries.map((entry) => (
-            <EntityCard
-              key={entry.metric.ref_id}
-              allowSwipe
-              allowMarkNotDone
-              onMarkNotDone={() => archiveMetric(entry.metric)}
-            >
+            <EntityCard key={entry.metric.ref_id}>
               <EntityLink to={`/workspace/metrics/${entry.metric.ref_id}`}>
                 {entry.metric.icon && (
                   <EntityIconComponent icon={entry.metric.icon} />

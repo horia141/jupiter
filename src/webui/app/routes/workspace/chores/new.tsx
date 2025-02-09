@@ -91,6 +91,10 @@ export async function action({ request }: ActionArgs) {
         : undefined,
       due_at_day: form.dueAtDay ? parseInt(form.dueAtDay) : undefined,
       due_at_month: form.dueAtMonth ? parseInt(form.dueAtMonth) : undefined,
+      skip_rule:
+        form.skipRule !== undefined && form.skipRule !== ""
+          ? form.skipRule
+          : undefined,
       must_do: form.mustDo,
       start_at_date: form.startAtDate ? form.startAtDate : undefined,
       end_at_date: form.endAtDate ? form.endAtDate : undefined,

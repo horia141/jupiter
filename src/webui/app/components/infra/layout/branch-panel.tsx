@@ -4,7 +4,17 @@ import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import CloseIcon from "@mui/icons-material/Close";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
-import { Box, Button, ButtonGroup, IconButton, styled } from "@mui/material";
+import {
+  Box,
+  Button,
+  ButtonGroup,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  styled,
+} from "@mui/material";
 import { Form, Link, useLocation } from "@remix-run/react";
 import { AnimatePresence, motion, useIsPresent } from "framer-motion";
 import React, {
@@ -41,6 +51,7 @@ export function BranchPanel(props: PropsWithChildren<BranchPanelProps>) {
   const isPresent = useIsPresent();
   const isHydrated = useHydrated();
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
+  const [showArchiveDialog, setShowArchiveDialog] = useState(false);
 
   // This little function is a hack to get around the fact that Framer Motion
   // generates a translateX(Xpx) CSS applied to the StyledMotionDrawer element.
@@ -177,16 +188,42 @@ export function BranchPanel(props: PropsWithChildren<BranchPanelProps>) {
               )}
 
               {props.showArchiveButton && (
-                <IconButton
-                  id="branch-entity-archive"
-                  sx={{ marginLeft: "auto" }}
-                  disabled={!props.enableArchiveButton}
-                  type="submit"
-                  name="intent"
-                  value="archive"
-                >
-                  <DeleteIcon />
-                </IconButton>
+                <>
+                  <IconButton
+                    id="branch-entity-archive"
+                    sx={{ marginLeft: "auto" }}
+                    disabled={!props.enableArchiveButton}
+                    type="button"
+                    onClick={() => setShowArchiveDialog(true)}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                  <Dialog
+                    onClose={() => setShowArchiveDialog(false)}
+                    open={showArchiveDialog}
+                    disablePortal
+                  >
+                    <DialogTitle>Careful!</DialogTitle>
+                    <DialogContent>
+                      Are you sure you want to archive this entity?
+                    </DialogContent>
+                    <DialogActions>
+                      <Button
+                        id="branch-entity-archive"
+                        sx={{ marginLeft: "auto" }}
+                        disabled={!props.enableArchiveButton}
+                        type="submit"
+                        name="intent"
+                        value="archive"
+                      >
+                        Yes
+                      </Button>
+                      <Button onClick={() => setShowArchiveDialog(false)}>
+                        No
+                      </Button>
+                    </DialogActions>
+                  </Dialog>
+                </>
               )}
 
               <IconButton

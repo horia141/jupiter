@@ -1,8 +1,7 @@
-import type { SmartList } from "@jupiter/webapi-client";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Outlet, useFetcher } from "@remix-run/react";
+import { Outlet } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import EntityIconComponent from "~/components/entity-icon";
@@ -48,21 +47,6 @@ export default function SmartLists() {
   const shouldShowABranch = useTrunkNeedsToShowBranch();
   const shouldShowALeafToo = useTrunkNeedsToShowLeaf();
 
-  const archiveSmarListFetch = useFetcher();
-
-  function archiveSmartList(smartList: SmartList) {
-    archiveSmarListFetch.submit(
-      {
-        intent: "archive",
-        name: "NOT USED - FOR ARCHIVE ONLY",
-      },
-      {
-        method: "post",
-        action: `/workspace/smart-lists/${smartList.ref_id}/items/details`,
-      }
-    );
-  }
-
   return (
     <TrunkPanel
       key={"smart-lists"}
@@ -78,9 +62,6 @@ export default function SmartLists() {
             <EntityCard
               key={`smart-list-${entry.smart_list.ref_id}`}
               entityId={`smart-list-${entry.smart_list.ref_id}`}
-              allowSwipe
-              allowMarkNotDone
-              onMarkNotDone={() => archiveSmartList(entry.smart_list)}
             >
               <EntityLink
                 to={`/workspace/smart-lists/${entry.smart_list.ref_id}/items`}

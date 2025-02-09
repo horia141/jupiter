@@ -88,7 +88,10 @@ export async function action({ request }: ActionArgs) {
         : undefined,
       due_at_day: form.dueAtDay ? parseInt(form.dueAtDay) : undefined,
       due_at_month: form.dueAtMonth ? parseInt(form.dueAtMonth) : undefined,
-      skip_rule: form.skipRule,
+      skip_rule:
+        form.skipRule !== undefined && form.skipRule !== ""
+          ? form.skipRule
+          : undefined,
       repeats_in_period_count: form.repeatsInPeriodCount
         ? parseInt(form.repeatsInPeriodCount)
         : undefined,

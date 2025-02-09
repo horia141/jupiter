@@ -1,8 +1,7 @@
-import type { Doc } from "@jupiter/webapi-client";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Outlet, useFetcher } from "@remix-run/react";
+import { Outlet } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNameComponent } from "~/components/entity-name";
@@ -42,21 +41,6 @@ export default function Docs() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
 
-  const archiveDocFetch = useFetcher();
-
-  function archiveDoc(doc: Doc) {
-    archiveDocFetch.submit(
-      {
-        intent: "archive",
-        name: "NOT USED - FOR ARCHIVE ONLY",
-      },
-      {
-        method: "post",
-        action: `/workspace/docs/${doc.ref_id}`,
-      }
-    );
-  }
-
   return (
     <TrunkPanel
       key={"docs"}
@@ -69,9 +53,6 @@ export default function Docs() {
             <EntityCard
               key={`doc-${entry.doc.ref_id}`}
               entityId={`doc-${entry.doc.ref_id}`}
-              allowSwipe
-              allowMarkNotDone
-              onMarkNotDone={() => archiveDoc(entry.doc)}
             >
               <EntityLink to={`/workspace/docs/${entry.doc.ref_id}`}>
                 <EntityNameComponent name={entry.doc.name} />

@@ -1,17 +1,9 @@
-import type {
-  Chore,
-  ChoreFindResultEntry,
-  Project,
-} from "@jupiter/webapi-client";
-import {
-  Eisen,
-  RecurringTaskPeriod,
-  WorkspaceFeature,
-} from "@jupiter/webapi-client";
+import type { ChoreFindResultEntry, Project } from "@jupiter/webapi-client";
+import { WorkspaceFeature } from "@jupiter/webapi-client";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Outlet, useFetcher } from "@remix-run/react";
+import { Outlet } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients.server";
@@ -67,24 +59,6 @@ export default function Chores() {
     entriesByRefId.set(entry.chore.ref_id, entry);
   }
 
-  const archiveChoreFetch = useFetcher();
-
-  function archiveChore(chore: Chore) {
-    archiveChoreFetch.submit(
-      {
-        intent: "archive",
-        name: "NOT USED - FOR ARCHIVE ONLY",
-        project: "NOT USED - FOR ARCHIVE ONLY",
-        period: RecurringTaskPeriod.DAILY,
-        eisen: Eisen.REGULAR,
-      },
-      {
-        method: "post",
-        action: `/workspace/chores/${chore.ref_id}`,
-      }
-    );
-  }
-
   return (
     <TrunkPanel
       key={"chores"}
@@ -101,9 +75,6 @@ export default function Chores() {
               <EntityCard
                 key={`chore-${chore.ref_id}`}
                 entityId={`chore-${chore.ref_id}`}
-                allowSwipe
-                allowMarkNotDone
-                onMarkNotDone={() => archiveChore(chore)}
               >
                 <EntityLink to={`/workspace/chores/${chore.ref_id}`}>
                   <EntityNameComponent name={chore.name} />

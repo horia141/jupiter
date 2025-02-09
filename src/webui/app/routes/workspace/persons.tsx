@@ -1,11 +1,10 @@
-import type { Person } from "@jupiter/webapi-client";
-import { PersonRelationship, WorkspaceFeature } from "@jupiter/webapi-client";
+import { WorkspaceFeature } from "@jupiter/webapi-client";
 import TuneIcon from "@mui/icons-material/Tune";
 import { Button } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Link, Outlet, useFetcher } from "@remix-run/react";
+import { Link, Outlet } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients.server";
@@ -58,22 +57,7 @@ export default function Persons() {
 
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
 
-  const archivePersonFetch = useFetcher();
   const isBigScreen = useBigScreen();
-
-  function archivePerson(person: Person) {
-    archivePersonFetch.submit(
-      {
-        intent: "archive",
-        name: "NOT USED - FOR ARCHIVE ONLY",
-        relationship: PersonRelationship.OTHER,
-      },
-      {
-        method: "post",
-        action: `/workspace/persons/${person.ref_id}`,
-      }
-    );
-  }
 
   return (
     <TrunkPanel
@@ -106,9 +90,6 @@ export default function Persons() {
             <EntityCard
               entityId={`person-${entry.person.ref_id}`}
               key={`person-${entry.person.ref_id}`}
-              allowSwipe
-              allowMarkNotDone
-              onMarkNotDone={() => archivePerson(entry.person)}
             >
               <EntityLink to={`/workspace/persons/${entry.person.ref_id}`}>
                 <EntityNameComponent name={entry.person.name} />

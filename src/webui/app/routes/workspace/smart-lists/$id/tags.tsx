@@ -5,13 +5,13 @@ import TagIcon from "@mui/icons-material/Tag";
 import TuneIcon from "@mui/icons-material/Tune";
 import { Button, ButtonGroup } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Link, Outlet, useFetcher, useParams } from "@remix-run/react";
+import { Link, Outlet, useParams, useTransition } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { z } from "zod";
-import { parseParams } from "zodix";
+import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
@@ -31,6 +31,12 @@ import {
 const ParamsSchema = {
   id: z.string(),
 };
+
+const UpdateSchema = z.discriminatedUnion("intent", [
+  z.object({
+    intent: z.literal("archive"),
+  }),
+]);
 
 export const handle = {
   displayType: DisplayType.BRANCH,
@@ -62,11 +68,31 @@ export async function loader({ request, params }: LoaderArgs) {
   }
 }
 
+export async function action({ request, params }: LoaderArgs) {
+  const apiClient = await getLoggedInApiClient(request);
+  const { id } = parseParams(params, ParamsSchema);
+  const form = await parseForm(request, UpdateSchema);
+
+  switch (form.intent) {
+    case "archive": {
+      await apiClient.smartLists.smartListArchive({
+        ref_id: id,
+      });
+
+      return redirect("/workspace/smart-lists");
+    }
+  }
+}
+
 export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export default function SmartListViewTags() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
+  const transition = useTransition();
+
+  const inputsEnabled =
+    transition.state === "idle" && !loaderData.smartList.archived;
 
   const shouldShowALeaf = useBranchNeedsToShowLeaf();
 
@@ -75,25 +101,13 @@ export default function SmartListViewTags() {
     tagsByRefId[tag.ref_id] = tag;
   }
 
-  const archiveTagFetch = useFetcher();
   const isBigScreen = useBigScreen();
-
-  function archiveTag(tag: SmartListTag) {
-    archiveTagFetch.submit(
-      {
-        intent: "archive",
-        name: "NOT USED - FOR ARCHIVE ONLY",
-      },
-      {
-        method: "post",
-        action: `/workspace/smart-lists/${loaderData.smartList.ref_id}/tags/${tag.ref_id}`,
-      }
-    );
-  }
 
   return (
     <BranchPanel
       key={`smart-list-${loaderData.smartList.ref_id}/tags`}
+      showArchiveButton
+      enableArchiveButton={inputsEnabled}
       createLocation={`/workspace/smart-lists/${loaderData.smartList.ref_id}/tags/new`}
       extraControls={[
         <Button
@@ -126,12 +140,7 @@ export default function SmartListViewTags() {
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
         <EntityStack>
           {loaderData.smartListTags.map((tag) => (
-            <EntityCard
-              key={tag.ref_id}
-              allowSwipe
-              allowMarkNotDone
-              onMarkNotDone={() => archiveTag(tag)}
-            >
+            <EntityCard key={tag.ref_id}>
               <EntityLink
                 to={`/workspace/smart-lists/${loaderData.smartList.ref_id}/tags/${tag.ref_id}`}
               >

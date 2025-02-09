@@ -1,8 +1,8 @@
-import type { TimePlan, TimePlanFindResultEntry } from "@jupiter/webapi-client";
+import type { TimePlanFindResultEntry } from "@jupiter/webapi-client";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Outlet, useFetcher } from "@remix-run/react";
+import { Outlet } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients.server";
@@ -52,20 +52,6 @@ export default function TimePlans() {
     entriesByRefId.set(entry.time_plan.ref_id, entry);
   }
 
-  const archiveTimePlanFetch = useFetcher();
-
-  function archiveTimePlan(timePlan: TimePlan) {
-    archiveTimePlanFetch.submit(
-      {
-        intent: "archive",
-      },
-      {
-        method: "post",
-        action: `/workspace/time-plans/${timePlan.ref_id}`,
-      }
-    );
-  }
-
   return (
     <TrunkPanel
       key={"time-plans"}
@@ -79,9 +65,6 @@ export default function TimePlans() {
         <TimePlanStack
           topLevelInfo={topLevelInfo}
           timePlans={sortedTimePlans}
-          allowSwipe
-          allowMarkNotDone
-          onMarkNotDone={(timePlan) => archiveTimePlan(timePlan)}
         />
       </NestingAwareBlock>
 

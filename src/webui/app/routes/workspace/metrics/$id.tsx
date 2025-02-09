@@ -2,12 +2,12 @@ import type { MetricEntry } from "@jupiter/webapi-client";
 import { ApiError } from "@jupiter/webapi-client";
 import { ResponsiveLine } from "@nivo/line";
 import type { LoaderArgs } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Link, Outlet, useFetcher, useParams } from "@remix-run/react";
+import { Link, Outlet, useParams, useTransition } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { z } from "zod";
-import { parseParams } from "zodix";
+import { parseForm, parseParams } from "zodix";
 
 import TuneIcon from "@mui/icons-material/Tune";
 import { Button, styled } from "@mui/material";
@@ -37,6 +37,12 @@ import { TopLevelInfoContext } from "~/top-level-context";
 const ParamsSchema = {
   id: z.string(),
 };
+
+const UpdateFormSchema = z.discriminatedUnion("intent", [
+  z.object({
+    intent: z.literal("archive"),
+  }),
+]);
 
 export const handle = {
   displayType: DisplayType.BRANCH,
@@ -68,6 +74,22 @@ export async function loader({ request, params }: LoaderArgs) {
   }
 }
 
+export async function action({ request, params }: LoaderArgs) {
+  const apiClient = await getLoggedInApiClient(request);
+  const { id } = parseParams(params, ParamsSchema);
+  const form = await parseForm(request, UpdateFormSchema);
+
+  switch (form.intent) {
+    case "archive": {
+      await apiClient.metrics.metricArchive({
+        ref_id: id,
+      });
+
+      return redirect(`/workspace/metrics`);
+    }
+  }
+}
+
 export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
@@ -75,6 +97,10 @@ export default function Metric() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const shouldShowALeaf = useBranchNeedsToShowLeaf();
   const topLevelInfo = useContext(TopLevelInfoContext);
+  const transition = useTransition();
+
+  const inputsEnabled =
+    transition.state === "idle" && !loaderData.metric.archived;
 
   const sortedEntries = [...loaderData.metricEntries].sort((e1, e2) => {
     return -compareADate(e1.collection_time, e2.collection_time);
@@ -82,25 +108,12 @@ export default function Metric() {
 
   const today = DateTime.local({ zone: topLevelInfo.user.timezone });
 
-  const archiveTagFetch = useFetcher();
   const isBigScreen = useBigScreen();
-
-  function archiveEntry(item: MetricEntry) {
-    archiveTagFetch.submit(
-      {
-        intent: "archive",
-        collectionTime: "NOT USED - FOR ARCHIVE ONLY",
-        value: "0",
-      },
-      {
-        method: "post",
-        action: `/workspace/metrics/${loaderData.metric.ref_id}/entries/${item.ref_id}`,
-      }
-    );
-  }
 
   return (
     <BranchPanel
+      showArchiveButton
+      enableArchiveButton={inputsEnabled}
       key={`metric-${loaderData.metric.ref_id}`}
       createLocation={`/workspace/metrics/${loaderData.metric.ref_id}/entries/new`}
       extraControls={[
@@ -124,9 +137,6 @@ export default function Metric() {
             <EntityCard
               entityId={`metric-entry-${entry.ref_id}`}
               key={`metric-entry-${entry.ref_id}`}
-              allowSwipe
-              allowMarkNotDone
-              onMarkNotDone={() => archiveEntry(entry)}
             >
               <EntityLink
                 to={`/workspace/metrics/${loaderData.metric.ref_id}/entries/${entry.ref_id}`}

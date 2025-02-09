@@ -1,12 +1,9 @@
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Outlet, useFetcher } from "@remix-run/react";
+import { Outlet } from "@remix-run/react";
 
-import {
-  type WorkingMem,
-  type WorkingMemFindResultEntry,
-} from "@jupiter/webapi-client";
+import { type WorkingMemFindResultEntry } from "@jupiter/webapi-client";
 
 import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";
@@ -20,7 +17,6 @@ import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { BranchPanel } from "~/components/infra/layout/branch-panel";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { PeriodTag } from "~/components/period-tag";
-import { aDateToDate } from "~/logic/domain/adate";
 import { sortWorkingMemsNaturally } from "~/logic/domain/working-mem";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -61,22 +57,6 @@ export default function WorkingMemArchive({ request }: LoaderArgs) {
 
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
 
-  const archiveWorkingMemFetch = useFetcher();
-
-  function archiveWorkingMem(workingmem: WorkingMem) {
-    archiveWorkingMemFetch.submit(
-      {
-        intent: "archive",
-      },
-      {
-        method: "post",
-        action: `/workspace/working-mem/archive/${workingmem.ref_id}`,
-      }
-    );
-  }
-
-  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
-
   return (
     <BranchPanel
       key={`working-mem/archive}`}
@@ -89,11 +69,6 @@ export default function WorkingMemArchive({ request }: LoaderArgs) {
               <EntityCard
                 entityId={`working-mem-${workingMem.ref_id}`}
                 key={`working-mem-${workingMem.ref_id}`}
-                allowSwipe
-                allowMarkNotDone={
-                  aDateToDate(workingMem.right_now) > today.minus({ days: 14 })
-                }
-                onMarkNotDone={() => archiveWorkingMem(workingMem)}
               >
                 <EntityLink
                   to={`/workspace/working-mem/archive/${workingMem.ref_id}`}
