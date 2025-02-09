@@ -6,8 +6,6 @@ import { Outlet } from "@remix-run/react";
 import { type WorkingMemFindResultEntry } from "@jupiter/webapi-client";
 
 import { AnimatePresence } from "framer-motion";
-import { DateTime } from "luxon";
-import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { ADateTag } from "~/components/adate-tag";
 import { EntityNameComponent } from "~/components/entity-name";
@@ -24,7 +22,6 @@ import {
   DisplayType,
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
-import { TopLevelInfoContext } from "~/top-level-context";
 
 export const handle = {
   displayType: DisplayType.BRANCH,
@@ -45,7 +42,6 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 
 export default function WorkingMemArchive({ request }: LoaderArgs) {
   const entries = useLoaderDataSafeForAnimation<typeof loader>();
-  const topLevelInfo = useContext(TopLevelInfoContext);
 
   const sortedWorkingMems = sortWorkingMemsNaturally(
     entries.map((e) => e.working_mem)

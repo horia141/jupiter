@@ -33,7 +33,8 @@ import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import {
   ActionMultipleSpread,
   ActionSingle,
-  FilterFewOptions,
+  FilterFewOptionsCompact,
+  FilterFewOptionsSpread,
   SectionActions,
 } from "~/components/infra/section-actions";
 import { SectionCardNew } from "~/components/infra/section-card-new";
@@ -243,7 +244,8 @@ export default function TimePlanAddFromCurrentBigPlans() {
                   }),
                 ],
               }),
-              FilterFewOptions(
+              FilterFewOptionsCompact(
+                "View",
                 selectedView,
                 [
                   {

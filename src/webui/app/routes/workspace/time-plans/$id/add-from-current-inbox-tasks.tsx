@@ -34,7 +34,7 @@ import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import {
   ActionMultipleSpread,
   ActionSingle,
-  FilterFewOptions,
+  FilterFewOptionsCompact,
   SectionActions,
 } from "~/components/infra/section-actions";
 import { SectionCardNew } from "~/components/infra/section-card-new";
@@ -43,6 +43,7 @@ import { TimePlanActivitKindSelect } from "~/components/time-plan-activity-kind-
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import type { InboxTaskParent } from "~/logic/domain/inbox-task";
 import {
+  filterInboxTasksForDisplay,
   inboxTaskFindEntryToParent,
   sortInboxTasksByEisenAndDifficulty,
 } from "~/logic/domain/inbox-task";
@@ -51,6 +52,10 @@ import {
   sortProjectsByTreeOrder,
 } from "~/logic/domain/project";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
+import {
+  ActionableTime,
+  actionableTimeToDateTime,
+} from "~/rendering/actionable-time";
 import { LeafPanelExpansionState } from "~/rendering/leaf-panel-expansion";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -224,22 +229,39 @@ export default function TimePlanAddFromCurrentInboxTasks() {
     new Set<string>()
   );
 
-  const sortedInboxTasks = sortInboxTasksByEisenAndDifficulty(
-    loaderData.inboxTasks.map((e) => e.inbox_task)
-  );
-
   const entriesByRefId: { [key: string]: InboxTaskParent } = {};
   for (const entry of loaderData.inboxTasks) {
     entriesByRefId[entry.inbox_task.ref_id] = inboxTaskFindEntryToParent(entry);
   }
 
+  const [selectedView, setSelectedView] = useState(
+    inferDefaultSelectedView(topLevelInfo.workspace)
+  );
+  const [selectedActionableTime, setSelectedActionableTime] = useState(
+    ActionableTime.ONE_WEEK
+  );
+
+  const sortedInboxTasks = sortInboxTasksByEisenAndDifficulty(
+    loaderData.inboxTasks.map((e) => e.inbox_task)
+  );
+
+  const filteredInboxTasks = filterInboxTasksForDisplay(
+    sortedInboxTasks,
+    entriesByRefId,
+    {},
+    {
+      includeIfNoActionableDate: true,
+      actionableDateEnd: actionableTimeToDateTime(
+        selectedActionableTime,
+        topLevelInfo.user.timezone
+      ),
+      includeIfNoDueDate: true,
+    }
+  );
+
   const sortedProjects = sortProjectsByTreeOrder(loaderData.allProjects || []);
   const allProjectsByRefId = new Map(
     loaderData.allProjects?.map((p) => [p.ref_id, p])
-  );
-
-  const [selectedView, setSelectedView] = useState(
-    inferDefaultSelectedView(topLevelInfo.workspace)
   );
 
   const today = DateTime.local({ zone: topLevelInfo.user.timezone });
@@ -277,7 +299,8 @@ export default function TimePlanAddFromCurrentInboxTasks() {
                   }),
                 ],
               }),
-              FilterFewOptions(
+              FilterFewOptionsCompact(
+                "View",
                 selectedView,
                 [
                   {
@@ -293,6 +316,25 @@ export default function TimePlanAddFromCurrentInboxTasks() {
                   },
                 ],
                 (selected) => setSelectedView(selected)
+              ),
+              FilterFewOptionsCompact(
+                "Actionable",
+                selectedActionableTime,
+                [
+                  {
+                    value: ActionableTime.NOW,
+                    text: "From Now",
+                  },
+                  {
+                    value: ActionableTime.ONE_WEEK,
+                    text: "One Week",
+                  },
+                  {
+                    value: ActionableTime.ONE_MONTH,
+                    text: "One Month",
+                  },
+                ],
+                (selected) => setSelectedActionableTime(selected)
               ),
             ]}
           />
@@ -324,7 +366,7 @@ export default function TimePlanAddFromCurrentInboxTasks() {
           <InboxTaskList
             today={today}
             topLevelInfo={topLevelInfo}
-            inboxTasks={sortedInboxTasks}
+            inboxTasks={filteredInboxTasks}
             alreadyIncludedInboxTaskRefIds={alreadyIncludedInboxTaskRefIds}
             targetInboxTaskRefIds={targetInboxTaskRefIds}
             inboxTasksByRefId={entriesByRefId}
@@ -339,7 +381,7 @@ export default function TimePlanAddFromCurrentInboxTasks() {
         {selectedView === View.BY_PROJECT && (
           <>
             {sortedProjects.map((p) => {
-              const theInboxTasks = sortedInboxTasks.filter(
+              const theInboxTasks = filteredInboxTasks.filter(
                 (se) => entriesByRefId[se.ref_id]?.project?.ref_id === p.ref_id
               );
 

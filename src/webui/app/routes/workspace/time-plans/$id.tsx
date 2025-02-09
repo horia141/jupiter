@@ -53,7 +53,7 @@ import { FieldError, GlobalError } from "~/components/infra/errors";
 import { BranchPanel } from "~/components/infra/layout/branch-panel";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import {
-  FilterFewOptions,
+  FilterFewOptionsSpread,
   FilterManyOptions,
   NavMultipleCompact,
   NavSingle,
@@ -407,7 +407,8 @@ export default function TimePlanView() {
                       }),
                     ],
                   }),
-                  FilterFewOptions(
+                  FilterFewOptionsSpread(
+                    "View",
                     selectedView,
                     [
                       {

@@ -5,6 +5,7 @@ import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import {
   Autocomplete,
+  Box,
   Button,
   ButtonGroup,
   Checkbox,
@@ -13,11 +14,14 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControl,
   Grow,
+  InputLabel,
   MenuItem,
   MenuList,
   Paper,
   Popper,
+  Select,
   Stack,
   TextField,
   useTheme,
@@ -69,6 +73,8 @@ interface FilterOption<K> {
 
 interface FilterFewOptionsDesc<K> {
   kind: "filter-few-options";
+  title: string;
+  approach: "spread" | "compact";
   defaultOption: K;
   options: Array<FilterOption<K>>;
   onSelect: (selected: K) => void;
@@ -137,13 +143,33 @@ export function ActionMultipleSpread(
   };
 }
 
-export function FilterFewOptions<K>(
+export function FilterFewOptionsSpread<K>(
+  title: string,
   defaultOption: K,
   options: Array<FilterOption<K>>,
   onSelect: (selected: K) => void
 ): FilterFewOptionsDesc<K> {
   return {
     kind: "filter-few-options",
+    approach: "spread",
+    title: title,
+    defaultOption: defaultOption,
+    options: options,
+    onSelect: onSelect,
+    hideIfOneOption: true,
+  };
+}
+
+export function FilterFewOptionsCompact<K>(
+  title: string,
+  defaultOption: K,
+  options: Array<FilterOption<K>>,
+  onSelect: (selected: K) => void
+): FilterFewOptionsDesc<K> {
+  return {
+    kind: "filter-few-options",
+    approach: "compact",
+    title: title,
     defaultOption: defaultOption,
     options: options,
     onSelect: onSelect,
@@ -189,7 +215,11 @@ export function SectionActions(props: SectionActionsProps) {
   }
 
   return (
-    <Stack direction="row" spacing={1} sx={{ padding: "0.25rem" }}>
+    <Stack
+      direction="row"
+      spacing={1}
+      sx={{ padding: "0.25rem", height: "fit-content" }}
+    >
       {props.actions.map((action, index) => (
         <ActionView
           key={`action-${props.id}-${index}`}
@@ -706,6 +736,15 @@ interface FilterFewOptionsViewProps<K> {
 }
 
 function FilterFewOptionsView<K>(props: FilterFewOptionsViewProps<K>) {
+  switch (props.action.approach) {
+    case "spread":
+      return <FilterFewOptionsSpreadView {...props} />;
+    case "compact":
+      return <FilterFewOptionsCompactView {...props} />;
+  }
+}
+
+function FilterFewOptionsSpreadView<K>(props: FilterFewOptionsViewProps<K>) {
   const [selected, setSelected] = useState<K>(props.action.defaultOption);
 
   const realOptions: FilterOption<K>[] = [];
@@ -757,6 +796,64 @@ function FilterFewOptionsView<K>(props: FilterFewOptionsViewProps<K>) {
         );
       })}
     </ButtonGroup>
+  );
+}
+
+function FilterFewOptionsCompactView<K>(props: FilterFewOptionsViewProps<K>) {
+  const realOptions: FilterOption<K>[] = [];
+  for (const option of props.action.options) {
+    if (option.gatedOn) {
+      const workspace = props.topLevelInfo.workspace;
+      if (!isWorkspaceFeatureAvailable(workspace, option.gatedOn)) {
+        continue;
+      }
+    }
+    realOptions.push(option);
+  }
+
+  const [selectedIndex, setSelectedIndex] = useState(
+    Math.max(
+      0,
+      realOptions.findIndex((opt) => opt.value === props.action.defaultOption)
+    )
+  );
+
+  if (realOptions.length === 0) {
+    return <></>;
+  }
+
+  if (props.action.hideIfOneOption && realOptions.length === 1) {
+    return <></>;
+  }
+
+  return (
+    <FormControl size="small">
+      <InputLabel id="section-action-filter-few-multiple-compact-label">
+        {props.action.title}
+      </InputLabel>
+      <Select
+        labelId="section-action-filter-few-multiple-compact-label"
+        id="section-action-filter-few-multiple-compact"
+        label={props.action.title}
+        readOnly={!props.inputsEnabled}
+        value={selectedIndex}
+        onChange={(e) => {
+          setSelectedIndex(e.target.value as number);
+          props.action.onSelect(realOptions[e.target.value as number].value);
+        }}
+        renderValue={(selected) => (
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+            {realOptions[selectedIndex].icon} {realOptions[selectedIndex].text}
+          </Box>
+        )}
+      >
+        {realOptions.map((option, index) => (
+          <MenuItem key={`filter-few-multiple-${index}`} value={index}>
+            {option.icon} {option.text}
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
   );
 }
 
