@@ -199,6 +199,14 @@ export async function action({ request, params }: ActionArgs) {
         return redirect(`/workspace/chores`);
       }
 
+      case "regen": {
+        await apiClient.chores.choreRegen({
+          ref_id: id,
+        });
+
+        return redirect(`/workspace/chores/${id}`);
+      }
+
       case "change-project": {
         await apiClient.chores.choreChangeProject({
           ref_id: id,
@@ -432,6 +440,15 @@ export default function Chore() {
               value="update"
             >
               Save
+            </Button>
+            <Button
+              variant="outlined"
+              disabled={!inputsEnabled}
+              type="submit"
+              name="intent"
+              value="regen"
+            >
+              Regen
             </Button>
             {isWorkspaceFeatureAvailable(
               topLevelInfo.workspace,

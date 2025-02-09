@@ -23,6 +23,7 @@ export function TimePlanActivityFeasabilitySelect(
   return (
     <>
       <ToggleButtonGroup
+        fullWidth
         value={feasability}
         exclusive
         onChange={(_, newFeasability) =>

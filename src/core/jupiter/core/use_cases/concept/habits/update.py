@@ -69,8 +69,6 @@ class HabitUpdateUseCase(
 
         project = await uow.get_for(Project).load_by_id(habit.project_ref_id)
 
-        print("The skip rule", args.skip_rule._value.__class__)
-
         need_to_change_inbox_tasks = (
             args.name.should_change
             or args.period.should_change

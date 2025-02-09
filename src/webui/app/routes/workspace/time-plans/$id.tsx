@@ -397,6 +397,10 @@ export default function TimePlanView() {
                         link: `/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-inbox-tasks`,
                       }),
                       NavSingle({
+                        text: "From Generated Inbox Tasks",
+                        link: `/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-generated-inbox-tasks`,
+                      }),
+                      NavSingle({
                         text: "From Current Big Plans",
                         link: `/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-big-plans`,
                         gatedOn: WorkspaceFeature.BIG_PLANS,

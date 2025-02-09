@@ -9,6 +9,7 @@ import type { HabitFindArgs } from '../models/HabitFindArgs';
 import type { HabitFindResult } from '../models/HabitFindResult';
 import type { HabitLoadArgs } from '../models/HabitLoadArgs';
 import type { HabitLoadResult } from '../models/HabitLoadResult';
+import type { HabitRegenArgs } from '../models/HabitRegenArgs';
 import type { HabitRemoveArgs } from '../models/HabitRemoveArgs';
 import type { HabitSuspendArgs } from '../models/HabitSuspendArgs';
 import type { HabitUnsuspendArgs } from '../models/HabitUnsuspendArgs';
@@ -126,6 +127,29 @@ export class HabitsService {
         return this.httpRequest.request({
             method: 'POST',
             url: '/habit-load',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * A use case for regenerating tasks associated with habits.
+     * A use case for regenerating tasks associated with habits.
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
+     * @throws ApiError
+     */
+    public habitRegen(
+        requestBody?: HabitRegenArgs,
+    ): CancelablePromise<any> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/habit-regen',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

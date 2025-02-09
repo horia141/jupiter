@@ -21,6 +21,7 @@ export function TimePlanActivitKindSelect(
   return (
     <>
       <ToggleButtonGroup
+        fullWidth
         value={kind}
         exclusive
         onChange={(_, newKind) => newKind !== null && setKind(newKind)}

@@ -58,6 +58,7 @@ import {
 } from "~/rendering/actionable-time";
 import { LeafPanelExpansionState } from "~/rendering/leaf-panel-expansion";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
+import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import type { TopLevelInfo } from "~/top-level-context";
@@ -215,6 +216,7 @@ export default function TimePlanAddFromCurrentInboxTasks() {
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
   const topLevelInfo = useContext(TopLevelInfoContext);
+  const isBigScreen = useBigScreen();
 
   const inputsEnabled =
     transition.state === "idle" && !loaderData.timePlan.archived;
@@ -340,7 +342,11 @@ export default function TimePlanAddFromCurrentInboxTasks() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
+        <Stack
+          spacing={2}
+          useFlexGap
+          direction={isBigScreen ? "row" : "column"}
+        >
           <FormControl fullWidth>
             <FormLabel id="kind">Kind</FormLabel>
             <TimePlanActivitKindSelect

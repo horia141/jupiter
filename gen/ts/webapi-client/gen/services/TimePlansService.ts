@@ -13,6 +13,7 @@ import type { TimePlanCreateArgs } from '../models/TimePlanCreateArgs';
 import type { TimePlanCreateResult } from '../models/TimePlanCreateResult';
 import type { TimePlanFindArgs } from '../models/TimePlanFindArgs';
 import type { TimePlanFindResult } from '../models/TimePlanFindResult';
+import type { TimePlanGenForTimePlanArgs } from '../models/TimePlanGenForTimePlanArgs';
 import type { TimePlanLoadArgs } from '../models/TimePlanLoadArgs';
 import type { TimePlanLoadResult } from '../models/TimePlanLoadResult';
 import type { TimePlanRemoveArgs } from '../models/TimePlanRemoveArgs';
@@ -175,6 +176,29 @@ export class TimePlansService {
         return this.httpRequest.request({
             method: 'POST',
             url: '/time-plan-find',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * The command for generating new tasks for a time plan.
+     * The command for generating new tasks for a time plan.
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
+     * @throws ApiError
+     */
+    public timePlanGenForTimePlan(
+        requestBody?: TimePlanGenForTimePlanArgs,
+    ): CancelablePromise<any> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/time-plan-gen-for-time-plan',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

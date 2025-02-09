@@ -48,6 +48,7 @@ interface LeafPanelProps {
   enableArchiveButton?: boolean;
   returnLocation: string;
   initialExpansionState?: LeafPanelExpansionState;
+  allowedExpansionStates?: LeafPanelExpansionState[];
 }
 
 export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
@@ -124,10 +125,12 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
   }, []);
 
   function handleExpansion() {
-    setExpansionState((e) => cycleExpansionState(e));
+    setExpansionState((e) =>
+      cycleExpansionState(e, props.allowedExpansionStates)
+    );
     saveLeafPanelExpansion(
       props.returnLocation,
-      cycleExpansionState(expansionState)
+      cycleExpansionState(expansionState, props.allowedExpansionStates)
     );
   }
 
@@ -334,8 +337,15 @@ const LeafPanelContent = styled("div")<LeafPanelContentProps>(
 );
 
 function cycleExpansionState(
-  expansionState: LeafPanelExpansionState
+  expansionState: LeafPanelExpansionState,
+  allowedExpansionStates?: LeafPanelExpansionState[]
 ): LeafPanelExpansionState {
+  if (allowedExpansionStates && allowedExpansionStates.length > 0) {
+    const currentIndex = allowedExpansionStates.indexOf(expansionState);
+    const nextIndex = (currentIndex + 1) % allowedExpansionStates.length;
+    return allowedExpansionStates[nextIndex];
+  }
+
   switch (expansionState) {
     case LeafPanelExpansionState.SMALL:
       return LeafPanelExpansionState.MEDIUM;

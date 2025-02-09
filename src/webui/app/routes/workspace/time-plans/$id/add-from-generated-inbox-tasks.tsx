@@ -1,6 +1,7 @@
-import type { BigPlan, Workspace } from "@jupiter/webapi-client";
+import type { InboxTask, Workspace } from "@jupiter/webapi-client";
 import {
   ApiError,
+  RecurringTaskPeriod,
   TimePlanActivityFeasability,
   TimePlanActivityKind,
   TimePlanActivityTarget,
@@ -13,6 +14,8 @@ import {
   Divider,
   FormControl,
   FormLabel,
+  InputLabel,
+  OutlinedInput,
   Stack,
   Typography,
 } from "@mui/material";
@@ -21,11 +24,12 @@ import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useParams, useTransition } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
+import { DateTime } from "luxon";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { BigPlanCard } from "~/components/big-plan-card";
+import { InboxTaskCard } from "~/components/inbox-task-card";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
@@ -37,19 +41,26 @@ import {
   SectionActions,
 } from "~/components/infra/section-actions";
 import { SectionCardNew } from "~/components/infra/section-card-new";
+import { PeriodSelect } from "~/components/period-select";
 import { TimePlanActivityFeasabilitySelect } from "~/components/time-plan-activity-feasability-select";
 import { TimePlanActivitKindSelect } from "~/components/time-plan-activity-kind-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
-import type { BigPlanParent } from "~/logic/domain/big-plan";
+import type { InboxTaskParent } from "~/logic/domain/inbox-task";
 import {
-  bigPlanFindEntryToParent,
-  sortBigPlansNaturally,
-} from "~/logic/domain/big-plan";
+  filterInboxTasksForDisplay,
+  inboxTaskFindEntryToParent,
+  sortInboxTasksByEisenAndDifficulty,
+} from "~/logic/domain/inbox-task";
 import {
   computeProjectHierarchicalNameFromRoot,
   sortProjectsByTreeOrder,
 } from "~/logic/domain/project";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
+import { fixSelectOutputToEnum, selectZod } from "~/logic/select";
+import {
+  ActionableTime,
+  actionableTimeToDateTime,
+} from "~/rendering/actionable-time";
 import { LeafPanelExpansionState } from "~/rendering/leaf-panel-expansion";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useBigScreen } from "~/rendering/use-big-screen";
@@ -67,14 +78,19 @@ const ParamsSchema = {
   id: z.string(),
 };
 
-const UpdateFormSchema = {
-  intent: z.string(),
-  targetBigPlanRefIds: z
-    .string()
-    .transform((s) => (s === "" ? [] : s.split(","))),
-  kind: z.nativeEnum(TimePlanActivityKind),
-  feasability: z.nativeEnum(TimePlanActivityFeasability),
-};
+const UpdateFormSchema = z.discriminatedUnion("intent", [
+  z.object({
+    intent: z.literal("gen"),
+    today: z.string(),
+    period: selectZod(z.nativeEnum(RecurringTaskPeriod)),
+  }),
+  z.object({
+    intent: z.literal("add"),
+    targetInboxTaskRefIds: z.array(z.string()),
+    kind: z.nativeEnum(TimePlanActivityKind),
+    feasability: z.nativeEnum(TimePlanActivityFeasability),
+  }),
+]);
 
 export const handle = {
   displayType: DisplayType.LEAF,
@@ -97,19 +113,19 @@ export async function loader({ request, params }: LoaderArgs) {
       include_other_time_plans: false,
     });
 
-    const bigPlansResult = await apiClient.bigPlans.bigPlanFind({
+    const inboxTasksResult = await apiClient.inboxTasks.inboxTaskFind({
       allow_archived: false,
       include_notes: false,
+      include_time_event_blocks: false,
       filter_just_workable: true,
-      include_project: true,
-      include_inbox_tasks: false,
+      filter_just_generated: true,
     });
 
     return json({
       allProjects: summaryResponse.projects || undefined,
       timePlan: timePlanResult.time_plan,
       activities: timePlanResult.activities,
-      bigPlans: bigPlansResult.entries,
+      inboxTasks: inboxTasksResult.entries,
     });
   } catch (error) {
     if (error instanceof ApiError && error.status === StatusCodes.NOT_FOUND) {
@@ -133,22 +149,21 @@ export async function action({ request, params }: ActionArgs) {
 
   try {
     switch (form.intent) {
-      case "add": {
-        await apiClient.timePlans.timePlanAssociateWithBigPlans({
-          ref_id: id,
-          big_plan_ref_ids: form.targetBigPlanRefIds,
-          override_existing_dates: false,
-          kind: form.kind,
-          feasability: form.feasability,
+      case "gen": {
+        await apiClient.timePlans.timePlanGenForTimePlan({
+          today: form.today,
+          period: fixSelectOutputToEnum<RecurringTaskPeriod>(form.period),
         });
 
-        return redirect(`/workspace/time-plans/${id}`);
+        return redirect(
+          `/workspace/time-plans/${id}/add-from-generated-inbox-tasks`
+        );
       }
 
-      case "add-and-override": {
-        await apiClient.timePlans.timePlanAssociateWithBigPlans({
+      case "add": {
+        await apiClient.timePlans.timePlanAssociateWithInboxTasks({
           ref_id: id,
-          big_plan_ref_ids: form.targetBigPlanRefIds,
+          inbox_task_ref_ids: form.targetInboxTaskRefIds,
           override_existing_dates: true,
           kind: form.kind,
           feasability: form.feasability,
@@ -172,7 +187,7 @@ export async function action({ request, params }: ActionArgs) {
   }
 }
 
-export default function TimePlanAddFromCurrentBigPlans() {
+export default function TimePlanAddFromCurrentInboxTasks() {
   const { id } = useParams();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
@@ -183,33 +198,52 @@ export default function TimePlanAddFromCurrentBigPlans() {
   const inputsEnabled =
     transition.state === "idle" && !loaderData.timePlan.archived;
 
-  const alreadyIncludedBigPlanRefIds = new Set(
+  const alreadyIncludedInboxTaskRefIds = new Set(
     loaderData.activities
-      .filter((tpa) => tpa.target === TimePlanActivityTarget.BIG_PLAN)
+      .filter((tpa) => tpa.target === TimePlanActivityTarget.INBOX_TASK)
       .map((tpa) => tpa.target_ref_id)
   );
 
-  const [targetBigPlanRefIds, setTargetBigPlanRefIds] = useState(
+  const [targetInboxTaskRefIds, setTargetInboxTaskRefIds] = useState(
     new Set<string>()
   );
 
-  const sortedBigPlans = sortBigPlansNaturally(
-    loaderData.bigPlans.map((e) => e.big_plan)
+  const entriesByRefId: { [key: string]: InboxTaskParent } = {};
+  for (const entry of loaderData.inboxTasks) {
+    entriesByRefId[entry.inbox_task.ref_id] = inboxTaskFindEntryToParent(entry);
+  }
+
+  const [selectedView, setSelectedView] = useState(
+    inferDefaultSelectedView(topLevelInfo.workspace)
+  );
+  const [selectedActionableTime, setSelectedActionableTime] = useState(
+    ActionableTime.ONE_WEEK
   );
 
-  const entriesByRefId: { [key: string]: BigPlanParent } = {};
-  for (const entry of loaderData.bigPlans) {
-    entriesByRefId[entry.big_plan.ref_id] = bigPlanFindEntryToParent(entry);
-  }
+  const sortedInboxTasks = sortInboxTasksByEisenAndDifficulty(
+    loaderData.inboxTasks.map((e) => e.inbox_task)
+  );
+
+  const filteredInboxTasks = filterInboxTasksForDisplay(
+    sortedInboxTasks,
+    entriesByRefId,
+    {},
+    {
+      includeIfNoActionableDate: true,
+      actionableDateEnd: actionableTimeToDateTime(
+        selectedActionableTime,
+        topLevelInfo.user.timezone
+      ),
+      includeIfNoDueDate: true,
+    }
+  );
 
   const sortedProjects = sortProjectsByTreeOrder(loaderData.allProjects || []);
   const allProjectsByRefId = new Map(
     loaderData.allProjects?.map((p) => [p.ref_id, p])
   );
 
-  const [selectedView, setSelectedView] = useState(
-    inferDefaultSelectedView(topLevelInfo.workspace)
-  );
+  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
 
   useEffect(() => {
     setSelectedView(inferDefaultSelectedView(topLevelInfo.workspace));
@@ -217,7 +251,7 @@ export default function TimePlanAddFromCurrentBigPlans() {
 
   return (
     <LeafPanel
-      key={`time-plan-${id}/add-from-current-big-plans`}
+      key={`time-plan-${id}/add-from-current-inbox-tasks`}
       returnLocation={`/workspace/time-plans/${id}`}
       initialExpansionState={LeafPanelExpansionState.LARGE}
       allowedExpansionStates={[
@@ -226,13 +260,12 @@ export default function TimePlanAddFromCurrentBigPlans() {
       ]}
     >
       <GlobalError actionResult={actionData} />
-
       <SectionCardNew
-        id="time-plan-current-big-plans"
-        title="Current Big Plans"
+        id="time-plan-current-inbox-tasks"
+        title="Current Inbox Tasks"
         actions={
           <SectionActions
-            id="add-from-current-big-plans"
+            id="time-plan-add-from-current-big-plans"
             topLevelInfo={topLevelInfo}
             inputsEnabled={inputsEnabled}
             actions={[
@@ -244,8 +277,8 @@ export default function TimePlanAddFromCurrentBigPlans() {
                     highlight: true,
                   }),
                   ActionSingle({
-                    text: "Add And Override Dates",
-                    value: "add-and-override",
+                    text: "Gen",
+                    value: "gen",
                   }),
                 ],
               }),
@@ -267,46 +300,103 @@ export default function TimePlanAddFromCurrentBigPlans() {
                 ],
                 (selected) => setSelectedView(selected)
               ),
+              FilterFewOptionsCompact(
+                "Actionable",
+                selectedActionableTime,
+                [
+                  {
+                    value: ActionableTime.NOW,
+                    text: "From Now",
+                  },
+                  {
+                    value: ActionableTime.ONE_WEEK,
+                    text: "One Week",
+                  },
+                  {
+                    value: ActionableTime.ONE_MONTH,
+                    text: "One Month",
+                  },
+                ],
+                (selected) => setSelectedActionableTime(selected)
+              ),
             ]}
           />
         }
       >
-        <Stack
-          spacing={2}
-          useFlexGap
-          direction={isBigScreen ? "row" : "column"}
-        >
-          <FormControl fullWidth>
-            <FormLabel id="kind">Kind</FormLabel>
-            <TimePlanActivitKindSelect
-              name="kind"
-              defaultValue={TimePlanActivityKind.FINISH}
-              inputsEnabled={inputsEnabled}
-            />
-            <FieldError actionResult={actionData} fieldName="/kind" />
-          </FormControl>
+        <Stack spacing={2} useFlexGap>
+          <Stack
+            spacing={2}
+            useFlexGap
+            direction={isBigScreen ? "row" : "column"}
+          >
+            <FormControl fullWidth>
+              <InputLabel id="today" shrink>
+                Generation Date
+              </InputLabel>
+              <OutlinedInput
+                type="date"
+                notched
+                label="Generation Date"
+                readOnly={!inputsEnabled}
+                disabled={!inputsEnabled}
+                defaultValue={loaderData.timePlan.start_date}
+                name="today"
+              />
 
-          <FormControl fullWidth>
-            <FormLabel id="feasability">Feasability</FormLabel>
-            <TimePlanActivityFeasabilitySelect
-              name="feasability"
-              defaultValue={TimePlanActivityFeasability.NICE_TO_HAVE}
-              inputsEnabled={inputsEnabled}
-            />
-            <FieldError actionResult={actionData} fieldName="/feasability" />
-          </FormControl>
+              <FieldError actionResult={actionData} fieldName="/today" />
+            </FormControl>
+
+            <FormControl fullWidth>
+              <InputLabel id="period">Generation Period</InputLabel>
+              <PeriodSelect
+                labelId="period"
+                label="Generation Period"
+                name="period"
+                readOnly={!inputsEnabled}
+                defaultValue={[loaderData.timePlan.period]}
+              />
+              <FieldError actionResult={actionData} fieldName="/period" />
+            </FormControl>
+          </Stack>
+
+          <Stack
+            spacing={2}
+            useFlexGap
+            direction={isBigScreen ? "row" : "column"}
+          >
+            <FormControl fullWidth>
+              <FormLabel id="kind">Kind</FormLabel>
+              <TimePlanActivitKindSelect
+                name="kind"
+                defaultValue={TimePlanActivityKind.FINISH}
+                inputsEnabled={inputsEnabled}
+              />
+              <FieldError actionResult={actionData} fieldName="/kind" />
+            </FormControl>
+
+            <FormControl fullWidth>
+              <FormLabel id="feasability">Feasability</FormLabel>
+              <TimePlanActivityFeasabilitySelect
+                name="feasability"
+                defaultValue={TimePlanActivityFeasability.NICE_TO_HAVE}
+                inputsEnabled={inputsEnabled}
+              />
+              <FieldError actionResult={actionData} fieldName="/feasability" />
+            </FormControl>
+          </Stack>
         </Stack>
 
         {selectedView === View.MERGED && (
-          <BigPlanList
+          <InboxTaskList
+            today={today}
             topLevelInfo={topLevelInfo}
-            bigPlans={sortedBigPlans}
-            alreadyIncludedBigPlanRefIds={alreadyIncludedBigPlanRefIds}
-            targetBigPlanRefIds={targetBigPlanRefIds}
-            bigPlansByRefId={entriesByRefId}
+            inboxTasks={filteredInboxTasks}
+            alreadyIncludedInboxTaskRefIds={alreadyIncludedInboxTaskRefIds}
+            targetInboxTaskRefIds={targetInboxTaskRefIds}
+            inboxTasksByRefId={entriesByRefId}
             onSelected={(it) =>
-              setTargetBigPlanRefIds((itri) =>
-                toggleBigPlanRefIds(itri, it.ref_id)
+              setTargetInboxTaskRefIds((itri) =>
+                toggleInboxTaskRefIds(itri, it.ref_id)
               )
             }
           />
@@ -315,11 +405,11 @@ export default function TimePlanAddFromCurrentBigPlans() {
         {selectedView === View.BY_PROJECT && (
           <>
             {sortedProjects.map((p) => {
-              const theBigPlans = sortedBigPlans.filter(
+              const theInboxTasks = filteredInboxTasks.filter(
                 (se) => entriesByRefId[se.ref_id]?.project?.ref_id === p.ref_id
               );
 
-              if (theBigPlans.length === 0) {
+              if (theInboxTasks.length === 0) {
                 return null;
               }
 
@@ -343,15 +433,18 @@ export default function TimePlanAddFromCurrentBigPlans() {
                     </Typography>
                   </Divider>
 
-                  <BigPlanList
+                  <InboxTaskList
+                    today={today}
                     topLevelInfo={topLevelInfo}
-                    bigPlans={theBigPlans}
-                    alreadyIncludedBigPlanRefIds={alreadyIncludedBigPlanRefIds}
-                    targetBigPlanRefIds={targetBigPlanRefIds}
-                    bigPlansByRefId={entriesByRefId}
+                    inboxTasks={theInboxTasks}
+                    alreadyIncludedInboxTaskRefIds={
+                      alreadyIncludedInboxTaskRefIds
+                    }
+                    targetInboxTaskRefIds={targetInboxTaskRefIds}
+                    inboxTasksByRefId={entriesByRefId}
                     onSelected={(it) =>
-                      setTargetBigPlanRefIds((itri) =>
-                        toggleBigPlanRefIds(itri, it.ref_id)
+                      setTargetInboxTaskRefIds((itri) =>
+                        toggleInboxTaskRefIds(itri, it.ref_id)
                       )
                     }
                   />
@@ -362,9 +455,9 @@ export default function TimePlanAddFromCurrentBigPlans() {
         )}
 
         <input
-          name="targetBigPlanRefIds"
+          name="targetInboxTaskRefIds"
           type="hidden"
-          value={Array.from(targetBigPlanRefIds).join(",")}
+          value={Array.from(targetInboxTaskRefIds).join(",")}
         />
       </SectionCardNew>
     </LeafPanel>
@@ -382,36 +475,40 @@ export const ErrorBoundary = makeErrorBoundary(
     }. Please try again!`
 );
 
-interface BigPlanListProps {
+interface InboxTaskListProps {
+  today: DateTime;
   topLevelInfo: TopLevelInfo;
-  bigPlans: Array<BigPlan>;
-  alreadyIncludedBigPlanRefIds: Set<string>;
-  targetBigPlanRefIds: Set<string>;
-  bigPlansByRefId: { [key: string]: BigPlanParent };
-  onSelected: (it: BigPlan) => void;
+  inboxTasks: Array<InboxTask>;
+  alreadyIncludedInboxTaskRefIds: Set<string>;
+  targetInboxTaskRefIds: Set<string>;
+  inboxTasksByRefId: { [key: string]: InboxTaskParent };
+  onSelected: (it: InboxTask) => void;
 }
 
-function BigPlanList(props: BigPlanListProps) {
+function InboxTaskList(props: InboxTaskListProps) {
   return (
     <Stack spacing={2} useFlexGap>
-      {props.bigPlans.map((bigPlan) => (
-        <BigPlanCard
-          key={`big-plan-${bigPlan.ref_id}`}
+      {props.inboxTasks.map((inboxTask) => (
+        <InboxTaskCard
+          key={`inbox-task-${inboxTask.ref_id}`}
+          today={props.today}
           topLevelInfo={props.topLevelInfo}
-          bigPlan={bigPlan}
-          compact
+          inboxTask={inboxTask}
           allowSelect
           selected={
-            props.alreadyIncludedBigPlanRefIds.has(bigPlan.ref_id) ||
-            props.targetBigPlanRefIds.has(bigPlan.ref_id)
+            props.alreadyIncludedInboxTaskRefIds.has(inboxTask.ref_id) ||
+            props.targetInboxTaskRefIds.has(inboxTask.ref_id)
           }
           showOptions={{
+            showProject: true,
+            showEisen: true,
+            showDifficulty: true,
             showDueDate: true,
             showParent: true,
           }}
-          parent={props.bigPlansByRefId[bigPlan.ref_id]}
+          parent={props.inboxTasksByRefId[inboxTask.ref_id]}
           onClick={(it) => {
-            if (props.alreadyIncludedBigPlanRefIds.has(bigPlan.ref_id)) {
+            if (props.alreadyIncludedInboxTaskRefIds.has(inboxTask.ref_id)) {
               return;
             }
 
@@ -423,26 +520,26 @@ function BigPlanList(props: BigPlanListProps) {
   );
 }
 
-function toggleBigPlanRefIds(
-  bigPlanRefIds: Set<string>,
+function toggleInboxTaskRefIds(
+  inboxTaskRefIds: Set<string>,
   newRefId: string
 ): Set<string> {
-  if (bigPlanRefIds.has(newRefId)) {
-    const newBigPlanRefIds = new Set<string>();
-    for (const ri of bigPlanRefIds.values()) {
+  if (inboxTaskRefIds.has(newRefId)) {
+    const newInboxTaskRefIds = new Set<string>();
+    for (const ri of inboxTaskRefIds.values()) {
       if (ri === newRefId) {
         continue;
       }
-      newBigPlanRefIds.add(ri);
+      newInboxTaskRefIds.add(ri);
     }
-    return newBigPlanRefIds;
+    return newInboxTaskRefIds;
   } else {
-    const newBigPlanRefIds = new Set<string>();
-    for (const ri of bigPlanRefIds.values()) {
-      newBigPlanRefIds.add(ri);
+    const newInboxTaskRefIds = new Set<string>();
+    for (const ri of inboxTaskRefIds.values()) {
+      newInboxTaskRefIds.add(ri);
     }
-    newBigPlanRefIds.add(newRefId);
-    return newBigPlanRefIds;
+    newInboxTaskRefIds.add(newRefId);
+    return newInboxTaskRefIds;
   }
 }
 

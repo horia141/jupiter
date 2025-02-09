@@ -67,6 +67,7 @@ class InboxTaskFindArgs(UseCaseArgsBase):
     include_notes: bool
     include_time_event_blocks: bool
     filter_just_workable: bool | None
+    filter_just_generated: bool | None
     filter_ref_ids: list[EntityId] | None
     filter_project_ref_ids: list[EntityId] | None
     filter_sources: list[InboxTaskSource] | None
@@ -142,6 +143,8 @@ class InboxTaskFindUseCase(
         filter_sources = workspace.infer_sources_for_enabled_features(
             args.filter_sources
         )
+        if args.filter_just_generated:
+            filter_sources = self._filter_sources_for_generated_tasks(filter_sources)
 
         project_collection = await uow.get_for(ProjectCollection).load_by_parent(
             workspace.ref_id,
@@ -328,3 +331,8 @@ class InboxTaskFindUseCase(
                 for it in inbox_tasks
             ],
         )
+
+    def _filter_sources_for_generated_tasks(
+        self, sources: list[InboxTaskSource]
+    ) -> list[InboxTaskSource]:
+        return [s for s in sources if not s.allow_user_changes]

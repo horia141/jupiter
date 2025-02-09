@@ -221,7 +221,7 @@ class DailySchedule(Schedule):
         self._should_keep = (
             skip_rule.should_keep(RecurringTaskPeriod.DAILY, self._due_date)
             if skip_rule
-            else False
+            else True
         )
 
     @property
@@ -275,7 +275,7 @@ class WeeklySchedule(Schedule):
         self._should_keep = (
             skip_rule.should_keep(RecurringTaskPeriod.WEEKLY, self._due_date)
             if skip_rule
-            else False
+            else True
         )
 
     @property
@@ -329,7 +329,7 @@ class MonthlySchedule(Schedule):
         self._should_keep = (
             skip_rule.should_keep(RecurringTaskPeriod.MONTHLY, self._due_date)
             if skip_rule
-            else False
+            else True
         )
 
     @property
@@ -457,7 +457,7 @@ class QuarterlySchedule(Schedule):
         self._should_keep = (
             skip_rule.should_keep(RecurringTaskPeriod.QUARTERLY, self._due_date)
             if skip_rule
-            else False
+            else True
         )
 
     @property
@@ -557,7 +557,7 @@ class YearlySchedule(Schedule):
         self._should_keep = (
             skip_rule.should_keep(RecurringTaskPeriod.YEARLY, self._due_date)
             if skip_rule
-            else False
+            else True
         )
 
     @property

@@ -7,6 +7,7 @@ interface PeriodSelectProps {
   label: string;
   name: string;
   readOnly: boolean;
+  defaultValue?: RecurringTaskPeriod[];
 }
 
 export function PeriodSelect(props: PeriodSelectProps) {
@@ -17,7 +18,7 @@ export function PeriodSelect(props: PeriodSelectProps) {
       readOnly={props.readOnly}
       disabled={props.readOnly}
       multiple
-      defaultValue={[]}
+      defaultValue={props.defaultValue || []}
       renderValue={(selected) => (
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
           {selected.map((value) => (

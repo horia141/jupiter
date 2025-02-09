@@ -49,6 +49,7 @@ from .chore_find_result import ChoreFindResult
 from .chore_find_result_entry import ChoreFindResultEntry
 from .chore_load_args import ChoreLoadArgs
 from .chore_load_result import ChoreLoadResult
+from .chore_regen_args import ChoreRegenArgs
 from .chore_remove_args import ChoreRemoveArgs
 from .chore_summary import ChoreSummary
 from .chore_suspend_args import ChoreSuspendArgs
@@ -144,6 +145,7 @@ from .habit_find_result import HabitFindResult
 from .habit_find_result_entry import HabitFindResultEntry
 from .habit_load_args import HabitLoadArgs
 from .habit_load_result import HabitLoadResult
+from .habit_regen_args import HabitRegenArgs
 from .habit_remove_args import HabitRemoveArgs
 from .habit_summary import HabitSummary
 from .habit_suspend_args import HabitSuspendArgs
@@ -513,6 +515,7 @@ from .time_plan_domain import TimePlanDomain
 from .time_plan_find_args import TimePlanFindArgs
 from .time_plan_find_result import TimePlanFindResult
 from .time_plan_find_result_entry import TimePlanFindResultEntry
+from .time_plan_gen_for_time_plan_args import TimePlanGenForTimePlanArgs
 from .time_plan_load_args import TimePlanLoadArgs
 from .time_plan_load_result import TimePlanLoadResult
 from .time_plan_load_result_activity_doneness_type_0 import TimePlanLoadResultActivityDonenessType0
@@ -631,6 +634,7 @@ __all__ = (
     "ChoreFindResultEntry",
     "ChoreLoadArgs",
     "ChoreLoadResult",
+    "ChoreRegenArgs",
     "ChoreRemoveArgs",
     "ChoreSummary",
     "ChoreSuspendArgs",
@@ -726,6 +730,7 @@ __all__ = (
     "HabitFindResultEntry",
     "HabitLoadArgs",
     "HabitLoadResult",
+    "HabitRegenArgs",
     "HabitRemoveArgs",
     "HabitSummary",
     "HabitSuspendArgs",
@@ -1093,6 +1098,7 @@ __all__ = (
     "TimePlanFindArgs",
     "TimePlanFindResult",
     "TimePlanFindResultEntry",
+    "TimePlanGenForTimePlanArgs",
     "TimePlanLoadArgs",
     "TimePlanLoadResult",
     "TimePlanLoadResultActivityDonenessType0",
