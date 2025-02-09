@@ -86,7 +86,9 @@ const UpdateFormSchema = z.discriminatedUnion("intent", [
   }),
   z.object({
     intent: z.literal("add"),
-    targetInboxTaskRefIds: z.array(z.string()),
+    targetInboxTaskRefIds: z
+      .string()
+      .transform((s) => (s === "" ? [] : s.split(","))),
     kind: z.nativeEnum(TimePlanActivityKind),
     feasability: z.nativeEnum(TimePlanActivityFeasability),
   }),

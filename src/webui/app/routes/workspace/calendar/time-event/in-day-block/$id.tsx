@@ -1,4 +1,14 @@
-import { ApiError, TimeEventNamespace } from "@jupiter/webapi-client";
+import type {
+  BigPlanSummary,
+  ProjectSummary} from "@jupiter/webapi-client";
+import {
+  ApiError,
+  Difficulty,
+  Eisen,
+  InboxTaskSource,
+  InboxTaskStatus,
+  TimeEventNamespace,
+} from "@jupiter/webapi-client";
 import {
   Box,
   Button,
@@ -22,6 +32,7 @@ import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
+import { InboxTaskPropertiesEditor } from "~/components/entities/inbox-task-properties-editor";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
@@ -35,6 +46,9 @@ import { SectionCardNew } from "~/components/infra/section-card-new";
 import { TimeEventParamsSource } from "~/components/time-event-params-source";
 import { TimeEventSourceLink } from "~/components/time-event-source-link";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
+import { saveScoreAction } from "~/logic/domain/gamification/scores.server";
+import { isInboxTaskCoreFieldEditable } from "~/logic/domain/inbox-task";
+import { allowUserChanges } from "~/logic/domain/inbox-task-source";
 import {
   isTimeEventInDayBlockEditable,
   timeEventInDayBlockParamsToTimezone,
@@ -49,6 +63,19 @@ const ParamsSchema = {
   id: z.string(),
 };
 
+const UpdateFormInboxTaskSchema = {
+  inboxTaskRefId: z.string(),
+  inboxTaskSource: z.nativeEnum(InboxTaskSource),
+  inboxTaskName: z.string(),
+  inboxTaskProject: z.string().optional(),
+  inboxTaskBigPlan: z.string().optional(),
+  inboxTaskStatus: z.nativeEnum(InboxTaskStatus),
+  inboxTaskEisen: z.nativeEnum(Eisen),
+  inboxTaskDifficulty: z.nativeEnum(Difficulty),
+  inboxTaskActionableDate: z.string().optional(),
+  inboxTaskDueDate: z.string().optional(),
+};
+
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
     intent: z.literal("update"),
@@ -60,6 +87,46 @@ const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
     intent: z.literal("archive"),
   }),
+  z.object({
+    intent: z.literal("inbox-task-mark-done"),
+    ...UpdateFormInboxTaskSchema,
+  }),
+  z.object({
+    intent: z.literal("inbox-task-mark-not-done"),
+    ...UpdateFormInboxTaskSchema,
+  }),
+  z.object({
+    intent: z.literal("inbox-task-start"),
+    ...UpdateFormInboxTaskSchema,
+  }),
+  z.object({
+    intent: z.literal("inbox-task-restart"),
+    ...UpdateFormInboxTaskSchema,
+  }),
+  z.object({
+    intent: z.literal("inbox-task-block"),
+    ...UpdateFormInboxTaskSchema,
+  }),
+  z.object({
+    intent: z.literal("inbox-task-stop"),
+    ...UpdateFormInboxTaskSchema,
+  }),
+  z.object({
+    intent: z.literal("inbox-task-reactivate"),
+    ...UpdateFormInboxTaskSchema,
+  }),
+  z.object({
+    intent: z.literal("inbox-task-change-project"),
+    inboxTaskProject: z.string(),
+  }),
+  z.object({
+    intent: z.literal("inbox-task-associate-with-big-plan"),
+    inboxTaskBigPlan: z.string().optional(),
+  }),
+  z.object({
+    intent: z.literal("inbox-task-update"),
+    ...UpdateFormInboxTaskSchema,
+  }),
 ]);
 
 export const handle = {
@@ -70,16 +137,35 @@ export async function loader({ request, params }: LoaderArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
 
+  const summaryResponse = await apiClient.getSummaries.getSummaries({
+    allow_archived: false,
+    include_workspace: true,
+    include_projects: true,
+    include_big_plans: true,
+  });
+
   try {
     const response = await apiClient.inDayBlock.timeEventInDayBlockLoad({
       ref_id: id,
       allow_archived: true,
     });
 
+    let inboxTaskResult = null;
+    if (response.inbox_task) {
+      inboxTaskResult = await apiClient.inboxTasks.inboxTaskLoad({
+        ref_id: response.inbox_task.ref_id,
+        allow_archived: true,
+      });
+    }
+
     return json({
+      rootProject: summaryResponse.root_project as ProjectSummary,
+      allProjects: summaryResponse.projects as Array<ProjectSummary>,
+      allBigPlans: summaryResponse.big_plans as Array<BigPlanSummary>,
       inDayBlock: response.in_day_block,
       scheduleEvent: response.schedule_event,
       inboxTask: response.inbox_task,
+      inboxTaskInfo: inboxTaskResult,
     });
   } catch (error) {
     if (error instanceof ApiError && error.status === StatusCodes.NOT_FOUND) {
@@ -128,6 +214,117 @@ export async function action({ request, params }: ActionArgs) {
         await apiClient.inDayBlock.timeEventInDayBlockArchive({
           ref_id: id,
         });
+        return redirect(`/workspace/calendar?${url.searchParams}`);
+      }
+
+      case "inbox-task-mark-done":
+      case "inbox-task-mark-not-done":
+      case "inbox-task-start":
+      case "inbox-task-restart":
+      case "inbox-task-block":
+      case "inbox-task-stop":
+      case "inbox-task-reactivate":
+      case "inbox-task-update": {
+        const corePropertyEditable = isInboxTaskCoreFieldEditable(
+          form.inboxTaskSource
+        );
+
+        let status = form.inboxTaskStatus;
+        if (form.intent === "inbox-task-mark-done") {
+          status = InboxTaskStatus.DONE;
+        } else if (form.intent === "inbox-task-mark-not-done") {
+          status = InboxTaskStatus.NOT_DONE;
+        } else if (form.intent === "inbox-task-start") {
+          status = InboxTaskStatus.IN_PROGRESS;
+        } else if (form.intent === "inbox-task-restart") {
+          status = InboxTaskStatus.IN_PROGRESS;
+        } else if (form.intent === "inbox-task-block") {
+          status = InboxTaskStatus.BLOCKED;
+        } else if (form.intent === "inbox-task-stop") {
+          status = allowUserChanges(form.inboxTaskSource)
+            ? InboxTaskStatus.NOT_STARTED
+            : InboxTaskStatus.NOT_STARTED_GEN;
+        } else if (form.intent === "inbox-task-reactivate") {
+          status = allowUserChanges(form.inboxTaskSource)
+            ? InboxTaskStatus.NOT_STARTED
+            : InboxTaskStatus.NOT_STARTED_GEN;
+        }
+
+        const result = await apiClient.inboxTasks.inboxTaskUpdate({
+          ref_id: form.inboxTaskRefId,
+          name: corePropertyEditable
+            ? {
+                should_change: true,
+                value: form.inboxTaskName,
+              }
+            : { should_change: false },
+          status: {
+            should_change: true,
+            value: status,
+          },
+          eisen: corePropertyEditable
+            ? {
+                should_change: true,
+                value: form.inboxTaskEisen,
+              }
+            : { should_change: false },
+          difficulty: corePropertyEditable
+            ? {
+                should_change: true,
+                value: form.inboxTaskDifficulty,
+              }
+            : { should_change: false },
+          actionable_date: {
+            should_change: true,
+            value:
+              form.inboxTaskActionableDate !== undefined &&
+              form.inboxTaskActionableDate !== ""
+                ? form.inboxTaskActionableDate
+                : undefined,
+          },
+          due_date: {
+            should_change: true,
+            value:
+              form.inboxTaskDueDate !== undefined &&
+              form.inboxTaskDueDate !== ""
+                ? form.inboxTaskDueDate
+                : undefined,
+          },
+        });
+
+        if (result.record_score_result) {
+          return redirect(`/workspace/calendar?${url.searchParams}`, {
+            headers: {
+              "Set-Cookie": await saveScoreAction(result.record_score_result),
+            },
+          });
+        }
+
+        return redirect(`/workspace/calendar?${url.searchParams}`);
+      }
+
+      case "inbox-task-change-project": {
+        if (form.inboxTaskProject === undefined) {
+          throw new Error("Unexpected null project");
+        }
+        await apiClient.inboxTasks.inboxTaskChangeProject({
+          ref_id: id,
+          project_ref_id: form.inboxTaskProject,
+        });
+
+        return redirect(`/workspace/calendar?${url.searchParams}`);
+      }
+
+      case "inbox-task-associate-with-big-plan": {
+        await apiClient.inboxTasks.inboxTaskAssociateWithBigPlan({
+          ref_id: id,
+          big_plan_ref_id:
+            form.inboxTaskBigPlan !== undefined &&
+            form.inboxTaskBigPlan !== "none"
+              ? form.inboxTaskBigPlan
+              : undefined,
+        });
+
         return redirect(`/workspace/calendar?${url.searchParams}`);
       }
 
@@ -363,6 +560,22 @@ export default function TimeEventInDayBlockViewOne() {
           </Stack>
         </Stack>
       </SectionCardNew>
+
+      {loaderData.inboxTask && (
+        <InboxTaskPropertiesEditor
+          title="Inbox Task"
+          intentPrefix="inbox-task"
+          namePrefix="inboxTask"
+          topLevelInfo={topLevelInfo}
+          rootProject={loaderData.rootProject}
+          allProjects={loaderData.allProjects}
+          allBigPlans={loaderData.allBigPlans}
+          inputsEnabled={inputsEnabled}
+          inboxTask={loaderData.inboxTask}
+          inboxTaskInfo={loaderData.inboxTaskInfo!}
+          actionData={actionData}
+        />
+      )}
     </LeafPanel>
   );
 }

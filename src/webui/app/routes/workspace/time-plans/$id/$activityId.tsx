@@ -1,6 +1,13 @@
-import type { InboxTask, TimePlan } from "@jupiter/webapi-client";
+import type {
+  BigPlanSummary,
+  ProjectSummary,
+  TimePlan,
+} from "@jupiter/webapi-client";
 import {
   ApiError,
+  Difficulty,
+  Eisen,
+  InboxTaskSource,
   InboxTaskStatus,
   RecurringTaskPeriod,
   TimePlanActivityFeasability,
@@ -13,19 +20,17 @@ import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   useActionData,
-  useFetcher,
   useParams,
   useRouteLoaderData,
   useTransition,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { BigPlanStack } from "~/components/big-plan-stack";
-import { InboxTaskStack } from "~/components/inbox-task-stack";
+import { InboxTaskPropertiesEditor } from "~/components/entities/inbox-task-properties-editor";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
@@ -41,6 +46,9 @@ import { TimeEventInDayBlockStack } from "~/components/time-event-in-day-block-s
 import { TimePlanActivityFeasabilitySelect } from "~/components/time-plan-activity-feasability-select";
 import { TimePlanActivitKindSelect } from "~/components/time-plan-activity-kind-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
+import { saveScoreAction } from "~/logic/domain/gamification/scores.server";
+import { isInboxTaskCoreFieldEditable } from "~/logic/domain/inbox-task";
+import { allowUserChanges } from "~/logic/domain/inbox-task-source";
 import {
   sortInboxTaskTimeEventsNaturally,
   timeEventInDayBlockToTimezone,
@@ -57,11 +65,69 @@ const ParamsSchema = {
   activityId: z.string(),
 };
 
-const UpdateFormSchema = {
-  intent: z.string(),
-  kind: z.nativeEnum(TimePlanActivityKind),
-  feasability: z.nativeEnum(TimePlanActivityFeasability),
+const UpdateFormTargetInboxTaskSchema = {
+  targetInboxTaskRefId: z.string(),
+  targetInboxTaskSource: z.nativeEnum(InboxTaskSource),
+  targetInboxTaskName: z.string(),
+  targetInboxTaskProject: z.string().optional(),
+  targetInboxTaskBigPlan: z.string().optional(),
+  targetInboxTaskStatus: z.nativeEnum(InboxTaskStatus),
+  targetInboxTaskEisen: z.nativeEnum(Eisen),
+  targetInboxTaskDifficulty: z.nativeEnum(Difficulty),
+  targetInboxTaskActionableDate: z.string().optional(),
+  targetInboxTaskDueDate: z.string().optional(),
 };
+
+const UpdateFormSchema = z.discriminatedUnion("intent", [
+  z.object({
+    intent: z.literal("update"),
+    kind: z.nativeEnum(TimePlanActivityKind),
+    feasability: z.nativeEnum(TimePlanActivityFeasability),
+  }),
+  z.object({
+    intent: z.literal("archive"),
+  }),
+  z.object({
+    intent: z.literal("target-inbox-task-mark-done"),
+    ...UpdateFormTargetInboxTaskSchema,
+  }),
+  z.object({
+    intent: z.literal("target-inbox-task-mark-not-done"),
+    ...UpdateFormTargetInboxTaskSchema,
+  }),
+  z.object({
+    intent: z.literal("target-inbox-task-start"),
+    ...UpdateFormTargetInboxTaskSchema,
+  }),
+  z.object({
+    intent: z.literal("target-inbox-task-restart"),
+    ...UpdateFormTargetInboxTaskSchema,
+  }),
+  z.object({
+    intent: z.literal("target-inbox-task-block"),
+    ...UpdateFormTargetInboxTaskSchema,
+  }),
+  z.object({
+    intent: z.literal("target-inbox-task-stop"),
+    ...UpdateFormTargetInboxTaskSchema,
+  }),
+  z.object({
+    intent: z.literal("target-inbox-task-reactivate"),
+    ...UpdateFormTargetInboxTaskSchema,
+  }),
+  z.object({
+    intent: z.literal("target-inbox-task-change-project"),
+    targetInboxTaskProject: z.string(),
+  }),
+  z.object({
+    intent: z.literal("target-inbox-task-associate-with-big-plan"),
+    targetInboxTaskBigPlan: z.string().optional(),
+  }),
+  z.object({
+    intent: z.literal("target-inbox-task-update"),
+    ...UpdateFormTargetInboxTaskSchema,
+  }),
+]);
 
 export const handle = {
   displayType: DisplayType.LEAF,
@@ -70,6 +136,13 @@ export const handle = {
 export async function loader({ request, params }: LoaderArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { activityId } = parseParams(params, ParamsSchema);
+
+  const summaryResponse = await apiClient.getSummaries.getSummaries({
+    allow_archived: false,
+    include_workspace: true,
+    include_projects: true,
+    include_big_plans: true,
+  });
 
   try {
     const result = await apiClient.activity.timePlanActivityLoad({
@@ -86,8 +159,12 @@ export async function loader({ request, params }: LoaderArgs) {
     }
 
     return json({
+      rootProject: summaryResponse.root_project as ProjectSummary,
+      allProjects: summaryResponse.projects as Array<ProjectSummary>,
+      allBigPlans: summaryResponse.big_plans as Array<BigPlanSummary>,
       timePlanActivity: result.time_plan_activity,
       targetInboxTask: result.target_inbox_task,
+      targetInboxTaskInfo: inboxTaskResult,
       targetInboxTaskTimeEventBlocks: inboxTaskResult?.time_event_blocks,
       targetBigPlan: result.target_big_plan,
     });
@@ -136,6 +213,118 @@ export async function action({ request, params }: ActionArgs) {
 
         return redirect(`/workspace/time-plans/${id}`);
       }
+
+      case "target-inbox-task-mark-done":
+      case "target-inbox-task-mark-not-done":
+      case "target-inbox-task-start":
+      case "target-inbox-task-restart":
+      case "target-inbox-task-block":
+      case "target-inbox-task-stop":
+      case "target-inbox-task-reactivate":
+      case "target-inbox-task-update": {
+        const corePropertyEditable = isInboxTaskCoreFieldEditable(
+          form.targetInboxTaskSource
+        );
+
+        let status = form.targetInboxTaskStatus;
+        if (form.intent === "target-inbox-task-mark-done") {
+          status = InboxTaskStatus.DONE;
+        } else if (form.intent === "target-inbox-task-mark-not-done") {
+          status = InboxTaskStatus.NOT_DONE;
+        } else if (form.intent === "target-inbox-task-start") {
+          status = InboxTaskStatus.IN_PROGRESS;
+        } else if (form.intent === "target-inbox-task-restart") {
+          status = InboxTaskStatus.IN_PROGRESS;
+        } else if (form.intent === "target-inbox-task-block") {
+          status = InboxTaskStatus.BLOCKED;
+        } else if (form.intent === "target-inbox-task-stop") {
+          status = allowUserChanges(form.targetInboxTaskSource)
+            ? InboxTaskStatus.NOT_STARTED
+            : InboxTaskStatus.NOT_STARTED_GEN;
+        } else if (form.intent === "target-inbox-task-reactivate") {
+          status = allowUserChanges(form.targetInboxTaskSource)
+            ? InboxTaskStatus.NOT_STARTED
+            : InboxTaskStatus.NOT_STARTED_GEN;
+        }
+
+        const result = await apiClient.inboxTasks.inboxTaskUpdate({
+          ref_id: form.targetInboxTaskRefId,
+          name: corePropertyEditable
+            ? {
+                should_change: true,
+                value: form.targetInboxTaskName,
+              }
+            : { should_change: false },
+          status: {
+            should_change: true,
+            value: status,
+          },
+          eisen: corePropertyEditable
+            ? {
+                should_change: true,
+                value: form.targetInboxTaskEisen,
+              }
+            : { should_change: false },
+          difficulty: corePropertyEditable
+            ? {
+                should_change: true,
+                value: form.targetInboxTaskDifficulty,
+              }
+            : { should_change: false },
+          actionable_date: {
+            should_change: true,
+            value:
+              form.targetInboxTaskActionableDate !== undefined &&
+              form.targetInboxTaskActionableDate !== ""
+                ? form.targetInboxTaskActionableDate
+                : undefined,
+          },
+          due_date: {
+            should_change: true,
+            value:
+              form.targetInboxTaskDueDate !== undefined &&
+              form.targetInboxTaskDueDate !== ""
+                ? form.targetInboxTaskDueDate
+                : undefined,
+          },
+        });
+
+        if (result.record_score_result) {
+          return redirect(`/workspace/time-plans/${id}`, {
+            headers: {
+              "Set-Cookie": await saveScoreAction(result.record_score_result),
+            },
+          });
+        }
+
+        return redirect(`/workspace/time-plans/${id}`);
+      }
+
+      case "target-inbox-task-change-project": {
+        if (form.targetInboxTaskProject === undefined) {
+          throw new Error("Unexpected null project");
+        }
+        await apiClient.inboxTasks.inboxTaskChangeProject({
+          ref_id: id,
+          project_ref_id: form.targetInboxTaskProject,
+        });
+
+        return redirect(`/workspace/time-plans/${id}/${activityId}`);
+      }
+
+      case "target-inbox-task-associate-with-big-plan": {
+        await apiClient.inboxTasks.inboxTaskAssociateWithBigPlan({
+          ref_id: id,
+          big_plan_ref_id:
+            form.targetInboxTaskBigPlan !== undefined &&
+            form.targetInboxTaskBigPlan !== "none"
+              ? form.targetInboxTaskBigPlan
+              : undefined,
+        });
+
+        return redirect(`/workspace/time-plans/${id}`);
+      }
+
       default:
         throw new Response("Bad Intent", { status: 500 });
     }
@@ -163,34 +352,6 @@ export default function TimePlanActivity() {
   const inputsEnabled =
     transition.state === "idle" && !loaderData.timePlanActivity.archived;
 
-  const cardActionFetcher = useFetcher();
-
-  function handleInboxTaskMarkDone(it: InboxTask) {
-    cardActionFetcher.submit(
-      {
-        id: it.ref_id,
-        status: InboxTaskStatus.DONE,
-      },
-      {
-        method: "post",
-        action: "/workspace/inbox-tasks/update-status-and-eisen",
-      }
-    );
-  }
-
-  function handleInboxTaskMarkNotDone(it: InboxTask) {
-    cardActionFetcher.submit(
-      {
-        id: it.ref_id,
-        status: InboxTaskStatus.NOT_DONE,
-      },
-      {
-        method: "post",
-        action: "/workspace/inbox-tasks/update-status-and-eisen",
-      }
-    );
-  }
-
   const inboxTaskTimeEventEntries = (
     loaderData.targetInboxTaskTimeEventBlocks || []
   ).map((block) => ({
@@ -206,8 +367,6 @@ export default function TimePlanActivity() {
   const sortedInboxTaskTimeEventEntries = sortInboxTaskTimeEventsNaturally(
     inboxTaskTimeEventEntries
   );
-
-  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
 
   let newInboxTaskTimeEventLocation = undefined;
 
@@ -281,21 +440,19 @@ export default function TimePlanActivity() {
 
       {loaderData.targetInboxTask && (
         <>
-          <SectionCardNew id="target" title="Target Inbox Task">
-            <InboxTaskStack
-              today={today}
-              topLevelInfo={topLevelInfo}
-              showOptions={{
-                showStatus: true,
-                showDueDate: true,
-                showHandleMarkDone: true,
-                showHandleMarkNotDone: true,
-              }}
-              inboxTasks={[loaderData.targetInboxTask]}
-              onCardMarkDone={handleInboxTaskMarkDone}
-              onCardMarkNotDone={handleInboxTaskMarkNotDone}
-            />
-          </SectionCardNew>
+          <InboxTaskPropertiesEditor
+            title="Target Inbox Task"
+            intentPrefix="target-inbox-task"
+            namePrefix="targetInboxTask"
+            topLevelInfo={topLevelInfo}
+            rootProject={loaderData.rootProject}
+            allProjects={loaderData.allProjects}
+            allBigPlans={loaderData.allBigPlans}
+            inputsEnabled={inputsEnabled}
+            inboxTask={loaderData.targetInboxTask}
+            inboxTaskInfo={loaderData.targetInboxTaskInfo!}
+            actionData={actionData}
+          />
 
           {isWorkspaceFeatureAvailable(
             topLevelInfo.workspace,
