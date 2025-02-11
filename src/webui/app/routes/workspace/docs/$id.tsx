@@ -23,10 +23,10 @@ const ParamsSchema = {
   id: z.string(),
 };
 
-const UpdateFormSchema = {
-  intent: z.string(),
-  name: z.string(),
-};
+const UpdateFormSchema = z.discriminatedUnion("intent", [
+  z.object({ intent: z.literal("archive") }),
+  z.object({ intent: z.literal("remove") }),
+]);
 
 export const handle = {
   displayType: DisplayType.LEAF,

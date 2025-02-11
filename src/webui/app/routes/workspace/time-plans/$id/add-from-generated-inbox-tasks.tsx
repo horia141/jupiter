@@ -381,7 +381,7 @@ export default function TimePlanAddFromCurrentInboxTasks() {
               <FormLabel id="feasability">Feasability</FormLabel>
               <TimePlanActivityFeasabilitySelect
                 name="feasability"
-                defaultValue={TimePlanActivityFeasability.NICE_TO_HAVE}
+                defaultValue={TimePlanActivityFeasability.MUST_DO}
                 inputsEnabled={inputsEnabled}
               />
               <FieldError actionResult={actionData} fieldName="/feasability" />

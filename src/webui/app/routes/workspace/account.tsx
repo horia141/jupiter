@@ -39,7 +39,7 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const AccountFormSchema = z.discriminatedUnion("intent", [
+const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
     intent: z.literal("update"),
     name: z.string(),
@@ -69,7 +69,7 @@ export async function loader({ request }: LoaderArgs) {
 
 export async function action({ request }: ActionArgs) {
   const apiClient = await getLoggedInApiClient(request);
-  const form = await parseForm(request, AccountFormSchema);
+  const form = await parseForm(request, UpdateFormSchema);
 
   try {
     switch (form.intent) {

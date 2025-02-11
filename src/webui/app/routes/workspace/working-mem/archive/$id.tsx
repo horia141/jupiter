@@ -45,9 +45,9 @@ const ParamsSchema = {
   id: z.string(),
 };
 
-const UpdateFormSchema = {
-  intent: z.string(),
-};
+const UpdateFormSchema = z.discriminatedUnion("intent", [
+  z.object({ intent: z.literal("archive") }),
+]);
 
 export const handle = {
   displayType: DisplayType.LEAF,

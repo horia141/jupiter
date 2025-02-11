@@ -66,15 +66,24 @@ enum View {
 const ParamsSchema = {
   id: z.string(),
 };
-
-const UpdateFormSchema = {
-  intent: z.string(),
+const CommonParamsSchema = {
   targetBigPlanRefIds: z
     .string()
     .transform((s) => (s === "" ? [] : s.split(","))),
   kind: z.nativeEnum(TimePlanActivityKind),
   feasability: z.nativeEnum(TimePlanActivityFeasability),
 };
+
+const UpdateFormSchema = z.discriminatedUnion("intent", [
+  z.object({
+    intent: z.literal("add"),
+    ...CommonParamsSchema,
+  }),
+  z.object({
+    intent: z.literal("add-and-override"),
+    ...CommonParamsSchema,
+  }),
+]);
 
 export const handle = {
   displayType: DisplayType.LEAF,

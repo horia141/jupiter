@@ -45,7 +45,6 @@ import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
 import { difficultyName } from "~/logic/domain/difficulty";
 import { inboxTaskStatusName } from "~/logic/domain/inbox-task-status";
-import { getIntent } from "~/logic/intent";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -58,19 +57,26 @@ const ParamsSchema = {
 export const handle = {
   displayType: DisplayType.LEAF,
 };
-
-const UpdateFormSchema = {
-  intent: z.string(),
-  user: z.string(),
-  channel: z.string().optional(),
-  message: z.string().optional(),
-  generationName: z.string().optional(),
-  generationStatus: z.nativeEnum(InboxTaskStatus).optional(),
-  generationEisen: z.nativeEnum(Eisen),
-  generationDifficulty: z.nativeEnum(Difficulty),
-  generationActionableDate: z.string().optional(),
-  generationDueDate: z.string().optional(),
-};
+const UpdateFormSchema = z.discriminatedUnion("intent", [
+  z.object({
+    intent: z.literal("update"),
+    user: z.string(),
+    channel: z.string(),
+    message: z.string(),
+    generationName: z.string().optional(),
+    generationStatus: z.nativeEnum(InboxTaskStatus).optional(),
+    generationEisen: z.nativeEnum(Eisen),
+    generationDifficulty: z.nativeEnum(Difficulty),
+    generationActionableDate: z.string().optional(),
+    generationDueDate: z.string().optional(),
+  }),
+  z.object({
+    intent: z.literal("archive"),
+  }),
+  z.object({
+    intent: z.literal("remove"),
+  }),
+]);
 
 export async function loader({ request, params }: LoaderArgs) {
   const apiClient = await getLoggedInApiClient(request);
@@ -103,10 +109,8 @@ export async function action({ request, params }: ActionArgs) {
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
 
-  const { intent } = getIntent<undefined>(form.intent);
-
   try {
-    switch (intent) {
+    switch (form.intent) {
       case "update": {
         await apiClient.slack.slackTaskUpdate({
           ref_id: id,

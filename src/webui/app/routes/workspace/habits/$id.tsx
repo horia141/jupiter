@@ -45,7 +45,6 @@ import { RecurringTaskGenParamsBlock } from "~/components/recurring-task-gen-par
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { sortInboxTasksNaturally } from "~/logic/domain/inbox-task";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
-import { getIntent } from "~/logic/intent";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -54,21 +53,38 @@ import { TopLevelInfoContext } from "~/top-level-context";
 const ParamsSchema = {
   id: z.string(),
 };
-
-const UpdateFormSchema = {
-  intent: z.string(),
-  name: z.string(),
-  project: z.string(),
-  period: z.nativeEnum(RecurringTaskPeriod),
-  eisen: z.nativeEnum(Eisen),
-  difficulty: z.nativeEnum(Difficulty),
-  actionableFromDay: z.string().optional(),
-  actionableFromMonth: z.string().optional(),
-  dueAtDay: z.string().optional(),
-  dueAtMonth: z.string().optional(),
-  skipRule: z.string().optional(),
-  repeatsInPeriodCount: z.string().optional(),
-};
+const UpdateFormSchema = z.discriminatedUnion("intent", [
+  z.object({
+    intent: z.literal("update"),
+    name: z.string(),
+    project: z.string(),
+    period: z.nativeEnum(RecurringTaskPeriod),
+    eisen: z.nativeEnum(Eisen),
+    difficulty: z.nativeEnum(Difficulty),
+    actionableFromDay: z.string().optional(),
+    actionableFromMonth: z.string().optional(),
+    dueAtDay: z.string().optional(),
+    dueAtMonth: z.string().optional(),
+    skipRule: z.string().optional(),
+    repeatsInPeriodCount: z.string().optional(),
+  }),
+  z.object({
+    intent: z.literal("regen"),
+  }),
+  z.object({
+    intent: z.literal("change-project"),
+    project: z.string(),
+  }),
+  z.object({
+    intent: z.literal("create-note"),
+  }),
+  z.object({
+    intent: z.literal("archive"),
+  }),
+  z.object({
+    intent: z.literal("remove"),
+  }),
+]);
 
 export const handle = {
   displayType: DisplayType.LEAF,
@@ -111,10 +127,8 @@ export async function action({ request, params }: ActionArgs) {
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
 
-  const { intent } = getIntent<undefined>(form.intent);
-
   try {
-    switch (intent) {
+    switch (form.intent) {
       case "update": {
         await apiClient.habits.habitUpdate({
           ref_id: id,

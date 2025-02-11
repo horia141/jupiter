@@ -36,13 +36,23 @@ import { TopLevelInfoContext } from "~/top-level-context";
 const ParamsSchema = {
   id: z.string(),
 };
-
-const UpdateFormSchema = {
-  intent: z.string(),
-  name: z.string(),
-  startDate: z.string(),
-  endDate: z.string(),
-};
+const UpdateFormSchema = z.discriminatedUnion("intent", [
+  z.object({
+    intent: z.literal("update"),
+    name: z.string(),
+    startDate: z.string(),
+    endDate: z.string(),
+  }),
+  z.object({
+    intent: z.literal("create-note"),
+  }),
+  z.object({
+    intent: z.literal("archive"),
+  }),
+  z.object({
+    intent: z.literal("remove"),
+  }),
+]);
 
 export const handle = {
   displayType: DisplayType.LEAF,

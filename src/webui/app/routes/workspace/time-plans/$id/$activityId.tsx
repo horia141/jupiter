@@ -454,6 +454,7 @@ export default function TimePlanActivity() {
         <>
           <InboxTaskPropertiesEditor
             title="Target Inbox Task"
+            showLinkToInboxTask
             intentPrefix="target-inbox-task"
             namePrefix="targetInboxTask"
             topLevelInfo={topLevelInfo}

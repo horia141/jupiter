@@ -38,11 +38,22 @@ const ParamsSchema = {
   entryId: z.string(),
 };
 
-const UpdateFormSchema = {
-  intent: z.string(),
-  collectionTime: z.string(),
-  value: z.string().transform(parseFloat),
-};
+const UpdateFormSchema = z.discriminatedUnion("intent", [
+  z.object({
+    intent: z.literal("update"),
+    collectionTime: z.string(),
+    value: z.string().transform(parseFloat),
+  }),
+  z.object({
+    intent: z.literal("create-note"),
+  }),
+  z.object({
+    intent: z.literal("archive"),
+  }),
+  z.object({
+    intent: z.literal("remove"),
+  }),
+]);
 
 export const handle = {
   displayType: DisplayType.LEAF,

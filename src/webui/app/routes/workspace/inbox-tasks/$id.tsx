@@ -45,7 +45,6 @@ import {
   timeEventInDayBlockToTimezone,
 } from "~/logic/domain/time-event";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
-import { getIntent } from "~/logic/intent";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -55,18 +54,67 @@ const ParamsSchema = {
   id: z.string(),
 };
 
-const UpdateFormSchema = {
-  intent: z.string(),
+const CommonParamsSchema = {
   source: z.nativeEnum(InboxTaskSource),
   name: z.string(),
-  project: z.string().optional(),
-  bigPlan: z.string().optional(),
   status: z.nativeEnum(InboxTaskStatus),
   eisen: z.nativeEnum(Eisen),
   difficulty: z.nativeEnum(Difficulty),
   actionableDate: z.string().optional(),
   dueDate: z.string().optional(),
 };
+
+const UpdateFormSchema = z.discriminatedUnion("intent", [
+  z.object({
+    intent: z.literal("mark-done"),
+    ...CommonParamsSchema,
+  }),
+  z.object({
+    intent: z.literal("mark-not-done"),
+    ...CommonParamsSchema,
+  }),
+  z.object({
+    intent: z.literal("start"),
+    ...CommonParamsSchema,
+  }),
+  z.object({
+    intent: z.literal("restart"),
+    ...CommonParamsSchema,
+  }),
+  z.object({
+    intent: z.literal("block"),
+    ...CommonParamsSchema,
+  }),
+  z.object({
+    intent: z.literal("stop"),
+    ...CommonParamsSchema,
+  }),
+  z.object({
+    intent: z.literal("reactivate"),
+    ...CommonParamsSchema,
+  }),
+  z.object({
+    intent: z.literal("update"),
+    ...CommonParamsSchema,
+  }),
+  z.object({
+    intent: z.literal("change-project"),
+    project: z.string(),
+  }),
+  z.object({
+    intent: z.literal("associate-with-big-plan"),
+    bigPlan: z.string().optional(),
+  }),
+  z.object({
+    intent: z.literal("create-note"),
+  }),
+  z.object({
+    intent: z.literal("archive"),
+  }),
+  z.object({
+    intent: z.literal("remove"),
+  }),
+]);
 
 export const handle = {
   displayType: DisplayType.LEAF,
@@ -125,12 +173,8 @@ export async function action({ request, params }: ActionArgs) {
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
 
-  const { intent } = getIntent<undefined>(form.intent);
-
-  const corePropertyEditable = isInboxTaskCoreFieldEditable(form.source);
-
   try {
-    switch (intent) {
+    switch (form.intent) {
       case "mark-done":
       case "mark-not-done":
       case "start":
@@ -140,21 +184,23 @@ export async function action({ request, params }: ActionArgs) {
       case "reactivate":
       case "update": {
         let status = form.status;
-        if (intent === "mark-done") {
+        const corePropertyEditable = isInboxTaskCoreFieldEditable(form.source);
+
+        if (form.intent === "mark-done") {
           status = InboxTaskStatus.DONE;
-        } else if (intent === "mark-not-done") {
+        } else if (form.intent === "mark-not-done") {
           status = InboxTaskStatus.NOT_DONE;
-        } else if (intent === "start") {
+        } else if (form.intent === "start") {
           status = InboxTaskStatus.IN_PROGRESS;
-        } else if (intent === "restart") {
+        } else if (form.intent === "restart") {
           status = InboxTaskStatus.IN_PROGRESS;
-        } else if (intent === "block") {
+        } else if (form.intent === "block") {
           status = InboxTaskStatus.BLOCKED;
-        } else if (intent === "stop") {
+        } else if (form.intent === "stop") {
           status = allowUserChanges(form.source)
             ? InboxTaskStatus.NOT_STARTED
             : InboxTaskStatus.NOT_STARTED_GEN;
-        } else if (intent === "reactivate") {
+        } else if (form.intent === "reactivate") {
           status = allowUserChanges(form.source)
             ? InboxTaskStatus.NOT_STARTED
             : InboxTaskStatus.NOT_STARTED_GEN;

@@ -55,7 +55,6 @@ import {
 import { personRelationshipName } from "~/logic/domain/person-relationship";
 import { sortBirthdayTimeEventsNaturally } from "~/logic/domain/time-event";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
-import { getIntent } from "~/logic/intent";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -64,23 +63,33 @@ import { TopLevelInfoContext } from "~/top-level-context";
 const ParamsSchema = {
   id: z.string(),
 };
-
-const UpdateFormSchema = {
-  intent: z.string(),
-  name: z.string(),
-  relationship: z.nativeEnum(PersonRelationship),
-  birthdayDay: z.string().optional(),
-  birthdayMonth: z.string().optional(),
-  catchUpPeriod: z
-    .union([z.nativeEnum(RecurringTaskPeriod), z.literal("none")])
-    .optional(),
-  catchUpEisen: z.nativeEnum(Eisen).optional(),
-  catchUpDifficulty: z.nativeEnum(Difficulty).optional(),
-  catchUpActionableFromDay: z.string().optional(),
-  catchUpActionableFromMonth: z.string().optional(),
-  catchUpDueAtDay: z.string().optional(),
-  catchUpDueAtMonth: z.string().optional(),
-};
+const UpdateFormSchema = z.discriminatedUnion("intent", [
+  z.object({
+    intent: z.literal("update"),
+    name: z.string(),
+    relationship: z.nativeEnum(PersonRelationship),
+    birthdayDay: z.string().optional(),
+    birthdayMonth: z.string().optional(),
+    catchUpPeriod: z
+      .union([z.nativeEnum(RecurringTaskPeriod), z.literal("none")])
+      .optional(),
+    catchUpEisen: z.nativeEnum(Eisen).optional(),
+    catchUpDifficulty: z.nativeEnum(Difficulty).optional(),
+    catchUpActionableFromDay: z.string().optional(),
+    catchUpActionableFromMonth: z.string().optional(),
+    catchUpDueAtDay: z.string().optional(),
+    catchUpDueAtMonth: z.string().optional(),
+  }),
+  z.object({
+    intent: z.literal("create-note"),
+  }),
+  z.object({
+    intent: z.literal("archive"),
+  }),
+  z.object({
+    intent: z.literal("remove"),
+  }),
+]);
 
 export const handle = {
   displayType: DisplayType.LEAF,
@@ -119,10 +128,8 @@ export async function action({ request, params }: ActionArgs) {
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
 
-  const { intent } = getIntent<undefined>(form.intent);
-
   try {
-    switch (intent) {
+    switch (form.intent) {
       case "update": {
         await apiClient.persons.personUpdate({
           ref_id: id,

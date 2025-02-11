@@ -37,11 +37,13 @@ import { EisenhowerSelect } from "../eisenhower-select";
 import { InboxTaskSourceLink } from "../inbox-task-source-link";
 import { InboxTaskStatusBigTag } from "../inbox-task-status-big-tag";
 import { FieldError } from "../infra/errors";
+import { NavSingle, SectionActions } from "../infra/section-actions";
 import { SectionCardNew } from "../infra/section-card-new";
 import { ProjectSelect } from "../project-select";
 
 interface InboxTaskPropertiesEditorProps {
   title: string;
+  showLinkToInboxTask?: boolean;
   intentPrefix?: string;
   namePrefix?: string;
   fieldsPrefix?: string;
@@ -169,7 +171,26 @@ export function InboxTaskPropertiesEditor(
   }, [props.inboxTaskInfo]);
 
   return (
-    <SectionCardNew title={props.title}>
+    <SectionCardNew
+      title={props.title}
+      actions={
+        <SectionActions
+          id="inbox-task-editor"
+          topLevelInfo={props.topLevelInfo}
+          inputsEnabled={props.inputsEnabled}
+          actions={
+            props.showLinkToInboxTask
+              ? [
+                  NavSingle({
+                    text: "Inbox Task",
+                    link: `/workspace/inbox-tasks/${props.inboxTask.ref_id}`,
+                  }),
+                ]
+              : []
+          }
+        />
+      }
+    >
       <Stack spacing={2} useFlexGap>
         <Box sx={{ display: "flex", flexDirection: "row", gap: "0.25rem" }}>
           <input

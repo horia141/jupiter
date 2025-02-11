@@ -28,12 +28,14 @@ import { getIntent } from "~/logic/intent";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
 
-const SecurityFormSchema = {
-  intent: z.string(),
-  currentPassword: z.string(),
-  newPassword: z.string(),
-  newPasswordRepeat: z.string(),
-};
+const UpdateFormSchema = z.discriminatedUnion("intent", [
+  z.object({
+    intent: z.literal("change-password"),
+    currentPassword: z.string(),
+    newPassword: z.string(),
+    newPasswordRepeat: z.string(),
+  }),
+]);
 
 export const handle = {
   displayType: DisplayType.TOOL,
@@ -46,7 +48,7 @@ export async function loader({ request }: LoaderArgs) {
 
 export async function action({ request }: ActionArgs) {
   const apiClient = await getLoggedInApiClient(request);
-  const form = await parseForm(request, SecurityFormSchema);
+  const form = await parseForm(request, UpdateFormSchema);
 
   const { intent } = getIntent<undefined>(form.intent);
 

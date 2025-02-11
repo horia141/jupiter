@@ -1,9 +1,18 @@
 import type { BigPlan, InboxTask, TimePlan } from "@jupiter/webapi-client";
 import {
   ApiError,
+  TimePlanActivityFeasability,
+  TimePlanActivityKind,
   TimePlanActivityTarget,
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
+import {
+  Divider,
+  FormControl,
+  FormLabel,
+  Stack,
+  Typography,
+} from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -16,7 +25,7 @@ import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
-import { GlobalError } from "~/components/infra/errors";
+import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import {
   ActionMultipleSpread,
@@ -25,6 +34,8 @@ import {
 } from "~/components/infra/section-actions";
 import { SectionCardNew } from "~/components/infra/section-card-new";
 import { TimePlanActivityCard } from "~/components/time-plan-activity-card";
+import { TimePlanActivityFeasabilitySelect } from "~/components/time-plan-activity-feasability-select";
+import { TimePlanActivitKindSelect } from "~/components/time-plan-activity-kind-select";
 import { TimePlanCard } from "~/components/time-plan-card";
 import { TimePlanStack } from "~/components/time-plan-stack";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
@@ -35,6 +46,7 @@ import {
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { LeafPanelExpansionState } from "~/rendering/leaf-panel-expansion";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
+import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
@@ -43,13 +55,24 @@ const ParamsSchema = {
   id: z.string(),
   otherTimePlanId: z.string(),
 };
-
-const UpdateFormSchema = {
-  intent: z.string(),
+const CommonParamsSchema = {
   targetActivitiesRefIds: z
     .string()
     .transform((s) => (s === "" ? [] : s.split(","))),
+  kind: z.nativeEnum(TimePlanActivityKind),
+  feasability: z.nativeEnum(TimePlanActivityFeasability),
 };
+
+const UpdateFormSchema = z.discriminatedUnion("intent", [
+  z.object({
+    intent: z.literal("add"),
+    ...CommonParamsSchema,
+  }),
+  z.object({
+    intent: z.literal("add-and-override"),
+    ...CommonParamsSchema,
+  }),
+]);
 
 export const handle = {
   displayType: DisplayType.LEAF,
@@ -147,6 +170,8 @@ export async function action({ request, params }: ActionArgs) {
           ref_id: id,
           other_time_plan_ref_id: otherTimePlanId,
           activity_ref_ids: form.targetActivitiesRefIds,
+          kind: form.kind,
+          feasability: form.feasability,
           override_existing_dates: false,
         });
 
@@ -158,6 +183,8 @@ export async function action({ request, params }: ActionArgs) {
           ref_id: id,
           other_time_plan_ref_id: otherTimePlanId,
           activity_ref_ids: form.targetActivitiesRefIds,
+          kind: form.kind,
+          feasability: form.feasability,
           override_existing_dates: true,
         });
 
@@ -185,6 +212,7 @@ export default function TimePlanAddFromCurrentTimePlans() {
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
   const topLevelInfo = useContext(TopLevelInfoContext);
+  const isBigScreen = useBigScreen();
 
   const inputsEnabled =
     transition.state === "idle" && !loaderData.mainTimePlan.archived;
@@ -266,6 +294,36 @@ export default function TimePlanAddFromCurrentTimePlans() {
           />
         }
       >
+        <Stack
+          spacing={2}
+          useFlexGap
+          direction={isBigScreen ? "row" : "column"}
+        >
+          <FormControl fullWidth>
+            <FormLabel id="kind">Kind</FormLabel>
+            <TimePlanActivitKindSelect
+              name="kind"
+              defaultValue={TimePlanActivityKind.FINISH}
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/kind" />
+          </FormControl>
+
+          <FormControl fullWidth>
+            <FormLabel id="feasability">Feasability</FormLabel>
+            <TimePlanActivityFeasabilitySelect
+              name="feasability"
+              defaultValue={TimePlanActivityFeasability.NICE_TO_HAVE}
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/feasability" />
+          </FormControl>
+        </Stack>
+
+        <Divider>
+          <Typography variant="h6">Activities</Typography>
+        </Divider>
+
         <EntityStack>
           {sortedOtherActivities.map((activity) => (
             <TimePlanActivityCard

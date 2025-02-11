@@ -78,15 +78,24 @@ const QuerySchema = {
   bigPlanRefId: z.string().optional(),
   timePlanActivityRefId: z.string().optional(),
 };
-
-const UpdateFormSchema = {
-  intent: z.string(),
+const CommonParamsSchema = {
   targetInboxTaskRefIds: z
     .string()
     .transform((s) => (s === "" ? [] : s.split(","))),
   kind: z.nativeEnum(TimePlanActivityKind),
   feasability: z.nativeEnum(TimePlanActivityFeasability),
 };
+
+const UpdateFormSchema = z.discriminatedUnion("intent", [
+  z.object({
+    intent: z.literal("add"),
+    ...CommonParamsSchema,
+  }),
+  z.object({
+    intent: z.literal("add-and-override"),
+    ...CommonParamsSchema,
+  }),
+]);
 
 export const handle = {
   displayType: DisplayType.LEAF,

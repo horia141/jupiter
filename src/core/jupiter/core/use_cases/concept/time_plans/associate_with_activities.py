@@ -46,6 +46,8 @@ class TimePlanAssociateWithActivitiesArgs(UseCaseArgsBase):
     ref_id: EntityId
     other_time_plan_ref_id: EntityId
     activity_ref_ids: list[EntityId]
+    kind: TimePlanActivityKind
+    feasability: TimePlanActivityFeasability
     override_existing_dates: bool
 
 
@@ -97,8 +99,8 @@ class TimePlanAssociateWithActivitiesUseCase(
                     existing_activity_name=activity.name,
                     existing_activity_target=activity.target,
                     existing_activity_target_ref_id=inbox_task.ref_id,
-                    existing_activity_kind=activity.kind,
-                    existing_activity_feasability=activity.feasability,
+                    existing_activity_kind=args.kind,
+                    existing_activity_feasability=args.feasability,
                 )
                 new_time_plan_activity = await generic_creator(
                     uow, progress_reporter, new_time_plan_activity
@@ -126,7 +128,7 @@ class TimePlanAssociateWithActivitiesUseCase(
                                 time_plan_ref_id=args.ref_id,
                                 big_plan_ref_id=big_plan.ref_id,
                                 kind=TimePlanActivityKind.MAKE_PROGRESS,
-                                feasability=TimePlanActivityFeasability.MUST_DO,
+                                feasability=args.feasability,
                             )
                         )
                         new_big_plan_time_plan_activity = await generic_creator(
@@ -157,8 +159,8 @@ class TimePlanAssociateWithActivitiesUseCase(
                     existing_activity_name=activity.name,
                     existing_activity_target=activity.target,
                     existing_activity_target_ref_id=big_plan.ref_id,
-                    existing_activity_kind=activity.kind,
-                    existing_activity_feasability=activity.feasability,
+                    existing_activity_kind=args.kind,
+                    existing_activity_feasability=args.feasability,
                 )
                 new_time_plan_activity = await generic_creator(
                     uow, progress_reporter, new_time_plan_activity

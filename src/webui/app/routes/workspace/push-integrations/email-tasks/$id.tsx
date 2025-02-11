@@ -44,7 +44,6 @@ import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
 import { inboxTaskStatusName } from "~/logic/domain/inbox-task-status";
-import { getIntent } from "~/logic/intent";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -53,21 +52,28 @@ import { TopLevelInfoContext } from "~/top-level-context";
 const ParamsSchema = {
   id: z.string(),
 };
-
-const UpdateFormSchema = {
-  intent: z.string(),
-  fromAddress: z.string(),
-  fromName: z.string(),
-  toAddress: z.string(),
-  subject: z.string(),
-  body: z.string(),
-  generationName: z.string().optional(),
-  generationStatus: z.nativeEnum(InboxTaskStatus).optional(),
-  generationEisen: z.nativeEnum(Eisen),
-  generationDifficulty: z.nativeEnum(Difficulty),
-  generationActionableDate: z.string().optional(),
-  generationDueDate: z.string().optional(),
-};
+const UpdateFormSchema = z.discriminatedUnion("intent", [
+  z.object({
+    intent: z.literal("update"),
+    fromAddress: z.string(),
+    fromName: z.string(),
+    toAddress: z.string(),
+    subject: z.string(),
+    body: z.string(),
+    generationName: z.string().optional(),
+    generationStatus: z.nativeEnum(InboxTaskStatus).optional(),
+    generationEisen: z.nativeEnum(Eisen),
+    generationDifficulty: z.nativeEnum(Difficulty),
+    generationActionableDate: z.string().optional(),
+    generationDueDate: z.string().optional(),
+  }),
+  z.object({
+    intent: z.literal("archive"),
+  }),
+  z.object({
+    intent: z.literal("remove"),
+  }),
+]);
 
 export const handle = {
   displayType: DisplayType.LEAF,
@@ -104,10 +110,8 @@ export async function action({ request, params }: ActionArgs) {
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
 
-  const { intent } = getIntent<undefined>(form.intent);
-
   try {
-    switch (intent) {
+    switch (form.intent) {
       case "update": {
         await apiClient.email.emailTaskUpdate({
           ref_id: id,

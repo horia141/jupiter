@@ -35,19 +35,29 @@ const ParamsSchema = {
   id: z.string(),
   itemId: z.string(),
 };
-
-const UpdateFormSchema = {
-  intent: z.string(),
-  name: z.string(),
-  isDone: CheckboxAsString,
-  tags: z
-    .string()
-    .transform((s) => (s.trim() !== "" ? s.trim().split(",") : [])),
-  url: z
-    .string()
-    .transform((s) => (s === "" ? undefined : s))
-    .optional(),
-};
+const UpdateFormSchema = z.discriminatedUnion("intent", [
+  z.object({
+    intent: z.literal("update"),
+    name: z.string(),
+    isDone: CheckboxAsString,
+    tags: z
+      .string()
+      .transform((s) => (s.trim() !== "" ? s.trim().split(",") : [])),
+    url: z
+      .string()
+      .transform((s) => (s === "" ? undefined : s))
+      .optional(),
+  }),
+  z.object({
+    intent: z.literal("create-note"),
+  }),
+  z.object({
+    intent: z.literal("archive"),
+  }),
+  z.object({
+    intent: z.literal("remove"),
+  }),
+]);
 
 export const handle = {
   displayType: DisplayType.LEAF,

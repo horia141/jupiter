@@ -58,11 +58,22 @@ const ParamsSchema = {
   id: z.string(),
 };
 
-const UpdateFormSchema = {
-  intent: z.string(),
-  rightNow: z.string(),
-  period: z.nativeEnum(RecurringTaskPeriod),
-};
+const UpdateFormSchema = z.discriminatedUnion("intent", [
+  z.object({
+    intent: z.literal("change-time-config"),
+    rightNow: z.string(),
+    period: z.nativeEnum(RecurringTaskPeriod),
+  }),
+  z.object({
+    intent: z.literal("update-report"),
+  }),
+  z.object({
+    intent: z.literal("archive"),
+  }),
+  z.object({
+    intent: z.literal("remove"),
+  }),
+]);
 
 export const handle = {
   displayType: DisplayType.LEAF,

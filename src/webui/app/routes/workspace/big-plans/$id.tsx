@@ -55,7 +55,6 @@ import { aDateToDate } from "~/logic/domain/adate";
 import { saveScoreAction } from "~/logic/domain/gamification/scores.server";
 import { sortInboxTasksNaturally } from "~/logic/domain/inbox-task";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
-import { getIntent } from "~/logic/intent";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -66,14 +65,61 @@ const ParamsSchema = {
   alert: z.string().optional(),
 };
 
-const UpdateFormSchema = {
-  intent: z.string(),
+const CommonParamsSchema = {
   name: z.string(),
   project: z.string(),
   status: z.nativeEnum(BigPlanStatus),
   actionableDate: z.string().optional(),
   dueDate: z.string().optional(),
 };
+
+const UpdateFormSchema = z.discriminatedUnion("intent", [
+  z.object({
+    intent: z.literal("mark-done"),
+    ...CommonParamsSchema,
+  }),
+  z.object({
+    intent: z.literal("mark-not-done"),
+    ...CommonParamsSchema,
+  }),
+  z.object({
+    intent: z.literal("start"),
+    ...CommonParamsSchema,
+  }),
+  z.object({
+    intent: z.literal("restart"),
+    ...CommonParamsSchema,
+  }),
+  z.object({
+    intent: z.literal("block"),
+    ...CommonParamsSchema,
+  }),
+  z.object({
+    intent: z.literal("stop"),
+    ...CommonParamsSchema,
+  }),
+  z.object({
+    intent: z.literal("reactivate"),
+    ...CommonParamsSchema,
+  }),
+  z.object({
+    intent: z.literal("update"),
+    ...CommonParamsSchema,
+  }),
+  z.object({
+    intent: z.literal("change-project"),
+    project: z.string(),
+  }),
+  z.object({
+    intent: z.literal("create-note"),
+  }),
+  z.object({
+    intent: z.literal("archive"),
+  }),
+  z.object({
+    intent: z.literal("remove"),
+  }),
+]);
 
 export const handle = {
   displayType: DisplayType.LEAF,
@@ -130,10 +176,8 @@ export async function action({ request, params }: ActionArgs) {
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
 
-  const { intent } = getIntent<undefined>(form.intent);
-
   try {
-    switch (intent) {
+    switch (form.intent) {
       case "mark-done":
       case "mark-not-done":
       case "start":
@@ -143,19 +187,19 @@ export async function action({ request, params }: ActionArgs) {
       case "reactivate":
       case "update": {
         let status = form.status;
-        if (intent === "mark-done") {
+        if (form.intent === "mark-done") {
           status = BigPlanStatus.DONE;
-        } else if (intent === "mark-not-done") {
+        } else if (form.intent === "mark-not-done") {
           status = BigPlanStatus.NOT_DONE;
-        } else if (intent === "start") {
+        } else if (form.intent === "start") {
           status = BigPlanStatus.IN_PROGRESS;
-        } else if (intent === "restart") {
+        } else if (form.intent === "restart") {
           status = BigPlanStatus.IN_PROGRESS;
-        } else if (intent === "block") {
+        } else if (form.intent === "block") {
           status = BigPlanStatus.BLOCKED;
-        } else if (intent === "stop") {
+        } else if (form.intent === "stop") {
           status = BigPlanStatus.NOT_STARTED;
-        } else if (intent === "reactivate") {
+        } else if (form.intent === "reactivate") {
           status = BigPlanStatus.NOT_STARTED;
         }
 
