@@ -253,6 +253,14 @@ export async function action({ request, params }: ActionArgs) {
         return redirect(`/workspace/inbox-tasks`);
       }
 
+      case "remove": {
+        await apiClient.inboxTasks.inboxTaskRemove({
+          ref_id: id,
+        });
+
+        return redirect(`/workspace/inbox-tasks`);
+      }
+
       default:
         throw new Response("Bad Intent", { status: 500 });
     }
@@ -281,6 +289,8 @@ export default function InboxTask() {
   const inboxTask = loaderData.info.inbox_task;
 
   const inputsEnabled = transition.state === "idle" && !inboxTask.archived;
+
+  const corePropertyEditable = isInboxTaskCoreFieldEditable(inboxTask.source);
 
   const inboxTasksByRefId = new Map();
   inboxTasksByRefId.set(
@@ -320,8 +330,10 @@ export default function InboxTask() {
   return (
     <LeafPanel
       key={`inbox-task-${inboxTask.ref_id}`}
-      showArchiveButton
-      enableArchiveButton={inputsEnabled}
+      showArchiveAndRemoveButton
+      inputsEnabled={inputsEnabled}
+      entityArchived={inboxTask.archived}
+      entityNotEditable={!corePropertyEditable}
       returnLocation="/workspace/inbox-tasks"
     >
       <GlobalError actionResult={actionData} />

@@ -72,6 +72,13 @@ export async function action({ request, params }: ActionArgs) {
         return redirect(`/workspace/docs`);
       }
 
+      case "remove": {
+        await apiClient.docs.docRemove({
+          ref_id: id,
+        });
+        return redirect(`/workspace/docs`);
+      }
+
       default:
         throw new Response("Bad Intent", { status: 500 });
     }
@@ -100,8 +107,9 @@ export default function Doc() {
   return (
     <LeafPanel
       key={`doc-${loaderData.doc.ref_id}`}
-      showArchiveButton
-      enableArchiveButton={inputsEnabled}
+      showArchiveAndRemoveButton
+      inputsEnabled={inputsEnabled}
+      entityArchived={loaderData.doc.archived}
       returnLocation="/workspace/docs"
       initialExpansionState={LeafPanelExpansionState.FULL}
     >

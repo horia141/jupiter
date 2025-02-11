@@ -168,6 +168,7 @@ export default function TimeEventInDayBlockCreateForInboxTask() {
     <LeafPanel
       key="time-event-in-day-block/new"
       returnLocation={`/workspace/calendar?${query}`}
+      inputsEnabled={inputsEnabled}
     >
       <TimeEventParamsSource
         startDate={startDate}

@@ -43,8 +43,10 @@ export async function loader({ request, params }: LoaderArgs) {
   const { id } = parseParams(params, ParamsSchema);
 
   const result = await apiClient.smartLists.smartListLoad({
-    allow_archived: true,
     ref_id: id,
+    allow_archived: true,
+    allow_archived_items: false,
+    allow_archived_tags: false,
   });
 
   return json({
@@ -91,9 +93,8 @@ export default function NewSmartListTag() {
   return (
     <LeafPanel
       key={`smart-list-${id}/tags/new`}
-      showArchiveButton
-      enableArchiveButton={inputsEnabled}
       returnLocation={`/workspace/smart-lists/${id}/tags`}
+      inputsEnabled={inputsEnabled}
     >
       <Card>
         <GlobalError actionResult={actionData} />

@@ -134,7 +134,11 @@ export default function NewPerson() {
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <LeafPanel key={"persons/new"} returnLocation="/workspace/persons">
+    <LeafPanel
+      key={"persons/new"}
+      returnLocation="/workspace/persons"
+      inputsEnabled={inputsEnabled}
+    >
       <Card>
         <GlobalError actionResult={actionData} />
         <CardContent>

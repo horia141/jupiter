@@ -223,6 +223,14 @@ export async function action({ request, params }: ActionArgs) {
         return redirect(`/workspace/big-plans`);
       }
 
+      case "remove": {
+        await apiClient.bigPlans.bigPlanRemove({
+          ref_id: id,
+        });
+
+        return redirect(`/workspace/big-plans`);
+      }
+
       default:
         throw new Response("Bad Intent", { status: 500 });
     }
@@ -316,8 +324,9 @@ export default function BigPlan() {
   return (
     <LeafPanel
       key={`big-plan-${loaderData.bigPlan.ref_id}`}
-      showArchiveButton
-      enableArchiveButton={inputsEnabled}
+      showArchiveAndRemoveButton
+      inputsEnabled={inputsEnabled}
+      entityArchived={loaderData.bigPlan.archived}
       returnLocation={"/workspace/big-plans"}
     >
       <Card sx={{ marginBottom: "1rem" }}>

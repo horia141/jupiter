@@ -2,6 +2,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import DeleteIcon from "@mui/icons-material/Delete";
+import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight";
 import SwitchLeftIcon from "@mui/icons-material/SwitchLeft";
 import {
@@ -44,8 +45,10 @@ const BIG_SCREEN_WIDTH_FULL_INT = 1200;
 const SMALL_SCREEN_WIDTH = "100%";
 
 interface LeafPanelProps {
-  showArchiveButton?: boolean;
-  enableArchiveButton?: boolean;
+  showArchiveAndRemoveButton?: boolean;
+  inputsEnabled: boolean;
+  entityNotEditable?: boolean;
+  entityArchived?: boolean;
   returnLocation: string;
   initialExpansionState?: LeafPanelExpansionState;
   allowedExpansionStates?: LeafPanelExpansionState[];
@@ -239,16 +242,19 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
             </IconButton>
           </ButtonGroup>
 
-          {props.showArchiveButton && (
+          {props.showArchiveAndRemoveButton && (
             <>
               <IconButton
                 id="leaf-entity-archive"
                 sx={{ marginLeft: "auto" }}
-                disabled={!props.enableArchiveButton}
+                disabled={
+                  props.entityNotEditable ||
+                  (!props.entityArchived && !props.inputsEnabled)
+                }
                 type="button"
                 onClick={() => setShowArchiveDialog(true)}
               >
-                <DeleteIcon />
+                {props.entityArchived ? <DeleteForeverIcon /> : <DeleteIcon />}
               </IconButton>
               <Dialog
                 onClose={() => setShowArchiveDialog(false)}
@@ -257,16 +263,21 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
               >
                 <DialogTitle>Careful!</DialogTitle>
                 <DialogContent>
-                  Are you sure you want to archive this entity?
+                  Are you sure you want to{" "}
+                  {props.entityArchived ? "remove" : "archive"} this entity?
+                  {props.entityArchived ? " This action cannot be undone." : ""}
                 </DialogContent>
                 <DialogActions>
                   <Button
                     id="leaf-entity-archive"
                     sx={{ marginLeft: "auto" }}
-                    disabled={!props.enableArchiveButton}
+                    disabled={
+                      props.entityNotEditable ||
+                      (!props.entityArchived && !props.inputsEnabled)
+                    }
                     type="submit"
                     name="intent"
-                    value="archive"
+                    value={props.entityArchived ? "remove" : "archive"}
                   >
                     Yes
                   </Button>

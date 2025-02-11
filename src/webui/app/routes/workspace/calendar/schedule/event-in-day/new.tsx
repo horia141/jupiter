@@ -143,6 +143,7 @@ export default function ScheduleEventInDayNew() {
     <LeafPanel
       key="schedule-event-in-day/new"
       returnLocation={`/workspace/calendar?${query}`}
+      inputsEnabled={inputsEnabled}
     >
       <TimeEventParamsSource
         startDate={startDate}

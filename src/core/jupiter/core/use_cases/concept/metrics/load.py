@@ -31,6 +31,7 @@ class MetricLoadArgs(UseCaseArgsBase):
 
     ref_id: EntityId
     allow_archived: bool
+    allow_archived_entries: bool
 
 
 @use_case_result
@@ -60,7 +61,7 @@ class MetricLoadUseCase(
             args.ref_id, allow_archived=args.allow_archived
         )
         metric_entries = await uow.get_for(MetricEntry).find_all(
-            metric.ref_id, allow_archived=args.allow_archived
+            metric.ref_id, allow_archived=args.allow_archived_entries
         )
 
         inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(

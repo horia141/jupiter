@@ -3,7 +3,7 @@ import { Button } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Link, Outlet, useFetcher } from "@remix-run/react";
+import { Link, Outlet } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients.server";
@@ -51,25 +51,6 @@ export default function EmailTasks() {
 
   const sortedEntries = [...entries];
 
-  const archiveEmailTaskFetch = useFetcher();
-
-  function archiveEmailTask(emailTask: EmailTask) {
-    archiveEmailTaskFetch.submit(
-      {
-        intent: "archive",
-        fromAddress: "NOT USED - FOR ARCHIVE ONLY",
-        fromName: "NOT USED - FOR ARCHIVE ONLY",
-        toAddress: "NOT USED - FOR ARCHIVE ONLY",
-        subject: "NOT USED - FOR ARCHIVE ONLY",
-        body: "NOT USED - FOR ARCHIVE ONLY",
-      },
-      {
-        method: "post",
-        action: `/workspace/push-integrations/email-tasks/${emailTask.ref_id}`,
-      }
-    );
-  }
-
   return (
     <TrunkPanel
       key={"email-tasks"}
@@ -97,9 +78,6 @@ export default function EmailTasks() {
             <EntityCard
               key={`email-task-${entry.email_task.ref_id}`}
               entityId={`email-task-${entry.email_task.ref_id}`}
-              allowSwipe
-              allowMarkNotDone
-              onMarkNotDone={() => archiveEmailTask(entry.email_task)}
             >
               <EntityLink
                 to={`/workspace/push-integrations/email-tasks/${entry.email_task.ref_id}`}

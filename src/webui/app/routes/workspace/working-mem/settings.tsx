@@ -117,6 +117,7 @@ export default function MetricsSettings() {
     <LeafPanel
       key={"working-mem/settings"}
       returnLocation="/workspace/working-mem"
+      inputsEnabled={inputsEnabled}
     >
       <Card>
         <GlobalError actionResult={actionData} />

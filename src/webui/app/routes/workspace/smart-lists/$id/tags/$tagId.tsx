@@ -93,6 +93,14 @@ export async function action({ request, params }: ActionArgs) {
         return redirect(`/workspace/smart-lists/${id}/tags`);
       }
 
+      case "remove": {
+        await apiClient.tag.smartListTagRemove({
+          ref_id: id,
+        });
+
+        return redirect(`/workspace/smart-lists/${id}/tags`);
+      }
+
       default:
         throw new Response("Bad Intent", { status: 500 });
     }
@@ -123,8 +131,9 @@ export default function SmartListTag() {
   return (
     <LeafPanel
       key={`smart-list-${id}/tag-${tagId}`}
-      showArchiveButton
-      enableArchiveButton={inputsEnabled}
+      showArchiveAndRemoveButton
+      inputsEnabled={inputsEnabled}
+      entityArchived={loaderData.smartListTag.archived}
       returnLocation={`/workspace/smart-lists/${id}/tags`}
     >
       <Card>

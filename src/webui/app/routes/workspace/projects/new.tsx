@@ -83,7 +83,11 @@ export default function NewProject() {
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <LeafPanel key={"projects/new"} returnLocation="/workspace/projects">
+    <LeafPanel
+      key={"projects/new"}
+      returnLocation="/workspace/projects"
+      inputsEnabled={inputsEnabled}
+    >
       <Card>
         <GlobalError actionResult={actionData} />
         <CardContent>

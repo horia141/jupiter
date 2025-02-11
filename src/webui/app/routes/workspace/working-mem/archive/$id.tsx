@@ -160,10 +160,11 @@ export default function WorkingMem() {
   return (
     <LeafPanel
       key={`working-mem-${loaderData.workingMem.ref_id}`}
-      showArchiveButton={
-        aDateToDate(loaderData.workingMem.right_now) > today.minus({ days: 14 })
+      showArchiveAndRemoveButton={
+        aDateToDate(loaderData.workingMem.right_now) < today.minus({ days: 14 })
       }
-      enableArchiveButton={inputsEnabled}
+      inputsEnabled={inputsEnabled}
+      entityArchived={loaderData.workingMem.archived}
       returnLocation="/workspace/working-mem/archive"
     >
       <Card

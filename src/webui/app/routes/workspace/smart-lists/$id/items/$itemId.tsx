@@ -131,6 +131,15 @@ export async function action({ request, params }: ActionArgs) {
 
         return redirect(`/workspace/smart-lists/${id}/items`);
       }
+
+      case "remove": {
+        await apiClient.item.smartListItemRemove({
+          ref_id: itemId,
+        });
+
+        return redirect(`/workspace/smart-lists/${id}/items`);
+      }
+
       default:
         throw new Response("Bad Intent", { status: 500 });
     }
@@ -158,8 +167,9 @@ export default function SmartListItem() {
   return (
     <LeafPanel
       key={`smart-list-${id}/item-${loaderData.item.ref_id}`}
-      showArchiveButton
-      enableArchiveButton={inputsEnabled}
+      showArchiveAndRemoveButton
+      inputsEnabled={inputsEnabled}
+      entityArchived={loaderData.item.archived}
       returnLocation={`/workspace/smart-lists/${id}/items`}
     >
       <Card sx={{ marginBottom: "1rem" }}>

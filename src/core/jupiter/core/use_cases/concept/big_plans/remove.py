@@ -3,6 +3,12 @@
 from jupiter.core.domain.concept.big_plans.service.remove_service import (
     BigPlanRemoveService,
 )
+from jupiter.core.domain.concept.time_plans.time_plan_activity import (
+    TimePlanActivityRespository,
+)
+from jupiter.core.domain.concept.time_plans.time_plan_activity_target import (
+    TimePlanActivityTarget,
+)
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -38,6 +44,19 @@ class BigPlanRemoveUseCase(
         args: BigPlanRemoveArgs,
     ) -> None:
         """Execute the command's action."""
+        # Remove time plan activities that are associated with the big plan.
+        # These are entities that just represent the link between a time plan
+        # and the big plan. So they have to go!
+        time_plan_activities = await uow.get(
+            TimePlanActivityRespository
+        ).find_all_generic(
+            target=TimePlanActivityTarget.BIG_PLAN,
+            target_ref_id=args.ref_id,
+            allow_archived=True,
+        )
+        for time_plan_activity in time_plan_activities:
+            await uow.get(TimePlanActivityRespository).remove(time_plan_activity.ref_id)
+
         await BigPlanRemoveService().remove(
             context.domain_context,
             uow,

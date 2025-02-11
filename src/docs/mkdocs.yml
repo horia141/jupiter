@@ -50,6 +50,7 @@ nav:
           - 'Reporting': 'concepts/reporting.md'
           - 'Tasks Generation': 'concepts/tasks-generation.md'
           - 'Garbage Collection': 'concepts/garbage-collection.md'
+          - 'Removal': 'concepts/archival-and-removal.md'
     - 'Tools':
           - 'Pomodoro Timer': 'tools/pomodoro-timer.md'
           - 'Search': 'tools/search.md'

@@ -137,6 +137,13 @@ export async function action({ request, params }: ActionArgs) {
         return redirect(`/workspace/journals/${id}`);
       }
 
+      case "remove": {
+        await apiClient.journals.journalRemove({
+          ref_id: id,
+        });
+        return redirect(`/workspace/journals`);
+      }
+
       default:
         throw new Response("Bad Intent", { status: 500 });
     }
@@ -206,8 +213,9 @@ export default function Journal() {
   return (
     <LeafPanel
       key={`journal-${loaderData.journal.ref_id}`}
-      showArchiveButton
-      enableArchiveButton={inputsEnabled}
+      showArchiveAndRemoveButton
+      inputsEnabled={inputsEnabled}
+      entityArchived={loaderData.journal.archived}
       returnLocation="/workspace/journals"
       initialExpansionState={LeafPanelExpansionState.FULL}
     >

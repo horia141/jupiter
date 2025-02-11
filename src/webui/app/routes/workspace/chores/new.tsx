@@ -126,7 +126,11 @@ export default function NewChore() {
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <LeafPanel key={"chores/new"} returnLocation="/workspace/chores">
+    <LeafPanel
+      key={"chores/new"}
+      returnLocation="/workspace/chores"
+      inputsEnabled={inputsEnabled}
+    >
       <Card>
         <GlobalError actionResult={actionData} />
         <CardContent>

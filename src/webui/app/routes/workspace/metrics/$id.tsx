@@ -42,6 +42,9 @@ const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
     intent: z.literal("archive"),
   }),
+  z.object({
+    intent: z.literal("remove"),
+  }),
 ]);
 
 export const handle = {
@@ -55,7 +58,8 @@ export async function loader({ request, params }: LoaderArgs) {
   try {
     const response = await apiClient.metrics.metricLoad({
       ref_id: id,
-      allow_archived: false,
+      allow_archived: true,
+      allow_archived_entries: false,
     });
 
     return json({
@@ -87,6 +91,14 @@ export async function action({ request, params }: LoaderArgs) {
 
       return redirect(`/workspace/metrics`);
     }
+
+    case "remove": {
+      await apiClient.metrics.metricRemove({
+        ref_id: id,
+      });
+
+      return redirect(`/workspace/metrics`);
+    }
   }
 }
 
@@ -112,8 +124,9 @@ export default function Metric() {
 
   return (
     <BranchPanel
-      showArchiveButton
-      enableArchiveButton={inputsEnabled}
+      showArchiveAndRemoveButton
+      inputsEnabled={inputsEnabled}
+      entityArchived={loaderData.metric.archived}
       key={`metric-${loaderData.metric.ref_id}`}
       createLocation={`/workspace/metrics/${loaderData.metric.ref_id}/entries/new`}
       extraControls={[

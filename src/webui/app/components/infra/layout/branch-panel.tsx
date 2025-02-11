@@ -3,6 +3,7 @@ import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import CloseIcon from "@mui/icons-material/Close";
 import DeleteIcon from "@mui/icons-material/Delete";
+import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import {
   Box,
@@ -38,8 +39,9 @@ const SMALL_SCREEN_ANIMATION_END = "100vw";
 
 interface BranchPanelProps {
   createLocation?: string;
-  showArchiveButton?: boolean;
-  enableArchiveButton?: boolean;
+  showArchiveAndRemoveButton?: boolean;
+  inputsEnabled?: boolean;
+  entityArchived?: boolean;
   extraControls?: JSX.Element[];
   returnLocation: string;
 }
@@ -187,16 +189,20 @@ export function BranchPanel(props: PropsWithChildren<BranchPanelProps>) {
                 />
               )}
 
-              {props.showArchiveButton && (
+              {props.showArchiveAndRemoveButton && (
                 <>
                   <IconButton
                     id="branch-entity-archive"
                     sx={{ marginLeft: "auto" }}
-                    disabled={!props.enableArchiveButton}
+                    disabled={!props.entityArchived && !props.inputsEnabled}
                     type="button"
                     onClick={() => setShowArchiveDialog(true)}
                   >
-                    <DeleteIcon />
+                    {props.entityArchived ? (
+                      <DeleteForeverIcon />
+                    ) : (
+                      <DeleteIcon />
+                    )}
                   </IconButton>
                   <Dialog
                     onClose={() => setShowArchiveDialog(false)}
@@ -205,16 +211,20 @@ export function BranchPanel(props: PropsWithChildren<BranchPanelProps>) {
                   >
                     <DialogTitle>Careful!</DialogTitle>
                     <DialogContent>
-                      Are you sure you want to archive this entity?
+                      Are you sure you want to{" "}
+                      {props.entityArchived ? "remove" : "archive"} this entity?
+                      {props.entityArchived
+                        ? " This action cannot be undone."
+                        : ""}
                     </DialogContent>
                     <DialogActions>
                       <Button
                         id="branch-entity-archive"
                         sx={{ marginLeft: "auto" }}
-                        disabled={!props.enableArchiveButton}
+                        disabled={!props.entityArchived && !props.inputsEnabled}
                         type="submit"
                         name="intent"
-                        value="archive"
+                        value={props.entityArchived ? "remove" : "archive"}
                       >
                         Yes
                       </Button>
@@ -228,7 +238,9 @@ export function BranchPanel(props: PropsWithChildren<BranchPanelProps>) {
 
               <IconButton
                 sx={{
-                  marginLeft: !props.showArchiveButton ? "auto" : undefined,
+                  marginLeft: !props.showArchiveAndRemoveButton
+                    ? "auto"
+                    : undefined,
                 }}
               >
                 <Link style={{ display: "flex" }} to={props.returnLocation}>

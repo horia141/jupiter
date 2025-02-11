@@ -231,6 +231,14 @@ export async function action({ request, params }: ActionArgs) {
         return redirect(`/workspace/persons`);
       }
 
+      case "remove": {
+        await apiClient.persons.personRemove({
+          ref_id: id,
+        });
+
+        return redirect(`/workspace/persons`);
+      }
+
       default:
         throw new Response("Bad Intent", { status: 500 });
     }
@@ -321,8 +329,9 @@ export default function Person() {
   return (
     <LeafPanel
       key={`person-${person.ref_id}`}
-      showArchiveButton
-      enableArchiveButton={inputsEnabled}
+      showArchiveAndRemoveButton
+      inputsEnabled={inputsEnabled}
+      entityArchived={person.archived}
       returnLocation="/workspace/persons"
     >
       <Card sx={{ marginBottom: "1rem" }}>

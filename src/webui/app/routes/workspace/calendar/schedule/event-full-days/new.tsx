@@ -115,6 +115,7 @@ export default function ScheduleEventFullDaysNew() {
     <LeafPanel
       key="schedule-event-full-days/new"
       returnLocation={`/workspace/calendar?${query}`}
+      inputsEnabled={inputsEnabled}
     >
       <GlobalError actionResult={actionData} />
       <SectionCardNew

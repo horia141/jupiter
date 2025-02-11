@@ -217,6 +217,14 @@ export async function action({ request, params }: ActionArgs) {
         return redirect(`/workspace/habits`);
       }
 
+      case "remove": {
+        await apiClient.habits.habitRemove({
+          ref_id: id,
+        });
+
+        return redirect(`/workspace/habits`);
+      }
+
       default:
         throw new Response("Bad Intent", { status: 500 });
     }
@@ -295,8 +303,9 @@ export default function Habit() {
   return (
     <LeafPanel
       key={`habit-${loaderData.habit.ref_id}`}
-      showArchiveButton
-      enableArchiveButton={inputsEnabled}
+      showArchiveAndRemoveButton
+      inputsEnabled={inputsEnabled}
+      entityArchived={loaderData.habit.archived}
       returnLocation="/workspace/habits"
     >
       <Card sx={{ marginBottom: "1rem" }}>

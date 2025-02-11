@@ -81,6 +81,7 @@ export async function loader({ request, params }: LoaderArgs) {
     const response = await apiClient.metrics.metricLoad({
       ref_id: id,
       allow_archived: true,
+      allow_archived_entries: false,
     });
 
     return json({
@@ -194,6 +195,14 @@ export async function action({ request, params }: ActionArgs) {
         return redirect(`/workspace/metrics/${id}`);
       }
 
+      case "remove": {
+        await apiClient.metrics.metricRemove({
+          ref_id: id,
+        });
+
+        return redirect(`/workspace/metrics`);
+      }
+
       case "create-note": {
         await apiClient.notes.noteCreate({
           domain: NoteDomain.METRIC,
@@ -271,8 +280,9 @@ export default function MetricDetails() {
   return (
     <LeafPanel
       key={`metric-${id}/details`}
-      showArchiveButton
-      enableArchiveButton={inputsEnabled}
+      showArchiveAndRemoveButton
+      inputsEnabled={inputsEnabled}
+      entityArchived={loaderData.metric.archived}
       returnLocation={`/workspace/metrics/${id}`}
     >
       <Card sx={{ marginBottom: "1rem" }}>

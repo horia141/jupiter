@@ -324,7 +324,11 @@ export default function NewInboxTask() {
   }
 
   return (
-    <LeafPanel key={"inbox-tasks/new"} returnLocation="/workspace/inbox-tasks">
+    <LeafPanel
+      key={"inbox-tasks/new"}
+      returnLocation="/workspace/inbox-tasks"
+      inputsEnabled={inputsEnabled}
+    >
       <Card>
         <GlobalError actionResult={actionData} />
         <CardContent>

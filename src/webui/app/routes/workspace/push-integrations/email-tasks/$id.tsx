@@ -176,6 +176,14 @@ export async function action({ request, params }: ActionArgs) {
         return redirect(`/workspace/push-integrations/email-tasks`);
       }
 
+      case "remove": {
+        await apiClient.email.emailTaskRemove({
+          ref_id: id,
+        });
+
+        return redirect(`/workspace/push-integrations/email-tasks`);
+      }
+
       default:
         throw new Response("Bad Intent", { status: 500 });
     }
@@ -236,8 +244,9 @@ export default function EmailTask() {
   return (
     <LeafPanel
       key={`email-tasks-${loaderData.emailTask.ref_id}`}
-      showArchiveButton
-      enableArchiveButton={inputsEnabled}
+      showArchiveAndRemoveButton
+      inputsEnabled={inputsEnabled}
+      entityArchived={loaderData.emailTask.archived}
       returnLocation="/workspace/push-integrations/email-tasks"
     >
       <Card>

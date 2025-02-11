@@ -51,6 +51,9 @@ const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
     intent: z.literal("archive"),
   }),
+  z.object({
+    intent: z.literal("remove"),
+  }),
 ]);
 
 export const handle = {
@@ -135,6 +138,14 @@ export async function action({ request, params }: ActionArgs) {
         return redirect(`/workspace/projects`);
       }
 
+      case "remove": {
+        await apiClient.projects.projectRemove({
+          ref_id: id,
+        });
+
+        return redirect(`/workspace/projects`);
+      }
+
       default:
         throw new Response("Bad Intent", { status: 500 });
     }
@@ -184,8 +195,9 @@ export default function Project() {
   return (
     <LeafPanel
       key={`projects-${loaderData.project.ref_id}`}
-      showArchiveButton={!isRootProject(loaderData.project)}
-      enableArchiveButton={inputsEnabled}
+      showArchiveAndRemoveButton={!isRootProject(loaderData.project)}
+      inputsEnabled={inputsEnabled}
+      entityArchived={loaderData.project.archived}
       returnLocation="/workspace/projects"
     >
       <Card sx={{ marginBottom: "1rem" }}>

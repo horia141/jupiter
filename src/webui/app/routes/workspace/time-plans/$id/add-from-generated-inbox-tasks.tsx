@@ -255,6 +255,7 @@ export default function TimePlanAddFromCurrentInboxTasks() {
     <LeafPanel
       key={`time-plan-${id}/add-from-current-inbox-tasks`}
       returnLocation={`/workspace/time-plans/${id}`}
+      inputsEnabled={inputsEnabled}
       initialExpansionState={LeafPanelExpansionState.LARGE}
       allowedExpansionStates={[
         LeafPanelExpansionState.LARGE,

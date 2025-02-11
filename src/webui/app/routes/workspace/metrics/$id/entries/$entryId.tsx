@@ -114,6 +114,15 @@ export async function action({ request, params }: ActionArgs) {
 
         return redirect(`/workspace/metrics/${id}`);
       }
+
+      case "remove": {
+        await apiClient.entry.metricEntryRemove({
+          ref_id: entryId,
+        });
+
+        return redirect(`/workspace/metrics/${id}`);
+      }
+
       default:
         throw new Response("Bad Intent", { status: 500 });
     }
@@ -147,8 +156,9 @@ export default function MetricEntry() {
   return (
     <LeafPanel
       key={`metric-${id}/entry-${entryId}`}
-      showArchiveButton
-      enableArchiveButton={inputsEnabled}
+      showArchiveAndRemoveButton
+      inputsEnabled={inputsEnabled}
+      entityArchived={loaderData.metricEntry.archived}
       returnLocation={`/workspace/metrics/${id}`}
     >
       <Card sx={{ marginBottom: "1rem" }}>

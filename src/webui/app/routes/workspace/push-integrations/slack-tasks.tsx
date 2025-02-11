@@ -3,7 +3,7 @@ import { Button } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Link, Outlet, useFetcher } from "@remix-run/react";
+import { Link, Outlet } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients.server";
@@ -51,21 +51,6 @@ export default function SlackTasks() {
 
   const sortedEntries = [...entries];
 
-  const archiveSlackTaskFetch = useFetcher();
-
-  function archiveSlackTask(slackTask: SlackTask) {
-    archiveSlackTaskFetch.submit(
-      {
-        intent: "archive",
-        user: "NOT USED - FOR ARCHIVE ONLY",
-      },
-      {
-        method: "post",
-        action: `/workspace/push-integrations/slack-tasks/${slackTask.ref_id}`,
-      }
-    );
-  }
-
   return (
     <TrunkPanel
       key={"slack-tasks"}
@@ -93,9 +78,6 @@ export default function SlackTasks() {
             <EntityCard
               key={`slack-task-${entry.slack_task.ref_id}`}
               entityId={`slack-task-${entry.slack_task.ref_id}`}
-              allowSwipe
-              allowMarkNotDone
-              onMarkNotDone={() => archiveSlackTask(entry.slack_task)}
             >
               <EntityLink
                 to={`/workspace/push-integrations/slack-tasks/${entry.slack_task.ref_id}`}

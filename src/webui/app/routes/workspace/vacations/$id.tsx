@@ -119,6 +119,13 @@ export async function action({ request, params }: ActionArgs) {
         return redirect(`/workspace/vacations`);
       }
 
+      case "remove": {
+        await apiClient.vacations.vacationRemove({
+          ref_id: id,
+        });
+        return redirect(`/workspace/vacations`);
+      }
+
       default:
         throw new Response("Bad Intent", { status: 500 });
     }
@@ -157,8 +164,9 @@ export default function Vacation() {
   return (
     <LeafPanel
       key={`vacation-${vacation.ref_id}`}
-      showArchiveButton
-      enableArchiveButton={inputsEnabled}
+      showArchiveAndRemoveButton
+      inputsEnabled={inputsEnabled}
+      entityArchived={vacation.archived}
       returnLocation="/workspace/vacations"
     >
       <Card sx={{ marginBottom: "1rem" }}>

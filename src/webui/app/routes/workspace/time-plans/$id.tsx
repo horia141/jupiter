@@ -101,6 +101,9 @@ const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
     intent: z.literal("archive"),
   }),
+  z.object({
+    intent: z.literal("remove"),
+  }),
 ]);
 
 export const handle = {
@@ -191,7 +194,16 @@ export async function action({ request, params }: ActionArgs) {
         await apiClient.timePlans.timePlanArchive({
           ref_id: id,
         });
-        return redirect(`/workspace/time-plans/${id}`);
+
+        return redirect(`/workspace/time-plans`);
+      }
+
+      case "remove": {
+        await apiClient.timePlans.timePlanRemove({
+          ref_id: id,
+        });
+
+        return redirect(`/workspace/time-plans`);
       }
 
       default:
@@ -306,8 +318,9 @@ export default function TimePlanView() {
   return (
     <BranchPanel
       key={`time-plan-${loaderData.timePlan.ref_id}`}
-      showArchiveButton
-      enableArchiveButton={inputsEnabled}
+      showArchiveAndRemoveButton
+      inputsEnabled={inputsEnabled}
+      entityArchived={loaderData.timePlan.archived}
       returnLocation="/workspace/time-plans"
     >
       <Form method="post">

@@ -1,6 +1,4 @@
-import type {
-  BigPlanSummary,
-  ProjectSummary} from "@jupiter/webapi-client";
+import type { BigPlanSummary, ProjectSummary } from "@jupiter/webapi-client";
 import {
   ApiError,
   Difficulty,
@@ -86,6 +84,9 @@ const UpdateFormSchema = z.discriminatedUnion("intent", [
   }),
   z.object({
     intent: z.literal("archive"),
+  }),
+  z.object({
+    intent: z.literal("remove"),
   }),
   z.object({
     intent: z.literal("inbox-task-mark-done"),
@@ -212,6 +213,13 @@ export async function action({ request, params }: ActionArgs) {
 
       case "archive": {
         await apiClient.inDayBlock.timeEventInDayBlockArchive({
+          ref_id: id,
+        });
+        return redirect(`/workspace/calendar?${url.searchParams}`);
+      }
+
+      case "remove": {
+        await apiClient.inDayBlock.timeEventInDayBlockRemove({
           ref_id: id,
         });
         return redirect(`/workspace/calendar?${url.searchParams}`);
@@ -414,8 +422,10 @@ export default function TimeEventInDayBlockViewOne() {
   return (
     <LeafPanel
       key={`time-event-in-day-block-${loaderData.inDayBlock.ref_id}`}
-      showArchiveButton={corePropertyEditable}
-      enableArchiveButton={inputsEnabled && corePropertyEditable}
+      showArchiveAndRemoveButton={corePropertyEditable}
+      inputsEnabled={inputsEnabled}
+      entityNotEditable={!corePropertyEditable}
+      entityArchived={loaderData.inDayBlock.archived}
       returnLocation={`/workspace/calendar?${query}`}
     >
       <TimeEventParamsSource

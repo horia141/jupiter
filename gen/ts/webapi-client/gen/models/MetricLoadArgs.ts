@@ -10,5 +10,6 @@ import type { EntityId } from './EntityId';
 export type MetricLoadArgs = {
     ref_id: EntityId;
     allow_archived: boolean;
+    allow_archived_entries: boolean;
 };
 

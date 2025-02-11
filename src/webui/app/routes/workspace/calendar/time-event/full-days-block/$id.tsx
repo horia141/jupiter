@@ -128,8 +128,10 @@ export default function TimeEventFullDaysBlockViewOne() {
   return (
     <LeafPanel
       key={`time-event-full-days-block-${loaderData.fullDaysBlock.ref_id}`}
-      showArchiveButton
-      enableArchiveButton={inputsEnabled && corePropertyEditable}
+      showArchiveAndRemoveButton
+      inputsEnabled={inputsEnabled}
+      entityNotEditable={!corePropertyEditable}
+      entityArchived={loaderData.fullDaysBlock.archived}
       returnLocation={`/workspace/calendar?${query}`}
     >
       <GlobalError actionResult={actionData} />

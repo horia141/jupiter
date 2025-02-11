@@ -142,7 +142,11 @@ export default function NewMetric() {
   }
 
   return (
-    <LeafPanel key={"metrics/new"} returnLocation="/workspace/metrics">
+    <LeafPanel
+      key={"metrics/new"}
+      returnLocation="/workspace/metrics"
+      inputsEnabled={inputsEnabled}
+    >
       <Card>
         <GlobalError actionResult={actionData} />
         <CardContent>

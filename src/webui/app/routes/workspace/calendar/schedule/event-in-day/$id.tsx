@@ -71,6 +71,9 @@ const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
     intent: z.literal("archive"),
   }),
+  z.object({
+    intent: z.literal("remove"),
+  }),
 ]);
 
 export const handle = {
@@ -173,6 +176,13 @@ export async function action({ request, params }: ActionArgs) {
         return redirect(`/workspace/calendar?${url.searchParams}`);
       }
 
+      case "remove": {
+        await apiClient.eventInDay.scheduleEventInDayRemove({
+          ref_id: id,
+        });
+        return redirect(`/workspace/calendar?${url.searchParams}`);
+      }
+
       default:
         throw new Response("Bad Intent", { status: 500 });
     }
@@ -250,8 +260,10 @@ export default function ScheduleEventInDayViewOne() {
   return (
     <LeafPanel
       key={`schedule-event-in-day-${loaderData.scheduleEventInDay.ref_id}`}
-      showArchiveButton
-      enableArchiveButton={inputsEnabled && corePropertyEditable}
+      showArchiveAndRemoveButton
+      inputsEnabled={inputsEnabled}
+      entityNotEditable={!corePropertyEditable}
+      entityArchived={loaderData.scheduleEventInDay.archived}
       returnLocation={`/workspace/calendar?${query}`}
     >
       <TimeEventParamsSource

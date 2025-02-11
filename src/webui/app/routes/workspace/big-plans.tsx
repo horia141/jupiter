@@ -1,11 +1,11 @@
 import type { BigPlan } from "@jupiter/webapi-client";
-import { BigPlanStatus, WorkspaceFeature } from "@jupiter/webapi-client";
+import { WorkspaceFeature } from "@jupiter/webapi-client";
 import ViewListIcon from "@mui/icons-material/ViewList";
 import ViewTimelineIcon from "@mui/icons-material/ViewTimeline";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Link, Outlet, useFetcher } from "@remix-run/react";
+import { Link, Outlet } from "@remix-run/react";
 import { BigPlanStatusTag } from "~/components/big-plan-status-tag";
 
 import {
@@ -111,23 +111,6 @@ export default function BigPlans() {
     ? View.TIMELINE_BY_PROJECT
     : View.TIMELINE;
   const [selectedView, setSelectedView] = useState(initialView);
-
-  const archiveBigPlanFetch = useFetcher();
-
-  function archiveBigPlan(bigPlan: BigPlan) {
-    archiveBigPlanFetch.submit(
-      {
-        intent: "archive",
-        name: "NOT USED - FOR ARCHIVE ONLY",
-        project: "NOT USED - FOR ARCHIVE ONLY",
-        status: BigPlanStatus.NOT_STARTED,
-      },
-      {
-        method: "post",
-        action: `/workspace/big-plans/${bigPlan.ref_id}`,
-      }
-    );
-  }
 
   const [showFilterDialog, setShowFilterDialog] = useState(false);
 
@@ -319,7 +302,6 @@ export default function BigPlans() {
             topLevelInfo={topLevelInfo}
             bigPlans={sortedBigPlans}
             entriesByRefId={entriesByRefId}
-            onArchiveBigPlan={archiveBigPlan}
           />
         )}
       </NestingAwareBlock>
@@ -521,15 +503,9 @@ interface ListProps {
   topLevelInfo: TopLevelInfo;
   bigPlans: Array<BigPlan>;
   entriesByRefId: Map<string, BigPlanParent>;
-  onArchiveBigPlan: (bigPlan: BigPlan) => void;
 }
 
-function List({
-  topLevelInfo,
-  bigPlans,
-  entriesByRefId,
-  onArchiveBigPlan,
-}: ListProps) {
+function List({ topLevelInfo, bigPlans, entriesByRefId }: ListProps) {
   return (
     <BigPlanStack
       topLevelInfo={topLevelInfo}
@@ -543,7 +519,6 @@ function List({
         showHandleMarkDone: true,
         showHandleMarkNotDone: true,
       }}
-      onCardMarkNotDone={onArchiveBigPlan}
     />
   );
 }

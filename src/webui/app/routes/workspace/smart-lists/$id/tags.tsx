@@ -36,6 +36,9 @@ const UpdateSchema = z.discriminatedUnion("intent", [
   z.object({
     intent: z.literal("archive"),
   }),
+  z.object({
+    intent: z.literal("remove"),
+  }),
 ]);
 
 export const handle = {
@@ -49,7 +52,9 @@ export async function loader({ request, params }: LoaderArgs) {
   try {
     const response = await apiClient.smartLists.smartListLoad({
       ref_id: id,
-      allow_archived: false,
+      allow_archived: true,
+      allow_archived_items: false,
+      allow_archived_tags: false,
     });
 
     return json({
@@ -81,6 +86,14 @@ export async function action({ request, params }: LoaderArgs) {
 
       return redirect("/workspace/smart-lists");
     }
+
+    case "remove": {
+      await apiClient.smartLists.smartListRemove({
+        ref_id: id,
+      });
+
+      return redirect("/workspace/smart-lists");
+    }
   }
 }
 
@@ -106,8 +119,9 @@ export default function SmartListViewTags() {
   return (
     <BranchPanel
       key={`smart-list-${loaderData.smartList.ref_id}/tags`}
-      showArchiveButton
-      enableArchiveButton={inputsEnabled}
+      showArchiveAndRemoveButton
+      inputsEnabled={inputsEnabled}
+      entityArchived={loaderData.smartList.archived}
       createLocation={`/workspace/smart-lists/${loaderData.smartList.ref_id}/tags/new`}
       extraControls={[
         <Button

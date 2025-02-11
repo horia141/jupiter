@@ -156,7 +156,11 @@ export default function NewBigPlan() {
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <LeafPanel key={`big-plans/new`} returnLocation="/workspace/big-plans">
+    <LeafPanel
+      key={`big-plans/new`}
+      returnLocation="/workspace/big-plans"
+      inputsEnabled={inputsEnabled}
+    >
       <Card>
         <GlobalError actionResult={actionData} />
         <CardContent>

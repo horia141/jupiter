@@ -123,7 +123,11 @@ export default function NewHabit() {
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <LeafPanel key={"habits/new"} returnLocation="/workspace/habits">
+    <LeafPanel
+      key={"habits/new"}
+      returnLocation="/workspace/habits"
+      inputsEnabled={inputsEnabled}
+    >
       <Card>
         <GlobalError actionResult={actionData} />
         <CardContent>

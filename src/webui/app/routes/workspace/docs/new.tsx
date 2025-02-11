@@ -61,6 +61,7 @@ export default function NewDoc() {
     <LeafPanel
       key={"docs/new"}
       returnLocation="/workspace/docs"
+      inputsEnabled={inputsEnabled}
       initialExpansionState={LeafPanelExpansionState.FULL}
     >
       <Card>

@@ -88,6 +88,9 @@ const UpdateFormSchema = z.discriminatedUnion("intent", [
     intent: z.literal("archive"),
   }),
   z.object({
+    intent: z.literal("remove"),
+  }),
+  z.object({
     intent: z.literal("target-inbox-task-mark-done"),
     ...UpdateFormTargetInboxTaskSchema,
   }),
@@ -208,6 +211,14 @@ export async function action({ request, params }: ActionArgs) {
 
       case "archive": {
         await apiClient.activity.timePlanActivityArchive({
+          ref_id: activityId,
+        });
+
+        return redirect(`/workspace/time-plans/${id}`);
+      }
+
+      case "remove": {
+        await apiClient.activity.timePlanActivityRemove({
           ref_id: activityId,
         });
 
@@ -391,8 +402,9 @@ export default function TimePlanActivity() {
   return (
     <LeafPanel
       key={`time-plan-${id}/activity-${activityId}`}
-      showArchiveButton
-      enableArchiveButton={inputsEnabled}
+      showArchiveAndRemoveButton
+      inputsEnabled={inputsEnabled}
+      entityArchived={loaderData.timePlanActivity.archived}
       returnLocation={`/workspace/time-plans/${id}`}
       initialExpansionState={LeafPanelExpansionState.MEDIUM}
     >

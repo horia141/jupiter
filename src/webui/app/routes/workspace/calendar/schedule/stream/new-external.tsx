@@ -86,6 +86,7 @@ export default function ScheduleStreamNew() {
     <LeafPanel
       key="schedule-stream/new"
       returnLocation={`/workspace/calendar/schedule/stream?${query}`}
+      inputsEnabled={inputsEnabled}
     >
       <GlobalError actionResult={actionData} />
       <SectionCardNew

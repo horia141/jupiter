@@ -64,6 +64,9 @@ const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
     intent: z.literal("archive"),
   }),
+  z.object({
+    intent: z.literal("remove"),
+  }),
 ]);
 
 export const handle = {
@@ -160,6 +163,13 @@ export async function action({ request, params }: ActionArgs) {
         return redirect(`/workspace/calendar?${url.searchParams}`);
       }
 
+      case "remove": {
+        await apiClient.eventFullDays.scheduleEventFullDaysRemove({
+          ref_id: id,
+        });
+        return redirect(`/workspace/calendar?${url.searchParams}`);
+      }
+
       default:
         throw new Response("Bad Intent", { status: 500 });
     }
@@ -204,8 +214,10 @@ export default function ScheduleEventFullDaysViewOne() {
   return (
     <LeafPanel
       key={`schedule-event-full-days-${loaderData.scheduleEventFullDays.ref_id}`}
-      showArchiveButton={inputsEnabled && corePropertyEditable}
-      enableArchiveButton={inputsEnabled}
+      showArchiveAndRemoveButton={inputsEnabled}
+      inputsEnabled={inputsEnabled}
+      entityNotEditable={!corePropertyEditable}
+      entityArchived={loaderData.scheduleEventFullDays.archived}
       returnLocation={`/workspace/calendar?${query}`}
     >
       <GlobalError actionResult={actionData} />

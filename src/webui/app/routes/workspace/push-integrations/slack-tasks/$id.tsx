@@ -167,6 +167,14 @@ export async function action({ request, params }: ActionArgs) {
         return redirect(`/workspace/push-integrations/slack-tasks`);
       }
 
+      case "remove": {
+        await apiClient.slack.slackTaskRemove({
+          ref_id: id,
+        });
+
+        return redirect(`/workspace/push-integrations/slack-tasks`);
+      }
+
       default:
         throw new Response("Bad Intent", { status: 500 });
     }
@@ -227,8 +235,9 @@ export default function SlackTask() {
   return (
     <LeafPanel
       key={`slack-tasks/${loaderData.slackTask.ref_id}`}
-      showArchiveButton
-      enableArchiveButton={inputsEnabled}
+      showArchiveAndRemoveButton
+      inputsEnabled={inputsEnabled}
+      entityArchived={loaderData.slackTask.archived}
       returnLocation="/workspace/push-integrations/slack-tasks"
     >
       <Card>

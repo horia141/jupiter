@@ -65,6 +65,9 @@ const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
     intent: z.literal("archive"),
   }),
+  z.object({
+    intent: z.literal("remove"),
+  }),
 ]);
 
 export const handle = {
@@ -156,6 +159,16 @@ export async function action({ request, params }: ActionArgs) {
         );
       }
 
+      case "remove": {
+        await apiClient.stream.scheduleStreamRemove({
+          ref_id: id,
+        });
+
+        return redirect(
+          `/workspace/calendar/schedule/stream?${url.searchParams}`
+        );
+      }
+
       default:
         throw new Response("Bad Intent", { status: 500 });
     }
@@ -189,8 +202,10 @@ export default function ScheduleStreamViewOne() {
   return (
     <LeafPanel
       key={`schedule-stream-${loaderData.scheduleStream.ref_id}`}
-      showArchiveButton
-      enableArchiveButton={inputsEnabled}
+      showArchiveAndRemoveButton
+      inputsEnabled={inputsEnabled}
+      entityNotEditable={!corePropertyEditable}
+      entityArchived={loaderData.scheduleStream.archived}
       returnLocation={`/workspace/calendar/schedule/stream?${query}`}
     >
       <GlobalError actionResult={actionData} />

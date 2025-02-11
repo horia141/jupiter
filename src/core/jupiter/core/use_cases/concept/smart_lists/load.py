@@ -28,6 +28,8 @@ class SmartListLoadArgs(UseCaseArgsBase):
 
     ref_id: EntityId
     allow_archived: bool
+    allow_archived_items: bool
+    allow_archived_tags: bool
 
 
 @use_case_result
@@ -59,10 +61,10 @@ class SmartListLoadUseCase(
             allow_archived=args.allow_archived,
         )
         smart_list_tags = await uow.get_for(SmartListTag).find_all_generic(
-            parent_ref_id=smart_list.ref_id, allow_archived=args.allow_archived
+            parent_ref_id=smart_list.ref_id, allow_archived=args.allow_archived_tags
         )
         smart_list_items = await uow.get_for(SmartListItem).find_all_generic(
-            parent_ref_id=smart_list.ref_id, allow_archived=args.allow_archived
+            parent_ref_id=smart_list.ref_id, allow_archived=args.allow_archived_items
         )
 
         note = await uow.get(NoteRepository).load_optional_for_source(

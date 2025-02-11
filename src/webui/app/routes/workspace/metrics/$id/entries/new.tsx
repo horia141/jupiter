@@ -47,8 +47,9 @@ export async function loader({ request, params }: LoaderArgs) {
   const { id } = parseParams(params, ParamsSchema);
 
   const response = await apiClient.metrics.metricLoad({
-    allow_archived: true,
     ref_id: id,
+    allow_archived: true,
+    allow_archived_entries: false,
   });
 
   return json({
@@ -99,6 +100,7 @@ export default function NewMetricEntry() {
     <LeafPanel
       key={`metric-${id}/entries/new`}
       returnLocation={`/workspace/metrics/${loaderData.metric.ref_id}`}
+      inputsEnabled={inputsEnabled}
     >
       <Card>
         <GlobalError actionResult={actionData} />

@@ -70,7 +70,11 @@ export default function NewSmartList() {
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <LeafPanel key={"smart-lists/new"} returnLocation="/workspace/smart-lists">
+    <LeafPanel
+      key={"smart-lists/new"}
+      returnLocation="/workspace/smart-lists"
+      inputsEnabled={inputsEnabled}
+    >
       <Card>
         <GlobalError actionResult={actionData} />
         <CardContent>

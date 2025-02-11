@@ -81,7 +81,11 @@ export default function NewJournal() {
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <LeafPanel key={"journasl/new"} returnLocation="/workspace/journals">
+    <LeafPanel
+      key={"journasl/new"}
+      returnLocation="/workspace/journals"
+      inputsEnabled={inputsEnabled}
+    >
       <GlobalError actionResult={actionData} />
       <Card>
         <CardContent>
