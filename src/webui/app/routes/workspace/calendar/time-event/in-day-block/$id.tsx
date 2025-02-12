@@ -574,6 +574,7 @@ export default function TimeEventInDayBlockViewOne() {
       {loaderData.inboxTask && (
         <InboxTaskPropertiesEditor
           title="Inbox Task"
+          showLinkToInboxTask
           intentPrefix="inbox-task"
           namePrefix="inboxTask"
           topLevelInfo={topLevelInfo}

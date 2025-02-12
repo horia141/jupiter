@@ -199,7 +199,7 @@ class SqliteSearchRepository(SqliteRepository, SearchRepository):
             .where(
                 self._search_index_table.c.workspace_ref_id == workspace_ref_id.as_int()
             )
-            .where(self._search_index_table.c.name.match(query_clean))
+            .where(self._search_index_table.c.name.match(f'"{query_clean}"'))
         )
         if not include_archived:
             query_stmt = query_stmt.where(
