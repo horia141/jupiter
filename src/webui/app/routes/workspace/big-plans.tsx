@@ -516,8 +516,8 @@ function List({ topLevelInfo, bigPlans, entriesByRefId }: ListProps) {
         showParent: true,
         showActionableDate: true,
         showDueDate: true,
-        showHandleMarkDone: true,
-        showHandleMarkNotDone: true,
+        showHandleMarkDone: false,
+        showHandleMarkNotDone: false,
       }}
     />
   );

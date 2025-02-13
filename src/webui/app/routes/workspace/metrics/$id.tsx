@@ -148,10 +148,10 @@ export default function Metric() {
           >
             <TuneIcon />
           </IconButton>
-        )
+        ),
       ]}
-            returnLocation="/workspace/metrics"
-          >
+      returnLocation="/workspace/metrics"
+    >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
         <MetricGraph sortedMetricEntries={sortedEntries} />
 

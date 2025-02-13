@@ -13,6 +13,7 @@ interface BigPlanStackProps {
   bigPlans: BigPlan[];
   entriesByRefId?: Map<string, BigPlanParent>;
   showOptions: BigPlanShowOptions;
+  allowSwipe?: boolean;
   onCardMarkDone?: (it: BigPlan) => void;
   onCardMarkNotDone?: (it: BigPlan) => void;
 }
@@ -31,7 +32,7 @@ export function BigPlanStack(props: BigPlanStackProps) {
           <BigPlanCard
             key={`big-plan-${entry.ref_id}`}
             topLevelInfo={props.topLevelInfo}
-            allowSwipe
+            allowSwipe={props.allowSwipe}
             bigPlan={entry}
             showOptions={props.showOptions}
             parent={props.entriesByRefId?.get(entry.ref_id)}

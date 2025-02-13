@@ -119,16 +119,18 @@ const UpdateFormSchema = z.discriminatedUnion("intent", [
     ...UpdateFormTargetInboxTaskSchema,
   }),
   z.object({
+    intent: z.literal("target-inbox-task-update"),
+    ...UpdateFormTargetInboxTaskSchema,
+  }),
+  z.object({
     intent: z.literal("target-inbox-task-change-project"),
+    targetInboxTaskRefId: z.string(),
     targetInboxTaskProject: z.string(),
   }),
   z.object({
     intent: z.literal("target-inbox-task-associate-with-big-plan"),
+    targetInboxTaskRefId: z.string(),
     targetInboxTaskBigPlan: z.string().optional(),
-  }),
-  z.object({
-    intent: z.literal("target-inbox-task-update"),
-    ...UpdateFormTargetInboxTaskSchema,
   }),
 ]);
 
@@ -316,7 +318,7 @@ export async function action({ request, params }: ActionArgs) {
           throw new Error("Unexpected null project");
         }
         await apiClient.inboxTasks.inboxTaskChangeProject({
-          ref_id: id,
+          ref_id: form.targetInboxTaskRefId,
           project_ref_id: form.targetInboxTaskProject,
         });
 
@@ -325,7 +327,7 @@ export async function action({ request, params }: ActionArgs) {
 
       case "target-inbox-task-associate-with-big-plan": {
         await apiClient.inboxTasks.inboxTaskAssociateWithBigPlan({
-          ref_id: id,
+          ref_id: form.targetInboxTaskRefId,
           big_plan_ref_id:
             form.targetInboxTaskBigPlan !== undefined &&
             form.targetInboxTaskBigPlan !== "none"

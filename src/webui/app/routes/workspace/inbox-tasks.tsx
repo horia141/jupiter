@@ -1570,7 +1570,7 @@ function BigScreenKanbanByEisen({
           {EISENS.filter((e) => showEisenBoard[e]).map((e) => {
             return (
               <React.Fragment key={e}>
-                <Divider>
+                <Divider sx={{ paddingTop: "1rem", paddingBottom: "1rem" }}>
                   <Typography variant="h6">
                     {eisenIcon(e)} {eisenName(e)}
                   </Typography>
@@ -1675,7 +1675,7 @@ function KanbanBoard({
 }: KanbanBoardProps) {
   return (
     <Grid container spacing={2}>
-      <Grid xs={2}>
+      <Grid xs={2} sx={{ position: "relative" }}>
         <InboxTasksColumn
           today={today}
           topLevelInfo={topLevelInfo}
@@ -1698,7 +1698,7 @@ function KanbanBoard({
         />
       </Grid>
 
-      <Grid xs={2}>
+      <Grid xs={2} sx={{ position: "relative" }}>
         <InboxTasksColumn
           today={today}
           topLevelInfo={topLevelInfo}
@@ -1723,7 +1723,7 @@ function KanbanBoard({
         />
       </Grid>
 
-      <Grid xs={2}>
+      <Grid xs={2} sx={{ position: "relative" }}>
         <InboxTasksColumn
           today={today}
           topLevelInfo={topLevelInfo}
@@ -1746,7 +1746,7 @@ function KanbanBoard({
         />
       </Grid>
 
-      <Grid xs={2}>
+      <Grid xs={2} sx={{ position: "relative" }}>
         <InboxTasksColumn
           today={today}
           topLevelInfo={topLevelInfo}
@@ -1769,7 +1769,7 @@ function KanbanBoard({
         />
       </Grid>
 
-      <Grid xs={2}>
+      <Grid xs={2} sx={{ position: "relative" }}>
         <InboxTasksColumn
           today={today}
           topLevelInfo={topLevelInfo}
@@ -1792,7 +1792,7 @@ function KanbanBoard({
         />
       </Grid>
 
-      <Grid xs={2}>
+      <Grid xs={2} sx={{ position: "relative" }}>
         <InboxTasksColumn
           today={today}
           topLevelInfo={topLevelInfo}
@@ -2461,9 +2461,29 @@ function InboxTasksColumn(props: InboxTasksColumnProps) {
 
   return (
     <>
-      <Box sx={{ paddingBottom: "1rem" }}>
+      <Box
+        sx={{
+          height: "1rem",
+          marginBottom: "1rem",
+          position: "sticky",
+          top: 0,
+          zIndex: 1,
+          display: "flex",
+          alignItems: "center",
+          gap: "0.5rem",
+        }}
+      >
         <InboxTaskStatusTag status={props.allowStatus} />
-        <Typography component="span">{formattedCountStr}</Typography>
+        <Typography
+          component="span"
+          sx={{
+            overflow: "hidden",
+            whiteSpace: "nowrap",
+            textOverflow: "ellipsis",
+          }}
+        >
+          {formattedCountStr}
+        </Typography>
       </Box>
 
       <Droppable

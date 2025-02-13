@@ -327,17 +327,28 @@ interface TrunkPanelContentProps {
 
 const TrunkPanelContent = styled("div")<TrunkPanelContentProps>(
   ({ theme, isbigscreen, hasleaf, hasbranch }) => ({
-    width:
-      hasbranch === "false"
-        ? isbigscreen === "true"
-          ? `${theme.breakpoints.values.lg}px`
-          : "100vw"
-        : "100vw",
-    margin: "auto",
-    padding:
+    paddingTop:
       hasbranch === "false"
         ? isbigscreen === "true"
           ? "0.5rem"
+          : "0px"
+        : "0px",
+    paddingBottom:
+      hasbranch === "false"
+        ? isbigscreen === "true"
+          ? "0.5rem"
+          : "0px"
+        : "0px",
+    paddingLeft:
+      hasbranch === "false"
+        ? isbigscreen === "true"
+          ? `calc((100vw - ${theme.breakpoints.values.lg}px) / 2)`
+          : "0px"
+        : "0px",
+    paddingRight:
+      hasbranch === "false"
+        ? isbigscreen === "true"
+          ? `calc((100vw - ${theme.breakpoints.values.lg}px) / 2)`
           : "0px"
         : "0px",
     height: `calc(var(--vh, 1vh) * 100 - env(safe-area-inset-top) - ${

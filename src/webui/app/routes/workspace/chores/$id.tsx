@@ -49,6 +49,7 @@ import { aDateToDate } from "~/logic/domain/adate";
 import { sortInboxTasksNaturally } from "~/logic/domain/inbox-task";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
+import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
@@ -281,6 +282,7 @@ export default function Chore() {
   const transition = useTransition();
 
   const topLevelInfo = useContext(TopLevelInfoContext);
+  const isBigScreen = useBigScreen();
 
   const inputsEnabled =
     transition.state === "idle" && !loaderData.chore.archived;
@@ -405,52 +407,57 @@ export default function Chore() {
               <FieldError actionResult={actionData} fieldName="/must_do" />
             </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="startAtDate" shrink>
-                Start At Date [Optional]
-              </InputLabel>
-              <OutlinedInput
-                type="date"
-                notched
-                label="startAtDate"
-                defaultValue={
-                  loaderData.chore.start_at_date
-                    ? aDateToDate(loaderData.chore.start_at_date).toFormat(
-                        "yyyy-MM-dd"
-                      )
-                    : undefined
-                }
-                name="startAtDate"
-                readOnly={!inputsEnabled}
-              />
+            <Stack spacing={2} direction={isBigScreen ? "row" : "column"}>
+              <FormControl fullWidth>
+                <InputLabel id="startAtDate" shrink>
+                  Start At Date [Optional]
+                </InputLabel>
+                <OutlinedInput
+                  type="date"
+                  notched
+                  label="startAtDate"
+                  defaultValue={
+                    loaderData.chore.start_at_date
+                      ? aDateToDate(loaderData.chore.start_at_date).toFormat(
+                          "yyyy-MM-dd"
+                        )
+                      : undefined
+                  }
+                  name="startAtDate"
+                  readOnly={!inputsEnabled}
+                />
 
-              <FieldError
-                actionResult={actionData}
-                fieldName="/start_at_date"
-              />
-            </FormControl>
+                <FieldError
+                  actionResult={actionData}
+                  fieldName="/start_at_date"
+                />
+              </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="endAtDate" shrink>
-                End At Date [Optional]
-              </InputLabel>
-              <OutlinedInput
-                type="date"
-                notched
-                label="endAtDate"
-                defaultValue={
-                  loaderData.chore.end_at_date
-                    ? aDateToDate(loaderData.chore.end_at_date).toFormat(
-                        "yyyy-MM-dd"
-                      )
-                    : undefined
-                }
-                name="endAtDate"
-                readOnly={!inputsEnabled}
-              />
+              <FormControl fullWidth>
+                <InputLabel id="endAtDate" shrink>
+                  End At Date [Optional]
+                </InputLabel>
+                <OutlinedInput
+                  type="date"
+                  notched
+                  label="endAtDate"
+                  defaultValue={
+                    loaderData.chore.end_at_date
+                      ? aDateToDate(loaderData.chore.end_at_date).toFormat(
+                          "yyyy-MM-dd"
+                        )
+                      : undefined
+                  }
+                  name="endAtDate"
+                  readOnly={!inputsEnabled}
+                />
 
-              <FieldError actionResult={actionData} fieldName="/end_at_date" />
-            </FormControl>
+                <FieldError
+                  actionResult={actionData}
+                  fieldName="/end_at_date"
+                />
+              </FormControl>
+            </Stack>
           </Stack>
         </CardContent>
 

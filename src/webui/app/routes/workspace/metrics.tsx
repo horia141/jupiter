@@ -68,7 +68,7 @@ export default function Metrics() {
             WorkspaceFeature.PROJECTS
           ) && (
             <>
-                {isBigScreen ? (
+              {isBigScreen ? (
                 <Button
                   variant="outlined"
                   to={`/workspace/metrics/settings`}
@@ -77,14 +77,11 @@ export default function Metrics() {
                 >
                   Settings
                 </Button>
-                ) : (
-                <IconButton
-                  to={`/workspace/metrics/settings`}
-                  component={Link}
-                >
+              ) : (
+                <IconButton to={`/workspace/metrics/settings`} component={Link}>
                   <TuneIcon />
                 </IconButton>
-                )}
+              )}
             </>
           )}
         </>,
