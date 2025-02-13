@@ -17,6 +17,7 @@ const BlockEditor = lazy(() =>
 );
 
 interface EntityNoteEditorProps {
+  autofocus?: boolean;
   initialNote: Note;
   inputsEnabled: boolean;
 }

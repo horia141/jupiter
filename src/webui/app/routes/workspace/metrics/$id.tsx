@@ -10,7 +10,7 @@ import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 
 import TuneIcon from "@mui/icons-material/Tune";
-import { Button, styled } from "@mui/material";
+import { Button, IconButton, styled } from "@mui/material";
 import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";
 import { useContext } from "react";
@@ -130,18 +130,28 @@ export default function Metric() {
       key={`metric-${loaderData.metric.ref_id}`}
       createLocation={`/workspace/metrics/${loaderData.metric.ref_id}/entries/new`}
       extraControls={[
-        <Button
-          key={loaderData.metric.ref_id}
-          variant="outlined"
-          to={`/workspace/metrics/${loaderData.metric.ref_id}/details`}
-          component={Link}
-          startIcon={<TuneIcon />}
-        >
-          {isBigScreen ? "Details" : ""}
-        </Button>,
+        isBigScreen ? (
+          <Button
+            key={loaderData.metric.ref_id}
+            variant="outlined"
+            to={`/workspace/metrics/${loaderData.metric.ref_id}/details`}
+            component={Link}
+            startIcon={<TuneIcon />}
+          >
+            Details
+          </Button>
+        ) : (
+          <IconButton
+            key={loaderData.metric.ref_id}
+            to={`/workspace/metrics/${loaderData.metric.ref_id}/details`}
+            component={Link}
+          >
+            <TuneIcon />
+          </IconButton>
+        )
       ]}
-      returnLocation="/workspace/metrics"
-    >
+            returnLocation="/workspace/metrics"
+          >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
         <MetricGraph sortedMetricEntries={sortedEntries} />
 

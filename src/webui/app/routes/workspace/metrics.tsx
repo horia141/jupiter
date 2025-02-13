@@ -1,6 +1,6 @@
 import { WorkspaceFeature } from "@jupiter/webapi-client";
 import TuneIcon from "@mui/icons-material/Tune";
-import { Button } from "@mui/material";
+import { Button, IconButton } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -68,14 +68,23 @@ export default function Metrics() {
             WorkspaceFeature.PROJECTS
           ) && (
             <>
-              <Button
-                variant="outlined"
-                to={`/workspace/metrics/settings`}
-                component={Link}
-                startIcon={<TuneIcon />}
-              >
-                {isBigScreen ? "Settings" : ""}
-              </Button>
+                {isBigScreen ? (
+                <Button
+                  variant="outlined"
+                  to={`/workspace/metrics/settings`}
+                  component={Link}
+                  startIcon={<TuneIcon />}
+                >
+                  Settings
+                </Button>
+                ) : (
+                <IconButton
+                  to={`/workspace/metrics/settings`}
+                  component={Link}
+                >
+                  <TuneIcon />
+                </IconButton>
+                )}
             </>
           )}
         </>,

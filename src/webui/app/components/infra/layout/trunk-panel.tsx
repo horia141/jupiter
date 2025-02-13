@@ -229,7 +229,7 @@ const TrunkPanelControlsInner = styled(Box)<TrunkPanelControlsInnerProps>(
     margin: "auto",
     display: "flex",
     alignItems: "center",
-    gap: "1rem",
+    gap: isbigscreen === "true" ? "1rem" : "0.2rem",
   })
 );
 
