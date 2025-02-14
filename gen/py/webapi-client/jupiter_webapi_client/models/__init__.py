@@ -205,6 +205,8 @@ from .journal_find_args import JournalFindArgs
 from .journal_find_result import JournalFindResult
 from .journal_find_result_entry import JournalFindResultEntry
 from .journal_load_args import JournalLoadArgs
+from .journal_load_for_date_and_period_args import JournalLoadForDateAndPeriodArgs
+from .journal_load_for_date_and_period_result import JournalLoadForDateAndPeriodResult
 from .journal_load_result import JournalLoadResult
 from .journal_load_settings_args import JournalLoadSettingsArgs
 from .journal_load_settings_result import JournalLoadSettingsResult
@@ -517,6 +519,8 @@ from .time_plan_find_result import TimePlanFindResult
 from .time_plan_find_result_entry import TimePlanFindResultEntry
 from .time_plan_gen_for_time_plan_args import TimePlanGenForTimePlanArgs
 from .time_plan_load_args import TimePlanLoadArgs
+from .time_plan_load_for_date_and_period_args import TimePlanLoadForDateAndPeriodArgs
+from .time_plan_load_for_date_and_period_result import TimePlanLoadForDateAndPeriodResult
 from .time_plan_load_result import TimePlanLoadResult
 from .time_plan_load_result_activity_doneness_type_0 import TimePlanLoadResultActivityDonenessType0
 from .time_plan_remove_args import TimePlanRemoveArgs
@@ -790,6 +794,8 @@ __all__ = (
     "JournalFindResult",
     "JournalFindResultEntry",
     "JournalLoadArgs",
+    "JournalLoadForDateAndPeriodArgs",
+    "JournalLoadForDateAndPeriodResult",
     "JournalLoadResult",
     "JournalLoadSettingsArgs",
     "JournalLoadSettingsResult",
@@ -1100,6 +1106,8 @@ __all__ = (
     "TimePlanFindResultEntry",
     "TimePlanGenForTimePlanArgs",
     "TimePlanLoadArgs",
+    "TimePlanLoadForDateAndPeriodArgs",
+    "TimePlanLoadForDateAndPeriodResult",
     "TimePlanLoadResult",
     "TimePlanLoadResultActivityDonenessType0",
     "TimePlanRemoveArgs",

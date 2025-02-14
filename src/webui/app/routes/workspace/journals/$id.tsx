@@ -3,6 +3,7 @@ import {
   ApiError,
   InboxTaskStatus,
   RecurringTaskPeriod,
+  WorkspaceFeature,
 } from "@jupiter/webapi-client";
 import {
   Button,
@@ -16,7 +17,6 @@ import {
   OutlinedInput,
   Select,
   Stack,
-  Typography,
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect, Response } from "@remix-run/node";
@@ -39,14 +39,18 @@ import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import { SectionCardNew } from "~/components/infra/section-card-new";
 import { JournalStack } from "~/components/journal-stack";
 import { ShowReport } from "~/components/show-report";
+import { TimePlanStack } from "~/components/time-plan-stack";
 import {
   aGlobalError,
   validationErrorToUIErrorInfo,
 } from "~/logic/action-result";
 import { sortJournalsNaturally } from "~/logic/domain/journal";
 import { periodName } from "~/logic/domain/period";
+import { sortTimePlansNaturally } from "~/logic/domain/time-plan";
+import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { LeafPanelExpansionState } from "~/rendering/leaf-panel-expansion";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useBigScreen } from "~/rendering/use-big-screen";
@@ -84,14 +88,27 @@ export async function loader({ request, params }: LoaderArgs) {
   const { id } = parseParams(params, ParamsSchema);
 
   const summaryResponse = await apiClient.getSummaries.getSummaries({
+    include_workspace: true,
     include_projects: true,
   });
 
   try {
+    const workspace = summaryResponse.workspace!;
+
     const result = await apiClient.journals.journalLoad({
       ref_id: id,
       allow_archived: true,
     });
+
+    let timePlanResult = undefined;
+    if (isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.TIME_PLANS)) {
+      timePlanResult =
+        await apiClient.timePlans.timePlanLoadForTimeDateAndPeriod({
+          right_now: result.journal.right_now,
+          period: result.journal.period,
+          allow_archived: false,
+        });
+    }
 
     return json({
       allProjects: summaryResponse.projects as Array<ProjectSummary>,
@@ -99,6 +116,8 @@ export async function loader({ request, params }: LoaderArgs) {
       note: result.note,
       writingTask: result.writing_task,
       subPeriodJournals: result.sub_period_journals,
+      timePlan: timePlanResult?.time_plan,
+      subTimePlans: timePlanResult?.sub_period_time_plans ?? [],
     });
   } catch (error) {
     if (error instanceof ApiError && error.status === StatusCodes.NOT_FOUND) {
@@ -218,6 +237,7 @@ export default function Journal() {
   }
 
   const sortedSubJournals = sortJournalsNaturally(loaderData.subPeriodJournals);
+  const sortedTimePlans = sortTimePlansNaturally(loaderData.subTimePlans);
 
   const today = DateTime.local({ zone: topLevelInfo.user.timezone });
 
@@ -332,11 +352,34 @@ export default function Journal() {
         />
       )}
 
-      <Typography variant="h5" sx={{ marginBottom: "1rem" }}>
-        Other Journals in this Period
-      </Typography>
+      <SectionCardNew id="sub-journals" title="Other Journals in this Period">
+        <JournalStack
+          topLevelInfo={topLevelInfo}
+          journals={sortedSubJournals}
+        />
+      </SectionCardNew>
 
-      <JournalStack topLevelInfo={topLevelInfo} journals={sortedSubJournals} />
+      {isWorkspaceFeatureAvailable(
+        topLevelInfo.workspace,
+        WorkspaceFeature.TIME_PLANS
+      ) &&
+        loaderData.timePlan &&
+        sortedTimePlans.length > 0 && (
+          <SectionCardNew id="sub-time-plans" title="Time Plans in this Period">
+            {loaderData.timePlan && (
+              <TimePlanStack
+                topLevelInfo={topLevelInfo}
+                timePlans={[loaderData.timePlan]}
+              />
+            )}
+            {sortedTimePlans.length > 0 && (
+              <TimePlanStack
+                topLevelInfo={topLevelInfo}
+                timePlans={sortedTimePlans}
+              />
+            )}
+          </SectionCardNew>
+        )}
     </LeafPanel>
   );
 }

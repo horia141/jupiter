@@ -9,6 +9,8 @@ import type { JournalCreateResult } from '../models/JournalCreateResult';
 import type { JournalFindArgs } from '../models/JournalFindArgs';
 import type { JournalFindResult } from '../models/JournalFindResult';
 import type { JournalLoadArgs } from '../models/JournalLoadArgs';
+import type { JournalLoadForDateAndPeriodArgs } from '../models/JournalLoadForDateAndPeriodArgs';
+import type { JournalLoadForDateAndPeriodResult } from '../models/JournalLoadForDateAndPeriodResult';
 import type { JournalLoadResult } from '../models/JournalLoadResult';
 import type { JournalLoadSettingsArgs } from '../models/JournalLoadSettingsArgs';
 import type { JournalLoadSettingsResult } from '../models/JournalLoadSettingsResult';
@@ -150,6 +152,29 @@ export class JournalsService {
         return this.httpRequest.request({
             method: 'POST',
             url: '/journal-load',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * The command for loading details about a journal.
+     * The command for loading details about a journal.
+     * @param requestBody The input data
+     * @returns JournalLoadForDateAndPeriodResult Successful response
+     * @throws ApiError
+     */
+    public journalLoadForDateAndPeriod(
+        requestBody?: JournalLoadForDateAndPeriodArgs,
+    ): CancelablePromise<JournalLoadForDateAndPeriodResult> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/journal-load-for-date-and-period',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

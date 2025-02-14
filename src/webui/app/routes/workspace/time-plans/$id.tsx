@@ -61,12 +61,14 @@ import {
 } from "~/components/infra/section-actions";
 import { SectionCard } from "~/components/infra/section-card";
 import { SectionCardNew } from "~/components/infra/section-card-new";
+import { JournalStack } from "~/components/journal-stack";
 import { TimePlanActivityList } from "~/components/time-plan-activity-list";
 import { TimePlanStack } from "~/components/time-plan-stack";
 import {
   aGlobalError,
   validationErrorToUIErrorInfo,
 } from "~/logic/action-result";
+import { sortJournalsNaturally } from "~/logic/domain/journal";
 import { periodName } from "~/logic/domain/period";
 import {
   computeProjectHierarchicalNameFromRoot,
@@ -130,6 +132,15 @@ export async function loader({ request, params }: LoaderArgs) {
       include_other_time_plans: true,
     });
 
+    let journalResult = undefined;
+    if (isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.JOURNALS)) {
+      journalResult = await apiClient.journals.journalLoadForDateAndPeriod({
+        right_now: result.time_plan.right_now,
+        period: result.time_plan.period,
+        allow_archived: false,
+      });
+    }
+
     let timeEventResult = undefined;
     if (isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.SCHEDULE)) {
       timeEventResult = await apiClient.calendar.calendarLoadForDateAndPeriod({
@@ -152,6 +163,8 @@ export async function loader({ request, params }: LoaderArgs) {
       subPeriodTimePlans: result.sub_period_time_plans as Array<TimePlan>,
       higherTimePlan: result.higher_time_plan as TimePlan,
       previousTimePlan: result.previous_time_plan as TimePlan,
+      journal: journalResult?.journal,
+      subPeriodJournals: journalResult?.sub_period_journals || [],
       timeEventForInboxTasks:
         timeEventResult?.entries?.inbox_task_entries || [],
       timeEventForBigPlans: [],
@@ -314,6 +327,8 @@ export default function TimePlanView() {
   );
 
   const today = DateTime.local({ zone: topLevelInfo.user.timezone });
+
+  const sortedSubJournals = sortJournalsNaturally(loaderData.subPeriodJournals);
 
   return (
     <BranchPanel
@@ -742,6 +757,31 @@ export default function TimePlanView() {
               />
             </SectionCardNew>
           )}
+
+          {isWorkspaceFeatureAvailable(
+            topLevelInfo.workspace,
+            WorkspaceFeature.JOURNALS
+          ) &&
+            (loaderData.journal || sortedSubJournals.length > 0) && (
+              <SectionCardNew
+                id="time-plan-journal"
+                title="Journal For This Plan"
+              >
+                {loaderData.journal && (
+                  <JournalStack
+                    topLevelInfo={topLevelInfo}
+                    journals={[loaderData.journal]}
+                  />
+                )}
+
+                {sortedSubJournals.length > 0 && (
+                  <JournalStack
+                    topLevelInfo={topLevelInfo}
+                    journals={sortedSubJournals}
+                  />
+                )}
+              </SectionCardNew>
+            )}
         </NestingAwareBlock>
       </Form>
 

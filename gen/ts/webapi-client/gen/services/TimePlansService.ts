@@ -15,6 +15,8 @@ import type { TimePlanFindArgs } from '../models/TimePlanFindArgs';
 import type { TimePlanFindResult } from '../models/TimePlanFindResult';
 import type { TimePlanGenForTimePlanArgs } from '../models/TimePlanGenForTimePlanArgs';
 import type { TimePlanLoadArgs } from '../models/TimePlanLoadArgs';
+import type { TimePlanLoadForDateAndPeriodArgs } from '../models/TimePlanLoadForDateAndPeriodArgs';
+import type { TimePlanLoadForDateAndPeriodResult } from '../models/TimePlanLoadForDateAndPeriodResult';
 import type { TimePlanLoadResult } from '../models/TimePlanLoadResult';
 import type { TimePlanRemoveArgs } from '../models/TimePlanRemoveArgs';
 
@@ -222,6 +224,29 @@ export class TimePlansService {
         return this.httpRequest.request({
             method: 'POST',
             url: '/time-plan-load',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * The command for loading details about a time plan.
+     * The command for loading details about a time plan.
+     * @param requestBody The input data
+     * @returns TimePlanLoadForDateAndPeriodResult Successful response
+     * @throws ApiError
+     */
+    public timePlanLoadForTimeDateAndPeriod(
+        requestBody?: TimePlanLoadForDateAndPeriodArgs,
+    ): CancelablePromise<TimePlanLoadForDateAndPeriodResult> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/time-plan-load-for-time-date-and-period',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
