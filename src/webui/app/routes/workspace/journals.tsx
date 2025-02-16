@@ -6,7 +6,7 @@ import { Outlet } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { makeErrorBoundary } from "~/components/infra/error-boundary";
+import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import { JournalStack } from "~/components/journal-stack";
@@ -66,6 +66,7 @@ export default function Journals() {
   );
 }
 
-export const ErrorBoundary = makeErrorBoundary(
+export const ErrorBoundary = makeTrunkErrorBoundary(
+  "/workspace",
   () => `There was an error loading the journals! Please try again!`
 );

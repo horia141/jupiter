@@ -20,8 +20,9 @@ import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
-import { makeCatchBoundary } from "~/components/infra/catch-boundary";
-import { makeErrorBoundary } from "~/components/infra/error-boundary";
+
+import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
+import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { TimeEventFullDaysBlockStack } from "~/components/time-event-full-days-block-stack";
@@ -291,11 +292,13 @@ export default function Vacation() {
   );
 }
 
-export const CatchBoundary = makeCatchBoundary(
+export const CatchBoundary = makeLeafCatchBoundary(
+  "/workspace/vacations",
   () => `Could not find vacation #${useParams().id}!`
 );
 
-export const ErrorBoundary = makeErrorBoundary(
+export const ErrorBoundary = makeLeafErrorBoundary(
+  "/workspace/vacations",
   () =>
     `There was an error loading vacation #${useParams().id}. Please try again!`
 );

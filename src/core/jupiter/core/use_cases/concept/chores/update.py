@@ -3,10 +3,14 @@ from typing import cast
 
 from jupiter.core.domain.concept.chores.chore import Chore
 from jupiter.core.domain.concept.chores.chore_name import ChoreName
-from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import (
+    InboxTask,
+    InboxTaskRepository,
+)
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
     InboxTaskCollection,
 )
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.concept.projects.project import Project
 from jupiter.core.domain.core import schedules
 from jupiter.core.domain.core.adate import ADate
@@ -131,10 +135,13 @@ class ChoreUpdateUseCase(
             ).load_by_parent(
                 workspace.ref_id,
             )
-            all_inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
+            all_inbox_tasks = await uow.get(
+                InboxTaskRepository
+            ).find_all_for_source_created_desc(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
-                chore_ref_id=[chore.ref_id],
+                source=InboxTaskSource.CHORE,
+                source_entity_ref_id=chore.ref_id,
             )
 
             for inbox_task in all_inbox_tasks:

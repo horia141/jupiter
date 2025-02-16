@@ -16,10 +16,11 @@ import { DateTime } from "luxon";
 import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNameComponent } from "~/components/entity-name";
-import { makeCatchBoundary } from "~/components/infra/catch-boundary";
+import { makeBranchCatchBoundary } from "~/components/infra/catch-boundary";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
-import { makeErrorBoundary } from "~/components/infra/error-boundary";
+
+import { makeBranchErrorBoundary } from "~/components/infra/error-boundary";
 import { BranchPanel } from "~/components/infra/layout/branch-panel";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { TimeDiffTag } from "~/components/time-diff-tag";
@@ -183,11 +184,13 @@ export default function Metric() {
   );
 }
 
-export const CatchBoundary = makeCatchBoundary(
+export const CatchBoundary = makeBranchCatchBoundary(
+  "/workspace/metrics",
   () => `Could not find metric #${useParams().id}!`
 );
 
-export const ErrorBoundary = makeErrorBoundary(
+export const ErrorBoundary = makeBranchErrorBoundary(
+  "/workspace/metrics",
   () =>
     `There was an error loading metric #${useParams().id}! Please try again!`
 );

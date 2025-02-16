@@ -1,5 +1,4 @@
 """The command for finding a slack task."""
-from typing import cast
 
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
@@ -96,10 +95,10 @@ class SlackTaskFindUseCase(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
                 source=[InboxTaskSource.SLACK_TASK],
-                slack_task_ref_id=[st.ref_id for st in slack_tasks],
+                source_entity_ref_id=[st.ref_id for st in slack_tasks],
             )
             inbox_tasks_by_slack_task_ref_id = {
-                cast(EntityId, it.slack_task_ref_id): it for it in inbox_tasks
+                it.source_entity_ref_id_for_sure: it for it in inbox_tasks
             }
         else:
             inbox_tasks_by_slack_task_ref_id = None

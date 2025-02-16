@@ -26,7 +26,7 @@ import { parseQuery } from "zodix";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { makeErrorBoundary } from "~/components/infra/error-boundary";
+import { makeToolErrorBoundary } from "~/components/infra/error-boundary";
 import { ToolPanel } from "~/components/infra/layout/tool-panel";
 import { ShowReport } from "~/components/show-report";
 import type { ActionResult } from "~/logic/action-result";
@@ -239,6 +239,6 @@ export default function Report() {
   );
 }
 
-export const ErrorBoundary = makeErrorBoundary(
+export const ErrorBoundary = makeToolErrorBoundary(
   () => `There was an error running the report! Please try again!`
 );

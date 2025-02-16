@@ -5,7 +5,7 @@ import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { ScoreHistory } from "~/components/gamification/score-history";
 import { ScoreOverview } from "~/components/gamification/score-overview";
-import { makeErrorBoundary } from "~/components/infra/error-boundary";
+import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
 import { ToolPanel } from "~/components/infra/layout/tool-panel";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -58,7 +58,8 @@ export default function Gamification() {
   );
 }
 
-export const ErrorBoundary = makeErrorBoundary(
+export const ErrorBoundary = makeTrunkErrorBoundary(
+  "/workspace",
   () =>
     `There was an error displaying gamification information! Please try again!`
 );

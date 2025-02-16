@@ -45,10 +45,14 @@ class Person(LeafEntity):
         source_entity_ref_id=IsRefId(),
     )
     catch_up_tasks = OwnsMany(
-        InboxTask, source=InboxTaskSource.PERSON_CATCH_UP, person_ref_id=IsRefId()
+        InboxTask,
+        source=InboxTaskSource.PERSON_CATCH_UP,
+        source_entity_ref_id=IsRefId(),
     )
     birthday_tasks = OwnsMany(
-        InboxTask, source=InboxTaskSource.PERSON_BIRTHDAY, person_ref_id=IsRefId()
+        InboxTask,
+        source=InboxTaskSource.PERSON_BIRTHDAY,
+        source_entity_ref_id=IsRefId(),
     )
 
     @staticmethod

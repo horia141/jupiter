@@ -1,6 +1,6 @@
 """The command for archiving a metric."""
 
-from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTaskRepository
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
     InboxTaskCollection,
 )
@@ -59,11 +59,13 @@ class MetricArchiveUseCase(
         metric_entries_to_archive = await uow.get_for(MetricEntry).find_all(
             parent_ref_id=metric.ref_id,
         )
-        inbox_tasks_to_archive = await uow.get_for(InboxTask).find_all_generic(
+        inbox_tasks_to_archive = await uow.get(
+            InboxTaskRepository
+        ).find_all_for_source_created_desc(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=False,
-            source=[InboxTaskSource.METRIC],
-            metric_ref_id=[metric.ref_id],
+            source=InboxTaskSource.METRIC,
+            source_entity_ref_id=metric.ref_id,
         )
 
         inbox_task_archive_service = InboxTaskArchiveService()

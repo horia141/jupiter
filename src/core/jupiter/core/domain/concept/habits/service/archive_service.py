@@ -2,10 +2,11 @@
 
 from jupiter.core.domain.concept.habits.habit import Habit
 from jupiter.core.domain.concept.habits.habit_collection import HabitCollection
-from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTaskRepository
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
     InboxTaskCollection,
 )
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.concept.inbox_tasks.service.archive_service import (
     InboxTaskArchiveService,
 )
@@ -38,10 +39,13 @@ class HabitArchiveService:
         inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             habit_collection.workspace.ref_id,
         )
-        inbox_tasks_to_archive = await uow.get_for(InboxTask).find_all_generic(
+        inbox_tasks_to_archive = await uow.get(
+            InboxTaskRepository
+        ).find_all_for_source_created_desc(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=False,
-            habit_ref_id=[habit.ref_id],
+            source=InboxTaskSource.HABIT,
+            source_entity_ref_id=habit.ref_id,
         )
 
         inbox_task_archive_service = InboxTaskArchiveService()

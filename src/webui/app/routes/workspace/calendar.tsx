@@ -53,7 +53,7 @@ import { parseQuery } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNameComponent } from "~/components/entity-name";
 import { EntityLink } from "~/components/infra/entity-card";
-import { makeErrorBoundary } from "~/components/infra/error-boundary";
+import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import {
@@ -468,7 +468,8 @@ export default function CalendarView() {
   );
 }
 
-export const ErrorBoundary = makeErrorBoundary(
+export const ErrorBoundary = makeTrunkErrorBoundary(
+  "/workspace",
   () => `There was an error loading the calendar events! Please try again!`
 );
 

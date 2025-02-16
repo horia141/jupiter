@@ -7,6 +7,7 @@ from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
     InboxTaskCollection,
 )
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.concept.projects.project import Project
 from jupiter.core.domain.concept.projects.project_collection import ProjectCollection
 from jupiter.core.domain.core.notes.note import Note
@@ -115,7 +116,8 @@ class ChoreFindUseCase(
             inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
-                chore_ref_id=[bp.ref_id for bp in chores],
+                soure=InboxTaskSource.CHORE,
+                source_entity_ref_id=[bp.ref_id for bp in chores],
             )
         else:
             inbox_tasks = None
@@ -142,7 +144,9 @@ class ChoreFindUseCase(
                     if project_by_ref_id is not None
                     else None,
                     inbox_tasks=[
-                        it for it in inbox_tasks if it.chore_ref_id == rt.ref_id
+                        it
+                        for it in inbox_tasks
+                        if it.source_entity_ref_id_for_sure == rt.ref_id
                     ]
                     if inbox_tasks is not None
                     else None,

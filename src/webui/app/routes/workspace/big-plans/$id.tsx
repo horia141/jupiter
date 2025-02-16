@@ -42,9 +42,9 @@ import { getLoggedInApiClient } from "~/api-clients.server";
 import { BigPlanStatusBigTag } from "~/components/big-plan-status-big-tag";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
-import { makeCatchBoundary } from "~/components/infra/catch-boundary";
+import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
 import { EntityActionHeader } from "~/components/infra/entity-actions-header";
-import { makeErrorBoundary } from "~/components/infra/error-boundary";
+import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { SectionCardNew } from "~/components/infra/section-card-new";
@@ -738,11 +738,13 @@ export default function BigPlan() {
   );
 }
 
-export const CatchBoundary = makeCatchBoundary(
+export const CatchBoundary = makeLeafCatchBoundary(
+  "/workspace/big-plans",
   () => `Could not find big plan #${useParams().id}!`
 );
 
-export const ErrorBoundary = makeErrorBoundary(
+export const ErrorBoundary = makeLeafErrorBoundary(
+  "/workspace/big-plans",
   () =>
     `There was an error loading big plan #${useParams().id}! Please try again!`
 );

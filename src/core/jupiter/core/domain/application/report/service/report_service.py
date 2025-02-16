@@ -232,7 +232,7 @@ class ReportService:
 
             raw_all_inbox_tasks = await uow.get(
                 InboxTaskRepository
-            ).find_all_with_filters(
+            ).find_modified_in_range(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
                 filter_sources=sources,
@@ -250,8 +250,8 @@ class ReportService:
                     and (
                         not (filter_big_plan_ref_ids is not None)
                         or (
-                            it.big_plan_ref_id is not None
-                            and it.big_plan_ref_id in filter_big_plan_ref_ids
+                            it.source_entity_ref_id is not None
+                            and it.source_entity_ref_id in filter_big_plan_ref_ids
                         )
                     )
                 )
@@ -260,8 +260,8 @@ class ReportService:
                     and (
                         not (filter_habit_ref_ids is not None)
                         or (
-                            it.habit_ref_id is not None
-                            and it.habit_ref_id in filter_habit_ref_ids
+                            it.source_entity_ref_id is not None
+                            and it.source_entity_ref_id in filter_habit_ref_ids
                         )
                     )
                 )
@@ -270,8 +270,8 @@ class ReportService:
                     and (
                         not (filter_chore_ref_ids is not None)
                         or (
-                            it.chore_ref_id is not None
-                            and it.chore_ref_id in filter_chore_ref_ids
+                            it.source_entity_ref_id is not None
+                            and it.source_entity_ref_id in filter_chore_ref_ids
                         )
                     )
                 )
@@ -279,7 +279,7 @@ class ReportService:
                     it.source is InboxTaskSource.METRIC
                     and (
                         not (filter_metric_ref_ids is not None)
-                        or it.metric_ref_id in metrics_by_ref_id
+                        or it.source_entity_ref_id in metrics_by_ref_id
                     )
                 )
                 or (
@@ -289,7 +289,7 @@ class ReportService:
                     )
                     and (
                         not (filter_person_ref_ids is not None)
-                        or it.person_ref_id in persons_by_ref_id
+                        or it.source_entity_ref_id in persons_by_ref_id
                     )
                 )
                 or (
@@ -297,8 +297,8 @@ class ReportService:
                     and (
                         not (filter_slack_task_ref_ids is not None)
                         or (
-                            it.slack_task_ref_id is not None
-                            and it.slack_task_ref_id in filter_slack_task_ref_ids
+                            it.source_entity_ref_id is not None
+                            and it.source_entity_ref_id in filter_slack_task_ref_ids
                         )
                     )
                 )
@@ -307,8 +307,8 @@ class ReportService:
                     and (
                         not (filter_email_task_ref_ids is not None)
                         or (
-                            it.email_task_ref_id is not None
-                            and it.email_task_ref_id in filter_email_task_ref_ids
+                            it.source_entity_ref_id is not None
+                            and it.source_entity_ref_id in filter_email_task_ref_ids
                         )
                     )
                 )
@@ -477,9 +477,9 @@ class ReportService:
                     for (k, v) in groupby(
                         sorted(
                             [
-                                (it.habit_ref_id, it)
+                                (it.source_entity_ref_id, it)
                                 for it in all_inbox_tasks
-                                if it.habit_ref_id
+                                if it.source_entity_ref_id
                             ],
                             key=itemgetter(0),
                         ),
@@ -512,9 +512,9 @@ class ReportService:
                     for (k, v) in groupby(
                         sorted(
                             [
-                                (it.chore_ref_id, it)
+                                (it.source_entity_ref_id, it)
                                 for it in all_inbox_tasks
-                                if it.chore_ref_id
+                                if it.source_entity_ref_id
                             ],
                             key=itemgetter(0),
                         ),
@@ -545,9 +545,9 @@ class ReportService:
                     for (k, v) in groupby(
                         sorted(
                             [
-                                (it.big_plan_ref_id, it)
+                                (it.source_entity_ref_id, it)
                                 for it in all_inbox_tasks
-                                if it.big_plan_ref_id
+                                if it.source_entity_ref_id
                             ],
                             key=itemgetter(0),
                         ),

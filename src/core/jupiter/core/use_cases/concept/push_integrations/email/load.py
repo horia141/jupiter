@@ -1,6 +1,9 @@
 """Use case for loading a particular email task."""
 
-from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import (
+    InboxTask,
+    InboxTaskRepository,
+)
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
     InboxTaskCollection,
 )
@@ -58,11 +61,13 @@ class EmailTaskLoadUseCase(
         inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             workspace.ref_id,
         )
-        inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
+        inbox_tasks = await uow.get(
+            InboxTaskRepository
+        ).find_all_for_source_created_desc(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
-            source=[InboxTaskSource.EMAIL_TASK],
-            email_task_ref_id=[email_task.ref_id],
+            source=InboxTaskSource.EMAIL_TASK,
+            source_entity_ref_id=email_task.ref_id,
         )
         inbox_task = inbox_tasks[0] if len(inbox_tasks) > 0 else None
 

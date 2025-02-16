@@ -21,8 +21,9 @@ import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
-import { makeCatchBoundary } from "~/components/infra/catch-boundary";
-import { makeErrorBoundary } from "~/components/infra/error-boundary";
+
+import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
+import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { TimeDiffTag } from "~/components/time-diff-tag";
@@ -266,12 +267,14 @@ export default function MetricEntry() {
   );
 }
 
-export const CatchBoundary = makeCatchBoundary(
+export const CatchBoundary = makeLeafCatchBoundary(
+  () => `/workspace/metrics/${useParams().id}`,
   () =>
     `Could not find metric entry #${useParams().id}:#${useParams().entryId}!`
 );
 
-export const ErrorBoundary = makeErrorBoundary(
+export const ErrorBoundary = makeLeafErrorBoundary(
+  () => `/workspace/metrics/${useParams().id}`,
   () =>
     `There was an error loading metric entry #${useParams().id}:#${
       useParams().entryId

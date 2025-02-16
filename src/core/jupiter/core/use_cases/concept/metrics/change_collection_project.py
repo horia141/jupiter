@@ -74,7 +74,7 @@ class MetricChangeCollectionProjectUseCase(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
                 source=[InboxTaskSource.METRIC],
-                metric_ref_id=[m.ref_id for m in metrics],
+                source_entity_ref_id=[m.ref_id for m in metrics],
             )
 
             for inbox_task in all_collection_inbox_tasks:

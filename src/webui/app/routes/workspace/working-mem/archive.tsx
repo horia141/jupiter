@@ -11,7 +11,7 @@ import { ADateTag } from "~/components/adate-tag";
 import { EntityNameComponent } from "~/components/entity-name";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
-import { makeErrorBoundary } from "~/components/infra/error-boundary";
+import { makeBranchErrorBoundary } from "~/components/infra/error-boundary";
 import { BranchPanel } from "~/components/infra/layout/branch-panel";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { PeriodTag } from "~/components/period-tag";
@@ -86,6 +86,7 @@ export default function WorkingMemArchive({ request }: LoaderArgs) {
   );
 }
 
-export const ErrorBoundary = makeErrorBoundary(
+export const ErrorBoundary = makeBranchErrorBoundary(
+  "/workspace/working-mem",
   () => `There was an error loading the vacations! Please try again!`
 );

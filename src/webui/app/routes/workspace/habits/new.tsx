@@ -26,7 +26,8 @@ import { useContext } from "react";
 import { z } from "zod";
 import { CheckboxAsString, parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { makeErrorBoundary } from "~/components/infra/error-boundary";
+
+import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { ProjectSelect } from "~/components/project-select";
@@ -208,6 +209,7 @@ export default function NewHabit() {
   );
 }
 
-export const ErrorBoundary = makeErrorBoundary(
+export const ErrorBoundary = makeLeafErrorBoundary(
+  "/workspace/habits",
   () => `There was an error creating the habit! Please try again!`
 );

@@ -93,11 +93,11 @@ class JournalFindUseCase(
                 parent_ref_id=note_collection.ref_id,
                 source=[InboxTaskSource.JOURNAL],
                 allow_archived=args.allow_archived,
-                journal_ref_id=[journal.ref_id for journal in journals],
+                source_entity_ref_id=[journal.ref_id for journal in journals],
             )
             for writing_task in writing_tasks:
                 writing_tasks_by_journal_ref_id[
-                    writing_task.journal_ref_id
+                    writing_task.source_entity_ref_id
                 ] = writing_task
 
         return JournalFindResult(

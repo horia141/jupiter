@@ -12,6 +12,7 @@ import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Duration } from "luxon";
 import { useCallback, useContext, useEffect, useState } from "react";
 import { ClientOnly } from "remix-utils";
+import { makeToolErrorBoundary } from "~/components/infra/error-boundary";
 import { ToolPanel } from "~/components/infra/layout/tool-panel";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { isDevelopment } from "~/logic/domain/env";
@@ -131,6 +132,10 @@ export default function Pomodoro() {
     </ToolPanel>
   );
 }
+
+export const ErrorBoundary = makeToolErrorBoundary(
+  () => `There was an error with the pomodoro timing! Please try again!`
+);
 
 interface PomodoroCardProps {
   finished: string;

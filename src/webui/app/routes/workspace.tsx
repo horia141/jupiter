@@ -34,7 +34,6 @@ import {
   ScoreSnackbarManager,
   useScoreActionSingleton,
 } from "~/components/gamification/score-snackbar-manager";
-import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import SearchBox from "~/components/search-box";
 import { isUserFeatureAvailable } from "~/logic/domain/user";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -43,6 +42,7 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { TopLevelInfoContext } from "~/top-level-context";
 
 import { CommunityLink } from "~/components/community-link";
+import { makeRootErrorBoundary } from "~/components/infra/error-boundary";
 import { WorkspaceContainer } from "~/components/infra/layout/workspace-container";
 import { SmartAppBar } from "~/components/infra/smart-appbar";
 import { ReleaseUpdateWidget } from "~/components/release-update-widget";
@@ -339,6 +339,6 @@ export function CatchBoundary() {
   throw new Error(`Unhandled error: ${caught.status}`);
 }
 
-export const ErrorBoundary = makeErrorBoundary(
+export const ErrorBoundary = makeRootErrorBoundary(
   () => `There was an error loading the workspace! Please try again!`
 );

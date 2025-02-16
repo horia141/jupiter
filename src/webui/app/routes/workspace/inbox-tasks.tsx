@@ -53,7 +53,7 @@ import { getLoggedInApiClient } from "~/api-clients.server";
 import type { InboxTaskShowOptions } from "~/components/inbox-task-card";
 import { InboxTaskCard } from "~/components/inbox-task-card";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
-import { makeErrorBoundary } from "~/components/infra/error-boundary";
+import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
@@ -677,7 +677,8 @@ export default function InboxTasks() {
   );
 }
 
-export const ErrorBoundary = makeErrorBoundary(
+export const ErrorBoundary = makeTrunkErrorBoundary(
+  "/workspace",
   () => `There was an error loading the inbox tasks! Please try again!`
 );
 

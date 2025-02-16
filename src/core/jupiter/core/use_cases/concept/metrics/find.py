@@ -1,6 +1,5 @@
 """The command for finding metrics."""
 import itertools
-import typing
 from collections import defaultdict
 from typing import cast
 
@@ -147,12 +146,12 @@ class MetricFindUseCase(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
                 source=[InboxTaskSource.METRIC],
-                metric_ref_id=[m.ref_id for m in metrics],
+                source_entity_ref_id=[m.ref_id for m in metrics],
             )
 
             for inbox_task in all_inbox_tasks:
                 metric_collection_inbox_tasks_by_ref_id[
-                    typing.cast(EntityId, inbox_task.metric_ref_id)
+                    inbox_task.source_entity_ref_id_for_sure
                 ].append(inbox_task)
         else:
             metric_collection_inbox_tasks_by_ref_id = defaultdict(list)

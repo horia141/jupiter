@@ -9,7 +9,8 @@ import { z } from "zod";
 import { parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { DocEditor } from "~/components/doc-editor";
-import { makeErrorBoundary } from "~/components/infra/error-boundary";
+
+import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
@@ -76,6 +77,7 @@ export default function NewDoc() {
   );
 }
 
-export const ErrorBoundary = makeErrorBoundary(
+export const ErrorBoundary = makeLeafErrorBoundary(
+  "/workspace/docs",
   () => `There was an error creating the note! Please try again!`
 );

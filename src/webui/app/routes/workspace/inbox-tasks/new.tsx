@@ -38,7 +38,8 @@ import { parseForm, parseQuery } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { DifficultySelect } from "~/components/difficulty-select";
 import { EisenhowerSelect } from "~/components/eisenhower-select";
-import { makeErrorBoundary } from "~/components/infra/error-boundary";
+
+import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import {
   BetterFieldError,
   FieldError,
@@ -537,6 +538,7 @@ export default function NewInboxTask() {
   );
 }
 
-export const ErrorBoundary = makeErrorBoundary(
+export const ErrorBoundary = makeLeafErrorBoundary(
+  "/workspace/inbox-tasks",
   () => `There was an error creating the inbox task! Please try again!`
 );

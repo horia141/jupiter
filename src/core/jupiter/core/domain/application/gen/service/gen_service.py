@@ -251,14 +251,14 @@ class GenService:
                 all_inbox_tasks_by_working_mem_ref_id_and_timeline = {}
                 for inbox_task in all_cleanup_inbox_tasks:
                     if (
-                        inbox_task.working_mem_ref_id is None
+                        inbox_task.source_entity_ref_id is None
                         or inbox_task.recurring_timeline is None
                     ):
                         raise Exception(
                             f"Expected that inbox task with id='{inbox_task.ref_id}'",
                         )
                     all_inbox_tasks_by_working_mem_ref_id_and_timeline[
-                        (inbox_task.working_mem_ref_id, inbox_task.recurring_timeline)
+                        (inbox_task.source_entity_ref_id, inbox_task.recurring_timeline)
                     ] = inbox_task
 
                 gen_log_entry = await self._generate_working_mem_and_inbox_task(
@@ -297,7 +297,7 @@ class GenService:
                         parent_ref_id=inbox_task_collection.ref_id,
                         source=[InboxTaskSource.HABIT],
                         allow_archived=True,
-                        habit_ref_id=[rt.ref_id for rt in all_habits]
+                        source_entity_ref_id=[rt.ref_id for rt in all_habits]
                         if all_habits
                         else NoFilter(),
                     )
@@ -308,14 +308,14 @@ class GenService:
                 ] = defaultdict(list)
                 for inbox_task in all_collection_inbox_tasks:
                     if (
-                        inbox_task.habit_ref_id is None
+                        inbox_task.source_entity_ref_id is None
                         or inbox_task.recurring_timeline is None
                     ):
                         raise Exception(
                             f"Expected that inbox task with id='{inbox_task.ref_id}'",
                         )
                     all_inbox_tasks_by_habit_ref_id_and_timeline[
-                        (inbox_task.habit_ref_id, inbox_task.recurring_timeline)
+                        (inbox_task.source_entity_ref_id, inbox_task.recurring_timeline)
                     ].append(inbox_task)
 
                 for habit in all_habits:
@@ -354,7 +354,7 @@ class GenService:
                         parent_ref_id=inbox_task_collection.ref_id,
                         source=[InboxTaskSource.CHORE],
                         allow_archived=True,
-                        chore_ref_id=[rt.ref_id for rt in all_chores]
+                        source_entity_ref_id=[rt.ref_id for rt in all_chores]
                         if all_chores
                         else NoFilter(),
                     )
@@ -362,14 +362,14 @@ class GenService:
                 all_inbox_tasks_by_chore_ref_id_and_timeline = {}
                 for inbox_task in all_collection_inbox_tasks:
                     if (
-                        inbox_task.chore_ref_id is None
+                        inbox_task.source_entity_ref_id is None
                         or inbox_task.recurring_timeline is None
                     ):
                         raise Exception(
                             f"Expected that inbox task with id='{inbox_task.ref_id}'",
                         )
                     all_inbox_tasks_by_chore_ref_id_and_timeline[
-                        (inbox_task.chore_ref_id, inbox_task.recurring_timeline)
+                        (inbox_task.source_entity_ref_id, inbox_task.recurring_timeline)
                     ] = inbox_task
 
                 for chore in all_chores:
@@ -412,7 +412,7 @@ class GenService:
                         parent_ref_id=inbox_task_collection.ref_id,
                         source=[InboxTaskSource.METRIC],
                         allow_archived=True,
-                        metric_ref_id=[m.ref_id for m in all_metrics]
+                        source_entity_ref_id=[m.ref_id for m in all_metrics]
                         if all_metrics
                         else NoFilter(),
                     )
@@ -421,14 +421,14 @@ class GenService:
 
                 for inbox_task in all_collection_inbox_tasks:
                     if (
-                        inbox_task.metric_ref_id is None
+                        inbox_task.source_entity_ref_id is None
                         or inbox_task.recurring_timeline is None
                     ):
                         raise Exception(
                             f"Expected that inbox task with id='{inbox_task.ref_id}'",
                         )
                     all_collection_inbox_tasks_by_metric_ref_id_and_timeline[
-                        (inbox_task.metric_ref_id, inbox_task.recurring_timeline)
+                        (inbox_task.source_entity_ref_id, inbox_task.recurring_timeline)
                     ] = inbox_task
 
                 for metric in all_metrics:
@@ -504,14 +504,14 @@ class GenService:
                 all_catch_up_inbox_tasks_by_person_ref_id_and_timeline = {}
                 for inbox_task in all_catch_up_inbox_tasks:
                     if (
-                        inbox_task.person_ref_id is None
+                        inbox_task.source_entity_ref_id is None
                         or inbox_task.recurring_timeline is None
                     ):
                         raise Exception(
                             f"Expected that inbox task with id='{inbox_task.ref_id}'",
                         )
                     all_catch_up_inbox_tasks_by_person_ref_id_and_timeline[
-                        (inbox_task.person_ref_id, inbox_task.recurring_timeline)
+                        (inbox_task.source_entity_ref_id, inbox_task.recurring_timeline)
                     ] = inbox_task
 
                 project = all_projects_by_ref_id[
@@ -542,14 +542,14 @@ class GenService:
             all_birthday_inbox_tasks_by_person_ref_id_and_timeline = {}
             for inbox_task in all_birthday_inbox_tasks:
                 if (
-                    inbox_task.person_ref_id is None
+                    inbox_task.source_entity_ref_id is None
                     or inbox_task.recurring_timeline is None
                 ):
                     raise Exception(
                         f"Expected that inbox task with id='{inbox_task.ref_id}'",
                     )
                 all_birthday_inbox_tasks_by_person_ref_id_and_timeline[
-                    (inbox_task.person_ref_id, inbox_task.recurring_timeline)
+                    (inbox_task.source_entity_ref_id, inbox_task.recurring_timeline)
                 ] = inbox_task
 
             all_birthday_time_event_blocks_by_person_ref_id_and_start_date = {}
@@ -615,13 +615,13 @@ class GenService:
                         parent_ref_id=inbox_task_collection.ref_id,
                         allow_archived=True,
                         source=[InboxTaskSource.SLACK_TASK],
-                        slack_task_ref_id=[st.ref_id for st in all_slack_tasks]
+                        source_entity_ref_id=[st.ref_id for st in all_slack_tasks]
                         if all_slack_tasks
                         else NoFilter(),
                     )
 
                 all_inbox_tasks_by_slack_task_ref_id = {
-                    it.slack_task_ref_id: it for it in all_slack_inbox_tasks
+                    it.source_entity_ref_id_for_sure: it for it in all_slack_inbox_tasks
                 }
                 for slack_task in all_slack_tasks:
                     project = all_projects_by_ref_id[
@@ -670,13 +670,13 @@ class GenService:
                         parent_ref_id=inbox_task_collection.ref_id,
                         allow_archived=True,
                         source=[InboxTaskSource.EMAIL_TASK],
-                        email_task_ref_id=[st.ref_id for st in all_email_tasks]
+                        source_entity_ref_id=[st.ref_id for st in all_email_tasks]
                         if all_email_tasks
                         else NoFilter(),
                     )
 
                 all_inbox_tasks_by_email_task_ref_id = {
-                    it.email_task_ref_id: it for it in all_email_inbox_tasks
+                    it.source_entity_ref_id_for_sure: it for it in all_email_inbox_tasks
                 }
                 for email_task in all_email_tasks:
                     project = all_projects_by_ref_id[

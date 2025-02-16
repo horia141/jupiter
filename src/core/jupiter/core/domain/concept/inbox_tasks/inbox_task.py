@@ -67,15 +67,7 @@ class InboxTask(LeafEntity):
     actionable_date: ADate | None
     due_date: ADate | None
     notes: str | None
-    working_mem_ref_id: EntityId | None
-    habit_ref_id: EntityId | None
-    chore_ref_id: EntityId | None
-    big_plan_ref_id: EntityId | None
-    journal_ref_id: EntityId | None
-    metric_ref_id: EntityId | None
-    person_ref_id: EntityId | None
-    slack_task_ref_id: EntityId | None
-    email_task_ref_id: EntityId | None
+    source_entity_ref_id: EntityId | None
     recurring_timeline: str | None
     recurring_repeat_index: int | None
     recurring_gen_right_now: Timestamp | None  # Time for which this inbox task was generated
@@ -85,6 +77,13 @@ class InboxTask(LeafEntity):
     note = OwnsAtMostOne(
         Note, domain=NoteDomain.INBOX_TASK, source_entity_ref_id=IsRefId()
     )
+
+    @property
+    def source_entity_ref_id_for_sure(self) -> EntityId:
+        """Get the source entity ref id."""
+        if self.source_entity_ref_id is None:
+            raise Exception("Source entity ref id is not set")
+        return self.source_entity_ref_id
 
     @staticmethod
     @create_entity_action
@@ -122,15 +121,7 @@ class InboxTask(LeafEntity):
             project_ref_id=big_plan_project_ref_id
             if big_plan_ref_id
             else project_ref_id,
-            working_mem_ref_id=None,
-            habit_ref_id=None,
-            chore_ref_id=None,
-            big_plan_ref_id=big_plan_ref_id,
-            journal_ref_id=None,
-            metric_ref_id=None,
-            person_ref_id=None,
-            slack_task_ref_id=None,
-            email_task_ref_id=None,
+            source_entity_ref_id=big_plan_ref_id,
             notes=None,
             recurring_timeline=None,
             recurring_repeat_index=None,
@@ -163,15 +154,7 @@ class InboxTask(LeafEntity):
             actionable_date=None,
             due_date=due_date,
             project_ref_id=project_ref_id,
-            working_mem_ref_id=working_mem_ref_id,
-            habit_ref_id=None,
-            chore_ref_id=None,
-            big_plan_ref_id=None,
-            journal_ref_id=None,
-            metric_ref_id=None,
-            person_ref_id=None,
-            slack_task_ref_id=None,
-            email_task_ref_id=None,
+            source_entity_ref_id=working_mem_ref_id,
             notes=None,
             recurring_timeline=recurring_task_timeline,
             recurring_repeat_index=None,
@@ -208,15 +191,7 @@ class InboxTask(LeafEntity):
             actionable_date=actionable_date,
             due_date=due_date,
             project_ref_id=project_ref_id,
-            working_mem_ref_id=None,
-            habit_ref_id=habit_ref_id,
-            chore_ref_id=None,
-            big_plan_ref_id=None,
-            journal_ref_id=None,
-            metric_ref_id=None,
-            person_ref_id=None,
-            slack_task_ref_id=None,
-            email_task_ref_id=None,
+            source_entity_ref_id=habit_ref_id,
             notes=None,
             recurring_timeline=recurring_task_timeline,
             recurring_repeat_index=recurring_task_repeat_index,
@@ -252,15 +227,7 @@ class InboxTask(LeafEntity):
             actionable_date=actionable_date,
             due_date=due_date,
             project_ref_id=project_ref_id,
-            working_mem_ref_id=None,
-            habit_ref_id=None,
-            chore_ref_id=chore_ref_id,
-            big_plan_ref_id=None,
-            journal_ref_id=None,
-            metric_ref_id=None,
-            person_ref_id=None,
-            slack_task_ref_id=None,
-            email_task_ref_id=None,
+            source_entity_ref_id=chore_ref_id,
             notes=None,
             recurring_timeline=recurring_task_timeline,
             recurring_repeat_index=None,
@@ -295,15 +262,7 @@ class InboxTask(LeafEntity):
             actionable_date=actionable_date,
             due_date=due_date,
             project_ref_id=project_ref_id,
-            working_mem_ref_id=None,
-            habit_ref_id=None,
-            chore_ref_id=None,
-            big_plan_ref_id=None,
-            journal_ref_id=journal_ref_id,
-            metric_ref_id=None,
-            person_ref_id=None,
-            slack_task_ref_id=None,
-            email_task_ref_id=None,
+            source_entity_ref_id=journal_ref_id,
             notes=None,
             recurring_timeline=None,
             recurring_repeat_index=None,
@@ -339,15 +298,7 @@ class InboxTask(LeafEntity):
             actionable_date=actionable_date,
             due_date=due_date,
             project_ref_id=project_ref_id,
-            working_mem_ref_id=None,
-            habit_ref_id=None,
-            chore_ref_id=None,
-            big_plan_ref_id=None,
-            journal_ref_id=None,
-            metric_ref_id=metric_ref_id,
-            person_ref_id=None,
-            slack_task_ref_id=None,
-            email_task_ref_id=None,
+            source_entity_ref_id=metric_ref_id,
             notes=None,
             recurring_timeline=recurring_task_timeline,
             recurring_repeat_index=None,
@@ -383,15 +334,7 @@ class InboxTask(LeafEntity):
             actionable_date=actionable_date,
             due_date=due_date,
             project_ref_id=project_ref_id,
-            working_mem_ref_id=None,
-            habit_ref_id=None,
-            chore_ref_id=None,
-            big_plan_ref_id=None,
-            journal_ref_id=None,
-            metric_ref_id=None,
-            person_ref_id=person_ref_id,
-            slack_task_ref_id=None,
-            email_task_ref_id=None,
+            source_entity_ref_id=person_ref_id,
             notes=None,
             recurring_timeline=recurring_task_timeline,
             recurring_repeat_index=None,
@@ -425,15 +368,7 @@ class InboxTask(LeafEntity):
             actionable_date=due_date.subtract_days(preparation_days_cnt),
             due_date=due_date,
             project_ref_id=project_ref_id,
-            working_mem_ref_id=None,
-            habit_ref_id=None,
-            chore_ref_id=None,
-            big_plan_ref_id=None,
-            journal_ref_id=None,
-            metric_ref_id=None,
-            person_ref_id=person_ref_id,
-            slack_task_ref_id=None,
-            email_task_ref_id=None,
+            source_entity_ref_id=person_ref_id,
             notes=None,
             recurring_timeline=recurring_task_timeline,
             recurring_repeat_index=None,
@@ -470,15 +405,7 @@ class InboxTask(LeafEntity):
             actionable_date=generation_extra_info.actionable_date,
             due_date=generation_extra_info.due_date,
             project_ref_id=project_ref_id,
-            working_mem_ref_id=None,
-            habit_ref_id=None,
-            chore_ref_id=None,
-            big_plan_ref_id=None,
-            journal_ref_id=None,
-            metric_ref_id=None,
-            person_ref_id=None,
-            slack_task_ref_id=slack_task_ref_id,
-            email_task_ref_id=None,
+            source_entity_ref_id=slack_task_ref_id,
             notes=InboxTask._build_notes_for_slack_task(user, channel, message),
             recurring_timeline=None,
             recurring_repeat_index=None,
@@ -518,15 +445,7 @@ class InboxTask(LeafEntity):
             actionable_date=generation_extra_info.actionable_date,
             due_date=generation_extra_info.due_date,
             project_ref_id=project_ref_id,
-            working_mem_ref_id=None,
-            habit_ref_id=None,
-            chore_ref_id=None,
-            big_plan_ref_id=None,
-            metric_ref_id=None,
-            journal_ref_id=None,
-            person_ref_id=None,
-            slack_task_ref_id=None,
-            email_task_ref_id=email_task_ref_id,
+            source_entity_ref_id=email_task_ref_id,
             notes=InboxTask._build_notes_for_email_task(
                 from_address,
                 from_name,
@@ -592,7 +511,7 @@ class InboxTask(LeafEntity):
             ctx,
             source=InboxTaskSource.BIG_PLAN,
             project_ref_id=project_ref_id,
-            big_plan_ref_id=big_plan_ref_id,
+            source_entity_ref_id=big_plan_ref_id,
         )
 
     @update_entity_action
@@ -607,7 +526,7 @@ class InboxTask(LeafEntity):
         return self._new_version(
             ctx,
             source=InboxTaskSource.USER,
-            big_plan_ref_id=None,
+            source_entity_ref_id=None,
         )
 
     @update_entity_action
@@ -622,7 +541,7 @@ class InboxTask(LeafEntity):
             raise InputValidationError(
                 f"Cannot reassociate a task which isn't a big plan one '{self.name}'",
             )
-        if self.big_plan_ref_id != big_plan_ref_id:
+        if self.source_entity_ref_id != big_plan_ref_id:
             raise InputValidationError(
                 f"Cannot reassociate a task which is not with the big plan '{self.name}'",
             )
@@ -1063,22 +982,23 @@ class InboxTaskRepository(LeafEntityRepository[InboxTask], abc.ABC):
     """A repository of inbox tasks."""
 
     @abc.abstractmethod
-    async def find_all_with_filters(
+    async def find_all_for_source_created_desc(
+        self,
+        parent_ref_id: EntityId,
+        source: InboxTaskSource,
+        source_entity_ref_id: EntityId,
+        allow_archived: bool = False,
+    ) -> list[InboxTask]:
+        """Find all inbox tasks for a source."""
+
+    @abc.abstractmethod
+    async def find_modified_in_range(
         self,
         parent_ref_id: EntityId,
         allow_archived: bool = False,
         filter_ref_ids: Iterable[EntityId] | None = None,
         filter_sources: Iterable[InboxTaskSource] | None = None,
         filter_project_ref_ids: Iterable[EntityId] | None = None,
-        filter_working_mem_ref_ids: Iterable[EntityId] | None = None,
-        filter_habit_ref_ids: Iterable[EntityId] | None = None,
-        filter_chore_ref_ids: Iterable[EntityId] | None = None,
-        filter_big_plan_ref_ids: Iterable[EntityId] | None = None,
-        filter_journal_ref_ids: Iterable[EntityId] | None = None,
-        filter_metric_ref_ids: Iterable[EntityId] | None = None,
-        filter_person_ref_ids: Iterable[EntityId] | None = None,
-        filter_slack_task_ref_ids: Iterable[EntityId] | None = None,
-        filter_email_task_ref_ids: Iterable[EntityId] | None = None,
         filter_last_modified_time_start: ADate | None = None,
         filter_last_modified_time_end: ADate | None = None,
     ) -> list[InboxTask]:

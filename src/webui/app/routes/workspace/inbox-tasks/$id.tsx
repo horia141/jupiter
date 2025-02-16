@@ -29,8 +29,8 @@ import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { InboxTaskPropertiesEditor } from "~/components/entities/inbox-task-properties-editor";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
-import { makeCatchBoundary } from "~/components/infra/catch-boundary";
-import { makeErrorBoundary } from "~/components/infra/error-boundary";
+import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
+import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { SectionCardNew } from "~/components/infra/section-card-new";
@@ -460,11 +460,13 @@ export default function InboxTask() {
   );
 }
 
-export const CatchBoundary = makeCatchBoundary(
+export const CatchBoundary = makeLeafCatchBoundary(
+  "/workspace/inbox-tasks",
   () => `Could not find inbox task #${useParams().id}!`
 );
 
-export const ErrorBoundary = makeErrorBoundary(
+export const ErrorBoundary = makeLeafErrorBoundary(
+  "/workspace/inbox-tasks",
   () =>
     `There was an error loading inbox task #${
       useParams().id

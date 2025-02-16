@@ -37,8 +37,7 @@ import { getLoggedInApiClient } from "~/api-clients.server";
 import { DifficultySelect } from "~/components/difficulty-select";
 import { EisenhowerSelect } from "~/components/eisenhower-select";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
-import { makeCatchBoundary } from "~/components/infra/catch-boundary";
-import { makeErrorBoundary } from "~/components/infra/error-boundary";
+
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
@@ -49,6 +48,8 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
+import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
+import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 const ParamsSchema = {
   id: z.string(),
 };
@@ -479,11 +480,13 @@ export default function EmailTask() {
   );
 }
 
-export const CatchBoundary = makeCatchBoundary(
+export const CatchBoundary = makeLeafCatchBoundary(
+  "/workspace/push-integrations/email-tasks",
   () => `Could not find email task #${useParams().id}!`
 );
 
-export const ErrorBoundary = makeErrorBoundary(
+export const ErrorBoundary = makeLeafErrorBoundary(
+  "/workspace/push-integrations/email-tasks",
   () =>
     `There was an error loading email task #${
       useParams().id

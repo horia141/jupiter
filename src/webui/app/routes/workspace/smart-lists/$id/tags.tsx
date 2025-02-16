@@ -13,10 +13,10 @@ import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { makeCatchBoundary } from "~/components/infra/catch-boundary";
+import { makeBranchCatchBoundary } from "~/components/infra/catch-boundary";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
-import { makeErrorBoundary } from "~/components/infra/error-boundary";
+import { makeBranchErrorBoundary } from "~/components/infra/error-boundary";
 import { BranchPanel } from "~/components/infra/layout/branch-panel";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { SmartListTagTag } from "~/components/smart-list-tag-tag";
@@ -172,11 +172,13 @@ export default function SmartListViewTags() {
   );
 }
 
-export const CatchBoundary = makeCatchBoundary(
+export const CatchBoundary = makeBranchCatchBoundary(
+  "/workspace/smart-lists",
   () => `Could not find smart list #${useParams().id}!`
 );
 
-export const ErrorBoundary = makeErrorBoundary(
+export const ErrorBoundary = makeBranchErrorBoundary(
+  "/workspace/smart-lists",
   () =>
     `There was an error loading smart list #${
       useParams().id

@@ -29,7 +29,7 @@ import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntitySummaryLink } from "~/components/entity-summary-link";
 import { EventSourceTag } from "~/components/event-source-tag";
 import { EntityCard } from "~/components/infra/entity-card";
-import { makeErrorBoundary } from "~/components/infra/error-boundary";
+import { makeToolErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { ToolPanel } from "~/components/infra/layout/tool-panel";
 import { SyncTargetSelect } from "~/components/sync-target-select";
@@ -166,7 +166,7 @@ export default function GC() {
   );
 }
 
-export const ErrorBoundary = makeErrorBoundary(
+export const ErrorBoundary = makeToolErrorBoundary(
   () => `There was an error garbage collecting! Please try again!`
 );
 

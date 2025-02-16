@@ -19,7 +19,8 @@ import { useContext } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { makeErrorBoundary } from "~/components/infra/error-boundary";
+
+import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { ProjectSelect } from "~/components/project-select";
@@ -142,6 +143,7 @@ export default function SlackTasksSettings() {
   );
 }
 
-export const ErrorBoundary = makeErrorBoundary(
+export const ErrorBoundary = makeLeafErrorBoundary(
+  "/workspace/push-integrations/slack-tasks",
   () => `There was an error upserting Slack task settings! Please try again!`
 );

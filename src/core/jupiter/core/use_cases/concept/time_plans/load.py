@@ -208,7 +208,7 @@ class TimePlanLoadUseCase(
 
                 if inbox_task.source == InboxTaskSource.BIG_PLAN:
                     activities_by_big_plan_ref_id[
-                        cast(EntityId, inbox_task.big_plan_ref_id)
+                        inbox_task.source_entity_ref_id_for_sure
                     ].append(activity.ref_id)
 
             for activity in activities:

@@ -1,5 +1,5 @@
 import type { Note } from "@jupiter/webapi-client";
-import { Box } from "@mui/material";
+import { Box, useTheme } from "@mui/material";
 import { useFetcher } from "@remix-run/react";
 import { Buffer } from "buffer-polyfill";
 import type { ComponentType } from "react";
@@ -27,10 +27,12 @@ export function EntityNoteEditor({
   inputsEnabled,
 }: EntityNoteEditorProps) {
   const cardActionFetcher = useFetcher<SomeErrorNoData>();
+  const theme = useTheme();
 
   const [dataModified, setDataModified] = useState(false);
-  const [isActing, setIsActing] = useState(false);
   const [shouldAct, setShouldAct] = useState(false);
+  const [isActing, setIsActing] = useState(false);
+  const [hasActed, setHasActed] = useState(false);
   const [noteContent, setNoteContent] = useState<Array<OneOfNoteContentBlock>>(
     initialNote.content
   );
@@ -67,6 +69,7 @@ export function EntityNoteEditor({
 
   useEffect(() => {
     if (
+      isActing &&
       cardActionFetcher.state === "idle" &&
       cardActionFetcher.type === "done"
     ) {
@@ -74,14 +77,44 @@ export function EntityNoteEditor({
       if (shouldAct) {
         act();
         setShouldAct(false);
+      } else {
+        setHasActed(true);
+        setTimeout(() => {
+          setHasActed(false);
+        }, 1000);
       }
     }
-  }, [act, cardActionFetcher, shouldAct]);
+  }, [act, isActing, cardActionFetcher, shouldAct]);
+  console.log(isActing);
 
   return (
-    <>
+    <Box sx={{ position: "relative" }}>
       <GlobalError actionResult={cardActionFetcher.data} />
       <FieldError actionResult={cardActionFetcher.data} fieldName="/content" />
+      {isActing && (
+        <Box
+          sx={{
+            position: "absolute",
+            top: "0rem",
+            right: "0rem",
+            color: theme.palette.text.disabled,
+          }}
+        >
+          Saving...
+        </Box>
+      )}
+      {hasActed && (
+        <Box
+          sx={{
+            position: "absolute",
+            top: "0rem",
+            right: "0rem",
+            color: theme.palette.text.disabled,
+          }}
+        >
+          Saved!
+        </Box>
+      )}
 
       <ClientOnly fallback={<div>Loading... </div>}>
         {() => (
@@ -100,6 +133,6 @@ export function EntityNoteEditor({
           </Suspense>
         )}
       </ClientOnly>
-    </>
+    </Box>
   );
 }

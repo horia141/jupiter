@@ -393,9 +393,8 @@ interface BranchPanelContentProps {
 
 const BranchPanelContent = styled("div")<BranchPanelContentProps>(
   ({ theme, isbigscreen, hasleaf }) => ({
-    padding: isbigscreen === "true" ? "0.5rem" : "0px",
-    paddingBottom: isbigscreen === "true" ? "4rem" : "0px",
-    paddingTop: isbigscreen === "true" ? "4rem" : "0px",
+    paddingBottom: isbigscreen === "true" ? "0.5rem" : "0px",
+    paddingTop: isbigscreen === "true" ? "0.5rem" : "0px",
     paddingLeft:
       isbigscreen === "true"
         ? `calc((100vw - ${theme.breakpoints.values.lg}px) / 2)`

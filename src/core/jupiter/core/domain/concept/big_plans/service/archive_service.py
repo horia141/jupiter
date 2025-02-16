@@ -2,10 +2,14 @@
 
 from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
 from jupiter.core.domain.concept.big_plans.big_plan_collection import BigPlanCollection
-from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import (
+    InboxTask,
+    InboxTaskRepository,
+)
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
     InboxTaskCollection,
 )
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.concept.inbox_tasks.service.archive_service import (
     InboxTaskArchiveService,
 )
@@ -47,10 +51,13 @@ class BigPlanArchiveService:
         inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             big_plan_collection.workspace.ref_id,
         )
-        inbox_tasks_to_archive = await uow.get_for(InboxTask).find_all_generic(
+        inbox_tasks_to_archive = await uow.get(
+            InboxTaskRepository
+        ).find_all_for_source_created_desc(
             parent_ref_id=inbox_task_collection.ref_id,
-            allow_archived=False,
-            big_plan_ref_id=[big_plan.ref_id],
+            source_entity_ref_id=big_plan.ref_id,
+            source=InboxTaskSource.BIG_PLAN,
+            allow_archived=True,
         )
 
         archived_inbox_tasks = []

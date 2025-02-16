@@ -130,7 +130,7 @@ class PersonFindUseCase(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
                 source=[InboxTaskSource.PERSON_CATCH_UP],
-                person_ref_id=[p.ref_id for p in persons],
+                source_entity_ref_id=[p.ref_id for p in persons],
             )
         else:
             catch_up_inbox_tasks = None
@@ -140,7 +140,7 @@ class PersonFindUseCase(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
                 source=[InboxTaskSource.PERSON_BIRTHDAY],
-                person_ref_id=[p.ref_id for p in persons],
+                source_entity_ref_id=[p.ref_id for p in persons],
             )
         else:
             birthday_inbox_tasks = None
@@ -161,14 +161,14 @@ class PersonFindUseCase(
                     catch_up_inbox_tasks=[
                         it
                         for it in catch_up_inbox_tasks
-                        if it.person_ref_id == p.ref_id
+                        if it.source_entity_ref_id_for_sure == p.ref_id
                     ]
                     if catch_up_inbox_tasks is not None
                     else None,
                     birthday_inbox_tasks=[
                         it
                         for it in birthday_inbox_tasks
-                        if it.person_ref_id == p.ref_id
+                        if it.source_entity_ref_id_for_sure == p.ref_id
                     ]
                     if birthday_inbox_tasks is not None
                     else None,

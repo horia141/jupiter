@@ -1,9 +1,10 @@
 """Service for hard removing a Slack task and associated inbox task."""
 
-from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTaskRepository
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
     InboxTaskCollection,
 )
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.concept.inbox_tasks.service.remove_service import (
     InboxTaskRemoveService,
 )
@@ -39,10 +40,13 @@ class SlackTaskRemoveService:
         inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             push_integration_group.workspace.ref_id,
         )
-        inbox_tasks_to_remove = await uow.get_for(InboxTask).find_all_generic(
+        inbox_tasks_to_remove = await uow.get(
+            InboxTaskRepository
+        ).find_all_for_source_created_desc(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
-            slack_task_ref_id=[slack_task.ref_id],
+            source=InboxTaskSource.SLACK_TASK,
+            source_entity_ref_id=slack_task.ref_id,
         )
 
         inbox_task_remove_service = InboxTaskRemoveService()

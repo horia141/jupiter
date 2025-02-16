@@ -41,7 +41,7 @@ class WorkingMem(LeafEntity):
     cleanup_task = OwnsOne(
         InboxTask,
         source=InboxTaskSource.WORKING_MEM_CLEANUP,
-        working_mem_ref_id=IsRefId(),
+        source_entity_ref_id=IsRefId(),
     )
 
     @staticmethod

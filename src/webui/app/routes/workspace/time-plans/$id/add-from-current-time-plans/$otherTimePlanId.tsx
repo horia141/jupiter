@@ -1,6 +1,7 @@
 import type { BigPlan, InboxTask, TimePlan } from "@jupiter/webapi-client";
 import {
   ApiError,
+  InboxTaskSource,
   TimePlanActivityFeasability,
   TimePlanActivityKind,
   TimePlanActivityTarget,
@@ -22,9 +23,8 @@ import { useContext, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { EntityStack } from "~/components/infra/entity-stack";
-import { makeErrorBoundary } from "~/components/infra/error-boundary";
+
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import {
@@ -51,6 +51,8 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
+import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
+import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 const ParamsSchema = {
   id: z.string(),
   otherTimePlanId: z.string(),
@@ -338,7 +340,7 @@ export default function TimePlanAddFromCurrentTimePlans() {
               indent={
                 activity.target === TimePlanActivityTarget.INBOX_TASK &&
                 otherTargetInboxTasksByRefId.get(activity.target_ref_id)
-                  ?.big_plan_ref_id
+                  ?.source === InboxTaskSource.BIG_PLAN
                   ? 2
                   : 0
               }
@@ -409,14 +411,16 @@ export default function TimePlanAddFromCurrentTimePlans() {
   );
 }
 
-export const CatchBoundary = makeCatchBoundary(
+export const CatchBoundary = makeLeafCatchBoundary(
+  () => `/workspace/time-plans/${useParams().id}`,
   () =>
     `Could not find time plan  #${useParams().id}:#${
       useParams().otherTimePlanId
     }`
 );
 
-export const ErrorBoundary = makeErrorBoundary(
+export const ErrorBoundary = makeLeafErrorBoundary(
+  () => `/workspace/time-plans/${useParams().id}`,
   () =>
     `There was an error loading time plan activity #${useParams().id}:#${
       useParams().otherTimePlanId

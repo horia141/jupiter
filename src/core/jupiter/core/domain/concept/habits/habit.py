@@ -34,7 +34,7 @@ class Habit(LeafEntity):
     repeats_in_period_count: int | None
 
     inbox_tasks = OwnsMany(
-        InboxTask, source=InboxTaskSource.HABIT, habit_ref_id=IsRefId()
+        InboxTask, source=InboxTaskSource.HABIT, source_entity_ref_id=IsRefId()
     )
     note = OwnsAtMostOne(Note, domain=NoteDomain.HABIT, source_entity_ref_id=IsRefId())
 

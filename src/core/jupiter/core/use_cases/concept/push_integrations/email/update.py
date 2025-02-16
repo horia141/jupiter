@@ -1,7 +1,10 @@
 """The command for updating a email task."""
 
 from jupiter.core.domain.application.gen.service.gen_service import GenService
-from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import (
+    InboxTask,
+    InboxTaskRepository,
+)
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
     InboxTaskCollection,
 )
@@ -109,14 +112,15 @@ class EmailTaskUpdateUseCase(
         inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             workspace.ref_id,
         )
-        generated_inbox_task = (
-            await uow.get_for(InboxTask).find_all_generic(
-                parent_ref_id=inbox_task_collection.ref_id,
-                allow_archived=False,
-                source=[InboxTaskSource.EMAIL_TASK],
-                email_task_ref_id=[email_task.ref_id],
-            )
-        )[0]
+        all_inbox_tasks = await uow.get(
+            InboxTaskRepository
+        ).find_all_for_source_created_desc(
+            parent_ref_id=inbox_task_collection.ref_id,
+            allow_archived=False,
+            source=InboxTaskSource.EMAIL_TASK,
+            source_entity_ref_id=email_task.ref_id,
+        )
+        generated_inbox_task = all_inbox_tasks[0]
 
         generated_inbox_task = generated_inbox_task.update_link_to_email_task(
             ctx=context.domain_context,

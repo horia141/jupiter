@@ -21,7 +21,8 @@ import { useContext, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseQuery } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { makeErrorBoundary } from "~/components/infra/error-boundary";
+import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
+
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import {
@@ -224,6 +225,7 @@ export default function ScheduleEventFullDaysNew() {
   );
 }
 
-export const ErrorBoundary = makeErrorBoundary(
+export const ErrorBoundary = makeLeafErrorBoundary(
+  () => `/workspace/calendar?${useSearchParams()}`,
   () => `There was an error creating the event full days! Please try again!`
 );

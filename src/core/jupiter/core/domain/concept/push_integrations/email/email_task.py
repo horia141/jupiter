@@ -38,7 +38,7 @@ class EmailTask(LeafEntity):
     has_generated_task: bool
 
     generated_task = OwnsAtMostOne(
-        InboxTask, source=InboxTaskSource.EMAIL_TASK, email_task_ref_id=IsRefId()
+        InboxTask, source=InboxTaskSource.EMAIL_TASK, source_entity_ref_id=IsRefId()
     )
 
     @staticmethod

@@ -1,6 +1,9 @@
 """Use case for loading a metric."""
 
-from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import (
+    InboxTask,
+    InboxTaskRepository,
+)
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
     InboxTaskCollection,
 )
@@ -67,11 +70,13 @@ class MetricLoadUseCase(
         inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             context.workspace.ref_id
         )
-        metric_collection_inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
+        metric_collection_inbox_tasks = await uow.get(
+            InboxTaskRepository
+        ).find_all_for_source_created_desc(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
-            source=[InboxTaskSource.METRIC],
-            metric_ref_id=[metric.ref_id],
+            source=InboxTaskSource.METRIC,
+            source_entity_ref_id=metric.ref_id,
         )
 
         note = await uow.get(NoteRepository).load_optional_for_source(

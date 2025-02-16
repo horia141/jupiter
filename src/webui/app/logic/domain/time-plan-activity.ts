@@ -4,7 +4,10 @@ import type {
   TimePlanActivity,
   TimePlanActivityFeasability,
 } from "@jupiter/webapi-client";
-import { TimePlanActivityTarget } from "@jupiter/webapi-client";
+import {
+  InboxTaskSource,
+  TimePlanActivityTarget,
+} from "@jupiter/webapi-client";
 import { compareTimePlanActivityFeasability } from "./time-plan-activity-feasability";
 import { compareTimePlanActivityKind } from "./time-plan-activity-kind";
 
@@ -25,11 +28,11 @@ export function filterActivityByFeasabilityWithParents(
       return a.feasability === feasability;
     } else {
       const inboxTask = targetInboxTasks.get(a.target_ref_id)!;
-      if (!inboxTask.big_plan_ref_id) {
+      if (inboxTask.source !== InboxTaskSource.BIG_PLAN) {
         return a.feasability === feasability;
       }
 
-      const bigPlan = targetBigPlans.get(inboxTask.big_plan_ref_id!)!;
+      const bigPlan = targetBigPlans.get(inboxTask.source_entity_ref_id!)!;
       const bigPlanActivity = activitiesByBigPlanRefId.get(bigPlan.ref_id)!;
 
       return bigPlanActivity.feasability === feasability;
@@ -70,11 +73,17 @@ export function sortTimePlanActivitiesNaturally(
     const j1Parent =
       j1.target === TimePlanActivityTarget.BIG_PLAN
         ? j1.target_ref_id
-        : targetInboxTasks.get(j1.target_ref_id)!.big_plan_ref_id;
+        : targetInboxTasks.get(j1.target_ref_id)!.source ===
+          InboxTaskSource.BIG_PLAN
+        ? targetInboxTasks.get(j1.target_ref_id)!.source_entity_ref_id
+        : undefined;
     const j2Parent =
       j2.target === TimePlanActivityTarget.BIG_PLAN
         ? j2.target_ref_id
-        : targetInboxTasks.get(j2.target_ref_id)!.big_plan_ref_id;
+        : targetInboxTasks.get(j2.target_ref_id)!.source ===
+          InboxTaskSource.BIG_PLAN
+        ? targetInboxTasks.get(j2.target_ref_id)!.source_entity_ref_id
+        : undefined;
 
     if (j1Parent !== j2Parent) {
       if (j1Parent === undefined || j1Parent === null) {

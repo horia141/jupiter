@@ -2,10 +2,14 @@
 from typing import cast
 
 from jupiter.core.domain.concept.habits.habit import Habit
-from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import (
+    InboxTask,
+    InboxTaskRepository,
+)
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
     InboxTaskCollection,
 )
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.concept.projects.project import Project
 from jupiter.core.domain.core import schedules
 from jupiter.core.domain.features import (
@@ -61,10 +65,13 @@ class HabitChangeProjectUseCase(
         inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             workspace.ref_id,
         )
-        all_inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
+        all_inbox_tasks = await uow.get(
+            InboxTaskRepository
+        ).find_all_for_source_created_desc(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
-            habit_ref_id=[args.ref_id],
+            source=InboxTaskSource.HABIT,
+            source_entity_ref_id=args.ref_id,
         )
 
         await uow.get_for(Project).load_by_id(args.project_ref_id)

@@ -2,7 +2,10 @@
 import typing
 
 from jupiter.core.domain.application.gen.service.gen_service import GenService
-from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import (
+    InboxTask,
+    InboxTaskRepository,
+)
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
     InboxTaskCollection,
 )
@@ -173,17 +176,21 @@ class PersonUpdateUseCase(
         inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             workspace.ref_id,
         )
-        person_catch_up_tasks = await uow.get_for(InboxTask).find_all_generic(
+        person_catch_up_tasks = await uow.get(
+            InboxTaskRepository
+        ).find_all_for_source_created_desc(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
-            source=[InboxTaskSource.PERSON_CATCH_UP],
-            person_ref_id=[person.ref_id],
+            source=InboxTaskSource.PERSON_CATCH_UP,
+            source_entity_ref_id=person.ref_id,
         )
-        person_birthday_tasks = await uow.get_for(InboxTask).find_all_generic(
+        person_birthday_tasks = await uow.get(
+            InboxTaskRepository
+        ).find_all_for_source_created_desc(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
-            source=[InboxTaskSource.PERSON_BIRTHDAY],
-            person_ref_id=[person.ref_id],
+            source=InboxTaskSource.PERSON_BIRTHDAY,
+            source_entity_ref_id=person.ref_id,
         )
         birthday_time_event_blocks = await uow.get(
             TimeEventFullDaysBlockRepository

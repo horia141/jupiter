@@ -39,7 +39,7 @@ class SlackTask(LeafEntity):
     channel: SlackChannelName | None
 
     generated_task = OwnsAtMostOne(
-        InboxTask, source=InboxTaskSource.SLACK_TASK, slack_task_ref_id=IsRefId()
+        InboxTask, source=InboxTaskSource.SLACK_TASK, source_entity_ref_id=IsRefId()
     )
 
     @staticmethod

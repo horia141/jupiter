@@ -46,7 +46,7 @@ class Journal(LeafEntity):
 
     note = OwnsOne(Note, domain=NoteDomain.JOURNAL, source_entity_ref_id=IsRefId())
     writing_task = OwnsAtMostOne(
-        InboxTask, source=InboxTaskSource.JOURNAL, journal_ref_id=IsRefId()
+        InboxTask, source=InboxTaskSource.JOURNAL, source_entity_ref_id=IsRefId()
     )
 
     @staticmethod

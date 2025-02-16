@@ -21,7 +21,12 @@ import {
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Form, useActionData, useTransition } from "@remix-run/react";
+import {
+  Form,
+  useActionData,
+  useSearchParams,
+  useTransition,
+} from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
 import { useContext } from "react";
@@ -31,6 +36,7 @@ import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntitySummaryLink } from "~/components/entity-summary-link";
 import { EventSourceTag } from "~/components/event-source-tag";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
+import { makeBranchErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError } from "~/components/infra/errors";
 import { BranchPanel } from "~/components/infra/layout/branch-panel";
 import { ScheduleStreamMultiSelect } from "~/components/schedule-stream-multi-select";
@@ -103,12 +109,17 @@ export default function CalendarSettings() {
 
   const today = DateTime.local({ zone: topLevelInfo.user.timezone });
 
+  const query = useSearchParams();
+
   const scheduleStreamsByRefId = new Map(
     loaderData.scheduleStreams.map((stream) => [stream.ref_id, stream])
   );
 
   return (
-    <BranchPanel key="calendar-settings" returnLocation="/workspace/calendar">
+    <BranchPanel
+      key="calendar-settings"
+      returnLocation={`/workspace/calendar?${query}`}
+    >
       <Form method="post">
         <Card>
           <CardContent>
@@ -230,6 +241,11 @@ export default function CalendarSettings() {
     </BranchPanel>
   );
 }
+
+export const ErrorBoundary = makeBranchErrorBoundary(
+  () => `/workspace/calendar?${useSearchParams()}`,
+  () => `There was an error creating the event in day! Please try again!`
+);
 
 const AccordionHeader = styled(Box)(({ theme }) => ({
   display: "flex",

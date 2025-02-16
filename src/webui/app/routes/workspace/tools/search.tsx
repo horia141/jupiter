@@ -30,7 +30,7 @@ import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntitySummaryLink } from "~/components/entity-summary-link";
 import { EntityCard } from "~/components/infra/entity-card";
 import { EntityStack2 } from "~/components/infra/entity-stack";
-import { makeErrorBoundary } from "~/components/infra/error-boundary";
+import { makeToolErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { ToolPanel } from "~/components/infra/layout/tool-panel";
 import { EntityTagSelect } from "~/components/named-entity-tag-select";
@@ -506,6 +506,6 @@ export default function Search() {
   );
 }
 
-export const ErrorBoundary = makeErrorBoundary(
+export const ErrorBoundary = makeToolErrorBoundary(
   () => `There was an error performing the search!`
 );

@@ -1,5 +1,4 @@
 """Use case for creating time plan actitivities for inbox tasks."""
-from typing import cast
 
 from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
 from jupiter.core.domain.concept.big_plans.big_plan_collection import BigPlanCollection
@@ -91,7 +90,7 @@ class TimePlanAssociateWithInboxTasksUseCase(
         )
 
         big_plan_ref_ids = [
-            cast(EntityId, it.big_plan_ref_id)
+            it.source_entity_ref_id_for_sure
             for it in inbox_tasks
             if it.source == InboxTaskSource.BIG_PLAN
         ]

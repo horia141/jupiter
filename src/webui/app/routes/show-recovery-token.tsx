@@ -17,7 +17,7 @@ import { parseQuery } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { CommunityLink } from "~/components/community-link";
 import { DocsHelp, DocsHelpSubject } from "~/components/docs-help";
-import { makeErrorBoundary } from "~/components/infra/error-boundary";
+import { makeRootErrorBoundary } from "~/components/infra/error-boundary";
 import { LifecyclePanel } from "~/components/infra/layout/lifecycle-panel";
 import { StandaloneContainer } from "~/components/infra/layout/standalone-container";
 import { SmartAppBar } from "~/components/infra/smart-appbar";
@@ -106,7 +106,7 @@ export default function ShowRecoveryToken() {
   );
 }
 
-export const ErrorBoundary = makeErrorBoundary(
+export const ErrorBoundary = makeRootErrorBoundary(
   () => `There was an error creating the workspace! Please try again!`
 );
 

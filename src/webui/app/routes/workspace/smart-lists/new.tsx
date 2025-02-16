@@ -19,7 +19,8 @@ import { z } from "zod";
 import { parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { IconSelector } from "~/components/icon-selector";
-import { makeErrorBoundary } from "~/components/infra/error-boundary";
+import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
+
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
@@ -114,6 +115,7 @@ export default function NewSmartList() {
   );
 }
 
-export const ErrorBoundary = makeErrorBoundary(
+export const ErrorBoundary = makeLeafErrorBoundary(
+  "/workspace/smart-lists",
   () => `There was an error creating the smart list! Please try again!`
 );

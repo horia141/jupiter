@@ -1,10 +1,14 @@
 """The command for changing the project for a big plan."""
 
 from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
-from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import (
+    InboxTask,
+    InboxTaskRepository,
+)
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
     InboxTaskCollection,
 )
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.concept.projects.project import Project
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -58,10 +62,13 @@ class BigPlanChangeProjectUseCase(
         inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             workspace.ref_id,
         )
-        all_inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
+        all_inbox_tasks = await uow.get(
+            InboxTaskRepository
+        ).find_all_for_source_created_desc(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
-            big_plan_ref_id=[big_plan.ref_id],
+            source=InboxTaskSource.BIG_PLAN,
+            source_entity_ref_id=big_plan.ref_id,
         )
 
         for inbox_task in all_inbox_tasks:

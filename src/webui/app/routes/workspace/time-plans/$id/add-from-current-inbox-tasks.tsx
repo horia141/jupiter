@@ -27,8 +27,7 @@ import { z } from "zod";
 import { parseForm, parseParams, parseQuery } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { InboxTaskCard } from "~/components/inbox-task-card";
-import { makeCatchBoundary } from "~/components/infra/catch-boundary";
-import { makeErrorBoundary } from "~/components/infra/error-boundary";
+
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import {
@@ -64,6 +63,8 @@ import { DisplayType } from "~/rendering/use-nested-entities";
 import type { TopLevelInfo } from "~/top-level-context";
 import { TopLevelInfoContext } from "~/top-level-context";
 
+import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
+import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 enum View {
   MERGED = "merged",
   BY_PROJECT = "by-project",
@@ -460,11 +461,13 @@ export default function TimePlanAddFromCurrentInboxTasks() {
   );
 }
 
-export const CatchBoundary = makeCatchBoundary(
+export const CatchBoundary = makeLeafCatchBoundary(
+  () => `/workspace/time-plans/${useParams().id}`,
   () => `Could not find time plan  #${useParams().id}`
 );
 
-export const ErrorBoundary = makeErrorBoundary(
+export const ErrorBoundary = makeLeafErrorBoundary(
+  () => `/workspace/time-plans/${useParams().id}`,
   () =>
     `There was an error loading time plan activity #${
       useParams().id

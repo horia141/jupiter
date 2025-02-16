@@ -4,6 +4,7 @@ from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
 from jupiter.core.domain.concept.chores.chore import Chore
 from jupiter.core.domain.concept.habits.habit import Habit
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.concept.metrics.metric import Metric
 from jupiter.core.domain.concept.persons.person import Person
 from jupiter.core.domain.concept.projects.project import Project
@@ -81,58 +82,61 @@ class InboxTaskLoadUseCase(
         )
         project = await uow.get_for(Project).load_by_id(inbox_task.project_ref_id)
 
-        if inbox_task.working_mem_ref_id is not None:
+        if inbox_task.source is InboxTaskSource.WORKING_MEM_CLEANUP:
             working_mem = await uow.get_for(WorkingMem).load_by_id(
-                inbox_task.working_mem_ref_id, allow_archived=True
+                inbox_task.source_entity_ref_id_for_sure, allow_archived=True
             )
         else:
             working_mem = None
 
-        if inbox_task.habit_ref_id is not None:
+        if inbox_task.source is InboxTaskSource.HABIT:
             habit = await uow.get_for(Habit).load_by_id(
-                inbox_task.habit_ref_id, allow_archived=True
+                inbox_task.source_entity_ref_id_for_sure, allow_archived=True
             )
         else:
             habit = None
 
-        if inbox_task.chore_ref_id is not None:
+        if inbox_task.source is InboxTaskSource.CHORE:
             chore = await uow.get_for(Chore).load_by_id(
-                inbox_task.chore_ref_id, allow_archived=True
+                inbox_task.source_entity_ref_id_for_sure, allow_archived=True
             )
         else:
             chore = None
 
-        if inbox_task.big_plan_ref_id is not None:
+        if inbox_task.source is InboxTaskSource.BIG_PLAN:
             big_plan = await uow.get_for(BigPlan).load_by_id(
-                inbox_task.big_plan_ref_id, allow_archived=True
+                inbox_task.source_entity_ref_id_for_sure, allow_archived=True
             )
         else:
             big_plan = None
 
-        if inbox_task.metric_ref_id is not None:
+        if inbox_task.source is InboxTaskSource.METRIC:
             metric = await uow.get_for(Metric).load_by_id(
-                inbox_task.metric_ref_id, allow_archived=True
+                inbox_task.source_entity_ref_id_for_sure, allow_archived=True
             )
         else:
             metric = None
 
-        if inbox_task.person_ref_id is not None:
+        if (
+            inbox_task.source is InboxTaskSource.PERSON_BIRTHDAY
+            or inbox_task.source is InboxTaskSource.PERSON_CATCH_UP
+        ):
             person = await uow.get_for(Person).load_by_id(
-                inbox_task.person_ref_id, allow_archived=True
+                inbox_task.source_entity_ref_id_for_sure, allow_archived=True
             )
         else:
             person = None
 
-        if inbox_task.slack_task_ref_id is not None:
+        if inbox_task.source is InboxTaskSource.SLACK_TASK:
             slack_task = await uow.get_for(SlackTask).load_by_id(
-                inbox_task.slack_task_ref_id, allow_archived=True
+                inbox_task.source_entity_ref_id_for_sure, allow_archived=True
             )
         else:
             slack_task = None
 
-        if inbox_task.email_task_ref_id is not None:
+        if inbox_task.source is InboxTaskSource.EMAIL_TASK:
             email_task = await uow.get_for(EmailTask).load_by_id(
-                inbox_task.email_task_ref_id, allow_archived=True
+                inbox_task.source_entity_ref_id_for_sure, allow_archived=True
             )
         else:
             email_task = None

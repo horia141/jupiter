@@ -36,7 +36,7 @@ class Chore(LeafEntity):
     end_at_date: ADate | None
 
     inbox_tasks = OwnsMany(
-        InboxTask, source=InboxTaskSource.CHORE, chore_ref_id=IsRefId()
+        InboxTask, source=InboxTaskSource.CHORE, source_entity_ref_id=IsRefId()
     )
     note = OwnsAtMostOne(Note, domain=NoteDomain.CHORE, source_entity_ref_id=IsRefId())
 

@@ -1,10 +1,14 @@
 """Use case for loading big plans."""
 
 from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
-from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import (
+    InboxTask,
+    InboxTaskRepository,
+)
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
     InboxTaskCollection,
 )
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.concept.projects.project import Project
 from jupiter.core.domain.core.notes.note import Note, NoteRepository
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
@@ -64,10 +68,13 @@ class BigPlanLoadUseCase(
         inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             workspace.ref_id,
         )
-        inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
+        inbox_tasks = await uow.get(
+            InboxTaskRepository
+        ).find_all_for_source_created_desc(
             parent_ref_id=inbox_task_collection.ref_id,
-            allow_archived=True,
-            big_plan_ref_id=[args.ref_id],
+            allow_archived=args.allow_archived,
+            source=InboxTaskSource.BIG_PLAN,
+            source_entity_ref_id=big_plan.ref_id,
         )
 
         note = await uow.get(NoteRepository).load_optional_for_source(

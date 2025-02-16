@@ -36,7 +36,7 @@ class Metric(BranchEntity):
 
     entries = OwnsMany(MetricEntry, metric_ref_id=IsRefId())
     collection_tasks = OwnsMany(
-        InboxTask, source=InboxTaskSource.METRIC, metric_ref_id=IsRefId()
+        InboxTask, source=InboxTaskSource.METRIC, source_entity_ref_id=IsRefId()
     )
     note = OwnsAtMostOne(Note, domain=NoteDomain.METRIC, source_entity_ref_id=IsRefId())
 

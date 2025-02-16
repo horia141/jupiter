@@ -20,6 +20,7 @@ import {
   Select,
   Stack,
 } from "@mui/material";
+
 import type { ActionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -32,7 +33,8 @@ import { getLoggedInApiClient } from "~/api-clients.server";
 import { DifficultySelect } from "~/components/difficulty-select";
 import { EisenhowerSelect } from "~/components/eisenhower-select";
 import { IconSelector } from "~/components/icon-selector";
-import { makeErrorBoundary } from "~/components/infra/error-boundary";
+import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
+
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
@@ -309,6 +311,7 @@ export default function NewMetric() {
   );
 }
 
-export const ErrorBoundary = makeErrorBoundary(
+export const ErrorBoundary = makeLeafErrorBoundary(
+  `/workspace/metrics`,
   () => `There was an error creating the metric! Please try again!`
 );

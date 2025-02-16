@@ -31,8 +31,7 @@ import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { BigPlanStack } from "~/components/big-plan-stack";
 import { InboxTaskPropertiesEditor } from "~/components/entities/inbox-task-properties-editor";
-import { makeCatchBoundary } from "~/components/infra/catch-boundary";
-import { makeErrorBoundary } from "~/components/infra/error-boundary";
+
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import {
@@ -60,6 +59,8 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
+import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
+import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 const ParamsSchema = {
   id: z.string(),
   activityId: z.string(),
@@ -533,14 +534,16 @@ export default function TimePlanActivity() {
   );
 }
 
-export const CatchBoundary = makeCatchBoundary(
+export const CatchBoundary = makeLeafCatchBoundary(
+  () => `/workspace/time-plans/${useParams().id}`,
   () =>
     `Could not find time plan activity #${useParams().id}:#${
       useParams().activityId
     }!`
 );
 
-export const ErrorBoundary = makeErrorBoundary(
+export const ErrorBoundary = makeLeafErrorBoundary(
+  () => `/workspace/time-plans/${useParams().id}`,
   () =>
     `There was an error loading time plan activity #${useParams().id}:#${
       useParams().activityId

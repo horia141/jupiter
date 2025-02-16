@@ -47,8 +47,7 @@ import { getLoggedInApiClient } from "~/api-clients.server";
 import { BigPlanStack } from "~/components/big-plan-stack";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
-import { makeCatchBoundary } from "~/components/infra/catch-boundary";
-import { makeErrorBoundary } from "~/components/infra/error-boundary";
+
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { BranchPanel } from "~/components/infra/layout/branch-panel";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
@@ -85,6 +84,8 @@ import {
 } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
+import { makeBranchCatchBoundary } from "~/components/infra/catch-boundary";
+import { makeBranchErrorBoundary } from "~/components/infra/error-boundary";
 enum View {
   MERGED = "merged",
   BY_PROJECT = "by-project",
@@ -792,11 +793,13 @@ export default function TimePlanView() {
   );
 }
 
-export const CatchBoundary = makeCatchBoundary(
+export const CatchBoundary = makeBranchCatchBoundary(
+  "/workspace/time-plans",
   () => `Could not find time plan #${useParams().id}!`
 );
 
-export const ErrorBoundary = makeErrorBoundary(
+export const ErrorBoundary = makeBranchErrorBoundary(
+  "/workspace/time-plans",
   () =>
     `There was an error loading time plan #${useParams().id}. Please try again!`
 );

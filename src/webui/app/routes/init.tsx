@@ -41,7 +41,7 @@ import {
   WorkspaceFeatureFlagsEditor,
 } from "~/components/feature-flags-editor";
 import { EntityActionHeader } from "~/components/infra/entity-actions-header";
-import { makeErrorBoundary } from "~/components/infra/error-boundary";
+import { makeRootErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LifecyclePanel } from "~/components/infra/layout/lifecycle-panel";
 import { StandaloneContainer } from "~/components/infra/layout/standalone-container";
@@ -370,6 +370,6 @@ export default function WorkspaceInit() {
   );
 }
 
-export const ErrorBoundary = makeErrorBoundary(
+export const ErrorBoundary = makeRootErrorBoundary(
   () => `There was an error creating the workspace! Please try again!`
 );

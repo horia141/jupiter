@@ -41,7 +41,7 @@ import { EntitySummaryLink } from "~/components/entity-summary-link";
 import { EventSourceTag } from "~/components/event-source-tag";
 import { SlimChip } from "~/components/infra/chips";
 import { EntityCard } from "~/components/infra/entity-card";
-import { makeErrorBoundary } from "~/components/infra/error-boundary";
+import { makeToolErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { ToolPanel } from "~/components/infra/layout/tool-panel";
 import { PeriodSelect } from "~/components/period-select";
@@ -629,7 +629,7 @@ export default function Gen() {
   );
 }
 
-export const ErrorBoundary = makeErrorBoundary(
+export const ErrorBoundary = makeToolErrorBoundary(
   () => `There was an error generating tasks! Please try again!`
 );
 

@@ -41,7 +41,7 @@ class BigPlan(LeafEntity):
     completed_time: Timestamp | None
 
     inbox_tasks = OwnsMany(
-        InboxTask, source=InboxTaskSource.BIG_PLAN, big_plan_ref_id=IsRefId()
+        InboxTask, source=InboxTaskSource.BIG_PLAN, source_entity_ref_id=IsRefId()
     )
     note = OwnsAtMostOne(
         Note, domain=NoteDomain.BIG_PLAN, source_entity_ref_id=IsRefId()
