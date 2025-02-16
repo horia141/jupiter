@@ -22,15 +22,23 @@ class PersonLoadResult:
     Attributes:
         person (Person): A person.
         birthday_time_event_blocks (List['TimeEventFullDaysBlock']):
-        catch_up_inbox_tasks (List['InboxTask']):
-        birthday_inbox_tasks (List['InboxTask']):
+        catch_up_tasks (List['InboxTask']):
+        catch_up_tasks_total_cnt (int):
+        catch_up_tasks_page_size (int):
+        birthday_tasks (List['InboxTask']):
+        birthday_tasks_total_cnt (int):
+        birthday_tasks_page_size (int):
         note (Union['Note', None, Unset]):
     """
 
     person: "Person"
     birthday_time_event_blocks: List["TimeEventFullDaysBlock"]
-    catch_up_inbox_tasks: List["InboxTask"]
-    birthday_inbox_tasks: List["InboxTask"]
+    catch_up_tasks: List["InboxTask"]
+    catch_up_tasks_total_cnt: int
+    catch_up_tasks_page_size: int
+    birthday_tasks: List["InboxTask"]
+    birthday_tasks_total_cnt: int
+    birthday_tasks_page_size: int
     note: Union["Note", None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -44,15 +52,23 @@ class PersonLoadResult:
             birthday_time_event_blocks_item = birthday_time_event_blocks_item_data.to_dict()
             birthday_time_event_blocks.append(birthday_time_event_blocks_item)
 
-        catch_up_inbox_tasks = []
-        for catch_up_inbox_tasks_item_data in self.catch_up_inbox_tasks:
-            catch_up_inbox_tasks_item = catch_up_inbox_tasks_item_data.to_dict()
-            catch_up_inbox_tasks.append(catch_up_inbox_tasks_item)
+        catch_up_tasks = []
+        for catch_up_tasks_item_data in self.catch_up_tasks:
+            catch_up_tasks_item = catch_up_tasks_item_data.to_dict()
+            catch_up_tasks.append(catch_up_tasks_item)
 
-        birthday_inbox_tasks = []
-        for birthday_inbox_tasks_item_data in self.birthday_inbox_tasks:
-            birthday_inbox_tasks_item = birthday_inbox_tasks_item_data.to_dict()
-            birthday_inbox_tasks.append(birthday_inbox_tasks_item)
+        catch_up_tasks_total_cnt = self.catch_up_tasks_total_cnt
+
+        catch_up_tasks_page_size = self.catch_up_tasks_page_size
+
+        birthday_tasks = []
+        for birthday_tasks_item_data in self.birthday_tasks:
+            birthday_tasks_item = birthday_tasks_item_data.to_dict()
+            birthday_tasks.append(birthday_tasks_item)
+
+        birthday_tasks_total_cnt = self.birthday_tasks_total_cnt
+
+        birthday_tasks_page_size = self.birthday_tasks_page_size
 
         note: Union[Dict[str, Any], None, Unset]
         if isinstance(self.note, Unset):
@@ -68,8 +84,12 @@ class PersonLoadResult:
             {
                 "person": person,
                 "birthday_time_event_blocks": birthday_time_event_blocks,
-                "catch_up_inbox_tasks": catch_up_inbox_tasks,
-                "birthday_inbox_tasks": birthday_inbox_tasks,
+                "catch_up_tasks": catch_up_tasks,
+                "catch_up_tasks_total_cnt": catch_up_tasks_total_cnt,
+                "catch_up_tasks_page_size": catch_up_tasks_page_size,
+                "birthday_tasks": birthday_tasks,
+                "birthday_tasks_total_cnt": birthday_tasks_total_cnt,
+                "birthday_tasks_page_size": birthday_tasks_page_size,
             }
         )
         if note is not UNSET:
@@ -94,19 +114,27 @@ class PersonLoadResult:
 
             birthday_time_event_blocks.append(birthday_time_event_blocks_item)
 
-        catch_up_inbox_tasks = []
-        _catch_up_inbox_tasks = d.pop("catch_up_inbox_tasks")
-        for catch_up_inbox_tasks_item_data in _catch_up_inbox_tasks:
-            catch_up_inbox_tasks_item = InboxTask.from_dict(catch_up_inbox_tasks_item_data)
+        catch_up_tasks = []
+        _catch_up_tasks = d.pop("catch_up_tasks")
+        for catch_up_tasks_item_data in _catch_up_tasks:
+            catch_up_tasks_item = InboxTask.from_dict(catch_up_tasks_item_data)
 
-            catch_up_inbox_tasks.append(catch_up_inbox_tasks_item)
+            catch_up_tasks.append(catch_up_tasks_item)
 
-        birthday_inbox_tasks = []
-        _birthday_inbox_tasks = d.pop("birthday_inbox_tasks")
-        for birthday_inbox_tasks_item_data in _birthday_inbox_tasks:
-            birthday_inbox_tasks_item = InboxTask.from_dict(birthday_inbox_tasks_item_data)
+        catch_up_tasks_total_cnt = d.pop("catch_up_tasks_total_cnt")
 
-            birthday_inbox_tasks.append(birthday_inbox_tasks_item)
+        catch_up_tasks_page_size = d.pop("catch_up_tasks_page_size")
+
+        birthday_tasks = []
+        _birthday_tasks = d.pop("birthday_tasks")
+        for birthday_tasks_item_data in _birthday_tasks:
+            birthday_tasks_item = InboxTask.from_dict(birthday_tasks_item_data)
+
+            birthday_tasks.append(birthday_tasks_item)
+
+        birthday_tasks_total_cnt = d.pop("birthday_tasks_total_cnt")
+
+        birthday_tasks_page_size = d.pop("birthday_tasks_page_size")
 
         def _parse_note(data: object) -> Union["Note", None, Unset]:
             if data is None:
@@ -128,8 +156,12 @@ class PersonLoadResult:
         person_load_result = cls(
             person=person,
             birthday_time_event_blocks=birthday_time_event_blocks,
-            catch_up_inbox_tasks=catch_up_inbox_tasks,
-            birthday_inbox_tasks=birthday_inbox_tasks,
+            catch_up_tasks=catch_up_tasks,
+            catch_up_tasks_total_cnt=catch_up_tasks_total_cnt,
+            catch_up_tasks_page_size=catch_up_tasks_page_size,
+            birthday_tasks=birthday_tasks,
+            birthday_tasks_total_cnt=birthday_tasks_total_cnt,
+            birthday_tasks_page_size=birthday_tasks_page_size,
             note=note,
         )
 

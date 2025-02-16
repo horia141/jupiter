@@ -22,7 +22,7 @@ import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";
-import { parseForm, parseParams } from "zodix";
+import { parseForm, parseParams, parseQuery } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
@@ -46,6 +46,13 @@ const ParamsSchema = {
   id: z.string(),
 };
 
+const QuerySchema = {
+  cleanupTasksRetrieveOffset: z
+    .string()
+    .transform((s) => parseInt(s, 10))
+    .optional(),
+};
+
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({ intent: z.literal("archive") }),
 ]);
@@ -57,17 +64,21 @@ export const handle = {
 export async function loader({ request, params }: LoaderArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
+  const query = parseQuery(request, QuerySchema);
 
   try {
     const result = await apiClient.workingMem.workingMemLoad({
       ref_id: id,
       allow_archived: true,
+      cleanup_task_retrieve_offset: query.cleanupTasksRetrieveOffset,
     });
 
     return json({
       workingMem: result.working_mem,
       note: result.note,
-      cleanupTask: result.cleanup_task,
+      cleanupTasks: result.cleanup_tasks,
+      cleanupTasksTotalCnt: result.cleanup_tasks_total_cnt,
+      cleanupTasksPageSize: result.cleanup_tasks_page_size,
     });
   } catch (error) {
     if (error instanceof ApiError && error.status === StatusCodes.NOT_FOUND) {
@@ -219,7 +230,7 @@ export default function WorkingMem() {
         </CardContent>
       </Card>
 
-      {loaderData.cleanupTask && (
+      {loaderData.cleanupTasks.length > 0 && (
         <InboxTaskStack
           today={today}
           topLevelInfo={topLevelInfo}
@@ -230,8 +241,13 @@ export default function WorkingMem() {
             showHandleMarkDone: true,
             showHandleMarkNotDone: true,
           }}
-          label="Cleanup Task"
-          inboxTasks={[loaderData.cleanupTask]}
+          label="Cleanup Tasks"
+          inboxTasks={loaderData.cleanupTasks}
+          withPages={{
+            retrieveOffsetParamName: "cleanupTasksRetrieveOffset",
+            totalCnt: loaderData.cleanupTasksTotalCnt,
+            pageSize: loaderData.cleanupTasksPageSize,
+          }}
           onCardMarkDone={handleCardMarkDone}
           onCardMarkNotDone={handleCardMarkNotDone}
         />

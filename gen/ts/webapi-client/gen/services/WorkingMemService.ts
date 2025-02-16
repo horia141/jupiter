@@ -113,8 +113,8 @@ export class WorkingMemService {
     }
 
     /**
-     * The command for loading the  working mem.
-     * The command for loading the  working mem.
+     * The command for loading the working mem.
+     * The command for loading the working mem.
      * @param requestBody The input data
      * @returns WorkingMemLoadResult Successful response
      * @throws ApiError

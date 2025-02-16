@@ -14,17 +14,21 @@ T = TypeVar("T", bound="WorkingMemLoadResult")
 
 @_attrs_define
 class WorkingMemLoadResult:
-    """Working mem load  result.
+    """Working mem load result.
 
     Attributes:
         working_mem (WorkingMem): An entry in the working_mem.txt system.
         note (Note): A note in the notebook.
-        cleanup_task (InboxTask): An inbox task.
+        cleanup_tasks (List['InboxTask']):
+        cleanup_tasks_total_cnt (int):
+        cleanup_tasks_page_size (int):
     """
 
     working_mem: "WorkingMem"
     note: "Note"
-    cleanup_task: "InboxTask"
+    cleanup_tasks: List["InboxTask"]
+    cleanup_tasks_total_cnt: int
+    cleanup_tasks_page_size: int
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -32,7 +36,14 @@ class WorkingMemLoadResult:
 
         note = self.note.to_dict()
 
-        cleanup_task = self.cleanup_task.to_dict()
+        cleanup_tasks = []
+        for cleanup_tasks_item_data in self.cleanup_tasks:
+            cleanup_tasks_item = cleanup_tasks_item_data.to_dict()
+            cleanup_tasks.append(cleanup_tasks_item)
+
+        cleanup_tasks_total_cnt = self.cleanup_tasks_total_cnt
+
+        cleanup_tasks_page_size = self.cleanup_tasks_page_size
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -40,7 +51,9 @@ class WorkingMemLoadResult:
             {
                 "working_mem": working_mem,
                 "note": note,
-                "cleanup_task": cleanup_task,
+                "cleanup_tasks": cleanup_tasks,
+                "cleanup_tasks_total_cnt": cleanup_tasks_total_cnt,
+                "cleanup_tasks_page_size": cleanup_tasks_page_size,
             }
         )
 
@@ -57,12 +70,23 @@ class WorkingMemLoadResult:
 
         note = Note.from_dict(d.pop("note"))
 
-        cleanup_task = InboxTask.from_dict(d.pop("cleanup_task"))
+        cleanup_tasks = []
+        _cleanup_tasks = d.pop("cleanup_tasks")
+        for cleanup_tasks_item_data in _cleanup_tasks:
+            cleanup_tasks_item = InboxTask.from_dict(cleanup_tasks_item_data)
+
+            cleanup_tasks.append(cleanup_tasks_item)
+
+        cleanup_tasks_total_cnt = d.pop("cleanup_tasks_total_cnt")
+
+        cleanup_tasks_page_size = d.pop("cleanup_tasks_page_size")
 
         working_mem_load_result = cls(
             working_mem=working_mem,
             note=note,
-            cleanup_task=cleanup_task,
+            cleanup_tasks=cleanup_tasks,
+            cleanup_tasks_total_cnt=cleanup_tasks_total_cnt,
+            cleanup_tasks_page_size=cleanup_tasks_page_size,
         )
 
         working_mem_load_result.additional_properties = d

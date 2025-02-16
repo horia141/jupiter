@@ -2,6 +2,7 @@
 import abc
 import textwrap
 from collections.abc import Iterable
+from typing import ClassVar
 
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
@@ -981,6 +982,18 @@ class InboxTask(LeafEntity):
 class InboxTaskRepository(LeafEntityRepository[InboxTask], abc.ABC):
     """A repository of inbox tasks."""
 
+    PAGE_SIZE: ClassVar[int] = 10
+
+    @abc.abstractmethod
+    async def count_all_for_source(
+        self,
+        parent_ref_id: EntityId,
+        source: InboxTaskSource,
+        source_entity_ref_id: EntityId,
+        allow_archived: bool = False,
+    ) -> int:
+        """Count all inbox tasks for a source."""
+
     @abc.abstractmethod
     async def find_all_for_source_created_desc(
         self,
@@ -988,6 +1001,8 @@ class InboxTaskRepository(LeafEntityRepository[InboxTask], abc.ABC):
         source: InboxTaskSource,
         source_entity_ref_id: EntityId,
         allow_archived: bool = False,
+        retrieve_offset: int | None = None,
+        retrieve_limit: int | None = None,
     ) -> list[InboxTask]:
         """Find all inbox tasks for a source."""
 

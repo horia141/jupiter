@@ -14,6 +14,8 @@ export type HabitLoadResult = {
     habit: Habit;
     project: Project;
     inbox_tasks: Array<InboxTask>;
+    inbox_tasks_total_cnt: number;
+    inbox_tasks_page_size: number;
     note?: (Note | null);
 };
 

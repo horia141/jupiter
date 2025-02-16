@@ -1,5 +1,6 @@
 """The SQLite repository for inbox tasks."""
 from collections.abc import Iterable
+from typing import cast
 
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import (
     InboxTask,
@@ -12,9 +13,7 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.impl.repository.sqlite.infra.repository import (
     SqliteLeafEntityRepository,
 )
-from sqlalchemy import (
-    select,
-)
+from sqlalchemy import func, select
 
 
 class SqliteInboxTaskRepository(
@@ -22,14 +21,43 @@ class SqliteInboxTaskRepository(
 ):
     """The inbox task repository."""
 
+    async def count_all_for_source(
+        self,
+        parent_ref_id: EntityId,
+        source: InboxTaskSource,
+        source_entity_ref_id: EntityId,
+        allow_archived: bool = False,
+    ) -> int:
+        """Count all the inbox task for a source."""
+        query_stmt = select(func.count()).where(
+            self._table.c.inbox_task_collection_ref_id == parent_ref_id.as_int(),
+            self._table.c.source == source.value,
+            self._table.c.source_entity_ref_id == source_entity_ref_id.as_int(),
+        )
+        if not allow_archived:
+            query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        results = await self._connection.execute(query_stmt)
+        return cast(int, results.scalar_one())
+
     async def find_all_for_source_created_desc(
         self,
         parent_ref_id: EntityId,
         source: InboxTaskSource,
         source_entity_ref_id: EntityId,
         allow_archived: bool = False,
+        retrieve_offset: int | None = None,
+        retrieve_limit: int | None = None,
     ) -> list[InboxTask]:
         """Find all the inbox task for a source."""
+        if retrieve_offset is None and retrieve_limit is not None:
+            raise Exception("Cannot specify a limit without an offset.")
+        if retrieve_offset is not None and retrieve_limit is None:
+            raise Exception("Cannot specify an offset without a limit.")
+        if retrieve_offset is not None and retrieve_offset < 0:
+            raise Exception("Offset must be non-negative.")
+        if retrieve_limit is not None and retrieve_limit < 1:
+            raise Exception("Limit must be positive.")
+
         query_stmt = select(self._table).where(
             self._table.c.inbox_task_collection_ref_id == parent_ref_id.as_int(),
             self._table.c.source == source.value,
@@ -37,6 +65,8 @@ class SqliteInboxTaskRepository(
         )
         if not allow_archived:
             query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        if retrieve_offset is not None and retrieve_limit is not None:
+            query_stmt = query_stmt.offset(retrieve_offset).limit(retrieve_limit)
         query_stmt = query_stmt.order_by(self._table.c.created_time.desc())
         results = await self._connection.execute(query_stmt)
         return [self._row_to_entity(row) for row in results]

@@ -22,13 +22,17 @@ class MetricLoadResult:
     Attributes:
         metric (Metric): A metric.
         metric_entries (List['MetricEntry']):
-        metric_collection_inbox_tasks (List['InboxTask']):
+        collection_tasks (List['InboxTask']):
+        collection_tasks_total_cnt (int):
+        collection_tasks_page_size (int):
         note (Union['Note', None, Unset]):
     """
 
     metric: "Metric"
     metric_entries: List["MetricEntry"]
-    metric_collection_inbox_tasks: List["InboxTask"]
+    collection_tasks: List["InboxTask"]
+    collection_tasks_total_cnt: int
+    collection_tasks_page_size: int
     note: Union["Note", None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -42,10 +46,14 @@ class MetricLoadResult:
             metric_entries_item = metric_entries_item_data.to_dict()
             metric_entries.append(metric_entries_item)
 
-        metric_collection_inbox_tasks = []
-        for metric_collection_inbox_tasks_item_data in self.metric_collection_inbox_tasks:
-            metric_collection_inbox_tasks_item = metric_collection_inbox_tasks_item_data.to_dict()
-            metric_collection_inbox_tasks.append(metric_collection_inbox_tasks_item)
+        collection_tasks = []
+        for collection_tasks_item_data in self.collection_tasks:
+            collection_tasks_item = collection_tasks_item_data.to_dict()
+            collection_tasks.append(collection_tasks_item)
+
+        collection_tasks_total_cnt = self.collection_tasks_total_cnt
+
+        collection_tasks_page_size = self.collection_tasks_page_size
 
         note: Union[Dict[str, Any], None, Unset]
         if isinstance(self.note, Unset):
@@ -61,7 +69,9 @@ class MetricLoadResult:
             {
                 "metric": metric,
                 "metric_entries": metric_entries,
-                "metric_collection_inbox_tasks": metric_collection_inbox_tasks,
+                "collection_tasks": collection_tasks,
+                "collection_tasks_total_cnt": collection_tasks_total_cnt,
+                "collection_tasks_page_size": collection_tasks_page_size,
             }
         )
         if note is not UNSET:
@@ -86,12 +96,16 @@ class MetricLoadResult:
 
             metric_entries.append(metric_entries_item)
 
-        metric_collection_inbox_tasks = []
-        _metric_collection_inbox_tasks = d.pop("metric_collection_inbox_tasks")
-        for metric_collection_inbox_tasks_item_data in _metric_collection_inbox_tasks:
-            metric_collection_inbox_tasks_item = InboxTask.from_dict(metric_collection_inbox_tasks_item_data)
+        collection_tasks = []
+        _collection_tasks = d.pop("collection_tasks")
+        for collection_tasks_item_data in _collection_tasks:
+            collection_tasks_item = InboxTask.from_dict(collection_tasks_item_data)
 
-            metric_collection_inbox_tasks.append(metric_collection_inbox_tasks_item)
+            collection_tasks.append(collection_tasks_item)
+
+        collection_tasks_total_cnt = d.pop("collection_tasks_total_cnt")
+
+        collection_tasks_page_size = d.pop("collection_tasks_page_size")
 
         def _parse_note(data: object) -> Union["Note", None, Unset]:
             if data is None:
@@ -113,7 +127,9 @@ class MetricLoadResult:
         metric_load_result = cls(
             metric=metric,
             metric_entries=metric_entries,
-            metric_collection_inbox_tasks=metric_collection_inbox_tasks,
+            collection_tasks=collection_tasks,
+            collection_tasks_total_cnt=collection_tasks_total_cnt,
+            collection_tasks_page_size=collection_tasks_page_size,
             note=note,
         )
 

@@ -33,7 +33,7 @@ import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";
-import { parseForm, parseParams } from "zodix";
+import { parseForm, parseParams, parseQuery } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { IconSelector } from "~/components/icon-selector";
@@ -53,6 +53,13 @@ import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = {
   id: z.string(),
+};
+
+const QuerySchema = {
+  collectionTasksRetrieveOffset: z
+    .string()
+    .transform((s) => parseInt(s, 10))
+    .optional(),
 };
 
 const UpdateFormSchema = z.discriminatedUnion("intent", [
@@ -88,18 +95,22 @@ export const handle = {
 export async function loader({ request, params }: LoaderArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
+  const query = parseQuery(request, QuerySchema);
 
   try {
     const response = await apiClient.metrics.metricLoad({
       ref_id: id,
       allow_archived: true,
       allow_archived_entries: false,
+      collection_task_retrieve_offset: query.collectionTasksRetrieveOffset,
     });
 
     return json({
       metric: response.metric,
       note: response.note,
-      collectionInboxTasks: response.metric_collection_inbox_tasks,
+      collectionTasks: response.collection_tasks,
+      collectionTasksTotalCnt: response.collection_tasks_total_cnt,
+      collectionTasksPageSize: response.collection_tasks_page_size,
     });
   } catch (error) {
     if (error instanceof ApiError && error.status === StatusCodes.NOT_FOUND) {
@@ -251,8 +262,8 @@ export default function MetricDetails() {
   const inputsEnabled =
     transition.state === "idle" && !loaderData.metric.archived;
 
-  const sortedCollectionTasks = loaderData.collectionInboxTasks
-    ? sortInboxTasksNaturally(loaderData.collectionInboxTasks, {
+  const sortedCollectionTasks = loaderData.collectionTasks
+    ? sortInboxTasksNaturally(loaderData.collectionTasks, {
         dueDateAscending: false,
       })
     : undefined;
@@ -397,6 +408,11 @@ export default function MetricDetails() {
           }}
           label="Collection Tasks"
           inboxTasks={sortedCollectionTasks}
+          withPages={{
+            retrieveOffsetParamName: "collectionTasksRetrieveOffset",
+            totalCnt: loaderData.collectionTasksTotalCnt,
+            pageSize: loaderData.collectionTasksPageSize,
+          }}
           onCardMarkDone={handleCardMarkDone}
           onCardMarkNotDone={handleCardMarkNotDone}
         />

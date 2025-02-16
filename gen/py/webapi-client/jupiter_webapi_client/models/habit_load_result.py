@@ -23,12 +23,16 @@ class HabitLoadResult:
         habit (Habit): A habit.
         project (Project): The project.
         inbox_tasks (List['InboxTask']):
+        inbox_tasks_total_cnt (int):
+        inbox_tasks_page_size (int):
         note (Union['Note', None, Unset]):
     """
 
     habit: "Habit"
     project: "Project"
     inbox_tasks: List["InboxTask"]
+    inbox_tasks_total_cnt: int
+    inbox_tasks_page_size: int
     note: Union["Note", None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -43,6 +47,10 @@ class HabitLoadResult:
         for inbox_tasks_item_data in self.inbox_tasks:
             inbox_tasks_item = inbox_tasks_item_data.to_dict()
             inbox_tasks.append(inbox_tasks_item)
+
+        inbox_tasks_total_cnt = self.inbox_tasks_total_cnt
+
+        inbox_tasks_page_size = self.inbox_tasks_page_size
 
         note: Union[Dict[str, Any], None, Unset]
         if isinstance(self.note, Unset):
@@ -59,6 +67,8 @@ class HabitLoadResult:
                 "habit": habit,
                 "project": project,
                 "inbox_tasks": inbox_tasks,
+                "inbox_tasks_total_cnt": inbox_tasks_total_cnt,
+                "inbox_tasks_page_size": inbox_tasks_page_size,
             }
         )
         if note is not UNSET:
@@ -85,6 +95,10 @@ class HabitLoadResult:
 
             inbox_tasks.append(inbox_tasks_item)
 
+        inbox_tasks_total_cnt = d.pop("inbox_tasks_total_cnt")
+
+        inbox_tasks_page_size = d.pop("inbox_tasks_page_size")
+
         def _parse_note(data: object) -> Union["Note", None, Unset]:
             if data is None:
                 return data
@@ -106,6 +120,8 @@ class HabitLoadResult:
             habit=habit,
             project=project,
             inbox_tasks=inbox_tasks,
+            inbox_tasks_total_cnt=inbox_tasks_total_cnt,
+            inbox_tasks_page_size=inbox_tasks_page_size,
             note=note,
         )
 

@@ -75,6 +75,7 @@ class InboxTaskFindArgs(UseCaseArgsBase):
     filter_ref_ids: list[EntityId] | None
     filter_project_ref_ids: list[EntityId] | None
     filter_sources: list[InboxTaskSource] | None
+    filter_source_entity_ref_ids: list[EntityId] | None
 
 
 @use_case_result_part
@@ -128,6 +129,8 @@ class InboxTaskFindUseCase(
             if args.filter_sources is not None
             else workspace.infer_sources_for_enabled_features(None)
         )
+        if args.filter_just_generated:
+            filter_sources = self._filter_sources_for_generated_tasks(filter_sources)
 
         big_diff = list(
             set(filter_sources).difference(
@@ -144,12 +147,6 @@ class InboxTaskFindUseCase(
             if args.filter_just_workable
             else NoFilter()
         )
-        filter_sources = workspace.infer_sources_for_enabled_features(
-            args.filter_sources
-        )
-        if args.filter_just_generated:
-            filter_sources = self._filter_sources_for_generated_tasks(filter_sources)
-
         project_collection = await uow.get_for(ProjectCollection).load_by_parent(
             workspace.ref_id,
         )
@@ -200,6 +197,7 @@ class InboxTaskFindUseCase(
             status=filter_status,
             source=filter_sources,
             project_ref_id=args.filter_project_ref_ids or NoFilter(),
+            source_entity_ref_id=args.filter_source_entity_ref_ids or NoFilter(),
         )
 
         working_mems = await uow.get_for(WorkingMem).find_all(

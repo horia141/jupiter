@@ -19,6 +19,7 @@ from jupiter.core.domain.core.time_events.time_event_namespace import TimeEventN
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,
@@ -38,6 +39,8 @@ class PersonLoadArgs(UseCaseArgsBase):
 
     ref_id: EntityId
     allow_archived: bool
+    catch_up_task_retrieve_offset: int | None
+    birthday_task_retrieve_offset: int | None
 
 
 @use_case_result
@@ -46,8 +49,12 @@ class PersonLoadResult(UseCaseResultBase):
 
     person: Person
     birthday_time_event_blocks: list[TimeEventFullDaysBlock]
-    catch_up_inbox_tasks: list[InboxTask]
-    birthday_inbox_tasks: list[InboxTask]
+    catch_up_tasks: list[InboxTask]
+    catch_up_tasks_total_cnt: int
+    catch_up_tasks_page_size: int
+    birthday_tasks: list[InboxTask]
+    birthday_tasks_total_cnt: int
+    birthday_tasks_page_size: int
     note: Note | None
 
 
@@ -64,6 +71,17 @@ class PersonLoadUseCase(
         args: PersonLoadArgs,
     ) -> PersonLoadResult:
         """Execute the command's action."""
+        if (
+            args.catch_up_task_retrieve_offset is not None
+            and args.catch_up_task_retrieve_offset < 0
+        ):
+            raise InputValidationError("Invalid catch_up_inbox_task_retrieve_offset")
+        if (
+            args.birthday_task_retrieve_offset is not None
+            and args.birthday_task_retrieve_offset < 0
+        ):
+            raise InputValidationError("Invalid birthday_inbox_task_retrieve_offset")
+
         workspace = context.workspace
         person = await uow.get_for(Person).load_by_id(
             args.ref_id, allow_archived=args.allow_archived
@@ -86,27 +104,54 @@ class PersonLoadUseCase(
             allow_archived=args.allow_archived,
         )
 
-        catch_up_inbox_tasks = await uow.get(
+        catch_up_tasks_total_cnt = await uow.get(
+            InboxTaskRepository
+        ).count_all_for_source(
+            parent_ref_id=inbox_task_collection.ref_id,
+            allow_archived=True,
+            source=InboxTaskSource.PERSON_CATCH_UP,
+            source_entity_ref_id=args.ref_id,
+        )
+
+        catch_up_tasks = await uow.get(
             InboxTaskRepository
         ).find_all_for_source_created_desc(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
             source=InboxTaskSource.PERSON_CATCH_UP,
             source_entity_ref_id=args.ref_id,
+            retrieve_offset=args.catch_up_task_retrieve_offset or 0,
+            retrieve_limit=InboxTaskRepository.PAGE_SIZE,
         )
-        birthday_inbox_tasks = await uow.get(
+
+        birthday_tasks_total_cnt = await uow.get(
             InboxTaskRepository
-        ).find_all_for_source_created_desc(
+        ).count_all_for_source(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
             source=InboxTaskSource.PERSON_BIRTHDAY,
             source_entity_ref_id=args.ref_id,
         )
 
+        birthday_tasks = await uow.get(
+            InboxTaskRepository
+        ).find_all_for_source_created_desc(
+            parent_ref_id=inbox_task_collection.ref_id,
+            allow_archived=True,
+            source=InboxTaskSource.PERSON_BIRTHDAY,
+            source_entity_ref_id=args.ref_id,
+            retrieve_offset=args.birthday_task_retrieve_offset or 0,
+            retrieve_limit=InboxTaskRepository.PAGE_SIZE,
+        )
+
         return PersonLoadResult(
             person=person,
             note=note,
             birthday_time_event_blocks=birthday_time_event_blocks,
-            catch_up_inbox_tasks=catch_up_inbox_tasks,
-            birthday_inbox_tasks=birthday_inbox_tasks,
+            catch_up_tasks=catch_up_tasks,
+            catch_up_tasks_total_cnt=catch_up_tasks_total_cnt,
+            catch_up_tasks_page_size=InboxTaskRepository.PAGE_SIZE,
+            birthday_tasks=birthday_tasks,
+            birthday_tasks_total_cnt=birthday_tasks_total_cnt,
+            birthday_tasks_page_size=InboxTaskRepository.PAGE_SIZE,
         )

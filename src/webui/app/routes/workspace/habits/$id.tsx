@@ -32,7 +32,7 @@ import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
-import { parseForm, parseParams } from "zodix";
+import { parseForm, parseParams, parseQuery } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
@@ -54,6 +54,14 @@ import { TopLevelInfoContext } from "~/top-level-context";
 const ParamsSchema = {
   id: z.string(),
 };
+
+const QuerySchema = {
+  inboxTasksRetrieveOffset: z
+    .string()
+    .transform((s) => parseInt(s, 10))
+    .optional(),
+};
+
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
     intent: z.literal("update"),
@@ -94,6 +102,7 @@ export const handle = {
 export async function loader({ request, params }: LoaderArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
+  const query = parseQuery(request, QuerySchema); // Parse the query parameters
 
   const summaryResponse = await apiClient.getSummaries.getSummaries({
     include_projects: true,
@@ -103,6 +112,7 @@ export async function loader({ request, params }: LoaderArgs) {
     const result = await apiClient.habits.habitLoad({
       ref_id: id,
       allow_archived: true,
+      inbox_task_retrieve_offset: query.inboxTasksRetrieveOffset, // Pass the offset to the API call
     });
 
     return json({
@@ -110,6 +120,8 @@ export async function loader({ request, params }: LoaderArgs) {
       note: result.note,
       project: result.project,
       inboxTasks: result.inbox_tasks,
+      inboxTasksTotalCnt: result.inbox_tasks_total_cnt,
+      inboxTasksPageSize: result.inbox_tasks_page_size,
       allProjects: summaryResponse.projects as Array<Project>,
     });
   } catch (error) {
@@ -472,6 +484,11 @@ export default function Habit() {
           }}
           label="Inbox Tasks"
           inboxTasks={sortedInboxTasks}
+          withPages={{
+            retrieveOffsetParamName: "inboxTasksRetrieveOffset",
+            totalCnt: loaderData.inboxTasksTotalCnt,
+            pageSize: loaderData.inboxTasksPageSize,
+          }}
           onCardMarkDone={handleCardMarkDone}
           onCardMarkNotDone={handleCardMarkNotDone}
         />

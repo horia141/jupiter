@@ -68,9 +68,9 @@ def sync_detailed(
     client: AuthenticatedClient,
     body: WorkingMemLoadArgs,
 ) -> Response[Union[Any, WorkingMemLoadResult]]:
-    """The command for loading the  working mem.
+    """The command for loading the working mem.
 
-     The command for loading the  working mem.
+     The command for loading the working mem.
 
     Args:
         body (WorkingMemLoadArgs): Working mem find args.
@@ -99,9 +99,9 @@ def sync(
     client: AuthenticatedClient,
     body: WorkingMemLoadArgs,
 ) -> Optional[Union[Any, WorkingMemLoadResult]]:
-    """The command for loading the  working mem.
+    """The command for loading the working mem.
 
-     The command for loading the  working mem.
+     The command for loading the working mem.
 
     Args:
         body (WorkingMemLoadArgs): Working mem find args.
@@ -125,9 +125,9 @@ async def asyncio_detailed(
     client: AuthenticatedClient,
     body: WorkingMemLoadArgs,
 ) -> Response[Union[Any, WorkingMemLoadResult]]:
-    """The command for loading the  working mem.
+    """The command for loading the working mem.
 
-     The command for loading the  working mem.
+     The command for loading the working mem.
 
     Args:
         body (WorkingMemLoadArgs): Working mem find args.
@@ -154,9 +154,9 @@ async def asyncio(
     client: AuthenticatedClient,
     body: WorkingMemLoadArgs,
 ) -> Optional[Union[Any, WorkingMemLoadResult]]:
-    """The command for loading the  working mem.
+    """The command for loading the working mem.
 
-     The command for loading the  working mem.
+     The command for loading the working mem.
 
     Args:
         body (WorkingMemLoadArgs): Working mem find args.

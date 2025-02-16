@@ -10,5 +10,6 @@ import type { EntityId } from './EntityId';
 export type HabitLoadArgs = {
     ref_id: EntityId;
     allow_archived: boolean;
+    inbox_task_retrieve_offset?: (number | null);
 };
 

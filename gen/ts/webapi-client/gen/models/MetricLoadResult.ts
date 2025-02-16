@@ -14,6 +14,8 @@ export type MetricLoadResult = {
     metric: Metric;
     note?: (Note | null);
     metric_entries: Array<MetricEntry>;
-    metric_collection_inbox_tasks: Array<InboxTask>;
+    collection_tasks: Array<InboxTask>;
+    collection_tasks_total_cnt: number;
+    collection_tasks_page_size: number;
 };
 

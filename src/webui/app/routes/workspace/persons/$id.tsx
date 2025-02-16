@@ -36,7 +36,7 @@ import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";
-import { parseForm, parseParams } from "zodix";
+import { parseForm, parseParams, parseQuery } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
@@ -64,6 +64,18 @@ import { TopLevelInfoContext } from "~/top-level-context";
 const ParamsSchema = {
   id: z.string(),
 };
+
+const QuerySchema = {
+  catchUpTasksRetrieveOffset: z
+    .string()
+    .transform((s) => parseInt(s, 10))
+    .optional(),
+  birthdayTasksRetrieveOffset: z
+    .string()
+    .transform((s) => parseInt(s, 10))
+    .optional(),
+};
+
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
     intent: z.literal("update"),
@@ -99,17 +111,24 @@ export const handle = {
 export async function loader({ request, params }: LoaderArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
+  const query = parseQuery(request, QuerySchema);
 
   try {
     const result = await apiClient.persons.personLoad({
       ref_id: id,
       allow_archived: true,
+      catch_up_task_retrieve_offset: query.catchUpTasksRetrieveOffset,
+      birthday_task_retrieve_offset: query.birthdayTasksRetrieveOffset,
     });
 
     return json({
       person: result.person,
-      catchUpInboxTasks: result.catch_up_inbox_tasks,
-      birthdayInboxTasks: result.birthday_inbox_tasks,
+      catchUpTasks: result.catch_up_tasks,
+      catchUpTasksTotalCnt: result.catch_up_tasks_total_cnt,
+      catchUpTasksPageSize: result.catch_up_tasks_page_size,
+      birthdayTasks: result.birthday_tasks,
+      birthdayTasksTotalCnt: result.birthday_tasks_total_cnt,
+      birthdayTasksPageSize: result.birthday_tasks_page_size,
       note: result.note,
       birthdayTimeEventBlocks: result.birthday_time_event_blocks,
     });
@@ -277,17 +296,14 @@ export default function Person() {
     : undefined;
 
   const sortedBirthdayTasks = sortInboxTasksNaturally(
-    loaderData.birthdayInboxTasks,
+    loaderData.birthdayTasks,
     {
       dueDateAscending: false,
     }
   );
-  const sortedCatchUpTasks = sortInboxTasksNaturally(
-    loaderData.catchUpInboxTasks,
-    {
-      dueDateAscending: false,
-    }
-  );
+  const sortedCatchUpTasks = sortInboxTasksNaturally(loaderData.catchUpTasks, {
+    dueDateAscending: false,
+  });
 
   const birthdayTimeEventEntries = loaderData.birthdayTimeEventBlocks
     .filter((f) => !f.archived)
@@ -419,7 +435,6 @@ export default function Person() {
                   <MenuItem value={29}>29th</MenuItem>
                   <MenuItem value={30}>30th</MenuItem>
                   <MenuItem value={31}>31st</MenuItem>
-                  <MenuItem value={32}>32st</MenuItem>
                 </Select>
 
                 <FieldError actionResult={actionData} fieldName="/birthday" />
@@ -530,8 +545,11 @@ export default function Person() {
           }}
           label="Birthday Tasks"
           inboxTasks={sortedBirthdayTasks}
-          onCardMarkDone={handleCardMarkDone}
-          onCardMarkNotDone={handleCardMarkNotDone}
+          withPages={{
+            retrieveOffsetParamName: "birthdayTasksRetrieveOffset",
+            totalCnt: loaderData.birthdayTasksTotalCnt,
+            pageSize: loaderData.birthdayTasksPageSize,
+          }}
         />
       )}
 
@@ -548,6 +566,11 @@ export default function Person() {
           }}
           label="Catch Up Tasks"
           inboxTasks={sortedCatchUpTasks}
+          withPages={{
+            retrieveOffsetParamName: "catchUpTasksRetrieveOffset",
+            totalCnt: loaderData.catchUpTasksTotalCnt,
+            pageSize: loaderData.catchUpTasksPageSize,
+          }}
           onCardMarkDone={handleCardMarkDone}
           onCardMarkNotDone={handleCardMarkNotDone}
         />
