@@ -243,7 +243,7 @@ class GenService:
                         parent_ref_id=inbox_task_collection.ref_id,
                         source=[InboxTaskSource.WORKING_MEM_CLEANUP],
                         allow_archived=True,
-                        working_mem_ref_id=[rt.ref_id for rt in all_working_mem]
+                        source_entity_ref_id=[rt.ref_id for rt in all_working_mem]
                         if all_working_mem
                         else NoFilter(),
                     )
@@ -476,7 +476,7 @@ class GenService:
                         parent_ref_id=inbox_task_collection.ref_id,
                         allow_archived=True,
                         source=[InboxTaskSource.PERSON_CATCH_UP],
-                        person_ref_id=[m.ref_id for m in all_persons]
+                        source_entity_ref_id=[m.ref_id for m in all_persons]
                         if all_persons
                         else NoFilter(),
                     )
@@ -486,7 +486,7 @@ class GenService:
                         parent_ref_id=inbox_task_collection.ref_id,
                         allow_archived=True,
                         source=[InboxTaskSource.PERSON_BIRTHDAY],
-                        person_ref_id=[m.ref_id for m in all_persons]
+                        source_entity_ref_id=[m.ref_id for m in all_persons]
                         if all_persons
                         else NoFilter(),
                     )
