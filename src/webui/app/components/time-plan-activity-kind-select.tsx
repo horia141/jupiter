@@ -21,10 +21,12 @@ export function TimePlanActivitKindSelect(
   return (
     <>
       <ToggleButtonGroup
+        size="small"
         fullWidth
         value={kind}
         exclusive
         onChange={(_, newKind) => newKind !== null && setKind(newKind)}
+        sx={{ height: "100%" }}
       >
         <ToggleButton
           id="time-plan-activity-kind-finish"

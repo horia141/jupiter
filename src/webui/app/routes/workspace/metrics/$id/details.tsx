@@ -78,6 +78,9 @@ const UpdateFormSchema = z.discriminatedUnion("intent", [
     collectionDueAtMonth: z.string().optional(),
   }),
   z.object({
+    intent: z.literal("regen"),
+  }),
+  z.object({
     intent: z.literal("archive"),
   }),
   z.object({
@@ -206,6 +209,14 @@ export async function action({ request, params }: ActionArgs) {
         });
 
         return redirect(`/workspace/metrics/${id}`);
+      }
+
+      case "regen": {
+        await apiClient.metrics.metricRegen({
+          ref_id: id,
+        });
+
+        return redirect(`/workspace/metrics/${id}/details`);
       }
 
       case "archive": {
@@ -363,6 +374,15 @@ export default function MetricDetails() {
               value="update"
             >
               Save
+            </Button>
+            <Button
+              variant="outlined"
+              disabled={!inputsEnabled}
+              type="submit"
+              name="intent"
+              value="regen"
+            >
+              Regen
             </Button>
           </ButtonGroup>
         </CardActions>

@@ -94,6 +94,9 @@ const UpdateFormSchema = z.discriminatedUnion("intent", [
     catchUpDueAtMonth: z.string().optional(),
   }),
   z.object({
+    intent: z.literal("regen"),
+  }),
+  z.object({
     intent: z.literal("create-note"),
   }),
   z.object({
@@ -238,6 +241,14 @@ export async function action({ request, params }: ActionArgs) {
         });
 
         return redirect(`/workspace/persons`);
+      }
+
+      case "regen": {
+        await apiClient.persons.personRegen({
+          ref_id: id,
+        });
+
+        return redirect(`/workspace/persons/${id}`);
       }
 
       case "create-note": {
@@ -500,6 +511,15 @@ export default function Person() {
               value="update"
             >
               Save
+            </Button>
+            <Button
+              variant="outlined"
+              disabled={!inputsEnabled}
+              type="submit"
+              name="intent"
+              value="regen"
+            >
+              Regen
             </Button>
           </ButtonGroup>
         </CardActions>

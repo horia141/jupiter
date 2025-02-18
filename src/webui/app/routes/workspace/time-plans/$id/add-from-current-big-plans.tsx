@@ -229,6 +229,7 @@ export default function TimePlanAddFromCurrentBigPlans() {
     <LeafPanel
       key={`time-plan-${id}/add-from-current-big-plans`}
       returnLocation={`/workspace/time-plans/${id}`}
+      returnLocationDiscriminator="add-from-current-big-plans"
       inputsEnabled={inputsEnabled}
       initialExpansionState={LeafPanelExpansionState.LARGE}
       allowedExpansionStates={[

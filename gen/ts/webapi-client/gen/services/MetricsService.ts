@@ -11,6 +11,7 @@ import type { MetricLoadArgs } from '../models/MetricLoadArgs';
 import type { MetricLoadResult } from '../models/MetricLoadResult';
 import type { MetricLoadSettingsArgs } from '../models/MetricLoadSettingsArgs';
 import type { MetricLoadSettingsResult } from '../models/MetricLoadSettingsResult';
+import type { MetricRegenArgs } from '../models/MetricRegenArgs';
 import type { MetricRemoveArgs } from '../models/MetricRemoveArgs';
 import type { MetricUpdateArgs } from '../models/MetricUpdateArgs';
 
@@ -149,6 +150,29 @@ export class MetricsService {
         return this.httpRequest.request({
             method: 'POST',
             url: '/metric-load-settings',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * A use case for regenerating tasks associated with metrics.
+     * A use case for regenerating tasks associated with metrics.
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
+     * @throws ApiError
+     */
+    public metricRegen(
+        requestBody?: MetricRegenArgs,
+    ): CancelablePromise<any> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/metric-regen',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

@@ -4,4 +4,4 @@ BASENAME=jupiter-mobile
 DESCRIPTION="The Thrive Mobile application"
 BUILD_TARGET=to-fill
 HOSTED_GLOBAL_WEBUI_SERVER_URL=https://app.get-thriving.com/frontdoor?clientVersion=to-fill&appShell=mobile-capacitor&appPlatform=to-fill&appDistribution=to-fill
-LOCAL_WEBUI_SERVER_URL=http://localhost:10020/frontdoor?clientVersion=to-fill&appShell=mobile-capacitor&appPlatform=to-fill&appDistribution=to-fill
+LOCAL_WEBUI_SERVER_URL=http://10.0.2.2:10020/frontdoor?clientVersion=to-fill&appShell=mobile-capacitor&appPlatform=to-fill&appDistribution=to-fill

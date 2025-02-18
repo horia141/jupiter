@@ -23,12 +23,14 @@ export function TimePlanActivityFeasabilitySelect(
   return (
     <>
       <ToggleButtonGroup
+        size="small"
         fullWidth
         value={feasability}
         exclusive
         onChange={(_, newFeasability) =>
           newFeasability !== null && setFeasability(newFeasability)
         }
+        sx={{ height: "100%" }}
       >
         <ToggleButton
           id="time-plan-activity-feasability-must-do"

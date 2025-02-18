@@ -50,6 +50,7 @@ interface LeafPanelProps {
   entityNotEditable?: boolean;
   entityArchived?: boolean;
   returnLocation: string;
+  returnLocationDiscriminator?: string;
   initialExpansionState?: LeafPanelExpansionState;
   allowedExpansionStates?: LeafPanelExpansionState[];
 }
@@ -132,18 +133,20 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
       cycleExpansionState(e, props.allowedExpansionStates)
     );
     saveLeafPanelExpansion(
-      props.returnLocation,
+      `${props.returnLocation}/${props.returnLocationDiscriminator}`,
       cycleExpansionState(expansionState, props.allowedExpansionStates)
     );
   }
 
   useEffect(() => {
-    const savedExpansionState = loadLeafPanelExpansion(props.returnLocation);
+    const savedExpansionState = loadLeafPanelExpansion(
+      `${props.returnLocation}/${props.returnLocationDiscriminator}`
+    );
     if (!savedExpansionState) {
       return;
     }
     setExpansionState(savedExpansionState);
-  }, [props.returnLocation]);
+  }, [props.returnLocation, props.returnLocationDiscriminator]);
 
   function handleScrollTop() {
     containerRef.current?.scrollTo({

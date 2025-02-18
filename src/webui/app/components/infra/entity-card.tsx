@@ -201,6 +201,7 @@ const StyledLink = styled(Link)<StyledLinkProps>(
     flexWrap: "wrap",
     padding: inline === "true" ? undefined : "16px",
     alignItems: "center",
+    "-webkit-tap-highlight-color": "transparent",
   })
 );
 
@@ -239,5 +240,6 @@ const StyledFakeLink = styled("span")<StyledLinkProps>(
     flexWrap: "wrap",
     padding: inline === "true" ? undefined : "16px",
     alignItems: "center",
+    "-webkit-tap-highlight-color": "transparent",
   })
 );

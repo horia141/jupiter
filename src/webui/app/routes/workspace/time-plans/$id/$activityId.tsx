@@ -61,6 +61,7 @@ import { TopLevelInfoContext } from "~/top-level-context";
 
 import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
+import { useBigScreen } from "~/rendering/use-big-screen";
 const ParamsSchema = {
   id: z.string(),
   activityId: z.string(),
@@ -362,6 +363,7 @@ export default function TimePlanActivity() {
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
   const topLevelInfo = useContext(TopLevelInfoContext);
+  const isBigScreen = useBigScreen();
 
   const inputsEnabled =
     transition.state === "idle" && !loaderData.timePlanActivity.archived;
@@ -430,7 +432,11 @@ export default function TimePlanActivity() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
+        <Stack
+          spacing={2}
+          useFlexGap
+          direction={isBigScreen ? "row" : "column"}
+        >
           <FormControl fullWidth>
             <FormLabel id="kind">Kind</FormLabel>
             <TimePlanActivitKindSelect

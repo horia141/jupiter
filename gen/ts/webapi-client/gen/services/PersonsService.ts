@@ -11,6 +11,7 @@ import type { PersonLoadArgs } from '../models/PersonLoadArgs';
 import type { PersonLoadResult } from '../models/PersonLoadResult';
 import type { PersonLoadSettingsArgs } from '../models/PersonLoadSettingsArgs';
 import type { PersonLoadSettingsResult } from '../models/PersonLoadSettingsResult';
+import type { PersonRegenArgs } from '../models/PersonRegenArgs';
 import type { PersonRemoveArgs } from '../models/PersonRemoveArgs';
 import type { PersonUpdateArgs } from '../models/PersonUpdateArgs';
 
@@ -149,6 +150,29 @@ export class PersonsService {
         return this.httpRequest.request({
             method: 'POST',
             url: '/person-load-settings',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * A use case for regenerating tasks associated with persons.
+     * A use case for regenerating tasks associated with persons.
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
+     * @throws ApiError
+     */
+    public personRegen(
+        requestBody?: PersonRegenArgs,
+    ): CancelablePromise<any> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/person-regen',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

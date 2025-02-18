@@ -249,6 +249,7 @@ from .metric_load_args import MetricLoadArgs
 from .metric_load_result import MetricLoadResult
 from .metric_load_settings_args import MetricLoadSettingsArgs
 from .metric_load_settings_result import MetricLoadSettingsResult
+from .metric_regen_args import MetricRegenArgs
 from .metric_remove_args import MetricRemoveArgs
 from .metric_summary import MetricSummary
 from .metric_unit import MetricUnit
@@ -298,6 +299,7 @@ from .person_load_args import PersonLoadArgs
 from .person_load_result import PersonLoadResult
 from .person_load_settings_args import PersonLoadSettingsArgs
 from .person_load_settings_result import PersonLoadSettingsResult
+from .person_regen_args import PersonRegenArgs
 from .person_relationship import PersonRelationship
 from .person_remove_args import PersonRemoveArgs
 from .person_summary import PersonSummary
@@ -836,6 +838,7 @@ __all__ = (
     "MetricLoadResult",
     "MetricLoadSettingsArgs",
     "MetricLoadSettingsResult",
+    "MetricRegenArgs",
     "MetricRemoveArgs",
     "MetricSummary",
     "MetricUnit",
@@ -885,6 +888,7 @@ __all__ = (
     "PersonLoadResult",
     "PersonLoadSettingsArgs",
     "PersonLoadSettingsResult",
+    "PersonRegenArgs",
     "PersonRelationship",
     "PersonRemoveArgs",
     "PersonSummary",

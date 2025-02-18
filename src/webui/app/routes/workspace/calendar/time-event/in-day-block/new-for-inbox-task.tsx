@@ -1,4 +1,5 @@
-import { ApiError } from "@jupiter/webapi-client";
+import type { InboxTask } from "@jupiter/webapi-client";
+import { ApiError, Difficulty } from "@jupiter/webapi-client";
 import {
   Button,
   ButtonGroup,
@@ -64,7 +65,7 @@ export async function loader({ request }: LoaderArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const query = parseQuery(request, QuerySchema);
 
-  const summaryResponse = await apiClient.inboxTasks.inboxTaskLoad({
+  const inboxTaskResponse = await apiClient.inboxTasks.inboxTaskLoad({
     ref_id: query.inboxTaskRefId,
     allow_archived: true,
   });
@@ -82,7 +83,7 @@ export async function loader({ request }: LoaderArgs) {
 
   return json({
     date: query.date,
-    inboxTask: summaryResponse.inbox_task,
+    inboxTask: inboxTaskResponse.inbox_task,
   });
 }
 
@@ -156,7 +157,9 @@ export default function TimeEventInDayBlockCreateForInboxTask() {
   const [startTimeInDay, setStartTimeInDay] = useState(
     rightNow.toFormat("HH:mm")
   );
-  const [durationMins, setDurationMins] = useState(30);
+  const [durationMins, setDurationMins] = useState(
+    inferDurationMinsFromInboxTask(loaderData.inboxTask)
+  );
 
   useEffect(() => {
     if (query.get("sourceStartDate") && query.get("sourceStartTimeInDay")) {
@@ -164,6 +167,10 @@ export default function TimeEventInDayBlockCreateForInboxTask() {
       setStartTimeInDay(query.get("sourceStartTimeInDay")!);
     }
   }, [query]);
+
+  useEffect(() => {
+    inferDurationMinsFromInboxTask(loaderData.inboxTask);
+  }, [loaderData.inboxTask]);
 
   return (
     <LeafPanel
@@ -310,3 +317,14 @@ export const ErrorBoundary = makeLeafErrorBoundary(
   () => `/workspace/calendar?${useSearchParams()}`,
   () => `There was an error creating the event in day! Please try again!`
 );
+
+function inferDurationMinsFromInboxTask(inboxTask: InboxTask): number {
+  switch (inboxTask.difficulty) {
+    case Difficulty.EASY:
+      return 15;
+    case Difficulty.MEDIUM:
+      return 30;
+    case Difficulty.HARD:
+      return 60;
+  }
+}

@@ -9,11 +9,13 @@ import {
   Outlet,
   Scripts,
   useLoaderData,
+  useNavigate,
 } from "@remix-run/react";
 import { SnackbarProvider } from "notistack";
 
+import { App as CapacitorApp } from "@capacitor/app";
 import { SplashScreen } from "@capacitor/splash-screen";
-import { AppShell } from "@jupiter/webapi-client";
+import { AppPlatform, AppShell } from "@jupiter/webapi-client";
 import { StrictMode, useEffect } from "react";
 import { EnvBanner } from "./components/infra/env-banner";
 import {
@@ -79,6 +81,7 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 
 export default function App() {
   const loaderData = useLoaderData<typeof loader>();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (
@@ -87,7 +90,31 @@ export default function App() {
     ) {
       SplashScreen.hide();
     }
-  }, [loaderData.globalProperties.frontDoorInfo.appShell]);
+
+    if (
+      loaderData.globalProperties.frontDoorInfo.appPlatform ===
+        AppPlatform.MOBILE_ANDROID ||
+      loaderData.globalProperties.frontDoorInfo.appPlatform ===
+        AppPlatform.TABLET_ANDROID
+    ) {
+
+      async function setupBackButton() {
+        const backHandler = await CapacitorApp.addListener("backButton", () => {
+          if (window.history.state?.idx > 0) {
+            navigate(-1);
+          } else {
+            CapacitorApp.exitApp();
+          }
+        });
+    
+        return () => {
+          backHandler.remove();
+        };
+      }
+    
+      setupBackButton();
+    }
+  }, [loaderData.globalProperties.frontDoorInfo, navigate]);
 
   return (
     <html lang="en">

@@ -39,9 +39,9 @@ class Schedule(abc.ABC):
         )
 
     @staticmethod
-    def year_two_digits(date: Timestamp) -> str:
+    def year_big(date: Timestamp) -> str:
         """Get the last two digits (decade and year) from a date."""
-        return str(date.value.year % 100)
+        return date.value.format("YYYY")
 
     @staticmethod
     def month_to_quarter_num(date: Date) -> int:
@@ -215,7 +215,7 @@ class DailySchedule(Schedule):
         self._due_date = cast(Date, right_now.value.date())
         self._actionable_date = None
         self._full_name = InboxTaskName(
-            f"{name} {self.year_two_digits(right_now)}:{self.month_to_month(right_now)}{right_now.value.day}",
+            f"{name} {self.year_big(right_now)}:{self.month_to_month(right_now)}{right_now.value.day}",
         )
         self._timeline = infer_timeline(RecurringTaskPeriod.DAILY, right_now)
         self._should_keep = (
@@ -269,7 +269,7 @@ class WeeklySchedule(Schedule):
         else:
             self._due_date = start_of_week.end_of("week").end_of("day")
         self._full_name = InboxTaskName(
-            f"{name} {self.year_two_digits(right_now)}:W{start_of_week.week_of_year}",
+            f"{name} {self.year_big(right_now)}:W{start_of_week.week_of_year}",
         )
         self._timeline = infer_timeline(RecurringTaskPeriod.WEEKLY, right_now)
         self._should_keep = (
@@ -323,7 +323,7 @@ class MonthlySchedule(Schedule):
         else:
             self._due_date = start_of_month.end_of("month").end_of("day")
         self._full_name = InboxTaskName(
-            f"{name} {self.year_two_digits(right_now)}:{self.month_to_month(right_now)}",
+            f"{name} {self.year_big(right_now)}:{self.month_to_month(right_now)}",
         )
         self._timeline = infer_timeline(RecurringTaskPeriod.MONTHLY, right_now)
         self._should_keep = (
@@ -451,7 +451,7 @@ class QuarterlySchedule(Schedule):
                 .end_of("day")
             )
         self._full_name = InboxTaskName(
-            f"{name} {self.year_two_digits(right_now)}:{self.month_to_quarter(right_now)}",
+            f"{name} {self.year_big(right_now)}:{self.month_to_quarter(right_now)}",
         )
         self._timeline = infer_timeline(RecurringTaskPeriod.QUARTERLY, right_now)
         self._should_keep = (
@@ -552,7 +552,7 @@ class YearlySchedule(Schedule):
             )
         else:
             self._due_date = right_now.value.end_of("year").end_of("day")
-        self._full_name = InboxTaskName(f"{name} {self.year_two_digits(right_now)}")
+        self._full_name = InboxTaskName(f"{name} {self.year_big(right_now)}")
         self._timeline = infer_timeline(RecurringTaskPeriod.YEARLY, right_now)
         self._should_keep = (
             skip_rule.should_keep(RecurringTaskPeriod.YEARLY, self._due_date)

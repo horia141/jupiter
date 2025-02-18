@@ -85,7 +85,6 @@ export function EntityNoteEditor({
       }
     }
   }, [act, isActing, cardActionFetcher, shouldAct]);
-  console.log(isActing);
 
   return (
     <Box sx={{ position: "relative" }}>
