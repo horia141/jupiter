@@ -2,7 +2,6 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { HabitArchiveArgs } from '../models/HabitArchiveArgs';
-import type { HabitChangeProjectArgs } from '../models/HabitChangeProjectArgs';
 import type { HabitCreateArgs } from '../models/HabitCreateArgs';
 import type { HabitCreateResult } from '../models/HabitCreateResult';
 import type { HabitFindArgs } from '../models/HabitFindArgs';
@@ -35,29 +34,6 @@ export class HabitsService {
         return this.httpRequest.request({
             method: 'POST',
             url: '/habit-archive',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * The command for changing the project of a habit.
-     * The command for changing the project of a habit.
-     * @param requestBody The input data
-     * @returns any Successful response / Empty body
-     * @throws ApiError
-     */
-    public habitChangeProject(
-        requestBody?: HabitChangeProjectArgs,
-    ): CancelablePromise<any> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/habit-change-project',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

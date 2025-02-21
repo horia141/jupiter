@@ -41,8 +41,14 @@ export function ReleaseUpdateWidget() {
     return <></>;
   }
 
-  const releaseManifestResult: ReleaseManifestResult =
-    releaseManifestFetcher.data;
+  if (
+    releaseManifestFetcher.data.ok === false ||
+    !releaseManifestFetcher.data.res
+  ) {
+    return <></>;
+  }
+
+  const releaseManifestResult = releaseManifestFetcher.data.res;
 
   // First thing we check is if the latest server version is different from the client version.
   //   * Typically, we release a new version of the app much rarer than we do a new release of webui.

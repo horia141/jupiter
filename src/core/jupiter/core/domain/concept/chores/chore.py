@@ -80,24 +80,11 @@ class Chore(LeafEntity):
         )
 
     @update_entity_action
-    def change_project(
-        self,
-        ctx: DomainContext,
-        project_ref_id: EntityId,
-    ) -> "Chore":
-        """Change the project for the chore task."""
-        if self.project_ref_id == project_ref_id:
-            return self
-        return self._new_version(
-            ctx,
-            project_ref_id=project_ref_id,
-        )
-
-    @update_entity_action
     def update(
         self,
         ctx: DomainContext,
         name: UpdateAction[ChoreName],
+        project_ref_id: UpdateAction[EntityId],
         gen_params: UpdateAction[RecurringTaskGenParams],
         must_do: UpdateAction[bool],
         start_at_date: UpdateAction[ADate],
@@ -123,6 +110,7 @@ class Chore(LeafEntity):
         return self._new_version(
             ctx,
             name=name.or_else(self.name),
+            project_ref_id=project_ref_id.or_else(self.project_ref_id),
             gen_params=the_gen_params,
             must_do=must_do.or_else(self.must_do),
             start_at_date=the_start_at_date,

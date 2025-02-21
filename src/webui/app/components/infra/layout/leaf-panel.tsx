@@ -4,6 +4,7 @@ import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight";
+import PictureInPictureAltIcon from "@mui/icons-material/PictureInPictureAlt";
 import SwitchLeftIcon from "@mui/icons-material/SwitchLeft";
 import {
   Box,
@@ -38,6 +39,7 @@ const BIG_SCREEN_ANIMATION_END = "480px";
 const SMALL_SCREEN_ANIMATION_START = "100vw";
 const SMALL_SCREEN_ANIMATION_END = "100vw";
 
+const BIG_SCREEN_SHRUNK_HEIGHT = "300px";
 const BIG_SCREEN_WIDTH_SMALL = "480px";
 const BIG_SCREEN_WIDTH_MEDIUM = "calc(min(720px, 60vw))";
 const BIG_SCREEN_WIDTH_LARGE = "calc(min(1020px, 80vw))";
@@ -61,9 +63,11 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
   const location = useLocation();
   const containerRef = useRef<HTMLDivElement>(null);
   const isPresent = useIsPresent();
-  const [expansionState, setExpansionState] = useState(
-    props.initialExpansionState ?? LeafPanelExpansionState.SMALL
-  );
+  const [expansionState, setExpansionState] = useState<
+    LeafPanelExpansionState | "shrunk"
+  >(props.initialExpansionState ?? LeafPanelExpansionState.SMALL);
+  const [previousExpansionState, setPreviousExpansionState] =
+    useState<LeafPanelExpansionState | null>(null);
   const [expansionFullRight, setExpansionFullRight] = useState(0);
   const [expansionFullWidth, setExpansionFullWidth] = useState(
     BIG_SCREEN_WIDTH_FULL_INT
@@ -148,6 +152,16 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
     setExpansionState(savedExpansionState);
   }, [props.returnLocation, props.returnLocationDiscriminator]);
 
+  function handleShrunk() {
+    if (expansionState !== "shrunk") {
+      setPreviousExpansionState(expansionState);
+      setExpansionState("shrunk");
+    } else {
+      setExpansionState(previousExpansionState as LeafPanelExpansionState);
+      setPreviousExpansionState(null);
+    }
+  }
+
   function handleScrollTop() {
     containerRef.current?.scrollTo({
       left: 0,
@@ -178,35 +192,46 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
     exit: {
       opacity: 0,
       x: isBigScreen ? BIG_SCREEN_ANIMATION_END : SMALL_SCREEN_ANIMATION_END,
+      width: "0px",
     },
     [LeafPanelExpansionState.SMALL]: {
       right: "0px",
       opacity: 1,
       x: 0,
       width: BIG_SCREEN_WIDTH_SMALL,
+      height: `calc(var(--vh, 1vh) * 100 - env(safe-area-inset-top) - 4rem)`,
     },
     [LeafPanelExpansionState.MEDIUM]: {
       right: "0px",
       opacity: 1,
       x: 0,
       width: BIG_SCREEN_WIDTH_MEDIUM,
+      height: `calc(var(--vh, 1vh) * 100 - env(safe-area-inset-top) - 4rem)`,
     },
     [LeafPanelExpansionState.LARGE]: {
       right: "0px",
       opacity: 1,
       x: 0,
       width: BIG_SCREEN_WIDTH_LARGE,
+      height: `calc(var(--vh, 1vh) * 100 - env(safe-area-inset-top) - 4rem)`,
     },
     [LeafPanelExpansionState.FULL]: {
       right: `${expansionFullRight}px`,
       opacity: 1,
       x: 0,
       width: `${expansionFullWidth}px`,
+      height: `calc(var(--vh, 1vh) * 100 - env(safe-area-inset-top) - 4rem)`,
     },
     smallScreen: {
       x: 0,
       opacity: 1,
       width: SMALL_SCREEN_WIDTH,
+    },
+    shrunk: {
+      x: 0,
+      opacity: 1,
+      height: BIG_SCREEN_SHRUNK_HEIGHT,
+      width: BIG_SCREEN_WIDTH_SMALL,
     },
   };
 
@@ -225,9 +250,17 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
         <LeafPanelControls id="leaf-panel-controls">
           <ButtonGroup size="small">
             {isBigScreen && (
-              <IconButton onClick={handleExpansion}>
-                <SwitchLeftIcon />
-              </IconButton>
+              <>
+                <IconButton
+                  disabled={expansionState === "shrunk"}
+                  onClick={handleExpansion}
+                >
+                  <SwitchLeftIcon />
+                </IconButton>
+                <IconButton onClick={handleShrunk}>
+                  <PictureInPictureAltIcon />
+                </IconButton>
+              </>
             )}
             <IconButton onClick={handleScrollTop}>
               <ArrowUpwardIcon />
@@ -351,9 +384,12 @@ const LeafPanelContent = styled("div")<LeafPanelContentProps>(
 );
 
 function cycleExpansionState(
-  expansionState: LeafPanelExpansionState,
+  expansionState: LeafPanelExpansionState | "shrunk",
   allowedExpansionStates?: LeafPanelExpansionState[]
 ): LeafPanelExpansionState {
+  if (expansionState === "shrunk") {
+    return LeafPanelExpansionState.SMALL;
+  }
   if (allowedExpansionStates && allowedExpansionStates.length > 0) {
     const currentIndex = allowedExpansionStates.indexOf(expansionState);
     const nextIndex = (currentIndex + 1) % allowedExpansionStates.length;

@@ -67,8 +67,8 @@ const ParamsSchema = {
 
 const CommonParamsSchema = {
   name: z.string(),
-  project: z.string(),
   status: z.nativeEnum(BigPlanStatus),
+  project: z.string(),
   actionableDate: z.string().optional(),
   dueDate: z.string().optional(),
 };
@@ -105,10 +105,6 @@ const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
     intent: z.literal("update"),
     ...CommonParamsSchema,
-  }),
-  z.object({
-    intent: z.literal("change-project"),
-    project: z.string(),
   }),
   z.object({
     intent: z.literal("create-note"),
@@ -213,6 +209,10 @@ export async function action({ request, params }: ActionArgs) {
             should_change: true,
             value: status,
           },
+          project_ref_id: {
+            should_change: true,
+            value: form.project,
+          },
           actionable_date: {
             should_change: true,
             value:
@@ -238,15 +238,6 @@ export async function action({ request, params }: ActionArgs) {
         }
 
         return redirect(`/workspace/big-plans`);
-      }
-
-      case "change-project": {
-        await apiClient.bigPlans.bigPlanChangeProject({
-          ref_id: id,
-          project_ref_id: form.project,
-        });
-
-        return redirect(`/workspace/big-plans/${id}`);
       }
 
       case "create-note": {
@@ -321,8 +312,6 @@ export default function BigPlan() {
   const [selectedProject, setSelectedProject] = useState(
     loaderData.project.ref_id
   );
-  const selectedProjectIsDifferentFromCurrent =
-    loaderData.project.ref_id !== selectedProject;
 
   const sortedInboxTasks = sortInboxTasksNaturally(loaderData.inboxTasks, {
     dueDateAscending: false,
@@ -633,22 +622,6 @@ export default function BigPlan() {
               >
                 Save
               </Button>
-              {isWorkspaceFeatureAvailable(
-                topLevelInfo.workspace,
-                WorkspaceFeature.PROJECTS
-              ) && (
-                <Button
-                  variant="outlined"
-                  disabled={
-                    !inputsEnabled || !selectedProjectIsDifferentFromCurrent
-                  }
-                  type="submit"
-                  name="intent"
-                  value="change-project"
-                >
-                  Change Project
-                </Button>
-              )}
             </ButtonGroup>
           </Stack>
         </CardActions>

@@ -69,24 +69,11 @@ class Habit(LeafEntity):
         )
 
     @update_entity_action
-    def change_project(
-        self,
-        ctx: DomainContext,
-        project_ref_id: EntityId,
-    ) -> "Habit":
-        """Change the project for the habit task."""
-        if self.project_ref_id == project_ref_id:
-            return self
-        return self._new_version(
-            ctx,
-            project_ref_id=project_ref_id,
-        )
-
-    @update_entity_action
     def update(
         self,
         ctx: DomainContext,
         name: UpdateAction[HabitName],
+        project_ref_id: UpdateAction[EntityId],
         gen_params: UpdateAction[RecurringTaskGenParams],
         repeats_in_period_count: UpdateAction[int | None],
     ) -> "Habit":
@@ -110,6 +97,7 @@ class Habit(LeafEntity):
         return self._new_version(
             ctx,
             name=name.or_else(self.name),
+            project_ref_id=project_ref_id.or_else(self.project_ref_id),
             gen_params=the_gen_params,
             repeats_in_period_count=repeats_in_period_count.or_else(
                 self.repeats_in_period_count,

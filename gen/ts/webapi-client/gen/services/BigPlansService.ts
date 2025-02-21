@@ -2,7 +2,6 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { BigPlanArchiveArgs } from '../models/BigPlanArchiveArgs';
-import type { BigPlanChangeProjectArgs } from '../models/BigPlanChangeProjectArgs';
 import type { BigPlanCreateArgs } from '../models/BigPlanCreateArgs';
 import type { BigPlanCreateResult } from '../models/BigPlanCreateResult';
 import type { BigPlanFindArgs } from '../models/BigPlanFindArgs';
@@ -33,29 +32,6 @@ export class BigPlansService {
         return this.httpRequest.request({
             method: 'POST',
             url: '/big-plan-archive',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * The command for changing the project of a big plan.
-     * The command for changing the project of a big plan.
-     * @param requestBody The input data
-     * @returns any Successful response / Empty body
-     * @throws ApiError
-     */
-    public bigPlanChangeProject(
-        requestBody?: BigPlanChangeProjectArgs,
-    ): CancelablePromise<any> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/big-plan-change-project',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

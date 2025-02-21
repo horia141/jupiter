@@ -7,6 +7,7 @@ if TYPE_CHECKING:
     from ..models.big_plan_update_args_actionable_date import BigPlanUpdateArgsActionableDate
     from ..models.big_plan_update_args_due_date import BigPlanUpdateArgsDueDate
     from ..models.big_plan_update_args_name import BigPlanUpdateArgsName
+    from ..models.big_plan_update_args_project_ref_id import BigPlanUpdateArgsProjectRefId
     from ..models.big_plan_update_args_status import BigPlanUpdateArgsStatus
 
 
@@ -21,6 +22,7 @@ class BigPlanUpdateArgs:
         ref_id (str): A generic entity id.
         name (BigPlanUpdateArgsName):
         status (BigPlanUpdateArgsStatus):
+        project_ref_id (BigPlanUpdateArgsProjectRefId):
         actionable_date (BigPlanUpdateArgsActionableDate):
         due_date (BigPlanUpdateArgsDueDate):
     """
@@ -28,6 +30,7 @@ class BigPlanUpdateArgs:
     ref_id: str
     name: "BigPlanUpdateArgsName"
     status: "BigPlanUpdateArgsStatus"
+    project_ref_id: "BigPlanUpdateArgsProjectRefId"
     actionable_date: "BigPlanUpdateArgsActionableDate"
     due_date: "BigPlanUpdateArgsDueDate"
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -38,6 +41,8 @@ class BigPlanUpdateArgs:
         name = self.name.to_dict()
 
         status = self.status.to_dict()
+
+        project_ref_id = self.project_ref_id.to_dict()
 
         actionable_date = self.actionable_date.to_dict()
 
@@ -50,6 +55,7 @@ class BigPlanUpdateArgs:
                 "ref_id": ref_id,
                 "name": name,
                 "status": status,
+                "project_ref_id": project_ref_id,
                 "actionable_date": actionable_date,
                 "due_date": due_date,
             }
@@ -62,6 +68,7 @@ class BigPlanUpdateArgs:
         from ..models.big_plan_update_args_actionable_date import BigPlanUpdateArgsActionableDate
         from ..models.big_plan_update_args_due_date import BigPlanUpdateArgsDueDate
         from ..models.big_plan_update_args_name import BigPlanUpdateArgsName
+        from ..models.big_plan_update_args_project_ref_id import BigPlanUpdateArgsProjectRefId
         from ..models.big_plan_update_args_status import BigPlanUpdateArgsStatus
 
         d = src_dict.copy()
@@ -71,6 +78,8 @@ class BigPlanUpdateArgs:
 
         status = BigPlanUpdateArgsStatus.from_dict(d.pop("status"))
 
+        project_ref_id = BigPlanUpdateArgsProjectRefId.from_dict(d.pop("project_ref_id"))
+
         actionable_date = BigPlanUpdateArgsActionableDate.from_dict(d.pop("actionable_date"))
 
         due_date = BigPlanUpdateArgsDueDate.from_dict(d.pop("due_date"))
@@ -79,6 +88,7 @@ class BigPlanUpdateArgs:
             ref_id=ref_id,
             name=name,
             status=status,
+            project_ref_id=project_ref_id,
             actionable_date=actionable_date,
             due_date=due_date,
         )

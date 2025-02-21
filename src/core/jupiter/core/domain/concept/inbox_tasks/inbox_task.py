@@ -462,20 +462,6 @@ class InboxTask(LeafEntity):
         )
 
     @update_entity_action
-    def change_project(
-        self,
-        ctx: DomainContext,
-        project_ref_id: EntityId,
-    ) -> "InboxTask":
-        """Change the project for the inbox task."""
-        if not self.source.allow_user_changes:
-            raise CannotModifyGeneratedTaskError("project")
-        return self._new_version(
-            ctx,
-            project_ref_id=project_ref_id,
-        )
-
-    @update_entity_action
     def update_link_to_working_mem_cleanup(
         self,
         ctx: DomainContext,
@@ -495,39 +481,6 @@ class InboxTask(LeafEntity):
             name=name,
             due_date=due_date,
             recurring_timeline=recurring_timeline,
-        )
-
-    @update_entity_action
-    def associate_with_big_plan(
-        self,
-        ctx: DomainContext,
-        project_ref_id: EntityId,
-        big_plan_ref_id: EntityId,
-    ) -> "InboxTask":
-        """Associate an inbox task with a big plan."""
-        if not self.source.allow_user_changes:
-            raise CannotModifyGeneratedTaskError("big plan")
-
-        return self._new_version(
-            ctx,
-            source=InboxTaskSource.BIG_PLAN,
-            project_ref_id=project_ref_id,
-            source_entity_ref_id=big_plan_ref_id,
-        )
-
-    @update_entity_action
-    def release_from_big_plan(
-        self,
-        ctx: DomainContext,
-    ) -> "InboxTask":
-        """Release an inbox task from a big plan."""
-        if not self.source.allow_user_changes:
-            raise CannotModifyGeneratedTaskError("big plan")
-
-        return self._new_version(
-            ctx,
-            source=InboxTaskSource.USER,
-            source_entity_ref_id=None,
         )
 
     @update_entity_action
@@ -761,6 +714,8 @@ class InboxTask(LeafEntity):
         ctx: DomainContext,
         name: UpdateAction[InboxTaskName],
         status: UpdateAction[InboxTaskStatus],
+        project_ref_id: UpdateAction[EntityId],
+        big_plan_ref_id: UpdateAction[EntityId | None],
         actionable_date: UpdateAction[ADate | None],
         due_date: UpdateAction[ADate | None],
         eisen: UpdateAction[Eisen],
@@ -811,6 +766,20 @@ class InboxTask(LeafEntity):
 
             the_status = status.just_the_value
 
+        if project_ref_id.should_change:
+            if not self.source.allow_user_changes:
+                raise CannotModifyGeneratedTaskError("project")
+            the_project = project_ref_id.just_the_value
+        else:
+            the_project = self.project_ref_id
+
+        if big_plan_ref_id.should_change:
+            if not self.source.allow_user_changes:
+                raise CannotModifyGeneratedTaskError("big plan")
+            the_source_entity_ref_id = big_plan_ref_id.just_the_value
+        else:
+            the_source_entity_ref_id = self.source_entity_ref_id
+
         if actionable_date.should_change or due_date.should_change:
             the_actionable_date = actionable_date.or_else(self.actionable_date)
             the_due_date = due_date.or_else(self.due_date)
@@ -836,7 +805,15 @@ class InboxTask(LeafEntity):
         return self._new_version(
             ctx,
             name=the_name,
+            source=InboxTaskSource.BIG_PLAN
+            if big_plan_ref_id.should_change
+            and big_plan_ref_id.just_the_value is not None
+            else InboxTaskSource.USER
+            if big_plan_ref_id.should_change and big_plan_ref_id.just_the_value is None
+            else self.source,
             status=the_status,
+            project_ref_id=the_project,
+            source_entity_ref_id=the_source_entity_ref_id,
             actionable_date=the_actionable_date,
             due_date=the_due_date,
             working_time=the_working_time,

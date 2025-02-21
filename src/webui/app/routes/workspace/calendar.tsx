@@ -173,6 +173,8 @@ export async function loader({ request }: LoaderArgs) {
 export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
+const REFRESH_RIGHT_NOW_MS = 1000 * 60 * 5; // 5 minutes
+
 export default function CalendarView() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const transition = useTransition();
@@ -194,8 +196,20 @@ export default function CalendarView() {
   const shouldShowABranch = useTrunkNeedsToShowBranch();
   const shouldShowALeafToo = useTrunkNeedsToShowLeaf();
 
-  const rightNow = DateTime.local({ zone: topLevelInfo.user.timezone });
+  const [rightNow, setRightNow] = useState(
+    DateTime.local({ zone: topLevelInfo.user.timezone })
+  );
   const theRealToday = rightNow.toISODate() as ADate;
+
+  useEffect(() => {
+    const timeout = setInterval(() => {
+      setRightNow(DateTime.local({ zone: topLevelInfo.user.timezone }));
+    }, REFRESH_RIGHT_NOW_MS);
+
+    return () => {
+      clearInterval(timeout);
+    };
+  }, [topLevelInfo.user.timezone]);
 
   return (
     <TrunkPanel
@@ -606,6 +620,7 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
       <ViewAsCalendarInDayContainer>
         <ViewAsCalendarLeftColumn />
         <ViewAsCalendarTimeEventInDayColumn
+          daysToTheLeft={0}
           rightNow={props.rightNow}
           today={props.today}
           timezone={props.timezone}
@@ -748,6 +763,7 @@ function ViewAsCalendarWeekly(props: ViewAsProps) {
 
         {allDays.map((date, idx) => (
           <ViewAsCalendarTimeEventInDayColumn
+            daysToTheLeft={allDays.length - idx - 1}
             key={idx}
             rightNow={props.rightNow}
             today={props.today}
@@ -1488,6 +1504,7 @@ function ViewAsCalendarTimeEventFullDaysCell(
 }
 
 interface ViewAsCalendarTimeEventInDayColumnProps {
+  daysToTheLeft: number;
   rightNow: DateTime;
   today: ADate;
   timezone: Timezone;
@@ -1610,7 +1627,10 @@ function ViewAsCalendarTimeEventInDayColumn(
         ></Box>
       ))}
 
-      <TimeEventParamsNewPlaceholder date={props.date} />
+      <TimeEventParamsNewPlaceholder
+        daysToTheLeft={props.daysToTheLeft}
+        date={props.date}
+      />
 
       {props.timeEventsInDay.map((entry, index) => (
         <ViewAsCalendarTimeEventInDayCell

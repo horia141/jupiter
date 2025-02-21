@@ -9,6 +9,7 @@ import {
   InboxTaskStatus,
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
+import LaunchIcon from "@mui/icons-material/Launch";
 import {
   Autocomplete,
   Box,
@@ -25,11 +26,7 @@ import {
 import { useEffect, useState } from "react";
 import type { SomeErrorNoData } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
-import {
-  doesInboxTaskAllowChangingBigPlan,
-  doesInboxTaskAllowChangingProject,
-  isInboxTaskCoreFieldEditable,
-} from "~/logic/domain/inbox-task";
+import { isInboxTaskCoreFieldEditable } from "~/logic/domain/inbox-task";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import type { TopLevelInfo } from "~/top-level-context";
 import { DifficultySelect } from "../difficulty-select";
@@ -37,7 +34,11 @@ import { EisenhowerSelect } from "../eisenhower-select";
 import { InboxTaskSourceLink } from "../inbox-task-source-link";
 import { InboxTaskStatusBigTag } from "../inbox-task-status-big-tag";
 import { FieldError } from "../infra/errors";
-import { NavSingle, SectionActions } from "../infra/section-actions";
+import {
+  ActionSingle,
+  NavSingle,
+  SectionActions,
+} from "../infra/section-actions";
 import { SectionCardNew } from "../infra/section-card-new";
 import { ProjectSelect } from "../project-select";
 
@@ -76,24 +77,14 @@ export function InboxTaskPropertiesEditor(
           big_plan_id: "none",
         }
   );
-  const selectedBigPlanIsDifferentFromCurrent = props.inboxTaskInfo.big_plan
-    ? props.inboxTaskInfo.big_plan.ref_id !== selectedBigPlan.big_plan_id
-    : selectedBigPlan.big_plan_id !== "none";
 
   const [selectedProject, setSelectedProject] = useState(
     props.inboxTaskInfo.project.ref_id
   );
-  const [blockedToSelectProject, setBlockedToSelectProject] = useState(false);
-  const selectedProjectIsDifferentFromCurrent =
-    props.inboxTaskInfo.project.ref_id !== selectedProject;
-
+  const [blockedToSelectProject, setBlockedToSelectProject] = useState(
+    props.inboxTask.source === InboxTaskSource.BIG_PLAN
+  );
   const corePropertyEditable = isInboxTaskCoreFieldEditable(
-    props.inboxTask.source
-  );
-  const canChangeProject = doesInboxTaskAllowChangingProject(
-    props.inboxTask.source
-  );
-  const canChangeBigPlan = doesInboxTaskAllowChangingBigPlan(
     props.inboxTask.source
   );
 
@@ -183,10 +174,22 @@ export function InboxTaskPropertiesEditor(
               ? [
                   NavSingle({
                     text: "Inbox Task",
+                    icon: <LaunchIcon />,
                     link: `/workspace/inbox-tasks/${props.inboxTask.ref_id}`,
                   }),
+                  ActionSingle({
+                    text: "Save",
+                    value: constructIntentName(props.intentPrefix, "update"),
+                    highlight: true,
+                  }),
                 ]
-              : []
+              : [
+                  ActionSingle({
+                    text: "Save",
+                    value: constructIntentName(props.intentPrefix, "update"),
+                    highlight: true,
+                  }),
+                ]
           }
         />
       }
@@ -282,11 +285,7 @@ export function InboxTaskPropertiesEditor(
               name={constructFieldName(props.namePrefix, "project")}
               label="Project"
               inputsEnabled={props.inputsEnabled && corePropertyEditable}
-              disabled={
-                !corePropertyEditable ||
-                blockedToSelectProject ||
-                props.inboxTask.source === InboxTaskSource.BIG_PLAN
-              }
+              disabled={!corePropertyEditable || blockedToSelectProject}
               allProjects={props.allProjects}
               value={selectedProject}
               onChange={setSelectedProject}
@@ -535,63 +534,6 @@ export function InboxTaskPropertiesEditor(
               </Button>
             </ButtonGroup>
           )}
-
-          <ButtonGroup fullWidth sx={{ marginLeft: "0px" }}>
-            <Button
-              size="small"
-              variant="contained"
-              disabled={!props.inputsEnabled}
-              type="submit"
-              name="intent"
-              value={constructIntentName(props.intentPrefix, "update")}
-            >
-              Save
-            </Button>
-            {isWorkspaceFeatureAvailable(
-              props.topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS
-            ) && (
-              <Button
-                size="small"
-                variant="outlined"
-                disabled={
-                  !props.inputsEnabled ||
-                  !canChangeProject ||
-                  !selectedProjectIsDifferentFromCurrent
-                }
-                type="submit"
-                name="intent"
-                value={constructIntentName(
-                  props.intentPrefix,
-                  "change-project"
-                )}
-              >
-                Change Project
-              </Button>
-            )}
-            {isWorkspaceFeatureAvailable(
-              props.topLevelInfo.workspace,
-              WorkspaceFeature.BIG_PLANS
-            ) && (
-              <Button
-                size="small"
-                variant="outlined"
-                disabled={
-                  !props.inputsEnabled ||
-                  !canChangeBigPlan ||
-                  !selectedBigPlanIsDifferentFromCurrent
-                }
-                type="submit"
-                name="intent"
-                value={constructIntentName(
-                  props.intentPrefix,
-                  "associate-with-big-plan"
-                )}
-              >
-                Assoc. Big Plan
-              </Button>
-            )}
-          </ButtonGroup>
         </Stack>
       </CardActions>
     </SectionCardNew>

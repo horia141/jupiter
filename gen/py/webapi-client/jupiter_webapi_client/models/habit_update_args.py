@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from ..models.habit_update_args_eisen import HabitUpdateArgsEisen
     from ..models.habit_update_args_name import HabitUpdateArgsName
     from ..models.habit_update_args_period import HabitUpdateArgsPeriod
+    from ..models.habit_update_args_project_ref_id import HabitUpdateArgsProjectRefId
     from ..models.habit_update_args_repeats_in_period_count import HabitUpdateArgsRepeatsInPeriodCount
     from ..models.habit_update_args_skip_rule import HabitUpdateArgsSkipRule
 
@@ -26,6 +27,7 @@ class HabitUpdateArgs:
     Attributes:
         ref_id (str): A generic entity id.
         name (HabitUpdateArgsName):
+        project_ref_id (HabitUpdateArgsProjectRefId):
         period (HabitUpdateArgsPeriod):
         eisen (HabitUpdateArgsEisen):
         difficulty (HabitUpdateArgsDifficulty):
@@ -39,6 +41,7 @@ class HabitUpdateArgs:
 
     ref_id: str
     name: "HabitUpdateArgsName"
+    project_ref_id: "HabitUpdateArgsProjectRefId"
     period: "HabitUpdateArgsPeriod"
     eisen: "HabitUpdateArgsEisen"
     difficulty: "HabitUpdateArgsDifficulty"
@@ -54,6 +57,8 @@ class HabitUpdateArgs:
         ref_id = self.ref_id
 
         name = self.name.to_dict()
+
+        project_ref_id = self.project_ref_id.to_dict()
 
         period = self.period.to_dict()
 
@@ -79,6 +84,7 @@ class HabitUpdateArgs:
             {
                 "ref_id": ref_id,
                 "name": name,
+                "project_ref_id": project_ref_id,
                 "period": period,
                 "eisen": eisen,
                 "difficulty": difficulty,
@@ -103,6 +109,7 @@ class HabitUpdateArgs:
         from ..models.habit_update_args_eisen import HabitUpdateArgsEisen
         from ..models.habit_update_args_name import HabitUpdateArgsName
         from ..models.habit_update_args_period import HabitUpdateArgsPeriod
+        from ..models.habit_update_args_project_ref_id import HabitUpdateArgsProjectRefId
         from ..models.habit_update_args_repeats_in_period_count import HabitUpdateArgsRepeatsInPeriodCount
         from ..models.habit_update_args_skip_rule import HabitUpdateArgsSkipRule
 
@@ -110,6 +117,8 @@ class HabitUpdateArgs:
         ref_id = d.pop("ref_id")
 
         name = HabitUpdateArgsName.from_dict(d.pop("name"))
+
+        project_ref_id = HabitUpdateArgsProjectRefId.from_dict(d.pop("project_ref_id"))
 
         period = HabitUpdateArgsPeriod.from_dict(d.pop("period"))
 
@@ -132,6 +141,7 @@ class HabitUpdateArgs:
         habit_update_args = cls(
             ref_id=ref_id,
             name=name,
+            project_ref_id=project_ref_id,
             period=period,
             eisen=eisen,
             difficulty=difficulty,

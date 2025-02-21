@@ -20,6 +20,10 @@ export type BigPlanUpdateArgs = {
         should_change: boolean;
         value?: BigPlanStatus;
     };
+    project_ref_id: {
+        should_change: boolean;
+        value?: EntityId;
+    };
     actionable_date: {
         should_change: boolean;
         value?: (ADate | null);

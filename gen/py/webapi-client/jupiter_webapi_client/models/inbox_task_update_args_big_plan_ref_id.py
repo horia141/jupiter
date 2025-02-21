@@ -5,64 +5,63 @@ from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
-T = TypeVar("T", bound="InboxTaskAssociateWithBigPlanArgs")
+T = TypeVar("T", bound="InboxTaskUpdateArgsBigPlanRefId")
 
 
 @_attrs_define
-class InboxTaskAssociateWithBigPlanArgs:
-    """PersonFindArgs.
-
+class InboxTaskUpdateArgsBigPlanRefId:
+    """
     Attributes:
-        ref_id (str): A generic entity id.
-        big_plan_ref_id (Union[None, Unset, str]):
+        should_change (bool):
+        value (Union[None, Unset, str]):
     """
 
-    ref_id: str
-    big_plan_ref_id: Union[None, Unset, str] = UNSET
+    should_change: bool
+    value: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
-        ref_id = self.ref_id
+        should_change = self.should_change
 
-        big_plan_ref_id: Union[None, Unset, str]
-        if isinstance(self.big_plan_ref_id, Unset):
-            big_plan_ref_id = UNSET
+        value: Union[None, Unset, str]
+        if isinstance(self.value, Unset):
+            value = UNSET
         else:
-            big_plan_ref_id = self.big_plan_ref_id
+            value = self.value
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
-                "ref_id": ref_id,
+                "should_change": should_change,
             }
         )
-        if big_plan_ref_id is not UNSET:
-            field_dict["big_plan_ref_id"] = big_plan_ref_id
+        if value is not UNSET:
+            field_dict["value"] = value
 
         return field_dict
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         d = src_dict.copy()
-        ref_id = d.pop("ref_id")
+        should_change = d.pop("should_change")
 
-        def _parse_big_plan_ref_id(data: object) -> Union[None, Unset, str]:
+        def _parse_value(data: object) -> Union[None, Unset, str]:
             if data is None:
                 return data
             if isinstance(data, Unset):
                 return data
             return cast(Union[None, Unset, str], data)
 
-        big_plan_ref_id = _parse_big_plan_ref_id(d.pop("big_plan_ref_id", UNSET))
+        value = _parse_value(d.pop("value", UNSET))
 
-        inbox_task_associate_with_big_plan_args = cls(
-            ref_id=ref_id,
-            big_plan_ref_id=big_plan_ref_id,
+        inbox_task_update_args_big_plan_ref_id = cls(
+            should_change=should_change,
+            value=value,
         )
 
-        inbox_task_associate_with_big_plan_args.additional_properties = d
-        return inbox_task_associate_with_big_plan_args
+        inbox_task_update_args_big_plan_ref_id.additional_properties = d
+        return inbox_task_update_args_big_plan_ref_id
 
     @property
     def additional_keys(self) -> List[str]:

@@ -2,8 +2,6 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { InboxTaskArchiveArgs } from '../models/InboxTaskArchiveArgs';
-import type { InboxTaskAssociateWithBigPlanArgs } from '../models/InboxTaskAssociateWithBigPlanArgs';
-import type { InboxTaskChangeProjectArgs } from '../models/InboxTaskChangeProjectArgs';
 import type { InboxTaskCreateArgs } from '../models/InboxTaskCreateArgs';
 import type { InboxTaskCreateResult } from '../models/InboxTaskCreateResult';
 import type { InboxTaskFindArgs } from '../models/InboxTaskFindArgs';
@@ -34,52 +32,6 @@ export class InboxTasksService {
         return this.httpRequest.request({
             method: 'POST',
             url: '/inbox-task-archive',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * The command for associating a inbox task with a big plan.
-     * The command for associating a inbox task with a big plan.
-     * @param requestBody The input data
-     * @returns any Successful response / Empty body
-     * @throws ApiError
-     */
-    public inboxTaskAssociateWithBigPlan(
-        requestBody?: InboxTaskAssociateWithBigPlanArgs,
-    ): CancelablePromise<any> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/inbox-task-associate-with-big-plan',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * The command for changing the project of a inbox task.
-     * The command for changing the project of a inbox task.
-     * @param requestBody The input data
-     * @returns any Successful response / Empty body
-     * @throws ApiError
-     */
-    public inboxTaskChangeProject(
-        requestBody?: InboxTaskChangeProjectArgs,
-    ): CancelablePromise<any> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/inbox-task-change-project',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

@@ -25,6 +25,7 @@ export async function action({ request }: ActionArgs) {
       ref_id: form.id,
       name: { should_change: false },
       status: { should_change: true, value: form.status },
+      project_ref_id: { should_change: false },
       actionable_date: { should_change: false },
       due_date: { should_change: false },
     });

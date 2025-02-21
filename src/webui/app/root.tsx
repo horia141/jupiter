@@ -97,7 +97,6 @@ export default function App() {
       loaderData.globalProperties.frontDoorInfo.appPlatform ===
         AppPlatform.TABLET_ANDROID
     ) {
-
       async function setupBackButton() {
         const backHandler = await CapacitorApp.addListener("backButton", () => {
           if (window.history.state?.idx > 0) {
@@ -106,12 +105,12 @@ export default function App() {
             CapacitorApp.exitApp();
           }
         });
-    
+
         return () => {
           backHandler.remove();
         };
       }
-    
+
       setupBackButton();
     }
   }, [loaderData.globalProperties.frontDoorInfo, navigate]);

@@ -9,6 +9,9 @@ export const RELEASE_MANIFEST_SCHEMA = z.record(
 export type ReleaseManifest = Record<AppDistribution, AppDistributionState>;
 
 export interface ReleaseManifestResult {
-  latestServerVersion: string;
-  manifest: ReleaseManifest;
+  ok: boolean;
+  res?: {
+    latestServerVersion: string;
+    manifest: ReleaseManifest;
+  };
 }

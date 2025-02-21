@@ -7,6 +7,14 @@ from jupiter.core.domain.application.gamification.service.record_score_service i
 from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
 from jupiter.core.domain.concept.big_plans.big_plan_name import BigPlanName
 from jupiter.core.domain.concept.big_plans.big_plan_status import BigPlanStatus
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import (
+    InboxTask,
+    InboxTaskRepository,
+)
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
+    InboxTaskCollection,
+)
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -35,6 +43,7 @@ class BigPlanUpdateArgs(UseCaseArgsBase):
     ref_id: EntityId
     name: UpdateAction[BigPlanName]
     status: UpdateAction[BigPlanStatus]
+    project_ref_id: UpdateAction[EntityId]
     actionable_date: UpdateAction[ADate | None]
     due_date: UpdateAction[ADate | None]
 
@@ -60,18 +69,44 @@ class BigPlanUpdateUseCase(
         args: BigPlanUpdateArgs,
     ) -> BigPlanUpdateResult:
         """Execute the command's action."""
+        workspace = context.workspace
         big_plan = await uow.get_for(BigPlan).load_by_id(args.ref_id)
 
         big_plan = big_plan.update(
             context.domain_context,
             name=args.name,
             status=args.status,
+            project_ref_id=args.project_ref_id,
             actionable_date=args.actionable_date,
             due_date=args.due_date,
         )
 
         await uow.get_for(BigPlan).save(big_plan)
         await progress_reporter.mark_updated(big_plan)
+
+        if args.project_ref_id.should_change:
+            inbox_task_collection = await uow.get_for(
+                InboxTaskCollection
+            ).load_by_parent(
+                workspace.ref_id,
+            )
+            all_inbox_tasks = await uow.get(
+                InboxTaskRepository
+            ).find_all_for_source_created_desc(
+                parent_ref_id=inbox_task_collection.ref_id,
+                allow_archived=True,
+                source=InboxTaskSource.BIG_PLAN,
+                source_entity_ref_id=big_plan.ref_id,
+            )
+
+            for inbox_task in all_inbox_tasks:
+                inbox_task = inbox_task.update_link_to_big_plan(
+                    context.domain_context,
+                    big_plan.project_ref_id,
+                    big_plan.ref_id,
+                )
+                await uow.get_for(InboxTask).save(inbox_task)
+                await progress_reporter.mark_updated(inbox_task)
 
         record_score_result = None
         if context.user.is_feature_available(UserFeature.GAMIFICATION):

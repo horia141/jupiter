@@ -138,6 +138,9 @@ export default function ScheduleEventInDayNew() {
       setStartDate(query.get("sourceStartDate")!);
       setStartTimeInDay(query.get("sourceStartTimeInDay")!);
     }
+    if (query.get("sourceDurationMins")) {
+      setDurationMins(parseInt(query.get("sourceDurationMins")!, 10));
+    }
   }, [query]);
 
   return (

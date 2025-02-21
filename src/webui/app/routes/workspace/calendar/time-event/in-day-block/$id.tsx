@@ -120,16 +120,6 @@ const UpdateFormSchema = z.discriminatedUnion("intent", [
     intent: z.literal("inbox-task-update"),
     ...UpdateFormInboxTaskSchema,
   }),
-  z.object({
-    intent: z.literal("inbox-task-change-project"),
-    inboxTaskRefId: z.string(),
-    inboxTaskProject: z.string(),
-  }),
-  z.object({
-    intent: z.literal("inbox-task-associate-with-big-plan"),
-    inboxTaskRefId: z.string(),
-    inboxTaskBigPlan: z.string().optional(),
-  }),
 ]);
 
 export const handle = {
@@ -272,6 +262,18 @@ export async function action({ request, params }: ActionArgs) {
             should_change: true,
             value: status,
           },
+          project_ref_id: {
+            should_change: true,
+            value: form.inboxTaskProject,
+          },
+          big_plan_ref_id: {
+            should_change: form.inboxTaskBigPlan !== undefined,
+            value:
+              form.inboxTaskBigPlan !== undefined &&
+              form.inboxTaskBigPlan !== "none"
+                ? form.inboxTaskBigPlan
+                : undefined,
+          },
           eisen: corePropertyEditable
             ? {
                 should_change: true,
@@ -309,31 +311,6 @@ export async function action({ request, params }: ActionArgs) {
             },
           });
         }
-
-        return redirect(`/workspace/calendar?${url.searchParams}`);
-      }
-
-      case "inbox-task-change-project": {
-        if (form.inboxTaskProject === undefined) {
-          throw new Error("Unexpected null project");
-        }
-        await apiClient.inboxTasks.inboxTaskChangeProject({
-          ref_id: form.inboxTaskRefId,
-          project_ref_id: form.inboxTaskProject,
-        });
-
-        return redirect(`/workspace/calendar?${url.searchParams}`);
-      }
-
-      case "inbox-task-associate-with-big-plan": {
-        await apiClient.inboxTasks.inboxTaskAssociateWithBigPlan({
-          ref_id: form.inboxTaskRefId,
-          big_plan_ref_id:
-            form.inboxTaskBigPlan !== undefined &&
-            form.inboxTaskBigPlan !== "none"
-              ? form.inboxTaskBigPlan
-              : undefined,
-        });
 
         return redirect(`/workspace/calendar?${url.searchParams}`);
       }
@@ -418,6 +395,9 @@ export default function TimeEventInDayBlockViewOne() {
     if (query.get("sourceStartDate") && query.get("sourceStartTimeInDay")) {
       setStartDate(query.get("sourceStartDate")!);
       setStartTimeInDay(query.get("sourceStartTimeInDay")!);
+    }
+    if (query.get("sourceDurationMins")) {
+      setDurationMins(parseInt(query.get("sourceDurationMins")!, 10));
     }
   }, [query, debounceForeign]);
 

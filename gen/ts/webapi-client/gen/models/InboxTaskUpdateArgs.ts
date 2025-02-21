@@ -22,6 +22,14 @@ export type InboxTaskUpdateArgs = {
         should_change: boolean;
         value?: InboxTaskStatus;
     };
+    project_ref_id: {
+        should_change: boolean;
+        value?: EntityId;
+    };
+    big_plan_ref_id: {
+        should_change: boolean;
+        value?: (EntityId | null);
+    };
     eisen: {
         should_change: boolean;
         value?: Eisen;

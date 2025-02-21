@@ -21,7 +21,7 @@ from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDu
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.core.recurring_task_skip_rule import RecurringTaskSkipRule
-from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.features import FeatureUnavailableError, WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
@@ -43,6 +43,7 @@ class ChoreUpdateArgs(UseCaseArgsBase):
 
     ref_id: EntityId
     name: UpdateAction[ChoreName]
+    project_ref_id: UpdateAction[EntityId]
     period: UpdateAction[RecurringTaskPeriod]
     eisen: UpdateAction[Eisen]
     difficulty: UpdateAction[Difficulty]
@@ -74,10 +75,16 @@ class ChoreUpdateUseCase(
 
         chore = await uow.get_for(Chore).load_by_id(args.ref_id)
 
-        project = await uow.get_for(Project).load_by_id(chore.project_ref_id)
+        if (
+            not workspace.is_feature_available(WorkspaceFeature.PROJECTS)
+            and args.project_ref_id.should_change
+            and args.project_ref_id.just_the_value != chore.project_ref_id
+        ):
+            raise FeatureUnavailableError(WorkspaceFeature.PROJECTS)
 
         need_to_change_inbox_tasks = (
             args.name.should_change
+            or args.project_ref_id.should_change
             or args.period.should_change
             or args.eisen.should_change
             or args.difficulty.should_change
@@ -85,6 +92,9 @@ class ChoreUpdateUseCase(
             or args.actionable_from_month.should_change
             or args.due_at_day.should_change
             or args.due_at_month.should_change
+            or args.must_do.should_change
+            or args.start_at_date.should_change
+            or args.end_at_date.should_change
         )
 
         if (
@@ -119,6 +129,7 @@ class ChoreUpdateUseCase(
 
         chore = chore.update(
             ctx=context.domain_context,
+            project_ref_id=args.project_ref_id,
             name=args.name,
             gen_params=chore_gen_params,
             must_do=args.must_do,
@@ -128,6 +139,8 @@ class ChoreUpdateUseCase(
 
         await uow.get_for(Chore).save(chore)
         await progress_reporter.mark_updated(chore)
+
+        project = await uow.get_for(Project).load_by_id(chore.project_ref_id)
 
         if need_to_change_inbox_tasks:
             inbox_task_collection = await uow.get_for(

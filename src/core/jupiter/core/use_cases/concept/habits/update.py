@@ -20,7 +20,7 @@ from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDu
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.core.recurring_task_skip_rule import RecurringTaskSkipRule
-from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.features import FeatureUnavailableError, WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
@@ -42,6 +42,7 @@ class HabitUpdateArgs(UseCaseArgsBase):
 
     ref_id: EntityId
     name: UpdateAction[HabitName]
+    project_ref_id: UpdateAction[EntityId]
     period: UpdateAction[RecurringTaskPeriod]
     eisen: UpdateAction[Eisen]
     difficulty: UpdateAction[Difficulty]
@@ -71,10 +72,16 @@ class HabitUpdateUseCase(
 
         habit = await uow.get_for(Habit).load_by_id(args.ref_id)
 
-        project = await uow.get_for(Project).load_by_id(habit.project_ref_id)
+        if (
+            not workspace.is_feature_available(WorkspaceFeature.PROJECTS)
+            and args.project_ref_id.should_change
+            and args.project_ref_id.just_the_value != habit.project_ref_id
+        ):
+            raise FeatureUnavailableError(WorkspaceFeature.PROJECTS)
 
         need_to_change_inbox_tasks = (
             args.name.should_change
+            or args.project_ref_id.should_change
             or args.period.should_change
             or args.eisen.should_change
             or args.difficulty.should_change
@@ -117,6 +124,7 @@ class HabitUpdateUseCase(
 
         habit = habit.update(
             ctx=context.domain_context,
+            project_ref_id=args.project_ref_id,
             name=args.name,
             gen_params=habit_gen_params,
             repeats_in_period_count=args.repeats_in_period_count,
@@ -124,6 +132,8 @@ class HabitUpdateUseCase(
 
         await uow.get_for(Habit).save(habit)
         await progress_reporter.mark_updated(habit)
+
+        project = await uow.get_for(Project).load_by_id(habit.project_ref_id)
 
         if need_to_change_inbox_tasks:
             inbox_task_collection = await uow.get_for(

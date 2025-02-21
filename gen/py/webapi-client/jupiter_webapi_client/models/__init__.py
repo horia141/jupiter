@@ -8,7 +8,6 @@ from .app_shell import AppShell
 from .big_plan import BigPlan
 from .big_plan_archive_args import BigPlanArchiveArgs
 from .big_plan_archive_service_result import BigPlanArchiveServiceResult
-from .big_plan_change_project_args import BigPlanChangeProjectArgs
 from .big_plan_collection import BigPlanCollection
 from .big_plan_create_args import BigPlanCreateArgs
 from .big_plan_create_result import BigPlanCreateResult
@@ -24,6 +23,7 @@ from .big_plan_update_args import BigPlanUpdateArgs
 from .big_plan_update_args_actionable_date import BigPlanUpdateArgsActionableDate
 from .big_plan_update_args_due_date import BigPlanUpdateArgsDueDate
 from .big_plan_update_args_name import BigPlanUpdateArgsName
+from .big_plan_update_args_project_ref_id import BigPlanUpdateArgsProjectRefId
 from .big_plan_update_args_status import BigPlanUpdateArgsStatus
 from .big_plan_update_result import BigPlanUpdateResult
 from .big_plan_work_summary import BigPlanWorkSummary
@@ -40,7 +40,6 @@ from .checklist_block_kind import ChecklistBlockKind
 from .checklist_item import ChecklistItem
 from .chore import Chore
 from .chore_archive_args import ChoreArchiveArgs
-from .chore_change_project_args import ChoreChangeProjectArgs
 from .chore_collection import ChoreCollection
 from .chore_create_args import ChoreCreateArgs
 from .chore_create_result import ChoreCreateResult
@@ -65,6 +64,7 @@ from .chore_update_args_end_at_date import ChoreUpdateArgsEndAtDate
 from .chore_update_args_must_do import ChoreUpdateArgsMustDo
 from .chore_update_args_name import ChoreUpdateArgsName
 from .chore_update_args_period import ChoreUpdateArgsPeriod
+from .chore_update_args_project_ref_id import ChoreUpdateArgsProjectRefId
 from .chore_update_args_skip_rule import ChoreUpdateArgsSkipRule
 from .chore_update_args_start_at_date import ChoreUpdateArgsStartAtDate
 from .clear_all_args import ClearAllArgs
@@ -136,7 +136,6 @@ from .get_summaries_args import GetSummariesArgs
 from .get_summaries_result import GetSummariesResult
 from .habit import Habit
 from .habit_archive_args import HabitArchiveArgs
-from .habit_change_project_args import HabitChangeProjectArgs
 from .habit_collection import HabitCollection
 from .habit_create_args import HabitCreateArgs
 from .habit_create_result import HabitCreateResult
@@ -159,6 +158,7 @@ from .habit_update_args_due_at_month import HabitUpdateArgsDueAtMonth
 from .habit_update_args_eisen import HabitUpdateArgsEisen
 from .habit_update_args_name import HabitUpdateArgsName
 from .habit_update_args_period import HabitUpdateArgsPeriod
+from .habit_update_args_project_ref_id import HabitUpdateArgsProjectRefId
 from .habit_update_args_repeats_in_period_count import HabitUpdateArgsRepeatsInPeriodCount
 from .habit_update_args_skip_rule import HabitUpdateArgsSkipRule
 from .heading_block import HeadingBlock
@@ -166,8 +166,6 @@ from .heading_block_kind import HeadingBlockKind
 from .hosting import Hosting
 from .inbox_task import InboxTask
 from .inbox_task_archive_args import InboxTaskArchiveArgs
-from .inbox_task_associate_with_big_plan_args import InboxTaskAssociateWithBigPlanArgs
-from .inbox_task_change_project_args import InboxTaskChangeProjectArgs
 from .inbox_task_collection import InboxTaskCollection
 from .inbox_task_create_args import InboxTaskCreateArgs
 from .inbox_task_create_result import InboxTaskCreateResult
@@ -183,10 +181,12 @@ from .inbox_task_status import InboxTaskStatus
 from .inbox_task_summary import InboxTaskSummary
 from .inbox_task_update_args import InboxTaskUpdateArgs
 from .inbox_task_update_args_actionable_date import InboxTaskUpdateArgsActionableDate
+from .inbox_task_update_args_big_plan_ref_id import InboxTaskUpdateArgsBigPlanRefId
 from .inbox_task_update_args_difficulty import InboxTaskUpdateArgsDifficulty
 from .inbox_task_update_args_due_date import InboxTaskUpdateArgsDueDate
 from .inbox_task_update_args_eisen import InboxTaskUpdateArgsEisen
 from .inbox_task_update_args_name import InboxTaskUpdateArgsName
+from .inbox_task_update_args_project_ref_id import InboxTaskUpdateArgsProjectRefId
 from .inbox_task_update_args_status import InboxTaskUpdateArgsStatus
 from .inbox_task_update_result import InboxTaskUpdateResult
 from .inbox_tasks_summary import InboxTasksSummary
@@ -599,7 +599,6 @@ __all__ = (
     "BigPlan",
     "BigPlanArchiveArgs",
     "BigPlanArchiveServiceResult",
-    "BigPlanChangeProjectArgs",
     "BigPlanCollection",
     "BigPlanCreateArgs",
     "BigPlanCreateResult",
@@ -615,6 +614,7 @@ __all__ = (
     "BigPlanUpdateArgsActionableDate",
     "BigPlanUpdateArgsDueDate",
     "BigPlanUpdateArgsName",
+    "BigPlanUpdateArgsProjectRefId",
     "BigPlanUpdateArgsStatus",
     "BigPlanUpdateResult",
     "BigPlanWorkSummary",
@@ -631,7 +631,6 @@ __all__ = (
     "ChecklistItem",
     "Chore",
     "ChoreArchiveArgs",
-    "ChoreChangeProjectArgs",
     "ChoreCollection",
     "ChoreCreateArgs",
     "ChoreCreateResult",
@@ -656,6 +655,7 @@ __all__ = (
     "ChoreUpdateArgsMustDo",
     "ChoreUpdateArgsName",
     "ChoreUpdateArgsPeriod",
+    "ChoreUpdateArgsProjectRefId",
     "ChoreUpdateArgsSkipRule",
     "ChoreUpdateArgsStartAtDate",
     "ClearAllArgs",
@@ -727,7 +727,6 @@ __all__ = (
     "GetSummariesResult",
     "Habit",
     "HabitArchiveArgs",
-    "HabitChangeProjectArgs",
     "HabitCollection",
     "HabitCreateArgs",
     "HabitCreateResult",
@@ -750,6 +749,7 @@ __all__ = (
     "HabitUpdateArgsEisen",
     "HabitUpdateArgsName",
     "HabitUpdateArgsPeriod",
+    "HabitUpdateArgsProjectRefId",
     "HabitUpdateArgsRepeatsInPeriodCount",
     "HabitUpdateArgsSkipRule",
     "HeadingBlock",
@@ -757,8 +757,6 @@ __all__ = (
     "Hosting",
     "InboxTask",
     "InboxTaskArchiveArgs",
-    "InboxTaskAssociateWithBigPlanArgs",
-    "InboxTaskChangeProjectArgs",
     "InboxTaskCollection",
     "InboxTaskCreateArgs",
     "InboxTaskCreateResult",
@@ -775,10 +773,12 @@ __all__ = (
     "InboxTaskSummary",
     "InboxTaskUpdateArgs",
     "InboxTaskUpdateArgsActionableDate",
+    "InboxTaskUpdateArgsBigPlanRefId",
     "InboxTaskUpdateArgsDifficulty",
     "InboxTaskUpdateArgsDueDate",
     "InboxTaskUpdateArgsEisen",
     "InboxTaskUpdateArgsName",
+    "InboxTaskUpdateArgsProjectRefId",
     "InboxTaskUpdateArgsStatus",
     "InboxTaskUpdateResult",
     "InitArgs",

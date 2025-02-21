@@ -87,10 +87,6 @@ const UpdateFormSchema = z.discriminatedUnion("intent", [
     intent: z.literal("regen"),
   }),
   z.object({
-    intent: z.literal("change-project"),
-    project: z.string(),
-  }),
-  z.object({
     intent: z.literal("create-note"),
   }),
   z.object({
@@ -154,6 +150,10 @@ export async function action({ request, params }: ActionArgs) {
           name: {
             should_change: true,
             value: form.name,
+          },
+          project_ref_id: {
+            should_change: true,
+            value: form.project,
           },
           period: {
             should_change: true,
@@ -235,15 +235,6 @@ export async function action({ request, params }: ActionArgs) {
         return redirect(`/workspace/chores/${id}`);
       }
 
-      case "change-project": {
-        await apiClient.chores.choreChangeProject({
-          ref_id: id,
-          project_ref_id: form.project,
-        });
-
-        return redirect(`/workspace/chores/${id}`);
-      }
-
       case "create-note": {
         await apiClient.notes.noteCreate({
           domain: NoteDomain.CHORE,
@@ -302,8 +293,6 @@ export default function Chore() {
   const [selectedProject, setSelectedProject] = useState(
     loaderData.project.ref_id
   );
-  const selectedProjectIsDifferentFromCurrent =
-    loaderData.project.ref_id !== selectedProject;
 
   const sortedInboxTasks = sortInboxTasksNaturally(loaderData.inboxTasks, {
     dueDateAscending: false,
@@ -493,22 +482,6 @@ export default function Chore() {
             >
               Regen
             </Button>
-            {isWorkspaceFeatureAvailable(
-              topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS
-            ) && (
-              <Button
-                variant="outlined"
-                disabled={
-                  !inputsEnabled || !selectedProjectIsDifferentFromCurrent
-                }
-                type="submit"
-                name="intent"
-                value="change-project"
-              >
-                Change Project
-              </Button>
-            )}
           </ButtonGroup>
         </CardActions>
       </Card>

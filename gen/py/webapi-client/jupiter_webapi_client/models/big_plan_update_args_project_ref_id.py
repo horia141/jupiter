@@ -1,54 +1,56 @@
-from typing import Any, Dict, List, Type, TypeVar
+from typing import Any, Dict, List, Type, TypeVar, Union
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-T = TypeVar("T", bound="BigPlanChangeProjectArgs")
+from ..types import UNSET, Unset
+
+T = TypeVar("T", bound="BigPlanUpdateArgsProjectRefId")
 
 
 @_attrs_define
-class BigPlanChangeProjectArgs:
-    """PersonFindArgs.
-
+class BigPlanUpdateArgsProjectRefId:
+    """
     Attributes:
-        ref_id (str): A generic entity id.
-        project_ref_id (str): A generic entity id.
+        should_change (bool):
+        value (Union[Unset, str]): A generic entity id.
     """
 
-    ref_id: str
-    project_ref_id: str
+    should_change: bool
+    value: Union[Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
-        ref_id = self.ref_id
+        should_change = self.should_change
 
-        project_ref_id = self.project_ref_id
+        value = self.value
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
-                "ref_id": ref_id,
-                "project_ref_id": project_ref_id,
+                "should_change": should_change,
             }
         )
+        if value is not UNSET:
+            field_dict["value"] = value
 
         return field_dict
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         d = src_dict.copy()
-        ref_id = d.pop("ref_id")
+        should_change = d.pop("should_change")
 
-        project_ref_id = d.pop("project_ref_id")
+        value = d.pop("value", UNSET)
 
-        big_plan_change_project_args = cls(
-            ref_id=ref_id,
-            project_ref_id=project_ref_id,
+        big_plan_update_args_project_ref_id = cls(
+            should_change=should_change,
+            value=value,
         )
 
-        big_plan_change_project_args.additional_properties = d
-        return big_plan_change_project_args
+        big_plan_update_args_project_ref_id.additional_properties = d
+        return big_plan_update_args_project_ref_id
 
     @property
     def additional_keys(self) -> List[str]:

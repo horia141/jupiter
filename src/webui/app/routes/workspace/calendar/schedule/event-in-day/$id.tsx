@@ -251,6 +251,9 @@ export default function ScheduleEventInDayViewOne() {
       setStartDate(query.get("sourceStartDate")!);
       setStartTimeInDay(query.get("sourceStartTimeInDay")!);
     }
+    if (query.get("sourceDurationMins")) {
+      setDurationMins(parseInt(query.get("sourceDurationMins")!, 10));
+    }
   }, [query, debounceForeign]);
 
   const allScheduleStreamsByRefId = new Map(

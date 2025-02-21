@@ -166,6 +166,9 @@ export default function TimeEventInDayBlockCreateForInboxTask() {
       setStartDate(query.get("sourceStartDate")!);
       setStartTimeInDay(query.get("sourceStartTimeInDay")!);
     }
+    if (query.get("sourceDurationMins")) {
+      setDurationMins(parseInt(query.get("sourceDurationMins")!, 10));
+    }
   }, [query]);
 
   useEffect(() => {

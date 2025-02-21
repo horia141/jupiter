@@ -76,25 +76,12 @@ class BigPlan(LeafEntity):
         )
 
     @update_entity_action
-    def change_project(
-        self,
-        ctx: DomainContext,
-        project_ref_id: EntityId,
-    ) -> "BigPlan":
-        """Change the project for the inbox task."""
-        if self.project_ref_id == project_ref_id:
-            return self
-        return self._new_version(
-            ctx,
-            project_ref_id=project_ref_id,
-        )
-
-    @update_entity_action
     def update(
         self,
         ctx: DomainContext,
         name: UpdateAction[BigPlanName],
         status: UpdateAction[BigPlanStatus],
+        project_ref_id: UpdateAction[EntityId],
         actionable_date: UpdateAction[ADate | None],
         due_date: UpdateAction[ADate | None],
     ) -> "BigPlan":
@@ -134,6 +121,7 @@ class BigPlan(LeafEntity):
             ctx,
             name=new_name,
             status=new_status,
+            project_ref_id=project_ref_id.or_else(self.project_ref_id),
             working_time=new_working_time,
             completed_time=new_completed_time,
             actionable_date=new_actionable_date,

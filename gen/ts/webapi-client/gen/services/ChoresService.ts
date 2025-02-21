@@ -2,7 +2,6 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { ChoreArchiveArgs } from '../models/ChoreArchiveArgs';
-import type { ChoreChangeProjectArgs } from '../models/ChoreChangeProjectArgs';
 import type { ChoreCreateArgs } from '../models/ChoreCreateArgs';
 import type { ChoreCreateResult } from '../models/ChoreCreateResult';
 import type { ChoreFindArgs } from '../models/ChoreFindArgs';
@@ -35,29 +34,6 @@ export class ChoresService {
         return this.httpRequest.request({
             method: 'POST',
             url: '/chore-archive',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * The command for changing the project of a chore.
-     * The command for changing the project of a chore.
-     * @param requestBody The input data
-     * @returns any Successful response / Empty body
-     * @throws ApiError
-     */
-    public choreChangeProject(
-        requestBody?: ChoreChangeProjectArgs,
-    ): CancelablePromise<any> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/chore-change-project',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

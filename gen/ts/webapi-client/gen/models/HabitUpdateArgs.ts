@@ -20,6 +20,10 @@ export type HabitUpdateArgs = {
         should_change: boolean;
         value?: HabitName;
     };
+    project_ref_id: {
+        should_change: boolean;
+        value?: EntityId;
+    };
     period: {
         should_change: boolean;
         value?: RecurringTaskPeriod;

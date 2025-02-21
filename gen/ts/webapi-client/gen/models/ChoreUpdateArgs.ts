@@ -21,6 +21,10 @@ export type ChoreUpdateArgs = {
         should_change: boolean;
         value?: ChoreName;
     };
+    project_ref_id: {
+        should_change: boolean;
+        value?: EntityId;
+    };
     period: {
         should_change: boolean;
         value?: RecurringTaskPeriod;

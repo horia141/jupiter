@@ -124,16 +124,6 @@ const UpdateFormSchema = z.discriminatedUnion("intent", [
     intent: z.literal("target-inbox-task-update"),
     ...UpdateFormTargetInboxTaskSchema,
   }),
-  z.object({
-    intent: z.literal("target-inbox-task-change-project"),
-    targetInboxTaskRefId: z.string(),
-    targetInboxTaskProject: z.string(),
-  }),
-  z.object({
-    intent: z.literal("target-inbox-task-associate-with-big-plan"),
-    targetInboxTaskRefId: z.string(),
-    targetInboxTaskBigPlan: z.string().optional(),
-  }),
 ]);
 
 export const handle = {
@@ -274,6 +264,18 @@ export async function action({ request, params }: ActionArgs) {
             should_change: true,
             value: status,
           },
+          project_ref_id: {
+            should_change: true,
+            value: form.targetInboxTaskProject,
+          },
+          big_plan_ref_id: {
+            should_change: form.targetInboxTaskBigPlan !== undefined,
+            value:
+              form.targetInboxTaskBigPlan !== undefined &&
+              form.targetInboxTaskBigPlan !== "none"
+                ? form.targetInboxTaskBigPlan
+                : undefined,
+          },
           eisen: corePropertyEditable
             ? {
                 should_change: true,
@@ -311,31 +313,6 @@ export async function action({ request, params }: ActionArgs) {
             },
           });
         }
-
-        return redirect(`/workspace/time-plans/${id}`);
-      }
-
-      case "target-inbox-task-change-project": {
-        if (form.targetInboxTaskProject === undefined) {
-          throw new Error("Unexpected null project");
-        }
-        await apiClient.inboxTasks.inboxTaskChangeProject({
-          ref_id: form.targetInboxTaskRefId,
-          project_ref_id: form.targetInboxTaskProject,
-        });
-
-        return redirect(`/workspace/time-plans/${id}/${activityId}`);
-      }
-
-      case "target-inbox-task-associate-with-big-plan": {
-        await apiClient.inboxTasks.inboxTaskAssociateWithBigPlan({
-          ref_id: form.targetInboxTaskRefId,
-          big_plan_ref_id:
-            form.targetInboxTaskBigPlan !== undefined &&
-            form.targetInboxTaskBigPlan !== "none"
-              ? form.targetInboxTaskBigPlan
-              : undefined,
-        });
 
         return redirect(`/workspace/time-plans/${id}`);
       }
@@ -462,7 +439,7 @@ export default function TimePlanActivity() {
       {loaderData.targetInboxTask && (
         <>
           <InboxTaskPropertiesEditor
-            title="Target Inbox Task"
+            title="Inbox Task"
             showLinkToInboxTask
             intentPrefix="target-inbox-task"
             namePrefix="targetInboxTask"
@@ -498,7 +475,7 @@ export default function TimePlanActivity() {
         loaderData.targetBigPlan && (
           <SectionCardNew
             id="target"
-            title="Target Big Plan"
+            title="Big Plan"
             actions={
               <SectionActions
                 id="target-big-plan"

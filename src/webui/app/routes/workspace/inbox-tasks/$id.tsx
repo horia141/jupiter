@@ -58,6 +58,8 @@ const CommonParamsSchema = {
   source: z.nativeEnum(InboxTaskSource),
   name: z.string(),
   status: z.nativeEnum(InboxTaskStatus),
+  project: z.string(),
+  bigPlan: z.string().optional(),
   eisen: z.nativeEnum(Eisen),
   difficulty: z.nativeEnum(Difficulty),
   actionableDate: z.string().optional(),
@@ -96,14 +98,6 @@ const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
     intent: z.literal("update"),
     ...CommonParamsSchema,
-  }),
-  z.object({
-    intent: z.literal("change-project"),
-    project: z.string(),
-  }),
-  z.object({
-    intent: z.literal("associate-with-big-plan"),
-    bigPlan: z.string().optional(),
   }),
   z.object({
     intent: z.literal("create-note"),
@@ -218,6 +212,17 @@ export async function action({ request, params }: ActionArgs) {
             should_change: true,
             value: status,
           },
+          project_ref_id: {
+            should_change: true,
+            value: form.project,
+          },
+          big_plan_ref_id: {
+            should_change: form.bigPlan !== undefined,
+            value:
+              form.bigPlan !== undefined && form.bigPlan !== "none"
+                ? form.bigPlan
+                : undefined,
+          },
           eisen: corePropertyEditable
             ? {
                 should_change: true,
@@ -255,30 +260,6 @@ export async function action({ request, params }: ActionArgs) {
         }
 
         return redirect(`/workspace/inbox-tasks`);
-      }
-
-      case "change-project": {
-        if (form.project === undefined) {
-          throw new Error("Unexpected null project");
-        }
-        await apiClient.inboxTasks.inboxTaskChangeProject({
-          ref_id: id,
-          project_ref_id: form.project,
-        });
-
-        return redirect(`/workspace/inbox-tasks/${id}`);
-      }
-
-      case "associate-with-big-plan": {
-        await apiClient.inboxTasks.inboxTaskAssociateWithBigPlan({
-          ref_id: id,
-          big_plan_ref_id:
-            form.bigPlan !== undefined && form.bigPlan !== "none"
-              ? form.bigPlan
-              : undefined,
-        });
-
-        return redirect(`/workspace/inbox-tasks/${id}`);
       }
 
       case "create-note": {
