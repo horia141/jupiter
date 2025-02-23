@@ -13,7 +13,6 @@ import {
   Card,
   CardActions,
   CardContent,
-  Divider,
   FormControl,
   InputLabel,
   OutlinedInput,
@@ -44,6 +43,7 @@ import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { RecurringTaskGenParamsBlock } from "~/components/recurring-task-gen-params-block";
+import { StandardDivider } from "~/components/standard-divider";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { sortInboxTasksNaturally } from "~/logic/domain/inbox-task";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -341,7 +341,7 @@ export default function MetricDetails() {
               <FieldError actionResult={actionData} fieldName="/icon" />
             </FormControl>
 
-            <Divider>Collection</Divider>
+            <StandardDivider title="Collection" size="large" />
 
             <RecurringTaskGenParamsBlock
               namePrefix="collection"
@@ -419,7 +419,6 @@ export default function MetricDetails() {
         <InboxTaskStack
           today={today}
           topLevelInfo={topLevelInfo}
-          showLabel
           showOptions={{
             showStatus: true,
             showDueDate: true,

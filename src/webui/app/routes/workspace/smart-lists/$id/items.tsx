@@ -14,7 +14,9 @@ import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import Check from "~/components/check";
+import { DocsHelpSubject } from "~/components/docs-help";
 import { EntityNameComponent } from "~/components/entity-name";
+import { EntityNoNothingCard } from "~/components/entity-no-nothing-card";
 import { makeBranchCatchBoundary } from "~/components/infra/catch-boundary";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
@@ -154,6 +156,15 @@ export default function SmartListViewItems() {
       returnLocation="/workspace/smart-lists"
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
+        {loaderData.smartListItems.length === 0 && (
+          <EntityNoNothingCard
+            title="You Have To Start Somewhere"
+            message="There are no items to show. You can create a new item."
+            newEntityLocations={`/workspace/smart-lists/${loaderData.smartList.ref_id}/items/new`}
+            helpSubject={DocsHelpSubject.SMART_LISTS}
+          />
+        )}
+
         <EntityStack>
           {loaderData.smartListItems.map((item) => (
             <EntityCard

@@ -463,7 +463,6 @@ export default function EmailTask() {
         <InboxTaskStack
           today={today}
           topLevelInfo={topLevelInfo}
-          showLabel
           showOptions={{
             showStatus: true,
             showDueDate: true,

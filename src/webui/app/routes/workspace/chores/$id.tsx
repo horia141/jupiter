@@ -517,7 +517,6 @@ export default function Chore() {
         <InboxTaskStack
           today={today}
           topLevelInfo={topLevelInfo}
-          showLabel
           showOptions={{
             showStatus: true,
             showDueDate: true,

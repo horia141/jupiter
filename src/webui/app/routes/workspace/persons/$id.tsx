@@ -15,7 +15,6 @@ import {
   Card,
   CardActions,
   CardContent,
-  Divider,
   FormControl,
   InputLabel,
   MenuItem,
@@ -46,6 +45,7 @@ import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { RecurringTaskGenParamsBlock } from "~/components/recurring-task-gen-params-block";
+import { StandardDivider } from "~/components/standard-divider";
 import { TimeEventFullDaysBlockStack } from "~/components/time-event-full-days-block-stack";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { sortInboxTasksNaturally } from "~/logic/domain/inbox-task";
@@ -480,7 +480,7 @@ export default function Person() {
               </FormControl>
             </Stack>
 
-            <Divider>Catch Up</Divider>
+            <StandardDivider title="Catch Up" size="small" />
 
             <RecurringTaskGenParamsBlock
               namePrefix="catchUp"
@@ -556,7 +556,6 @@ export default function Person() {
         <InboxTaskStack
           today={today}
           topLevelInfo={topLevelInfo}
-          showLabel
           showOptions={{
             showStatus: true,
             showDueDate: true,
@@ -577,7 +576,6 @@ export default function Person() {
         <InboxTaskStack
           today={today}
           topLevelInfo={topLevelInfo}
-          showLabel
           showOptions={{
             showStatus: true,
             showDueDate: true,

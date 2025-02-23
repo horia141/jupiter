@@ -7,13 +7,7 @@ import {
   TimePlanActivityTarget,
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
-import {
-  Divider,
-  FormControl,
-  FormLabel,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { FormControl, FormLabel, Stack } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -53,6 +47,7 @@ import { TopLevelInfoContext } from "~/top-level-context";
 
 import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
+import { StandardDivider } from "~/components/standard-divider";
 const ParamsSchema = {
   id: z.string(),
   otherTimePlanId: z.string(),
@@ -323,9 +318,7 @@ export default function TimePlanAddFromCurrentTimePlans() {
           </FormControl>
         </Stack>
 
-        <Divider>
-          <Typography variant="h6">Activities</Typography>
-        </Divider>
+        <StandardDivider title="Activities" size="large" />
 
         <EntityStack>
           {sortedOtherActivities.map((activity) => (

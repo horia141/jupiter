@@ -11,7 +11,6 @@ import {
   Card,
   CardActions,
   CardContent,
-  Divider,
   FormControl,
   FormLabel,
   InputLabel,
@@ -37,6 +36,7 @@ import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import { StandardDivider } from "~/components/standard-divider";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { periodName } from "~/logic/domain/period";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -169,7 +169,7 @@ export default function NewMetric() {
               <FieldError actionResult={actionData} fieldName="/icon" />
             </FormControl>
 
-            <Divider>Collection</Divider>
+            <StandardDivider title="Collection" size="large" />
 
             <FormControl fullWidth>
               <InputLabel id="collectionPeriod">Collection Period</InputLabel>

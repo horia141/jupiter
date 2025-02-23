@@ -12,9 +12,7 @@ import {
   CardContent,
   CardHeader,
   FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
+  FormLabel,
   Stack,
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
@@ -30,8 +28,9 @@ import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import { PeriodSelect } from "~/components/period-select";
+import { ProjectSelect } from "~/components/project-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
-import { periodName } from "~/logic/domain/period";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -127,21 +126,18 @@ export default function MetricsSettings() {
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>
-              <InputLabel id="generationPeriod">Generation Period</InputLabel>
-              <Select
-                labelId="status"
-                name="generationPeriod"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.generationPeriod}
+              <FormLabel id="generationPeriod">Generation Period</FormLabel>
+              <PeriodSelect
+                labelId="generationPeriod"
                 label="Generation Period"
-              >
-                <MenuItem value={RecurringTaskPeriod.DAILY}>
-                  {periodName(RecurringTaskPeriod.DAILY)}
-                </MenuItem>
-                <MenuItem value={RecurringTaskPeriod.WEEKLY}>
-                  {periodName(RecurringTaskPeriod.WEEKLY)}
-                </MenuItem>
-              </Select>
+                name="generationPeriod"
+                inputsEnabled={inputsEnabled}
+                defaultValue={loaderData.generationPeriod}
+                allowedValues={[
+                  RecurringTaskPeriod.DAILY,
+                  RecurringTaskPeriod.WEEKLY,
+                ]}
+              />
               <FieldError
                 actionResult={actionData}
                 fieldName="/generation_period"
@@ -153,20 +149,14 @@ export default function MetricsSettings() {
               WorkspaceFeature.PROJECTS
             ) && (
               <FormControl fullWidth>
-                <InputLabel id="cleanupProject">Clean Up Project</InputLabel>
-                <Select
-                  labelId="cleanupProject"
+                <ProjectSelect
                   name="cleanupProject"
-                  readOnly={!inputsEnabled}
+                  label="Clean Up Project"
+                  inputsEnabled={inputsEnabled}
+                  allProjects={loaderData.allProjects}
+                  disabled={false}
                   defaultValue={loaderData.cleanupProject.ref_id}
-                  label="cleanup Project"
-                >
-                  {loaderData.allProjects.map((p) => (
-                    <MenuItem key={p.ref_id} value={p.ref_id}>
-                      {p.name}
-                    </MenuItem>
-                  ))}
-                </Select>
+                />
                 <FieldError
                   actionResult={actionData}
                   fieldName="/cleanup_project_ref_id"

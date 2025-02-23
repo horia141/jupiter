@@ -1,11 +1,5 @@
 import type { InboxTask } from "@jupiter/webapi-client";
-import {
-  Divider,
-  Stack,
-  ToggleButton,
-  ToggleButtonGroup,
-  Typography,
-} from "@mui/material";
+import { Stack, ToggleButton, ToggleButtonGroup } from "@mui/material";
 import { Link, useLocation, useSearchParams } from "@remix-run/react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { DateTime } from "luxon";
@@ -16,6 +10,7 @@ import type {
 import type { TopLevelInfo } from "~/top-level-context";
 import type { InboxTaskShowOptions } from "./inbox-task-card";
 import { InboxTaskCard } from "./inbox-task-card";
+import { StandardDivider } from "./standard-divider";
 
 interface PagesProps {
   retrieveOffsetParamName: string;
@@ -26,7 +21,6 @@ interface PagesProps {
 interface InboxTaskStackProps {
   today: DateTime;
   topLevelInfo: TopLevelInfo;
-  showLabel?: boolean;
   showOptions: InboxTaskShowOptions;
   label?: string;
   inboxTasks: InboxTask[];
@@ -65,10 +59,8 @@ export function InboxTaskStack(props: InboxTaskStackProps) {
           transition={{ duration: 1 }}
         >
           <Stack spacing={2}>
-            {props.showLabel && (
-              <Divider style={{ paddingTop: "0.5rem" }}>
-                <Typography variant="h6">{props.label}</Typography>
-              </Divider>
+            {props.label && (
+              <StandardDivider title={props.label} size="large" />
             )}
 
             {props.withPages && (

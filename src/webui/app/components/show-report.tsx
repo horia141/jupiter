@@ -12,7 +12,6 @@ import {
 } from "@jupiter/webapi-client";
 import {
   Box,
-  Divider,
   List,
   ListItem,
   ListItemText,
@@ -28,7 +27,7 @@ import {
   Tabs,
   Typography,
 } from "@mui/material";
-import { useState } from "react";
+import React, { useState } from "react";
 
 import { EntityNameOneLineComponent } from "~/components/entity-name";
 import { ScoreOverview } from "~/components/gamification/score-overview";
@@ -47,6 +46,7 @@ import {
 } from "~/logic/domain/workspace";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import type { TopLevelInfo } from "~/top-level-context";
+import { StandardDivider } from "./standard-divider";
 import { TabPanel } from "./tab-panel";
 
 const _SOURCES_TO_REPORT = [
@@ -137,9 +137,7 @@ export function ShowReport({
       {isUserFeatureAvailable(topLevelInfo.user, UserFeature.GAMIFICATION) &&
         report.user_score_overview && (
           <>
-            <Divider>
-              <Typography variant="h6">💪 Score</Typography>
-            </Divider>
+            <StandardDivider title="💪 Score" size="large" />
             <ScoreOverview scoreOverview={report.user_score_overview} />
           </>
         )}
@@ -182,16 +180,14 @@ export function ShowReport({
       <TabPanel value={showTab} index={tabIndicesMap["by-periods"]}>
         <Stack spacing={2} useFlexGap>
           {report.per_period_breakdown.map((pp) => (
-            <Box key={pp.name}>
-              <Divider>
-                <Typography variant="h5">{pp.name}</Typography>
-              </Divider>
+            <React.Fragment key={pp.name}>
+              <StandardDivider title={pp.name} size="large" />
               <OverviewReport
                 topLevelInfo={topLevelInfo}
                 inboxTasksSummary={pp.inbox_tasks_summary}
                 bigPlansSummary={pp.big_plans_summary}
               />
-            </Box>
+            </React.Fragment>
           ))}
         </Stack>
       </TabPanel>
@@ -217,25 +213,14 @@ export function ShowReport({
               );
 
               return (
-                <Box key={pb.ref_id}>
-                  <Divider variant="fullWidth">
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        maxWidth: "calc(100vw - 2rem)",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                      }}
-                    >
-                      {fullProjectName}
-                    </Typography>
-                  </Divider>
+                <React.Fragment key={pb.ref_id}>
+                  <StandardDivider title={fullProjectName} size="large" />
                   <OverviewReport
                     topLevelInfo={topLevelInfo}
                     inboxTasksSummary={pb.inbox_tasks_summary}
                     bigPlansSummary={pb.big_plans_summary}
                   />
-                </Box>
+                </React.Fragment>
               );
             })}
           </Stack>
@@ -258,10 +243,8 @@ export function ShowReport({
               }
 
               return (
-                <Box key={period}>
-                  <Divider>
-                    <Typography variant="h5">{periodName(period)}</Typography>
-                  </Divider>
+                <React.Fragment key={period}>
+                  <StandardDivider title={periodName(period)} size="large" />
                   <TableContainer component={Box}>
                     <Table sx={{ tableLayout: "fixed" }}>
                       <TableHead>
@@ -330,7 +313,7 @@ export function ShowReport({
                       </TableBody>
                     </Table>
                   </TableContainer>
-                </Box>
+                </React.Fragment>
               );
             })}
           </Stack>
@@ -353,10 +336,8 @@ export function ShowReport({
               }
 
               return (
-                <Box key={period}>
-                  <Divider>
-                    <Typography variant="h5">{periodName(period)}</Typography>
-                  </Divider>
+                <React.Fragment key={period}>
+                  <StandardDivider title={periodName(period)} size="large" />
                   <TableContainer component={Box}>
                     <Table sx={{ tableLayout: "fixed" }}>
                       <TableHead>
@@ -410,7 +391,7 @@ export function ShowReport({
                       </TableBody>
                     </Table>
                   </TableContainer>
-                </Box>
+                </React.Fragment>
               );
             })}
           </Stack>
@@ -486,9 +467,7 @@ function OverviewReport(props: OverviewReportProps) {
 
   return (
     <Stack spacing={2} useFlexGap>
-      <Divider>
-        <Typography variant="h6">📥 Inbox Tasks</Typography>
-      </Divider>
+      <StandardDivider title="📥 Inbox Tasks" size="large" />
       <TableContainer>
         <Table sx={{ tableLayout: "fixed", width: "97%" }}>
           <TableHead>
@@ -570,9 +549,7 @@ function OverviewReport(props: OverviewReportProps) {
         WorkspaceFeature.BIG_PLANS
       ) && (
         <>
-          <Divider>
-            <Typography variant="h6">🌍 Big Plans</Typography>
-          </Divider>
+          <StandardDivider title="🌍 Big Plans" size="large" />
 
           <Typography variant="h6">Summary</Typography>
 

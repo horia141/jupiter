@@ -9,8 +9,10 @@ import { AnimatePresence } from "framer-motion";
 import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { DifficultyTag } from "~/components/difficulty-tag";
+import { DocsHelpSubject } from "~/components/docs-help";
 import { EisenTag } from "~/components/eisen-tag";
 import { EntityNameComponent } from "~/components/entity-name";
+import { EntityNoNothingCard } from "~/components/entity-no-nothing-card";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
@@ -85,6 +87,15 @@ export default function Persons() {
       returnLocation="/workspace"
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
+        {loaderData.entries.length === 0 && (
+          <EntityNoNothingCard
+            title="You Have To Start Somewhere"
+            message="There are no persons to show. You can create a new person."
+            newEntityLocations="/workspace/persons/new"
+            helpSubject={DocsHelpSubject.PERSONS}
+          />
+        )}
+
         <EntityStack>
           {loaderData.entries.map((entry) => (
             <EntityCard

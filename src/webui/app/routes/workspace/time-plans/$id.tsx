@@ -17,14 +17,10 @@ import FlareIcon from "@mui/icons-material/Flare";
 import ViewListIcon from "@mui/icons-material/ViewList";
 import {
   Button,
-  Divider,
   FormControl,
   InputLabel,
-  MenuItem,
   OutlinedInput,
-  Select,
   Stack,
-  Typography,
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect, Response } from "@remix-run/node";
@@ -67,7 +63,6 @@ import {
   validationErrorToUIErrorInfo,
 } from "~/logic/action-result";
 import { sortJournalsNaturally } from "~/logic/domain/journal";
-import { periodName } from "~/logic/domain/period";
 import {
   computeProjectHierarchicalNameFromRoot,
   sortProjectsByTreeOrder,
@@ -83,8 +78,13 @@ import {
 } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
+import { DocsHelpSubject } from "~/components/docs-help";
+import { EntityNoNothingCard } from "~/components/entity-no-nothing-card";
 import { makeBranchCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeBranchErrorBoundary } from "~/components/infra/error-boundary";
+import { PeriodSelect } from "~/components/period-select";
+import { StandardDivider } from "~/components/standard-divider";
+import { useBigScreen } from "~/rendering/use-big-screen";
 enum View {
   MERGED = "merged",
   BY_PROJECT = "by-project",
@@ -244,6 +244,7 @@ export default function TimePlanView() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
+  const isBigScreen = useBigScreen();
 
   const shouldShowALeaf = useBranchNeedsToShowLeaf();
 
@@ -357,7 +358,11 @@ export default function TimePlanView() {
               </Button>,
             ]}
           >
-            <Stack direction={"row"} spacing={2} useFlexGap>
+            <Stack
+              direction={isBigScreen ? "row" : "column"}
+              spacing={2}
+              useFlexGap
+            >
               <FormControl fullWidth>
                 <InputLabel id="rightNow" shrink margin="dense">
                   The Date
@@ -375,20 +380,14 @@ export default function TimePlanView() {
               </FormControl>
 
               <FormControl fullWidth>
-                <InputLabel id="period">Period</InputLabel>
-                <Select
+                <PeriodSelect
                   labelId="period"
-                  name="period"
-                  readOnly={!inputsEnabled}
-                  defaultValue={loaderData.timePlan.period}
                   label="Period"
-                >
-                  {Object.values(RecurringTaskPeriod).map((s) => (
-                    <MenuItem key={s} value={s}>
-                      {periodName(s)}
-                    </MenuItem>
-                  ))}
-                </Select>
+                  name="period"
+                  inputsEnabled={inputsEnabled}
+                  defaultValue={loaderData.timePlan.period}
+                />
+                <FieldError actionResult={actionData} fieldName="/period" />
                 <FieldError actionResult={actionData} fieldName="/status" />
               </FormControl>
             </Stack>
@@ -500,23 +499,21 @@ export default function TimePlanView() {
               />
             }
           >
+            {loaderData.activities.length === 0 && (
+              <EntityNoNothingCard
+                title="You Have To Start Somewhere"
+                message="There are no activities to show. You can create a new activity."
+                newEntityLocations={`/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-inbox-tasks`}
+                helpSubject={DocsHelpSubject.TIME_PLANS}
+              />
+            )}
+
             <Stack useFlexGap gap={2}>
               {selectedView === View.MERGED && (
                 <>
                   {mustDoActivities.length > 0 && (
                     <>
-                      <Divider variant="fullWidth">
-                        <Typography
-                          variant="h6"
-                          sx={{
-                            maxWidth: "calc(100vw - 2rem)",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                          }}
-                        >
-                          Must Do
-                        </Typography>
-                      </Divider>
+                      <StandardDivider title="Must Do" size="large" />
 
                       <TimePlanActivityList
                         topLevelInfo={topLevelInfo}
@@ -536,18 +533,7 @@ export default function TimePlanView() {
 
                   {niceToHaveActivities.length > 0 && (
                     <>
-                      <Divider variant="fullWidth">
-                        <Typography
-                          variant="h6"
-                          sx={{
-                            maxWidth: "calc(100vw - 2rem)",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                          }}
-                        >
-                          Nice To Have
-                        </Typography>
-                      </Divider>
+                      <StandardDivider title="Nice To Have" size="large" />
 
                       <TimePlanActivityList
                         topLevelInfo={topLevelInfo}
@@ -567,18 +553,7 @@ export default function TimePlanView() {
 
                   {stretchActivities.length > 0 && (
                     <>
-                      <Divider variant="fullWidth">
-                        <Typography
-                          variant="h6"
-                          sx={{
-                            maxWidth: "calc(100vw - 2rem)",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                          }}
-                        >
-                          Stretch
-                        </Typography>
-                      </Divider>
+                      <StandardDivider title="Stretch" size="large" />
 
                       <TimePlanActivityList
                         topLevelInfo={topLevelInfo}
@@ -602,18 +577,7 @@ export default function TimePlanView() {
                 <>
                   {mustDoActivities.length > 0 && (
                     <>
-                      <Divider variant="fullWidth">
-                        <Typography
-                          variant="h6"
-                          sx={{
-                            maxWidth: "calc(100vw - 2rem)",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                          }}
-                        >
-                          Must Do
-                        </Typography>
-                      </Divider>
+                      <StandardDivider title="Must Do" size="large" />
 
                       <TimePlanActivityList
                         topLevelInfo={topLevelInfo}
@@ -660,18 +624,7 @@ export default function TimePlanView() {
 
                     return (
                       <React.Fragment key={`project-${p.ref_id}`}>
-                        <Divider variant="fullWidth">
-                          <Typography
-                            variant="h6"
-                            sx={{
-                              maxWidth: "calc(100vw - 2rem)",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                            }}
-                          >
-                            {fullProjectName}
-                          </Typography>
-                        </Divider>
+                        <StandardDivider title={fullProjectName} size="large" />
 
                         <TimePlanActivityList
                           topLevelInfo={topLevelInfo}

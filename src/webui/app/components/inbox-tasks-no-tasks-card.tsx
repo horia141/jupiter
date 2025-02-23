@@ -14,7 +14,7 @@ interface NoTasksCardProps {
   parentNewLocations: string;
 }
 
-export function NoTasksCard(props: NoTasksCardProps) {
+export function InboxTasksNoTasksCard(props: NoTasksCardProps) {
   return (
     <Card>
       <CardHeader title="No Inbox Tasks" />

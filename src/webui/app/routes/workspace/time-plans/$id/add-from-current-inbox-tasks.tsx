@@ -9,21 +9,14 @@ import {
 } from "@jupiter/webapi-client";
 import FlareIcon from "@mui/icons-material/Flare";
 import ViewListIcon from "@mui/icons-material/ViewList";
-import {
-  Box,
-  Divider,
-  FormControl,
-  FormLabel,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { FormControl, FormLabel, Stack } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useParams, useTransition } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
-import { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams, parseQuery } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
@@ -66,6 +59,7 @@ import { TopLevelInfoContext } from "~/top-level-context";
 
 import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
+import { StandardDivider } from "~/components/standard-divider";
 enum View {
   MERGED = "merged",
   BY_PROJECT = "by-project",
@@ -422,19 +416,8 @@ export default function TimePlanAddFromCurrentInboxTasks() {
               );
 
               return (
-                <Box key={`project-${p.ref_id}`}>
-                  <Divider variant="fullWidth">
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        maxWidth: "calc(100vw - 2rem)",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                      }}
-                    >
-                      {fullProjectName}
-                    </Typography>
-                  </Divider>
+                <React.Fragment key={`project-${p.ref_id}`}>
+                  <StandardDivider title={fullProjectName} size="large" />
 
                   <InboxTaskList
                     today={today}
@@ -451,7 +434,7 @@ export default function TimePlanAddFromCurrentInboxTasks() {
                       )
                     }
                   />
-                </Box>
+                </React.Fragment>
               );
             })}
           </>

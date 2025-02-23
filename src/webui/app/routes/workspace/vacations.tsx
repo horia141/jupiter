@@ -15,7 +15,9 @@ import { DateTime } from "luxon";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { ADateTag } from "~/components/adate-tag";
+import { DocsHelpSubject } from "~/components/docs-help";
 import { EntityNameComponent } from "~/components/entity-name";
+import { EntityNoNothingCard } from "~/components/entity-no-nothing-card";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
@@ -75,6 +77,15 @@ export default function Vacations({ request }: LoaderArgs) {
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
         <VacationCalendar today={today} sortedVacations={sortedVacations} />
+
+        {sortedVacations.length === 0 && (
+          <EntityNoNothingCard
+            title="You Have To Start Somewhere"
+            message="There are no vacations to show. You can create a new vacation."
+            newEntityLocations="/workspace/vacations/new"
+            helpSubject={DocsHelpSubject.VACATIONS}
+          />
+        )}
 
         <EntityStack>
           {sortedVacations.map((vacation) => {

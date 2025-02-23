@@ -13,9 +13,7 @@ import {
   CardContent,
   FormControl,
   InputLabel,
-  MenuItem,
   OutlinedInput,
-  Select,
   Stack,
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
@@ -47,7 +45,6 @@ import {
   validationErrorToUIErrorInfo,
 } from "~/logic/action-result";
 import { sortJournalsNaturally } from "~/logic/domain/journal";
-import { periodName } from "~/logic/domain/period";
 import { sortTimePlansNaturally } from "~/logic/domain/time-plan";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { LeafPanelExpansionState } from "~/rendering/leaf-panel-expansion";
@@ -59,6 +56,7 @@ import { TopLevelInfoContext } from "~/top-level-context";
 
 import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
+import { PeriodSelect } from "~/components/period-select";
 
 const ParamsSchema = {
   id: z.string(),
@@ -279,20 +277,13 @@ export default function Journal() {
             </FormControl>
 
             <FormControl fullWidth>
-              <InputLabel id="period">Period</InputLabel>
-              <Select
-                labelId="status"
-                name="period"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.journal.period}
+              <PeriodSelect
+                labelId="period"
                 label="Period"
-              >
-                {Object.values(RecurringTaskPeriod).map((s) => (
-                  <MenuItem key={s} value={s}>
-                    {periodName(s)}
-                  </MenuItem>
-                ))}
-              </Select>
+                name="period"
+                inputsEnabled={inputsEnabled}
+                defaultValue={loaderData.journal.period}
+              />
               <FieldError actionResult={actionData} fieldName="/status" />
             </FormControl>
           </Stack>
@@ -340,7 +331,6 @@ export default function Journal() {
         <InboxTaskStack
           today={today}
           topLevelInfo={topLevelInfo}
-          showLabel
           showOptions={{
             showStatus: true,
             showDueDate: true,

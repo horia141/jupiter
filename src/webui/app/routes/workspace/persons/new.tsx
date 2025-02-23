@@ -11,7 +11,6 @@ import {
   Card,
   CardActions,
   CardContent,
-  Divider,
   FormControl,
   InputLabel,
   MenuItem,
@@ -32,6 +31,7 @@ import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { RecurringTaskGenParamsBlock } from "~/components/recurring-task-gen-params-block";
+import { StandardDivider } from "~/components/standard-divider";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { birthdayFromParts } from "~/logic/domain/person-birthday";
 import { personRelationshipName } from "~/logic/domain/person-relationship";
@@ -250,7 +250,7 @@ export default function NewPerson() {
               </FormControl>
             </Stack>
 
-            <Divider>Catch Up</Divider>
+            <StandardDivider title="Catch Up" size="small" />
 
             <RecurringTaskGenParamsBlock
               namePrefix="catchUp"

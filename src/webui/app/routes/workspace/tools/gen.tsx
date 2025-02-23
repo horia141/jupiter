@@ -15,16 +15,15 @@ import {
   Card,
   CardActions,
   CardContent,
-  Divider,
   FormControl,
   FormControlLabel,
+  FormLabel,
   InputLabel,
   OutlinedInput,
   Stack,
   styled,
   Switch,
   TextField,
-  Typography,
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
@@ -46,6 +45,7 @@ import { FieldError, GlobalError } from "~/components/infra/errors";
 import { ToolPanel } from "~/components/infra/layout/tool-panel";
 import { PeriodSelect } from "~/components/period-select";
 import { PeriodTag } from "~/components/period-tag";
+import { StandardDivider } from "~/components/standard-divider";
 import { SyncTargetSelect } from "~/components/sync-target-select";
 import { SyncTargetTag } from "~/components/sync-target-tag";
 import { TimeDiffTag } from "~/components/time-diff-tag";
@@ -274,12 +274,14 @@ export default function Gen() {
                   </FormControl>
 
                   <FormControl fullWidth>
-                    <InputLabel id="period">Generation Period</InputLabel>
+                    <FormLabel id="period">Generation Period</FormLabel>
                     <PeriodSelect
                       labelId="period"
                       label="Generation Period"
                       name="period"
-                      readOnly={!inputsEnabled}
+                      inputsEnabled={inputsEnabled}
+                      multiSelect
+                      defaultValue={Object.values(RecurringTaskPeriod)}
                     />
                     <FieldError actionResult={actionData} fieldName="/period" />
                   </FormControl>
@@ -472,9 +474,7 @@ export default function Gen() {
         </CardActions>
       </Card>
 
-      <Divider style={{ paddingTop: "1rem", paddingBottom: "1rem" }}>
-        <Typography variant="h6">Previous Runs</Typography>
-      </Divider>
+      <StandardDivider title="Previous Runs" size="large" />
 
       {loaderData.loadRuns.entries.map((entry) => {
         return (
@@ -572,11 +572,7 @@ export default function Gen() {
 
               {entry.entity_created_records.length > 0 && (
                 <>
-                  <Divider
-                    style={{ paddingTop: "1rem", paddingBottom: "1rem" }}
-                  >
-                    <Typography variant="h6">Created entities</Typography>
-                  </Divider>
+                  <StandardDivider title="Created entities" size="medium" />
 
                   {entry.entity_created_records.map((record) => (
                     <EntityCard key={record.ref_id}>
@@ -588,11 +584,7 @@ export default function Gen() {
 
               {entry.entity_updated_records.length > 0 && (
                 <>
-                  <Divider
-                    style={{ paddingTop: "1rem", paddingBottom: "1rem" }}
-                  >
-                    <Typography variant="h6">Updated entities</Typography>
-                  </Divider>
+                  <StandardDivider title="Updated entities" size="medium" />
 
                   {entry.entity_updated_records.map((record) => (
                     <EntityCard key={record.ref_id}>
@@ -604,11 +596,7 @@ export default function Gen() {
 
               {entry.entity_removed_records.length > 0 && (
                 <>
-                  <Divider
-                    style={{ paddingTop: "1rem", paddingBottom: "1rem" }}
-                  >
-                    <Typography variant="h6">Removed entities</Typography>
-                  </Divider>
+                  <StandardDivider title="Removed entities" size="medium" />
 
                   {entry.entity_removed_records.map((record) => (
                     <EntityCard key={record.ref_id}>

@@ -13,7 +13,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Divider,
   FormControlLabel,
   FormGroup,
   Stack,
@@ -53,12 +52,13 @@ import { getLoggedInApiClient } from "~/api-clients.server";
 import type { InboxTaskShowOptions } from "~/components/inbox-task-card";
 import { InboxTaskCard } from "~/components/inbox-task-card";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
+import { InboxTasksNoNothingCard } from "~/components/inbox-tasks-no-nothing-card";
+import { InboxTasksNoTasksCard } from "~/components/inbox-tasks-no-tasks-card";
 import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
-import { NoNothingCard } from "~/components/no-nothing-card";
-import { NoTasksCard } from "~/components/no-tasks-card";
+import { StandardDivider } from "~/components/standard-divider";
 import { TabPanel } from "~/components/tab-panel";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import type { SomeErrorNoData } from "~/logic/action-result";
@@ -472,9 +472,7 @@ export default function InboxTasks() {
           <DialogTitle>Filters</DialogTitle>
           <DialogContent>
             <Stack spacing={1} useFlexGap>
-              <Divider>
-                <Typography variant="h6">Actionable From</Typography>
-              </Divider>
+              <StandardDivider title="Actionable From" size="large" />
               <ButtonGroup
                 orientation={isBigScreen ? "horizontal" : "vertical"}
               >
@@ -515,9 +513,7 @@ export default function InboxTasks() {
               </ButtonGroup>
               {selectedView === View.KANBAN_BY_EISEN && (
                 <>
-                  <Divider>
-                    <Typography variant="h6">Show Eisen</Typography>
-                  </Divider>
+                  <StandardDivider title="Show Eisen" size="large" />
                   <FormGroup>
                     {EISENS.map((eisen) => (
                       <FormControlLabel
@@ -542,9 +538,7 @@ export default function InboxTasks() {
               {(selectedView === View.KANBAN_BY_EISEN ||
                 selectedView === View.KANBAN) && (
                 <>
-                  <Divider>
-                    <Typography variant="h6">Collapse Columns</Typography>
-                  </Divider>
+                  <StandardDivider title="Collapse Columns" size="large" />
                   <FormGroup>
                     {INBOX_TASK_STATUSES.map((status) => (
                       <FormControlLabel
@@ -1051,7 +1045,6 @@ function SwiftView(props: SwiftViewProps) {
           key="habit-due-today"
           today={props.today}
           topLevelInfo={props.topLevelInfo}
-          showLabel
           showOptions={{
             showStatus: true,
             showProject: true,
@@ -1073,7 +1066,6 @@ function SwiftView(props: SwiftViewProps) {
           today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="habit-due-this-week"
-          showLabel
           showOptions={{
             showStatus: true,
             showProject: true,
@@ -1095,7 +1087,6 @@ function SwiftView(props: SwiftViewProps) {
           today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="habit-due-this-month"
-          showLabel
           showOptions={{
             showStatus: true,
             showProject: true,
@@ -1118,7 +1109,6 @@ function SwiftView(props: SwiftViewProps) {
           today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="habit-due-this-quarter"
-          showLabel
           showOptions={{
             showStatus: true,
             showProject: true,
@@ -1141,7 +1131,6 @@ function SwiftView(props: SwiftViewProps) {
           today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="habit-due-this-year"
-          showLabel
           showOptions={{
             showStatus: true,
             showProject: true,
@@ -1170,7 +1159,6 @@ function SwiftView(props: SwiftViewProps) {
           today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="chore-due-today"
-          showLabel
           showOptions={{
             showStatus: true,
             showProject: true,
@@ -1192,7 +1180,6 @@ function SwiftView(props: SwiftViewProps) {
           today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="chore-due-this-week"
-          showLabel
           showOptions={{
             showStatus: true,
             showProject: true,
@@ -1214,7 +1201,6 @@ function SwiftView(props: SwiftViewProps) {
           today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="chore-due-this-month"
-          showLabel
           showOptions={{
             showStatus: true,
             showProject: true,
@@ -1237,7 +1223,6 @@ function SwiftView(props: SwiftViewProps) {
           today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="chore-due-this-quarter"
-          showLabel
           showOptions={{
             showStatus: true,
             showProject: true,
@@ -1260,7 +1245,6 @@ function SwiftView(props: SwiftViewProps) {
           today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="chore-due-this-year"
-          showLabel
           showOptions={{
             showStatus: true,
             showProject: true,
@@ -1289,7 +1273,6 @@ function SwiftView(props: SwiftViewProps) {
           today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="rest-due-today"
-          showLabel
           showOptions={{
             showStatus: true,
             showSource: true,
@@ -1312,7 +1295,6 @@ function SwiftView(props: SwiftViewProps) {
           today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="rest-due-this-week"
-          showLabel
           showOptions={{
             showStatus: true,
             showSource: true,
@@ -1335,7 +1317,6 @@ function SwiftView(props: SwiftViewProps) {
           today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="rest-due-this-month"
-          showLabel
           showOptions={{
             showStatus: true,
             showSource: true,
@@ -1359,7 +1340,6 @@ function SwiftView(props: SwiftViewProps) {
           today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="rest-due-this-quarter"
-          showLabel
           showOptions={{
             showStatus: true,
             showSource: true,
@@ -1383,7 +1363,6 @@ function SwiftView(props: SwiftViewProps) {
           today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="rest-due-this-year"
-          showLabel
           showOptions={{
             showStatus: true,
             showSource: true,
@@ -1427,27 +1406,29 @@ function SwiftView(props: SwiftViewProps) {
   const noNothing = noHabits && noChores && noRests;
 
   const noHabitsCard = (
-    <NoTasksCard
+    <InboxTasksNoTasksCard
       parent="habit"
       parentLabel="New Habit"
       parentNewLocations="/workspace/habits/new"
     />
   );
   const noChoresCard = (
-    <NoTasksCard
+    <InboxTasksNoTasksCard
       parent="chore"
       parentLabel="New Chore"
       parentNewLocations="/workspace/chores/new"
     />
   );
   const noRestsCard = (
-    <NoTasksCard
+    <InboxTasksNoTasksCard
       parent="inbox task"
       parentLabel="New Task"
       parentNewLocations="/workspace/inbox-tasks/new"
     />
   );
-  const noNothingCard = <NoNothingCard topLevelInfo={props.topLevelInfo} />;
+  const noNothingCard = (
+    <InboxTasksNoNothingCard topLevelInfo={props.topLevelInfo} />
+  );
 
   let initialSmallScreenSelectedTab = 0;
   if (!noHabits) {
@@ -1560,7 +1541,7 @@ function BigScreenKanbanByEisen({
   return (
     <>
       {inboxTasks.length === 0 && (
-        <NoTasksCard
+        <InboxTasksNoTasksCard
           parent="inbox task"
           parentLabel="New Task"
           parentNewLocations="/workspace/inbox-tasks/new"
@@ -1571,11 +1552,10 @@ function BigScreenKanbanByEisen({
           {EISENS.filter((e) => showEisenBoard[e]).map((e) => {
             return (
               <React.Fragment key={e}>
-                <Divider sx={{ paddingTop: "1rem", paddingBottom: "1rem" }}>
-                  <Typography variant="h6">
-                    {eisenIcon(e)} {eisenName(e)}
-                  </Typography>
-                </Divider>
+                <StandardDivider
+                  title={`${eisenIcon(e)} ${eisenName(e)}`}
+                  size="large"
+                />
                 <KanbanBoard
                   today={today}
                   topLevelInfo={topLevelInfo}
@@ -1625,7 +1605,7 @@ function BigScreenKanban({
   return (
     <>
       {inboxTasks.length === 0 && (
-        <NoTasksCard
+        <InboxTasksNoTasksCard
           parent="inbox task"
           parentLabel="New Task"
           parentNewLocations="/workspace/inbox-tasks/new"
@@ -2153,7 +2133,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
 
       <TabPanel value={smallScreenSelectedTab} index={0}>
         {notStartedTasks.length === 0 && (
-          <NoTasksCard
+          <InboxTasksNoTasksCard
             parent="inbox task"
             parentLabel="New Task"
             parentNewLocations="/workspace/inbox-tasks/new"
@@ -2181,7 +2161,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
 
       <TabPanel value={smallScreenSelectedTab} index={1}>
         {recurringTasks.length === 0 && (
-          <NoTasksCard
+          <InboxTasksNoTasksCard
             parent="inbox task"
             parentLabel="New Task"
             parentNewLocations="/workspace/inbox-tasks/new"
@@ -2209,7 +2189,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
 
       <TabPanel value={smallScreenSelectedTab} index={2}>
         {inProgressTasks.length === 0 && (
-          <NoTasksCard
+          <InboxTasksNoTasksCard
             parent="inbox task"
             parentLabel="New Task"
             parentNewLocations="/workspace/inbox-tasks/new"
@@ -2237,7 +2217,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
 
       <TabPanel value={smallScreenSelectedTab} index={3}>
         {blockedTasks.length === 0 && (
-          <NoTasksCard
+          <InboxTasksNoTasksCard
             parent="inbox task"
             parentLabel="New Task"
             parentNewLocations="/workspace/inbox-tasks/new"
@@ -2265,7 +2245,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
 
       <TabPanel value={smallScreenSelectedTab} index={4}>
         {notDoneTasks.length === 0 && (
-          <NoTasksCard
+          <InboxTasksNoTasksCard
             parent="inbox task"
             parentLabel="New Task"
             parentNewLocations="/workspace/inbox-tasks/new"
@@ -2293,7 +2273,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
 
       <TabPanel value={smallScreenSelectedTab} index={5}>
         {doneTasks.length === 0 && (
-          <NoTasksCard
+          <InboxTasksNoTasksCard
             parent="inbox task"
             parentLabel="New Task"
             parentNewLocations="/workspace/inbox-tasks/new"
@@ -2344,7 +2324,7 @@ function List({
   return (
     <>
       {inboxTasks.length === 0 && (
-        <NoTasksCard
+        <InboxTasksNoTasksCard
           parent="inbox task"
           parentLabel="New Task"
           parentNewLocations="/workspace/inbox-tasks/new"

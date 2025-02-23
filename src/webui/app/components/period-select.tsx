@@ -1,38 +1,81 @@
 import { RecurringTaskPeriod } from "@jupiter/webapi-client";
-import { Box, Chip, MenuItem, Select } from "@mui/material";
+import { ToggleButton, ToggleButtonGroup } from "@mui/material";
+import { useEffect, useState } from "react";
 import { periodName } from "~/logic/domain/period";
+import { useBigScreen } from "~/rendering/use-big-screen";
 
 interface PeriodSelectProps {
   labelId: string;
   label: string;
   name: string;
-  readOnly: boolean;
-  defaultValue?: RecurringTaskPeriod[];
+  allowNonePeriod?: boolean;
+  multiSelect?: boolean;
+  inputsEnabled: boolean;
+  defaultValue?: RecurringTaskPeriod | RecurringTaskPeriod[] | "none";
+  value?: RecurringTaskPeriod | RecurringTaskPeriod[] | "none";
+  onChange?: (
+    newPeriod: RecurringTaskPeriod | RecurringTaskPeriod[] | "none"
+  ) => void;
+  allowedValues?: RecurringTaskPeriod[];
 }
 
 export function PeriodSelect(props: PeriodSelectProps) {
+  const isBigScreen = useBigScreen();
+  const [period, setPeriod] = useState(
+    props.defaultValue ||
+      props.value ||
+      (props.multiSelect
+        ? [RecurringTaskPeriod.DAILY]
+        : RecurringTaskPeriod.DAILY)
+  );
+
+  useEffect(() => {
+    if (props.value !== undefined) {
+      if (props.multiSelect) {
+        setPeriod(props.value);
+      } else {
+        setPeriod(props.value);
+      }
+    }
+  }, [props.value, props.multiSelect]);
+
+  function handleChangePeriod(
+    event: React.MouseEvent<HTMLElement>,
+    newPeriod: RecurringTaskPeriod | RecurringTaskPeriod[] | null
+  ) {
+    if (newPeriod === null) {
+      return;
+    }
+    setPeriod(newPeriod);
+    if (props.onChange) {
+      props.onChange(newPeriod);
+    }
+  }
+
   return (
-    <Select
-      labelId={props.labelId}
-      name={props.name}
-      readOnly={props.readOnly}
-      disabled={props.readOnly}
-      multiple
-      defaultValue={props.defaultValue || []}
-      renderValue={(selected) => (
-        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-          {selected.map((value) => (
-            <Chip key={value} label={periodName(value)} />
+    <>
+      <ToggleButtonGroup
+        value={period}
+        exclusive={!props.multiSelect}
+        fullWidth
+        onChange={handleChangePeriod}
+      >
+        {props.allowNonePeriod && (
+          <ToggleButton value="none" disabled={!props.inputsEnabled}>
+            None
+          </ToggleButton>
+        )}
+        {Object.values(RecurringTaskPeriod)
+          .filter(
+            (p) => !props.allowedValues || props.allowedValues.includes(p)
+          )
+          .map((s) => (
+            <ToggleButton key={s} value={s} disabled={!props.inputsEnabled}>
+              {periodName(s, isBigScreen)}
+            </ToggleButton>
           ))}
-        </Box>
-      )}
-      label={props.label}
-    >
-      {Object.values(RecurringTaskPeriod).map((st) => (
-        <MenuItem key={st} value={st}>
-          {periodName(st)}
-        </MenuItem>
-      ))}
-    </Select>
+      </ToggleButtonGroup>
+      <input type="hidden" name={props.name} value={period} />
+    </>
   );
 }

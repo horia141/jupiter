@@ -16,7 +16,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Divider,
   styled,
   Table,
   TableBody,
@@ -24,19 +23,21 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Typography,
 } from "@mui/material";
 import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";
-import { useContext, useState } from "react";
+import React, { useContext, useState } from "react";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { BigPlanStack } from "~/components/big-plan-stack";
+import { DocsHelpSubject } from "~/components/docs-help";
 import { EntityNameOneLineComponent } from "~/components/entity-name";
+import { EntityNoNothingCard } from "~/components/entity-no-nothing-card";
 import { EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
+import { StandardDivider } from "~/components/standard-divider";
 import { aDateToDate } from "~/logic/domain/adate";
 import type { BigPlanParent } from "~/logic/domain/big-plan";
 import {
@@ -225,10 +226,20 @@ export default function BigPlans() {
       </Dialog>
 
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
-        {isWorkspaceFeatureAvailable(
-          topLevelInfo.workspace,
-          WorkspaceFeature.PROJECTS
-        ) &&
+        {sortedBigPlans.length === 0 && (
+          <EntityNoNothingCard
+            title="You Have To Start Somewhere"
+            message="There are no big plans to show. You can create a new big plan."
+            newEntityLocations="/workspace/big-plans/new"
+            helpSubject={DocsHelpSubject.BIG_PLANS}
+          />
+        )}
+
+        {sortedBigPlans.length > 0 &&
+          isWorkspaceFeatureAvailable(
+            topLevelInfo.workspace,
+            WorkspaceFeature.PROJECTS
+          ) &&
           selectedView === View.TIMELINE_BY_PROJECT && (
             <>
               {sortedProjects.map((p) => {
@@ -247,19 +258,8 @@ export default function BigPlans() {
                 );
 
                 return (
-                  <Box key={p.ref_id}>
-                    <Divider variant="fullWidth">
-                      <Typography
-                        variant="h6"
-                        sx={{
-                          maxWidth: "calc(100vw - 2rem)",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                        }}
-                      >
-                        {fullProjectName}
-                      </Typography>
-                    </Divider>
+                  <React.Fragment key={p.ref_id}>
+                    <StandardDivider title={fullProjectName} size="large" />
                     <>
                       {isBigScreen && (
                         <BigScreenTimeline
@@ -274,13 +274,13 @@ export default function BigPlans() {
                         />
                       )}
                     </>
-                  </Box>
+                  </React.Fragment>
                 );
               })}
             </>
           )}
 
-        {selectedView === View.TIMELINE && (
+        {sortedBigPlans.length > 0 && selectedView === View.TIMELINE && (
           <>
             {isBigScreen && (
               <BigScreenTimeline
@@ -297,7 +297,7 @@ export default function BigPlans() {
           </>
         )}
 
-        {selectedView === View.LIST && (
+        {sortedBigPlans.length > 0 && selectedView === View.LIST && (
           <List
             topLevelInfo={topLevelInfo}
             bigPlans={sortedBigPlans}

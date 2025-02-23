@@ -11,11 +11,11 @@ import { Link } from "@remix-run/react";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import type { TopLevelInfo } from "~/top-level-context";
 
-interface NoNothingCardProps {
+interface InboxTasksNoNothingCardProps {
   topLevelInfo: TopLevelInfo;
 }
 
-export function NoNothingCard(props: NoNothingCardProps) {
+export function InboxTasksNoNothingCard(props: InboxTasksNoNothingCardProps) {
   let initialText = "There are no inbox tasks to show. ";
   const { workspace } = props.topLevelInfo;
 

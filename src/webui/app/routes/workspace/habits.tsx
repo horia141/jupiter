@@ -8,8 +8,10 @@ import { AnimatePresence } from "framer-motion";
 import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { DifficultyTag } from "~/components/difficulty-tag";
+import { DocsHelpSubject } from "~/components/docs-help";
 import { EisenTag } from "~/components/eisen-tag";
 import { EntityNameComponent } from "~/components/entity-name";
+import { EntityNoNothingCard } from "~/components/entity-no-nothing-card";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
@@ -65,6 +67,15 @@ export default function Habits() {
       returnLocation="/workspace"
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
+        {sortedHabits.length === 0 && (
+          <EntityNoNothingCard
+            title="You Have To Start Somewhere"
+            message="There are no habits to show. You can create a new habit."
+            newEntityLocations="/workspace/habits/new"
+            helpSubject={DocsHelpSubject.HABITS}
+          />
+        )}
+
         <EntityStack>
           {sortedHabits.map((habit) => {
             const entry = entriesByRefId.get(

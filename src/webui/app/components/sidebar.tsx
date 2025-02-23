@@ -1,7 +1,6 @@
 import { WorkspaceFeature } from "@jupiter/webapi-client";
 import { Settings } from "@mui/icons-material";
 import {
-  Divider,
   List,
   ListItem,
   ListItemButton,
@@ -15,6 +14,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import type { TopLevelInfo } from "~/top-level-context";
+import { StandardDivider } from "./standard-divider";
 
 const BIG_SCREEN_WIDTH = "240px";
 const BIG_SCREEN_ANIMATION_START = "-240px";
@@ -301,7 +301,7 @@ export default function Sidebar(props: SidebarProps) {
               isWorkspaceFeatureAvailable(
                 props.topLevelInfo.workspace,
                 WorkspaceFeature.EMAIL_TASKS
-              )) && <Divider textAlign="left">Push Integrations</Divider>}
+              )) && <StandardDivider title="Push Integrations" size="small" />}
 
             {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
@@ -335,7 +335,7 @@ export default function Sidebar(props: SidebarProps) {
               </ListItem>
             )}
 
-            <Divider textAlign="left">Tools</Divider>
+            <StandardDivider title="Tools" size="small" />
 
             <ListItem disablePadding>
               <ListItemButton
@@ -370,7 +370,7 @@ export default function Sidebar(props: SidebarProps) {
               </ListItemButton>
             </ListItem>
 
-            <Divider textAlign="left">Process</Divider>
+            <StandardDivider title="Process" size="small" />
 
             <ListItem disablePadding>
               <ListItemButton
@@ -395,7 +395,7 @@ export default function Sidebar(props: SidebarProps) {
             </ListItem>
           </List>
 
-          <Divider textAlign="left">Explore</Divider>
+          <StandardDivider title="Explore" size="small" />
 
           <ListItem disablePadding>
             <ListItemButton

@@ -13,6 +13,8 @@ import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
+import { DocsHelpSubject } from "~/components/docs-help";
+import { EntityNoNothingCard } from "~/components/entity-no-nothing-card";
 import { makeBranchCatchBoundary } from "~/components/infra/catch-boundary";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
@@ -153,6 +155,14 @@ export default function SmartListViewTags() {
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
         <EntityStack>
+          {loaderData.smartListTags.length === 0 && (
+            <EntityNoNothingCard
+              title="You Have To Start Somewhere"
+              message="There are no tags to show. You can create a new tag."
+              newEntityLocations={`/workspace/smart-lists/${loaderData.smartList.ref_id}/tags/new`}
+              helpSubject={DocsHelpSubject.SMART_LISTS}
+            />
+          )}
           {loaderData.smartListTags.map((tag) => (
             <EntityCard key={tag.ref_id}>
               <EntityLink

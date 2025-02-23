@@ -2,10 +2,9 @@ import { ApiError, RecurringTaskPeriod } from "@jupiter/webapi-client";
 import {
   Button,
   FormControl,
+  FormLabel,
   InputLabel,
-  MenuItem,
   OutlinedInput,
-  Select,
 } from "@mui/material";
 import { Stack } from "@mui/system";
 import type { ActionArgs } from "@remix-run/node";
@@ -23,11 +22,11 @@ import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { SectionCard } from "~/components/infra/section-card";
+import { PeriodSelect } from "~/components/period-select";
 import {
   aGlobalError,
   validationErrorToUIErrorInfo,
 } from "~/logic/action-result";
-import { periodName } from "~/logic/domain/period";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
@@ -121,20 +120,14 @@ export default function NewTimePlan() {
           </FormControl>
 
           <FormControl fullWidth>
-            <InputLabel id="period">Period</InputLabel>
-            <Select
-              labelId="status"
-              name="period"
-              readOnly={!inputsEnabled}
-              defaultValue={RecurringTaskPeriod.DAILY}
+            <FormLabel id="period">Period</FormLabel>
+            <PeriodSelect
+              labelId="period"
               label="Period"
-            >
-              {Object.values(RecurringTaskPeriod).map((s) => (
-                <MenuItem key={s} value={s}>
-                  {periodName(s)}
-                </MenuItem>
-              ))}
-            </Select>
+              name="period"
+              inputsEnabled={inputsEnabled}
+              defaultValue={RecurringTaskPeriod.WEEKLY}
+            />
             <FieldError actionResult={actionData} fieldName="/period" />
           </FormControl>
         </Stack>

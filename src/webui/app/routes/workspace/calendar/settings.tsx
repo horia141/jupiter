@@ -10,13 +10,11 @@ import {
   Card,
   CardActions,
   CardContent,
-  Divider,
   FormControl,
   FormControlLabel,
   InputLabel,
   styled,
   Switch,
-  Typography,
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
@@ -40,6 +38,7 @@ import { makeBranchErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError } from "~/components/infra/errors";
 import { BranchPanel } from "~/components/infra/layout/branch-panel";
 import { ScheduleStreamMultiSelect } from "~/components/schedule-stream-multi-select";
+import { StandardDivider } from "~/components/standard-divider";
 import { TimeDiffTag } from "~/components/time-diff-tag";
 import {
   noErrorNoData,
@@ -175,9 +174,7 @@ export default function CalendarSettings() {
         </Card>
       </Form>
 
-      <Divider style={{ paddingTop: "1rem", paddingBottom: "1rem" }}>
-        <Typography variant="h6">Previous Runs</Typography>
-      </Divider>
+      <StandardDivider title="Previous Runs" size="large" />
 
       {loaderData.entries.map((entry) => {
         return (
@@ -223,8 +220,7 @@ export default function CalendarSettings() {
 
               {entry.entity_records.length > 0 && (
                 <>
-                  <Divider>Entities</Divider>
-
+                  <StandardDivider title="Entities" size="large" />
                   {entry.entity_records.map((record) => (
                     <EntityCard
                       key={`entities-${entry.ref_id}-${record.ref_id}`}

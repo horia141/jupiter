@@ -4,7 +4,9 @@ import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Outlet } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { getLoggedInApiClient } from "~/api-clients.server";
+import { DocsHelpSubject } from "~/components/docs-help";
 import { EntityNameComponent } from "~/components/entity-name";
+import { EntityNoNothingCard } from "~/components/entity-no-nothing-card";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
@@ -48,6 +50,15 @@ export default function Docs() {
       returnLocation="/workspace"
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
+        {loaderData.entries.length === 0 && (
+          <EntityNoNothingCard
+            title="You Have To Start Somewhere"
+            message="There are no docs to show. You can create a new doc."
+            newEntityLocations="/workspace/docs/new"
+            helpSubject={DocsHelpSubject.DOCS}
+          />
+        )}
+
         <EntityStack>
           {loaderData.entries.map((entry) => (
             <EntityCard

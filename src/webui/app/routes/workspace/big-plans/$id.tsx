@@ -669,7 +669,6 @@ export default function BigPlan() {
         <InboxTaskStack
           today={today}
           topLevelInfo={topLevelInfo}
-          showLabel
           showOptions={{
             showStatus: true,
             showEisen: true,

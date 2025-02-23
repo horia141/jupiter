@@ -6,6 +6,8 @@ import { Outlet } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients.server";
+import { DocsHelpSubject } from "~/components/docs-help";
+import { EntityNoNothingCard } from "~/components/entity-no-nothing-card";
 import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
@@ -56,6 +58,15 @@ export default function Journals() {
       returnLocation="/workspace"
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
+        {sortedJournals.length === 0 && (
+          <EntityNoNothingCard
+            title="You Have To Start Somewhere"
+            message="There are no journals to show. You can create a new journal."
+            newEntityLocations="/workspace/journals/new"
+            helpSubject={DocsHelpSubject.JOURNALS}
+          />
+        )}
+
         <JournalStack topLevelInfo={topLevelInfo} journals={sortedJournals} />
       </NestingAwareBlock>
 

@@ -20,6 +20,8 @@ import { makeBranchCatchBoundary } from "~/components/infra/catch-boundary";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 
+import { DocsHelpSubject } from "~/components/docs-help";
+import { EntityNoNothingCard } from "~/components/entity-no-nothing-card";
 import { makeBranchErrorBoundary } from "~/components/infra/error-boundary";
 import { BranchPanel } from "~/components/infra/layout/branch-panel";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
@@ -155,6 +157,15 @@ export default function Metric() {
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
         <MetricGraph sortedMetricEntries={sortedEntries} />
+
+        {sortedEntries.length === 0 && (
+          <EntityNoNothingCard
+            title="You Have To Start Somewhere"
+            message="There are no metric entries to show. You can create a new metric entry."
+            newEntityLocations={`/workspace/metrics/${loaderData.metric.ref_id}/entries/new`}
+            helpSubject={DocsHelpSubject.METRICS}
+          />
+        )}
 
         <EntityStack>
           {sortedEntries.map((entry) => (

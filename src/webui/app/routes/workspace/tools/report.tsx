@@ -1,6 +1,5 @@
 import type { ProjectSummary, ReportResult } from "@jupiter/webapi-client";
 import { ApiError, RecurringTaskPeriod } from "@jupiter/webapi-client";
-import type { SelectChangeEvent } from "@mui/material";
 import {
   Button,
   ButtonGroup,
@@ -8,10 +7,9 @@ import {
   CardActions,
   CardContent,
   FormControl,
+  FormLabel,
   InputLabel,
-  MenuItem,
   OutlinedInput,
-  Select,
   Stack,
 } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
@@ -28,6 +26,7 @@ import { FieldError, GlobalError } from "~/components/infra/errors";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeToolErrorBoundary } from "~/components/infra/error-boundary";
 import { ToolPanel } from "~/components/infra/layout/tool-panel";
+import { PeriodSelect } from "~/components/period-select";
 import { ShowReport } from "~/components/show-report";
 import type { ActionResult } from "~/logic/action-result";
 import {
@@ -35,12 +34,9 @@ import {
   noErrorSomeData,
   validationErrorToUIErrorInfo,
 } from "~/logic/action-result";
-import {
-  comparePeriods,
-  oneLessThanPeriod,
-  periodName,
-} from "~/logic/domain/period";
+import { oneLessThanPeriod } from "~/logic/domain/period";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
+import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
@@ -114,6 +110,7 @@ export default function Report() {
   }>;
   const transition = useTransition();
   const topLevelInfo = useContext(TopLevelInfoContext);
+  const isBigScreen = useBigScreen();
 
   const [period, setPeriod] = useState(RecurringTaskPeriod.MONTHLY);
   const [breakdownPeriod, setBreakdownPeriod] = useState<
@@ -122,8 +119,15 @@ export default function Report() {
 
   const inputsEnabled = transition.state === "idle";
 
-  function handleChangePeriod(event: SelectChangeEvent<RecurringTaskPeriod>) {
-    const newPeriod = event.target.value as RecurringTaskPeriod;
+  function handleChangePeriod(
+    newPeriod: RecurringTaskPeriod | RecurringTaskPeriod[] | "none"
+  ) {
+    if (newPeriod === "none") {
+      return;
+    }
+    if (Array.isArray(newPeriod)) {
+      newPeriod = newPeriod[0];
+    }
     setPeriod(newPeriod);
     if (newPeriod === RecurringTaskPeriod.DAILY) {
       setBreakdownPeriod("none");
@@ -133,9 +137,12 @@ export default function Report() {
   }
 
   function handleChangeBreakdownPeriod(
-    event: SelectChangeEvent<RecurringTaskPeriod | "none">
+    newPeriod: RecurringTaskPeriod | RecurringTaskPeriod[] | "none"
   ) {
-    setBreakdownPeriod(event.target.value as RecurringTaskPeriod | "none");
+    if (Array.isArray(newPeriod)) {
+      newPeriod = newPeriod[0];
+    }
+    setBreakdownPeriod(newPeriod);
   }
 
   return (
@@ -169,51 +176,41 @@ export default function Report() {
               <FieldError actionResult={loaderData} fieldName="/today" />
             </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="period">Period</InputLabel>
-              <Select
-                labelId="period"
-                name="period"
-                readOnly={!inputsEnabled}
-                value={period}
-                onChange={handleChangePeriod}
-                label="Period"
-              >
-                {Object.values(RecurringTaskPeriod).map((s) => (
-                  <MenuItem key={s} value={s}>
-                    {periodName(s)}
-                  </MenuItem>
-                ))}
-              </Select>
-              <FieldError actionResult={loaderData} fieldName="/status" />
-            </FormControl>
+            <Stack
+              spacing={2}
+              useFlexGap
+              direction={isBigScreen ? "row" : "column"}
+            >
+              <FormControl fullWidth>
+                <FormLabel id="period">Period</FormLabel>
+                <PeriodSelect
+                  labelId="period"
+                  label="Period"
+                  name="period"
+                  inputsEnabled={inputsEnabled}
+                  value={period}
+                  onChange={handleChangePeriod}
+                />
+                <FieldError actionResult={loaderData} fieldName="/status" />
+              </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="breakdownPeriod">Breakdown Period</InputLabel>
-              <Select
-                labelId="breakdownPeriod"
-                name="breakdownPeriod"
-                readOnly={!inputsEnabled}
-                value={breakdownPeriod}
-                onChange={handleChangeBreakdownPeriod}
-                label="Breakdown Period"
-              >
-                <MenuItem value="none">None</MenuItem>
-                {Object.values(RecurringTaskPeriod).map((s) => (
-                  <MenuItem
-                    disabled={comparePeriods(s, period) >= 0}
-                    key={s}
-                    value={s}
-                  >
-                    {periodName(s)}
-                  </MenuItem>
-                ))}
-              </Select>
-              <FieldError
-                actionResult={loaderData}
-                fieldName="/breakdown_period"
-              />
-            </FormControl>
+              <FormControl fullWidth>
+                <FormLabel id="breakdownPeriod">Breakdown Period</FormLabel>
+                <PeriodSelect
+                  labelId="breakdownPeriod"
+                  label="Breakdown Period"
+                  name="breakdownPeriod"
+                  inputsEnabled={inputsEnabled}
+                  allowNonePeriod
+                  value={breakdownPeriod}
+                  onChange={handleChangeBreakdownPeriod}
+                />
+                <FieldError
+                  actionResult={loaderData}
+                  fieldName="/breakdown_period"
+                />
+              </FormControl>
+            </Stack>
           </Stack>
         </CardContent>
 

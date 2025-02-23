@@ -10,11 +10,9 @@ import {
   Card,
   CardActions,
   CardContent,
-  Divider,
   FormControl,
   InputLabel,
   styled,
-  Typography,
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
@@ -32,6 +30,7 @@ import { EntityCard } from "~/components/infra/entity-card";
 import { makeToolErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { ToolPanel } from "~/components/infra/layout/tool-panel";
+import { StandardDivider } from "~/components/standard-divider";
 import { SyncTargetSelect } from "~/components/sync-target-select";
 import { SyncTargetTag } from "~/components/sync-target-tag";
 import { TimeDiffTag } from "~/components/time-diff-tag";
@@ -126,9 +125,7 @@ export default function GC() {
         </CardActions>
       </Card>
 
-      <Divider style={{ paddingTop: "1rem", paddingBottom: "1rem" }}>
-        <Typography variant="h6">Previous Runs</Typography>
-      </Divider>
+      <StandardDivider title="Garbage Collection" size="large" />
 
       {entries.map((entry) => {
         return (
