@@ -767,7 +767,7 @@ class InboxTask(LeafEntity):
             the_status = status.just_the_value
 
         if project_ref_id.should_change:
-            if not self.source.allow_user_changes:
+            if not self.source.allow_user_changes and project_ref_id.just_the_value != self.project_ref_id:
                 raise CannotModifyGeneratedTaskError("project")
             the_project = project_ref_id.just_the_value
         else:

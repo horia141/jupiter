@@ -1,5 +1,6 @@
 """A habit."""
 from jupiter.core.domain.concept.habits.habit_name import HabitName
+from jupiter.core.domain.concept.habits.habit_repeats_strategy import HabitRepeatsStrategy
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.core.notes.note import Note
@@ -31,6 +32,7 @@ class Habit(LeafEntity):
     name: HabitName
     gen_params: RecurringTaskGenParams
     suspended: bool
+    # repeats_strategy: HabitRepeatsStrategy | None
     repeats_in_period_count: int | None
 
     inbox_tasks = OwnsMany(
