@@ -18,7 +18,7 @@ import {
   Stack,
   styled,
 } from "@mui/material";
-import { Form, Link, useLocation, useNavigate } from "@remix-run/react";
+import { Form, useLocation, useNavigate } from "@remix-run/react";
 import { motion, useIsPresent } from "framer-motion";
 import type { PropsWithChildren } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -64,7 +64,7 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
   const containerRef = useRef<HTMLDivElement>(null);
   const isPresent = useIsPresent();
   const [expansionState, setExpansionState] = useState<
-    LeafPanelExpansionState | "shrunk"
+    LeafPanelExpansionState | "shrunk" | "exit"
   >(props.initialExpansionState ?? LeafPanelExpansionState.SMALL);
   const [previousExpansionState, setPreviousExpansionState] =
     useState<LeafPanelExpansionState | null>(null);
@@ -153,7 +153,7 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
   }, [props.returnLocation, props.returnLocationDiscriminator]);
 
   function handleShrunk() {
-    if (expansionState !== "shrunk") {
+    if (expansionState !== "shrunk" && expansionState !== "exit") {
       setPreviousExpansionState(expansionState);
       setExpansionState("shrunk");
     } else {
@@ -268,12 +268,21 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
             <IconButton onClick={handleScrollBottom}>
               <ArrowDownwardIcon />
             </IconButton>
-            <IconButton>
-              <Link to={props.returnLocation} style={{ display: "flex" }}>
-                <KeyboardDoubleArrowRightIcon />
-              </Link>
+            <IconButton
+              onClick={() => {
+                setExpansionState("exit");
+                const returnLocation = props.returnLocation;
+                setTimeout(() => navigation(returnLocation), 500);
+              }}
+            >
+              <KeyboardDoubleArrowRightIcon />
             </IconButton>
-            <IconButton onClick={() => navigation(-1)}>
+            <IconButton
+              onClick={() => {
+                setExpansionState("exit");
+                setTimeout(() => navigation(-1), 500);
+              }}
+            >
               <ArrowBackIcon />
             </IconButton>
           </ButtonGroup>
@@ -384,10 +393,10 @@ const LeafPanelContent = styled("div")<LeafPanelContentProps>(
 );
 
 function cycleExpansionState(
-  expansionState: LeafPanelExpansionState | "shrunk",
+  expansionState: LeafPanelExpansionState | "shrunk" | "exit",
   allowedExpansionStates?: LeafPanelExpansionState[]
 ): LeafPanelExpansionState {
-  if (expansionState === "shrunk") {
+  if (expansionState === "shrunk" || expansionState === "exit") {
     return LeafPanelExpansionState.SMALL;
   }
   if (allowedExpansionStates && allowedExpansionStates.length > 0) {
