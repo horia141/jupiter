@@ -3,6 +3,7 @@ import {
   ApiError,
   Difficulty,
   Eisen,
+  HabitRepeatsStrategy,
   RecurringTaskPeriod,
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
@@ -22,10 +23,11 @@ import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { z } from "zod";
 import { CheckboxAsString, parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
+import { HabitRepeatStrategySelect } from "~/components/habit-repeat-strategy-select";
 
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
@@ -51,6 +53,10 @@ const CreateFormSchema = {
   dueAtMonth: z.string().optional(),
   mustDo: CheckboxAsString,
   skipRule: z.string().optional(),
+  repeatsStrategy: z
+    .nativeEnum(HabitRepeatsStrategy)
+    .or(z.literal("none"))
+    .optional(),
   repeatsInPeriodCount: z.string().optional(),
 };
 
@@ -93,6 +99,10 @@ export async function action({ request }: ActionArgs) {
         form.skipRule !== undefined && form.skipRule !== ""
           ? form.skipRule
           : undefined,
+      repeats_strategy:
+        form.repeatsStrategy !== undefined && form.repeatsStrategy !== "none"
+          ? form.repeatsStrategy
+          : undefined,
       repeats_in_period_count: form.repeatsInPeriodCount
         ? parseInt(form.repeatsInPeriodCount)
         : undefined,
@@ -120,6 +130,13 @@ export default function NewHabit() {
   const transition = useTransition();
 
   const topLevelInfo = useContext(TopLevelInfoContext);
+
+  const [selectedPeriod, setSelectedPeriod] = useState<RecurringTaskPeriod>(
+    RecurringTaskPeriod.DAILY
+  );
+  const [selectedRepeatsStrategy, setSelectedRepeatsStrategy] = useState<
+    HabitRepeatsStrategy | "none"
+  >("none");
 
   const inputsEnabled = transition.state === "idle";
 
@@ -164,7 +181,14 @@ export default function NewHabit() {
             <RecurringTaskGenParamsBlock
               inputsEnabled={inputsEnabled}
               allowSkipRule
-              period={RecurringTaskPeriod.DAILY}
+              period={selectedPeriod}
+              onChangePeriod={(newPeriod) => {
+                if (newPeriod === "none") {
+                  setSelectedPeriod(RecurringTaskPeriod.DAILY);
+                } else {
+                  setSelectedPeriod(newPeriod);
+                }
+              }}
               eisen={Eisen.REGULAR}
               difficulty={Difficulty.EASY}
               actionableFromDay={null}
@@ -175,20 +199,38 @@ export default function NewHabit() {
               actionData={actionData}
             />
 
-            <FormControl fullWidth>
-              <InputLabel id="repeatsInPeriodCount">
-                Repeats In Period [Optional]
-              </InputLabel>
-              <OutlinedInput
-                label="Repeats In Period"
-                name="repeatsInPeriodCount"
-                readOnly={!inputsEnabled}
-              />
-              <FieldError
-                actionResult={actionData}
-                fieldName="/repeats_in_period_count"
-              />
-            </FormControl>
+            {selectedPeriod !== RecurringTaskPeriod.DAILY && (
+              <Stack direction="row" spacing={2}>
+                <FormControl sx={{ flexGrow: 3 }}>
+                  <HabitRepeatStrategySelect
+                    name="repeatsStrategy"
+                    inputsEnabled={inputsEnabled}
+                    allowNone
+                    value={selectedRepeatsStrategy}
+                    onChange={(newStrategy) =>
+                      setSelectedRepeatsStrategy(newStrategy)
+                    }
+                  />
+                </FormControl>
+                {selectedRepeatsStrategy !== "none" && (
+                  <FormControl sx={{ flexGrow: 1 }}>
+                    <InputLabel id="repeatsInPeriodCount">
+                      Repeats In Period [Optional]
+                    </InputLabel>
+                    <OutlinedInput
+                      label="Repeats In Period"
+                      name="repeatsInPeriodCount"
+                      readOnly={!inputsEnabled}
+                      sx={{ height: "100%" }}
+                    />
+                    <FieldError
+                      actionResult={actionData}
+                      fieldName="/repeats_in_period_count"
+                    />
+                  </FormControl>
+                )}
+              </Stack>
+            )}
           </Stack>
         </CardContent>
 

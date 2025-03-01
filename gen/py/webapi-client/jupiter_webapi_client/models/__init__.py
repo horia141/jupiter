@@ -146,6 +146,7 @@ from .habit_load_args import HabitLoadArgs
 from .habit_load_result import HabitLoadResult
 from .habit_regen_args import HabitRegenArgs
 from .habit_remove_args import HabitRemoveArgs
+from .habit_repeats_strategy import HabitRepeatsStrategy
 from .habit_summary import HabitSummary
 from .habit_suspend_args import HabitSuspendArgs
 from .habit_unsuspend_args import HabitUnsuspendArgs
@@ -160,6 +161,7 @@ from .habit_update_args_name import HabitUpdateArgsName
 from .habit_update_args_period import HabitUpdateArgsPeriod
 from .habit_update_args_project_ref_id import HabitUpdateArgsProjectRefId
 from .habit_update_args_repeats_in_period_count import HabitUpdateArgsRepeatsInPeriodCount
+from .habit_update_args_repeats_strategy import HabitUpdateArgsRepeatsStrategy
 from .habit_update_args_skip_rule import HabitUpdateArgsSkipRule
 from .heading_block import HeadingBlock
 from .heading_block_kind import HeadingBlockKind
@@ -737,6 +739,7 @@ __all__ = (
     "HabitLoadResult",
     "HabitRegenArgs",
     "HabitRemoveArgs",
+    "HabitRepeatsStrategy",
     "HabitSummary",
     "HabitSuspendArgs",
     "HabitUnsuspendArgs",
@@ -751,6 +754,7 @@ __all__ = (
     "HabitUpdateArgsPeriod",
     "HabitUpdateArgsProjectRefId",
     "HabitUpdateArgsRepeatsInPeriodCount",
+    "HabitUpdateArgsRepeatsStrategy",
     "HabitUpdateArgsSkipRule",
     "HeadingBlock",
     "HeadingBlockKind",

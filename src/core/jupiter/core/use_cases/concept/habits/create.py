@@ -4,6 +4,9 @@ from jupiter.core.domain.application.gen.service.gen_service import GenService
 from jupiter.core.domain.concept.habits.habit import Habit
 from jupiter.core.domain.concept.habits.habit_collection import HabitCollection
 from jupiter.core.domain.concept.habits.habit_name import HabitName
+from jupiter.core.domain.concept.habits.habit_repeats_strategy import (
+    HabitRepeatsStrategy,
+)
 from jupiter.core.domain.concept.projects.project import Project, ProjectRepository
 from jupiter.core.domain.concept.projects.project_collection import ProjectCollection
 from jupiter.core.domain.core.difficulty import Difficulty
@@ -50,6 +53,7 @@ class HabitCreateArgs(UseCaseArgsBase):
     due_at_day: RecurringTaskDueAtDay | None
     due_at_month: RecurringTaskDueAtMonth | None
     skip_rule: RecurringTaskSkipRule | None
+    repeats_strategy: HabitRepeatsStrategy | None
     repeats_in_period_count: int | None
 
 
@@ -114,6 +118,7 @@ class HabitCreateUseCase(
                 skip_rule=args.skip_rule,
             ),
             suspended=False,
+            repeats_strategy=args.repeats_strategy,
             repeats_in_period_count=args.repeats_in_period_count,
         )
         new_habit = await uow.get_for(Habit).create(new_habit)

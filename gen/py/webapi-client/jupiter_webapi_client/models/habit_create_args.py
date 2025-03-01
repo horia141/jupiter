@@ -5,6 +5,7 @@ from attrs import field as _attrs_field
 
 from ..models.difficulty import Difficulty
 from ..models.eisen import Eisen
+from ..models.habit_repeats_strategy import HabitRepeatsStrategy
 from ..models.recurring_task_period import RecurringTaskPeriod
 from ..types import UNSET, Unset
 
@@ -26,6 +27,7 @@ class HabitCreateArgs:
         due_at_day (Union[None, Unset, int]):
         due_at_month (Union[None, Unset, int]):
         skip_rule (Union[None, Unset, str]):
+        repeats_strategy (Union[HabitRepeatsStrategy, None, Unset]):
         repeats_in_period_count (Union[None, Unset, int]):
     """
 
@@ -39,6 +41,7 @@ class HabitCreateArgs:
     due_at_day: Union[None, Unset, int] = UNSET
     due_at_month: Union[None, Unset, int] = UNSET
     skip_rule: Union[None, Unset, str] = UNSET
+    repeats_strategy: Union[HabitRepeatsStrategy, None, Unset] = UNSET
     repeats_in_period_count: Union[None, Unset, int] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -87,6 +90,14 @@ class HabitCreateArgs:
         else:
             skip_rule = self.skip_rule
 
+        repeats_strategy: Union[None, Unset, str]
+        if isinstance(self.repeats_strategy, Unset):
+            repeats_strategy = UNSET
+        elif isinstance(self.repeats_strategy, HabitRepeatsStrategy):
+            repeats_strategy = self.repeats_strategy.value
+        else:
+            repeats_strategy = self.repeats_strategy
+
         repeats_in_period_count: Union[None, Unset, int]
         if isinstance(self.repeats_in_period_count, Unset):
             repeats_in_period_count = UNSET
@@ -115,6 +126,8 @@ class HabitCreateArgs:
             field_dict["due_at_month"] = due_at_month
         if skip_rule is not UNSET:
             field_dict["skip_rule"] = skip_rule
+        if repeats_strategy is not UNSET:
+            field_dict["repeats_strategy"] = repeats_strategy
         if repeats_in_period_count is not UNSET:
             field_dict["repeats_in_period_count"] = repeats_in_period_count
 
@@ -185,6 +198,23 @@ class HabitCreateArgs:
 
         skip_rule = _parse_skip_rule(d.pop("skip_rule", UNSET))
 
+        def _parse_repeats_strategy(data: object) -> Union[HabitRepeatsStrategy, None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                repeats_strategy_type_0 = HabitRepeatsStrategy(data)
+
+                return repeats_strategy_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[HabitRepeatsStrategy, None, Unset], data)
+
+        repeats_strategy = _parse_repeats_strategy(d.pop("repeats_strategy", UNSET))
+
         def _parse_repeats_in_period_count(data: object) -> Union[None, Unset, int]:
             if data is None:
                 return data
@@ -205,6 +235,7 @@ class HabitCreateArgs:
             due_at_day=due_at_day,
             due_at_month=due_at_month,
             skip_rule=skip_rule,
+            repeats_strategy=repeats_strategy,
             repeats_in_period_count=repeats_in_period_count,
         )
 

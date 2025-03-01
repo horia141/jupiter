@@ -4,6 +4,7 @@
 
 import type { EntityId } from './EntityId';
 import type { HabitName } from './HabitName';
+import type { HabitRepeatsStrategy } from './HabitRepeatsStrategy';
 import type { RecurringTaskGenParams } from './RecurringTaskGenParams';
 import type { Timestamp } from './Timestamp';
 
@@ -22,6 +23,7 @@ export type Habit = {
     project_ref_id: EntityId;
     gen_params: RecurringTaskGenParams;
     suspended: boolean;
+    repeats_strategy?: (HabitRepeatsStrategy | null);
     repeats_in_period_count?: (number | null);
 };
 

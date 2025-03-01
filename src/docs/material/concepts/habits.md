@@ -108,6 +108,21 @@ specified via the `skip_rule` property, which can be one of:
 A habit can have a repeat count. This makes the task actually be generated multiple times
 in a given time period. It's easier to model some habits - like reading 10 books in a year.
 
+How tasks are generated is further controlled by a _repeat strategy_. This determines how
+the repeats are spread out in the period. There are currently two optins:
+
+* `All Same`: every task generated will have an actionable data that is the start of the
+  particular period's interval, and an due date that is the end of the interval.
+* `Spread Out No Overlap`: tasks will be placed in the interval in order such that the
+  due date of one is the actionable date of the other, perfectly partinioning the period's
+  interval. The number of days in the period must be larger than the repeat count. Even so
+  there isn't a guarantee each one will receive the same number of days. For example, if
+  for a weekly period and a repeat count of `4`, the generated tasks will each have
+  `2`, `2`, `2`, and `1` days in duration respectively.
+
+Repeat count and stragies are not available when the period is `daily`. And you of
+course need to specify both one and the other, or neither.
+
 A habit can be suspended, via the `Suspended` property. Being marked as such means
 that the task won't be generated at all. For example, going to the gym might be suspended while
 you're recovering from an illness.

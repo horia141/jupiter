@@ -6,6 +6,7 @@ import type { Difficulty } from './Difficulty';
 import type { Eisen } from './Eisen';
 import type { EntityId } from './EntityId';
 import type { HabitName } from './HabitName';
+import type { HabitRepeatsStrategy } from './HabitRepeatsStrategy';
 import type { RecurringTaskDueAtDay } from './RecurringTaskDueAtDay';
 import type { RecurringTaskDueAtMonth } from './RecurringTaskDueAtMonth';
 import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
@@ -55,6 +56,10 @@ export type HabitUpdateArgs = {
     skip_rule: {
         should_change: boolean;
         value?: (RecurringTaskSkipRule | null);
+    };
+    repeats_strategy: {
+        should_change: boolean;
+        value?: (HabitRepeatsStrategy | null);
     };
     repeats_in_period_count: {
         should_change: boolean;

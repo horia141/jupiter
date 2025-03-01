@@ -3,6 +3,7 @@ import {
   ApiError,
   Difficulty,
   Eisen,
+  HabitRepeatsStrategy,
   InboxTaskStatus,
   NoteDomain,
   RecurringTaskPeriod,
@@ -37,6 +38,7 @@ import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
 
+import { HabitRepeatStrategySelect } from "~/components/habit-repeat-strategy-select";
 import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
@@ -75,6 +77,10 @@ const UpdateFormSchema = z.discriminatedUnion("intent", [
     dueAtDay: z.string().optional(),
     dueAtMonth: z.string().optional(),
     skipRule: z.string().optional(),
+    repeatsStrategy: z
+      .nativeEnum(HabitRepeatsStrategy)
+      .or(z.literal("none"))
+      .optional(),
     repeatsInPeriodCount: z.string().optional(),
   }),
   z.object({
@@ -198,6 +204,14 @@ export async function action({ request, params }: ActionArgs) {
                 ? undefined
                 : form.skipRule,
           },
+          repeats_strategy: {
+            should_change: true,
+            value:
+              form.repeatsStrategy !== undefined &&
+              form.repeatsStrategy !== "none"
+                ? form.repeatsStrategy
+                : undefined,
+          },
           repeats_in_period_count: {
             should_change: true,
             value: form.repeatsInPeriodCount
@@ -275,6 +289,14 @@ export default function Habit() {
     loaderData.project.ref_id
   );
 
+  const [selectedPeriod, setSelectedPeriod] = useState(
+    loaderData.habit.gen_params.period
+  );
+
+  const [selectedRepeatsStrategy, setSelectedRepeatsStrategy] = useState<
+    HabitRepeatsStrategy | "none"
+  >(loaderData.habit.repeats_strategy || "none");
+
   const sortedInboxTasks = sortInboxTasksNaturally(loaderData.inboxTasks, {
     dueDateAscending: false,
   });
@@ -312,6 +334,8 @@ export default function Habit() {
     // two are not otherwise updated when the loader data changes. Which happens
     // on a navigation event.
     setSelectedProject(loaderData.project.ref_id);
+    setSelectedPeriod(loaderData.habit.gen_params.period);
+    setSelectedRepeatsStrategy(loaderData.habit.repeats_strategy || "none");
   }, [loaderData]);
 
   const today = DateTime.local({ zone: topLevelInfo.user.timezone });
@@ -360,7 +384,14 @@ export default function Habit() {
             <RecurringTaskGenParamsBlock
               allowSkipRule
               inputsEnabled={inputsEnabled}
-              period={loaderData.habit.gen_params.period}
+              period={selectedPeriod}
+              onChangePeriod={(newPeriod) => {
+                if (newPeriod === "none") {
+                  setSelectedPeriod(RecurringTaskPeriod.DAILY);
+                } else {
+                  setSelectedPeriod(newPeriod);
+                }
+              }}
               eisen={loaderData.habit.gen_params.eisen}
               difficulty={loaderData.habit.gen_params.difficulty}
               actionableFromDay={
@@ -375,21 +406,40 @@ export default function Habit() {
               actionData={actionData}
             />
 
-            <FormControl fullWidth>
-              <InputLabel id="repeatsInPeriodCount">
-                Repeats In Period [Optional]
-              </InputLabel>
-              <OutlinedInput
-                label="Repeats In Period"
-                name="repeatsInPeriodCount"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.habit.repeats_in_period_count}
-              />
-              <FieldError
-                actionResult={actionData}
-                fieldName="/repeats_in_period_count"
-              />
-            </FormControl>
+            {selectedPeriod !== RecurringTaskPeriod.DAILY && (
+              <Stack direction="row" spacing={2}>
+                <FormControl sx={{ flexGrow: 3 }}>
+                  <HabitRepeatStrategySelect
+                    name="repeatsStrategy"
+                    inputsEnabled={inputsEnabled}
+                    allowNone
+                    value={selectedRepeatsStrategy}
+                    onChange={(newStrategy) =>
+                      setSelectedRepeatsStrategy(newStrategy)
+                    }
+                  />
+                </FormControl>
+
+                {selectedRepeatsStrategy !== "none" && (
+                  <FormControl sx={{ flexGrow: 1 }}>
+                    <InputLabel id="repeatsInPeriodCount">
+                      Repeats In Period [Optional]
+                    </InputLabel>
+                    <OutlinedInput
+                      label="Repeats In Period"
+                      name="repeatsInPeriodCount"
+                      readOnly={!inputsEnabled}
+                      defaultValue={loaderData.habit.repeats_in_period_count}
+                      sx={{ height: "100%" }}
+                    />
+                    <FieldError
+                      actionResult={actionData}
+                      fieldName="/repeats_in_period_count"
+                    />
+                  </FormControl>
+                )}
+              </Stack>
+            )}
           </Stack>
         </CardContent>
 

@@ -1,8 +1,11 @@
 """The command for updating a habit."""
-from typing import cast
+from typing import Sequence, cast
 
 from jupiter.core.domain.concept.habits.habit import Habit
 from jupiter.core.domain.concept.habits.habit_name import HabitName
+from jupiter.core.domain.concept.habits.habit_repeats_strategy import (
+    HabitRepeatsStrategy,
+)
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import (
     InboxTask,
     InboxTaskRepository,
@@ -13,6 +16,7 @@ from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.concept.projects.project import Project
 from jupiter.core.domain.core import schedules
+from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
@@ -51,6 +55,7 @@ class HabitUpdateArgs(UseCaseArgsBase):
     due_at_day: UpdateAction[RecurringTaskDueAtDay | None]
     due_at_month: UpdateAction[RecurringTaskDueAtMonth | None]
     skip_rule: UpdateAction[RecurringTaskSkipRule | None]
+    repeats_strategy: UpdateAction[HabitRepeatsStrategy | None]
     repeats_in_period_count: UpdateAction[int | None]
 
 
@@ -89,6 +94,7 @@ class HabitUpdateUseCase(
             or args.actionable_from_month.should_change
             or args.due_at_day.should_change
             or args.due_at_month.should_change
+            or args.repeats_strategy.should_change
             or args.repeats_in_period_count.should_change
         )
 
@@ -127,6 +133,7 @@ class HabitUpdateUseCase(
             project_ref_id=args.project_ref_id,
             name=args.name,
             gen_params=habit_gen_params,
+            repeats_strategy=args.repeats_strategy,
             repeats_in_period_count=args.repeats_in_period_count,
         )
 
@@ -162,14 +169,28 @@ class HabitUpdateUseCase(
                     habit.gen_params.due_at_month,
                 )
 
+                task_ranges: Sequence[tuple[ADate | None, ADate]]
+                if habit.repeats_in_period_count is not None:
+                    if habit.repeats_strategy is None:
+                        raise ValueError("Repeats strategy is not set")
+                    task_ranges = habit.repeats_strategy.spread_tasks(
+                        start_date=schedule.first_day,
+                        end_date=schedule.end_day,
+                        repeats_in_period=habit.repeats_in_period_count,
+                    )
+                else:
+                    task_ranges = [(schedule.actionable_date, schedule.due_date)]
+
                 inbox_task = inbox_task.update_link_to_habit(
                     ctx=context.domain_context,
                     project_ref_id=project.ref_id,
                     name=schedule.full_name,
                     timeline=schedule.timeline,
                     repeat_index=inbox_task.recurring_repeat_index,
-                    actionable_date=schedule.actionable_date,
-                    due_date=schedule.due_date,
+                    actionable_date=task_ranges[inbox_task.recurring_repeat_index or 0][
+                        0
+                    ],
+                    due_date=task_ranges[inbox_task.recurring_repeat_index or 0][1],
                     eisen=habit.gen_params.eisen,
                     difficulty=habit.gen_params.difficulty,
                 )

@@ -30,6 +30,7 @@ interface RecurringTaskGenParamsBlockProps {
   allowNonePeriod?: boolean;
   allowSkipRule?: boolean;
   period: RecurringTaskPeriod | "none";
+  onChangePeriod?: (period: RecurringTaskPeriod | "none") => void;
   eisen?: Eisen | null;
   difficulty?: Difficulty | null;
   actionableFromDay?: RecurringTaskDueAtDay | null;
@@ -69,6 +70,9 @@ export function RecurringTaskGenParamsBlock(
       setShowParams(true);
     }
     setPeriod(newPeriod);
+    if (props.onChangePeriod) {
+      props.onChangePeriod(newPeriod);
+    }
   }
 
   return (

@@ -35,7 +35,7 @@ def test_get_schedule_daily_simple(right_now: Timestamp) -> None:
     assert schedule.timeline == "2023,Q4,Dec,W51,D2"
     assert schedule.actionable_date is None
     assert schedule.due_date == ADate.from_str("2023-12-19")
-    assert schedule.full_name == InboxTaskName("A task 23:Dec19")
+    assert schedule.full_name == InboxTaskName("A task 2023:Dec19")
 
 
 def test_get_schedule_daily_with_skip_rule(right_now: Timestamp) -> None:
@@ -77,7 +77,7 @@ def test_get_schedule_weekly_simple(right_now: Timestamp) -> None:
     assert schedule.timeline == "2023,Q4,Dec,W51"
     assert schedule.actionable_date is None
     assert schedule.due_date == ADate.from_str("2023-12-24")
-    assert schedule.full_name == InboxTaskName("A task 23:W51")
+    assert schedule.full_name == InboxTaskName("A task 2023:W51")
 
 
 def test_get_schedule_weekly_with_skip_rule(right_now: Timestamp) -> None:
@@ -120,7 +120,7 @@ def test_get_schedule_weekly_set_actionable_from_day(right_now: Timestamp) -> No
     assert schedule.timeline == "2023,Q4,Dec,W51"
     assert schedule.actionable_date == ADate.from_str("2023-12-20")
     assert schedule.due_date == ADate.from_str("2023-12-24")
-    assert schedule.full_name == InboxTaskName("A task 23:W51")
+    assert schedule.full_name == InboxTaskName("A task 2023:W51")
 
 
 def test_get_schedule_weekly_set_due_at_day(right_now: Timestamp) -> None:
@@ -141,7 +141,7 @@ def test_get_schedule_weekly_set_due_at_day(right_now: Timestamp) -> None:
     assert schedule.timeline == "2023,Q4,Dec,W51"
     assert schedule.actionable_date is None
     assert schedule.due_date == ADate.from_str("2023-12-20")
-    assert schedule.full_name == InboxTaskName("A task 23:W51")
+    assert schedule.full_name == InboxTaskName("A task 2023:W51")
 
 
 def test_get_schedule_weekly_set_actionable_from_day_and_due_at_day(
@@ -165,7 +165,7 @@ def test_get_schedule_weekly_set_actionable_from_day_and_due_at_day(
     assert schedule.timeline == "2023,Q4,Dec,W51"
     assert schedule.actionable_date == ADate.from_str("2023-12-20")
     assert schedule.due_date == ADate.from_str("2023-12-22")
-    assert schedule.full_name == InboxTaskName("A task 23:W51")
+    assert schedule.full_name == InboxTaskName("A task 2023:W51")
 
 
 def test_get_schedule_monthly_simple(right_now: Timestamp) -> None:
@@ -185,7 +185,7 @@ def test_get_schedule_monthly_simple(right_now: Timestamp) -> None:
     assert schedule.timeline == "2023,Q4,Dec"
     assert schedule.actionable_date is None
     assert schedule.due_date == ADate.from_str("2023-12-31")
-    assert schedule.full_name == InboxTaskName("A task 23:Dec")
+    assert schedule.full_name == InboxTaskName("A task 2023:Dec")
 
 
 def test_get_sechdule_monthly_with_skip_rule(right_now: Timestamp) -> None:
@@ -230,7 +230,7 @@ def test_get_schedule_monthly_set_actionable_from_day(right_now: Timestamp) -> N
     assert schedule.timeline == "2023,Q4,Dec"
     assert schedule.actionable_date == ADate.from_str("2023-12-15")
     assert schedule.due_date == ADate.from_str("2023-12-31")
-    assert schedule.full_name == InboxTaskName("A task 23:Dec")
+    assert schedule.full_name == InboxTaskName("A task 2023:Dec")
 
 
 def test_get_schedule_monthly_set_due_at_day(right_now: Timestamp) -> None:
@@ -251,7 +251,7 @@ def test_get_schedule_monthly_set_due_at_day(right_now: Timestamp) -> None:
     assert schedule.timeline == "2023,Q4,Dec"
     assert schedule.actionable_date is None
     assert schedule.due_date == ADate.from_str("2023-12-15")
-    assert schedule.full_name == InboxTaskName("A task 23:Dec")
+    assert schedule.full_name == InboxTaskName("A task 2023:Dec")
 
 
 def test_get_schedule_monthly_set_actionable_from_day_and_due_at_day(
@@ -277,7 +277,7 @@ def test_get_schedule_monthly_set_actionable_from_day_and_due_at_day(
     assert schedule.timeline == "2023,Q4,Dec"
     assert schedule.actionable_date == ADate.from_str("2023-12-15")
     assert schedule.due_date == ADate.from_str("2023-12-20")
-    assert schedule.full_name == InboxTaskName("A task 23:Dec")
+    assert schedule.full_name == InboxTaskName("A task 2023:Dec")
 
 
 def test_get_schedule_quarterly_simple(right_now: Timestamp) -> None:
@@ -297,7 +297,7 @@ def test_get_schedule_quarterly_simple(right_now: Timestamp) -> None:
     assert schedule.timeline == "2023,Q4"
     assert schedule.actionable_date is None
     assert schedule.due_date == ADate.from_str("2023-12-31")
-    assert schedule.full_name == InboxTaskName("A task 23:Q4")
+    assert schedule.full_name == InboxTaskName("A task 2023:Q4")
 
 
 def test_get_schedule_quarterly_with_skip_rule(right_now: Timestamp) -> None:
@@ -342,7 +342,7 @@ def test_get_schedule_quarterly_set_actionable_from_day(right_now: Timestamp) ->
     assert schedule.timeline == "2023,Q4"
     assert schedule.actionable_date == ADate.from_str("2023-10-15")
     assert schedule.due_date == ADate.from_str("2023-12-31")
-    assert schedule.full_name == InboxTaskName("A task 23:Q4")
+    assert schedule.full_name == InboxTaskName("A task 2023:Q4")
 
 
 def test_get_schedule_quarterly_set_actionable_from_month(right_now: Timestamp) -> None:
@@ -365,7 +365,7 @@ def test_get_schedule_quarterly_set_actionable_from_month(right_now: Timestamp) 
     assert schedule.timeline == "2023,Q4"
     assert schedule.actionable_date == ADate.from_str("2023-11-01")
     assert schedule.due_date == ADate.from_str("2023-12-31")
-    assert schedule.full_name == InboxTaskName("A task 23:Q4")
+    assert schedule.full_name == InboxTaskName("A task 2023:Q4")
 
 
 def test_get_schedule_quarterly_set_actionable_from_day_and_month(
@@ -393,7 +393,7 @@ def test_get_schedule_quarterly_set_actionable_from_day_and_month(
     assert schedule.timeline == "2023,Q4"
     assert schedule.actionable_date == ADate.from_str("2023-11-15")
     assert schedule.due_date == ADate.from_str("2023-12-31")
-    assert schedule.full_name == InboxTaskName("A task 23:Q4")
+    assert schedule.full_name == InboxTaskName("A task 2023:Q4")
 
 
 def test_get_schedule_quarterly_set_due_at_day(right_now: Timestamp) -> None:
@@ -414,7 +414,7 @@ def test_get_schedule_quarterly_set_due_at_day(right_now: Timestamp) -> None:
     assert schedule.timeline == "2023,Q4"
     assert schedule.actionable_date is None
     assert schedule.due_date == ADate.from_str("2023-10-15")
-    assert schedule.full_name == InboxTaskName("A task 23:Q4")
+    assert schedule.full_name == InboxTaskName("A task 2023:Q4")
 
 
 def test_get_schedule_quarterly_set_due_at_month(right_now: Timestamp) -> None:
@@ -435,7 +435,7 @@ def test_get_schedule_quarterly_set_due_at_month(right_now: Timestamp) -> None:
     assert schedule.timeline == "2023,Q4"
     assert schedule.actionable_date is None
     assert schedule.due_date == ADate.from_str("2023-11-30")
-    assert schedule.full_name == InboxTaskName("A task 23:Q4")
+    assert schedule.full_name == InboxTaskName("A task 2023:Q4")
 
 
 def test_get_schedule_quarterly_set_due_at_day_and_month(right_now: Timestamp) -> None:
@@ -457,7 +457,7 @@ def test_get_schedule_quarterly_set_due_at_day_and_month(right_now: Timestamp) -
     assert schedule.timeline == "2023,Q4"
     assert schedule.actionable_date is None
     assert schedule.due_date == ADate.from_str("2023-11-15")
-    assert schedule.full_name == InboxTaskName("A task 23:Q4")
+    assert schedule.full_name == InboxTaskName("A task 2023:Q4")
 
 
 def test_get_schedule_quarterly_set_all_actionable_and_due(
@@ -487,7 +487,7 @@ def test_get_schedule_quarterly_set_all_actionable_and_due(
     assert schedule.timeline == "2023,Q4"
     assert schedule.actionable_date == ADate.from_str("2023-11-15")
     assert schedule.due_date == ADate.from_str("2023-12-20")
-    assert schedule.full_name == InboxTaskName("A task 23:Q4")
+    assert schedule.full_name == InboxTaskName("A task 2023:Q4")
 
 
 def test_get_schedule_yearly_simple(right_now: Timestamp) -> None:
@@ -507,7 +507,7 @@ def test_get_schedule_yearly_simple(right_now: Timestamp) -> None:
     assert schedule.timeline == "2023"
     assert schedule.actionable_date is None
     assert schedule.due_date == ADate.from_str("2023-12-31")
-    assert schedule.full_name == InboxTaskName("A task 23")
+    assert schedule.full_name == InboxTaskName("A task 2023")
 
 
 def test_get_schedule_yearly_with_skip_rule(
@@ -552,7 +552,7 @@ def test_get_schedule_yearly_set_actionable_from_day(right_now: Timestamp) -> No
     assert schedule.timeline == "2023"
     assert schedule.actionable_date == ADate.from_str("2023-01-15")
     assert schedule.due_date == ADate.from_str("2023-12-31")
-    assert schedule.full_name == InboxTaskName("A task 23")
+    assert schedule.full_name == InboxTaskName("A task 2023")
 
 
 def test_get_schedule_yearly_set_actionable_from_month(right_now: Timestamp) -> None:
@@ -575,7 +575,7 @@ def test_get_schedule_yearly_set_actionable_from_month(right_now: Timestamp) -> 
     assert schedule.timeline == "2023"
     assert schedule.actionable_date == ADate.from_str("2023-04-01")
     assert schedule.due_date == ADate.from_str("2023-12-31")
-    assert schedule.full_name == InboxTaskName("A task 23")
+    assert schedule.full_name == InboxTaskName("A task 2023")
 
 
 def test_get_schedule_yearly_set_actionable_from_day_and_month(
@@ -601,7 +601,7 @@ def test_get_schedule_yearly_set_actionable_from_day_and_month(
     assert schedule.timeline == "2023"
     assert schedule.actionable_date == ADate.from_str("2023-04-15")
     assert schedule.due_date == ADate.from_str("2023-12-31")
-    assert schedule.full_name == InboxTaskName("A task 23")
+    assert schedule.full_name == InboxTaskName("A task 2023")
 
 
 def test_get_schedule_yearly_set_due_at_day(right_now: Timestamp) -> None:
@@ -622,7 +622,7 @@ def test_get_schedule_yearly_set_due_at_day(right_now: Timestamp) -> None:
     assert schedule.timeline == "2023"
     assert schedule.actionable_date is None
     assert schedule.due_date == ADate.from_str("2023-01-15")
-    assert schedule.full_name == InboxTaskName("A task 23")
+    assert schedule.full_name == InboxTaskName("A task 2023")
 
 
 def test_get_schedule_yearly_set_due_at_month(right_now: Timestamp) -> None:
@@ -643,7 +643,7 @@ def test_get_schedule_yearly_set_due_at_month(right_now: Timestamp) -> None:
     assert schedule.timeline == "2023"
     assert schedule.actionable_date is None
     assert schedule.due_date == ADate.from_str("2023-04-30")
-    assert schedule.full_name == InboxTaskName("A task 23")
+    assert schedule.full_name == InboxTaskName("A task 2023")
 
 
 def test_get_schedule_yearly_set_due_at_day_and_month(right_now: Timestamp) -> None:
@@ -665,7 +665,7 @@ def test_get_schedule_yearly_set_due_at_day_and_month(right_now: Timestamp) -> N
     assert schedule.timeline == "2023"
     assert schedule.actionable_date is None
     assert schedule.due_date == ADate.from_str("2023-04-15")
-    assert schedule.full_name == InboxTaskName("A task 23")
+    assert schedule.full_name == InboxTaskName("A task 2023")
 
 
 def test_get_schedule_yearly_set_all_actionable_and_due(right_now: Timestamp) -> None:
@@ -691,7 +691,7 @@ def test_get_schedule_yearly_set_all_actionable_and_due(right_now: Timestamp) ->
     assert schedule.timeline == "2023"
     assert schedule.actionable_date == ADate.from_str("2023-04-15")
     assert schedule.due_date == ADate.from_str("2023-05-20")
-    assert schedule.full_name == InboxTaskName("A task 23")
+    assert schedule.full_name == InboxTaskName("A task 2023")
 
 
 def test_contains_timestamp(right_now: Timestamp) -> None:

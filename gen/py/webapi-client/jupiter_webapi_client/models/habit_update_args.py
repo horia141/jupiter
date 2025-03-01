@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from ..models.habit_update_args_period import HabitUpdateArgsPeriod
     from ..models.habit_update_args_project_ref_id import HabitUpdateArgsProjectRefId
     from ..models.habit_update_args_repeats_in_period_count import HabitUpdateArgsRepeatsInPeriodCount
+    from ..models.habit_update_args_repeats_strategy import HabitUpdateArgsRepeatsStrategy
     from ..models.habit_update_args_skip_rule import HabitUpdateArgsSkipRule
 
 
@@ -36,6 +37,7 @@ class HabitUpdateArgs:
         due_at_day (HabitUpdateArgsDueAtDay):
         due_at_month (HabitUpdateArgsDueAtMonth):
         skip_rule (HabitUpdateArgsSkipRule):
+        repeats_strategy (HabitUpdateArgsRepeatsStrategy):
         repeats_in_period_count (HabitUpdateArgsRepeatsInPeriodCount):
     """
 
@@ -50,6 +52,7 @@ class HabitUpdateArgs:
     due_at_day: "HabitUpdateArgsDueAtDay"
     due_at_month: "HabitUpdateArgsDueAtMonth"
     skip_rule: "HabitUpdateArgsSkipRule"
+    repeats_strategy: "HabitUpdateArgsRepeatsStrategy"
     repeats_in_period_count: "HabitUpdateArgsRepeatsInPeriodCount"
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -76,6 +79,8 @@ class HabitUpdateArgs:
 
         skip_rule = self.skip_rule.to_dict()
 
+        repeats_strategy = self.repeats_strategy.to_dict()
+
         repeats_in_period_count = self.repeats_in_period_count.to_dict()
 
         field_dict: Dict[str, Any] = {}
@@ -93,6 +98,7 @@ class HabitUpdateArgs:
                 "due_at_day": due_at_day,
                 "due_at_month": due_at_month,
                 "skip_rule": skip_rule,
+                "repeats_strategy": repeats_strategy,
                 "repeats_in_period_count": repeats_in_period_count,
             }
         )
@@ -111,6 +117,7 @@ class HabitUpdateArgs:
         from ..models.habit_update_args_period import HabitUpdateArgsPeriod
         from ..models.habit_update_args_project_ref_id import HabitUpdateArgsProjectRefId
         from ..models.habit_update_args_repeats_in_period_count import HabitUpdateArgsRepeatsInPeriodCount
+        from ..models.habit_update_args_repeats_strategy import HabitUpdateArgsRepeatsStrategy
         from ..models.habit_update_args_skip_rule import HabitUpdateArgsSkipRule
 
         d = src_dict.copy()
@@ -136,6 +143,8 @@ class HabitUpdateArgs:
 
         skip_rule = HabitUpdateArgsSkipRule.from_dict(d.pop("skip_rule"))
 
+        repeats_strategy = HabitUpdateArgsRepeatsStrategy.from_dict(d.pop("repeats_strategy"))
+
         repeats_in_period_count = HabitUpdateArgsRepeatsInPeriodCount.from_dict(d.pop("repeats_in_period_count"))
 
         habit_update_args = cls(
@@ -150,6 +159,7 @@ class HabitUpdateArgs:
             due_at_day=due_at_day,
             due_at_month=due_at_month,
             skip_rule=skip_rule,
+            repeats_strategy=repeats_strategy,
             repeats_in_period_count=repeats_in_period_count,
         )
 

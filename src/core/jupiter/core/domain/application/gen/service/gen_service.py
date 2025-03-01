@@ -2,7 +2,7 @@
 
 import typing
 from collections import defaultdict
-from typing import Final
+from typing import Final, Sequence
 
 from jupiter.core.domain.application.gen.gen_log import GenLog
 from jupiter.core.domain.application.gen.gen_log_entry import GenLogEntry
@@ -874,6 +874,18 @@ class GenService:
         }
         repeat_idx_to_keep: set[int | None] = set()
 
+        task_ranges: Sequence[tuple[ADate | None, ADate]]
+        if habit.repeats_in_period_count is not None:
+            if habit.repeats_strategy is None:
+                raise ValueError("Repeats strategy is not set")
+            task_ranges = habit.repeats_strategy.spread_tasks(
+                start_date=schedule.first_day,
+                end_date=schedule.end_day,
+                repeats_in_period=habit.repeats_in_period_count,
+            )
+        else:
+            task_ranges = [(schedule.actionable_date, schedule.due_date)]
+
         for task_idx in range(habit.repeats_in_period_count or 1):
             real_task_idx = (
                 task_idx if habit.repeats_in_period_count is not None else None
@@ -895,8 +907,8 @@ class GenService:
                     name=schedule.full_name,
                     timeline=schedule.timeline,
                     repeat_index=real_task_idx,
-                    actionable_date=schedule.actionable_date,
-                    due_date=schedule.due_date,
+                    actionable_date=task_ranges[task_idx][0],
+                    due_date=task_ranges[task_idx][1],
                     eisen=habit.gen_params.eisen,
                     difficulty=habit.gen_params.difficulty,
                 )
@@ -920,8 +932,8 @@ class GenService:
                     recurring_task_gen_right_now=today.to_timestamp_at_end_of_day(),
                     eisen=habit.gen_params.eisen,
                     difficulty=habit.gen_params.difficulty,
-                    actionable_date=schedule.actionable_date,
-                    due_date=schedule.due_date,
+                    actionable_date=task_ranges[task_idx][0],
+                    due_date=task_ranges[task_idx][1],
                 )
 
                 async with self._domain_storage_engine.get_unit_of_work() as uow:

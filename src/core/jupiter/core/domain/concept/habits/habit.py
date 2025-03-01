@@ -1,5 +1,8 @@
 """A habit."""
 from jupiter.core.domain.concept.habits.habit_name import HabitName
+from jupiter.core.domain.concept.habits.habit_repeats_strategy import (
+    HabitRepeatsStrategy,
+)
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.core.notes.note import Note
@@ -31,7 +34,7 @@ class Habit(LeafEntity):
     name: HabitName
     gen_params: RecurringTaskGenParams
     suspended: bool
-    # repeats_strategy: HabitRepeatsStrategy | None
+    repeats_strategy: HabitRepeatsStrategy | None
     repeats_in_period_count: int | None
 
     inbox_tasks = OwnsMany(
@@ -47,6 +50,7 @@ class Habit(LeafEntity):
         project_ref_id: EntityId,
         name: HabitName,
         gen_params: RecurringTaskGenParams,
+        repeats_strategy: HabitRepeatsStrategy | None,
         repeats_in_period_count: int | None,
         suspended: bool,
     ) -> "Habit":
@@ -58,6 +62,14 @@ class Habit(LeafEntity):
                 raise InputValidationError(
                     "Repeats in period needs to be strictly greater than 1 if specified",
                 )
+        if repeats_strategy is not None and repeats_in_period_count is None:
+            raise InputValidationError(
+                "Repeats in period count is required if repeats strategy is specified"
+            )
+        if repeats_in_period_count is not None and repeats_strategy is None:
+            raise InputValidationError(
+                "Repeats strategy is required if repeats in period is specified",
+            )
 
         return Habit._create(
             ctx,
@@ -65,6 +77,7 @@ class Habit(LeafEntity):
             project_ref_id=project_ref_id,
             name=name,
             gen_params=gen_params,
+            repeats_strategy=repeats_strategy,
             repeats_in_period_count=repeats_in_period_count,
             suspended=suspended,
         )
@@ -77,6 +90,7 @@ class Habit(LeafEntity):
         project_ref_id: UpdateAction[EntityId],
         gen_params: UpdateAction[RecurringTaskGenParams],
         repeats_in_period_count: UpdateAction[int | None],
+        repeats_strategy: UpdateAction[HabitRepeatsStrategy | None],
     ) -> "Habit":
         """Update the habit."""
         if gen_params.should_change:
@@ -94,12 +108,36 @@ class Habit(LeafEntity):
                 raise InputValidationError(
                     "Repeats in period needs to be strictly greater than 1 if specified",
                 )
+        if repeats_strategy.should_change and not repeats_in_period_count.should_change:
+            raise InputValidationError(
+                "Repeats in period count is required if repeats strategy is specified"
+            )
+        if repeats_in_period_count.should_change and not repeats_strategy.should_change:
+            raise InputValidationError(
+                "Repeats strategy is required if repeats in period count is specified"
+            )
+        if repeats_strategy.should_change and repeats_in_period_count.should_change:
+            if (
+                repeats_strategy.just_the_value is None
+                and repeats_in_period_count.just_the_value is not None
+            ):
+                raise InputValidationError(
+                    "Repeats strategy is required if repeats in period count is specified"
+                )
+            if (
+                repeats_strategy.just_the_value is not None
+                and repeats_in_period_count.just_the_value is None
+            ):
+                raise InputValidationError(
+                    "Repeats in period count is required if repeats strategy is specified"
+                )
 
         return self._new_version(
             ctx,
             name=name.or_else(self.name),
             project_ref_id=project_ref_id.or_else(self.project_ref_id),
             gen_params=the_gen_params,
+            repeats_strategy=repeats_strategy.or_else(self.repeats_strategy),
             repeats_in_period_count=repeats_in_period_count.or_else(
                 self.repeats_in_period_count,
             ),
