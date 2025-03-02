@@ -4,12 +4,6 @@ from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.concept.inbox_tasks.service.remove_service import (
     InboxTaskRemoveService,
 )
-from jupiter.core.domain.concept.time_plans.time_plan_activity import (
-    TimePlanActivityRespository,
-)
-from jupiter.core.domain.concept.time_plans.time_plan_activity_target import (
-    TimePlanActivityTarget,
-)
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -49,19 +43,6 @@ class InboxTaskRemoveUseCase(
             args.ref_id,
             allow_archived=True,
         )
-
-        # Remove time plan activities that are associated with the inbox task.
-        # These are entities that just represent the link between a time plan
-        # and the inbox task. So they have to go!
-        time_plan_activities = await uow.get(
-            TimePlanActivityRespository
-        ).find_all_generic(
-            target=TimePlanActivityTarget.INBOX_TASK,
-            target_ref_id=inbox_task.ref_id,
-            allow_archived=True,
-        )
-        for time_plan_activity in time_plan_activities:
-            await uow.get(TimePlanActivityRespository).remove(time_plan_activity.ref_id)
 
         await InboxTaskRemoveService().do_it(
             context.domain_context, uow, progress_reporter, inbox_task
