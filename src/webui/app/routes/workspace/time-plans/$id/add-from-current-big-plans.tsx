@@ -1,4 +1,4 @@
-import type { BigPlan, Workspace } from "@jupiter/webapi-client";
+import type { BigPlan, TimePlan, Workspace } from "@jupiter/webapi-client";
 import {
   ApiError,
   TimePlanActivityFeasability,
@@ -8,18 +8,21 @@ import {
 } from "@jupiter/webapi-client";
 import FlareIcon from "@mui/icons-material/Flare";
 import ViewListIcon from "@mui/icons-material/ViewList";
+import ViewTimelineIcon from "@mui/icons-material/ViewTimeline";
 import { FormControl, FormLabel, Stack } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useParams, useTransition } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
+import type { DateTime } from "luxon";
 import React, { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { BigPlanCard } from "~/components/big-plan-card";
-
+import { BigPlanStack } from "~/components/big-plan-stack";
+import { BigPlanTimelineBigScreen } from "~/components/big-plan-timeline-big-screen";
+import { BigPlanTimelineSmallScreen } from "~/components/big-plan-timeline-small-screen";
 import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
@@ -35,6 +38,7 @@ import { StandardDivider } from "~/components/standard-divider";
 import { TimePlanActivityFeasabilitySelect } from "~/components/time-plan-activity-feasability-select";
 import { TimePlanActivitKindSelect } from "~/components/time-plan-activity-kind-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
+import { aDateToDate } from "~/logic/domain/adate";
 import type { BigPlanParent } from "~/logic/domain/big-plan";
 import {
   bigPlanFindEntryToParent,
@@ -54,8 +58,10 @@ import type { TopLevelInfo } from "~/top-level-context";
 import { TopLevelInfoContext } from "~/top-level-context";
 
 enum View {
-  MERGED = "merged",
-  BY_PROJECT = "by-project",
+  LIST_MERGED = "list-merged",
+  LIST_BY_PROJECT = "list-by-project",
+  TIMELINE_MERGED = "timeline-merged",
+  TIMELINE_BY_PROJECT = "timeline-by-project",
 }
 
 const ParamsSchema = {
@@ -211,6 +217,8 @@ export default function TimePlanAddFromCurrentBigPlans() {
     loaderData.allProjects?.map((p) => [p.ref_id, p])
   );
 
+  const thisYear = aDateToDate(loaderData.timePlan.right_now).startOf("year");
+
   const [selectedView, setSelectedView] = useState(
     inferDefaultSelectedView(topLevelInfo.workspace)
   );
@@ -260,14 +268,25 @@ export default function TimePlanAddFromCurrentBigPlans() {
                 selectedView,
                 [
                   {
-                    value: View.MERGED,
-                    text: "Merged",
+                    value: View.LIST_MERGED,
+                    text: "List Merged",
                     icon: <ViewListIcon />,
                   },
                   {
-                    value: View.BY_PROJECT,
-                    text: "By Project",
+                    value: View.LIST_BY_PROJECT,
+                    text: "List By Project",
                     icon: <FlareIcon />,
+                    gatedOn: WorkspaceFeature.PROJECTS,
+                  },
+                  {
+                    value: View.TIMELINE_MERGED,
+                    text: "Timeline Merged",
+                    icon: <ViewTimelineIcon />,
+                  },
+                  {
+                    value: View.TIMELINE_BY_PROJECT,
+                    text: "Timeline By Project",
+                    icon: <ViewTimelineIcon />,
                     gatedOn: WorkspaceFeature.PROJECTS,
                   },
                 ],
@@ -303,7 +322,7 @@ export default function TimePlanAddFromCurrentBigPlans() {
           </FormControl>
         </Stack>
 
-        {selectedView === View.MERGED && (
+        {selectedView === View.LIST_MERGED && (
           <BigPlanList
             topLevelInfo={topLevelInfo}
             bigPlans={sortedBigPlans}
@@ -311,14 +330,17 @@ export default function TimePlanAddFromCurrentBigPlans() {
             targetBigPlanRefIds={targetBigPlanRefIds}
             bigPlansByRefId={entriesByRefId}
             onSelected={(it) =>
-              setTargetBigPlanRefIds((itri) =>
-                toggleBigPlanRefIds(itri, it.ref_id)
-              )
+              setTargetBigPlanRefIds((itri) => {
+                if (alreadyIncludedBigPlanRefIds.has(it.ref_id)) {
+                  return itri;
+                }
+                return toggleBigPlanRefIds(itri, it.ref_id);
+              })
             }
           />
         )}
 
-        {selectedView === View.BY_PROJECT && (
+        {selectedView === View.LIST_BY_PROJECT && (
           <>
             {sortedProjects.map((p) => {
               const theBigPlans = sortedBigPlans.filter(
@@ -345,9 +367,73 @@ export default function TimePlanAddFromCurrentBigPlans() {
                     targetBigPlanRefIds={targetBigPlanRefIds}
                     bigPlansByRefId={entriesByRefId}
                     onSelected={(it) =>
-                      setTargetBigPlanRefIds((itri) =>
-                        toggleBigPlanRefIds(itri, it.ref_id)
-                      )
+                      setTargetBigPlanRefIds((itri) => {
+                        if (alreadyIncludedBigPlanRefIds.has(it.ref_id)) {
+                          return itri;
+                        }
+                        return toggleBigPlanRefIds(itri, it.ref_id);
+                      })
+                    }
+                  />
+                </React.Fragment>
+              );
+            })}
+          </>
+        )}
+
+        {selectedView === View.TIMELINE_MERGED && (
+          <BigPlanTimeline
+            thisYear={thisYear}
+            timePlan={loaderData.timePlan}
+            topLevelInfo={topLevelInfo}
+            bigPlans={sortedBigPlans}
+            alreadyIncludedBigPlanRefIds={alreadyIncludedBigPlanRefIds}
+            targetBigPlanRefIds={targetBigPlanRefIds}
+            onSelected={(it) =>
+              setTargetBigPlanRefIds((itri) => {
+                if (alreadyIncludedBigPlanRefIds.has(it.ref_id)) {
+                  return itri;
+                }
+                return toggleBigPlanRefIds(itri, it.ref_id);
+              })
+            }
+          />
+        )}
+
+        {selectedView === View.TIMELINE_BY_PROJECT && (
+          <>
+            {sortedProjects.map((p) => {
+              const theBigPlans = sortedBigPlans.filter(
+                (se) => entriesByRefId[se.ref_id]?.project?.ref_id === p.ref_id
+              );
+
+              if (theBigPlans.length === 0) {
+                return null;
+              }
+
+              const fullProjectName = computeProjectHierarchicalNameFromRoot(
+                p,
+                allProjectsByRefId
+              );
+
+              return (
+                <React.Fragment key={`project-${p.ref_id}`}>
+                  <StandardDivider title={fullProjectName} size="large" />
+
+                  <BigPlanTimeline
+                    thisYear={thisYear}
+                    timePlan={loaderData.timePlan}
+                    topLevelInfo={topLevelInfo}
+                    bigPlans={theBigPlans}
+                    alreadyIncludedBigPlanRefIds={alreadyIncludedBigPlanRefIds}
+                    targetBigPlanRefIds={targetBigPlanRefIds}
+                    onSelected={(it) =>
+                      setTargetBigPlanRefIds((itri) => {
+                        if (alreadyIncludedBigPlanRefIds.has(it.ref_id)) {
+                          return itri;
+                        }
+                        return toggleBigPlanRefIds(itri, it.ref_id);
+                      })
                     }
                   />
                 </React.Fragment>
@@ -390,34 +476,94 @@ interface BigPlanListProps {
 
 function BigPlanList(props: BigPlanListProps) {
   return (
-    <Stack spacing={2} useFlexGap>
-      {props.bigPlans.map((bigPlan) => (
-        <BigPlanCard
-          key={`big-plan-${bigPlan.ref_id}`}
-          topLevelInfo={props.topLevelInfo}
-          bigPlan={bigPlan}
-          compact
-          allowSelect
-          selected={
-            props.alreadyIncludedBigPlanRefIds.has(bigPlan.ref_id) ||
-            props.targetBigPlanRefIds.has(bigPlan.ref_id)
-          }
-          showOptions={{
-            showDueDate: true,
-            showParent: true,
-          }}
-          parent={props.bigPlansByRefId[bigPlan.ref_id]}
-          onClick={(it) => {
-            if (props.alreadyIncludedBigPlanRefIds.has(bigPlan.ref_id)) {
-              return;
-            }
-
-            props.onSelected(it);
-          }}
-        />
-      ))}
-    </Stack>
+    <BigPlanStack
+      topLevelInfo={props.topLevelInfo}
+      bigPlans={props.bigPlans}
+      selectedPredicate={(it) =>
+        props.alreadyIncludedBigPlanRefIds.has(it.ref_id) ||
+        props.targetBigPlanRefIds.has(it.ref_id)
+      }
+      compact
+      allowSelect
+      showOptions={{
+        showDueDate: true,
+        showParent: true,
+      }}
+      onClick={(it) => {
+        props.onSelected(it);
+      }}
+    />
   );
+}
+
+interface BigPlanTimelineProps {
+  thisYear: DateTime;
+  timePlan: TimePlan;
+  topLevelInfo: TopLevelInfo;
+  bigPlans: Array<BigPlan>;
+  alreadyIncludedBigPlanRefIds: Set<string>;
+  targetBigPlanRefIds: Set<string>;
+  onSelected: (it: BigPlan) => void;
+}
+
+function BigPlanTimeline(props: BigPlanTimelineProps) {
+  const isBigScreen = useBigScreen();
+
+  if (isBigScreen) {
+    return (
+      <BigPlanTimelineBigScreen
+        thisYear={props.thisYear}
+        bigPlans={props.bigPlans}
+        dateMarkers={[
+          {
+            date: props.timePlan.start_date,
+            color: "red",
+            label: "Start Date",
+          },
+          {
+            date: props.timePlan.end_date,
+            color: "blue",
+            label: "End Date",
+          },
+        ]}
+        selectedPredicate={(it) =>
+          props.alreadyIncludedBigPlanRefIds.has(it.ref_id) ||
+          props.targetBigPlanRefIds.has(it.ref_id)
+        }
+        allowSelect
+        onClick={(it) => {
+          props.onSelected(it);
+        }}
+      />
+    );
+  } else {
+    return (
+      <BigPlanTimelineSmallScreen
+        thisYear={props.thisYear}
+        bigPlans={props.bigPlans}
+        dateMarkers={[
+          {
+            date: props.timePlan.start_date,
+            color: "red",
+            label: "Start Date",
+          },
+          {
+            date: props.timePlan.end_date,
+            color: "blue",
+            label: "End Date",
+          },
+        ]}
+        selectedPredicate={(it) =>
+          props.alreadyIncludedBigPlanRefIds.has(it.ref_id) ||
+          props.targetBigPlanRefIds.has(it.ref_id)
+        }
+        allowSelect
+        onClick={(it) => {
+          props.onSelected(it);
+        }}
+      />
+    );
+  }
 }
 
 function toggleBigPlanRefIds(
@@ -445,8 +591,8 @@ function toggleBigPlanRefIds(
 
 function inferDefaultSelectedView(workspace: Workspace) {
   if (!isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.PROJECTS)) {
-    return View.MERGED;
+    return View.TIMELINE_MERGED;
   }
 
-  return View.BY_PROJECT;
+  return View.TIMELINE_BY_PROJECT;
 }

@@ -11,8 +11,12 @@ interface BigPlanStackProps {
   label?: string;
   bigPlans: BigPlan[];
   entriesByRefId?: Map<string, BigPlanParent>;
+  selectedPredicate?: (it: BigPlan) => boolean;
+  compact?: boolean;
   showOptions: BigPlanShowOptions;
+  allowSelect?: boolean;
   allowSwipe?: boolean;
+  onClick?: (it: BigPlan) => void;
   onCardMarkDone?: (it: BigPlan) => void;
   onCardMarkNotDone?: (it: BigPlan) => void;
 }
@@ -28,9 +32,17 @@ export function BigPlanStack(props: BigPlanStackProps) {
             key={`big-plan-${entry.ref_id}`}
             topLevelInfo={props.topLevelInfo}
             allowSwipe={props.allowSwipe}
+            compact={props.compact}
+            allowSelect={props.allowSelect}
             bigPlan={entry}
+            selected={props.selectedPredicate?.(entry)}
             showOptions={props.showOptions}
             parent={props.entriesByRefId?.get(entry.ref_id)}
+            onClick={
+              props.onClick
+                ? () => props.onClick && props.onClick(entry)
+                : undefined
+            }
             onMarkDone={
               props.onCardMarkDone
                 ? () => props.onCardMarkDone && props.onCardMarkDone(entry)
