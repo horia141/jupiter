@@ -19,7 +19,7 @@ module.exports = {
         args: "dev",
         log_file: "$WEBUI_LOG_FILE",
         env: {
-            LOCAL_WEBAPI_SERVER_URL: "$WEBAPI_SERVER_URL",
+            LOCAL_OR_SELF_HOSTED_WEBAPI_SERVER_URL: "$WEBAPI_SERVER_URL",
             PORT: "$WEBUI_PORT"
         }
     }]

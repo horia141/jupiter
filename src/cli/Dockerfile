@@ -1,9 +1,8 @@
 FROM python:3.10.8
 LABEL maintainer='horia141@gmail.com'
 
-# hadolint ignore=DL3008
 RUN apt-get update && \
-    apt-get install -y git curl netcat --no-install-recommends && \
+    apt-get install -y git curl netcat libasound2-dev --no-install-recommends && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 RUN pip install --no-cache-dir "pipx==1.1.0" && pipx install "poetry==1.3.1"
@@ -30,6 +29,7 @@ COPY src/cli/jupiter src/cli/jupiter
 
 WORKDIR /jupiter/src/cli
 
+RUN cd ../core && poetry install --only main --no-interaction --no-ansi
 RUN poetry install --only main --no-interaction --no-ansi
 
 ENTRYPOINT ["python", "-m", "jupiter.cli.jupiter"]

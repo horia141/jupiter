@@ -58,7 +58,7 @@ const CommonParamsSchema = {
   source: z.nativeEnum(InboxTaskSource),
   name: z.string(),
   status: z.nativeEnum(InboxTaskStatus),
-  project: z.string(),
+  project: z.string().optional(),
   bigPlan: z.string().optional(),
   eisen: z.nativeEnum(Eisen),
   difficulty: z.nativeEnum(Difficulty),
@@ -213,7 +213,7 @@ export async function action({ request, params }: ActionArgs) {
             value: status,
           },
           project_ref_id: {
-            should_change: true,
+            should_change: form.project !== undefined,
             value: form.project,
           },
           big_plan_ref_id: {

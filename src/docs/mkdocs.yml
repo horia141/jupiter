@@ -56,6 +56,7 @@ nav:
           - 'Search': 'tools/search.md'
     - 'How Tos':
           - 'Installation': 'how-tos/install.md'
+          - 'Self-Hosting': 'how-tos/self-hosting.md'
           - 'Do Garbage Collection': 'how-tos/do-garbage-collection.md'
           - 'Recover Your Account': 'how-tos/recover-your-account.md'
     - Roadmap: 'roadmap.md'

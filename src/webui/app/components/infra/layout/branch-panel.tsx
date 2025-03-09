@@ -219,7 +219,7 @@ export function BranchPanel(props: PropsWithChildren<BranchPanelProps>) {
                     </DialogContent>
                     <DialogActions>
                       <Button
-                        id="branch-entity-archive"
+                        id="branch-entity-archive-confirm"
                         sx={{ marginLeft: "auto" }}
                         disabled={!props.entityArchived && !props.inputsEnabled}
                         type="submit"

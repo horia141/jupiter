@@ -112,7 +112,6 @@ export async function action({ request }: ActionArgs) {
         form.workspaceFirstScheduleStreamName,
       workspace_feature_flags: form.workspaceFeatureFlags,
       // for_app_review: form.forAppReview,
-      for_app_review: false,
     });
 
     session.set(AUTH_TOKEN_NAME, result.auth_token_ext);

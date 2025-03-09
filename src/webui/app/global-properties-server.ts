@@ -8,8 +8,8 @@ export interface GlobalPropertiesServer {
   version: string;
   title: string;
   description: string;
-  localWebApiServerUrl: string;
-  localWebApiProgressReporterUrl: string;
+  localOrSelfHostedWebApiServerUrl: string;
+  localOrSelfHostedWebApiProgressReporterUrl: string;
   hostedGlobalWebApiServerUrl: string;
   hostedGlobalWebApiProgressReporterUrl: string;
   docsUrl: string;
@@ -20,6 +20,7 @@ export interface GlobalPropertiesServer {
   googlePlayStoreUrl: string;
   termsOfServiceUrl: string;
   privacyPolicyUrl: string;
+  sessionCookieSecure: boolean;
   sessionCookieSecret: string;
   inboxTasksToAskForGC: number;
   overdueInfoDays: number;
@@ -49,9 +50,10 @@ function loadGlobalPropertiesOnServer(): GlobalPropertiesServer {
     version: process.env.VERSION as string,
     title: process.env.TITLE as string,
     description: process.env.DESCRIPTION as string,
-    localWebApiServerUrl: process.env.LOCAL_WEBAPI_SERVER_URL as string,
-    localWebApiProgressReporterUrl: process.env
-      .LOCAL_WEBAPI_PROGRESS_REPORTER_URL as string,
+    localOrSelfHostedWebApiServerUrl: process.env
+      .LOCAL_OR_SELF_HOSTED_WEBAPI_SERVER_URL as string,
+    localOrSelfHostedWebApiProgressReporterUrl: process.env
+      .LOCAL_OR_SELF_HOSTED_WEBAPI_PROGRESS_REPORTER_URL as string,
     hostedGlobalWebApiServerUrl: hostedGlobalWebApiServerUrl,
     hostedGlobalWebApiProgressReporterUrl:
       hostedGlobalWebApiProgressReporterUrl,
@@ -63,6 +65,7 @@ function loadGlobalPropertiesOnServer(): GlobalPropertiesServer {
     googlePlayStoreUrl: process.env.GOOGLE_PLAY_STORE_URL as string,
     termsOfServiceUrl: process.env.TERMS_OF_SERVICE_URL as string,
     privacyPolicyUrl: process.env.PRIVACY_POLICY_URL as string,
+    sessionCookieSecure: process.env.SESSION_COOKIE_SECURE === "true",
     sessionCookieSecret: process.env.SESSION_COOKIE_SECRET as string,
     inboxTasksToAskForGC: parseInt(
       process.env.INBOX_TASKS_TO_ASK_FOR_GC as string,
@@ -80,3 +83,11 @@ function loadGlobalPropertiesOnServer(): GlobalPropertiesServer {
 }
 
 export const GLOBAL_PROPERTIES = loadGlobalPropertiesOnServer();
+
+// A hack!
+console.log("=".repeat(80));
+console.log(`Starting Jupiter WebUI:`);
+console.log(`  Version: ${GLOBAL_PROPERTIES.version}`);
+console.log(`  Environment: ${GLOBAL_PROPERTIES.env}`);
+console.log(`  Hosting: ${GLOBAL_PROPERTIES.hosting}`);
+console.log("=".repeat(80));

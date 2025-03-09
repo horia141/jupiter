@@ -178,6 +178,7 @@ export function InboxTaskPropertiesEditor(
                     link: `/workspace/inbox-tasks/${props.inboxTask.ref_id}`,
                   }),
                   ActionSingle({
+                    id: "inbox-task-editor-save",
                     text: "Save",
                     value: constructIntentName(props.intentPrefix, "update"),
                     highlight: true,
@@ -185,6 +186,7 @@ export function InboxTaskPropertiesEditor(
                 ]
               : [
                   ActionSingle({
+                    id: "inbox-task-editor-save",
                     text: "Save",
                     value: constructIntentName(props.intentPrefix, "update"),
                     highlight: true,

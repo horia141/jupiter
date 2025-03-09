@@ -40,7 +40,7 @@ export function TimePlanActivityFeasabilitySelect(
           {timePlanActivityFeasabilityName(TimePlanActivityFeasability.MUST_DO)}
         </ToggleButton>
         <ToggleButton
-          id="time-plan-activity-feasability-should-do"
+          id="time-plan-activity-feasability-nice-to-have"
           disabled={!props.inputsEnabled}
           value={TimePlanActivityFeasability.NICE_TO_HAVE}
         >

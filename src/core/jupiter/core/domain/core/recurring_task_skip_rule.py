@@ -139,6 +139,7 @@ class RecurringTaskSkipRule(AtomicValue[str]):
         )
 
     def is_compatible_with(self, period: RecurringTaskPeriod) -> bool:
+        """Check if the skip rule is compatible with the period."""
         if period == RecurringTaskPeriod.DAILY:
             return self.the_type in [
                 "even",

@@ -13,8 +13,8 @@ Inspiration comes from [Getting Things Done](https://gettingthingsdone.com/what-
 [The Deep Life Stack](https://www.thedeeplife.com/podcasts/episodes/ep-252-the-deep-life-stack/),
 existentialist philosophy, [Notion](https://notion.so), and many others.
 
-The current version is both a [webapp](https://get-thriving.com) and a
-[CLI application](how-tos/install.md).
+The current version is both a [webapp](https://get-thriving.com), a mobile app, and a
+[CLI application](how-tos/install.md). You can also [self-host](how-tos/self-hosting.md) it.
 
 Here's a picture from the "inbox" view:
 

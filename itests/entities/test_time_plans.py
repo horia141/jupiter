@@ -10,9 +10,6 @@ from jupiter_webapi_client.api.big_plans.big_plan_create import (
 from jupiter_webapi_client.api.big_plans.big_plan_update import (
     sync_detailed as big_plan_update_sync,
 )
-from jupiter_webapi_client.api.inbox_tasks.inbox_task_associate_with_big_plan import (
-    sync_detailed as inbox_task_associate_with_big_plan_sync,
-)
 from jupiter_webapi_client.api.inbox_tasks.inbox_task_create import (
     sync_detailed as inbox_task_create_sync,
 )
@@ -43,18 +40,23 @@ from jupiter_webapi_client.models.big_plan_update_args_due_date import (
     BigPlanUpdateArgsDueDate,
 )
 from jupiter_webapi_client.models.big_plan_update_args_name import BigPlanUpdateArgsName
+from jupiter_webapi_client.models.big_plan_update_args_project_ref_id import (
+    BigPlanUpdateArgsProjectRefId,
+)
 from jupiter_webapi_client.models.big_plan_update_args_status import (
     BigPlanUpdateArgsStatus,
 )
+from jupiter_webapi_client.models.difficulty import Difficulty
+from jupiter_webapi_client.models.eisen import Eisen
 from jupiter_webapi_client.models.inbox_task import InboxTask
-from jupiter_webapi_client.models.inbox_task_associate_with_big_plan_args import (
-    InboxTaskAssociateWithBigPlanArgs,
-)
 from jupiter_webapi_client.models.inbox_task_create_args import InboxTaskCreateArgs
 from jupiter_webapi_client.models.inbox_task_status import InboxTaskStatus
 from jupiter_webapi_client.models.inbox_task_update_args import InboxTaskUpdateArgs
 from jupiter_webapi_client.models.inbox_task_update_args_actionable_date import (
     InboxTaskUpdateArgsActionableDate,
+)
+from jupiter_webapi_client.models.inbox_task_update_args_big_plan_ref_id import (
+    InboxTaskUpdateArgsBigPlanRefId,
 )
 from jupiter_webapi_client.models.inbox_task_update_args_difficulty import (
     InboxTaskUpdateArgsDifficulty,
@@ -68,11 +70,18 @@ from jupiter_webapi_client.models.inbox_task_update_args_eisen import (
 from jupiter_webapi_client.models.inbox_task_update_args_name import (
     InboxTaskUpdateArgsName,
 )
+from jupiter_webapi_client.models.inbox_task_update_args_project_ref_id import (
+    InboxTaskUpdateArgsProjectRefId,
+)
 from jupiter_webapi_client.models.inbox_task_update_args_status import (
     InboxTaskUpdateArgsStatus,
 )
 from jupiter_webapi_client.models.recurring_task_period import RecurringTaskPeriod
 from jupiter_webapi_client.models.time_plan import TimePlan
+from jupiter_webapi_client.models.time_plan_activity_feasability import (
+    TimePlanActivityFeasability,
+)
+from jupiter_webapi_client.models.time_plan_activity_kind import TimePlanActivityKind
 from jupiter_webapi_client.models.time_plan_associate_with_big_plans_args import (
     TimePlanAssociateWithBigPlansArgs,
 )
@@ -132,6 +141,8 @@ def create_time_plan_activity_from_big_plan(logged_in_client: AuthenticatedClien
                 ref_id=time_plan_id,
                 big_plan_ref_ids=[big_plan_id],
                 override_existing_dates=False,
+                kind=TimePlanActivityKind.FINISH,
+                feasability=TimePlanActivityFeasability.MUST_DO,
             ),
         )
         if result.status_code != 200:
@@ -150,6 +161,8 @@ def create_time_plan_activity_from_inbox_task(logged_in_client: AuthenticatedCli
                 ref_id=time_plan_id,
                 inbox_task_ref_ids=[inbox_task_id],
                 override_existing_dates=False,
+                kind=TimePlanActivityKind.FINISH,
+                feasability=TimePlanActivityFeasability.MUST_DO,
             ),
         )
         if result.status_code != 200:
@@ -170,6 +183,8 @@ def create_inbox_task(logged_in_client: AuthenticatedClient):
                 name=name,
                 big_plan_ref_id=big_plan_id or UNSET,
                 due_date=due_date or UNSET,
+                eisen=Eisen.REGULAR,
+                difficulty=Difficulty.EASY,
             ),
         )
         if result.status_code != 200:
@@ -231,14 +246,14 @@ def test_time_plan_create(page: Page, create_time_plan) -> None:
     page.wait_for_selector("#leaf-panel")
 
     page.locator('input[name="rightNow"]').fill("2024-06-18")
-    page.locator('input[name="period"]').fill("weekly")
+    page.locator('button[id="period-weekly"]').click()
     page.locator("#time-plan-create").click()
 
     page.wait_for_url(re.compile(r"/workspace/time-plans/\d+"))
 
     page.wait_for_selector("#branch-panel")
     expect(page.locator('input[name="rightNow"]')).to_have_value("2024-06-18")
-    expect(page.locator('input[name="period"]')).to_have_value("weekly")
+    expect(page.locator('button[aria-pressed="true"]')).to_have_text("Weekly")
 
 
 def test_time_plan_update(page: Page, create_time_plan) -> None:
@@ -247,14 +262,16 @@ def test_time_plan_update(page: Page, create_time_plan) -> None:
     page.wait_for_selector("#branch-panel")
 
     page.locator('input[name="rightNow"]').fill("2024-06-19")
-    page.locator('input[name="period"]').fill("daily")
+    page.locator('button[id="period-daily"]').click()
     page.locator("#time-plan-update").click()
 
     page.wait_for_url(re.compile(r"/workspace/time-plans/\d+"))
 
     page.wait_for_selector("#branch-panel")
     expect(page.locator('input[name="rightNow"]')).to_have_value("2024-06-19")
-    expect(page.locator('input[name="period"]')).to_have_value("daily")
+    expect(page.locator("button[id='period-daily']")).to_have_attribute(
+        "aria-pressed", "true"
+    )
 
 
 def test_time_plan_change_note(page: Page, create_time_plan) -> None:
@@ -288,9 +305,9 @@ def test_time_plan_archive(page: Page, create_time_plan) -> None:
     page.wait_for_selector("#branch-panel")
 
     page.locator("#branch-entity-archive").click()
+    page.locator("#branch-entity-archive-confirm").click()
 
     expect(page.locator("#time-plan-update")).to_be_disabled()
-    expect(page.locator("#branch-entity-archive")).to_be_disabled()
 
     entity_id = page.url.split("/")[-1]
     expect(page.locator(f"#time-plan-{entity_id}")).to_have_count(0)
@@ -384,10 +401,16 @@ def test_time_plan_create_new_inbox_task_activity(page: Page, create_time_plan) 
 
     page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan.ref_id}/\d+"))
 
-    expect(page.locator("input[name='kind']")).to_have_value("finish")
-    expect(page.locator("input[name='feasability']")).to_have_value("must-do")
+    expect(
+        page.locator("button[id='time-plan-activity-kind-finish']")
+    ).to_have_attribute("aria-pressed", "true")
+    expect(
+        page.locator("button[id='time-plan-activity-feasability-nice-to-have']")
+    ).to_have_attribute("aria-pressed", "true")
 
-    expect(page.locator("#target")).to_contain_text("New Inbox Task")
+    expect(page.locator("input[name='targetInboxTaskName']")).to_have_value(
+        "New Inbox Task"
+    )
 
 
 def test_time_plan_create_new_inbox_task_with_big_plan_activity(
@@ -409,10 +432,16 @@ def test_time_plan_create_new_inbox_task_with_big_plan_activity(
 
     page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan.ref_id}/\d+"))
 
-    expect(page.locator("input[name='kind']")).to_have_value("finish")
-    expect(page.locator("input[name='feasability']")).to_have_value("must-do")
+    expect(
+        page.locator("button[id='time-plan-activity-kind-finish']")
+    ).to_have_attribute("aria-pressed", "true")
+    expect(
+        page.locator("button[id='time-plan-activity-feasability-nice-to-have']")
+    ).to_have_attribute("aria-pressed", "true")
 
-    expect(page.locator("#target")).to_contain_text("New Inbox Task")
+    expect(page.locator("input[name='targetInboxTaskName']")).to_have_value(
+        "New Inbox Task"
+    )
 
     page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
 
@@ -423,8 +452,12 @@ def test_time_plan_create_new_inbox_task_with_big_plan_activity(
 
     page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan.ref_id}/\d+"))
 
-    expect(page.locator("input[name='kind']")).to_have_value("make-progress")
-    expect(page.locator("input[name='feasability']")).to_have_value("must-do")
+    expect(
+        page.locator("button[id='time-plan-activity-kind-finish']")
+    ).to_have_attribute("aria-pressed", "true")
+    expect(
+        page.locator("button[id='time-plan-activity-feasability-nice-to-have']")
+    ).to_have_attribute("aria-pressed", "true")
 
 
 def test_time_plan_create_new_big_plan_activity(
@@ -443,8 +476,12 @@ def test_time_plan_create_new_big_plan_activity(
 
     page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan.ref_id}/\d+"))
 
-    expect(page.locator("input[name='kind']")).to_have_value("make-progress")
-    expect(page.locator("input[name='feasability']")).to_have_value("must-do")
+    expect(
+        page.locator("button[id='time-plan-activity-kind-finish']")
+    ).to_have_attribute("aria-pressed", "true")
+    expect(
+        page.locator("button[id='time-plan-activity-feasability-nice-to-have']")
+    ).to_have_attribute("aria-pressed", "true")
 
     expect(page.locator("#target")).to_contain_text("New Big Plan")
 
@@ -478,12 +515,16 @@ def test_time_plan_create_new_inbox_task_from_big_plan_activity(
 
     page.locator("#time-plan-activities").locator(
         "a", has_text="The New Inbox Task"
-    ).click()
+    ).click(force=True)
 
     page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan.ref_id}/\d+"))
 
-    expect(page.locator("input[name='kind']")).to_have_value("finish")
-    expect(page.locator("input[name='feasability']")).to_have_value("must-do")
+    expect(
+        page.locator("button[id='time-plan-activity-kind-finish']")
+    ).to_have_attribute("aria-pressed", "true")
+    expect(
+        page.locator("button[id='time-plan-activity-feasability-must-do']")
+    ).to_have_attribute("aria-pressed", "true")
 
 
 def test_time_plan_create_activities_from_inbox_tasks_of_an_associated_big_plan(
@@ -1667,9 +1708,6 @@ def test_time_plan_activity_update(
 
     page.goto(f"/workspace/time-plans/{time_plan.ref_id}/{inbox_task_activity.ref_id}")
 
-    expect(page.locator("input[name='kind']")).to_have_value("finish")
-    expect(page.locator("input[name='feasability']")).to_have_value("must-do")
-
     page.locator("#time-plan-activity-kind-make-progress").click()
     page.locator("#time-plan-activity-feasability-stretch").click()
     page.locator("#time-plan-activity-properties").locator(
@@ -1678,8 +1716,12 @@ def test_time_plan_activity_update(
 
     page.reload()
 
-    expect(page.locator("input[name='kind']")).to_have_value("make-progress")
-    expect(page.locator("input[name='feasability']")).to_have_value("stretch")
+    expect(
+        page.locator('button[id="time-plan-activity-kind-finish"]')
+    ).to_have_attribute("aria-pressed", "true")
+    expect(
+        page.locator('button[id="time-plan-activity-feasability-stretch"]')
+    ).to_have_attribute("aria-pressed", "true")
 
 
 def test_time_plan_activity_archive_inbox_task(
@@ -1702,6 +1744,7 @@ def test_time_plan_activity_archive_inbox_task(
     page.goto(f"/workspace/time-plans/{time_plan.ref_id}/{inbox_task_activity.ref_id}")
 
     page.locator("#leaf-entity-archive").click()
+    page.locator("#leaf-entity-archive-confirm").click()
 
     expect(page.locator("#leaf-entity-archive")).to_be_disabled()
 
@@ -1725,7 +1768,9 @@ def test_time_plan_activity_archive_big_plan_with_inbox_task(
     big_plan_activity = create_time_plan_activity_from_big_plan(
         time_plan.ref_id, big_plan.ref_id
     )
-    _ = create_time_plan_activity_from_inbox_task(time_plan.ref_id, inbox_task.ref_id)
+    inbox_task_activity = create_time_plan_activity_from_inbox_task(
+        time_plan.ref_id, inbox_task.ref_id
+    )
 
     page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
 
@@ -1735,8 +1780,11 @@ def test_time_plan_activity_archive_big_plan_with_inbox_task(
     page.goto(f"/workspace/time-plans/{time_plan.ref_id}/{big_plan_activity.ref_id}")
 
     page.locator("#leaf-entity-archive").click()
+    page.locator("#leaf-entity-archive-confirm").click()
 
-    expect(page.locator("#leaf-entity-archive")).to_be_disabled()
+    page.goto(f"/workspace/time-plans/{time_plan.ref_id}/{inbox_task_activity.ref_id}")
+
+    expect(page.locator("#inbox-task-editor-save")).to_be_disabled()
 
     page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
 
@@ -1759,6 +1807,8 @@ def _mark_inbox_task_done(
             difficulty=InboxTaskUpdateArgsDifficulty(should_change=False),
             actionable_date=InboxTaskUpdateArgsActionableDate(should_change=False),
             due_date=InboxTaskUpdateArgsDueDate(should_change=False),
+            project_ref_id=InboxTaskUpdateArgsProjectRefId(should_change=False),
+            big_plan_ref_id=InboxTaskUpdateArgsBigPlanRefId(should_change=False),
         ),
     )
 
@@ -1778,6 +1828,8 @@ def _clear_inbox_task_dates(
                 should_change=True, value=None
             ),
             due_date=InboxTaskUpdateArgsDueDate(should_change=True, value=None),
+            project_ref_id=InboxTaskUpdateArgsProjectRefId(should_change=False),
+            big_plan_ref_id=InboxTaskUpdateArgsBigPlanRefId(should_change=False),
         ),
     )
 
@@ -1785,10 +1837,20 @@ def _clear_inbox_task_dates(
 def _associate_inbox_task_with_big_plan(
     logged_in_client: AuthenticatedClient, inbox_task: InboxTask, big_plan: BigPlan
 ) -> None:
-    inbox_task_associate_with_big_plan_sync(
+    inbox_task_update_sync(
         client=logged_in_client,
-        body=InboxTaskAssociateWithBigPlanArgs(
-            ref_id=inbox_task.ref_id, big_plan_ref_id=big_plan.ref_id
+        body=InboxTaskUpdateArgs(
+            ref_id=inbox_task.ref_id,
+            name=InboxTaskUpdateArgsName(should_change=False),
+            status=InboxTaskUpdateArgsStatus(should_change=False),
+            eisen=InboxTaskUpdateArgsEisen(should_change=False),
+            difficulty=InboxTaskUpdateArgsDifficulty(should_change=False),
+            actionable_date=InboxTaskUpdateArgsActionableDate(should_change=False),
+            due_date=InboxTaskUpdateArgsDueDate(should_change=False),
+            project_ref_id=InboxTaskUpdateArgsProjectRefId(should_change=False),
+            big_plan_ref_id=InboxTaskUpdateArgsBigPlanRefId(
+                should_change=True, value=big_plan.ref_id
+            ),
         ),
     )
 
@@ -1806,6 +1868,7 @@ def _mark_big_plan_done(
             ),
             actionable_date=BigPlanUpdateArgsActionableDate(should_change=False),
             due_date=BigPlanUpdateArgsDueDate(should_change=False),
+            project_ref_id=BigPlanUpdateArgsProjectRefId(should_change=False),
         ),
     )
 
@@ -1823,6 +1886,7 @@ def _clear_big_plan_dates(
                 should_change=True, value=None
             ),
             due_date=BigPlanUpdateArgsDueDate(should_change=True, value=None),
+            project_ref_id=BigPlanUpdateArgsProjectRefId(should_change=False),
         ),
     )
 

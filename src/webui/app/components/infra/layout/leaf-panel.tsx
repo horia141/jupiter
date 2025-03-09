@@ -314,7 +314,7 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
                 </DialogContent>
                 <DialogActions>
                   <Button
-                    id="leaf-entity-archive"
+                    id="leaf-entity-archive-confirm"
                     sx={{ marginLeft: "auto" }}
                     disabled={
                       props.entityNotEditable ||

@@ -1,4 +1,4 @@
-"A use case for regenerating tasks associated with habits."
+"""A use case for regenerating tasks associated with habits."""
 from jupiter.core.domain.application.gen.service.gen_service import GenService
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.sync_target import SyncTarget

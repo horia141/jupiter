@@ -182,7 +182,7 @@ export async function action({ request }: ActionArgs) {
           : (query.timePlanRefId as string),
       time_plan_activity_kind: form.timePlanActivityKind,
       time_plan_activity_feasability: form.timePlanActivityFeasability,
-      project_ref_id: form.project !== undefined ? form.project : undefined,
+      project_ref_id: form.project,
       big_plan_ref_id:
         bigPlanReason === "standard"
           ? form.bigPlan !== undefined && form.bigPlan !== "none"

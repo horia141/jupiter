@@ -77,7 +77,7 @@ def upgrade() -> None:
         with op.batch_alter_table("inbox_task") as batch_op:
             batch_op.drop_index("ix_inbox_task_slack_task_ref_id")
             batch_op.drop_column("slack_task_ref_id")
-    except KeyError as e:
+    except KeyError:
         pass
 
 

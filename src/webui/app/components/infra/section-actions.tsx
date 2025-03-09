@@ -50,6 +50,7 @@ interface NavMultipleDesc {
 
 interface ActionSingleDesc {
   kind: "action-single";
+  id?: string;
   text?: string;
   icon?: JSX.Element;
   value: string;
@@ -569,6 +570,7 @@ function ActionSingleView(props: ActionSingleViewProps) {
       type="submit"
       name="intent"
       value={props.action.value}
+      id={props.action.id}
     >
       {props.action.text}
     </Button>
@@ -617,6 +619,7 @@ function ActionMultipleSpreadView(props: ActionMultipleViewProps) {
             type="submit"
             name="intent"
             value={action.value}
+            id={action.id}
           >
             {action.text}
           </Button>
@@ -676,6 +679,7 @@ function ActionMultipleCompactView(props: ActionMultipleViewProps) {
           type="submit"
           name="intent"
           value={realActions[selectedIndex].value}
+          id={realActions[selectedIndex].id}
         >
           {realActions[selectedIndex].text}
         </Button>
@@ -710,6 +714,7 @@ function ActionMultipleCompactView(props: ActionMultipleViewProps) {
                 <MenuList id="split-button-menu" autoFocusItem>
                   {realActions.map((option, index) => (
                     <MenuItem
+                      id={option.id}
                       key={`action-multiple-${index}`}
                       selected={index === selectedIndex}
                       disabled={!props.inputsEnabled || option.disabled}

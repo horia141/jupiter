@@ -70,7 +70,12 @@ export function PeriodSelect(props: PeriodSelectProps) {
             (p) => !props.allowedValues || props.allowedValues.includes(p)
           )
           .map((s) => (
-            <ToggleButton key={s} value={s} disabled={!props.inputsEnabled}>
+            <ToggleButton
+              key={s}
+              id={`period-${s}`}
+              value={s}
+              disabled={!props.inputsEnabled}
+            >
               {periodName(s, isBigScreen)}
             </ToggleButton>
           ))}

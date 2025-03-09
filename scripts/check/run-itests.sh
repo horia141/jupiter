@@ -98,7 +98,7 @@ run_tests() {
     local webui_url=$1
     shift
 
-    LOCAL_WEBAPI_SERVER_URL=$webapi_url pytest itests \
+    LOCAL_OR_SELF_HOSTED_WEBAPI_SERVER_URL=$webapi_url pytest itests \
         -o log_cli=true \
         --html-report=.build-cache/itest/test-report.html \
         --title="Jupiter Integration Tests" \

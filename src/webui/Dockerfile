@@ -1,7 +1,6 @@
 FROM node:19.3
 LABEL maintainer='horia141@gmail.com'
 
-# hadolint ignore=DL3008
 RUN apt-get update && \
     apt-get install -y --no-install-recommends dumb-init && \
     apt-get clean && \
@@ -32,12 +31,9 @@ COPY src/webui/public/logo.png src/webui/public/logo.png
 COPY src/webui/public/pomodoro-notification.mp3 src/webui/public/pomodoro-notification.mp3
 
 ARG PORT=10020
+ENV HOST=0.0.0.0
 ENV PORT=$PORT
 EXPOSE $PORT
-
-ENV HOST 0.0.0.0
-EXPOSE 10020
-EXPOSE 8002
 
 WORKDIR /jupiter/src/webui
 

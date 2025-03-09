@@ -29,6 +29,7 @@ from jupiter.core.utils.global_properties import build_global_properties
 from jupiter.webapi.app import WebServiceApp
 from jupiter.webapi.time_provider import CronRunTimeProvider, PerRequestTimeProvider
 from jupiter.webapi.websocket_progress_reporter import WebsocketProgressReporterFactory
+from rich import print
 from rich.console import Console
 from rich.logging import RichHandler
 
@@ -128,6 +129,13 @@ async def main() -> None:
     )
 
     await sqlite_connection.prepare()
+
+    print("=" * 80)
+    print("Starting Jupiter WebAPI:")
+    print(f"  Version: {global_properties.version}")
+    print(f"  Environment: {global_properties.env}")
+    print(f"  Hosting: {global_properties.hosting}")
+    print("=" * 80)
 
     try:
         await web_app.run()

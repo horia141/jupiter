@@ -1,7 +1,6 @@
 FROM python:3.10.8
 LABEL maintainer='horia141@gmail.com'
 
-# hadolint ignore=DL3008
 RUN apt-get update && \
     apt-get install -y git curl netcat dumb-init --no-install-recommends && \
     apt-get clean && \

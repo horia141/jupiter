@@ -94,7 +94,6 @@ class InitArgs(UseCaseArgsBase):
     workspace_first_schedule_stream_name: ScheduleStreamName
     workspace_root_project_name: ProjectName
     workspace_feature_flags: set[WorkspaceFeature]
-    for_app_review: bool
 
 
 @use_case_result
@@ -141,12 +140,10 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 )
             )
 
-        from rich import print
-
-        print("For App Review", args.for_app_review)
+        for_app_review = False  # args.for_app_review
 
         async with self._domain_storage_engine.get_unit_of_work() as uow:
-            if args.for_app_review:
+            if for_app_review:
                 new_user = User.new_app_store_review_user(
                     ctx=context.domain_context,
                     email_address=args.user_email_address,

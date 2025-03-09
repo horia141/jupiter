@@ -32,8 +32,11 @@ export async function getGuestApiClient(
   }
 
   let base = "";
-  if (GLOBAL_PROPERTIES.hosting === Hosting.LOCAL) {
-    base = GLOBAL_PROPERTIES.localWebApiServerUrl;
+  if (
+    GLOBAL_PROPERTIES.hosting === Hosting.LOCAL ||
+    GLOBAL_PROPERTIES.hosting === Hosting.SELF_HOSTED
+  ) {
+    base = GLOBAL_PROPERTIES.localOrSelfHostedWebApiServerUrl;
   } else if (GLOBAL_PROPERTIES.hosting === Hosting.HOSTED_GLOBAL) {
     base = GLOBAL_PROPERTIES.hostedGlobalWebApiServerUrl;
   } else {
@@ -78,8 +81,11 @@ export async function getLoggedInApiClient(
   }
 
   let base = "";
-  if (GLOBAL_PROPERTIES.hosting === Hosting.LOCAL) {
-    base = GLOBAL_PROPERTIES.localWebApiServerUrl;
+  if (
+    GLOBAL_PROPERTIES.hosting === Hosting.LOCAL ||
+    GLOBAL_PROPERTIES.hosting === Hosting.SELF_HOSTED
+  ) {
+    base = GLOBAL_PROPERTIES.localOrSelfHostedWebApiServerUrl;
   } else if (GLOBAL_PROPERTIES.hosting === Hosting.HOSTED_GLOBAL) {
     base = GLOBAL_PROPERTIES.hostedGlobalWebApiServerUrl;
   } else {

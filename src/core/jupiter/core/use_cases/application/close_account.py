@@ -1,4 +1,4 @@
-"Close an account and workspace."
+"""Close an account and workspace."""
 from jupiter.core.domain.concept.user.user import User
 from jupiter.core.domain.concept.user_workspace_link.user_workspace_link import (
     UserWorkspaceLink,

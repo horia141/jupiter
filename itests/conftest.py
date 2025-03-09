@@ -37,7 +37,7 @@ def new_random_user() -> TestUser:
 @pytest.fixture(autouse=True, scope="package")
 def webapi_server_url() -> str:
     """The URL of the local Web API server."""
-    local_webapi_server_url = os.getenv("LOCAL_WEBAPI_SERVER_URL")
+    local_webapi_server_url = os.getenv("LOCAL_OR_SELF_HOSTED_WEBAPI_SERVER_URL")
     if re.match(r"^http://0[.]0[.]0[.]0:\d+$", local_webapi_server_url):
         return local_webapi_server_url
     validation_result = validators.url(local_webapi_server_url)

@@ -165,6 +165,7 @@ def test_vacation_archive(page: Page, create_vacation) -> None:
     page.wait_for_selector("#leaf-panel")
 
     page.locator("#leaf-entity-archive").click()
+    page.locator("#leaf-entity-archive-confirm").click()
 
     expect(page.locator('input[name="name"]')).not_to_be_disabled()
     expect(page.locator('input[name="startDate"]')).not_to_be_disabled()

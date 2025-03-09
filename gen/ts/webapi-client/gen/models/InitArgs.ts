@@ -26,6 +26,5 @@ export type InitArgs = {
     workspace_first_schedule_stream_name: ScheduleStreamName;
     workspace_root_project_name: ProjectName;
     workspace_feature_flags: Array<WorkspaceFeature>;
-    for_app_review: boolean;
 };
 
