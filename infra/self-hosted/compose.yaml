@@ -37,12 +37,16 @@ services:
     image: nginx:1-alpine
     restart: always
     ports:
-      - "${PORT:?Check https://docs.get-thriving.com/how-tos/self-hosting.html}:80"
+      - "80:80"
+      - "443:443"
     depends_on:
       - webui
       - webapi
     volumes:
+      - /etc/letsencrypt/live/${DOMAIN:-none}/fullchain.pem:/etc/letsencrypt/live/domain/fullchain.pem
+      - /etc/letsencrypt/live/${DOMAIN:-none}/privkey.pem:/etc/letsencrypt/live/domain/privkey.pem
       - ./nginx.conf:/etc/nginx/nginx.conf
       - ./webui.conf:/etc/nginx/conf.d/webui.conf
+      - ./webui.nodomain.conf:/etc/nginx/conf.d/webui.nodomain.conf
 volumes:
   db:

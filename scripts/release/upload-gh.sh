@@ -133,5 +133,6 @@ fi
 gh release upload ${RELEASE_TAG} --clobber infra/self-hosted/docker-compose.yaml
 gh release upload ${RELEASE_TAG} --clobber infra/self-hosted/nginx.conf
 gh release upload ${RELEASE_TAG} --clobber infra/self-hosted/webui.conf
+gh release upload ${RELEASE_TAG} --clobber infra/self-hosted/webui.nodomain.conf
 
 gh release edit ${RELEASE_TAG} --draft=false
