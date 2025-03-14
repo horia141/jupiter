@@ -15,6 +15,7 @@ class NamedEntityTag(str, Enum):
     PROJECT = "Project"
     SCHEDULEEVENTFULLDAYS = "ScheduleEventFullDays"
     SCHEDULEEVENTINDAY = "ScheduleEventInDay"
+    SCHEDULEEXTERNALSYNCLOG = "ScheduleExternalSyncLog"
     SCHEDULESTREAM = "ScheduleStream"
     SCORELOGENTRY = "ScoreLogEntry"
     SLACKTASK = "SlackTask"

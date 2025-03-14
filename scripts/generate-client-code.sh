@@ -8,7 +8,7 @@ WEBAPI_PORT=$(get_free_port)
 WEBAPI_URL=http://0.0.0.0:${WEBAPI_PORT}
 WEBUI_PORT=$(get_free_port)
 
-run_jupiter apigen "$WEBAPI_PORT" "$WEBUI_PORT" wait:webapi no-monit ci
+run_jupiter apigen "$WEBAPI_PORT" "$WEBUI_PORT" wait:webapi no-monit ci pm2
 
 mkdir -p gen/ts
 mkdir -p gen/py

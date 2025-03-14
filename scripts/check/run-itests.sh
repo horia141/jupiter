@@ -8,8 +8,14 @@ ci_mode() {
     # Add your ci mode logic here
     local extra_args=()
 
+    local mode=pm2
+
     while [[ $# -gt 0 ]]; do
         case "$1" in
+            --mode=*)
+                mode="${1#*=}"
+                shift
+                ;;
             *)
                 extra_args+=("$1")
                 shift
@@ -21,7 +27,11 @@ ci_mode() {
     local webapi_port=$(get_free_port)
     local webapi_url=http://0.0.0.0:${webapi_port}
     local webui_port=$(get_free_port)
-    local webui_url=http://0.0.0.0:${webui_port}
+    if [[ "$mode" == "docker" ]]; then
+        local webui_url=https://0.0.0.0:${webui_port}
+    else
+        local webui_url=http://0.0.0.0:${webui_port}
+    fi
 
     local in_ci=
     if [[ -z "$CI" ]]; then
@@ -30,7 +40,7 @@ ci_mode() {
         in_ci="ci"
     fi
 
-    run_jupiter "$namespace" "$webapi_port" "$webui_port" wait:all no-monit $in_ci
+    run_jupiter "$namespace" "$webapi_port" "$webui_port" wait:all no-monit $in_ci "$mode"
 
     echo "Using Web API $webapi_url and Web UI $webui_url"
 
@@ -98,6 +108,9 @@ run_tests() {
     local webui_url=$1
     shift
 
+    echo "webapi_url: $webapi_url"
+    echo "webui_url: $webui_url"
+
     LOCAL_OR_SELF_HOSTED_WEBAPI_SERVER_URL=$webapi_url pytest itests \
         -o log_cli=true \
         --html-report=.build-cache/itest/test-report.html \
@@ -115,7 +128,7 @@ main() {
         shift
         dev_mode "$@"
     else
-        echo "Usage: $0 {ci|dev [--webapi-url <URL>] [--webui-url <URL>] [--namespace <namespace>]} ...pytest-args"
+        echo "Usage: $0 {ci|dev [--webapi-url <URL>] [--webui-url <URL>] [--namespace <namespace>] [--mode pm2|docker]} ...pytest-args"
         exit 1
     fi
 }

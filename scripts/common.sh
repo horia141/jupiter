@@ -6,17 +6,13 @@ export STANDARD_WEBAPI_PORT=8004
 export STANDARD_WEBUI_PORT=10020
 
 run_jupiter() {
-    export local NAMESPACE=$1
-    export local WEBAPI_LOG_FILE=../../$RUN_ROOT/$NAMESPACE/webapi.log
-    export local WEBAPI_SQLITE_DB_URL=sqlite+aiosqlite:///../../$RUN_ROOT/$NAMESPACE/jupiter.sqlite
-    export local WEBAPI_PORT=$2
-    export local WEBAPI_SERVER_URL=http://0.0.0.0:${WEBAPI_PORT}
-    export local WEBUI_LOG_FILE=../../$RUN_ROOT/$NAMESPACE/webui.log
-    export local WEBUI_PORT=$3
-    export local WEBUI_SERVER_URL=http://0.0.0.0:${WEBUI_PORT}
+    local NAMESPACE=$1
+    local WEBAPI_PORT=$2
+    local WEBUI_PORT=$3
     local should_wait=$4
     local should_monit=$5
     local in_ci=$6
+    local mode=$7
 
     export local SCRIPT_ARGS=
     local platform=$(uname -s | awk '{print tolower($0)}')
@@ -28,6 +24,26 @@ run_jupiter() {
     fi
 
     mkdir -p "$RUN_ROOT/$NAMESPACE"
+
+    if [[ "$mode" == "pm2" ]]; then
+        _run_jupiter_with_pm2 "$NAMESPACE" "$WEBAPI_PORT" "$WEBUI_PORT" "$should_wait" "$should_monit" "$in_ci"
+    else
+        _run_jupiter_with_docker "$NAMESPACE" "$WEBAPI_PORT" "$WEBUI_PORT" "$should_wait" "$should_monit" "$in_ci"
+    fi
+}
+
+_run_jupiter_with_pm2() {
+    export local NAMESPACE=$1
+    export local WEBAPI_LOG_FILE=../../$RUN_ROOT/$NAMESPACE/webapi.log
+    export local WEBAPI_SQLITE_DB_URL=sqlite+aiosqlite:///../../$RUN_ROOT/$NAMESPACE/jupiter.sqlite
+    export local WEBAPI_SERVER_URL=http://0.0.0.0:${WEBAPI_PORT}
+    export local WEBAPI_PORT=$2
+    export local WEBUI_LOG_FILE=../../$RUN_ROOT/$NAMESPACE/webui.log
+    export local WEBUI_PORT=$3
+    export local WEBUI_SERVER_URL=http://0.0.0.0:${WEBUI_PORT}
+    local should_wait=$4
+    local should_monit=$5
+    local in_ci=$6
 
     if [[ "$in_ci" == "dev" ]]; then
         _envsubst < scripts/pm2.config.dev.template.js > "$RUN_ROOT/$NAMESPACE/pm2.config.js"
@@ -56,6 +72,54 @@ run_jupiter() {
 
     if [[ ${should_monit} == "monit" ]]; then
         npx pm2 monit
+    fi
+}
+
+_run_jupiter_with_docker() {
+    export local NAMESPACE=$1
+    export local WEBAPI_PORT=$2
+    export local WEBUI_PORT=$3
+    export local WEBAPI_SERVER_URL=http://0.0.0.0:${WEBAPI_PORT}
+    export local WEBUI_SERVER_URL=https://0.0.0.0:${WEBUI_PORT}
+    local should_wait=$4
+    local should_monit=$5
+    local in_ci=$6
+    export local AUTH_TOKEN_SECRET=$(openssl rand -hex 32)
+    export local SESSION_COOKIE_SECRET=$(openssl rand -hex 32)
+
+    export local FULLCHAIN_PEM=$(pwd)/$RUN_ROOT/$NAMESPACE/fullchain.pem
+    export local PRIVKEY_PEM=$(pwd)/$RUN_ROOT/$NAMESPACE/privkey.pem
+
+    openssl req -x509 \
+        -nodes \
+        -days 365 \
+        -subj "/CN=localhost" \
+        -newkey rsa:2048 \
+        -keyout $PRIVKEY_PEM \
+        -out $FULLCHAIN_PEM
+
+    trap "docker compose -f infra/self-hosted/compose.yaml down" EXIT
+
+    echo "$WEBAPI_PORT" > "$RUN_ROOT/$NAMESPACE/webapi.port"
+    echo "$WEBUI_PORT" > "$RUN_ROOT/$NAMESPACE/webui.port"
+
+    docker compose -f infra/self-hosted/compose.yaml up -d
+
+    if [[ "$should_wait" == "wait:all" ]]; then
+        wait_for_service_to_start webapi "$WEBAPI_SERVER_URL"
+        wait_for_service_to_start webui "$WEBUI_SERVER_URL"
+    fi
+
+    if [[ ${should_wait} == "wait:webapi" ]]; then
+        wait_for_service_to_start webapi "$WEBAPI_SERVER_URL"
+    fi 
+
+    if [[ ${should_wait} == "wait:webui" ]]; then
+        wait_for_service_to_start webui "$WEBUI_SERVER_URL"
+    fi
+
+    if [[ ${should_monit} == "monit" ]]; then
+        docker compose -f infra/self-hosted/compose.yaml logs -f
     fi
 }
 
@@ -106,7 +170,7 @@ wait_for_service_to_start() {
 
     while [ "$attempts" -lt "$max_attempts" ]; do
         set +e
-        response=$(http --timeout 10 --check-status get "${url}" 2>/dev/null)
+        response=$(http --verify=no --timeout 10 --check-status get "${url}" 2>/dev/null)
         resp=$?
         set -e
         

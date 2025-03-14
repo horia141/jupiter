@@ -9,6 +9,8 @@ services:
       - AUTH_TOKEN_SECRET=${AUTH_TOKEN_SECRET:?Check https://docs.get-thriving.com/how-tos/self-hosting.html}
     restart: always
     image: horia141/jupiter-webapi:${VERSION:-latest}
+    ports:
+    - "${WEBAPI_PORT:-0}:2000"
     volumes:
       - db:/data
     healthcheck:
@@ -39,14 +41,17 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      - "${WEBUI_PORT:-0}:443"
     depends_on:
       - webui
       - webapi
     volumes:
-      - /etc/letsencrypt/live/${DOMAIN:-none}/fullchain.pem:/etc/letsencrypt/live/domain/fullchain.pem
-      - /etc/letsencrypt/live/${DOMAIN:-none}/privkey.pem:/etc/letsencrypt/live/domain/privkey.pem
+      - ${FULLCHAIN_PEM:-/etc/letsencrypt/live/${DOMAIN:-none}/fullchain.pem}:/etc/letsencrypt/live/domain/fullchain.pem
+      - ${PRIVKEY_PEM:-/etc/letsencrypt/live/${DOMAIN:-none}/privkey.pem}:/etc/letsencrypt/live/domain/privkey.pem
       - ./nginx.conf:/etc/nginx/nginx.conf
       - ./webui.conf:/etc/nginx/conf.d/webui.conf
       - ./webui.nodomain.conf:/etc/nginx/conf.d/webui.nodomain.conf
 volumes:
   db:
+    name: db-${NAMESPACE:-dev}
+    
