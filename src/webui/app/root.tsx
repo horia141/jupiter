@@ -77,7 +77,7 @@ export function meta({ data }: { data: SerializeFrom<typeof loader> }) {
 }
 
 export function links() {
-  return [{ rel: "manifest", href: "pwa-manifest" }];
+  return [{ rel: "manifest", href: "/pwa-manifest" }];
 }
 
 export const shouldRevalidate: ShouldRevalidateFunction =
