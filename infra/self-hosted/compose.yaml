@@ -22,6 +22,7 @@ services:
     environment:
       - ENV=production
       - HOSTING=self-hosted
+      - HOSTING_NAME=${NAME:?Check https://docs.get-thriving.com/how-tos/self-hosting.html}
       - PORT=2000
       - LOCAL_OR_SELF_HOSTED_WEBAPI_SERVER_URL=http://webapi:2000
       - SESSION_COOKIE_SECURE=${SESSION_COOKIE_SECURE:-false}

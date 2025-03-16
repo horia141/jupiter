@@ -1,5 +1,6 @@
 ENV=local
 HOSTING=local
+HOSTING_NAME=Main
 BASENAME=jupiter-cli
 PORT=0
 DESCRIPTION="The CLI client for Thrive"

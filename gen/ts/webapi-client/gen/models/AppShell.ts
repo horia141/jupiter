@@ -10,5 +10,5 @@ export enum AppShell {
     BROWSER = 'browser',
     DESKTOP_ELECTRON = 'desktop-electron',
     MOBILE_CAPACITOR = 'mobile-capacitor',
-    MOBILE_PWA = 'mobile-pwa',
+    PWA = 'pwa',
 }

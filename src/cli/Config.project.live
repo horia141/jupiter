@@ -1,5 +1,6 @@
 ENV=staging
 HOSTING=local
+HOSTING_NAME=Main
 BASENAME=jupiter-cli
 DESCRIPTION="The CLI client for Thrive"
 DOCS_URL=https://docs.get-thriving.com

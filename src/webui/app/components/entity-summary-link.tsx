@@ -110,6 +110,8 @@ export function EntitySummaryLink({
           {commonSequence}
         </EntityLink>
       );
+    case NamedEntityTag.SCHEDULE_EXTERNAL_SYNC_LOG:
+      return (<></>); // This isn't really a supported entity
     case NamedEntityTag.HABIT:
       return (
         <EntityLink to={`/workspace/habits/${summary.ref_id}`}>

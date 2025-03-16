@@ -1,5 +1,6 @@
 ENV=local
 HOSTING=local
+HOSTING_NAME=Main
 BASENAME=jupiter-mobile
 DESCRIPTION="The Thrive Mobile application"
 BUILD_TARGET=to-fill

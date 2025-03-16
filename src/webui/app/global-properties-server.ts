@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 export interface GlobalPropertiesServer {
   env: Env;
   hosting: Hosting;
+  hostingName: string;
   baseName: string;
   version: string;
   title: string;
@@ -13,6 +14,7 @@ export interface GlobalPropertiesServer {
   hostedGlobalWebApiServerUrl: string;
   hostedGlobalWebApiProgressReporterUrl: string;
   docsUrl: string;
+  pwaStartUrl: string;
   communityUrl: string;
   appsStorageUrl: string;
   macStoreUrl: string;
@@ -46,6 +48,7 @@ function loadGlobalPropertiesOnServer(): GlobalPropertiesServer {
   const globalProperties = {
     env: process.env.ENV as Env,
     hosting: process.env.HOSTING as Hosting,
+    hostingName: process.env.HOSTING_NAME as string,
     baseName: process.env.BASENAME as string,
     version: process.env.VERSION as string,
     title: process.env.TITLE as string,
@@ -58,6 +61,7 @@ function loadGlobalPropertiesOnServer(): GlobalPropertiesServer {
     hostedGlobalWebApiProgressReporterUrl:
       hostedGlobalWebApiProgressReporterUrl,
     docsUrl: process.env.DOCS_URL as string,
+    pwaStartUrl: process.env.PWA_START_URL as string,
     communityUrl: process.env.COMMUNITY_URL as string,
     appsStorageUrl: process.env.APPS_STORAGE_URL as string,
     macStoreUrl: process.env.MAC_STORE_URL as string,

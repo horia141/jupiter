@@ -19,7 +19,7 @@ You'll see a login form. You need to press `New Workspace` and you'll be prompte
 ![Init](assets/tutorial-init.png)
 
 You can check what the advanced and [feature flags](concepts/feature-flags.md)
-accordions to, but equally you can ignore them.
+accordions if you're curious.
 
 Press `Create` and you will be shown an [account recovery token](how-tos/recover-your-account.md) that
 you need to store in a safe space. Once you do that, you can proceed to _your newly created workspace_.

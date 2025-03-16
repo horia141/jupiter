@@ -18,6 +18,8 @@ export function entityTagName(entityTag: NamedEntityTag): string {
       return "Schedule Event In Day";
     case NamedEntityTag.SCHEDULE_EVENT_FULL_DAYS:
       return "Schedule Event Full Days";
+    case NamedEntityTag.SCHEDULE_EXTERNAL_SYNC_LOG:
+      return "Schedule External Sync Log";
     case NamedEntityTag.HABIT:
       return "Habit";
     case NamedEntityTag.CHORE:

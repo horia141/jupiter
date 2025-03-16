@@ -1,5 +1,6 @@
 ENV=production
 HOSTING=hosted-global
+HOSTING_NAME=Main
 BASENAME=jupiter-desktop
 DESCRIPTION="The Thrive Desktop application"
 INITIAL_WINDOW_WIDTH=1400

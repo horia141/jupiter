@@ -2,10 +2,15 @@
 
 ## Web Application
 
-The simplest way to use Thrive is by using the [web application](https://app.get-thriving.com).
+The simplest way to use Thrive is by using the [web application](https://get-thriving.com/).
 If this is the first time you're visiting you'll be prompted to create an account.
 
-By using the web application you will be running in [hosted mode](../concepts/hosted-vs-local-mode.md).
+By using the web application you will be running in [global hosted mode](../concepts/hosting-options.md). You can access the web app in self hosted mode too.
+
+## Desktop App, Mobile Apps, PWA
+
+You can download the desktop app, mobile apps, or install a PWA for desktop (MacOS) and
+mobile (iOS and Android) too.
 
 ## MacOS Dmg Local
 
@@ -27,36 +32,8 @@ $ /Applications/Thrive.app/Contents/MacOS/thrive init --help
 
 You can of course add an alias to your shell about it.
 
-By using this approach you will be running in [local mode](../concepts/hosted-vs-local-mode.md).
+By using this approach you will be running in [local mode](../concepts/hosting-options.md).
 
-## GitHub (Advanced)
+## Self-Hosting
 
-Another way to install it is from "sources" on GitHub.
-
-You need to make sure you have a recent Python3 installed. Thrive has been tested on Python 3.10. Docker is also
-useful to have on board.
-
-From GitHub you can just clone the repository like so:
-
-```bash
-$ git clone git@github.com:horia141/jupiter.git jupiter
-```
-
-This will get you the `master` version of the code.
-
-You can use the scripts locally, like so:
-
-```bash
-$ cd thrive
-$ ./scripts/setup-for-dev.sh # Hopefully this is simple!
-```
-
-Now, you can run the thing like so and it will output a port to access it:
-
-```bash
-$ mkdir ~/my-jupier-work-dir
-$ ./scripts/new-dev-session.sh
-$ ./scripts/run-dev.sh
-```
-
-By using this approach you will be running in [local mode](../concepts/hosted-vs-local-mode.md).
+If you want to run Thrive in self hosted mode, check out the [self hosting guide](self-hosting.md).

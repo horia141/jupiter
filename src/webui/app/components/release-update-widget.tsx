@@ -66,7 +66,7 @@ export function ReleaseUpdateWidget() {
 
     switch (globalProperties.frontDoorInfo.appShell) {
       case AppShell.BROWSER:
-      case AppShell.MOBILE_PWA:
+      case AppShell.PWA:
         break;
 
       case AppShell.DESKTOP_ELECTRON:

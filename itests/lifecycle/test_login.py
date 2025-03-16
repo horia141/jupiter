@@ -1,5 +1,5 @@
-from playwright.sync_api import Page, expect
 import pytest
+from playwright.sync_api import Page, expect
 
 from itests.conftest import TestUser
 
@@ -21,8 +21,10 @@ def test_login(page: Page, new_user: TestUser):
     page.wait_for_url("/workspace/*")
 
 
-def test_login_bad_user_name(page: Page, new_user: TestUser, pytestconfig: pytest.Config):
-    page.goto(f"/workspace")
+def test_login_bad_user_name(
+    page: Page, new_user: TestUser, pytestconfig: pytest.Config
+):
+    page.goto("/workspace")
 
     expect(page.locator("body")).to_contain_text("Login")
 

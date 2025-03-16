@@ -84,6 +84,7 @@ _run_jupiter_with_docker() {
     local should_wait=$4
     local should_monit=$5
     local in_ci=$6
+    export local NAME="My Hosting"
     export local AUTH_TOKEN_SECRET=$(openssl rand -hex 32)
     export local SESSION_COOKIE_SECRET=$(openssl rand -hex 32)
 

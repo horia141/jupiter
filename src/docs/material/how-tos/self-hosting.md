@@ -133,6 +133,7 @@ you'll need to provide though. You'll need to create and edit an `.env` file lik
 
 ```bash
 touch .env
+echo "NAME=Horia's Thrive" >> .env # Use your own name here
 echo "DOMAIN=my-thrive-instance.com" >> .env # Use your own value here
 echo "AUTH_TOKEN_SECRET=$(openssl rand -base64 32)" >> .env
 echo "SESSION_COOKIE_SECRET=$(openssl rand -base64 32)" >> .env
@@ -141,6 +142,7 @@ echo "SESSION_COOKIE_SECRET=$(openssl rand -base64 32)" >> .env
 When inspecting the `.env` file, it should look something like this:
 
 ```bash
+NAME=Horia's Thrive
 DOMAIN=my-thrive-instance.com
 AUTH_TOKEN_SECRET=s6cfvG3E3vyzXjtIM/1I6+t9oM9pGBC6GG0O9L7XmiY=
 SESSION_COOKIE_SECRET=FI3X/vjPJCUUeH+tu2OvhCQn7i1HyiVV2Vl4g/ce9DQ=
@@ -201,9 +203,12 @@ It should take less than a minute to get to this output. If there's any errors,
 you're free to debug them, or reach out on our channels
 (GitHub issues, Discord,etc) for help.
 
-### Testing
+### Testing & Surfaces
 
 You can now access thrive by visiting the IP address or domain associated with your VPS.
+
+Currently only the webapp and PWA are supported ways of interacting with your
+self hosted version.
 
 ### Backups
 

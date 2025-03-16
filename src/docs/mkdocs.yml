@@ -26,9 +26,10 @@ extra_css:
 nav:
     - Home: 'index.md'
     - Tutorial: 'tutorial.md'
+    - Features: 'features.md'
     - Concepts:
           - 'Overview': 'concepts/overview.md'
-          - 'Hosted Vs Local Mode': 'concepts/hosted-vs-local-mode.md'
+          - 'Hosting Options': 'concepts/hosting-options.md'
           - 'Clients': 'concepts/clients.md'
           - 'Accounts': 'concepts/accounts.md'
           - 'Workspace': 'concepts/workspaces.md'
