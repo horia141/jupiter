@@ -27,6 +27,10 @@
         <span>You can</span>
         <a href="index.html"><button>Retry</button></a>
         <span>or</span>
+        <a href="index.html?hostedGlobal=true"
+          ><button>Retry on the global server</button></a
+        >
+        <span>or</span>
         <button id="exit" onClick="exit()">Exit</button>
       </p>
     </div>
@@ -34,7 +38,7 @@
 
   <script>
     async function exit() {
-      await preload.exit();
+      await lifecycle.exit();
     }
   </script>
 </html>

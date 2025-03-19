@@ -60,7 +60,7 @@ export function BigPlanCard(props: BigPlanCardProps) {
       }
     >
       <EntityLink
-        to={`/workspace/big-plans/${props.bigPlan.ref_id}`}
+        to={`/app/workspace/big-plans/${props.bigPlan.ref_id}`}
         block={props.onClick !== undefined}
       >
         <EntityNameComponent

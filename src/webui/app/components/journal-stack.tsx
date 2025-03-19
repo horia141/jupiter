@@ -34,7 +34,7 @@ export function JournalStack(props: JournalStackProps) {
             props.onMarkNotDone && props.onMarkNotDone(journal)
           }
         >
-          <EntityLink to={`/workspace/journals/${journal.ref_id}`}>
+          <EntityLink to={`/app/workspace/journals/${journal.ref_id}`}>
             <EntityNameComponent name={journal.name} />
             <JournalSourceTag source={journal.source} />
             <PeriodTag period={journal.period} />

@@ -105,7 +105,7 @@ export function BigPlanTimelineSmallScreen({
               <TimelineLink
                 leftmargin={betterLeftMargin}
                 width={betterWidth}
-                to={`/workspace/big-plans/${bigPlan.ref_id}`}
+                to={`/app/workspace/big-plans/${bigPlan.ref_id}`}
               >
                 <BigPlanStatusTag status={bigPlan.status} format="icon" />
                 <EntityNameOneLineComponent name={bigPlan.name} />

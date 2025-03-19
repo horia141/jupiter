@@ -18,8 +18,8 @@ export function TimePlanCard(props: TimePlanCardProps) {
   const timePlan = props.timePlan;
   const link =
     props.relativeToTimePlan !== undefined
-      ? `/workspace/time-plans/${props.relativeToTimePlan.ref_id}/add-from-current-time-plans/${timePlan.ref_id}`
-      : `/workspace/time-plans/${timePlan.ref_id}`;
+      ? `/app/workspace/time-plans/${props.relativeToTimePlan.ref_id}/add-from-current-time-plans/${timePlan.ref_id}`
+      : `/app/workspace/time-plans/${timePlan.ref_id}`;
   return (
     <EntityCard
       entityId={`time-plan-${timePlan.ref_id}`}

@@ -55,21 +55,21 @@ export function EntitySummaryLink({
       );
     case NamedEntityTag.INBOX_TASK:
       return (
-        <EntityLink to={`/workspace/inbox-tasks/${summary.ref_id}`}>
+        <EntityLink to={`/app/workspace/inbox-tasks/${summary.ref_id}`}>
           <SlimChip label={"Inbox Task"} color={"primary"} />
           {commonSequence}
         </EntityLink>
       );
     case NamedEntityTag.WORKING_MEM:
       return (
-        <EntityLink to={`/workspace/working-mem/archive/${summary.ref_id}`}>
+        <EntityLink to={`/app/workspace/working-mem/archive/${summary.ref_id}`}>
           <SlimChip label={"Working Mem"} color={"primary"} />
           {commonSequence}
         </EntityLink>
       );
     case NamedEntityTag.TIME_PLAN:
       return (
-        <EntityLink to={`/workspace/time-plans/${summary.ref_id}`}>
+        <EntityLink to={`/app/workspace/time-plans/${summary.ref_id}`}>
           <SlimChip label={"Time Plan"} color={"primary"} />
           {commonSequence}
         </EntityLink>
@@ -77,7 +77,7 @@ export function EntitySummaryLink({
     case NamedEntityTag.TIME_PLAN_ACTIVITY:
       return (
         <EntityLink
-          to={`/workspace/time-plans/${summary.parent_ref_id}/activities/${summary.ref_id}`}
+          to={`/app/workspace/time-plans/${summary.parent_ref_id}/activities/${summary.ref_id}`}
         >
           <SlimChip label={"Time Plan Acticity"} color={"primary"} />
           {commonSequence}
@@ -86,7 +86,7 @@ export function EntitySummaryLink({
     case NamedEntityTag.SCHEDULE_STREAM:
       return (
         <EntityLink
-          to={`/workspace/calendar/schedule/stream/${summary.ref_id}`}
+          to={`/app/workspace/calendar/schedule/stream/${summary.ref_id}`}
         >
           <SlimChip label={"Schedule Stream"} color={"primary"} />
           {commonSequence}
@@ -95,7 +95,7 @@ export function EntitySummaryLink({
     case NamedEntityTag.SCHEDULE_EVENT_IN_DAY:
       return (
         <EntityLink
-          to={`/workspace/calendar/schedule/event-in-day/${summary.ref_id}`}
+          to={`/app/workspace/calendar/schedule/event-in-day/${summary.ref_id}`}
         >
           <SlimChip label={"Schedule Event In Day"} color={"primary"} />
           {commonSequence}
@@ -104,66 +104,66 @@ export function EntitySummaryLink({
     case NamedEntityTag.SCHEDULE_EVENT_FULL_DAYS:
       return (
         <EntityLink
-          to={`/workspace/calendar/schedule/event-full-days/${summary.ref_id}`}
+          to={`/app/workspace/calendar/schedule/event-full-days/${summary.ref_id}`}
         >
           <SlimChip label={"Schedule Event Full Days"} color={"primary"} />
           {commonSequence}
         </EntityLink>
       );
     case NamedEntityTag.SCHEDULE_EXTERNAL_SYNC_LOG:
-      return (<></>); // This isn't really a supported entity
+      return <></>; // This isn't really a supported entity
     case NamedEntityTag.HABIT:
       return (
-        <EntityLink to={`/workspace/habits/${summary.ref_id}`}>
+        <EntityLink to={`/app/workspace/habits/${summary.ref_id}`}>
           <SlimChip label={"Habit"} color={"primary"} />
           {commonSequence}
         </EntityLink>
       );
     case NamedEntityTag.CHORE:
       return (
-        <EntityLink to={`/workspace/chores/${summary.ref_id}`}>
+        <EntityLink to={`/app/workspace/chores/${summary.ref_id}`}>
           <SlimChip label={"Chore"} color={"primary"} />
           {commonSequence}
         </EntityLink>
       );
     case NamedEntityTag.BIG_PLAN:
       return (
-        <EntityLink to={`/workspace/big-plans/${summary.ref_id}`}>
+        <EntityLink to={`/app/workspace/big-plans/${summary.ref_id}`}>
           <SlimChip label={"Big Plan"} color={"primary"} />
           {commonSequence}
         </EntityLink>
       );
     case NamedEntityTag.JOURNAL:
       return (
-        <EntityLink to={`/workspace/journals/${summary.ref_id}`}>
+        <EntityLink to={`/app/workspace/journals/${summary.ref_id}`}>
           <SlimChip label={"Journal"} color={"primary"} />
           {commonSequence}
         </EntityLink>
       );
     case NamedEntityTag.DOC:
       return (
-        <EntityLink to={`/workspace/docs/${summary.ref_id}`}>
+        <EntityLink to={`/app/workspace/docs/${summary.ref_id}`}>
           <SlimChip label={"Doc"} color={"primary"} />
           {commonSequence}
         </EntityLink>
       );
     case NamedEntityTag.VACATION:
       return (
-        <EntityLink to={`/workspace/vacations/${summary.ref_id}`}>
+        <EntityLink to={`/app/workspace/vacations/${summary.ref_id}`}>
           <SlimChip label={"Vacation"} color={"primary"} />
           {commonSequence}
         </EntityLink>
       );
     case NamedEntityTag.PROJECT:
       return (
-        <EntityLink to={`/workspace/projects/${summary.ref_id}`}>
+        <EntityLink to={`/app/workspace/projects/${summary.ref_id}`}>
           <SlimChip label={"Inbox Task"} color={"primary"} />
           {commonSequence}
         </EntityLink>
       );
     case NamedEntityTag.SMART_LIST:
       return (
-        <EntityLink to={`/workspace/smart-lists/${summary.ref_id}/items`}>
+        <EntityLink to={`/app/workspace/smart-lists/${summary.ref_id}/items`}>
           <SlimChip label={"Smart List"} color={"primary"} />
           {commonSequence}
         </EntityLink>
@@ -171,7 +171,7 @@ export function EntitySummaryLink({
     case NamedEntityTag.SMART_LIST_TAG:
       return (
         <EntityLink
-          to={`/workspace/smart-lists/${summary.parent_ref_id}/tags/${summary.ref_id}`}
+          to={`/app/workspace/smart-lists/${summary.parent_ref_id}/tags/${summary.ref_id}`}
         >
           <SlimChip label={"Smart List Tag"} color={"primary"} />
           {commonSequence}
@@ -180,7 +180,7 @@ export function EntitySummaryLink({
     case NamedEntityTag.SMART_LIST_ITEM:
       return (
         <EntityLink
-          to={`/workspace/smart-lists/${summary.parent_ref_id}/items/${summary.ref_id}`}
+          to={`/app/workspace/smart-lists/${summary.parent_ref_id}/items/${summary.ref_id}`}
         >
           <SlimChip label={"Smart List Item"} color={"primary"} />
           {commonSequence}
@@ -188,7 +188,7 @@ export function EntitySummaryLink({
       );
     case NamedEntityTag.METRIC:
       return (
-        <EntityLink to={`/workspace/metrics/${summary.ref_id}/entries`}>
+        <EntityLink to={`/app/workspace/metrics/${summary.ref_id}/entries`}>
           <SlimChip label={"Metric"} color={"primary"} />
           {commonSequence}
         </EntityLink>
@@ -196,7 +196,7 @@ export function EntitySummaryLink({
     case NamedEntityTag.METRIC_ENTRY:
       return (
         <EntityLink
-          to={`/workspace/metrics/${summary.parent_ref_id}/entries/${summary.ref_id}`}
+          to={`/app/workspace/metrics/${summary.parent_ref_id}/entries/${summary.ref_id}`}
         >
           <SlimChip label={"Metric Entry"} color={"primary"} />
           {commonSequence}
@@ -204,21 +204,21 @@ export function EntitySummaryLink({
       );
     case NamedEntityTag.PERSON:
       return (
-        <EntityLink to={`/workspace/persons/${summary.ref_id}`}>
+        <EntityLink to={`/app/workspace/persons/${summary.ref_id}`}>
           <SlimChip label={"Persons"} color={"primary"} />
           {commonSequence}
         </EntityLink>
       );
     case NamedEntityTag.SLACK_TASK:
       return (
-        <EntityLink to={`/workspace/slack-tasks/${summary.ref_id}`}>
+        <EntityLink to={`/app/workspace/slack-tasks/${summary.ref_id}`}>
           <SlimChip label={"Slack Tasks"} color={"primary"} />
           {commonSequence}
         </EntityLink>
       );
     case NamedEntityTag.EMAIL_TASK:
       return (
-        <EntityLink to={`/workspace/email-tasks/${summary.ref_id}`}>
+        <EntityLink to={`/app/workspace/email-tasks/${summary.ref_id}`}>
           <SlimChip label={"Email Tasks"} color={"primary"} />
           {commonSequence}
         </EntityLink>

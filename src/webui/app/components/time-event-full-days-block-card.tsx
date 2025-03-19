@@ -46,7 +46,7 @@ export function TimeEventFullDaysBlockCard(
       showAsArchived={props.entry.time_event.archived}
     >
       <EntityLink
-        to={`/workspace/calendar/time-event/full-days-block/${props.entry.time_event.ref_id}`}
+        to={`/app/workspace/calendar/time-event/full-days-block/${props.entry.time_event.ref_id}`}
       >
         <EntityNameComponent name={name} />
       </EntityLink>

@@ -14,6 +14,7 @@ export interface GlobalPropertiesServer {
   hostedGlobalWebApiServerUrl: string;
   hostedGlobalWebApiProgressReporterUrl: string;
   docsUrl: string;
+  hostedGlobalWebUiUrl: string;
   pwaStartUrl: string;
   communityUrl: string;
   appsStorageUrl: string;
@@ -61,6 +62,7 @@ function loadGlobalPropertiesOnServer(): GlobalPropertiesServer {
     hostedGlobalWebApiProgressReporterUrl:
       hostedGlobalWebApiProgressReporterUrl,
     docsUrl: process.env.DOCS_URL as string,
+    hostedGlobalWebUiUrl: process.env.HOSTED_GLOBAL_WEBUI_URL as string,
     pwaStartUrl: process.env.PWA_START_URL as string,
     communityUrl: process.env.COMMUNITY_URL as string,
     appsStorageUrl: process.env.APPS_STORAGE_URL as string,

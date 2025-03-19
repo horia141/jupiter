@@ -22,6 +22,7 @@ export enum DocsHelpSubject {
   PERSONS,
   SLACK_TASKS,
   EMAIL_TASKS,
+  SELF_HOSTING,
 }
 
 interface DocsHelpProps {
@@ -89,5 +90,7 @@ function subjectToUrl(subject: DocsHelpSubject) {
       return "concepts/slack-tasks";
     case DocsHelpSubject.EMAIL_TASKS:
       return "concepts/email-tasks";
+    case DocsHelpSubject.SELF_HOSTING:
+      return "how-tos/self-hosting";
   }
 }

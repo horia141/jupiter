@@ -2,26 +2,12 @@ import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
 import type { LoaderArgs, SerializeFrom } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import {
-  Links,
-  LiveReload,
-  Meta,
-  Outlet,
-  Scripts,
-  useLoaderData,
-  useNavigate,
-} from "@remix-run/react";
+import { Links, LiveReload, Meta, Outlet, Scripts } from "@remix-run/react";
 import { SnackbarProvider } from "notistack";
 
-import { App as CapacitorApp } from "@capacitor/app";
-import { SplashScreen } from "@capacitor/splash-screen";
-import { AppPlatform, AppShell } from "@jupiter/webapi-client";
-import { StrictMode, useEffect } from "react";
+import { StrictMode } from "react";
 import { EnvBanner } from "./components/infra/env-banner";
-import {
-  GlobalPropertiesContext,
-  serverToClientGlobalProperties,
-} from "./global-properties-client";
+import { serverToClientGlobalProperties } from "./global-properties-client";
 import { GLOBAL_PROPERTIES } from "./global-properties-server";
 import { loadFrontDoorInfo } from "./logic/frontdoor.server";
 import { standardShouldRevalidate } from "./rendering/standard-should-revalidate";
@@ -83,42 +69,7 @@ export function links() {
 export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
-export default function App() {
-  const loaderData = useLoaderData<typeof loader>();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (
-      loaderData.globalProperties.frontDoorInfo.appShell ===
-      AppShell.MOBILE_CAPACITOR
-    ) {
-      SplashScreen.hide();
-    }
-
-    if (
-      loaderData.globalProperties.frontDoorInfo.appPlatform ===
-        AppPlatform.MOBILE_ANDROID ||
-      loaderData.globalProperties.frontDoorInfo.appPlatform ===
-        AppPlatform.TABLET_ANDROID
-    ) {
-      async function setupBackButton() {
-        const backHandler = await CapacitorApp.addListener("backButton", () => {
-          if (window.history.state?.idx > 0) {
-            navigate(-1);
-          } else {
-            CapacitorApp.exitApp();
-          }
-        });
-
-        return () => {
-          backHandler.remove();
-        };
-      }
-
-      setupBackButton();
-    }
-  }, [loaderData.globalProperties.frontDoorInfo, navigate]);
-
+export default function Root() {
   return (
     <html lang="en">
       <head>
@@ -127,15 +78,13 @@ export default function App() {
       </head>
       <body>
         <StrictMode>
-          <GlobalPropertiesContext.Provider value={loaderData.globalProperties}>
-            <ThemeProvider theme={THEME}>
-              <SnackbarProvider>
-                <CssBaseline />
-                <EnvBanner />
-                <Outlet />
-              </SnackbarProvider>
-            </ThemeProvider>
-          </GlobalPropertiesContext.Provider>
+          <ThemeProvider theme={THEME}>
+            <SnackbarProvider>
+              <CssBaseline />
+              <EnvBanner />
+              <Outlet />
+            </SnackbarProvider>
+          </ThemeProvider>
         </StrictMode>
         <Scripts />
         <LiveReload />

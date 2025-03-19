@@ -19,6 +19,7 @@ COPY src/webui/package.json src/webui/package.json
 COPY src/webui/tsconfig.json src/webui/tsconfig.json
 COPY src/webui/remix.config.js src/webui/remix.config.js
 COPY src/webui/remix.env.d.ts src/webui/remix.env.d.ts
+COPY src/webui/from-electron.d.ts src/webui/from-electron.d.ts
 
 RUN npm install --ws --include-workspace-root
 

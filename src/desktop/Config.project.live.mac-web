@@ -5,5 +5,4 @@ BASENAME=jupiter-desktop
 DESCRIPTION="The Thrive Desktop application"
 INITIAL_WINDOW_WIDTH=1400
 INITIAL_WINDOW_HEIGHT=900
-HOSTED_GLOBAL_WEBUI_SERVER_URL=https://app.get-thriving.com/frontdoor?clientVersion=to-fill&appShell=desktop-electron&appPlatform=desktop&appDistribution=mac-web&initialWindowWidth=to-fill
-LOCAL_WEBUI_SERVER_URL=http://localhost:10020/frontdoor?clientVersion=to-fill&appShell=desktop-electron&appPlatform=desktop&appDistribution=mac-web&initialWindowWidth=to-fill
+FRONTDOOR_PATTERN=/frontdoor?clientVersion=to-fill&appShell=desktop-electron&appPlatform=desktop&appDistribution=mac-web&initialWindowWidth=to-fill

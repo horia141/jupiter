@@ -48,6 +48,16 @@ export function aGlobalError(globalError: string): SomeErrorNoData {
   };
 }
 
+export function aFieldError(fieldName: string, error: string): SomeErrorNoData {
+  return {
+    theType: "some-error-no-data",
+    globalError: null,
+    fieldErrors: {
+      [fieldName]: error,
+    },
+  };
+}
+
 export function getFieldError(
   uiErrorInfo: SomeErrorNoData | undefined,
   fieldPrefix: string

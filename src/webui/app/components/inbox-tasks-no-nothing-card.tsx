@@ -53,7 +53,7 @@ export function InboxTasksNoNothingCard(props: InboxTasksNoNothingCardProps) {
             variant="contained"
             size="small"
             component={Link}
-            to="/workspace/habits/new"
+            to="/app/workspace/habits/new"
           >
             New Habit
           </Button>
@@ -66,7 +66,7 @@ export function InboxTasksNoNothingCard(props: InboxTasksNoNothingCardProps) {
             variant="contained"
             size="small"
             component={Link}
-            to="/workspace/chores/new"
+            to="/app/workspace/chores/new"
           >
             New Chore
           </Button>
@@ -75,7 +75,7 @@ export function InboxTasksNoNothingCard(props: InboxTasksNoNothingCardProps) {
           variant="contained"
           size="small"
           component={Link}
-          to="/workspace/inbox-tasks/new"
+          to="/app/workspace/inbox-tasks/new"
         >
           New Inbox Task
         </Button>

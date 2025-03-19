@@ -70,7 +70,7 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
         }
       >
         <EntityLink
-          to={`/workspace/time-plans/${props.activity.time_plan_ref_id}/${props.activity.ref_id}`}
+          to={`/app/workspace/time-plans/${props.activity.time_plan_ref_id}/${props.activity.ref_id}`}
           block={props.onClick !== undefined}
         >
           <Typography
@@ -137,7 +137,7 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
         }
       >
         <EntityLink
-          to={`/workspace/time-plans/${props.activity.time_plan_ref_id}/${props.activity.ref_id}`}
+          to={`/app/workspace/time-plans/${props.activity.time_plan_ref_id}/${props.activity.ref_id}`}
           block={props.onClick !== undefined}
         >
           <Typography

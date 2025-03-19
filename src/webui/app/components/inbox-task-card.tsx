@@ -178,7 +178,7 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
         />
         <CardContent sx={{ padding: "0px!important" }}>
           <EntityLink
-            to={`/workspace/inbox-tasks/${props.inboxTask.ref_id}`}
+            to={`/app/workspace/inbox-tasks/${props.inboxTask.ref_id}`}
             block={props.onClick !== undefined}
           >
             <EntityNameComponent

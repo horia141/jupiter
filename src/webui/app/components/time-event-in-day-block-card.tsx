@@ -36,7 +36,7 @@ export function TimeEventInDayBlockCard(props: TimeEventInDayBlockCardProps) {
       showAsArchived={props.entry.time_event_in_tz.archived}
     >
       <EntityLink
-        to={`/workspace/calendar/time-event/in-day-block/${
+        to={`/app/workspace/calendar/time-event/in-day-block/${
           props.entry.time_event_in_tz.ref_id
         }?date=${props.entry.time_event_in_tz.start_date}&period=${
           isBigScreen ? "weekly" : "daily"

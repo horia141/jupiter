@@ -2,8 +2,8 @@
 
 > This is a work in progress section on how to do self-hosting for Thrive.
 
-Thrive natively support self-hosting, though at this moment only via the webapp surface.
-This document presents a number of alternative ways to achieve this.
+Thrive natively support self-hosting, though at this moment only via the webapp, PWA, and
+desktop app surfaces. This document presents a number of alternative ways to achieve this.
 
 **Self-hosting** means you are running the Thrive application on your _own infrastructure and
 servers_ rather than using the [hosted version](https://get-thriving.com). This gives you full
@@ -207,8 +207,21 @@ you're free to debug them, or reach out on our channels
 
 You can now access thrive by visiting the IP address or domain associated with your VPS.
 
-Currently only the webapp and PWA are supported ways of interacting with your
+Currently only the webapp, desktop app, and PWA are supported ways of interacting with your
 self hosted version.
+
+Whereas the webapp and PWA have a straightforward interactin pattern - visit your domain
+and access the app, and optionally install the PWA that is specific to this particular
+instance - the desktop app is designed to work with multiple hosts as a unit.
+
+When you open it, you'll see an option to pick a server on the login or init screen,
+which will take you to something like this:
+
+![Pick a server](../assets/self-hosting-pick-server.png)
+
+You can enter the URL of your server (typically `https://your-domain.com`) and the app
+will reconfigure to speak with it instead of the global hosted server. You can always
+come back to the global one, or switch between several instances.
 
 ### Backups
 

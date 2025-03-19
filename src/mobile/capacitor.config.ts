@@ -5,10 +5,10 @@ require("dotenv").config({
     path: ["Config.project", "../Config.global", "../../secrets/Config.secrets"],
 });
 
-const WEBUI_URL =
-  process.env.ENV == Env.PRODUCTION && process.env.HOSTING === Hosting.HOSTED_GLOBAL
-    ? process.env.HOSTED_GLOBAL_WEBUI_SERVER_URL
-    : process.env.LOCAL_WEBUI_SERVER_URL;
+let hostedGlobalWebUiUrl = process.env.HOSTED_GLOBAL_WEBUI_URL as string;
+if (process.env.ENV === Env.LOCAL && process.env.BUILD_TARGET === "android") {
+  hostedGlobalWebUiUrl = hostedGlobalWebUiUrl.replace("localhost", "10.0.2.2");
+}
 
 const config: CapacitorConfig = {
   appId: process.env.BUNDLE_ID,
@@ -16,7 +16,7 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   server: {
     cleartext: process.env.ENV === Env.LOCAL ? true : false,
-    allowNavigation: [new URL(WEBUI_URL as string).hostname],
+    allowNavigation: [new URL(hostedGlobalWebUiUrl).hostname],
     errorPath: "error.html"
   },
   ios: {

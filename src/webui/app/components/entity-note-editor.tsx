@@ -51,7 +51,7 @@ export function EntityNoteEditor({
       },
       {
         method: "post",
-        action: "/workspace/core/notes/update",
+        action: "/app/workspace/core/notes/update",
       }
     );
     setDataModified(false);

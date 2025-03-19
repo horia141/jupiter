@@ -45,7 +45,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 export default function SearchBox() {
   return (
     <Search>
-      <Form method="get" action="/workspace/tools/search">
+      <Form method="get" action="/app/workspace/tools/search">
         <SearchIconWrapper>
           <SearchIcon />
         </SearchIconWrapper>

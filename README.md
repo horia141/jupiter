@@ -11,16 +11,16 @@ The current version is both a [webapp](https://get-thriving.com) and a CLI appli
 
 Here's a picture from the "inbox" view:
 
-![Inbox Tasks](assets/showcase-inbox-tasks.png)
+![Inbox Tasks](src/docs/material/assets/showcase/showcase-inbox-tasks.png)
 
 And the calendar view:
 
-![Calendars](assets/showcase-calendar.png)
+![Calendars](src/docs/material/assets/showcase/showcase-calendar.png)
 
 And a metric feature:
 
-![Metrics](assets/showcase-metrics.png)
+![Metrics](src/docs/material/assets/showcase/showcase-metrics.png)
 
 And finally, a timeplan feature:
 
-![Time Plans](assets/showcase-timeplan.png)
+![Time Plans](src/docs/material/assets/showcase/showcase-timeplan.png)

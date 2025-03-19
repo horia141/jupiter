@@ -1,4 +1,3 @@
-import { Env, Hosting } from "@jupiter/webapi-client";
 import { config } from "dotenv";
 import { defineConfig } from "vite";
 import handlebars from "vite-plugin-handlebars";
@@ -6,12 +5,6 @@ import handlebars from "vite-plugin-handlebars";
 config({
   path: ["Config.project", "../Config.global", "../../secrets/Config.secrets"],
 });
-
-const WEBUI_URL =
-  process.env.ENV == Env.PRODUCTION &&
-  process.env.HOSTING === Hosting.HOSTED_GLOBAL
-    ? process.env.HOSTED_GLOBAL_WEBUI_SERVER_URL
-    : process.env.LOCAL_WEBUI_SERVER_URL;
 
 export default defineConfig({
   root: "./src", // Source folder
@@ -28,9 +21,6 @@ export default defineConfig({
     handlebars({
       context: {
         title: process.env.PUBLIC_NAME,
-        clientVersion: process.env.VERSION,
-        initialWindowWidth: process.env.INITIAL_WINDOW_WIDTH,
-        webUiUrl: WEBUI_URL,
       },
     }),
   ],

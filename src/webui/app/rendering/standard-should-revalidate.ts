@@ -38,15 +38,15 @@ export const standardShouldRevalidate: ShouldRevalidateFunction = ({
   nextParams,
   nextUrl,
 }) => {
-  if (formAction === "/workspace/inbox-tasks/update-status-and-eisen") {
+  if (formAction === "/app/workspace/inbox-tasks/update-status-and-eisen") {
     return false;
   }
 
-  if (formAction === "/workspace/docs/update-action") {
+  if (formAction === "/app/workspace/docs/update-action") {
     return false;
   }
 
-  if (formAction === "/workspace/core/notes/update") {
+  if (formAction === "/app/workspace/core/notes/update") {
     return false;
   }
 

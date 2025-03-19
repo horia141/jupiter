@@ -61,7 +61,7 @@ export function DocEditor({
         },
         {
           method: "post",
-          action: "/workspace/docs/update-action",
+          action: "/app/workspace/docs/update-action",
         }
       );
     } else {
@@ -73,7 +73,7 @@ export function DocEditor({
         },
         {
           method: "post",
-          action: "/workspace/docs/create-action",
+          action: "/app/workspace/docs/create-action",
         }
       );
     }

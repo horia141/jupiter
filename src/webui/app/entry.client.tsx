@@ -52,7 +52,7 @@ window.onerror = (event: Event | string, url, line) => {
       `${window.location.pathname}?${window.location.search}`,
       "utf-8"
     ).toString("base64");
-    window.location.replace(`/render-fix?returnTo=${destUrl}`);
+    window.location.replace(`/app/render-fix?returnTo=${destUrl}`);
     return true;
   }
 

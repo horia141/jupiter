@@ -90,7 +90,7 @@ export function BigPlanTimelineBigScreen({
                 >
                   <EntityLink
                     block={allowSelect}
-                    to={`/workspace/big-plans/${entry.ref_id}`}
+                    to={`/app/workspace/big-plans/${entry.ref_id}`}
                   >
                     <EntityNameOneLineComponent name={entry.name} />
                   </EntityLink>

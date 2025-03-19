@@ -24,7 +24,7 @@ cd src/mobile
 npx @capacitor/assets generate --iconBackgroundColor '#eeeeee' --iconBackgroundColorDark '#222222' --splashBackgroundColor '#eeeeee' --splashBackgroundColorDark '#111111'  --ios --android
 npx trapeze run config.yaml --diff
 ENV=production HOSTING=hosted-global BUILD_TARGET=android npx vite build --mode production --config vite.config.ts
-ENV=production HOSTING=hosted-global npx cap copy
+ENV=production HOSTING=hosted-global BUILD_TARGET=android npx cap copy
 
 cd android
 

@@ -26,7 +26,7 @@ export async function loader({ request }: LoaderArgs) {
 
     if (result.user || result.workspace) {
       const cookie = await saveFrontDoorInfo(params);
-      return redirect("/workspace", {
+      return redirect("/app/workspace", {
         headers: {
           "Set-Cookie": cookie,
         },
@@ -34,7 +34,7 @@ export async function loader({ request }: LoaderArgs) {
     }
   }
 
-  return redirect("/init", {
+  return redirect("/app/init", {
     headers: {
       "Set-Cookie": await saveFrontDoorInfo(params),
     },

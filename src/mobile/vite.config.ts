@@ -7,10 +7,12 @@ config({
     path: ["Config.project", "../Config.global", "../../secrets/Config.secrets"],
 });
 
-const WEBUI_URL =
-  process.env.ENV == Env.PRODUCTION && process.env.HOSTING === Hosting.HOSTED_GLOBAL
-    ? process.env.HOSTED_GLOBAL_WEBUI_SERVER_URL
-    : process.env.LOCAL_WEBUI_SERVER_URL;
+let hostedGlobalWebUiUrl = process.env.HOSTED_GLOBAL_WEBUI_URL as string;
+if (process.env.ENV === Env.LOCAL && process.env.BUILD_TARGET === "android") {
+  hostedGlobalWebUiUrl = hostedGlobalWebUiUrl.replace("localhost", "10.0.2.2");
+}
+
+const frontDoorUrl = new URL(process.env.FRONTDOOR_PATTERN as string, hostedGlobalWebUiUrl);
 
 export default defineConfig({
     root: './src', // Source folder
@@ -29,7 +31,7 @@ export default defineConfig({
                 ios: process.env.BUILD_TARGET === 'ios',
                 title: process.env.PUBLIC_NAME,
                 clientVersion: process.env.VERSION,
-                webUiUrl: WEBUI_URL,
+                webUiUrl: frontDoorUrl.toString(),
             }
         }),
     ]

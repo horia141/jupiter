@@ -4,6 +4,7 @@ import { redirect } from "@remix-run/node";
 import { z } from "zod";
 import { parseQuery } from "zodix";
 import { GLOBAL_PROPERTIES } from "~/global-properties-server";
+import { VERSION_HEADER } from "~/names";
 
 const QuerySchema = {
   distribution: z.nativeEnum(AppDistribution),
@@ -14,7 +15,14 @@ export async function loader({ request }: LoaderArgs) {
 
   switch (query.distribution) {
     case AppDistribution.WEB:
-      return redirect(`/workspace`);
+      // We need to add this version header explicitly here as it will
+      // be used in site selection to figure out if we're using the
+      // correct versions here.
+      return redirect(`/app/workspace`, {
+        headers: {
+          [VERSION_HEADER]: GLOBAL_PROPERTIES.version,
+        },
+      });
     case AppDistribution.MAC_WEB:
       return redirect(
         `${GLOBAL_PROPERTIES.appsStorageUrl}/v${GLOBAL_PROPERTIES.version}/Thrive-${GLOBAL_PROPERTIES.version}-universal.dmg`
