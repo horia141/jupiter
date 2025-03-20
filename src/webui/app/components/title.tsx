@@ -1,3 +1,4 @@
+import { Hosting } from "@jupiter/webapi-client";
 import { Typography } from "@mui/material";
 import { useContext } from "react";
 import { GlobalPropertiesContext } from "~/global-properties-client";
@@ -8,6 +9,15 @@ interface TitleProps {
 
 export function Title(props: TitleProps) {
   const globalProperties = useContext(GlobalPropertiesContext);
+
+  let name = "";
+  if (globalProperties.hosting === Hosting.HOSTED_GLOBAL) {
+    name = globalProperties.title;
+  } else if (globalProperties.hosting === Hosting.SELF_HOSTED) {
+    name = `${globalProperties.title} - ${globalProperties.hostingName}`;
+  } else {
+    name = globalProperties.title;
+  }
 
   return (
     <Typography
@@ -22,7 +32,7 @@ export function Title(props: TitleProps) {
         },
       }}
     >
-      {globalProperties.title}
+      {name}
     </Typography>
   );
 }
