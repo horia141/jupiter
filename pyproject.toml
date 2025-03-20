@@ -1,4 +1,5 @@
 [tool.poetry]
+package-mode = false
 name = "jupiter"
 version = "0.1.0"
 description = "Thrive is a small tool for _life planning_."

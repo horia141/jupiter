@@ -1,4 +1,5 @@
 [tool.poetry]
+package-mode = false
 name = "jupiter-cli"
 version = "0.1.0"
 description = "A CLI client for Thrive."
@@ -11,13 +12,13 @@ documentation = "https://docs.get-thriving.com"
 
 [tool.poetry.dependencies]
 python = ">=3.10, <3.11"
-rich = "12.4.4"
 jupiter-core = {path = "../core", develop = true}
+rich = "^13.9.4"
 simpleaudio = "^1.0.4"
 beepy = "^1.0.7"
 
-[tool.poetry.dev-dependencies]
-types-requests = "2.27.16"
+[tool.poetry.group.dev.dependencies]
+types-requests = "^2.32.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
