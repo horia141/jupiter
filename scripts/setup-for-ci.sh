@@ -18,6 +18,7 @@ poetry install --no-interaction --no-ansi
 (cd src/core && poetry install --no-interaction --no-ansi)
 (cd src/cli && poetry install --no-interaction --no-ansi)
 (cd src/webapi && poetry install --no-interaction --no-ansi)
+(cd src/docs && poetry install --no-interaction --no-ansi)
 (cd itests && poetry install --no-interaction --no-ansi)
 
 npm ci --ws --include-workspace-root
