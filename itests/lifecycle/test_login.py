@@ -5,7 +5,7 @@ from itests.conftest import TestUser
 
 
 def test_login(page: Page, new_user: TestUser):
-    page.goto("/workspace")
+    page.goto("/app/workspace")
 
     expect(page.locator("body")).to_contain_text("Login")
 
@@ -18,13 +18,13 @@ def test_login(page: Page, new_user: TestUser):
     # messing about with the browser, and Remix and its taking over of the
     # application communication, and especialy the redirects. If there's no wait
     # here then the redirect from "post /login" with cookies will not work!
-    page.wait_for_url("/workspace/*")
+    page.wait_for_url("/app/workspace/*")
 
 
 def test_login_bad_user_name(
     page: Page, new_user: TestUser, pytestconfig: pytest.Config
 ):
-    page.goto("/workspace")
+    page.goto("/app/workspace")
 
     expect(page.locator("body")).to_contain_text("Login")
 
@@ -37,7 +37,7 @@ def test_login_bad_user_name(
 
 
 def test_login_bad_password(page: Page, new_user: TestUser):
-    page.goto("/workspace")
+    page.goto("/app/workspace")
 
     expect(page.locator("body")).to_contain_text("Login")
 

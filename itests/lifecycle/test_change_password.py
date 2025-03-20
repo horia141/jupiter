@@ -15,7 +15,7 @@ def test_change_password(
     new_user: TestUser,
     new_user_and_workspace: InitResult,
 ):
-    page.goto("/workspace")
+    page.goto("/app/workspace")
 
     expect(page.locator("body")).to_contain_text("Login")
 
@@ -28,14 +28,14 @@ def test_change_password(
     # messing about with the browser, and Remix and its taking over of the
     # application communication, and especialy the redirects. If there's no wait
     # here then the redirect from "post /login" with cookies will not work!
-    page.wait_for_url("/workspace/*")
+    page.wait_for_url("/app/workspace/*")
 
     page.locator("#show-sidebar").click()
 
     page.locator("#account-menu").click()
     page.locator("#security").click()
 
-    page.wait_for_url("/workspace/security")
+    page.wait_for_url("/app/workspace/security")
 
     page.locator('input[name="currentPassword"]').fill(new_user.password)
     page.locator('input[name="newPassword"]').fill("a-new-password")
@@ -43,7 +43,7 @@ def test_change_password(
 
     page.locator("#change-password").click()
 
-    page.wait_for_url("/workspace/*")
+    page.wait_for_url("/app/workspace/*")
 
     page.locator("#account-menu").click()
     page.locator("#logout").click()
@@ -59,7 +59,7 @@ def test_change_password(
 
     page.locator("#login").click()
 
-    page.wait_for_url("/workspace/*")
+    page.wait_for_url("/app/workspace/*")
 
     logged_in_client = AuthenticatedClient(
         base_url=webapi_server_url, token=new_user_and_workspace.auth_token_ext

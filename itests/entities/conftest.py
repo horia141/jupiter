@@ -91,7 +91,7 @@ def page_logged_in(
     # messing about with the browser, and Remix and its taking over of the
     # application communication, and especialy the redirects. If there's no wait
     # here then the redirect from "post /login" with cookies will not work!
-    page.wait_for_url("/workspace/*")
+    page.wait_for_url("/app/app/workspace/*")
 
     yield new_user
 

@@ -5,6 +5,6 @@ from itests.conftest import TestUser
 
 
 def test_working_mem_write(page: Page, new_random_user: TestUser) -> None:
-    page.goto("/workspace/working-mem")
+    page.goto("/app/workspace/working-mem")
 
     print(f"Working mem {new_random_user.email}")
