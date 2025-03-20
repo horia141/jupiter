@@ -1,4 +1,5 @@
 """An externally facing authentication token."""
+
 import re
 from re import Pattern
 from typing import Final

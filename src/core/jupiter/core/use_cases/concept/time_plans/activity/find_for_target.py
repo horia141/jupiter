@@ -1,4 +1,5 @@
 """The use case for finding the time plan activities for a particular target."""
+
 from jupiter.core.domain.concept.time_plans.time_plan import TimePlan
 from jupiter.core.domain.concept.time_plans.time_plan_activity import TimePlanActivity
 from jupiter.core.domain.concept.time_plans.time_plan_activity_target import (

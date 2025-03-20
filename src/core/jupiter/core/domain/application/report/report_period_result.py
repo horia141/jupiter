@@ -1,4 +1,5 @@
 """The result of a report."""
+
 from dataclasses import field
 
 from jupiter.core.domain.application.gamification.user_score_overview import (

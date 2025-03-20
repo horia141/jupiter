@@ -1,4 +1,5 @@
 """The command for finding smart lists."""
+
 from collections import defaultdict
 
 from jupiter.core.domain.concept.smart_lists.smart_list import SmartList
@@ -134,9 +135,11 @@ class SmartListFindUseCase(
                     parent_ref_id=smart_list.ref_id,
                     allow_archived=args.allow_archived,
                     ref_id=args.filter_item_ref_id,
-                    is_done=args.filter_is_done
-                    if args.filter_is_done is not None
-                    else NoFilter(),
+                    is_done=(
+                        args.filter_is_done
+                        if args.filter_is_done is not None
+                        else NoFilter()
+                    ),
                     tag_ref_id=args.filter_tag_ref_id or NoFilter(),
                 ):
                     if (
@@ -173,23 +176,27 @@ class SmartListFindUseCase(
                 SmartListFindResponseEntry(
                     smart_list=sl,
                     note=all_notes_by_smart_list_ref_id.get(sl.ref_id, None),
-                    smart_list_tags=smart_list_tags_by_smart_list_ref_ids.get(
-                        sl.ref_id,
-                        [],
-                    )
-                    if smart_list_tags_by_smart_list_ref_ids is not None
-                    else None,
-                    smart_list_items=smart_list_items_by_smart_list_ref_ids.get(
-                        sl.ref_id,
-                        [],
-                    )
-                    if smart_list_items_by_smart_list_ref_ids is not None
-                    else None,
-                    smart_list_item_notes=list(
-                        all_notes_by_smart_list_item_ref_id.values()
-                    )
-                    if args.include_item_notes
-                    else None,
+                    smart_list_tags=(
+                        smart_list_tags_by_smart_list_ref_ids.get(
+                            sl.ref_id,
+                            [],
+                        )
+                        if smart_list_tags_by_smart_list_ref_ids is not None
+                        else None
+                    ),
+                    smart_list_items=(
+                        smart_list_items_by_smart_list_ref_ids.get(
+                            sl.ref_id,
+                            [],
+                        )
+                        if smart_list_items_by_smart_list_ref_ids is not None
+                        else None
+                    ),
+                    smart_list_item_notes=(
+                        list(all_notes_by_smart_list_item_ref_id.values())
+                        if args.include_item_notes
+                        else None
+                    ),
                 )
                 for sl in smart_lists
             ],

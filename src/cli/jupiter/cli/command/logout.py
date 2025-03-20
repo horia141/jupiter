@@ -1,4 +1,5 @@
 """Command for logging out."""
+
 from argparse import ArgumentParser, Namespace
 
 from jupiter.cli.command.command import Command

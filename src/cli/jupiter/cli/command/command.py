@@ -234,18 +234,18 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
             bool_field.add_argument(
                 f"--{field_name_to_arg_name(field.name)}",
                 dest=field.name,
-                default=field.default
-                if field.default is not dataclasses.MISSING
-                else False,
+                default=(
+                    field.default if field.default is not dataclasses.MISSING else False
+                ),
                 action="store_true",
                 help=field.metadata.get("help", ""),
             )
             bool_field.add_argument(
                 f"--no-{field_name_to_arg_name(field.name)}",
                 dest=field.name,
-                default=field.default
-                if field.default is not dataclasses.MISSING
-                else False,
+                default=(
+                    field.default if field.default is not dataclasses.MISSING else False
+                ),
                 action="store_false",
                 help=field.metadata.get("help", ""),
             )
@@ -289,9 +289,11 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
                     dest=field.name,
                     required=False,
                     type=field_type if field_type in (int, float) else str,
-                    default=field.default
-                    if field.default is not dataclasses.MISSING
-                    else None,
+                    default=(
+                        field.default
+                        if field.default is not dataclasses.MISSING
+                        else None
+                    ),
                     help=field.metadata.get("help", ""),
                 )
                 a_field.add_argument(
@@ -1490,7 +1492,7 @@ class CliApp:
             ):
                 try:
                     await command.run(self._console, args)
-                except Exception as e:  # noqa: BLE001
+                except Exception as e:
                     if type(e) not in self._exception_handlers:
                         raise
 

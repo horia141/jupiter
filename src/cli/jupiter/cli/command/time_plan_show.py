@@ -1,4 +1,5 @@
 """Command for showing the time plans."""
+
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     entity_id_to_rich_text,

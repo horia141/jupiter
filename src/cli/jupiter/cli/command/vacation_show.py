@@ -1,6 +1,5 @@
 """UseCase for showing the vacations."""
 
-
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     end_date_to_rich_text,

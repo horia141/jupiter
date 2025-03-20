@@ -1,4 +1,5 @@
 """UseCase for showing the big plans."""
+
 from typing import cast
 
 from jupiter.cli.command.command import LoggedInReadonlyCommand
@@ -37,9 +38,11 @@ class BigPlanShow(LoggedInReadonlyCommand[BigPlanFindUseCase, BigPlanFindResult]
             key=lambda bpe: (
                 bpe.big_plan.archived,
                 bpe.big_plan.status,
-                bpe.big_plan.actionable_date
-                if bpe.big_plan.actionable_date
-                else ADate.from_str("2100-01-01"),
+                (
+                    bpe.big_plan.actionable_date
+                    if bpe.big_plan.actionable_date
+                    else ADate.from_str("2100-01-01")
+                ),
             ),
         )
 

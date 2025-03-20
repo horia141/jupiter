@@ -1,4 +1,5 @@
 """Statistics about scores for a particular time interval."""
+
 import abc
 
 from jupiter.core.domain.application.gamification.score_log_entry import ScoreLogEntry

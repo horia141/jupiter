@@ -1,4 +1,5 @@
 """The jupiter Web RPC API."""
+
 import asyncio
 import logging
 

@@ -1,4 +1,5 @@
 """Fixtures for integration tests."""
+
 import os
 import re
 import uuid

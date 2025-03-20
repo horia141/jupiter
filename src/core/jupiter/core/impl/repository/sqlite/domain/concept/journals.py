@@ -1,4 +1,5 @@
 """The SQLite based journals repository."""
+
 from jupiter.core.domain.concept.journals.journal import (
     Journal,
     JournalExistsForDatePeriodCombinationError,

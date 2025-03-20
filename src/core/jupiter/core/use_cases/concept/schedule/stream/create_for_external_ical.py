@@ -1,4 +1,5 @@
 """Use case for creating a schedule stream from an external iCal."""
+
 import requests
 from icalendar import Calendar
 from jupiter.core.domain.concept.schedule.schedule_domain import ScheduleDomain

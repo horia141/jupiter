@@ -1,4 +1,5 @@
 """Tests for the recurring task skip rule."""
+
 import pendulum
 import pytest
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod

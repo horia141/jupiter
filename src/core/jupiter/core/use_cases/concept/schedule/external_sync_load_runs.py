@@ -1,4 +1,5 @@
 """Use case for loading history of runs."""
+
 from jupiter.core.domain.concept.schedule.schedule_domain import ScheduleDomain
 from jupiter.core.domain.concept.schedule.schedule_external_sync_log import (
     ScheduleExternalSyncLog,

@@ -1,4 +1,5 @@
 """An authentication token allows for secure and fast authentication across a session."""
+
 from typing import ClassVar
 
 import jwt

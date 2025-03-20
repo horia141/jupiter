@@ -1,4 +1,5 @@
 """The rules for skipping a recurring task."""
+
 from typing import Literal, cast
 
 import pendulum

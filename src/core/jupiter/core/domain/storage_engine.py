@@ -1,4 +1,5 @@
 """Domain-level storage interaction."""
+
 import abc
 from contextlib import AbstractAsyncContextManager
 from typing import TypeVar, overload
@@ -41,40 +42,41 @@ class DomainUnitOfWork(abc.ABC):
     @abc.abstractmethod
     def get_for(
         self, entity_type: type[_RootEntityT]
-    ) -> RootEntityRepository[_RootEntityT]:
-        ...
+    ) -> RootEntityRepository[_RootEntityT]: ...
 
     @overload
     @abc.abstractmethod
     def get_for(
         self, entity_type: type[_StubEntityT]
-    ) -> StubEntityRepository[_StubEntityT]:
-        ...
+    ) -> StubEntityRepository[_StubEntityT]: ...
 
     @overload
     @abc.abstractmethod
     def get_for(
         self, entity_type: type[_TrunkEntityT]
-    ) -> TrunkEntityRepository[_TrunkEntityT]:
-        ...
+    ) -> TrunkEntityRepository[_TrunkEntityT]: ...
 
     @overload
     @abc.abstractmethod
     def get_for(
         self, entity_type: type[_CrownEntityT]
-    ) -> CrownEntityRepository[_CrownEntityT]:
-        ...
+    ) -> CrownEntityRepository[_CrownEntityT]: ...
 
     @abc.abstractmethod
     def get_for(
         self,
-        entity_type: type[_RootEntityT]
-        | type[_StubEntityT]
-        | type[_TrunkEntityT]
-        | type[_CrownEntityT],
-    ) -> RootEntityRepository[_RootEntityT] | StubEntityRepository[
-        _StubEntityT
-    ] | TrunkEntityRepository[_TrunkEntityT] | CrownEntityRepository[_CrownEntityT]:
+        entity_type: (
+            type[_RootEntityT]
+            | type[_StubEntityT]
+            | type[_TrunkEntityT]
+            | type[_CrownEntityT]
+        ),
+    ) -> (
+        RootEntityRepository[_RootEntityT]
+        | StubEntityRepository[_StubEntityT]
+        | TrunkEntityRepository[_TrunkEntityT]
+        | CrownEntityRepository[_CrownEntityT]
+    ):
         """Retrieve a repository for a specific entity type."""
 
     @abc.abstractmethod

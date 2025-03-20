@@ -1,4 +1,5 @@
 """A specific schedule group or stream of events."""
+
 from jupiter.core.domain.concept.schedule.schedule_event_full_days import (
     ScheduleEventFullDays,
 )

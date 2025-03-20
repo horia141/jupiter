@@ -1,4 +1,5 @@
 """A generic entity id."""
+
 import re
 from functools import total_ordering
 

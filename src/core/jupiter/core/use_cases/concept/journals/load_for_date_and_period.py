@@ -1,4 +1,5 @@
 """Retrieve details about a journal."""
+
 from jupiter.core.domain.concept.journals.journal import Journal, JournalRepository
 from jupiter.core.domain.concept.journals.journal_collection import JournalCollection
 from jupiter.core.domain.core import schedules

@@ -1,4 +1,5 @@
 """Sqlite implementation of the notes repository."""
+
 from jupiter.core.domain.core.notes.note import (
     Note,
     NoteRepository,

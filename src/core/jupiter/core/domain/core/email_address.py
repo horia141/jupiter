@@ -1,4 +1,5 @@
 """An email address."""
+
 from functools import total_ordering
 from typing import cast
 

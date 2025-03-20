@@ -1,4 +1,5 @@
 """Application-specific realm helpers."""
+
 import abc
 import dataclasses
 import types
@@ -1797,7 +1798,7 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
         r"""Get all types registered that derive from base type."""
         yielded_types: set[type[Thing]] = set()
 
-        for (the_type, type_realm) in self._encoders_registry.keys():
+        for the_type, type_realm in self._encoders_registry.keys():
             if the_type in yielded_types:
                 continue
             if not allowed_in_realm(the_type, realm):
@@ -1808,7 +1809,7 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                 yielded_types.add(the_type)
                 yield the_type
 
-        for (the_type, type_realm) in self._decoders_registry.keys():
+        for the_type, type_realm in self._decoders_registry.keys():
             if the_type in yielded_types:
                 continue
             if not allowed_in_realm(the_type, realm):

@@ -119,11 +119,11 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
         return [
             ProjectSummary(
                 ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
-                parent_project_ref_id=_ENTITY_ID_DECODER.decode(
-                    str(row["parent_project_ref_id"])
-                )
-                if row["parent_project_ref_id"]
-                else None,
+                parent_project_ref_id=(
+                    _ENTITY_ID_DECODER.decode(str(row["parent_project_ref_id"]))
+                    if row["parent_project_ref_id"]
+                    else None
+                ),
                 name=_PROJECT_NAME_DECODER.decode(row["name"]),
                 order_of_child_projects=[
                     _ENTITY_ID_DECODER.decode(idx)

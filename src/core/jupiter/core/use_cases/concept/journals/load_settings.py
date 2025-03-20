@@ -1,4 +1,5 @@
 """Use case for loading the settings around journals."""
+
 from jupiter.core.domain.app import AppCore
 from jupiter.core.domain.concept.journals.journal_collection import JournalCollection
 from jupiter.core.domain.concept.projects.project import Project

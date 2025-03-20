@@ -1,4 +1,5 @@
 """Framework level elements for entities (aggregate roots in DDD)."""
+
 import abc
 import dataclasses
 from collections.abc import Callable

@@ -1,4 +1,5 @@
 """Use case for creating a journal."""
+
 from jupiter.core.domain.concept.journals.journal import Journal
 from jupiter.core.domain.concept.journals.journal_collection import JournalCollection
 from jupiter.core.domain.core.adate import ADate

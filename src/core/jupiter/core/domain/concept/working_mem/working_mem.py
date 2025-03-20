@@ -1,4 +1,5 @@
 """An entry in the working_mem.txt system."""
+
 import abc
 from typing import cast
 

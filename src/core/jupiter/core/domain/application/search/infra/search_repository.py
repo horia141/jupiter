@@ -1,4 +1,5 @@
 """A search index repository for free form searching across all entities in jupiter."""
+
 import abc
 from collections.abc import Iterable
 

@@ -1,4 +1,5 @@
 """Load settings for working mems use case."""
+
 from jupiter.core.domain.app import AppCore
 from jupiter.core.domain.concept.projects.project import Project
 from jupiter.core.domain.concept.working_mem.working_mem_collection import (

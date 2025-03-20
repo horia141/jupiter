@@ -1,4 +1,5 @@
 """The workspace where everything happens."""
+
 import abc
 from collections.abc import Iterable
 

@@ -1,4 +1,5 @@
 """Tests for the timezone."""
+
 from jupiter.core.domain.core.timezone import UTC, Timezone
 
 

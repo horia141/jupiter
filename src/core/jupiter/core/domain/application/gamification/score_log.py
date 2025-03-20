@@ -1,4 +1,5 @@
 """A container for all the scores a user has."""
+
 import abc
 
 from jupiter.core.domain.application.gamification.score_log_entry import ScoreLogEntry

@@ -1,4 +1,5 @@
 """UseCase for showing the chores."""
+
 from typing import cast
 
 from jupiter.cli.command.command import LoggedInReadonlyCommand

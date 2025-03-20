@@ -1,4 +1,5 @@
 """A mutation use case recoder which persists the records to storage."""
+
 from typing import Final
 
 from jupiter.core.framework.use_case import (

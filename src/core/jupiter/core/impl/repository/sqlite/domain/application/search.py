@@ -1,4 +1,5 @@
 """The SQLite based search repository."""
+
 from collections.abc import Iterable
 from typing import Final
 
@@ -97,11 +98,13 @@ class SqliteSearchRepository(SqliteRepository, SearchRepository):
                     last_modified_time=self._realm_codec_registry.get_encoder(
                         Timestamp, DatabaseRealm
                     ).encode(entity.last_modified_time),
-                    archived_time=self._realm_codec_registry.get_encoder(
-                        Timestamp, DatabaseRealm
-                    ).encode(entity.archived_time)
-                    if entity.archived_time
-                    else None,
+                    archived_time=(
+                        self._realm_codec_registry.get_encoder(
+                            Timestamp, DatabaseRealm
+                        ).encode(entity.archived_time)
+                        if entity.archived_time
+                        else None
+                    ),
                 )
             )
 
@@ -127,11 +130,13 @@ class SqliteSearchRepository(SqliteRepository, SearchRepository):
                 last_modified_time=self._realm_codec_registry.get_encoder(
                     Timestamp, DatabaseRealm
                 ).encode(entity.last_modified_time),
-                archived_time=self._realm_codec_registry.get_encoder(
-                    Timestamp, DatabaseRealm
-                ).encode(entity.archived_time)
-                if entity.archived_time
-                else None,
+                archived_time=(
+                    self._realm_codec_registry.get_encoder(
+                        Timestamp, DatabaseRealm
+                    ).encode(entity.archived_time)
+                    if entity.archived_time
+                    else None
+                ),
             )
         )
         result = await self._connection.execute(query)
@@ -273,11 +278,13 @@ class SqliteSearchRepository(SqliteRepository, SearchRepository):
                 created_time=self._realm_codec_registry.get_decoder(
                     Timestamp, DatabaseRealm
                 ).decode(row["created_time"]),
-                archived_time=self._realm_codec_registry.get_decoder(
-                    Timestamp, DatabaseRealm
-                ).decode(row["archived_time"])
-                if row["archived_time"]
-                else None,
+                archived_time=(
+                    self._realm_codec_registry.get_decoder(
+                        Timestamp, DatabaseRealm
+                    ).decode(row["archived_time"])
+                    if row["archived_time"]
+                    else None
+                ),
                 last_modified_time=self._realm_codec_registry.get_decoder(
                     Timestamp, DatabaseRealm
                 ).decode(row["last_modified_time"]),

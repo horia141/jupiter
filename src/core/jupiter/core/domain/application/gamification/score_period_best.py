@@ -1,4 +1,5 @@
 """The best score for a period of time and a particular subdivision of it."""
+
 import abc
 
 from jupiter.core.domain.application.gamification.score_stats import ScoreStats
@@ -64,12 +65,16 @@ class ScorePeriodBest(Record):
         return self._new_version(
             ctx,
             total_score=max(self.total_score, score_stats.total_score),
-            inbox_task_cnt=self.inbox_task_cnt
-            if self.total_score > score_stats.total_score
-            else score_stats.inbox_task_cnt,
-            big_plan_cnt=self.big_plan_cnt
-            if self.total_score > score_stats.total_score
-            else score_stats.big_plan_cnt,
+            inbox_task_cnt=(
+                self.inbox_task_cnt
+                if self.total_score > score_stats.total_score
+                else score_stats.inbox_task_cnt
+            ),
+            big_plan_cnt=(
+                self.big_plan_cnt
+                if self.total_score > score_stats.total_score
+                else score_stats.big_plan_cnt
+            ),
         )
 
     @property

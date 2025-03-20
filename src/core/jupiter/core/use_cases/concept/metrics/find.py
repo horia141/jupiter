@@ -1,4 +1,5 @@
 """The command for finding metrics."""
+
 import itertools
 from collections import defaultdict
 from typing import cast
@@ -180,15 +181,19 @@ class MetricFindUseCase(
                 MetricFindResponseEntry(
                     metric=m,
                     note=all_notes_by_metric_ref_id.get(m.ref_id, None),
-                    metric_entries=metric_entries_by_ref_ids.get(m.ref_id, [])
-                    if len(metric_entries_by_ref_ids) > 0
-                    else None,
-                    metric_collection_inbox_tasks=metric_collection_inbox_tasks_by_ref_id.get(
-                        m.ref_id,
-                        [],
-                    )
-                    if len(metric_collection_inbox_tasks_by_ref_id) > 0
-                    else None,
+                    metric_entries=(
+                        metric_entries_by_ref_ids.get(m.ref_id, [])
+                        if len(metric_entries_by_ref_ids) > 0
+                        else None
+                    ),
+                    metric_collection_inbox_tasks=(
+                        metric_collection_inbox_tasks_by_ref_id.get(
+                            m.ref_id,
+                            [],
+                        )
+                        if len(metric_collection_inbox_tasks_by_ref_id) > 0
+                        else None
+                    ),
                     metric_entry_notes=[
                         all_notes_by_metric_entry_ref_id[me.ref_id]
                         for me in metric_entries_by_ref_ids.get(m.ref_id, [])

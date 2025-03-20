@@ -1,4 +1,5 @@
 """UseCase for generating reports of progress."""
+
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     entity_id_to_rich_text,
@@ -354,9 +355,11 @@ class Report(LoggedInReadonlyCommand[ReportUseCase, ReportResult]):
             sorted_big_plans = sorted(
                 result.period_result.per_big_plan_breakdown,
                 key=lambda bpe: (
-                    bpe.actionable_date
-                    if bpe.actionable_date
-                    else ADate.from_str("2100-01-01"),
+                    (
+                        bpe.actionable_date
+                        if bpe.actionable_date
+                        else ADate.from_str("2100-01-01")
+                    ),
                 ),
             )
 
@@ -515,9 +518,11 @@ class Report(LoggedInReadonlyCommand[ReportUseCase, ReportResult]):
 
         sorted_not_done_big_plans = sorted(
             summary.not_done_big_plans,
-            key=lambda bp: bp.actionable_date
-            if bp.actionable_date
-            else ADate.from_str("2100-01-01"),
+            key=lambda bp: (
+                bp.actionable_date
+                if bp.actionable_date
+                else ADate.from_str("2100-01-01")
+            ),
         )
 
         for big_plan in sorted_not_done_big_plans:
@@ -532,9 +537,11 @@ class Report(LoggedInReadonlyCommand[ReportUseCase, ReportResult]):
 
         sorted_done_big_plans = sorted(
             summary.done_big_plans,
-            key=lambda bp: bp.actionable_date
-            if bp.actionable_date
-            else ADate.from_str("2100-01-01"),
+            key=lambda bp: (
+                bp.actionable_date
+                if bp.actionable_date
+                else ADate.from_str("2100-01-01")
+            ),
         )
 
         done_tree = big_plan_tree.add(done_text)

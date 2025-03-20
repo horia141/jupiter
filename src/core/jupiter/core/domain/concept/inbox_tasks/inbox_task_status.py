@@ -1,4 +1,5 @@
 """The status of an inbox task."""
+
 from functools import total_ordering
 
 from jupiter.core.framework.value import EnumValue, enum_value

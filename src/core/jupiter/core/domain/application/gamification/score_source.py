@@ -1,6 +1,5 @@
 """The source of a score."""
 
-
 from jupiter.core.framework.value import EnumValue, enum_value
 
 

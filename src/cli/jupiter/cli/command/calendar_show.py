@@ -1,4 +1,5 @@
 """Command for loading a calendar."""
+
 from typing import cast
 
 from jupiter.cli.command.command import LoggedInReadonlyCommand
@@ -207,17 +208,19 @@ class CalendarShow(
             per_subperiod_tree.add(
                 Text(
                     f"{stat.schedule_event_full_days_cnt} scheduled full day events",
-                    style="gray62"
-                    if stat.schedule_event_full_days_cnt == 0
-                    else "default",
+                    style=(
+                        "gray62"
+                        if stat.schedule_event_full_days_cnt == 0
+                        else "default"
+                    ),
                 )
             )
             per_subperiod_tree.add(
                 Text(
                     f"{stat.schedule_event_in_day_cnt} scheduled in day events",
-                    style="gray62"
-                    if stat.schedule_event_in_day_cnt == 0
-                    else "default",
+                    style=(
+                        "gray62" if stat.schedule_event_in_day_cnt == 0 else "default"
+                    ),
                 )
             )
             per_subperiod_tree.add(

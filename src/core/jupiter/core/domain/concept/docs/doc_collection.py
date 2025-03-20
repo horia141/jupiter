@@ -1,4 +1,5 @@
 """The doc collection."""
+
 from jupiter.core.domain.concept.docs.doc import Doc
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext

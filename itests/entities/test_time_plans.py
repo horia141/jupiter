@@ -1,4 +1,5 @@
 """Tests about time plans."""
+
 import re
 import time
 from collections.abc import Iterator
@@ -498,7 +499,9 @@ def test_time_plan_create_new_inbox_task_from_big_plan_activity(
         time_plan.ref_id, big_plan.ref_id
     )
 
-    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}/{big_plan_activity.ref_id}")
+    page.goto(
+        f"/app/workspace/time-plans/{time_plan.ref_id}/{big_plan_activity.ref_id}"
+    )
 
     page.locator("#leaf-panel").locator("a", has_text="New Inbox Task").click()
 
@@ -542,7 +545,9 @@ def test_time_plan_create_activities_from_inbox_tasks_of_an_associated_big_plan(
         time_plan.ref_id, big_plan.ref_id
     )
 
-    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}/{big_plan_activity.ref_id}")
+    page.goto(
+        f"/app/workspace/time-plans/{time_plan.ref_id}/{big_plan_activity.ref_id}"
+    )
 
     page.locator("#leaf-panel").locator(
         "a", has_text="From Current Inbox Tasks"
@@ -1706,7 +1711,9 @@ def test_time_plan_activity_update(
         time_plan.ref_id, inbox_task.ref_id
     )
 
-    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}/{inbox_task_activity.ref_id}")
+    page.goto(
+        f"/app/workspace/time-plans/{time_plan.ref_id}/{inbox_task_activity.ref_id}"
+    )
 
     page.locator("#time-plan-activity-kind-make-progress").click()
     page.locator("#time-plan-activity-feasability-stretch").click()
@@ -1741,7 +1748,9 @@ def test_time_plan_activity_archive_inbox_task(
 
     expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task")
 
-    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}/{inbox_task_activity.ref_id}")
+    page.goto(
+        f"/app/workspace/time-plans/{time_plan.ref_id}/{inbox_task_activity.ref_id}"
+    )
 
     page.locator("#leaf-entity-archive").click()
     page.locator("#leaf-entity-archive-confirm").click()
@@ -1777,12 +1786,16 @@ def test_time_plan_activity_archive_big_plan_with_inbox_task(
     expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task")
     expect(page.locator("#time-plan-activities")).to_contain_text("The Big Plan")
 
-    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}/{big_plan_activity.ref_id}")
+    page.goto(
+        f"/app/workspace/time-plans/{time_plan.ref_id}/{big_plan_activity.ref_id}"
+    )
 
     page.locator("#leaf-entity-archive").click()
     page.locator("#leaf-entity-archive-confirm").click()
 
-    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}/{inbox_task_activity.ref_id}")
+    page.goto(
+        f"/app/workspace/time-plans/{time_plan.ref_id}/{inbox_task_activity.ref_id}"
+    )
 
     expect(page.locator("#inbox-task-editor-save")).to_be_disabled()
 

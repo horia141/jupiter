@@ -1,4 +1,5 @@
 """A source of time, kept constant across each request."""
+
 from typing import Final
 
 import pendulum

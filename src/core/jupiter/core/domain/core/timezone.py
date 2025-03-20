@@ -1,4 +1,5 @@
 """An timezone in this domain."""
+
 from functools import total_ordering
 from typing import cast
 

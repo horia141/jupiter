@@ -1,4 +1,5 @@
 """The command for updating a user's properties."""
+
 from jupiter.core.domain.concept.user.user import User
 from jupiter.core.domain.concept.user.user_name import UserName
 from jupiter.core.domain.core.timezone import Timezone

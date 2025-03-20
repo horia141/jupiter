@@ -1,4 +1,5 @@
 """SQLite implementation of schedules infra classes."""
+
 from jupiter.core.domain.concept.schedule.schedule_external_sync_log_entry import (
     ScheduleExternalSyncLogEntry,
     ScheduleExternalSyncLogEntryRepository,

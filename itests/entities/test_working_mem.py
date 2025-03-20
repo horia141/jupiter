@@ -1,4 +1,5 @@
 """Tests for the working mem."""
+
 from playwright.sync_api import Page
 
 from itests.conftest import TestUser

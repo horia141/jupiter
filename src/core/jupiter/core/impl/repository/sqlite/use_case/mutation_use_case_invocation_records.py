@@ -1,4 +1,5 @@
 """SQlite based repository for the invocation record of mutation use cases."""
+
 from typing import Final
 
 from jupiter.core.framework.base.entity_id import EntityId

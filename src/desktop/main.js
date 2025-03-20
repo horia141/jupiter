@@ -64,7 +64,7 @@ function createWindow() {
   });
   win.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
-    return { action: 'deny' };
+    return { action: "deny" };
   });
 
   win.once("ready-to-show", () => {

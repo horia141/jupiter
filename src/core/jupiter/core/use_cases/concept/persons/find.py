@@ -1,4 +1,5 @@
 """The command for finding the persons."""
+
 from collections import defaultdict
 from typing import cast
 
@@ -151,27 +152,33 @@ class PersonFindUseCase(
                 PersonFindResultEntry(
                     person=p,
                     note=all_notes_by_person_ref_id.get(p.ref_id, None),
-                    birthday_time_event_blocks=[
-                        it
-                        for it in birthday_time_event_blocks
-                        if it.source_entity_ref_id == p.ref_id
-                    ]
-                    if birthday_time_event_blocks is not None
-                    else None,
-                    catch_up_inbox_tasks=[
-                        it
-                        for it in catch_up_inbox_tasks
-                        if it.source_entity_ref_id_for_sure == p.ref_id
-                    ]
-                    if catch_up_inbox_tasks is not None
-                    else None,
-                    birthday_inbox_tasks=[
-                        it
-                        for it in birthday_inbox_tasks
-                        if it.source_entity_ref_id_for_sure == p.ref_id
-                    ]
-                    if birthday_inbox_tasks is not None
-                    else None,
+                    birthday_time_event_blocks=(
+                        [
+                            it
+                            for it in birthday_time_event_blocks
+                            if it.source_entity_ref_id == p.ref_id
+                        ]
+                        if birthday_time_event_blocks is not None
+                        else None
+                    ),
+                    catch_up_inbox_tasks=(
+                        [
+                            it
+                            for it in catch_up_inbox_tasks
+                            if it.source_entity_ref_id_for_sure == p.ref_id
+                        ]
+                        if catch_up_inbox_tasks is not None
+                        else None
+                    ),
+                    birthday_inbox_tasks=(
+                        [
+                            it
+                            for it in birthday_inbox_tasks
+                            if it.source_entity_ref_id_for_sure == p.ref_id
+                        ]
+                        if birthday_inbox_tasks is not None
+                        else None
+                    ),
                 )
                 for p in persons
             ],

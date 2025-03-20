@@ -1,4 +1,5 @@
 """The command for finding working mem."""
+
 from collections import defaultdict
 from typing import cast
 
@@ -90,18 +91,18 @@ class WorkingMemFindUseCase(
                 parent_ref_id=note_collection.ref_id,
                 domain=NoteDomain.WORKING_MEM,
                 allow_archived=True,
-                source_entity_ref_id=[
-                    working_mem.ref_id for working_mem in working_mems
-                ]
-                if working_mems
-                else NoFilter(),
+                source_entity_ref_id=(
+                    [working_mem.ref_id for working_mem in working_mems]
+                    if working_mems
+                    else NoFilter()
+                ),
             )
             for note in notes:
                 notes_by_working_mem_ref_id[note.parent_ref_id] = note
 
-        cleanup_tasks_by_working_mem_ref_id: defaultdict[
-            EntityId, InboxTask
-        ] = defaultdict(None)
+        cleanup_tasks_by_working_mem_ref_id: defaultdict[EntityId, InboxTask] = (
+            defaultdict(None)
+        )
 
         if args.include_cleanup_tasks:
             inbox_task_collection = await uow.get_for(
@@ -112,11 +113,11 @@ class WorkingMemFindUseCase(
             cleanup_tasks = await uow.get_for(InboxTask).find_all_generic(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
-                source_entity_ref_id=[
-                    working_mem.ref_id for working_mem in working_mems
-                ]
-                if working_mems
-                else NoFilter(),
+                source_entity_ref_id=(
+                    [working_mem.ref_id for working_mem in working_mems]
+                    if working_mems
+                    else NoFilter()
+                ),
                 source=[InboxTaskSource.WORKING_MEM_CLEANUP],
             )
             for cleanup_task in cleanup_tasks:

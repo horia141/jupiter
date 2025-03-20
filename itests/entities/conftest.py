@@ -1,4 +1,5 @@
 """Fixtures with auth sessions."""
+
 from collections.abc import Iterator
 
 import pytest

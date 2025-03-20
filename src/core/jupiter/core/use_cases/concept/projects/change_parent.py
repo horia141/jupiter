@@ -1,4 +1,5 @@
 """Change the parent project of the project."""
+
 from typing import cast
 
 from jupiter.core.domain.concept.projects.project import Project

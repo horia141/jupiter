@@ -1,4 +1,5 @@
 """The command for updating a habit."""
+
 from typing import Sequence, cast
 
 from jupiter.core.domain.concept.habits.habit import Habit

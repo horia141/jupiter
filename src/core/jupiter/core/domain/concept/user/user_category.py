@@ -1,4 +1,5 @@
 """The category of user."""
+
 from jupiter.core.framework.value import EnumValue, enum_value
 
 

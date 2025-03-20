@@ -1,4 +1,5 @@
 """Session storage for the CLI app."""
+
 import json
 from dataclasses import dataclass
 from pathlib import Path

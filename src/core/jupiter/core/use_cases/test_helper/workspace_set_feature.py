@@ -1,4 +1,5 @@
 """Set a particular feature in the workspace."""
+
 from jupiter.core.domain.concept.workspaces.workspace import Workspace
 from jupiter.core.domain.env import Env
 from jupiter.core.domain.features import WorkspaceFeature

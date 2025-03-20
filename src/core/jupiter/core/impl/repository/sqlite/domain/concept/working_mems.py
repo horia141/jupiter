@@ -1,4 +1,5 @@
 """Respository implementation for working mems."""
+
 from jupiter.core.domain.concept.working_mem.working_mem import (
     WorkingMem,
     WorkingMemRepository,

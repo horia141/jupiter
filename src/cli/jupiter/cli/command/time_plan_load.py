@@ -1,4 +1,5 @@
 """Command for loading the time plans."""
+
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     big_plan_status_to_rich_text,
@@ -149,9 +150,11 @@ class TimePlanLoad(LoggedInReadonlyCommand[TimePlanLoadUseCase, TimePlanLoadResu
                 key=lambda bpe: (
                     bpe.archived,
                     bpe.status,
-                    bpe.actionable_date
-                    if bpe.actionable_date
-                    else ADate.from_str("2100-01-01"),
+                    (
+                        bpe.actionable_date
+                        if bpe.actionable_date
+                        else ADate.from_str("2100-01-01")
+                    ),
                 ),
             )
 

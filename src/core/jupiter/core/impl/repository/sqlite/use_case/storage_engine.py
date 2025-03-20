@@ -1,4 +1,5 @@
 """The SQLite storage engine for use cases."""
+
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from types import TracebackType

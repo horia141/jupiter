@@ -1,4 +1,5 @@
 """The SQLite based time plans repository."""
+
 from jupiter.core.domain.concept.time_plans.time_plan import (
     TimePlan,
     TimePlanExistsForDatePeriodCombinationError,

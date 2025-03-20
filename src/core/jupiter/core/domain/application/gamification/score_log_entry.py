@@ -1,4 +1,5 @@
 """A particular entry in the score log related to an task being completed."""
+
 import abc
 import random
 

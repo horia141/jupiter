@@ -1,4 +1,5 @@
 """Use case for loading a schedule in day event."""
+
 from jupiter.core.domain.concept.schedule.schedule_event_in_day import (
     ScheduleEventInDay,
 )

@@ -1,4 +1,5 @@
 """A vacation."""
+
 import typing
 
 from jupiter.core.domain.concept.vacations.vacation_name import VacationName

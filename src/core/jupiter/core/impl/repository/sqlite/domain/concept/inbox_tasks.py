@@ -1,4 +1,5 @@
 """The SQLite repository for inbox tasks."""
+
 from collections.abc import Iterable
 from typing import cast
 

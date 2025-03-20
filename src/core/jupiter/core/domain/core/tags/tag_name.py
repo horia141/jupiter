@@ -1,4 +1,5 @@
 """The base value object for any kind of tag tag."""
+
 import re
 from functools import total_ordering
 from typing import Final

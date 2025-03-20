@@ -1,4 +1,5 @@
 """The status of a big plan."""
+
 from functools import total_ordering
 
 from jupiter.core.framework.value import EnumValue, enum_value

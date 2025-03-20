@@ -1,4 +1,5 @@
 """Module for working with schedules."""
+
 import abc
 from typing import cast
 

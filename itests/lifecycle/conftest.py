@@ -1,4 +1,5 @@
 """Fixtures for lifecycle tests."""
+
 from typing import Iterator
 
 import pytest

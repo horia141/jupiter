@@ -1,4 +1,5 @@
 """The icon for an entity."""
+
 from typing import cast
 
 import emoji

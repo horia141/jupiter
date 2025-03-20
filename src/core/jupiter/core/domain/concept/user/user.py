@@ -1,4 +1,5 @@
 """A user of jupiter."""
+
 import abc
 
 from jupiter.core.domain.application.gamification.score_log import ScoreLog

@@ -1,4 +1,5 @@
 """UseCase for showing the inbox tasks."""
+
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     actionable_date_to_rich_text,

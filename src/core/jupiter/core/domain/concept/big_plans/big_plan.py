@@ -1,4 +1,5 @@
 """A big plan."""
+
 import abc
 from typing import Iterable
 

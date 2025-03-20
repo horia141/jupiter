@@ -1,4 +1,5 @@
 """A container for all the group of various push integrations we have."""
+
 from jupiter.core.domain.concept.push_integrations.email.email_task_collection import (
     EmailTaskCollection,
 )

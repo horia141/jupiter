@@ -1,4 +1,5 @@
 """The command for updating a chore."""
+
 from typing import cast
 
 from jupiter.core.domain.concept.chores.chore import Chore

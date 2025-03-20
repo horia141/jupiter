@@ -1,4 +1,5 @@
 """Tests about vacations."""
+
 import re
 import time
 from collections.abc import Iterator

@@ -1,4 +1,5 @@
 """Use case for loading the current working memory file."""
+
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import (
     InboxTask,
     InboxTaskRepository,

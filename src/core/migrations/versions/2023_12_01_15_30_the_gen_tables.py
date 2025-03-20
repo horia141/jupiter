@@ -5,6 +5,7 @@ Revises: 2bec03c27977
 Create Date: 2023-12-01 15:30:00.093323
 
 """
+
 from alembic import op
 
 

@@ -1,4 +1,5 @@
 """A domain-level context for calls that are made."""
+
 from dataclasses import dataclass
 
 from jupiter.core.domain.app import (

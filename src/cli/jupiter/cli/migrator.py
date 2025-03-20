@@ -1,4 +1,5 @@
 """A temporary migrator."""
+
 import asyncio
 
 import jupiter.core.domain

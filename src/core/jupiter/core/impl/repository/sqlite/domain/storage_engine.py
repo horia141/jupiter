@@ -1,4 +1,5 @@
 """The real implementation of an engine."""
+
 from collections.abc import AsyncIterator, Callable, Iterator
 from contextlib import asynccontextmanager
 from types import GenericAlias, ModuleType, TracebackType
@@ -127,36 +128,37 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
     @overload
     def get_for(
         self, entity_type: type[_RootEntityT]
-    ) -> RootEntityRepository[_RootEntityT]:
-        ...
+    ) -> RootEntityRepository[_RootEntityT]: ...
 
     @overload
     def get_for(
         self, entity_type: type[_StubEntityT]
-    ) -> StubEntityRepository[_StubEntityT]:
-        ...
+    ) -> StubEntityRepository[_StubEntityT]: ...
 
     @overload
     def get_for(
         self, entity_type: type[_TrunkEntityT]
-    ) -> TrunkEntityRepository[_TrunkEntityT]:
-        ...
+    ) -> TrunkEntityRepository[_TrunkEntityT]: ...
 
     @overload
     def get_for(
         self, entity_type: type[_CrownEntityT]
-    ) -> CrownEntityRepository[_CrownEntityT]:
-        ...
+    ) -> CrownEntityRepository[_CrownEntityT]: ...
 
     def get_for(
         self,
-        entity_type: type[_RootEntityT]
-        | type[_StubEntityT]
-        | type[_TrunkEntityT]
-        | type[_CrownEntityT],
-    ) -> RootEntityRepository[_RootEntityT] | StubEntityRepository[
-        _StubEntityT
-    ] | TrunkEntityRepository[_TrunkEntityT] | CrownEntityRepository[_CrownEntityT]:
+        entity_type: (
+            type[_RootEntityT]
+            | type[_StubEntityT]
+            | type[_TrunkEntityT]
+            | type[_CrownEntityT]
+        ),
+    ) -> (
+        RootEntityRepository[_RootEntityT]
+        | StubEntityRepository[_StubEntityT]
+        | TrunkEntityRepository[_TrunkEntityT]
+        | CrownEntityRepository[_CrownEntityT]
+    ):
         """Return a repository for a particular entity."""
         if entity_type not in self._entity_repository_factories:
             raise ValueError(f"No repository for entity type: {entity_type}")
@@ -569,16 +571,16 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
                     raise Exception(
                         f"Entity type {entity_type} already has a repository"
                     )
-                entity_repository_factories[
-                    entity_type
-                ] = concrete_entity_repository_type
+                entity_repository_factories[entity_type] = (
+                    concrete_entity_repository_type
+                )
                 if abstract_entity_repository_type in repository_factories:
                     raise Exception(
                         f"Abstract repository type {abstract_entity_repository_type} already has a repository"
                     )
-                repository_factories[
-                    abstract_entity_repository_type
-                ] = concrete_entity_repository_type
+                repository_factories[abstract_entity_repository_type] = (
+                    concrete_entity_repository_type
+                )
 
             # extract all record repositories
             for (
@@ -590,16 +592,16 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
                     raise Exception(
                         f"Record type {record_type} already has a repository"
                     )
-                record_repository_factories[
-                    record_type
-                ] = concrete_record_repository_type
+                record_repository_factories[record_type] = (
+                    concrete_record_repository_type
+                )
                 if abstract_record_repository_type in repository_factories:
                     raise Exception(
                         f"Abstract repository type {abstract_record_repository_type} already has a repository"
                     )
-                repository_factories[
-                    abstract_record_repository_type
-                ] = concrete_record_repository_type
+                repository_factories[abstract_record_repository_type] = (
+                    concrete_record_repository_type
+                )
 
             # extract all random repositories
             for (
@@ -608,9 +610,9 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
             ) in extract_repositories(m):
                 if abstract_repository_type in repository_factories:
                     continue
-                repository_factories[
-                    abstract_repository_type
-                ] = concrete_repository_type
+                repository_factories[abstract_repository_type] = (
+                    concrete_repository_type
+                )
 
             # look at all entities and build repositories for them
             for entity_type in extract_entities(m):

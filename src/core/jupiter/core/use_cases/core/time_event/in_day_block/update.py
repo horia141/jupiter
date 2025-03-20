@@ -1,4 +1,5 @@
 """Use case for updating a time event in day."""
+
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.time_events.time_event_in_day_block import (
     TimeEventInDayBlock,

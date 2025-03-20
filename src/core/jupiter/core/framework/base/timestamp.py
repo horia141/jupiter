@@ -1,4 +1,5 @@
 """A timestamp in the application."""
+
 import datetime
 from functools import total_ordering
 from typing import cast

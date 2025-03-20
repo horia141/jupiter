@@ -1,4 +1,5 @@
 """App version decoder."""
+
 from jupiter.core.domain.app import AppVersion
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.primitive import Primitive

@@ -1,4 +1,5 @@
 """Sqltite implementation of the time events repository."""
+
 from jupiter.core.domain.core.adate import ADate, ADateDatabaseDecoder
 from jupiter.core.domain.core.time_events.time_event_full_days_block import (
     TimeEventFullDaysBlock,
