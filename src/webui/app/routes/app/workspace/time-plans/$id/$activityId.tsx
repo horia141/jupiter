@@ -62,6 +62,7 @@ import { TopLevelInfoContext } from "~/top-level-context";
 import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { useBigScreen } from "~/rendering/use-big-screen";
+
 const ParamsSchema = {
   id: z.string(),
   activityId: z.string(),
@@ -335,7 +336,7 @@ export async function action({ request, params }: ActionArgs) {
 export default function TimePlanActivity() {
   const { id, activityId } = useParams();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
-  const timePlan = useRouteLoaderData("routes/workspace/time-plans/$id")
+  const timePlan = useRouteLoaderData("routes/app/workspace/time-plans/$id")
     .timePlan as TimePlan;
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
