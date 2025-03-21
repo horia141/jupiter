@@ -52,7 +52,7 @@ class EmailAddressDatabaseDecoder(PrimitiveAtomicValueDatabaseDecoder[EmailAddre
                 email_address_str,
                 check_deliverability=False,
             )
-            return EmailAddress(cast(str, email_address_fix.email))
+            return EmailAddress(cast(str, email_address_fix.normalized))
         except EmailNotValidError as err:
             raise InputValidationError(
                 f"Invalid email address '{primitive}'",

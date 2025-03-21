@@ -70,7 +70,12 @@ class SqliteUseCaseStorageEngine(UseCaseStorageEngine):
         """Constructor."""
         self._realm_codec_registry = realm_codec_registry
         self._sql_engine = connection.sql_engine
-        self._metadata = MetaData(bind=self._sql_engine)
+        self._metadata = MetaData()
+
+    async def initialize(self) -> None:
+        """Initialize the storage engine."""
+        async with self._sql_engine.connect() as conn:
+            await conn.run_sync(self._metadata.reflect)
 
     @asynccontextmanager
     async def get_unit_of_work(self) -> AsyncIterator[UseCaseUnitOfWork]:

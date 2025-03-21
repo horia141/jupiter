@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Final
 
+from pydantic_core import to_jsonable_python
 import sqlalchemy.exc
 from alembic import command
 from alembic.config import Config
@@ -34,7 +35,7 @@ class SqliteConnection(Connection):
             config.sqlite_db_url,
             future=True,
             json_serializer=lambda *a, **kw: json.dumps(
-                *a, **kw, default=pydantic_encoder
+                to_jsonable_python(*a, **kw),
             ),
         )
 

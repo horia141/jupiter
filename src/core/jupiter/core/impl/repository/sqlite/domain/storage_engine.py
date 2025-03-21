@@ -313,10 +313,15 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
         """Constructor."""
         self._realm_codec_registry = realm_codec_registry
         self._sql_engine = connection.sql_engine
-        self._metadata = MetaData(bind=self._sql_engine)
+        self._metadata = MetaData()
         self._entity_repository_factories = entity_repository_factories
         self._record_repository_factories = record_repository_factories
         self._repository_factories = repository_factories
+
+    async def initialize(self) -> None:
+        """Initialize the storage engine."""
+        async with self._sql_engine.connect() as conn:
+            await conn.run_sync(self._metadata.reflect)
 
     @staticmethod
     def build_from_module_root(
@@ -775,7 +780,12 @@ class SqliteSearchStorageEngine(SearchStorageEngine):
         """Constructor."""
         self._realm_codec_registry = realm_codec_registry
         self._sql_engine = connection.sql_engine
-        self._metadata = MetaData(bind=self._sql_engine)
+        self._metadata = MetaData()
+
+    async def initialize(self) -> None:
+        """Initialize the storage engine."""
+        async with self._sql_engine.connect() as conn:
+            await conn.run_sync(self._metadata.reflect)
 
     @asynccontextmanager
     async def get_unit_of_work(self) -> AsyncIterator[SearchUnitOfWork]:

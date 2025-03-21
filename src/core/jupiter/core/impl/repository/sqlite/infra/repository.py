@@ -85,6 +85,7 @@ class SqliteRepository(abc.ABC):
 
     _realm_codec_registry: Final[RealmCodecRegistry]
     _connection: Final[AsyncConnection]
+    _metadata: Final[MetaData]
 
     def __init__(
         self,
@@ -95,7 +96,7 @@ class SqliteRepository(abc.ABC):
         """Initialize the repository."""
         self._realm_codec_registry = realm_codec_registry
         self._connection = connection
-
+        self._metadata = metadata
 
 class SqliteEntityRepository(Generic[_EntityT], SqliteRepository, abc.ABC):
     """A repository for entities backed by SQLite, meant to be used as a mixin."""
@@ -121,13 +122,15 @@ class SqliteEntityRepository(Generic[_EntityT], SqliteRepository, abc.ABC):
         """Initialize the repository."""
         super().__init__(realm_codec_registry, connection, metadata)
         entity_type = self._infer_entity_class() if entity_type is None else entity_type
-        self._table = (
-            table
-            if table is not None
-            else SqliteEntityRepository._build_table_for_entity(
-                table_name, metadata, entity_type
+        the_table_name = table_name or inflection.underscore(entity_type.__name__)
+        the_table = table
+        if the_table is None:
+            the_table = metadata.tables.get(the_table_name)
+        if the_table is None:
+            the_table = SqliteEntityRepository._build_table_for_entity(
+                the_table_name, metadata, entity_type
             )
-        )
+        self._table = the_table
         self._event_table = build_event_table(self._table, metadata)
         self._entity_type = entity_type
         self._already_exists_err_cls = already_exists_err_cls
@@ -249,13 +252,9 @@ class SqliteEntityRepository(Generic[_EntityT], SqliteRepository, abc.ABC):
 
     @staticmethod
     def _build_table_for_entity(
-        table_name: str | None, metadata: MetaData, entity_type: type[_EntityT]
+        entity_table_name: str, metadata: MetaData, entity_type: type[_EntityT]
     ) -> Table:
         """Build the table for an entity."""
-
-        def extract_entity_table_name() -> str:
-            return inflection.underscore(entity_type.__name__)
-
         def extract_field_type(
             field: dataclasses.Field[Primitive | object],
         ) -> tuple[type[object], bool]:
@@ -282,8 +281,6 @@ class SqliteEntityRepository(Generic[_EntityT], SqliteRepository, abc.ABC):
                 return field.type, False
 
         all_fields = dataclasses.fields(entity_type)
-
-        entity_table_name = table_name or extract_entity_table_name()
 
         table = Table(
             entity_table_name,

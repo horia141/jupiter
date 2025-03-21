@@ -4,12 +4,13 @@ module.exports = {
       cwd: "src/webapi",
       interpreter: "none",
       script: "python",
-      args: "-m watchfiles jupiter.webapi.jupiter.sync_main . ../core",
+      args: " -W always::DeprecationWarning -m watchfiles jupiter.webapi.jupiter.sync_main . ../core",
       log_file: "$WEBAPI_LOG_FILE",
       env: {
         PY_COLORS: "1",
         SQLITE_DB_URL: "$WEBAPI_SQLITE_DB_URL",
-        PORT: "$WEBAPI_PORT"
+        PORT: "$WEBAPI_PORT",
+        SQLALCHEMY_WARN_20: "1"
       }
     }, {
         name: "${NAMESPACE}:webui",

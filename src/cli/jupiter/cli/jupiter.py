@@ -100,6 +100,9 @@ async def main() -> None:
     )
 
     await sqlite_connection.prepare()
+    await domain_storage_engine.initialize()
+    await search_storage_engine.initialize()
+    await usecase_storage_engine.initialize()
 
     session_info = session_storage.load_optional()
     guest_session = AppGuestUseCaseSession.for_cli(

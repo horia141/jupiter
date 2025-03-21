@@ -127,9 +127,12 @@ async def main() -> None:
         crm,
         jupiter.core.use_cases,
         jupiter.webapi.exceptions,
-    )
-
+        )
+    
     await sqlite_connection.prepare()
+    # await domain_storage_engine.initialize()
+    # await search_storage_engine.initialize()
+    # await usecase_storage_engine.initialize()
 
     print("=" * 80)
     print("Starting Jupiter WebAPI:")
