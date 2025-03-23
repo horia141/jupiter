@@ -44,7 +44,7 @@ import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import FlareIcon from "@mui/icons-material/Flare";
 import ViewKanbanIcon from "@mui/icons-material/ViewKanban";
 import ViewListIcon from "@mui/icons-material/ViewList";
-import Grid from "@mui/material/Unstable_Grid2";
+import Grid from "@mui/material/Grid2";
 import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";
 import { z } from "zod";
@@ -1455,7 +1455,7 @@ function SwiftView(props: SwiftViewProps) {
             props.topLevelInfo.workspace,
             WorkspaceFeature.HABITS
           ) && (
-            <Grid md>
+            <Grid size={{ md: 4 }}>
               <Typography variant="h5">💪 Habits</Typography>
               {!noHabits && habitsStack}
               {noHabits && noHabitsCard}
@@ -1466,14 +1466,14 @@ function SwiftView(props: SwiftViewProps) {
             props.topLevelInfo.workspace,
             WorkspaceFeature.CHORES
           ) && (
-            <Grid md>
+            <Grid size={{ md: 4 }}>
               <Typography variant="h5">♻️ Chores</Typography>
               {!noChores && choresStack}
               {noChores && noChoresCard}
             </Grid>
           )}
 
-          <Grid md>
+          <Grid size={{ md: 4 }}>
             <Typography variant="h5">🌍 Other Tasks</Typography>
             {!noRests && restStack}
             {noRests && noRestsCard}
@@ -1482,7 +1482,7 @@ function SwiftView(props: SwiftViewProps) {
       )}
 
       {!props.isBigScreen && !noNothing && (
-        <Grid xs={12}>
+        <Grid size={{ xs: 12 }}>
           <Tabs
             value={smallScreenSelectedTab}
             variant="fullWidth"
@@ -1656,7 +1656,7 @@ function KanbanBoard({
 }: KanbanBoardProps) {
   return (
     <Grid container spacing={2}>
-      <Grid xs={2} sx={{ position: "relative" }}>
+      <Grid size={{ xs: 2 }} sx={{ position: "relative" }}>
         <InboxTasksColumn
           today={today}
           topLevelInfo={topLevelInfo}
@@ -1679,7 +1679,7 @@ function KanbanBoard({
         />
       </Grid>
 
-      <Grid xs={2} sx={{ position: "relative" }}>
+        <Grid size={{ xs: 2 }} sx={{ position: "relative" }}>
         <InboxTasksColumn
           today={today}
           topLevelInfo={topLevelInfo}
@@ -1704,7 +1704,7 @@ function KanbanBoard({
         />
       </Grid>
 
-      <Grid xs={2} sx={{ position: "relative" }}>
+        <Grid size={{ xs: 2 }} sx={{ position: "relative" }}>
         <InboxTasksColumn
           today={today}
           topLevelInfo={topLevelInfo}
@@ -1727,7 +1727,7 @@ function KanbanBoard({
         />
       </Grid>
 
-      <Grid xs={2} sx={{ position: "relative" }}>
+        <Grid size={{ xs: 2 }} sx={{ position: "relative" }}>
         <InboxTasksColumn
           today={today}
           topLevelInfo={topLevelInfo}
@@ -1750,7 +1750,7 @@ function KanbanBoard({
         />
       </Grid>
 
-      <Grid xs={2} sx={{ position: "relative" }}>
+        <Grid size={{ xs: 2 }} sx={{ position: "relative" }}>
         <InboxTasksColumn
           today={today}
           topLevelInfo={topLevelInfo}
@@ -1773,7 +1773,7 @@ function KanbanBoard({
         />
       </Grid>
 
-      <Grid xs={2} sx={{ position: "relative" }}>
+        <Grid size={{ xs: 2 }} sx={{ position: "relative" }}>
         <InboxTasksColumn
           today={today}
           topLevelInfo={topLevelInfo}

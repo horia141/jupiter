@@ -2,9 +2,7 @@ import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Outlet, useNavigate } from "@remix-run/react";
-
 import type { Vacation, VacationFindResultEntry } from "@jupiter/webapi-client";
-
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { Box, IconButton, styled, Typography } from "@mui/material";
