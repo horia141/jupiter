@@ -10,17 +10,17 @@
   "repository": "https://github.com/horia141/jupiter",
   "documentation": "https://docs.get-thriving.com",
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^5.47.0",
-    "@typescript-eslint/parser": "^5.47.0",
-    "eslint": "^8.30.0",
-    "eslint-config-prettier": "^8.5.0",
+    "@typescript-eslint/eslint-plugin": "^8.27.0",
+    "@typescript-eslint/parser": "^8.27.0",
+    "eslint": "^8.0.0",
+    "eslint-config-prettier": "^10.1.1",
     "eslint-config-react-app": "^7.0.1",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "openapi-typescript-codegen": "^0.23.0",
-    "pm2": "^5.3.1",
-    "prettier": "2.8.1",
-    "prettier-plugin-organize-imports": "^3.2.2",
-    "typescript": "^4.8.4"
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "openapi-typescript-codegen": "^0.29.0",
+    "pm2": "^6.0.5",
+    "prettier": "3.5.3",
+    "prettier-plugin-organize-imports": "^4.1.0",
+    "typescript": "^5.8.2"
   },
   "eslintConfig": {
     "extends": [
