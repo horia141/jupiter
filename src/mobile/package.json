@@ -13,19 +13,20 @@
   "repository": "https://github.com/horia141/jupiter",
   "documentation": "https://docs.get-thriving.com",
   "dependencies": {
-    "@capacitor/android": "^6.2.0",
-    "@capacitor/app": "^6.0.2",
-    "@capacitor/core": "^6.2.0",
-    "@capacitor/device": "^6.0.2",
-    "@capacitor/ios": "^6.2.0",
-    "@capacitor/splash-screen": "^6.0.3",
-    "@jupiter/webapi-client": "file:../../gen/ts/webapi-client"
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/app": "^7.0.0",
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/device": "^7.0.0",
+    "@capacitor/ios": "^7.0.0",
+    "@capacitor/splash-screen": "^7.0.0",
+    "@jupiter/webapi-client": "file:../../gen/ts/webapi-client",
+    "dotenv": "^16.4.7"
   },
   "devDependencies": {
     "@capacitor/assets": "^3.0.5",
-    "@capacitor/cli": "^6.2.0",
+    "@capacitor/cli": "^7.0.0",
     "@trapezedev/configure": "^7.1.3",
-    "vite": "^6.0.7",
-    "vite-plugin-handlebars": "^2.0.0"
+    "vite": "^6.2.2",
+    "vite-plugin-handlebars": "^1.5.0"
   }
 }
