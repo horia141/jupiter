@@ -62,6 +62,7 @@ from jupiter.core.use_cases.infra.use_cases import (
     AppTransactionalLoggedInReadOnlyUseCase,
     readonly_use_case,
 )
+from sqlalchemy import select, text
 
 
 @use_case_args
@@ -200,6 +201,12 @@ class InboxTaskFindUseCase(
             project_ref_id=args.filter_project_ref_ids or NoFilter(),
             source_entity_ref_id=args.filter_source_entity_ref_ids or NoFilter(),
         )
+
+        stmt = text("SELECT * FROM working_mem LIMIT 1")
+        result = await uow._connection.execute(stmt)
+        row = result.fetchone()
+
+        print(row)  # No processors here
 
         working_mems = await uow.get_for(WorkingMem).find_all(
             parent_ref_id=working_mem_collection.ref_id,

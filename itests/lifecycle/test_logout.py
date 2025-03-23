@@ -22,6 +22,6 @@ def test_logout(page: Page, new_user: TestUser):
     page.locator("#account-menu").click()
     page.locator("#logout").click()
 
-    page.wait_for_url("/login")
+    page.wait_for_url("/app/login")
 
     expect(page.locator("body")).to_contain_text("Login")

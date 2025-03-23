@@ -1,5 +1,4 @@
 """The SQLite implementation of the fast info repository."""
-
 import json
 
 from jupiter.core.domain.concept.big_plans.big_plan_name import BigPlanName
@@ -65,7 +64,7 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
             await self._connection.execute(
                 text(query), {"parent_ref_id": parent_ref_id.as_int()}
             )
-        ).fetchall()
+        ).mappings().all()
         return [
             VacationSummary(
                 ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
@@ -87,7 +86,7 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
             await self._connection.execute(
                 text(query), {"parent_ref_id": parent_ref_id.as_int()}
             )
-        ).fetchall()
+        ).mappings().all()
         return [
             ScheduleStreamSummary(
                 ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
@@ -115,7 +114,7 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
             await self._connection.execute(
                 text(query), {"parent_ref_id": parent_ref_id.as_int()}
             )
-        ).fetchall()
+        ).mappings().all()
         return [
             ProjectSummary(
                 ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
@@ -146,7 +145,7 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
             await self._connection.execute(
                 text(query), {"parent_ref_id": parent_ref_id.as_int()}
             )
-        ).fetchall()
+        ).mappings().all()
         return [
             InboxTaskSummary(
                 ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
@@ -168,7 +167,7 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
             await self._connection.execute(
                 text(query), {"parent_ref_id": parent_ref_id.as_int()}
             )
-        ).fetchall()
+        ).mappings().all()
         return [
             HabitSummary(
                 ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
@@ -190,7 +189,7 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
             await self._connection.execute(
                 text(query), {"parent_ref_id": parent_ref_id.as_int()}
             )
-        ).fetchall()
+        ).mappings().all()
         return [
             ChoreSummary(
                 ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
@@ -212,7 +211,7 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
             await self._connection.execute(
                 text(query), {"parent_ref_id": parent_ref_id.as_int()}
             )
-        ).fetchall()
+        ).mappings().all()
         return [
             BigPlanSummary(
                 ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
@@ -235,7 +234,7 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
             await self._connection.execute(
                 text(query), {"parent_ref_id": parent_ref_id.as_int()}
             )
-        ).fetchall()
+        ).mappings().all()
         return [
             SmartListSummary(
                 ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
@@ -258,7 +257,7 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
             await self._connection.execute(
                 text(query), {"parent_ref_id": parent_ref_id.as_int()}
             )
-        ).fetchall()
+        ).mappings().all()
         return [
             MetricSummary(
                 ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
@@ -281,7 +280,7 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
             await self._connection.execute(
                 text(query), {"parent_ref_id": parent_ref_id.as_int()}
             )
-        ).fetchall()
+        ).mappings().all()
         return [
             PersonSummary(
                 ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),

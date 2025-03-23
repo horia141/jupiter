@@ -103,7 +103,7 @@ export default function Security() {
                     label="Current Password"
                     name="currentPassword"
                     autoComplete="current-password"
-                    inputsEnabled={!inputsEnabled}
+                    inputsEnabled={inputsEnabled}
                   />
                   <FieldError
                     actionResult={actionData}
@@ -117,7 +117,7 @@ export default function Security() {
                     label="newPassword"
                     name="newPassword"
                     autoComplete="new-password"
-                    inputsEnabled={!inputsEnabled}
+                    inputsEnabled={inputsEnabled}
                   />
                   <FieldError
                     actionResult={actionData}
@@ -133,7 +133,7 @@ export default function Security() {
                     label="New Password Repeat"
                     name="newPasswordRepeat"
                     autoComplete="new-password"
-                    inputsEnabled={!inputsEnabled}
+                    inputsEnabled={inputsEnabled}
                   />
                   <FieldError
                     actionResult={actionData}

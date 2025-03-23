@@ -81,7 +81,7 @@ def page_logged_in(
     page: Page, new_user: TestUser, logged_in_client: AuthenticatedClient
 ) -> Iterator[TestUser]:
     """A page with a logged in user."""
-    page.goto("/login")
+    page.goto("/app/login")
 
     page.locator('input[name="emailAddress"]').fill(new_user.email)
     page.locator('input[name="password"]').fill(new_user.password)
@@ -92,7 +92,7 @@ def page_logged_in(
     # messing about with the browser, and Remix and its taking over of the
     # application communication, and especialy the redirects. If there's no wait
     # here then the redirect from "post /login" with cookies will not work!
-    page.wait_for_url("/app/app/workspace/*")
+    page.wait_for_url("/app/workspace/*")
 
     yield new_user
 

@@ -3,6 +3,7 @@
 import json
 from dataclasses import dataclass
 from pathlib import Path
+import sqlite3
 from typing import Final
 
 from pydantic_core import to_jsonable_python
@@ -37,6 +38,7 @@ class SqliteConnection(Connection):
             json_serializer=lambda *a, **kw: json.dumps(
                 to_jsonable_python(*a, **kw),
             ),
+            # connect_args={"detect_types": sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES}
         )
 
     async def prepare(self) -> None:

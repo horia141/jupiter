@@ -37,9 +37,9 @@ def test_change_password(
 
     page.wait_for_url("/app/workspace/security")
 
-    page.locator('input[name="currentPassword"]').fill(new_user.password)
-    page.locator('input[name="newPassword"]').fill("a-new-password")
-    page.locator('input[name="newPasswordRepeat"]').fill("a-new-password")
+    page.locator("input[name='currentPassword']").fill(new_user.password)
+    page.locator("input[name='newPassword']").fill("a-new-password")
+    page.locator("input[name='newPasswordRepeat']").fill("a-new-password")
 
     page.locator("#change-password").click()
 
@@ -48,7 +48,7 @@ def test_change_password(
     page.locator("#account-menu").click()
     page.locator("#logout").click()
 
-    page.wait_for_url("/login")
+    page.wait_for_url("/app/login")
 
     expect(page.locator("body")).to_contain_text("Login")
 
