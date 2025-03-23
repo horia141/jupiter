@@ -27,9 +27,9 @@ poetry install --no-interaction --no-ansi
 (cd src/docs && poetry install --no-interaction --no-ansi)
 (cd itests && poetry install --no-interaction --no-ansi)
 
-npm install --ws --include-workspace-root
-(cd src/desktop && npm install --no-ansi)
-(cd src/mobile && npm install --no-ansi)
+npm install --no-save
+(cd src/desktop && npm install --no-save)
+(cd src/mobile && npm install --no-save)
 
 playwright install
 
