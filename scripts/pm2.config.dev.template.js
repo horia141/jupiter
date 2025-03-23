@@ -9,15 +9,14 @@ module.exports = {
       env: {
         PY_COLORS: "1",
         SQLITE_DB_URL: "$WEBAPI_SQLITE_DB_URL",
-        PORT: "$WEBAPI_PORT",
-        SQLALCHEMY_WARN_20: "1"
+        PORT: "$WEBAPI_PORT"
       }
     }, {
         name: "${NAMESPACE}:webui",
         cwd: "src/webui",
         interpreter: "none",
-        script: "remix",
-        args: "dev",
+        script: "npx",
+        args: "remix dev",
         log_file: "$WEBUI_LOG_FILE",
         env: {
             LOCAL_OR_SELF_HOSTED_WEBAPI_SERVER_URL: "$WEBAPI_SERVER_URL",

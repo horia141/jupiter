@@ -53,18 +53,18 @@ export async function loader({ request }: LoaderArgs) {
   });
 }
 
-export function meta({ data }: { data: SerializeFrom<typeof loader> }) {
-  return {
-    charset: "utf-8",
-    title: data.globalProperties.title,
-    viewport:
-      "width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no",
-  };
-}
+// export function meta({ data }: { data: SerializeFrom<typeof loader> }) {
+//   return {
+//     charset: "utf-8",
+//     title: data.globalProperties.title,
+//     viewport:
+//       "width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no",
+//   };
+// }
 
-export function links() {
-  return [{ rel: "manifest", href: "/pwa-manifest" }];
-}
+// export function links() {
+//   return [{ rel: "manifest", href: "/pwa-manifest" }];
+// }
 
 export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
