@@ -22,6 +22,7 @@ import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   Form,
   useActionData,
+  useNavigation,
   useSearchParams,
   useTransition,
 } from "@remix-run/react";
@@ -101,10 +102,10 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function CalendarSettings() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
+  const navigation = useNavigation();
   const topLevelInfo = useContext(TopLevelInfoContext);
 
-  const inputsEnabled = transition.state === "idle";
+  const inputsEnabled = navigation.state === "idle";
 
   const today = DateTime.local({ zone: topLevelInfo.user.timezone });
 

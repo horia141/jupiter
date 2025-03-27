@@ -23,7 +23,7 @@ import {
 import type { ActionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useTransition } from "@remix-run/react";
+import { useActionData, useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { useState } from "react";
 import { z } from "zod";
@@ -128,10 +128,9 @@ export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export default function NewMetric() {
-  const transition = useTransition();
   const actionData = useActionData<typeof action>();
-
-  const inputsEnabled = transition.state === "idle";
+  const navigation = useNavigation();
+  const inputsEnabled = navigation.state === "idle";
 
   const [showCollectionParams, setShowCollectionParams] = useState(false);
 

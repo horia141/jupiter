@@ -15,7 +15,7 @@ import {
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useTransition } from "@remix-run/react";
+import { useNavigation, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
 import { useContext, useState } from "react";
@@ -108,7 +108,7 @@ export default function Report() {
     allProjects: Array<ProjectSummary> | undefined;
     report: ReportResult | undefined;
   }>;
-  const transition = useTransition();
+  const navigation = useNavigation();
   const topLevelInfo = useContext(TopLevelInfoContext);
   const isBigScreen = useBigScreen();
 
@@ -117,7 +117,7 @@ export default function Report() {
     RecurringTaskPeriod | "none"
   >(RecurringTaskPeriod.WEEKLY);
 
-  const inputsEnabled = transition.state === "idle";
+  const inputsEnabled = navigation.state === "idle";
 
   function handleChangePeriod(
     newPeriod: RecurringTaskPeriod | RecurringTaskPeriod[] | "none",

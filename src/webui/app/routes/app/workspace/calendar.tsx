@@ -41,8 +41,9 @@ import {
   Outlet,
   useLocation,
   useNavigate,
+  useNavigation,
   useSearchParams,
-  useTransition,
+  useActionData,
 } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";
@@ -177,7 +178,7 @@ const REFRESH_RIGHT_NOW_MS = 1000 * 60 * 5; // 5 minutes
 
 export default function CalendarView() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
-  const transition = useTransition();
+  const navigation = useNavigation();
   const location = useLocation();
   const [query] = useSearchParams();
 
@@ -191,7 +192,7 @@ export default function CalendarView() {
 
   const topLevelInfo = useContext(TopLevelInfoContext);
 
-  const inputsEnabled = transition.state === "idle";
+  const inputsEnabled = navigation.state === "idle";
 
   const shouldShowABranch = useTrunkNeedsToShowBranch();
   const shouldShowALeafToo = useTrunkNeedsToShowLeaf();

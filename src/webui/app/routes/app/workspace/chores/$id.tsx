@@ -27,6 +27,7 @@ import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   useActionData,
   useFetcher,
+  useNavigation,
   useParams,
   useTransition,
 } from "@remix-run/react";
@@ -282,13 +283,13 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function Chore() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
+  const navigation = useNavigation();
 
   const topLevelInfo = useContext(TopLevelInfoContext);
   const isBigScreen = useBigScreen();
 
   const inputsEnabled =
-    transition.state === "idle" && !loaderData.chore.archived;
+    navigation.state === "idle" && !loaderData.chore.archived;
 
   const [selectedProject, setSelectedProject] = useState(
     loaderData.project.ref_id,

@@ -12,6 +12,7 @@ import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   useActionData,
+  useNavigation,
   useSearchParams,
   useTransition,
 } from "@remix-run/react";
@@ -78,10 +79,10 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function ScheduleStreamNew() {
   const actionData = useActionData<typeof action>();
   const topLevelInfo = useContext(TopLevelInfoContext);
-  const transition = useTransition();
+  const navigation = useNavigation();
   const [query] = useSearchParams();
 
-  const inputsEnabled = transition.state === "idle";
+  const inputsEnabled = navigation.state === "idle";
 
   return (
     <LeafPanel

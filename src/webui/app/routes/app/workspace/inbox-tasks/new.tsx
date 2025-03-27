@@ -30,7 +30,7 @@ import {
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useTransition } from "@remix-run/react";
+import { useActionData, useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { useContext, useState } from "react";
 import { z } from "zod";
@@ -247,7 +247,7 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function NewInboxTask() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
+  const navigation = useNavigation();
   const topLevelInfo = useContext(TopLevelInfoContext);
 
   const [selectedBigPlan, setSelectedBigPlan] = useState(
@@ -260,7 +260,7 @@ export default function NewInboxTask() {
     loaderData.bigPlanReason === "for-big-plan",
   );
 
-  const inputsEnabled = transition.state === "idle";
+  const inputsEnabled = navigation.state === "idle";
 
   const allProjectsById: { [k: string]: Project } = {};
   if (

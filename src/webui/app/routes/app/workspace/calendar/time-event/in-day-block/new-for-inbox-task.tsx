@@ -13,6 +13,7 @@ import { json, redirect, Response } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   useActionData,
+  useNavigation,
   useSearchParams,
   useTransition,
 } from "@remix-run/react";
@@ -145,11 +146,11 @@ export default function TimeEventInDayBlockCreateForInboxTask() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const topLevelInfo = useContext(TopLevelInfoContext);
-  const transition = useTransition();
+  const navigation = useNavigation();
   const [query] = useSearchParams();
 
   const inputsEnabled =
-    transition.state === "idle" && !loaderData.inboxTask.archived;
+    navigation.state === "idle" && !loaderData.inboxTask.archived;
 
   const rightNow = DateTime.local({ zone: topLevelInfo.user.timezone });
 

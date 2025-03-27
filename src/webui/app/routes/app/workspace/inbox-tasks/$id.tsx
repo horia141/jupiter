@@ -21,7 +21,7 @@ import {
   type LoaderArgs,
 } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useParams, useTransition } from "@remix-run/react";
+import { useActionData, useParams, useNavigation } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
@@ -309,13 +309,13 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function InboxTask() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
+  const navigation = useNavigation();
 
   const topLevelInfo = useContext(TopLevelInfoContext);
   const info = loaderData.info;
   const inboxTask = loaderData.info.inbox_task;
 
-  const inputsEnabled = transition.state === "idle" && !inboxTask.archived;
+  const inputsEnabled = navigation.state === "idle" && !inboxTask.archived;
 
   const corePropertyEditable = isInboxTaskCoreFieldEditable(inboxTask.source);
 

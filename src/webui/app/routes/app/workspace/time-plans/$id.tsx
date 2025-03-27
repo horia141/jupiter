@@ -29,8 +29,8 @@ import {
   Form,
   Outlet,
   useActionData,
+  useNavigation,
   useParams,
-  useTransition,
 } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
@@ -243,15 +243,14 @@ export const shouldRevalidate: ShouldRevalidateFunction = basicShouldRevalidate;
 export default function TimePlanView() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
+  const navigation = useNavigation();
   const isBigScreen = useBigScreen();
 
   const shouldShowALeaf = useBranchNeedsToShowLeaf();
 
   const topLevelInfo = useContext(TopLevelInfoContext);
 
-  const inputsEnabled =
-    transition.state === "idle" && !loaderData.timePlan.archived;
+  const inputsEnabled = navigation.state === "idle" && !loaderData.timePlan.archived;
 
   const targetInboxTasksByRefId = new Map<string, InboxTask>(
     loaderData.targetInboxTasks.map((it) => [it.ref_id, it]),

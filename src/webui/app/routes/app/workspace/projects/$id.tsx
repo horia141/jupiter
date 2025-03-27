@@ -14,7 +14,7 @@ import {
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect, Response } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useParams, useTransition } from "@remix-run/react";
+import { useActionData, useParams, useNavigation } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useEffect, useState } from "react";
 import { z } from "zod";
@@ -168,10 +168,10 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function Project() {
   const loaderData = useLoaderDataForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
+  const navigation = useNavigation();
 
   const inputsEnabled =
-    transition.state === "idle" && !loaderData.project.archived;
+    navigation.state === "idle" && !loaderData.project.archived;
 
   const parentProject = loaderData.allProjects.find(
     (project) => project.ref_id === loaderData.project.parent_project_ref_id,

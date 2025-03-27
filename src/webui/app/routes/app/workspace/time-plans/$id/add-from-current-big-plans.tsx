@@ -13,7 +13,7 @@ import { FormControl, FormLabel, Stack } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useParams, useTransition } from "@remix-run/react";
+import { useActionData, useParams, useNavigation } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import type { DateTime } from "luxon";
 import React, { useContext, useEffect, useState } from "react";
@@ -186,12 +186,10 @@ export default function TimePlanAddFromCurrentBigPlans() {
   const { id } = useParams();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
+  const navigation = useNavigation();
+  const inputsEnabled = navigation.state === "idle" && !loaderData.timePlan.archived;
   const topLevelInfo = useContext(TopLevelInfoContext);
   const isBigScreen = useBigScreen();
-
-  const inputsEnabled =
-    transition.state === "idle" && !loaderData.timePlan.archived;
 
   const alreadyIncludedBigPlanRefIds = new Set(
     loaderData.activities

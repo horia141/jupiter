@@ -15,6 +15,7 @@ import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   useActionData,
+  useNavigation,
   useParams,
   useSearchParams,
   useTransition,
@@ -191,11 +192,11 @@ export default function ScheduleEventFullDaysViewOne() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const topLevelInfo = useContext(TopLevelInfoContext);
-  const transition = useTransition();
+  const navigation = useNavigation();
   const [query] = useSearchParams();
 
   const inputsEnabled =
-    transition.state === "idle" && !loaderData.scheduleEventFullDays.archived;
+    navigation.state === "idle" && !loaderData.scheduleEventFullDays.archived;
   const corePropertyEditable = isCorePropertyEditable(
     loaderData.scheduleEventFullDays,
   );

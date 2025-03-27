@@ -17,7 +17,7 @@ import {
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect, Response } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useFetcher, useParams, useTransition } from "@remix-run/react";
+import { useFetcher, useParams, useNavigation } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
 import { useContext } from "react";
@@ -130,14 +130,13 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 
 export default function WorkingMem() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
-  const transition = useTransition();
+  const fetcher = useFetcher();
+  const navigation = useNavigation();
+  const inputsEnabled = navigation.state === "idle" && !loaderData.workingMem.archived;
 
   const topLevelInfo = useContext(TopLevelInfoContext);
 
   const isBigScreen = useBigScreen();
-
-  const inputsEnabled =
-    transition.state === "idle" && !loaderData.workingMem.archived;
 
   const cardActionFetcher = useFetcher();
 

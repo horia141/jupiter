@@ -20,7 +20,7 @@ import {
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useTransition } from "@remix-run/react";
+import { useNavigation, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
 import { useContext, useEffect, useState } from "react";
@@ -126,7 +126,7 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function Search() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const topLevelInfo = useContext(TopLevelInfoContext);
-  const transition = useTransition();
+  const navigation = useNavigation();
 
   const isBigScreen = useBigScreen();
 
@@ -228,7 +228,7 @@ export default function Search() {
     );
   }, [loaderData]);
 
-  const inputsEnabled = transition.state === "idle";
+  const inputsEnabled = navigation.state === "idle";
 
   const today = DateTime.local({ zone: topLevelInfo.user.timezone });
 

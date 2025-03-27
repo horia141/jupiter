@@ -15,7 +15,7 @@ import {
 } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Link, useTransition } from "@remix-run/react";
+import { Link, useNavigation } from "@remix-run/react";
 import { useContext, useState } from "react";
 import { CommunityLink } from "~/components/community-link";
 import { DocsHelp, DocsHelpSubject } from "~/components/docs-help";
@@ -46,9 +46,9 @@ export async function loader({ request }: LoaderArgs) {
 
 export default function PickServer() {
   const globalProperties = useContext(GlobalPropertiesContext);
-  const transition = useTransition();
+  const navigation = useNavigation();
 
-  const inputsEnabled = transition.state === "idle";
+  const inputsEnabled = navigation.state === "idle";
 
   const [serverUrl, setServerUrl] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);

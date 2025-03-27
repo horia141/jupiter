@@ -4,7 +4,7 @@ import { ResponsiveLine } from "@nivo/line";
 import type { LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Link, Outlet, useParams, useTransition } from "@remix-run/react";
+import { Link, Outlet, useParams, useNavigation } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
@@ -112,10 +112,9 @@ export default function Metric() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const shouldShowALeaf = useBranchNeedsToShowLeaf();
   const topLevelInfo = useContext(TopLevelInfoContext);
-  const transition = useTransition();
-
-  const inputsEnabled =
-    transition.state === "idle" && !loaderData.metric.archived;
+  const params = useParams();
+  const navigation = useNavigation();
+  const inputsEnabled = navigation.state === "idle";
 
   const sortedEntries = [...loaderData.metricEntries].sort((e1, e2) => {
     return -compareADate(e1.collection_time, e2.collection_time);

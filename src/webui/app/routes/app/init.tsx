@@ -28,7 +28,7 @@ import {
   Link,
   useActionData,
   useLoaderData,
-  useTransition,
+  useNavigation,
 } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { useContext } from "react";
@@ -138,9 +138,9 @@ export async function action({ request }: ActionArgs) {
 export default function WorkspaceInit() {
   const loaderData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
+  const navigation = useNavigation();
+  const inputsEnabled = navigation.state === "idle";
 
-  const inputsEnabled = transition.state === "idle";
   const globalProperties = useContext(GlobalPropertiesContext);
 
   return (

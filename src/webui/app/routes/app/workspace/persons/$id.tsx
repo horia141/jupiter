@@ -29,7 +29,7 @@ import {
   useActionData,
   useFetcher,
   useParams,
-  useTransition,
+  useNavigation,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
@@ -298,7 +298,8 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function Person() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
+  const params = useParams();
+  const navigation = useNavigation();
   const topLevelInfo = useContext(TopLevelInfoContext);
 
   const person = loaderData.person;
@@ -329,7 +330,7 @@ export default function Person() {
     birthdayTimeEventEntries,
   );
 
-  const inputsEnabled = transition.state === "idle" && !person.archived;
+  const inputsEnabled = navigation.state === "idle" && !person.archived;
 
   const cardActionFetcher = useFetcher();
 

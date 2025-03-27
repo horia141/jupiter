@@ -13,7 +13,7 @@ import {
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useTransition } from "@remix-run/react";
+import { useActionData, useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm } from "zodix";
@@ -84,9 +84,8 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 
 export default function Security() {
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
-
-  const inputsEnabled = transition.state === "idle";
+  const navigation = useNavigation();
+  const inputsEnabled = navigation.state === "idle";
 
   return (
     <TrunkPanel key={"security"} returnLocation="/app/workspace">

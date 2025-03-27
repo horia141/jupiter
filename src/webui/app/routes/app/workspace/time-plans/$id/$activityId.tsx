@@ -22,7 +22,7 @@ import {
   useActionData,
   useParams,
   useRouteLoaderData,
-  useTransition,
+  useNavigation,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext } from "react";
@@ -339,12 +339,11 @@ export default function TimePlanActivity() {
   const timePlan = useRouteLoaderData("routes/app/workspace/time-plans/$id")
     .timePlan as TimePlan;
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
+  const navigation = useNavigation();
   const topLevelInfo = useContext(TopLevelInfoContext);
   const isBigScreen = useBigScreen();
 
-  const inputsEnabled =
-    transition.state === "idle" && !loaderData.timePlanActivity.archived;
+  const inputsEnabled = navigation.state === "idle" && !loaderData.timePlanActivity.archived;
 
   const inboxTaskTimeEventEntries = (
     loaderData.targetInboxTaskTimeEventBlocks || []

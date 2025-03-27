@@ -13,6 +13,7 @@ import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   useActionData,
+  useNavigation,
   useParams,
   useSearchParams,
   useTransition,
@@ -90,11 +91,11 @@ export default function TimeEventFullDaysBlockViewOne() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const topLevelInfo = useContext(TopLevelInfoContext);
-  const transition = useTransition();
+  const navigation = useNavigation();
   const [query] = useSearchParams();
 
   const inputsEnabled =
-    transition.state === "idle" && !loaderData.fullDaysBlock.archived;
+    navigation.state === "idle" && !loaderData.fullDaysBlock.archived;
   const corePropertyEditable = false;
 
   const [durationDays, setDurationDays] = useState(

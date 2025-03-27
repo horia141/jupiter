@@ -7,7 +7,7 @@ import { Button, ButtonGroup } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Link, Outlet, useParams, useTransition } from "@remix-run/react";
+import { Link, Outlet, useParams, useNavigation } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { z } from "zod";
@@ -107,10 +107,10 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 
 export default function SmartListViewItems() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
-  const transition = useTransition();
+  const navigation = useNavigation();
 
   const inputsEnabled =
-    transition.state === "idle" && !loaderData.smartList.archived;
+    navigation.state === "idle" && !loaderData.smartList.archived;
 
   const shouldShowALeaf = useBranchNeedsToShowLeaf();
 

@@ -25,6 +25,7 @@ import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   useActionData,
   useFetcher,
+  useNavigation,
   useParams,
   useTransition,
 } from "@remix-run/react";
@@ -201,11 +202,11 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function SlackTask() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
+  const navigation = useNavigation();
   const topLevelInfo = useContext(TopLevelInfoContext);
 
   const inputsEnabled =
-    transition.state === "idle" && !loaderData.slackTask.archived;
+    navigation.state === "idle" && !loaderData.slackTask.archived;
 
   const cardActionFetcher = useFetcher();
 

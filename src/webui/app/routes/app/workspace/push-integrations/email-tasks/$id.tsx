@@ -25,6 +25,7 @@ import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   useActionData,
   useFetcher,
+  useNavigation,
   useParams,
   useTransition,
 } from "@remix-run/react";
@@ -210,13 +211,13 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function EmailTask() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
+  const navigation = useNavigation();
   const topLevelInfo = useContext(TopLevelInfoContext);
 
   const today = DateTime.local({ zone: topLevelInfo.user.timezone });
 
   const inputsEnabled =
-    transition.state === "idle" && !loaderData.emailTask.archived;
+    navigation.state === "idle" && !loaderData.emailTask.archived;
 
   const cardActionFetcher = useFetcher();
 

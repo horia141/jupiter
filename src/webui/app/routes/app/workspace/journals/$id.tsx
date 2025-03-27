@@ -22,8 +22,8 @@ import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   useActionData,
   useFetcher,
+  useNavigation,
   useParams,
-  useTransition,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
@@ -199,14 +199,14 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function Journal() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
+  const navigation = useNavigation();
 
   const topLevelInfo = useContext(TopLevelInfoContext);
 
   const isBigScreen = useBigScreen();
 
   const inputsEnabled =
-    transition.state === "idle" && !loaderData.journal.archived;
+    navigation.state === "idle" && !loaderData.journal.archived;
 
   const cardActionFetcher = useFetcher();
 

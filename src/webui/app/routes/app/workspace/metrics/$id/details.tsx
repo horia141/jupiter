@@ -26,7 +26,7 @@ import {
   useActionData,
   useFetcher,
   useParams,
-  useTransition,
+  useNavigation,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
@@ -267,11 +267,11 @@ export default function MetricDetails() {
   const { id } = useParams();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
+  const navigation = useNavigation();
   const topLevelInfo = useContext(TopLevelInfoContext);
 
   const inputsEnabled =
-    transition.state === "idle" && !loaderData.metric.archived;
+    navigation.state === "idle" && !loaderData.metric.archived;
 
   const sortedCollectionTasks = loaderData.collectionTasks
     ? sortInboxTasksNaturally(loaderData.collectionTasks, {

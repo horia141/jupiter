@@ -30,6 +30,7 @@ import {
   Link,
   useActionData,
   useFetcher,
+  useNavigation,
   useParams,
   useTransition,
 } from "@remix-run/react";
@@ -287,12 +288,12 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function BigPlan() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
+  const navigation = useNavigation();
 
   const topLevelInfo = useContext(TopLevelInfoContext);
 
   const inputsEnabled =
-    transition.state === "idle" && !loaderData.bigPlan.archived;
+    navigation.state === "idle" && !loaderData.bigPlan.archived;
 
   const bigPlansByRefId = new Map();
   bigPlansByRefId.set(loaderData.bigPlan.ref_id, loaderData.bigPlan);

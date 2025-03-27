@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Form, Link, useActionData, useTransition } from "@remix-run/react";
+import { Form, Link, useActionData, useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm } from "zodix";
@@ -87,9 +87,8 @@ export async function action({ request }: LoaderArgs) {
 
 export default function ResetPassword() {
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
-
-  const inputsEnabled = transition.state === "idle";
+  const navigation = useNavigation();
+  const inputsEnabled = navigation.state === "idle";
 
   return (
     <StandaloneContainer>
