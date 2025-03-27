@@ -202,7 +202,7 @@ export async function action({ request, params }: ActionArgs) {
         return redirect(
           `/app/workspace/time-plans/${id}/${
             query.timePlanActivityRefId as string
-          }`
+          }`,
         );
       }
 
@@ -235,11 +235,11 @@ export default function TimePlanAddFromCurrentInboxTasks() {
   const alreadyIncludedInboxTaskRefIds = new Set(
     loaderData.activities
       .filter((tpa) => tpa.target === TimePlanActivityTarget.INBOX_TASK)
-      .map((tpa) => tpa.target_ref_id)
+      .map((tpa) => tpa.target_ref_id),
   );
 
   const [targetInboxTaskRefIds, setTargetInboxTaskRefIds] = useState(
-    new Set<string>()
+    new Set<string>(),
   );
 
   const entriesByRefId: { [key: string]: InboxTaskParent } = {};
@@ -248,14 +248,14 @@ export default function TimePlanAddFromCurrentInboxTasks() {
   }
 
   const [selectedView, setSelectedView] = useState(
-    inferDefaultSelectedView(topLevelInfo.workspace)
+    inferDefaultSelectedView(topLevelInfo.workspace),
   );
   const [selectedActionableTime, setSelectedActionableTime] = useState(
-    ActionableTime.ONE_WEEK
+    ActionableTime.ONE_WEEK,
   );
 
   const sortedInboxTasks = sortInboxTasksByEisenAndDifficulty(
-    loaderData.inboxTasks.map((e) => e.inbox_task)
+    loaderData.inboxTasks.map((e) => e.inbox_task),
   );
 
   const filteredInboxTasks = filterInboxTasksForDisplay(
@@ -266,15 +266,15 @@ export default function TimePlanAddFromCurrentInboxTasks() {
       includeIfNoActionableDate: true,
       actionableDateEnd: actionableTimeToDateTime(
         selectedActionableTime,
-        topLevelInfo.user.timezone
+        topLevelInfo.user.timezone,
       ),
       includeIfNoDueDate: true,
-    }
+    },
   );
 
   const sortedProjects = sortProjectsByTreeOrder(loaderData.allProjects || []);
   const allProjectsByRefId = new Map(
-    loaderData.allProjects?.map((p) => [p.ref_id, p])
+    loaderData.allProjects?.map((p) => [p.ref_id, p]),
   );
 
   const today = DateTime.local({ zone: topLevelInfo.user.timezone });
@@ -334,7 +334,7 @@ export default function TimePlanAddFromCurrentInboxTasks() {
                     gatedOn: WorkspaceFeature.PROJECTS,
                   },
                 ],
-                (selected) => setSelectedView(selected)
+                (selected) => setSelectedView(selected),
               ),
               FilterFewOptionsCompact(
                 "Actionable",
@@ -353,7 +353,7 @@ export default function TimePlanAddFromCurrentInboxTasks() {
                     text: "One Month",
                   },
                 ],
-                (selected) => setSelectedActionableTime(selected)
+                (selected) => setSelectedActionableTime(selected),
               ),
             ]}
           />
@@ -395,7 +395,7 @@ export default function TimePlanAddFromCurrentInboxTasks() {
             inboxTasksByRefId={entriesByRefId}
             onSelected={(it) =>
               setTargetInboxTaskRefIds((itri) =>
-                toggleInboxTaskRefIds(itri, it.ref_id)
+                toggleInboxTaskRefIds(itri, it.ref_id),
               )
             }
           />
@@ -405,7 +405,7 @@ export default function TimePlanAddFromCurrentInboxTasks() {
           <>
             {sortedProjects.map((p) => {
               const theInboxTasks = filteredInboxTasks.filter(
-                (se) => entriesByRefId[se.ref_id]?.project?.ref_id === p.ref_id
+                (se) => entriesByRefId[se.ref_id]?.project?.ref_id === p.ref_id,
               );
 
               if (theInboxTasks.length === 0) {
@@ -414,7 +414,7 @@ export default function TimePlanAddFromCurrentInboxTasks() {
 
               const fullProjectName = computeProjectHierarchicalNameFromRoot(
                 p,
-                allProjectsByRefId
+                allProjectsByRefId,
               );
 
               return (
@@ -432,7 +432,7 @@ export default function TimePlanAddFromCurrentInboxTasks() {
                     inboxTasksByRefId={entriesByRefId}
                     onSelected={(it) =>
                       setTargetInboxTaskRefIds((itri) =>
-                        toggleInboxTaskRefIds(itri, it.ref_id)
+                        toggleInboxTaskRefIds(itri, it.ref_id),
                       )
                     }
                   />
@@ -454,7 +454,7 @@ export default function TimePlanAddFromCurrentInboxTasks() {
 
 export const CatchBoundary = makeLeafCatchBoundary(
   () => `/app/workspace/time-plans/${useParams().id}`,
-  () => `Could not find time plan  #${useParams().id}`
+  () => `Could not find time plan  #${useParams().id}`,
 );
 
 export const ErrorBoundary = makeLeafErrorBoundary(
@@ -462,7 +462,7 @@ export const ErrorBoundary = makeLeafErrorBoundary(
   () =>
     `There was an error loading time plan activity #${
       useParams().id
-    }. Please try again!`
+    }. Please try again!`,
 );
 
 interface InboxTaskListProps {
@@ -512,7 +512,7 @@ function InboxTaskList(props: InboxTaskListProps) {
 
 function toggleInboxTaskRefIds(
   inboxTaskRefIds: Set<string>,
-  newRefId: string
+  newRefId: string,
 ): Set<string> {
   if (inboxTaskRefIds.has(newRefId)) {
     const newInboxTaskRefIds = new Set<string>();

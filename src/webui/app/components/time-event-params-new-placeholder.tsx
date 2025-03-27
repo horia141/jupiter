@@ -13,7 +13,7 @@ interface TimeEventParamsNewPlaceholderParams {
 }
 
 export function TimeEventParamsNewPlaceholder(
-  props: TimeEventParamsNewPlaceholderParams
+  props: TimeEventParamsNewPlaceholderParams,
 ) {
   const [query] = useSearchParams();
 
@@ -53,7 +53,7 @@ export function TimeEventParamsNewPlaceholder(
             minutesSinceStartOfDay,
             overflowMinutes > 0
               ? sourceDurationMinsInt - overflowMinutes
-              : sourceDurationMinsInt
+              : sourceDurationMinsInt,
           ),
           backgroundColor: "gray",
           opacity: 0.5,
@@ -89,7 +89,7 @@ export function TimeEventParamsNewPlaceholder(
             left: "200%",
             height: calendarTimeEventInDayDurationToRems(
               0,
-              overflowMinutes - 24 * 60
+              overflowMinutes - 24 * 60,
             ),
             backgroundColor: "gray",
             opacity: 0.5,

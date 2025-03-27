@@ -39,12 +39,12 @@ interface TimePlanActivityCardProps {
 
 export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
   const timePlan = props.timePlansByRefId.get(
-    props.activity.time_plan_ref_id.toString()
+    props.activity.time_plan_ref_id.toString(),
   );
 
   if (props.activity.target === TimePlanActivityTarget.INBOX_TASK) {
     const inboxTask = props.inboxTasksByRefId.get(
-      props.activity.target_ref_id
+      props.activity.target_ref_id,
     )!;
     const timeEvents =
       props.timeEventsByRefId.get(`it:${inboxTask.ref_id}`) ?? [];
@@ -112,7 +112,7 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
   } else if (
     isWorkspaceFeatureAvailable(
       props.topLevelInfo.workspace,
-      WorkspaceFeature.BIG_PLANS
+      WorkspaceFeature.BIG_PLANS,
     )
   ) {
     const bigPlan = props.bigPlansByRefId.get(props.activity.target_ref_id)!;

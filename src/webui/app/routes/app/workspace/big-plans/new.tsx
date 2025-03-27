@@ -125,12 +125,12 @@ export async function action({ request }: ActionArgs) {
     switch (timePlanReason) {
       case "standard":
         return redirect(
-          `/app/workspace/big-plans/${result.new_big_plan.ref_id}`
+          `/app/workspace/big-plans/${result.new_big_plan.ref_id}`,
         );
 
       case "for-time-plan":
         return redirect(
-          `/app/workspace/time-plans/${result.new_time_plan_activity?.time_plan_ref_id}/${result.new_time_plan_activity?.ref_id}`
+          `/app/workspace/time-plans/${result.new_time_plan_activity?.time_plan_ref_id}/${result.new_time_plan_activity?.ref_id}`,
         );
     }
   } catch (error) {
@@ -179,7 +179,7 @@ export default function NewBigPlan() {
 
             {isWorkspaceFeatureAvailable(
               topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS
+              WorkspaceFeature.PROJECTS,
             ) && (
               <FormControl fullWidth>
                 <ProjectSelect
@@ -208,7 +208,7 @@ export default function NewBigPlan() {
                   loaderData.timePlanReason === "for-time-plan"
                     ? aDateToDate(
                         (loaderData.associatedTimePlan as TimePlan)
-                          .start_date as ADate
+                          .start_date as ADate,
                       ).toFormat("yyyy-MM-dd")
                     : undefined
                 }
@@ -234,7 +234,7 @@ export default function NewBigPlan() {
                   loaderData.timePlanReason === "for-time-plan"
                     ? aDateToDate(
                         (loaderData.associatedTimePlan as TimePlan)
-                          .end_date as ADate
+                          .end_date as ADate,
                       ).toFormat("yyyy-MM-dd")
                     : undefined
                 }
@@ -245,7 +245,7 @@ export default function NewBigPlan() {
 
             {isWorkspaceFeatureAvailable(
               topLevelInfo.workspace,
-              WorkspaceFeature.TIME_PLANS
+              WorkspaceFeature.TIME_PLANS,
             ) &&
               loaderData.timePlanReason === "for-time-plan" && (
                 <>
@@ -300,5 +300,5 @@ export default function NewBigPlan() {
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/big-plans",
-  () => `There was an error creating the big plan! Please try again!`
+  () => `There was an error creating the big plan! Please try again!`,
 );

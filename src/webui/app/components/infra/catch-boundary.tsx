@@ -8,7 +8,7 @@ import { TrunkPanel } from "./layout/trunk-panel";
 
 export function makeLeafCatchBoundary(
   returnLocation: string | (() => string),
-  labelFn: (c: ThrownResponse) => string
+  labelFn: (c: ThrownResponse) => string,
 ) {
   function CatchBoundary() {
     const caught = useCatch();
@@ -40,7 +40,7 @@ export function makeLeafCatchBoundary(
 
 export function makeBranchCatchBoundary(
   returnLocation: string,
-  labelFn: (c: ThrownResponse) => string
+  labelFn: (c: ThrownResponse) => string,
 ) {
   function CatchBoundary() {
     const caught = useCatch();
@@ -68,7 +68,7 @@ export function makeBranchCatchBoundary(
 
 export function makeTrunkCatchBoundary(
   returnLocation: string,
-  labelFn: (c: ThrownResponse) => string
+  labelFn: (c: ThrownResponse) => string,
 ) {
   function CatchBoundary() {
     const caught = useCatch();

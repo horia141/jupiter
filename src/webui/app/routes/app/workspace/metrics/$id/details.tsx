@@ -172,9 +172,9 @@ export async function action({ request, params }: ActionArgs) {
               form.collectionPeriod === "none"
                 ? undefined
                 : form.collectionActionableFromDay === undefined ||
-                  form.collectionActionableFromDay === ""
-                ? undefined
-                : parseInt(form.collectionActionableFromDay),
+                    form.collectionActionableFromDay === ""
+                  ? undefined
+                  : parseInt(form.collectionActionableFromDay),
           },
           collection_actionable_from_month: {
             should_change: true,
@@ -182,9 +182,9 @@ export async function action({ request, params }: ActionArgs) {
               form.collectionPeriod === "none"
                 ? undefined
                 : form.collectionActionableFromMonth === undefined ||
-                  form.collectionActionableFromMonth === ""
-                ? undefined
-                : parseInt(form.collectionActionableFromMonth),
+                    form.collectionActionableFromMonth === ""
+                  ? undefined
+                  : parseInt(form.collectionActionableFromMonth),
           },
           collection_due_at_day: {
             should_change: true,
@@ -192,9 +192,9 @@ export async function action({ request, params }: ActionArgs) {
               form.collectionPeriod === "none"
                 ? undefined
                 : form.collectionDueAtDay === undefined ||
-                  form.collectionDueAtDay === ""
-                ? undefined
-                : parseInt(form.collectionDueAtDay),
+                    form.collectionDueAtDay === ""
+                  ? undefined
+                  : parseInt(form.collectionDueAtDay),
           },
           collection_due_at_month: {
             should_change: true,
@@ -202,9 +202,9 @@ export async function action({ request, params }: ActionArgs) {
               form.collectionPeriod === "none"
                 ? undefined
                 : form.collectionDueAtMonth === undefined ||
-                  form.collectionDueAtMonth === ""
-                ? undefined
-                : parseInt(form.collectionDueAtMonth),
+                    form.collectionDueAtMonth === ""
+                  ? undefined
+                  : parseInt(form.collectionDueAtMonth),
           },
         });
 
@@ -290,7 +290,7 @@ export default function MetricDetails() {
       {
         method: "post",
         action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-      }
+      },
     );
   }
 
@@ -303,7 +303,7 @@ export default function MetricDetails() {
       {
         method: "post",
         action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-      }
+      },
     );
   }
 
@@ -442,11 +442,11 @@ export default function MetricDetails() {
 
 export const CatchBoundary = makeLeafCatchBoundary(
   () => `/app/workspace/metrics/${useParams().id}`,
-  () => `Could not find metric #${useParams().id}!`
+  () => `Could not find metric #${useParams().id}!`,
 );
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   () => `/app/workspace/metrics/${useParams().id}`,
   () =>
-    `There was an error loading metric #${useParams().id}! Please try again!`
+    `There was an error loading metric #${useParams().id}! Please try again!`,
 );

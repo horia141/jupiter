@@ -14,7 +14,7 @@ interface TimeEventFullDaysBlockCardProps {
 }
 
 export function TimeEventFullDaysBlockCard(
-  props: TimeEventFullDaysBlockCardProps
+  props: TimeEventFullDaysBlockCardProps,
 ) {
   let name = null;
   switch (props.entry.time_event.namespace) {

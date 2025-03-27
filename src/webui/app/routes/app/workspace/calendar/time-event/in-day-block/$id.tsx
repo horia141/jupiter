@@ -183,7 +183,7 @@ export async function action({ request, params }: ActionArgs) {
       case "update": {
         const { startDate, startTimeInDay } = timeEventInDayBlockParamsToUtc(
           form,
-          form.userTimezone
+          form.userTimezone,
         );
         await apiClient.inDayBlock.timeEventInDayBlockUpdate({
           ref_id: id,
@@ -226,7 +226,7 @@ export async function action({ request, params }: ActionArgs) {
       case "inbox-task-reactivate":
       case "inbox-task-update": {
         const corePropertyEditable = isInboxTaskCoreFieldEditable(
-          form.inboxTaskSource
+          form.inboxTaskSource,
         );
 
         let status = form.inboxTaskStatus;
@@ -342,7 +342,7 @@ export default function TimeEventInDayBlockViewOne() {
   const inputsEnabled =
     transition.state === "idle" && !loaderData.inDayBlock.archived;
   const corePropertyEditable = isTimeEventInDayBlockEditable(
-    loaderData.inDayBlock.namespace
+    loaderData.inDayBlock.namespace,
   );
 
   let name = null;
@@ -364,14 +364,14 @@ export default function TimeEventInDayBlockViewOne() {
       startDate: loaderData.inDayBlock.start_date,
       startTimeInDay: loaderData.inDayBlock.start_time_in_day,
     },
-    topLevelInfo.user.timezone
+    topLevelInfo.user.timezone,
   );
   const [startDate, setStartDate] = useState(blockParamsInTz.startDate);
   const [startTimeInDay, setStartTimeInDay] = useState(
-    blockParamsInTz.startTimeInDay!
+    blockParamsInTz.startTimeInDay!,
   );
   const [durationMins, setDurationMins] = useState(
-    loaderData.inDayBlock.duration_mins
+    loaderData.inDayBlock.duration_mins,
   );
   useEffect(() => {
     const blockParamsInTz = timeEventInDayBlockParamsToTimezone(
@@ -379,7 +379,7 @@ export default function TimeEventInDayBlockViewOne() {
         startDate: loaderData.inDayBlock.start_date,
         startTimeInDay: loaderData.inDayBlock.start_time_in_day,
       },
-      topLevelInfo.user.timezone
+      topLevelInfo.user.timezone,
     );
     setStartDate(blockParamsInTz.startDate);
     setStartTimeInDay(blockParamsInTz.startTimeInDay!);
@@ -575,7 +575,7 @@ export default function TimeEventInDayBlockViewOne() {
 
 export const CatchBoundary = makeLeafCatchBoundary(
   () => `/app/workspace/calendar?${useSearchParams()}`,
-  () => `Could not find time event in day block #${useParams().id}!`
+  () => `Could not find time event in day block #${useParams().id}!`,
 );
 
 export const ErrorBoundary = makeLeafErrorBoundary(
@@ -583,5 +583,5 @@ export const ErrorBoundary = makeLeafErrorBoundary(
   () =>
     `There was an error loading time event in day block #${
       useParams().id
-    }. Please try again!`
+    }. Please try again!`,
 );

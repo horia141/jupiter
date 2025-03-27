@@ -9,7 +9,7 @@ function hydrate() {
       document,
       <StrictMode>
         <RemixBrowser />
-      </StrictMode>
+      </StrictMode>,
     );
   });
 }
@@ -25,7 +25,7 @@ document
       "html > *:not(body, head)",
       'script[src*="extension://"]',
       'link[href*="extension://"]',
-    ].join(", ")
+    ].join(", "),
   )
   .forEach((s) => {
     s.parentNode?.removeChild(s);

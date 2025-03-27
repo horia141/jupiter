@@ -84,7 +84,7 @@ export async function loader({ request }: LoaderArgs) {
       noErrorSomeData({
         allProjects: summaryResponse.projects as Array<ProjectSummary>,
         report: reportResponse,
-      })
+      }),
     );
   } catch (error) {
     if (
@@ -120,7 +120,7 @@ export default function Report() {
   const inputsEnabled = transition.state === "idle";
 
   function handleChangePeriod(
-    newPeriod: RecurringTaskPeriod | RecurringTaskPeriod[] | "none"
+    newPeriod: RecurringTaskPeriod | RecurringTaskPeriod[] | "none",
   ) {
     if (newPeriod === "none") {
       return;
@@ -137,7 +137,7 @@ export default function Report() {
   }
 
   function handleChangeBreakdownPeriod(
-    newPeriod: RecurringTaskPeriod | RecurringTaskPeriod[] | "none"
+    newPeriod: RecurringTaskPeriod | RecurringTaskPeriod[] | "none",
   ) {
     if (Array.isArray(newPeriod)) {
       newPeriod = newPeriod[0];
@@ -162,10 +162,10 @@ export default function Report() {
                 name="today"
                 defaultValue={
                   isNoErrorSomeData(loaderData)
-                    ? loaderData.data.report?.period_result.today ??
+                    ? (loaderData.data.report?.period_result.today ??
                       DateTime.local({
                         zone: topLevelInfo.user.timezone,
-                      }).toISODate()
+                      }).toISODate())
                     : DateTime.local({
                         zone: topLevelInfo.user.timezone,
                       }).toISODate()
@@ -237,5 +237,5 @@ export default function Report() {
 }
 
 export const ErrorBoundary = makeToolErrorBoundary(
-  () => `There was an error running the report! Please try again!`
+  () => `There was an error running the report! Please try again!`,
 );

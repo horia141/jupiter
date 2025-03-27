@@ -10,10 +10,10 @@ interface TimePlanActivityFeasabilitySelectProps {
 }
 
 export function TimePlanActivityFeasabilitySelect(
-  props: TimePlanActivityFeasabilitySelectProps
+  props: TimePlanActivityFeasabilitySelectProps,
 ) {
   const [feasability, setFeasability] = useState<TimePlanActivityFeasability>(
-    props.defaultValue
+    props.defaultValue,
   );
 
   useEffect(() => {
@@ -45,7 +45,7 @@ export function TimePlanActivityFeasabilitySelect(
           value={TimePlanActivityFeasability.NICE_TO_HAVE}
         >
           {timePlanActivityFeasabilityName(
-            TimePlanActivityFeasability.NICE_TO_HAVE
+            TimePlanActivityFeasability.NICE_TO_HAVE,
           )}
         </ToggleButton>
         <ToggleButton

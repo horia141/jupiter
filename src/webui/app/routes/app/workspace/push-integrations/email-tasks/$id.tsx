@@ -229,7 +229,7 @@ export default function EmailTask() {
       {
         method: "post",
         action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-      }
+      },
     );
   }
 
@@ -242,7 +242,7 @@ export default function EmailTask() {
       {
         method: "post",
         action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-      }
+      },
     );
   }
 
@@ -405,7 +405,7 @@ export default function EmailTask() {
                   loaderData.emailTask.generation_extra_info?.actionable_date
                     ? aDateToDate(
                         loaderData.emailTask.generation_extra_info
-                          ?.actionable_date
+                          ?.actionable_date,
                       ).toFormat("yyyy-MM-dd")
                     : undefined
                 }
@@ -430,7 +430,7 @@ export default function EmailTask() {
                 defaultValue={
                   loaderData.emailTask.generation_extra_info?.due_date
                     ? aDateToDate(
-                        loaderData.emailTask.generation_extra_info?.due_date
+                        loaderData.emailTask.generation_extra_info?.due_date,
                       ).toFormat("yyyy-MM-dd")
                     : undefined
                 }
@@ -481,7 +481,7 @@ export default function EmailTask() {
 
 export const CatchBoundary = makeLeafCatchBoundary(
   "/app/workspace/push-integrations/email-tasks",
-  () => `Could not find email task #${useParams().id}!`
+  () => `Could not find email task #${useParams().id}!`,
 );
 
 export const ErrorBoundary = makeLeafErrorBoundary(
@@ -489,5 +489,5 @@ export const ErrorBoundary = makeLeafErrorBoundary(
   () =>
     `There was an error loading email task #${
       useParams().id
-    }! Please try again!`
+    }! Please try again!`,
 );

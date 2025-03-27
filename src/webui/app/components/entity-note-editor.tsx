@@ -13,7 +13,7 @@ import { FieldError, GlobalError } from "./infra/errors";
 const BlockEditor = lazy(() =>
   import("~/components/infra/block-editor.js").then((module) => ({
     default: module.default as unknown as ComponentType<BlockEditorProps>,
-  }))
+  })),
 );
 
 interface EntityNoteEditorProps {
@@ -34,14 +34,14 @@ export function EntityNoteEditor({
   const [isActing, setIsActing] = useState(false);
   const [hasActed, setHasActed] = useState(false);
   const [noteContent, setNoteContent] = useState<Array<OneOfNoteContentBlock>>(
-    initialNote.content
+    initialNote.content,
   );
 
   const act = useCallback(() => {
     setIsActing(true);
     const base64Content = Buffer.from(
       JSON.stringify(noteContent),
-      "utf-8"
+      "utf-8",
     ).toString("base64");
     // We already created this thing, we just need to update!
     cardActionFetcher.submit(
@@ -52,7 +52,7 @@ export function EntityNoteEditor({
       {
         method: "post",
         action: "/app/workspace/core/notes/update",
-      }
+      },
     );
     setDataModified(false);
   }, [cardActionFetcher, initialNote.ref_id, noteContent]);

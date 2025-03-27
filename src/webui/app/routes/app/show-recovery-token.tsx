@@ -102,7 +102,7 @@ export default function ShowRecoveryToken() {
 }
 
 export const ErrorBoundary = makeRootErrorBoundary(
-  () => `There was an error creating the workspace! Please try again!`
+  () => `There was an error creating the workspace! Please try again!`,
 );
 
 const RecoveryTokenBox = styled(Typography)(({ theme }) => ({

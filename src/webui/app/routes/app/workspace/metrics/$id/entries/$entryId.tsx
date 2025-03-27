@@ -193,7 +193,7 @@ export default function MetricEntry() {
                 defaultValue={
                   loaderData.metricEntry.collection_time
                     ? aDateToDate(
-                        loaderData.metricEntry.collection_time
+                        loaderData.metricEntry.collection_time,
                       ).toFormat("yyyy-MM-dd")
                     : undefined
                 }
@@ -270,7 +270,7 @@ export default function MetricEntry() {
 export const CatchBoundary = makeLeafCatchBoundary(
   () => `/app/workspace/metrics/${useParams().id}`,
   () =>
-    `Could not find metric entry #${useParams().id}:#${useParams().entryId}!`
+    `Could not find metric entry #${useParams().id}:#${useParams().entryId}!`,
 );
 
 export const ErrorBoundary = makeLeafErrorBoundary(
@@ -278,5 +278,5 @@ export const ErrorBoundary = makeLeafErrorBoundary(
   () =>
     `There was an error loading metric entry #${useParams().id}:#${
       useParams().entryId
-    }! Please try again!`
+    }! Please try again!`,
 );

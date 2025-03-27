@@ -124,7 +124,7 @@ export async function action({ request, params }: ActionArgs) {
       case "update": {
         const { startDate, startTimeInDay } = timeEventInDayBlockParamsToUtc(
           form,
-          form.userTimezone
+          form.userTimezone,
         );
         await apiClient.eventInDay.scheduleEventInDayUpdate({
           ref_id: id,
@@ -154,7 +154,7 @@ export async function action({ request, params }: ActionArgs) {
           schedule_stream_ref_id: form.scheduleStreamRefId,
         });
         return redirect(
-          `/app/workspace/calendar/schedule/event-in-day/${id}?${url.searchParams}`
+          `/app/workspace/calendar/schedule/event-in-day/${id}?${url.searchParams}`,
         );
       }
 
@@ -165,7 +165,7 @@ export async function action({ request, params }: ActionArgs) {
           content: [],
         });
         return redirect(
-          `/app/workspace/calendar/schedule/event-in-day/${id}?${url.searchParams}`
+          `/app/workspace/calendar/schedule/event-in-day/${id}?${url.searchParams}`,
         );
       }
 
@@ -210,7 +210,7 @@ export default function ScheduleEventInDayViewOne() {
   const inputsEnabled =
     transition.state === "idle" && !loaderData.scheduleEventInDay.archived;
   const corePropertyEditable = isCorePropertyEditable(
-    loaderData.scheduleEventInDay
+    loaderData.scheduleEventInDay,
   );
 
   const blockParamsInTz = timeEventInDayBlockParamsToTimezone(
@@ -218,14 +218,14 @@ export default function ScheduleEventInDayViewOne() {
       startDate: loaderData.timeEventInDayBlock.start_date,
       startTimeInDay: loaderData.timeEventInDayBlock.start_time_in_day,
     },
-    topLevelInfo.user.timezone
+    topLevelInfo.user.timezone,
   );
   const [startDate, setStartDate] = useState(blockParamsInTz.startDate);
   const [startTimeInDay, setStartTimeInDay] = useState(
-    blockParamsInTz.startTimeInDay!
+    blockParamsInTz.startTimeInDay!,
   );
   const [durationMins, setDurationMins] = useState(
-    loaderData.timeEventInDayBlock.duration_mins
+    loaderData.timeEventInDayBlock.duration_mins,
   );
 
   useEffect(() => {
@@ -234,7 +234,7 @@ export default function ScheduleEventInDayViewOne() {
         startDate: loaderData.timeEventInDayBlock.start_date,
         startTimeInDay: loaderData.timeEventInDayBlock.start_time_in_day,
       },
-      topLevelInfo.user.timezone
+      topLevelInfo.user.timezone,
     );
     setStartDate(blockParamsInTz.startDate);
     setStartTimeInDay(blockParamsInTz.startTimeInDay!);
@@ -257,7 +257,7 @@ export default function ScheduleEventInDayViewOne() {
   }, [query, debounceForeign]);
 
   const allScheduleStreamsByRefId = new Map(
-    loaderData.allScheduleStreams.map((st) => [st.ref_id, st])
+    loaderData.allScheduleStreams.map((st) => [st.ref_id, st]),
   );
 
   return (
@@ -319,7 +319,7 @@ export default function ScheduleEventInDayViewOne() {
               allScheduleStreams={loaderData.allScheduleStreams}
               defaultValue={
                 allScheduleStreamsByRefId.get(
-                  loaderData.scheduleEventInDay.schedule_stream_ref_id
+                  loaderData.scheduleEventInDay.schedule_stream_ref_id,
                 )!
               }
             />
@@ -465,7 +465,7 @@ export default function ScheduleEventInDayViewOne() {
 
 export const CatchBoundary = makeLeafCatchBoundary(
   () => `/app/workspace/calendar?${useSearchParams()}`,
-  () => `Could not find schedule event in day#${useParams().id}!`
+  () => `Could not find schedule event in day#${useParams().id}!`,
 );
 
 export const ErrorBoundary = makeLeafErrorBoundary(
@@ -473,5 +473,5 @@ export const ErrorBoundary = makeLeafErrorBoundary(
   () =>
     `There was an error loading schedule event in day #${
       useParams().id
-    }. Please try again!`
+    }. Please try again!`,
 );

@@ -99,7 +99,7 @@ export default function PersonsSettings() {
     >
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
-        WorkspaceFeature.PROJECTS
+        WorkspaceFeature.PROJECTS,
       ) && (
         <Card>
           <GlobalError actionResult={actionData} />
@@ -142,5 +142,5 @@ export default function PersonsSettings() {
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/persons",
-  () => `There was an error upserting person settings! Please try again!`
+  () => `There was an error upserting person settings! Please try again!`,
 );

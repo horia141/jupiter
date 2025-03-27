@@ -69,7 +69,7 @@ export default function Persons() {
         <>
           {isWorkspaceFeatureAvailable(
             topLevelInfo.workspace,
-            WorkspaceFeature.PROJECTS
+            WorkspaceFeature.PROJECTS,
           ) && (
             <>
               <Button
@@ -137,5 +137,5 @@ export default function Persons() {
 
 export const ErrorBoundary = makeTrunkErrorBoundary(
   "/app/workspace",
-  () => `There was an error loading the persons! Please try again!`
+  () => `There was an error loading the persons! Please try again!`,
 );

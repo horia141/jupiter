@@ -58,7 +58,7 @@ export default function SlackTasks() {
         <>
           {isWorkspaceFeatureAvailable(
             topLevelInfo.workspace,
-            WorkspaceFeature.PROJECTS
+            WorkspaceFeature.PROJECTS,
           ) && (
             <Button
               variant="contained"
@@ -126,5 +126,5 @@ export default function SlackTasks() {
 
 export const ErrorBoundary = makeTrunkErrorBoundary(
   "/app/workspace",
-  () => `There was an error loading the Slack tasks!s Please try again!`
+  () => `There was an error loading the Slack tasks!s Please try again!`,
 );

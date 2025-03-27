@@ -113,7 +113,7 @@ type EditorJsListItem = {
 };
 
 function transformContentBlocksToEditorJs(
-  content: Array<OneOfNoteContentBlock>
+  content: Array<OneOfNoteContentBlock>,
 ): OutputData {
   function transformListItemToEditorJs(listItem: ListItem): EditorJsListItem {
     return {
@@ -207,7 +207,7 @@ function transformContentBlocksToEditorJs(
           throw new Error("Link blocks are not supported right now");
         case EntityReferenceBlock.kind.ENTITY_REFERENCE:
           throw new Error(
-            "Entity reference blocks are not supported right now"
+            "Entity reference blocks are not supported right now",
           );
         default:
           throw new Error(`Unknown block kind: ${block}`);
@@ -218,7 +218,7 @@ function transformContentBlocksToEditorJs(
 }
 
 function transformEditorJsToContentBlocks(
-  content: OutputData
+  content: OutputData,
 ): Array<OneOfNoteContentBlock> {
   function transformEditorJsToListItem(listItem: EditorJsListItem): ListItem {
     return {
@@ -266,7 +266,7 @@ function transformEditorJsToContentBlocks(
             (item: { text: string; checked: boolean }) => ({
               text: item.text,
               checked: item.checked,
-            })
+            }),
           ),
         } as ChecklistBlock;
       case "table":

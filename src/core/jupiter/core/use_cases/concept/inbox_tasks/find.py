@@ -62,7 +62,6 @@ from jupiter.core.use_cases.infra.use_cases import (
     AppTransactionalLoggedInReadOnlyUseCase,
     readonly_use_case,
 )
-from sqlalchemy import select, text
 
 
 @use_case_args

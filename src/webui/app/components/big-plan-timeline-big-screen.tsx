@@ -73,7 +73,7 @@ export function BigPlanTimelineBigScreen({
           {bigPlans.map((entry) => {
             const { leftMargin, width } = computeBigPlanGnattPosition(
               thisYear,
-              entry
+              entry,
             );
 
             return (
@@ -105,7 +105,7 @@ export function BigPlanTimelineBigScreen({
                   {dateMarkers?.map((marker, idx) => {
                     const markerPosition = computeMarkerPosition(
                       thisYear,
-                      marker.date
+                      marker.date,
                     );
                     return (
                       <Tooltip key={idx} title={marker.label} placement="top">
@@ -148,7 +148,7 @@ const TimelineGnattBlob = styled("div")<TimelineGnattBlobProps>(
     backgroundColor: theme.palette.action.disabledBackground,
     borderRadius: "0.25rem",
     height: "1.5rem",
-  })
+  }),
 );
 
 interface TimelineMarkerProps {
@@ -166,7 +166,7 @@ const TimelineMarker = styled("div")<TimelineMarkerProps>(
     left: `calc(${leftmargin * 100}% - 0.5rem)`,
     zIndex: 1,
     cursor: "pointer",
-  })
+  }),
 );
 
 function computeMarkerPosition(thisYear: DateTime, date: ADate): number {

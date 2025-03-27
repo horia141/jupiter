@@ -12,7 +12,7 @@ export function PeriodTag(props: Props) {
 }
 
 function periodToClass(
-  period: RecurringTaskPeriod
+  period: RecurringTaskPeriod,
 ): "info" | "success" | "primary" | "warning" | "error" {
   switch (period) {
     case RecurringTaskPeriod.DAILY:

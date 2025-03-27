@@ -16,7 +16,7 @@ export function PersonRelationshipTag(props: PersonRelationshipTagProps) {
 }
 
 function relaionshipToColor(
-  relationship: PersonRelationship
+  relationship: PersonRelationship,
 ): "success" | "info" | "default" {
   switch (relationship) {
     case PersonRelationship.FRIEND:

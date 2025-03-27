@@ -1,6 +1,6 @@
 """SQLite implementation of gamification task scores classes."""
 
-from typing import Final
+from typing import Any, Final
 
 from jupiter.core.domain.application.gamification.score_log import (
     ScoreLog,
@@ -38,6 +38,7 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     MetaData,
+    Row,
     String,
     Table,
     delete,
@@ -370,5 +371,5 @@ class SqliteScorePeriodBestRepository(
         )
         return [self._row_to_entity(row) for row in result]
 
-    def _row_to_entity(self, row: RowType) -> ScorePeriodBest:
+    def _row_to_entity(self, row: Row) -> ScorePeriodBest:
         return self._realm_codec_registry.db_decode(ScorePeriodBest, row._mapping)  # type: ignore[attr-defined]

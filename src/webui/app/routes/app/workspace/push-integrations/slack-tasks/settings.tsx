@@ -46,7 +46,7 @@ export async function loader({ request }: LoaderArgs) {
   });
 
   const slackTaskSettingsResponse = await apiClient.slack.slackTaskLoadSettings(
-    {}
+    {},
   );
 
   return json({
@@ -101,7 +101,7 @@ export default function SlackTasksSettings() {
     >
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
-        WorkspaceFeature.PROJECTS
+        WorkspaceFeature.PROJECTS,
       ) && (
         <Card>
           <GlobalError actionResult={actionData} />
@@ -145,5 +145,5 @@ export default function SlackTasksSettings() {
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/push-integrations/slack-tasks",
-  () => `There was an error upserting Slack task settings! Please try again!`
+  () => `There was an error upserting Slack task settings! Please try again!`,
 );

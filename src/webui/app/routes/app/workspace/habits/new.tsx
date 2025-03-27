@@ -132,7 +132,7 @@ export default function NewHabit() {
   const topLevelInfo = useContext(TopLevelInfoContext);
 
   const [selectedPeriod, setSelectedPeriod] = useState<RecurringTaskPeriod>(
-    RecurringTaskPeriod.DAILY
+    RecurringTaskPeriod.DAILY,
   );
   const [selectedRepeatsStrategy, setSelectedRepeatsStrategy] = useState<
     HabitRepeatsStrategy | "none"
@@ -163,7 +163,7 @@ export default function NewHabit() {
 
             {isWorkspaceFeatureAvailable(
               topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS
+              WorkspaceFeature.PROJECTS,
             ) && (
               <FormControl fullWidth>
                 <ProjectSelect
@@ -253,5 +253,5 @@ export default function NewHabit() {
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/habits",
-  () => `There was an error creating the habit! Please try again!`
+  () => `There was an error creating the habit! Please try again!`,
 );

@@ -204,7 +204,7 @@ export default function Vacation() {
                 notched
                 label="startDate"
                 defaultValue={aDateToDate(vacation.start_date).toFormat(
-                  "yyyy-MM-dd"
+                  "yyyy-MM-dd",
                 )}
                 name="startDate"
                 readOnly={!inputsEnabled}
@@ -222,7 +222,7 @@ export default function Vacation() {
                 notched
                 label="endDate"
                 defaultValue={aDateToDate(vacation.end_date).toFormat(
-                  "yyyy-MM-dd"
+                  "yyyy-MM-dd",
                 )}
                 name="endDate"
                 readOnly={!inputsEnabled}
@@ -279,7 +279,7 @@ export default function Vacation() {
 
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
-        WorkspaceFeature.SCHEDULE
+        WorkspaceFeature.SCHEDULE,
       ) && (
         <TimeEventFullDaysBlockStack
           topLevelInfo={topLevelInfo}
@@ -294,11 +294,11 @@ export default function Vacation() {
 
 export const CatchBoundary = makeLeafCatchBoundary(
   "/app/workspace/vacations",
-  () => `Could not find vacation #${useParams().id}!`
+  () => `Could not find vacation #${useParams().id}!`,
 );
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/vacations",
   () =>
-    `There was an error loading vacation #${useParams().id}. Please try again!`
+    `There was an error loading vacation #${useParams().id}. Please try again!`,
 );

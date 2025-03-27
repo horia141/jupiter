@@ -111,7 +111,7 @@ export default function CalendarSettings() {
   const query = useSearchParams();
 
   const scheduleStreamsByRefId = new Map(
-    loaderData.scheduleStreams.map((stream) => [stream.ref_id, stream])
+    loaderData.scheduleStreams.map((stream) => [stream.ref_id, stream]),
   );
 
   return (
@@ -130,7 +130,7 @@ export default function CalendarSettings() {
                 name="scheduleStreamRefIds"
                 readOnly={!inputsEnabled}
                 allScheduleStreams={loaderData.scheduleStreams.filter(
-                  (ss) => ss.source === ScheduleSource.EXTERNAL_ICAL
+                  (ss) => ss.source === ScheduleSource.EXTERNAL_ICAL,
                 )}
               />
               <FieldError
@@ -240,7 +240,7 @@ export default function CalendarSettings() {
 
 export const ErrorBoundary = makeBranchErrorBoundary(
   () => `/app/workspace/calendar?${useSearchParams()}`,
-  () => `There was an error creating the event in day! Please try again!`
+  () => `There was an error creating the event in day! Please try again!`,
 );
 
 const AccordionHeader = styled(Box)(({ theme }) => ({

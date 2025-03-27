@@ -220,7 +220,7 @@ export default function SlackTask() {
       {
         method: "post",
         action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-      }
+      },
     );
   }
 
@@ -233,7 +233,7 @@ export default function SlackTask() {
       {
         method: "post",
         action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-      }
+      },
     );
   }
 
@@ -398,7 +398,7 @@ export default function SlackTask() {
                   loaderData.slackTask.generation_extra_info?.actionable_date
                     ? aDateToDate(
                         loaderData.slackTask.generation_extra_info
-                          ?.actionable_date
+                          ?.actionable_date,
                       ).toFormat("yyyy-MM-dd")
                     : undefined
                 }
@@ -423,7 +423,7 @@ export default function SlackTask() {
                 defaultValue={
                   loaderData.slackTask.generation_extra_info?.due_date
                     ? aDateToDate(
-                        loaderData.slackTask.generation_extra_info?.due_date
+                        loaderData.slackTask.generation_extra_info?.due_date,
                       ).toFormat("yyyy-MM-dd")
                     : undefined
                 }
@@ -474,7 +474,7 @@ export default function SlackTask() {
 
 export const CatchBoundary = makeLeafCatchBoundary(
   "/app/workspace/push-integrations/slack-tasks",
-  () => `Could not find Slack task #${useParams().id}!`
+  () => `Could not find Slack task #${useParams().id}!`,
 );
 
 export const ErrorBoundary = makeLeafErrorBoundary(
@@ -482,5 +482,5 @@ export const ErrorBoundary = makeLeafErrorBoundary(
   () =>
     `There was an error loading Slack task #${
       useParams().id
-    }! Please try again!`
+    }! Please try again!`,
 );

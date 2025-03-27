@@ -7,7 +7,7 @@ interface TimePlanActivityFeasabilityTagProps {
 }
 
 export function TimePlanActivityFeasabilityTag(
-  props: TimePlanActivityFeasabilityTagProps
+  props: TimePlanActivityFeasabilityTagProps,
 ) {
   return (
     <SlimChip
@@ -18,7 +18,7 @@ export function TimePlanActivityFeasabilityTag(
 }
 
 function feasabilityToColor(
-  props: TimePlanActivityFeasability
+  props: TimePlanActivityFeasability,
 ): "success" | "warning" | "info" {
   switch (props) {
     case TimePlanActivityFeasability.MUST_DO:

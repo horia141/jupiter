@@ -102,10 +102,10 @@ export default function Projects() {
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
 
   const sortedProjects = sortProjectsByTreeOrder(
-    projects.map((entry) => entry.project)
+    projects.map((entry) => entry.project),
   );
   const allProjectsByRefId = new Map(
-    projects.map((entry) => [entry.project.ref_id, entry.project])
+    projects.map((entry) => [entry.project.ref_id, entry.project]),
   );
 
   return (
@@ -124,7 +124,7 @@ export default function Projects() {
                 : undefined;
               const indent = computeProjectDistanceFromRoot(
                 project,
-                allProjectsByRefId
+                allProjectsByRefId,
               );
               return (
                 <EntityCard
@@ -144,7 +144,7 @@ export default function Projects() {
                             newOrderOfChildProjects:
                               shiftProjectUpInListOfChildren(
                                 project,
-                                parentProject.order_of_child_projects
+                                parentProject.order_of_child_projects,
                               ),
                           })}
                         >
@@ -160,7 +160,7 @@ export default function Projects() {
                             newOrderOfChildProjects:
                               shiftProjectDownInListOfChildren(
                                 project,
-                                parentProject.order_of_child_projects
+                                parentProject.order_of_child_projects,
                               ),
                           })}
                         >
@@ -189,5 +189,5 @@ export default function Projects() {
 
 export const ErrorBoundary = makeTrunkErrorBoundary(
   "/app/workspace",
-  () => `There was an error loading the projects! Please try again!`
+  () => `There was an error loading the projects! Please try again!`,
 );

@@ -108,7 +108,7 @@ export async function action({ request }: ActionArgs) {
 
     const { startDate, startTimeInDay } = timeEventInDayBlockParamsToUtc(
       form,
-      form.userTimezone
+      form.userTimezone,
     );
 
     await apiClient.inDayBlock.timeEventInDayBlockCreateForInboxTask({
@@ -121,7 +121,7 @@ export async function action({ request }: ActionArgs) {
     switch (timePlanReason) {
       case "for-time-plan":
         return redirect(
-          `/app/workspace/time-plans/${query.timePlanRefId}/${query.timePlanActivityRefId}`
+          `/app/workspace/time-plans/${query.timePlanRefId}/${query.timePlanActivityRefId}`,
         );
       case "standard":
         return redirect(`/app/workspace/inbox-tasks/${query.inboxTaskRefId}`);
@@ -155,10 +155,10 @@ export default function TimeEventInDayBlockCreateForInboxTask() {
 
   const [startDate, setStartDate] = useState(rightNow.toFormat("yyyy-MM-dd"));
   const [startTimeInDay, setStartTimeInDay] = useState(
-    rightNow.toFormat("HH:mm")
+    rightNow.toFormat("HH:mm"),
   );
   const [durationMins, setDurationMins] = useState(
-    inferDurationMinsFromInboxTask(loaderData.inboxTask)
+    inferDurationMinsFromInboxTask(loaderData.inboxTask),
   );
 
   useEffect(() => {
@@ -318,7 +318,7 @@ export default function TimeEventInDayBlockCreateForInboxTask() {
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   () => `/app/workspace/calendar?${useSearchParams()}`,
-  () => `There was an error creating the event in day! Please try again!`
+  () => `There was an error creating the event in day! Please try again!`,
 );
 
 function inferDurationMinsFromInboxTask(inboxTask: InboxTask): number {

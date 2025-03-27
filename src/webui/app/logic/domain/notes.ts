@@ -72,7 +72,7 @@ const NOTE_CONTENT_BLOCK_PARSER = z.discriminatedUnion("kind", [
       z.object({
         text: z.string(),
         checked: z.boolean(),
-      })
+      }),
     ),
   }),
   z.object({

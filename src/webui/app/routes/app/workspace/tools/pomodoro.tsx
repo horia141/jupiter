@@ -39,7 +39,7 @@ export default function Pomodoro() {
   const [timerStarted, setTimerStarted] = useState(false);
   const [timerFinished, setTimerFinished] = useState(false);
   const [intervalHandle, setIntervalHandle] = useState<string | undefined>(
-    undefined
+    undefined,
   );
 
   function startTimer() {
@@ -74,7 +74,7 @@ export default function Pomodoro() {
     new Notification(`${globalProperties.title}} Pomodoro Timer`, {
       icon: "/favicon.ico",
       body: `Your ${actualDuration.toFormat(
-        "m"
+        "m",
       )} minutes Pomodor interval is finished!`,
     });
   }, [actualDuration, globalProperties]);
@@ -134,7 +134,7 @@ export default function Pomodoro() {
 }
 
 export const ErrorBoundary = makeToolErrorBoundary(
-  () => `There was an error with the pomodoro timing! Please try again!`
+  () => `There was an error with the pomodoro timing! Please try again!`,
 );
 
 interface PomodoroCardProps {
@@ -147,12 +147,12 @@ const PomodoroCard = styled(CardContent)<PomodoroCardProps>(
       finished === "true"
         ? theme.palette.info.light
         : theme.palette.background.paper,
-  })
+  }),
 );
 
 function NotificationControl() {
   const [permissionStatus, setPermissionStatus] = useState(
-    Notification.permission
+    Notification.permission,
   );
 
   function enableNotifications() {

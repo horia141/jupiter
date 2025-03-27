@@ -71,7 +71,7 @@ export async function action({ request }: LoaderArgs) {
         headers: {
           "Set-Cookie": await commitSession(session),
         },
-      }
+      },
     );
   } catch (error) {
     if (

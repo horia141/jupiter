@@ -80,7 +80,7 @@ export default function Chores() {
         <EntityStack>
           {sortedChores.map((chore) => {
             const entry = entriesByRefId.get(
-              chore.ref_id
+              chore.ref_id,
             ) as ChoreFindResultEntry;
             return (
               <EntityCard
@@ -91,7 +91,7 @@ export default function Chores() {
                   <EntityNameComponent name={chore.name} />
                   {isWorkspaceFeatureAvailable(
                     topLevelInfo.workspace,
-                    WorkspaceFeature.PROJECTS
+                    WorkspaceFeature.PROJECTS,
                   ) && <ProjectTag project={entry.project as Project} />}
                   <Check isDone={!chore.suspended} label="Active" />
                   <PeriodTag period={chore.gen_params.period} />
@@ -117,5 +117,5 @@ export default function Chores() {
 
 export const ErrorBoundary = makeTrunkErrorBoundary(
   "/app/workspace",
-  () => `There was an error loading the chores! Please try again!`
+  () => `There was an error loading the chores! Please try again!`,
 );

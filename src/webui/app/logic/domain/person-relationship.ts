@@ -1,7 +1,7 @@
 import { PersonRelationship } from "@jupiter/webapi-client";
 
 export function personRelationshipName(
-  relationship: PersonRelationship
+  relationship: PersonRelationship,
 ): string {
   switch (relationship) {
     case PersonRelationship.FAMILY:

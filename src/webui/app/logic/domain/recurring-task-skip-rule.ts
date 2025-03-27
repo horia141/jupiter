@@ -71,7 +71,7 @@ export type SkipRule =
 
 export function skipRuleTypeName(
   skipRuleType: SkipRuleType,
-  isBigScreen: boolean = true
+  isBigScreen: boolean = true,
 ): string {
   switch (skipRuleType) {
     case SkipRuleType.NONE:
@@ -97,7 +97,7 @@ export function skipRuleTypeName(
 
 export function isCompatibleWithPeriod(
   skipRuleType: SkipRuleType,
-  period: RecurringTaskPeriod
+  period: RecurringTaskPeriod,
 ): boolean {
   const dailyTypes = [
     SkipRuleType.NONE,
@@ -150,7 +150,7 @@ export function isCompatibleWithPeriod(
 }
 
 export function parseSkipRule(
-  skipRule?: RecurringTaskSkipRule | null
+  skipRule?: RecurringTaskSkipRule | null,
 ): SkipRule {
   if (!skipRule) {
     return { type: SkipRuleType.NONE };

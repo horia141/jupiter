@@ -41,7 +41,7 @@ export function UserFeatureFlagsEditor(props: UserFeatureFlagsEditorProps) {
             break;
           case FeatureControl.ALWAYS_OFF_HOSTING:
             extraLabel = `Cannot enable, due to the hosting mode being ${hostingName(
-              props.hosting
+              props.hosting,
             )}`;
             break;
           case FeatureControl.ALWAYS_OFF_TECH:
@@ -83,7 +83,7 @@ export function UserFeatureFlagsEditor(props: UserFeatureFlagsEditorProps) {
                     <DocsHelp
                       size="small"
                       subject={userFeatureToDocsHelpSubject(
-                        feature as UserFeature
+                        feature as UserFeature,
                       )}
                     />
                   </span>
@@ -106,7 +106,7 @@ interface WorkspaceFeatureFlagsEditorProps {
 }
 
 export function WorkspaceFeatureFlagsEditor(
-  props: WorkspaceFeatureFlagsEditorProps
+  props: WorkspaceFeatureFlagsEditorProps,
 ) {
   return (
     <>
@@ -121,7 +121,7 @@ export function WorkspaceFeatureFlagsEditor(
             break;
           case FeatureControl.ALWAYS_OFF_HOSTING:
             extraLabel = `Cannot enable, due to the hosting mode being ${hostingName(
-              props.hosting
+              props.hosting,
             )}`;
             break;
           case FeatureControl.ALWAYS_OFF_TECH:
@@ -163,7 +163,7 @@ export function WorkspaceFeatureFlagsEditor(
                     <DocsHelp
                       size="small"
                       subject={workspaceFeatureToDocsHelpSubject(
-                        feature as WorkspaceFeature
+                        feature as WorkspaceFeature,
                       )}
                     />
                   </span>

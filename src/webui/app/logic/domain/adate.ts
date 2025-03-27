@@ -1,13 +1,17 @@
 import type { ADate } from "@jupiter/webapi-client";
 import { DateTime } from "luxon";
 
-export function aDateToDate(aDate: ADate): DateTime {
-  return DateTime.fromISO(aDate);
+export function aDateToDate(aDate: ADate): DateTime<true> {
+  const date = DateTime.fromISO(aDate);
+  if (!date.isValid) {
+    throw new Error(`Invalid date: ${aDate}`);
+  }
+  return date;
 }
 
 export function compareADate(
   adate1?: ADate | null,
-  adate2?: ADate | null
+  adate2?: ADate | null,
 ): number {
   if (
     (adate1 === undefined || adate1 === null) &&

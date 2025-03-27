@@ -106,7 +106,7 @@ export function NavSingle(desc: Omit<NavSingleDesc, "kind">): NavSingleDesc {
 }
 
 export function NavMultipleSpread(
-  desc: Omit<Omit<NavMultipleDesc, "kind">, "approach">
+  desc: Omit<Omit<NavMultipleDesc, "kind">, "approach">,
 ): NavMultipleDesc {
   return {
     kind: "nav-multiple",
@@ -116,7 +116,7 @@ export function NavMultipleSpread(
 }
 
 export function NavMultipleCompact(
-  desc: Omit<Omit<NavMultipleDesc, "kind">, "approach">
+  desc: Omit<Omit<NavMultipleDesc, "kind">, "approach">,
 ): NavMultipleDesc {
   return {
     kind: "nav-multiple",
@@ -126,7 +126,7 @@ export function NavMultipleCompact(
 }
 
 export function ActionSingle(
-  desc: Omit<ActionSingleDesc, "kind">
+  desc: Omit<ActionSingleDesc, "kind">,
 ): ActionSingleDesc {
   return {
     kind: "action-single",
@@ -135,7 +135,7 @@ export function ActionSingle(
 }
 
 export function ActionMultipleSpread(
-  desc: Omit<Omit<ActionMultipleDesc, "kind">, "approach">
+  desc: Omit<Omit<ActionMultipleDesc, "kind">, "approach">,
 ): ActionMultipleDesc {
   return {
     kind: "action-multiple",
@@ -148,7 +148,7 @@ export function FilterFewOptionsSpread<K>(
   title: string,
   defaultOption: K,
   options: Array<FilterOption<K>>,
-  onSelect: (selected: K) => void
+  onSelect: (selected: K) => void,
 ): FilterFewOptionsDesc<K> {
   return {
     kind: "filter-few-options",
@@ -165,7 +165,7 @@ export function FilterFewOptionsCompact<K>(
   title: string,
   defaultOption: K,
   options: Array<FilterOption<K>>,
-  onSelect: (selected: K) => void
+  onSelect: (selected: K) => void,
 ): FilterFewOptionsDesc<K> {
   return {
     kind: "filter-few-options",
@@ -181,7 +181,7 @@ export function FilterFewOptionsCompact<K>(
 export function FilterManyOptions<K>(
   title: string,
   options: Array<FilterOption<K>>,
-  onSelect: (selected: Array<K>) => void
+  onSelect: (selected: Array<K>) => void,
 ): FilterManyOptionsDesc<K> {
   return {
     kind: "filter-many-options",
@@ -466,11 +466,11 @@ function NavMultipleCompactView(props: NavMultipleViewProps) {
 
   const selectedIndex = Math.max(
     0,
-    realActions.findIndex((nav) => nav.highlight)
+    realActions.findIndex((nav) => nav.highlight),
   );
 
   function handleMenuItemClick(
-    event: React.MouseEvent<HTMLElement, MouseEvent>
+    event: React.MouseEvent<HTMLElement, MouseEvent>,
   ) {
     setOpen(false);
   }
@@ -649,7 +649,7 @@ function ActionMultipleCompactView(props: ActionMultipleViewProps) {
 
   function handleMenuItemClick(
     event: React.MouseEvent<HTMLElement, MouseEvent>,
-    index: number
+    index: number,
   ) {
     setSelectedIndex(index);
     setOpen(false);
@@ -819,8 +819,8 @@ function FilterFewOptionsCompactView<K>(props: FilterFewOptionsViewProps<K>) {
   const [selectedIndex, setSelectedIndex] = useState(
     Math.max(
       0,
-      realOptions.findIndex((opt) => opt.value === props.action.defaultOption)
-    )
+      realOptions.findIndex((opt) => opt.value === props.action.defaultOption),
+    ),
   );
 
   if (realOptions.length === 0) {

@@ -44,7 +44,7 @@ export default function WorkingMemArchive({ request }: LoaderArgs) {
   const entries = useLoaderDataSafeForAnimation<typeof loader>();
 
   const sortedWorkingMems = sortWorkingMemsNaturally(
-    entries.map((e) => e.working_mem)
+    entries.map((e) => e.working_mem),
   );
   const workingMemsByRefId = new Map<string, WorkingMemFindResultEntry>();
   for (const entry of entries) {
@@ -88,5 +88,5 @@ export default function WorkingMemArchive({ request }: LoaderArgs) {
 
 export const ErrorBoundary = makeBranchErrorBoundary(
   "/app/workspace/working-mem",
-  () => `There was an error loading the vacations! Please try again!`
+  () => `There was an error loading the vacations! Please try again!`,
 );

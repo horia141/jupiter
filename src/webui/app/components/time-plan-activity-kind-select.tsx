@@ -10,7 +10,7 @@ interface TimePlanActivityKindSelectProps {
 }
 
 export function TimePlanActivitKindSelect(
-  props: TimePlanActivityKindSelectProps
+  props: TimePlanActivityKindSelectProps,
 ) {
   const [kind, setKind] = useState<TimePlanActivityKind>(props.defaultValue);
 

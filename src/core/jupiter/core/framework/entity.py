@@ -517,6 +517,9 @@ def _check_entity_can_be_filterd_by(
         else:
             raise Exception(f"Entity {cls} does not have a field {filter_name}")
 
+        if isinstance(found_field.type, str):
+            raise Exception(f"Cannot filter by {filter_name} because it's a virtual field")
+
         found_field_type, found_field_optional = normalize_optional(found_field.type)
 
         if found_field_optional:

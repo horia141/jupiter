@@ -54,7 +54,7 @@ export default function Vacations({ request }: LoaderArgs) {
   const topLevelInfo = useContext(TopLevelInfoContext);
 
   const sortedVacations = sortVacationsNaturally(
-    entries.map((e) => e.vacation)
+    entries.map((e) => e.vacation),
   );
   const vacationsByRefId = new Map<string, VacationFindResultEntry>();
   for (const entry of entries) {
@@ -64,7 +64,7 @@ export default function Vacations({ request }: LoaderArgs) {
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
 
   const today = DateTime.local({ zone: topLevelInfo.user.timezone }).startOf(
-    "day"
+    "day",
   );
 
   return (
@@ -166,7 +166,7 @@ function VacationCalendar({ today, sortedVacations }: VacationCalendarProps) {
   const firstIntervalRoundDate = earliestDate.startOf(intervalStep);
   const lastIntervalRoundDate = latestDate.endOf(intervalStep);
   const [currentInterval, setCurrentInterval] = useState(
-    lastIntervalRoundDate.startOf(intervalStep)
+    lastIntervalRoundDate.startOf(intervalStep),
   );
   useEffect(() => {
     setCurrentInterval(() => lastIntervalRoundDate.startOf(intervalStep));
@@ -181,7 +181,9 @@ function VacationCalendar({ today, sortedVacations }: VacationCalendarProps) {
       return;
     }
     setCurrentInterval((ci) =>
-      intervalStep === "year" ? ci.minus({ years: 1 }) : ci.minus({ months: 1 })
+      intervalStep === "year"
+        ? ci.minus({ years: 1 })
+        : ci.minus({ months: 1 }),
     );
   }
 
@@ -190,13 +192,13 @@ function VacationCalendar({ today, sortedVacations }: VacationCalendarProps) {
       return;
     }
     setCurrentInterval((ci) =>
-      intervalStep === "year" ? ci.plus({ years: 1 }) : ci.plus({ months: 1 })
+      intervalStep === "year" ? ci.plus({ years: 1 }) : ci.plus({ months: 1 }),
     );
   }
 
   function handleDayClick(
     datum: TimeRangeDayData,
-    event: React.SyntheticEvent
+    event: React.SyntheticEvent,
   ) {
     if (!vacationDays.has(datum.day)) {
       return null;
@@ -275,7 +277,7 @@ function VacationCalendar({ today, sortedVacations }: VacationCalendarProps) {
 
 export const ErrorBoundary = makeTrunkErrorBoundary(
   "/app/workspace",
-  () => `There was an error loading the vacations! Please try again!`
+  () => `There was an error loading the vacations! Please try again!`,
 );
 
 const TooltipBox = styled("div")`

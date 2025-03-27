@@ -47,7 +47,7 @@ export default function TimePlans() {
   const shouldShowALeafToo = useTrunkNeedsToShowLeaf();
 
   const sortedTimePlans = sortTimePlansNaturally(
-    entries.map((e) => e.time_plan)
+    entries.map((e) => e.time_plan),
   );
   const entriesByRefId = new Map<string, TimePlanFindResultEntry>();
   for (const entry of entries) {
@@ -88,5 +88,5 @@ export default function TimePlans() {
 
 export const ErrorBoundary = makeTrunkErrorBoundary(
   "/app/workspace",
-  () => `There was an error loading the time plans! Please try again!`
+  () => `There was an error loading the time plans! Please try again!`,
 );

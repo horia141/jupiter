@@ -79,7 +79,7 @@ export default function Habits() {
         <EntityStack>
           {sortedHabits.map((habit) => {
             const entry = entriesByRefId.get(
-              habit.ref_id
+              habit.ref_id,
             ) as HabitFindResultEntry;
             return (
               <EntityCard
@@ -90,7 +90,7 @@ export default function Habits() {
                   <EntityNameComponent name={habit.name} />
                   {isWorkspaceFeatureAvailable(
                     topLevelInfo.workspace,
-                    WorkspaceFeature.PROJECTS
+                    WorkspaceFeature.PROJECTS,
                   ) && <ProjectTag project={entry.project as Project} />}
                   {habit.suspended && <span className="tag">Suspended</span>}
                   <PeriodTag period={habit.gen_params.period} />
@@ -116,5 +116,5 @@ export default function Habits() {
 
 export const ErrorBoundary = makeTrunkErrorBoundary(
   "/app/workspace",
-  () => `There was an error loading the habits! Please try again!`
+  () => `There was an error loading the habits! Please try again!`,
 );

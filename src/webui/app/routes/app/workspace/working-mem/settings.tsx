@@ -146,7 +146,7 @@ export default function MetricsSettings() {
 
             {isWorkspaceFeatureAvailable(
               topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS
+              WorkspaceFeature.PROJECTS,
             ) && (
               <FormControl fullWidth>
                 <ProjectSelect
@@ -180,7 +180,7 @@ export default function MetricsSettings() {
 
             {isWorkspaceFeatureAvailable(
               topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS
+              WorkspaceFeature.PROJECTS,
             ) && (
               <Button
                 variant="contained"
@@ -202,5 +202,5 @@ export default function MetricsSettings() {
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/working-mem",
   () =>
-    `There was an error upserting the working mem settings! Please try again!`
+    `There was an error upserting the working mem settings! Please try again!`,
 );

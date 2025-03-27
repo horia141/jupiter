@@ -254,17 +254,17 @@ export default function TimePlanView() {
     transition.state === "idle" && !loaderData.timePlan.archived;
 
   const targetInboxTasksByRefId = new Map<string, InboxTask>(
-    loaderData.targetInboxTasks.map((it) => [it.ref_id, it])
+    loaderData.targetInboxTasks.map((it) => [it.ref_id, it]),
   );
   const actitiviesByBigPlanRefId = new Map<string, TimePlanActivity>(
     loaderData.activities
       .filter((a) => a.target === TimePlanActivityTarget.BIG_PLAN)
-      .map((a) => [a.target_ref_id, a])
+      .map((a) => [a.target_ref_id, a]),
   );
   const targetBigPlansByRefId = new Map<string, BigPlan>(
     loaderData.targetBigPlans
       ? loaderData.targetBigPlans.map((bp) => [bp.ref_id, bp])
-      : []
+      : [],
   );
   const timeEventsByRefId = new Map();
   for (const e of loaderData.timeEventForInboxTasks) {
@@ -276,14 +276,14 @@ export default function TimePlanView() {
   // }
 
   const sortedSubTimePlans = sortTimePlansNaturally(
-    loaderData.subPeriodTimePlans
+    loaderData.subPeriodTimePlans,
   );
 
   const [selectedView, setSelectedView] = useState(
-    inferDefaultSelectedView(topLevelInfo.workspace, loaderData.timePlan)
+    inferDefaultSelectedView(topLevelInfo.workspace, loaderData.timePlan),
   );
   const [selectedKinds, setSelectedKinds] = useState<TimePlanActivityKind[]>(
-    []
+    [],
   );
   const [selectedFeasabilities, setSelectedFeasabilities] = useState<
     TimePlanActivityFeasability[]
@@ -295,27 +295,27 @@ export default function TimePlanView() {
     actitiviesByBigPlanRefId,
     targetInboxTasksByRefId,
     targetBigPlansByRefId,
-    TimePlanActivityFeasability.MUST_DO
+    TimePlanActivityFeasability.MUST_DO,
   );
   const niceToHaveActivities = filterActivityByFeasabilityWithParents(
     loaderData.activities,
     actitiviesByBigPlanRefId,
     targetInboxTasksByRefId,
     targetBigPlansByRefId,
-    TimePlanActivityFeasability.NICE_TO_HAVE
+    TimePlanActivityFeasability.NICE_TO_HAVE,
   );
   const stretchActivities = filterActivityByFeasabilityWithParents(
     loaderData.activities,
     actitiviesByBigPlanRefId,
     targetInboxTasksByRefId,
     targetBigPlansByRefId,
-    TimePlanActivityFeasability.STRETCH
+    TimePlanActivityFeasability.STRETCH,
   );
   const otherActivities = niceToHaveActivities.concat(stretchActivities);
 
   useEffect(() => {
     setSelectedView(
-      inferDefaultSelectedView(topLevelInfo.workspace, loaderData.timePlan)
+      inferDefaultSelectedView(topLevelInfo.workspace, loaderData.timePlan),
     );
     setSelectedKinds([]);
     setSelectedFeasabilities([]);
@@ -324,7 +324,7 @@ export default function TimePlanView() {
 
   const sortedProjects = sortProjectsByTreeOrder(loaderData.allProjects || []);
   const allProjectsByRefId = new Map(
-    loaderData.allProjects?.map((p) => [p.ref_id, p])
+    loaderData.allProjects?.map((p) => [p.ref_id, p]),
   );
 
   const today = DateTime.local({ zone: topLevelInfo.user.timezone });
@@ -454,7 +454,7 @@ export default function TimePlanView() {
                         gatedOn: WorkspaceFeature.PROJECTS,
                       },
                     ],
-                    (selected) => setSelectedView(selected)
+                    (selected) => setSelectedView(selected),
                   ),
                 ]}
                 extraActions={[
@@ -467,7 +467,7 @@ export default function TimePlanView() {
                         text: "Make Progress",
                       },
                     ],
-                    setSelectedKinds
+                    setSelectedKinds,
                   ),
                   FilterManyOptions(
                     "Feasability",
@@ -485,7 +485,7 @@ export default function TimePlanView() {
                         text: "Stretch",
                       },
                     ],
-                    setSelectedFeasabilities
+                    setSelectedFeasabilities,
                   ),
                   FilterManyOptions(
                     "Done",
@@ -493,7 +493,7 @@ export default function TimePlanView() {
                       { value: true, text: "Done" },
                       { value: false, text: "Not Done" },
                     ],
-                    setSelectedDoneness
+                    setSelectedDoneness,
                   ),
                 ]}
               />
@@ -619,7 +619,7 @@ export default function TimePlanView() {
                     const fullProjectName =
                       computeProjectHierarchicalNameFromRoot(
                         p,
-                        allProjectsByRefId
+                        allProjectsByRefId,
                       );
 
                     return (
@@ -715,7 +715,7 @@ export default function TimePlanView() {
 
           {isWorkspaceFeatureAvailable(
             topLevelInfo.workspace,
-            WorkspaceFeature.JOURNALS
+            WorkspaceFeature.JOURNALS,
           ) &&
             (loaderData.journal || sortedSubJournals.length > 0) && (
               <SectionCardNew
@@ -749,13 +749,13 @@ export default function TimePlanView() {
 
 export const CatchBoundary = makeBranchCatchBoundary(
   "/app/workspace/time-plans",
-  () => `Could not find time plan #${useParams().id}!`
+  () => `Could not find time plan #${useParams().id}!`,
 );
 
 export const ErrorBoundary = makeBranchErrorBoundary(
   "/app/workspace/time-plans",
   () =>
-    `There was an error loading time plan #${useParams().id}. Please try again!`
+    `There was an error loading time plan #${useParams().id}. Please try again!`,
 );
 
 function inferDefaultSelectedView(workspace: Workspace, timePlan: TimePlan) {

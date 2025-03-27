@@ -196,15 +196,15 @@ export default function TimePlanAddFromCurrentBigPlans() {
   const alreadyIncludedBigPlanRefIds = new Set(
     loaderData.activities
       .filter((tpa) => tpa.target === TimePlanActivityTarget.BIG_PLAN)
-      .map((tpa) => tpa.target_ref_id)
+      .map((tpa) => tpa.target_ref_id),
   );
 
   const [targetBigPlanRefIds, setTargetBigPlanRefIds] = useState(
-    new Set<string>()
+    new Set<string>(),
   );
 
   const sortedBigPlans = sortBigPlansNaturally(
-    loaderData.bigPlans.map((e) => e.big_plan)
+    loaderData.bigPlans.map((e) => e.big_plan),
   );
 
   const entriesByRefId: { [key: string]: BigPlanParent } = {};
@@ -214,13 +214,13 @@ export default function TimePlanAddFromCurrentBigPlans() {
 
   const sortedProjects = sortProjectsByTreeOrder(loaderData.allProjects || []);
   const allProjectsByRefId = new Map(
-    loaderData.allProjects?.map((p) => [p.ref_id, p])
+    loaderData.allProjects?.map((p) => [p.ref_id, p]),
   );
 
   const thisYear = aDateToDate(loaderData.timePlan.right_now).startOf("year");
 
   const [selectedView, setSelectedView] = useState(
-    inferDefaultSelectedView(topLevelInfo.workspace)
+    inferDefaultSelectedView(topLevelInfo.workspace),
   );
 
   useEffect(() => {
@@ -290,7 +290,7 @@ export default function TimePlanAddFromCurrentBigPlans() {
                     gatedOn: WorkspaceFeature.PROJECTS,
                   },
                 ],
-                (selected) => setSelectedView(selected)
+                (selected) => setSelectedView(selected),
               ),
             ]}
           />
@@ -344,7 +344,7 @@ export default function TimePlanAddFromCurrentBigPlans() {
           <>
             {sortedProjects.map((p) => {
               const theBigPlans = sortedBigPlans.filter(
-                (se) => entriesByRefId[se.ref_id]?.project?.ref_id === p.ref_id
+                (se) => entriesByRefId[se.ref_id]?.project?.ref_id === p.ref_id,
               );
 
               if (theBigPlans.length === 0) {
@@ -353,7 +353,7 @@ export default function TimePlanAddFromCurrentBigPlans() {
 
               const fullProjectName = computeProjectHierarchicalNameFromRoot(
                 p,
-                allProjectsByRefId
+                allProjectsByRefId,
               );
 
               return (
@@ -404,7 +404,7 @@ export default function TimePlanAddFromCurrentBigPlans() {
           <>
             {sortedProjects.map((p) => {
               const theBigPlans = sortedBigPlans.filter(
-                (se) => entriesByRefId[se.ref_id]?.project?.ref_id === p.ref_id
+                (se) => entriesByRefId[se.ref_id]?.project?.ref_id === p.ref_id,
               );
 
               if (theBigPlans.length === 0) {
@@ -413,7 +413,7 @@ export default function TimePlanAddFromCurrentBigPlans() {
 
               const fullProjectName = computeProjectHierarchicalNameFromRoot(
                 p,
-                allProjectsByRefId
+                allProjectsByRefId,
               );
 
               return (
@@ -454,7 +454,7 @@ export default function TimePlanAddFromCurrentBigPlans() {
 
 export const CatchBoundary = makeLeafCatchBoundary(
   () => `/app/workspace/time-plans/${useParams().id}`,
-  () => `Could not find time plan  #${useParams().id}`
+  () => `Could not find time plan  #${useParams().id}`,
 );
 
 export const ErrorBoundary = makeLeafErrorBoundary(
@@ -462,7 +462,7 @@ export const ErrorBoundary = makeLeafErrorBoundary(
   () =>
     `There was an error loading time plan activity #${
       useParams().id
-    }. Please try again!`
+    }. Please try again!`,
 );
 
 interface BigPlanListProps {
@@ -568,7 +568,7 @@ function BigPlanTimeline(props: BigPlanTimelineProps) {
 
 function toggleBigPlanRefIds(
   bigPlanRefIds: Set<string>,
-  newRefId: string
+  newRefId: string,
 ): Set<string> {
   if (bigPlanRefIds.has(newRefId)) {
     const newBigPlanRefIds = new Set<string>();

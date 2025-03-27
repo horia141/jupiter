@@ -71,7 +71,7 @@ export async function action({ params, request }: ActionArgs) {
     });
 
     return redirect(
-      `/app/workspace/metrics/${id}/entries/${response.new_metric_entry.ref_id}`
+      `/app/workspace/metrics/${id}/entries/${response.new_metric_entry.ref_id}`,
     );
   } catch (error) {
     if (
@@ -161,5 +161,5 @@ export default function NewMetricEntry() {
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   () => `/app/workspace/metrics/${useParams().id}`,
-  () => `There was an error creating the metric entry! Please try again!`
+  () => `There was an error creating the metric entry! Please try again!`,
 );

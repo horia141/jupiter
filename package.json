@@ -15,8 +15,9 @@
     "eslint": "^8.0.0",
     "eslint-config-prettier": "^10.1.1",
     "eslint-config-react-app": "^7.0.1",
-    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
     "openapi-typescript-codegen": "^0.29.0",
+    "@remix-run/eslint-config": "^1.19.0",
     "pm2": "^6.0.5",
     "prettier": "3.5.3",
     "prettier-plugin-organize-imports": "^4.1.0",
@@ -27,11 +28,18 @@
       "react-app",
       "react-app/jest",
       "plugin:@typescript-eslint/recommended",
-      "prettier"
+      "prettier",
+      "@remix-run/eslint-config",
+      "@remix-run/eslint-config/node"
     ],
     "parser": "@typescript-eslint/parser",
     "plugins": [
-      "@typescript-eslint"
-    ]
+      "@typescript-eslint",
+      "react-hooks"
+    ],
+    "rules": {
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "warn"
+    }
   }
 }

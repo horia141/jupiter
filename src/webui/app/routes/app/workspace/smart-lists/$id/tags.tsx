@@ -184,7 +184,7 @@ export default function SmartListViewTags() {
 
 export const CatchBoundary = makeBranchCatchBoundary(
   "/app/workspace/smart-lists",
-  () => `Could not find smart list #${useParams().id}!`
+  () => `Could not find smart list #${useParams().id}!`,
 );
 
 export const ErrorBoundary = makeBranchErrorBoundary(
@@ -192,5 +192,5 @@ export const ErrorBoundary = makeBranchErrorBoundary(
   () =>
     `There was an error loading smart list #${
       useParams().id
-    }! Please try again!`
+    }! Please try again!`,
 );

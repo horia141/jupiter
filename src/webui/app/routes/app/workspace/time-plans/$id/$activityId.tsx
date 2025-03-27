@@ -229,7 +229,7 @@ export async function action({ request, params }: ActionArgs) {
       case "target-inbox-task-reactivate":
       case "target-inbox-task-update": {
         const corePropertyEditable = isInboxTaskCoreFieldEditable(
-          form.targetInboxTaskSource
+          form.targetInboxTaskSource,
         );
 
         let status = form.targetInboxTaskStatus;
@@ -351,7 +351,7 @@ export default function TimePlanActivity() {
   ).map((block) => ({
     time_event_in_tz: timeEventInDayBlockToTimezone(
       block,
-      topLevelInfo.user.timezone
+      topLevelInfo.user.timezone,
     ),
     entry: {
       inbox_task: loaderData.targetInboxTask!,
@@ -359,7 +359,7 @@ export default function TimePlanActivity() {
     },
   }));
   const sortedInboxTaskTimeEventEntries = sortInboxTaskTimeEventsNaturally(
-    inboxTaskTimeEventEntries
+    inboxTaskTimeEventEntries,
   );
 
   let newInboxTaskTimeEventLocation = undefined;
@@ -456,7 +456,7 @@ export default function TimePlanActivity() {
 
           {isWorkspaceFeatureAvailable(
             topLevelInfo.workspace,
-            WorkspaceFeature.SCHEDULE
+            WorkspaceFeature.SCHEDULE,
           ) && (
             <TimeEventInDayBlockStack
               topLevelInfo={topLevelInfo}
@@ -471,7 +471,7 @@ export default function TimePlanActivity() {
 
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
-        WorkspaceFeature.BIG_PLANS
+        WorkspaceFeature.BIG_PLANS,
       ) &&
         loaderData.targetBigPlan && (
           <SectionCardNew
@@ -523,7 +523,7 @@ export const CatchBoundary = makeLeafCatchBoundary(
   () =>
     `Could not find time plan activity #${useParams().id}:#${
       useParams().activityId
-    }!`
+    }!`,
 );
 
 export const ErrorBoundary = makeLeafErrorBoundary(
@@ -531,5 +531,5 @@ export const ErrorBoundary = makeLeafErrorBoundary(
   () =>
     `There was an error loading time plan activity #${useParams().id}:#${
       useParams().activityId
-    }! Please try again!`
+    }! Please try again!`,
 );

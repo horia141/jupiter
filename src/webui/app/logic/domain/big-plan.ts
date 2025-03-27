@@ -11,7 +11,7 @@ export interface BigPlanParent {
 }
 
 export function bigPlanFindEntryToParent(
-  entry: BigPlanFindResultEntry
+  entry: BigPlanFindResultEntry,
 ): BigPlanParent {
   return {
     project: entry.project || undefined,
@@ -19,7 +19,7 @@ export function bigPlanFindEntryToParent(
 }
 
 export function sortBigPlansNaturally(
-  bigPlans: Array<BigPlan>
+  bigPlans: Array<BigPlan>,
 ): Array<BigPlan> {
   return [...bigPlans].sort((e1, e2) => {
     return (

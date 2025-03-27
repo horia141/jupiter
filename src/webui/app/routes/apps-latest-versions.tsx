@@ -25,7 +25,7 @@ export async function loader({ request }: LoaderArgs) {
       });
     case AppDistribution.MAC_WEB:
       return redirect(
-        `${GLOBAL_PROPERTIES.appsStorageUrl}/v${GLOBAL_PROPERTIES.version}/Thrive-${GLOBAL_PROPERTIES.version}-universal.dmg`
+        `${GLOBAL_PROPERTIES.appsStorageUrl}/v${GLOBAL_PROPERTIES.version}/Thrive-${GLOBAL_PROPERTIES.version}-universal.dmg`,
       );
     case AppDistribution.MAC_STORE:
       return redirect(GLOBAL_PROPERTIES.macStoreUrl);

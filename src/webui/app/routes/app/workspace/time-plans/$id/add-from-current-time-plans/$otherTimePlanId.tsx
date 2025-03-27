@@ -219,22 +219,22 @@ export default function TimePlanAddFromCurrentTimePlans() {
       .filter(
         (s) =>
           loaderData.mainActivities.findIndex(
-            (r) => r.target === s.target && r.target_ref_id === s.target_ref_id
-          ) !== -1
+            (r) => r.target === s.target && r.target_ref_id === s.target_ref_id,
+          ) !== -1,
       )
-      .map((tpa) => tpa.ref_id)
+      .map((tpa) => tpa.ref_id),
   );
   const [targetActivitiesRefIds, setTargetActivitiesRefIds] = useState(
-    new Set<string>()
+    new Set<string>(),
   );
 
   const otherTargetInboxTasksByRefId = new Map<string, InboxTask>(
-    loaderData.otherTargetInboxTasks.map((it) => [it.ref_id, it])
+    loaderData.otherTargetInboxTasks.map((it) => [it.ref_id, it]),
   );
   const otherTargetBigPlansByRefId = new Map<string, BigPlan>(
     loaderData.otherTargetBigPlans
       ? loaderData.otherTargetBigPlans.map((bp) => [bp.ref_id, bp])
-      : []
+      : [],
   );
   const otherTimeEventsByRefId = new Map();
   for (const e of loaderData.otherTimeEventForInboxTasks) {
@@ -249,12 +249,12 @@ export default function TimePlanAddFromCurrentTimePlans() {
     loaderData.otherActivities,
     otherTargetInboxTasksByRefId,
     otherTargetBigPlansByRefId,
-    loaderData.otherActivityDoneness
+    loaderData.otherActivityDoneness,
   );
   const sortedOtherActivities = sortTimePlanActivitiesNaturally(
     filteredOtherActivities,
     otherTargetInboxTasksByRefId,
-    otherTargetBigPlansByRefId
+    otherTargetBigPlansByRefId,
   );
 
   return (
@@ -344,7 +344,7 @@ export default function TimePlanAddFromCurrentTimePlans() {
                 }
 
                 setTargetActivitiesRefIds((at) =>
-                  toggleActivitiesRefIds(at, activity.ref_id)
+                  toggleActivitiesRefIds(at, activity.ref_id),
                 );
               }}
               fullInfo={true}
@@ -410,7 +410,7 @@ export const CatchBoundary = makeLeafCatchBoundary(
   () =>
     `Could not find time plan  #${useParams().id}:#${
       useParams().otherTimePlanId
-    }`
+    }`,
 );
 
 export const ErrorBoundary = makeLeafErrorBoundary(
@@ -418,12 +418,12 @@ export const ErrorBoundary = makeLeafErrorBoundary(
   () =>
     `There was an error loading time plan activity #${useParams().id}:#${
       useParams().otherTimePlanId
-    }. Please try again!`
+    }. Please try again!`,
 );
 
 function toggleActivitiesRefIds(
   ActivitiesRefIds: Set<string>,
-  newRefId: string
+  newRefId: string,
 ): Set<string> {
   if (ActivitiesRefIds.has(newRefId)) {
     const newActivitiesRefIds = new Set<string>();

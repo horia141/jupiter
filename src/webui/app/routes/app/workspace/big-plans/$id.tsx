@@ -298,7 +298,7 @@ export default function BigPlan() {
   bigPlansByRefId.set(loaderData.bigPlan.ref_id, loaderData.bigPlan);
 
   const timePlanActivities = loaderData.timePlanEntries?.map(
-    (entry) => entry.time_plan_activity
+    (entry) => entry.time_plan_activity,
   );
   const timePlansByRefId = new Map();
   if (loaderData.timePlanEntries) {
@@ -310,7 +310,7 @@ export default function BigPlan() {
   const timeEventsByRefId = new Map();
 
   const [selectedProject, setSelectedProject] = useState(
-    loaderData.project.ref_id
+    loaderData.project.ref_id,
   );
 
   const sortedInboxTasks = sortInboxTasksNaturally(loaderData.inboxTasks, {
@@ -328,7 +328,7 @@ export default function BigPlan() {
       {
         method: "post",
         action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-      }
+      },
     );
   }
 
@@ -341,7 +341,7 @@ export default function BigPlan() {
       {
         method: "post",
         action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-      }
+      },
     );
   }
 
@@ -390,7 +390,7 @@ export default function BigPlan() {
 
             {isWorkspaceFeatureAvailable(
               topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS
+              WorkspaceFeature.PROJECTS,
             ) && (
               <FormControl fullWidth>
                 <ProjectSelect
@@ -407,7 +407,7 @@ export default function BigPlan() {
             )}
             {!isWorkspaceFeatureAvailable(
               topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS
+              WorkspaceFeature.PROJECTS,
             ) && <input type="hidden" name="project" value={selectedProject} />}
 
             <FormControl fullWidth>
@@ -421,7 +421,7 @@ export default function BigPlan() {
                 defaultValue={
                   loaderData.bigPlan.actionable_date
                     ? aDateToDate(loaderData.bigPlan.actionable_date).toFormat(
-                        "yyyy-MM-dd"
+                        "yyyy-MM-dd",
                       )
                     : undefined
                 }
@@ -446,7 +446,7 @@ export default function BigPlan() {
                 defaultValue={
                   loaderData.bigPlan.due_date
                     ? aDateToDate(loaderData.bigPlan.due_date).toFormat(
-                        "yyyy-MM-dd"
+                        "yyyy-MM-dd",
                       )
                     : undefined
                 }
@@ -687,7 +687,7 @@ export default function BigPlan() {
 
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
-        WorkspaceFeature.TIME_PLANS
+        WorkspaceFeature.TIME_PLANS,
       ) &&
         timePlanActivities && (
           <SectionCardNew
@@ -712,11 +712,11 @@ export default function BigPlan() {
 
 export const CatchBoundary = makeLeafCatchBoundary(
   "/app/workspace/big-plans",
-  () => `Could not find big plan #${useParams().id}!`
+  () => `Could not find big plan #${useParams().id}!`,
 );
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/big-plans",
   () =>
-    `There was an error loading big plan #${useParams().id}! Please try again!`
+    `There was an error loading big plan #${useParams().id}! Please try again!`,
 );

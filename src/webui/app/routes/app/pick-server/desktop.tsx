@@ -34,7 +34,7 @@ export async function loader({ request }: LoaderArgs) {
   const frontDoor = await loadFrontDoorInfo(
     GLOBAL_PROPERTIES.version,
     request.headers.get("Cookie"),
-    request.headers.get("User-Agent")
+    request.headers.get("User-Agent"),
   );
 
   if (frontDoor.appShell !== AppShell.DESKTOP_ELECTRON) {

@@ -18,7 +18,7 @@ interface EntityTagSelectProps {
 export function EntityTagSelect(props: EntityTagSelectProps) {
   const allowedEntityTags = inferEntityTagsForEnabledFeatures(
     props.topLevelInfo.workspace,
-    Object.values(NamedEntityTag)
+    Object.values(NamedEntityTag),
   );
 
   return (

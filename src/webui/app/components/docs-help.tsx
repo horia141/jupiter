@@ -35,7 +35,7 @@ export function DocsHelp(props: DocsHelpProps) {
 
   const helpUrl = new URL(
     subjectToUrl(props.subject),
-    globalProperties.docsUrl
+    globalProperties.docsUrl,
   );
 
   return (

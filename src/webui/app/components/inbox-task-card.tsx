@@ -117,7 +117,7 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
 
   function onDragEnd(
     event: MouseEvent | TouchEvent | PointerEvent,
-    info: PanInfo
+    info: PanInfo,
   ) {
     if (info.offset.x < -SWIPE_COMPLETE_THRESHOLD) {
       setTimeout(() => {
@@ -144,7 +144,7 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
       theme.palette.success.light,
       theme.palette.background.paper,
       theme.palette.warning.light,
-    ]
+    ],
   );
 
   const inputsEnabled =
@@ -199,7 +199,7 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
               )}
               {isWorkspaceFeatureAvailable(
                 props.topLevelInfo.workspace,
-                WorkspaceFeature.PROJECTS
+                WorkspaceFeature.PROJECTS,
               ) &&
                 props.showOptions.showProject &&
                 props.parent?.project && (
@@ -228,7 +228,7 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
                 <>
                   {isWorkspaceFeatureAvailable(
                     props.topLevelInfo.workspace,
-                    WorkspaceFeature.BIG_PLANS
+                    WorkspaceFeature.BIG_PLANS,
                   ) &&
                     props.parent &&
                     props.parent.bigPlan && (
@@ -236,7 +236,7 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
                     )}
                   {isWorkspaceFeatureAvailable(
                     props.topLevelInfo.workspace,
-                    WorkspaceFeature.HABITS
+                    WorkspaceFeature.HABITS,
                   ) &&
                     props.parent &&
                     props.parent.habit && (
@@ -244,7 +244,7 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
                     )}
                   {isWorkspaceFeatureAvailable(
                     props.topLevelInfo.workspace,
-                    WorkspaceFeature.CHORES
+                    WorkspaceFeature.CHORES,
                   ) &&
                     props.parent &&
                     props.parent.chore && (
@@ -252,7 +252,7 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
                     )}
                   {isWorkspaceFeatureAvailable(
                     props.topLevelInfo.workspace,
-                    WorkspaceFeature.METRICS
+                    WorkspaceFeature.METRICS,
                   ) &&
                     props.parent &&
                     props.parent.metric && (
@@ -260,7 +260,7 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
                     )}
                   {isWorkspaceFeatureAvailable(
                     props.topLevelInfo.workspace,
-                    WorkspaceFeature.PERSONS
+                    WorkspaceFeature.PERSONS,
                   ) &&
                     props.parent &&
                     props.parent.person && (
@@ -268,7 +268,7 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
                     )}
                   {isWorkspaceFeatureAvailable(
                     props.topLevelInfo.workspace,
-                    WorkspaceFeature.SLACK_TASKS
+                    WorkspaceFeature.SLACK_TASKS,
                   ) &&
                     props.parent &&
                     props.parent.slackTask && (
@@ -278,7 +278,7 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
                     )}
                   {isWorkspaceFeatureAvailable(
                     props.topLevelInfo.workspace,
-                    WorkspaceFeature.EMAIL_TASKS
+                    WorkspaceFeature.EMAIL_TASKS,
                   ) &&
                     props.parent &&
                     props.parent.emailTask && (

@@ -197,13 +197,13 @@ export default function Metric() {
 
 export const CatchBoundary = makeBranchCatchBoundary(
   "/app/workspace/metrics",
-  () => `Could not find metric #${useParams().id}!`
+  () => `Could not find metric #${useParams().id}!`,
 );
 
 export const ErrorBoundary = makeBranchErrorBoundary(
   "/app/workspace/metrics",
   () =>
-    `There was an error loading metric #${useParams().id}! Please try again!`
+    `There was an error loading metric #${useParams().id}! Please try again!`,
 );
 
 interface MetricGraphProps {

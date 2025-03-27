@@ -150,7 +150,7 @@ export default function WorkingMem() {
       {
         method: "post",
         action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-      }
+      },
     );
   }
 
@@ -163,7 +163,7 @@ export default function WorkingMem() {
       {
         method: "post",
         action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-      }
+      },
     );
   }
 
@@ -257,11 +257,11 @@ export default function WorkingMem() {
 
 export const CatchBoundary = makeLeafCatchBoundary(
   "/app/workspace/working-mem/archive",
-  () => `Could not find journal #${useParams().id}!`
+  () => `Could not find journal #${useParams().id}!`,
 );
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/working-mem/archive",
   () =>
-    `There was an error loading journal #${useParams().id}. Please try again!`
+    `There was an error loading journal #${useParams().id}. Please try again!`,
 );

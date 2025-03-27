@@ -88,7 +88,7 @@ export function ShowReport({
   if (
     !isWorkspaceFeatureAvailable(
       topLevelInfo.workspace,
-      WorkspaceFeature.PROJECTS
+      WorkspaceFeature.PROJECTS,
     )
   ) {
     tabIndicesMap["by-habits"] -= 1;
@@ -98,7 +98,7 @@ export function ShowReport({
   if (
     !isWorkspaceFeatureAvailable(
       topLevelInfo.workspace,
-      WorkspaceFeature.HABITS
+      WorkspaceFeature.HABITS,
     )
   ) {
     tabIndicesMap["by-chores"] -= 1;
@@ -107,7 +107,7 @@ export function ShowReport({
   if (
     !isWorkspaceFeatureAvailable(
       topLevelInfo.workspace,
-      WorkspaceFeature.CHORES
+      WorkspaceFeature.CHORES,
     )
   ) {
     tabIndicesMap["by-big-plans"] -= 1;
@@ -115,7 +115,7 @@ export function ShowReport({
 
   const allProjectsSorted = sortProjectsByTreeOrder(allProjects);
   const allProjectsByRefId = new Map<string, ProjectSummary>(
-    allProjects.map((p) => [p.ref_id, p])
+    allProjects.map((p) => [p.ref_id, p]),
   );
 
   return (
@@ -153,19 +153,19 @@ export function ShowReport({
         <Tab label="⌛ By Periods" />
         {isWorkspaceFeatureAvailable(
           topLevelInfo.workspace,
-          WorkspaceFeature.PROJECTS
+          WorkspaceFeature.PROJECTS,
         ) && <Tab label="💡 By Projects" />}
         {isWorkspaceFeatureAvailable(
           topLevelInfo.workspace,
-          WorkspaceFeature.HABITS
+          WorkspaceFeature.HABITS,
         ) && <Tab label="💪 By Habits" />}
         {isWorkspaceFeatureAvailable(
           topLevelInfo.workspace,
-          WorkspaceFeature.CHORES
+          WorkspaceFeature.CHORES,
         ) && <Tab label="♻️ By Chore" />}
         {isWorkspaceFeatureAvailable(
           topLevelInfo.workspace,
-          WorkspaceFeature.BIG_PLANS
+          WorkspaceFeature.BIG_PLANS,
         ) && <Tab label="🌍 By Big Plan" />}
       </Tabs>
 
@@ -194,13 +194,13 @@ export function ShowReport({
 
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
-        WorkspaceFeature.PROJECTS
+        WorkspaceFeature.PROJECTS,
       ) && (
         <TabPanel value={showTab} index={tabIndicesMap["by-projects"]}>
           <Stack spacing={2} useFlexGap>
             {allProjectsSorted.map((project) => {
               const pb = report.per_project_breakdown.find(
-                (pb) => pb.ref_id === project.ref_id
+                (pb) => pb.ref_id === project.ref_id,
               );
 
               if (pb === undefined) {
@@ -209,7 +209,7 @@ export function ShowReport({
 
               const fullProjectName = computeProjectHierarchicalNameFromRoot(
                 project,
-                allProjectsByRefId
+                allProjectsByRefId,
               );
 
               return (
@@ -229,13 +229,13 @@ export function ShowReport({
 
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
-        WorkspaceFeature.HABITS
+        WorkspaceFeature.HABITS,
       ) && (
         <TabPanel value={showTab} index={tabIndicesMap["by-habits"]}>
           <Stack spacing={2} useFlexGap>
             {Object.values(RecurringTaskPeriod).map((period) => {
               const periodHabits = report.per_habit_breakdown.filter(
-                (phb) => phb.period === period
+                (phb) => phb.period === period,
               );
 
               if (periodHabits.length === 0) {
@@ -322,13 +322,13 @@ export function ShowReport({
 
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
-        WorkspaceFeature.CHORES
+        WorkspaceFeature.CHORES,
       ) && (
         <TabPanel value={showTab} index={tabIndicesMap["by-chores"]}>
           <Stack spacing={2} useFlexGap>
             {Object.values(RecurringTaskPeriod).map((period) => {
               const periodChores = report.per_chore_breakdown.filter(
-                (pcb) => pcb.period === period
+                (pcb) => pcb.period === period,
               );
 
               if (periodChores.length === 0) {
@@ -400,7 +400,7 @@ export function ShowReport({
 
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
-        WorkspaceFeature.BIG_PLANS
+        WorkspaceFeature.BIG_PLANS,
       ) && (
         <TabPanel value={showTab} index={tabIndicesMap["by-big-plans"]}>
           <TableContainer component={Box}>
@@ -462,7 +462,7 @@ function OverviewReport(props: OverviewReportProps) {
   const isBigScreen = useBigScreen();
   const filteredSource = inferSourcesForEnabledFeatures(
     props.topLevelInfo.workspace,
-    _SOURCES_TO_REPORT
+    _SOURCES_TO_REPORT,
   );
 
   return (
@@ -515,27 +515,27 @@ function OverviewReport(props: OverviewReportProps) {
                 <SmallTableCell>{inboxTaskSourceName(source)}</SmallTableCell>
                 <SmallTableCell>
                   {props.inboxTasksSummary.created.per_source_cnt.find(
-                    (s) => s.source === source
+                    (s) => s.source === source,
                   )?.count || 0}
                 </SmallTableCell>
                 <SmallTableCell>
                   {props.inboxTasksSummary.not_started.per_source_cnt.find(
-                    (s) => s.source === source
+                    (s) => s.source === source,
                   )?.count || 0}
                 </SmallTableCell>
                 <SmallTableCell>
                   {props.inboxTasksSummary.working.per_source_cnt.find(
-                    (s) => s.source === source
+                    (s) => s.source === source,
                   )?.count || 0}
                 </SmallTableCell>
                 <SmallTableCell>
                   {props.inboxTasksSummary.not_done.per_source_cnt.find(
-                    (s) => s.source === source
+                    (s) => s.source === source,
                   )?.count || 0}
                 </SmallTableCell>
                 <SmallTableCell>
                   {props.inboxTasksSummary.done.per_source_cnt.find(
-                    (s) => s.source === source
+                    (s) => s.source === source,
                   )?.count || 0}
                 </SmallTableCell>
               </TableRow>
@@ -546,7 +546,7 @@ function OverviewReport(props: OverviewReportProps) {
 
       {isWorkspaceFeatureAvailable(
         props.topLevelInfo.workspace,
-        WorkspaceFeature.BIG_PLANS
+        WorkspaceFeature.BIG_PLANS,
       ) && (
         <>
           <StandardDivider title="🌍 Big Plans" size="large" />

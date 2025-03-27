@@ -17,7 +17,7 @@ export const basicShouldRevalidate: ShouldRevalidateFunction = ({
     onlyDifferenceIsInTimeEventParamsSource(
       formMethod || "GET",
       currentUrl,
-      nextUrl
+      nextUrl,
     )
   ) {
     return false;
@@ -55,7 +55,7 @@ export const standardShouldRevalidate: ShouldRevalidateFunction = ({
     onlyDifferenceIsInTimeEventParamsSource(
       formMethod || "GET",
       currentUrl,
-      nextUrl
+      nextUrl,
     )
   ) {
     return false;
@@ -67,7 +67,7 @@ export const standardShouldRevalidate: ShouldRevalidateFunction = ({
 function onlyDifferenceIsInTimeEventParamsSource(
   formMethod: string,
   currentUrl: URL,
-  nextUrl: URL
+  nextUrl: URL,
 ): boolean {
   if (formMethod !== "GET") {
     return false;

@@ -286,11 +286,11 @@ export default function Habit() {
     transition.state === "idle" && !loaderData.habit.archived;
 
   const [selectedProject, setSelectedProject] = useState(
-    loaderData.project.ref_id
+    loaderData.project.ref_id,
   );
 
   const [selectedPeriod, setSelectedPeriod] = useState(
-    loaderData.habit.gen_params.period
+    loaderData.habit.gen_params.period,
   );
 
   const [selectedRepeatsStrategy, setSelectedRepeatsStrategy] = useState<
@@ -312,7 +312,7 @@ export default function Habit() {
       {
         method: "post",
         action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-      }
+      },
     );
   }
 
@@ -325,7 +325,7 @@ export default function Habit() {
       {
         method: "post",
         action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-      }
+      },
     );
   }
 
@@ -365,7 +365,7 @@ export default function Habit() {
 
             {isWorkspaceFeatureAvailable(
               topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS
+              WorkspaceFeature.PROJECTS,
             ) && (
               <FormControl fullWidth>
                 <ProjectSelect
@@ -521,10 +521,11 @@ export default function Habit() {
 
 export const CatchBoundary = makeLeafCatchBoundary(
   "/app/workspace/habits",
-  () => `Could not find habit #${useParams().id}!`
+  () => `Could not find habit #${useParams().id}!`,
 );
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/habits",
-  () => `There was an error loading habit #${useParams().id}! Please try again!`
+  () =>
+    `There was an error loading habit #${useParams().id}! Please try again!`,
 );

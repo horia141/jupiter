@@ -80,35 +80,35 @@ export async function action({ request }: ActionArgs) {
         form.catchUpPeriod === "none"
           ? undefined
           : form.catchUpActionableFromDay === undefined ||
-            form.catchUpActionableFromDay === ""
-          ? undefined
-          : parseInt(form.catchUpActionableFromDay),
+              form.catchUpActionableFromDay === ""
+            ? undefined
+            : parseInt(form.catchUpActionableFromDay),
       catch_up_actionable_from_month:
         form.catchUpPeriod === "none"
           ? undefined
           : form.catchUpActionableFromMonth === undefined ||
-            form.catchUpActionableFromMonth === ""
-          ? undefined
-          : parseInt(form.catchUpActionableFromMonth),
+              form.catchUpActionableFromMonth === ""
+            ? undefined
+            : parseInt(form.catchUpActionableFromMonth),
       catch_up_due_at_day:
         form.catchUpPeriod === "none"
           ? undefined
           : form.catchUpDueAtDay === undefined || form.catchUpDueAtDay === ""
-          ? undefined
-          : parseInt(form.catchUpDueAtDay),
+            ? undefined
+            : parseInt(form.catchUpDueAtDay),
       catch_up_due_at_month:
         form.catchUpPeriod === "none"
           ? undefined
           : form.catchUpDueAtMonth === undefined ||
-            form.catchUpDueAtMonth === ""
-          ? undefined
-          : parseInt(form.catchUpDueAtMonth),
+              form.catchUpDueAtMonth === ""
+            ? undefined
+            : parseInt(form.catchUpDueAtMonth),
       birthday:
         form.birthdayDay === "N/A" || form.birthdayMonth === "N/A"
           ? undefined
           : birthdayFromParts(
               parseInt(form.birthdayDay),
-              parseInt(form.birthdayMonth)
+              parseInt(form.birthdayMonth),
             ),
     });
 
@@ -290,5 +290,5 @@ export default function NewPerson() {
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   `/app/workspace/persons`,
-  () => `There was an error creating the person! Please try again!`
+  () => `There was an error creating the person! Please try again!`,
 );

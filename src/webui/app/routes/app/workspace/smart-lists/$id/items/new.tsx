@@ -82,7 +82,7 @@ export async function action({ request, params }: ActionArgs) {
     });
 
     return redirect(
-      `/app/workspace/smart-lists/${id}/items/${response.new_smart_list_item.ref_id}`
+      `/app/workspace/smart-lists/${id}/items/${response.new_smart_list_item.ref_id}`,
     );
   } catch (error) {
     if (
@@ -172,5 +172,5 @@ export default function NewSmartListItem() {
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   () => `/app/workspace/smart-lists/${useParams().id}/items`,
-  () => `There was an error creating the smart list item! Please try again!`
+  () => `There was an error creating the smart list item! Please try again!`,
 );

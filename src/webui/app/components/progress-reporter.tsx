@@ -88,12 +88,12 @@ function ProgressReporterClientOnly(props: ProgressReporterProps) {
   const [unseenMessages, setUnseenMessages] = useState<number>(0);
 
   const webApiProgressReporterUrl = new URL(
-    globalProperties.webApiProgressReporterUrl
+    globalProperties.webApiProgressReporterUrl,
   );
   webApiProgressReporterUrl.searchParams.append("token", props.token);
 
   const { lastJsonMessage, readyState } = useWebSocket(
-    webApiProgressReporterUrl.toString()
+    webApiProgressReporterUrl.toString(),
   );
 
   useEffect(() => {

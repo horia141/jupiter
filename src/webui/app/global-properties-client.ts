@@ -62,7 +62,7 @@ export const GlobalPropertiesContext = createContext<GlobalPropertiesClient>({
 
 export function serverToClientGlobalProperties(
   globalPropertiesServer: GlobalPropertiesServer,
-  frontDoorInfo: FrontDoorInfo
+  frontDoorInfo: FrontDoorInfo,
 ): GlobalPropertiesClient {
   return {
     env: globalPropertiesServer.env,

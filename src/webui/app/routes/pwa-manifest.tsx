@@ -15,11 +15,11 @@ export async function loader({ request }: LoaderArgs) {
   }
 
   const { platform } = inferPlatformAndDistribution(
-    request.headers.get("User-Agent")
+    request.headers.get("User-Agent"),
   );
 
   const startUrl = new URL(
-    "http://example.com" + GLOBAL_PROPERTIES.pwaStartUrl
+    "http://example.com" + GLOBAL_PROPERTIES.pwaStartUrl,
   );
   startUrl.searchParams.set("clientVersion", GLOBAL_PROPERTIES.version);
   startUrl.searchParams.set("appPlatform", platform);

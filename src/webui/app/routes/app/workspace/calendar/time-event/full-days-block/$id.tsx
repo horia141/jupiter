@@ -98,7 +98,7 @@ export default function TimeEventFullDaysBlockViewOne() {
   const corePropertyEditable = false;
 
   const [durationDays, setDurationDays] = useState(
-    loaderData.fullDaysBlock.duration_days
+    loaderData.fullDaysBlock.duration_days,
   );
   useEffect(() => {
     setDurationDays(loaderData.fullDaysBlock.duration_days);
@@ -113,7 +113,7 @@ export default function TimeEventFullDaysBlockViewOne() {
     case TimeEventNamespace.PERSON_BIRTHDAY:
       name = birthdayTimeEventName(
         loaderData.fullDaysBlock,
-        loaderData.person!
+        loaderData.person!,
       );
       break;
 
@@ -241,7 +241,7 @@ export default function TimeEventFullDaysBlockViewOne() {
 
 export const CatchBoundary = makeLeafCatchBoundary(
   () => `/app/workspace/calendar?${useSearchParams()}`,
-  () => `Could not find time event full days block #${useParams().id}!`
+  () => `Could not find time event full days block #${useParams().id}!`,
 );
 
 export const ErrorBoundary = makeLeafErrorBoundary(
@@ -249,5 +249,5 @@ export const ErrorBoundary = makeLeafErrorBoundary(
   () =>
     `There was an error loading time event full days block #${
       useParams().id
-    }. Please try again!`
+    }. Please try again!`,
 );

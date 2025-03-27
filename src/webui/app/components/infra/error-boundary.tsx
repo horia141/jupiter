@@ -31,7 +31,7 @@ export function makeRootErrorBoundary(labelFn: () => string) {
 
 export function makeLeafErrorBoundary(
   returnLocation: string | (() => string),
-  labelFn: () => string
+  labelFn: () => string,
 ) {
   function ErrorBoundary({ error }: { error: Error }) {
     const globalProperties = useContext(GlobalPropertiesContext);
@@ -64,7 +64,7 @@ export function makeLeafErrorBoundary(
 
 export function makeBranchErrorBoundary(
   returnLocation: string | (() => string),
-  labelFn: () => string
+  labelFn: () => string,
 ) {
   function ErrorBoundary({ error }: { error: Error }) {
     const globalProperties = useContext(GlobalPropertiesContext);
@@ -97,7 +97,7 @@ export function makeBranchErrorBoundary(
 
 export function makeTrunkErrorBoundary(
   returnLocation: string,
-  labelFn: () => string
+  labelFn: () => string,
 ) {
   function ErrorBoundary({ error }: { error: Error }) {
     const globalProperties = useContext(GlobalPropertiesContext);

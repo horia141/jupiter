@@ -67,7 +67,7 @@ export default function Metrics() {
         <>
           {isWorkspaceFeatureAvailable(
             topLevelInfo.workspace,
-            WorkspaceFeature.PROJECTS
+            WorkspaceFeature.PROJECTS,
           ) && (
             <>
               {isBigScreen ? (
@@ -128,5 +128,5 @@ export default function Metrics() {
 
 export const ErrorBoundary = makeTrunkErrorBoundary(
   "/app/workspace",
-  () => `There was an error loading the metrics! Please try again!`
+  () => `There was an error loading the metrics! Please try again!`,
 );

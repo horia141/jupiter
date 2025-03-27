@@ -13,12 +13,12 @@ interface HabitRepeatStrategySelectProps {
 }
 
 export function HabitRepeatStrategySelect(
-  props: HabitRepeatStrategySelectProps
+  props: HabitRepeatStrategySelectProps,
 ) {
   const [strategy, setStrategy] = useState<HabitRepeatsStrategy | "none">(
     props.defaultValue ||
       props.value ||
-      (props.allowNone ? "none" : HabitRepeatsStrategy.ALL_SAME)
+      (props.allowNone ? "none" : HabitRepeatsStrategy.ALL_SAME),
   );
 
   useEffect(() => {
@@ -29,7 +29,7 @@ export function HabitRepeatStrategySelect(
 
   function handleChangeStrategy(
     event: React.MouseEvent<HTMLElement>,
-    newStrategy: HabitRepeatsStrategy | "none"
+    newStrategy: HabitRepeatsStrategy | "none",
   ) {
     setStrategy(newStrategy);
     if (props.onChange) {

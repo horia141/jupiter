@@ -84,7 +84,7 @@ export default function BigPlans() {
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
 
   const sortedBigPlans = sortBigPlansNaturally(
-    loaderData.bigPlans.map((b) => b.big_plan)
+    loaderData.bigPlans.map((b) => b.big_plan),
   );
   const entriesByRefId = new Map<string, BigPlanParent>();
   for (const entry of loaderData.bigPlans) {
@@ -98,7 +98,7 @@ export default function BigPlans() {
 
   const initialView = isWorkspaceFeatureAvailable(
     topLevelInfo.workspace,
-    WorkspaceFeature.PROJECTS
+    WorkspaceFeature.PROJECTS,
   )
     ? View.TIMELINE_BY_PROJECT
     : View.TIMELINE;
@@ -112,7 +112,7 @@ export default function BigPlans() {
       <ButtonGroup key="1">
         {isWorkspaceFeatureAvailable(
           topLevelInfo.workspace,
-          WorkspaceFeature.PROJECTS
+          WorkspaceFeature.PROJECTS,
         ) && (
           <Button
             variant={
@@ -156,11 +156,11 @@ export default function BigPlans() {
   }
 
   const thisYear = DateTime.local({ zone: topLevelInfo.user.timezone }).startOf(
-    "year"
+    "year",
   );
   const sortedProjects = sortProjectsByTreeOrder(loaderData.allProjects || []);
   const allProjectsByRefId = new Map(
-    loaderData.allProjects?.map((p) => [p.ref_id, p])
+    loaderData.allProjects?.map((p) => [p.ref_id, p]),
   );
 
   return (
@@ -179,7 +179,7 @@ export default function BigPlans() {
           <ButtonGroup orientation="vertical">
             {isWorkspaceFeatureAvailable(
               topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS
+              WorkspaceFeature.PROJECTS,
             ) && (
               <Button
                 variant={
@@ -229,14 +229,14 @@ export default function BigPlans() {
         {sortedBigPlans.length > 0 &&
           isWorkspaceFeatureAvailable(
             topLevelInfo.workspace,
-            WorkspaceFeature.PROJECTS
+            WorkspaceFeature.PROJECTS,
           ) &&
           selectedView === View.TIMELINE_BY_PROJECT && (
             <>
               {sortedProjects.map((p) => {
                 const theBigPlans = sortedBigPlans.filter(
                   (se) =>
-                    entriesByRefId.get(se.ref_id)?.project?.ref_id === p.ref_id
+                    entriesByRefId.get(se.ref_id)?.project?.ref_id === p.ref_id,
                 );
 
                 if (theBigPlans.length === 0) {
@@ -245,7 +245,7 @@ export default function BigPlans() {
 
                 const fullProjectName = computeProjectHierarchicalNameFromRoot(
                   p,
-                  allProjectsByRefId
+                  allProjectsByRefId,
                 );
 
                 return (
@@ -342,5 +342,5 @@ export default function BigPlans() {
 
 export const ErrorBoundary = makeTrunkErrorBoundary(
   "/app/workspace",
-  () => `There was an error loading the big plans! Please try again!`
+  () => `There was an error loading the big plans! Please try again!`,
 );

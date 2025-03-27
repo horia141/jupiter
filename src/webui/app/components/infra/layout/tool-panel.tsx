@@ -46,7 +46,7 @@ interface ToolPanelFrameProps {
 }
 
 const ToolPanelFrame = styled(motion.div)<ToolPanelFrameProps>(
-  ({ theme, isBigScreen }) => ({})
+  ({ theme, isBigScreen }) => ({}),
 );
 
 interface ToolCardContentProps {
@@ -60,5 +60,5 @@ const ToolCardContent = styled(Form)<ToolCardContentProps>(
       isbigscreen === "true" ? "4rem" : "3.5rem"
     })`,
     overflowY: "scroll",
-  })
+  }),
 );

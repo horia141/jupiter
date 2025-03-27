@@ -13,7 +13,7 @@ export function userFeatureName(feature: UserFeature): string {
 }
 
 export function userFeatureToDocsHelpSubject(
-  feature: UserFeature
+  feature: UserFeature,
 ): DocsHelpSubject {
   switch (feature) {
     case UserFeature.GAMIFICATION:
@@ -59,7 +59,7 @@ export function workspaceFeatureName(feature: WorkspaceFeature): string {
 }
 
 export function workspaceFeatureToDocsHelpSubject(
-  feature: WorkspaceFeature
+  feature: WorkspaceFeature,
 ): DocsHelpSubject {
   switch (feature) {
     case WorkspaceFeature.INBOX_TASKS:
@@ -98,7 +98,7 @@ export function workspaceFeatureToDocsHelpSubject(
 }
 
 export function featureControlImpliesReadonly(
-  featureControl: FeatureControl
+  featureControl: FeatureControl,
 ): boolean {
   return featureControl !== FeatureControl.USER;
 }

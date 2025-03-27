@@ -31,7 +31,7 @@ module.exports = {
       buildPath,
       electronVersion,
       platform,
-      arch
+      arch,
     ) => {
       if (platform !== "darwin" && platform !== "mas") {
         return; // Only modify Info.plist on macOS

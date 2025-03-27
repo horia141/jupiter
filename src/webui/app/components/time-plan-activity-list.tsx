@@ -34,7 +34,7 @@ export function TimePlanActivityList(props: TimePlanActivityListProps) {
   const sortedActivities = sortTimePlanActivitiesNaturally(
     props.activities,
     props.inboxTasksByRefId,
-    props.bigPlansByRefId
+    props.bigPlansByRefId,
   );
 
   return (

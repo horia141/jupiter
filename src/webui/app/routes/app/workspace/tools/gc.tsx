@@ -164,7 +164,7 @@ export default function GC() {
 }
 
 export const ErrorBoundary = makeToolErrorBoundary(
-  () => `There was an error garbage collecting! Please try again!`
+  () => `There was an error garbage collecting! Please try again!`,
 );
 
 const AccordionHeader = styled(Box)(({ theme }) => ({

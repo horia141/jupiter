@@ -182,7 +182,7 @@ export default function SmartListTag() {
 export const CatchBoundary = makeLeafCatchBoundary(
   () => `/app/workspace/smart-lists/${useParams().id}/tags`,
   () =>
-    `Could not find smart list tag #${useParams().id}:#${useParams().tagId}!`
+    `Could not find smart list tag #${useParams().id}:#${useParams().tagId}!`,
 );
 
 export const ErrorBoundary = makeLeafErrorBoundary(
@@ -190,5 +190,5 @@ export const ErrorBoundary = makeLeafErrorBoundary(
   () =>
     `There was an error loading smart list tag #${useParams().id}:#${
       useParams().tagId
-    }! Please try again!`
+    }! Please try again!`,
 );

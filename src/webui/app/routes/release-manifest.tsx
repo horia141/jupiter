@@ -9,7 +9,7 @@ export async function loader() {
         "/v" +
         GLOBAL_PROPERTIES.version +
         "/release-manifest.json",
-      { cache: "no-store" }
+      { cache: "no-store" },
     );
     const manifestRaw = await manifestFetch.json();
     const manifest = RELEASE_MANIFEST_SCHEMA.parse(manifestRaw);

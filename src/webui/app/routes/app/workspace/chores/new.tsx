@@ -149,7 +149,7 @@ export default function NewChore() {
 
             {isWorkspaceFeatureAvailable(
               topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS
+              WorkspaceFeature.PROJECTS,
             ) && (
               <FormControl fullWidth>
                 <ProjectSelect
@@ -238,5 +238,5 @@ export default function NewChore() {
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/chores",
-  () => `There was an error creating the chore! Please try again!`
+  () => `There was an error creating the chore! Please try again!`,
 );

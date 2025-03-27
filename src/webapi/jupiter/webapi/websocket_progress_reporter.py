@@ -1,4 +1,5 @@
 """Progress reporter that uses a websocket to push progress updates."""
+
 import asyncio
 import logging
 from collections import defaultdict

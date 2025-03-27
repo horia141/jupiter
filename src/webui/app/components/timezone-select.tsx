@@ -13,7 +13,7 @@ export function TimezoneSelect(props: TimezoneSelectProps) {
   const allTimezonesAsOptions = (Intl as any).supportedValuesOf("timeZone");
 
   const [realValue, setRealValue] = useState(
-    props.initialValue || "Europe/London"
+    props.initialValue || "Europe/London",
   );
   useEffect(() => {
     setRealValue(Intl.DateTimeFormat().resolvedOptions().timeZone);

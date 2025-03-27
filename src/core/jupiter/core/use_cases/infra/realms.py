@@ -1161,6 +1161,9 @@ class _StandardUseCaseArgsWebDecoder(
 
         for field in all_fields:
             try:
+                if isinstance(field.type, str):
+                    raise RealmDecodingError(f"Cannot decode field {field.name} of {self._the_type.__name__} because it's a virtual field")
+
                 field_type, is_optional = normalize_optional(field.type)
                 if field.name not in value:
                     if is_optional:
@@ -1824,7 +1827,7 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
         self,
         thing_type: type[_DomainThingT] | ForwardRef | str,
         realm: type[_RealmT],
-        root_type: type[_DomainThingT] | None = None,
+        root_type: type[DomainThing] | None = None,
     ) -> RealmEncoder[_DomainThingT, _RealmT]:
         """Get a codec for a realm and a thing type."""
         if isinstance(thing_type, typing._GenericAlias) and thing_type.__name__ == "Literal":  # type: ignore
@@ -1954,7 +1957,7 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
         self,
         thing_type: type[_DomainThingT] | ForwardRef | str,
         realm: type[_RealmT],
-        root_type: type[_DomainThingT] | None = None,
+        root_type: type[DomainThing] | None = None,
     ) -> RealmDecoder[_DomainThingT, _RealmT]:
         """Get a codec for a realm and a thing type."""
         if isinstance(thing_type, typing._GenericAlias) and thing_type.__name__ == "Literal":  # type: ignore

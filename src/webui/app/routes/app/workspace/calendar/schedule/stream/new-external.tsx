@@ -54,11 +54,11 @@ export async function action({ request }: ActionArgs) {
       {
         source_ical_url: form.sourceIcalUrl,
         color: form.color,
-      }
+      },
     );
 
     return redirect(
-      `/app/workspace/calendar/schedule/stream/${response.new_schedule_stream.ref_id}?${url.searchParams}`
+      `/app/workspace/calendar/schedule/stream/${response.new_schedule_stream.ref_id}?${url.searchParams}`,
     );
   } catch (error) {
     if (
@@ -145,5 +145,5 @@ export default function ScheduleStreamNew() {
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   () => `/app/workspace/calendar/schedule/stream?${useSearchParams()}`,
-  () => `There was an error creating the schedule stream! Please try again!`
+  () => `There was an error creating the schedule stream! Please try again!`,
 );

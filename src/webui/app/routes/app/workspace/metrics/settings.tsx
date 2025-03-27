@@ -95,7 +95,7 @@ export default function MetricsSettings() {
     >
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
-        WorkspaceFeature.PROJECTS
+        WorkspaceFeature.PROJECTS,
       ) && (
         <Card>
           <GlobalError actionResult={actionData} />
@@ -139,5 +139,5 @@ export default function MetricsSettings() {
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   `/app/workspace/metrics`,
-  () => `There was an error upserting the metric settings! Please try again!`
+  () => `There was an error upserting the metric settings! Please try again!`,
 );

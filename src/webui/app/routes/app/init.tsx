@@ -121,7 +121,7 @@ export async function action({ request }: ActionArgs) {
         headers: {
           "Set-Cookie": await commitSession(session),
         },
-      }
+      },
     );
   } catch (error) {
     if (
@@ -384,5 +384,5 @@ export default function WorkspaceInit() {
 }
 
 export const ErrorBoundary = makeRootErrorBoundary(
-  () => `There was an error creating the workspace! Please try again!`
+  () => `There was an error creating the workspace! Please try again!`,
 );

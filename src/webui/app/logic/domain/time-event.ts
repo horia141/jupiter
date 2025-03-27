@@ -21,7 +21,7 @@ import { aDateToDate, compareADate } from "./adate";
 
 export function birthdayTimeEventName(
   block: TimeEventFullDaysBlock,
-  person: Person
+  person: Person,
 ) {
   const date = aDateToDate(block.start_date);
   return `${person.name}'s Birthday '${date.toFormat("yy")}`;
@@ -32,7 +32,7 @@ export const BIRTHDAY_TIME_EVENT_COLOR = ScheduleStreamColor.GREEN;
 export const VACATION_TIME_EVENT_COLOR = ScheduleStreamColor.ORANGE;
 
 export function sortBirthdayTimeEventsNaturally(
-  timeEvents: Array<CombinedTimeEventFullDaysEntry>
+  timeEvents: Array<CombinedTimeEventFullDaysEntry>,
 ): CombinedTimeEventFullDaysEntry[] {
   return [...timeEvents].sort((j1, j2) => {
     return compareADate(j1.time_event.start_date, j2.time_event.start_date);
@@ -40,7 +40,7 @@ export function sortBirthdayTimeEventsNaturally(
 }
 
 export function sortInboxTaskTimeEventsNaturally(
-  timeEvents: Array<CombinedTimeEventInDayEntry>
+  timeEvents: Array<CombinedTimeEventInDayEntry>,
 ): CombinedTimeEventInDayEntry[] {
   return [...timeEvents].sort((j1, j2) => {
     return (
@@ -68,7 +68,7 @@ const FULL_DaYS_TIME_EVENT_NAMESPACES_IN_ORDER = [
 
 export function compareNamespaceForSortingFullDaysTimeEvents(
   namespace1: TimeEventNamespace,
-  namespace2: TimeEventNamespace
+  namespace2: TimeEventNamespace,
 ): number {
   const index1 = FULL_DaYS_TIME_EVENT_NAMESPACES_IN_ORDER.indexOf(namespace1);
   const index2 = FULL_DaYS_TIME_EVENT_NAMESPACES_IN_ORDER.indexOf(namespace2);
@@ -90,34 +90,38 @@ interface TimeEventInDayBlockParams {
 }
 
 export function calculateStartTimeFromBlockParams(
-  blockParams: TimeEventInDayBlockParams
+  blockParams: TimeEventInDayBlockParams,
 ): DateTime {
   return DateTime.fromISO(
     `${blockParams.startDate}T${blockParams.startTimeInDay}`,
-    { zone: "UTC" }
+    { zone: "UTC" },
   );
 }
 
 export function calculateEndTimeFromBlockParams(
   blockParams: TimeEventInDayBlockParams,
-  durationMins: number
-): DateTime {
+  durationMins: number,
+): DateTime<true> {
   const startTime = calculateStartTimeFromBlockParams(blockParams);
   return startTime.plus({ minutes: durationMins });
 }
 
 export function calculateStartTimeForTimeEvent(
-  timeEvent: TimeEventInDayBlock
-): DateTime {
-  return DateTime.fromISO(
+  timeEvent: TimeEventInDayBlock,
+): DateTime<true> {
+  const startTime = DateTime.fromISO(
     `${timeEvent.start_date}T${timeEvent.start_time_in_day}`,
-    { zone: "UTC" }
+    { zone: "UTC" },
   );
+  if (!startTime.isValid) {
+    throw new Error(`Invalid start time: ${timeEvent.start_date}T${timeEvent.start_time_in_day}`);
+  }
+  return startTime;
 }
 
 export function calculateEndTimeForTimeEvent(
-  timeEvent: TimeEventInDayBlock
-): DateTime {
+  timeEvent: TimeEventInDayBlock,
+): DateTime<true> {
   const startTime = calculateStartTimeForTimeEvent(timeEvent);
   const endTime = startTime.plus({ minutes: timeEvent.duration_mins });
 
@@ -126,14 +130,14 @@ export function calculateEndTimeForTimeEvent(
 
 export function timeEventInDayBlockToTimezone(
   timeEvent: TimeEventInDayBlock,
-  timezone: Timezone
+  timezone: Timezone,
 ): TimeEventInDayBlock {
   const { startDate, startTimeInDay } = timeEventInDayBlockParamsToTimezone(
     {
       startDate: timeEvent.start_date,
       startTimeInDay: timeEvent.start_time_in_day,
     },
-    timezone
+    timezone,
   );
 
   return {
@@ -145,7 +149,7 @@ export function timeEventInDayBlockToTimezone(
 
 export function timeEventInDayBlockParamsToUtc(
   params: TimeEventInDayBlockParams,
-  timezone: Timezone
+  timezone: Timezone,
 ): TimeEventInDayBlockParams {
   if (!params.startTimeInDay) {
     // This works around some issues in the uI where the control for
@@ -155,8 +159,11 @@ export function timeEventInDayBlockParamsToUtc(
   }
   const startTime = DateTime.fromISO(
     `${params.startDate}T${params.startTimeInDay}`,
-    { zone: timezone }
+    { zone: timezone },
   );
+  if (!startTime.isValid) {
+    throw new Error(`Invalid start time: ${params.startDate}T${params.startTimeInDay}`);
+  }
   const utcStartTime = startTime.toUTC();
   return {
     startDate: utcStartTime.toISODate(),
@@ -166,7 +173,7 @@ export function timeEventInDayBlockParamsToUtc(
 
 export function timeEventInDayBlockParamsToTimezone(
   params: TimeEventInDayBlockParams,
-  timezone: Timezone
+  timezone: Timezone,
 ): TimeEventInDayBlockParams {
   if (!params.startTimeInDay) {
     // This works around some issues in the uI where the control for
@@ -176,9 +183,15 @@ export function timeEventInDayBlockParamsToTimezone(
   }
   const startTime = DateTime.fromISO(
     `${params.startDate}T${params.startTimeInDay}`,
-    { zone: "UTC" }
+    { zone: "UTC" },
   );
+  if (!startTime.isValid) {
+    throw new Error(`Invalid start time: ${params.startDate}T${params.startTimeInDay}`);
+  }
   const localStartTime = startTime.setZone(timezone);
+  if (!localStartTime.isValid) {
+    throw new Error(`Invalid start time: ${params.startDate}T${params.startTimeInDay}`);
+  }
   return {
     startDate: localStartTime.toISODate(),
     startTimeInDay: localStartTime.toFormat("HH:mm"),
@@ -186,7 +199,7 @@ export function timeEventInDayBlockParamsToTimezone(
 }
 
 export function calendarTimeEventInDayStartMinutesToRems(
-  startMins: number
+  startMins: number,
 ): string {
   // Each 15 minutes is 1 rem. Display has 96=4*24 rem height.
   const startHours = Math.max(0, startMins / 15);
@@ -195,24 +208,24 @@ export function calendarTimeEventInDayStartMinutesToRems(
 
 export function calendarPxHeightToMinutes(
   pxHeight: number,
-  remHeight: number
+  remHeight: number,
 ): number {
   return Math.floor(pxHeight / remHeight) * 15;
 }
 
 export function calendarTimeEventInDayDurationToRems(
   minutesSinceStartOfDay: number,
-  durationMins: number
+  durationMins: number,
 ): string {
   const durationInQuarters = computeTimeEventInDayDurationInQuarters(
     minutesSinceStartOfDay,
-    durationMins
+    durationMins,
   );
   return `${durationInQuarters}rem`;
 }
 
 export function scheduleTimeEventInDayDurationToRems(
-  durationMins: number
+  durationMins: number,
 ): string {
   const durationInHalfs = 0.5 + Math.floor(durationMins / 30);
   return `${durationInHalfs}rem`;

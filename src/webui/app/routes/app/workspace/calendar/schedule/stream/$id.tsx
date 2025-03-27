@@ -122,7 +122,7 @@ export async function action({ request, params }: ActionArgs) {
         });
 
         return redirect(
-          `/app/workspace/calendar/schedule/stream?${url.searchParams}`
+          `/app/workspace/calendar/schedule/stream?${url.searchParams}`,
         );
       }
 
@@ -134,7 +134,7 @@ export async function action({ request, params }: ActionArgs) {
         });
 
         return redirect(
-          `/app/workspace/calendar/schedule/stream/${id}?${url.searchParams}`
+          `/app/workspace/calendar/schedule/stream/${id}?${url.searchParams}`,
         );
       }
 
@@ -145,7 +145,7 @@ export async function action({ request, params }: ActionArgs) {
         });
 
         return redirect(
-          `/app/workspace/calendar/schedule/stream/${id}?${url.searchParams}`
+          `/app/workspace/calendar/schedule/stream/${id}?${url.searchParams}`,
         );
       }
 
@@ -155,7 +155,7 @@ export async function action({ request, params }: ActionArgs) {
         });
 
         return redirect(
-          `/app/workspace/calendar/schedule/stream?${url.searchParams}`
+          `/app/workspace/calendar/schedule/stream?${url.searchParams}`,
         );
       }
 
@@ -165,7 +165,7 @@ export async function action({ request, params }: ActionArgs) {
         });
 
         return redirect(
-          `/app/workspace/calendar/schedule/stream?${url.searchParams}`
+          `/app/workspace/calendar/schedule/stream?${url.searchParams}`,
         );
       }
 
@@ -196,7 +196,7 @@ export default function ScheduleStreamViewOne() {
   const inputsEnabled =
     transition.state === "idle" && !loaderData.scheduleStream.archived;
   const corePropertyEditable = isCorePropertyEditable(
-    loaderData.scheduleStream
+    loaderData.scheduleStream,
   );
 
   return (
@@ -305,7 +305,7 @@ export default function ScheduleStreamViewOne() {
 
 export const CatchBoundary = makeLeafCatchBoundary(
   () => `/app/workspace/calendar/schedule/stream?${useSearchParams()}`,
-  () => `Could not find schedule stream #${useParams().id}!`
+  () => `Could not find schedule stream #${useParams().id}!`,
 );
 
 export const ErrorBoundary = makeLeafErrorBoundary(
@@ -313,5 +313,5 @@ export const ErrorBoundary = makeLeafErrorBoundary(
   () =>
     `There was an error loading schedule stream #${
       useParams().id
-    }. Please try again!`
+    }. Please try again!`,
 );

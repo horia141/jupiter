@@ -25,7 +25,7 @@ export function BigPlanStatusTag(props: Props) {
 }
 
 function statusToClass(
-  status: BigPlanStatus
+  status: BigPlanStatus,
 ): "info" | "warning" | "success" | "error" {
   switch (status) {
     case BigPlanStatus.NOT_STARTED:

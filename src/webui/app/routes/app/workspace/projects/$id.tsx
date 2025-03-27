@@ -174,22 +174,22 @@ export default function Project() {
     transition.state === "idle" && !loaderData.project.archived;
 
   const parentProject = loaderData.allProjects.find(
-    (project) => project.ref_id === loaderData.project.parent_project_ref_id
+    (project) => project.ref_id === loaderData.project.parent_project_ref_id,
   );
   const [selectedProject, setSelectedProject] = useState(
     parentProject === undefined
       ? loaderData.rootProject.ref_id
-      : parentProject.ref_id
+      : parentProject.ref_id,
   );
 
   useEffect(() => {
     const parentProject = loaderData.allProjects.find(
-      (project) => project.ref_id === loaderData.project.parent_project_ref_id
+      (project) => project.ref_id === loaderData.project.parent_project_ref_id,
     );
     setSelectedProject(
       parentProject === undefined
         ? loaderData.rootProject.ref_id
-        : parentProject.ref_id
+        : parentProject.ref_id,
     );
   }, [loaderData]);
 
@@ -294,11 +294,11 @@ export default function Project() {
 
 export const CatchBoundary = makeLeafCatchBoundary(
   "/app/workspace/projects",
-  () => `Could not find project #${useParams().id}!`
+  () => `Could not find project #${useParams().id}!`,
 );
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/projects",
   () =>
-    `There was an error loading project #${useParams().id}! Please try again!`
+    `There was an error loading project #${useParams().id}! Please try again!`,
 );

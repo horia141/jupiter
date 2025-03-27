@@ -17,7 +17,7 @@ export function TagsEditor({ allTags, defaultTags, readOnly }: Props) {
   }
 
   const [tagsHiddenValue, setTagsHiddenValue] = useState(
-    defaultTags.map((tid) => tagsByRefId[tid].tag_name).join(",")
+    defaultTags.map((tid) => tagsByRefId[tid].tag_name).join(","),
   );
 
   return (

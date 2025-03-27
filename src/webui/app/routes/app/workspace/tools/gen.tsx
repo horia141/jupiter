@@ -138,15 +138,15 @@ export async function action({ request }: ActionArgs) {
       gen_targets: fixSelectOutputToEnum<SyncTarget>(form.gen_targets),
       period: fixSelectOutputToEnum<RecurringTaskPeriod>(form.period),
       filter_project_ref_ids: fixSelectOutputEntityId(
-        form.filter_project_ref_ids
+        form.filter_project_ref_ids,
       ),
       filter_habit_ref_ids: fixSelectOutputEntityId(form.filter_habit_ref_ids),
       filter_chore_ref_ids: fixSelectOutputEntityId(form.filter_chore_ref_ids),
       filter_metric_ref_ids: fixSelectOutputEntityId(
-        form.filter_metric_ref_ids
+        form.filter_metric_ref_ids,
       ),
       filter_person_ref_ids: fixSelectOutputEntityId(
-        form.filter_person_ref_ids
+        form.filter_person_ref_ids,
       ),
     });
 
@@ -288,7 +288,7 @@ export default function Gen() {
 
                   {isWorkspaceFeatureAvailable(
                     topLevelInfo.workspace,
-                    WorkspaceFeature.PROJECTS
+                    WorkspaceFeature.PROJECTS,
                   ) && (
                     <FormControl fullWidth>
                       <Autocomplete
@@ -322,7 +322,7 @@ export default function Gen() {
 
                   {isWorkspaceFeatureAvailable(
                     topLevelInfo.workspace,
-                    WorkspaceFeature.HABITS
+                    WorkspaceFeature.HABITS,
                   ) && (
                     <FormControl fullWidth>
                       <Autocomplete
@@ -356,7 +356,7 @@ export default function Gen() {
 
                   {isWorkspaceFeatureAvailable(
                     topLevelInfo.workspace,
-                    WorkspaceFeature.CHORES
+                    WorkspaceFeature.CHORES,
                   ) && (
                     <FormControl fullWidth>
                       <Autocomplete
@@ -390,7 +390,7 @@ export default function Gen() {
 
                   {isWorkspaceFeatureAvailable(
                     topLevelInfo.workspace,
-                    WorkspaceFeature.METRICS
+                    WorkspaceFeature.METRICS,
                   ) && (
                     <FormControl fullWidth>
                       <Autocomplete
@@ -424,7 +424,7 @@ export default function Gen() {
 
                   {isWorkspaceFeatureAvailable(
                     topLevelInfo.workspace,
-                    WorkspaceFeature.PERSONS
+                    WorkspaceFeature.PERSONS,
                   ) && (
                     <FormControl fullWidth>
                       <Autocomplete
@@ -618,7 +618,7 @@ export default function Gen() {
 }
 
 export const ErrorBoundary = makeToolErrorBoundary(
-  () => `There was an error generating tasks! Please try again!`
+  () => `There was an error generating tasks! Please try again!`,
 );
 
 const AccordionHeader = styled(Box)(({ theme }) => ({

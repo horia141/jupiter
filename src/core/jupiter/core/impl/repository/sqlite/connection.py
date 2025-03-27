@@ -3,15 +3,13 @@
 import json
 from dataclasses import dataclass
 from pathlib import Path
-import sqlite3
 from typing import Final
 
-from pydantic_core import to_jsonable_python
 import sqlalchemy.exc
 from alembic import command
 from alembic.config import Config
 from jupiter.core.framework.storage import Connection, ConnectionPrepareError
-from pydantic.json import pydantic_encoder
+from pydantic_core import to_jsonable_python
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
 

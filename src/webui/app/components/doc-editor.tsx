@@ -14,7 +14,7 @@ import { FieldError, GlobalError } from "./infra/errors";
 const BlockEditor = lazy(() =>
   import("~/components/infra/block-editor.js").then((module) => ({
     default: module.default as unknown as ComponentType<BlockEditorProps>,
-  }))
+  })),
 );
 
 interface DocEditorProps {
@@ -38,17 +38,17 @@ export function DocEditor({
   const [docId, setDocId] = useState(initialDoc ? initialDoc.ref_id : null);
   const [noteId, setNoteId] = useState(initialNote ? initialNote.ref_id : null);
   const [noteName, setNoteName] = useState<string>(
-    initialDoc ? initialDoc.name : ""
+    initialDoc ? initialDoc.name : "",
   );
   const [noteContent, setNoteContent] = useState<Array<OneOfNoteContentBlock>>(
-    initialNote ? initialNote.content : []
+    initialNote ? initialNote.content : [],
   );
 
   const act = useCallback(() => {
     setIsActing(true);
     const base64Content = Buffer.from(
       JSON.stringify(noteContent),
-      "utf-8"
+      "utf-8",
     ).toString("base64");
     if (docId && noteId) {
       // We already created this thing, we just need to update!
@@ -62,7 +62,7 @@ export function DocEditor({
         {
           method: "post",
           action: "/app/workspace/docs/update-action",
-        }
+        },
       );
     } else {
       // We need to create it!
@@ -74,7 +74,7 @@ export function DocEditor({
         {
           method: "post",
           action: "/app/workspace/docs/create-action",
-        }
+        },
       );
     }
     setDataModified(false);

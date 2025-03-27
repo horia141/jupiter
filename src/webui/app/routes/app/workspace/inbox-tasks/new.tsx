@@ -206,11 +206,11 @@ export async function action({ request }: ActionArgs) {
         switch (bigPlanReason) {
           case "for-big-plan":
             return redirect(
-              `/app/workspace/time-plans/${query.timePlanRefId}/${query.parentTimePlanActivityRefId}`
+              `/app/workspace/time-plans/${query.timePlanRefId}/${query.parentTimePlanActivityRefId}`,
             );
           case "standard":
             return redirect(
-              `/app/workspace/time-plans/${result.new_time_plan_activity?.time_plan_ref_id}/${result.new_time_plan_activity?.ref_id}`
+              `/app/workspace/time-plans/${result.new_time_plan_activity?.time_plan_ref_id}/${result.new_time_plan_activity?.ref_id}`,
             );
         }
         break;
@@ -219,12 +219,12 @@ export async function action({ request }: ActionArgs) {
         switch (bigPlanReason) {
           case "for-big-plan":
             return redirect(
-              `/app/workspace/big-plans/${query.bigPlanRefId as string}`
+              `/app/workspace/big-plans/${query.bigPlanRefId as string}`,
             );
 
           case "standard":
             return redirect(
-              `/app/workspace/inbox-tasks/${result.new_inbox_task.ref_id}`
+              `/app/workspace/inbox-tasks/${result.new_inbox_task.ref_id}`,
             );
         }
         break;
@@ -251,13 +251,13 @@ export default function NewInboxTask() {
   const topLevelInfo = useContext(TopLevelInfoContext);
 
   const [selectedBigPlan, setSelectedBigPlan] = useState(
-    loaderData.defaultBigPlan
+    loaderData.defaultBigPlan,
   );
   const [selectedProject, setSelectedProject] = useState(
-    loaderData.defaultProject.ref_id
+    loaderData.defaultProject.ref_id,
   );
   const [blockedToSelectProject, setBlockedToSelectProject] = useState(
-    loaderData.bigPlanReason === "for-big-plan"
+    loaderData.bigPlanReason === "for-big-plan",
   );
 
   const inputsEnabled = transition.state === "idle";
@@ -266,7 +266,7 @@ export default function NewInboxTask() {
   if (
     isWorkspaceFeatureAvailable(
       topLevelInfo.workspace,
-      WorkspaceFeature.PROJECTS
+      WorkspaceFeature.PROJECTS,
     )
   ) {
     for (const project of loaderData.allProjects) {
@@ -280,7 +280,7 @@ export default function NewInboxTask() {
   if (
     isWorkspaceFeatureAvailable(
       topLevelInfo.workspace,
-      WorkspaceFeature.BIG_PLANS
+      WorkspaceFeature.BIG_PLANS,
     )
   ) {
     for (const bigPlan of loaderData.allBigPlans) {
@@ -296,20 +296,20 @@ export default function NewInboxTask() {
       loaderData.allBigPlans.map((bp: BigPlanSummary) => ({
         label: bp.name,
         big_plan_id: bp.ref_id,
-      }))
+      })),
     );
   }
 
   function handleChangeBigPlan(
     e: React.SyntheticEvent,
-    { label, big_plan_id }: BigPlanACOption
+    { label, big_plan_id }: BigPlanACOption,
   ) {
     setSelectedBigPlan({ label, big_plan_id });
 
     if (
       isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
-        WorkspaceFeature.PROJECTS
+        WorkspaceFeature.PROJECTS,
       )
     ) {
       if (big_plan_id === "none") {
@@ -350,7 +350,7 @@ export default function NewInboxTask() {
 
             {isWorkspaceFeatureAvailable(
               topLevelInfo.workspace,
-              WorkspaceFeature.BIG_PLANS
+              WorkspaceFeature.BIG_PLANS,
             ) && (
               <FormControl fullWidth>
                 <Autocomplete
@@ -386,7 +386,7 @@ export default function NewInboxTask() {
 
             {isWorkspaceFeatureAvailable(
               topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS
+              WorkspaceFeature.PROJECTS,
             ) && (
               <FormControl fullWidth>
                 <ProjectSelect
@@ -439,14 +439,14 @@ export default function NewInboxTask() {
                   loaderData.timePlanReason === "for-time-plan"
                     ? aDateToDate(
                         (loaderData.associatedTimePlan as TimePlan)
-                          .start_date as ADate
+                          .start_date as ADate,
                       ).toFormat("yyyy-MM-dd")
                     : loaderData.bigPlanReason === "for-big-plan" &&
-                      loaderData.ownerBigPlan?.actionable_date
-                    ? aDateToDate(
-                        loaderData.ownerBigPlan.actionable_date
-                      ).toFormat("yyyy-MM-dd")
-                    : undefined
+                        loaderData.ownerBigPlan?.actionable_date
+                      ? aDateToDate(
+                          loaderData.ownerBigPlan.actionable_date,
+                        ).toFormat("yyyy-MM-dd")
+                      : undefined
                 }
               />
 
@@ -470,14 +470,14 @@ export default function NewInboxTask() {
                   loaderData.timePlanReason === "for-time-plan"
                     ? aDateToDate(
                         (loaderData.associatedTimePlan as TimePlan)
-                          .end_date as ADate
+                          .end_date as ADate,
                       ).toFormat("yyyy-MM-dd")
                     : loaderData.bigPlanReason === "for-big-plan" &&
-                      loaderData.ownerBigPlan?.due_date
-                    ? aDateToDate(loaderData.ownerBigPlan.due_date).toFormat(
-                        "yyyy-MM-dd"
-                      )
-                    : ""
+                        loaderData.ownerBigPlan?.due_date
+                      ? aDateToDate(loaderData.ownerBigPlan.due_date).toFormat(
+                          "yyyy-MM-dd",
+                        )
+                      : ""
                 }
               />
 
@@ -486,7 +486,7 @@ export default function NewInboxTask() {
 
             {isWorkspaceFeatureAvailable(
               topLevelInfo.workspace,
-              WorkspaceFeature.TIME_PLANS
+              WorkspaceFeature.TIME_PLANS,
             ) &&
               loaderData.timePlanReason === "for-time-plan" && (
                 <>
@@ -540,5 +540,5 @@ export default function NewInboxTask() {
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/inbox-tasks",
-  () => `There was an error creating the inbox task! Please try again!`
+  () => `There was an error creating the inbox task! Please try again!`,
 );

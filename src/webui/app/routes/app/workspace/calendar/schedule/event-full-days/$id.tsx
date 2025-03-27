@@ -138,10 +138,10 @@ export async function action({ request, params }: ActionArgs) {
           {
             ref_id: id,
             schedule_stream_ref_id: form.scheduleStreamRefId,
-          }
+          },
         );
         return redirect(
-          `/app/workspace/calendar/schedule/event-full-days/${id}?${url.searchParams}`
+          `/app/workspace/calendar/schedule/event-full-days/${id}?${url.searchParams}`,
         );
       }
 
@@ -152,7 +152,7 @@ export async function action({ request, params }: ActionArgs) {
           content: [],
         });
         return redirect(
-          `/app/workspace/calendar/schedule/event-full-days/${id}?${url.searchParams}`
+          `/app/workspace/calendar/schedule/event-full-days/${id}?${url.searchParams}`,
         );
       }
 
@@ -197,18 +197,18 @@ export default function ScheduleEventFullDaysViewOne() {
   const inputsEnabled =
     transition.state === "idle" && !loaderData.scheduleEventFullDays.archived;
   const corePropertyEditable = isCorePropertyEditable(
-    loaderData.scheduleEventFullDays
+    loaderData.scheduleEventFullDays,
   );
 
   const [durationDays, setDurationDays] = useState(
-    loaderData.timeEventFullDaysBlock.duration_days
+    loaderData.timeEventFullDaysBlock.duration_days,
   );
   useEffect(() => {
     setDurationDays(loaderData.timeEventFullDaysBlock.duration_days);
   }, [loaderData.timeEventFullDaysBlock.duration_days]);
 
   const allScheduleStreamsByRefId = new Map(
-    loaderData.allScheduleStreams.map((st) => [st.ref_id, st])
+    loaderData.allScheduleStreams.map((st) => [st.ref_id, st]),
   );
 
   return (
@@ -260,7 +260,7 @@ export default function ScheduleEventFullDaysViewOne() {
               allScheduleStreams={loaderData.allScheduleStreams}
               defaultValue={
                 allScheduleStreamsByRefId.get(
-                  loaderData.scheduleEventFullDays.schedule_stream_ref_id
+                  loaderData.scheduleEventFullDays.schedule_stream_ref_id,
                 )!
               }
             />
@@ -378,7 +378,7 @@ export default function ScheduleEventFullDaysViewOne() {
 
 export const CatchBoundary = makeLeafCatchBoundary(
   () => `/app/workspace/calendar?${useSearchParams()}`,
-  () => `Could not find schedule event in day#${useParams().id}!`
+  () => `Could not find schedule event in day#${useParams().id}!`,
 );
 
 export const ErrorBoundary = makeLeafErrorBoundary(
@@ -386,5 +386,5 @@ export const ErrorBoundary = makeLeafErrorBoundary(
   () =>
     `There was an error loading schedule event in day #${
       useParams().id
-    }. Please try again!`
+    }. Please try again!`,
 );

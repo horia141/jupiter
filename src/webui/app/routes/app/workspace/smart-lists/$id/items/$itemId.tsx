@@ -284,7 +284,7 @@ export default function SmartListItem() {
 export const CatchBoundary = makeLeafCatchBoundary(
   () => `/app/workspace/smart-lists/${useParams().id}/items`,
   () =>
-    `Could not find smart list item #${useParams().id}:#${useParams().itemId}!`
+    `Could not find smart list item #${useParams().id}:#${useParams().itemId}!`,
 );
 
 export const ErrorBoundary = makeLeafErrorBoundary(
@@ -292,5 +292,5 @@ export const ErrorBoundary = makeLeafErrorBoundary(
   () =>
     `There was an error loading smart list item #${useParams().id}:#${
       useParams().itemId
-    }! Please try again!`
+    }! Please try again!`,
 );

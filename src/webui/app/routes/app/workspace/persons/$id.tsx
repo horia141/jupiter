@@ -191,9 +191,9 @@ export async function action({ request, params }: ActionArgs) {
               form.catchUpPeriod === undefined || form.catchUpPeriod === "none"
                 ? undefined
                 : form.catchUpActionableFromDay === undefined ||
-                  form.catchUpActionableFromDay === ""
-                ? undefined
-                : parseInt(form.catchUpActionableFromDay),
+                    form.catchUpActionableFromDay === ""
+                  ? undefined
+                  : parseInt(form.catchUpActionableFromDay),
           },
           catch_up_actionable_from_month: {
             should_change: true,
@@ -201,9 +201,9 @@ export async function action({ request, params }: ActionArgs) {
               form.catchUpPeriod === undefined || form.catchUpPeriod === "none"
                 ? undefined
                 : form.catchUpActionableFromMonth === undefined ||
-                  form.catchUpActionableFromMonth === ""
-                ? undefined
-                : parseInt(form.catchUpActionableFromMonth),
+                    form.catchUpActionableFromMonth === ""
+                  ? undefined
+                  : parseInt(form.catchUpActionableFromMonth),
           },
           catch_up_due_at_day: {
             should_change: true,
@@ -211,9 +211,9 @@ export async function action({ request, params }: ActionArgs) {
               form.catchUpPeriod === undefined || form.catchUpPeriod === "none"
                 ? undefined
                 : form.catchUpDueAtDay === undefined ||
-                  form.catchUpDueAtDay === ""
-                ? undefined
-                : parseInt(form.catchUpDueAtDay),
+                    form.catchUpDueAtDay === ""
+                  ? undefined
+                  : parseInt(form.catchUpDueAtDay),
           },
           catch_up_due_at_month: {
             should_change: true,
@@ -221,9 +221,9 @@ export async function action({ request, params }: ActionArgs) {
               form.catchUpPeriod === undefined || form.catchUpPeriod === "none"
                 ? undefined
                 : form.catchUpDueAtMonth === undefined ||
-                  form.catchUpDueAtMonth === ""
-                ? undefined
-                : parseInt(form.catchUpDueAtMonth),
+                    form.catchUpDueAtMonth === ""
+                  ? undefined
+                  : parseInt(form.catchUpDueAtMonth),
           },
           birthday: {
             should_change: true,
@@ -235,7 +235,7 @@ export async function action({ request, params }: ActionArgs) {
                 ? undefined
                 : birthdayFromParts(
                     parseInt(form.birthdayDay, 10),
-                    parseInt(form.birthdayMonth, 10)
+                    parseInt(form.birthdayMonth, 10),
                   ),
           },
         });
@@ -310,7 +310,7 @@ export default function Person() {
     loaderData.birthdayTasks,
     {
       dueDateAscending: false,
-    }
+    },
   );
   const sortedCatchUpTasks = sortInboxTasksNaturally(loaderData.catchUpTasks, {
     dueDateAscending: false,
@@ -326,7 +326,7 @@ export default function Person() {
       },
     }));
   const sortedBirthdayTimeEventEntries = sortBirthdayTimeEventsNaturally(
-    birthdayTimeEventEntries
+    birthdayTimeEventEntries,
   );
 
   const inputsEnabled = transition.state === "idle" && !person.archived;
@@ -342,7 +342,7 @@ export default function Person() {
       {
         method: "post",
         action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-      }
+      },
     );
   }
 
@@ -355,7 +355,7 @@ export default function Person() {
       {
         method: "post",
         action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-      }
+      },
     );
   }
 
@@ -596,7 +596,7 @@ export default function Person() {
 
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
-        WorkspaceFeature.SCHEDULE
+        WorkspaceFeature.SCHEDULE,
       ) &&
         sortedBirthdayTimeEventEntries.length > 0 && (
           <TimeEventFullDaysBlockStack
@@ -612,11 +612,11 @@ export default function Person() {
 
 export const CatchBoundary = makeLeafCatchBoundary(
   `/app/workspace/persons`,
-  () => `Could not find person #${useParams().id}!`
+  () => `Could not find person #${useParams().id}!`,
 );
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   `/app/workspace/persons`,
   () =>
-    `There was an error loading person #${useParams().id}! Please try again!`
+    `There was an error loading person #${useParams().id}! Please try again!`,
 );

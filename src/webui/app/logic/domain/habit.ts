@@ -15,11 +15,11 @@ export function sortHabitsNaturally(habits: Habit[]): Habit[] {
       comparePeriods(c1.gen_params.period, c2.gen_params.period) ||
       compareEisen(
         c1.gen_params.eisen ?? Eisen.REGULAR,
-        c2.gen_params.eisen ?? Eisen.REGULAR
+        c2.gen_params.eisen ?? Eisen.REGULAR,
       ) ||
       compareDifficulty(
         c1.gen_params.difficulty ?? Difficulty.EASY,
-        c2.gen_params.difficulty ?? Difficulty.EASY
+        c2.gen_params.difficulty ?? Difficulty.EASY,
       )
     );
   });

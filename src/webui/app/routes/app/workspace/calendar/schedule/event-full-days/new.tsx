@@ -84,7 +84,7 @@ export async function action({ request }: ActionArgs) {
     });
 
     return redirect(
-      `/app/workspace/calendar/schedule/event-full-days/${response.new_schedule_event_full_days.ref_id}?${url.searchParams}`
+      `/app/workspace/calendar/schedule/event-full-days/${response.new_schedule_event_full_days.ref_id}?${url.searchParams}`,
     );
   } catch (error) {
     if (
@@ -227,5 +227,5 @@ export default function ScheduleEventFullDaysNew() {
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   () => `/app/workspace/calendar?${useSearchParams()}`,
-  () => `There was an error creating the event full days! Please try again!`
+  () => `There was an error creating the event full days! Please try again!`,
 );

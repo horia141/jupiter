@@ -98,6 +98,7 @@ class SqliteRepository(abc.ABC):
         self._connection = connection
         self._metadata = metadata
 
+
 class SqliteEntityRepository(Generic[_EntityT], SqliteRepository, abc.ABC):
     """A repository for entities backed by SQLite, meant to be used as a mixin."""
 
@@ -255,6 +256,7 @@ class SqliteEntityRepository(Generic[_EntityT], SqliteRepository, abc.ABC):
         entity_table_name: str, metadata: MetaData, entity_type: type[_EntityT]
     ) -> Table:
         """Build the table for an entity."""
+
         def extract_field_type(
             field: dataclasses.Field[Primitive | object],
         ) -> tuple[type[object], bool]:

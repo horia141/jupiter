@@ -219,7 +219,7 @@ export default function Journal() {
       {
         method: "post",
         action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-      }
+      },
     );
   }
 
@@ -232,7 +232,7 @@ export default function Journal() {
       {
         method: "post",
         action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-      }
+      },
     );
   }
 
@@ -353,7 +353,7 @@ export default function Journal() {
 
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
-        WorkspaceFeature.TIME_PLANS
+        WorkspaceFeature.TIME_PLANS,
       ) &&
         loaderData.timePlan &&
         sortedTimePlans.length > 0 && (
@@ -378,11 +378,11 @@ export default function Journal() {
 
 export const CatchBoundary = makeLeafCatchBoundary(
   `/app/workspace/journals`,
-  () => `Could not find journal #${useParams().id}!`
+  () => `Could not find journal #${useParams().id}!`,
 );
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/journals",
   () =>
-    `There was an error loading journal #${useParams().id}. Please try again!`
+    `There was an error loading journal #${useParams().id}. Please try again!`,
 );

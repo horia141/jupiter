@@ -291,7 +291,7 @@ export default function Chore() {
     transition.state === "idle" && !loaderData.chore.archived;
 
   const [selectedProject, setSelectedProject] = useState(
-    loaderData.project.ref_id
+    loaderData.project.ref_id,
   );
 
   const sortedInboxTasks = sortInboxTasksNaturally(loaderData.inboxTasks, {
@@ -309,7 +309,7 @@ export default function Chore() {
       {
         method: "post",
         action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-      }
+      },
     );
   }
 
@@ -322,7 +322,7 @@ export default function Chore() {
       {
         method: "post",
         action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-      }
+      },
     );
   }
 
@@ -360,7 +360,7 @@ export default function Chore() {
 
             {isWorkspaceFeatureAvailable(
               topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS
+              WorkspaceFeature.PROJECTS,
             ) && (
               <FormControl fullWidth>
                 <ProjectSelect
@@ -420,7 +420,7 @@ export default function Chore() {
                   defaultValue={
                     loaderData.chore.start_at_date
                       ? aDateToDate(loaderData.chore.start_at_date).toFormat(
-                          "yyyy-MM-dd"
+                          "yyyy-MM-dd",
                         )
                       : undefined
                   }
@@ -445,7 +445,7 @@ export default function Chore() {
                   defaultValue={
                     loaderData.chore.end_at_date
                       ? aDateToDate(loaderData.chore.end_at_date).toFormat(
-                          "yyyy-MM-dd"
+                          "yyyy-MM-dd",
                         )
                       : undefined
                   }
@@ -540,11 +540,11 @@ export default function Chore() {
 
 export const CatchBoundary = makeLeafCatchBoundary(
   "/app/workspace/chores",
-  () => `Could not find chore #${useParams().id}!`
+  () => `Could not find chore #${useParams().id}!`,
 );
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/chores",
   () =>
-    `There was an error loading chore  #${useParams().id}! Please try again!`
+    `There was an error loading chore  #${useParams().id}! Please try again!`,
 );

@@ -2,7 +2,7 @@ import { RecurringTaskPeriod } from "@jupiter/webapi-client";
 
 export function periodName(
   status: RecurringTaskPeriod,
-  isBigScreen: boolean = true
+  isBigScreen: boolean = true,
 ): string {
   switch (status) {
     case RecurringTaskPeriod.DAILY:
@@ -27,7 +27,7 @@ const PERIOD_MAP = {
 };
 
 export function oneLessThanPeriod(
-  period: RecurringTaskPeriod
+  period: RecurringTaskPeriod,
 ): RecurringTaskPeriod {
   switch (period) {
     case RecurringTaskPeriod.DAILY:
@@ -44,7 +44,7 @@ export function oneLessThanPeriod(
 }
 
 export function oneMoreThanPeriod(
-  period: RecurringTaskPeriod
+  period: RecurringTaskPeriod,
 ): RecurringTaskPeriod {
   switch (period) {
     case RecurringTaskPeriod.DAILY:
@@ -62,7 +62,7 @@ export function oneMoreThanPeriod(
 
 export function comparePeriods(
   period1: RecurringTaskPeriod,
-  period2: RecurringTaskPeriod
+  period2: RecurringTaskPeriod,
 ): number {
   return PERIOD_MAP[period1] - PERIOD_MAP[period2];
 }

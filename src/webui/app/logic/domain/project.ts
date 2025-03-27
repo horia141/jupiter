@@ -5,7 +5,7 @@ export function isRootProject(project: Project | ProjectSummary): boolean {
 }
 
 export function sortProjectsByTreeOrder(
-  projects: (Project | ProjectSummary)[]
+  projects: (Project | ProjectSummary)[],
 ): ProjectSummary[] {
   // Essentially we do a DFS-ish traversal of the tree.
   const projectsByParentRefId: Map<
@@ -37,7 +37,7 @@ export function sortProjectsByTreeOrder(
     const children = projectsByParentRefId.get(currentProject.ref_id) || [];
     const sortedChildren = sortProjectsByOrderWithinParent(
       currentProject,
-      children
+      children,
     );
     stack.push(...sortedChildren);
   }
@@ -47,14 +47,14 @@ export function sortProjectsByTreeOrder(
 
 function sortProjectsByOrderWithinParent(
   parent: Project | ProjectSummary,
-  children: (Project | ProjectSummary)[]
+  children: (Project | ProjectSummary)[],
 ): ProjectSummary[] {
   return [...children].sort((a, b) => {
     const first = parent.order_of_child_projects.findIndex(
-      (x) => x === a.ref_id
+      (x) => x === a.ref_id,
     );
     const second = parent.order_of_child_projects.findIndex(
-      (x) => x === b.ref_id
+      (x) => x === b.ref_id,
     );
     return second - first;
   });
@@ -62,13 +62,13 @@ function sortProjectsByOrderWithinParent(
 
 export function computeProjectHierarchicalNameFromRoot(
   project: Project | ProjectSummary,
-  allProjectsByRefId: Map<string, Project | ProjectSummary>
+  allProjectsByRefId: Map<string, Project | ProjectSummary>,
 ): string {
   let name = project.name;
   let currentProject = project;
   while (currentProject.parent_project_ref_id) {
     const currentProjectTmp = allProjectsByRefId.get(
-      currentProject.parent_project_ref_id
+      currentProject.parent_project_ref_id,
     );
     if (!currentProjectTmp) {
       throw new Error("Invariant violation");
@@ -81,14 +81,14 @@ export function computeProjectHierarchicalNameFromRoot(
 
 export function computeProjectDistanceFromRoot(
   project: Project | ProjectSummary,
-  allProjectsByRefId: Map<string, Project | ProjectSummary>
+  allProjectsByRefId: Map<string, Project | ProjectSummary>,
 ): number {
   let distance = 0;
   let currentProject = project;
   while (currentProject.parent_project_ref_id) {
     distance++;
     const currentProjectTmp = allProjectsByRefId.get(
-      currentProject.parent_project_ref_id
+      currentProject.parent_project_ref_id,
     );
     if (!currentProjectTmp) {
       throw new Error("Invariant violation");
@@ -100,7 +100,7 @@ export function computeProjectDistanceFromRoot(
 
 export function shiftProjectUpInListOfChildren(
   project: Project | ProjectSummary,
-  orderOfChildProjects: string[]
+  orderOfChildProjects: string[],
 ): string[] {
   const index = orderOfChildProjects.findIndex((x) => x === project.ref_id);
   if (index === -1) {
@@ -117,7 +117,7 @@ export function shiftProjectUpInListOfChildren(
 
 export function shiftProjectDownInListOfChildren(
   project: Project | ProjectSummary,
-  orderOfChildProjects: string[]
+  orderOfChildProjects: string[],
 ): string[] {
   const index = orderOfChildProjects.findIndex((x) => x === project.ref_id);
   if (index === -1) {

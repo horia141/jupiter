@@ -15,7 +15,7 @@ interface SyncTargetSelectProps {
 export function SyncTargetSelect(props: SyncTargetSelectProps) {
   const allowedSyncTargets = inferSyncTargetsForEnabledFeatures(
     props.topLevelInfo.workspace,
-    Object.values(SyncTarget)
+    Object.values(SyncTarget),
   );
 
   return (

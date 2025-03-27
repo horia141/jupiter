@@ -13,7 +13,7 @@ export function InboxTaskStatusTag(props: Props) {
 }
 
 function statusToClass(
-  status: InboxTaskStatus
+  status: InboxTaskStatus,
 ): "primary" | "info" | "warning" | "success" | "error" {
   switch (status) {
     case InboxTaskStatus.NOT_STARTED:

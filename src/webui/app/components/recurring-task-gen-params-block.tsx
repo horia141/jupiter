@@ -42,7 +42,7 @@ interface RecurringTaskGenParamsBlockProps {
 }
 
 export function RecurringTaskGenParamsBlock(
-  props: RecurringTaskGenParamsBlockProps
+  props: RecurringTaskGenParamsBlockProps,
 ) {
   const isBigScreen = useBigScreen();
   const [period, setPeriod] = useState(props.period);
@@ -51,7 +51,7 @@ export function RecurringTaskGenParamsBlock(
   }, [props.period]);
 
   const [showParams, setShowParams] = useState(
-    !(props.allowNonePeriod === true && props.period === "none")
+    !(props.allowNonePeriod === true && props.period === "none"),
   );
   useEffect(() => {
     setShowParams(!(props.allowNonePeriod === true && props.period === "none"));
@@ -59,7 +59,7 @@ export function RecurringTaskGenParamsBlock(
 
   function handleChangePeriod(
     event: React.MouseEvent<HTMLElement>,
-    newPeriod: RecurringTaskPeriod | "none" | null
+    newPeriod: RecurringTaskPeriod | "none" | null,
   ) {
     if (newPeriod === null) {
       return;
@@ -133,7 +133,7 @@ export function RecurringTaskGenParamsBlock(
               actionResult={props.actionData}
               fieldName={constructFieldErrorName(
                 props.fieldsPrefix,
-                "difficulty"
+                "difficulty",
               )}
             />
           </FormControl>
@@ -151,7 +151,7 @@ export function RecurringTaskGenParamsBlock(
                     label="Actionable From Day"
                     name={constructFieldName(
                       props.namePrefix,
-                      "actionableFromDay"
+                      "actionableFromDay",
                     )}
                     readOnly={!props.inputsEnabled}
                     defaultValue={props.actionableFromDay || ""}
@@ -169,7 +169,7 @@ export function RecurringTaskGenParamsBlock(
                     actionResult={props.actionData}
                     fieldName={constructFieldErrorName(
                       props.fieldsPrefix,
-                      "actionable_from_day"
+                      "actionable_from_day",
                     )}
                   />
                 </FormControl>
@@ -195,7 +195,7 @@ export function RecurringTaskGenParamsBlock(
                     actionResult={props.actionData}
                     fieldName={constructFieldErrorName(
                       props.fieldsPrefix,
-                      "due_at_day"
+                      "due_at_day",
                     )}
                   />
                 </FormControl>
@@ -214,7 +214,7 @@ export function RecurringTaskGenParamsBlock(
                     label="Actionable From Day"
                     name={constructFieldName(
                       props.namePrefix,
-                      "actionableFromDay"
+                      "actionableFromDay",
                     )}
                     readOnly={!props.inputsEnabled}
                     defaultValue={props.actionableFromDay || ""}
@@ -230,7 +230,7 @@ export function RecurringTaskGenParamsBlock(
                     actionResult={props.actionData}
                     fieldName={constructFieldErrorName(
                       props.fieldsPrefix,
-                      "actionable_from_day"
+                      "actionable_from_day",
                     )}
                   />
                 </FormControl>
@@ -254,7 +254,7 @@ export function RecurringTaskGenParamsBlock(
                     actionResult={props.actionData}
                     fieldName={constructFieldErrorName(
                       props.fieldsPrefix,
-                      "due_at_day"
+                      "due_at_day",
                     )}
                   />
                 </FormControl>
@@ -273,7 +273,7 @@ export function RecurringTaskGenParamsBlock(
                     label="Actionable From Day"
                     name={constructFieldName(
                       props.namePrefix,
-                      "actionableFromDay"
+                      "actionableFromDay",
                     )}
                     readOnly={!props.inputsEnabled}
                     defaultValue={props.actionableFromDay || ""}
@@ -289,7 +289,7 @@ export function RecurringTaskGenParamsBlock(
                     actionResult={props.actionData}
                     fieldName={constructFieldErrorName(
                       props.fieldsPrefix,
-                      "actionable_from_day"
+                      "actionable_from_day",
                     )}
                   />
                 </FormControl>
@@ -302,7 +302,7 @@ export function RecurringTaskGenParamsBlock(
                     label="Actionable From Month"
                     name={constructFieldName(
                       props.namePrefix,
-                      "actionableFromMonth"
+                      "actionableFromMonth",
                     )}
                     readOnly={!props.inputsEnabled}
                     defaultValue={props.actionableFromMonth || ""}
@@ -316,7 +316,7 @@ export function RecurringTaskGenParamsBlock(
                     actionResult={props.actionData}
                     fieldName={constructFieldErrorName(
                       props.fieldsPrefix,
-                      "actionable_from_month"
+                      "actionable_from_month",
                     )}
                   />
                 </FormControl>
@@ -342,7 +342,7 @@ export function RecurringTaskGenParamsBlock(
                     actionResult={props.actionData}
                     fieldName={constructFieldErrorName(
                       props.fieldsPrefix,
-                      "due_at_day"
+                      "due_at_day",
                     )}
                   />
                 </FormControl>
@@ -366,7 +366,7 @@ export function RecurringTaskGenParamsBlock(
                     actionResult={props.actionData}
                     fieldName={constructFieldErrorName(
                       props.fieldsPrefix,
-                      "due_at_month"
+                      "due_at_month",
                     )}
                   />
                 </FormControl>
@@ -385,7 +385,7 @@ export function RecurringTaskGenParamsBlock(
                     label="Actionable From Day"
                     name={constructFieldName(
                       props.namePrefix,
-                      "actionableFromDay"
+                      "actionableFromDay",
                     )}
                     readOnly={!props.inputsEnabled}
                     defaultValue={props.actionableFromDay || ""}
@@ -401,7 +401,7 @@ export function RecurringTaskGenParamsBlock(
                     actionResult={props.actionData}
                     fieldName={constructFieldErrorName(
                       props.fieldsPrefix,
-                      "actionable_from_day"
+                      "actionable_from_day",
                     )}
                   />
                 </FormControl>
@@ -414,7 +414,7 @@ export function RecurringTaskGenParamsBlock(
                     label="Actionable From Month"
                     name={constructFieldName(
                       props.namePrefix,
-                      "actionableFromMonth"
+                      "actionableFromMonth",
                     )}
                     readOnly={!props.inputsEnabled}
                     defaultValue={props.actionableFromMonth || ""}
@@ -443,7 +443,7 @@ export function RecurringTaskGenParamsBlock(
                     actionResult={props.actionData}
                     fieldName={constructFieldErrorName(
                       props.fieldsPrefix,
-                      "actionable_from_month"
+                      "actionable_from_month",
                     )}
                   />
                 </FormControl>
@@ -469,7 +469,7 @@ export function RecurringTaskGenParamsBlock(
                     actionResult={props.actionData}
                     fieldName={constructFieldErrorName(
                       props.fieldsPrefix,
-                      "due_at_day"
+                      "due_at_day",
                     )}
                   />
                 </FormControl>
@@ -508,7 +508,7 @@ export function RecurringTaskGenParamsBlock(
                     actionResult={props.actionData}
                     fieldName={constructFieldErrorName(
                       props.fieldsPrefix,
-                      "due_at_month"
+                      "due_at_month",
                     )}
                   />
                 </FormControl>
@@ -529,7 +529,7 @@ export function RecurringTaskGenParamsBlock(
                   actionResult={props.actionData}
                   fieldName={constructFieldErrorName(
                     props.fieldsPrefix,
-                    "skip_rule"
+                    "skip_rule",
                   )}
                 />
               </FormControl>
@@ -543,7 +543,7 @@ export function RecurringTaskGenParamsBlock(
 
 function constructFieldName(
   namePrefix: string | undefined,
-  fieldName: string
+  fieldName: string,
 ): string {
   if (!namePrefix) {
     return fieldName;
@@ -555,7 +555,7 @@ function constructFieldName(
 
 function constructFieldErrorName(
   fieldsPrefix: string | undefined,
-  fieldName: string
+  fieldName: string,
 ): string {
   if (!fieldsPrefix) {
     return `/${fieldName}`;

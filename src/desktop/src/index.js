@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", async () => {
   const hostedGlobal = new URL(window.location.href).searchParams.get(
-    "hostedGlobal"
+    "hostedGlobal",
   );
   const webUiUrl =
     hostedGlobal === "true"

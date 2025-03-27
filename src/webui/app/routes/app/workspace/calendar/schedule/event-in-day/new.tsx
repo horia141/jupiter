@@ -88,7 +88,7 @@ export async function action({ request }: ActionArgs) {
   try {
     const { startDate, startTimeInDay } = timeEventInDayBlockParamsToUtc(
       form,
-      form.userTimezone
+      form.userTimezone,
     );
     const response = await apiClient.eventInDay.scheduleEventInDayCreate({
       schedule_stream_ref_id: form.scheduleStreamRefId,
@@ -99,7 +99,7 @@ export async function action({ request }: ActionArgs) {
     });
 
     return redirect(
-      `/app/workspace/calendar/schedule/event-in-day/${response.new_schedule_event_in_day.ref_id}?${url.searchParams}`
+      `/app/workspace/calendar/schedule/event-in-day/${response.new_schedule_event_in_day.ref_id}?${url.searchParams}`,
     );
   } catch (error) {
     if (
@@ -129,7 +129,7 @@ export default function ScheduleEventInDayNew() {
 
   const [startDate, setStartDate] = useState(rightNow.toFormat("yyyy-MM-dd"));
   const [startTimeInDay, setStartTimeInDay] = useState(
-    rightNow.toFormat("HH:mm")
+    rightNow.toFormat("HH:mm"),
   );
   const [durationMins, setDurationMins] = useState(30);
 
@@ -296,5 +296,5 @@ export default function ScheduleEventInDayNew() {
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   () => `/app/workspace/calendar?${useSearchParams()}`,
-  () => `There was an error creating the event in day! Please try again!`
+  () => `There was an error creating the event in day! Please try again!`,
 );

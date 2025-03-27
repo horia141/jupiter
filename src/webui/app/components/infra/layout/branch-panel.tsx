@@ -83,7 +83,7 @@ export function BranchPanel(props: PropsWithChildren<BranchPanelProps>) {
       }
       saveScrollPosition(ref, pathname);
     },
-    [isPresent, isBigScreen]
+    [isPresent, isBigScreen],
   );
 
   useEffect(() => {
@@ -101,7 +101,7 @@ export function BranchPanel(props: PropsWithChildren<BranchPanelProps>) {
       handleScroll(
         theRef,
         extractBranchFromPath(location.pathname),
-        shouldShowALeaf
+        shouldShowALeaf,
       );
     }
 
@@ -272,7 +272,7 @@ const BranchPanelFrame = styled(motion.div)<BranchPanelFrameProps>(
   ({ theme, isBigScreen }) => ({
     backgroundColor: theme.palette.background.paper,
     width: "100vw",
-  })
+  }),
 );
 
 const BranchPanelControls = styled("div")(
@@ -282,7 +282,7 @@ const BranchPanelControls = styled("div")(
       background-color: ${theme.palette.background.paper};
       border-radius: 0px;
       box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.2);
-      `
+      `,
 );
 
 interface TrunkPanelControlsInnerProps {
@@ -297,7 +297,7 @@ const TrunkPanelControlsInner = styled(Box)<TrunkPanelControlsInnerProps>(
     display: "flex",
     alignItems: "center",
     gap: isbigscreen === "true" ? "1rem" : "0.2rem",
-  })
+  }),
 );
 
 interface TrunkPanelExtraControlsProps {
@@ -409,5 +409,5 @@ const BranchPanelContent = styled("div")<BranchPanelContentProps>(
       isbigscreen === "true" ? "4rem" : hasleaf === "false" ? "4rem" : "0px"
     })`,
     overflowY: "scroll",
-  })
+  }),
 );

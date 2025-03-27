@@ -74,7 +74,7 @@ export function BigPlanCard(props: BigPlanCardProps) {
         {props.showOptions.showParent &&
           isWorkspaceFeatureAvailable(
             props.topLevelInfo.workspace,
-            WorkspaceFeature.PROJECTS
+            WorkspaceFeature.PROJECTS,
           ) &&
           props.parent && (
             <ProjectTag project={props.parent.project as Project} />

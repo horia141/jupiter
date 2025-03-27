@@ -46,7 +46,7 @@ export async function loader({ request }: LoaderArgs) {
   });
 
   const emailTaskSettingsResponse = await apiClient.email.emailTaskLoadSettings(
-    {}
+    {},
   );
 
   return json({
@@ -101,7 +101,7 @@ export default function EmailTasksSettings() {
     >
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
-        WorkspaceFeature.PROJECTS
+        WorkspaceFeature.PROJECTS,
       ) && (
         <Card>
           <GlobalError actionResult={actionData} />
@@ -144,5 +144,5 @@ export default function EmailTasksSettings() {
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/push-integrations/email-tasks",
-  () => `There was an error upserting email task settings! Please try again!`
+  () => `There was an error upserting email task settings! Please try again!`,
 );

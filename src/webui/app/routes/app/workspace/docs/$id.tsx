@@ -132,10 +132,10 @@ export default function Doc() {
 
 export const CatchBoundary = makeLeafCatchBoundary(
   "/app/workspace/docs",
-  () => `Could not find doc #${useParams().id}!`
+  () => `Could not find doc #${useParams().id}!`,
 );
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/docs",
-  () => `There was an error loading doc #${useParams().id}. Please try again!`
+  () => `There was an error loading doc #${useParams().id}. Please try again!`,
 );

@@ -11,10 +11,10 @@ interface ScheduleStreamMultiSelectProps {
 }
 
 export function ScheduleStreamMultiSelect(
-  props: ScheduleStreamMultiSelectProps
+  props: ScheduleStreamMultiSelectProps,
 ) {
   const allScheduleStreamsByRefId = new Map(
-    props.allScheduleStreams.map((st) => [st.ref_id, st])
+    props.allScheduleStreams.map((st) => [st.ref_id, st]),
   );
   return (
     <Select

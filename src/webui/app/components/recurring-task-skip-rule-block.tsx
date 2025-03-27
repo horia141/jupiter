@@ -44,7 +44,7 @@ interface EditingInfo {
 
 function skipRuleToEditingInfo(
   period: RecurringTaskPeriod,
-  skipRule: SkipRule
+  skipRule: SkipRule,
 ): EditingInfo {
   if (!isCompatibleWithPeriod(skipRule.type, period)) {
     return {
@@ -115,21 +115,21 @@ function editingInfoToSkipRule(editingInfo: EditingInfo): SkipRule {
 }
 
 export function RecurringTaskSkipRuleBlock(
-  props: RecurringTaskSkipRuleBlockProps
+  props: RecurringTaskSkipRuleBlockProps,
 ) {
   const isBigScreen = useBigScreen();
   const [editingInfo, setEditingInfo] = useState<EditingInfo>(
-    skipRuleToEditingInfo(props.period, parseSkipRule(props.skipRule))
+    skipRuleToEditingInfo(props.period, parseSkipRule(props.skipRule)),
   );
   useEffect(() => {
     setEditingInfo(
-      skipRuleToEditingInfo(props.period, parseSkipRule(props.skipRule))
+      skipRuleToEditingInfo(props.period, parseSkipRule(props.skipRule)),
     );
   }, [props.skipRule, props.period]);
 
   function handleNewSkipRule(
     event: React.MouseEvent<HTMLElement>,
-    newSkipRuleType: SkipRuleType | null
+    newSkipRuleType: SkipRuleType | null,
   ) {
     if (newSkipRuleType === null) {
       return;
@@ -192,7 +192,7 @@ export function RecurringTaskSkipRuleBlock(
 
   function handleChangeCustomQuarterlyRelYearly(
     quarter: number,
-    include: boolean
+    include: boolean,
   ) {
     setEditingInfo((oldEditingInfo: EditingInfo) => ({
       ...oldEditingInfo,
@@ -457,7 +457,7 @@ export function RecurringTaskSkipRuleBlock(
             >
               {skipRuleTypeName(
                 SkipRuleType.CUSTOM_DAILY_REL_WEEKLY,
-                isBigScreen
+                isBigScreen,
               )}
             </ToggleButton>
             <ToggleButton
@@ -467,7 +467,7 @@ export function RecurringTaskSkipRuleBlock(
             >
               {skipRuleTypeName(
                 SkipRuleType.CUSTOM_DAILY_REL_MONTHLY,
-                isBigScreen
+                isBigScreen,
               )}
             </ToggleButton>
           </ToggleButtonGroup>
@@ -526,7 +526,7 @@ export function RecurringTaskSkipRuleBlock(
             >
               {skipRuleTypeName(
                 SkipRuleType.CUSTOM_WEEKLY_REL_YEARLY,
-                isBigScreen
+                isBigScreen,
               )}
             </ToggleButton>
           </ToggleButtonGroup>
@@ -584,7 +584,7 @@ export function RecurringTaskSkipRuleBlock(
             >
               {skipRuleTypeName(
                 SkipRuleType.CUSTOM_MONTHLY_REL_YEARLY,
-                isBigScreen
+                isBigScreen,
               )}
             </ToggleButton>
           </ToggleButtonGroup>
@@ -642,7 +642,7 @@ export function RecurringTaskSkipRuleBlock(
             >
               {skipRuleTypeName(
                 SkipRuleType.CUSTOM_QUARTERLY_REL_YEARLY,
-                isBigScreen
+                isBigScreen,
               )}
             </ToggleButton>
           </ToggleButtonGroup>

@@ -29,7 +29,7 @@ export function selectZod<R extends string>(zodEntity: z.ZodType<R>) {
 }
 
 export function fixSelectOutputToEnum<T extends string>(
-  selectOutput: undefined | string | string[] | T | T[]
+  selectOutput: undefined | string | string[] | T | T[],
 ): T[] | undefined {
   if (selectOutput === undefined) {
     return undefined;
@@ -47,7 +47,7 @@ export function fixSelectOutputToEnum<T extends string>(
 }
 
 export function fixSelectOutputEntityId(
-  selectOutput: undefined | string | string[]
+  selectOutput: undefined | string | string[],
 ): EntityId[] | undefined {
   if (selectOutput === undefined) {
     return undefined;

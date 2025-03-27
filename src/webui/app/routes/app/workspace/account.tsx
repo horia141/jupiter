@@ -278,5 +278,5 @@ export default function Account() {
 
 export const ErrorBoundary = makeTrunkErrorBoundary(
   "/app/workspace",
-  () => `There was an error updating the account! Please try again!`
+  () => `There was an error updating the account! Please try again!`,
 );

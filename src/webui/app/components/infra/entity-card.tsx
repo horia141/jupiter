@@ -54,7 +54,7 @@ export function EntityCard(props: PropsWithChildren<EntityCardProps>) {
 
   function onDragEnd(
     event: MouseEvent | TouchEvent | PointerEvent,
-    info: PanInfo
+    info: PanInfo,
   ) {
     if (info.offset.x < -SWIPE_COMPLETE_THRESHOLD) {
       if (props.allowMarkDone && props.onMarkDone) {
@@ -77,7 +77,7 @@ export function EntityCard(props: PropsWithChildren<EntityCardProps>) {
       theme.palette.success.light,
       theme.palette.background.paper,
       theme.palette.warning.light,
-    ]
+    ],
   );
 
   return (
@@ -111,8 +111,8 @@ export function EntityCard(props: PropsWithChildren<EntityCardProps>) {
                 ? theme.palette.action.hover
                 : "transparent"
               : backgroundHint === "success"
-              ? `${theme.palette.success.light}22`
-              : `${theme.palette.error.light}22`,
+                ? `${theme.palette.success.light}22`
+                : `${theme.palette.error.light}22`,
         }}
         onClick={props.onClick}
       >
@@ -202,7 +202,7 @@ const StyledLink = styled(Link)<StyledLinkProps>(
     padding: inline === "true" ? undefined : "16px",
     alignItems: "center",
     WebkitTapHighlightColor: "transparent",
-  })
+  }),
 );
 
 interface EntityFakeLinkProps {
@@ -241,5 +241,5 @@ const StyledFakeLink = styled("span")<StyledLinkProps>(
     padding: inline === "true" ? undefined : "16px",
     alignItems: "center",
     WebkitTapHighlightColor: "transparent",
-  })
+  }),
 );

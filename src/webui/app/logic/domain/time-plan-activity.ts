@@ -21,7 +21,7 @@ export function filterActivityByFeasabilityWithParents(
   activitiesByBigPlanRefId: Map<string, TimePlanActivity>,
   targetInboxTasks: Map<string, InboxTask>,
   targetBigPlans: Map<string, BigPlan>,
-  feasability: TimePlanActivityFeasability
+  feasability: TimePlanActivityFeasability,
 ): TimePlanActivity[] {
   return timePlanActivities.filter((a) => {
     if (a.target === TimePlanActivityTarget.BIG_PLAN) {
@@ -44,7 +44,7 @@ export function filterActivitiesByTargetStatus(
   timePlanActivities: TimePlanActivity[],
   targetInboxTasks: Map<string, InboxTask>,
   targetBigPlans: Map<string, BigPlan>,
-  activityDoneness: Record<string, boolean>
+  activityDoneness: Record<string, boolean>,
 ): TimePlanActivity[] {
   return timePlanActivities.filter((activity) => {
     if (activityDoneness[activity.ref_id]) {
@@ -67,23 +67,23 @@ export function filterActivitiesByTargetStatus(
 export function sortTimePlanActivitiesNaturally(
   timePlanActivities: TimePlanActivity[],
   targetInboxTasks: Map<string, InboxTask>,
-  targetBigPlans: Map<string, BigPlan>
+  targetBigPlans: Map<string, BigPlan>,
 ): TimePlanActivity[] {
   return [...timePlanActivities].sort((j1, j2) => {
     const j1Parent =
       j1.target === TimePlanActivityTarget.BIG_PLAN
         ? j1.target_ref_id
         : targetInboxTasks.get(j1.target_ref_id)!.source ===
-          InboxTaskSource.BIG_PLAN
-        ? targetInboxTasks.get(j1.target_ref_id)!.source_entity_ref_id
-        : undefined;
+            InboxTaskSource.BIG_PLAN
+          ? targetInboxTasks.get(j1.target_ref_id)!.source_entity_ref_id
+          : undefined;
     const j2Parent =
       j2.target === TimePlanActivityTarget.BIG_PLAN
         ? j2.target_ref_id
         : targetInboxTasks.get(j2.target_ref_id)!.source ===
-          InboxTaskSource.BIG_PLAN
-        ? targetInboxTasks.get(j2.target_ref_id)!.source_entity_ref_id
-        : undefined;
+            InboxTaskSource.BIG_PLAN
+          ? targetInboxTasks.get(j2.target_ref_id)!.source_entity_ref_id
+          : undefined;
 
     if (j1Parent !== j2Parent) {
       if (j1Parent === undefined || j1Parent === null) {

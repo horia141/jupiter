@@ -27,7 +27,7 @@ export function scheduleStreamColorName(color: ScheduleStreamColor): string {
 
 export function scheduleStreamColorHex(
   color: ScheduleStreamColor,
-  modify?: "lighter" | "darker" | "normal"
+  modify?: "lighter" | "darker" | "normal",
 ): string {
   let hexColor: string;
   switch (color) {
@@ -73,7 +73,7 @@ export function scheduleStreamColorHex(
 }
 
 export function scheduleStreamColorContrastingHex(
-  color: ScheduleStreamColor
+  color: ScheduleStreamColor,
 ): string {
   switch (color) {
     case ScheduleStreamColor.BLUE:

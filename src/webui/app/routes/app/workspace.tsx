@@ -93,7 +93,7 @@ export default function Workspace() {
     useState<null | HTMLElement>(null);
   const accountMenuOpen = Boolean(accountMenuAnchorEl);
   const handleAccountMenuClick = (
-    event: React.MouseEvent<HTMLButtonElement>
+    event: React.MouseEvent<HTMLButtonElement>,
   ) => {
     setAccountMenuAnchorEl(event.currentTarget);
   };
@@ -108,7 +108,7 @@ export default function Workspace() {
     animateBadge(badgeRef.current, { scale: 1.2 }, { duration: 0.15 }).then(
       () => {
         animateBadge(badgeRef.current, { scale: 1 }, { duration: 0.15 });
-      }
+      },
     );
   }, [animateBadge, badgeRef, scoreAction]);
 
@@ -196,7 +196,7 @@ export default function Workspace() {
           >
             {isUserFeatureAvailable(
               loaderData.user,
-              UserFeature.GAMIFICATION
+              UserFeature.GAMIFICATION,
             ) && (
               <MenuItem
                 to="/app/workspace/gamification"
@@ -326,5 +326,5 @@ export function CatchBoundary() {
 }
 
 export const ErrorBoundary = makeRootErrorBoundary(
-  () => `There was an error loading the workspace! Please try again!`
+  () => `There was an error loading the workspace! Please try again!`,
 );

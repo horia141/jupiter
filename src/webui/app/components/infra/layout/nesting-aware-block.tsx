@@ -8,7 +8,7 @@ interface NestingAwarePanelProps {
 }
 
 export function NestingAwareBlock(
-  props: PropsWithChildren<NestingAwarePanelProps>
+  props: PropsWithChildren<NestingAwarePanelProps>,
 ) {
   const isBigScreen = useBigScreen();
 

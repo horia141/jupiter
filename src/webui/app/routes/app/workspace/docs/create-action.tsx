@@ -30,7 +30,7 @@ export async function action({ request }: ActionArgs) {
     });
 
     return json(
-      noErrorSomeData({ new_doc: result.new_doc, new_note: result.new_note })
+      noErrorSomeData({ new_doc: result.new_doc, new_note: result.new_note }),
     );
   } catch (error) {
     if (

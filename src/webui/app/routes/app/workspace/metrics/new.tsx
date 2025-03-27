@@ -85,30 +85,30 @@ export async function action({ request }: ActionArgs) {
         form.collectionPeriod === "none"
           ? undefined
           : form.collectionActionableFromDay === undefined ||
-            form.collectionActionableFromDay === ""
-          ? undefined
-          : parseInt(form.collectionActionableFromDay),
+              form.collectionActionableFromDay === ""
+            ? undefined
+            : parseInt(form.collectionActionableFromDay),
       collection_actionable_from_month:
         form.collectionPeriod === "none"
           ? undefined
           : form.collectionActionableFromMonth === undefined ||
-            form.collectionActionableFromMonth === ""
-          ? undefined
-          : parseInt(form.collectionActionableFromMonth),
+              form.collectionActionableFromMonth === ""
+            ? undefined
+            : parseInt(form.collectionActionableFromMonth),
       collection_due_at_day:
         form.collectionPeriod === "none"
           ? undefined
           : form.collectionDueAtDay === undefined ||
-            form.collectionDueAtDay === ""
-          ? undefined
-          : parseInt(form.collectionDueAtDay),
+              form.collectionDueAtDay === ""
+            ? undefined
+            : parseInt(form.collectionDueAtDay),
       collection_due_at_month:
         form.collectionPeriod === "none"
           ? undefined
           : form.collectionDueAtMonth === undefined ||
-            form.collectionDueAtMonth === ""
-          ? undefined
-          : parseInt(form.collectionDueAtMonth),
+              form.collectionDueAtMonth === ""
+            ? undefined
+            : parseInt(form.collectionDueAtMonth),
     });
 
     return redirect(`/app/workspace/metrics/${result.new_metric.ref_id}`);
@@ -313,5 +313,5 @@ export default function NewMetric() {
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   `/app/workspace/metrics`,
-  () => `There was an error creating the metric! Please try again!`
+  () => `There was an error creating the metric! Please try again!`,
 );

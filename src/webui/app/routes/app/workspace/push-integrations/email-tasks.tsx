@@ -58,7 +58,7 @@ export default function EmailTasks() {
         <>
           {isWorkspaceFeatureAvailable(
             topLevelInfo.workspace,
-            WorkspaceFeature.PROJECTS
+            WorkspaceFeature.PROJECTS,
           ) && (
             <Button
               variant="contained"
@@ -126,5 +126,5 @@ export default function EmailTasks() {
 
 export const ErrorBoundary = makeTrunkErrorBoundary(
   "/app/workspace",
-  () => `There was an error loading the email tasks! Please try again!`
+  () => `There was an error loading the email tasks! Please try again!`,
 );

@@ -67,7 +67,7 @@ export async function action({ request, params }: ActionArgs) {
     });
 
     return redirect(
-      `/app/workspace/smart-lists/${id}/tags/${response.new_smart_list_tag.ref_id}`
+      `/app/workspace/smart-lists/${id}/tags/${response.new_smart_list_tag.ref_id}`,
     );
   } catch (error) {
     if (
@@ -133,7 +133,7 @@ export default function NewSmartListTag() {
 
 export const CatchBoundary = makeLeafCatchBoundary(
   () => `/app/workspace/smart-lists/${useParams().id}/tags`,
-  () => `Could not find smart list tag #${useParams().id}`
+  () => `Could not find smart list tag #${useParams().id}`,
 );
 
 export const ErrorBoundary = makeLeafErrorBoundary(
@@ -141,5 +141,5 @@ export const ErrorBoundary = makeLeafErrorBoundary(
   () =>
     `There was an error loading smart list tag #${
       useParams().id
-    }! Please try again!`
+    }! Please try again!`,
 );

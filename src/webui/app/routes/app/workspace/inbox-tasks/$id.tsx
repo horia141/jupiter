@@ -322,11 +322,11 @@ export default function InboxTask() {
   const inboxTasksByRefId = new Map();
   inboxTasksByRefId.set(
     loaderData.info.inbox_task.ref_id,
-    loaderData.info.inbox_task
+    loaderData.info.inbox_task,
   );
 
   const timePlanActivities = loaderData.timePlanEntries?.map(
-    (entry) => entry.time_plan_activity
+    (entry) => entry.time_plan_activity,
   );
   const timePlansByRefId = new Map();
   if (loaderData.timePlanEntries) {
@@ -338,13 +338,13 @@ export default function InboxTask() {
   const timeEventsByRefId = new Map();
   timeEventsByRefId.set(
     `it:${loaderData.info.inbox_task.ref_id}`,
-    loaderData.info.time_event_blocks
+    loaderData.info.time_event_blocks,
   );
 
   const timeEventEntries = loaderData.info.time_event_blocks.map((block) => ({
     time_event_in_tz: timeEventInDayBlockToTimezone(
       block,
-      topLevelInfo.user.timezone
+      topLevelInfo.user.timezone,
     ),
     entry: {
       inbox_task: loaderData.info.inbox_task,
@@ -405,7 +405,7 @@ export default function InboxTask() {
 
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
-        WorkspaceFeature.SCHEDULE
+        WorkspaceFeature.SCHEDULE,
       ) && (
         <TimeEventInDayBlockStack
           topLevelInfo={topLevelInfo}
@@ -418,7 +418,7 @@ export default function InboxTask() {
 
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
-        WorkspaceFeature.TIME_PLANS
+        WorkspaceFeature.TIME_PLANS,
       ) &&
         timePlanActivities && (
           <SectionCardNew
@@ -443,7 +443,7 @@ export default function InboxTask() {
 
 export const CatchBoundary = makeLeafCatchBoundary(
   "/app/workspace/inbox-tasks",
-  () => `Could not find inbox task #${useParams().id}!`
+  () => `Could not find inbox task #${useParams().id}!`,
 );
 
 export const ErrorBoundary = makeLeafErrorBoundary(
@@ -451,5 +451,5 @@ export const ErrorBoundary = makeLeafErrorBoundary(
   () =>
     `There was an error loading inbox task #${
       useParams().id
-    }! Please try again!`
+    }! Please try again!`,
 );
