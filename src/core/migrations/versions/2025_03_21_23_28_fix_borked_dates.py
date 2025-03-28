@@ -65,6 +65,24 @@ def upgrade() -> None:
     """
     )
 
+    op.execute(
+        """
+        UPDATE smart_list_collection
+        SET created_time = created_time || "0"
+        WHERE created_time IS NOT NULL and created_time like "%.00000";
+    """
+    )
+
+    op.execute(
+        """
+        UPDATE smart_list_collection
+        SET last_modified_time = last_modified_time || "0"
+        WHERE last_modified_time IS NOT NULL and last_modified_time like "%.00000";
+    """
+    )
+    
+    
+
 
 def downgrade() -> None:
     pass

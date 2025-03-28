@@ -57,6 +57,7 @@
   },
   "devDependencies": {
     "@remix-run/dev": "^1.19.0",
+    "@remix-run/v1-route-convention": "^0.1.4",
     "@types/http-status-codes": "^1.2.0",
     "@types/js-cookie": "^3.0.6",
     "@types/luxon": "^3.4.2",

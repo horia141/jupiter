@@ -71,7 +71,7 @@ export function EntityNoteEditor({
     if (
       isActing &&
       cardActionFetcher.state === "idle" &&
-      cardActionFetcher.type === "done"
+      cardActionFetcher.data !== null
     ) {
       setIsActing(false);
       if (shouldAct) {

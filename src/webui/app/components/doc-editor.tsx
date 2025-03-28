@@ -102,7 +102,7 @@ export function DocEditor({
 
     if (
       cardActionFetcher.state === "idle" &&
-      cardActionFetcher.type === "done"
+      cardActionFetcher.data !== null
     ) {
       setIsActing(false);
       if (shouldAct) {
