@@ -30,7 +30,7 @@ import type { PanInfo } from "framer-motion";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import type { DateTime } from "luxon";
 import { useContext, useState } from "react";
-import { ClientOnly } from "remix-utils/client-only";
+import { ClientOnly } from "~/components/infra/client-only";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { aDateToDate } from "~/logic/domain/adate";
 import type {

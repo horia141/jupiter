@@ -2,7 +2,7 @@ import { Button, ButtonGroup, OutlinedInput } from "@mui/material";
 import type { EmojiClickData } from "emoji-picker-react";
 import EmojiPicker, { EmojiStyle } from "emoji-picker-react";
 import { useState } from "react";
-import { ClientOnly } from "remix-utils/client-only";
+import { ClientOnly } from "~/components/infra/client-only";
 
 interface Props {
   defaultIcon?: string | null;

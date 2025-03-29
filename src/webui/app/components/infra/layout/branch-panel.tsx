@@ -25,7 +25,7 @@ import React, {
   useState,
   type PropsWithChildren,
 } from "react";
-import { useHydrated } from "remix-utils/use-hydrated";
+import { useHydrated } from "~/rendering/use-hidrated";
 import { extractBranchFromPath } from "~/rendering/routes";
 import {
   restoreScrollPosition,
