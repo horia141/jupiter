@@ -8,13 +8,13 @@ import { Link, useLocation } from "@remix-run/react";
 import { AnimatePresence, motion, useIsPresent } from "framer-motion";
 import type { PropsWithChildren } from "react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useHydrated } from "~/rendering/use-hidrated";
 import { extractTrunkFromPath } from "~/rendering/routes";
 import {
   restoreScrollPosition,
   saveScrollPosition,
 } from "~/rendering/scroll-restoration";
 import { useBigScreen } from "~/rendering/use-big-screen";
+import { useHydrated } from "~/rendering/use-hidrated";
 import {
   useTrunkNeedsToShowBranch,
   useTrunkNeedsToShowLeaf,

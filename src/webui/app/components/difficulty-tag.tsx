@@ -1,5 +1,6 @@
 import { Difficulty } from "@jupiter/webapi-client";
 import { difficultyName } from "~/logic/domain/difficulty";
+
 import { SlimChip } from "./infra/chips";
 
 interface Props {

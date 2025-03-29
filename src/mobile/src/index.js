@@ -1,4 +1,5 @@
 import { SplashScreen } from "@capacitor/splash-screen";
+
 import { getWebUiUrl } from "./config";
 
 document.addEventListener("DOMContentLoaded", async () => {

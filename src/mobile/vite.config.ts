@@ -1,6 +1,7 @@
+import { config } from "dotenv";
 import { defineConfig } from "vite";
 import handlebars from "vite-plugin-handlebars";
-import { config } from "dotenv";
+
 import { Env, Hosting } from "../../gen/ts/webapi-client/dist";
 
 config({

@@ -1,4 +1,5 @@
 import { CapacitorConfig } from "@capacitor/cli";
+
 import { Env, Hosting } from "../../gen/ts/webapi-client/dist";
 
 require("dotenv").config({

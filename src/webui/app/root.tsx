@@ -1,11 +1,11 @@
-import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
+import { CssBaseline, ThemeProvider, createTheme } from "@mui/material";
 import type { LoaderFunctionArgs, SerializeFrom } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Links, LiveReload, Meta, Outlet, Scripts } from "@remix-run/react";
 import { SnackbarProvider } from "notistack";
-
 import { StrictMode } from "react";
+
 import { EnvBanner } from "./components/infra/env-banner";
 import { serverToClientGlobalProperties } from "./global-properties-client";
 import { GLOBAL_PROPERTIES } from "./global-properties-server";

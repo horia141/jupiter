@@ -7,6 +7,7 @@ import {
 import { isUserFeatureAvailable } from "~/logic/domain/user";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import type { TopLevelInfo } from "~/top-level-context";
+
 import { EntityNameComponent } from "./entity-name";
 import { EntityCard, EntityLink } from "./infra/entity-card";
 import { EntityStack } from "./infra/entity-stack";

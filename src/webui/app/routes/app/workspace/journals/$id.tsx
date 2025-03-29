@@ -33,11 +33,12 @@ import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
-
+import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { SectionCardNew } from "~/components/infra/section-card-new";
 import { JournalStack } from "~/components/journal-stack";
+import { PeriodSelect } from "~/components/period-select";
 import { ShowReport } from "~/components/show-report";
 import { TimePlanStack } from "~/components/time-plan-stack";
 import {
@@ -53,9 +54,6 @@ import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
-
-import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
-import { PeriodSelect } from "~/components/period-select";
 
 const ParamsSchema = {
   id: z.string(),

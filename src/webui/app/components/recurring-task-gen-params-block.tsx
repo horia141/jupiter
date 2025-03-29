@@ -13,14 +13,14 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from "@mui/material";
+import { useEffect, useState } from "react";
 import type { SomeErrorNoData } from "~/logic/action-result";
 import { periodName } from "~/logic/domain/period";
+import { useBigScreen } from "~/rendering/use-big-screen";
+
 import { DifficultySelect } from "./difficulty-select";
 import { EisenhowerSelect } from "./eisenhower-select";
 import { FieldError } from "./infra/errors";
-
-import { useEffect, useState } from "react";
-import { useBigScreen } from "~/rendering/use-big-screen";
 import { RecurringTaskSkipRuleBlock } from "./recurring-task-skip-rule-block";
 
 interface RecurringTaskGenParamsBlockProps {

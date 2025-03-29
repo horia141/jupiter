@@ -2,6 +2,7 @@ import type { CardProps, ChipProps } from "@mui/material";
 import { Card, CardContent, Chip, styled } from "@mui/material";
 import type { PropsWithChildren } from "react";
 import { useBigScreen } from "~/rendering/use-big-screen";
+
 import { ExtraControls } from "./layout/extra-controls";
 
 interface SectionCardProps {

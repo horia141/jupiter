@@ -13,6 +13,7 @@ import {
 } from "@jupiter/webapi-client";
 import { sortTimePlanActivitiesNaturally } from "~/logic/domain/time-plan-activity";
 import type { TopLevelInfo } from "~/top-level-context";
+
 import { EntityStack } from "./infra/entity-stack";
 import { TimePlanActivityCard } from "./time-plan-activity-card";
 

@@ -1,5 +1,6 @@
 import { ApiClient, Hosting } from "@jupiter/webapi-client";
 import { redirect } from "@remix-run/node";
+
 import { GLOBAL_PROPERTIES } from "./global-properties-server";
 import type { FrontDoorInfo } from "./logic/frontdoor";
 import { loadFrontDoorInfo } from "./logic/frontdoor.server";

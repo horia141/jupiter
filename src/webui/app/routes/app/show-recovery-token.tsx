@@ -5,8 +5,8 @@ import {
   CardActions,
   CardContent,
   CardHeader,
-  styled,
   Typography,
+  styled,
 } from "@mui/material";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";

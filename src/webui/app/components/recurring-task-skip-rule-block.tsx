@@ -16,10 +16,10 @@ import { DateTime } from "luxon";
 import { useEffect, useState } from "react";
 import type { SkipRule } from "~/logic/domain/recurring-task-skip-rule";
 import {
+  SkipRuleType,
   assembleSkipRule,
   isCompatibleWithPeriod,
   parseSkipRule,
-  SkipRuleType,
   skipRuleTypeName,
 } from "~/logic/domain/recurring-task-skip-rule";
 import { useBigScreen } from "~/rendering/use-big-screen";

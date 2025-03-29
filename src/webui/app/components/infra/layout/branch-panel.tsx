@@ -19,19 +19,19 @@ import {
 import { Form, Link, useLocation } from "@remix-run/react";
 import { AnimatePresence, motion, useIsPresent } from "framer-motion";
 import React, {
+  type PropsWithChildren,
   useCallback,
   useEffect,
   useRef,
   useState,
-  type PropsWithChildren,
 } from "react";
-import { useHydrated } from "~/rendering/use-hidrated";
 import { extractBranchFromPath } from "~/rendering/routes";
 import {
   restoreScrollPosition,
   saveScrollPosition,
 } from "~/rendering/scroll-restoration";
 import { useBigScreen } from "~/rendering/use-big-screen";
+import { useHydrated } from "~/rendering/use-hidrated";
 import { useTrunkNeedsToShowLeaf } from "~/rendering/use-nested-entities";
 
 const SMALL_SCREEN_ANIMATION_START = "100vw";

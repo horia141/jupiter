@@ -16,7 +16,6 @@ import {
   ListItem,
   ListItemText,
   Stack,
-  styled,
   Tab,
   Table,
   TableBody,
@@ -26,9 +25,9 @@ import {
   TableRow,
   Tabs,
   Typography,
+  styled,
 } from "@mui/material";
 import React, { useState } from "react";
-
 import { EntityNameOneLineComponent } from "~/components/entity-name";
 import { ScoreOverview } from "~/components/gamification/score-overview";
 import { EntityLink } from "~/components/infra/entity-card";
@@ -46,6 +45,7 @@ import {
 } from "~/logic/domain/workspace";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import type { TopLevelInfo } from "~/top-level-context";
+
 import { StandardDivider } from "./standard-divider";
 import { TabPanel } from "./tab-panel";
 

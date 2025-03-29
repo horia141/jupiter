@@ -6,14 +6,15 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  styled,
   Toolbar,
+  styled,
 } from "@mui/material";
 import { Link } from "@remix-run/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import type { TopLevelInfo } from "~/top-level-context";
+
 import { StandardDivider } from "./standard-divider";
 
 const BIG_SCREEN_WIDTH = "240px";

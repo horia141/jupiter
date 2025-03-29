@@ -1,5 +1,6 @@
 import type { ScheduleStreamSummary } from "@jupiter/webapi-client";
 import { Box, Chip, MenuItem, Select } from "@mui/material";
+
 import { ScheduleStreamColorTag } from "./schedule-stream-color-tag";
 
 interface ScheduleStreamMultiSelectProps {

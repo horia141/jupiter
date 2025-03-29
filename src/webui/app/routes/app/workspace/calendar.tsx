@@ -25,13 +25,13 @@ import {
   Box,
   Button,
   Paper,
-  styled,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableRow,
   Typography,
+  styled,
   useTheme,
 } from "@mui/material";
 import type { LoaderFunctionArgs } from "@remix-run/node";
@@ -39,11 +39,11 @@ import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   Outlet,
+  useActionData,
   useLocation,
   useNavigate,
   useNavigation,
   useSearchParams,
-  useActionData,
 } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";
@@ -80,18 +80,18 @@ import type {
   CombinedTimeEventInDayEntry,
 } from "~/logic/domain/time-event";
 import {
-  birthdayTimeEventName,
   BIRTHDAY_TIME_EVENT_COLOR,
+  INBOX_TASK_TIME_EVENT_COLOR,
+  VACATION_TIME_EVENT_COLOR,
+  birthdayTimeEventName,
   calculateEndTimeForTimeEvent,
   calculateStartTimeForTimeEvent,
   calendarPxHeightToMinutes,
   calendarTimeEventInDayDurationToRems,
   calendarTimeEventInDayStartMinutesToRems,
   compareNamespaceForSortingFullDaysTimeEvents,
-  INBOX_TASK_TIME_EVENT_COLOR,
   scheduleTimeEventInDayDurationToRems,
   timeEventInDayBlockToTimezone,
-  VACATION_TIME_EVENT_COLOR,
 } from "~/logic/domain/time-event";
 import { inferPlatformAndDistribution } from "~/logic/frontdoor.server";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";

@@ -17,6 +17,7 @@ import {
   workspaceFeatureToDocsHelpSubject,
 } from "~/logic/domain/feature";
 import { hostingName } from "~/logic/domain/hosting";
+
 import { DocsHelp } from "./docs-help";
 
 interface UserFeatureFlagsEditorProps {

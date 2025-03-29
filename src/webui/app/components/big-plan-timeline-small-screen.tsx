@@ -1,8 +1,9 @@
 import type { ADate, BigPlan } from "@jupiter/webapi-client";
-import { styled, Tooltip } from "@mui/material";
+import { Tooltip, styled } from "@mui/material";
 import { Link } from "@remix-run/react";
 import type { DateTime } from "luxon";
 import { aDateToDate } from "~/logic/domain/adate";
+
 import { BigPlanStatusTag } from "./big-plan-status-tag";
 import { EntityNameOneLineComponent } from "./entity-name";
 import { EntityStack } from "./infra/entity-stack";

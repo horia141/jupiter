@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 import { sanitizeUrl } from "@braintree/sanitize-url";
 import { config } from "dotenv";
-import { app, BrowserWindow, ipcMain, shell } from "electron";
+import { BrowserWindow, app, ipcMain, shell } from "electron";
 import fs from "fs";
 import path from "node:path";
 import normalizeUrl from "normalize-url";

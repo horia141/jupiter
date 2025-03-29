@@ -1,6 +1,7 @@
 import { type ScheduleStreamSummary } from "@jupiter/webapi-client";
 import { Box, MenuItem, Select } from "@mui/material";
 import { isCorePropertyEditable } from "~/logic/domain/schedule-stream";
+
 import { ScheduleStreamColorTag } from "./schedule-stream-color-tag";
 
 interface ScheduleStreamSelectProps {

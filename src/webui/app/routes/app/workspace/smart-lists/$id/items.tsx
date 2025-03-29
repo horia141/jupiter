@@ -7,7 +7,7 @@ import { Button, ButtonGroup } from "@mui/material";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Link, Outlet, useParams, useNavigation } from "@remix-run/react";
+import { Link, Outlet, useNavigation, useParams } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { z } from "zod";

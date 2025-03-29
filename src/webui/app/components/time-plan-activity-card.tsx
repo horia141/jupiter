@@ -19,6 +19,7 @@ import { TimePlanActivityFeasabilityTag } from "~/components/time-plan-activity-
 import { TimePlanActivityKindTag } from "~/components/time-plan-activity-kind-tag";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import type { TopLevelInfo } from "~/top-level-context";
+
 import { ADateTag } from "./adate-tag";
 import { TimePlanTag } from "./time-plan-tag";
 

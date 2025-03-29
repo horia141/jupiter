@@ -13,8 +13,8 @@ import {
   FormControl,
   FormControlLabel,
   InputLabel,
-  styled,
   Switch,
+  styled,
 } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";

@@ -1,4 +1,4 @@
-import { WorkspaceFeature, type SlackTask } from "@jupiter/webapi-client";
+import { type SlackTask, WorkspaceFeature } from "@jupiter/webapi-client";
 import { Button } from "@mui/material";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";

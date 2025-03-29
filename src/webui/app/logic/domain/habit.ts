@@ -1,4 +1,5 @@
 import { Difficulty, Eisen, type Habit } from "@jupiter/webapi-client";
+
 import { compareDifficulty } from "./difficulty";
 import { compareEisen } from "./eisen";
 import { comparePeriods } from "./period";

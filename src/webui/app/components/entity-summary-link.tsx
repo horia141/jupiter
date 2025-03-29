@@ -1,6 +1,7 @@
 import type { EntitySummary } from "@jupiter/webapi-client";
 import { NamedEntityTag } from "@jupiter/webapi-client";
 import type { DateTime } from "luxon";
+
 import { SlimChip } from "./infra/chips";
 import { EntityFakeLink, EntityLink } from "./infra/entity-card";
 import { TimeDiffTag } from "./time-diff-tag";

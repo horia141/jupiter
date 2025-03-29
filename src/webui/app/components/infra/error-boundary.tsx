@@ -1,13 +1,14 @@
 import { Alert, AlertTitle, Box, Button, ButtonGroup } from "@mui/material";
+import { Link, isRouteErrorResponse, useRouteError } from "@remix-run/react";
+import { StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { isDevelopment } from "~/logic/domain/env";
+
 import { BranchPanel } from "./layout/branch-panel";
 import { LeafPanel } from "./layout/leaf-panel";
 import { ToolPanel } from "./layout/tool-panel";
 import { TrunkPanel } from "./layout/trunk-panel";
-import { isRouteErrorResponse, Link, useRouteError } from "@remix-run/react";
-import { StatusCodes } from "http-status-codes";
 
 export function makeRootErrorBoundary(labelsFor: { error?: () => string }) {
   function ErrorBoundary() {

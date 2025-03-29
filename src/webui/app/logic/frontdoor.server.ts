@@ -1,6 +1,7 @@
 import { AppDistribution, AppPlatform, AppShell } from "@jupiter/webapi-client";
 import { createCookie } from "@remix-run/node";
 import uap from "ua-parser-js";
+
 import { FRONTDOOR_COOKIE_NAME } from "../names";
 import type { FrontDoorInfo } from "./frontdoor";
 import { FRONT_DOOR_INFO_SCHEMA } from "./frontdoor";

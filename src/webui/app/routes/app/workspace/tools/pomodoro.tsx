@@ -5,8 +5,8 @@ import {
   CardActions,
   CardContent,
   CardHeader,
-  styled,
   Typography,
+  styled,
 } from "@mui/material";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Duration } from "luxon";

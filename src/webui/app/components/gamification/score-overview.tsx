@@ -1,13 +1,13 @@
 import type { UserScore, UserScoreOverview } from "@jupiter/webapi-client";
 import {
   Box,
-  styled,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
+  styled,
 } from "@mui/material";
 import { useBigScreen } from "~/rendering/use-big-screen";
 

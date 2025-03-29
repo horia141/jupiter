@@ -1,9 +1,24 @@
 import type {
   DragStart,
-  DroppableStateSnapshot,
   DropResult,
+  DroppableStateSnapshot,
 } from "@hello-pangea/dnd";
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
+import type {
+  InboxTask,
+  InboxTaskFindResultEntry,
+} from "@jupiter/webapi-client";
+import {
+  Eisen,
+  InboxTaskSource,
+  InboxTaskStatus,
+  RecurringTaskPeriod,
+  WorkspaceFeature,
+} from "@jupiter/webapi-client";
+import FilterAltIcon from "@mui/icons-material/FilterAlt";
+import FlareIcon from "@mui/icons-material/Flare";
+import ViewKanbanIcon from "@mui/icons-material/ViewKanban";
+import ViewListIcon from "@mui/icons-material/ViewList";
 import {
   Box,
   Button,
@@ -16,42 +31,25 @@ import {
   FormControlLabel,
   FormGroup,
   Stack,
-  styled,
   Tab,
   Tabs,
   Typography,
+  styled,
 } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Link, Outlet, useFetcher } from "@remix-run/react";
-
-import type {
-  InboxTask,
-  InboxTaskFindResultEntry,
-} from "@jupiter/webapi-client";
-import {
-  Eisen,
-  InboxTaskSource,
-  InboxTaskStatus,
-  RecurringTaskPeriod,
-  WorkspaceFeature,
-} from "@jupiter/webapi-client";
-import React, { memo, useContext, useState } from "react";
-import { InboxTaskStatusTag } from "~/components/inbox-task-status-tag";
-
-import FilterAltIcon from "@mui/icons-material/FilterAlt";
-import FlareIcon from "@mui/icons-material/Flare";
-import ViewKanbanIcon from "@mui/icons-material/ViewKanban";
-import ViewListIcon from "@mui/icons-material/ViewList";
-import Grid from "@mui/material/Grid2";
 import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";
+import React, { memo, useContext, useState } from "react";
 import { z } from "zod";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import type { InboxTaskShowOptions } from "~/components/inbox-task-card";
 import { InboxTaskCard } from "~/components/inbox-task-card";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
+import { InboxTaskStatusTag } from "~/components/inbox-task-status-tag";
 import { InboxTasksNoNothingCard } from "~/components/inbox-tasks-no-nothing-card";
 import { InboxTasksNoTasksCard } from "~/components/inbox-tasks-no-tasks-card";
 import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";

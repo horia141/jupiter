@@ -1,7 +1,11 @@
+import { UserFeature } from "@jupiter/webapi-client";
 import { Settings } from "@mui/icons-material";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import Logout from "@mui/icons-material/Logout";
 import MenuIcon from "@mui/icons-material/Menu";
 import PolicyIcon from "@mui/icons-material/Policy";
+import SecurityIcon from "@mui/icons-material/Security";
+import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
 import {
   Alert,
   AlertTitle,
@@ -20,35 +24,29 @@ import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Form, Link, useOutlet } from "@remix-run/react";
-import Sidebar from "~/components/sidebar";
-
-import { UserFeature } from "@jupiter/webapi-client";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import SecurityIcon from "@mui/icons-material/Security";
-import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
 import { AnimatePresence, useAnimate } from "framer-motion";
 import { useContext, useEffect, useState } from "react";
 import { getLoggedInApiClient } from "~/api-clients.server";
+import { CommunityLink } from "~/components/community-link";
 import { DocsHelp, DocsHelpSubject } from "~/components/docs-help";
 import {
   ScoreSnackbarManager,
   useScoreActionSingleton,
 } from "~/components/gamification/score-snackbar-manager";
-import SearchBox from "~/components/search-box";
-import { isUserFeatureAvailable } from "~/logic/domain/user";
-import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
-import { useBigScreen } from "~/rendering/use-big-screen";
-import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
-import { TopLevelInfoContext } from "~/top-level-context";
-
-import { CommunityLink } from "~/components/community-link";
 import { makeRootErrorBoundary } from "~/components/infra/error-boundary";
 import { WorkspaceContainer } from "~/components/infra/layout/workspace-container";
 import { SmartAppBar } from "~/components/infra/smart-appbar";
 import { ReleaseUpdateWidget } from "~/components/release-update-widget";
+import SearchBox from "~/components/search-box";
+import Sidebar from "~/components/sidebar";
 import { Title } from "~/components/title";
 import { GlobalPropertiesContext } from "~/global-properties-client";
+import { isUserFeatureAvailable } from "~/logic/domain/user";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
+import { useBigScreen } from "~/rendering/use-big-screen";
+import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import editorJsTweaks from "~/styles/editorjs-tweaks.css";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: editorJsTweaks },

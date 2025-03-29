@@ -40,9 +40,11 @@ import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { BigPlanStack } from "~/components/big-plan-stack";
+import { DocsHelpSubject } from "~/components/docs-help";
+import { EntityNoNothingCard } from "~/components/entity-no-nothing-card";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
-
+import { makeBranchErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { BranchPanel } from "~/components/infra/layout/branch-panel";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
@@ -56,6 +58,8 @@ import {
 import { SectionCard } from "~/components/infra/section-card";
 import { SectionCardNew } from "~/components/infra/section-card-new";
 import { JournalStack } from "~/components/journal-stack";
+import { PeriodSelect } from "~/components/period-select";
+import { StandardDivider } from "~/components/standard-divider";
 import { TimePlanActivityList } from "~/components/time-plan-activity-list";
 import { TimePlanStack } from "~/components/time-plan-stack";
 import {
@@ -71,6 +75,7 @@ import { sortTimePlansNaturally } from "~/logic/domain/time-plan";
 import { filterActivityByFeasabilityWithParents } from "~/logic/domain/time-plan-activity";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { basicShouldRevalidate } from "~/rendering/standard-should-revalidate";
+import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
@@ -78,12 +83,6 @@ import {
 } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-import { DocsHelpSubject } from "~/components/docs-help";
-import { EntityNoNothingCard } from "~/components/entity-no-nothing-card";
-import { makeBranchErrorBoundary } from "~/components/infra/error-boundary";
-import { PeriodSelect } from "~/components/period-select";
-import { StandardDivider } from "~/components/standard-divider";
-import { useBigScreen } from "~/rendering/use-big-screen";
 enum View {
   MERGED = "merged",
   BY_PROJECT = "by-project",

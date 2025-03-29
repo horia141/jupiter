@@ -1,4 +1,5 @@
 import type { Person } from "@jupiter/webapi-client";
+
 import { LinkTag } from "./infra/link-tag";
 
 interface Props {

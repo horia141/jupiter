@@ -1,4 +1,5 @@
-import { Difficulty, Eisen, type Chore } from "@jupiter/webapi-client";
+import { type Chore, Difficulty, Eisen } from "@jupiter/webapi-client";
+
 import { compareDifficulty } from "./difficulty";
 import { compareEisen } from "./eisen";
 import { comparePeriods } from "./period";

@@ -7,6 +7,7 @@ import {
   Hosting,
 } from "@jupiter/webapi-client";
 import { createContext } from "react";
+
 import type { GlobalPropertiesServer } from "./global-properties-server";
 import type { FrontDoorInfo } from "./logic/frontdoor";
 

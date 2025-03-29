@@ -1,7 +1,6 @@
 import type { ADate, BigPlan } from "@jupiter/webapi-client";
 import {
   Box,
-  styled,
   Table,
   TableBody,
   TableCell,
@@ -9,10 +8,12 @@ import {
   TableHead,
   TableRow,
   Tooltip,
+  styled,
   useTheme,
 } from "@mui/material";
 import type { DateTime } from "luxon";
 import { aDateToDate } from "~/logic/domain/adate";
+
 import { BigPlanStatusTag } from "./big-plan-status-tag";
 import { EntityNameOneLineComponent } from "./entity-name";
 import { EntityLink } from "./infra/entity-card";

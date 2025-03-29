@@ -1,6 +1,6 @@
 import { RemixBrowser } from "@remix-run/react";
 import { Buffer } from "buffer-polyfill";
-import { startTransition, StrictMode } from "react";
+import { StrictMode, startTransition } from "react";
 import { hydrateRoot } from "react-dom/client";
 
 function hydrate() {
