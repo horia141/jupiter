@@ -32,29 +32,29 @@ document
   });
 
 window.onerror = (event: Event | string, url, line) => {
-  // if (
-  //   typeof event === "string" &&
-  //   (event.indexOf("Hydration failed") !== -1 ||
-  //     event.indexOf("Minified React error") !== -1)
-  // ) {
-  //   // We're handling some sort of React hydration error because of
-  //   // mismatches in SSR and client-side rendering. These mostly occur
-  //   // because of the many time manipulations we do client-side. Which
-  //   // might differ from what's happening server-side, if we're not careful
-  //   // or even if there's noticeable clock skew between the client's
-  //   // machine and the server.
-  //   // If this happens, Remix tends to crash hard - styles are messed up.
-  //   // To prevent this we force a client-side reload to a very safe page. Which
-  //   // then does a Remix reload to the final page. We're gonna log this
-  //   // at some point.
+  if (
+    typeof event === "string" &&
+    (event.indexOf("Hydration failed") !== -1 ||
+      event.indexOf("Minified React error") !== -1)
+  ) {
+    // We're handling some sort of React hydration error because of
+    // mismatches in SSR and client-side rendering. These mostly occur
+    // because of the many time manipulations we do client-side. Which
+    // might differ from what's happening server-side, if we're not careful
+    // or even if there's noticeable clock skew between the client's
+    // machine and the server.
+    // If this happens, Remix tends to crash hard - styles are messed up.
+    // To prevent this we force a client-side reload to a very safe page. Which
+    // then does a Remix reload to the final page. We're gonna log this
+    // at some point.
 
-  //   const destUrl = Buffer.from(
-  //     `${window.location.pathname}?${window.location.search}`,
-  //     "utf-8"
-  //   ).toString("base64");
-  //   window.location.replace(`/app/render-fix?returnTo=${destUrl}`);
-  //   return true;
-  // }
+    const destUrl = Buffer.from(
+      `${window.location.pathname}?${window.location.search}`,
+      "utf-8"
+    ).toString("base64");
+    window.location.replace(`/app/render-fix?returnTo=${destUrl}`);
+    return true;
+  }
 
   return false;
 };
