@@ -671,12 +671,9 @@ export default function InboxTasks() {
   );
 }
 
-export const ErrorBoundary = makeTrunkErrorBoundary(
-  "/app/workspace",
-  {
-    error: () => `There was an error loading the inbox tasks! Please try again!`,
-  },
-);
+export const ErrorBoundary = makeTrunkErrorBoundary("/app/workspace", {
+  error: () => `There was an error loading the inbox tasks! Please try again!`,
+});
 
 const GCSection = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.grey[100],

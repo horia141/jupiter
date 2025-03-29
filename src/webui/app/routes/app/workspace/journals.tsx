@@ -77,9 +77,6 @@ export default function Journals() {
   );
 }
 
-export const ErrorBoundary = makeTrunkErrorBoundary(
-  "/app/workspace",
-  {
-    error: () => `There was an error loading the journals! Please try again!`,
-  },
-);
+export const ErrorBoundary = makeTrunkErrorBoundary("/app/workspace", {
+  error: () => `There was an error loading the journals! Please try again!`,
+});

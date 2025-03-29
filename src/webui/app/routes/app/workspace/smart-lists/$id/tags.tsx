@@ -181,7 +181,6 @@ export default function SmartListViewTags() {
   );
 }
 
-
 export const ErrorBoundary = makeBranchErrorBoundary(
   "/app/workspace/smart-lists",
   {

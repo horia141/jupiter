@@ -58,10 +58,7 @@ export default function Gamification() {
   );
 }
 
-export const ErrorBoundary = makeTrunkErrorBoundary(
-  "/app/workspace",
-  {
-    error: () =>
-      `There was an error displaying gamification information! Please try again!`,
-  },
-);
+export const ErrorBoundary = makeTrunkErrorBoundary("/app/workspace", {
+  error: () =>
+    `There was an error displaying gamification information! Please try again!`,
+});

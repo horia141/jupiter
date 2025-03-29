@@ -185,9 +185,6 @@ export default function Settings() {
   );
 }
 
-export const ErrorBoundary = makeTrunkErrorBoundary(
-  "/app/workspace",
-  {
-    error: () => `There was an error updating the workspace! Please try again!`,
-  },
-);
+export const ErrorBoundary = makeTrunkErrorBoundary("/app/workspace", {
+  error: () => `There was an error updating the workspace! Please try again!`,
+});

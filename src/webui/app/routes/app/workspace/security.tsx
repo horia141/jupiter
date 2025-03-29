@@ -163,9 +163,7 @@ export default function Security() {
   );
 }
 
-export const ErrorBoundary = makeTrunkErrorBoundary(
-  "/app/workspace",
-  {
-    error: () => `There was an error changing security settings! Please try again!`,
-  },
-);
+export const ErrorBoundary = makeTrunkErrorBoundary("/app/workspace", {
+  error: () =>
+    `There was an error changing security settings! Please try again!`,
+});

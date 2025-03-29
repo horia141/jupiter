@@ -18,5 +18,5 @@ platforms:
         displayName: $PUBLIC_NAME
         productName: App
         copy:
-        - src: ../../PrivacyInfo.xcprivacy
-          dest: PrivacyInfo.xcprivacy
+          - src: ../../PrivacyInfo.xcprivacy
+            dest: PrivacyInfo.xcprivacy

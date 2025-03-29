@@ -7,7 +7,7 @@ interface ClientOnlyProps {
 }
 
 export function ClientOnly({ children, fallback = null }: ClientOnlyProps) {
-  const hydrated = useHydrated(); 
+  const hydrated = useHydrated();
 
   if (!hydrated) {
     return <>{fallback}</>;

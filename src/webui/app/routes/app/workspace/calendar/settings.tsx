@@ -241,7 +241,8 @@ export default function CalendarSettings() {
 export const ErrorBoundary = makeBranchErrorBoundary(
   () => `/app/workspace/calendar?${useSearchParams()}`,
   {
-    error: () => `There was an error creating the event in day! Please try again!`,
+    error: () =>
+      `There was an error creating the event in day! Please try again!`,
   },
 );
 

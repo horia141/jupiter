@@ -193,14 +193,11 @@ export default function Metric() {
   );
 }
 
-export const ErrorBoundary = makeBranchErrorBoundary(
-  "/app/workspace/metrics",
-  {
-    notFound: () => `Could not find metric #${useParams().id}!`,
-    error: () =>
-      `There was an error loading metric #${useParams().id}! Please try again!`,
-  },
-);
+export const ErrorBoundary = makeBranchErrorBoundary("/app/workspace/metrics", {
+  notFound: () => `Could not find metric #${useParams().id}!`,
+  error: () =>
+    `There was an error loading metric #${useParams().id}! Please try again!`,
+});
 
 interface MetricGraphProps {
   sortedMetricEntries: MetricEntry[];

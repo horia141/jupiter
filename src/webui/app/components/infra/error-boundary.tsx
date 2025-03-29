@@ -9,9 +9,7 @@ import { TrunkPanel } from "./layout/trunk-panel";
 import { isRouteErrorResponse, Link, useRouteError } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 
-export function makeRootErrorBoundary(labelsFor: {
-  error?: () => string;
-}) {
+export function makeRootErrorBoundary(labelsFor: { error?: () => string }) {
   function ErrorBoundary() {
     const error = useRouteError();
     const globalProperties = useContext(GlobalPropertiesContext);
@@ -37,12 +35,12 @@ export function makeRootErrorBoundary(labelsFor: {
           <AlertTitle>Danger</AlertTitle>
           {labelsFor.error ? labelsFor.error() : "Error retrieving entity!"}
 
-        {isDevelopment(globalProperties.env) && (
-          <Box>
-            <pre>{error.message}</pre>
-            <pre>{error.stack}</pre>
-          </Box>
-        )}
+          {isDevelopment(globalProperties.env) && (
+            <Box>
+              <pre>{error.message}</pre>
+              <pre>{error.stack}</pre>
+            </Box>
+          )}
         </Alert>
       );
     }
@@ -138,7 +136,7 @@ export function makeBranchErrorBoundary(
   labelsFor: {
     notFound?: () => string;
     error?: () => string;
-  }
+  },
 ) {
   function ErrorBoundary() {
     const error = useRouteError();
@@ -156,7 +154,9 @@ export function makeBranchErrorBoundary(
           >
             <Alert severity="warning">
               <AlertTitle>Error</AlertTitle>
-              {labelsFor.notFound ? labelsFor.notFound() : "Could not find entity!"}
+              {labelsFor.notFound
+                ? labelsFor.notFound()
+                : "Could not find entity!"}
             </Alert>
           </BranchPanel>
         );
@@ -169,19 +169,19 @@ export function makeBranchErrorBoundary(
           key="error"
           inputsEnabled={true}
           returnLocation={resolvedReturnLocation}
-      >
-        <Alert severity="error">
-          <AlertTitle>Danger</AlertTitle>
-          {labelsFor.error ? labelsFor.error() : "Error retrieving entity!"}
+        >
+          <Alert severity="error">
+            <AlertTitle>Danger</AlertTitle>
+            {labelsFor.error ? labelsFor.error() : "Error retrieving entity!"}
 
-          {isDevelopment(globalProperties.env) && (
-            <Box>
-              <pre>{error.message}</pre>
-              <pre>{error.stack}</pre>
-            </Box>
-          )}
-        </Alert>
-      </BranchPanel>
+            {isDevelopment(globalProperties.env) && (
+              <Box>
+                <pre>{error.message}</pre>
+                <pre>{error.stack}</pre>
+              </Box>
+            )}
+          </Alert>
+        </BranchPanel>
       );
     }
 
@@ -216,28 +216,28 @@ export function makeTrunkErrorBoundary(
       return (
         <TrunkPanel key="error" returnLocation={returnLocation}>
           <Alert severity="error">
-          <AlertTitle>Danger</AlertTitle>
-          {labelsFor.error ? labelsFor.error() : "Error retrieving entity!"}
+            <AlertTitle>Danger</AlertTitle>
+            {labelsFor.error ? labelsFor.error() : "Error retrieving entity!"}
 
-          {isDevelopment(globalProperties.env) && (
-            <Box>
-              <pre>{error.message}</pre>
-              <pre>{error.stack}</pre>
-            </Box>
-          )}
+            {isDevelopment(globalProperties.env) && (
+              <Box>
+                <pre>{error.message}</pre>
+                <pre>{error.stack}</pre>
+              </Box>
+            )}
+          </Alert>
+        </TrunkPanel>
+      );
+    }
+
+    return (
+      <TrunkPanel key="error" returnLocation={returnLocation}>
+        <Alert severity="error">
+          <AlertTitle>Critical</AlertTitle>
+          Unknown error!
         </Alert>
       </TrunkPanel>
     );
-  }
-
-  return (
-    <TrunkPanel key="error" returnLocation={returnLocation}>
-      <Alert severity="error">
-        <AlertTitle>Critical</AlertTitle>
-        Unknown error!
-      </Alert>
-    </TrunkPanel>
-  );
   }
 
   return ErrorBoundary;

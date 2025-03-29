@@ -31,10 +31,13 @@ export default function handleRequest(
           done = true;
 
           resolve(
-            new Response(Readable.toWeb(body) as globalThis.ReadableStream<Uint8Array>, {
-              headers: responseHeaders,
-              status: didError ? 500 : responseStatusCode,
-            }),
+            new Response(
+              Readable.toWeb(body) as globalThis.ReadableStream<Uint8Array>,
+              {
+                headers: responseHeaders,
+                status: didError ? 500 : responseStatusCode,
+              },
+            ),
           );
 
           pipe(body);

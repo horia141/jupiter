@@ -335,7 +335,9 @@ export async function action({ request, params }: ActionFunctionArgs) {
 export default function TimePlanActivity() {
   const { id, activityId } = useParams();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
-  const timePlan = useRouteLoaderData<{timePlan: TimePlan}>("routes/app/workspace/time-plans/$id")!.timePlan;
+  const timePlan = useRouteLoaderData<{ timePlan: TimePlan }>(
+    "routes/app/workspace/time-plans/$id",
+  )!.timePlan;
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const topLevelInfo = useContext(TopLevelInfoContext);
