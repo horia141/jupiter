@@ -30,6 +30,10 @@ ruff = "^0.4.0"
 watchfiles = "^1.0.4"
 openapi-python-client = "^0.24.1"
 randomname = "^0.2.1"
+pip-audit = "^2.8.0"
+
+[tool.poetry.requires-plugins]
+poetry-plugin-export = ">=1.8"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

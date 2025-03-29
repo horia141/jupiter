@@ -14,7 +14,7 @@ then
   exit 1
 fi
 
-if ! npx prettier --check src/webui src/desktop
+if ! npx prettier --check src/webui src/desktop src/mobile
 then
   echo "Styling inconsistency! Please run 'make fix-style' to auto-address style issues!"
   exit 1
