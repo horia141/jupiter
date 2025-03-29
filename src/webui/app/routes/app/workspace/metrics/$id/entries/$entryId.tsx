@@ -269,6 +269,7 @@ export const ErrorBoundary = makeLeafErrorBoundary(
   () => `/app/workspace/metrics/${useParams().id}/entries`,
   {
     notFound: () => `Could not find metric entry #${useParams().entryId}!`,
-    error: () => `There was an error loading metric entry #${useParams().entryId}! Please try again!`
-  }
+    error: () =>
+      `There was an error loading metric entry #${useParams().entryId}! Please try again!`,
+  },
 );

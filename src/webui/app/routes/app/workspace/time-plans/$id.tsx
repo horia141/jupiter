@@ -80,7 +80,6 @@ import { TopLevelInfoContext } from "~/top-level-context";
 
 import { DocsHelpSubject } from "~/components/docs-help";
 import { EntityNoNothingCard } from "~/components/entity-no-nothing-card";
-import { makeBranchCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeBranchErrorBoundary } from "~/components/infra/error-boundary";
 import { PeriodSelect } from "~/components/period-select";
 import { StandardDivider } from "~/components/standard-divider";
@@ -250,7 +249,8 @@ export default function TimePlanView() {
 
   const topLevelInfo = useContext(TopLevelInfoContext);
 
-  const inputsEnabled = navigation.state === "idle" && !loaderData.timePlan.archived;
+  const inputsEnabled =
+    navigation.state === "idle" && !loaderData.timePlan.archived;
 
   const targetInboxTasksByRefId = new Map<string, InboxTask>(
     loaderData.targetInboxTasks.map((it) => [it.ref_id, it]),
@@ -746,15 +746,13 @@ export default function TimePlanView() {
   );
 }
 
-export const CatchBoundary = makeBranchCatchBoundary(
-  "/app/workspace/time-plans",
-  () => `Could not find time plan #${useParams().id}!`,
-);
-
 export const ErrorBoundary = makeBranchErrorBoundary(
   "/app/workspace/time-plans",
-  () =>
-    `There was an error loading time plan #${useParams().id}. Please try again!`,
+  {
+    notFound: () => `Could not find time plan #${useParams().id}!`,
+    error: () =>
+      `There was an error loading time plan #${useParams().id}. Please try again!`,
+  },
 );
 
 function inferDefaultSelectedView(workspace: Workspace, timePlan: TimePlan) {

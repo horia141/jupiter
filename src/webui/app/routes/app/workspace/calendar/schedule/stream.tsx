@@ -86,5 +86,7 @@ export default function ScheduleStreamViewAll() {
 
 export const ErrorBoundary = makeBranchErrorBoundary(
   () => `/app/workspace/calendar?${useSearchParams()}`,
-  () => "There was an error loading time plan calendar streams!",
+  {
+    error: () => "There was an error loading time plan calendar streams!",
+  },
 );

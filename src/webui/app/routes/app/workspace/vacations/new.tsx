@@ -139,9 +139,6 @@ export default function NewVacation() {
   );
 }
 
-export const ErrorBoundary = makeLeafErrorBoundary(
-  "/app/workspace/vacations",
-  {
-    error: () => `There was an error creating the vacation! Please try again!`,
-  }
-);
+export const ErrorBoundary = makeLeafErrorBoundary("/app/workspace/vacations", {
+  error: () => `There was an error creating the vacation! Please try again!`,
+});

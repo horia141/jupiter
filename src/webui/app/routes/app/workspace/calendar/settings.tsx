@@ -241,7 +241,9 @@ export default function CalendarSettings() {
 
 export const ErrorBoundary = makeBranchErrorBoundary(
   () => `/app/workspace/calendar?${useSearchParams()}`,
-  () => `There was an error creating the event in day! Please try again!`,
+  {
+    error: () => `There was an error creating the event in day! Please try again!`,
+  },
 );
 
 const AccordionHeader = styled(Box)(({ theme }) => ({

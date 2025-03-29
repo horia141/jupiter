@@ -131,7 +131,8 @@ export default function WorkingMem() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const fetcher = useFetcher();
   const navigation = useNavigation();
-  const inputsEnabled = navigation.state === "idle" && !loaderData.workingMem.archived;
+  const inputsEnabled =
+    navigation.state === "idle" && !loaderData.workingMem.archived;
 
   const topLevelInfo = useContext(TopLevelInfoContext);
 
@@ -257,6 +258,7 @@ export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/working-mem/archive",
   {
     notFound: () => `Could not find working memory archive #${useParams().id}!`,
-    error: () => `There was an error loading working memory archive #${useParams().id}! Please try again!`
-  }
+    error: () =>
+      `There was an error loading working memory archive #${useParams().id}! Please try again!`,
+  },
 );

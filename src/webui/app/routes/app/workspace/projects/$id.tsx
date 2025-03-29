@@ -290,10 +290,8 @@ export default function Project() {
   );
 }
 
-export const ErrorBoundary = makeLeafErrorBoundary(
-  "/app/workspace/projects",
-  {
-    notFound: () => `Could not find project #${useParams().id}!`,
-    error: () => `There was an error loading project #${useParams().id}! Please try again!`
-  }
-);
+export const ErrorBoundary = makeLeafErrorBoundary("/app/workspace/projects", {
+  notFound: () => `Could not find project #${useParams().id}!`,
+  error: () =>
+    `There was an error loading project #${useParams().id}! Please try again!`,
+});

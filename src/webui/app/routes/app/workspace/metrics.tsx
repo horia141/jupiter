@@ -128,5 +128,7 @@ export default function Metrics() {
 
 export const ErrorBoundary = makeTrunkErrorBoundary(
   "/app/workspace",
-  () => `There was an error loading the metrics! Please try again!`,
+  {
+    error: () => `There was an error loading the metrics! Please try again!`,
+  },
 );

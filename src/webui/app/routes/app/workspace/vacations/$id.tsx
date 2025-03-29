@@ -290,10 +290,8 @@ export default function Vacation() {
   );
 }
 
-export const ErrorBoundary = makeLeafErrorBoundary(
-  "/app/workspace/vacations",
-  {
-    notFound: () => `Could not find vacation #${useParams().id}!`,
-    error: () => `There was an error loading vacation #${useParams().id}! Please try again!`
-  }
-);
+export const ErrorBoundary = makeLeafErrorBoundary("/app/workspace/vacations", {
+  notFound: () => `Could not find vacation #${useParams().id}!`,
+  error: () =>
+    `There was an error loading vacation #${useParams().id}! Please try again!`,
+});

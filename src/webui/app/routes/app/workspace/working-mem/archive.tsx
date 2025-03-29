@@ -88,5 +88,7 @@ export default function WorkingMemArchive({ request }: LoaderArgs) {
 
 export const ErrorBoundary = makeBranchErrorBoundary(
   "/app/workspace/working-mem",
-  () => `There was an error loading the vacations! Please try again!`,
+  {
+    error: () => `There was an error loading the vacations! Please try again!`,
+  },
 );

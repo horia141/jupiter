@@ -88,5 +88,7 @@ export default function TimePlans() {
 
 export const ErrorBoundary = makeTrunkErrorBoundary(
   "/app/workspace",
-  () => `There was an error loading the time plans! Please try again!`,
+  {
+    error: () => `There was an error loading the time plans! Please try again!`,
+  },
 );

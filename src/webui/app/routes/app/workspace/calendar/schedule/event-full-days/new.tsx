@@ -230,6 +230,7 @@ export const ErrorBoundary = makeLeafErrorBoundary(
   () => `/app/workspace/calendar?${useSearchParams()}`,
   {
     notFound: () => `Could not find the event full days!`,
-    error: () => `There was an error creating the event full days! Please try again!`,
+    error: () =>
+      `There was an error creating the event full days! Please try again!`,
   },
 );

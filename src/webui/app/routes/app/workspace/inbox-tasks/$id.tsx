@@ -444,6 +444,7 @@ export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/inbox-tasks",
   {
     notFound: () => `Could not find inbox task #${useParams().id}!`,
-    error: () => `There was an error loading inbox task #${useParams().id}! Please try again!`
-  }
+    error: () =>
+      `There was an error loading inbox task #${useParams().id}! Please try again!`,
+  },
 );

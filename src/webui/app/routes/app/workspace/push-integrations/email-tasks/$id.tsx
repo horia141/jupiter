@@ -482,6 +482,7 @@ export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/push-integrations/email-tasks",
   {
     notFound: () => `Could not find email task #${useParams().id}!`,
-    error: () => `There was an error loading email task #${useParams().id}! Please try again!`
-  }
+    error: () =>
+      `There was an error loading email task #${useParams().id}! Please try again!`,
+  },
 );

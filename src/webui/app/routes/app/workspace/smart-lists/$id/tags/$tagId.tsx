@@ -181,6 +181,7 @@ export const ErrorBoundary = makeLeafErrorBoundary(
   () => `/app/workspace/smart-lists/${useParams().id}/tags`,
   {
     notFound: () => `Could not find smart list tag #${useParams().tagId}!`,
-    error: () => `There was an error loading smart list tag #${useParams().tagId}! Please try again!`
-  }
+    error: () =>
+      `There was an error loading smart list tag #${useParams().tagId}! Please try again!`,
+  },
 );

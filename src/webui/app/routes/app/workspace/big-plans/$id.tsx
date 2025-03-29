@@ -710,11 +710,8 @@ export default function BigPlan() {
   );
 }
 
-export const ErrorBoundary = makeLeafErrorBoundary(
-  "/app/workspace/big-plans",
-  {
-    notFound: () => `Could not find big plan #${useParams().id}!`,
-    error: () =>
-      `There was an error loading big plan #${useParams().id}! Please try again!`,
-  },
-);
+export const ErrorBoundary = makeLeafErrorBoundary("/app/workspace/big-plans", {
+  notFound: () => `Could not find big plan #${useParams().id}!`,
+  error: () =>
+    `There was an error loading big plan #${useParams().id}! Please try again!`,
+});

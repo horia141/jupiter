@@ -342,7 +342,8 @@ export default function TimePlanActivity() {
   const topLevelInfo = useContext(TopLevelInfoContext);
   const isBigScreen = useBigScreen();
 
-  const inputsEnabled = navigation.state === "idle" && !loaderData.timePlanActivity.archived;
+  const inputsEnabled =
+    navigation.state === "idle" && !loaderData.timePlanActivity.archived;
 
   const inboxTaskTimeEventEntries = (
     loaderData.targetInboxTaskTimeEventBlocks || []
@@ -519,7 +520,9 @@ export default function TimePlanActivity() {
 export const ErrorBoundary = makeLeafErrorBoundary(
   () => `/app/workspace/time-plans/${useParams().id}`,
   {
-    notFound: () => `Could not find time plan activity #${useParams().activityId}!`,
-    error: () => `There was an error loading time plan activity #${useParams().activityId}! Please try again!`
-  }
+    notFound: () =>
+      `Could not find time plan activity #${useParams().activityId}!`,
+    error: () =>
+      `There was an error loading time plan activity #${useParams().activityId}! Please try again!`,
+  },
 );

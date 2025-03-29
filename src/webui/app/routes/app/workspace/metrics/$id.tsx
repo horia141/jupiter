@@ -16,7 +16,6 @@ import { DateTime } from "luxon";
 import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNameComponent } from "~/components/entity-name";
-import { makeBranchCatchBoundary } from "~/components/infra/catch-boundary";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 
@@ -194,15 +193,13 @@ export default function Metric() {
   );
 }
 
-export const CatchBoundary = makeBranchCatchBoundary(
-  "/app/workspace/metrics",
-  () => `Could not find metric #${useParams().id}!`,
-);
-
 export const ErrorBoundary = makeBranchErrorBoundary(
   "/app/workspace/metrics",
-  () =>
-    `There was an error loading metric #${useParams().id}! Please try again!`,
+  {
+    notFound: () => `Could not find metric #${useParams().id}!`,
+    error: () =>
+      `There was an error loading metric #${useParams().id}! Please try again!`,
+  },
 );
 
 interface MetricGraphProps {

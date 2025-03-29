@@ -307,6 +307,7 @@ export const ErrorBoundary = makeLeafErrorBoundary(
   () => `/app/workspace/calendar/schedule/stream/${useParams().id}`,
   {
     notFound: () => `Could not find stream #${useParams().id}!`,
-    error: () => `There was an error loading stream #${useParams().id}! Please try again!`
-  }
+    error: () =>
+      `There was an error loading stream #${useParams().id}! Please try again!`,
+  },
 );

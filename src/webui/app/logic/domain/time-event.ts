@@ -114,7 +114,9 @@ export function calculateStartTimeForTimeEvent(
     { zone: "UTC" },
   );
   if (!startTime.isValid) {
-    throw new Error(`Invalid start time: ${timeEvent.start_date}T${timeEvent.start_time_in_day}`);
+    throw new Error(
+      `Invalid start time: ${timeEvent.start_date}T${timeEvent.start_time_in_day}`,
+    );
   }
   return startTime;
 }
@@ -162,7 +164,9 @@ export function timeEventInDayBlockParamsToUtc(
     { zone: timezone },
   );
   if (!startTime.isValid) {
-    throw new Error(`Invalid start time: ${params.startDate}T${params.startTimeInDay}`);
+    throw new Error(
+      `Invalid start time: ${params.startDate}T${params.startTimeInDay}`,
+    );
   }
   const utcStartTime = startTime.toUTC();
   return {
@@ -186,11 +190,15 @@ export function timeEventInDayBlockParamsToTimezone(
     { zone: "UTC" },
   );
   if (!startTime.isValid) {
-    throw new Error(`Invalid start time: ${params.startDate}T${params.startTimeInDay}`);
+    throw new Error(
+      `Invalid start time: ${params.startDate}T${params.startTimeInDay}`,
+    );
   }
   const localStartTime = startTime.setZone(timezone);
   if (!localStartTime.isValid) {
-    throw new Error(`Invalid start time: ${params.startDate}T${params.startTimeInDay}`);
+    throw new Error(
+      `Invalid start time: ${params.startDate}T${params.startTimeInDay}`,
+    );
   }
   return {
     startDate: localStartTime.toISODate(),

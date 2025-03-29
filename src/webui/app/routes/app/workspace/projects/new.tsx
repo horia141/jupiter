@@ -141,9 +141,6 @@ export default function NewProject() {
   );
 }
 
-export const ErrorBoundary = makeLeafErrorBoundary(
-  "/app/workspace/projects",
-  {
-    error: () => `There was an error creating the project! Please try again!`,
-  }
-);
+export const ErrorBoundary = makeLeafErrorBoundary("/app/workspace/projects", {
+  error: () => `There was an error creating the project! Please try again!`,
+});

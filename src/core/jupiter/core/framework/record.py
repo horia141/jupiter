@@ -161,7 +161,9 @@ def _check_record_can_be_filterd_by(
             raise Exception(f"Record {cls} does not have a field {filter_name}")
 
         if isinstance(found_field.type, str):
-            raise Exception(f"Cannot filter by {filter_name} because it's a virtual field")
+            raise Exception(
+                f"Cannot filter by {filter_name} because it's a virtual field"
+            )
 
         found_field_type, found_field_optional = _get_real_type(found_field.type)
 

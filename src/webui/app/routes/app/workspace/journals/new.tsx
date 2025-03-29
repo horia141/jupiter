@@ -140,9 +140,6 @@ export default function NewJournal() {
   );
 }
 
-export const ErrorBoundary = makeLeafErrorBoundary(
-  "/app/workspace/journals",
-  {
-    error: () => `There was an error creating the journal! Please try again!`,
-  }
-);
+export const ErrorBoundary = makeLeafErrorBoundary("/app/workspace/journals", {
+  error: () => `There was an error creating the journal! Please try again!`,
+});

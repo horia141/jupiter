@@ -310,9 +310,6 @@ export default function NewMetric() {
   );
 }
 
-export const ErrorBoundary = makeLeafErrorBoundary(
-  `/app/workspace/metrics`,
-  {
-    error: () => `There was an error creating the metric! Please try again!`,
-  }
-);
+export const ErrorBoundary = makeLeafErrorBoundary(`/app/workspace/metrics`, {
+  error: () => `There was an error creating the metric! Please try again!`,
+});

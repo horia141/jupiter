@@ -117,5 +117,7 @@ export default function Chores() {
 
 export const ErrorBoundary = makeTrunkErrorBoundary(
   "/app/workspace",
-  () => `There was an error loading the chores! Please try again!`,
+  {
+    error: () => `There was an error loading the chores! Please try again!`,
+  },
 );

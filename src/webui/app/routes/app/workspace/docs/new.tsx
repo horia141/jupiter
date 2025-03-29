@@ -77,9 +77,6 @@ export default function NewDoc() {
   );
 }
 
-export const ErrorBoundary = makeLeafErrorBoundary(
-  "/app/workspace/docs",
-  {
-    error: () => `There was an error creating the note! Please try again!`,
-  }
-);
+export const ErrorBoundary = makeLeafErrorBoundary("/app/workspace/docs", {
+  error: () => `There was an error creating the note! Please try again!`,
+});

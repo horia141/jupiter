@@ -80,8 +80,6 @@ def upgrade() -> None:
         WHERE last_modified_time IS NOT NULL and last_modified_time like "%.00000";
     """
     )
-    
-    
 
 
 def downgrade() -> None:

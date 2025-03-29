@@ -146,6 +146,7 @@ export default function SlackTasksSettings() {
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/push-integrations/slack-tasks",
   {
-    error: () => `There was an error upserting Slack task settings! Please try again!`,
-  }
+    error: () =>
+      `There was an error upserting Slack task settings! Please try again!`,
+  },
 );

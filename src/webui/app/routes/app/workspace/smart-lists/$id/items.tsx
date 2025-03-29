@@ -17,7 +17,6 @@ import Check from "~/components/check";
 import { DocsHelpSubject } from "~/components/docs-help";
 import { EntityNameComponent } from "~/components/entity-name";
 import { EntityNoNothingCard } from "~/components/entity-no-nothing-card";
-import { makeBranchCatchBoundary } from "~/components/infra/catch-boundary";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeBranchErrorBoundary } from "~/components/infra/error-boundary";
@@ -192,15 +191,13 @@ export default function SmartListViewItems() {
   );
 }
 
-export const CatchBoundary = makeBranchCatchBoundary(
-  "/app/workspace/smart-lists",
-  () => `Could not find smart list #${useParams().id}!`,
-);
-
 export const ErrorBoundary = makeBranchErrorBoundary(
   "/app/workspace/smart-lists",
-  () =>
-    `There was an error loading smart list #${
-      useParams().id
-    }! Please try again!`,
+  {
+    notFound: () => `Could not find smart list #${useParams().id}!`,
+    error: () =>
+      `There was an error loading smart list #${
+        useParams().id
+      }! Please try again!`,
+  },
 );

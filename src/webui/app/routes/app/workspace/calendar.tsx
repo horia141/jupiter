@@ -487,7 +487,9 @@ export default function CalendarView() {
 
 export const ErrorBoundary = makeTrunkErrorBoundary(
   "/app/workspace",
-  () => `There was an error loading the calendar events! Please try again!`,
+  {
+    error: () => `There was an error loading the calendar events! Please try again!`,
+  },
 );
 
 const MAX_VISIBLE_TIME_EVENT_FULL_DAYS = 3;
@@ -786,7 +788,9 @@ function ViewAsCalendarMonthly(props: ViewAsProps) {
     throw new Error("Stats are required");
   }
 
-  const periodStartDate = DateTime.fromISO(props.periodStartDate) as DateTime<true>;
+  const periodStartDate = DateTime.fromISO(
+    props.periodStartDate,
+  ) as DateTime<true>;
   const periodEndDate = DateTime.fromISO(props.periodEndDate) as DateTime<true>;
   const firstWeekIdx = periodStartDate.weekNumber;
 

@@ -673,7 +673,9 @@ export default function InboxTasks() {
 
 export const ErrorBoundary = makeTrunkErrorBoundary(
   "/app/workspace",
-  () => `There was an error loading the inbox tasks! Please try again!`,
+  {
+    error: () => `There was an error loading the inbox tasks! Please try again!`,
+  },
 );
 
 const GCSection = styled(Box)(({ theme }) => ({

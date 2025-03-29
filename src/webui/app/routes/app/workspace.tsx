@@ -325,6 +325,6 @@ export function CatchBoundary() {
   throw new Error(`Unhandled error: ${caught.status}`);
 }
 
-export const ErrorBoundary = makeRootErrorBoundary(
-  () => `There was an error loading the workspace! Please try again!`,
-);
+export const ErrorBoundary = makeRootErrorBoundary({
+  error: () => `There was an error loading the workspace! Please try again!`,
+});

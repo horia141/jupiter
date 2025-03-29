@@ -519,10 +519,8 @@ export default function Habit() {
   );
 }
 
-export const ErrorBoundary = makeLeafErrorBoundary(
-  "/app/workspace/habits",
-  {
-    notFound: () => `Could not find habit #${useParams().id}!`,
-    error: () => `There was an error loading habit #${useParams().id}! Please try again!`
-  }
-);
+export const ErrorBoundary = makeLeafErrorBoundary("/app/workspace/habits", {
+  notFound: () => `Could not find habit #${useParams().id}!`,
+  error: () =>
+    `There was an error loading habit #${useParams().id}! Please try again!`,
+});

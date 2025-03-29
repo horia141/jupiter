@@ -15,7 +15,6 @@ import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { DocsHelpSubject } from "~/components/docs-help";
 import { EntityNoNothingCard } from "~/components/entity-no-nothing-card";
-import { makeBranchCatchBoundary } from "~/components/infra/catch-boundary";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeBranchErrorBoundary } from "~/components/infra/error-boundary";
@@ -106,7 +105,8 @@ export default function SmartListViewTags() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const navigation = useNavigation();
 
-  const inputsEnabled = navigation.state === "idle" && !loaderData.smartList.archived;
+  const inputsEnabled =
+    navigation.state === "idle" && !loaderData.smartList.archived;
 
   const shouldShowALeaf = useBranchNeedsToShowLeaf();
 
@@ -181,15 +181,14 @@ export default function SmartListViewTags() {
   );
 }
 
-export const CatchBoundary = makeBranchCatchBoundary(
-  "/app/workspace/smart-lists",
-  () => `Could not find smart list #${useParams().id}!`,
-);
 
 export const ErrorBoundary = makeBranchErrorBoundary(
   "/app/workspace/smart-lists",
-  () =>
-    `There was an error loading smart list #${
-      useParams().id
-    }! Please try again!`,
+  {
+    notFound: () => `Could not find smart list #${useParams().id}!`,
+    error: () =>
+      `There was an error loading smart list #${
+        useParams().id
+      }! Please try again!`,
+  },
 );

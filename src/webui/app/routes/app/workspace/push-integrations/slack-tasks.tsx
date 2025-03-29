@@ -126,5 +126,7 @@ export default function SlackTasks() {
 
 export const ErrorBoundary = makeTrunkErrorBoundary(
   "/app/workspace",
-  () => `There was an error loading the Slack tasks!s Please try again!`,
+  {
+    error: () => `There was an error loading the Slack tasks! Please try again!`,
+  },
 );

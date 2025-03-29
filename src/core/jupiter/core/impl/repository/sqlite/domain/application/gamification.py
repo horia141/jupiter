@@ -1,6 +1,6 @@
 """SQLite implementation of gamification task scores classes."""
 
-from typing import Any, Final
+from typing import Final
 
 from jupiter.core.domain.application.gamification.score_log import (
     ScoreLog,

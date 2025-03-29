@@ -162,6 +162,7 @@ export default function NewMetricEntry() {
 export const ErrorBoundary = makeLeafErrorBoundary(
   () => `/app/workspace/metrics/${useParams().id}`,
   {
-    error: () => `There was an error creating the metric entry! Please try again!`,
-  }
+    error: () =>
+      `There was an error creating the metric entry! Please try again!`,
+  },
 );

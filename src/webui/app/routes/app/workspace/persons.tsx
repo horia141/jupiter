@@ -137,5 +137,7 @@ export default function Persons() {
 
 export const ErrorBoundary = makeTrunkErrorBoundary(
   "/app/workspace",
-  () => `There was an error loading the persons! Please try again!`,
+  {
+    error: () => `There was an error loading the persons! Please try again!`,
+  },
 );

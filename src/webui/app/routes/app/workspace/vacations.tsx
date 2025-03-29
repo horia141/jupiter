@@ -277,7 +277,9 @@ function VacationCalendar({ today, sortedVacations }: VacationCalendarProps) {
 
 export const ErrorBoundary = makeTrunkErrorBoundary(
   "/app/workspace",
-  () => `There was an error loading the vacations! Please try again!`,
+  {
+    error: () => `There was an error loading the vacations! Please try again!`,
+  },
 );
 
 const TooltipBox = styled("div")`

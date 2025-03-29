@@ -205,6 +205,6 @@ export default function Login() {
   );
 }
 
-export const ErrorBoundary = makeRootErrorBoundary(
-  () => `There was an error logging in! Please try again!`,
-);
+export const ErrorBoundary = makeRootErrorBoundary({
+  error: () => `There was an error logging in! Please try again!`,
+});

@@ -145,6 +145,7 @@ export default function EmailTasksSettings() {
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/push-integrations/email-tasks",
   {
-    error: () => `There was an error upserting email task settings! Please try again!`,
-  }
+    error: () =>
+      `There was an error upserting email task settings! Please try again!`,
+  },
 );

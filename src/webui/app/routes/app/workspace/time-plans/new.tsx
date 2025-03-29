@@ -140,5 +140,5 @@ export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/time-plans",
   {
     error: () => `There was an error creating the time plan! Please try again!`,
-  }
+  },
 );

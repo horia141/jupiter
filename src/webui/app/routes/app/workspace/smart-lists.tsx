@@ -95,5 +95,7 @@ export default function SmartLists() {
 
 export const ErrorBoundary = makeTrunkErrorBoundary(
   "/app/workspace",
-  () => `There was an error loading the smart lists! Please try again!`,
+  {
+    error: () => `There was an error loading the smart lists! Please try again!`,
+  },
 );

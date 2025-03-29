@@ -228,7 +228,8 @@ export default function TimePlanAddFromCurrentInboxTasks() {
   const topLevelInfo = useContext(TopLevelInfoContext);
   const isBigScreen = useBigScreen();
 
-  const inputsEnabled = navigation.state === "idle" && !loaderData.timePlan.archived;
+  const inputsEnabled =
+    navigation.state === "idle" && !loaderData.timePlan.archived;
 
   const alreadyIncludedInboxTaskRefIds = new Set(
     loaderData.activities
@@ -454,8 +455,9 @@ export const ErrorBoundary = makeLeafErrorBoundary(
   () => `/app/workspace/time-plans/${useParams().id}`,
   {
     notFound: () => `Could not find time plan #${useParams().id}!`,
-    error: () => `There was an error loading time plan #${useParams().id}! Please try again!`
-  }
+    error: () =>
+      `There was an error loading time plan #${useParams().id}! Please try again!`,
+  },
 );
 
 interface InboxTaskListProps {

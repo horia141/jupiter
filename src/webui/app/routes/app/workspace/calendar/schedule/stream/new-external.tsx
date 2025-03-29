@@ -147,6 +147,7 @@ export default function ScheduleStreamNew() {
 export const ErrorBoundary = makeLeafErrorBoundary(
   () => `/app/workspace/calendar/schedule/stream?${useSearchParams()}`,
   {
-    error: () => `There was an error creating the schedule stream! Please try again!`,
-  }
+    error: () =>
+      `There was an error creating the schedule stream! Please try again!`,
+  },
 );

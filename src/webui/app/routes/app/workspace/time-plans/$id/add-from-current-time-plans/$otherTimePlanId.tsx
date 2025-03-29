@@ -408,8 +408,9 @@ export const ErrorBoundary = makeLeafErrorBoundary(
   () => `/app/workspace/time-plans/${useParams().id}`,
   {
     notFound: () => `Could not find time plan #${useParams().otherTimePlanId}!`,
-    error: () => `There was an error loading time plan #${useParams().otherTimePlanId}! Please try again!`
-  }
+    error: () =>
+      `There was an error loading time plan #${useParams().otherTimePlanId}! Please try again!`,
+  },
 );
 
 function toggleActivitiesRefIds(

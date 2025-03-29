@@ -541,6 +541,7 @@ export default function NewInboxTask() {
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/inbox-tasks",
   {
-    error: () => `There was an error creating the inbox task! Please try again!`,
-  }
+    error: () =>
+      `There was an error creating the inbox task! Please try again!`,
+  },
 );

@@ -443,6 +443,7 @@ export const ErrorBoundary = makeLeafErrorBoundary(
   () => `/app/workspace/metrics/${useParams().id}`,
   {
     notFound: () => `Could not find metric details for #${useParams().id}!`,
-    error: () => `There was an error loading metric details for #${useParams().id}! Please try again!`
-  }
+    error: () =>
+      `There was an error loading metric details for #${useParams().id}! Please try again!`,
+  },
 );

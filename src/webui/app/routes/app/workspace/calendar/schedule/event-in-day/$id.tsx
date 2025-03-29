@@ -467,6 +467,7 @@ export const ErrorBoundary = makeLeafErrorBoundary(
   () => `/app/workspace/calendar/schedule/event-in-day/${useParams().id}`,
   {
     notFound: () => `Could not find event in day #${useParams().id}!`,
-    error: () => `There was an error loading event in day #${useParams().id}! Please try again!`
-  }
+    error: () =>
+      `There was an error loading event in day #${useParams().id}! Please try again!`,
+  },
 );

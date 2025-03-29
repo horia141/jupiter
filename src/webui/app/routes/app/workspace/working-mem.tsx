@@ -149,5 +149,7 @@ export default function WorkingMem() {
 
 export const ErrorBoundary = makeTrunkErrorBoundary(
   "/app/workspace",
-  () => `There was an error loading the working mem! Please try again!`,
+  {
+    error: () => `There was an error loading the working mem! Please try again!`,
+  },
 );

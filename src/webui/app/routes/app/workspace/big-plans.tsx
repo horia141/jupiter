@@ -342,5 +342,7 @@ export default function BigPlans() {
 
 export const ErrorBoundary = makeTrunkErrorBoundary(
   "/app/workspace",
-  () => `There was an error loading the big plans! Please try again!`,
+  {
+    error: () => `There was an error loading the big plans! Please try again!`,
+  },
 );

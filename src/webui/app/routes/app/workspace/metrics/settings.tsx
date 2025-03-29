@@ -137,9 +137,7 @@ export default function MetricsSettings() {
   );
 }
 
-export const ErrorBoundary = makeLeafErrorBoundary(
-  `/app/workspace/metrics`,
-  {
-    error: () => `There was an error upserting the metric settings! Please try again!`,
-  }
-);
+export const ErrorBoundary = makeLeafErrorBoundary(`/app/workspace/metrics`, {
+  error: () =>
+    `There was an error upserting the metric settings! Please try again!`,
+});

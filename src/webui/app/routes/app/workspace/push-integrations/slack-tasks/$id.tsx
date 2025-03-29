@@ -475,6 +475,7 @@ export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/push-integrations/slack-tasks",
   {
     notFound: () => `Could not find slack task #${useParams().id}!`,
-    error: () => `There was an error loading slack task #${useParams().id}! Please try again!`
-  }
+    error: () =>
+      `There was an error loading slack task #${useParams().id}! Please try again!`,
+  },
 );

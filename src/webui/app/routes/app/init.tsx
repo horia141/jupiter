@@ -383,6 +383,6 @@ export default function WorkspaceInit() {
   );
 }
 
-export const ErrorBoundary = makeRootErrorBoundary(
-  () => `There was an error creating the workspace! Please try again!`,
-);
+export const ErrorBoundary = makeRootErrorBoundary({
+  error: () => `There was an error creating the workspace! Please try again!`,
+});

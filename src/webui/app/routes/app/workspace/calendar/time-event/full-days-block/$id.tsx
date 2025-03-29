@@ -242,7 +242,9 @@ export default function TimeEventFullDaysBlockViewOne() {
 export const ErrorBoundary = makeLeafErrorBoundary(
   () => `/app/workspace/calendar/time-event/full-days-block/${useParams().id}`,
   {
-    notFound: () => `Could not find time event full days block #${useParams().id}!`,
-    error: () => `There was an error loading time event full days block #${useParams().id}! Please try again!`
-  }
+    notFound: () =>
+      `Could not find time event full days block #${useParams().id}!`,
+    error: () =>
+      `There was an error loading time event full days block #${useParams().id}! Please try again!`,
+  },
 );

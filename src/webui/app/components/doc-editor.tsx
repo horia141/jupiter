@@ -100,10 +100,7 @@ export function DocEditor({
       setNoteId(cardActionFetcher.data?.data.new_note.ref_id);
     }
 
-    if (
-      cardActionFetcher.state === "idle" &&
-      cardActionFetcher.data !== null
-    ) {
+    if (cardActionFetcher.state === "idle" && cardActionFetcher.data !== null) {
       setIsActing(false);
       if (shouldAct) {
         act();

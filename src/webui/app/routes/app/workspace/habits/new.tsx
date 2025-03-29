@@ -251,9 +251,6 @@ export default function NewHabit() {
   );
 }
 
-export const ErrorBoundary = makeLeafErrorBoundary(
-  "/app/workspace/habits",
-  {
-    error: () => `There was an error creating the habit! Please try again!`,
-  }
-);
+export const ErrorBoundary = makeLeafErrorBoundary("/app/workspace/habits", {
+  error: () => `There was an error creating the habit! Please try again!`,
+});

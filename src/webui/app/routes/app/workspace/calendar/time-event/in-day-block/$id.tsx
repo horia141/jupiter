@@ -576,7 +576,9 @@ export default function TimeEventInDayBlockViewOne() {
 export const ErrorBoundary = makeLeafErrorBoundary(
   () => `/app/workspace/calendar/time-event/in-day-block/${useParams().id}`,
   {
-    notFound: () => `Could not find time event in day block #${useParams().id}!`,
-    error: () => `There was an error loading time event in day block #${useParams().id}! Please try again!`
-  }
+    notFound: () =>
+      `Could not find time event in day block #${useParams().id}!`,
+    error: () =>
+      `There was an error loading time event in day block #${useParams().id}! Please try again!`,
+  },
 );

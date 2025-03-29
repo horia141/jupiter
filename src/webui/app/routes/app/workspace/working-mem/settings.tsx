@@ -202,6 +202,7 @@ export default function MetricsSettings() {
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/working-mem",
   {
-    error: () => `There was an error upserting the working mem settings! Please try again!`,
-  }
+    error: () =>
+      `There was an error upserting the working mem settings! Please try again!`,
+  },
 );

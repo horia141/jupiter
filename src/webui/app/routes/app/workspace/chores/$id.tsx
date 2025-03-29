@@ -537,10 +537,8 @@ export default function Chore() {
   );
 }
 
-export const ErrorBoundary = makeLeafErrorBoundary(
-  "/app/workspace/chores",
-  {
-    notFound: () => `Could not find chore #${useParams().id}!`,
-    error: () => `There was an error loading chore #${useParams().id}! Please try again!`
-  }
-);
+export const ErrorBoundary = makeLeafErrorBoundary("/app/workspace/chores", {
+  notFound: () => `Could not find chore #${useParams().id}!`,
+  error: () =>
+    `There was an error loading chore #${useParams().id}! Please try again!`,
+});

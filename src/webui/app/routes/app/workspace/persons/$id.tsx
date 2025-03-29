@@ -609,10 +609,8 @@ export default function Person() {
   );
 }
 
-export const ErrorBoundary = makeLeafErrorBoundary(
-  "/app/workspace/persons",
-  {
-    notFound: () => `Could not find person #${useParams().id}!`,
-    error: () => `There was an error loading person #${useParams().id}! Please try again!`
-  }
-);
+export const ErrorBoundary = makeLeafErrorBoundary("/app/workspace/persons", {
+  notFound: () => `Could not find person #${useParams().id}!`,
+  error: () =>
+    `There was an error loading person #${useParams().id}! Please try again!`,
+});

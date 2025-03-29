@@ -375,10 +375,8 @@ export default function Journal() {
   );
 }
 
-export const ErrorBoundary = makeLeafErrorBoundary(
-  "/app/workspace/journals",
-  {
-    notFound: () => `Could not find journal #${useParams().id}!`,
-    error: () => `There was an error loading journal #${useParams().id}! Please try again!`
-  }
-);
+export const ErrorBoundary = makeLeafErrorBoundary("/app/workspace/journals", {
+  notFound: () => `Could not find journal #${useParams().id}!`,
+  error: () =>
+    `There was an error loading journal #${useParams().id}! Please try again!`,
+});

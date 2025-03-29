@@ -116,5 +116,7 @@ export default function Habits() {
 
 export const ErrorBoundary = makeTrunkErrorBoundary(
   "/app/workspace",
-  () => `There was an error loading the habits! Please try again!`,
+  {
+    error: () => `There was an error loading the habits! Please try again!`,
+  },
 );

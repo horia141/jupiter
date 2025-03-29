@@ -1162,7 +1162,9 @@ class _StandardUseCaseArgsWebDecoder(
         for field in all_fields:
             try:
                 if isinstance(field.type, str):
-                    raise RealmDecodingError(f"Cannot decode field {field.name} of {self._the_type.__name__} because it's a virtual field")
+                    raise RealmDecodingError(
+                        f"Cannot decode field {field.name} of {self._the_type.__name__} because it's a virtual field"
+                    )
 
                 field_type, is_optional = normalize_optional(field.type)
                 if field.name not in value:
