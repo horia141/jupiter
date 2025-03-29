@@ -21,8 +21,6 @@ import { z } from "zod";
 import { CheckboxAsString, parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
-
-import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -281,16 +279,10 @@ export default function SmartListItem() {
   );
 }
 
-export const CatchBoundary = makeLeafCatchBoundary(
-  () => `/app/workspace/smart-lists/${useParams().id}/items`,
-  () =>
-    `Could not find smart list item #${useParams().id}:#${useParams().itemId}!`,
-);
-
 export const ErrorBoundary = makeLeafErrorBoundary(
   () => `/app/workspace/smart-lists/${useParams().id}/items`,
-  () =>
-    `There was an error loading smart list item #${useParams().id}:#${
-      useParams().itemId
-    }! Please try again!`,
+  {
+    notFound: () => `Could not find smart list item #${useParams().itemId}!`,
+    error: () => `There was an error loading smart list item #${useParams().itemId}! Please try again!`
+  }
 );

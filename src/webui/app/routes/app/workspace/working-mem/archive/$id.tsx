@@ -27,7 +27,6 @@ import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
 
-import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import {
@@ -254,13 +253,10 @@ export default function WorkingMem() {
   );
 }
 
-export const CatchBoundary = makeLeafCatchBoundary(
-  "/app/workspace/working-mem/archive",
-  () => `Could not find journal #${useParams().id}!`,
-);
-
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/working-mem/archive",
-  () =>
-    `There was an error loading journal #${useParams().id}. Please try again!`,
+  {
+    notFound: () => `Could not find working memory archive #${useParams().id}!`,
+    error: () => `There was an error loading working memory archive #${useParams().id}! Please try again!`
+  }
 );

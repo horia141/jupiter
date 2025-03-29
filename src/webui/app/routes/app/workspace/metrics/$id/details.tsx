@@ -37,7 +37,6 @@ import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { IconSelector } from "~/components/icon-selector";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
-import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 
 import { FieldError, GlobalError } from "~/components/infra/errors";
@@ -440,13 +439,10 @@ export default function MetricDetails() {
   );
 }
 
-export const CatchBoundary = makeLeafCatchBoundary(
-  () => `/app/workspace/metrics/${useParams().id}`,
-  () => `Could not find metric #${useParams().id}!`,
-);
-
 export const ErrorBoundary = makeLeafErrorBoundary(
   () => `/app/workspace/metrics/${useParams().id}`,
-  () =>
-    `There was an error loading metric #${useParams().id}! Please try again!`,
+  {
+    notFound: () => `Could not find metric details for #${useParams().id}!`,
+    error: () => `There was an error loading metric details for #${useParams().id}! Please try again!`
+  }
 );

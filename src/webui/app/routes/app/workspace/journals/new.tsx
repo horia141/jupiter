@@ -142,5 +142,7 @@ export default function NewJournal() {
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/journals",
-  () => `There was an error creating the journal! Please try again!`,
+  {
+    error: () => `There was an error creating the journal! Please try again!`,
+  }
 );

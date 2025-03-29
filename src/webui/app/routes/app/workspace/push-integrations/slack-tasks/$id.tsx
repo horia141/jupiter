@@ -38,8 +38,6 @@ import { getLoggedInApiClient } from "~/api-clients.server";
 import { DifficultySelect } from "~/components/difficulty-select";
 import { EisenhowerSelect } from "~/components/eisenhower-select";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
-
-import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -473,15 +471,10 @@ export default function SlackTask() {
   );
 }
 
-export const CatchBoundary = makeLeafCatchBoundary(
-  "/app/workspace/push-integrations/slack-tasks",
-  () => `Could not find Slack task #${useParams().id}!`,
-);
-
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/push-integrations/slack-tasks",
-  () =>
-    `There was an error loading Slack task #${
-      useParams().id
-    }! Please try again!`,
+  {
+    notFound: () => `Could not find slack task #${useParams().id}!`,
+    error: () => `There was an error loading slack task #${useParams().id}! Please try again!`
+  }
 );

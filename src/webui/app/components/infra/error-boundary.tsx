@@ -6,6 +6,8 @@ import { BranchPanel } from "./layout/branch-panel";
 import { LeafPanel } from "./layout/leaf-panel";
 import { ToolPanel } from "./layout/tool-panel";
 import { TrunkPanel } from "./layout/trunk-panel";
+import { isRouteErrorResponse, useRouteError } from "@remix-run/react";
+import { StatusCodes } from "http-status-codes";
 
 export function makeRootErrorBoundary(labelFn: () => string) {
   function ErrorBoundary({ error }: { error: Error }) {
@@ -31,22 +33,48 @@ export function makeRootErrorBoundary(labelFn: () => string) {
 
 export function makeLeafErrorBoundary(
   returnLocation: string | (() => string),
-  labelFn: () => string,
+  labelsFor: {
+    notFound?: () => string,
+    error?: () => string,
+  }
 ) {
-  function ErrorBoundary({ error }: { error: Error }) {
+  function ErrorBoundary() {
+    const error = useRouteError();
     const globalProperties = useContext(GlobalPropertiesContext);
     const resolvedReturnLocation =
       typeof returnLocation === "function" ? returnLocation() : returnLocation;
 
-    return (
-      <LeafPanel
-        key="error"
+    if (isRouteErrorResponse(error)) {
+      if (error.status === StatusCodes.NOT_FOUND) {
+        const resolvedReturnLocation =
+          typeof returnLocation === "function"
+            ? returnLocation()
+            : returnLocation;
+        return (
+          <LeafPanel
+            key="error"
+            inputsEnabled={true}
+            returnLocation={resolvedReturnLocation}
+          >
+            <Alert severity="warning">
+              <AlertTitle>Error</AlertTitle>
+              {labelsFor.notFound ? labelsFor.notFound() : "Could not find entity!"}
+            </Alert>
+          </LeafPanel>
+        );
+      }
+    }
+
+    if (error instanceof Error) {
+      return (
+        <LeafPanel
+          key="error"
         inputsEnabled={true}
         returnLocation={resolvedReturnLocation}
       >
         <Alert severity="error">
           <AlertTitle>Danger</AlertTitle>
-          {labelFn()}
+          {labelsFor.error ? labelsFor.error() : "Error retrieving entity!"}
 
           {isDevelopment(globalProperties.env) && (
             <Box>
@@ -54,6 +82,20 @@ export function makeLeafErrorBoundary(
               <pre>{error.stack}</pre>
             </Box>
           )}
+        </Alert>
+        </LeafPanel>
+      );
+    }
+
+    return  (
+      <LeafPanel
+        key="error"
+      inputsEnabled={true}
+      returnLocation={resolvedReturnLocation}
+    >
+      <Alert severity="error">
+        <AlertTitle>Critical</AlertTitle>
+          Unknown error!
         </Alert>
       </LeafPanel>
     );

@@ -300,5 +300,7 @@ export default function NewBigPlan() {
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/big-plans",
-  () => `There was an error creating the big plan! Please try again!`,
+  {
+    error: () => `There was an error creating the big plan! Please try again!`,
+  },
 );

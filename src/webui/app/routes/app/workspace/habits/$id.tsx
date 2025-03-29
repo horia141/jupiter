@@ -40,7 +40,6 @@ import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
 
 import { HabitRepeatStrategySelect } from "~/components/habit-repeat-strategy-select";
-import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -520,13 +519,10 @@ export default function Habit() {
   );
 }
 
-export const CatchBoundary = makeLeafCatchBoundary(
-  "/app/workspace/habits",
-  () => `Could not find habit #${useParams().id}!`,
-);
-
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/habits",
-  () =>
-    `There was an error loading habit #${useParams().id}! Please try again!`,
+  {
+    notFound: () => `Could not find habit #${useParams().id}!`,
+    error: () => `There was an error loading habit #${useParams().id}! Please try again!`
+  }
 );

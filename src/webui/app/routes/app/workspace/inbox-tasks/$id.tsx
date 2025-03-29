@@ -29,9 +29,8 @@ import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { InboxTaskPropertiesEditor } from "~/components/entities/inbox-task-properties-editor";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
-import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
-import { GlobalError } from "~/components/infra/errors";
+import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { SectionCardNew } from "~/components/infra/section-card-new";
 import { TimeEventInDayBlockStack } from "~/components/time-event-in-day-block-stack";
@@ -441,15 +440,10 @@ export default function InboxTask() {
   );
 }
 
-export const CatchBoundary = makeLeafCatchBoundary(
-  "/app/workspace/inbox-tasks",
-  () => `Could not find inbox task #${useParams().id}!`,
-);
-
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/inbox-tasks",
-  () =>
-    `There was an error loading inbox task #${
-      useParams().id
-    }! Please try again!`,
+  {
+    notFound: () => `Could not find inbox task #${useParams().id}!`,
+    error: () => `There was an error loading inbox task #${useParams().id}! Please try again!`
+  }
 );

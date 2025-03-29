@@ -20,8 +20,6 @@ import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { IconSelector } from "~/components/icon-selector";
-
-import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -236,15 +234,10 @@ export default function SmartListDetails() {
   );
 }
 
-export const CatchBoundary = makeLeafCatchBoundary(
-  () => `/app/workspace/smart-lists/${useParams().id}/items`,
-  () => `Could not find smart list #${useParams().id}!`,
-);
-
 export const ErrorBoundary = makeLeafErrorBoundary(
   () => `/app/workspace/smart-lists/${useParams().id}/items`,
-  () =>
-    `There was an error loading smart list #${
-      useParams().id
-    }! Please try again!`,
+  {
+    notFound: () => `Could not find smart list item details!`,
+    error: () => `There was an error loading smart list item details! Please try again!`
+  }
 );

@@ -23,7 +23,6 @@ import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -240,15 +239,10 @@ export default function TimeEventFullDaysBlockViewOne() {
   );
 }
 
-export const CatchBoundary = makeLeafCatchBoundary(
-  () => `/app/workspace/calendar?${useSearchParams()}`,
-  () => `Could not find time event full days block #${useParams().id}!`,
-);
-
 export const ErrorBoundary = makeLeafErrorBoundary(
-  () => `/app/workspace/calendar?${useSearchParams()}`,
-  () =>
-    `There was an error loading time event full days block #${
-      useParams().id
-    }. Please try again!`,
+  () => `/app/workspace/calendar/time-event/full-days-block/${useParams().id}`,
+  {
+    notFound: () => `Could not find time event full days block #${useParams().id}!`,
+    error: () => `There was an error loading time event full days block #${useParams().id}! Please try again!`
+  }
 );

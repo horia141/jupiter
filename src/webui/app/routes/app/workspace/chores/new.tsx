@@ -238,5 +238,7 @@ export default function NewChore() {
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/chores",
-  () => `There was an error creating the chore! Please try again!`,
+  {
+    error: () => `There was an error creating the chore! Please try again!`,
+  }
 );

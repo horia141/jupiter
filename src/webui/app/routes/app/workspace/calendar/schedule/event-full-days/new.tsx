@@ -228,5 +228,8 @@ export default function ScheduleEventFullDaysNew() {
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   () => `/app/workspace/calendar?${useSearchParams()}`,
-  () => `There was an error creating the event full days! Please try again!`,
+  {
+    notFound: () => `Could not find the event full days!`,
+    error: () => `There was an error creating the event full days! Please try again!`,
+  },
 );

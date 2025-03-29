@@ -297,5 +297,7 @@ export default function ScheduleEventInDayNew() {
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   () => `/app/workspace/calendar?${useSearchParams()}`,
-  () => `There was an error creating the event in day! Please try again!`,
+  {
+    error: () => `There was an error creating the event in day! Please try again!`,
+  }
 );

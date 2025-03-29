@@ -54,7 +54,6 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { PeriodSelect } from "~/components/period-select";
 
@@ -376,13 +375,10 @@ export default function Journal() {
   );
 }
 
-export const CatchBoundary = makeLeafCatchBoundary(
-  `/app/workspace/journals`,
-  () => `Could not find journal #${useParams().id}!`,
-);
-
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/journals",
-  () =>
-    `There was an error loading journal #${useParams().id}. Please try again!`,
+  {
+    notFound: () => `Could not find journal #${useParams().id}!`,
+    error: () => `There was an error loading journal #${useParams().id}! Please try again!`
+  }
 );

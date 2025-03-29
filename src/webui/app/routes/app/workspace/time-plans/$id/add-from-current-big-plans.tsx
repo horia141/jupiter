@@ -23,7 +23,6 @@ import { getLoggedInApiClient } from "~/api-clients.server";
 import { BigPlanStack } from "~/components/big-plan-stack";
 import { BigPlanTimelineBigScreen } from "~/components/big-plan-timeline-big-screen";
 import { BigPlanTimelineSmallScreen } from "~/components/big-plan-timeline-small-screen";
-import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -450,17 +449,12 @@ export default function TimePlanAddFromCurrentBigPlans() {
   );
 }
 
-export const CatchBoundary = makeLeafCatchBoundary(
-  () => `/app/workspace/time-plans/${useParams().id}`,
-  () => `Could not find time plan  #${useParams().id}`,
-);
-
 export const ErrorBoundary = makeLeafErrorBoundary(
   () => `/app/workspace/time-plans/${useParams().id}`,
-  () =>
-    `There was an error loading time plan activity #${
-      useParams().id
-    }. Please try again!`,
+  {
+    notFound: () => `Could not find time plan #${useParams().id}!`,
+    error: () => `There was an error loading time plan #${useParams().id}! Please try again!`
+  }
 );
 
 interface BigPlanListProps {

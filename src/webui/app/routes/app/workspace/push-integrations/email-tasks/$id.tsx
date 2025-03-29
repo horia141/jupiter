@@ -38,7 +38,6 @@ import { getLoggedInApiClient } from "~/api-clients.server";
 import { DifficultySelect } from "~/components/difficulty-select";
 import { EisenhowerSelect } from "~/components/eisenhower-select";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
-
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
@@ -48,9 +47,8 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
-
-import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
+
 const ParamsSchema = {
   id: z.string(),
 };
@@ -480,15 +478,10 @@ export default function EmailTask() {
   );
 }
 
-export const CatchBoundary = makeLeafCatchBoundary(
-  "/app/workspace/push-integrations/email-tasks",
-  () => `Could not find email task #${useParams().id}!`,
-);
-
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/push-integrations/email-tasks",
-  () =>
-    `There was an error loading email task #${
-      useParams().id
-    }! Please try again!`,
+  {
+    notFound: () => `Could not find email task #${useParams().id}!`,
+    error: () => `There was an error loading email task #${useParams().id}! Please try again!`
+  }
 );

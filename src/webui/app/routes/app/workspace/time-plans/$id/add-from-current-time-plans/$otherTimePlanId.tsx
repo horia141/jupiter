@@ -45,7 +45,6 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { StandardDivider } from "~/components/standard-divider";
 const ParamsSchema = {
@@ -405,20 +404,12 @@ export default function TimePlanAddFromCurrentTimePlans() {
   );
 }
 
-export const CatchBoundary = makeLeafCatchBoundary(
-  () => `/app/workspace/time-plans/${useParams().id}`,
-  () =>
-    `Could not find time plan  #${useParams().id}:#${
-      useParams().otherTimePlanId
-    }`,
-);
-
 export const ErrorBoundary = makeLeafErrorBoundary(
   () => `/app/workspace/time-plans/${useParams().id}`,
-  () =>
-    `There was an error loading time plan activity #${useParams().id}:#${
-      useParams().otherTimePlanId
-    }. Please try again!`,
+  {
+    notFound: () => `Could not find time plan #${useParams().otherTimePlanId}!`,
+    error: () => `There was an error loading time plan #${useParams().otherTimePlanId}! Please try again!`
+  }
 );
 
 function toggleActivitiesRefIds(

@@ -139,5 +139,7 @@ export default function MetricsSettings() {
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   `/app/workspace/metrics`,
-  () => `There was an error upserting the metric settings! Please try again!`,
+  {
+    error: () => `There was an error upserting the metric settings! Please try again!`,
+  }
 );

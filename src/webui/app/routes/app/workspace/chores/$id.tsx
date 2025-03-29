@@ -39,9 +39,7 @@ import { CheckboxAsString, parseForm, parseParams, parseQuery } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
-import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
-
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { ProjectSelect } from "~/components/project-select";
@@ -539,13 +537,10 @@ export default function Chore() {
   );
 }
 
-export const CatchBoundary = makeLeafCatchBoundary(
-  "/app/workspace/chores",
-  () => `Could not find chore #${useParams().id}!`,
-);
-
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/chores",
-  () =>
-    `There was an error loading chore  #${useParams().id}! Please try again!`,
+  {
+    notFound: () => `Could not find chore #${useParams().id}!`,
+    error: () => `There was an error loading chore #${useParams().id}! Please try again!`
+  }
 );

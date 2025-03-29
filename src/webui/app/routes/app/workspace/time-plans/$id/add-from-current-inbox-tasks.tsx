@@ -57,7 +57,6 @@ import { DisplayType } from "~/rendering/use-nested-entities";
 import type { TopLevelInfo } from "~/top-level-context";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { StandardDivider } from "~/components/standard-divider";
 enum View {
@@ -451,17 +450,12 @@ export default function TimePlanAddFromCurrentInboxTasks() {
   );
 }
 
-export const CatchBoundary = makeLeafCatchBoundary(
-  () => `/app/workspace/time-plans/${useParams().id}`,
-  () => `Could not find time plan  #${useParams().id}`,
-);
-
 export const ErrorBoundary = makeLeafErrorBoundary(
   () => `/app/workspace/time-plans/${useParams().id}`,
-  () =>
-    `There was an error loading time plan activity #${
-      useParams().id
-    }. Please try again!`,
+  {
+    notFound: () => `Could not find time plan #${useParams().id}!`,
+    error: () => `There was an error loading time plan #${useParams().id}! Please try again!`
+  }
 );
 
 interface InboxTaskListProps {

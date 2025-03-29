@@ -59,7 +59,6 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { useBigScreen } from "~/rendering/use-big-screen";
 
@@ -517,18 +516,10 @@ export default function TimePlanActivity() {
   );
 }
 
-export const CatchBoundary = makeLeafCatchBoundary(
-  () => `/app/workspace/time-plans/${useParams().id}`,
-  () =>
-    `Could not find time plan activity #${useParams().id}:#${
-      useParams().activityId
-    }!`,
-);
-
 export const ErrorBoundary = makeLeafErrorBoundary(
   () => `/app/workspace/time-plans/${useParams().id}`,
-  () =>
-    `There was an error loading time plan activity #${useParams().id}:#${
-      useParams().activityId
-    }! Please try again!`,
+  {
+    notFound: () => `Could not find time plan activity #${useParams().activityId}!`,
+    error: () => `There was an error loading time plan activity #${useParams().activityId}! Please try again!`
+  }
 );

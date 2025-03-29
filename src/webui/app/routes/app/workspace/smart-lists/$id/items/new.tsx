@@ -172,5 +172,7 @@ export default function NewSmartListItem() {
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   () => `/app/workspace/smart-lists/${useParams().id}/items`,
-  () => `There was an error creating the smart list item! Please try again!`,
+  {
+    error: () => `There was an error creating the smart list item! Please try again!`,
+  }
 );

@@ -142,5 +142,7 @@ export default function PersonsSettings() {
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/persons",
-  () => `There was an error upserting person settings! Please try again!`,
+  {
+    error: () => `There was an error upserting person settings! Please try again!`,
+  }
 );
