@@ -1,4 +1,4 @@
-import editorjsCodeflask from "@calumk/editorjs-codeflask";
+import editorjsCodecup from "@calumk/editorjs-codecup";
 import Checklist from "@editorjs/checklist";
 import Delimiter from "@editorjs/delimiter";
 import type { OutputData } from "@editorjs/editorjs";
@@ -79,7 +79,7 @@ export default function BlockEditor(props: BlockEditorProps) {
             cols: 3,
           },
         },
-        code: editorjsCodeflask,
+        code: editorjsCodecup,
         quote: {
           class: Quote,
           inlineToolbar: true,
