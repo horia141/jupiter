@@ -1,5 +1,5 @@
 import { AppDistribution } from "@jupiter/webapi-client";
-import type { LoaderArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
 import { z } from "zod";
 import { parseQuery } from "zodix";
@@ -10,7 +10,7 @@ const QuerySchema = {
   distribution: z.nativeEnum(AppDistribution),
 };
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const query = parseQuery(request, QuerySchema);
 
   switch (query.distribution) {

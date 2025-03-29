@@ -1,7 +1,7 @@
 import { App as CapacitorApp } from "@capacitor/app";
 import { SplashScreen } from "@capacitor/splash-screen";
 import { AppPlatform, AppShell } from "@jupiter/webapi-client";
-import type { LoaderArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Outlet, useLoaderData, useNavigate } from "@remix-run/react";
@@ -14,7 +14,7 @@ import { GLOBAL_PROPERTIES } from "~/global-properties-server";
 import { loadFrontDoorInfo } from "~/logic/frontdoor.server";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   // This is the only place where we can read this field.
   const frontDoor = await loadFrontDoorInfo(
     GLOBAL_PROPERTIES.version,

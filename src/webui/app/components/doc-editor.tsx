@@ -4,7 +4,7 @@ import { useFetcher } from "@remix-run/react";
 import { Buffer } from "buffer-polyfill";
 import type { ComponentType } from "react";
 import { lazy, Suspense, useCallback, useEffect, useState } from "react";
-import { ClientOnly } from "remix-utils";
+import { ClientOnly } from "remix-utils/client-only";
 import type { NoErrorSomeData, SomeErrorNoData } from "~/logic/action-result";
 import { isNoErrorSomeData } from "~/logic/action-result";
 import type { OneOfNoteContentBlock } from "~/logic/domain/notes";
@@ -92,7 +92,7 @@ export function DocEditor({
 
   useEffect(() => {
     if (
-      cardActionFetcher.submission?.action.endsWith("/create-action") &&
+      cardActionFetcher.formAction?.endsWith("/create-action") &&
       cardActionFetcher.data &&
       isNoErrorSomeData(cardActionFetcher.data)
     ) {

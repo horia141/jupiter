@@ -8,7 +8,7 @@ import { Link, useLocation } from "@remix-run/react";
 import { AnimatePresence, motion, useIsPresent } from "framer-motion";
 import type { PropsWithChildren } from "react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useHydrated } from "remix-utils";
+import { useHydrated } from "remix-utils/use-hydrated";
 import { extractTrunkFromPath } from "~/rendering/routes";
 import {
   restoreScrollPosition,

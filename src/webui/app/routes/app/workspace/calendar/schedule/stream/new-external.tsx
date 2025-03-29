@@ -7,14 +7,13 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import type { ActionArgs } from "@remix-run/node";
+import type { ActionFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   useActionData,
   useNavigation,
   useSearchParams,
-  useTransition,
 } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { useContext } from "react";
@@ -45,7 +44,7 @@ export const handle = {
   displayType: DisplayType.LEAF,
 };
 
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const form = await parseForm(request, CreateFormSchema);
   const url = new URL(request.url);

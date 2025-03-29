@@ -1,4 +1,4 @@
-import type { LoaderArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Outlet } from "@remix-run/react";
@@ -27,7 +27,7 @@ export const handle = {
   displayType: DisplayType.BRANCH,
 };
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const response = await apiClient.workingMem.workingMemFind({
     allow_archived: true,
@@ -40,7 +40,7 @@ export async function loader({ request }: LoaderArgs) {
 export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
-export default function WorkingMemArchive({ request }: LoaderArgs) {
+export default function WorkingMemArchive({ request }: LoaderFunctionArgs) {
   const entries = useLoaderDataSafeForAnimation<typeof loader>();
 
   const sortedWorkingMems = sortWorkingMemsNaturally(

@@ -16,10 +16,10 @@ import {
   Menu,
   MenuItem,
 } from "@mui/material";
-import type { LinksFunction, LoaderArgs } from "@remix-run/node";
+import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Form, Link, useCatch, useOutlet } from "@remix-run/react";
+import { Form, Link, useOutlet } from "@remix-run/react";
 import Sidebar from "~/components/sidebar";
 
 import { UserFeature } from "@jupiter/webapi-client";
@@ -55,7 +55,7 @@ export const links: LinksFunction = () => [
 ];
 
 // @secureFn
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const response = await apiClient.loadTopLevelInfo.loadTopLevelInfo({});
 
@@ -304,25 +304,6 @@ export default function Workspace() {
       </WorkspaceContainer>
     </TopLevelInfoContext.Provider>
   );
-}
-
-export function CatchBoundary() {
-  const caught = useCatch();
-
-  if (caught.status === 426 /* UPGRADE REQUIRED */) {
-    return (
-      <Alert severity="warning">
-        <AlertTitle>Your session has expired! Login again!</AlertTitle>
-        <ButtonGroup>
-          <Button variant="outlined" component={Link} to="/app/login">
-            Login
-          </Button>
-        </ButtonGroup>
-      </Alert>
-    );
-  }
-
-  throw new Error(`Unhandled error: ${caught.status}`);
 }
 
 export const ErrorBoundary = makeRootErrorBoundary({

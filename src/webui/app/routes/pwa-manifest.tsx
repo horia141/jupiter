@@ -1,10 +1,10 @@
 import { Hosting } from "@jupiter/webapi-client";
-import type { LoaderArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { GLOBAL_PROPERTIES } from "~/global-properties-server";
 import { inferPlatformAndDistribution } from "~/logic/frontdoor.server";
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   let name = "";
   if (GLOBAL_PROPERTIES.hosting === Hosting.HOSTED_GLOBAL) {
     name = GLOBAL_PROPERTIES.title;

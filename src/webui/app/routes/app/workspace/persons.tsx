@@ -1,7 +1,7 @@
 import { WorkspaceFeature } from "@jupiter/webapi-client";
 import TuneIcon from "@mui/icons-material/Tune";
 import { Button } from "@mui/material";
-import type { LoaderArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Link, Outlet } from "@remix-run/react";
@@ -35,7 +35,7 @@ export const handle = {
   displayType: DisplayType.TRUNK,
 };
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const body = await apiClient.persons.personFind({
     allow_archived: false,

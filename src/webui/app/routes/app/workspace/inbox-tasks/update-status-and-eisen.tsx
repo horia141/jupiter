@@ -1,5 +1,5 @@
 import { ApiError, Eisen, InboxTaskStatus } from "@jupiter/webapi-client";
-import type { ActionArgs } from "@remix-run/node";
+import type { ActionFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
@@ -17,7 +17,7 @@ const UpdateStatusAndEisenFormSchema = {
   eisen: z.nativeEnum(Eisen).or(z.literal("no-go")).optional(),
 };
 
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const form = await parseForm(request, UpdateStatusAndEisenFormSchema);
 

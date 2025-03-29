@@ -16,7 +16,7 @@ import {
   styled,
   Switch,
 } from "@mui/material";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
@@ -24,7 +24,6 @@ import {
   useActionData,
   useNavigation,
   useSearchParams,
-  useTransition,
 } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
@@ -60,7 +59,7 @@ export const handle = {
   displayType: DisplayType.BRANCH,
 };
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const summaryResponse = await apiClient.getSummaries.getSummaries({
     include_schedule_streams: true,
@@ -73,7 +72,7 @@ export async function loader({ request }: LoaderArgs) {
   });
 }
 
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const form = await parseForm(request, ScheduleExternalSyncFormSchema);
 

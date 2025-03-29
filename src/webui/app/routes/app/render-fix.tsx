@@ -7,7 +7,7 @@ import {
   CardHeader,
   Typography,
 } from "@mui/material";
-import type { LoaderArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { z } from "zod";
@@ -29,7 +29,7 @@ export const handle = {
   displayType: DisplayType.ROOT,
 };
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const params = parseQuery(request, QuerySchema);
   const returnTo = Buffer.from(params.returnTo, "base64").toString("utf-8");
   return json({

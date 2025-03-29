@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, Stack } from "@mui/material";
-import type { LoaderArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { getLoggedInApiClient } from "~/api-clients.server";
@@ -16,7 +16,7 @@ export const handle = {
   displayType: DisplayType.TOOL,
 };
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const result = await apiClient.users.userLoad({});
 

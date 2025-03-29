@@ -1,4 +1,4 @@
-import type { LoaderArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
 import { parseQuery } from "zodix";
 import { getGuestApiClient } from "~/api-clients.server";
@@ -16,7 +16,7 @@ export const handle = {
 // in shell specific data here, and frondoor stores them in a way that's
 // accessible to the rest of the app. Not entering through the frontdoor
 // means that the assumptions will be made by the system (ie you're a browser).
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const params = parseQuery(request, FRONT_DOOR_INFO_SCHEMA);
 

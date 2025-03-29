@@ -1,4 +1,4 @@
-import { Alert, AlertTitle, Box } from "@mui/material";
+import { Alert, AlertTitle, Box, Button, ButtonGroup } from "@mui/material";
 import { useContext } from "react";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { isDevelopment } from "~/logic/domain/env";
@@ -6,7 +6,7 @@ import { BranchPanel } from "./layout/branch-panel";
 import { LeafPanel } from "./layout/leaf-panel";
 import { ToolPanel } from "./layout/tool-panel";
 import { TrunkPanel } from "./layout/trunk-panel";
-import { isRouteErrorResponse, useRouteError } from "@remix-run/react";
+import { isRouteErrorResponse, Link, useRouteError } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 
 export function makeRootErrorBoundary(labelsFor: {
@@ -15,6 +15,21 @@ export function makeRootErrorBoundary(labelsFor: {
   function ErrorBoundary() {
     const error = useRouteError();
     const globalProperties = useContext(GlobalPropertiesContext);
+
+    if (isRouteErrorResponse(error)) {
+      if (error.status === 426 /* UPGRADE RE  QUIRED */) {
+        return (
+          <Alert severity="warning">
+            <AlertTitle>Your session has expired! Login again!</AlertTitle>
+            <ButtonGroup>
+              <Button variant="outlined" component={Link} to="/app/login">
+                Login
+              </Button>
+            </ButtonGroup>
+          </Alert>
+        );
+      }
+    }
 
     if (error instanceof Error) {
       return (

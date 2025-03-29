@@ -13,7 +13,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import type { LoaderArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Link, useNavigation } from "@remix-run/react";
 import { useContext, useState } from "react";
@@ -30,7 +30,7 @@ import { GLOBAL_PROPERTIES } from "~/global-properties-server";
 import { aFieldError } from "~/logic/action-result";
 import { loadFrontDoorInfo } from "~/logic/frontdoor.server";
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const frontDoor = await loadFrontDoorInfo(
     GLOBAL_PROPERTIES.version,
     request.headers.get("Cookie"),

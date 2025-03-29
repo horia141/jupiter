@@ -21,7 +21,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import {
   Form,
@@ -73,7 +73,7 @@ const WorkspaceInitFormSchema = {
 };
 
 // @secureFn
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getGuestApiClient(request);
   const result = await apiClient.loadTopLevelInfo.loadTopLevelInfo({});
   if (result.user || result.workspace) {
@@ -92,7 +92,7 @@ export async function loader({ request }: LoaderArgs) {
 }
 
 // @secureFn
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const apiClient = await getGuestApiClient(request);
   const form = await parseForm(request, WorkspaceInitFormSchema);

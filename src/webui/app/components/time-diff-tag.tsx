@@ -1,6 +1,6 @@
 import type { ADate, Timestamp } from "@jupiter/webapi-client";
 import type { DateTime } from "luxon";
-import { ClientOnly } from "remix-utils";
+import { ClientOnly } from "remix-utils/client-only";
 import { timestampToDate } from "~/logic/domain/timestamp";
 import { FatChip } from "./infra/chips";
 
