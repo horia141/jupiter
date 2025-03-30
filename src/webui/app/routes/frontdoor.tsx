@@ -1,5 +1,5 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
-import { redirect } from "@remix-run/node";
+import { redirect, redirectDocument } from "@remix-run/node";
 import { parseQuery } from "zodix";
 import { getGuestApiClient } from "~/api-clients.server";
 import { FRONT_DOOR_INFO_SCHEMA } from "~/logic/frontdoor";
@@ -26,7 +26,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     if (result.user || result.workspace) {
       const cookie = await saveFrontDoorInfo(params);
-      return redirect("/app/workspace", {
+      return redirectDocument("/frontdoor-redirect-hack-workspace.html", {
         headers: {
           "Set-Cookie": cookie,
         },
@@ -34,7 +34,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
   }
 
-  return redirect("/app/init", {
+  return redirectDocument("/frontdoor-redirect-hack-init.html", {
     headers: {
       "Set-Cookie": await saveFrontDoorInfo(params),
     },
