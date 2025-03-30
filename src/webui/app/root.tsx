@@ -1,8 +1,8 @@
 import { CssBaseline, ThemeProvider, createTheme } from "@mui/material";
 import type { LoaderFunctionArgs, SerializeFrom } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import { data, json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Links, LiveReload, Meta, Outlet, Scripts } from "@remix-run/react";
+import { Links, LiveReload, Meta, Outlet, Scripts, useLoaderData } from "@remix-run/react";
 import { SnackbarProvider } from "notistack";
 import { StrictMode } from "react";
 
@@ -72,6 +72,7 @@ export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export default function Root() {
+  const loaderData = useLoaderData<typeof loader>();
   return (
     <html lang="en">
       <head>
@@ -83,7 +84,7 @@ export default function Root() {
           <ThemeProvider theme={THEME}>
             <SnackbarProvider>
               <CssBaseline />
-              <EnvBanner />
+              <EnvBanner env={loaderData.globalProperties.env} />
               <Outlet />
             </SnackbarProvider>
           </ThemeProvider>
