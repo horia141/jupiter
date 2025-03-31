@@ -1,4 +1,4 @@
-FROM node:19.3
+FROM node:22.14
 LABEL maintainer='horia141@gmail.com'
 
 RUN apt-get update && \
