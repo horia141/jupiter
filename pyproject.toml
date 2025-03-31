@@ -31,6 +31,7 @@ watchfiles = "^1.0.4"
 openapi-python-client = "^0.24.1"
 randomname = "^0.2.1"
 pip-audit = "^2.8.0"
+pylibyear = "^0.3.4"
 
 [tool.poetry.requires-plugins]
 poetry-plugin-export = ">=1.8"
