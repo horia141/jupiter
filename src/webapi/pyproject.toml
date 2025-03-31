@@ -11,7 +11,7 @@ repository = "https://github.com/horia141/jupiter"
 documentation = "https://docs.get-thriving.com"
 
 [tool.poetry.dependencies]
-python = ">=3.10, <3.11"
+python = "^3.13"
 jupiter-core = {path = "../core", develop = true}
 fastapi = "^0.115.11"
 uvicorn = "^0.34.0"

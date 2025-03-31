@@ -1,6 +1,6 @@
-# Assume Python 3.10
+# Assume Python 3.13
 lint.select = ["F", "E", "W", "I", "N", "YTT", "BLE", "B", "A", "DTZ", "T10", "EXE", "ICN", "G", "INP", "PIE", "PYI", "PT", "Q", "RSE", "TID", "PTH", "PLC", "PLE", "RUF"]
 lint.ignore = ["PYI019"]
 extend-exclude = ["migrations"]
-target-version = "py310"
+target-version = "py313"
 line-length = 190  # Black handle this
