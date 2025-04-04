@@ -64,16 +64,17 @@ enum View {
   TIMELINE_BY_PROJECT = "timeline-by-project",
 }
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-};
-const CommonParamsSchema = {
+});
+
+const CommonParamsSchema = z.object({
   targetBigPlanRefIds: z
     .string()
     .transform((s) => (s === "" ? [] : s.split(","))),
   kind: z.nativeEnum(TimePlanActivityKind),
   feasability: z.nativeEnum(TimePlanActivityFeasability),
-};
+});
 
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
@@ -452,11 +453,12 @@ export default function TimePlanAddFromCurrentBigPlans() {
 }
 
 export const ErrorBoundary = makeLeafErrorBoundary(
-  () => `/app/workspace/time-plans/${useParams().id}`,
+  (params) => `/app/workspace/time-plans/${params.id}`,
+  ParamsSchema,
   {
-    notFound: () => `Could not find time plan #${useParams().id}!`,
-    error: () =>
-      `There was an error loading time plan #${useParams().id}! Please try again!`,
+    notFound: (params) => `Could not find time plan #${params.id}!`,
+    error: (params) =>
+      `There was an error loading time plan #${params.id}! Please try again!`,
   },
 );
 

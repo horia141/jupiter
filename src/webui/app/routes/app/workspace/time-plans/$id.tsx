@@ -15,22 +15,11 @@ import {
 } from "@jupiter/webapi-client";
 import FlareIcon from "@mui/icons-material/Flare";
 import ViewListIcon from "@mui/icons-material/ViewList";
-import {
-  FormControl,
-  InputLabel,
-  OutlinedInput,
-  Stack,
-} from "@mui/material";
+import { FormControl, InputLabel, OutlinedInput, Stack } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import {
-  Form,
-  Outlet,
-  useActionData,
-  useNavigation,
-  useParams,
-} from "@remix-run/react";
+import { Form, Outlet, useActionData, useNavigation } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
@@ -88,9 +77,9 @@ enum View {
   BY_PROJECT = "by-project",
 }
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-};
+});
 
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
@@ -353,8 +342,8 @@ export default function TimePlanView() {
                     text: "Change Time Config",
                     value: "change-time-config",
                     disabled: !inputsEnabled,
-                    highlight: true
-                  })
+                    highlight: true,
+                  }),
                 ]}
               />
             }
@@ -750,10 +739,11 @@ export default function TimePlanView() {
 
 export const ErrorBoundary = makeBranchErrorBoundary(
   "/app/workspace/time-plans",
+  ParamsSchema,
   {
-    notFound: () => `Could not find time plan #${useParams().id}!`,
-    error: () =>
-      `There was an error loading time plan #${useParams().id}. Please try again!`,
+    notFound: (params) => `Could not find time plan #${params.id}!`,
+    error: (params) =>
+      `There was an error loading time plan #${params.id}. Please try again!`,
   },
 );
 

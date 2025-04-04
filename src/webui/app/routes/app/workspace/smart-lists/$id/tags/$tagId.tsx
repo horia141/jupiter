@@ -27,10 +27,11 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
   tagId: z.string(),
-};
+});
+
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
     intent: z.literal("update"),
@@ -179,10 +180,11 @@ export default function SmartListTag() {
 }
 
 export const ErrorBoundary = makeLeafErrorBoundary(
-  () => `/app/workspace/smart-lists/${useParams().id}/tags`,
+  (params) => `/app/workspace/smart-lists/${params.id}/tags`,
+  ParamsSchema,
   {
-    notFound: () => `Could not find smart list tag #${useParams().tagId}!`,
-    error: () =>
-      `There was an error loading smart list tag #${useParams().tagId}! Please try again!`,
+    notFound: (params) => `Could not find smart list tag #${params.tagId}!`,
+    error: (params) =>
+      `There was an error loading smart list tag #${params.tagId}! Please try again!`,
   },
 );

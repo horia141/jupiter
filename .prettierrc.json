@@ -1,6 +1,7 @@
 {
     "plugins": ["@trivago/prettier-plugin-sort-imports"],
     "importOrder": [
+        "^@jupiter/webapi-client/(.*)$",
         "^@jupiter/webui/(.*)$",
         "^@jupiter/desktop/(.*)$",
         "^@jupiter/mobile/(.*)$",

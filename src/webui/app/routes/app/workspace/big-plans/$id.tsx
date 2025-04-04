@@ -31,7 +31,6 @@ import {
   useActionData,
   useFetcher,
   useNavigation,
-  useParams,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
@@ -60,10 +59,9 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-  alert: z.string().optional(),
-};
+});
 
 const CommonParamsSchema = {
   name: z.string(),
@@ -710,8 +708,12 @@ export default function BigPlan() {
   );
 }
 
-export const ErrorBoundary = makeLeafErrorBoundary("/app/workspace/big-plans", {
-  notFound: () => `Could not find big plan #${useParams().id}!`,
-  error: () =>
-    `There was an error loading big plan #${useParams().id}! Please try again!`,
-});
+export const ErrorBoundary = makeLeafErrorBoundary(
+  "/app/workspace/big-plans",
+  ParamsSchema,
+  {
+    notFound: (params) => `Could not find big plan with ID ${params.id}!`,
+    error: (params) =>
+      `There was an error loading big plan with ID ${params.id}! Please try again!`,
+  },
+);

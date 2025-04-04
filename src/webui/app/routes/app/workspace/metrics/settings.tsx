@@ -35,6 +35,8 @@ const UpdateFormSchema = {
   project: z.string(),
 };
 
+const ParamsSchema = z.object({});
+
 export const handle = {
   displayType: DisplayType.LEAF,
 };
@@ -137,7 +139,12 @@ export default function MetricsSettings() {
   );
 }
 
-export const ErrorBoundary = makeLeafErrorBoundary(`/app/workspace/metrics`, {
-  error: () =>
-    `There was an error upserting the metric settings! Please try again!`,
-});
+export const ErrorBoundary = makeLeafErrorBoundary(
+  "/app/workspace/metrics",
+  ParamsSchema,
+  {
+    notFound: () => `Could not find the metrics settings!`,
+    error: () =>
+      `There was an error loading the metrics settings! Please try again!`,
+  },
+);

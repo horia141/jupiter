@@ -13,7 +13,7 @@ import {
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useNavigation, useParams } from "@remix-run/react";
+import { useActionData, useNavigation } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
@@ -33,9 +33,10 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-};
+});
+
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
     intent: z.literal("update"),
@@ -291,8 +292,12 @@ export default function Vacation() {
   );
 }
 
-export const ErrorBoundary = makeLeafErrorBoundary("/app/workspace/vacations", {
-  notFound: () => `Could not find vacation #${useParams().id}!`,
-  error: () =>
-    `There was an error loading vacation #${useParams().id}! Please try again!`,
-});
+export const ErrorBoundary = makeLeafErrorBoundary(
+  "/app/workspace/vacations",
+  ParamsSchema,
+  {
+    notFound: (params) => `Could not find vacation #${params.id}!`,
+    error: (params) =>
+      `There was an error loading vacation #${params.id}! Please try again!`,
+  },
+);

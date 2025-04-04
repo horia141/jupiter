@@ -33,10 +33,10 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
   entryId: z.string(),
-};
+});
 
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
@@ -267,10 +267,12 @@ export default function MetricEntry() {
 }
 
 export const ErrorBoundary = makeLeafErrorBoundary(
-  () => `/app/workspace/metrics/${useParams().id}/entries`,
+  "/app/workspace/metrics",
+  ParamsSchema,
   {
-    notFound: () => `Could not find metric entry #${useParams().entryId}!`,
-    error: () =>
-      `There was an error loading metric entry #${useParams().entryId}! Please try again!`,
+    notFound: (params) =>
+      `Could not find entry ${params.entryId} in metric ${params.id}!`,
+    error: (params) =>
+      `There was an error loading entry ${params.entryId} in metric ${params.id}! Please try again!`,
   },
 );

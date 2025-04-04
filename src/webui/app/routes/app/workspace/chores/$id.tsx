@@ -24,12 +24,7 @@ import {
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import {
-  useActionData,
-  useFetcher,
-  useNavigation,
-  useParams,
-} from "@remix-run/react";
+import { useActionData, useFetcher, useNavigation } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
 import { useContext, useEffect, useState } from "react";
@@ -54,16 +49,16 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-};
+});
 
-const QuerySchema = {
+const QuerySchema = z.object({
   inboxTasksRetrieveOffset: z
     .string()
     .transform((s) => parseInt(s, 10))
     .optional(),
-};
+});
 
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
@@ -537,8 +532,12 @@ export default function Chore() {
   );
 }
 
-export const ErrorBoundary = makeLeafErrorBoundary("/app/workspace/chores", {
-  notFound: () => `Could not find chore #${useParams().id}!`,
-  error: () =>
-    `There was an error loading chore #${useParams().id}! Please try again!`,
-});
+export const ErrorBoundary = makeLeafErrorBoundary(
+  "/app/workspace/chores",
+  ParamsSchema,
+  {
+    notFound: (params) => `Could not find chore #${params.id}!`,
+    error: (params) =>
+      `There was an error loading chore #${params.id}! Please try again!`,
+  },
+);

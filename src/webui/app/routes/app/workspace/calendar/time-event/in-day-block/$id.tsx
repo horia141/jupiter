@@ -22,7 +22,6 @@ import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   useActionData,
   useNavigation,
-  useParams,
   useSearchParams,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
@@ -57,9 +56,9 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-};
+});
 
 const UpdateFormInboxTaskSchema = {
   inboxTaskRefId: z.string(),
@@ -574,11 +573,12 @@ export default function TimeEventInDayBlockViewOne() {
 }
 
 export const ErrorBoundary = makeLeafErrorBoundary(
-  () => `/app/workspace/calendar/time-event/in-day-block/${useParams().id}`,
+  (params) => `/app/workspace/calendar/time-event/in-day-block/${params.id}`,
+  ParamsSchema,
   {
-    notFound: () =>
-      `Could not find time event in day block #${useParams().id}!`,
-    error: () =>
-      `There was an error loading time event in day block #${useParams().id}! Please try again!`,
+    notFound: (params) =>
+      `Could not find time event in day block #${params.id}!`,
+    error: (params) =>
+      `There was an error loading time event in day block #${params.id}! Please try again!`,
   },
 );

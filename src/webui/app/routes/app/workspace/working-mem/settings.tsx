@@ -48,6 +48,8 @@ const UpdateFormSchema = z.discriminatedUnion("intent", [
   }),
 ]);
 
+const ParamsSchema = z.object({});
+
 export const handle = {
   displayType: DisplayType.LEAF,
 };
@@ -201,8 +203,10 @@ export default function MetricsSettings() {
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/working-mem",
+  ParamsSchema,
   {
+    notFound: () => `Could not find the working memory settings!`,
     error: () =>
-      `There was an error upserting the working mem settings! Please try again!`,
+      `There was an error loading the working memory settings! Please try again!`,
   },
 );

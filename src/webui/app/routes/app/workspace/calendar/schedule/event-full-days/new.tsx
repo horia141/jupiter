@@ -44,6 +44,8 @@ const QuerySchema = {
     .optional(),
 };
 
+const ParamsSchema = z.object({});
+
 const CreateFormSchema = {
   scheduleStreamRefId: z.string(),
   name: z.string(),
@@ -226,7 +228,8 @@ export default function ScheduleEventFullDaysNew() {
 }
 
 export const ErrorBoundary = makeLeafErrorBoundary(
-  () => `/app/workspace/calendar?${useSearchParams()}`,
+  "/app/workspace/calendar",
+  ParamsSchema,
   {
     notFound: () => `Could not find the event full days!`,
     error: () =>

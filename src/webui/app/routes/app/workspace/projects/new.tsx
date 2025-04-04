@@ -34,6 +34,8 @@ const CreateFormSchema = {
   name: z.string(),
 };
 
+const ParamsSchema = z.object({});
+
 export const handle = {
   displayType: DisplayType.LEAF,
 };
@@ -141,6 +143,11 @@ export default function NewProject() {
   );
 }
 
-export const ErrorBoundary = makeLeafErrorBoundary("/app/workspace/projects", {
-  error: () => `There was an error creating the project! Please try again!`,
-});
+export const ErrorBoundary = makeLeafErrorBoundary(
+  "/app/workspace/projects",
+  ParamsSchema,
+  {
+    notFound: () => `Could not find the project!`,
+    error: () => `There was an error creating the project! Please try again!`,
+  },
+);

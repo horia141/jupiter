@@ -3,7 +3,7 @@ import { Card, CardContent, FormControl } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useNavigation, useParams } from "@remix-run/react";
+import { useActionData, useNavigation } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
@@ -19,9 +19,9 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-};
+});
 
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({ intent: z.literal("archive") }),
@@ -129,8 +129,12 @@ export default function Doc() {
   );
 }
 
-export const ErrorBoundary = makeLeafErrorBoundary("/app/workspace/docs", {
-  notFound: () => `Could not find doc #${useParams().id}!`,
-  error: () =>
-    `There was an error loading doc #${useParams().id}! Please try again!`,
-});
+export const ErrorBoundary = makeLeafErrorBoundary(
+  "/app/workspace/docs",
+  ParamsSchema,
+  {
+    notFound: (params) => `Could not find doc #${params.id}!`,
+    error: (params) =>
+      `There was an error loading doc #${params.id}! Please try again!`,
+  },
+);

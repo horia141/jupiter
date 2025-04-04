@@ -57,6 +57,8 @@ const CreateFormSchema = {
     .optional(),
 };
 
+const ParamsSchema = z.object({});
+
 export const handle = {
   displayType: DisplayType.LEAF,
 };
@@ -299,6 +301,11 @@ export default function NewBigPlan() {
   );
 }
 
-export const ErrorBoundary = makeLeafErrorBoundary("/app/workspace/big-plans", {
-  error: () => `There was an error creating the big plan! Please try again!`,
-});
+export const ErrorBoundary = makeLeafErrorBoundary(
+  "/app/workspace/big-plans",
+  ParamsSchema,
+  {
+    notFound: () => `Could not find the big plan!`,
+    error: () => `There was an error creating the big plan! Please try again!`,
+  },
+);

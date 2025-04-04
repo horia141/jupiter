@@ -1,5 +1,11 @@
 {
-  "include": ["remix.env.d.ts", "from-electron.d.ts", "**/*.ts", "**/*.tsx", "vite.config.mts"],
+  "include": [
+    "remix.env.d.ts",
+    "from-electron.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "vite.config.mts"
+  ],
   "compilerOptions": {
     "types": ["@remix-run/node", "vite/client"],
     "skipLibCheck": true,

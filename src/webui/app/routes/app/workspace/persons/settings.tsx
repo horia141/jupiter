@@ -35,6 +35,8 @@ const UpdateFormSchema = {
   project: z.string().optional(),
 };
 
+const ParamsSchema = z.object({});
+
 export const handle = {
   displayType: DisplayType.LEAF,
 };
@@ -140,7 +142,12 @@ export default function PersonsSettings() {
   );
 }
 
-export const ErrorBoundary = makeLeafErrorBoundary("/app/workspace/persons", {
-  error: () =>
-    `There was an error upserting person settings! Please try again!`,
-});
+export const ErrorBoundary = makeLeafErrorBoundary(
+  "/app/workspace/persons",
+  ParamsSchema,
+  {
+    notFound: () => `Could not find the persons settings!`,
+    error: () =>
+      `There was an error loading the persons settings! Please try again!`,
+  },
+);

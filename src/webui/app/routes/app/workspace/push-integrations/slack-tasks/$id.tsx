@@ -22,12 +22,7 @@ import {
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import {
-  useActionData,
-  useFetcher,
-  useNavigation,
-  useParams,
-} from "@remix-run/react";
+import { useActionData, useFetcher, useNavigation } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
 import { useContext } from "react";
@@ -50,9 +45,9 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-};
+});
 
 export const handle = {
   displayType: DisplayType.LEAF,
@@ -473,9 +468,10 @@ export default function SlackTask() {
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/push-integrations/slack-tasks",
+  ParamsSchema,
   {
-    notFound: () => `Could not find slack task #${useParams().id}!`,
-    error: () =>
-      `There was an error loading slack task #${useParams().id}! Please try again!`,
+    notFound: (params) => `Could not find slack task #${params.id}!`,
+    error: (params) =>
+      `There was an error loading slack task #${params.id}! Please try again!`,
   },
 );

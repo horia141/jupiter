@@ -197,9 +197,7 @@ function VacationCalendar({ today, sortedVacations }: VacationCalendarProps) {
     );
   }
 
-  function handleDayClick(
-    datum: TimeRangeDayData,
-  ) {
+  function handleDayClick(datum: TimeRangeDayData) {
     if (!vacationDays.has(datum.day)) {
       return null;
     }

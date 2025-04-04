@@ -4,6 +4,7 @@ import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Outlet } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
+import { z } from "zod";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { ADateTag } from "~/components/adate-tag";
@@ -25,6 +26,8 @@ import {
 export const handle = {
   displayType: DisplayType.BRANCH,
 };
+
+const ParamsSchema = z.object({});
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
@@ -87,6 +90,7 @@ export default function WorkingMemArchive() {
 
 export const ErrorBoundary = makeBranchErrorBoundary(
   "/app/workspace/working-mem",
+  ParamsSchema,
   {
     error: () => `There was an error loading the vacations! Please try again!`,
   },

@@ -60,6 +60,8 @@ const CreateFormSchema = {
   repeatsInPeriodCount: z.string().optional(),
 };
 
+const ParamsSchema = z.object({});
+
 export const handle = {
   displayType: DisplayType.LEAF,
 };
@@ -251,6 +253,11 @@ export default function NewHabit() {
   );
 }
 
-export const ErrorBoundary = makeLeafErrorBoundary("/app/workspace/habits", {
-  error: () => `There was an error creating the habit! Please try again!`,
-});
+export const ErrorBoundary = makeLeafErrorBoundary(
+  "/app/workspace/habits",
+  ParamsSchema,
+  {
+    notFound: () => `Could not find the habit!`,
+    error: () => `There was an error creating the habit! Please try again!`,
+  },
+);

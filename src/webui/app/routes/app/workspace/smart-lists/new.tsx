@@ -32,6 +32,8 @@ const CreateFormSchema = {
   icon: z.string().optional(),
 };
 
+const ParamsSchema = z.object({});
+
 export const handle = {
   displayType: DisplayType.LEAF,
 };
@@ -116,7 +118,9 @@ export default function NewSmartList() {
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/smart-lists",
+  ParamsSchema,
   {
+    notFound: () => `Could not find the smart list!`,
     error: () =>
       `There was an error creating the smart list! Please try again!`,
   },

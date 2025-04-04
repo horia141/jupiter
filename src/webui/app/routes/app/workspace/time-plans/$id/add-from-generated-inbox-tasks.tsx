@@ -22,7 +22,7 @@ import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useNavigation, useParams } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
-import { useContext, useEffect, useState, Fragment   } from "react";
+import { Fragment, useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 
@@ -72,9 +72,9 @@ enum View {
   BY_PROJECT = "by-project",
 }
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-};
+});
 
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
@@ -455,11 +455,12 @@ export default function TimePlanAddFromCurrentInboxTasks() {
 }
 
 export const ErrorBoundary = makeLeafErrorBoundary(
-  () => `/app/workspace/time-plans/${useParams().id}`,
+  (params) => `/app/workspace/time-plans/${params.id}`,
+  ParamsSchema,
   {
-    notFound: () => `Could not find time plan #${useParams().id}!`,
-    error: () =>
-      `There was an error loading time plan #${useParams().id}! Please try again!`,
+    notFound: (params) => `Could not find time plan #${params.id}!`,
+    error: (params) =>
+      `There was an error loading time plan #${params.id}! Please try again!`,
   },
 );
 

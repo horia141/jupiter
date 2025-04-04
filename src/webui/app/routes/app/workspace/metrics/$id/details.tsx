@@ -49,16 +49,16 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-};
+});
 
-const QuerySchema = {
+const QuerySchema = z.object({
   collectionTasksRetrieveOffset: z
     .string()
     .transform((s) => parseInt(s, 10))
     .optional(),
-};
+});
 
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
@@ -439,10 +439,11 @@ export default function MetricDetails() {
 }
 
 export const ErrorBoundary = makeLeafErrorBoundary(
-  () => `/app/workspace/metrics/${useParams().id}`,
+  (params) => `/app/workspace/metrics/${params.id}`,
+  ParamsSchema,
   {
-    notFound: () => `Could not find metric details for #${useParams().id}!`,
-    error: () =>
-      `There was an error loading metric details for #${useParams().id}! Please try again!`,
+    notFound: (params) => `Could not find metric details for #${params.id}!`,
+    error: (params) =>
+      `There was an error loading metric details for #${params.id}! Please try again!`,
   },
 );

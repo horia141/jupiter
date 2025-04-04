@@ -356,11 +356,7 @@ interface OverdueWarningProps {
   dueDate?: ADate | null;
 }
 
-function OverdueWarning({
-  today,
-  status,
-  dueDate,
-}: OverdueWarningProps) {
+function OverdueWarning({ today, status, dueDate }: OverdueWarningProps) {
   const globalProperties = useContext(GlobalPropertiesContext);
 
   if (isCompleted(status)) {

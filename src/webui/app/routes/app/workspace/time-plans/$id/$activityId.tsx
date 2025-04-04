@@ -61,10 +61,10 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
   activityId: z.string(),
-};
+});
 
 const UpdateFormTargetInboxTaskSchema = {
   targetInboxTaskRefId: z.string(),
@@ -518,11 +518,12 @@ export default function TimePlanActivity() {
 }
 
 export const ErrorBoundary = makeLeafErrorBoundary(
-  () => `/app/workspace/time-plans/${useParams().id}`,
+  "/app/workspace/time-plans",
+  ParamsSchema,
   {
-    notFound: () =>
-      `Could not find time plan activity #${useParams().activityId}!`,
-    error: () =>
-      `There was an error loading time plan activity #${useParams().activityId}! Please try again!`,
+    notFound: (params) =>
+      `Could not find activity ${params.activityId} in time plan ${params.id}!`,
+    error: (params) =>
+      `There was an error loading activity ${params.activityId} in time plan ${params.id}! Please try again!`,
   },
 );

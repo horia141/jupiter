@@ -197,12 +197,10 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
   );
 }
 
-const TrunkPanelFrame = styled(motion.div)(
-  ({ theme }) => ({
-    backgroundColor: theme.palette.background.paper,
-    width: "100vw",
-  }),
-);
+const TrunkPanelFrame = styled(motion.div)(({ theme }) => ({
+  backgroundColor: theme.palette.background.paper,
+  width: "100vw",
+}));
 
 const TrunkPanelControls = styled("div")(
   ({ theme }) => `

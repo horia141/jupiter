@@ -22,6 +22,8 @@ const CreateFormSchema = {
   name: z.string(),
 };
 
+const ParamsSchema = z.object({});
+
 export const handle = {
   displayType: DisplayType.LEAF,
 };
@@ -77,6 +79,11 @@ export default function NewDoc() {
   );
 }
 
-export const ErrorBoundary = makeLeafErrorBoundary("/app/workspace/docs", {
-  error: () => `There was an error creating the note! Please try again!`,
-});
+export const ErrorBoundary = makeLeafErrorBoundary(
+  "/app/workspace/docs",
+  ParamsSchema,
+  {
+    notFound: () => `Could not find the document!`,
+    error: () => `There was an error creating the document! Please try again!`,
+  },
+);

@@ -7,7 +7,7 @@ import { Button, ButtonGroup } from "@mui/material";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Link, Outlet, useNavigation, useParams } from "@remix-run/react";
+import { Link, Outlet, useNavigation } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { z } from "zod";
@@ -32,9 +32,9 @@ import {
   useBranchNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-};
+});
 
 const UpdateSchema = z.discriminatedUnion("intent", [
   z.object({
@@ -194,11 +194,10 @@ export default function SmartListViewItems() {
 
 export const ErrorBoundary = makeBranchErrorBoundary(
   "/app/workspace/smart-lists",
+  ParamsSchema,
   {
-    notFound: () => `Could not find smart list #${useParams().id}!`,
-    error: () =>
-      `There was an error loading smart list #${
-        useParams().id
-      }! Please try again!`,
+    notFound: (params) => `Could not find smart list #${params.id}!`,
+    error: (params) =>
+      `There was an error loading smart list #${params.id}! Please try again!`,
   },
 );

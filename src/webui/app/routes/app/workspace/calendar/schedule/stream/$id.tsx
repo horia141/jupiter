@@ -20,7 +20,6 @@ import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   useActionData,
   useNavigation,
-  useParams,
   useSearchParams,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
@@ -46,9 +45,9 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-};
+});
 
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
@@ -304,10 +303,11 @@ export default function ScheduleStreamViewOne() {
 }
 
 export const ErrorBoundary = makeLeafErrorBoundary(
-  () => `/app/workspace/calendar/schedule/stream/${useParams().id}`,
+  (params) => `/app/workspace/calendar/schedule/stream/${params.id}`,
+  ParamsSchema,
   {
-    notFound: () => `Could not find stream #${useParams().id}!`,
-    error: () =>
-      `There was an error loading stream #${useParams().id}! Please try again!`,
+    notFound: (params) => `Could not find stream #${params.id}!`,
+    error: (params) =>
+      `There was an error loading stream #${params.id}! Please try again!`,
   },
 );

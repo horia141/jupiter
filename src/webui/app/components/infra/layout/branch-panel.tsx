@@ -265,12 +265,10 @@ export function BranchPanel(props: PropsWithChildren<BranchPanelProps>) {
   );
 }
 
-const BranchPanelFrame = styled(motion.div)(
-  ({ theme }) => ({
-    backgroundColor: theme.palette.background.paper,
-    width: "100vw",
-  }),
-);
+const BranchPanelFrame = styled(motion.div)(({ theme }) => ({
+  backgroundColor: theme.palette.background.paper,
+  width: "100vw",
+}));
 
 const BranchPanelControls = styled("div")(
   ({ theme }) => `

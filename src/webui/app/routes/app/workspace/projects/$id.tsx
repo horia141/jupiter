@@ -14,7 +14,7 @@ import {
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useNavigation, useParams } from "@remix-run/react";
+import { useActionData, useNavigation } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useEffect, useState } from "react";
 import { z } from "zod";
@@ -32,9 +32,9 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation as useLoaderDataForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-};
+});
 
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
@@ -291,8 +291,12 @@ export default function Project() {
   );
 }
 
-export const ErrorBoundary = makeLeafErrorBoundary("/app/workspace/projects", {
-  notFound: () => `Could not find project #${useParams().id}!`,
-  error: () =>
-    `There was an error loading project #${useParams().id}! Please try again!`,
-});
+export const ErrorBoundary = makeLeafErrorBoundary(
+  "/app/workspace/projects",
+  ParamsSchema,
+  {
+    notFound: (params) => `Could not find project with ID ${params.id}!`,
+    error: (params) =>
+      `There was an error loading project with ID ${params.id}! Please try again!`,
+  },
+);

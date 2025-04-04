@@ -421,9 +421,7 @@ function NavMultipleSpreadView(props: NavMultipleViewProps) {
         if (nav.gatedOn) {
           const workspace = props.topLevelInfo.workspace;
           if (!isWorkspaceFeatureAvailable(workspace, nav.gatedOn)) {
-            return (
-              <Fragment key={`nav-multiple-${index}`}></Fragment>
-            );
+            return <Fragment key={`nav-multiple-${index}`}></Fragment>;
           }
         }
 
@@ -599,9 +597,7 @@ function ActionMultipleSpreadView(props: ActionMultipleViewProps) {
         if (action.gatedOn) {
           const workspace = props.topLevelInfo.workspace;
           if (!isWorkspaceFeatureAvailable(workspace, action.gatedOn)) {
-            return (
-              <Fragment key={`action-multiple-${index}`}></Fragment>
-            );
+            return <Fragment key={`action-multiple-${index}`}></Fragment>;
           }
         }
 
@@ -646,9 +642,7 @@ function ActionMultipleCompactView(props: ActionMultipleViewProps) {
     realActions.push(action);
   }
 
-  function handleMenuItemClick(
-    index: number,
-  ) {
+  function handleMenuItemClick(index: number) {
     setSelectedIndex(index);
     setOpen(false);
   }
@@ -775,9 +769,7 @@ function FilterFewOptionsSpreadView<K>(props: FilterFewOptionsViewProps<K>) {
         if (option.gatedOn) {
           const workspace = props.topLevelInfo.workspace;
           if (!isWorkspaceFeatureAvailable(workspace, option.gatedOn)) {
-            return (
-              <Fragment key={`filter-few-options-${index}`}></Fragment>
-            );
+            return <Fragment key={`filter-few-options-${index}`}></Fragment>;
           }
         }
 

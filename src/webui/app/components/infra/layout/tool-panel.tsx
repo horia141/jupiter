@@ -41,9 +41,7 @@ export function ToolPanel(props: PropsWithChildren<ToolPanelProps>) {
   );
 }
 
-const ToolPanelFrame = styled(motion.div)(
-  () => ({}),
-);
+const ToolPanelFrame = styled(motion.div)(() => ({}));
 
 interface ToolCardContentProps {
   isbigscreen: string;

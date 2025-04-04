@@ -14,7 +14,6 @@ import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   useActionData,
   useNavigation,
-  useParams,
   useSearchParams,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
@@ -40,9 +39,9 @@ import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-};
+});
 
 export const handle = {
   displayType: DisplayType.LEAF,
@@ -240,11 +239,12 @@ export default function TimeEventFullDaysBlockViewOne() {
 }
 
 export const ErrorBoundary = makeLeafErrorBoundary(
-  () => `/app/workspace/calendar/time-event/full-days-block/${useParams().id}`,
+  (params) => `/app/workspace/calendar/time-event/full-days-block/${params.id}`,
+  ParamsSchema,
   {
-    notFound: () =>
-      `Could not find time event full days block #${useParams().id}!`,
-    error: () =>
-      `There was an error loading time event full days block #${useParams().id}! Please try again!`,
+    notFound: (params) =>
+      `Could not find time event full days block #${params.id}!`,
+    error: (params) =>
+      `There was an error loading time event full days block #${params.id}! Please try again!`,
   },
 );

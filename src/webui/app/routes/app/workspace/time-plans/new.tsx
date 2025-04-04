@@ -20,7 +20,10 @@ import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { ActionSingle, SectionActions } from "~/components/infra/section-actions";
+import {
+  ActionSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
 import { SectionCardNew } from "~/components/infra/section-card-new";
 import { PeriodSelect } from "~/components/period-select";
 import {
@@ -85,24 +88,24 @@ export default function NewTimePlan() {
     >
       <GlobalError actionResult={actionData} />
       <SectionCardNew
-            title="Properties"
-            actions={
-              <SectionActions
-                id="time-plan-create"
-                topLevelInfo={topLevelInfo}
-                inputsEnabled={inputsEnabled}
-                actions={[
-                  ActionSingle({
-                    id: "create",
-                    text: "Create",
-                    value: "create",
-                    disabled: !inputsEnabled,
-                    highlight: true
-                  })
-                ]}
-              />
-            }
-          >
+        title="Properties"
+        actions={
+          <SectionActions
+            id="time-plan-create"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                id: "create",
+                text: "Create",
+                value: "create",
+                disabled: !inputsEnabled,
+                highlight: true,
+              }),
+            ]}
+          />
+        }
+      >
         <Stack spacing={2} useFlexGap>
           <FormControl fullWidth>
             <InputLabel id="rightNow" shrink margin="dense">

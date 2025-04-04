@@ -47,10 +47,11 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
   otherTimePlanId: z.string(),
-};
+});
+
 const CommonParamsSchema = {
   targetActivitiesRefIds: z
     .string()
@@ -404,11 +405,13 @@ export default function TimePlanAddFromCurrentTimePlans() {
 }
 
 export const ErrorBoundary = makeLeafErrorBoundary(
-  () => `/app/workspace/time-plans/${useParams().id}`,
+  "/app/workspace/time-plans",
+  ParamsSchema,
   {
-    notFound: () => `Could not find time plan #${useParams().otherTimePlanId}!`,
-    error: () =>
-      `There was an error loading time plan #${useParams().otherTimePlanId}! Please try again!`,
+    notFound: (params) =>
+      `Could not find time plan ${params.otherTimePlanId} to add to time plan ${params.id}!`,
+    error: (params) =>
+      `There was an error loading time plan ${params.otherTimePlanId} to add to time plan ${params.id}! Please try again!`,
   },
 );
 

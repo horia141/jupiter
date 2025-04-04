@@ -23,12 +23,7 @@ import {
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import {
-  useActionData,
-  useFetcher,
-  useNavigation,
-  useParams,
-} from "@remix-run/react";
+import { useActionData, useFetcher, useNavigation } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
 import { useContext, useEffect, useState } from "react";
@@ -52,9 +47,9 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-};
+});
 
 const QuerySchema = {
   inboxTasksRetrieveOffset: z
@@ -518,8 +513,12 @@ export default function Habit() {
   );
 }
 
-export const ErrorBoundary = makeLeafErrorBoundary("/app/workspace/habits", {
-  notFound: () => `Could not find habit #${useParams().id}!`,
-  error: () =>
-    `There was an error loading habit #${useParams().id}! Please try again!`,
-});
+export const ErrorBoundary = makeLeafErrorBoundary(
+  "/app/workspace/habits",
+  ParamsSchema,
+  {
+    notFound: (params) => `Could not find habit with ID ${params.id}!`,
+    error: (params) =>
+      `There was an error loading habit with ID ${params.id}! Please try again!`,
+  },
+);

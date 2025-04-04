@@ -6,7 +6,7 @@ import { ResponsiveLine } from "@nivo/line";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Link, Outlet, useNavigation, useParams } from "@remix-run/react";
+import { Link, Outlet, useNavigation } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
@@ -35,9 +35,9 @@ import {
 } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-};
+});
 
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
@@ -191,11 +191,15 @@ export default function Metric() {
   );
 }
 
-export const ErrorBoundary = makeBranchErrorBoundary("/app/workspace/metrics", {
-  notFound: () => `Could not find metric #${useParams().id}!`,
-  error: () =>
-    `There was an error loading metric #${useParams().id}! Please try again!`,
-});
+export const ErrorBoundary = makeBranchErrorBoundary(
+  "/app/workspace/metrics",
+  ParamsSchema,
+  {
+    notFound: (params) => `Could not find metric #${params.id}!`,
+    error: (params) =>
+      `There was an error loading metric #${params.id}! Please try again!`,
+  },
+);
 
 interface MetricGraphProps {
   sortedMetricEntries: MetricEntry[];

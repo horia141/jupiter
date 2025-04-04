@@ -26,13 +26,13 @@ import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-};
+});
 
-const CreateFormSchema = {
+const CreateFormSchema = z.object({
   name: z.string(),
-};
+});
 
 export const handle = {
   displayType: DisplayType.LEAF,
@@ -131,10 +131,11 @@ export default function NewSmartListTag() {
 }
 
 export const ErrorBoundary = makeLeafErrorBoundary(
-  () => `/app/workspace/smart-lists/${useParams().id}/tags`,
+  (params) => `/app/workspace/smart-lists/${params.id}/tags`,
+  ParamsSchema,
   {
-    notFound: () => `Could not find smart list tag #${useParams().id}`,
-    error: () =>
-      `There was an error loading smart list tag #${useParams().id}! Please try again!`,
+    notFound: (params) => `Could not find smart list tag #${params.id}`,
+    error: (params) =>
+      `There was an error loading smart list tag #${params.id}! Please try again!`,
   },
 );

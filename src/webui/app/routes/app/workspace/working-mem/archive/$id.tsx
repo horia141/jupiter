@@ -17,7 +17,7 @@ import {
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useFetcher, useNavigation, useParams } from "@remix-run/react";
+import { useFetcher, useNavigation } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
 import { useContext } from "react";
@@ -41,9 +41,9 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-};
+});
 
 const QuerySchema = {
   cleanupTasksRetrieveOffset: z
@@ -254,10 +254,11 @@ export default function WorkingMem() {
 }
 
 export const ErrorBoundary = makeLeafErrorBoundary(
-  "/app/workspace/working-mem/archive",
+  "/app/workspace/working-mem",
+  ParamsSchema,
   {
-    notFound: () => `Could not find working memory archive #${useParams().id}!`,
-    error: () =>
-      `There was an error loading working memory archive #${useParams().id}! Please try again!`,
+    notFound: (params) => `Could not find archived item with ID ${params.id}!`,
+    error: (params) =>
+      `There was an error loading archived item with ID ${params.id}! Please try again!`,
   },
 );
