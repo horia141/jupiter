@@ -1,5 +1,5 @@
 import type { Env, Hosting } from "@jupiter/webapi-client";
-import dotenv from "dotenv";
+import { config } from "dotenv";
 
 export interface GlobalPropertiesServer {
   env: Env;
@@ -33,8 +33,8 @@ export interface GlobalPropertiesServer {
 
 // @secureFn
 function loadGlobalPropertiesOnServer(): GlobalPropertiesServer {
-  dotenv.config({ path: `${process.cwd()}/../Config.global` });
-  dotenv.config({ path: `${process.cwd()}/Config.project` });
+  config({ path: `${process.cwd()}/../Config.global` });
+  config({ path: `${process.cwd()}/Config.project` });
 
   const hostedGlobalWebApiServerHost = process.env
     .HOSTED_GLOBAL_WEBAPI_SERVER_HOST as string;

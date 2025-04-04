@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { useHydrated } from "~/rendering/use-hidrated";
 
 interface ClientOnlyProps {

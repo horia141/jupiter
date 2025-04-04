@@ -1,12 +1,11 @@
 import { IconButton } from "@mui/material";
 import { useContext } from "react";
+
 import { GlobalPropertiesContext } from "~/global-properties-client";
 
 import { default as DiscordIcon } from "./discord-icon";
 
-interface CommunityLinkProps {}
-
-export function CommunityLink(props: CommunityLinkProps) {
+export function CommunityLink() {
   const globalProperties = useContext(GlobalPropertiesContext);
 
   return (

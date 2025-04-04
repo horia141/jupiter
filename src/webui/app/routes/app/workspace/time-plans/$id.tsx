@@ -16,7 +16,6 @@ import {
 import FlareIcon from "@mui/icons-material/Flare";
 import ViewListIcon from "@mui/icons-material/ViewList";
 import {
-  Button,
   FormControl,
   InputLabel,
   OutlinedInput,
@@ -35,9 +34,10 @@ import {
 import { AnimatePresence } from "framer-motion";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
-import React, { useContext, useEffect, useState } from "react";
+import { Fragment, useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { BigPlanStack } from "~/components/big-plan-stack";
 import { DocsHelpSubject } from "~/components/docs-help";
@@ -49,13 +49,13 @@ import { FieldError, GlobalError } from "~/components/infra/errors";
 import { BranchPanel } from "~/components/infra/layout/branch-panel";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import {
+  ActionSingle,
   FilterFewOptionsSpread,
   FilterManyOptions,
   NavMultipleCompact,
   NavSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { SectionCard } from "~/components/infra/section-card";
 import { SectionCardNew } from "~/components/infra/section-card-new";
 import { JournalStack } from "~/components/journal-stack";
 import { PeriodSelect } from "~/components/period-select";
@@ -340,21 +340,24 @@ export default function TimePlanView() {
       <Form method="post">
         <NestingAwareBlock shouldHide={shouldShowALeaf}>
           <GlobalError actionResult={actionData} />
-          <SectionCard
+          <SectionCardNew
             title="Properties"
-            actions={[
-              <Button
-                key="change-time-config"
-                id="time-plan-update"
-                variant="contained"
-                disabled={!inputsEnabled}
-                type="submit"
-                name="intent"
-                value="change-time-config"
-              >
-                Save
-              </Button>,
-            ]}
+            actions={
+              <SectionActions
+                id="time-plan-properties"
+                topLevelInfo={topLevelInfo}
+                inputsEnabled={inputsEnabled}
+                actions={[
+                  ActionSingle({
+                    id: "change-time-config",
+                    text: "Change Time Config",
+                    value: "change-time-config",
+                    disabled: !inputsEnabled,
+                    highlight: true
+                  })
+                ]}
+              />
+            }
           >
             <Stack
               direction={isBigScreen ? "row" : "column"}
@@ -389,13 +392,13 @@ export default function TimePlanView() {
                 <FieldError actionResult={actionData} fieldName="/status" />
               </FormControl>
             </Stack>
-          </SectionCard>
-          <SectionCard title="Notes">
+          </SectionCardNew>
+          <SectionCardNew title="Notes">
             <EntityNoteEditor
               initialNote={loaderData.note}
               inputsEnabled={inputsEnabled}
             />
-          </SectionCard>
+          </SectionCardNew>
 
           <SectionCardNew
             id="time-plan-activities"
@@ -621,7 +624,7 @@ export default function TimePlanView() {
                       );
 
                     return (
-                      <React.Fragment key={`project-${p.ref_id}`}>
+                      <Fragment key={`project-${p.ref_id}`}>
                         <StandardDivider title={fullProjectName} size="large" />
 
                         <TimePlanActivityList
@@ -637,7 +640,7 @@ export default function TimePlanView() {
                           filterDoneness={selectedDoneness}
                           timeEventsByRefId={timeEventsByRefId}
                         />
-                      </React.Fragment>
+                      </Fragment>
                     );
                   })}
                 </>

@@ -1,4 +1,5 @@
 import { TimePlanActivityFeasability } from "@jupiter/webapi-client";
+
 import { timePlanActivityFeasabilityName } from "~/logic/domain/time-plan-activity-feasability";
 
 import { SlimChip } from "./infra/chips";

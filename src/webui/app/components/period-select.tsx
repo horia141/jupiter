@@ -1,6 +1,7 @@
 import { RecurringTaskPeriod } from "@jupiter/webapi-client";
 import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 import { useEffect, useState } from "react";
+
 import { periodName } from "~/logic/domain/period";
 import { useBigScreen } from "~/rendering/use-big-screen";
 

@@ -4,6 +4,7 @@ import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Outlet } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { ADateTag } from "~/components/adate-tag";
 import { EntityNameComponent } from "~/components/entity-name";
@@ -38,7 +39,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
-export default function WorkingMemArchive({ request }: LoaderFunctionArgs) {
+export default function WorkingMemArchive() {
   const entries = useLoaderDataSafeForAnimation<typeof loader>();
 
   const sortedWorkingMems = sortWorkingMemsNaturally(

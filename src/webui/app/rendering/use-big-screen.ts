@@ -1,6 +1,7 @@
 import { AppPlatform, AppShell } from "@jupiter/webapi-client";
 import { useMediaQuery, useTheme } from "@mui/material";
 import { useContext } from "react";
+
 import { GlobalPropertiesContext } from "~/global-properties-client";
 
 export function useBigScreen(): boolean {
@@ -21,7 +22,7 @@ export function useBigScreen(): boolean {
           return true;
       }
       break;
-    case AppShell.DESKTOP_ELECTRON:
+    case AppShell.DESKTOP_ELECTRON: {
       const mdBreakpointPx = theme.breakpoints.values["md"];
 
       if (globalProperties.frontDoorInfo.initialWindowWidth !== undefined) {
@@ -35,6 +36,7 @@ export function useBigScreen(): boolean {
       }
 
       return true;
+    }
     case AppShell.MOBILE_CAPACITOR:
       return false;
     case AppShell.PWA:

@@ -27,7 +27,8 @@ import {
   Typography,
   styled,
 } from "@mui/material";
-import React, { useState } from "react";
+import { Fragment, useState } from "react";
+
 import { EntityNameOneLineComponent } from "~/components/entity-name";
 import { ScoreOverview } from "~/components/gamification/score-overview";
 import { EntityLink } from "~/components/infra/entity-card";
@@ -180,14 +181,14 @@ export function ShowReport({
       <TabPanel value={showTab} index={tabIndicesMap["by-periods"]}>
         <Stack spacing={2} useFlexGap>
           {report.per_period_breakdown.map((pp) => (
-            <React.Fragment key={pp.name}>
+            <Fragment key={pp.name}>
               <StandardDivider title={pp.name} size="large" />
               <OverviewReport
                 topLevelInfo={topLevelInfo}
                 inboxTasksSummary={pp.inbox_tasks_summary}
                 bigPlansSummary={pp.big_plans_summary}
               />
-            </React.Fragment>
+            </Fragment>
           ))}
         </Stack>
       </TabPanel>
@@ -213,14 +214,14 @@ export function ShowReport({
               );
 
               return (
-                <React.Fragment key={pb.ref_id}>
+                <Fragment key={pb.ref_id}>
                   <StandardDivider title={fullProjectName} size="large" />
                   <OverviewReport
                     topLevelInfo={topLevelInfo}
                     inboxTasksSummary={pb.inbox_tasks_summary}
                     bigPlansSummary={pb.big_plans_summary}
                   />
-                </React.Fragment>
+                </Fragment>
               );
             })}
           </Stack>
@@ -243,7 +244,7 @@ export function ShowReport({
               }
 
               return (
-                <React.Fragment key={period}>
+                <Fragment key={period}>
                   <StandardDivider title={periodName(period)} size="large" />
                   <TableContainer component={Box}>
                     <Table sx={{ tableLayout: "fixed" }}>
@@ -313,7 +314,7 @@ export function ShowReport({
                       </TableBody>
                     </Table>
                   </TableContainer>
-                </React.Fragment>
+                </Fragment>
               );
             })}
           </Stack>
@@ -336,7 +337,7 @@ export function ShowReport({
               }
 
               return (
-                <React.Fragment key={period}>
+                <Fragment key={period}>
                   <StandardDivider title={periodName(period)} size="large" />
                   <TableContainer component={Box}>
                     <Table sx={{ tableLayout: "fixed" }}>
@@ -391,7 +392,7 @@ export function ShowReport({
                       </TableBody>
                     </Table>
                   </TableContainer>
-                </React.Fragment>
+                </Fragment>
               );
             })}
           </Stack>

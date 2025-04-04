@@ -1,5 +1,6 @@
 import type { ScheduleInDayEventEntry, Timezone } from "@jupiter/webapi-client";
 import { TimeEventNamespace } from "@jupiter/webapi-client";
+
 import { type CombinedTimeEventInDayEntry } from "~/logic/domain/time-event";
 import { useBigScreen } from "~/rendering/use-big-screen";
 

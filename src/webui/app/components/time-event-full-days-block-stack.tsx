@@ -14,7 +14,7 @@ interface TimeEventFullDaysBlockStackProps {
 export function TimeEventFullDaysBlockStack(
   props: TimeEventFullDaysBlockStackProps,
 ) {
-  let actions = undefined;
+  const actions = undefined;
 
   return (
     <SectionCardNew

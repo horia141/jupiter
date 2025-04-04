@@ -17,6 +17,7 @@ import { Form, Link, useActionData, useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm } from "zodix";
+
 import { getGuestApiClient } from "~/api-clients.server";
 import { CommunityLink } from "~/components/community-link";
 import { DocsHelp, DocsHelpSubject } from "~/components/docs-help";
@@ -38,11 +39,6 @@ const RecoverAccountFormSchema = {
   newPassword: z.string(),
   newPasswordRepeat: z.string(),
 };
-
-// @secureFn
-export async function loader({ request }: LoaderFunctionArgs) {
-  return json({});
-}
 
 // @secureFn
 export async function action({ request }: LoaderFunctionArgs) {

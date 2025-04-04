@@ -7,7 +7,8 @@ import { Box, Button, ButtonGroup, IconButton, styled } from "@mui/material";
 import { Link, useLocation } from "@remix-run/react";
 import { AnimatePresence, motion, useIsPresent } from "framer-motion";
 import type { PropsWithChildren } from "react";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+
 import { extractTrunkFromPath } from "~/rendering/routes";
 import {
   restoreScrollPosition,
@@ -46,7 +47,7 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
   // to be relative to the viewport, not this element. So we use this function to
   // not emit a translateX in case of 0px. So whenever any trunk element appears
   // it'll work relative to the whole viewport.
-  function template({ x }: { x: string }, generatedTransform: string): string {
+  function template({ x }: { x: string }, _generatedTransform: string): string {
     if (x === "0px" || x === "0vw" || x === "0%" || x === "0") {
       if (isHydrated) {
         return "";
@@ -131,7 +132,6 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
       id="trunk-panel"
       key={extractTrunkFromPath(location.pathname)}
       transformTemplate={template}
-      isBigScreen={isBigScreen}
       initial={{
         opacity: 0,
         x: isBigScreen ? undefined : SMALL_SCREEN_ANIMATION_START,
@@ -197,12 +197,8 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
   );
 }
 
-interface TrunkPanelFrameProps {
-  isBigScreen: boolean;
-}
-
-const TrunkPanelFrame = styled(motion.div)<TrunkPanelFrameProps>(
-  ({ theme, isBigScreen }) => ({
+const TrunkPanelFrame = styled(motion.div)(
+  ({ theme }) => ({
     backgroundColor: theme.palette.background.paper,
     width: "100vw",
   }),
@@ -248,7 +244,7 @@ function TrunkPanelExtraControls({
     return (
       <>
         {controls.map((c, i) => (
-          <React.Fragment key={i}>{c}</React.Fragment>
+          <Fragment key={i}>{c}</Fragment>
         ))}
       </>
     );
@@ -277,7 +273,7 @@ function TrunkPanelExtraControls({
             <TrunkPanelExtraControlsOuterContainer>
               <TrunkPanelExtraControlsInnerContainer>
                 {controls.map((c, i) => (
-                  <React.Fragment key={i}>{c}</React.Fragment>
+                  <Fragment key={i}>{c}</Fragment>
                 ))}
               </TrunkPanelExtraControlsInnerContainer>
             </TrunkPanelExtraControlsOuterContainer>

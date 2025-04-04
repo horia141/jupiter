@@ -53,12 +53,14 @@ export function filterActivitiesByTargetStatus(
     }
 
     switch (activity.target) {
-      case TimePlanActivityTarget.INBOX_TASK:
+      case TimePlanActivityTarget.INBOX_TASK: {
         const inboxTask = targetInboxTasks.get(activity.target_ref_id)!;
         return !inboxTask.archived;
-      case TimePlanActivityTarget.BIG_PLAN:
+      }
+      case TimePlanActivityTarget.BIG_PLAN: {
         const bigPlan = targetBigPlans.get(activity.target_ref_id)!;
         return !bigPlan.archived;
+      }
     }
 
     throw new Error("This should not happen");
@@ -68,7 +70,6 @@ export function filterActivitiesByTargetStatus(
 export function sortTimePlanActivitiesNaturally(
   timePlanActivities: TimePlanActivity[],
   targetInboxTasks: Map<string, InboxTask>,
-  targetBigPlans: Map<string, BigPlan>,
 ): TimePlanActivity[] {
   return [...timePlanActivities].sort((j1, j2) => {
     const j1Parent =

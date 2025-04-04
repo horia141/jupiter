@@ -12,6 +12,7 @@ import {
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
 import { Typography } from "@mui/material";
+
 import { BigPlanStatusTag } from "~/components/big-plan-status-tag";
 import { InboxTaskStatusTag } from "~/components/inbox-task-status-tag";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";

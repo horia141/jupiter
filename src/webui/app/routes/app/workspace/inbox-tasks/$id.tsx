@@ -26,11 +26,12 @@ import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { InboxTaskPropertiesEditor } from "~/components/entities/inbox-task-properties-editor";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
-import { FieldError, GlobalError } from "~/components/infra/errors";
+import { GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { SectionCardNew } from "~/components/infra/section-card-new";
 import { TimeEventInDayBlockStack } from "~/components/time-event-in-day-block-stack";

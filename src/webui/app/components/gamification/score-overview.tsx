@@ -9,6 +9,7 @@ import {
   TableRow,
   styled,
 } from "@mui/material";
+
 import { useBigScreen } from "~/rendering/use-big-screen";
 
 interface ScoreOverviewProps {

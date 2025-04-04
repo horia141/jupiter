@@ -1,15 +1,9 @@
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 
 export const basicShouldRevalidate: ShouldRevalidateFunction = ({
-  actionResult,
-  currentParams,
   currentUrl,
   defaultShouldRevalidate,
-  formAction,
-  formData,
-  formEncType,
   formMethod,
-  nextParams,
   nextUrl,
 }) => {
   if (
@@ -27,15 +21,10 @@ export const basicShouldRevalidate: ShouldRevalidateFunction = ({
 };
 
 export const standardShouldRevalidate: ShouldRevalidateFunction = ({
-  actionResult,
-  currentParams,
   currentUrl,
   defaultShouldRevalidate,
   formAction,
-  formData,
-  formEncType,
   formMethod,
-  nextParams,
   nextUrl,
 }) => {
   if (formAction === "/app/workspace/inbox-tasks/update-status-and-eisen") {

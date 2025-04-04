@@ -31,7 +31,7 @@ document
     s.parentNode?.removeChild(s);
   });
 
-window.onerror = (event: Event | string, url, line) => {
+window.onerror = (event: Event | string) => {
   if (
     typeof event === "string" &&
     (event.indexOf("Hydration failed") !== -1 ||
@@ -50,7 +50,7 @@ window.onerror = (event: Event | string, url, line) => {
 
     const destUrl = Buffer.from(
       `${window.location.pathname}?${window.location.search}`,
-      "utf-8"
+      "utf-8",
     ).toString("base64");
     window.location.replace(`/app/render-fix?returnTo=${destUrl}`);
     return true;

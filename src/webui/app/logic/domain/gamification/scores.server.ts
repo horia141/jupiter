@@ -1,5 +1,6 @@
 import type { RecordScoreResult } from "@jupiter/webapi-client";
 import { createCookie } from "@remix-run/node";
+
 import { SCORE_ACTION_COOKIE_NAME } from "~/names";
 
 // TODO(horia141): secrets!

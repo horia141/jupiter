@@ -1,4 +1,3 @@
-import type { CardProps, ChipProps } from "@mui/material";
 import { Card, CardContent, Chip, styled } from "@mui/material";
 import type { PropsWithChildren } from "react";
 
@@ -20,7 +19,7 @@ export function SectionCardNew(props: PropsWithChildren<SectionCardNewProps>) {
   );
 }
 
-const SectionHeader = styled("div")(({ theme }) => ({
+const SectionHeader = styled("div")(() => ({
   display: "flex",
   flexWrap: "nowrap",
   justifyContent: "space-between",
@@ -28,11 +27,11 @@ const SectionHeader = styled("div")(({ theme }) => ({
   height: "3rem",
 }));
 
-const StyledCard = styled(Card)<CardProps>(({ theme }) => ({
+const StyledCard = styled(Card)(() => ({
   position: "relative",
 }));
 
-const SectionTitle = styled(Chip)<ChipProps>(({ theme }) => ({
+const SectionTitle = styled(Chip)(() => ({
   position: "relative",
   maxWidth: "calc(100% - 5rem)",
   top: "-0.05rem",

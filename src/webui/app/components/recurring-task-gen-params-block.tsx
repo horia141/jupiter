@@ -14,6 +14,7 @@ import {
   ToggleButtonGroup,
 } from "@mui/material";
 import { useEffect, useState } from "react";
+
 import type { SomeErrorNoData } from "~/logic/action-result";
 import { periodName } from "~/logic/domain/period";
 import { useBigScreen } from "~/rendering/use-big-screen";

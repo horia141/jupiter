@@ -1,6 +1,7 @@
 import Cookies from "js-cookie";
 import { useSnackbar } from "notistack";
 import { useEffect, useState } from "react";
+
 import type { ScoreAction } from "~/logic/domain/gamification/scores";
 import { SCORE_ACTION_COOKIE_SCHEMA } from "~/logic/domain/gamification/scores";
 import { SCORE_ACTION_COOKIE_NAME } from "~/names";

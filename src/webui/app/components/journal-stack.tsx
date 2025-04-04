@@ -4,6 +4,7 @@ import {
   UserFeature,
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
+
 import { isUserFeatureAvailable } from "~/logic/domain/user";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import type { TopLevelInfo } from "~/top-level-context";

@@ -12,6 +12,7 @@ import { json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { z } from "zod";
 import { parseQuery } from "zodix";
+
 import { CommunityLink } from "~/components/community-link";
 import { DocsHelp, DocsHelpSubject } from "~/components/docs-help";
 import { LifecyclePanel } from "~/components/infra/layout/lifecycle-panel";
@@ -61,7 +62,7 @@ export default function RenderFix() {
             </Typography>
 
             <Typography>
-              We've recovered. Press the button below to return!
+              We&apos;ve recovered. Press the button below to return!
             </Typography>
           </CardContent>
         </Card>

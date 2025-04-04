@@ -16,6 +16,7 @@ import {
   TimeEventNamespace,
 } from "@jupiter/webapi-client";
 import { DateTime } from "luxon";
+
 import { computeTimeEventInDayDurationInQuarters } from "~/routes/app/workspace/calendar";
 
 import { aDateToDate, compareADate } from "./adate";

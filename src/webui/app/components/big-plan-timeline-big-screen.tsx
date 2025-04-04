@@ -12,6 +12,7 @@ import {
   useTheme,
 } from "@mui/material";
 import type { DateTime } from "luxon";
+
 import { aDateToDate } from "~/logic/domain/adate";
 
 import { BigPlanStatusTag } from "./big-plan-status-tag";
@@ -127,7 +128,7 @@ export function BigPlanTimelineBigScreen({
   );
 }
 
-const BigScreenTimelineHeaderCell = styled(TableCell)(({ theme }) => ({
+const BigScreenTimelineHeaderCell = styled(TableCell)(() => ({
   display: "flex",
   flexWrap: "nowrap",
   justifyContent: "space-between",

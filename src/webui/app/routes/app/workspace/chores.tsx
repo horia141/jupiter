@@ -6,6 +6,7 @@ import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Outlet } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { useContext } from "react";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import Check from "~/components/check";
 import { DifficultyTag } from "~/components/difficulty-tag";

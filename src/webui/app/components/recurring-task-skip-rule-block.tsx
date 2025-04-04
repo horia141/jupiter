@@ -14,6 +14,7 @@ import {
 } from "@mui/material";
 import { DateTime } from "luxon";
 import { useEffect, useState } from "react";
+
 import type { SkipRule } from "~/logic/domain/recurring-task-skip-rule";
 import {
   SkipRuleType,
@@ -79,13 +80,14 @@ function editingInfoToSkipRule(editingInfo: EditingInfo): SkipRule {
       return { type: SkipRuleType.EVEN };
     case SkipRuleType.ODD:
       return { type: SkipRuleType.ODD };
-    case SkipRuleType.EVERY:
+    case SkipRuleType.EVERY: {
       const realN = parseInt(editingInfo.n);
       const realK = parseInt(editingInfo.k);
       if (isNaN(realN) || isNaN(realK)) {
         return { type: SkipRuleType.EVERY, n: -1, k: -1 };
       }
       return { type: SkipRuleType.EVERY, n: realN, k: realK };
+    }
     case SkipRuleType.CUSTOM_DAILY_REL_WEEKLY:
       return {
         type: SkipRuleType.CUSTOM_DAILY_REL_WEEKLY,

@@ -1,6 +1,7 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
-import { redirect, redirectDocument } from "@remix-run/node";
+import { redirectDocument } from "@remix-run/node";
 import { parseQuery } from "zodix";
+
 import { getGuestApiClient } from "~/api-clients.server";
 import { FRONT_DOOR_INFO_SCHEMA } from "~/logic/frontdoor";
 import { saveFrontDoorInfo } from "~/logic/frontdoor.server";

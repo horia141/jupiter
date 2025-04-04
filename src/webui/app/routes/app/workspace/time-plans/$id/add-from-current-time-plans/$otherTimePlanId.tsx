@@ -16,6 +16,7 @@ import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
@@ -252,7 +253,6 @@ export default function TimePlanAddFromCurrentTimePlans() {
   const sortedOtherActivities = sortTimePlanActivitiesNaturally(
     filteredOtherActivities,
     otherTargetInboxTasksByRefId,
-    otherTargetBigPlansByRefId,
   );
 
   return (
@@ -336,7 +336,7 @@ export default function TimePlanAddFromCurrentTimePlans() {
                   ? 2
                   : 0
               }
-              onClick={(a) => {
+              onClick={() => {
                 if (alreadyIncludedActivities.has(activity.ref_id)) {
                   return;
                 }

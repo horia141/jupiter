@@ -2,6 +2,7 @@ import type { ADate, BigPlan } from "@jupiter/webapi-client";
 import { Tooltip, styled } from "@mui/material";
 import { Link } from "@remix-run/react";
 import type { DateTime } from "luxon";
+
 import { aDateToDate } from "~/logic/domain/adate";
 
 import { BigPlanStatusTag } from "./big-plan-status-tag";
@@ -142,14 +143,14 @@ export function BigPlanTimelineSmallScreen({
   );
 }
 
-const SmallScreenTimelineList = styled("div")(({ theme }) => ({
+const SmallScreenTimelineList = styled("div")(() => ({
   display: "flex",
   flexDirection: "column",
   gap: "1rem",
   fontSize: "0.8rem",
 }));
 
-const SmallScreenTimelineHeader = styled("div")(({ theme }) => ({
+const SmallScreenTimelineHeader = styled("div")(() => ({
   display: "flex",
   justifyContent: "space-between",
   flexWrap: "nowrap",
@@ -191,7 +192,7 @@ interface TimelineLinkProps {
 }
 
 const TimelineLink = styled(Link)<TimelineLinkProps>(
-  ({ theme, leftmargin, width }) => ({
+  ({ leftmargin, width }) => ({
     position: "absolute",
     display: "flex",
     marginLeft: `${leftmargin * 100}%`,

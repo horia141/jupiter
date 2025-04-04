@@ -1,6 +1,7 @@
 import type { ADate } from "@jupiter/webapi-client";
 import { Box } from "@mui/material";
 import { useSearchParams } from "@remix-run/react";
+
 import {
   calculateStartTimeFromBlockParams,
   calendarTimeEventInDayDurationToRems,

@@ -27,7 +27,8 @@ import {
   useTheme,
 } from "@mui/material";
 import { Link } from "@remix-run/react";
-import React, { useState } from "react";
+import { Fragment, useRef, useState } from "react";
+
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import type { TopLevelInfo } from "~/top-level-context";
@@ -95,8 +96,8 @@ type ActionDesc =
   | NavMultipleDesc // A group of buttons, as a navigation
   | ActionSingleDesc // A single button, as an action
   | ActionMultipleDesc // A group of buttons, as an action
-  | FilterFewOptionsDesc<any> // A group to filter on, can be a navigation or a callback
-  | FilterManyOptionsDesc<any>; // A group to filter on, with many options
+  | FilterFewOptionsDesc<never> // A group to filter on, can be a navigation or a callback
+  | FilterManyOptionsDesc<never>; // A group to filter on, with many options
 
 export function NavSingle(desc: Omit<NavSingleDesc, "kind">): NavSingleDesc {
   return {
@@ -421,7 +422,7 @@ function NavMultipleSpreadView(props: NavMultipleViewProps) {
           const workspace = props.topLevelInfo.workspace;
           if (!isWorkspaceFeatureAvailable(workspace, nav.gatedOn)) {
             return (
-              <React.Fragment key={`nav-multiple-${index}`}></React.Fragment>
+              <Fragment key={`nav-multiple-${index}`}></Fragment>
             );
           }
         }
@@ -449,7 +450,7 @@ function NavMultipleSpreadView(props: NavMultipleViewProps) {
 
 function NavMultipleCompactView(props: NavMultipleViewProps) {
   const [open, setOpen] = useState(false);
-  const anchorRef = React.useRef<HTMLDivElement>(null);
+  const anchorRef = useRef<HTMLDivElement>(null);
   const theme = useTheme();
   const isBigScreen = useBigScreen();
 
@@ -469,9 +470,7 @@ function NavMultipleCompactView(props: NavMultipleViewProps) {
     realActions.findIndex((nav) => nav.highlight),
   );
 
-  function handleMenuItemClick(
-    event: React.MouseEvent<HTMLElement, MouseEvent>,
-  ) {
+  function handleMenuItemClick() {
     setOpen(false);
   }
 
@@ -601,7 +600,7 @@ function ActionMultipleSpreadView(props: ActionMultipleViewProps) {
           const workspace = props.topLevelInfo.workspace;
           if (!isWorkspaceFeatureAvailable(workspace, action.gatedOn)) {
             return (
-              <React.Fragment key={`action-multiple-${index}`}></React.Fragment>
+              <Fragment key={`action-multiple-${index}`}></Fragment>
             );
           }
         }
@@ -631,8 +630,8 @@ function ActionMultipleSpreadView(props: ActionMultipleViewProps) {
 
 function ActionMultipleCompactView(props: ActionMultipleViewProps) {
   const [open, setOpen] = useState(false);
-  const anchorRef = React.useRef<HTMLDivElement>(null);
-  const [selectedIndex, setSelectedIndex] = React.useState(0);
+  const anchorRef = useRef<HTMLDivElement>(null);
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const theme = useTheme();
   const isBigScreen = useBigScreen();
 
@@ -648,7 +647,6 @@ function ActionMultipleCompactView(props: ActionMultipleViewProps) {
   }
 
   function handleMenuItemClick(
-    event: React.MouseEvent<HTMLElement, MouseEvent>,
     index: number,
   ) {
     setSelectedIndex(index);
@@ -718,7 +716,7 @@ function ActionMultipleCompactView(props: ActionMultipleViewProps) {
                       key={`action-multiple-${index}`}
                       selected={index === selectedIndex}
                       disabled={!props.inputsEnabled || option.disabled}
-                      onClick={(event) => handleMenuItemClick(event, index)}
+                      onClick={() => handleMenuItemClick(index)}
                     >
                       {option.text}
                     </MenuItem>
@@ -778,9 +776,7 @@ function FilterFewOptionsSpreadView<K>(props: FilterFewOptionsViewProps<K>) {
           const workspace = props.topLevelInfo.workspace;
           if (!isWorkspaceFeatureAvailable(workspace, option.gatedOn)) {
             return (
-              <React.Fragment
-                key={`filter-few-options-${index}`}
-              ></React.Fragment>
+              <Fragment key={`filter-few-options-${index}`}></Fragment>
             );
           }
         }
@@ -846,7 +842,7 @@ function FilterFewOptionsCompactView<K>(props: FilterFewOptionsViewProps<K>) {
           setSelectedIndex(e.target.value as number);
           props.action.onSelect(realOptions[e.target.value as number].value);
         }}
-        renderValue={(selected) => (
+        renderValue={() => (
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
             {realOptions[selectedIndex].icon} {realOptions[selectedIndex].text}
           </Box>

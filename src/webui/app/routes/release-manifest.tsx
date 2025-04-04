@@ -1,4 +1,5 @@
 import { json } from "@remix-run/node";
+
 import { GLOBAL_PROPERTIES } from "~/global-properties-server";
 import { RELEASE_MANIFEST_SCHEMA } from "~/logic/release";
 
@@ -20,7 +21,7 @@ export async function loader() {
         manifest: manifest,
       },
     });
-  } catch (error) {
+  } catch {
     return json({
       ok: false,
     });

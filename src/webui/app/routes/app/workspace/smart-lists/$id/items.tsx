@@ -12,6 +12,7 @@ import { AnimatePresence } from "framer-motion";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import Check from "~/components/check";
 import { DocsHelpSubject } from "~/components/docs-help";
@@ -139,7 +140,7 @@ export default function SmartListViewItems() {
         </Button>,
         <ButtonGroup key={loaderData.smartList.ref_id}>
           <Button variant="contained" startIcon={<ReorderIcon />}>
-            "Items"
+            Items
           </Button>
 
           <Button
@@ -148,7 +149,7 @@ export default function SmartListViewItems() {
             startIcon={<TagIcon />}
             component={Link}
           >
-            "Tags"
+            Tags
           </Button>
         </ButtonGroup>,
       ]}

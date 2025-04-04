@@ -11,6 +11,7 @@ import { Outlet, useNavigate } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";
 import { useContext, useEffect, useMemo, useState } from "react";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { ADateTag } from "~/components/adate-tag";
 import { DocsHelpSubject } from "~/components/docs-help";
@@ -49,7 +50,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
-export default function Vacations({ request }: LoaderFunctionArgs) {
+export default function Vacations() {
   const entries = useLoaderDataSafeForAnimation<typeof loader>();
   const topLevelInfo = useContext(TopLevelInfoContext);
 
@@ -198,7 +199,6 @@ function VacationCalendar({ today, sortedVacations }: VacationCalendarProps) {
 
   function handleDayClick(
     datum: TimeRangeDayData,
-    event: React.SyntheticEvent,
   ) {
     if (!vacationDays.has(datum.day)) {
       return null;

@@ -2,6 +2,7 @@ import { styled } from "@mui/material";
 import { Form, useLocation } from "@remix-run/react";
 import { motion } from "framer-motion";
 import type { PropsWithChildren } from "react";
+
 import { useBigScreen } from "~/rendering/use-big-screen";
 
 const SMALL_SCREEN_ANIMATION_START = "100vw";
@@ -18,7 +19,6 @@ export function ToolPanel(props: PropsWithChildren<ToolPanelProps>) {
   return (
     <ToolPanelFrame
       id="tool-panel"
-      isBigScreen={isBigScreen}
       key={location.pathname}
       initial={{
         opacity: 0,
@@ -41,12 +41,8 @@ export function ToolPanel(props: PropsWithChildren<ToolPanelProps>) {
   );
 }
 
-interface ToolPanelFrameProps {
-  isBigScreen: boolean;
-}
-
-const ToolPanelFrame = styled(motion.div)<ToolPanelFrameProps>(
-  ({ theme, isBigScreen }) => ({}),
+const ToolPanelFrame = styled(motion.div)(
+  () => ({}),
 );
 
 interface ToolCardContentProps {

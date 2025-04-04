@@ -6,6 +6,7 @@ import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Outlet, useLoaderData, useNavigate } from "@remix-run/react";
 import { useEffect } from "react";
+
 import {
   GlobalPropertiesContext,
   serverToClientGlobalProperties,
@@ -45,26 +46,26 @@ export default function App() {
       SplashScreen.hide();
     }
 
+    async function setupBackButton() {
+      const backHandler = await CapacitorApp.addListener("backButton", () => {
+        if (window.history.state?.idx > 0) {
+          navigate(-1);
+        } else {
+          CapacitorApp.exitApp();
+        }
+      });
+
+      return () => {
+        backHandler.remove();
+      };
+    }
+
     if (
       loaderData.globalProperties.frontDoorInfo.appPlatform ===
         AppPlatform.MOBILE_ANDROID ||
       loaderData.globalProperties.frontDoorInfo.appPlatform ===
         AppPlatform.TABLET_ANDROID
     ) {
-      async function setupBackButton() {
-        const backHandler = await CapacitorApp.addListener("backButton", () => {
-          if (window.history.state?.idx > 0) {
-            navigate(-1);
-          } else {
-            CapacitorApp.exitApp();
-          }
-        });
-
-        return () => {
-          backHandler.remove();
-        };
-      }
-
       setupBackButton();
     }
   }, [loaderData.globalProperties.frontDoorInfo, navigate]);

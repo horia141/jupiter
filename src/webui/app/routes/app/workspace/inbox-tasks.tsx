@@ -43,8 +43,9 @@ import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Link, Outlet, useFetcher } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";
-import React, { memo, useContext, useState } from "react";
+import { Fragment, memo, useContext, useState } from "react";
 import { z } from "zod";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import type { InboxTaskShowOptions } from "~/components/inbox-task-card";
 import { InboxTaskCard } from "~/components/inbox-task-card";
@@ -1548,7 +1549,7 @@ function BigScreenKanbanByEisen({
         <>
           {EISENS.filter((e) => showEisenBoard[e]).map((e) => {
             return (
-              <React.Fragment key={e}>
+              <Fragment key={e}>
                 <StandardDivider
                   title={`${eisenIcon(e)} ${eisenName(e)}`}
                   size="large"
@@ -1565,7 +1566,7 @@ function BigScreenKanbanByEisen({
                   draggedInboxTaskId={draggedInboxTaskId}
                   collapseInboxTaskStatusColumn={collapseInboxTaskStatusColumn}
                 />
-              </React.Fragment>
+              </Fragment>
             );
           })}
         </>
@@ -2538,7 +2539,7 @@ const InboxTaskColumnTasks = memo(function InboxTaskColumnTasks(
             draggableId={inboxTask.ref_id}
             index={index}
           >
-            {(provided, snapshpt) => (
+            {(provided, _snapshpt) => (
               <div
                 ref={provided.innerRef}
                 {...provided.draggableProps}

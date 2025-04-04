@@ -4,6 +4,7 @@ import type {
   VacationEntry,
 } from "@jupiter/webapi-client";
 import { TimeEventNamespace } from "@jupiter/webapi-client";
+
 import type { CombinedTimeEventFullDaysEntry } from "~/logic/domain/time-event";
 import { birthdayTimeEventName } from "~/logic/domain/time-event";
 

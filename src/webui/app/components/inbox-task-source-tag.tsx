@@ -1,4 +1,5 @@
 import { InboxTaskSource } from "@jupiter/webapi-client";
+
 import { inboxTaskSourceName } from "~/logic/domain/inbox-task-source";
 
 import { SlimChip } from "./infra/chips";

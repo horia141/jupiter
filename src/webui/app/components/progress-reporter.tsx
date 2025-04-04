@@ -14,6 +14,7 @@ import {
 import { useContext, useEffect, useRef, useState } from "react";
 import useWebSocket, { ReadyState } from "react-use-websocket";
 import { z } from "zod";
+
 import { ClientOnly } from "~/components/infra/client-only";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { useBigScreen } from "~/rendering/use-big-screen";
@@ -229,7 +230,7 @@ const Container = styled("div")(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,
 }));
 
-const ContainerLog = styled(CardContent)(({ theme }) => ({
+const ContainerLog = styled(CardContent)(() => ({
   overflowY: "scroll",
   scrollBehavior: "smooth",
   height: "7.5rem",

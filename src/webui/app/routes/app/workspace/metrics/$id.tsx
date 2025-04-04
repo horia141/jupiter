@@ -13,6 +13,7 @@ import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { DocsHelpSubject } from "~/components/docs-help";
 import { EntityNameComponent } from "~/components/entity-name";
@@ -109,7 +110,6 @@ export default function Metric() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const shouldShowALeaf = useBranchNeedsToShowLeaf();
   const topLevelInfo = useContext(TopLevelInfoContext);
-  const params = useParams();
   const navigation = useNavigation();
   const inputsEnabled = navigation.state === "idle";
 

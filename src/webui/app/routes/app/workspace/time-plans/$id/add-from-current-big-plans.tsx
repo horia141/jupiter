@@ -16,9 +16,10 @@ import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useNavigation, useParams } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import type { DateTime } from "luxon";
-import React, { useContext, useEffect, useState } from "react";
+import { Fragment, useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { BigPlanStack } from "~/components/big-plan-stack";
 import { BigPlanTimelineBigScreen } from "~/components/big-plan-timeline-big-screen";
@@ -355,7 +356,7 @@ export default function TimePlanAddFromCurrentBigPlans() {
               );
 
               return (
-                <React.Fragment key={`project-${p.ref_id}`}>
+                <Fragment key={`project-${p.ref_id}`}>
                   <StandardDivider title={fullProjectName} size="large" />
 
                   <BigPlanList
@@ -373,7 +374,7 @@ export default function TimePlanAddFromCurrentBigPlans() {
                       })
                     }
                   />
-                </React.Fragment>
+                </Fragment>
               );
             })}
           </>
@@ -415,7 +416,7 @@ export default function TimePlanAddFromCurrentBigPlans() {
               );
 
               return (
-                <React.Fragment key={`project-${p.ref_id}`}>
+                <Fragment key={`project-${p.ref_id}`}>
                   <StandardDivider title={fullProjectName} size="large" />
 
                   <BigPlanTimeline
@@ -434,7 +435,7 @@ export default function TimePlanAddFromCurrentBigPlans() {
                       })
                     }
                   />
-                </React.Fragment>
+                </Fragment>
               );
             })}
           </>

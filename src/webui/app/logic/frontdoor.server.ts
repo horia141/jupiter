@@ -1,6 +1,6 @@
 import { AppDistribution, AppPlatform, AppShell } from "@jupiter/webapi-client";
 import { createCookie } from "@remix-run/node";
-import uap from "ua-parser-js";
+import { UAParser } from "ua-parser-js";
 
 import { FRONTDOOR_COOKIE_NAME } from "../names";
 import type { FrontDoorInfo } from "./frontdoor";
@@ -58,7 +58,7 @@ export function inferPlatformAndDistribution(userAgent: string | null): {
     return { platform: AppPlatform.DESKTOP, distribution: AppDistribution.WEB };
   }
 
-  const ua = uap.UAParser(userAgent);
+  const ua = UAParser(userAgent);
 
   if (ua.device.type === "mobile" && ua.os.name === "iOS") {
     return {

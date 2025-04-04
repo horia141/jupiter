@@ -18,13 +18,15 @@ import {
 } from "@mui/material";
 import { Form, Link, useLocation } from "@remix-run/react";
 import { AnimatePresence, motion, useIsPresent } from "framer-motion";
-import React, {
+import {
+  Fragment,
   type PropsWithChildren,
   useCallback,
   useEffect,
   useRef,
   useState,
 } from "react";
+
 import { extractBranchFromPath } from "~/rendering/routes";
 import {
   restoreScrollPosition,
@@ -62,7 +64,7 @@ export function BranchPanel(props: PropsWithChildren<BranchPanelProps>) {
   // to be relative to the viewport, not this element. So we use this function to
   // not emit a translateX in case of 0px. So whenever any leaf element appears
   // it'll work relative to the whole viewport.
-  function template({ x }: { x: string }, generatedTransform: string): string {
+  function template({ x }: { x: string }, _generatedTransform: string): string {
     if (x === "0px" || x === "0vw" || x === "0%" || x === "0") {
       if (isHydrated) {
         return "";
@@ -145,7 +147,6 @@ export function BranchPanel(props: PropsWithChildren<BranchPanelProps>) {
       id="branch-panel"
       key={extractBranchFromPath(location.pathname)}
       transformTemplate={template}
-      isBigScreen={isBigScreen}
       initial={{
         opacity: 0,
         x: isBigScreen ? undefined : SMALL_SCREEN_ANIMATION_START,
@@ -264,12 +265,8 @@ export function BranchPanel(props: PropsWithChildren<BranchPanelProps>) {
   );
 }
 
-interface BranchPanelFrameProps {
-  isBigScreen: boolean;
-}
-
-const BranchPanelFrame = styled(motion.div)<BranchPanelFrameProps>(
-  ({ theme, isBigScreen }) => ({
+const BranchPanelFrame = styled(motion.div)(
+  ({ theme }) => ({
     backgroundColor: theme.palette.background.paper,
     width: "100vw",
   }),
@@ -315,7 +312,7 @@ function TrunkPanelExtraControls({
     return (
       <>
         {controls.map((c, i) => (
-          <React.Fragment key={i}>{c}</React.Fragment>
+          <Fragment key={i}>{c}</Fragment>
         ))}
       </>
     );
@@ -344,7 +341,7 @@ function TrunkPanelExtraControls({
             <TrunkPanelExtraControlsOuterContainer>
               <TrunkPanelExtraControlsInnerContainer>
                 {controls.map((c, i) => (
-                  <React.Fragment key={i}>{c}</React.Fragment>
+                  <Fragment key={i}>{c}</Fragment>
                 ))}
               </TrunkPanelExtraControlsInnerContainer>
             </TrunkPanelExtraControlsOuterContainer>

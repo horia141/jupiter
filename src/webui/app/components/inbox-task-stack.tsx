@@ -3,6 +3,7 @@ import { Stack, ToggleButton, ToggleButtonGroup } from "@mui/material";
 import { Link, useLocation, useSearchParams } from "@remix-run/react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { DateTime } from "luxon";
+
 import type {
   InboxTaskOptimisticState,
   InboxTaskParent,

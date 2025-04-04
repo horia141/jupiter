@@ -1,7 +1,8 @@
+import { PassThrough, Readable } from "stream";
+
 import type { EntryContext } from "@remix-run/node";
 import { RemixServer } from "@remix-run/react";
 import { renderToPipeableStream } from "react-dom/server";
-import { PassThrough, Readable } from "stream";
 
 import { GLOBAL_PROPERTIES } from "./global-properties-server";
 import { ENV_HEADER, HOSTING_HEADER, VERSION_HEADER } from "./names";

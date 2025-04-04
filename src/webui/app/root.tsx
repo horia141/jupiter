@@ -1,8 +1,15 @@
 import { CssBaseline, ThemeProvider, createTheme } from "@mui/material";
 import type { LoaderFunctionArgs, SerializeFrom } from "@remix-run/node";
-import { data, json } from "@remix-run/node";
+import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Links, LiveReload, Meta, Outlet, Scripts, useLoaderData } from "@remix-run/react";
+import {
+  Links,
+  LiveReload,
+  Meta,
+  Outlet,
+  Scripts,
+  useLoaderData,
+} from "@remix-run/react";
 import { SnackbarProvider } from "notistack";
 import { StrictMode } from "react";
 

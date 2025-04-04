@@ -16,9 +16,10 @@ import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useNavigation, useParams } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
-import React, { useContext, useEffect, useState } from "react";
+import { Fragment, useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams, parseQuery } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { InboxTaskCard } from "~/components/inbox-task-card";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
@@ -416,7 +417,7 @@ export default function TimePlanAddFromCurrentInboxTasks() {
               );
 
               return (
-                <React.Fragment key={`project-${p.ref_id}`}>
+                <Fragment key={`project-${p.ref_id}`}>
                   <StandardDivider title={fullProjectName} size="large" />
 
                   <InboxTaskList
@@ -434,7 +435,7 @@ export default function TimePlanAddFromCurrentInboxTasks() {
                       )
                     }
                   />
-                </React.Fragment>
+                </Fragment>
               );
             })}
           </>

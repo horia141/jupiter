@@ -1,6 +1,7 @@
 import { Hosting } from "@jupiter/webapi-client";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
+
 import { GLOBAL_PROPERTIES } from "~/global-properties-server";
 import { inferPlatformAndDistribution } from "~/logic/frontdoor.server";
 

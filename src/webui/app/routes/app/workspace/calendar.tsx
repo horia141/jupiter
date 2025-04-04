@@ -39,7 +39,6 @@ import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   Outlet,
-  useActionData,
   useLocation,
   useNavigate,
   useNavigation,
@@ -48,9 +47,10 @@ import {
 import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";
 import type { PropsWithChildren } from "react";
-import React, { useContext, useEffect, useRef, useState } from "react";
+import { Fragment, useContext, useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { parseQuery } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNameComponent } from "~/components/entity-name";
 import { EntityLink } from "~/components/infra/entity-card";
@@ -1274,9 +1274,7 @@ function ViewAsCalendarDateHeader(props: ViewAsCalendarDateHeaderProps) {
   );
 }
 
-interface ViewAsCalendarLeftColumnProps {}
-
-function ViewAsCalendarLeftColumn(props: ViewAsCalendarLeftColumnProps) {
+function ViewAsCalendarLeftColumn() {
   const theme = useTheme();
   const hours = Array.from({ length: 24 }, (_, i) =>
     DateTime.utc(1987, 9, 18, i, 0, 0),
@@ -2058,7 +2056,7 @@ function ViewAsScheduleDailyAndWeekly(props: ViewAsProps) {
                 partitionFullDays.length === 0 &&
                 partitionInDay.length === 0
               ) {
-                return <React.Fragment key={date}></React.Fragment>;
+                return <Fragment key={date}></Fragment>;
               }
 
               const firstRowFullDays = partitionFullDays[0];
@@ -2067,7 +2065,7 @@ function ViewAsScheduleDailyAndWeekly(props: ViewAsProps) {
               const otherRowsInDay = partitionInDay.slice(1);
 
               return (
-                <React.Fragment key={date}>
+                <Fragment key={date}>
                   {firstRowFullDays && (
                     <>
                       <TableRow>
@@ -2141,7 +2139,7 @@ function ViewAsScheduleDailyAndWeekly(props: ViewAsProps) {
                       ))}
                     </>
                   )}
-                </React.Fragment>
+                </Fragment>
               );
             })}
           </TableBody>
@@ -2223,14 +2221,13 @@ function ViewAsScheduleTimeEventFullDaysRows(
     case TimeEventNamespace.SCHEDULE_FULL_DAYS_BLOCK: {
       const fullDaysEntry = props.entry.entry as ScheduleFullDaysEventEntry;
       return (
-        <React.Fragment>
+        <Fragment>
           <ViewAsScheduleTimeCell isbigscreen={isBigScreen.toString()}>
             [All Day]
           </ViewAsScheduleTimeCell>
 
           <ViewAsScheduleEventCell
             color={scheduleStreamColorHex(fullDaysEntry.stream.color)}
-            isbigscreen={isBigScreen.toString()}
             height="0.25rem"
           >
             <EntityLink
@@ -2248,21 +2245,20 @@ function ViewAsScheduleTimeEventFullDaysRows(
               />
             </EntityLink>
           </ViewAsScheduleEventCell>
-        </React.Fragment>
+        </Fragment>
       );
     }
 
     case TimeEventNamespace.PERSON_BIRTHDAY: {
       const fullDaysEntry = props.entry.entry as PersonEntry;
       return (
-        <React.Fragment>
+        <Fragment>
           <ViewAsScheduleTimeCell isbigscreen={isBigScreen.toString()}>
             [All Day]
           </ViewAsScheduleTimeCell>
 
           <ViewAsScheduleEventCell
             color={scheduleStreamColorHex(BIRTHDAY_TIME_EVENT_COLOR)}
-            isbigscreen={isBigScreen.toString()}
             height="0.25rem"
           >
             <EntityLink
@@ -2283,21 +2279,20 @@ function ViewAsScheduleTimeEventFullDaysRows(
               />
             </EntityLink>
           </ViewAsScheduleEventCell>
-        </React.Fragment>
+        </Fragment>
       );
     }
 
     case TimeEventNamespace.VACATION: {
       const fullDaysEntry = props.entry.entry as VacationEntry;
       return (
-        <React.Fragment>
+        <Fragment>
           <ViewAsScheduleTimeCell isbigscreen={isBigScreen.toString()}>
             [All Day]
           </ViewAsScheduleTimeCell>
 
           <ViewAsScheduleEventCell
             color={scheduleStreamColorHex(VACATION_TIME_EVENT_COLOR)}
-            isbigscreen={isBigScreen.toString()}
             height="0.25rem"
           >
             <EntityLink
@@ -2315,7 +2310,7 @@ function ViewAsScheduleTimeEventFullDaysRows(
               />
             </EntityLink>
           </ViewAsScheduleEventCell>
-        </React.Fragment>
+        </Fragment>
       );
     }
 
@@ -2344,14 +2339,13 @@ function ViewAsScheduleTimeEventInDaysRows(
     case TimeEventNamespace.SCHEDULE_EVENT_IN_DAY: {
       const scheduleEntry = props.entry.entry as ScheduleInDayEventEntry;
       return (
-        <React.Fragment>
+        <Fragment>
           <ViewAsScheduleTimeCell isbigscreen={isBigScreen.toString()}>
             [{startTime.toFormat("HH:mm")} - {endTime.toFormat("HH:mm")}]
           </ViewAsScheduleTimeCell>
 
           <ViewAsScheduleEventCell
             color={scheduleStreamColorHex(scheduleEntry.stream.color)}
-            isbigscreen={isBigScreen.toString()}
             height={scheduleTimeEventInDayDurationToRems(
               props.entry.time_event_in_tz.duration_mins,
             )}
@@ -2371,14 +2365,14 @@ function ViewAsScheduleTimeEventInDaysRows(
               />
             </EntityLink>
           </ViewAsScheduleEventCell>
-        </React.Fragment>
+        </Fragment>
       );
     }
 
     case TimeEventNamespace.INBOX_TASK: {
       const inboxTaskEntry = props.entry.entry as InboxTaskEntry;
       return (
-        <React.Fragment>
+        <Fragment>
           <ViewAsScheduleTimeCell isbigscreen={isBigScreen.toString()}>
             [{startTime.toFormat("HH:mm")} - {endTime.toFormat("HH:mm")}]
           </ViewAsScheduleTimeCell>
@@ -2392,7 +2386,6 @@ function ViewAsScheduleTimeEventInDaysRows(
                   ? "darker"
                   : "normal",
             )}
-            isbigscreen={isBigScreen.toString()}
             height={scheduleTimeEventInDayDurationToRems(
               props.entry.time_event_in_tz.duration_mins,
             )}
@@ -2412,7 +2405,7 @@ function ViewAsScheduleTimeEventInDaysRows(
               />
             </EntityLink>
           </ViewAsScheduleEventCell>
-        </React.Fragment>
+        </Fragment>
       );
     }
 
@@ -2450,13 +2443,12 @@ const ViewAsScheduleTimeCell = styled(TableCell)<ViewAsScheduleTimeCellProps>(
 );
 
 interface ViewAsScheduleEventCellProps {
-  isbigscreen: string;
   color: string;
   height: string;
 }
 
 const ViewAsScheduleEventCell = styled(TableCell)<ViewAsScheduleEventCellProps>(
-  ({ isbigscreen, color, height }) => ({
+  ({ color, height }) => ({
     verticalAlign: "top",
     backgroundColor: color,
     padding: "0.25rem",

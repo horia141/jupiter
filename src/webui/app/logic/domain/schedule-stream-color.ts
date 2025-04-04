@@ -107,7 +107,7 @@ function adjustColor(hex: string, amount: number): string {
     usePound = true;
   }
 
-  let num = parseInt(hex, 16);
+  const num = parseInt(hex, 16);
 
   let r = (num >> 16) + amount;
   if (r > 255) r = 255;

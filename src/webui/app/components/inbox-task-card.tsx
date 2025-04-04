@@ -9,7 +9,6 @@ import type {
   Metric,
   Person,
   SlackTask,
-  Timezone,
 } from "@jupiter/webapi-client";
 import { WorkspaceFeature } from "@jupiter/webapi-client";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -30,6 +29,7 @@ import type { PanInfo } from "framer-motion";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import type { DateTime } from "luxon";
 import { useContext, useState } from "react";
+
 import { ClientOnly } from "~/components/infra/client-only";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { aDateToDate } from "~/logic/domain/adate";
@@ -169,11 +169,10 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
           ((!props.allowSelect || !props.selected) && inputsEnabled) ||
           false
         ).toString()}
-        onClick={(e) => props.onClick && props.onClick(props.inboxTask)}
+        onClick={() => props.onClick && props.onClick(props.inboxTask)}
       >
         <OverdueWarning
           today={props.today}
-          userTimezone={props.topLevelInfo.user.timezone}
           status={props.inboxTask.status}
           dueDate={props.inboxTask.due_date}
         />
@@ -353,14 +352,12 @@ const TagsContained = styled(Box)({
 
 interface OverdueWarningProps {
   today: DateTime;
-  userTimezone: Timezone;
   status: InboxTaskStatus;
   dueDate?: ADate | null;
 }
 
 function OverdueWarning({
   today,
-  userTimezone,
   status,
   dueDate,
 }: OverdueWarningProps) {
@@ -402,7 +399,7 @@ function OverdueWarning({
   );
 }
 
-const OverdueWarningChip = styled(Chip)<ChipProps>(({ theme }) => ({
+const OverdueWarningChip = styled(Chip)<ChipProps>(() => ({
   position: "absolute",
   top: "0px",
   fontSize: "0.75rem",

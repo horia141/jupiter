@@ -16,7 +16,8 @@ import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Outlet } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";
-import React, { useContext, useState } from "react";
+import { Fragment, useContext, useState } from "react";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { BigPlanStack } from "~/components/big-plan-stack";
 import { BigPlanTimelineBigScreen } from "~/components/big-plan-timeline-big-screen";
@@ -248,7 +249,7 @@ export default function BigPlans() {
                 );
 
                 return (
-                  <React.Fragment key={p.ref_id}>
+                  <Fragment key={p.ref_id}>
                     <StandardDivider title={fullProjectName} size="large" />
                     <>
                       {isBigScreen && (
@@ -278,7 +279,7 @@ export default function BigPlans() {
                         />
                       )}
                     </>
-                  </React.Fragment>
+                  </Fragment>
                 );
               })}
             </>

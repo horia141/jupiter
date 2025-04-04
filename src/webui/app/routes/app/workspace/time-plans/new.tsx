@@ -1,6 +1,5 @@
 import { ApiError, RecurringTaskPeriod } from "@jupiter/webapi-client";
 import {
-  Button,
   FormControl,
   FormLabel,
   InputLabel,
@@ -16,11 +15,13 @@ import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { SectionCard } from "~/components/infra/section-card";
+import { ActionSingle, SectionActions } from "~/components/infra/section-actions";
+import { SectionCardNew } from "~/components/infra/section-card-new";
 import { PeriodSelect } from "~/components/period-select";
 import {
   aGlobalError,
@@ -83,22 +84,25 @@ export default function NewTimePlan() {
       inputsEnabled={inputsEnabled}
     >
       <GlobalError actionResult={actionData} />
-      <SectionCard
-        title="Properties"
-        actions={[
-          <Button
-            key="add"
-            id="time-plan-create"
-            variant="contained"
-            disabled={!inputsEnabled}
-            type="submit"
-            name="intent"
-            value="create"
+      <SectionCardNew
+            title="Properties"
+            actions={
+              <SectionActions
+                id="time-plan-create"
+                topLevelInfo={topLevelInfo}
+                inputsEnabled={inputsEnabled}
+                actions={[
+                  ActionSingle({
+                    id: "create",
+                    text: "Create",
+                    value: "create",
+                    disabled: !inputsEnabled,
+                    highlight: true
+                  })
+                ]}
+              />
+            }
           >
-            Create
-          </Button>,
-        ]}
-      >
         <Stack spacing={2} useFlexGap>
           <FormControl fullWidth>
             <InputLabel id="rightNow" shrink margin="dense">
@@ -130,7 +134,7 @@ export default function NewTimePlan() {
             <FieldError actionResult={actionData} fieldName="/period" />
           </FormControl>
         </Stack>
-      </SectionCard>
+      </SectionCardNew>
     </LeafPanel>
   );
 }

@@ -2,7 +2,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import { Button, ButtonGroup, IconButton, styled } from "@mui/material";
 import { AnimatePresence, motion } from "framer-motion";
-import React, { useState } from "react";
+import { Fragment, useState } from "react";
 
 interface ExtraControlsProps {
   isBigScreen: boolean;
@@ -16,7 +16,7 @@ export function ExtraControls({ isBigScreen, controls }: ExtraControlsProps) {
     return (
       <ExtraControlsBigScreenContainer>
         {controls.map((c, i) => (
-          <React.Fragment key={i}>{c}</React.Fragment>
+          <Fragment key={i}>{c}</Fragment>
         ))}
       </ExtraControlsBigScreenContainer>
     );
@@ -54,7 +54,7 @@ export function ExtraControls({ isBigScreen, controls }: ExtraControlsProps) {
             <ExtraControlsSmallScreenContainer>
               <div style={{ width: "max-content" }}>
                 {controls.map((c, i) => (
-                  <React.Fragment key={i}>{c}</React.Fragment>
+                  <Fragment key={i}>{c}</Fragment>
                 ))}
               </div>
             </ExtraControlsSmallScreenContainer>

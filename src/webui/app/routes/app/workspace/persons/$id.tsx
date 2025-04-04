@@ -40,6 +40,7 @@ import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams, parseQuery } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
@@ -300,7 +301,6 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function Person() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const params = useParams();
   const navigation = useNavigation();
   const topLevelInfo = useContext(TopLevelInfoContext);
 

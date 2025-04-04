@@ -4,6 +4,7 @@ import { useFetcher } from "@remix-run/react";
 import { Buffer } from "buffer-polyfill";
 import type { ComponentType } from "react";
 import { Suspense, lazy, useCallback, useEffect, useState } from "react";
+
 import { ClientOnly } from "~/components/infra/client-only";
 import {
   NoErrorSomeData,
