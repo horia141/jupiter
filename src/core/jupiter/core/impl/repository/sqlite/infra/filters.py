@@ -4,15 +4,15 @@ from jupiter.core.framework.entity import EntityLinkFiltersCompiled, NoFilter
 from jupiter.core.framework.realm import DatabaseRealm, RealmCodecRegistry
 from jupiter.core.framework.utils import is_primitive_type
 from jupiter.core.framework.value import AtomicValue, EnumValue
-from sqlalchemy import Table, select
+from sqlalchemy import Select, Table
 
 
 def compile_query_relative_to(
     realm_codec_registry: RealmCodecRegistry,
-    query_stmt: select,
+    query_stmt: Select,
     table: Table,
     filters: EntityLinkFiltersCompiled,
-) -> select:
+) -> Select:
     """Compile filters relative to a table."""
     for key, value in filters.items():
         if isinstance(value, NoFilter):

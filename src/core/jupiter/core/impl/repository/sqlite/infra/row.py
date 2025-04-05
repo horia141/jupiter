@@ -1,6 +1,7 @@
 """Row type infra."""
-
 from typing import Any
 
-RowType = dict[str, Any]  # type: ignore
+from sqlalchemy.engine import Row
+
+RowType = Row[Any]  # type: ignore
 # None | float | int | str | datetime | JSONDictType]

@@ -1844,7 +1844,7 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                 raise Exception(
                     f"Recursive types are only allowed to be encoded as root types, but {thing_type} is not the root type {root_type.__name__}"
                 )
-            return self.get_encoder(root_type, realm, root_type)
+            return self.get_encoder(cast(type[_DomainThingT], root_type), realm, root_type)
         elif isinstance(thing_type, str):
             if root_type is None:
                 raise Exception("Cannot infer the type of a string without a root type")
@@ -1852,7 +1852,7 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                 raise Exception(
                     f"Recursive types are only allowed to be encoded as root types, but {thing_type} is not the root type {root_type.__name__}"
                 )
-            return self.get_encoder(root_type, realm, root_type)
+            return self.get_encoder(cast(type[_DomainThingT], root_type), realm, root_type)
         elif is_thing_ish_type(thing_type):
             if (thing_type, realm) not in self._encoders_registry:
                 if (thing_type, DatabaseRealm) not in self._encoders_registry:
@@ -1971,7 +1971,7 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                 raise Exception(
                     f"Recursive types are only allowed to be encoded as root types, but {thing_type} is not the root type {root_type.__name__}"
                 )
-            return self.get_decoder(root_type, realm, root_type)
+            return self.get_decoder(cast(type[_DomainThingT], root_type), realm, root_type)
         elif isinstance(thing_type, str):
             if root_type is None:
                 raise Exception("Cannot infer the type of a string without a root type")
@@ -1979,7 +1979,7 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                 raise Exception(
                     f"Recursive types are only allowed to be encoded as root types, but {thing_type} is not the root type {root_type.__name__}"
                 )
-            return self.get_decoder(root_type, realm, root_type)
+            return self.get_decoder(cast(type[_DomainThingT], root_type), realm, root_type)
         elif is_thing_ish_type(thing_type):
             if (thing_type, realm) not in self._decoders_registry:
                 if (thing_type, DatabaseRealm) not in self._decoders_registry:
